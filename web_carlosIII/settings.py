@@ -31,7 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'polls.apps.PollsConfig',
+    'wetlab.apps.WetlabConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -131,11 +131,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 
 #  Media settings
-MEDIA_URL = '/polls/documents/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'polls/documents/')
+MEDIA_URL = '/wetlab/documents/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'wetlab/documents/')
 
 CRONJOBS = [
-    ('*/5 * * * *', 'polls.cron.fetching_stats_scheduled_job', '>> crontab.log')
+    ('*/5 * * * *', 'wetlab.cron.fetching_stats_scheduled_job', '>> crontab.log')
 ]
 
 CRONTAB_COMMAND_SUFFIX = '2>&1'

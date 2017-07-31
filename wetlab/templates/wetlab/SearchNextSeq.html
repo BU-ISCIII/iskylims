@@ -1,0 +1,81 @@
+{% extends 'wetlab/base.html' %}
+{% load static %}
+{% block content %}
+    {% csrf_token %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-8 col-sm-offset-2">
+          <div class="panel panel-default">
+             <div class="panel-heading">Searching information of the RUN</div>
+             <div class="panel-body">
+             <p>Searching information can be done on 2 different levels: <BR>
+            <ul>
+                <li>On RUN level</li>
+                <ul>
+                    <li>Looking for an especific run: Filling the exact name of the run field</li>
+                    <li>Looking for similar RUN match: Clicking on the "Fuzzy Search" checkbox</li>
+                    <li>Searching from an especific date: Filling the Date Field</li>
+                    <li>Searching for run State: Selecting from the state list Field</li>
+                </ul>
+                <li>On Project level</li>
+                <ul>
+                    <li>Looking for an especific project: Filling the exact name of the run field</li>
+                    <li>Looking for similar Project match: Clicking on the "Fuzzy Search" checkbox</li>
+                    <li>Searching from an especific date: Filling the Date Field</li>
+                    <li>Searching for Project State: Selecting from the state list Field</li>
+                    <BR>
+                    <li>Getting the projects for an especific user: Filling the userid field</li>
+                </ul>
+            </ul>
+            </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        </div> <!--// end col-sm-8  -->
+    </div> <!--// end row -->
+    
+    <!-- FORM for searching RUN and/or Project Information -->
+    
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-8" >
+        <div class="panel panel-default">
+          <div class="panel-heading">Searching RUN</div>
+          <div class="panel-body">
+            <form method="post" enctype="multipart/form-data" name="getSample" id="getSample" class="form-horizontal">
+            {% csrf_token %}        
+                <div class="form-group">
+                  <input type="hidden" name="action" value="runinfo"/>
+                  <label class="col-sm-4 control-label" for="runname" >Fill the RUN name </label>
+                  <div class="col-sm-8"><input class="form-control" type="text" name="runname" size="60" maxlength="100"></div>
+                </div>
+                <br>
+                <br>
+                <div class="form-group">
+                  <label class="col-sm-4 control-label" for="runfuzzysearch" >Fuzzy Search </label>
+                  <div class="col-sm-8"><input class="form-control" type="checkbox" name="runfuzzysearch" value="YES" id="runfuzzysearch"></div>
+                <br>
+                <br>
+                <div class="form-group">
+                  <label class="col-sm-4 control-label" for="runstate" >Run state</label>
+                  <div class="col-sm-8"><select class="form-control" name="runstate" id="rundate">
+                                        				<option value="">  </option>
+                                                        <option value="Recorded">Recorded</option>
+                                                        <option value="Recorded2">Recorded2</option>
+                  </div>
+                <br>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-4 control-label" for="rundate" >From Date Search (YYYY-MM-DD)</label>
+                  <div class="col-sm-8"><input class="form-control" type="date" name="rundate" value="YES" id="fuzzysearch"></div>
+                <br>
+                </div>
+                <input class="btn pull-left btn-primary" type="reset">
+                <input class="btn pull-right btn-primary" type="submit" value="Submit">
+            </form>
+            <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
+         </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        </div> <!--// end col-sm-8  -->
+    </div> <!--// end row -->
+
+    <!-- End of FORM for searching RUN /Project information -->
+
+
+{% endblock %}
