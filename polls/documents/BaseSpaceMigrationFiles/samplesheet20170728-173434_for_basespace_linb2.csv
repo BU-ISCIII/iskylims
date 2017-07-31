@@ -1,0 +1,11 @@
+[Header]
+FileVersion,1
+LibraryPrepKit,linb2
+ContainerType,Plate96
+ContainerID,ContainerID_00001
+Notes,automatic generated file form SampleSheet
+
+[Data]
+SampleID,Name,Species,Sample_Project,NucleicAcid,Well,Index1Name,Index1Sequence,Index2Name,Index2Sequence
+T5305,T5305,,MJFerrandiz20161116,DNA,A01,N711,AAGAGGCA,S508,CTAAGCCT
+R6-GB, R6-GB,,MJFerrandiz20161116,DNA,B02,N728,TGCAGCTA,S510,ATTAGACG
