@@ -1,0 +1,89 @@
+
+
+#banner {
+	font-family: Cambria, "Hoefler Text", "Liberation Serif", Times, "Times New Roman", serif;
+	color: #000000;
+	font-size: 20px;
+	background-image: url(../img/NextSeq_banner.jpg);
+	background-repeat: no-repeat;
+	height: 350px;
+	width: 1400px;
+	margin-bottom: 5px;
+}
+
+.form-group.required .control-label:after {
+  content:"*";
+  color:red;
+}
+
+.img-center {margin:0 auto;}
+
+formwapper{
+		width: 600px;
+		height: auto;
+		background-color: #FFF;
+	}
+	form {
+		width: 600px;
+		height: auto;
+		background-color: #FFF;
+		font-family: "Trebuchet MS", Helvetica, sans-serif;
+		font-size: 13px;
+		
+	}
+	
+	fieldset {
+	
+		background-color:#F1FBFB;
+		border: none;
+		padding-bottom: 20px;
+	}
+	
+	.f_label {
+		width: 250px;
+		display: block;
+		font-family: "Trebuchet MS", Helvetica, sans-serif;
+		font-size: 13px;
+		margin-top: 5px;
+		margin-right: 10px;
+		margin-bottom: 5px;
+		margin-left: 5px;
+	}
+		
+	.f_input{
+		width: 350px;
+		border:thin solid #66CCFF;
+		margin-bottom: 10px;
+	}
+	.f_select{
+		width: 350px;
+		border: thin solid #66#66CCFF;
+		margin-bottom: 10px;
+	}
+	.f_textarea {
+		width: 350px;
+		border: thin solid #66CCFF;
+		margin-bottom: 10px;
+	}
+	.b_send {
+		width: 150px;
+		height: 25px;
+		font-family: "Trebuchet MS", Helvetica, sans-serif;
+		color: #FFF;
+		font-weight: bold;
+		background-color: #6CF;
+		margin-right: 10px;
+		float: right;
+	}
+	.b_reset {
+		width: 150px;
+		height: 25px;
+		font-family: "Trebuchet MS", Helvetica, sans-serif;
+		color: #FFF;
+		font-weight: bold;
+		background-color: #6CF;
+		margin-left: 10px;
+		float: left;
+}
+
+

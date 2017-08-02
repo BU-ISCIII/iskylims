@@ -1,0 +1,23 @@
+{% extends 'polls/base.html' %}
+
+{% block content %}
+  <ul>
+    <li>
+      <a href="{% url 'simple_upload' %}">Simple Upload</a></li>
+    <li>
+      <a href="{% url 'model_form_upload' %}">Model Form Upload</a></li>
+  </ul>
+
+  <p>Uploaded files:</p>
+  <ul>
+    {% for obj in documents %}
+      <li>{{obj.description }} has the index {{obj.id}} 
+        <a href="{{ obj.csv_file.url }}" download={{ obj.csv_file.name }}>{{ obj.csv_file.name }}</a>
+        <p>otra prueba</p>
+        <a href="{{ obj.csv_file.path }}" download={{ obj.csv_file.name }}>{{ obj.csv_file.name }}</a>
+        <small>(Uploaded at: {{ obj.uploaded_at }})</small>
+      </li>
+    {% endfor %}
+  </ul>
+  <a href="imagen-1.png" download>Descargar imagen</a>
+{% endblock %}

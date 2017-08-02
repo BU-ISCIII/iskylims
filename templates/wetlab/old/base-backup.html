@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Bioinfo CarlosIII</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+{% load staticfiles  %}
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <!-- Place favicon.ico in the root directory -->
+    <link rel=”icon” type=”image/png” href=”{% static "polls/img/icons/apple-touch-icon.png" "%}">
+    <link rel=“shortcut icon” href=“polls/static/polls/img/icons/favicon.ico”  type=“image/x-icon”>
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+
+{% block extrahead %}
+    <link rel="stylesheet" href="{% static "polls/css/bootstrap.min.css" %}" type="text/css"/>
+    <link rel="stylesheet" href="{% static "polls/css/form.css" %}" type="text/css"/>
+    <meta name="viewport" content = "width=device-width, initial-scale=1.0">
+    <script src="/static/polls/js/vendor/modernizr-2.8.3.min.js"></script>
+    <script language="javascript" src="/static/polls/js/gen_validatorv4.js" type="text/javascript" xml:space="preserve"> </script>
+    <style type="text/css">
+		html,
+		body {
+		  height:100%
+		}
+	</style>
+{% endblock %}
+
+
+
+  </head>
+  <body>
+    <body class="body" style="background-color:#f6f6f6">
+    <div class="banner" id="banner"></div>
+    <div class="container-fluid" style="min-height:95%; ">
+	<div class="row">
+	  <div class="col-md-2">
+            <br>
+              <div class="well bs-sidebar" id="sidebar" style="background-color:#CCCCCC">
+                <nav>
+		  <ul class="nav nav-pills nav-stacked">
+		    <li><a href="/polls/"><b>HOME</b></a></li>
+		    <li><a href="#" id="btn-1" data-toggle="collapse" data-target="#submenu1" aria-expanded="false"><b>WET LAB</b> </a>
+		    <ul class="nav collapse" id="submenu1" role="menu" aria-labelledby="btn-1">
+			<li><a href="/polls/getSampleSheet/">Upload Sample Sheet</a></li>
+			<li><a href="/polls/uploadsForm/">New Run data</a></li>
+			<li><a href="/polls/get_run_data">Get Run data</a></li>
+			<li><a href="#">download file</a></li>
+			<li><a href="/polls/list_forms">Latest Reports</a></li>
+			<li><a href="#">Sample Reports</a></li>
+			<li><a href="#">Conversion to Basespace</a></li>
+		    </ul>
+		    </li>
+		    <li><a href="#" id="btn-1" data-toggle="collapse" data-target="#submenu2" aria-expanded="false"><b>NextSeqStatistics</b> </a>
+			<ul class="nav collapse" id="submenu2" role="menu" aria-labelledby="btn-1">
+			    <li><a href="/polls/nextSeq/listStatistics">List available Statistics</a></li>
+			    <li><a href="/polls/nextSeq/search_statistics">Search Statistics</a></li>
+			</ul>
+		    </li>	
+		    <li><a href="#" id="btn-1" data-toggle="collapse" data-target="#submenu3" aria-expanded="false"><b>MiSeqStatistics</b> </a>
+			<ul class="nav collapse" id="submenu3" role="menu" aria-labelledby="btn-1">
+			    <li><a href="#">List available Statistics</a></li>
+			    <li><a href="#">Search Statistics</a></li>
+			</ul>
+		    </li>
+		    <li><a href="#">Link 4</a></li>
+		</ul>
+	      </nav>
+	    </div> <!--well bs-sidebar affix-->
+	  </div> <!--col-md-2-->
+
+          <div class="col-md-10">
+          
+            {% block content %}
+            {% endblock %}
+	    <p><a href="{% url 'index' %}"><span class="glyphicon glyphicon-home"></span> Home</a></p>
+          </div> <!--col-md-10-->
+          </div> <!--row-->
+
+
+    	<!-- Footer Content -->
+	<footer>
+	    <div class="container-fluid" style='margin-left:15px'>
+		<p><a href="#" target="blank">Contact</a> | <a href="#" target="blank">LinkedIn</a> | <a href="#" target="blank">Twitter</a> | <a href="#" target="blank">Google+</a></p>
+	    </div>
+	</footer>
+  </body>
+</html>
