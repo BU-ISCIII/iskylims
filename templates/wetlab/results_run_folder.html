@@ -1,4 +1,4 @@
-{% extends 'polls/base.html' %}
+{% extends 'wetlab/base.html' %}
 
 {% block content %}
 <h2>Data information for the run folder</h2>
@@ -7,9 +7,9 @@
         {% for field, value in r_data %}
            {% if field == "Sample Sheet file"%}
                 
-                <p>{{ field }} <a href="/polls/documents/{{ value }}" download>{{ value|cut:"documents/" }}<span class="glyphicon glyphicon-download-alt"></span></a></p>
+                <p>{{ field }} <a href="/wetlab/documents/{{ value }}" download>{{ value|cut:"documents/" }}<span class="glyphicon glyphicon-download-alt"></span></a></p>
            {% elif field == "BaseSpace file" %}
-                <p>{{ field }} <a href="/polls/documents/{{ value }}" download>{{ value|cut:"BaseSpaceMigrationFiles/" }}<span class="glyphicon glyphicon-download-alt"></span></a></p>
+                <p>{{ field }} <a href="/wetlab/documents/{{ value }}" download>{{ value|cut:"BaseSpaceMigrationFiles/" }}<span class="glyphicon glyphicon-download-alt"></span></a></p>
             {% else %}
               <p> {{ field }}- {{ value }}</p>
            {% endif %}
