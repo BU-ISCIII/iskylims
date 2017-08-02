@@ -37,7 +37,7 @@ def sample_sheet_map_basespace(in_file, library_kit, projects):
     well_row={}
     letter_well='A'
     number_well='01'
-    result_directory='polls/documents/BaseSpaceMigrationFiles/'
+    result_directory='wetlab/documents/BaseSpaceMigrationFiles/'
     cwd = os.getcwd()
     data_found=0
     header_found=0
@@ -117,7 +117,7 @@ def sample_sheet_map_basespace(in_file, library_kit, projects):
                 fh_out.write('\n')
       
     fh_out.close()
-    return (out_file.replace('polls/documents/',''))
+    return (out_file.replace('wetlab/documents/',''))
 
 def get_projects_in_run(in_file):
     header_found=0
