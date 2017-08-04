@@ -1,31 +1,22 @@
-{% extends 'wetlab/base.html' %}
+{% extends 'drylab/base.html' %}
 {% load static %}
 {% block content %}
     {% csrf_token %}
     
     <h1><div class="color-heading">BioInformatics</div></h1>
-    <h2>ISCiii</h2>
+    <h2>iSkyLIMS: DryLab</h2>
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-8">
         <div class="panel panel-default">
-          <div class="panel-heading">Background</div>
+          <div class="panel-heading">Welcome</div>
           <div class="panel-body">
-           Life-science laboratories make increasing use of Next Generation Sequencing (NGS) 
-            for studying bio- macromolecules and their interactions. <br>
-            Array-based methods for measuring gene expression or protein-DNA interactions are being replaced 
-            by RNA-Seq and ChIP-Seq. <br>
-            Sequencing is generally performed by specialized facilities that have to keep track of sequencing requests,
-            trace samples, ensure quality and make data available according to predefined privileges.<br>
-            An integrated tool helps to troubleshoot problems, to maintain a high quality standard, to reduce time and costs. <br>
-            Commercial and non-commercial tools called LIMS (Laboratory Information Management Systems) 
-            are available for this purpose.<br>
-            However, they often come at prohibitive cost and/or lack the flexibility and scalability needed to adjust seamlessly to the frequently changing protocols employed. <br>
-            In order to manage the flow of sequencing data produced at the Genomic Unit of the Italian Institute of Technology (IIT), we developed SMITH (Sequencing Machine Information Tracking and Handling).
-          </div> <!--// end panel body -->
+			  This section will allow you to check BU-ISCIII service activity. Available processes are request new services,<br>
+			  colaborations, counseling and infrastructure. You will be able to check the status of your ongoing services.
+		  </div> <!--// end panel body -->
         </div> <!--// end panel -->
       </div> <!--// end col-sm-8 -->
       <div class="col-sm-2 col-sm-offset-1">
-            <img class="promo-block-img img-responsive" src="{% static "wetlab/img/illumina/nextseqReduced.png" %}" align="Avatar">
+            <img class="promo-block-img img-responsive" src="{% static "drylab/img/illumina/nextseqReduced.png" %}" align="Avatar">
         </div> <!--// end img --> 
       </div> <!--// end col-sm-4 -->
     </div> <!--// end row -->
@@ -35,97 +26,20 @@
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-6">
         <div class="panel panel-default">
-          <div class="panel-heading">Benefits of using LIMS</div>
+          <div class="panel-heading">Services ongoing and queued</div>
           <div class="panel-body">
-                The first version of iSkyLIMS had been deployed in December 2017. Since then, more than 4000 samples sequenced on 170 flow cells have been re-runed and processed, to have historic information from the last years.<br>
-                The use of SpaceLIMS led to a drastic reduction on time and human errors that takes to carry out primary and secondary data analyses.<br>
-                Primary data analysis refers to de-multiplexing and conversion of BCL to FASTQ format.<br>
-                SpaceLIMS automatically generates and launches the scripts needed for primary data analysis. Depending on read length and read mode (single read or paired end read),
-                 primary data analysis is generally finished within a few hours after the last chemistry cycle.
-          </div>  <!--  end of panel body  -->
+          		Under construction. This will be a table with services ongoing or queued
+		  </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
       </div> <!--// end col-sm-6 -->
       <div class="col-sm-4 col-sm-offset-2">
         <div class="panel panel-default">
-          <div class="panel-heading">Results</div>
+          <div class="panel-heading">Timeline of services</div>
           <div class="panel-body">
-            Results: iSkyLIMS runs automatically and limits direct human interaction mainly to administrative tasks. iSkyLIMS data-delivery procedures were standardized making it easier for biologists and analysts to navigate the data. Automation also helps saving time. The workflows are available through an API provided by the workflow management system. The parameters and input data are passed to the workflow engine that performs de-multiplexing, quality control, alignments, etc.
-          </div>  <!--  end of panel body  -->
+          	Under construction. Kind of diagram with services dates.
+		  </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
       </div> <!--// end col-sm-4 -->
     </div> <!--// end row -->
-
-<!-- Experience -->
-        <div id="experience">
-            <div class="bg-color-sky-light" data-auto-height="true">
-                <div class="container content-lg">
-                    <div class="row row-space-2 margin-b-4">
-                        <div class="col-md-3 col-sm-6 md-margin-b-4">
-                            <div class="service" data-height="height">
-                                <div class="service-element">
-                                    <i class="service-icon icon-screen-tablet"></i>
-                                </div>
-                                <div class="service-info">
-                                    <h3>Services</h3>
-                                    <p class="margin-b-5">Available services</p>
-                                </div>
-                                <a href="#" class="content-wrapper-link"></a>    
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-sm-6 md-margin-b-4">
-                            <div class="service bg-color-base wow zoomIn" data-height="height" data-wow-duration=".3" data-wow-delay=".1s">
-                                <div class="service-element">
-                                    <i class="service-icon color-white icon-graph"></i>
-                                </div>
-                                <div class="service-info">
-                                    <h3 class="color-white">Statistics Graphic</h3>
-                                    <p class="color-white margin-b-5">Get graphics</p>
-                                </div>
-                                <a href="#" class="content-wrapper-link"></a>    
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-sm-6 sm-margin-b-4">
-                            <div class="service" data-height="height">
-                                <div class="service-element">
-                                    <i class="service-icon icon-chemistry"></i>
-                                </div>
-                                <div class="service-info">
-                                    <h3>WET LAB</h3>
-                                    <p class="margin-b-5">Wet LAB run</p>
-                                </div>
-                                <a href="#" class="content-wrapper-link"></a>    
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-sm-6">
-                            <div class="service" data-height="height">
-                                <div class="service-element">
-                                    <i class="service-icon icon-badge"></i>
-                                </div>
-                                <div class="service-info">
-                                    <h3>Quality</h3>
-                                    <p class="margin-b-5">Quality </p>
-                                </div>
-                                <a href="#" class="content-wrapper-link"></a>    
-                            </div>
-                        </div>
-                    </div>
-                    <!--// end row -->
-                </div>
-            </div>
-        </div>
-        <!-- End Experience -->
-        <div id="experience">
-            <div class="bg-color-sky-light" data-auto-height="true">
-                <div class="container content-lg">
-                    <div class="row row-space-2 margin-b-4">
-                         <div class="col-sm-2 col-sm-offset-1">
-                            <img class="promo-block-img img-responsive" src="{% static "wetlab/img/magic.gif" %}" align="Avatar">
-                          </div> <!--// end img --> 
-                    </div>
-                    <!--// end row -->
-                </div>
-            </div>
-        </div>
-                        
 
 {% endblock %}
