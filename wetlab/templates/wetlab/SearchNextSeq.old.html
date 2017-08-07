@@ -70,10 +70,41 @@
     
     
     {% else %}
-    <!-- FORM for searching RUN  Information -->
-  
     <div class="row row-space-2 margin-b-4">
-      <div class="col-sm-7" >
+        <div class="col-sm-8 ">
+          <div class="panel panel-default">
+             <div class="panel-heading">Searching information of the RUN</div>
+             <div class="panel-body">
+             <p>Searching information can be done on 2 different levels: <BR>
+            <ul class="list-group">
+                <li class="list-group-item">On RUN level</li>
+                <ul>
+                    <li class="list-group-item">Looking for an especific run: Filling the exact name of the run field</li>
+                    <li class="list-group-item">Looking for similar RUN match: Clicking on the "Fuzzy Search" checkbox</li>
+                    <li class="list-group-item">Searching from an especific date: Filling the Date Field</li>
+                    <li class="list-group-item">Searching for run State: Selecting from the state list Field</li>
+                </ul>
+                <BR>
+                <ul class="list-group">
+                  <li class="list-group-item">On Project level</li>
+                  <ul>
+                    <li class="list-group-item">Looking for an especific project: Filling the exact name of the run field</li>
+                    <li class="list-group-item">Looking for similar Project match: Clicking on the "Fuzzy Search" checkbox</li>
+                    <li class="list-group-item">Searching from an especific date: Filling the Date Field</li>
+                    <li class="list-group-item">Searching for Project State: Selecting from the state list Field</li>
+                    <BR>
+                    <li class="list-group-item">Getting the projects for an especific user: Filling the userid field</li>
+                </ul>
+            </ul>
+            </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        </div> <!--// end col-sm-8  -->
+    </div> <!--// end row -->
+    
+    <!-- FORM for searching RUN  Information -->
+    
+    <div class="row row-space-2 margin-b-4">
+      <div class="col-sm-8 col-sm-offset-2" >
         <div class="panel panel-default">
           <div class="panel-heading"><strong>Searching RUN</strong></div>
           <div class="panel-body">
@@ -81,16 +112,16 @@
             {% csrf_token %}
             <input type="hidden" name="action" value="runsearch"/>
              <div class="form-group"> 
-                  <label class="col-sm-5  control-label" for="runname" >Fill the RUN name </label>
-                  <div class="col-sm-5"><input class="form-control" type="text" name="runname" id="runname" size="100" maxlength="100"></div>
+                  <label class="col-sm-4  control-label" for="runname" >Fill the RUN name </label>
+                  <div class="col-sm-6"><input class="form-control" type="text" name="runname" id="runname" size="100" maxlength="100"></div>
              </div>  <!-- end from-group   -->
              <div class="form-group">
-                <label class="col-sm-5 control-label" for="runfuzzysearch" >Fuzzy Search </label>
+                <label class="col-sm-4 control-label" for="runfuzzysearch" >Fuzzy Search </label>
                 <div class="col-sm-1"><input class="form-control align-left" type="checkbox" name="runfuzzysearch" value="runfuzzy" id="runfuzzysearch"></div>
                 <br>
              </div>  <!-- end from-group   -->
              <div class="form-group">
-               <label class="col-sm-5 control-label" for="runstate" >Run state</label>
+               <label class="col-sm-4 control-label" for="runstate" >Run state</label>
                <div class="col-sm-4"><select class="form-control" name="runstate" id="runstate">
                                				<option value="">Choose a value</option>
                                             <option value="Recorded">Recorded</option>
@@ -102,8 +133,8 @@
                 <br>
              </div>  <!-- end from-group   -->
                 <div class="form-group">
-                  <label class="col-sm-5 control-label" for="rundate" >From Date Search (YYYY-MM-DD)</label>
-                  <div class="col-sm-5"><input class="form-control" type="date" name="rundate" value="" id="rundate"></div>
+                  <label class="col-sm-4 control-label" for="rundate" >From Date Search (YYYY-MM-DD)</label>
+                  <div class="col-sm-8"><input class="form-control" type="date" name="rundate" value="" id="rundate"></div>
                 <br>
             </div>  <!-- end from-group   -->
                 <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
@@ -111,30 +142,15 @@
             </form>
          </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
-        </div> <!--// end col-sm-7  -->
- 
-        <!-- Insert the help panel -->
-        <BR><BR>
-        <div class="col-sm-3 col-sm-offset-1">
-          <div class="panel panel-default">
-             <div class="panel-heading">Searching information of the RUN</div>
-             <div class="panel-body">
-             <p>Searching information can be done on Runs or on Projects: <BR>
-             <p>For extended help click on the button below.</p>
-            <center><button id="myBtn"> Help </button></center>
-            </div>  <!--  end of panel body  -->
-        </div> <!--// end panel -->
-        <!-- Insert the Help window when clicking on the button -->
-        {% include 'wetlab/search-help.html' %}
- 
+        </div> <!--// end col-sm-8  -->
     </div> <!--// end row -->
 
     <!-- End of FORM for searching RUN information -->
 
 <!-- FORM for searching  Project Information -->
     
-    <div class="row row-space-4 margin-b-4">
-      <div class="col-sm-7 col-sm-offset-1" >
+    <div class="row row-space-2 margin-b-4">
+      <div class="col-sm-8 col-sm-offset-2" >
         <div class="panel panel-default">
           <div class="panel-heading"><strong>Searching Project</strong></div>
           <div class="panel-body">
@@ -142,16 +158,16 @@
             {% csrf_token %}
             <input type="hidden" name="action" value="projectinfo"/>
             <div class="form-group"> 
-                  <label class="col-sm-5  control-label" for="projectname" >Fill the Project name </label>
-                  <div class="col-sm-5"><input class="form-control" type="text" name="projectname" id="projectname" size="100" maxlength="100"></div>
+                  <label class="col-sm-4  control-label" for="projectname" >Fill the Project name </label>
+                  <div class="col-sm-6"><input class="form-control" type="text" name="projectname" id="projectname" size="100" maxlength="100"></div>
              </div>  <!-- end from-group   -->
              <div class="form-group">
-                <label class="col-sm-5 control-label" for="projectfuzzysearch" >Fuzzy Search </label>
+                <label class="col-sm-4 control-label" for="projectfuzzysearch" >Fuzzy Search </label>
                 <div class="col-sm-1"><input class="form-control align-left" type="checkbox" name="projectfuzzysearch" value="runfuzzy" id="projectfuzzysearch"></div>
                 <br>
              </div>  <!-- end from-group   -->
              <div class="form-group">
-               <label class="col-sm-5 control-label" for="projectstate" >Project state</label>
+               <label class="col-sm-4 control-label" for="projectstate" >Project state</label>
                <div class="col-sm-4"><select class="form-control" name="projectstate" id="projectstate">
                                				<option value="">Choose a value  </option>
                                             <option value="Recorded">Recorded</option>
@@ -162,15 +178,15 @@
                 <br>
              </div>  <!-- end from-group   -->
              <div class="form-group">
-                <label class="col-sm-5 control-label" for="projectdate" >From Date Search (YYYY-MM-DD)</label>
-                <div class="col-sm-5"><input class="form-control" type="date" name="projectdate" id="projectdate" size="100" maxlength="100"></div>
+                <label class="col-sm-4 control-label" for="projectdate" >From Date Search (YYYY-MM-DD)</label>
+                <div class="col-sm-6"><input class="form-control" type="date" name="projectdate" id="projectdate" size="100" maxlength="100"></div>
                 <br>
              </div>  <!-- end from-group   -->
              <br>
              <br>
             <div class="form-group"> 
-                  <label class="col-sm-5  control-label" for="username" >Search from user name</label>
-                  <div class="col-sm-5"><input class="form-control" type="text" name="username" id="username" size="100" maxlength="100"></div>
+                  <label class="col-sm-4  control-label" for="username" >Search from user name</label>
+                  <div class="col-sm-6"><input class="form-control" type="text" name="username" id="username" size="100" maxlength="100"></div>
              </div>  <!-- end from-group   -->
             <br>
             <br>
@@ -179,7 +195,7 @@
             </form>
          </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
-        </div> <!--// end col-sm-7  -->
+        </div> <!--// end col-sm-8  -->
     </div> <!--// end row -->
 
     <!-- End of FORM for searching Project information -->

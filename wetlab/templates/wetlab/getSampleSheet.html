@@ -58,9 +58,7 @@
           
           <p> Fields marked with <FONT COLOR= "Red">*</FONT> are mandatory</p>
           
-    {% elif uploaded_file_url %}
-        <p>File uploaded at: <a href="{{ uploaded_file_url}}"download>{{ uploaded_file_url  }}</a></p>
-        <p>{{ field }} <a href="{{ uploaded_file_url }}" download>{{ uploaded_file_url|cut:"documents/" }}<span class="glyphicon glyphicon-download-alt"></span></a></p>
+    
                     
     {% elif completed_form %}
         {% csrf_token %}
