@@ -46,6 +46,16 @@ class RunProcess(models.Model):
         
     def get_sample_file (self):
         return '%s' %(self.sampleSheet)
+        
+    def get_state(self):
+        return '%s' %(self.runState)
+        
+    def get_info_process (self):
+        str_date=self.generatedat.strftime("%I:%M%p on %B %d, %Y")
+        if (self.runState == 'Recorded' or self.runState == 'SampleSent'):
+            return '%s;%s;%s;%s;%s'  %(self.runName, self.runState, self.requestedCenter, self.sampleSheet, str_date )
+        else:
+            return '%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.requestedCenter, self.useSpaceImgMb, self.useSpaceFastaMb, self.useSpaceOtherMb, str_date)
 
 class Projects(models.Model):
     runprocess_id = models.ForeignKey(

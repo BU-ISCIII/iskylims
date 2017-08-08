@@ -177,7 +177,65 @@ def get_sample_file (request):
 
 
 def search_nextSeq (request):
+    if request.method=='POST' and (request.POST['action']=='runsearch'):
+        
+        if 'runfuzzysearch' in request.POST:
+            run_fuzzy=request.POST['runfuzzysearch']
+        else:
+            run_fuzzy=''
+        run_name=request.POST['runname']
+        run_date=request.POST['rundate']
+        run_state=request.POST['runstate']
 
+        if (run_name !=''):
+            if run_fuzzy:
+                if (RunProcess.objects.filter(runName__icontains =run_name).exists()):
+                    run_name_list=RunProcess.objects.filter(runName__icontains =run_name)
+                    ## collect the list of run that matches the run name 
+                    run_list=[]
+                    
+                    for i in range(len(run_name_list)):
+                        run_list.append([run_name_list[i],run_name_list[i].id])
+                    #import pdb; pdb.set_trace()    
+                    return render(request, 'wetlab/SearchNextSeq.html', {'display_run_list': run_list })
+                else:
+                    return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ]})
+            else:
+                #import pdb; pdb.set_trace()
+                if (RunProcess.objects.filter(runName__exact =run_name).exists()):
+                    run_name_found=RunProcess.objects.filter(runName__exact =run_name)
+                    if (len(run_name_found)>1):
+                        return render (request,'wetlab/error_page.html', {'content':['Too many matches found when searching for the run name ', run_name ,
+                                                                'ADVICE:', 'Select the Fuzzy to gt the list for all matches runs ']})
+                    ## collect the state to get the valid information of run that matches the run name 
+                    run_state=run_name_found[0].get_state()
+                    
+                    if (run_state == 'Recorded' or run_state == 'SampleSent'):
+                        d_list=['Run name','State of the Run is','Run was requested by','The Sample Sheet used is','Run was recorded on date']
+                    else:
+                        d_list=['Run name','State of the Run is','Run was requested by','Disk space used for Images','Disk space used for Fasta Files','Disk space used for other Files','Run recorded date'] 
+                    run_info_data=run_name_found[0].get_info_process().split(';')
+                    r_data_display=[]
+                    import pdb; pdb.set_trace() 
+                    for i in range (len (d_list)):
+                        r_data_display.append([d_list[i],run_info_data[i]])
+                    #import pdb; pdb.set_trace()
+                    return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
+                else:
+                    return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ,
+                                                                             'ADVICE:', 'Select the Fuzzy search button to get the match']})
+        ## search the run base on the  runstate and/or rundate 
+        else:
+            if run_state:
+                if run_date:
+                    run_name_list=RunProcess.objects.filter(runState =run_state).exists()
+                else:
+                    run_name_list=RunProcess.objects.filter(runState =run_state).exists()
+            else:
+                if run_date:
+                    run_name_list=RunProcess.objects.filter(runState =run_state).exists()
+                else: 
+                    return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the selecting request', '']})
     
     #import pdb; pdb.set_trace()
     return render(request, 'wetlab/SearchNextSeq.html')
