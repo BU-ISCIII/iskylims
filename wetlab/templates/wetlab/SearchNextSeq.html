@@ -59,9 +59,19 @@
          </div> <!--  end of row -->
     
     {% elif display_run_list %}
-    
-    
-    
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7">
+            <div class="panel panel-default">
+                <div class="panel-heading">The following list matches with yor search: </div>
+                <div class="panel-body">
+                {% for key, values in display_run_list %} 
+                    <div class="col-sm-6"><a href="/wetlab/runsearch?{{ values }}">{{ key }}</a></div><BR>
+                 {% endfor %}     
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-7 -->
+    </div> <!--  end of row -->      
+                
     {% elif display_project_info %}
     
     

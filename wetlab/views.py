@@ -192,8 +192,11 @@ def search_nextSeq (request):
                 if (RunProcess.objects.filter(runName__icontains =run_name).exists()):
                     run_name_list=RunProcess.objects.filter(runName__icontains =run_name)
                     ## collect the list of run that matches the run name 
-                    run_list=''
-                    import pdb; pdb.set_trace()
+                    run_list=[]
+                    
+                    for i in range(len(run_name_list)):
+                        run_list.append([run_name_list[i],run_name_list[i].id])
+                    #import pdb; pdb.set_trace()    
                     return render(request, 'wetlab/SearchNextSeq.html', {'display_run_list': run_list })
                 else:
                     return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ]})
@@ -206,12 +209,14 @@ def search_nextSeq (request):
                                                                 'ADVICE:', 'Select the Fuzzy to gt the list for all matches runs ']})
                     ## collect the state to get the valid information of run that matches the run name 
                     run_state=run_name_found[0].get_state()
+                    
                     if (run_state == 'Recorded' or run_state == 'SampleSent'):
                         d_list=['Run name','State of the Run is','Run was requested by','The Sample Sheet used is','Run was recorded on date']
                     else:
                         d_list=['Run name','State of the Run is','Run was requested by','Disk space used for Images','Disk space used for Fasta Files','Disk space used for other Files','Run recorded date'] 
                     run_info_data=run_name_found[0].get_info_process().split(';')
                     r_data_display=[]
+                    import pdb; pdb.set_trace() 
                     for i in range (len (d_list)):
                         r_data_display.append([d_list[i],run_info_data[i]])
                     #import pdb; pdb.set_trace()
