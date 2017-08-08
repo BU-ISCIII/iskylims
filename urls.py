@@ -8,12 +8,11 @@ from django.views.generic import ListView, DetailView
 
 
 urlpatterns = [
-    # ex: /polls/
     url(r'^$', views.index, name='index'),
-    url(r'^home$', views.home, name='home'),
     url(r'^searchNextSeq', views.search_nextSeq, name='search_nextSeq'),
     url(r'^getSampleSheet', views.get_sample_file, name='get_sample_file'),
     url(r'^documents/', views.downloadFile, name='downloadFile'),
+    url(r'^search_run=(?P<run_id>[0-9]+)/$', views.search_run, name='search_run'),
     url('^', include('django.contrib.auth.urls')),
 
 ] 

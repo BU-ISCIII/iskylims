@@ -16,6 +16,7 @@ from .models import *
 
 from django.core.files.storage import FileSystemStorage
 import re
+import datetime
 
 ####### Import libraries for static files
 #from django.shortcuts import render_to_response
@@ -174,11 +175,25 @@ def get_sample_file (request):
 
     return render(request, 'wetlab/getSampleSheet.html')
 
-
+def get_information_run(run_name_found):
+    ## collect the state to get the valid information of run that matches the run name 
+    run_state=run_name_found[0].get_state()
+    if (run_state == 'Recorded' or run_state == 'SampleSent'):
+        d_list=['Run name','State of the Run is','Run was requested by','The Sample Sheet used is','Run was recorded on date']
+    else:
+        d_list=['Run name','State of the Run is','Run was requested by','Disk space used for Images','Disk space used for Fasta Files','Disk space used for other Files','Run recorded date'] 
+    run_info_data=run_name_found[0].get_info_process().split(';')
+    r_data_display=[] 
+    for i in range (len (d_list)):
+        r_data_display.append([d_list[i],run_info_data[i]])
+    return r_data_display
+    
+    
+    
 
 def search_nextSeq (request):
     if request.method=='POST' and (request.POST['action']=='runsearch'):
-        
+        ## Define the variable run_fuzzy to '', in case check box is not checked
         if 'runfuzzysearch' in request.POST:
             run_fuzzy=request.POST['runfuzzysearch']
         else:
@@ -207,19 +222,7 @@ def search_nextSeq (request):
                     if (len(run_name_found)>1):
                         return render (request,'wetlab/error_page.html', {'content':['Too many matches found when searching for the run name ', run_name ,
                                                                 'ADVICE:', 'Select the Fuzzy to gt the list for all matches runs ']})
-                    ## collect the state to get the valid information of run that matches the run name 
-                    run_state=run_name_found[0].get_state()
-                    
-                    if (run_state == 'Recorded' or run_state == 'SampleSent'):
-                        d_list=['Run name','State of the Run is','Run was requested by','The Sample Sheet used is','Run was recorded on date']
-                    else:
-                        d_list=['Run name','State of the Run is','Run was requested by','Disk space used for Images','Disk space used for Fasta Files','Disk space used for other Files','Run recorded date'] 
-                    run_info_data=run_name_found[0].get_info_process().split(';')
-                    r_data_display=[]
-                    import pdb; pdb.set_trace() 
-                    for i in range (len (d_list)):
-                        r_data_display.append([d_list[i],run_info_data[i]])
-                    #import pdb; pdb.set_trace()
+                    r_data_display= get_information_run(run_name_found)
                     return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
                 else:
                     return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ,
@@ -228,9 +231,40 @@ def search_nextSeq (request):
         else:
             if run_state:
                 if run_date:
-                    run_name_list=RunProcess.objects.filter(runState =run_state).exists()
+                    ## Date query search for date greater than run_date and less than run_date +1
+                    ## converting run_date to date for adding one day 
+                    import pdb; pdb.set_trace()
+                    
+                    start_date= datetime.datetime.strptime(run_date, "%Y-%m-%d").date()
+                    end_date= str( start_date + datetime.timedelta(days=1))
+                    
+                    if (RunProcess.objects.filter(generatedat__range=(run_date, end_date)).exists()):
+                        run_name_list=RunProcess.objects.filter(generatedat__range=(run_date, end_date))
+                        if (len(run_name_list)>1) :
+                            ## collect the list of run that matches the run date 
+                            run_list=[]
+                            for i in range(len(run_name_list)):
+                                run_list.append([run_name_list[i],run_name_list[i].id])
+                            #import pdb; pdb.set_trace()    
+                            return render(request, 'wetlab/SearchNextSeq.html', {'display_run_list': run_list })
+                        else:
+                            r_data_display  = get_information_run(run_name_list)
+                            return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
+                    else:
+                        return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run date ', run_date ]})
+
                 else:
-                    run_name_list=RunProcess.objects.filter(runState =run_state).exists()
+                    if (RunProcess.objects.filter(runState =run_state).exists()):
+                        run_name_list=RunProcess.objects.filter(runState =run_state)
+                        ## collect the list of run that matches the run name 
+                        run_list=[]
+                        for i in range(len(run_name_list)):
+                            run_list.append([run_name_list[i],run_name_list[i].id])
+                            #import pdb; pdb.set_trace()    
+                        return render(request, 'wetlab/SearchNextSeq.html', {'display_run_list': run_list })
+                    else:
+                        return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run state ', run_state ]})
+
             else:
                 if run_date:
                     run_name_list=RunProcess.objects.filter(runState =run_state).exists()
@@ -240,17 +274,19 @@ def search_nextSeq (request):
     #import pdb; pdb.set_trace()
     return render(request, 'wetlab/SearchNextSeq.html')
 
-    
-#############################
-#### Form creation File System field
-#############################
 
-def home(request):
-    form_sample_sheet = Document.objects.all()
-    fs= FileSystemStorage()
-    #filename= fs.
-    #uploaded_file_url= 
-    return render(request, 'wetlab/home.html', { 'documents': form_sample_sheet })
+def search_run (request, run_id):
+    #import pdb; pdb.set_trace()
+    if (RunProcess.objects.filter(pk=run_id).exists()):
+        run_name_found = RunProcess.objects.filter(pk=run_id)
+        r_data_display  = get_information_run(run_name_found)
+        return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
+    else:
+        return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run  ', 
+                                                                             'ADVICE:', 'Select the Fuzzy search button to get the match']})
+
+
+
 
 
 
@@ -305,7 +341,7 @@ def downloadFile(request):
     #return render (request, 'results_run_folder.html', {'d_list':[info_data]})
 
 
-    
+'''    
 def simple_upload(request):
     if request.method == 'POST' and request.FILES['myfile']:
         myfile = request.FILES['myfile']
@@ -317,7 +353,7 @@ def simple_upload(request):
             'uploaded_file_url': uploaded_file_url
         })
     return render(request, 'wetlab/simple_upload.html')
-
+'''
 
 def model_form_upload(request):
     if request.method == 'POST':
