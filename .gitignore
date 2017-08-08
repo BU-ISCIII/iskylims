@@ -1,2 +1,4 @@
 *.xml
 *.bin
+documents
+__pycache__
