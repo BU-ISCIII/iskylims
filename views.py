@@ -176,6 +176,7 @@ def get_sample_file (request):
     return render(request, 'wetlab/getSampleSheet.html')
 
 def get_information_run(run_name_found):
+    info_dict={}
     ## collect the state to get the valid information of run that matches the run name 
     run_state=run_name_found[0].get_state()
     if (run_state == 'Recorded' or run_state == 'SampleSent'):
@@ -186,9 +187,21 @@ def get_information_run(run_name_found):
     r_data_display=[] 
     for i in range (len (d_list)):
         r_data_display.append([d_list[i],run_info_data[i]])
-    return r_data_display
+    info_dict['data']=r_data_display
+    if (run_state == 'Recorded'):
+        info_dict['graphic']='25-percentage.gif'
+    return info_dict
     
-    
+def fetch_list_for_run (run_name_list):
+    if len(run_name_list)>1:
+        run_list=[]
+        for i in range(len(run_name_list)):
+            run_list.append([run_name_list[i],run_name_list[i].id])
+                        #import pdb; pdb.set_trace()    
+        return render(request, 'wetlab/SearchNextSeq.html', {'display_run_list': run_list })
+    else:
+        r_data_display= get_information_run(run_name_list)
+        return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
     
 
 def search_nextSeq (request):
@@ -198,78 +211,169 @@ def search_nextSeq (request):
             run_fuzzy=request.POST['runfuzzysearch']
         else:
             run_fuzzy=''
+            ## Define the variable search_all to '', in case check box is not checked
+        if 'searchall' in request.POST:
+            search_all=request.POST['searchall']
+        else:
+            search_all=''
         run_name=request.POST['runname']
-        run_date=request.POST['rundate']
+        start_date=request.POST['startdate']
+        end_date=request.POST['enddate']
         run_state=request.POST['runstate']
+        
+        #############################################################
+        ## Search for a single match 
+        #############################################################
+        if (run_name !='' and run_fuzzy ==''):
+            if (RunProcess.objects.filter(runName__exact =run_name).exists()):
+                run_name_found=RunProcess.objects.filter(runName__exact =run_name)
+                if (len(run_name_found)>1):
+                    return render (request,'wetlab/error_page.html', {'content':['Too many matches found when searching for the run name ', run_name ,
+                                                                    'ADVICE:', 'Select the Fuzzy to gt the list for all matches runs ']})
+                r_data_display= get_information_run(run_name_found)
+                return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
+            else:
+                return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ,
+                                                                    'ADVICE:', 'Select the Fuzzy search button to get the match']})
+        ############################################################# 
+        ## check for the right format of the date fields  
+        #############################################################
+        if start_date !='' :
+            try: 
+                datetime.datetime.strptime(start_date, '%Y-%m-%d')
+            except:
+                return render (request,'wetlab/error_page.html', {'content':['The format for the "From Start Date" Field is incorrect ', 
+                                                                    'ADVICE:', 'Use the format  (YYYY-MM-DD)']})
+        if end_date !='' :
+            try: 
+                datetime.datetime.strptime(end_date, '%Y-%m-%d')
+            except:
+                return render (request,'wetlab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ', 
+                                                                    'ADVICE:', 'Use the format  (YYYY-MM-DD)']})
+        if search_all :
+            #############################################################
+            #### searching for projects were match the run name and the state
+            #############################################################
+            if (run_name and run_fuzzy and run_state and start_date == '' and end_date == ''):
+                if (RunProcess.objects.filter(runName__icontains =run_name, runState=run_state).exists()):
+                    run_name_list=RunProcess.objects.filter(runName__icontains =run_name,runState=run_state)
+                    fetch_list_for_run(run_name_list)
+                    '''
+                    if len(run_name_list)>1:
+                        run_list=[]
+                        for i in range(len(run_name_list)):
+                            run_list.append([run_name_list[i],run_name_list[i].id])
+                        #import pdb; pdb.set_trace()    
+                        return render(request, 'wetlab/SearchNextSeq.html', {'display_run_list': run_list })
+                    else:
+                        r_data_display= get_information_run(run_name_list)
+                        return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
+                   '''     
+                else:
+                    return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ]})
+                    
+            if (run_name and run_fuzzy and run_state and start_date != '' and end_date == ''):
+                if (RunProcess.objects.filter(runName__icontains =run_name, runState=run_state).exists()):
+                    run_name_list=RunProcess.objects.filter(runName__icontains =run_name,runState=run_state)
+                    if len(run_name_list)>1:
+                        run_list=[]
+                        for i in range(len(run_name_list)):
+                            run_list.append([run_name_list[i],run_name_list[i].id])
+                        #import pdb; pdb.set_trace()    
+                        return render(request, 'wetlab/SearchNextSeq.html', {'display_run_list': run_list })
+                    else:
+                        r_data_display= get_information_run(run_name_list)
+                        return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
+                else:
+                    return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ]})
 
-        if (run_name !=''):
-            if run_fuzzy:
+        else:
+            if (run_name !='' and run_fuzzy !=''):
                 if (RunProcess.objects.filter(runName__icontains =run_name).exists()):
                     run_name_list=RunProcess.objects.filter(runName__icontains =run_name)
                     ## collect the list of run that matches the run name 
-                    run_list=[]
-                    
-                    for i in range(len(run_name_list)):
-                        run_list.append([run_name_list[i],run_name_list[i].id])
-                    #import pdb; pdb.set_trace()    
-                    return render(request, 'wetlab/SearchNextSeq.html', {'display_run_list': run_list })
+                    if len(run_name_list)>1:
+                        run_list=[]
+                        for i in range(len(run_name_list)):
+                            run_list.append([run_name_list[i],run_name_list[i].id])
+                        #import pdb; pdb.set_trace()    
+                        return render(request, 'wetlab/SearchNextSeq.html', {'display_run_list': run_list })
+                    else:
+                        r_data_display= get_information_run(run_name_list)
+                        return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
                 else:
                     return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ]})
-            else:
-                #import pdb; pdb.set_trace()
-                if (RunProcess.objects.filter(runName__exact =run_name).exists()):
-                    run_name_found=RunProcess.objects.filter(runName__exact =run_name)
-                    if (len(run_name_found)>1):
-                        return render (request,'wetlab/error_page.html', {'content':['Too many matches found when searching for the run name ', run_name ,
-                                                                'ADVICE:', 'Select the Fuzzy to gt the list for all matches runs ']})
-                    r_data_display= get_information_run(run_name_found)
-                    return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
-                else:
-                    return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ,
-                                                                             'ADVICE:', 'Select the Fuzzy search button to get the match']})
-        ## search the run base on the  runstate and/or rundate 
-        else:
+            
+            ############################################################# 
+            ##  searching for projects in the same state
+            ############################################################# 
             if run_state:
-                if run_date:
-                    ## Date query search for date greater than run_date and less than run_date +1
-                    ## converting run_date to date for adding one day 
-                    import pdb; pdb.set_trace()
-                    
-                    start_date= datetime.datetime.strptime(run_date, "%Y-%m-%d").date()
-                    end_date= str( start_date + datetime.timedelta(days=1))
-                    
-                    if (RunProcess.objects.filter(generatedat__range=(run_date, end_date)).exists()):
-                        run_name_list=RunProcess.objects.filter(generatedat__range=(run_date, end_date))
-                        if (len(run_name_list)>1) :
-                            ## collect the list of run that matches the run date 
-                            run_list=[]
-                            for i in range(len(run_name_list)):
-                                run_list.append([run_name_list[i],run_name_list[i].id])
-                            #import pdb; pdb.set_trace()    
-                            return render(request, 'wetlab/SearchNextSeq.html', {'display_run_list': run_list })
-                        else:
-                            r_data_display  = get_information_run(run_name_list)
-                            return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
-                    else:
-                        return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run date ', run_date ]})
-
-                else:
-                    if (RunProcess.objects.filter(runState =run_state).exists()):
-                        run_name_list=RunProcess.objects.filter(runState =run_state)
+                if (RunProcess.objects.filter(runState =run_state).exists()):
+                    run_name_list=RunProcess.objects.filter(runState =run_state)
                         ## collect the list of run that matches the run name 
+                    if len(run_name_list) >1:
                         run_list=[]
                         for i in range(len(run_name_list)):
                             run_list.append([run_name_list[i],run_name_list[i].id])
                             #import pdb; pdb.set_trace()    
                         return render(request, 'wetlab/SearchNextSeq.html', {'display_run_list': run_list })
                     else:
-                        return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run state ', run_state ]})
+                        r_data_display= get_information_run(run_name_list)
+                        return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
+                else:
+                    return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run state ', run_state ]})
+                      
+            #############################################################
+            #### searching for projects that were created after start date
+            #############################################################
+            if start_date:
+                #import pdb; pdb.set_trace()
+                if end_date =='':    
+                    ## Date query search for date greater than run_date and less than start_date +1
+                    ## converting run_date to date for adding one day
+                    s_date= datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
+                    #import pdb; pdb.set_trace()
+                    end_date= str( s_date + datetime.timedelta(days=1))
+                if (RunProcess.objects.filter(generatedat__range=(start_date, end_date)).exists()):
+                    run_name_list=RunProcess.objects.filter(generatedat__range=(start_date, end_date))
+                    if (len(run_name_list)>1) :
+                         ## collect the list of run that matches the run date 
+                        run_list=[]
+                        for i in range(len(run_name_list)):
+                            run_list.append([run_name_list[i],run_name_list[i].id])
+                            #import pdb; pdb.set_trace()    
+                        return render(request, 'wetlab/SearchNextSeq.html', {'display_run_list': run_list })
+                    else:
+                        #import pdb; pdb.set_trace()
+                        r_data_display  = get_information_run(run_name_list)
+                        return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
+                else:
+                    return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run date ', start_date ]})
 
-            else:
-                if run_date:
-                    run_name_list=RunProcess.objects.filter(runState =run_state).exists()
-                else: 
-                    return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the selecting request', '']})
+            #############################################################
+            #### searching for projects that were created before end date
+            #############################################################
+            if end_date:
+                    ## Date query search for date less than end_date                     ## converting run_date to date for adding one day 
+                #import pdb; pdb.set_trace()
+                if (RunProcess.objects.filter(generatedat__lte = end_date).exists()):
+                    run_name_list=RunProcess.objects.filter(generatedat__range=(start_date, end_date))
+                    if (len(run_name_list)>1) :
+                         ## collect the list of run that matches the run date 
+                        run_list=[]
+                        for i in range(len(run_name_list)):
+                            run_list.append([run_name_list[i],run_name_list[i].id])
+                            #import pdb; pdb.set_trace()    
+                        return render(request, 'wetlab/SearchNextSeq.html', {'display_run_list': run_list })
+                    else:
+                        r_data_display  = get_information_run(run_name_list)
+                        return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
+                else:
+                    return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run date ', start_date ]})
+
+                    ############################################################# 
+                            
+
     
     #import pdb; pdb.set_trace()
     return render(request, 'wetlab/SearchNextSeq.html')
