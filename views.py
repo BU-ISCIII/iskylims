@@ -22,13 +22,11 @@ def index(request):
     return render(request, 'drylab/index.html')
 
 def service_request(request):
-	if request.method == "POST":
-		form = ServiceRequestForm(data.request.POST,
-		files=request.FILES,
-		)
-		if form.is_valid():
-			return redirect("service request done")
-	else:
-		form = ServiceRequestForm()
-		
-		return render(request, 'drylab/ServiceRequestForm.html',{ 'form' : form})
+# 	if request.method == "POST":
+# 		form = ServiceRequestForm(data.request.POST,
+# 		files=request.FILES,
+# 		)
+# 		if form.is_valid():
+# 			return redirect("service request done")
+	form = ServiceRequestForm()	
+	return render(request, 'drylab/ServiceRequestForm.html' , { 'form' : form })
