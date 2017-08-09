@@ -2,7 +2,7 @@
 *.xml
 *.bin
 documents/
-
+migrations/
 ## Default for python projects
 # Byte-compiled / optimized / DLL files
 __pycache__/
