@@ -10,6 +10,7 @@ from django.views.generic import ListView, DetailView
 urlpatterns = [
     # ex: /polls/
     url(r'^$', views.index, name='index'),
+    url(r'^service_request',views.service_request, name='request_service')
 ] 
 #+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

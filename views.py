@@ -24,3 +24,6 @@ def index(request):
     #context = {'latest_question_list': latest_question_list}
     return render(request, 'drylab/index.html')
 
+def service_request(request):
+    return render(request, 'drylab/index.html')
+
