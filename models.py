@@ -4,6 +4,9 @@ from django.db import models
 from django.utils import timezone
 from django import forms
 from django.utils.encoding import python_2_unicode_compatible
+from mptt.models import MPTTModel
+from mptt.fields import TreeForeignKey, TreeManyToManyField
+
 
 # Create your models here.
 
@@ -25,9 +28,17 @@ class Platform(models.Model):
 	def __str__ (self):
  		return '%s' %(self.platformName)
 
-class AvailableService(models.Model):
-	availServiceDescription=models.CharField(max_length=50)
-	availServiceParent=models.ForeignKey('self',models.SET_NULL,null=True) 
+class AvailableService(MPTTModel):
+	availServiceDescription=models.CharField(max_length=100)
+	parent=TreeForeignKey('self',models.SET_NULL,null=True,blank=True) 
+
+	def __str__(self):
+		return self.availServiceDescription
+	
+	class Meta: 
+		ordering = ["tree_id","lft"]
+		verbose_name = ("AvailableService")
+		verbose_name_plural = ("AvailableServices")
 
 class Service(models.Model):
 	serviceName=models.CharField(max_length=50)
@@ -40,7 +51,7 @@ class Service(models.Model):
 	servicePlatform=models.ForeignKey(Platform)
 	serviceRunSpecs=models.CharField(max_length=10)
 	serviceFileExt=models.ForeignKey(FileExt)
-	serviceAvailableService=models.ManyToManyField(AvailableService)
+	serviceAvailableService=TreeManyToManyField(AvailableService,verbose_name=("AvailableServices"))
 	serviceFile=models.FileField(upload_to='documents/')
 	serviceStatus=models.CharField(max_length=10)
 	serviceNotes=models.TextField(max_length=500)

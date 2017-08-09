@@ -2,14 +2,11 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse
 from django.template import loader
-
 import time
-
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
-
 from .models import *
-
+from .forms import *
 from django.core.files.storage import FileSystemStorage
 import re
 
@@ -25,5 +22,13 @@ def index(request):
     return render(request, 'drylab/index.html')
 
 def service_request(request):
-    return render(request, 'drylab/index.html')
-
+	if request.method == "POST":
+		form = ServiceRequestForm(data.request.POST,
+		files=request.FILES,
+		)
+		if form.is_valid():
+			return redirect("service request done")
+	else:
+		form = ServiceRequestForm()
+		
+		return render(request, 'drylab/ServiceRequestForm.html',{ 'form' : form})
