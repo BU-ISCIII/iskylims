@@ -21,26 +21,53 @@ class ServiceRequestForm(forms.ModelForm):
  		#self.fields['serviceFileExt'] = forms.ModelChoiceField(queryset=Center.objects.all())
  			
  		self.helper.layout = layout.Layout(
- 				layout.Fieldset(
- 					_("Researcher data"),
- 					layout.Field("serviceName"),
- 					layout.Field("servicePosition"),
- 					layout.Field("serviceCenter"),
- 					layout.Field("serviceArea"),
- 					layout.Field("serviceExtension"),
- 					bootstrap.PrependedText("serviceEmail","@",css_class="input-block-level",placeholder="contact@example.com"),
+ 				layout.Div(
+ 					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Researcher data</h3></div>"""), 
+ 					layout.Div(
+ 						layout.Div(
+ 							layout.Field("serviceName"),
+ 							layout.Field("servicePosition"),
+ 							layout.Field("serviceCenter"),
+ 							css_class="col-md-6",
+ 						),
+ 						layout.Div(
+ 							layout.Field("serviceArea"),
+ 							layout.Field("serviceExtension"),
+ 							bootstrap.PrependedText("serviceEmail","@",css_class="input-block-level",placeholder="contact@example.com"),
+ 							css_class="col-md-6",
+ 						),
+ 						css_class = 'row panel-body',
  					),
- 				layout.Fieldset(
- 					_("Sequencing data"),
- 					layout.Field('serviceSeqCenter'),
- 					layout.Field('servicePlatform'),
- 					layout.Field('serviceRunSpecs'),
-					layout.Field('serviceFileExt'),
+ 					css_class = 'panel panel-default'
+ 					),
+ 				layout.Div(
+ 					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Sequencing Data</h3></div>"""),
+ 					layout.Div(
+ 						layout.Div(
+ 							layout.Field('serviceSeqCenter'),
+ 							layout.Field('servicePlatform'),
+ 							css_class="col-md-6",
+ 						),
+ 						layout.Div(
+ 							layout.Field('serviceRunSpecs'),
+							layout.Field('serviceFileExt'),
+							css_class="col-md-6",
+						),
+						css_class="row panel-body"
+						),
+					css_class = "panel panel-default"
 					),
-				layout.Fieldset(
-					_("Service Description"),
-					layout.Field('serviceFile'),
-					layout.Field('serviceNotes'),						
+				layout.Div(
+					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Service Description</h3></div>"""),
+					layout.Div(
+						layout.Div(
+							layout.Field('serviceFile'),
+							layout.Field('serviceNotes'),
+							css_class="col-md-12"
+							),
+                    	css_class="row panel-body"
+                    	),
+					css_class = "panel panel-default"
 					),
 				bootstrap.FormActions(
 					layout.Submit(('submit'),_('Save')),

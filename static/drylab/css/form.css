@@ -24,12 +24,8 @@ formwapper{
 		background-color: #FFF;
 	}
 	form {
-		width: 600px;
+		width: auto;
 		height: auto;
-		background-color: #FFF;
-		font-family: "Trebuchet MS", Helvetica, sans-serif;
-		font-size: 13px;
-		
 	}
 	
 	fieldset {
