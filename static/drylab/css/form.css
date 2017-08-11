@@ -82,4 +82,20 @@ formwapper{
 		float: left;
 }
 
+/* Css style for tree checkbox in form */
+.level-0{
+	margin-left:20px;
+}
+
+.level-1{
+	margin-left:40px;
+}
+
+.level-2{
+	margin-left:60px;
+}
+
+.level-3{
+	margin-left:80px;
+}
 

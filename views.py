@@ -28,5 +28,5 @@ def service_request(request):
 # 		)
 # 		if form.is_valid():
 # 			return redirect("service request done")
-	form = ServiceRequestForm()	
+	form = ServiceRequestForm("Genomic Data Analysis")	
 	return render(request, 'drylab/ServiceRequestForm.html' , { 'form' : form })
