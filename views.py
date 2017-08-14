@@ -13,7 +13,7 @@ import re
 ####### Import libraries for static files
 #from django.shortcuts import render_to_response
 #from django.shortcuts import RequestContext
-# import pdb; pdb.set_trace()
+ #import pdb; pdb.set_trace()
 
 
 def index(request):
@@ -28,5 +28,5 @@ def service_request(request):
 # 		)
 # 		if form.is_valid():
 # 			return redirect("service request done")
-	form = ServiceRequestForm("Genomic Data Analysis")	
+	form = ServiceRequestForm(serviceFilter="User support")	
 	return render(request, 'drylab/ServiceRequestForm.html' , { 'form' : form })

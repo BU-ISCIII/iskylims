@@ -6,28 +6,26 @@ from crispy_forms.helper import FormHelper
 from crispy_forms import layout, bootstrap 
 from utils.fields import MultipleChoiceTreeField
 from .models import *
-
+import pdb
 
 class ServiceRequestForm(forms.ModelForm):
+    #pdb.set_trace()
+ 	servicesAvailable = MultipleChoiceTreeField(                                                                                              
+ 			label=_("Services Available"),                                                                                                    
+ 			required = True,                                                                                                                  
+ 			queryset=AvailableService.objects.filter(availServiceDescription__exact="").get_descendants(include_self=True)         
+ 			)                                                                                                                         		  
  	class Meta:
  		model = Service
  		fields = ['serviceName','servicePosition','serviceCenter','serviceArea','serviceExtension','serviceEmail','serviceSeqCenter','servicePlatform','serviceRunSpecs','serviceFileExt','serviceFile','serviceNotes']
  		
  	def __init__(self, serviceFilter ,*args, **kwargs):
  		super(ServiceRequestForm, self).__init__(*args, **kwargs)
- 		self.serviceFilter = serviceFilter
  		self.helper = FormHelper()
  		self.helper.form_action=""
  		self.helper.form_method="POST"
- 		
- 		#self.fields['serviceCenter'] = forms.ModelChoiceField(queryset=Center.objects.all())
- 		#self.fields['serviceFileExt'] = forms.ModelChoiceField(queryset=Center.objects.all())
- 		
- 		servicesAvailable = MultipleChoiceTreeField(
- 				label=_("Services Available"),
- 				required = True,
- 				queryset=AvailableService.objects.filter(availServiceDescription__exact=self.serviceFilter).get_descendants(include_self=True)
- 				)                                                                                                                         		
+ 		self.fields['servicesAvailable'].queryset = AvailableService.objects.filter(availServiceDescription__exact=serviceFilter).get_descendants(include_self=True)
+ 		#pdb.set_trace()
  		
  		self.helper.layout = layout.Layout(
  				layout.Div(
