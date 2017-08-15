@@ -22,11 +22,11 @@
                 <div class="col-sm-6">   {{ values }}</div><BR> <BR>
                {% endif %}
             {% endfor %} 
-                 </div> <!--  end of panel body -->
-              </div> <!--  end of panel  -->
-             </div> <!--  end of col-sm-7 -->
+           </div> <!--  end of panel body -->
+          </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-7 -->
               <!-- new panel on the right to show progress state -->
-              <div class="col-sm-4 col-sm-offset-1">
+              <div class="col-sm-3 col-sm-offset-1">
                 <BR>
                 <div class="panel panel-default">
                 <div class="panel-heading">State run :  </div> 
@@ -34,23 +34,28 @@
                     <img class="promo-block-img img-responsive" src="/static/wetlab/img/percentage/{{ display_one_run.graphic }}"  align="Avatar">
                 </div> <!--  end of panel body -->
               </div> <!--  end of panel  -->
-             </div> <!--  end of col-sm-4 --> 
-             <BR>
-             <BR>
-             <div class="col-sm-4 col-sm-offset-1">
-                <BR>
-                <div class="panel panel-default">
+        </div> <!--  end of col-sm-4 --> 
+    </div> <!--  end of row -->
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-4 col-sm-offset-7">
+        <BR>
+      {%if display_one_run.projects%}
+            <div class="panel panel-default">
                 <div class="panel-heading">Associate projects: </div> 
-                <div class="panel-body"> The following projects are associate to the run:
-                    <ul>
-                      <li>Project 1 </li>
-                      <li>Project 2</li>
-                    </ul>
+                <div class="panel-body"> The following projects are associate to the run:<BR>
+                {% for key, values in display_one_run.projects %}
+                    <div class="col-sm-8 col-sm-offset-2"><a href="/wetlab/search_project={{ values }}">{{ key }}</a></div><BR><BR>
+                {%endfor%}
+      {% else%}
+            <div class="panel panel-danger">
+                <div class="panel-heading">Associate projects: </div> 
+                <div class="panel-body"> There is no projects associated to the run.
+                <BR> Contact with your system administrator to get more information.
+      {% endif%}
                 </div> <!--  end of panel body -->
-              </div> <!--  end of panel  -->
-             </div> <!--  end of col-sm-4 -->
-             
-         </div> <!--  end of row -->
+             </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-4 --> 
+     </div> <!--  end of row -->
     
     {% elif display_run_list %}
     <div class="row row-space-2 margin-b-4">
@@ -99,6 +104,7 @@
                                				<option value="">Choose a value</option>
                                             <option value="Recorded">Recorded</option>
                                             <option value="SampleSent">SampleSent</option>
+                                            <option value="ProcessRunning">SampleSent</option>
                                             <option value="B2FqExecuted">B2FqExecuted</option>
                                             <option value="Completed">Completed</option>
                                       </select>

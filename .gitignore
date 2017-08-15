@@ -3,6 +3,7 @@
 *.bin
 documents/
 migrations/
+tmp/
 ## Default for python projects
 # Byte-compiled / optimized / DLL files
 __pycache__/

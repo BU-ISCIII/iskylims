@@ -1,26 +1,23 @@
 # -*- coding: utf-8 -*-
+## import django 
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse
 from django.template import loader
-
-#from .forms import DocumentForm, Docutres
-from .utils.sample_convertion import *
-from .utils.stats_calculation import *
-import time
-
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
+from django.contrib.auth.models import User
+
+## import methods defined on utils.py
+from .utils.sample_convertion import *
+from .utils.stats_calculation import *
+
 
 from .models import *
 
 
-from django.core.files.storage import FileSystemStorage
-import re
-import datetime
+import re, os, shutil
+import datetime, time
 
-####### Import libraries for static files
-#from django.shortcuts import render_to_response
-#from django.shortcuts import RequestContext
 # import pdb; pdb.set_trace()
 
 
@@ -72,7 +69,7 @@ def get_sample_file (request):
         ## Check if the users are already defined on database. Error page is showed if users are not defined on database
         user_already_defined=[]
         for key, val  in project_list.items():
-            if ( not UserInfo.objects.filter(userid__icontains = val).exists()):
+            if ( not User.objects.filter(username__icontains = val).exists()):
                 user_already_defined.append(val)
         if (len(user_already_defined)>0):
             if (len(user_already_defined)>1):
@@ -106,18 +103,18 @@ def get_sample_file (request):
                           'Project names must be unique','', 'ADVICE:','Edit the installed in the database before uploading the Sample sheet']})
         ##Once the information looks good. it will be stores in runProcess and projects table 
         
-        
-        ## bioinfo_id with pk=1 is the default ID when no bioinfo service request has been ordered 
+
         #import pdb; pdb.set_trace()
-        bioId=BioInfo.objects.get(pk=1)
-        ## store data in runProcess table
-        run_proc_data = RunProcess(runName=run_name,sampleSheet= file_name, runState='Recorded', bioinfo_id= bioId)
+
+        ## store data in runProcess table, run is in pre-recorded state
+        run_proc_data = RunProcess(runName=run_name,sampleSheet= file_name, runState='Pre-Recorded')
         run_proc_data.save()
+        
         ## create new project tables based on the project involved in the run and 
         ## include the project information in projects variable to build the new FORM
         #import pdb; pdb.set_trace()
         for key, val  in project_list.items():
-            userid=UserInfo.objects.get(userid__exact = val)
+            userid=User.objects.get(username__exact = val)
             p_data=Projects(runprocess_id=RunProcess.objects.get(runName =run_name), projectName=key, user_id=userid)
             p_data.save()
             projects.append([key, val])
@@ -170,12 +167,22 @@ def get_sample_file (request):
         results.append(['runname', run_name])
         
         #import pdb; pdb.set_trace()
+        ## save the sample sheet file under tmp/recorded to be processed when run folder was created
+        subfolder_name=str(run_p.id)
+        import pdb; pdb.set_trace()
+        os.mkdir(os.path.join('wetlab/tmp/recorded', subfolder_name ))
+        sample_sheet_copy= os.path.join('wetlab/tmp/recorded', subfolder_name, 'samplesheet.csv' )
+        shutil.copy(in_file,sample_sheet_copy)
+        ## update the state of the run to 'Recorded'
+        run_p.runState='Recorded'
+        run_p.save()
+        
         return render (request, 'wetlab/getSampleSheet.html', {'completed_form':results})
     
 
     return render(request, 'wetlab/getSampleSheet.html')
 
-def get_information_run(run_name_found):
+def get_information_run(run_name_found,run_id):
     info_dict={}
     ## collect the state to get the valid information of run that matches the run name 
     run_state=run_name_found[0].get_state()
@@ -190,19 +197,18 @@ def get_information_run(run_name_found):
     info_dict['data']=r_data_display
     if (run_state == 'Recorded'):
         info_dict['graphic']='25-percentage.gif'
+        ### BaseSpaceFile.objects.get(pk=Document.objects.get(run_name=run_name_value).id)
+    
+    p_list= Projects.objects.filter(runprocess_id=run_id)
+    if p_list !='':
+        #import pdb; pdb.set_trace()
+        p_data_list=[]
+        for p in range (len(p_list)):
+            p_data_list.append([p_list[p].projectName,p_list[p].id])
+        info_dict['projects']=p_data_list
     return info_dict
     
-def fetch_list_for_run (run_name_list):
-    if len(run_name_list)>1:
-        run_list=[]
-        for i in range(len(run_name_list)):
-            run_list.append([run_name_list[i],run_name_list[i].id])
-                        #import pdb; pdb.set_trace()    
-        return render(request, 'wetlab/SearchNextSeq.html', {'display_run_list': run_list })
-    else:
-        r_data_display= get_information_run(run_name_list)
-        return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
-    
+   
 
 def search_nextSeq (request):
     if request.method=='POST' and (request.POST['action']=='runsearch'):
@@ -230,7 +236,7 @@ def search_nextSeq (request):
                 if (len(run_name_found)>1):
                     return render (request,'wetlab/error_page.html', {'content':['Too many matches found when searching for the run name ', run_name ,
                                                                     'ADVICE:', 'Select the Fuzzy to gt the list for all matches runs ']})
-                r_data_display= get_information_run(run_name_found)
+                r_data_display= get_information_run(run_name_found,run_name_found[0].id)
                 return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
             else:
                 return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ,
@@ -257,8 +263,6 @@ def search_nextSeq (request):
             if (run_name and run_fuzzy and run_state and start_date == '' and end_date == ''):
                 if (RunProcess.objects.filter(runName__icontains =run_name, runState=run_state).exists()):
                     run_name_list=RunProcess.objects.filter(runName__icontains =run_name,runState=run_state)
-                    fetch_list_for_run(run_name_list)
-                    '''
                     if len(run_name_list)>1:
                         run_list=[]
                         for i in range(len(run_name_list)):
@@ -266,15 +270,56 @@ def search_nextSeq (request):
                         #import pdb; pdb.set_trace()    
                         return render(request, 'wetlab/SearchNextSeq.html', {'display_run_list': run_list })
                     else:
-                        r_data_display= get_information_run(run_name_list)
+                        r_data_display= get_information_run(run_name_list,run_name_list[0].id)
                         return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
-                   '''     
+    
+                else:
+                    return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ]})
+            #############################################################
+            #### searching for projects were match the run name , the state and start date
+            #############################################################
+            if (run_name and run_fuzzy and run_state and start_date != '' and end_date == ''):
+            ## Date query search for date greater than run_date and less than start_date +1
+            ## converting run_date to date for adding one day
+                s_date= datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
+                end_date= str( s_date + datetime.timedelta(days=1))
+                if (RunProcess.objects.filter(runName__icontains =run_name, runState=run_state, generatedat__range=(start_date, end_date)).exists()):
+                    run_name_list=RunProcess.objects.filter(runName__icontains =run_name,runState=run_state, generatedat__range=(start_date, end_date))
+                    if len(run_name_list)>1:
+                        run_list=[]
+                        for i in range(len(run_name_list)):
+                            run_list.append([run_name_list[i],run_name_list[i].id])
+                        #import pdb; pdb.set_trace()    
+                        return render(request, 'wetlab/SearchNextSeq.html', {'display_run_list': run_list })
+                    else:
+                        r_data_display= get_information_run(run_name_list ,run_name_list[0].id)
+                        return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
+                else:
+                    return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ]})
+            #############################################################
+            #### searching for projects were match the run name , the state and start and end date
+            #############################################################
+            if (run_name and run_fuzzy and run_state and start_date != '' and end_date != ''):
+                if (RunProcess.objects.filter(runName__icontains =run_name, runState=run_state,generatedat__range=(start_date, end_date)).exists()):
+                    run_name_list=RunProcess.objects.filter(runName__icontains =run_name,runState=run_state, generatedat__range=(start_date, end_date))
+                    if len(run_name_list)>1:
+                        run_list=[]
+                        for i in range(len(run_name_list)):
+                            run_list.append([run_name_list[i],run_name_list[i].id])
+                        #import pdb; pdb.set_trace()    
+                        return render(request, 'wetlab/SearchNextSeq.html', {'display_run_list': run_list })
+                    else:
+                        r_data_display= get_information_run(run_name_list,run_name_list[0].id)
+                        return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
                 else:
                     return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ]})
                     
-            if (run_name and run_fuzzy and run_state and start_date != '' and end_date == ''):
-                if (RunProcess.objects.filter(runName__icontains =run_name, runState=run_state).exists()):
-                    run_name_list=RunProcess.objects.filter(runName__icontains =run_name,runState=run_state)
+            #############################################################
+            #### searching for projects were match the state and start and end date
+            #############################################################
+            if (run_state and start_date != '' and end_date != ''):
+                if (RunProcess.objects.filter(runName__icontains =run_name, runState=run_state, generatedat__range=(start_date, end_date)).exists()):
+                    run_name_list=RunProcess.objects.filter(runState=run_state, generatedat__range=(start_date, end_date))
                     if len(run_name_list)>1:
                         run_list=[]
                         for i in range(len(run_name_list)):
@@ -282,11 +327,34 @@ def search_nextSeq (request):
                         #import pdb; pdb.set_trace()    
                         return render(request, 'wetlab/SearchNextSeq.html', {'display_run_list': run_list })
                     else:
-                        r_data_display= get_information_run(run_name_list)
+                        r_data_display= get_information_run(run_name_list,run_name_list[0].id)
                         return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
                 else:
-                    return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ]})
-
+                    return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ]})       
+            
+            #############################################################
+            #### searching for projects were match the state and start date
+            #############################################################
+            if (run_state and start_date != '' and end_date == ''):
+                ## Date query search for date greater than run_date and less than start_date +1
+                ## converting run_date to date for adding one day
+                s_date= datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
+                end_date= str( s_date + datetime.timedelta(days=1))
+                if (RunProcess.objects.filter(runName__icontains =run_name, runState=run_state,generatedat__range=(start_date, end_date)).exists()):
+                    run_name_list=RunProcess.objects.filter(runState=run_state, generatedat__range=(start_date, end_date))
+                    if len(run_name_list)>1:
+                        run_list=[]
+                        for i in range(len(run_name_list)):
+                            run_list.append([run_name_list[i],run_name_list[i].id])
+                        #import pdb; pdb.set_trace()    
+                        return render(request, 'wetlab/SearchNextSeq.html', {'display_run_list': run_list })
+                    else:
+                        r_data_display= get_information_run(run_name_list,run_name_list[0].id)
+                        return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
+                else:
+                    return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ]})       
+                    
+                    
         else:
             if (run_name !='' and run_fuzzy !=''):
                 if (RunProcess.objects.filter(runName__icontains =run_name).exists()):
@@ -299,7 +367,7 @@ def search_nextSeq (request):
                         #import pdb; pdb.set_trace()    
                         return render(request, 'wetlab/SearchNextSeq.html', {'display_run_list': run_list })
                     else:
-                        r_data_display= get_information_run(run_name_list)
+                        r_data_display= get_information_run(run_name_list,run_name_list[0].id)
                         return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
                 else:
                     return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ]})
@@ -318,7 +386,7 @@ def search_nextSeq (request):
                             #import pdb; pdb.set_trace()    
                         return render(request, 'wetlab/SearchNextSeq.html', {'display_run_list': run_list })
                     else:
-                        r_data_display= get_information_run(run_name_list)
+                        r_data_display= get_information_run(run_name_list,run_name_list[0].id)
                         return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
                 else:
                     return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run state ', run_state ]})
@@ -332,7 +400,6 @@ def search_nextSeq (request):
                     ## Date query search for date greater than run_date and less than start_date +1
                     ## converting run_date to date for adding one day
                     s_date= datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
-                    #import pdb; pdb.set_trace()
                     end_date= str( s_date + datetime.timedelta(days=1))
                 if (RunProcess.objects.filter(generatedat__range=(start_date, end_date)).exists()):
                     run_name_list=RunProcess.objects.filter(generatedat__range=(start_date, end_date))
@@ -345,7 +412,7 @@ def search_nextSeq (request):
                         return render(request, 'wetlab/SearchNextSeq.html', {'display_run_list': run_list })
                     else:
                         #import pdb; pdb.set_trace()
-                        r_data_display  = get_information_run(run_name_list)
+                        r_data_display  = get_information_run(run_name_list ,run_name_list[0].id)
                         return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
                 else:
                     return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run date ', start_date ]})
@@ -366,7 +433,7 @@ def search_nextSeq (request):
                             #import pdb; pdb.set_trace()    
                         return render(request, 'wetlab/SearchNextSeq.html', {'display_run_list': run_list })
                     else:
-                        r_data_display  = get_information_run(run_name_list)
+                        r_data_display  = get_information_run(run_name_list ,run_name_list[0].id)
                         return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
                 else:
                     return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run date ', start_date ]})
@@ -383,12 +450,21 @@ def search_run (request, run_id):
     #import pdb; pdb.set_trace()
     if (RunProcess.objects.filter(pk=run_id).exists()):
         run_name_found = RunProcess.objects.filter(pk=run_id)
-        r_data_display  = get_information_run(run_name_found)
+        r_data_display  = get_information_run(run_name_found,run_id)
         return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
     else:
         return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run  ', 
                                                                              'ADVICE:', 'Select the Fuzzy search button to get the match']})
 
+def search_project (request, project_id):
+    #import pdb; pdb.set_trace()
+    if (Projects.objects.filter(pk=project_id).exists()):
+        project_found = Projects.objects.filter(pk=project_id)
+        p_data_display  = get_information_project(project_found)
+        return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
+    else:
+        return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run  ', 
+                                                                             'ADVICE:', 'Select the Fuzzy search button to get the match']})
 
 
 

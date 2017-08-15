@@ -31,19 +31,17 @@ class UserInfoAdmin (admin.ModelAdmin):
 class RunProcessAdmin (admin.ModelAdmin):
     list_display = ('runName','sampleSheet','generatedBSFile', 'requestedCenter')
 
-class BioInfoAdmin(admin.ModelAdmin):
-    list_display = ('serviceRegistration','researcher','info1','info2','department')
-
 
 class ProjectsAdmin (admin.ModelAdmin):
     list_display= ('runprocess_id','user_id','projectName','procState','libraryKit','baseSpaceFile')
+    #list_display= ('runprocess_id','projectName','procState','libraryKit','baseSpaceFile')
     
-admin.site.register(Document , AppAdmin)
+#admin.site.register(Document , AppAdmin)
 admin.site.register(RunningParameters , RunningParametersAdmin)
-admin.site.register(RunProcess , RunProcessAdmin)
+#admin.site.register(RunProcess , RunProcessAdmin)
 #admin.site.register(RawNextSeqStatisticsXml , RawNextSeqStatsXml)
-admin.site.register(UserInfo,UserInfoAdmin)
-admin.site.register(BioInfo, BioInfoAdmin)
+#admin.site.register(UserInfo,UserInfoAdmin)
+
 admin.site.register(Projects, ProjectsAdmin)
 
 

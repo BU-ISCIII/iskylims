@@ -4,7 +4,8 @@ from django.db import models
 from django import forms
 from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
-
+from django.contrib.auth.models import User
+'''
 class UserInfo(models.Model):
     userid=models.CharField(max_length=25)
     userFirstName=models.CharField(max_length=45)
@@ -14,8 +15,8 @@ class UserInfo(models.Model):
     
     def __str__ (self):
         return '%s' %(self.userid)
-
-
+'''
+'''
 class BioInfo(models.Model):
     info1=models.CharField(max_length=45)
     info2=models.CharField(max_length=45, default='')
@@ -26,7 +27,7 @@ class BioInfo(models.Model):
 
     def __str__(self):
         return '%s' %(self.info1)
-
+'''
 class RunProcess(models.Model):
     runName = models.CharField(max_length=45)
     sampleSheet = models.FileField(upload_to='documents/')
@@ -37,8 +38,6 @@ class RunProcess(models.Model):
     useSpaceImgMb=models.CharField(max_length=10)
     useSpaceFastaMb=models.CharField(max_length=10)
     useSpaceOtherMb=models.CharField(max_length=10)
-    bioinfo_id=models.ForeignKey(
-            BioInfo)
     requestedCenter= models.CharField(max_length=45)
     
     def __str__(self):
@@ -61,8 +60,7 @@ class Projects(models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
             on_delete=models.CASCADE)
-    user_id= models.ForeignKey(
-            UserInfo)
+    user_id= models.ForeignKey(User)
     projectName= models.CharField(max_length=45)
     procState=models.CharField(max_length=25, default='Not Started')
     libraryKit=models.CharField(max_length=45)
@@ -128,11 +126,9 @@ class Choice(models.Model):
     def __str__(self):
         return self.choice_text
 
-class luis(models.Model):
-	votes = models.IntegerField(default=0)
-	choice_text = models.CharField(max_length=200)
+
 '''
-########## class for upload field
+'''
 class Document(models.Model):
     run_name = models.CharField(max_length=255, blank=True)
     project_name = models.CharField(max_length=255, blank=True) 
@@ -152,7 +148,8 @@ class Document(models.Model):
         return '%s;%s;%s;%s;%s;%s;%s' %(self.run_name, self.project_name, 
                     self.user_id, self.description,  self.name, 
                     self.csv_file, self.uploaded_at)
-        
+''' 
+'''       
 class BaseSpaceFile (models.Model):
     document = models.OneToOneField(
             Document,
@@ -164,6 +161,7 @@ class BaseSpaceFile (models.Model):
     
     def __str__(self):
         return '%s' %(self.baseSpace_file)
+'''
 '''   
 class NextSeqStatisticsBin (models.Model):
     document = models.OneToOneField(

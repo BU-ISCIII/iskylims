@@ -1,7 +1,9 @@
 import paramiko
 from datetime import datetime
 from .utils.stats_calculation import *
+from .utils.parsing_run_info import *
 
+import os , sys
 def createSSHClient(server, port, user, password):
     client = paramiko.SSHClient()
     client.load_system_host_keys()
@@ -50,3 +52,15 @@ def fetching_stats_scheduled_job ():
     
     return True
 
+def check_recorded_folder ():
+    filelist= ['161123_NS500454_0096_AHFGV5BGXY','261123_NS500454_0096_AHFGV5BGXY','361123_NS500454_0096_AHFGV5BGXY',
+               '461123_NS500454_0096_AHFGV5BGXY','561123_NS500454_0096_AHFGV5BGXY']
+    processed_run_file=['261123_NS500454_0096_AHFGV5BGXY','361123_NS500454_0096_AHFGV5BGXY','461123_NS500454_0096_AHFGV5BGXY',
+                        '561123_NS500454_0096_AHFGV5BGXY']
+    path="tmp/recorded/"
+    
+    if os.listdir(path):
+        process_run_in_recorded_state ()
+        
+
+        
