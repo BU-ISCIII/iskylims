@@ -36,15 +36,35 @@
               </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-4 --> 
     </div> <!--  end of row -->
-    <div class="row row-space-2 margin-b-4">
+    
+     <div class="row row-space-2 margin-b-4">
+    {%if display_one_run.parameters%}
+     <!-- display run parameters in run is not in recorded state -->
+        <div class="col-sm-7 ">
+            <div class="panel panel-default">
+                <div class="panel-heading">Run Paramters used for the run.</div>
+                <div class="panel-body"> 
+             {% for key, values in display_one_run.parameters %}
+                <div class="col-sm-6">{{ key }}</div>
+                <div class="col-sm-6">  {{ values }} </div><BR> <BR>
+             {% endfor %}
+            </div> <!--  end of panel body -->
+          </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-6 -->
+    {% endif %}
+    
+    {%if display_one_run.parameters%} 
+        <div class="col-sm-4 col-sm-offset-1">
+    {% else %}
         <div class="col-sm-4 col-sm-offset-7">
+    {% endif %}
         <BR>
       {%if display_one_run.projects%}
             <div class="panel panel-default">
                 <div class="panel-heading">Associate projects: </div> 
                 <div class="panel-body"> The following projects are associate to the run:<BR>
                 {% for key, values in display_one_run.projects %}
-                    <div class="col-sm-8 col-sm-offset-2"><a href="/wetlab/search_project={{ values }}">{{ key }}</a></div><BR><BR>
+                    <div class="col-sm-6 col-sm-offset-2"><a href="/wetlab/search_project={{ values }}">{{ key }}</a></div><BR><BR>
                 {%endfor%}
       {% else%}
             <div class="panel panel-danger">
@@ -103,9 +123,9 @@
                <div class="col-sm-4"><select class="form-control" name="runstate" id="runstate">
                                				<option value="">Choose a value</option>
                                             <option value="Recorded">Recorded</option>
-                                            <option value="SampleSent">SampleSent</option>
-                                            <option value="ProcessRunning">SampleSent</option>
-                                            <option value="B2FqExecuted">B2FqExecuted</option>
+                                            <option value="Sample Sent">Sample Sent</option>
+                                            <option value="Process Running">Process Running</option>
+                                            <option value="Bcl2Fq Executed">Bcl2Fq Executed</option>
                                             <option value="Completed">Completed</option>
                                       </select>
                </div>  <!-- end select input -->

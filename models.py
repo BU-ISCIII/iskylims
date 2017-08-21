@@ -51,7 +51,7 @@ class RunProcess(models.Model):
         
     def get_info_process (self):
         str_date=self.generatedat.strftime("%I:%M%p on %B %d, %Y")
-        if (self.runState == 'Recorded' or self.runState == 'SampleSent'):
+        if (self.runState == 'Recorded' or self.runState == 'Sample Sent'):
             return '%s;%s;%s;%s;%s'  %(self.runName, self.runState, self.requestedCenter, self.sampleSheet, str_date )
         else:
             return '%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.requestedCenter, self.useSpaceImgMb, self.useSpaceFastaMb, self.useSpaceOtherMb, str_date)
@@ -100,11 +100,14 @@ class RunningParameters (models.Model):
         return '%s' %(self.RunID)
         
     def get_run_parameters_info (self):
+        #str_run_start_date=self.RunStartDate.strftime("%I:%M%p on %B %d, %Y")
+        img_channel=self.ImageChannel.strip('[').strip(']').replace("'","")
+        #import pdb; pdb.set_trace()
         return '%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s' %(self.RunID, self.ExperimentName, self.RTAVersion,
             self.SystemSuiteVersion, self.LibraryID, self.Chemistry, self.RunStartDate,
             self.AnalysisWorkflowType, self.RunManagementType, self.PlannedRead1Cycles, self.PlannedRead2Cycles,
             self.PlannedIndex1ReadCycles, self.PlannedIndex2ReadCycles, self.ApplicationVersion, self.NumTilesPerSwath,
-            self.ImageChannel, self.Flowcell, self.ImageDimensions, self.FlowcellLayout)
+             img_channel, self.Flowcell, self.ImageDimensions, self.FlowcellLayout)
     
 
 
@@ -164,11 +167,9 @@ class BaseSpaceFile (models.Model):
 '''
 '''   
 class NextSeqStatisticsBin (models.Model):
-    document = models.OneToOneField(
-            Document,
-            on_delete=models.CASCADE,
-            primary_key=True,
-            )
+    runprocess_id = models.ForeignKey(
+            RunProcess,
+            on_delete=models.CASCADE
     lane = models.CharField(max_length=10)
     singleRead = models.CharField(max_length=10)
     tiles = models.CharField(max_length=10)
@@ -193,10 +194,10 @@ class NextSeqStatisticsBin (models.Model):
         return '%s' %(self.document)
 '''
 ''' 
-class RawNextSeqStatisticsXml (models.Model):
-    document = models.ForeignKey(
-            Document,
-            on_delete=models.CASCADE)
+class RawStatisticsXml (models.Model):
+    runprocess_id = models.ForeignKey(
+            RunProcess,
+            on_delete=models.CASCADE
     rawYield = models.CharField(max_length=64)
     rawYieldQ30= models.CharField(max_length=64)
     rawQuality= models.CharField(max_length=64)
@@ -205,13 +206,13 @@ class RawNextSeqStatisticsXml (models.Model):
     PF_Quality= models.CharField(max_length=64)
     barcodeCount= models.CharField(max_length=64)
     perfectBarcodeCount= models.CharField(max_length=64)
-    project=models.CharField(max_length=30,default='-')
+    projectName=models.CharField(max_length=30,default='-')
     generated_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
         return '%s' %(self.document)
         
-    def get_nextSeq_stats(self):
+    def get_raw_xml_stats(self):
         return '%s;%s;%s;%s;%s;%s;%s;%s;%s' %(self.project, self.barcodeCount,
                 self.perfectBarcodeCount, self.rawYield, self.PF_Yield,
                 self.rawYieldQ30, self.PF_YieldQ30, self.rawQuality,

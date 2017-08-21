@@ -4,6 +4,16 @@ from .utils.stats_calculation import *
 from .utils.parsing_run_info import *
 
 import os , sys
+
+def check_crontab():
+    time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(time_start ,'  checking the time for starting crontab')
+
+def check_crontab2():
+    time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(time_start ,'  checking the time for starting crontab2 has to be on min 28 ')
+
+
 def createSSHClient(server, port, user, password):
     client = paramiko.SSHClient()
     client.load_system_host_keys()
@@ -53,14 +63,38 @@ def fetching_stats_scheduled_job ():
     return True
 
 def check_recorded_folder ():
-    filelist= ['161123_NS500454_0096_AHFGV5BGXY','261123_NS500454_0096_AHFGV5BGXY','361123_NS500454_0096_AHFGV5BGXY',
-               '461123_NS500454_0096_AHFGV5BGXY','561123_NS500454_0096_AHFGV5BGXY']
-    processed_run_file=['261123_NS500454_0096_AHFGV5BGXY','361123_NS500454_0096_AHFGV5BGXY','461123_NS500454_0096_AHFGV5BGXY',
-                        '561123_NS500454_0096_AHFGV5BGXY']
-    path="tmp/recorded/"
-    
+    time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(time_start ,'  looking for new run in directory on wetlab/tmp/recorded \n')
+    path='iSkyLIMS/wetlab/tmp/recorded/'
+    dir_wetlab=os.getcwd()
+    print('woring dir = ', dir_wetlab)
     if os.listdir(path):
-        process_run_in_recorded_state ()
-        
+        # There are sample sheet files that need to be processed
+        updated_run=process_run_in_recorded_state ()
+        if updated_run == 'Error':
+            print('No connection is available to Flavia \n')
+            print ('Exiting the process for searching run in recorded state \n')
+        else:
+            for run_changed in updated_run:
+                print('The run ', run_changed, 'is now on Sample Sent state\n')
+    else:
+        print( 'Exiting the crontab for record_folder. No directories have been found \n')
 
-        
+def check_not_finish_run():
+    time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(time_start ,'  looking for not finish run  \n')
+    updated_run=found_not_completed_run()
+    if (not updated_run):
+        print('Exiting the crontab for not finish run without performing any changes \n')
+        return
+    if updated_run != 'Error':
+        print('Exiting the crontab for not finish run performing the changes in the following run \n')
+        for state, value in updated_run.iteritems():
+            print ('The following Run are now in the state ', state, '\n')
+            for run_changed in value:
+                print('--', run_changed, '\n')
+    else:
+            print('No connection is available to Flavia \n')
+
+            
+    

@@ -38,7 +38,7 @@ class ProjectsAdmin (admin.ModelAdmin):
     
 #admin.site.register(Document , AppAdmin)
 admin.site.register(RunningParameters , RunningParametersAdmin)
-#admin.site.register(RunProcess , RunProcessAdmin)
+admin.site.register(RunProcess , RunProcessAdmin)
 #admin.site.register(RawNextSeqStatisticsXml , RawNextSeqStatsXml)
 #admin.site.register(UserInfo,UserInfoAdmin)
 

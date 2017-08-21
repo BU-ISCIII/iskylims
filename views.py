@@ -186,7 +186,7 @@ def get_information_run(run_name_found,run_id):
     info_dict={}
     ## collect the state to get the valid information of run that matches the run name 
     run_state=run_name_found[0].get_state()
-    if (run_state == 'Recorded' or run_state == 'SampleSent'):
+    if (run_state == 'Recorded' or run_state == 'Sample Sent'):
         d_list=['Run name','State of the Run is','Run was requested by','The Sample Sheet used is','Run was recorded on date']
     else:
         d_list=['Run name','State of the Run is','Run was requested by','Disk space used for Images','Disk space used for Fasta Files','Disk space used for other Files','Run recorded date'] 
@@ -197,6 +197,23 @@ def get_information_run(run_name_found,run_id):
     info_dict['data']=r_data_display
     if (run_state == 'Recorded'):
         info_dict['graphic']='25-percentage.gif'
+    elif (run_state == 'Sample Sent'):
+        info_dict['graphic']='40-percentage.gif'
+        # finding the running parameters index for the run
+        runName_id=RunningParameters.objects.get(pk=run_id)
+        # Adding the Run Parameters information
+        rp_list=['Run ID','Experiment Name ','RTA version ','System Suite Version','Library ID ','Chemistry','Run Start Date', 'Analysis Work Flow Type','Run Management Type','Planned Read1 Cycles',
+                'Planned Read2 Cycles','Planned Index1 Read Cycles','Planned Index2 Read Cycles','Application Version','Num Tiles per Swatch','Image Channel',
+                'Flowcel','Image Dimensions', 'Flowcell Layout']
+        rp_data=runName_id.get_run_parameters_info().split(';')
+        r_rp_display=[]
+        for i in range (len(rp_list)):
+            if i == 'Image Channel':
+                img_data_list=rp_data[i].split(',')
+                r_rp_display.append([rp_list[i],[img_data_list]])
+            else:
+                r_rp_display.append([rp_list[i], rp_data[i]])
+        info_dict['parameters']=r_rp_display
         ### BaseSpaceFile.objects.get(pk=Document.objects.get(run_name=run_name_value).id)
     
     p_list= Projects.objects.filter(runprocess_id=run_id)
@@ -206,6 +223,7 @@ def get_information_run(run_name_found,run_id):
         for p in range (len(p_list)):
             p_data_list.append([p_list[p].projectName,p_list[p].id])
         info_dict['projects']=p_data_list
+    #import pdb; pdb.set_trace()
     return info_dict
     
    
