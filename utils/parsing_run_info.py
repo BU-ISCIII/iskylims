@@ -4,7 +4,7 @@ import sys, os, re
 import xml.etree.ElementTree as ET
 import time
 import shutil
-from  ..models import *
+#from  ..models import *
 
 from smb.SMBConnection import SMBConnection
 
@@ -88,7 +88,7 @@ def save_run_info(run_info, run_parameter, run_id):
                          Flowcell= running_data['Flowcell'], ImageDimensions= running_data['ImageDimensions'],
                          FlowcellLayout= running_data['FlowcellLayout'])
 
-    #running_parameters.save()
+    running_parameters.save()
     
        
     return
@@ -198,7 +198,7 @@ def update_state(run_id, state):
     run.save()
 
 def parsing_statistics_xml(demux_file, conversion_file):
- 
+    total_p_b_count=[0,0,0,0] 
     stats_result={}
     #demux_file='example.xml'
     demux_stat=ET.parse(demux_file)
@@ -210,23 +210,39 @@ def parsing_statistics_xml(demux_file, conversion_file):
     for i in range(len(projects)):
         p_temp=root[0][i]
         samples=p_temp.findall('Sample')
+                
         sample_all_index=len(samples)-1
-        barcodeCount=[]
-        perfectBarcodeCount=[]
-        b_count=[]
-        p_b_count=[]
+        barcodeCount ,perfectBarcodeCount, b_count =[], [] ,[]
+        p_b_count, one_mismatch_count =[], []
+
         dict_stats={}
         for c in p_temp[sample_all_index].iter('BarcodeCount'):
+        #for c in p_temp[sample].iter('BarcodeCount'):
             #b_count.append(c.text)
             barcodeCount.append(c.text)
         for c in p_temp[sample_all_index].iter('PerfectBarcodeCount'):
             p_b_count.append(c.text)
-        perfectBarcodeCount.append(p_b_count)
+        
+        # look for One mismatch barcode
+        
+        if p_temp[sample_all_index].find('OneMismatchBarcodeCount') ==None:
+             for  fill in range(4):
+                one_mismatch_count.append('NaN')
+        else:
+            for c in p_temp[sample_all_index].iter('OneMismatchBarcodeCount'):
+                one_mismatch_count.append(c.text)
+        
+        #one_mismatch_count.append(one_m_count)
+        
         dict_stats['BarcodeCount']=barcodeCount
-        dict_stats['PerfectBarcodeCount']=perfectBarcodeCount
+        dict_stats['PerfectBarcodeCount']=p_b_count
+        dict_stats['sampleNumber']=len(samples)
+        dict_stats['OneMismatchBarcodeCount']=one_mismatch_count
         stats_result[projects[i]]=dict_stats
+
     
     #demux_file='example.xml'
+    
     conversion_stat=ET.parse(conversion_file)
     root_conv=conversion_stat.getroot()
     projects=[]
@@ -241,10 +257,10 @@ def parsing_statistics_xml(demux_file, conversion_file):
         tiles_index=len(tiles)-1
         list_raw_yield=[]
         list_raw_yield_q30=[]
-        list_raw_quality=[]
+        list_raw_qualityscore=[]
         list_pf_yield=[]
         list_pf_yield_q30=[]
-        list_pf_quality=[]
+        list_pf_qualityscore=[]
     
         for l_index in range(4):
             raw_yield_value = 0
@@ -273,17 +289,19 @@ def parsing_statistics_xml(demux_file, conversion_file):
                     pf_quality_value +=int(c.text)
             list_raw_yield.append(str(raw_yield_value))
             list_raw_yield_q30.append(str(raw_yield_q30_value))
-            list_raw_quality.append(str(raw_quality_value))
+            list_raw_qualityscore.append(str(raw_quality_value))
             list_pf_yield.append(str(pf_yield_value))
             list_pf_yield_q30.append(str(pf_yield_q30_value))
-            list_pf_quality.append(str(pf_quality_value))
+            list_pf_qualityscore.append(str(pf_quality_value))
                 
         stats_result[projects[i]]['RAW_Yield']=list_raw_yield
         stats_result[projects[i]]['RAW_YieldQ30']=list_raw_yield_q30
-        stats_result[projects[i]]['RAW_Quality']=list_raw_quality
+        stats_result[projects[i]]['RAW_QualityScore']=list_raw_qualityscore
         stats_result[projects[i]]['PF_Yield']=list_pf_yield
         stats_result[projects[i]]['PF_YieldQ30']=list_pf_yield_q30
-        stats_result[projects[i]]['PF_Quality']=list_pf_quality
+        stats_result[projects[i]]['PF_QualityScore']=list_pf_qualityscore
+
+    
     return stats_result
 
 def store_raw_xml_stats(stats_projects, run_id):
@@ -292,14 +310,78 @@ def store_raw_xml_stats(stats_projects, run_id):
         raw_stats_xml = RawStatisticsXml (runprocess_id=RunProgress.objects.get(pk=run_id),
                                           rawYield= project['RAW_Yield'], rawYieldQ30= project['RAW_YieldQ30'],
                                           rawQuality= project['RAW_Quality'], PF_Yield= project['PF_Yield'],
-                                          PF_YieldQ30= project['PF_YieldQ30'], PF_Quality =project ['PF_Quality'],
+                                          PF_YieldQ30= project['PF_YieldQ30'], PF_QualityScore =project ['PF_QualityScore'],
                                           barcodeCount= project['barcodeCount'], perfectBarcodeCount= project['perfectBarcodeCount'],
-                                          projectName=project)
-        raw_stats_xml.save()
+                                          projectName=project, sampleNumber= project['sampleNumber'])
+        print('saving raw stats\n')
+        #raw_stats_xml.save()
 
 def process_xml_stats(stats_projects, run_id):
+    # get the total number of read per lane
+    total_cluster_lane=(stats_projects['all']['PerfectBarcodeCount'])
+    
     for project in stats_projects:
-        print('do something')
+        print(project)
+        pf_cluster , perfect_barcode ,percentage_lane =[] ,[], []
+        bigger_q30 , mean_quality , yield_mb , one_mismatch = [] , [] ,[], []
+        flow_raw_cluster, flow_pf_cluster, flow_yield_mb = 0, 0, 0
+
+        
+        for i in range (4):
+            # get the lane information
+            pf_cluster.append(stats_projects[project]['PerfectBarcodeCount'][i])
+                    
+ 
+            perfect_barcode.append(format(int(stats_projects[project]['PerfectBarcodeCount'][i])*100/int(stats_projects[project]['BarcodeCount'][i]),'.3f'))
+            
+            yield_mb.append( format (float(stats_projects[project]['PF_Yield'][i])/1000000,'.3f'))
+            
+            bigger_q30.append(format(float(stats_projects[project]['PF_YieldQ30'][i])*100/float( stats_projects[project]['PF_Yield'][i]),'.3f'))
+            
+            mean_quality.append(format(float(stats_projects[project]['PF_QualityScore'][i])/float(stats_projects[project]['PF_Yield'][i]),'.3f'))
+            
+            percentage_lane.append( format(int(stats_projects[project]['PerfectBarcodeCount'][i])*100/int(total_cluster_lane[i]),'.3f' ))
+            
+            one_mismatch.append(stats_projects[project]['OneMismatchBarcodeCount'][i] )
+
+            # make the calculation for Flowcell
+            flow_raw_cluster +=int(stats_projects[project]['BarcodeCount'][i])
+            flow_pf_cluster +=int(stats_projects[project]['PerfectBarcodeCount'][i])
+            flow_yield_mb +=float(stats_projects[project]['PF_Yield'][i])/1000000
+
+            #store in database
+        flow_yield_mb= format(flow_yield_mb,'.3f')
+        flow_raw_cluster=str(flow_raw_cluster)
+        flow_pf_cluster=str(flow_pf_cluster)
+        print('pf_cluster',pf_cluster)
+        print('percentage_lane',percentage_lane)
+        print('perfect barcode',perfect_barcode)
+        print('one_mismatch',one_mismatch)
+        print('yield Mb',yield_mb)
+        print('bigger_q30',bigger_q30)
+        print('mean_quality',mean_quality)
+        
+        print('---- flowcell')
+        print('flow_raw_cluster',flow_raw_cluster)
+        print('flow_pf_cluster',flow_pf_cluster)
+        print('flow_yield_mb',flow_yield_mb)
+        print('sampleNumber',stats_projects[project]['sampleNumber'])
+        '''
+        if project == 'all' or project == 'default':
+            project_id='NULL'
+        else:
+            project_id=Projects.object.get(projectName__exact = project)
+            project='NULL'
+        
+        process_stats_xml = NextSeqStatisticsXml(runprocess_id=RunProgress.objects.get(pk=run_id),
+                                                 flowSummRaw=flow_raw_cluster, flowPfCluster=flow_pf_cluster,
+                                                 flowYieldMb=flow_yield_mb,
+                                                 sampleNumber=stats_projects[project]['sampleNumber'],
+                                                 pfCluster=pf_cluster, percentageLane=percentage_lane,
+                                                 perfectBarcode=perfect_barcode, oneMismatch= one_mismatch, yieldMb=yield_mb,
+                                                 biggerQ30=bigger_q30, meanQuality=mean_quality,
+                                                 default_or_all=project, project_id=project_id)
+        '''
 
 def process_run_in_samplesent_state (process_list):
      # prepare a dictionary with key as run_name and value the RunID
@@ -404,7 +486,7 @@ def find_state_and_save_data(run_name,run_folder):
     else:
         rn_found.runState='Completed' 
         
-def found_not_completed_run ():
+def find_not_completed_run ():
     working_list={}
     state_list = ['Sample Sent','Process Running','Bcl2Fastq Executed']
     # get the run that are not completed
@@ -428,20 +510,16 @@ def found_not_completed_run ():
                 process_run_in_bcl2F_q_executed_state(working_list['Bcl2Fastq Executed'])
     return (working_list)
     
+demux_file='../tmp/processing/DemultiplexingStats.xml'
+conversion_file='../tmp/processing/ConversionStats.xml'
+directory=os.getcwd()
+print (directory)
+run_id=2
+#stats_projects= parsing_statistics_xml(demux_file, conversion_file)
+#store_raw_xml_stats(stats_projects, run_id)
+#process_xml_stats(stats_projects, run_id)
 
 
-
-
-
-
-
-
-
-
-
-
-
-#process_run_in_recorded_state()
 
 
 

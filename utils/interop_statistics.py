@@ -3,17 +3,51 @@
 from interop import py_interop_run_metrics, py_interop_run, py_interop_summary, py_interop_plot
 #import pandas as pd
 import numpy
-#run_folder = r"/home/bioinfo/Documentos/practicas-CarlosIII/bcl2fastq/InterOp/ejemplo-interop/MiSeqDemo"
-run_folder = r"/home/bioinfo/Documentos/practicas-CarlosIII/bcl2fastq/InterOp/nextSeq"
-run_metrics = py_interop_run_metrics.run_metrics()
-run_folder = run_metrics.read(run_folder)
-valid_to_load = py_interop_run.uchar_vector(py_interop_run.MetricCount, 0)
-py_interop_run_metrics.list_summary_metrics_to_load(valid_to_load)
 
-#run_folder = run_metrics.read(run_folder, valid_to_load)
 
-summary = py_interop_summary.run_summary()
-py_interop_summary.summarize_run_metrics(run_metrics, summary)
+def process_binStats(run_folder):
+    run_metrics = py_interop_run_metrics.run_metrics()
+    #run_folder = run_metrics.read(run_folder)
+    valid_to_load = py_interop_run.uchar_vector(py_interop_run.MetricCount, 0)
+    py_interop_run_metrics.list_summary_metrics_to_load(valid_to_load)
+    run_folder = run_metrics.read(run_folder)
+    #run_folder = run_metrics.read(run_folder, valid_to_load)
+
+    summary = py_interop_summary.run_summary()
+    py_interop_summary.summarize_run_metrics(run_metrics, summary)
+    total_s_yield_g=summary.total_summary().yield_g()
+    total_s_error_rate=summary.total_summary().error_rate()
+    total_s_first_cycle_intensity=summary.total_summary().first_cycle_intensity()
+    total_s_percent_aligned=summary.total_summary().percent_aligned()
+    total_s_percent_gt_q30=summary.total_summary().percent_gt_q30()
+    total_s_projected_yield_g=summary.total_summary().projected_yield_g()
+    
+    nonindex_s_yield_g=summary.nonindex_summary().yield_g()
+    nonindex_s_error_rate=summary.nonindex_summary().error_rate()
+    nonindex_s_first_cycle_intensity=summary.nonindex_summary().first_cycle_intensity()
+    nonindex_s_percent_aligned=summary.nonindex_summary().percent_aligned()
+    nonindex_s_percent_gt_q30=summary.nonindex_summary().percent_gt_q30()
+    nonindex_s_projected_yield_g=summary.nonindex_summary().projected_yield_g()
+    
+    ### information per reads
+    summary.at(0).at(0).density().mean() # get density (K/MM2) for read 1 and lane 1
+
+    summary.at(0).at(0).tile_count() # get tiles for read 1 and lane 1
+
+    print ('total_s_projected_yield_g ', total_s_projected_yield_g)
+    options = py_interop_plot.filter_options(run_metrics.run_info().flowcell().naming_method())
+    bufferSize = py_interop_plot.calculate_flowcell_buffer_size(run_metrics, options)
+       
+    import pandas as pd
+    columns = ( ('Yield Total (G)', 'yield_g'), ('Projected Yield (G)', 'projected_yield_g'), ('% Aligned', 'percent_aligned'))
+    rows = [('Non-Indexed Total', summary.nonindex_summary()), ('Total', summary.total_summary())]
+    d = []
+    for label, func in columns:
+        d.append( (label, pd.Series([getattr(r[1], func)() for r in rows], index=[r[0] for r in rows])))
+    df = pd.DataFrame.from_items(d)
+    print(df)
+    
+    print ('summary ', summary)
 '''
 columns = ( ('Yield Total (G)', 'yield_g'), ('Projected Yield (G)', 'projected_yield_g'), ('% Aligned', 'percent_aligned'))
 rows = [('Non-Indexed Total', summary.nonindex_summary()), ('Total', summary.total_summary())]
@@ -26,9 +60,14 @@ print(df)
 
 
 
+run_folder = r"/home/bioinfo/Documentos/practicas-CarlosIII/bcl2fastq/InterOp/ejemplo-interop/MiSeqDemo"
+#run_folder = r"/home/bioinfo/Documentos/practicas-CarlosIII/bcl2fastq/InterOp/nextSeq"
+process_binStats(run_folder)
+
+'''
 run = py_interop_run_metrics.run_metrics()
-options = py_interop_plot.filter_options(run.run_info().flowcell().naming_method())
-bufferSize = py_interop_plot.calculate_flowcell_buffer_size(run, options)
+
+
 dataBuffer = numpy.zeros(bufferSize, dtype=numpy.float32)
 idBuffer = numpy.zeros(bufferSize, dtype=numpy.uint32)
 data = py_interop_plot.flowcell_data()
@@ -188,3 +227,4 @@ def main():
 if __name__ == '__main__':
     main()
 
+'''

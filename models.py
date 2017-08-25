@@ -51,11 +51,12 @@ class RunProcess(models.Model):
         
     def get_info_process (self):
         str_date=self.generatedat.strftime("%I:%M%p on %B %d, %Y")
-        if (self.runState == 'Recorded' or self.runState == 'Sample Sent'):
-            return '%s;%s;%s;%s;%s'  %(self.runName, self.runState, self.requestedCenter, self.sampleSheet, str_date )
-        else:
+        if (self.runState == 'Completed'):
             return '%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.requestedCenter, self.useSpaceImgMb, self.useSpaceFastaMb, self.useSpaceOtherMb, str_date)
+        else:
+            return '%s;%s;%s;%s;%s'  %(self.runName, self.runState, self.requestedCenter, self.sampleSheet, str_date )
 
+            
 class Projects(models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
@@ -203,36 +204,52 @@ class RawStatisticsXml (models.Model):
     rawQuality= models.CharField(max_length=64)
     PF_Yield= models.CharField(max_length=64)
     PF_YieldQ30= models.CharField(max_length=64)
-    PF_Quality= models.CharField(max_length=64)
+    PF_QualityScore= models.CharField(max_length=64)
     barcodeCount= models.CharField(max_length=64)
     perfectBarcodeCount= models.CharField(max_length=64)
     projectName=models.CharField(max_length=30,default='-')
+    sampleNumber=models.CharField(max_length=30, default ='NULL')
     generated_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return '%s' %(self.document)
+        return '%s' %(self.runprocess_id)
         
     def get_raw_xml_stats(self):
-        return '%s;%s;%s;%s;%s;%s;%s;%s;%s' %(self.project, self.barcodeCount,
+        return '%s;%s;%s;%s;%s;%s;%s;%s;%s;%s' %(self.project, self.barcodeCount,
                 self.perfectBarcodeCount, self.rawYield, self.PF_Yield,
                 self.rawYieldQ30, self.PF_YieldQ30, self.rawQuality,
-                self.PF_Quality)
+                self.PF_Quality, self.sampleNumber)
 '''
 ''' 
 class NextSeqStatisticsXml (models.Model):
-    document = models.ForeignKey(
-            Document,
-            on_delete=models.CASCADE)
-    flowSummRaw = models.CharField(max_length=20)
-    flowSummPF= models.CharField(max_length=20)
-    rawQuality= models.CharField(max_length=64)
-    PF_Yield= models.CharField(max_length=64)
-    PF_YieldQ30= models.CharField(max_length=64)
-    PF_Quality= models.CharField(max_length=64)
-    barcodeCount= models.CharField(max_length=64)
-    perfectBarcodeCount= models.CharField(max_length=64)
-    project=models.CharField(max_length=30,default='-')
+    runprocess_id = models.ForeignKey(
+            RunProcess,
+            on_delete=models.CASCADE
+    flowRawCluster = models.CharField(max_length=20)
+    flowPfCluster= models.CharField(max_length=20)
+    flowYieldMb= models.CharField(max_length=20)
+    sampleNumber= models.CharField(max_length=20)
+    pfCluster = models.CharField(max_length=64)
+    percentageLane = models.CharField(max_length=64)
+    perfectBarcode = models.CharField(max_length=64)
+    oneMismatch = models.CharField(max_length=64)
+    yieldMb = models.CharField(max_length=64)
+    biggerQ30 = models.CharField(max_length=64)
+    meanQuality = models.CharField(max_length=64)
+    
+    default_or_all=models.CharField(max_length=30)
+    project_id = models.ForeignKey(Projects)
     generated_at = models.DateTimeField(auto_now_add=True)
+        
+    
+    def __str__(self):
+        return '%s' %(self.runprocess_id)
+        
+    def get_flow_cell_summary (self):
+    
+    
+    def get_lane_summary(self):
+    
 
 '''
 '''

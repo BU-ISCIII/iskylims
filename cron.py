@@ -83,7 +83,7 @@ def check_recorded_folder ():
 def check_not_finish_run():
     time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(time_start ,'  looking for not finish run  \n')
-    updated_run=found_not_completed_run()
+    updated_run=find_not_completed_run()
     if (not updated_run):
         print('Exiting the crontab for not finish run without performing any changes \n')
         return
