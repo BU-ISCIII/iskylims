@@ -34,7 +34,7 @@ class AvailableService(MPTTModel):
 	parent=TreeForeignKey('self',models.SET_NULL,null=True,blank=True) 
 
 	def __str__(self):
-		return self.availServiceDescription
+		return '%s' %(self.availServiceDescription)
 	
 	class Meta: 
 		ordering = ["tree_id","lft"]

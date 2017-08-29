@@ -4,27 +4,25 @@ from django import forms
 from django.utils.translation import ugettext_lazy as _, ugettext
 from crispy_forms.helper import FormHelper
 from crispy_forms import layout, bootstrap 
-from utils.fields import MultipleChoiceTreeField
+#from utils.fields import MultipleChoiceTreeField
+from mptt.forms import TreeNodeMultipleChoiceField
 from .models import *
 import pdb
 
 class ServiceRequestForm(forms.ModelForm):
-    #pdb.set_trace()
- 	servicesAvailable = MultipleChoiceTreeField(                                                                                              
- 			label=_("Services Available"),                                                                                                    
- 			required = True,                                                                                                                  
- 			queryset=AvailableService.objects.filter(availServiceDescription__exact="").get_descendants(include_self=True)         
- 			)                                                                                                                         		  
  	class Meta:
  		model = Service
- 		fields = ['serviceName','servicePosition','serviceCenter','serviceArea','serviceExtension','serviceEmail','serviceSeqCenter','servicePlatform','serviceRunSpecs','serviceFileExt','serviceFile','serviceNotes']
- 		
+ 		fields = ['serviceName','servicePosition','serviceCenter','serviceArea','serviceExtension','serviceEmail','serviceSeqCenter','servicePlatform','serviceRunSpecs','serviceFileExt','serviceAvailableService','serviceFile','serviceNotes']
+ 		field_classes = {
+				'serviceAvailableService': TreeNodeMultipleChoiceField,
+				}
+
  	def __init__(self, serviceFilter ,*args, **kwargs):
  		super(ServiceRequestForm, self).__init__(*args, **kwargs)
  		self.helper = FormHelper()
  		self.helper.form_action=""
  		self.helper.form_method="POST"
- 		self.fields['servicesAvailable'].queryset = AvailableService.objects.filter(availServiceDescription__exact=serviceFilter).get_descendants(include_self=True)
+ 		self.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact=serviceFilter).get_descendants(include_self=True)
  		#pdb.set_trace()
  		
  		self.helper.layout = layout.Layout(
@@ -68,7 +66,7 @@ class ServiceRequestForm(forms.ModelForm):
                 	layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Service selection</h3></div>"""), 
                 	layout.Div(                                                                                            
                 		layout.Div(                                                                                        
-                			layout.Field('servicesAvailable',template="utils/checkbox_select_multiple_tree.html"),                                                                   
+                			layout.Field('serviceAvailableService',template="utils/checkbox_select_multiple_tree.html"),                                                                   
                 			css_class="col-md-12"                                                                          
                 			),                                                                                             
                     	css_class="row panel-body"                                                                         

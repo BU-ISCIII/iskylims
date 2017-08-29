@@ -13,20 +13,22 @@ import re
 ####### Import libraries for static files
 #from django.shortcuts import render_to_response
 #from django.shortcuts import RequestContext
- #import pdb; pdb.set_trace()
+import pdb 
+#pdb.set_trace()
 
 
 def index(request):
-    #latest_question_list = Question.objects.order_by('-pub_date')[:5]
-    #context = {'latest_question_list': latest_question_list}
     return render(request, 'drylab/index.html')
 
 def service_request(request):
-# 	if request.method == "POST":
-# 		form = ServiceRequestForm(data.request.POST,
-# 		files=request.FILES,
-# 		)
-# 		if form.is_valid():
-# 			return redirect("service request done")
-	form = ServiceRequestForm(serviceFilter="User support")	
+	if request.method == "POST":
+		#pdb.set_trace()  
+		form = ServiceRequestForm(data=request.POST,files=request.FILES,serviceFilter="Genomic data analysis")
+		if form.is_valid():
+			#pdb.set_trace()   
+			form.save()
+			return render(request,'drylab/index.html')
+	else:
+		form = ServiceRequestForm(serviceFilter="Genomic data analysis")	
+	
 	return render(request, 'drylab/ServiceRequestForm.html' , { 'form' : form })
