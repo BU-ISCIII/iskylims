@@ -10,7 +10,8 @@
     <link href="http://fonts.googleapis.com/css?family=Hind:300,400,500,600,700" rel="stylesheet" type="text/css">
     <link href="{% static "drylab/vendor/simple-line-icons/css/simple-line-icons.css" %}" rel="stylesheet" type="text/css"/>
     <link href="{% static "drylab/vendor/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css"/>
-    
+    <link href="{% static "drylab/css/custom.css" %}" rel="stylesheet" type="text/css"/> 
+
 	<!-- GLOBAL MANDATORY JAVA SCRIPTS -->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> <!-- drop menus -->
@@ -60,11 +61,11 @@
 								<li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">SERVICES REQUEST<span class="caret"></span></a>
 				  					<ul class="dropdown-menu">
 				    					<li><a href="/drylab/service_request">GENOMICS UNIT SEQUENCING</a></li>
-				    					<li><a href="#">EXTERNAL SEQUENCING</a></li>
+				    					<li><a href="/drylab/service_request">EXTERNAL SEQUENCING</a></li>
 				  					</ul>
 								</li>
-                                <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#">COUNSELING REQUEST</a></li>
-                                <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#">INFRASTRUCTURE REQUEST</a></li>
+                                <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/drylab/counseling_request">COUNSELING REQUEST</a></li>
+                                <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/drylab/infrastructure_request">INFRASTRUCTURE REQUEST</a></li>
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#">STATISTICS</a></li>
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#contact">CONTACT</a></li>
                             </ul>

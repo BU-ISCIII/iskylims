@@ -22,13 +22,42 @@ def index(request):
 
 def service_request(request):
 	if request.method == "POST":
-		#pdb.set_trace()  
 		form = ServiceRequestForm(data=request.POST,files=request.FILES,serviceFilter="Genomic data analysis")
 		if form.is_valid():
-			#pdb.set_trace()   
-			form.save()
-			return render(request,'drylab/index.html')
+			new_service = form.save(commit=False)
+			new_service.serviceStatus = "Recorded"
+			new_service.save()
+			form.save_m2m()
+			return render(request,'drylab/info_page.html',{'content':['Your service request has been successfully recorded.','You will be contacted shortly.']})
 	else:
 		form = ServiceRequestForm(serviceFilter="Genomic data analysis")	
 	
-	return render(request, 'drylab/ServiceRequestForm.html' , { 'form' : form })
+	return render(request, 'drylab/RequestForm.html' , { 'form' : form })
+
+def counseling_request(request):                                                                                                                                    
+ 	if request.method == "POST":                                                                                                                                 
+ 		form = ServiceRequestForm(data=request.POST,files=request.FILES,serviceFilter="Bioinformatics consulting and training")                                                   
+ 		if form.is_valid():                                                                                                                                      
+ 			new_service = form.save(commit=False)                                                                                                                
+ 			new_service.serviceStatus = "Recorded"                                                                                                               
+ 			new_service.save()                                                                                                                                   
+ 			form.save_m2m()                                                                                                                                      
+ 			return render(request,'drylab/info_page.html',{'content':['Your service request has been successfully recorded.','You will be contacted shortly.']}) 
+ 	else:                                                                                                                                                        
+ 		form = ServiceRequestForm(serviceFilter="Bioinformatics consulting and training")	                                                                                     
+ 	                                                                                                                                                             
+ 	return render(request, 'drylab/RequestForm.html' , { 'form' : form })                                                                                        
+
+def infrastructure_request(request):                                                                                                                                     
+  	if request.method == "POST":                                                                                                                                  
+  		form = ServiceRequestForm(data=request.POST,files=request.FILES,serviceFilter="User support")                                                    
+  		if form.is_valid():                                                                                                                                       
+  			new_service = form.save(commit=False)                                                                                                                 
+  			new_service.serviceStatus = "Recorded"                                                                                                                
+  			new_service.save()                                                                                                                                    
+  			form.save_m2m()                                                                                                                                       
+  			return render(request,'drylab/info_page.html',{'content':['Your service request has been successfully recorded.','You will be contacted shortly.']})  
+  	else:                                                                                                                                                         
+  		form = ServiceRequestForm(serviceFilter="User support")	                                                                                      
+  	                                                                                                                                                              
+  	return render(request, 'drylab/RequestForm.html' , { 'form' : form })                                                                                         

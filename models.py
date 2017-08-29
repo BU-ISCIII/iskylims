@@ -1,5 +1,5 @@
-from django.db import models
 import datetime
+import os
 from django.db import models
 from django.utils import timezone
 from django import forms
@@ -7,7 +7,27 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel
 from mptt.fields import TreeForeignKey, TreeManyToManyField
+from django.utils.timezone import now as timezone_now
 
+
+STATUS_CHOICES = (
+			('recorded',_("Recorded")),
+	   		('approved',_("Approved")),
+			('rejected',_("Rejected")),
+			('queued',_("Queued")),
+			('in_progress',_('In progress')),
+			('delivered',_("Delivered")),
+			('archived',_("Archived"))
+		)
+
+def service_files_upload(instance,filename):
+	now = timezone_now()
+	filename_base,filename_ext = os.path.splitext(filename)
+	return 'drylab/servicesRequest/%s_%s%s' % (
+			now.strftime("%Y%m%d%H%M%S"),
+			filename_base.lower(),
+			filename_ext.lower(),
+	)
 
 # Create your models here.
 
@@ -53,8 +73,8 @@ class Service(models.Model):
 	serviceRunSpecs=models.CharField(_("Run specifications"),max_length=10)
 	serviceFileExt=models.ForeignKey(FileExt,verbose_name=_("File extension"))
 	serviceAvailableService=TreeManyToManyField(AvailableService,verbose_name=_("AvailableServices"))
-	serviceFile=models.FileField(_("Service description file"),upload_to='documents/')
-	serviceStatus=models.CharField(_("Service status"),max_length=10)
+	serviceFile=models.FileField(_("Service description file"),upload_to=service_files_upload)
+	serviceStatus=models.CharField(_("Service status"),max_length=10,choices=STATUS_CHOICES)
 	serviceNotes=models.TextField(_("Service Notes"),max_length=500)
 	
 	def __str__ (self):
