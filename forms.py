@@ -17,12 +17,11 @@ class ServiceRequestForm(forms.ModelForm):
 				'serviceAvailableService': TreeNodeMultipleChoiceField,
 				}
 
- 	def __init__(self, serviceFilter ,*args, **kwargs):
+ 	def __init__(self,*args, **kwargs):
  		super(ServiceRequestForm, self).__init__(*args, **kwargs)
  		self.helper = FormHelper()
  		self.helper.form_action=""
  		self.helper.form_method="POST"
- 		self.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact=serviceFilter).get_descendants(include_self=True)
  		#pdb.set_trace()
  		
  		self.helper.layout = layout.Layout(
@@ -89,4 +88,18 @@ class ServiceRequestForm(forms.ModelForm):
 					layout.Submit(('submit'),_('Save')),
                     )
 				)
+class ServiceRequestForm_extended(ServiceRequestForm):
+	
+	class Meta:
+		model = Service
+		exclude = [
+				'serviceSeqCenter',
+				'servicePlatform',
+				'serviceRunSpecs',
+				'serviceFileExt',
+				'serviceStatus',
+				] 
 
+	def __init__(self,*args, **kwargs):
+		super(ServiceRequestForm_extended, self).__init__(*args, **kwargs)
+		self.helper.layout.pop(1)
