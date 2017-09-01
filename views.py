@@ -1,14 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import get_object_or_404, render, redirect
-from django.http import HttpResponse
-from django.template import loader
-import time
-from django.conf import settings
-from django.core.files.storage import FileSystemStorage
 from .models import *
 from .forms import *
-from django.core.files.storage import FileSystemStorage
-import re
+from django.contrib.auth.decorators import login_required
 
 ####### Import libraries for static files
 #from django.shortcuts import render_to_response
@@ -16,10 +10,11 @@ import re
 import pdb 
 #pdb.set_trace()
 
-
+@login_required
 def index(request):
     return render(request, 'drylab/index.html')
 
+@login_required
 def service_request(request):
 	if request.method == "POST":
 		form = ServiceRequestForm(data=request.POST,files=request.FILES)
@@ -35,6 +30,7 @@ def service_request(request):
 	form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True) 
 	return render(request, 'drylab/RequestForm.html' , { 'form' : form })
 
+@login_required
 def counseling_request(request):                                                                                                                                    
  	if request.method == "POST":                                                                                                                                 
  		form = ServiceRequestForm_extended(data=request.POST,files=request.FILES)                                                   
@@ -50,6 +46,7 @@ def counseling_request(request):
  	form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Bioinformatics consulting and training").get_descendants(include_self=True)                                                                                                                                                              
  	return render(request, 'drylab/RequestForm.html' , { 'form' : form })                                                                                        
 
+@login_required
 def infrastructure_request(request):                                                                                                                                     
   	if request.method == "POST":                                                                                                                                  
   		form = ServiceRequestForm_extended(data=request.POST,files=request.FILES)                                                    

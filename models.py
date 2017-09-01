@@ -1,14 +1,13 @@
-import datetime
 import os
 from django.db import models
-from django.utils import timezone
 from django import forms
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel
 from mptt.fields import TreeForeignKey, TreeManyToManyField
 from django.utils.timezone import now as timezone_now
-
+from django.contrib.auth.models import User
+from wetlab.models import RunProcess
 
 STATUS_CHOICES = (
 			('recorded',_("Recorded")),
@@ -62,6 +61,7 @@ class AvailableService(MPTTModel):
 		verbose_name_plural = ("AvailableServices")
 
 class Service(models.Model):
+	serviceUsername=models.ForeignKey(User)
 	serviceName=models.CharField(_("Complete name"),max_length=50)
 	servicePosition=models.CharField(_("Position"),max_length=50)
 	serviceCenter=models.ForeignKey(Center,verbose_name=_("Center"))
@@ -69,6 +69,7 @@ class Service(models.Model):
 	serviceExtension=models.CharField(_("Phone extension"),max_length=5)
 	serviceEmail=models.EmailField(_("email"),max_length=45)
 	serviceSeqCenter=models.CharField(_("Sequencing center"),max_length=50,blank=False,null=True)
+	serviceRunID=models.ForeignKey(RunProcess)
 	servicePlatform=models.ForeignKey(Platform,verbose_name=_("Sequencing platform"),blank=False,null=True)
 	serviceRunSpecs=models.CharField(_("Run specifications"),max_length=10,blank=False,null=True)
 	serviceFileExt=models.ForeignKey(FileExt,verbose_name=_("File extension"),blank=False,null=True)
