@@ -4,7 +4,27 @@ from .utils.stats_calculation import *
 from .utils.parsing_run_info import *
 
 import os , sys
+import logging
+from logging.handlers import RotatingFileHandler
 
+def open_log():
+    
+    LOG_FILENAME = 'testing.log'
+    #def create_log ():
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+    #create the file handler
+    handler = logging.handlers.RotatingFileHandler(LOG_FILENAME, maxBytes=20000, backupCount=5)
+    handler.setLevel(logging.DEBUG)
+    
+    #create a Logging format
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    #add the handlers to the logger
+    logger.addHandler(handler)
+    
+    return logger
+'''
 def check_crontab():
     time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(time_start ,'  checking the time for starting crontab')
@@ -20,6 +40,7 @@ def createSSHClient(server, port, user, password):
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     client.connect(server, port, user, password)
     return client 
+
 
 
 
@@ -61,40 +82,49 @@ def fetching_stats_scheduled_job ():
     #store_in_db(xml_statistics, 'nextSeq_xml_table')
     
     return True
-
+'''
 def check_recorded_folder ():
-    time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(time_start ,'  looking for new run in directory on wetlab/tmp/recorded \n')
+    logger=open_log()
+    
+    logger.info('Looking for new run in directory on wetlab/tmp/recorded \n')
     path='iSkyLIMS/wetlab/tmp/recorded/'
     dir_wetlab=os.getcwd()
-    print('woring dir = ', dir_wetlab)
+    loging.debug('woring dir = %s', dir_wetlab)
     if os.listdir(path):
         # There are sample sheet files that need to be processed
-        updated_run=process_run_in_recorded_state ()
+        updated_run=process_run_in_recorded_state (logger)
         if updated_run == 'Error':
-            print('No connection is available to Flavia \n')
-            print ('Exiting the process for searching run in recorded state \n')
+            logger.error('No connection is available to Flavia \n')
+            logger.error('Exiting the process for searching run in recorded state \n')
         else:
             for run_changed in updated_run:
-                print('The run ', run_changed, 'is now on Sample Sent state\n')
+                logger.info('The run  %s is now on Sample Sent state', run_changed)
     else:
-        print( 'Exiting the crontab for record_folder. No directories have been found \n')
+        logger.info( 'Exiting the crontab for record_folder. No directories have been found \n')
 
 def check_not_finish_run():
     time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(time_start ,'  looking for not finish run  \n')
-    updated_run=find_not_completed_run()
-    if (not updated_run):
-        print('Exiting the crontab for not finish run without performing any changes \n')
-        return
-    if updated_run != 'Error':
-        print('Exiting the crontab for not finish run performing the changes in the following run \n')
-        for state, value in updated_run.iteritems():
-            print ('The following Run are now in the state ', state, '\n')
-            for run_changed in value:
-                print('--', run_changed, '\n')
-    else:
-            print('No connection is available to Flavia \n')
-
-            
+    print(time_start )
+    print('Starting the process for searching not completed runs ')
+    logger=open_log()
+    logger.info('starting execute the crontab for not finish run')
+    updated_run=find_not_completed_run(logger)
+    logger.debug('Display the list of the updated_run %s', updated_run)
     
+    count=0
+    for state in updated_run:
+        if (updated_run[state] == "" ):
+            logger.debug('found runs on %s but not found the conditions to upgrade the state', state)
+        elif (updated_run[state]== 'Error'):
+            logger.error('Not connection was available for state %s', state)
+        else:
+            for run_changed in updated_run[state]:
+                logger.info('the run  %s was changed from %s', run_changed, state)
+                count +=1
+         
+    if count == 0:
+        logger.info('Exiting the crontab without performing any changes')
+    time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(time_stop)
+    print ('Exiting the process for searching not completed runs')
+            

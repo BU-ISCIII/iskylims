@@ -35,6 +35,10 @@ class RunProcessAdmin (admin.ModelAdmin):
 class ProjectsAdmin (admin.ModelAdmin):
     list_display= ('runprocess_id','user_id','projectName','procState','libraryKit','baseSpaceFile')
     #list_display= ('runprocess_id','projectName','procState','libraryKit','baseSpaceFile')
+
+class RawStatisticsXmladmin (admin.ModelAdmin):
+    list_display= ('runprocess_id', 'project_id', 'rawYield' )
+    
     
 #admin.site.register(Document , AppAdmin)
 admin.site.register(RunningParameters , RunningParametersAdmin)
@@ -43,6 +47,7 @@ admin.site.register(RunProcess , RunProcessAdmin)
 #admin.site.register(UserInfo,UserInfoAdmin)
 
 admin.site.register(Projects, ProjectsAdmin)
+admin.site.register(RawStatisticsXml, RawStatisticsXmladmin)
 
 
 

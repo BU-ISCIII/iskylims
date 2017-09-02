@@ -186,7 +186,7 @@ def get_information_run(run_name_found,run_id):
     info_dict={}
     ## collect the state to get the valid information of run that matches the run name 
     run_state=run_name_found[0].get_state()
-    if (run_state == 'Recorded' or run_state == 'Sample Sent'):
+    if (run_state != 'Completed'):
         d_list=['Run name','State of the Run is','Run was requested by','The Sample Sheet used is','Run was recorded on date']
     else:
         d_list=['Run name','State of the Run is','Run was requested by','Disk space used for Images','Disk space used for Fasta Files','Disk space used for other Files','Run recorded date'] 
@@ -197,8 +197,12 @@ def get_information_run(run_name_found,run_id):
     info_dict['data']=r_data_display
     if (run_state == 'Recorded'):
         info_dict['graphic']='25-percentage.gif'
-    elif (run_state == 'Sample Sent'):
+    if (run_state == 'Sample Sent'):
         info_dict['graphic']='40-percentage.gif'
+    if (run_state == 'Process Running'):
+        info_dict['graphic']='50-percentage.gif'
+    if (run_state == 'Bcl2Fastq Executed'):
+        info_dict['graphic']='60-percentage.gif'
         # finding the running parameters index for the run
         runName_id=RunningParameters.objects.get(pk=run_id)
         # Adding the Run Parameters information
@@ -255,6 +259,7 @@ def search_nextSeq (request):
                     return render (request,'wetlab/error_page.html', {'content':['Too many matches found when searching for the run name ', run_name ,
                                                                     'ADVICE:', 'Select the Fuzzy to gt the list for all matches runs ']})
                 r_data_display= get_information_run(run_name_found,run_name_found[0].id)
+                #import pdb; pdb.set_trace()
                 return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
             else:
                 return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ,

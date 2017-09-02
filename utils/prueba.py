@@ -1,11 +1,179 @@
 #!/usr/bin/env python3
+#from  ..models import *
 
+import sys, os, re
+import xml.etree.ElementTree as ET
+import time
+import shutil
+import logging
+from logging.handlers import RotatingFileHandler
 from interop import py_interop_run_metrics, py_interop_run, py_interop_summary, py_interop_plot
-#import pandas as pd
-import os
-from  ..models import *
+
+def open_log():
+    
+    LOG_FILENAME = 'testing.log'
+    #def create_log ():
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+    #create the file handler
+    handler = logging.handlers.RotatingFileHandler(LOG_FILENAME, maxBytes=20000, backupCount=5)
+    handler.setLevel(logging.DEBUG)
+    
+    #create a Logging format
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    #add the handlers to the logger
+    logger.addHandler(handler)
+    
+    return logger
+
+
+def test():
+    print ('esto es una prueba de import')
+    
+def parsing_statistics_xml(demux_file, conversion_file, logger):
+    total_p_b_count=[0,0,0,0] 
+    stats_result={}
+    #demux_file='example.xml'
+    demux_stat=ET.parse(demux_file)
+    root=demux_stat.getroot()
+    projects=[]
+    logger.info('Starting conversion for demux file')
+    for child in root.iter('Project'):
+        projects.append(child.attrib['name'])
+    
+    for i in range(len(projects)):
+        p_temp=root[0][i]
+        samples=p_temp.findall('Sample')
+                
+        sample_all_index=len(samples)-1
+        barcodeCount ,perfectBarcodeCount, b_count =[], [] ,[]
+        p_b_count, one_mismatch_count =[], []
+
+        dict_stats={}
+        for c in p_temp[sample_all_index].iter('BarcodeCount'):
+        #for c in p_temp[sample].iter('BarcodeCount'):
+            #b_count.append(c.text)
+            barcodeCount.append(c.text)
+        for c in p_temp[sample_all_index].iter('PerfectBarcodeCount'):
+            p_b_count.append(c.text)
+        
+        # look for One mismatch barcode
+        
+        if p_temp[sample_all_index].find('OneMismatchBarcodeCount') ==None:
+             for  fill in range(4):
+                one_mismatch_count.append('NaN')
+        else:
+            for c in p_temp[sample_all_index].iter('OneMismatchBarcodeCount'):
+                one_mismatch_count.append(c.text)
+        
+        #one_mismatch_count.append(one_m_count)
+        
+        dict_stats['BarcodeCount']=barcodeCount
+        dict_stats['PerfectBarcodeCount']=p_b_count
+        dict_stats['sampleNumber']=len(samples)
+        dict_stats['OneMismatchBarcodeCount']=one_mismatch_count
+        stats_result[projects[i]]=dict_stats
+        logger.info('Complete parsing from demux file for project %s', projects[i])
+    
+    
+    conversion_stat=ET.parse(conversion_file)
+    root_conv=conversion_stat.getroot()
+    projects=[]
+    logger.info('Starting conversion for conversion file')
+    for child in root_conv.iter('Project'):
+        projects.append(child.attrib['name'])
+    for i in range(len(projects)):
+        p_temp=root_conv[0][i]
+        samples=p_temp.findall('Sample')
+        sample_all_index=len(samples)-1
+        tiles=p_temp[sample_all_index][0][0].findall('Tile')
+        tiles_index=len(tiles)-1
+        list_raw_yield=[]
+        list_raw_yield_q30=[]
+        list_raw_qualityscore=[]
+        list_pf_yield=[]
+        list_pf_yield_q30=[]
+        list_pf_qualityscore=[]
+    
+        for l_index in range(4):
+            raw_yield_value = 0
+            raw_yield_q30_value = 0
+            raw_quality_value = 0   
+            pf_yield_value = 0
+            pf_yield_q30_value = 0
+            pf_quality_value = 0
+            for t_index in range(tiles_index):
+                
+                     # get the yield value for RAW and for read 1 and 2
+                for c in p_temp[sample_all_index][0][l_index][t_index][0].iter('Yield'):
+                    raw_yield_value +=int(c.text)
+                    # get the yield Q30 value for RAW  and for read 1 and 2
+                for c in p_temp[sample_all_index][0][l_index][t_index][0].iter('YieldQ30'):
+                    raw_yield_q30_value +=int(c.text)
+                for c in p_temp[sample_all_index][0][l_index][t_index][0].iter('QualityScoreSum'):
+                    raw_quality_value +=int(c.text)
+                 # get the yield value for PF and for read 1 and 2
+                for c in p_temp[sample_all_index][0][l_index][t_index][1].iter('Yield'):
+                    pf_yield_value +=int(c.text)
+                # get the yield Q30 value for PF and for read 1 and 2
+                for c in p_temp[sample_all_index][0][l_index][t_index][1].iter('YieldQ30'):
+                    pf_yield_q30_value +=int(c.text)
+                for c in p_temp[sample_all_index][0][l_index][t_index][1].iter('QualityScoreSum'):
+                    pf_quality_value +=int(c.text)
+            list_raw_yield.append(str(raw_yield_value))
+            list_raw_yield_q30.append(str(raw_yield_q30_value))
+            list_raw_qualityscore.append(str(raw_quality_value))
+            list_pf_yield.append(str(pf_yield_value))
+            list_pf_yield_q30.append(str(pf_yield_q30_value))
+            list_pf_qualityscore.append(str(pf_quality_value))
+                
+        stats_result[projects[i]]['RAW_Yield']=list_raw_yield
+        stats_result[projects[i]]['RAW_YieldQ30']=list_raw_yield_q30
+        stats_result[projects[i]]['RAW_QualityScore']=list_raw_qualityscore
+        stats_result[projects[i]]['PF_Yield']=list_pf_yield
+        stats_result[projects[i]]['PF_YieldQ30']=list_pf_yield_q30
+        stats_result[projects[i]]['PF_QualityScore']=list_pf_qualityscore
+        logger.info('completed parsing for xml stats for project %s', projects[i])
+    
+    unknow_lanes  = []
+    unknow_barcode_start_index= len(projects)
+    counter=0
+    logger.info('Collecting the Top Unknow Barcodes')
+    for un_child in root_conv.iter('TopUnknownBarcodes'):
+        un_index= unknow_barcode_start_index + counter
+        p_temp=root_conv[0][un_index][0]
+        unknow_barcode_lines=p_temp.findall('Barcode')
+        unknow_bc_count=[]
+        for lanes in unknow_barcode_lines:
+            unknow_bc_count.append(lanes.attrib)
+
+        unknow_lanes.append(unknow_bc_count)
+        counter +=1
+    stats_result['TopUnknownBarcodes']= unknow_lanes
+    logger.info('Complete XML parsing ')
+    
+    return stats_result
+
+
+def process_xml_stats(stats_projects, run_id, logger):
+    
+    for project in stats_projects:
+        if project == 'TopUnknownBarcodes':
+            for un_lane in range(4) :
+                logger.info('Processing lane %s for TopUnknownBarcodes')
+                count_top=0
+                lane_number=str(un_lane + 1)
+                for barcode_line in stats_projects[project][un_lane]:
+                    #for count, sequence barcode_line.iteritems()
+                    barcode_count= barcode_line['count']
+                    barcode_sequence= barcode_line['sequence']
+    
+    
+    return stats_result
 
 def process_binStats(run_folder, run_id, logger):
+    
     logger.info('starting analyzing the binary statistics ')
     run_metrics = py_interop_run_metrics.run_metrics()
     #run_folder = run_metrics.read(run_folder)
@@ -16,10 +184,10 @@ def process_binStats(run_folder, run_id, logger):
 
     summary = py_interop_summary.run_summary()
     py_interop_summary.summarize_run_metrics(run_metrics, summary)
-    
+    '''
     # get the Run Summary for Read 1 to 4
     for read_level in range(4):
-        
+    
         # summary yield total
         read_summary_yield_g=format(summary.at(read_level).summary().yield_g(),'.3f')
         # summary projected total yield
@@ -85,7 +253,7 @@ def process_binStats(run_folder, run_id, logger):
                                                   intensityCycle= nonindex_s_first_cycle_intensity, biggerQ30= nonindex_s_percent_gt_q30)   
 
      # ns_bin_run_summary.save()
-    
+    '''
     ### information per reads
     
     #lan_summary= py_interop_summary.lane_summary()
@@ -94,12 +262,11 @@ def process_binStats(run_folder, run_id, logger):
         logger.info('Processing bin stats for Read %s', read_number)
         for lane_number in range(4):
             
-            read_lane_tiles=str(int(summary.at(read_number).at(lane_number).tile_count() )*2)
+            read_lane_tiles=str(int(summary.at(0).at(0).tile_count() )*2)
             # Density (k/mm2) divide the value by 1000 to have it K/mm2
             # get the +/- with the steddev
             read_lane_density_mean=str(round(float(summary.at(read_number).at(lane_number).density().mean())/1000))
             read_lane_density_stddev=str(round(float(summary.at(read_number).at(lane_number).density().stddev())/1000))
-            read_lane_density_field=read_lane_density_mean + '  ' + chr(177) + '  ' +read_lane_density_stddev
             # cluster _pf  in % 
             read_lane_percent_pf_mean=format(summary.at(read_number).at(lane_number).percent_pf().mean(),'.3f')
             read_lane_percent_pf_stddev=format(summary.at(read_number).at(lane_number).percent_pf().stddev(),'.3f')  
@@ -149,233 +316,17 @@ def process_binStats(run_folder, run_id, logger):
             read_lane_intensity_cycle_stddev=format(summary.at(read_number).at(lane_number).first_cycle_intensity().stddev(),'.3f')
             read_lane_intensity_cycle_field=read_lane_intensity_cycle_mean + '  ' + chr(177) + '  ' + read_lane_intensity_cycle_stddev
     
-            ns_bin_read_lane = NextSeqStatsBinRunRead (runprocess_id=RunProcess.objects.get(pk=run_id),
-                                                       read= str(read_number), lane = str(lane_number),
-                                                       tiles= read_lane_tiles, density= read_lane_density_field,
-                                                       cluster_PF= read_lane_percent_pf_field, phas_prephas= read_lane_phas_prephas_field,
-                                                       reads= read_lane_reads, reads_PF= read_lane_reads_pf,
-                                                       q30= read_lane_percent_gt_q30, yields= read_lane_yield_g,
-                                                       cyclesErrRated= read_lane_cycles_error_rate, aligned= read_lane_percent_aligned_field,
-                                                       errorRate= read_lane_error_rate_field, errorRate35= read_lane_error_rate_35_field,
-                                                       errorRate50= read_lane_error_rate_50_field, errorRate75= read_lane_error_rate_75_field,
-                                                       errorRate100= read_lane_error_rate_100_field, intensityCycle= read_lane_intensity_cycle_field)
-            # ns_bin_read_lane.save()
 
     logger.info ('Exiting the binary stats ')
-    
-def create_graphics(run_folder):
-    #create by cycle  graphic
-    plot_by_cycle= '~/software/opt/interop/bin/'+ 'plot_by_cycle  ' + run_folder + '  | gnuplot'
-    os.system(plot_by_cycle)
-    
-    #create by lane  graphic
-    plot_by_lane= '~/software/opt/interop/bin/'+ 'plot_by_lane  ' + run_folder + '  | gnuplot'
-    os.system(plot_by_lane)
-    
-    #create flowcell  graphic
-    plot_flowcell= '~/software/opt/interop/bin/'+ 'plot_flowcell  ' + run_folder + '  | gnuplot'
-    os.system(plot_flowcell)
-    
-    #create qscore  histogram graphic
-    plot_qscore_histogram= '~/software/opt/interop/bin/'+ 'plot_qscore_histogram  ' + run_folder + '  | gnuplot'
-    os.system(plot_qscore_histogram)
-    
-    #create by qswcore heatmap  graphic
-    plot_qscore_heatmap= '~/software/opt/interop/bin/'+ 'plot_qscore_heatmap  ' + run_folder + '  | gnuplot'
-    os.system(plot_qscore_heatmap)
-    
-    plot_sample= '~/software/opt/interop/bin/'+ 'plot_sample_qc  ' + run_folder + '  | gnuplot'
-    os.system(plot_sample)
+
+local_dir_samba= '../tmp/processing'
+logger=open_log()
+demux_file='../tmp/processing/DemultiplexingStats.xml'
+conversion_file='../tmp/processing/ConversionStats.xml'
+run_processing_id=2
+#xml_stats=parsing_statistics_xml(demux_file, conversion_file, logger)
+#process_xml_stats(xml_stats,run_processing_id, logger)
+process_binStats(local_dir_samba, run_processing_id, logger)
 
 
-'''
-columns = ( ('Yield Total (G)', 'yield_g'), ('Projected Yield (G)', 'projected_yield_g'), ('% Aligned', 'percent_aligned'))
-rows = [('Non-Indexed Total', summary.nonindex_summary()), ('Total', summary.total_summary())]
-d = []
-for label, func in columns:
-    d.append( (label, pd.Series([getattr(r[1], func)() for r in rows], index=[r[0] for r in rows])))
-df = pd.DataFrame.from_items(d)
-print(df)
-'''
-
-
-
-#run_folder = r"/home/bioinfo/Documentos/practicas-CarlosIII/bcl2fastq/InterOp/ejemplo-interop/MiSeqDemo"
-run_folder = r"/home/bioinfo/Documentos/practicas-CarlosIII/bcl2fastq/InterOp/nextSeq"
-#process_binStats(run_folder)
-
-create_graphics(run_folder)
-print ('end')
-'''
-run = py_interop_run_metrics.run_metrics()
-
-
-dataBuffer = numpy.zeros(bufferSize, dtype=numpy.float32)
-idBuffer = numpy.zeros(bufferSize, dtype=numpy.uint32)
-data = py_interop_plot.flowcell_data()
-
-py_interop_plot.plot_flowcell_map2(run, py_interop_run.Intensity, options, data, dataBuffer, idBuffer)
-
-read_index=0
-yield_g = summary.at(read_index).summary().yield_g()
-error_rate = summary.at(read_index).summary().error_rate()
-
-first_cycle = summary.at(read_index).summary().first_cycle_intensity()
-percent_aligned = summary.at(read_index).summary().percent_aligned()
-percent_q30 = summary.at(read_index).summary().percent_gt_q30()
-
-sum_yield = summary.total_summary().yield_g()
-sum_non_index_yield = summary.nonindex_summary().yield_g()
-
-
-
-print('yield_g = ', yield_g, '  error_rate =  ', error_rate)
-value_1 = float(8)
-value_2 = float(3)
-line_sum = py_interop_summary.lane_summary()
-#line_aligned = line_sum.at(read_index).summary().percent_aligned()
-metric_stat = py_interop_summary.metric_stat()
-#stat_sum = py_interop_summary.stat_summary()
-#mean= metric_stat.mean(value_1, value_2)
-print('hello')
-
-
-####codigo de ejemplo
-from interop.py_interop_run_metrics import run_metrics as RunMetrics
- 
-run_dir = r"/home/bioinfo/Documentos/practicas-CarlosIII/bcl2fastq/InterOp/nextSeq"
-run_metrics = RunMetrics()
-run_metrics.read(run_dir)
- 
-# Run metrics contains 
-# corrected_intensity_metric_set
-# error_metric_set
-# extraction_metric_set
-# image_metric_set
-# index_metric_set
-# q_by_lane_metric_set
-# q_collapsed_metric_set
-# q_metric_set
- 
-q_metric_set = run_metrics.q_metric_set()
-# q_metric_set contains metrics but is not a python list 
-# it has a size() that give the length of the list
-# it contains one metric for each lane/tile/cycle
- 
-metrics = q_metric_set.metrics_for_cycle(1)
-metrics = q_metric_set.metrics_for_lane(1)
-metrics = q_metric_set.metrics()
-# These function return whole or sub set of metrics which can be subscripted as follow
-metrics[0]
-# <interop.py_interop_metrics.q_metric; proxy of <Swig Object of type 'std::vector< illumina::interop::model::metrics::q_metric >::value_type *' at 0x2aaab987f1e0> >
-# this is a metrics object described here http://illumina.github.io/interop/group__q__metric.html
-metrics[0].qscore_hist()
-# (0, 109812, 0, 165009, 4582040, 0, 0)
-# return number of cluster for each quality score bin
-metrics[0].lane()
-# 1
-# the lane number for this metric
-metrics[0].tile()
-# 1103
-# the tile id for this metric
-metrics[0].cycle()
-# 1
-# the cycle for this metric
-
-############ otro ejemplo de  summarise_metrics_per_tile.py 
-
-from interop.py_interop_run_metrics import run_metrics as RunMetrics
-run_dir=r"/home/bioinfo/Documentos/practicas-CarlosIII/bcl2fastq/InterOp/nextSeq"
-
-def calc_avg_q(q_hist):
-	q8, q12, q22, q27, q32, q37, q41 = q_hist
-	d = q8 * 8 + q12 * 12 + q22 * 22 + q27 * 27 + q32 * 32 + q37 * 37 + q41 * 41
-	return d/sum(q_hist)
-
-def sum_q_hist(q_hist1, q_hist2):
-  q8, q12, q22, q27, q32, q37, q41 = q_hist1
-  tq8, tq12, tq22, tq27, tq32, tq37, tq41 = q_hist2
-  return (q8+tq8, q12+tq12, q22+tq22, q27+tq27, q32+tq32, q37+tq37, q41+tq41)
-
-def get_run_metrics_per_tile(run_dir, start_cycle=0, end_cycle=310):
-  run_metrics = RunMetrics()
-  run_metrics.read(run_dir)
-  q_metric_set = run_metrics.q_metric_set()
-  metrics = q_metric_set.metrics()
-
-  all_lanes = {}
-  for lane in range(1,9):
-    all_lanes[lane] = {}
-    
-  for i in range(metrics.size()):
-    tile_set = all_lanes[metrics[i].lane()]
-    if metrics[i].cycle() > start_cycle and metrics[i].cycle() < end_cycle:
-      q_hist1 = tile_set.get(metrics[i].tile(), (0, 0, 0, 0, 0, 0, 0))
-      q_hist2 = metrics[i].qscore_hist()
-      tile_set[metrics[i].tile()] = sum_q_hist(q_hist1, q_hist2)
-  return all_lanes
-
-run_dir = r"/home/bioinfo/Documentos/practicas-CarlosIII/bcl2fastq/InterOp/nextSeq"
-all_lanes = get_run_metrics_per_tile(run_dir)
-lane = 4 
-for tile in sorted(all_lanes[lane]):
-    print(lane, tile, calc_avg_q(all_lanes[lane][tile]))
-    
- ###############################################################   
-
-from interop import py_interop_run_metrics
-from interop import py_interop_summary
-from interop import py_interop_run
-import numpy
-import logging
-import sys
-import os
-  
-  
-def main():
-    """ Retrieve run folder paths from the command line
-      Ensure only metrics required for summary are loaded
-      Load the run metrics
-      Calculate the summary metrics
-      Display error by lane, read
-      """
-    logging.basicConfig(level=logging.INFO)
- 
-    run_metrics = py_interop_run_metrics.run_metrics()
-    summary = py_interop_summary.run_summary()
-
-    valid_to_load = py_interop_run.uchar_vector(py_interop_run.MetricCount, 0)
-    py_interop_run_metrics.list_summary_metrics_to_load(valid_to_load)
- 
-    for run_folder_path in sys.argv[1:]:
-        run_folder = os.path.basename(run_folder_path)
-        try:
-            run_metrics.read(run_folder_path, valid_to_load)
-        except Exception:
-            logging.warn("Skipping - cannot read RunInfo.xml: %s - %s"%(run_folder, str(ex)))
-            continue
-        py_interop_summary.summarize_run_metrics(run_metrics, summary)
-        error_rate_read_lane_surface = numpy.zeros((summary.size(), summary.lane_count(), summary.surface_count()))
-        for read_index in xrange(summary.size()):
-            for lane_index in xrange(summary.lane_count()):
-                for surface_index in xrange(summary.surface_count()):
-                    error_rate_read_lane_surface[read_index, lane_index, surface_index] = \
-                        summary.at(read_index).at(lane_index).at(surface_index).error_rate().mean()
-        logging.info("Run Folder: "+run_folder)
-        for read_index in xrange(summary.size()):
-            read_summary = summary.at(read_index)
-            logging.info("Read "+str(read_summary.read().number())+" - Top Surface Mean Error: "+str(error_rate_read_lane_surface[read_index, :, 0].mean()))
- 
-if __name__ == '__main__':
-    main()
-
-
-
-
-    
-    options = py_interop_plot.filter_options(run_metrics.run_info().flowcell().naming_method())
-    bufferSize = py_interop_plot.calculate_flowcell_buffer_size(run_metrics, options)
-       
-    print(options)
-    print(bufferSize)
-'''
+print ('completed')

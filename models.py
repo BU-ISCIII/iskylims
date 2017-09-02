@@ -5,29 +5,7 @@ from django import forms
 from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
-'''
-class UserInfo(models.Model):
-    userid=models.CharField(max_length=25)
-    userFirstName=models.CharField(max_length=45)
-    userLastName=models.CharField(max_length=45)
-    userArea=models.CharField(max_length=25)
-    userEmail=models.EmailField(max_length=45)
-    
-    def __str__ (self):
-        return '%s' %(self.userid)
-'''
-'''
-class BioInfo(models.Model):
-    info1=models.CharField(max_length=45)
-    info2=models.CharField(max_length=45, default='')
-    serviceRegistration= models.CharField(max_length=45, default='not required')
-    researcher =models.CharField(max_length=45, default='')
-    department= models.CharField(max_length=45, default='not assigned')
-    
 
-    def __str__(self):
-        return '%s' %(self.info1)
-'''
 class RunProcess(models.Model):
     runName = models.CharField(max_length=45)
     sampleSheet = models.FileField(upload_to='documents/')
@@ -112,67 +90,35 @@ class RunningParameters (models.Model):
     
 
 
-'''
-class Question(models.Model):
-    question_text = models.CharField(max_length=200)
-    pub_date = models.DateTimeField('date published')
-    def __str__(self):
-        return self.question_text
-    
-    def was_published_recently(self):
-        return self.pub_date >= timezone.now() - datetime.timedelta(days=1)
 
 
-class Choice(models.Model):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    choice_text = models.CharField(max_length=200)
-    votes = models.IntegerField(default=0)
-    def __str__(self):
-        return self.choice_text
-
-
-'''
-'''
-class Document(models.Model):
-    run_name = models.CharField(max_length=255, blank=True)
-    project_name = models.CharField(max_length=255, blank=True) 
-    description = models.CharField(max_length=255, blank=True)
-    csv_file = models.FileField(upload_to='documents/')
-    uploaded_at = models.DateTimeField(auto_now_add=True)
-    name = models.CharField(max_length=255, blank=True)
-    user_id = models.CharField(max_length=50,blank=True)
-    email = models.EmailField(max_length=255,blank=True)
-    convert = models.BooleanField(default=False)
-    
-    
-    def __str__(self):
-        return '%s' %(self.run_name)
-    
-    def get_run_info (self):
-        return '%s;%s;%s;%s;%s;%s;%s' %(self.run_name, self.project_name, 
-                    self.user_id, self.description,  self.name, 
-                    self.csv_file, self.uploaded_at)
-''' 
-'''       
-class BaseSpaceFile (models.Model):
-    document = models.OneToOneField(
-            Document,
-            on_delete=models.CASCADE,
-            primary_key=True,
-            )
-    baseSpace_file = models.CharField(max_length=255)
-    generated_at = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return '%s' %(self.baseSpace_file)
-'''
-'''   
-class NextSeqStatisticsBin (models.Model):
+   
+class NextSeqStatsBinRunSummary (models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
-            on_delete=models.CASCADE
+            on_delete=models.CASCADE)
+    level= models.CharField(max_length=20)
+    yieldTotal= models.CharField(max_length=10)
+    projectedTotalYield = models.CharField(max_length=10)
+    aligned= models.CharField(max_length=10)
+    errorRate=models.CharField(max_length=10)
+    intensityCycle= models.CharField(max_length=10)
+    biggerQ30= models.CharField(max_length=10)
+    
+    def __str__(self):
+        return '%s' %(self.level)
+
+    def get_bin_run_summary(self):
+        return '%s';'%s';'%s';'%s';'%s';'%s';'%s' %(self.level, self.yieldTotal,
+        self.projectedTotalYield, self.aligned, self.errorRate, self.intensityCycle,
+        self.biggerQ30)
+
+class NextSeqStatsBinRunRead (models.Model):
+    runprocess_id = models.ForeignKey(
+            RunProcess,
+            on_delete=models.CASCADE)
+    read= models.CharField(max_length=10)
     lane = models.CharField(max_length=10)
-    singleRead = models.CharField(max_length=10)
     tiles = models.CharField(max_length=10)
     density = models.CharField(max_length=10)
     cluster_PF = models.CharField(max_length=10)
@@ -185,30 +131,27 @@ class NextSeqStatisticsBin (models.Model):
     aligned = models.CharField(max_length=10)
     errorRate = models.CharField(max_length=10)
     errorRate35 = models.CharField(max_length=10)
+    errorRate50 = models.CharField(max_length=10)
     errorRate75 = models.CharField(max_length=10)
     errorRate100 = models.CharField(max_length=10)
     intensityCycle = models.CharField(max_length=10)
-    comments = models.CharField(max_length=10)
-    status = models.CharField(max_length=10)
     
     def __str__(self):
-        return '%s' %(self.document)
-'''
-''' 
+        return '%s' %(self.read)
+        
+
+
 class RawStatisticsXml (models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
-            on_delete=models.CASCADE
+            on_delete=models.CASCADE)
+    project_id = models.ForeignKey(Projects,  null=True)
     rawYield = models.CharField(max_length=64)
     rawYieldQ30= models.CharField(max_length=64)
     rawQuality= models.CharField(max_length=64)
     PF_Yield= models.CharField(max_length=64)
     PF_YieldQ30= models.CharField(max_length=64)
     PF_QualityScore= models.CharField(max_length=64)
-    barcodeCount= models.CharField(max_length=64)
-    perfectBarcodeCount= models.CharField(max_length=64)
-    projectName=models.CharField(max_length=30,default='-')
-    sampleNumber=models.CharField(max_length=30, default ='NULL')
     generated_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
@@ -219,26 +162,42 @@ class RawStatisticsXml (models.Model):
                 self.perfectBarcodeCount, self.rawYield, self.PF_Yield,
                 self.rawYieldQ30, self.PF_YieldQ30, self.rawQuality,
                 self.PF_Quality, self.sampleNumber)
-'''
-''' 
-class NextSeqStatisticsXml (models.Model):
+
+class RawTopUnknowBarcodes (models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
-            on_delete=models.CASCADE
+            on_delete=models.CASCADE)
+    lane_number= models.CharField(max_length=4)
+    top_number = models.CharField(max_length=4)
+    count= models.CharField(max_length=10)
+    sequence = models.CharField(max_length=40)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+
+class NextSeqStatsFlSummary(models.Model):
+    runprocess_id = models.ForeignKey(
+            RunProcess,
+            on_delete=models.CASCADE)
+    project_id = models.ForeignKey(Projects)  
     flowRawCluster = models.CharField(max_length=20)
     flowPfCluster= models.CharField(max_length=20)
     flowYieldMb= models.CharField(max_length=20)
     sampleNumber= models.CharField(max_length=20)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+class NextSeqStatsLaneSummary (models.Model):
+    runprocess_id = models.ForeignKey(
+            RunProcess,
+            on_delete=models.CASCADE)
+    project_id = models.ForeignKey(Projects)
+    lane= models.CharField(max_length=3)
     pfCluster = models.CharField(max_length=64)
-    percentageLane = models.CharField(max_length=64)
+    percentLane = models.CharField(max_length=64)
     perfectBarcode = models.CharField(max_length=64)
     oneMismatch = models.CharField(max_length=64)
     yieldMb = models.CharField(max_length=64)
     biggerQ30 = models.CharField(max_length=64)
     meanQuality = models.CharField(max_length=64)
-    
-    default_or_all=models.CharField(max_length=30)
-    project_id = models.ForeignKey(Projects)
     generated_at = models.DateTimeField(auto_now_add=True)
         
     
@@ -246,20 +205,17 @@ class NextSeqStatisticsXml (models.Model):
         return '%s' %(self.runprocess_id)
         
     def get_flow_cell_summary (self):
-    
+        return '%s' %(self.runprocess_id)
     
     def get_lane_summary(self):
-    
+        return '%s' %(self.runprocess_id)
 
-'''
-'''
+
 class NextSeqGraphicsStats (models.Model):
-    document = models.OneToOneField(
-            Document,
-            on_delete=models.CASCADE,
-            primary_key=True,
-            )
-    folderGraphic= models.CharField(max_length=255)
+    runprocess_id = models.ForeignKey(
+            RunProcess,
+            on_delete=models.CASCADE)
+    folderRunGraphic= models.CharField(max_length=255)
     cluserCountGraph= models.CharField(max_length=255)
     flowCellGraph= models.CharField(max_length=255)
     intensityByCycleGraph= models.CharField(max_length=255)
@@ -269,7 +225,7 @@ class NextSeqGraphicsStats (models.Model):
     
     def __str__(self):
         return '%s' %(self.document)
-    
+'''    
 class MiSeqStatisticsBin (models.Model):
     document = models.OneToOneField(
             Document,
@@ -337,7 +293,83 @@ class MiSeqGraphicsStats (models.Model):
         return '%s' %(self.document)
 '''  
 
+'''
+class Question(models.Model):
+    question_text = models.CharField(max_length=200)
+    pub_date = models.DateTimeField('date published')
+    def __str__(self):
+        return self.question_text
     
+    def was_published_recently(self):
+        return self.pub_date >= timezone.now() - datetime.timedelta(days=1)
+
+
+class Choice(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    choice_text = models.CharField(max_length=200)
+    votes = models.IntegerField(default=0)
+    def __str__(self):
+        return self.choice_text
+
+
+'''
+'''
+class Document(models.Model):
+    run_name = models.CharField(max_length=255, blank=True)
+    project_name = models.CharField(max_length=255, blank=True) 
+    description = models.CharField(max_length=255, blank=True)
+    csv_file = models.FileField(upload_to='documents/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    name = models.CharField(max_length=255, blank=True)
+    user_id = models.CharField(max_length=50,blank=True)
+    email = models.EmailField(max_length=255,blank=True)
+    convert = models.BooleanField(default=False)
+    
+    
+    def __str__(self):
+        return '%s' %(self.run_name)
+    
+    def get_run_info (self):
+        return '%s;%s;%s;%s;%s;%s;%s' %(self.run_name, self.project_name, 
+                    self.user_id, self.description,  self.name, 
+                    self.csv_file, self.uploaded_at)
+''' 
+'''       
+class BaseSpaceFile (models.Model):
+    document = models.OneToOneField(
+            Document,
+            on_delete=models.CASCADE,
+            primary_key=True,
+            )
+    baseSpace_file = models.CharField(max_length=255)
+    generated_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return '%s' %(self.baseSpace_file)
+'''
+'''
+class UserInfo(models.Model):
+    userid=models.CharField(max_length=25)
+    userFirstName=models.CharField(max_length=45)
+    userLastName=models.CharField(max_length=45)
+    userArea=models.CharField(max_length=25)
+    userEmail=models.EmailField(max_length=45)
+    
+    def __str__ (self):
+        return '%s' %(self.userid)
+'''
+'''
+class BioInfo(models.Model):
+    info1=models.CharField(max_length=45)
+    info2=models.CharField(max_length=45, default='')
+    serviceRegistration= models.CharField(max_length=45, default='not required')
+    researcher =models.CharField(max_length=45, default='')
+    department= models.CharField(max_length=45, default='not assigned')
+    
+
+    def __str__(self):
+        return '%s' %(self.info1)
+'''
     
 
 
