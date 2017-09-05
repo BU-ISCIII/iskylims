@@ -13,6 +13,8 @@ urlpatterns = [
     url(r'^service_request',views.service_request, name='request_service'),
  	url(r'^counseling_request',views.counseling_request, name='counseling_service'), 
  	url(r'^infrastructure_request',views.infrastructure_request, name='infrastructure_service'), 
+	url(r'^user_creation',views.user_creation, name='user_creation'),  
+ 	url(r'^user_edit',views.user_edit, name='user_edit'),   
 ] 
 #+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
