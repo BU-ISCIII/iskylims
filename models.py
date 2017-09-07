@@ -6,8 +6,8 @@ from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel
 from mptt.fields import TreeForeignKey, TreeManyToManyField
 from django.utils.timezone import now as timezone_now
-from django.contrib.auth.models import User,AbstractUser
 from wetlab.models import RunProcess
+from utils.models import Profile,Center
 
 STATUS_CHOICES = (
 			('recorded',_("Recorded")),
@@ -29,23 +29,6 @@ def service_files_upload(instance,filename):
 	)
 
 # Create your models here.
-class Center(models.Model):
-	centerName=models.CharField(_("Center"),max_length=50)
-	centerAbbr=models.CharField(_("Center"),max_length=25)
-
-	def __str__ (self):
-		return '%s' %(self.centerName)
-
-class UserInfo(models.Model):                                             
-    userInfoUserID = models.OneToOneField(User, on_delete=models.CASCADE)  
-    userInfoPosition=models.CharField(_("Position"),max_length=50)         
-    userInfoCenter=models.ForeignKey(Center,verbose_name=_("Center"))      
-    userInfoArea=models.CharField(_("Area / Unit"),max_length=50)          
-    userInfoExtension=models.CharField(_("Phone extension"),max_length=5)  
-                                                                           
-    def __str__ (self):                                                    
-     	return '%s' %(self.pk)                                
-
 class FileExt(models.Model):
 	fileExt=models.CharField(_("File extension"),max_length=10)
 	def __str__ (self):
@@ -70,7 +53,7 @@ class AvailableService(MPTTModel):
 		verbose_name_plural = ("AvailableServices")
 
 class Service(models.Model):
-	serviceUsername=models.ForeignKey(UserInfo)
+	serviceUsername=models.ForeignKey(Profile)
 	serviceSeqCenter=models.CharField(_("Sequencing center"),max_length=50,blank=False,null=True)
 	serviceRunID=models.ForeignKey(RunProcess,null=True)
 	servicePlatform=models.ForeignKey(Platform,verbose_name=_("Sequencing platform"),blank=False,null=True)
