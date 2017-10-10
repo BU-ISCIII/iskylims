@@ -1,22 +1,122 @@
 
 
-#banner {
-	font-family: Cambria, "Hoefler Text", "Liberation Serif", Times, "Times New Roman", serif;
-	color: #000000;
-	font-size: 20px;
-	background-image: url(../img/NextSeq_banner.jpg);
-	background-repeat: no-repeat;
-	height: 350px;
-	width: 1400px;
-	margin-bottom: 5px;
-}
-
 .form-group.required .control-label:after {
   content:"*";
   color:red;
 }
 
 .img-center {margin:0 auto;}
+
+
+button.accordion {
+    background-color: #eee;
+    color: #444;
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 15px;
+    transition: 0.4s;
+}
+
+button.accordion.active, button.accordion:hover {
+    background-color: #ddd;
+}
+
+button.accordion:after {
+    content: '\002B';
+    color: #777;
+    font-weight: bold;
+    float: right;
+    margin-left: 5px;
+}
+
+button.accordion.active:after {
+    content: "\2212";
+}
+
+div.panelaccordion {
+    padding: 0 18px;
+    background-color: white;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease-out;
+}
+
+/* Style the tab */
+div.tab {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+}
+
+/* Style the buttons inside the tab */
+div.tab button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+    font-size: 17px;
+}
+
+/* Change background color of buttons on hover */
+div.tab button:hover {
+    background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+div.tab button.active {
+    background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+    display: none;
+    padding: 6px 12px;
+    -webkit-animation: fadeEffect 1s;
+    animation: fadeEffect 1s;
+}
+
+/* Fade in tabs */
+@-webkit-keyframes fadeEffect {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+
+@keyframes fadeEffect {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+
+/* END of Fade in tabs  */
+
+/* scroll horizontal table  */
+div.dataTables_wrapper {
+        width: 800px;
+        margin: 0 auto;
+	overflow-x: scroll;
+	white-space : nowrap;
+    }
+/* END of scroll horizontal table */
+
+
+.table-responsive 
+{   
+    width: 100%;
+    margin-bottom: 15px;
+    overflow-x: auto;   
+    overflow-y: hidden;     
+    -webkit-overflow-scrolling: touch;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+    border: 1px solid #000000;
+    white-space : nowrap;
+     
+}
 
 
 <style>
@@ -92,75 +192,5 @@
     color: white;
 }
 
-
-
-
-formwapper{
-		width: 600px;
-		height: auto;
-		background-color: #FFF;
-	}
-	form {
-		width: 600px;
-		height: auto;
-		background-color: #FFF;
-		font-family: "Trebuchet MS", Helvetica, sans-serif;
-		font-size: 13px;
-		
-	}
-	
-	fieldset {
-	
-		background-color:#F1FBFB;
-		border: none;
-		padding-bottom: 20px;
-	}
-	
-	.f_label {
-		width: 250px;
-		display: block;
-		font-family: "Trebuchet MS", Helvetica, sans-serif;
-		font-size: 13px;
-		margin-top: 5px;
-		margin-right: 10px;
-		margin-bottom: 5px;
-		margin-left: 5px;
-	}
-		
-	.f_input{
-		width: 350px;
-		border:thin solid #66CCFF;
-		margin-bottom: 10px;
-	}
-	.f_select{
-		width: 350px;
-		border: thin solid #66#66CCFF;
-		margin-bottom: 10px;
-	}
-	.f_textarea {
-		width: 350px;
-		border: thin solid #66CCFF;
-		margin-bottom: 10px;
-	}
-	.b_send {
-		width: 150px;
-		height: 25px;
-		font-family: "Trebuchet MS", Helvetica, sans-serif;
-		color: #FFF;
-		font-weight: bold;
-		background-color: #6CF;
-		margin-right: 10px;
-		float: right;
-	}
-	.b_reset {
-		width: 150px;
-		height: 25px;
-		font-family: "Trebuchet MS", Helvetica, sans-serif;
-		color: #FFF;
-		font-weight: bold;
-		background-color: #6CF;
-		margin-left: 10px;
-		float: left;
-}
 
 

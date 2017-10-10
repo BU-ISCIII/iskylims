@@ -1,0 +1,107 @@
+{% extends 'wetlab/base.html' %}
+{% load static %}
+{% block content %}
+    {% csrf_token %}
+{% if researcher_one_project %}
+<script type="text/javascript" src="http://localhost/fusioncharts/js/fusioncharts.js"></script>
+<script type="text/javascript" src="http://localhost/fusioncharts/js/themes/fusioncharts.theme.fint.js"></script>
+<script type="text/javascript" src="http://static.fusioncharts.com/code/latest/themes/fusioncharts.theme.ocean.js"></script>
+<script type="text/javascript" src="http://static.fusioncharts.com/code/latest/themes/fusioncharts.theme.zune.js"></script>
+    <div class="row row-space-2 margin-b-4">
+      <div class="col-sm-8 col-sm-offset-1" >
+        <div class="panel panel-default">
+          <div class="panel-heading"><h2>Statistics result for researcher {{researcher_one_project.user_name}} </h2></div>
+           <div class="panel-body">
+                <h3> Project Name : {{researcher_one_project.project_name}}</h3>
+          
+          
+            </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        </div> <!--// end col-sm-8  -->
+    </div> <!--// end row -->
+    <BR>
+    <div class="row row-space-2 margin-b-4">
+      <div class="col-sm-7" >
+        <div class="panel panel-default">
+          <div class="panel-heading"><h2>Statistics result for researcher </h2>
+          <div class="panel-body">
+                <!-- Column 2 Chart will start here-->
+            <div id="chart-1"> </div>
+                <!-- dumping JavaScript code here -->
+                {{ researcher_one_project.q_30_chart |safe }}
+         </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  -->
+    </div> <!--// end row -->
+
+    <div class="row row-space-2 margin-b-3">
+      <div class="col-sm-8 col-sm-offset-1" >
+        <div class="panel panel-default">
+          <div class="panel-heading"><h2>Statistics result for researcher</h2></div>
+          <div class="panel-body">
+                <!-- Column 2 Chart will start here-->
+            <div id="chart-2"> </div>
+                <!-- dumping JavaScript code here -->
+                {{ researcher_one_project.mean_q_chart |safe }}
+         </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        </div> <!--// end col-sm-8  -->
+    </div> <!--// end row -->
+
+
+{% else %}
+    <!-- FORM for searching project research  Information -->
+  
+    <div class="row row-space-2 margin-b-4">
+      <div class="col-sm-7" >
+        <div class="panel panel-default">
+          <div class="panel-heading"><h2>Statistics per researcher</h2></div>
+          <div class="panel-body">
+            <form method="post" enctype="multipart/form-data" name="statsresearcher" id="statsresearcher" class="form-horizontal well">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="researcher"/>
+             <div class="form-group required"> 
+                  <label class="col-sm-5  control-label" for="researchername" >Fill the researcher name </label>
+                  <div class="col-sm-5"><input class="form-control" type="text" required = "required" name="researchername" id="reserchername" size="100" maxlength="100"></div>
+             </div>  <!-- end from-group   -->
+ 
+                <br>
+
+                <div class="form-group">
+                  <label class="col-sm-5 control-label" for="startdate" >From Start Date (YYYY-MM-DD)</label>
+                  <div class="col-sm-5"><input class="form-control" type="date" name="startdate" value="" id="startdate"></div>
+                <br>
+            </div>  <!-- end from-group   -->
+                <div class="form-group">
+                  <label class="col-sm-5 control-label" for="enddate" >End Date Search (YYYY-MM-DD)</label>
+                  <div class="col-sm-5"><input class="form-control" type="date" name="enddate" value="" id="enddate"></div>
+                <br>
+             
+            </div>  <!-- end from-group   -->
+                <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
+                <input class="btn pull-right btn-primary" type="submit" value="Submit">
+            </form>
+            <p> Fields marked with <FONT COLOR= "Red">*</FONT> are mandatory</p>
+         </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  -->
+ 
+        <!-- Insert the help panel -->
+        <BR><BR>
+        <div class="col-sm-3 col-sm-offset-1">
+          <div class="panel panel-default">
+             <div class="panel-heading">Searching information project Researcher</div>
+             <div class="panel-body">
+             <p>Searching information for the projects created by a researcher<BR>
+             <p>For extended help click on the button below.</p>
+            <center><button id="myBtn"> Help </button></center>
+            </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        <!-- Insert the Help window when clicking on the button -->
+        {% include 'wetlab/search-researcher-help.html' %}
+ 
+    </div> <!--// end row -->
+
+    <!-- End of FORM for searching RUN information -->
+{% endif %}
+{% endblock %}

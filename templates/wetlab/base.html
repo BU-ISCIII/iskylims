@@ -10,16 +10,18 @@
         <link href="http://fonts.googleapis.com/css?family=Hind:300,400,500,600,700" rel="stylesheet" type="text/css">
         <link href="{% static "wetlab/vendor/simple-line-icons/css/simple-line-icons.css" %}" rel="stylesheet" type="text/css"/>
         <link href="{% static "wetlab/vendor/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css"/>
+	<link href= "ttps://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css"/>
      <!-- GLOBAL MANDATORY JAVA SCRIPTS -->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> <!-- drop menus -->
+
 
 	
     <!-- PAGE LEVEL PLUGIN STYLES -->
         <link href="{% static "wetlab/css/animate.css" %}" rel="stylesheet">
         <link href="{% static "wetlab/vendor/swiper/css/swiper.min.css" %}"rel="stylesheet" type="text/css"/>
 	<link href="{% static "wetlab/css/form.css" %}" rel="stylesheet" type="text/css"/>
-    
+	
     <!-- THEME STYLES -->
         <link href="{% static "wetlab/css/layout.min.css" %}" rel="stylesheet" type="text/css"/>
 	
@@ -46,7 +48,7 @@
                         <!-- Logo -->
                         <div class="logo">
                             <a class="logo-wrap" href="#body">
-                                <img class="logo-img" src="{% static "wetlab/img/LogoBioInfo.jpg" %}" alt="ISCiii_Bio_Informatic_Logo">
+                                <img src="{% static "wetlab/img/iSkyLIMS-final.jpg" %}" alt="iSkyLIMS_Logo">
                             </a>
                         </div>
                         <!-- End Logo -->
@@ -61,13 +63,19 @@
 				  <ul class="dropdown-menu">
 				    <li><a href="/wetlab/getSampleSheet/">Upload the Run </a></li>
 				    <li><a href="/wetlab/searchNextSeq/">Search NextSeq</a></li>
-				    <li><a href="#">download file</a></li>
-				    <li><a href="/wetlab/list_forms">Latest Reports</a></li>
-				    <li><a href="#">Sample Reports</a></li>
-				    <li><a href="#">Conversion to Basespace</a></li>
+				    <li><a href="/wetlab/latest_run">Get Latest Run</a></li>
 				  </ul>
 				</li>
-                                <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#">Statistics</a></li>
+                                <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">WetLAB Statistics<span class="caret"></span></a>
+				    <ul class="dropdown-menu">
+				    <li><a href="/wetlab/NextSeqStatsPerResearcher/">Projects per Researcher </a></li>
+				    <li><a href="/wetlab/NextSeqStatsPerTime/">Period of time</a></li>
+				    <li><a href="/wetlab/NextSeqStatistics">Experiment Type</a></li>
+				    <li><a href="/wetlab/NextSeqStatistics">Library Kit Qualitty</a></li>
+				    <li><a href="/wetlab/NextSeqStatistics">Annual Reports</a></li>
+				    <li><a href="/wetlab/NextSeqStatistics">Monthly Reports</a></li>
+				  </ul>
+				</li>
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#">Search Stats</a></li>
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#">Work</a></li>
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#contact">Contact</a></li>
@@ -139,7 +147,7 @@
             <div class="content container">
                 <div class="row">
                     <div class="col-xs-6">
-                        <img class="footer-logo" src="{% static "wetlab/img/LogoBioInfo.jpg" %}" alt="ISCiii_Bio_Informatic_Logo">
+                        <img class="footer-logo" src="{% static "wetlab/img/iSkyLIMS-final.jpg" %}" alt="iSkyLIMS_Logo">
                     </div>
                     <div class="col-xs-6 text-right sm-text-left">
                         <p class="margin-b-0"><a class="fweight-700" href="http://keenthemes.com/preview/acecv/">Acecv</a> Theme Powered by: <a class="fweight-700" href="http://www.keenthemes.com/">KeenThemes.com</a></p>
@@ -174,6 +182,7 @@
         <script src="{% static "wetlab/js/components/wow.min.js" %}" type="text/javascript"></script>
 	<!-- CUSTOMIZED SCRIPTS -->
 	<script src="{% static "wetlab/js/customized.js" %}" type="text/javascript"></script>
+	<script src="{% static "wetlab/js/wetlab.js" %}" type="text/javascript"></script>
 
      
 	

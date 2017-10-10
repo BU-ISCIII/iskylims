@@ -4,7 +4,7 @@ import sys, os, re
 import xml.etree.ElementTree as ET
 import time
 import shutil
-
+import locale
 
 from  ..models import *
 from .interop_statistics import *
@@ -26,16 +26,6 @@ def open_samba_connection():
     '''
     return conn
 
-def fetch_runID_parameter():
-    runparameters_file='wetlab/tmp/tmp/processing/RunParameters.xml'
-    data_from_runparameters=get_running_info(runparameters_file)
-    run_name=data_from_runparameters['ExperimentName']
-    ## to include the information on database we get the index first
-    if RunProcess.object.filter(runName__exact = run_name).exists():
-        r_name_id = RunProcess.object.filter(runName__exact = run_name).id
-        r_name_id.RunID=data_from_runparameters['RunID']
-
-
 
 def save_run_info(run_info, run_parameter, run_id, logger):
     running_data={}
@@ -52,9 +42,14 @@ def save_run_info(run_info, run_parameter, run_id, logger):
                  
     running_data['ImageChannel']=image_channel
     running_data['Flowcell']=p_run.find('Flowcell').text
-    
-    running_data['ImageDimensions']=p_run.find('ImageDimensions').attrib
-    running_data['FlowcellLayout']=p_run.find('FlowcellLayout').attrib
+    if 'ImageDimensions' not in p_run.attrib:
+        print ("There is no ImageDimension Atributes")
+    else:
+        running_data['ImageDimensions']=p_run.find('ImageDimensions').attrib
+    if 'FlowcellLayout' not in p_run.attrib:
+        print ("There is no FlowcellLayout Atributes")
+    else:
+        running_data['FlowcellLayout']=p_run.find('FlowcellLayout').attrib
     #################################################
     ## parsing RunParameter.xml file
     #################################################
@@ -131,7 +126,7 @@ def process_run_in_recorded_state(logger):
             line=line.rstrip()
             processed_run.append(line)
         fh.close()
-        logger.debug('Fetching the ')
+        
     # Check if the directory from flavia has been processed
     file_list = conn.listPath( share_folder_name, '/')
     for sfh in file_list:
@@ -222,7 +217,7 @@ def parsing_statistics_xml(demux_file, conversion_file, logger):
     logger.info('Starting conversion for demux file')
     for child in root.iter('Project'):
         projects.append(child.attrib['name'])
-    
+    total_samples = 0
     for i in range(len(projects)):
         p_temp=root[0][i]
         samples=p_temp.findall('Sample')
@@ -255,8 +250,11 @@ def parsing_statistics_xml(demux_file, conversion_file, logger):
         dict_stats['sampleNumber']=len(samples)
         dict_stats['OneMismatchBarcodeCount']=one_mismatch_count
         stats_result[projects[i]]=dict_stats
+        if projects[i] != 'default':
+            total_samples += len(samples)
         logger.info('Complete parsing from demux file for project %s', projects[i])
-    
+    # overwrite the value for total samples
+    stats_result[projects['total']]['sampleNumber']=total_samples
     
     conversion_stat=ET.parse(conversion_file)
     root_conv=conversion_stat.getroot()
@@ -345,57 +343,64 @@ def store_raw_xml_stats(stats_projects, run_id,logger):
         if project == 'all' or project == 'default':
             logger.info('Found project %s setting the project_id to NULL', project)
             project_id= None
+            default_all = project
         else:
             p_name_id=Projects.objects.get(projectName__exact = project).id
             project_id= Projects.objects.get(pk=p_name_id)
+            default_all = None
            
         raw_stats_xml = RawStatisticsXml (runprocess_id=RunProcess.objects.get(pk=run_id),
-                                          project_id = project_id,
+                                          project_id = project_id, defaultAll = default_all,
                                           rawYield= stats_projects[project]['RAW_Yield'], rawYieldQ30= stats_projects[project]['RAW_YieldQ30'],
                                           rawQuality= stats_projects[project]['RAW_QualityScore'], PF_Yield= stats_projects[project]['PF_Yield'],
                                           PF_YieldQ30= stats_projects[project]['PF_YieldQ30'], PF_QualityScore =stats_projects[project]['PF_QualityScore'])
         
         logger.info('saving raw stats for %s project', project)
-        #raw_stats_xml.save()
+        raw_stats_xml.save()
     logger.info('Raw XML data have been stored for all projects ')
     
     
 def process_xml_stats(stats_projects, run_id, logger):
     # get the total number of read per lane
+    M_BASE=1.004361/1000000
     logger.debug('starting the process_xml_stats method')
     total_cluster_lane=(stats_projects['all']['PerfectBarcodeCount'])
     logger.info('processing flowcell stats for %s ', run_id)
     for project in stats_projects:
         if project == 'TopUnknownBarcodes':
             continue
+        flow_raw_cluster, flow_pf_cluster, flow_yield_mb = 0, 0, 0
         for fl_item in range(4):
              # make the calculation for Flowcell
-            flow_raw_cluster, flow_pf_cluster, flow_yield_mb = 0, 0, 0
+            
             flow_raw_cluster +=int(stats_projects[project]['BarcodeCount'][fl_item])
             flow_pf_cluster +=int(stats_projects[project]['PerfectBarcodeCount'][fl_item])
-            flow_yield_mb +=float(stats_projects[project]['PF_Yield'][fl_item])/1000000
+            flow_yield_mb +=float(stats_projects[project]['PF_Yield'][fl_item])*M_BASE
 
-        flow_yield_mb= format(flow_yield_mb,'.3f')
-        flow_raw_cluster=str(flow_raw_cluster)
-        flow_pf_cluster=str(flow_pf_cluster)
+        
+        flow_raw_cluster='{0:,}'.format(flow_raw_cluster)
+        flow_pf_cluster='{0:,}'.format(flow_pf_cluster)
+        flow_yield_mb= '{0:,}'.format(round(flow_yield_mb))
         sample_number=stats_projects[project]['sampleNumber']
         
-        if project == 'all' or project == 'default':
+        if project == 'all' or project == 'default' :
             logger.info('Found project %s setting the project_id to NULL', project)
             project_id= None
+            default_all = project
         else:
             p_name_id=Projects.objects.get(projectName__exact = project).id
             project_id= Projects.objects.get(pk=p_name_id)
+            default_all = None
 
         #store in database
         logger.info('Processed information for flow Summary for project %s', project)
         ns_fl_summary = NextSeqStatsFlSummary(runprocess_id=RunProcess.objects.get(pk=run_id),
-                                project_id=project_id, flowRawCluster=flow_raw_cluster,
+                                project_id=project_id, defaultAll=default_all, flowRawCluster=flow_raw_cluster,
                                 flowPfCluster=flow_pf_cluster, flowYieldMb= flow_yield_mb,
                                 sampleNumber= sample_number)
 
         
-        #ns_fl_summary.save()
+        ns_fl_summary.save()
         logger.info('saving processing flowcell xml data  for project %s', project)                                         
 
         
@@ -407,11 +412,12 @@ def process_xml_stats(stats_projects, run_id, logger):
         for i in range (4):
             # get the lane information
             lane_number=str(i + 1)
-            pf_cluster=stats_projects[project]['PerfectBarcodeCount'][i]
+            pf_cluster_int=(int(stats_projects[project]['PerfectBarcodeCount'][i]))
+            pf_cluster='{0:,}'.format(pf_cluster_int)
             perfect_barcode=(format(int(stats_projects[project]['PerfectBarcodeCount'][i])*100/int(stats_projects[project]['BarcodeCount'][i]),'.3f'))
-            percent_lane=  format(float(int(pf_cluster)/int(total_cluster_lane[i]))*100, '.3f')
+            percent_lane=  format(float(int(pf_cluster_int)/int(total_cluster_lane[i]))*100, '.3f')
             one_mismatch=stats_projects[project]['OneMismatchBarcodeCount'][i]
-            yield_mb= format (float(stats_projects[project]['PF_Yield'][i])/1000000,'.3f')
+            yield_mb= '{0:,}'.format(round(float(stats_projects[project]['PF_Yield'][i])*M_BASE))
 
             bigger_q30=format(float(stats_projects[project]['PF_YieldQ30'][i])*100/float( stats_projects[project]['PF_Yield'][i]),'.3f')
             
@@ -420,25 +426,27 @@ def process_xml_stats(stats_projects, run_id, logger):
             # make the calculation for Flowcell
             flow_raw_cluster = stats_projects[project]['BarcodeCount'][i]
             flow_pf_cluster = stats_projects[project]['PerfectBarcodeCount'][i]
-            flow_yield_mb =format(float(stats_projects[project]['PF_Yield'][i])/1000000, '.3f')
+            flow_yield_mb ='{0:,}'.format(round(float(stats_projects[project]['PF_Yield'][i])*M_BASE))
 
             #store in database
             if project == 'all' or project == 'default':
                 logger.info('Found project %s setting the project_id to NULL', project)
                 project_id= None
+                default_all =project
             else:
                 p_name_id=Projects.objects.get(projectName__exact = project).id
                 project_id= Projects.objects.get(pk=p_name_id)
+                default_all = None
                 
             #store in database
             logger.info('Processed information for Lane %s for project %s', lane_number, project)
             ns_lane_summary = NextSeqStatsLaneSummary(runprocess_id=RunProcess.objects.get(pk=run_id),
-                                                 project_id=project_id, lane = lane_number,
+                                                 project_id=project_id, defaultAll = default_all, lane = lane_number,
                                                  pfCluster=pf_cluster, percentLane=percent_lane, perfectBarcode=perfect_barcode,
                                                  oneMismatch= one_mismatch, yieldMb=yield_mb,
                                                  biggerQ30=bigger_q30, meanQuality=mean_quality )
             
-            #ns_lane_summary.save()
+            ns_lane_summary.save()
     
     logger.info ('processing the TopUnknownBarcodes')    
     for project in stats_projects:
@@ -449,19 +457,16 @@ def process_xml_stats(stats_projects, run_id, logger):
                 lane_number=str(un_lane + 1)
                 top_number =1
                 for barcode_line in stats_projects[project][un_lane]:
-                    barcode_count= barcode_line['count']
+                    barcode_count= '{0:,}'.format(barcode_line['count'])
                     barcode_sequence= barcode_line['sequence']
                     
                     raw_unknow_barcode = RawTopUnknowBarcodes(runprocess_id=RunProcess.objects.get(pk=run_id),
                                                              lane_number = lane_number, top_number=str(top_number),
                                                              count=barcode_count, sequence=barcode_sequence) 
-                    #raw_unknow_barcode.save()
+                    raw_unknow_barcode.save()
                     top_number +=1
                     
-                                    
-        
-
-        
+                                           
 def process_run_in_samplesent_state (process_list, logger):
      # prepare a dictionary with key as run_name and value the RunID
      for run_item in process_list:
@@ -470,6 +475,7 @@ def process_run_in_samplesent_state (process_list, logger):
         logger.debug ('Run ID for the run process to be update is:  %s', run_be_processed_id)
         #run_Id_for_searching=RunningParameters.objects.get(runName_id= run_be_processed_id)
         update_state(run_be_processed_id, 'Process Running', logger)
+
         
 def process_run_in_processrunning_state (process_list, logger):
     processed_run=[]
@@ -498,14 +504,13 @@ def process_run_in_processrunning_state (process_list, logger):
                 break
             else:
                 logger.debug('Report directory not found in file_list %s ', sh.filename)
+        processed_run.append(run_Id_used)
             
     # close samba connection 
     conn.close()
     return processed_run
 
 
-
-   
 
 def process_run_in_bcl2F_q_executed_state (process_list, logger):
     processed_run=[]
@@ -515,7 +520,10 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
         logger.info ('Processing the process on bcl2F_q for the run %s', run_item)
         run_processing_id=RunProcess.objects.get(runName__exact=run_item).id
         run_Id_used=str(RunningParameters.objects.get(runName_id= run_processing_id))
-        #update_state(run_processing_id, 'Running Stats', logger)
+        plot_dir='../documents/images_plot'
+        
+        update_state(run_processing_id, 'Running Stats', logger)
+        
         # get the directory of samba to fetch the files
         share_folder_name ='Flavia'
         local_dir_samba= 'iSkyLIMS/wetlab/tmp/processing'
@@ -578,9 +586,11 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
         # processing information for the interop files
 
         process_binStats(local_dir_samba, run_processing_id, logger)
-        #create_graphics(local_dir_samba, logger)
-        
-        #update_state(run_processing_id, 'Completed', logger)
+        graphic_dir=os.path.join(plot_dir,run_Id_used)
+        create_graphics(local_dir_samba, run_processing_id, run_Id_used, logger)
+        processed_run.append(run_Id_used)
+        logger.info('run id %s is now on Completed state', run_Id_used)
+        update_state(run_processing_id, 'Completed', logger)
     return processed_run
 
 def find_state_and_save_data(run_name,run_folder):
@@ -608,6 +618,7 @@ def find_state_and_save_data(run_name,run_folder):
         rn_found.runState='Bcl2Fastq Executed'
     else:
         rn_found.runState='Completed' 
+
         
 def find_not_completed_run (logger):
     working_list={}
@@ -636,6 +647,8 @@ def find_not_completed_run (logger):
     
     return (processed_run)
     
+print( 'executing the parsing_run_info.py')
+
 '''
 demux_file='../tmp/processing/DemultiplexingStats.xml'
 conversion_file='../tmp/processing/ConversionStats.xml'
@@ -650,9 +663,6 @@ process_xml_stats(stats_projects, run_id)
 
 
 
-
-
-print ('completed')
 
     
 '''
@@ -695,7 +705,18 @@ def copy_sample_sheet(run_name, run_folder):
         info_text = str('[INFO]--  run name ',run_name, 'state was changed to SampleSent \n')
         log_file.write(info_text)
         log_file.close()
-'''
+        
+        
+def fetch_runID_parameter():
+    runparameters_file='wetlab/tmp/tmp/processing/RunParameters.xml'
+    data_from_runparameters=get_running_info(runparameters_file)
+    run_name=data_from_runparameters['ExperimentName']
+    ## to include the information on database we get the index first
+    if RunProcess.object.filter(runName__exact = run_name).exists():
+        r_name_id = RunProcess.object.filter(runName__exact = run_name).id
+        r_name_id.RunID=data_from_runparameters['RunID']
+
+
 def perform_xml_stats (xml_statistics, run_name_value):
     for project in xml_statistics:
         print (project)
@@ -709,3 +730,4 @@ def perform_xml_stats (xml_statistics, run_name_value):
             fl_raw_yield_sum+= int(values)
         for values in xml_statistics[project]['']:
             print()
+'''

@@ -1,0 +1,139 @@
+{% extends 'wetlab/base.html' %}
+{% load static %}
+{% block content %}
+    {% csrf_token %}
+{% if display_one_project %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7">
+            <div class="panel panel-default">
+            {% for key, values in display_one_project.p_data %} 
+               {%if key == "Project Name" %}
+                <div class="panel-heading">Information for the project : <strong>{{ values }}</strong>  </div>
+               {%endif%}
+            {% endfor %}
+           <div class="panel-body">
+             <div class="col-sm-6"> User Name </div>
+             <div class="col-sm-6"> {{ display_one_project.user_name }}  </div>
+               
+             {% for key, values in display_one_project.p_data %}
+               {% if "File to upload to BaseSpace" in key %}
+                <div class="col-sm-6">{{ key }}</div>
+                <div class="col-sm-6"><a href="/wetlab/documents/{{ values }}" download>Library Kit File  <span class="glyphicon glyphicon-download-alt"></span></a></div><BR> <BR>
+               {% elif key == 'Project Name'%}
+               {% else %}
+                <div class="col-sm-6">{{ key }}</div>
+                <div class="col-sm-6">   {{ values }}</div><BR> <BR>
+               {% endif %}
+            {% endfor %} 
+           </div> <!--  end of panel body -->
+          </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-7 -->
+              <!-- new panel on the right to show progress state -->
+              <div class="col-sm-3 col-sm-offset-1">
+                <BR>
+                <div class="panel panel-default">
+                <div class="panel-heading">Project State : <b>{{ display_one_project.state}} </b></div> 
+                <div class="panel-body"> 
+                    <img class="promo-block-img img-responsive" src="/static/wetlab/img/percentage/{{ display_one_project.graphic }}"  align="Avatar">
+                </div> <!--  end of panel body -->
+              </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-4 --> 
+    </div> <!--  end of row -->
+          {% if display_one_project.fl_summary %}
+      <div class="row row-space-8 margin-b-1">
+         <div class="col-sm-8 ">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Flowcell Summary for this project.</h3></div>
+                <div class="panel-body"> 
+                  <table class="table">
+                      <thead>
+                        <tr>
+                        {% for values in display_one_project.fl_summary.0 %}
+                          <th>{{ values }} </th> 
+                        {%endfor%}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                        {% for values in display_one_project.fl_summary.1 %}
+                          <td>{{ values }} </td> 
+                        {%endfor%}
+                        </tr>
+                      </tbody>
+                  </table>
+          
+                </div> <!--  end of panel body -->
+             </div> <!--  end of panel  -->
+           </div> <!--  end of col-sm-4 -->              
+      </div> <!--  end of row -->
+        {% endif%}
+        {% if display_one_project.lane_summary %}
+      <div class="row row-space-10 margin-b-1">
+         <div class="col-sm-10 ">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Lane Summary for this project.</h3></div>
+                <div class="panel-body"> 
+                  <table class="table">
+                      <thead>
+                        <tr>
+                        {% for values in display_one_project.lane_summary.0 %}
+                          <th>{{ values }} </th> 
+                        {%endfor%}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                        {% for values in display_one_project.lane_summary.1 %}
+                          <td>{{ values }} </td> 
+                        {%endfor%}
+                        </tr>
+                        <tr>
+                        {% for values in display_one_project.lane_summary.2 %}
+                          <td>{{ values }} </td> 
+                        {%endfor%}
+                        </tr>
+                        <tr>
+                        {% for values in display_one_project.lane_summary.3 %}
+                          <td>{{ values }} </td> 
+                        {%endfor%}
+                        </tr>
+                        <tr>
+                        {% for values in display_one_project.lane_summary.4 %}
+                          <td>{{ values }} </td> 
+                        {%endfor%}
+                        </tr>
+                      </tbody>
+                  </table>
+          
+                </div> <!--  end of panel body -->
+             </div> <!--  end of panel  -->
+           </div> <!--  end of col-sm-4 -->              
+      </div> <!--  end of row -->
+{% endif%}
+{% elif display_project_list %}
+        <div class="row row-space-2 margin-b-4">
+        <BR>
+        <div class="col-sm-5 col-sm-offset-1"">
+            <div class="panel panel-default">
+                <table class="table table-hover">
+                   <thead>
+                      <tr>
+                        <th>The following projects are found for your search:</th>
+                      </tr>
+                   </thead>
+                   <tbody>
+                    {% for key, values in display_project_list.projects %}  
+                     <tr>
+                       <td><a href="/wetlab/search_project={{ values }}">{{ key }}</a> </td>
+                     </tr>
+                    {%endfor%}
+                   </tbody>
+                 </table>
+           </div> <!--  end of panel body -->
+          </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-7 -->
+    
+    
+{% endif %} 
+    
+{% endblock %}

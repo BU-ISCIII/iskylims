@@ -12,11 +12,12 @@ from interop import py_interop_run_metrics, py_interop_run, py_interop_summary, 
 def open_log():
     
     LOG_FILENAME = 'testing.log'
+    log_name=os.path.join('../log/', LOG_FILENAME)
     #def create_log ():
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
     #create the file handler
-    handler = logging.handlers.RotatingFileHandler(LOG_FILENAME, maxBytes=20000, backupCount=5)
+    handler = logging.handlers.RotatingFileHandler(log_name, maxBytes=20000, backupCount=5)
     handler.setLevel(logging.DEBUG)
     
     #create a Logging format
@@ -27,10 +28,6 @@ def open_log():
     
     return logger
 
-
-def test():
-    print ('esto es una prueba de import')
-    
 def parsing_statistics_xml(demux_file, conversion_file, logger):
     total_p_b_count=[0,0,0,0] 
     stats_result={}
@@ -135,7 +132,7 @@ def parsing_statistics_xml(demux_file, conversion_file, logger):
         stats_result[projects[i]]['PF_YieldQ30']=list_pf_yield_q30
         stats_result[projects[i]]['PF_QualityScore']=list_pf_qualityscore
         logger.info('completed parsing for xml stats for project %s', projects[i])
-    
+        
     unknow_lanes  = []
     unknow_barcode_start_index= len(projects)
     counter=0
@@ -152,25 +149,149 @@ def parsing_statistics_xml(demux_file, conversion_file, logger):
         counter +=1
     stats_result['TopUnknownBarcodes']= unknow_lanes
     logger.info('Complete XML parsing ')
-    
+
     return stats_result
 
 
-def process_xml_stats(stats_projects, run_id, logger):
+def store_raw_xml_stats(stats_projects, run_id,logger):
+    for project in stats_projects:
+        if project == 'TopUnknownBarcodes':
+            continue
+        logger.info('processing project %s with rund_id = %s', project, run_id)
+        if project == 'all' or project == 'default':
+            logger.info('Found project %s setting the project_id to NULL', project)
+            project_id= None
+            defult_all = project
+        else:
+            p_name_id=Projects.objects.get(projectName__exact = project).id
+            project_id= Projects.objects.get(pk=p_name_id)
+            defult_all = None
+           
+        raw_stats_xml = RawStatisticsXml (runprocess_id=RunProcess.objects.get(pk=run_id),
+                                          project_id = project_id,
+                                          rawYield= stats_projects[project]['RAW_Yield'], rawYieldQ30= stats_projects[project]['RAW_YieldQ30'],
+                                          defaultAll= defult_all,
+                                          rawQuality= stats_projects[project]['RAW_QualityScore'], PF_Yield= stats_projects[project]['PF_Yield'],
+                                          PF_YieldQ30= stats_projects[project]['PF_YieldQ30'], PF_QualityScore =stats_projects[project]['PF_QualityScore'])
+        
+        logger.info('saving raw stats for %s project', project)
+        raw_stats_xml.save()
+    logger.info('Raw XML data have been stored for all projects ')
     
+    
+def process_xml_stats(stats_projects, run_id, logger):
+    # get the total number of read per lane
+    M_BASE=1.004361/1000000
+    logger.debug('starting the process_xml_stats method')
+    total_cluster_lane=(stats_projects['all']['PerfectBarcodeCount'])
+    logger.info('processing flowcell stats for %s ', run_id)
+    for project in stats_projects:
+        if project == 'TopUnknownBarcodes':
+            continue
+        flow_raw_cluster, flow_pf_cluster, flow_yield_mb = 0, 0, 0
+        for fl_item in range(4):
+             # make the calculation for Flowcell
+            
+            flow_raw_cluster +=int(stats_projects[project]['BarcodeCount'][fl_item])
+            flow_pf_cluster +=int(stats_projects[project]['PerfectBarcodeCount'][fl_item])
+            flow_yield_mb +=float(stats_projects[project]['PF_Yield'][fl_item])*M_BASE
+
+        
+        flow_raw_cluster='{0:,}'.format(flow_raw_cluster)
+        flow_pf_cluster='{0:,}'.format(flow_pf_cluster)
+        flow_yield_mb= '{0:,}'.format(round(flow_yield_mb))
+        sample_number=stats_projects[project]['sampleNumber']
+        
+        if project == 'all' or project == 'default' :
+            logger.info('Found project %s setting the project_id to NULL', project)
+            project_id= None
+            default_all = project
+        else:
+            p_name_id=Projects.objects.get(projectName__exact = project).id
+            project_id= Projects.objects.get(pk=p_name_id)
+            default_all=None
+
+        #store in database
+        logger.info('Processed information for flow Summary for project %s', project)
+        
+        ns_fl_summary = NextSeqStatsFlSummary(runprocess_id=RunProcess.objects.get(pk=run_id),
+                                defaultAll = default_all,
+                                project_id=project_id, flowRawCluster=flow_raw_cluster,
+                                flowPfCluster=flow_pf_cluster, flowYieldMb= flow_yield_mb,
+                                sampleNumber= sample_number)
+
+        
+        ns_fl_summary.save()
+        
+        logger.info('saving processing flowcell xml data  for project %s', project)                                         
+
+        
+    for project in stats_projects:
+        if project == 'TopUnknownBarcodes':
+            continue
+        logger.info('processing lane stats for %s', project)
+        
+        for i in range (4):
+            # get the lane information
+            lane_number=str(i + 1)
+            pf_cluster_int=(int(stats_projects[project]['PerfectBarcodeCount'][i]))
+            pf_cluster='{0:,}'.format(pf_cluster_int)
+            perfect_barcode=(format(int(stats_projects[project]['PerfectBarcodeCount'][i])*100/int(stats_projects[project]['BarcodeCount'][i]),'.3f'))
+            percent_lane=  format(float(int(pf_cluster_int)/int(total_cluster_lane[i]))*100, '.3f')
+            one_mismatch=stats_projects[project]['OneMismatchBarcodeCount'][i]
+            yield_mb= '{0:,}'.format(round(float(stats_projects[project]['PF_Yield'][i])*M_BASE))
+
+            bigger_q30=format(float(stats_projects[project]['PF_YieldQ30'][i])*100/float( stats_projects[project]['PF_Yield'][i]),'.3f')
+            
+            mean_quality=format(float(stats_projects[project]['PF_QualityScore'][i])/float(stats_projects[project]['PF_Yield'][i]),'.3f')
+
+            # make the calculation for Flowcell
+            flow_raw_cluster = stats_projects[project]['BarcodeCount'][i]
+            flow_pf_cluster = stats_projects[project]['PerfectBarcodeCount'][i]
+            flow_yield_mb ='{0:,}'.format(round(float(stats_projects[project]['PF_Yield'][i])*M_BASE))
+
+            
+            #store in database
+            if project == 'all' or project == 'default':
+                logger.info('Found project %s setting the project_id to NULL', project)
+                project_id= None
+            else:
+                p_name_id=Projects.objects.get(projectName__exact = project).id
+                project_id= Projects.objects.get(pk=p_name_id)
+                
+            #store in database
+            logger.info('Processed information for Lane %s for project %s', lane_number, project)
+            
+            ns_lane_summary = NextSeqStatsLaneSummary(runprocess_id=RunProcess.objects.get(pk=run_id),
+                                                 project_id=project_id, lane = lane_number,
+                                                 pfCluster=pf_cluster, percentLane=percent_lane, perfectBarcode=perfect_barcode,
+                                                 oneMismatch= one_mismatch, yieldMb=yield_mb,
+                                                 biggerQ30=bigger_q30, meanQuality=mean_quality )
+            
+            ns_lane_summary.save()
+            
+    logger.info ('processing the TopUnknownBarcodes')    
     for project in stats_projects:
         if project == 'TopUnknownBarcodes':
             for un_lane in range(4) :
-                logger.info('Processing lane %s for TopUnknownBarcodes')
+                logger.info('Processing lane %s for TopUnknownBarcodes', un_lane)
                 count_top=0
                 lane_number=str(un_lane + 1)
+                top_number =1
                 for barcode_line in stats_projects[project][un_lane]:
-                    #for count, sequence barcode_line.iteritems()
                     barcode_count= barcode_line['count']
                     barcode_sequence= barcode_line['sequence']
-    
-    
-    return stats_result
+                    '''
+                    raw_unknow_barcode = RawTopUnknowBarcodes(runprocess_id=RunProcess.objects.get(pk=run_id),
+                                                             lane_number = lane_number, top_number=str(top_number),
+                                                             count=barcode_count, sequence=barcode_sequence) 
+                    raw_unknow_barcode.save()
+                    '''
+                    top_number +=1
+
+
+
+
 
 def process_binStats(run_folder, run_id, logger):
     
@@ -184,7 +305,7 @@ def process_binStats(run_folder, run_id, logger):
 
     summary = py_interop_summary.run_summary()
     py_interop_summary.summarize_run_metrics(run_metrics, summary)
-    '''
+    
     # get the Run Summary for Read 1 to 4
     for read_level in range(4):
     
@@ -252,8 +373,8 @@ def process_binStats(run_folder, run_id, logger):
                                                   aligned= nonindex_s_percent_aligned, errorRate= nonindex_s_error_rate,
                                                   intensityCycle= nonindex_s_first_cycle_intensity, biggerQ30= nonindex_s_percent_gt_q30)   
 
-     # ns_bin_run_summary.save()
-    '''
+    ns_bin_run_summary.save()
+    
     ### information per reads
     
     #lan_summary= py_interop_summary.lane_summary()
@@ -319,14 +440,74 @@ def process_binStats(run_folder, run_id, logger):
 
     logger.info ('Exiting the binary stats ')
 
+def create_graphics(run_folder, graphic_dir, logger):
+    graphic_list=['plot_by_cycle  ', 'plot_by_lane  ', 'plot_flowcell  ', 'plot_qscore_histogram  ',
+                  'plot_qscore_heatmap  ', 'plot_sample_qc  ' ]
+    os.chdir('/home/bioinfo/iSkyLIMS/wetlab/documents/images_plot/')
+    for item_grapic in graphic_list:
+        plot_command= '~/software/opt/interop/bin/'+ item_grapic + run_folder + '  | gnuplot'
+        os.system(plot_command)
+    
+    if not os.path.exists(graphic_dir):
+        os.mkdir(graphic_dir)
+    '''    
+    source = os.listdir("./")
+    for files in source:
+        if files.endswith(".png"):
+            shutil.move(files,graphic_dir)
+    '''        
+    
+    source = os.listdir(graphic_dir)
+    for files in source:
+        move_file=files.split('_')
+        old_file=os.path.join(graphic_dir,files)
+        new_file=os.path.join(graphic_dir,move_file[1])
+        shutil.move(old_file,new_file)
+
+    
+ 
+        
+      
+    #create by cycle  graphic
+    plot_by_cycle= '~/software/opt/interop/bin/'+ 'plot_by_cycle  ' + run_folder + '  | gnuplot'
+    os.system(plot_by_cycle)
+    
+    #create by lane  graphic
+    plot_by_lane= '~/software/opt/interop/bin/'+ 'plot_by_lane  ' + run_folder + '  | gnuplot'
+    os.system(plot_by_lane)
+    
+    #create flowcell  graphic
+    plot_flowcell= '~/software/opt/interop/bin/'+ 'plot_flowcell  ' + run_folder + '  | gnuplot'
+    os.system(plot_flowcell)
+    
+    #create qscore  histogram graphic
+    plot_qscore_histogram= '~/software/opt/interop/bin/'+ 'plot_qscore_histogram  ' + run_folder + '  | gnuplot'
+    os.system(plot_qscore_histogram)
+    
+    #create by qswcore heatmap  graphic
+    plot_qscore_heatmap= '~/software/opt/interop/bin/'+ 'plot_qscore_heatmap  ' + run_folder + '  | gnuplot'
+    os.system(plot_qscore_heatmap)
+    
+    plot_sample= '~/software/opt/interop/bin/'+ 'plot_sample_qc  ' + run_folder + '  | gnuplot'
+    os.system(plot_sample)
+    #create the directory to move the plot graphics
+
+    
+
+
+runid_name='161123_NS500454_0096_AHFGV5BGXY'
+
 local_dir_samba= '../tmp/processing'
 logger=open_log()
+logger.info('test')
 demux_file='../tmp/processing/DemultiplexingStats.xml'
 conversion_file='../tmp/processing/ConversionStats.xml'
 run_processing_id=2
-#xml_stats=parsing_statistics_xml(demux_file, conversion_file, logger)
-#process_xml_stats(xml_stats,run_processing_id, logger)
-process_binStats(local_dir_samba, run_processing_id, logger)
+graphic_dir=os.path.join(runid_name)
+xml_stats=parsing_statistics_xml(demux_file, conversion_file, logger)
+store_raw_xml_stats(xml_stats, run_processing_id,logger)
+process_xml_stats(xml_stats,run_processing_id, logger)
+#process_binStats(local_dir_samba, run_processing_id, logger)
+#create_graphics(local_dir_samba, graphic_dir, logger)
 
 
-print ('completed')

@@ -2,7 +2,7 @@
 
 from interop import py_interop_run_metrics, py_interop_run, py_interop_summary, py_interop_plot
 #import pandas as pd
-import os
+import os, shutil
 from  ..models import *
 
 def process_binStats(run_folder, run_id, logger):
@@ -35,11 +35,11 @@ def process_binStats(run_folder, run_id, logger):
         read_percent_gt_q30=format(summary.at(read_level).summary().percent_gt_q30(),'.3f')
         logger.info('Store the Run Summary  for read %s', read_level)
         ns_bin_run_summary = NextSeqStatsBinRunSummary (runprocess_id=RunProcess.objects.get(pk=run_id),
-                                                  level=str(read_level), yieldTotal = read_summary_yield_g,
+                                                  level=str(read_level+1), yieldTotal = read_summary_yield_g,
                                                   projectedTotalYield= read_summary_projected_yield_g,
                                                   aligned= read_summary_percent_aligned, errorRate= read_summary_error_rate,
                                                   intensityCycle= read_summary_first_cycle_intensity, biggerQ30= read_percent_gt_q30)
-        # ns_bin_run_summary.save()
+        ns_bin_run_summary.save()
         
     # get the run summary for Total
     # total summary
@@ -61,7 +61,7 @@ def process_binStats(run_folder, run_id, logger):
                                                   projectedTotalYield= total_s_projected_yield_g,
                                                   aligned= total_s_percent_aligned, errorRate= total_s_error_rate,
                                                   intensityCycle= total_s_first_cycle_intensity, biggerQ30= total_s_percent_gt_q30)
-     # ns_bin_run_summary.save()
+    ns_bin_run_summary.save()
      
      # get the run summary for non index
      # non index yield
@@ -84,7 +84,7 @@ def process_binStats(run_folder, run_id, logger):
                                                   aligned= nonindex_s_percent_aligned, errorRate= nonindex_s_error_rate,
                                                   intensityCycle= nonindex_s_first_cycle_intensity, biggerQ30= nonindex_s_percent_gt_q30)   
 
-     # ns_bin_run_summary.save()
+    ns_bin_run_summary.save()
     
     ### information per reads
     
@@ -150,7 +150,7 @@ def process_binStats(run_folder, run_id, logger):
             read_lane_intensity_cycle_field=read_lane_intensity_cycle_mean + '  ' + chr(177) + '  ' + read_lane_intensity_cycle_stddev
     
             ns_bin_read_lane = NextSeqStatsBinRunRead (runprocess_id=RunProcess.objects.get(pk=run_id),
-                                                       read= str(read_number), lane = str(lane_number),
+                                                       read= str(read_number+1), lane = str(lane_number+1),
                                                        tiles= read_lane_tiles, density= read_lane_density_field,
                                                        cluster_PF= read_lane_percent_pf_field, phas_prephas= read_lane_phas_prephas_field,
                                                        reads= read_lane_reads, reads_PF= read_lane_reads_pf,
@@ -159,34 +159,50 @@ def process_binStats(run_folder, run_id, logger):
                                                        errorRate= read_lane_error_rate_field, errorRate35= read_lane_error_rate_35_field,
                                                        errorRate50= read_lane_error_rate_50_field, errorRate75= read_lane_error_rate_75_field,
                                                        errorRate100= read_lane_error_rate_100_field, intensityCycle= read_lane_intensity_cycle_field)
-            # ns_bin_read_lane.save()
+            ns_bin_read_lane.save()
 
     logger.info ('Exiting the binary stats ')
     
-def create_graphics(run_folder):
-    #create by cycle  graphic
-    plot_by_cycle= '~/software/opt/interop/bin/'+ 'plot_by_cycle  ' + run_folder + '  | gnuplot'
-    os.system(plot_by_cycle)
-    
-    #create by lane  graphic
-    plot_by_lane= '~/software/opt/interop/bin/'+ 'plot_by_lane  ' + run_folder + '  | gnuplot'
-    os.system(plot_by_lane)
-    
-    #create flowcell  graphic
-    plot_flowcell= '~/software/opt/interop/bin/'+ 'plot_flowcell  ' + run_folder + '  | gnuplot'
-    os.system(plot_flowcell)
-    
-    #create qscore  histogram graphic
-    plot_qscore_histogram= '~/software/opt/interop/bin/'+ 'plot_qscore_histogram  ' + run_folder + '  | gnuplot'
-    os.system(plot_qscore_histogram)
-    
-    #create by qswcore heatmap  graphic
-    plot_qscore_heatmap= '~/software/opt/interop/bin/'+ 'plot_qscore_heatmap  ' + run_folder + '  | gnuplot'
-    os.system(plot_qscore_heatmap)
-    
-    plot_sample= '~/software/opt/interop/bin/'+ 'plot_sample_qc  ' + run_folder + '  | gnuplot'
-    os.system(plot_sample)
+def create_graphics(run_folder,run_id, graphic_dir, logger):
+    graphic_list=['plot_by_cycle  ', 'plot_by_lane  ', 'plot_flowcell  ', 'plot_qscore_histogram  ',
+                  'plot_qscore_heatmap  ', 'plot_sample_qc  ' ]
 
+    # create the graphics
+    logger.info('Creating plot graphics for run id %s', run_id)
+    for item_graphic in graphic_list:
+        plot_command= '~/software/opt/interop/bin/'+ item_graphic + run_folder + '  | gnuplot'
+        os.system(plot_command)
+        
+    run_graphic_dir=os.path.join('iSkyLIMS/wetlab/documents/images_plot', graphic_dir)
+    if not os.path.exists(run_graphic_dir):
+        os.mkdir(run_graphic_dir)
+        logger.info('created new directory %s', run_graphic_dir)
+    #move the graphic files to wetlab directory
+    source = os.listdir("./")
+    for files in source:
+        if files.endswith(".png"):
+            shutil.move(files,run_graphic_dir)
+            
+    #removing the processing_ character in the file names
+    source = os.listdir(run_graphic_dir)
+    logger.info('Renaming the graphic files')
+    for files in source:
+        move_file=files.split('_')
+        old_file=os.path.join(run_graphic_dir,files)
+        new_file=os.path.join(run_graphic_dir,move_file[1])
+        shutil.move(old_file,new_file)
+    
+    folder_run_graphic=graphic_dir.replace('../','')
+    # saving the graphic location in database
+    ns_graphic_stats= NextSeqGraphicsStats (runprocess_id=RunProcess.objects.get(pk=run_id),
+                                            folderRunGraphic= folder_run_graphic, cluserCountGraph = 'ClusterCount-by-lane.png',
+                                            flowCellGraph= 'flowcell-Intensity.png', intensityByCycleGraph = 'Intensity-by-cycle.png',
+                                            heatMapGraph= 'q-heat-map.png', histogramGraph= 'q-histogram.png',
+                                            sampleQcGraph= 'sample-qc.png')
+    ns_graphic_stats.save()
+    logger.info('Graphic plots saved on database')
+
+print('Executing interop_statstics.py')
 
 '''
 columns = ( ('Yield Total (G)', 'yield_g'), ('Projected Yield (G)', 'projected_yield_g'), ('% Aligned', 'percent_aligned'))
@@ -201,11 +217,11 @@ print(df)
 
 
 #run_folder = r"/home/bioinfo/Documentos/practicas-CarlosIII/bcl2fastq/InterOp/ejemplo-interop/MiSeqDemo"
-run_folder = r"/home/bioinfo/Documentos/practicas-CarlosIII/bcl2fastq/InterOp/nextSeq"
+#run_folder = r"/home/bioinfo/Documentos/practicas-CarlosIII/bcl2fastq/InterOp/nextSeq"
 #process_binStats(run_folder)
 
-create_graphics(run_folder)
-print ('end')
+
+
 '''
 run = py_interop_run_metrics.run_metrics()
 
