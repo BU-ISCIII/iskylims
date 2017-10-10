@@ -30,10 +30,15 @@ class RunProcess(models.Model):
     def get_info_process (self):
         str_date=self.generatedat.strftime("%I:%M%p on %B %d, %Y")
         if (self.runState == 'Completed'):
-            return '%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.requestedCenter, self.useSpaceImgMb, self.useSpaceFastaMb, self.useSpaceOtherMb, str_date)
+            return '%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.runState, 
+                            self.requestedCenter, self.useSpaceImgMb, 
+                            self.useSpaceFastaMb, self.useSpaceOtherMb, str_date)
         else:
-            return '%s;%s;%s;%s;%s'  %(self.runName, self.runState, self.requestedCenter, self.sampleSheet, str_date )
-
+            return '%s;%s;%s;%s;%s'  %(self.runName, self.runState, 
+                            self.requestedCenter, self.sampleSheet, str_date )
+    
+    def get_run_name (self):
+        return '%s' %(self.runName)
             
 class Projects(models.Model):
     runprocess_id = models.ForeignKey(
@@ -44,10 +49,23 @@ class Projects(models.Model):
     procState=models.CharField(max_length=25, default='Not Started')
     libraryKit=models.CharField(max_length=45)
     baseSpaceFile = models.CharField(max_length=255)
+    generatedat = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
         return '%s' %(self.projectName)
 
+    def get_state(self):
+        return '%s' %(self.procState)
+        
+    def get_project_info (self):
+        return '%s;%s;%s' %(self.projectName, self.libraryKit, self.baseSpaceFile)
+        
+    def get_user_name (self):
+        user_name = self.user_id.username
+        return '%s' %(user_name)
+    
+    def get_project_name (self):
+        return '%s' %(self.projectName)
 
 class RunningParameters (models.Model):
     runName_id = models.OneToOneField(
@@ -109,9 +127,9 @@ class NextSeqStatsBinRunSummary (models.Model):
         return '%s' %(self.level)
 
     def get_bin_run_summary(self):
-        return '%s';'%s';'%s';'%s';'%s';'%s';'%s' %(self.level, self.yieldTotal,
-        self.projectedTotalYield, self.aligned, self.errorRate, self.intensityCycle,
-        self.biggerQ30)
+        return '%s;%s;%s;%s;%s;%s' %( self.yieldTotal,
+                self.projectedTotalYield, self.aligned, self.errorRate, 
+                self.intensityCycle, self.biggerQ30)
 
 class NextSeqStatsBinRunRead (models.Model):
     runprocess_id = models.ForeignKey(
@@ -120,25 +138,31 @@ class NextSeqStatsBinRunRead (models.Model):
     read= models.CharField(max_length=10)
     lane = models.CharField(max_length=10)
     tiles = models.CharField(max_length=10)
-    density = models.CharField(max_length=10)
-    cluster_PF = models.CharField(max_length=10)
-    phas_prephas = models.CharField(max_length=10)
-    reads = models.CharField(max_length=10)
-    reads_PF = models.CharField(max_length=10)
-    q30 = models.CharField(max_length=10)
-    yields = models.CharField(max_length=10)
-    cyclesErrRated = models.CharField(max_length=10)
-    aligned = models.CharField(max_length=10)
-    errorRate = models.CharField(max_length=10)
-    errorRate35 = models.CharField(max_length=10)
-    errorRate50 = models.CharField(max_length=10)
-    errorRate75 = models.CharField(max_length=10)
-    errorRate100 = models.CharField(max_length=10)
-    intensityCycle = models.CharField(max_length=10)
+    density = models.CharField(max_length=40)
+    cluster_PF = models.CharField(max_length=40)
+    phas_prephas = models.CharField(max_length=40)
+    reads = models.CharField(max_length=40)
+    reads_PF = models.CharField(max_length=40)
+    q30 = models.CharField(max_length=40)
+    yields = models.CharField(max_length=40)
+    cyclesErrRated = models.CharField(max_length=40)
+    aligned = models.CharField(max_length=40)
+    errorRate = models.CharField(max_length=40)
+    errorRate35 = models.CharField(max_length=40)
+    errorRate50 = models.CharField(max_length=40)
+    errorRate75 = models.CharField(max_length=40)
+    errorRate100 = models.CharField(max_length=40)
+    intensityCycle = models.CharField(max_length=40)
     
     def __str__(self):
         return '%s' %(self.read)
-        
+    
+    def get_bin_run_read(self):
+        return '%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s' %( self.lane,self.tiles, self.density,
+                self.cluster_PF, self.phas_prephas, self.reads, self.reads_PF,
+                self.q30, self.yields, self.cyclesErrRated, self.aligned,
+                self.errorRate, self.errorRate35, self.errorRate50, self.errorRate75,
+                self.errorRate100, self.intensityCycle)
 
 
 class RawStatisticsXml (models.Model):
@@ -146,12 +170,13 @@ class RawStatisticsXml (models.Model):
             RunProcess,
             on_delete=models.CASCADE)
     project_id = models.ForeignKey(Projects,  null=True)
-    rawYield = models.CharField(max_length=64)
-    rawYieldQ30= models.CharField(max_length=64)
-    rawQuality= models.CharField(max_length=64)
-    PF_Yield= models.CharField(max_length=64)
-    PF_YieldQ30= models.CharField(max_length=64)
-    PF_QualityScore= models.CharField(max_length=64)
+    defaultAll =models.CharField(max_length=40, null=True)
+    rawYield = models.CharField(max_length=255)
+    rawYieldQ30= models.CharField(max_length=255)
+    rawQuality= models.CharField(max_length=255)
+    PF_Yield= models.CharField(max_length=255)
+    PF_YieldQ30= models.CharField(max_length=255)
+    PF_QualityScore= models.CharField(max_length=255)
     generated_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
@@ -169,28 +194,40 @@ class RawTopUnknowBarcodes (models.Model):
             on_delete=models.CASCADE)
     lane_number= models.CharField(max_length=4)
     top_number = models.CharField(max_length=4)
-    count= models.CharField(max_length=10)
+    count= models.CharField(max_length=40)
     sequence = models.CharField(max_length=40)
     generated_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__ (self):
+        return '%s' %(self.lane_number)
+    
+    def get_unknow_barcodes (self):
+        return '%s;%s' %(self.count, self.sequence)
 
 
 class NextSeqStatsFlSummary(models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
             on_delete=models.CASCADE)
-    project_id = models.ForeignKey(Projects)  
-    flowRawCluster = models.CharField(max_length=20)
-    flowPfCluster= models.CharField(max_length=20)
-    flowYieldMb= models.CharField(max_length=20)
-    sampleNumber= models.CharField(max_length=20)
+    project_id = models.ForeignKey(Projects,  null=True)
+    defaultAll =models.CharField(max_length=40, null=True)  
+    flowRawCluster = models.CharField(max_length=40)
+    flowPfCluster= models.CharField(max_length=40)
+    flowYieldMb= models.CharField(max_length=40)
+    sampleNumber= models.CharField(max_length=40)
     generated_at = models.DateTimeField(auto_now_add=True)
+    
+    def get_fl_summary(self):
+        return '%s;%s;%s;%s' %(self.flowRawCluster, self.flowPfCluster,
+            self.flowYieldMb, self.sampleNumber)
 
 class NextSeqStatsLaneSummary (models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
             on_delete=models.CASCADE)
-    project_id = models.ForeignKey(Projects)
-    lane= models.CharField(max_length=3)
+    project_id = models.ForeignKey(Projects,  null=True)
+    defaultAll =models.CharField(max_length=40, null=True)
+    lane= models.CharField(max_length=10)
     pfCluster = models.CharField(max_length=64)
     percentLane = models.CharField(max_length=64)
     perfectBarcode = models.CharField(max_length=64)
@@ -208,8 +245,13 @@ class NextSeqStatsLaneSummary (models.Model):
         return '%s' %(self.runprocess_id)
     
     def get_lane_summary(self):
-        return '%s' %(self.runprocess_id)
+        return '%s;%s;%s;%s;%s;%s;%s;%s' %(self.lane, self.pfCluster,
+                self.percentLane, self.perfectBarcode, self.oneMismatch,
+                self.yieldMb, self.biggerQ30, self.biggerQ30)
 
+    def get_stats_info (self):
+
+        return'%s;%s' %(self.biggerQ30, self.meanQuality)
 
 class NextSeqGraphicsStats (models.Model):
     runprocess_id = models.ForeignKey(
@@ -222,9 +264,20 @@ class NextSeqGraphicsStats (models.Model):
     heatMapGraph= models.CharField(max_length=255)
     histogramGraph= models.CharField(max_length=255)
     sampleQcGraph= models.CharField(max_length=255)
+    generated_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return '%s' %(self.document)
+        return '%s' %(self.folderRunGraphic)
+        
+    def get_graphics(self):
+        return '%s;%s;%s;%s;%s;%s'%(self.cluserCountGraph,
+                self.flowCellGraph, self.intensityByCycleGraph,
+                self.heatMapGraph, self.histogramGraph,
+                self.sampleQcGraph)
+
+    def get_folder_graphic(self):
+        return '%s' %(self.folderRunGraphic)
+   
 '''    
 class MiSeqStatisticsBin (models.Model):
     document = models.OneToOneField(

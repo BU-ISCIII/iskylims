@@ -9,12 +9,13 @@ from logging.handlers import RotatingFileHandler
 
 def open_log():
     
-    LOG_FILENAME = 'testing.log'
+    LOG_FILENAME = 'checking_uncompleted_run.log'
+    log_name=os.path.join('iSkyLIMS/wetlab/log/', LOG_FILENAME)
     #def create_log ():
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
     #create the file handler
-    handler = logging.handlers.RotatingFileHandler(LOG_FILENAME, maxBytes=20000, backupCount=5)
+    handler = logging.handlers.RotatingFileHandler(log_name, maxBytes=40000, backupCount=5)
     handler.setLevel(logging.DEBUG)
     
     #create a Logging format
@@ -24,6 +25,7 @@ def open_log():
     logger.addHandler(handler)
     
     return logger
+    
 '''
 def check_crontab():
     time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -84,12 +86,15 @@ def fetching_stats_scheduled_job ():
     return True
 '''
 def check_recorded_folder ():
+    time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(time_start )
+    print('Starting the process for recorded_folder ')
     logger=open_log()
     
     logger.info('Looking for new run in directory on wetlab/tmp/recorded \n')
     path='iSkyLIMS/wetlab/tmp/recorded/'
     dir_wetlab=os.getcwd()
-    loging.debug('woring dir = %s', dir_wetlab)
+    logger.debug('woring dir = %s', dir_wetlab)
     if os.listdir(path):
         # There are sample sheet files that need to be processed
         updated_run=process_run_in_recorded_state (logger)
