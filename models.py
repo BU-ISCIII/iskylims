@@ -277,6 +277,26 @@ class NextSeqGraphicsStats (models.Model):
 
     def get_folder_graphic(self):
         return '%s' %(self.folderRunGraphic)
+        
+class SamplesInProject (models.Model):
+    project_id = models.ForeignKey(
+                Projects,
+                on_delete= models.CASCADE)
+    sampleName = models.CharField(max_length=255)
+    barcodeName = models.CharField(max_length=255)
+    pfClusters = models.CharField(max_length=55)
+    percentInProject = models.CharField(max_length=25)
+    yieldMb = models.CharField(max_length=55)
+    qualityQ30 = models.CharField(max_length=55)
+    meanQuality = models.CharField(max_length=55)
+    
+    def __str__ (self):
+        return '%$' %(self.sampleItem)
+    
+    def get_sample_information(self):
+        return '%s;%s;%s;%s;%s;%s;%s' %(self.sampleName , self.barcodeName,
+                self.pfClusters ,self.percentInProject, self.yieldMb ,
+                self.qualityQ30 , self.meanQuality )
    
 '''    
 class MiSeqStatisticsBin (models.Model):

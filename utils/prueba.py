@@ -28,50 +28,42 @@ def open_log():
     
     return logger
 
-def parsing_statistics_xml(demux_file, conversion_file, logger):
+def parsing_sample_project_xml(demux_file, conversion_file, logger):
     total_p_b_count=[0,0,0,0] 
-    stats_result={}
+    sample_result_dict={}
     #demux_file='example.xml'
     demux_stat=ET.parse(demux_file)
     root=demux_stat.getroot()
     projects=[]
-    logger.info('Starting conversion for demux file')
+    logger.info('Starting parsing DemultiplexingStats.XML for getting Sample information')
     for child in root.iter('Project'):
         projects.append(child.attrib['name'])
     
     for i in range(len(projects)):
+        if projects [i] == 'default' or projects [i] == 'all':
+            continue
         p_temp=root[0][i]
         samples=p_temp.findall('Sample')
-                
-        sample_all_index=len(samples)-1
-        barcodeCount ,perfectBarcodeCount, b_count =[], [] ,[]
-        p_b_count, one_mismatch_count =[], []
+        sample_dict ={}
+        for index in range (len(samples)):
+            sample_name = samples[index].attrib['name']
+            if sample_name == 'all':
+                continue 
+            barcodeCount , perfectBarcodeCount = 0 , 0
 
-        dict_stats={}
-        for c in p_temp[sample_all_index].iter('BarcodeCount'):
-        #for c in p_temp[sample].iter('BarcodeCount'):
-            #b_count.append(c.text)
-            barcodeCount.append(c.text)
-        for c in p_temp[sample_all_index].iter('PerfectBarcodeCount'):
-            p_b_count.append(c.text)
+            sample_stats={}
+            sample_stats ['barcodeName'] = samples[index].find ('Barcode').attrib['name']
         
-        # look for One mismatch barcode
-        
-        if p_temp[sample_all_index].find('OneMismatchBarcodeCount') ==None:
-             for  fill in range(4):
-                one_mismatch_count.append('NaN')
-        else:
-            for c in p_temp[sample_all_index].iter('OneMismatchBarcodeCount'):
-                one_mismatch_count.append(c.text)
-        
-        #one_mismatch_count.append(one_m_count)
-        
-        dict_stats['BarcodeCount']=barcodeCount
-        dict_stats['PerfectBarcodeCount']=p_b_count
-        dict_stats['sampleNumber']=len(samples)
-        dict_stats['OneMismatchBarcodeCount']=one_mismatch_count
-        stats_result[projects[i]]=dict_stats
-        logger.info('Complete parsing from demux file for project %s', projects[i])
+            for bar_count in p_temp[index][0].iter('BarcodeCount'):
+                barcodeCount += int(bar_count.text)
+            for p_bar_count in p_temp[index][0].iter('PerfectBarcodeCount'):
+                perfectBarcodeCount += int(p_bar_count.text)
+            sample_stats['BarcodeCount']=barcodeCount
+            sample_stats['PerfectBarcodeCount']=perfectBarcodeCount
+            sample_dict[sample_name] = sample_stats
+            
+            sample_result_dict[projects[i]]=sample_dict
+    logger.info('Complete parsing from demux file for sample and for project %s', projects[i])
     
     
     conversion_stat=ET.parse(conversion_file)
@@ -81,76 +73,55 @@ def parsing_statistics_xml(demux_file, conversion_file, logger):
     for child in root_conv.iter('Project'):
         projects.append(child.attrib['name'])
     for i in range(len(projects)):
+        if projects [i] == 'default' or projects [i] == 'all':
+            continue
         p_temp=root_conv[0][i]
         samples=p_temp.findall('Sample')
-        sample_all_index=len(samples)-1
-        tiles=p_temp[sample_all_index][0][0].findall('Tile')
-        tiles_index=len(tiles)-1
-        list_raw_yield=[]
-        list_raw_yield_q30=[]
-        list_raw_qualityscore=[]
-        list_pf_yield=[]
-        list_pf_yield_q30=[]
-        list_pf_qualityscore=[]
-    
-        for l_index in range(4):
+        
+        for s_index in range (len (samples)):
+            sample_name = samples[s_index].attrib['name']
+            if sample_name == 'all':
+                continue 
+            quality_per_sample = {}
             raw_yield_value = 0
             raw_yield_q30_value = 0
             raw_quality_value = 0   
             pf_yield_value = 0
             pf_yield_q30_value = 0
             pf_quality_value = 0
-            for t_index in range(tiles_index):
+            
+            for l_index in range(4):
+                tiles_index = len(p_temp[s_index][0][l_index].findall ('Tile'))
+                for t_index in range(tiles_index):
+                         # get the yield value for RAW and for read 1 and 2
+                    for c in p_temp[s_index][0][l_index][t_index][0].iter('Yield'):
+                        raw_yield_value +=int(c.text)
+                        # get the yield Q30 value for RAW  and for read 1 and 2
+                    for c in p_temp[s_index][0][l_index][t_index][0].iter('YieldQ30'):
+                        raw_yield_q30_value +=int(c.text)
+                    for c in p_temp[s_index][0][l_index][t_index][0].iter('QualityScoreSum'):
+                        raw_quality_value +=int(c.text)
+                     # get the yield value for PF and for read 1 and 2
+                    for c in p_temp[s_index][0][l_index][t_index][1].iter('Yield'):
+                        pf_yield_value +=int(c.text)
+                    # get the yield Q30 value for PF and for read 1 and 2
+                    for c in p_temp[s_index][0][l_index][t_index][1].iter('YieldQ30'):
+                        pf_yield_q30_value +=int(c.text)
+                    for c in p_temp[s_index][0][l_index][t_index][1].iter('QualityScoreSum'):
+                        pf_quality_value +=int(c.text)
                 
-                     # get the yield value for RAW and for read 1 and 2
-                for c in p_temp[sample_all_index][0][l_index][t_index][0].iter('Yield'):
-                    raw_yield_value +=int(c.text)
-                    # get the yield Q30 value for RAW  and for read 1 and 2
-                for c in p_temp[sample_all_index][0][l_index][t_index][0].iter('YieldQ30'):
-                    raw_yield_q30_value +=int(c.text)
-                for c in p_temp[sample_all_index][0][l_index][t_index][0].iter('QualityScoreSum'):
-                    raw_quality_value +=int(c.text)
-                 # get the yield value for PF and for read 1 and 2
-                for c in p_temp[sample_all_index][0][l_index][t_index][1].iter('Yield'):
-                    pf_yield_value +=int(c.text)
-                # get the yield Q30 value for PF and for read 1 and 2
-                for c in p_temp[sample_all_index][0][l_index][t_index][1].iter('YieldQ30'):
-                    pf_yield_q30_value +=int(c.text)
-                for c in p_temp[sample_all_index][0][l_index][t_index][1].iter('QualityScoreSum'):
-                    pf_quality_value +=int(c.text)
-            list_raw_yield.append(str(raw_yield_value))
-            list_raw_yield_q30.append(str(raw_yield_q30_value))
-            list_raw_qualityscore.append(str(raw_quality_value))
-            list_pf_yield.append(str(pf_yield_value))
-            list_pf_yield_q30.append(str(pf_yield_q30_value))
-            list_pf_qualityscore.append(str(pf_quality_value))
-                
-        stats_result[projects[i]]['RAW_Yield']=list_raw_yield
-        stats_result[projects[i]]['RAW_YieldQ30']=list_raw_yield_q30
-        stats_result[projects[i]]['RAW_QualityScore']=list_raw_qualityscore
-        stats_result[projects[i]]['PF_Yield']=list_pf_yield
-        stats_result[projects[i]]['PF_YieldQ30']=list_pf_yield_q30
-        stats_result[projects[i]]['PF_QualityScore']=list_pf_qualityscore
+            sample_result_dict[projects[i]][sample_name]['RAW_Yield']=raw_yield_value
+            sample_result_dict[projects[i]][sample_name]['RAW_YieldQ30']=raw_yield_q30_value
+            sample_result_dict[projects[i]][sample_name]['RAW_QualityScore']=raw_quality_value
+            sample_result_dict[projects[i]][sample_name]['PF_Yield']=pf_yield_value
+            sample_result_dict[projects[i]][sample_name]['PF_YieldQ30']=pf_yield_q30_value
+            sample_result_dict[projects[i]][sample_name]['PF_QualityScore']=pf_quality_value
         logger.info('completed parsing for xml stats for project %s', projects[i])
         
-    unknow_lanes  = []
-    unknow_barcode_start_index= len(projects)
-    counter=0
-    logger.info('Collecting the Top Unknow Barcodes')
-    for un_child in root_conv.iter('TopUnknownBarcodes'):
-        un_index= unknow_barcode_start_index + counter
-        p_temp=root_conv[0][un_index][0]
-        unknow_barcode_lines=p_temp.findall('Barcode')
-        unknow_bc_count=[]
-        for lanes in unknow_barcode_lines:
-            unknow_bc_count.append(lanes.attrib)
 
-        unknow_lanes.append(unknow_bc_count)
-        counter +=1
-    stats_result['TopUnknownBarcodes']= unknow_lanes
-    logger.info('Complete XML parsing ')
+    logger.info('Complete XML parsing  for getting Samples')
 
-    return stats_result
+    return sample_result_dict
 
 
 def store_raw_xml_stats(stats_projects, run_id,logger):
@@ -179,41 +150,38 @@ def store_raw_xml_stats(stats_projects, run_id,logger):
     logger.info('Raw XML data have been stored for all projects ')
     
     
-def process_xml_stats(stats_projects, run_id, logger):
+def store_samples_projects(sample_project_stats, run_id, logger):
     # get the total number of read per lane
     M_BASE=1.004361/1000000
-    logger.debug('starting the process_xml_stats method')
-    total_cluster_lane=(stats_projects['all']['PerfectBarcodeCount'])
+    logger.debug('starting store_sample_projects method')
+    
     logger.info('processing flowcell stats for %s ', run_id)
-    for project in stats_projects:
-        if project == 'TopUnknownBarcodes':
-            continue
-        flow_raw_cluster, flow_pf_cluster, flow_yield_mb = 0, 0, 0
-        for fl_item in range(4):
-             # make the calculation for Flowcell
+    
+    for project in sample_project_stats:
+        # find the total number of PerfectBarcodeCount in the procjec to make percent calculations
+        total_perfect_barcode_count = 0
+        for sample in sample_project_stats[project]:
+            total_perfect_barcode_count += sample_project_stats[project][sample] ['PerfectBarcodeCount']
+        for sample in sample_project_stats[project]:
+            sample_name = sample
+            barcode_name = sample_project_stats[project][sample]['barcodeName']
+            perfect_barcode = sample_project_stats[project][sample] ['PerfectBarcodeCount']
+            percent_in_project = format (float(perfect_barcode *100 /total_perfect_barcode_count),'.3f')
+            yield_mb = sample_project_stats[project][sample] ['PF_Yield']*M_BASE
+            if yield_mb >0:
+                bigger_q30=format(float(sample_project_stats[project][sample]['PF_YieldQ30'])*100/float( sample_project_stats[project][sample]['PF_Yield']),'.3f')
+                mean_quality=format(float(sample_project_stats[project][sample]['PF_QualityScore'])/float(sample_project_stats[project][sample]['PF_Yield']),'.3f')
+            else:
+                bigger_q30 = 0
+                mean_quality =0
+            print ( 'project = ', project ,  'sample = ', sample_name)
+        print('projecto procesado  ', project)     
             
-            flow_raw_cluster +=int(stats_projects[project]['BarcodeCount'][fl_item])
-            flow_pf_cluster +=int(stats_projects[project]['PerfectBarcodeCount'][fl_item])
-            flow_yield_mb +=float(stats_projects[project]['PF_Yield'][fl_item])*M_BASE
-
         
-        flow_raw_cluster='{0:,}'.format(flow_raw_cluster)
-        flow_pf_cluster='{0:,}'.format(flow_pf_cluster)
-        flow_yield_mb= '{0:,}'.format(round(flow_yield_mb))
-        sample_number=stats_projects[project]['sampleNumber']
-        
-        if project == 'all' or project == 'default' :
-            logger.info('Found project %s setting the project_id to NULL', project)
-            project_id= None
-            default_all = project
-        else:
-            p_name_id=Projects.objects.get(projectName__exact = project).id
-            project_id= Projects.objects.get(pk=p_name_id)
-            default_all=None
 
         #store in database
         logger.info('Processed information for flow Summary for project %s', project)
-        
+        '''
         ns_fl_summary = NextSeqStatsFlSummary(runprocess_id=RunProcess.objects.get(pk=run_id),
                                 defaultAll = default_all,
                                 project_id=project_id, flowRawCluster=flow_raw_cluster,
@@ -281,13 +249,14 @@ def process_xml_stats(stats_projects, run_id, logger):
                 for barcode_line in stats_projects[project][un_lane]:
                     barcode_count= barcode_line['count']
                     barcode_sequence= barcode_line['sequence']
-                    '''
+    '''
+    '''
                     raw_unknow_barcode = RawTopUnknowBarcodes(runprocess_id=RunProcess.objects.get(pk=run_id),
                                                              lane_number = lane_number, top_number=str(top_number),
                                                              count=barcode_count, sequence=barcode_sequence) 
                     raw_unknow_barcode.save()
-                    '''
-                    top_number +=1
+    '''
+
 
 
 
@@ -504,9 +473,14 @@ demux_file='../tmp/processing/DemultiplexingStats.xml'
 conversion_file='../tmp/processing/ConversionStats.xml'
 run_processing_id=2
 graphic_dir=os.path.join(runid_name)
-xml_stats=parsing_statistics_xml(demux_file, conversion_file, logger)
-store_raw_xml_stats(xml_stats, run_processing_id,logger)
-process_xml_stats(xml_stats,run_processing_id, logger)
+
+sample_project_stats = parsing_sample_project_xml (demux_file, conversion_file, logger)
+store_samples_projects (sample_project_stats, run_processing_id, logger)
+print ('completed')
+
+#xml_stats=parsing_statistics_xml(demux_file, conversion_file, logger)
+#store_raw_xml_stats(xml_stats, run_processing_id,logger)
+#process_xml_stats(xml_stats,run_processing_id, logger)
 #process_binStats(local_dir_samba, run_processing_id, logger)
 #create_graphics(local_dir_samba, graphic_dir, logger)
 

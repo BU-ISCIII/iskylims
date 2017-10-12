@@ -128,8 +128,8 @@ def check_not_finish_run():
                 count +=1
          
     if count == 0:
-        logger.info('Exiting the crontab without performing any changes')
+        logger.info('***** Exiting the crontab without performing any changes')
     time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(time_stop)
-    print ('Exiting the process for searching not completed runs')
+    print ('****** Exiting the process for searching not completed runs')
             

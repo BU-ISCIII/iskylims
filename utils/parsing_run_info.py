@@ -210,7 +210,7 @@ def update_state(run_id, state, logger):
 def parsing_statistics_xml(demux_file, conversion_file, logger):
     total_p_b_count=[0,0,0,0] 
     stats_result={}
-    #demux_file='example.xml'
+
     demux_stat=ET.parse(demux_file)
     root=demux_stat.getroot()
     projects=[]
@@ -466,6 +466,144 @@ def process_xml_stats(stats_projects, run_id, logger):
                     raw_unknow_barcode.save()
                     top_number +=1
                     
+
+def parsing_sample_project_xml(demux_file, conversion_file, logger):
+    total_p_b_count=[0,0,0,0] 
+    sample_result_dict={}
+    #demux_file='example.xml'
+    demux_stat=ET.parse(demux_file)
+    root=demux_stat.getroot()
+    projects=[]
+    logger.info('Starting parsing DemultiplexingStats.XML for getting Sample information')
+    for child in root.iter('Project'):
+        projects.append(child.attrib['name'])
+    
+    for i in range(len(projects)):
+        if projects [i] == 'default' or projects [i] == 'all':
+            continue
+        p_temp=root[0][i]
+        samples=p_temp.findall('Sample')
+        sample_dict ={}
+        for index in range (len(samples)):
+            sample_name = samples[index].attrib['name']
+            if sample_name == 'all':
+                continue 
+            barcodeCount , perfectBarcodeCount = 0 , 0
+
+            sample_stats={}
+            sample_stats ['barcodeName'] = samples[index].find ('Barcode').attrib['name']
+        
+            for bar_count in p_temp[index][0].iter('BarcodeCount'):
+                barcodeCount += int(bar_count.text)
+            for p_bar_count in p_temp[index][0].iter('PerfectBarcodeCount'):
+                perfectBarcodeCount += int(p_bar_count.text)
+            sample_stats['BarcodeCount']=barcodeCount
+            sample_stats['PerfectBarcodeCount']=perfectBarcodeCount
+            sample_dict[sample_name] = sample_stats
+            
+            sample_result_dict[projects[i]]=sample_dict
+    logger.info('Complete parsing from demux file for sample and for project %s', projects[i])
+    
+    
+    conversion_stat=ET.parse(conversion_file)
+    root_conv=conversion_stat.getroot()
+    projects=[]
+    logger.info('Starting conversion for conversion file')
+    for child in root_conv.iter('Project'):
+        projects.append(child.attrib['name'])
+    for i in range(len(projects)):
+        if projects [i] == 'default' or projects [i] == 'all':
+            continue
+        p_temp=root_conv[0][i]
+        samples=p_temp.findall('Sample')
+        
+        for s_index in range (len (samples)):
+            sample_name = samples[s_index].attrib['name']
+            if sample_name == 'all':
+                continue 
+            quality_per_sample = {}
+            raw_yield_value = 0
+            raw_yield_q30_value = 0
+            raw_quality_value = 0   
+            pf_yield_value = 0
+            pf_yield_q30_value = 0
+            pf_quality_value = 0
+            
+            for l_index in range(4):
+                tiles_index = len(p_temp[s_index][0][l_index].findall ('Tile'))
+                for t_index in range(tiles_index):
+                         # get the yield value for RAW and for read 1 and 2
+                    for c in p_temp[s_index][0][l_index][t_index][0].iter('Yield'):
+                        raw_yield_value +=int(c.text)
+                        # get the yield Q30 value for RAW  and for read 1 and 2
+                    for c in p_temp[s_index][0][l_index][t_index][0].iter('YieldQ30'):
+                        raw_yield_q30_value +=int(c.text)
+                    for c in p_temp[s_index][0][l_index][t_index][0].iter('QualityScoreSum'):
+                        raw_quality_value +=int(c.text)
+                     # get the yield value for PF and for read 1 and 2
+                    for c in p_temp[s_index][0][l_index][t_index][1].iter('Yield'):
+                        pf_yield_value +=int(c.text)
+                    # get the yield Q30 value for PF and for read 1 and 2
+                    for c in p_temp[s_index][0][l_index][t_index][1].iter('YieldQ30'):
+                        pf_yield_q30_value +=int(c.text)
+                    for c in p_temp[s_index][0][l_index][t_index][1].iter('QualityScoreSum'):
+                        pf_quality_value +=int(c.text)
+                
+            sample_result_dict[projects[i]][sample_name]['RAW_Yield']=raw_yield_value
+            sample_result_dict[projects[i]][sample_name]['RAW_YieldQ30']=raw_yield_q30_value
+            sample_result_dict[projects[i]][sample_name]['RAW_QualityScore']=raw_quality_value
+            sample_result_dict[projects[i]][sample_name]['PF_Yield']=pf_yield_value
+            sample_result_dict[projects[i]][sample_name]['PF_YieldQ30']=pf_yield_q30_value
+            sample_result_dict[projects[i]][sample_name]['PF_QualityScore']=pf_quality_value
+        logger.info('completed parsing for xml stats for project %s', projects[i])
+        
+
+    logger.info('Complete XML parsing  for getting Samples')
+
+    return sample_result_dict
+
+
+
+def store_samples_projects(sample_project_stats, run_id, logger):
+    # get the total number of read per lane
+    M_BASE=1.004361/1000000
+    logger.debug('starting store_sample_projects method')
+    
+    logger.info('processing flowcell stats for %s ', run_id)
+    
+    for project in sample_project_stats:
+        # find the total number of PerfectBarcodeCount in the procjec to make percent calculations
+        total_perfect_barcode_count = 0
+        for sample in sample_project_stats[project]:
+            total_perfect_barcode_count += sample_project_stats[project][sample] ['PerfectBarcodeCount']
+        for sample in sample_project_stats[project]:
+            sample_name = sample
+            barcode_name = sample_project_stats[project][sample]['barcodeName']
+            perfect_barcode = sample_project_stats[project][sample] ['PerfectBarcodeCount']
+            percent_in_project = format (float(perfect_barcode *100 /total_perfect_barcode_count),'.2f')
+            yield_mb = '{0:,}'.format(round(float(sample_project_stats[project][sample] ['PF_Yield'])*M_BASE))
+            if sample_project_stats[project][sample] ['PF_Yield'] > 0:
+                bigger_q30=format(float(sample_project_stats[project][sample]['PF_YieldQ30'])*100/float( sample_project_stats[project][sample]['PF_Yield']),'.3f')
+                mean_quality=format(float(sample_project_stats[project][sample]['PF_QualityScore'])/float(sample_project_stats[project][sample]['PF_Yield']),'.3f')
+            else:
+                bigger_q30 = 0
+                mean_quality =0
+            p_name_id=Projects.objects.get(projectName__exact = project).id
+            project_id= Projects.objects.get(pk=p_name_id)
+            
+            sample_to_store = SamplesInProject (project_id = project_id, sampleName = sample_name,
+                            barcodeName = barcode_name, pfClusters = perfect_barcode, 
+                            percentInProject = percent_in_project , yieldMb = yield_mb,
+                            qualityQ30 = bigger_q30, meanQuality = mean_quality)
+               
+            sample_to_store.save()  
+            logger.debug('Stored sample %s', sample_name)
+        logger.info('Stored sample for the project $s', project)
+
+        #store in database
+        logger.info('Processed information sample %s', project)
+
+
                                            
 def process_run_in_samplesent_state (process_list, logger):
      # prepare a dictionary with key as run_name and value the RunID
@@ -531,7 +669,7 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
         conversion_file=os.path.join(local_dir_samba,'ConversionStats.xml')
         run_info_file=os.path.join(local_dir_samba, 'RunInfo.xml')
         #copy the demultiplexingStats.xml file to wetlab/tmp/processing
-        '''
+        
         try:
             conn=open_samba_connection()
             logger.info('Successful connection for updating run on bcl2F_q' )
@@ -576,13 +714,18 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
                     return ('Error')
             # close samba connection 
         conn.close()
-        '''
+        
         # parsing the files to get the xml Stats
         logger.info('processing the XML files')
         xml_stats=parsing_statistics_xml(demux_file, conversion_file, logger)
         store_raw_xml_stats(xml_stats,run_processing_id, logger)
         process_xml_stats(xml_stats,run_processing_id, logger)
-        logger.info('processing the interop files')
+        
+        # parsing and processing the project samples
+        sample_project_stats = parsing_sample_project_xml (demux_file, conversion_file, logger)
+        store_samples_projects (sample_project_stats, run_processing_id, logger)
+        
+        logger.info('processing interop files')
         # processing information for the interop files
 
         process_binStats(local_dir_samba, run_processing_id, logger)

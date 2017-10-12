@@ -109,6 +109,40 @@
              </div> <!--  end of panel  -->
            </div> <!--  end of col-sm-4 -->              
       </div> <!--  end of row -->
+      
+      {% if display_one_project.sample_table %}
+      <div class="row row-space-10 margin-b-1">
+         <div class="col-sm-10 ">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Samples used for this project.</h3></div>
+                <div class="panel-body"> 
+                  <table class="table table-hover">
+                      <thead>
+                        <tr>
+                        {% for values in display_one_project.sample_heading %}
+                          <th>{{ values }} </th> 
+                        {%endfor%}
+                        </tr>
+                      </thead>
+                      <tbody>
+                          {% for values in display_one_project.sample_table %}
+                            <tr>
+                                {% for value in values %}
+                                <td>{{ value }} </td> 
+                                {%endfor%}
+                            </tr>
+                          {%endfor%}
+                      </tbody>
+                  </table>
+          
+                </div> <!--  end of panel body -->
+             </div> <!--  end of panel  -->
+           </div> <!--  end of col-sm-4 -->              
+      </div> <!--  end of row -->
+      
+      
+      
+      
 {% endif%}
 {% elif display_project_list %}
         <div class="row row-space-2 margin-b-4">
@@ -132,7 +166,62 @@
            </div> <!--  end of panel body -->
           </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-7 -->
+{% endif%}    
+{% else %}
+<!-- FORM for searching  Project Information -->
     
+    <div class="row row-space-4 margin-b-4">
+      <div class="col-sm-7 col-sm-offset-1" >
+        <div class="panel panel-default">
+          <div class="panel-heading"><strong>Searching Project</strong></div>
+          <div class="panel-body">
+            <form method="post" enctype="multipart/form-data" name="searchproject" id="searchproject" class="form-horizontal well">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="searchproject"/>
+            <div class="form-group"> 
+                  <label class="col-sm-5  control-label" for="projectname" >Fill the Project name </label>
+                  <div class="col-sm-5"><input class="form-control" type="text" name="projectname" id="projectname" size="100" maxlength="100"></div>
+             </div>  <!-- end from-group   -->
+            <BR>
+             <div class="form-group">
+               <label class="col-sm-5 control-label" for="projectstate" >Project state</label>
+               <div class="col-sm-4"><select class="form-control" name="projectstate" id="projectstate">
+                               				<option value="">Choose a value  </option>
+                                            <option value="Recorded">Recorded</option>
+                                            <option value="B2FqExecuted">B2FqExecuted</option>
+                                            <option value="Completed">Completed</option>
+                                      </select>
+               </div>  <!-- end select input -->
+                <br>
+             </div>  <!-- end from-group   -->
+             <div class="form-group">
+                <label class="col-sm-5 control-label" for="startdate" >From Date (YYYY-MM-DD)</label>
+                <div class="col-sm-5"><input class="form-control" type="date" name="startdate" id="startdate" size="100" maxlength="100"></div>
+                <br>
+             </div>  <!-- end from-group   -->
+             <br>
+             <div class="form-group">
+                <label class="col-sm-5 control-label" for="enddate" >End Date (YYYY-MM-DD)</label>
+                <div class="col-sm-5"><input class="form-control" type="date" name="enddate" id="enddate" size="100" maxlength="100"></div>
+                <br>
+             </div>  <!-- end from-group   -->
+             <br>
+             <br>
+            <div class="form-group"> 
+                  <label class="col-sm-5  control-label" for="username" >Search from user name</label>
+                  <div class="col-sm-5"><input class="form-control" type="text" name="username" id="username" size="100" maxlength="100"></div>
+             </div>  <!-- end from-group   -->
+            <br>
+            <br>
+                <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
+                <input class="btn pull-right btn-primary" type="submit" value="Submit">
+            </form>
+         </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  -->
+    </div> <!--// end row -->
+
+    <!-- End of FORM for searching Project information -->
     
 {% endif %} 
     

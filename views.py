@@ -12,7 +12,6 @@ from .utils.sample_convertion import *
 from .utils.stats_calculation import *
 from .utils.stats_graphics import *
 
-
 from .models import *
 
 from .fusioncharts.fusioncharts import FusionCharts
@@ -445,14 +444,16 @@ def search_nextSeq (request):
                 run_list.append([runs_found[i],runs_found[i].id])
                 #import pdb; pdb.set_trace()    
             return render(request, 'wetlab/SearchNextSeq.html', {'display_run_list': run_list })
-        
+    else:
+    #import pdb; pdb.set_trace()
+        return render(request, 'wetlab/SearchNextSeq.html')        
 
-
+def search_nextProject (request):
     ############################################################# 
     ###  Find the projects that match the input values
     ############################################################# 
     
-    elif request.method=='POST' and (request.POST['action']=='searchproject'):
+    if request.method=='POST' and (request.POST['action']=='searchproject'):
         project_name=request.POST['projectname']
         start_date=request.POST['startdate']
         end_date=request.POST['enddate']
@@ -547,7 +548,7 @@ def search_nextSeq (request):
 
     else:
     #import pdb; pdb.set_trace()
-        return render(request, 'wetlab/SearchNextSeq.html')
+        return render(request, 'wetlab/projectInfo.html')
 
 
 def search_run (request, run_id):
@@ -605,6 +606,17 @@ def get_information_project (project_id):
             lane_data_display.append(lane_values)
         project_info_dict['lane_summary'] = lane_data_display
         
+        # prepare the data for sample information
+        
+        sample_found_list = SamplesInProject.objects.filter(project_id__exact = project_id)
+        sample_heading_list = ['Sample','Barcode','PF Clusters','Percent of Project', 'Yield (Mbases)','% >= Q30 bases', 'Mean Quality Score']
+        project_info_dict['sample_heading'] = sample_heading_list
+        sample_list =[]
+        for sample_item in range(len(sample_found_list)) :
+            sample_line = sample_found_list[sample_item].get_sample_information().split(';')
+            sample_list.append(sample_line)
+        #import pdb; pdb.set_trace()
+        project_info_dict['sample_table'] = sample_list
     return project_info_dict
 
 
@@ -959,6 +971,8 @@ def downloadFile(request):
     #return render (request, 'results_run_folder.html', {'d_list':[info_data]})
 
 
+
+    
 '''    
 def simple_upload(request):
     if request.method == 'POST' and request.FILES['myfile']:
