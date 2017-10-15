@@ -289,15 +289,23 @@ class SamplesInProject (models.Model):
     yieldMb = models.CharField(max_length=55)
     qualityQ30 = models.CharField(max_length=55)
     meanQuality = models.CharField(max_length=55)
+    generated_at = models.DateTimeField(auto_now_add=True)
     
     def __str__ (self):
-        return '%$' %(self.sampleItem)
+        return '%s' %(self.sampleName)
     
     def get_sample_information(self):
         return '%s;%s;%s;%s;%s;%s;%s' %(self.sampleName , self.barcodeName,
                 self.pfClusters ,self.percentInProject, self.yieldMb ,
                 self.qualityQ30 , self.meanQuality )
+    def get_sample_name(self):
+        return '%s' %(self.sampleName)
    
+    def get_project_name (self) :
+       p_id = self.project_id
+       project_name =Projects.objects.get(projectName=p_id).get_project_name()
+       #Projects.objects.prefetch_related('user_id').filter(user_id = user_id)
+       return '%s' %(project_name)
 '''    
 class MiSeqStatisticsBin (models.Model):
     document = models.OneToOneField(

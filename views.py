@@ -371,7 +371,10 @@ def search_nextSeq (request):
         start_date=request.POST['startdate']
         end_date=request.POST['enddate']
         run_state=request.POST['runstate']
-        
+        # check that some values are in the request if not return the form
+        if run_name == '' and start_date == '' and end_date == '' and run_state == '':
+            return render(request, 'wetlab/SearchNextSeq.html')
+            
         ### check the right format of start and end date
         if start_date != '':
             try: 
@@ -459,6 +462,12 @@ def search_nextProject (request):
         end_date=request.POST['enddate']
         project_state=request.POST['projectstate']
         user_name = request.POST['username']
+        # check that some values are in the request if not return the form
+        if project_name == '' and start_date == '' and end_date == '' and user_name =='' and project_state == '':
+            return render(request, 'wetlab/NextSearchProject.html')
+        if user_name !=''  and len(user_name) <5 :
+             return render (request,'wetlab/error_page.html', {'content':['The user name must contains at least 5 caracters ', 
+                                                                    'ADVICE:', 'write the full user name to get a better match']})
         ### check the right format of start and end date
         if start_date != '':
             try: 
@@ -533,7 +542,7 @@ def search_nextProject (request):
             project_id = projects_found[0].id
             project_found_id = Projects.objects.get(pk=project_id)
             p_data_display  = get_information_project(project_found_id)
-            return render(request, 'wetlab/projectInfo.html', {'display_one_project': p_data_display })
+            return render(request, 'wetlab/NextSearchProject.html', {'display_one_project': p_data_display })
         else :
             # Display a list with all projects that matches the conditions
             project_list_dict = {}
@@ -543,12 +552,149 @@ def search_nextProject (request):
                 p_name_id = project.id
                 project_list.append([p_name, p_name_id])
             project_list_dict ['projects'] = project_list
-            return render(request, 'wetlab/projectInfo.html', {'display_project_list': project_list_dict })
+            return render(request, 'wetlab/NextSearchProject.html', {'display_project_list': project_list_dict })
 
 
     else:
     #import pdb; pdb.set_trace()
-        return render(request, 'wetlab/projectInfo.html')
+        return render(request, 'wetlab/NextSearchProject.html')
+
+
+def search_nextSample (request):
+    ############################################################# 
+    ###  Find the projects that match the input values
+    ############################################################# 
+    
+    if request.method=='POST' and (request.POST['action']=='searchsample'):
+        sample_name=request.POST['samplename']
+        start_date=request.POST['startdate']
+        end_date=request.POST['enddate']    
+        user_name = request.POST['username']
+        # check that some values are in the request if not return the form
+        if user_name == '' and start_date == '' and end_date == '' and user_name =='':
+            return render(request, 'wetlab/SearchNextSample.html')
+        
+        if user_name !=''  and len(user_name) <5 :
+             return render (request,'wetlab/error_page.html', {'content':['The user name must contains at least 5 caracters ', 
+                                                                    'ADVICE:', 'write the full user name to get a better match']})
+        ### check the right format of start and end date
+        if start_date != '':
+            try: 
+                datetime.datetime.strptime(start_date, '%Y-%m-%d')
+            except:
+                return render (request,'wetlab/error_page.html', {'content':['The format for the "Start Date Search" Field is incorrect ', 
+                                                                    'ADVICE:', 'Use the format  (YYYY-MM-DD)']})
+        if end_date != '':
+            try: 
+                datetime.datetime.strptime(end_date, '%Y-%m-%d')
+            except:
+                return render (request,'wetlab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ', 
+                                                                    'ADVICE:', 'Use the format  (YYYY-MM-DD)']})    
+        ### Get projects when project name is not empty 
+        if sample_name != '' :
+            if SamplesInProject.objects.filter(sampleName__exact = sample_name).exists():
+                sample_found = SamplesInProject.objects.filter(sampleName__exact = sample_name)
+                if len(sample_found) == 1:
+                    # display sample 
+                    return render(request, 'wetlab/SearchNextSample.html')
+                else:
+                    pass
+            if SamplesInProject.objects.filter(sampleName__contains = sample_name).exists():
+                sample_found = SamplesInProject.objects.filter(sampleName__exact = sample_name)
+            else:
+                return render (request,'wetlab/error_page.html', {'content':['No sample found with the string , ', sample_name ]})
+            
+        ### if there is no project name, then get all which will be filtered by other conditions set by user
+        #import pdb; pdb.set_trace()
+        if sample_name == '':
+            sample_found = SamplesInProject.objects.all()
+        # Check the start and end date
+        if start_date !='' and end_date != '':
+            
+            if sample_found.filter(generatedat__range=(start_date, end_date)).exists():
+                 sample_found = projects_found.filter(generatedat__range=(start_date, end_date))
+            else:
+                return render (request,'wetlab/error_page.html', {'content':['There are no Projects containing ', sample_name,
+                                        ' created between ', start_date, 'and the ', end_date]})
+        if start_date !='' and end_date == '':
+            if sample_found.filter(generatedat__gte = start_date).exists():
+                 sample_found = projects_found.filter(generatedat__gte = start_date)
+                 #import pdb; pdb.set_trace()
+            else:
+                return render (request,'wetlab/error_page.html', {'content':['There are no Projects containing ', sample_name,
+                                        ' starting from', start_date]})
+        if start_date =='' and end_date != '':
+            if sample_found.filter(generatedat__lte = end_date).exists():
+                 sample_found = projects_found.filter(generatedat__lte = end_date)
+            else:
+                return render (request,'wetlab/error_page.html', {'content':['There are no Projects containing ', sample_name,
+                                        ' finish before ', end_date]})
+                # check if user name is not empty
+        if user_name != '':
+            
+            if User.objects.filter(username__icontains = user_name).exists():
+                users = User.objects.filter (username__icontains = user_name)
+                if len(users) == 1:
+                    user_id= users[0].id
+                    
+                    project_id_list = Projects.objects.prefetch_related('user_id').filter(user_id = user_id)
+                    if len(project_id_list) == 1:
+                        project_id_list[0].id
+                        #import pdb; pdb.set_trace()
+                        if sample_found.filter(project_id = project_id_list[0]).exists():
+                            sample_found = sample_found.filter(project_id = project_id_list[0])
+                            
+                        else:
+                            text_error = 'User ' + user_name +' does not have yet any samples'
+                            return render (request,'wetlab/error_page.html', {'content':[text_error, 
+                                        'ADVICE:', 'Contact with your administrator' ]})
+                    else:
+                        sample_found = sample_found.filter(project_id__in = project_id_list) 
+                            
+                else:
+                    text_error= 'There are too many users names containing ' + sample_name  + '  which match your query'
+                    return render (request,'wetlab/error_page.html', {'content':[text_error, 
+                                        'ADVICE:', 'Fill in the user name field the full name of the user' ]})
+                        
+                #r_name_id = User.objects.get(username__icontains = user_name).id
+
+            else:
+                return render (request,'wetlab/error_page.html', {'content':['The samples found did not belong to the user, ', user_name ]})
+            
+        
+        if len(project_id_list) == 1:
+            
+            # get the project  name for the match 
+            #import pdb; pdb.set_trace()
+            project_name = Projects.objects.get(pk = project_id_list[0].id).get_project_name()
+            
+            sample_found_count = sample_found.count()
+            if sample_found_count == 1:
+                sample_data_information = get_sample_information (sample_found.id)
+                return render(request, 'wetlab/SearchNextSample.html',{'display_one_sample': sample_data_information })
+
+            elif sample_found_count < 20 :
+                multiple_samples ={}
+                multiple_samples['project_name'] = project_name
+                samples_list_in_project =[]
+                #import pdb; pdb.set_trace()
+                for sample_item in sample_found :
+                    sample_name = sample_item.get_sample_name()
+                    sample_id = sample_item.id
+                    samples_list_in_project.append([sample_name, sample_id])
+                multiple_samples['samples'] = samples_list_in_project
+                return render(request, 'wetlab/SearchNextSample.html',{'multiple_sample_one_project': multiple_samples })
+            else:
+                return render (request,'wetlab/error_page.html', {'content':['There are too many samples that match your query',
+                            'ADVICE:', 'Include more caracters in the Sample Name field']})
+        return render(request, 'wetlab/SearchNextSample.html')           
+    
+    else:
+    #import pdb; pdb.set_trace()
+        return render(request, 'wetlab/SearchNextSample.html')
+    
+
+
 
 
 def search_run (request, run_id):
@@ -560,6 +706,7 @@ def search_run (request, run_id):
     else:
         return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run  ', 
                                                                              'ADVICE:', 'Select the Fuzzy search button to get the match']})
+                                                                             
 def latest_run (request) :
     latest_run = RunProcess.objects.order_by('id').last()
     #import pdb; pdb.set_trace()
@@ -619,7 +766,23 @@ def get_information_project (project_id):
         project_info_dict['sample_table'] = sample_list
     return project_info_dict
 
-
+def get_sample_information (sample_id):
+    sample_info_dict ={}
+    data_surce= {}
+    heading = 'Graphic for quality Sample'
+    table_heading = ['Sample Name', 'Barcode Sequence', 'PF Clusters','% in Project','Yield (MB)','% >= Q30 bases','Mean Quality Score']
+    #import pdb; pdb.set_trace()
+    table_values = SamplesInProject.objects.get (pk = sample_id).get_sample_information().split(';') 
+    sample_info_dict ['table_heading'] = table_heading
+    sample_info_dict ['table_values'] = table_values
+    data_source = graphic_for_quality_angular(heading, 80)
+    quality_sample_angular = FusionCharts("angulargauge", "ex1" , "250", "200", "chart-1", "json", data_source)
+    sample_info_dict['quality_chart1'] = quality_sample_angular.render()
+    #import pdb; pdb.set_trace()
+    project_name = SamplesInProject.objects.get (pk = sample_id).get_project_name()
+    sample_info_dict ['project_name'] = project_name
+    
+    return sample_info_dict
 
 
 def search_project (request, project_id):
@@ -627,12 +790,19 @@ def search_project (request, project_id):
     if (Projects.objects.filter(pk=project_id).exists()):
         project_found_id = Projects.objects.get(pk=project_id)
         p_data_display  = get_information_project(project_found_id)
-        return render(request, 'wetlab/projectInfo.html', {'display_one_project': p_data_display })
+        return render(request, 'wetlab/NextSearchProject.html', {'display_one_project': p_data_display })
     else:
-        return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the project  ', 
-                                                            'ADVICE:', 'Select the Fuzzy search button to get the match']})
+        return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the project  ' ]})
 
 
+def search_sample (request, sample_id):
+    
+    if (SamplesInProject.objects.filter(pk=sample_id).exists()):
+        #sample_found_id = SamplesInProject.objects.get(pk=sample_id)
+        sample_data_display  = get_sample_information (sample_id)
+        return render(request, 'wetlab/SearchNextSample.html', {'display_one_sample': sample_data_display })
+    else:
+        return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the sample ' ]})
     
 def next_seq_statistics (request):
     return render (request, 'wetlab/NextSeqStatistics.html', {})
