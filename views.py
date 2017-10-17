@@ -873,13 +873,12 @@ def nextSeqStats_per_researcher (request):
                         # to be compared with the percent of this project
                         q_30_media, mean_q_media = [] , []
                         for lane in range (1,5):
-                            
-                            found_lane = NextSeqStatsLaneSummary.objects.filter(lane__exact = lane).exclude(defaultAll__isnull = True).exclude (project_id__exact = researcher_project_id)
+                            found_lane = NextSeqStatsLaneSummary.objects.filter(lane__exact = lane).exclude(defaultAll__isnull = False).exclude (project_id__exact = researcher_project_id)
                             q_30_list , mean_q_list = [] , []
                             #import pdb; pdb.set_trace()
                             for item_lane in found_lane:
                                 #import pdb; pdb.set_trace()
-                                q_30_value, mean_q_value = item_lane.get_stats_info().split(';')
+                                q_30_value, mean_q_value , yield_mb = item_lane.get_stats_info().split(';')
                                 q_30_list.append(float(q_30_value))
                                 mean_q_list.append(float(mean_q_value))
                             #import pdb; pdb.set_trace()
@@ -894,7 +893,7 @@ def nextSeqStats_per_researcher (request):
                         for lane in range (1, 5):
                             found_lane = NextSeqStatsLaneSummary.objects.filter(lane__exact = lane , project_id__exact = researcher_project_id )
                             #import pdb; pdb.set_trace()
-                            q_30_value, mean_q_value = found_lane[0].get_stats_info().split(';')
+                            q_30_value, mean_q_value , yield_mb = found_lane[0].get_stats_info().split(';')
                             q_30_project_lane.append(float(q_30_value))
                             mean_q_project_lane.append(float(mean_q_value))
                                                         
@@ -923,12 +922,12 @@ def nextSeqStats_per_researcher (request):
                         # to be compared with the percent of this project
                         q_30_media, mean_q_media = [] , []
                         for lane in range (1,5):
-                            found_lane = NextSeqStatsLaneSummary.objects.filter(lane__exact = lane).exclude(defaultAll__isnull = True)
+                            found_lane = NextSeqStatsLaneSummary.objects.filter(lane__exact = lane).exclude(defaultAll__isnull = False)
                             q_30_list , mean_q_list = [] , []
                             #import pdb; pdb.set_trace()
                             for item_lane in found_lane:
                                 #import pdb; pdb.set_trace()
-                                q_30_value, mean_q_value = item_lane.get_stats_info().split(';')
+                                q_30_value, mean_q_value , yield_mb = item_lane.get_stats_info().split(';')
                                 q_30_list.append(float(q_30_value))
                                 mean_q_list.append(float(mean_q_value))
                             #import pdb; pdb.set_trace()
@@ -946,8 +945,8 @@ def nextSeqStats_per_researcher (request):
                             q_30_list , mean_q_list = [] , []
                             for r_project in r_project_by_researcher:
                                 project_names.append(r_project__str__)
-                                project_researcher_lane = NextSeqStatsLaneSummary.objects.filter(lane__exact = lane, project_id__exact = r_project_id).exclude(defaultAll__isnull = True)
-                                q_30_value, mean_q_value = project_researcher_lane[0].get_stats_info().split(';')
+                                project_researcher_lane = NextSeqStatsLaneSummary.objects.filter(lane__exact = lane, project_id__exact = r_project_id).exclude(defaultAll__isnull = False)
+                                q_30_value, mean_q_value, yield_mb = project_researcher_lane[0].get_stats_info().split(';')
                                 q_30_list.append(float(q_30_value))
                                 mean_q_list.append(float(mean_q_value))
                                 #import pdb; pdb.set_trace()
@@ -1055,7 +1054,7 @@ def nextSeqStats_per_time (request):
                 themes = ['', 'ocean','fint','carbon','zune']
                 # prepare the column graphic for nunber of top Unknow Barcode
                 for lane_unbarcode in top_unbarcode_list:
-                    heading = 'Number of unbarcode sequence in lane ' + str(l_count)
+                    heading = 'Number of undetermined barcode sequence in lane ' + str(l_count)
                     data_source = graphic_for_top_unbarcodes(heading , themes[l_count] , lane_unbarcode)
          
                     chart_number = 'chart-' + str(l_count)
@@ -1067,7 +1066,7 @@ def nextSeqStats_per_time (request):
                     l_count +=1 
                 
                 # prepare the pie graphic for the number of top Unknow Barcode per sequence
-                data_source = pie_graphic_for_unknow_barcode('Number of count for the Unknow Sequences', 'fint',top_count_sequence)
+                data_source = pie_graphic_for_unknow_barcode('Number of count for the Undetermined Sequences', 'fint',top_count_sequence)
                 unknow_pie3d = FusionCharts("pie3d", "ex5" , "500", "400", "chart-5", "json", data_source)
                 stat_per_time ['unknow_pie3d'] = unknow_pie3d.render()
                 #import pdb; pdb.set_trace()
@@ -1079,15 +1078,114 @@ def nextSeqStats_per_time (request):
             return render (request,'wetlab/error_page.html', {'content':'Start date and End Date cannot be empty '}) 
 
         ############################################################# 
-        
-        
-    
-    
-    
-    
+
     return render (request,'wetlab/NextSeqStatsPerTime.html')
     
+ 
+ 
+ 
+def nextSeqStats_per_library (request):
+    if request.method=='POST' :
+        library_kit_name=request.POST['libraryKitName']
+        start_date=request.POST['startdate']
+        end_date=request.POST['enddate']    
+        # check that some values are in the request if not return the form
+        if library_kit_name == '' and start_date == '' and end_date == '' :
+            return render(request, 'wetlab/NextSeqStatsPerLibrary.html')
+        
+        if library_kit_name !=''  and len(library_kit_name) <3 :
+             return render (request,'wetlab/error_page.html', {'content':['The user name must contains at least 4 caracters ', 
+                                                                    'ADVICE:', 'write the full Library Kit name to get a better match']})
+        ### check the right format of start and end date
+        if start_date != '':
+            try: 
+                datetime.datetime.strptime(start_date, '%Y-%m-%d')
+            except:
+                return render (request,'wetlab/error_page.html', {'content':['The format for the "Start Date Search" Field is incorrect ', 
+                                                                    'ADVICE:', 'Use the format  (YYYY-MM-DD)']})
+        if end_date != '':
+            try: 
+                datetime.datetime.strptime(end_date, '%Y-%m-%d')
+            except:
+                return render (request,'wetlab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ', 
+                                                                    'ADVICE:', 'Use the format  (YYYY-MM-DD)']})  
+        if library_kit_name != '':
+            if Projects.objects.filter(libraryKit__contains = library_kit_name, procState = 'Completed').exists():
+                library_found = Projects.objects.filter(libraryKit__contains = library_kit_name, procState = 'Completed')
+        else:
+            library_found = Projects.objects.filter(procState == 'Completed')
+        if (start_date != '' and end_date != ''):
+            if library_found.filter(generatedat__range=(start_date, end_date)).exists():
+                 library_found = library_found.filter(generatedat__range=(start_date, end_date))
+            else:
+                return render (request,'wetlab/error_page.html', {'content':['There are no Projects containing ', sample_name,
+                                        ' created between ', start_date, 'and the ', end_date]})
+        if start_date !='' and end_date == '':
+            if library_found.filter(generatedat__gte = start_date).exists():
+                 library_found = library_found.filter(generatedat__gte = start_date)
+                 #import pdb; pdb.set_trace()
+            else:
+                return render (request,'wetlab/error_page.html', {'content':['There are no Projects containing ', sample_name,
+                                        ' starting from', start_date]})
+        if start_date =='' and end_date != '':
+            if library_found.filter(generatedat__lte = end_date).exists():
+                 library_found = library_found.filter(generatedat__lte = end_date)
+            else:
+                return render (request,'wetlab/error_page.html', {'content':['There are no Projects containing ', sample_name,
+                                        ' finish before ', end_date]})
+        
+        #Collecting the statistics for the selected library
+        # Get the projects which are using the library kit
+        #import pdb; pdb.set_trace()
+        library_stats ={}
+        projects_name_in_library =[]
+        q_30_list , mean_q_list , yield_mb_list = [] , [] ,[]
+        # Getting 1 library. Library could be in several projects. Information is collected per lane and by project 
+        #check if only 1 library kit matches the query
+        library_names ={}
+        for library in library_found :
+            library_names [library.libraryKit] = 1
+        if len(library_names) == 1:
+            # There is only 1 library in the query. Results displays all projects data which have this library kit
+            mean_lane_graphic ={}
+            
+            for lane_number in range (1,5):
+                q_30_lane , mean_q_lane , yield_mb_lane = {} , {} ,{}
+                for project in library_found :
+                    projects_name_in_library.append(project.get_project_name())
+                    project_id = project.id
+                    # Get quality information for each Lane summary of the project id
+                    
+                    
+                    lane_in_project = NextSeqStatsLaneSummary.objects.get(project_id__exact = project_id, lane__exact = lane_number)
+                    q_30_value, mean_q_value, yield_mb = lane_in_project.get_stats_info().split(';')
+                    project_name = project.get_project_name()
+                    q_30_lane[project_name] = q_30_value
+                    mean_q_lane[project_name] = mean_q_value
+                    yield_mb_lane[project_name] = yield_mb.replace(',','')
+                    #import pdb; pdb.set_trace()
+                # creating the graphics
+                chart_number = 'chart-' + str(lane_number)
+                render_number = 'ex'+ str(lane_number)
+                heading = 'Number of MBases in the projects for Lane ' + str(lane_number)
+                data_source = graphic_for_library_kit (heading, 'projects in lane ' ,'x_axis_name', 'y_axis_name', 'ocean', yield_mb_lane)
+                yield_mb_lane_graphic = FusionCharts("column3d", render_number , "500", "400", chart_number, "json", data_source)
+                import pdb; pdb.set_trace()
+                yield_graphic = 'yield_mb_graphic' + str(lane_number)
+                library_stats [yield_graphic] = yield_mb_lane_graphic.render()
+            import pdb; pdb.set_trace()
     
+                    ########################################################################
+                    ####### 
+            library_stats['library_name'] = 'pepe'     
+                
+            return render (request,'wetlab/NextSeqStatsPerLibrary.html', {'display_library_stats': library_stats })
+        else:
+            library_list_stats ={}
+            return render (request,'wetlab/NextSeqStatsPerLibrary.html', {'display_list_of_library_stats': library_list_stats })
+
+    else:
+        return render (request,'wetlab/NextSeqStatsPerLibrary.html')
     
     
 def downloadFile(request):

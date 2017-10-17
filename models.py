@@ -247,11 +247,11 @@ class NextSeqStatsLaneSummary (models.Model):
     def get_lane_summary(self):
         return '%s;%s;%s;%s;%s;%s;%s;%s' %(self.lane, self.pfCluster,
                 self.percentLane, self.perfectBarcode, self.oneMismatch,
-                self.yieldMb, self.biggerQ30, self.biggerQ30)
+                self.yieldMb, self.biggerQ30, self.meanQuality)
 
     def get_stats_info (self):
 
-        return'%s;%s' %(self.biggerQ30, self.meanQuality)
+        return'%s;%s;%s' %(self.biggerQ30, self.meanQuality, self.yieldMb)
 
 class NextSeqGraphicsStats (models.Model):
     runprocess_id = models.ForeignKey(

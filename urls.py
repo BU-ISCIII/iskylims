@@ -23,6 +23,7 @@ urlpatterns = [
     url('^', include('django.contrib.auth.urls')),
     url('^graphic', views.test_graphic, name='test_graphic'),
     url('^NextSeqStatsPerTime', views.nextSeqStats_per_time, name ='nextSeqStats_per_time'),
+    url(r'^NextSeqStatsLibrary', views.nextSeqStats_per_library , name ='nextSeqStats_per_library'),
     #url(r'^documents/images_plot$', 'django.views.static.serve',{'document_root': settings.MEDIA_ROOT}),
     #url(r'^documents/(?P<path>.*)$', 'django.views.static.serve',{'document_root': settings.MEDIA_ROOT,}),
 
