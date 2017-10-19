@@ -91,8 +91,8 @@ def check_recorded_folder ():
     print('Starting the process for recorded_folder ')
     logger=open_log()
     
-    logger.info('Looking for new run in directory on wetlab/tmp/recorded \n')
-    path='iSkyLIMS/wetlab/tmp/recorded/'
+    logger.info('Looking for new run in directory on documents/wetlab/tmp/recorded \n')
+    path='iSkyLIMS/documents/wetlab/tmp/recorded/'
     dir_wetlab=os.getcwd()
     logger.debug('woring dir = %s', dir_wetlab)
     if os.listdir(path):

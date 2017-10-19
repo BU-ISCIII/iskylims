@@ -112,11 +112,11 @@ def process_run_in_recorded_state(logger):
     except:
         return ('Error')
     processed_run_file, runlist = [] , []
-    recorded_dir='iSkyLIMS/wetlab/tmp/recorded/'
+    recorded_dir='iSkyLIMS/documents/wetlab/tmp/recorded/'
     share_folder_name='Flavia'
-    local_run_parameter_file='iSkyLIMS/wetlab/tmp/tmp/RunParameters.xml'
-    local_run_info_file='iSkyLIMS/wetlab/tmp/tmp/RunInfo.xml'
-    process_run_file='iSkyLIMS/wetlab/tmp/processed_run_file'
+    local_run_parameter_file='iSkyLIMS/documents/wetlab/tmp/tmp/RunParameters.xml'
+    local_run_info_file='iSkyLIMS/documents/wetlab/tmp/tmp/RunInfo.xml'
+    process_run_file='iSkyLIMS/documents/wetlab/tmp/processed_run_file'
     processed_run=[]
     run_names_processed=[]
     ## get the list of the processed run
@@ -658,13 +658,13 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
         logger.info ('Processing the process on bcl2F_q for the run %s', run_item)
         run_processing_id=RunProcess.objects.get(runName__exact=run_item).id
         run_Id_used=str(RunningParameters.objects.get(runName_id= run_processing_id))
-        plot_dir='../documents/images_plot'
+        plot_dir='../../documents/wetlab/images_plot'
         
         update_state(run_processing_id, 'Running Stats', logger)
         
         # get the directory of samba to fetch the files
         share_folder_name ='Flavia'
-        local_dir_samba= 'iSkyLIMS/wetlab/tmp/processing'
+        local_dir_samba= 'iSkyLIMS/documents/wetlab/tmp/processing'
         demux_file=os.path.join(local_dir_samba,'DemultiplexingStats.xml')
         conversion_file=os.path.join(local_dir_samba,'ConversionStats.xml')
         run_info_file=os.path.join(local_dir_samba, 'RunInfo.xml')
@@ -692,7 +692,7 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
                 #conn.retrieveFile('share', '/path/to/remote_file', fp)
             conn.retrieveFile(share_folder_name, samba_conversion_file, runinfo_fp)
         logger.info('Fetched the RunInfo.xml')
-        # copy all binary files in interop folder to local  wetlab/tmp/processing/interop  
+        # copy all binary files in interop folder to local  documents/wetlab/tmp/processing/interop  
         interop_local_dir_samba= os.path.join(local_dir_samba, 'InterOp')
         remote_interop_dir=os.path.join('/',run_Id_used,'InterOP')
         file_list = conn.listPath( share_folder_name, remote_interop_dir)
@@ -735,7 +735,7 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
         logger.info('run id %s is now on Completed state', run_Id_used)
         update_state(run_processing_id, 'Completed', logger)
     return processed_run
-
+'''
 def find_state_and_save_data(run_name,run_folder):
     run_file='RunInfo.xml'
     run_parameter='RunParameters.xml'
@@ -744,7 +744,7 @@ def find_state_and_save_data(run_name,run_folder):
         rn_found = RunProcess.objects.get(runName__exact=run_name)
     except:
         #os.chdir('wetlab/tmp/logs')
-        with open('wetlab/tmp/logs/wetlab.log', 'a') as log_file:
+        with open('documents/wetlab/tmp/logs/wetlab.log', 'a') as log_file:
             time_log = str(datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y"),'\n')
             log_write(time_log)
             error_text= str('[ERROR]--  run name ',run_name, 'was not found in database  \n')
@@ -761,7 +761,7 @@ def find_state_and_save_data(run_name,run_folder):
         rn_found.runState='Bcl2Fastq Executed'
     else:
         rn_found.runState='Completed' 
-
+'''
         
 def find_not_completed_run (logger):
     working_list={}
@@ -792,34 +792,7 @@ def find_not_completed_run (logger):
     
 print( 'executing the parsing_run_info.py')
 
-'''
-demux_file='../tmp/processing/DemultiplexingStats.xml'
-conversion_file='../tmp/processing/ConversionStats.xml'
-directory=os.getcwd()
-print (directory)
-run_id=2
-stats_projects= parsing_statistics_xml(demux_file, conversion_file)
-#store_raw_xml_stats(stats_projects, run_id)
-process_xml_stats(stats_projects, run_id)
-'''
 
-
-
-
-
-    
-'''
-    array_line=[[] for i in range(5)]
-    
-    for key, value in xml_statistics[project].items():
-        print (key, value )
-        array_line[0].append(key)
-        count=1
-        for val in value:
-            array_line[count].append(val)
-            count+= 1
-    project_stats[project]=array_line
-'''
     
 '''
 
