@@ -3,11 +3,11 @@
 {% block content %}
     {% csrf_token %}
 {% if display_one_run %}
-    <script type="text/javascript" src="http://localhost/fusioncharts/js/fusioncharts.js"></script>
-    <script type="text/javascript" src="http://localhost/fusioncharts/js/themes/fusioncharts.theme.fint.js"></script>
-    <script type="text/javascript" src="http://static.fusioncharts.com/code/latest/themes/fusioncharts.theme.ocean.js"></script>
-    <script type="text/javascript" src="http://static.fusioncharts.com/code/latest/themes/fusioncharts.theme.zune.js"></script>
-    <div class="row row-space-2 margin-b-4">
+ <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>              
+ <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>                   
+ <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
+ <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>  
+<div class="row row-space-2 margin-b-4">
         <div class="col-sm-7">
             <div class="panel panel-default">
             {% for key, values in display_one_run.data %} 

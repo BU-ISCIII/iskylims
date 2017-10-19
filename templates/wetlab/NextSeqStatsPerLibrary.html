@@ -3,12 +3,14 @@
 {% block content %}
     {% csrf_token %}
 {% if display_library_stats %}
-<script type="text/javascript" src="http://localhost/fusioncharts/js/fusioncharts.js"></script>
-<script type="text/javascript" src="http://localhost/fusioncharts/js/themes/fusioncharts.theme.fint.js"></script>
-<script type="text/javascript" src="http://localhost/fusioncharts/js/themes/fusioncharts.theme.ocean.js"></script>
-<script type="text/javascript" src="http://localhost/fusioncharts/js/themes/fusioncharts.theme.zune.js"></script>
-<script type="text/javascript" src="http://localhost/fusioncharts/js/themes/fusioncharts.theme.carbon.js"></script>
-    <div class="row row-space-2 margin-b-4">
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>           
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>                   
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>  
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script>   
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>     
+
+<div class="row row-space-2 margin-b-4">
       <div class="col-sm-8 col-sm-offset-1" >
         <div class="panel panel-default">
           <div class="panel-heading"><h2>Statistics result for library <strong>{{display_library_stats.library_name}}</strong> </h2></div>

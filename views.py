@@ -20,7 +20,7 @@ import statistics
 import re, os, shutil
 import datetime, time
 
-# import pdb; pdb.set_trace()
+#import pdb; pdb.set_trace()
 
 
 def index(request):
@@ -54,16 +54,18 @@ def get_sample_file (request):
         fs = FileSystemStorage()
         timestr = time.strftime("%Y%m%d-%H%M%S")
         ## including the timestamp to the sample sheet file
-        file_name=str('documents/' + split_filename.group(1) + timestr + ext_file)
+        #import pdb; pdb.set_trace()
+        file_name=str('wetlab/documents/' + split_filename.group(1) + timestr + ext_file)
         filename = fs.save(file_name,  myfile)
         uploaded_file_url = fs.url(filename)
         
         ### add the document directory to read the csv file
-        stored_file=str('wetlab/documents/' + file_name)
+        stored_file=str('documents/' + file_name)
         ## Fetch from the Sample Sheet file the projects included in the run and the user. Error page is showed if not project/description colunms are found
         try:        
             project_list=get_projects_in_run(stored_file)
         except:
+
             ## delete sample sheet file 
             fs.delete(file_name)
             return render (request,'wetlab/error_page.html', {'content':['Sample Sheet does not contain "Sample_proyect" and/or "Description" fields','',
@@ -140,7 +142,8 @@ def get_sample_file (request):
         bs_file={}
         results=[]
         
-        in_file=str('wetlab/documents/' + s_file)
+        #import pdb; pdb.set_trace() 
+        in_file=str('documents/' + s_file)
         #import pdb; pdb.set_trace()
         ## build the project list for each library kit 
         for x in range(len(library_kit)):
@@ -172,8 +175,8 @@ def get_sample_file (request):
         ## save the sample sheet file under tmp/recorded to be processed when run folder was created
         subfolder_name=str(run_p.id)
         #import pdb; pdb.set_trace()
-        os.mkdir(os.path.join('wetlab/tmp/recorded', subfolder_name ))
-        sample_sheet_copy= os.path.join('wetlab/tmp/recorded', subfolder_name, 'samplesheet.csv' )
+        os.mkdir(os.path.join('documents/wetlab/tmp/recorded', subfolder_name ))
+        sample_sheet_copy= os.path.join('documents/wetlab/tmp/recorded', subfolder_name, 'samplesheet.csv' )
         shutil.copy(in_file,sample_sheet_copy)
         ## update the state of the run to 'Recorded'
         run_p.runState='Recorded'

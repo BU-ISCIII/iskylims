@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 
 class RunProcess(models.Model):
     runName = models.CharField(max_length=45)
-    sampleSheet = models.FileField(upload_to='documents/')
+    sampleSheet = models.FileField(upload_to='wetlab/documents')
     generatedat = models.DateTimeField(auto_now_add=True)
     runState = models.CharField(max_length=25)
     generatedBSFile = models.BooleanField(default=False)
