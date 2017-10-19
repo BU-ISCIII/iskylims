@@ -1148,11 +1148,12 @@ def nextSeqStats_per_library (request):
         if len(library_names) == 1:
             # There is only 1 library in the query. Results displays all projects data which have this library kit
             mean_lane_graphic ={}
-            
+            for project in library_found :
+                projects_name_in_library.append(project.get_project_name())
+            q30_in_lib, mean_in_lib, yield_mb_in_lib = [], [] , []
             for lane_number in range (1,5):
                 q_30_lane , mean_q_lane , yield_mb_lane = {} , {} ,{}
                 for project in library_found :
-                    projects_name_in_library.append(project.get_project_name())
                     project_id = project.id
                     # Get quality information for each Lane summary of the project id
                     
@@ -1161,24 +1162,68 @@ def nextSeqStats_per_library (request):
                     q_30_value, mean_q_value, yield_mb = lane_in_project.get_stats_info().split(';')
                     project_name = project.get_project_name()
                     q_30_lane[project_name] = q_30_value
+                    q30_in_lib.append(float(q_30_value))
                     mean_q_lane[project_name] = mean_q_value
+                    mean_in_lib.append(float(mean_q_value))
                     yield_mb_lane[project_name] = yield_mb.replace(',','')
+                    yield_mb_in_lib.append(float(yield_mb.replace(',','')))
                     #import pdb; pdb.set_trace()
-                # creating the graphics
+                # creating the Yield MBases graphics
                 chart_number = 'chart-' + str(lane_number)
                 render_number = 'ex'+ str(lane_number)
                 heading = 'Number of MBases in the projects for Lane ' + str(lane_number)
-                data_source = graphic_for_library_kit (heading, 'projects in lane ' ,'x_axis_name', 'y_axis_name', 'ocean', yield_mb_lane)
-                yield_mb_lane_graphic = FusionCharts("column3d", render_number , "500", "400", chart_number, "json", data_source)
-                import pdb; pdb.set_trace()
+                data_source = graphic_for_library_kit (heading, 'projects in lane ' ,'Project Names', 'Number of M bases', 'ocean', yield_mb_lane)
+                yield_mb_lane_graphic = FusionCharts("column3d", render_number , "500", "300", chart_number, "json", data_source)
+                #import pdb; pdb.set_trace()
                 yield_graphic = 'yield_mb_graphic' + str(lane_number)
                 library_stats [yield_graphic] = yield_mb_lane_graphic.render()
-            import pdb; pdb.set_trace()
-    
-                    ########################################################################
-                    ####### 
-            library_stats['library_name'] = 'pepe'     
                 
+                # creating the Q30 graphics
+                chart_number = 'q30-chart-' + str(lane_number)
+                render_number = 'q30-ex'+ str(lane_number)
+                heading = 'Percent of bases > Q30 in the projects for Lane ' + str(lane_number)
+                data_source = graphic_for_library_kit (heading, 'projects in lane ' ,'Project Names', 'Percent of Q 30', 'zune', q_30_lane)
+                q30_lane_graphic = FusionCharts("column3d", render_number , "400", "300", chart_number, "json", data_source)
+                #import pdb; pdb.set_trace()
+                q30_graphic = 'q30_graphic' + str(lane_number)
+                library_stats [q30_graphic] = q30_lane_graphic.render()
+                
+                # creating the Mean graphics
+                chart_number = 'mean-chart-' + str(lane_number)
+                render_number = 'mean-ex'+ str(lane_number)
+                heading = 'Mean Quality Score in the projects for Lane ' + str(lane_number)
+                data_source = graphic_for_library_kit (heading, 'projects in lane ' ,'Project Names', 'Percent of Q 30', 'carbon', mean_q_lane)
+                mean_lane_graphic = FusionCharts("column3d", render_number , "400", "300", chart_number, "json", data_source)
+                #import pdb; pdb.set_trace()
+                mean_graphic = 'mean_graphic' + str(lane_number)
+                library_stats [mean_graphic] = mean_lane_graphic.render()
+                
+    
+            library_name = project.get_library_name()
+            library_stats['library_name'] = library_name  
+            library_stats['project_names'] = projects_name_in_library   
+            #import pdb; pdb.set_trace()    
+            ########################################################################
+            ####### 
+            q30_comparations ={}
+            q30_comparations [library_name] = format(statistics.mean (q30_in_lib), '.2f')
+            
+            heading = 'Comparation of Percent of bases > Q30  ' 
+            data_source = graphic_for_library_kit (heading, 'Q30 comparation ' ,'Library Names', 'Percent of Q 30', 'fint', q30_comparations)
+            comp_q30_lib_graphic = FusionCharts("column3d", 'comp-q30-1' , "500", "300", 'comp-q30-chart-1', "json", data_source)
+            #import pdb; pdb.set_trace()
+            library_stats ['comp_q30_graphic'] = comp_q30_lib_graphic.render()
+            
+            mean_comparations ={}
+            mean_comparations [library_name] = format(statistics.mean (mean_in_lib), '.2f')
+            
+            heading = 'Comparation of Mean Quality Score ' 
+            data_source = graphic_for_library_kit (heading, 'Mean Quality Score comparation ' ,'Library Names', 'Mean Quality Score', 'fint', mean_comparations)
+            comp_mean_lib_graphic = FusionCharts("column3d", 'comp-mean-1' , "500", "300", 'comp-mean-chart-1', "json", data_source)
+            #import pdb; pdb.set_trace()
+            library_stats ['comp_mean_graphic'] = comp_mean_lib_graphic.render()
+            
+            
             return render (request,'wetlab/NextSeqStatsPerLibrary.html', {'display_library_stats': library_stats })
         else:
             library_list_stats ={}

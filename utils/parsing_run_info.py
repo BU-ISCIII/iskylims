@@ -247,7 +247,7 @@ def parsing_statistics_xml(demux_file, conversion_file, logger):
         
         dict_stats['BarcodeCount']=barcodeCount
         dict_stats['PerfectBarcodeCount']=p_b_count
-        dict_stats['sampleNumber']=len(samples)
+        dict_stats['sampleNumber']=len(samples) -1
         dict_stats['OneMismatchBarcodeCount']=one_mismatch_count
         stats_result[projects[i]]=dict_stats
         if projects[i] != 'default':
@@ -579,7 +579,7 @@ def store_samples_projects(sample_project_stats, run_id, logger):
         for sample in sample_project_stats[project]:
             sample_name = sample
             barcode_name = sample_project_stats[project][sample]['barcodeName']
-            perfect_barcode = sample_project_stats[project][sample] ['PerfectBarcodeCount']
+            perfect_barcode = '{0:,}'.format(sample_project_stats[project][sample] ['PerfectBarcodeCount'])
             percent_in_project = format (float(perfect_barcode *100 /total_perfect_barcode_count),'.2f')
             yield_mb = '{0:,}'.format(round(float(sample_project_stats[project][sample] ['PF_Yield'])*M_BASE))
             if sample_project_stats[project][sample] ['PF_Yield'] > 0:

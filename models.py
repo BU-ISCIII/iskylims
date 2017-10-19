@@ -66,6 +66,9 @@ class Projects(models.Model):
     
     def get_project_name (self):
         return '%s' %(self.projectName)
+    
+    def get_library_name (self):
+        return '%s' %(self.libraryKit)
 
 class RunningParameters (models.Model):
     runName_id = models.OneToOneField(

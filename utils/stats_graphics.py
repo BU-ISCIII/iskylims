@@ -155,15 +155,55 @@ def graphic_for_top_unbarcodes (heading, theme, lane_unbarcode) :
                 "exportEnabled": "1"
             }
 
-    datos =[]
-    data_dict = {} 
+    data =[]
+    
     for key , values in lane_unbarcode.items() :
+        data_dict = {} 
         data_dict['label'] = key
         data_dict['value'] = values
-        datos.append(data_dict)
-    data_source['data'] = datos    
+        data.append(data_dict)
+    data_source['data'] = data    
         
     return data_source
+    
+def graphic_for_library_kit (heading, sub_caption, x_axis_name, y_axis_name, theme, lane_quality) :
+    data_source = {}
+    data_source['chart'] = { 
+                "caption": heading,
+                "subCaption": sub_caption,
+                "xAxisName": x_axis_name,
+                "yAxisName": y_axis_name,
+                #"theme": "fint",
+                "theme": theme,
+                "numberPrefix": "",
+                "placevaluesInside": "1",
+                "rotatevalues": "1",
+                #Showing canvas bg to apply background color
+                "showCanvasBg": "1",
+                #Shwoing canvas base to apply base color
+                "showCanvasBase": "1",
+                #Changing canvas base depth
+                "canvasBaseDepth": "14",
+                #Changing canvas background depth
+                "canvasBgDepth": "5",
+                #Changing canvas base color
+                "canvasBaseColor": "#aaaaaa",
+                #Changing canvas background color
+                "canvasBgColor": "#eeeeee",
+                "exportEnabled": "1"
+            }
+
+    data =[]
+    
+    for key , values in lane_quality.items() :
+        data_dict = {} 
+        data_dict['label'] = key
+        data_dict['value'] = values
+        data.append(data_dict)
+    data_source['data'] = data    
+        
+    return data_source
+    
 
 def pie_graphic_for_unknow_barcode (heading, theme, top_count_sequence):
     data_source = {}
@@ -182,14 +222,68 @@ def pie_graphic_for_unknow_barcode (heading, theme, top_count_sequence):
         "theme": theme,
         "exportEnabled": "1"
     }
-    datos =[]
+    data =[]
     data_dict = {} 
 
     for key , values in top_count_sequence.items() :
         data_dict['label'] = key
         data_dict['value'] = values
-        datos.append(data_dict)
-    data_source['data'] = datos    
+        data.append(data_dict)
+    data_source['data'] = data    
     
     return data_source
     
+    
+
+    
+########
+ #JSON para la calidad de la muestra/project/Run
+########
+def graphic_for_quality_angular (heading, value) :
+    data_source = {}
+    
+    data_source ['chart'] = {
+        "caption": heading,
+        "lowerlimit": "0",
+        "upperlimit": "100",
+        "lowerlimitdisplay": "Bad",
+        "upperlimitdisplay": "Good",
+        "palette": "1",
+        "numbersuffix": "%",
+        "tickvaluedistance": "10",
+        "showvalue": "0",
+        # inner white radious 
+        "gaugeinnerradius": "25",
+        "bgcolor": "FFFFFF",
+        "pivotfillcolor": "333333",
+        "pivotradius": "8",
+        "pivotfillmix": "333333, 333333",
+        "pivotfilltype": "radial",
+        "pivotfillratio": "0,100",
+        "showtickvalues": "1",
+        "showborder": "0"
+    }
+    data_source ['colorrange'] = {
+        "color": [
+                {"minvalue": "0", "maxvalue": "45","code": "e44a00"},
+                {"minvalue": "45", "maxvalue": "75", "code": "f8bd19"},
+                {"minvalue": "75", "maxvalue": "100", "code": "6baa01"}
+                ]
+                }
+    data_source['dials'] = {
+                "dial": [ {
+                    "value": value,
+                    "rearextension": "15",
+                    # length fo the arrow
+                    "radius": "50",
+                    "bgcolor": "333333",
+                    "bordercolor": "333333",
+                    "basewidth": "8"
+                    }
+                ]
+            }
+    return data_source
+
+
+
+
