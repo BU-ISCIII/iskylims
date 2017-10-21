@@ -224,6 +224,21 @@
             </div> <!--// end col-sm-6  -->
         </div> <!--// end col-sm 12 -->
     </div> <!--// end row -->
+    
+    <div class="row row-space-2 margin-b-4">
+    <div class="col-sm-12" >
+        <div class="col-sm-6" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Comparation of Number of Bases Statistics </h3></div>
+                <div class="panel-body">
+                    <!-- Column 2 Chart will start here-->
+                        <div id="comp-n_bases-chart-1"> </div>
+                    <!-- dumping JavaScript code here -->
+                    {{ display_library_stats.comp_n_bases_graphic |safe }}
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-6  -->
+    </div> <!--// end row -->
 
 {% else %}
     <!-- FORM for Lobrary Kit statistics -->

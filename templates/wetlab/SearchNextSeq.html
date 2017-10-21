@@ -30,12 +30,25 @@
           </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-7 -->
               <!-- new panel on the right to show progress state -->
+              <div class="container">
               <div class="col-sm-3 col-sm-offset-1">
                 <BR>
                 <div class="panel panel-default">
-                <div class="panel-heading">State run :  </div> 
+                <div class="panel-heading">State run is : {{ display_one_run.run_state }} </div> 
+                
                 <div class="panel-body"> 
-                    <img class="promo-block-img img-responsive" src="/static/wetlab/img/percentage/{{ display_one_run.graphic }}"  align="Avatar">
+                    <div class="progress {{ display_one_run.graphic_color }}">
+                    {% if display_one_run.graphic_value > 50 %}
+                        <span class="progress-left">
+                            <span class="progress-bar"></span>
+                        </span>
+                    {% endif%}
+                        <span class="progress-right">
+                            <span class="progress-bar"></span>
+                        </span>
+                        <div class="progress-value">{{ display_one_run.graphic_value }}%</div>
+                    </div>
+                    </div>
                 </div> <!--  end of panel body -->
               </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-4 --> 

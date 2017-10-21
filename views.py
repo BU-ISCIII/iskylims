@@ -203,18 +203,25 @@ def get_information_run(run_name_found,run_id):
     for i in range (len (d_list)):
         r_data_display.append([d_list[i],run_info_data[i]])
     info_dict['data']=r_data_display
+    info_dict['run_state'] = run_state
     if (run_state == 'Recorded'):
-        info_dict['graphic']='25-percentage.gif'
+        info_dict['graphic_value']=25
+        info_dict['graphic_color']= 'violet'
     if (run_state == 'Sample Sent'):
-        info_dict['graphic']='40-percentage.gif'
+        info_dict['graphic_value']=40
+        info_dict['graphic_color']= 'pink'
     if (run_state == 'Process Running'):
-        info_dict['graphic']='50-percentage.gif'
+        info_dict['graphic_value']=50
+        info_dict['graphic_color']= 'brown'
     if (run_state == 'Bcl2Fastq Executed'):
-        info_dict['graphic']='60-percentage.gif'
+        info_dict['graphic_value']=60
+        info_dict['graphic_color']= 'orange'
     if (run_state == 'Running Stats'):
-        info_dict['graphic']='75-percentage.gif'
+        info_dict['graphic_value']=75
+        info_dict['graphic_color']= 'yellow'
     if (run_state == 'Completed'):
-        info_dict['graphic']='100-percentage.gif'
+        info_dict['graphic_value']=100
+        info_dict['graphic_color']= 'green'
         # finding the running parameters index for the run
         runName_id=RunningParameters.objects.get(pk=run_id)
         # Adding the Run Parameters information
@@ -1159,8 +1166,7 @@ def nextSeqStats_per_library (request):
                 for project in library_found :
                     project_id = project.id
                     # Get quality information for each Lane summary of the project id
-                    
-                    
+                                        
                     lane_in_project = NextSeqStatsLaneSummary.objects.get(project_id__exact = project_id, lane__exact = lane_number)
                     q_30_value, mean_q_value, yield_mb = lane_in_project.get_stats_info().split(';')
                     project_name = project.get_project_name()
@@ -1201,31 +1207,68 @@ def nextSeqStats_per_library (request):
                 mean_graphic = 'mean_graphic' + str(lane_number)
                 library_stats [mean_graphic] = mean_lane_graphic.render()
                 
-    
+                    
             library_name = project.get_library_name()
             library_stats['library_name'] = library_name  
             library_stats['project_names'] = projects_name_in_library   
             #import pdb; pdb.set_trace()    
             ########################################################################
-            ####### 
-            q30_comparations ={}
-            q30_comparations [library_name] = format(statistics.mean (q30_in_lib), '.2f')
+            # set the data for the library under study
             
+            q30_comparations , mean_comparations , n_bases_comparations = {}, {} , {} 
+            q30_comparations [library_name] = format(statistics.mean (q30_in_lib), '.2f')
+            mean_comparations [library_name] = format(statistics.mean (mean_in_lib), '.2f')
+            n_bases_comparations [library_name] = format(statistics.mean (yield_mb_in_lib), '.2f')
+            
+            # get the data for the libraries to compare with  
+            if start_date == '' and end_date == '':
+                if Projects.objects.filter(procState = 'Completed').exclude(libraryKit__exact = library_name).exists():
+                    libraries_to_compare = Projects.objects.filter(procState = 'Completed').exclude(libraryKit__exact = library_name)
+                    q30_compare_lib, mean_compare_lib, yield_mb_compare_lib = [], [] , []
+                    
+                    for project_to_compare in libraries_to_compare :
+                        library_to_compare_name = project_to_compare.get_library_name()
+                        project_to_compare_id = project_to_compare.id
+                        q_30_lane , mean_q_lane , yield_mb_lane = {} , {} ,{}
+                        for lane_number in range (1,5):
+                            lane_in_project = NextSeqStatsLaneSummary.objects.get(project_id__exact = project_to_compare_id, lane__exact = lane_number)
+                            q_30_value, mean_q_value, yield_mb = lane_in_project.get_stats_info().split(';')
+                            q30_compare_lib.append(float(q_30_value))
+                            mean_compare_lib.append(float(mean_q_value))
+                            yield_mb_compare_lib.append(float(yield_mb.replace(',','')))
+                        if library_to_compare_name in q30_comparations:
+                            q30_tmp_list =[float(q30_comparations [library_to_compare_name]), statistics.mean (q30_compare_lib)]
+                            q30_comparations [library_to_compare_name] = format(statistics.mean (q30_tmp_list), '.2f')
+                            mean_tmp_list = [float(mean_comparations [library_to_compare_name]), statistics.mean (mean_compare_lib)]
+                            mean_comparations [library_to_compare_name] = format(statistics.mean (mean_tmp_list), '.2f')
+                            n_bases_list =[float(n_bases_comparations [library_to_compare_name]), statistics.mean (yield_mb_compare_lib)]
+                            n_bases_comparations [library_to_compare_name] = format(statistics.mean (n_bases_list), '.2f')
+                        else:
+                            q30_comparations [library_to_compare_name] = format(statistics.mean (q30_compare_lib), '.2f')
+                            mean_comparations [library_to_compare_name] = format(statistics.mean (mean_compare_lib), '.2f')
+                            n_bases_comparations [library_to_compare_name] = format(statistics.mean (yield_mb_compare_lib), '.2f')
+                        
+                else :
+                    pass
+                
+           
             heading = 'Comparation of Percent of bases > Q30  ' 
-            data_source = graphic_for_library_kit (heading, 'Q30 comparation ' ,'Library Names', 'Percent of Q 30', 'fint', q30_comparations)
+            data_source = graphic_for_library_kit (heading, 'Q30 comparation ' ,'Library Names', 'Percent of Q 30', '', q30_comparations)
             comp_q30_lib_graphic = FusionCharts("column3d", 'comp-q30-1' , "500", "300", 'comp-q30-chart-1', "json", data_source)
             #import pdb; pdb.set_trace()
             library_stats ['comp_q30_graphic'] = comp_q30_lib_graphic.render()
-            
-            mean_comparations ={}
-            mean_comparations [library_name] = format(statistics.mean (mean_in_lib), '.2f')
-            
+
             heading = 'Comparation of Mean Quality Score ' 
-            data_source = graphic_for_library_kit (heading, 'Mean Quality Score comparation ' ,'Library Names', 'Mean Quality Score', 'fint', mean_comparations)
+            data_source = graphic_for_library_kit (heading, 'Mean Quality Score comparation ' ,'Library Names', 'Mean Quality Score', '', mean_comparations)
             comp_mean_lib_graphic = FusionCharts("column3d", 'comp-mean-1' , "500", "300", 'comp-mean-chart-1', "json", data_source)
             #import pdb; pdb.set_trace()
             library_stats ['comp_mean_graphic'] = comp_mean_lib_graphic.render()
             
+            heading = 'Number of Bases comparation' 
+            data_source = graphic_for_library_kit (heading, 'Number of Bases comparation ' ,'Library Names', 'Number of Bases ', '', n_bases_comparations)
+            comp_mean_lib_graphic = FusionCharts("column3d", 'comp-n_bases-1' , "500", "300", 'comp-n_bases-chart-1', "json", data_source)
+            #import pdb; pdb.set_trace()
+            library_stats ['comp_n_bases_graphic'] = comp_mean_lib_graphic.render()
             
             return render (request,'wetlab/NextSeqStatsPerLibrary.html', {'display_library_stats': library_stats })
         else:
