@@ -1128,20 +1128,21 @@ def nextSeqStats_per_library (request):
             if library_found.filter(generatedat__range=(start_date, end_date)).exists():
                  library_found = library_found.filter(generatedat__range=(start_date, end_date))
             else:
-                return render (request,'wetlab/error_page.html', {'content':['There are no Projects containing ', sample_name,
+                return render (request,'wetlab/error_page.html', {'content':['There are no Library containing ', library_kit_name,
                                         ' created between ', start_date, 'and the ', end_date]})
         if start_date !='' and end_date == '':
             if library_found.filter(generatedat__gte = start_date).exists():
                  library_found = library_found.filter(generatedat__gte = start_date)
                  #import pdb; pdb.set_trace()
             else:
-                return render (request,'wetlab/error_page.html', {'content':['There are no Projects containing ', sample_name,
+                return render (request,'wetlab/error_page.html', {'content':['There are no Library containing ', library_kit_name,
                                         ' starting from', start_date]})
         if start_date =='' and end_date != '':
             if library_found.filter(generatedat__lte = end_date).exists():
-                 library_found = library_found.filter(generatedat__lte = end_date)
+                #import pdb; pdb.set_trace()
+                library_found = library_found.filter(generatedat__lte = end_date)
             else:
-                return render (request,'wetlab/error_page.html', {'content':['There are no Projects containing ', sample_name,
+                return render (request,'wetlab/error_page.html', {'content':['There are no Library containing ', library_kit_name,
                                         ' finish before ', end_date]})
         
         #Collecting the statistics for the selected library
@@ -1219,53 +1220,76 @@ def nextSeqStats_per_library (request):
             q30_comparations [library_name] = format(statistics.mean (q30_in_lib), '.2f')
             mean_comparations [library_name] = format(statistics.mean (mean_in_lib), '.2f')
             n_bases_comparations [library_name] = format(statistics.mean (yield_mb_in_lib), '.2f')
-            
+            error_in_library_to_compare = ''
             # get the data for the libraries to compare with  
             if start_date == '' and end_date == '':
                 if Projects.objects.filter(procState = 'Completed').exclude(libraryKit__exact = library_name).exists():
                     libraries_to_compare = Projects.objects.filter(procState = 'Completed').exclude(libraryKit__exact = library_name)
-                    q30_compare_lib, mean_compare_lib, yield_mb_compare_lib = [], [] , []
-                    
-                    for project_to_compare in libraries_to_compare :
-                        library_to_compare_name = project_to_compare.get_library_name()
-                        project_to_compare_id = project_to_compare.id
-                        q_30_lane , mean_q_lane , yield_mb_lane = {} , {} ,{}
-                        for lane_number in range (1,5):
-                            lane_in_project = NextSeqStatsLaneSummary.objects.get(project_id__exact = project_to_compare_id, lane__exact = lane_number)
-                            q_30_value, mean_q_value, yield_mb = lane_in_project.get_stats_info().split(';')
-                            q30_compare_lib.append(float(q_30_value))
-                            mean_compare_lib.append(float(mean_q_value))
-                            yield_mb_compare_lib.append(float(yield_mb.replace(',','')))
-                        if library_to_compare_name in q30_comparations:
-                            q30_tmp_list =[float(q30_comparations [library_to_compare_name]), statistics.mean (q30_compare_lib)]
-                            q30_comparations [library_to_compare_name] = format(statistics.mean (q30_tmp_list), '.2f')
-                            mean_tmp_list = [float(mean_comparations [library_to_compare_name]), statistics.mean (mean_compare_lib)]
-                            mean_comparations [library_to_compare_name] = format(statistics.mean (mean_tmp_list), '.2f')
-                            n_bases_list =[float(n_bases_comparations [library_to_compare_name]), statistics.mean (yield_mb_compare_lib)]
-                            n_bases_comparations [library_to_compare_name] = format(statistics.mean (n_bases_list), '.2f')
-                        else:
-                            q30_comparations [library_to_compare_name] = format(statistics.mean (q30_compare_lib), '.2f')
-                            mean_comparations [library_to_compare_name] = format(statistics.mean (mean_compare_lib), '.2f')
-                            n_bases_comparations [library_to_compare_name] = format(statistics.mean (yield_mb_compare_lib), '.2f')
-                        
                 else :
-                    pass
+                    error_in_library_to_compare ='No other library have been found for doing the comparison. '
+                    
+            if start_date != '' and end_date == '':
+                if Projects.objects.filter(procState = 'Completed', generatedat__gte = start_date).exclude(libraryKit__exact = library_name).exists():
+                    libraries_to_compare = Projects.objects.filter(procState = 'Completed', generatedat__gte = start_date).exclude(libraryKit__exact = library_name)
+                else :
+                    error_in_library_to_compare ='No other library have been found for doing the comparison, with the starting date  ' + start_date
+            
+            if start_date == '' and end_date != '':
+                if Projects.objects.filter(procState = 'Completed', generatedat__lte = end_date).exclude(libraryKit__exact = library_name).exists():
+                    libraries_to_compare = Projects.objects.filter(procState = 'Completed', generatedat__lte = end_date).exclude(libraryKit__exact = library_name)
+                else :
+                    error_in_library_to_compare ='No other library have been found for doing the comparison ending with  ' + end_date
+                    
+            if start_date != '' and end_date != '':
+                if Projects.objects.filter(procState = 'Completed', generatedat__range =(start_date, end_date)).exclude(libraryKit__exact = library_name).exists():
+                    libraries_to_compare = Projects.objects.filter(procState = 'Completed', generatedat__range =(start_date, end_date)).exclude(libraryKit__exact = library_name)
+                else :
+                    error_in_library_to_compare ='No other library have been found for doing the comparison for the start date  ' + start_date + '  and with the ending date  ' + end_date
+            
+            
+            
+            if error_in_library_to_compare == '':
+                for project_to_compare in libraries_to_compare :
+                    library_to_compare_name = project_to_compare.get_library_name()
+                    project_to_compare_id = project_to_compare.id
+                    #q_30_lane , mean_q_lane , yield_mb_lane = {} , {} ,{}
+                    q30_compare_lib, mean_compare_lib, yield_mb_compare_lib = [], [] , []
+                    for lane_number in range (1,5):
+                        lane_in_project = NextSeqStatsLaneSummary.objects.get(project_id__exact = project_to_compare_id, lane__exact = lane_number)
+                        q_30_value, mean_q_value, yield_mb = lane_in_project.get_stats_info().split(';')
+                        q30_compare_lib.append(float(q_30_value))
+                        mean_compare_lib.append(float(mean_q_value))
+                        yield_mb_compare_lib.append(float(yield_mb.replace(',','')))
+                    if library_to_compare_name in q30_comparations:
+                        q30_tmp_list =[float(q30_comparations [library_to_compare_name]), statistics.mean (q30_compare_lib)]
+                        q30_comparations [library_to_compare_name] = format(statistics.mean (q30_tmp_list), '.2f')
+                        mean_tmp_list = [float(mean_comparations [library_to_compare_name]), statistics.mean (mean_compare_lib)]
+                        mean_comparations [library_to_compare_name] = format(statistics.mean (mean_tmp_list), '.2f')
+                        n_bases_list =[float(n_bases_comparations [library_to_compare_name]), statistics.mean (yield_mb_compare_lib)]
+                        n_bases_comparations [library_to_compare_name] = format(statistics.mean (n_bases_list), '.2f')
+                    else:
+                        q30_comparations [library_to_compare_name] = format(statistics.mean (q30_compare_lib), '.2f')
+                        mean_comparations [library_to_compare_name] = format(statistics.mean (mean_compare_lib), '.2f')
+                        n_bases_comparations [library_to_compare_name] = format(statistics.mean (yield_mb_compare_lib), '.2f')
+                 
+            else:
+                library_stats ['error_library'] = error_in_library_to_compare
                 
-           
-            heading = 'Comparation of Percent of bases > Q30  ' 
-            data_source = graphic_for_library_kit (heading, 'Q30 comparation ' ,'Library Names', 'Percent of Q 30', '', q30_comparations)
+ 
+            heading = 'Comparison of Percent of bases > Q30  ' 
+            data_source = graphic_for_library_kit (heading, 'Q30 comparison ' ,'Library Names', 'Percent of Q 30', '', q30_comparations)
             comp_q30_lib_graphic = FusionCharts("column3d", 'comp-q30-1' , "500", "300", 'comp-q30-chart-1', "json", data_source)
             #import pdb; pdb.set_trace()
             library_stats ['comp_q30_graphic'] = comp_q30_lib_graphic.render()
 
-            heading = 'Comparation of Mean Quality Score ' 
-            data_source = graphic_for_library_kit (heading, 'Mean Quality Score comparation ' ,'Library Names', 'Mean Quality Score', '', mean_comparations)
+            heading = 'Comparison of Mean Quality Score ' 
+            data_source = graphic_for_library_kit (heading, 'Mean Quality Score comparison ' ,'Library Names', 'Mean Quality Score', '', mean_comparations)
             comp_mean_lib_graphic = FusionCharts("column3d", 'comp-mean-1' , "500", "300", 'comp-mean-chart-1', "json", data_source)
             #import pdb; pdb.set_trace()
             library_stats ['comp_mean_graphic'] = comp_mean_lib_graphic.render()
             
-            heading = 'Number of Bases comparation' 
-            data_source = graphic_for_library_kit (heading, 'Number of Bases comparation ' ,'Library Names', 'Number of Bases ', '', n_bases_comparations)
+            heading = 'Number of Bases comparison' 
+            data_source = graphic_for_library_kit (heading, 'Number of Bases comparison ' ,'Library Names', 'Number of Bases ', '', n_bases_comparations)
             comp_mean_lib_graphic = FusionCharts("column3d", 'comp-n_bases-1' , "500", "300", 'comp-n_bases-chart-1', "json", data_source)
             #import pdb; pdb.set_trace()
             library_stats ['comp_n_bases_graphic'] = comp_mean_lib_graphic.render()
@@ -1273,6 +1297,60 @@ def nextSeqStats_per_library (request):
             return render (request,'wetlab/NextSeqStatsPerLibrary.html', {'display_library_stats': library_stats })
         else:
             library_list_stats ={}
+            libraries_found_name =[]
+            # get the library names that match with the searching criteria
+            for library in library_found :
+                lib_name =library.get_library_name ()
+                if not lib_name in libraries_found_name :
+                    libraries_found_name.append(lib_name)
+            #import pdb; pdb.set_trace()
+            library_list_stats['library_names'] = libraries_found_name
+            
+            q30_comparations , mean_comparations , n_bases_comparations = {}, {} , {} 
+            for project_to_compare in library_found :
+                library_to_compare_name = project_to_compare.get_library_name()
+                project_to_compare_id = project_to_compare.id
+                q30_compare_lib, mean_compare_lib, yield_mb_compare_lib = [], [] , []
+                for lane_number in range (1,5):
+                    lane_in_project = NextSeqStatsLaneSummary.objects.get(project_id__exact = project_to_compare_id, lane__exact = lane_number)
+                    q_30_value, mean_q_value, yield_mb = lane_in_project.get_stats_info().split(';')
+                    q30_compare_lib.append(float(q_30_value))
+                    mean_compare_lib.append(float(mean_q_value))
+                    yield_mb_compare_lib.append(float(yield_mb.replace(',','')))
+                if library_to_compare_name in q30_comparations:
+                    q30_tmp_list =[float(q30_comparations [library_to_compare_name]), statistics.mean (q30_compare_lib)]
+                    q30_comparations [library_to_compare_name] = format(statistics.mean (q30_tmp_list), '.2f')
+                    mean_tmp_list = [float(mean_comparations [library_to_compare_name]), statistics.mean (mean_compare_lib)]
+                    mean_comparations [library_to_compare_name] = format(statistics.mean (mean_tmp_list), '.2f')
+                    n_bases_list =[float(n_bases_comparations [library_to_compare_name]), statistics.mean (yield_mb_compare_lib)]
+                    n_bases_comparations [library_to_compare_name] = format(statistics.mean (n_bases_list), '.2f')
+                else:
+                    q30_comparations [library_to_compare_name] = format(statistics.mean (q30_compare_lib), '.2f')
+                    mean_comparations [library_to_compare_name] = format(statistics.mean (mean_compare_lib), '.2f')
+                    n_bases_comparations [library_to_compare_name] = format(statistics.mean (yield_mb_compare_lib), '.2f')
+            
+            
+            heading = 'Comparison of Percent of bases > Q30  ' 
+            data_source = graphic_for_library_kit (heading, 'Q30 comparison ' ,'Library Names', 'Percent of Q 30', '', q30_comparations)
+            comp_q30_lib_graphic = FusionCharts("column3d", 'comp-q30-1' , "500", "300", 'comp-q30-chart-1', "json", data_source)
+            #import pdb; pdb.set_trace()
+            library_list_stats ['comp_q30_graphic'] = comp_q30_lib_graphic.render()
+
+            heading = 'Comparison of Mean Quality Score ' 
+            data_source = graphic_for_library_kit (heading, 'Mean Quality Score comparison ' ,'Library Names', 'Mean Quality Score', '', mean_comparations)
+            comp_mean_lib_graphic = FusionCharts("column3d", 'comp-mean-1' , "500", "300", 'comp-mean-chart-1', "json", data_source)
+            #import pdb; pdb.set_trace()
+            library_list_stats ['comp_mean_graphic'] = comp_mean_lib_graphic.render()
+            
+            heading = 'Number of Bases comparison' 
+            data_source = graphic_for_library_kit (heading, 'Number of Bases comparison ' ,'Library Names', 'Number of Bases ', '', n_bases_comparations)
+            comp_mean_lib_graphic = FusionCharts("column3d", 'comp-n_bases-1' , "500", "300", 'comp-n_bases-chart-1', "json", data_source)
+            #import pdb; pdb.set_trace()
+            library_list_stats ['comp_n_bases_graphic'] = comp_mean_lib_graphic.render()
+            
+            
+            
+            
             return render (request,'wetlab/NextSeqStatsPerLibrary.html', {'display_list_of_library_stats': library_list_stats })
 
     else:

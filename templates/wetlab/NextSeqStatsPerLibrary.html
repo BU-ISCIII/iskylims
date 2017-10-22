@@ -196,6 +196,19 @@
             </div> <!--// end col-sm-6  -->
         </div> <!--// end col-sm 12 -->
     </div> <!--// end row -->
+    {% if  display_library_stats.error_library %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="panel panel-danger">
+                <div class="panel-body">
+                    <p>When looking for other libraries to compare this library with others based on the dates defined on the FORM .
+                    {{ display_library_stats.error_library }}</p>
+                    <p>For that reason only the library  {{display_library_stats.library_name}} graphics are showed</p>
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-6  -->
+    </div> <!--// end row -->
+    {% endif %}
     <!-- Q 30 quality Library statistics graphics-->
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
@@ -235,6 +248,71 @@
                         <div id="comp-n_bases-chart-1"> </div>
                     <!-- dumping JavaScript code here -->
                     {{ display_library_stats.comp_n_bases_graphic |safe }}
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-6  -->
+    </div> <!--// end row -->
+
+{% elif display_list_of_library_stats %}
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>           
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>                   
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>  
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script>   
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>     
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7 col-sm-offset-3" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h2>These libraries match the searching criteria </h2></div>
+                <div class="panel-body">
+                    
+                    {% for values in display_list_of_library_stats.library_names %}
+                        <h5>{{ values }}</h5>
+                    {% endfor%}
+                    <p>The following graphics will show the summary form these libraries to compare with </p>
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-8  -->
+    </div> <!--// end row -->
+    <!-- Q 30 quality Library statistics graphics-->
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="col-sm-6" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Comparation of Percent of >Q30 Statistics </h3></div>
+                    <div class="panel-body">
+                        <!-- Column 2 Chart will start here-->
+                            <div id="comp-q30-chart-1"> </div>
+                        <!-- dumping JavaScript code here -->
+                        {{ display_list_of_library_stats.comp_q30_graphic |safe }}
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-6  -->
+            
+            <div class="col-sm-6" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Comparation of Mean Quality Score Statistics </h3></div>
+                    <div class="panel-body">
+                        <!-- Column 2 Chart will start here-->
+                            <div id="comp-mean-chart-1"> </div>
+                        <!-- dumping JavaScript code here -->
+                        {{ display_list_of_library_stats.comp_mean_graphic |safe }}
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-6  -->
+        </div> <!--// end col-sm 12 -->
+    </div> <!--// end row -->
+    
+    <div class="row row-space-2 margin-b-4">
+    <div class="col-sm-12" >
+        <div class="col-sm-6" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Comparation of Number of Bases Statistics </h3></div>
+                <div class="panel-body">
+                    <!-- Column 2 Chart will start here-->
+                        <div id="comp-n_bases-chart-1"> </div>
+                    <!-- dumping JavaScript code here -->
+                    {{ display_list_of_library_stats.comp_n_bases_graphic |safe }}
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->
         </div> <!--// end col-sm-6  -->
