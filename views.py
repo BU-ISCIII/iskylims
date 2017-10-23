@@ -1091,7 +1091,29 @@ def nextSeqStats_per_time (request):
 
     return render (request,'wetlab/NextSeqStatsPerTime.html')
     
- 
+def get_list_of_libraries_values (library_found, q30_comparations, mean_comparations , n_bases_comparations) :
+        
+    for project_to_compare in library_found :
+        library_to_compare_name = project_to_compare.get_library_name()
+        project_to_compare_id = project_to_compare.id
+        q30_compare_lib, mean_compare_lib, yield_mb_compare_lib = [], [] , []
+        for lane_number in range (1,5):
+            lane_in_project = NextSeqStatsLaneSummary.objects.get(project_id__exact = project_to_compare_id, lane__exact = lane_number)
+            q_30_value, mean_q_value, yield_mb = lane_in_project.get_stats_info().split(';')
+            q30_compare_lib.append(float(q_30_value))
+            mean_compare_lib.append(float(mean_q_value))
+            yield_mb_compare_lib.append(float(yield_mb.replace(',','')))
+        if library_to_compare_name in q30_comparations:
+            q30_tmp_list =[float(q30_comparations [library_to_compare_name]), statistics.mean (q30_compare_lib)]
+            q30_comparations [library_to_compare_name] = format(statistics.mean (q30_tmp_list), '.2f')
+            mean_tmp_list = [float(mean_comparations [library_to_compare_name]), statistics.mean (mean_compare_lib)]
+            mean_comparations [library_to_compare_name] = format(statistics.mean (mean_tmp_list), '.2f')
+            n_bases_list =[float(n_bases_comparations [library_to_compare_name]), statistics.mean (yield_mb_compare_lib)]
+            n_bases_comparations [library_to_compare_name] = format(statistics.mean (n_bases_list), '.2f')
+        else:
+            q30_comparations [library_to_compare_name] = format(statistics.mean (q30_compare_lib), '.2f')
+            mean_comparations [library_to_compare_name] = format(statistics.mean (mean_compare_lib), '.2f')
+            n_bases_comparations [library_to_compare_name] = format(statistics.mean (yield_mb_compare_lib), '.2f') 
  
  
 def nextSeqStats_per_library (request):
@@ -1215,7 +1237,7 @@ def nextSeqStats_per_library (request):
             #import pdb; pdb.set_trace()    
             ########################################################################
             # set the data for the library under study
-            
+            ########################################################################
             q30_comparations , mean_comparations , n_bases_comparations = {}, {} , {} 
             q30_comparations [library_name] = format(statistics.mean (q30_in_lib), '.2f')
             mean_comparations [library_name] = format(statistics.mean (mean_in_lib), '.2f')
@@ -1245,9 +1267,7 @@ def nextSeqStats_per_library (request):
                     libraries_to_compare = Projects.objects.filter(procState = 'Completed', generatedat__range =(start_date, end_date)).exclude(libraryKit__exact = library_name)
                 else :
                     error_in_library_to_compare ='No other library have been found for doing the comparison for the start date  ' + start_date + '  and with the ending date  ' + end_date
-            
-            
-            
+              
             if error_in_library_to_compare == '':
                 for project_to_compare in libraries_to_compare :
                     library_to_compare_name = project_to_compare.get_library_name()
@@ -1305,31 +1325,12 @@ def nextSeqStats_per_library (request):
                     libraries_found_name.append(lib_name)
             #import pdb; pdb.set_trace()
             library_list_stats['library_names'] = libraries_found_name
-            
             q30_comparations , mean_comparations , n_bases_comparations = {}, {} , {} 
-            for project_to_compare in library_found :
-                library_to_compare_name = project_to_compare.get_library_name()
-                project_to_compare_id = project_to_compare.id
-                q30_compare_lib, mean_compare_lib, yield_mb_compare_lib = [], [] , []
-                for lane_number in range (1,5):
-                    lane_in_project = NextSeqStatsLaneSummary.objects.get(project_id__exact = project_to_compare_id, lane__exact = lane_number)
-                    q_30_value, mean_q_value, yield_mb = lane_in_project.get_stats_info().split(';')
-                    q30_compare_lib.append(float(q_30_value))
-                    mean_compare_lib.append(float(mean_q_value))
-                    yield_mb_compare_lib.append(float(yield_mb.replace(',','')))
-                if library_to_compare_name in q30_comparations:
-                    q30_tmp_list =[float(q30_comparations [library_to_compare_name]), statistics.mean (q30_compare_lib)]
-                    q30_comparations [library_to_compare_name] = format(statistics.mean (q30_tmp_list), '.2f')
-                    mean_tmp_list = [float(mean_comparations [library_to_compare_name]), statistics.mean (mean_compare_lib)]
-                    mean_comparations [library_to_compare_name] = format(statistics.mean (mean_tmp_list), '.2f')
-                    n_bases_list =[float(n_bases_comparations [library_to_compare_name]), statistics.mean (yield_mb_compare_lib)]
-                    n_bases_comparations [library_to_compare_name] = format(statistics.mean (n_bases_list), '.2f')
-                else:
-                    q30_comparations [library_to_compare_name] = format(statistics.mean (q30_compare_lib), '.2f')
-                    mean_comparations [library_to_compare_name] = format(statistics.mean (mean_compare_lib), '.2f')
-                    n_bases_comparations [library_to_compare_name] = format(statistics.mean (yield_mb_compare_lib), '.2f')
-            
-            
+            ###
+            # get the data for displaying the libraries found in the form request
+            ###
+            get_list_of_libraries_values (library_found, q30_comparations, mean_comparations , n_bases_comparations)
+           
             heading = 'Comparison of Percent of bases > Q30  ' 
             data_source = graphic_for_library_kit (heading, 'Q30 comparison ' ,'Library Names', 'Percent of Q 30', '', q30_comparations)
             comp_q30_lib_graphic = FusionCharts("column3d", 'comp-q30-1' , "500", "300", 'comp-q30-chart-1', "json", data_source)
@@ -1347,10 +1348,43 @@ def nextSeqStats_per_library (request):
             comp_mean_lib_graphic = FusionCharts("column3d", 'comp-n_bases-1' , "500", "300", 'comp-n_bases-chart-1', "json", data_source)
             #import pdb; pdb.set_trace()
             library_list_stats ['comp_n_bases_graphic'] = comp_mean_lib_graphic.render()
+            ###
+            # get the data for displaying the libraries found in the form request
+            ###
+            all_libraries = Projects.objects.filter(procState = 'Completed')
+            if (start_date != '' and end_date != ''):
+                if all_libraries.filter(generatedat__range=(start_date, end_date)).exists():
+                     library_found = library_found.filter(generatedat__range=(start_date, end_date))
+            if start_date !='' and end_date == '':
+                if all_libraries.filter(generatedat__gte = start_date).exists():
+                     all_libraries = library_found.filter(generatedat__gte = start_date)
+            if start_date =='' and end_date != '':
+                if all_libraries.filter(generatedat__lte = end_date).exists():
+                    #import pdb; pdb.set_trace()
+                    all_libraries = library_found.filter(generatedat__lte = end_date)
             
+            q30_comparations , mean_comparations , n_bases_comparations = {}, {} , {} 
+            get_list_of_libraries_values (all_libraries, q30_comparations, mean_comparations , n_bases_comparations)
             
+            heading = 'Library kits of Percent of bases > Q30  ' 
+            data_source = graphic_for_library_kit (heading, 'Q30 library kits ' ,'Library Names', 'Percent of Q 30', '', q30_comparations)
+            lib_q30_lib_graphic = FusionCharts("column3d", 'lib-q30-lib' , "500", "300", 'lib-q30-chart-1', "json", data_source)
+            #import pdb; pdb.set_trace()
+            library_list_stats ['lib_q30_graphic'] = lib_q30_lib_graphic.render()
+
+            heading = 'Library kits of Mean Quality Score ' 
+            data_source = graphic_for_library_kit (heading, 'Mean Quality Score Library kits ' ,'Library Names', 'Mean Quality Score', '', mean_comparations)
+            lib_mean_lib_graphic = FusionCharts("column3d", 'lib-mean-lib' , "500", "300", 'lib-mean-chart-1', "json", data_source)
+            #import pdb; pdb.set_trace()
+            library_list_stats ['lib_mean_graphic'] = lib_mean_lib_graphic.render()
             
+            heading = 'Number of Bases per Library kits' 
+            data_source = graphic_for_library_kit (heading, 'Number of Bases per Library kits ' ,'Library Names', 'Number of Bases ', '', n_bases_comparations)
+            lib_mean_lib_graphic = FusionCharts("column3d", 'lib-n_bases-lib' , "500", "300", 'lib-n_bases-chart-1', "json", data_source)
+            #import pdb; pdb.set_trace()
+            library_list_stats ['lib_n_bases_graphic'] = lib_mean_lib_graphic.render()
             
+            #import pdb; pdb.set_trace()
             return render (request,'wetlab/NextSeqStatsPerLibrary.html', {'display_list_of_library_stats': library_list_stats })
 
     else:
@@ -1663,57 +1697,7 @@ def test_graphic (request):
         # returning complete JavaScript and HTML code, which is used to generate chart in the browsers. 
     return  render(request, 'wetlab/graphic.html', {'output' : test})
     #return  render(request, 'wetlab/graphic.html', {'output' : pie3d.render()})
-'''
-creacion del grafico usando un diccionario
-dataSource = {}
-    
-    # Chart data is passed to the `dataSource` parameter, as hashes, in the form of
-    # key-value pairs.
-    dataSource['chart'] = { 
-        "caption": "Comparison of Quarterly Revenue",
-        "subCaption": "Harry's SuperMart",
-        "xAxisname": "Quarter",
-        "yAxisName": "Amount ($)",
-        "numberPrefix": "$",
-        "theme": "zune"
-        }
 
-    # The `category` dict is defined inside the `categories` array with four key-value pairs
-    # that represent the x-axis labels for the four quarters.
-    dataSource["categories"] = [{
-                "category": [
-                    { "label": "Q1" },
-                    { "label": "Q2" },
-                    { "label": "Q3" },
-                    { "label": "Q4" }
-                ]
-            }]
-    
-    # The `data` hash contains four key-value pairs that are the values for the revenue
-    # generated in the previous year.
-
-        dataSource["dataset"] = [{
-                "seriesname": "Previous Year",
-                "data": [
-                        { "value": "10000" },
-                        { "value": "11500" },
-                        { "value": "12500" },
-                        { "value": "15000" }
-                    ]
-                }, {
-                "seriesname": "Current Year",
-                "data": [
-                        { "value": "25400" },
-                        { "value": "29800" },
-                        { "value": "21800" },
-                        { "value": "26800" }
-                    ]
-                }    
-            ]
-
-    # Create an object for the Multiseries column 2D charts using the FusionCharts class constructor
-    mscol2D = FusionCharts("mscolumn2d", "ex1" , "600", "400", "chart-1", "json", dataSource)
-'''
     
   
 
