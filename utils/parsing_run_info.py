@@ -174,7 +174,8 @@ def process_run_in_recorded_state(logger):
                     shutil.rmtree(os.path.join(recorded_dir, exp_name_id))
                     logger.debug('Deleted the recorded folder ')
                         # change the run  to SampleSent state
-                    update_state(exp_name_id, 'Sample Sent'. logger)
+                    update_run_state(exp_name_id, 'Sample Sent'. logger)
+                    update_project_state(exp_name_id, 'Sample Sent'. logger)
                         # add the run_dir inside the processed_run file
                     processed_run.append(run_dir)
                     run_names_processed.append(exp_name)
@@ -201,11 +202,18 @@ def process_run_in_recorded_state(logger):
 
 
 
-def update_state(run_id, state, logger):
+def update_run_state(run_id, state, logger):
     run=RunProcess.objects.get(pk=run_id)
     logger.info('updating the run state for %s to %s ', run_id, state)
     run.runState= state
     run.save()
+
+def update_project_state(run_id, state, logger):
+    projects_to_update = Projects.objects.filter(runprocess_id__exact = run_id)
+    for project in projects_to_update :
+        logger.info('updating the project state for %s to %s ', project, state)
+        project.procState = state
+        project.save()
 
 def parsing_statistics_xml(demux_file, conversion_file, logger):
     total_p_b_count=[0,0,0,0] 
@@ -612,7 +620,7 @@ def process_run_in_samplesent_state (process_list, logger):
         run_be_processed_id=RunProcess.objects.get(runName__exact=run_item).id
         logger.debug ('Run ID for the run process to be update is:  %s', run_be_processed_id)
         #run_Id_for_searching=RunningParameters.objects.get(runName_id= run_be_processed_id)
-        update_state(run_be_processed_id, 'Process Running', logger)
+        update_run_state(run_be_processed_id, 'Process Running', logger)
 
         
 def process_run_in_processrunning_state (process_list, logger):
@@ -638,7 +646,8 @@ def process_run_in_processrunning_state (process_list, logger):
             if sh.filename =='Reports' :
                 logger.info('bcl2fastq has been completed for run %s', run_Id_used)
                 processed_run.append(run_Id_used)
-                update_state(run_be_processed_id, 'Bcl2Fastq Executed', logger)
+                update_run_state(run_be_processed_id, 'Bcl2Fastq Executed', logger)
+                update_project_state(run_be_processed_id, 'B2FqExecuted', logger)
                 break
             else:
                 logger.debug('Report directory not found in file_list %s ', sh.filename)
@@ -660,7 +669,7 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
         run_Id_used=str(RunningParameters.objects.get(runName_id= run_processing_id))
         plot_dir='../../documents/wetlab/images_plot'
         
-        update_state(run_processing_id, 'Running Stats', logger)
+        update_run_state(run_processing_id, 'Running Stats', logger)
         
         # get the directory of samba to fetch the files
         share_folder_name ='Flavia'
@@ -733,7 +742,8 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
         create_graphics(local_dir_samba, run_processing_id, run_Id_used, logger)
         processed_run.append(run_Id_used)
         logger.info('run id %s is now on Completed state', run_Id_used)
-        update_state(run_processing_id, 'Completed', logger)
+        update_run_state(run_processing_id, 'Completed', logger)
+        update_project_state(run_processing_id, 'Completed', logger)
     return processed_run
 '''
 def find_state_and_save_data(run_name,run_folder):

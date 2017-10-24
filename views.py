@@ -181,7 +181,12 @@ def get_sample_file (request):
         ## update the state of the run to 'Recorded'
         run_p.runState='Recorded'
         run_p.save()
-        
+        ## update the project state to Recorded
+        project_to_be_updated = Projects.objects.filer(runprocess_id__exact = run_p.id)
+        for project in project_to_be_updated :
+            project.procState='Recorded'
+            project.save()
+            
         return render (request, 'wetlab/getSampleSheet.html', {'completed_form':results})
     
 
@@ -736,11 +741,18 @@ def get_information_project (project_id):
     project_info_dict ['user_name'] = project_id.get_user_name()
     p_state = project_id.get_state()
     project_info_dict['state'] = p_state
-    if p_state == 'Not Started':
-        project_info_dict['graphic']='25-percentage.gif'
-    
+    if p_state == 'Recorded':
+        project_info_dict['graphic_value']=25
+        project_info_dict['graphic_color']='violet'
+    if p_state == 'Sample Sent':
+        project_info_dict['graphic_value']= 50
+        project_info_dict['graphic_color']='brown'
+    if p_state == 'B2FqExecuted':
+        project_info_dict['graphic_value']= 75
+        project_info_dict['graphic_color']='yelllow'
     if p_state == 'Completed':
-        project_info_dict['graphic']='100-percentage.gif'
+        project_info_dict['graphic_value']= 100
+        project_info_dict['graphic_color']='green'
         fl_data_display=[]
         #import pdb; pdb.set_trace()
         # prepare the data for Flowcell Summary

@@ -34,7 +34,17 @@
                 <div class="panel panel-default">
                 <div class="panel-heading">Project State : <b>{{ display_one_project.state}} </b></div> 
                 <div class="panel-body"> 
-                    <img class="promo-block-img img-responsive" src="/static/wetlab/img/percentage/{{ display_one_project.graphic }}"  align="Avatar">
+                    <div class="progress {{ display_one_project.graphic_color }}">
+                    {% if display_one_project.graphic_value > 50 %}
+                        <span class="progress-left">
+                            <span class="progress-bar"></span>
+                        </span>
+                    {% endif%}
+                        <span class="progress-right">
+                            <span class="progress-bar"></span>
+                        </span>
+                        <div class="progress-value">{{ display_one_project.graphic_value }}%</div>
+                    </div>
                 </div> <!--  end of panel body -->
               </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-4 --> 
@@ -187,6 +197,7 @@
                <div class="col-sm-4"><select class="form-control" name="projectstate" id="projectstate">
                                				<option value="">Choose a value  </option>
                                             <option value="Recorded">Recorded</option>
+                                            <option value="Sample Sent">Sample Sent</option>
                                             <option value="B2FqExecuted">B2FqExecuted</option>
                                             <option value="Completed">Completed</option>
                                       </select>
