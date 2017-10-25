@@ -91,21 +91,28 @@ def check_recorded_folder ():
     print('Starting the process for recorded_folder ')
     logger=open_log()
     
-    logger.info('Looking for new run in directory on documents/wetlab/tmp/recorded \n')
+    logger.info('Looking for new run in directory on documents/wetlab/tmp/recorded ')
     path='iSkyLIMS/documents/wetlab/tmp/recorded/'
     dir_wetlab=os.getcwd()
-    logger.debug('woring dir = %s', dir_wetlab)
+    logger.debug('working directory is %s', dir_wetlab)
     if os.listdir(path):
         # There are sample sheet files that need to be processed
         updated_run=process_run_in_recorded_state (logger)
         if updated_run == 'Error':
-            logger.error('No connection is available to Flavia \n')
-            logger.error('Exiting the process for searching run in recorded state \n')
+            logger.error('No connection is available to Flavia')
+            logger.error('Exiting the process for searching run in recorded state ')
+            time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            print(time_stop)
+            print('Exiting the check_recorder_folder module due to error when connecting to Flavia')
         else:
             for run_changed in updated_run:
                 logger.info('The run  %s is now on Sample Sent state', run_changed)
+            time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            print(time_stop)
     else:
-        logger.info( 'Exiting the crontab for record_folder. No directories have been found \n')
+        time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print(time_stop)
+        logger.info( 'Exiting the crontab for record_folder. No directories have been found')
 
 def check_not_finish_run():
     time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')

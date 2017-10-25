@@ -144,21 +144,21 @@ def process_run_in_recorded_state(logger):
                 with open(local_run_parameter_file ,'wb') as r_par_fp :
                     samba_run_parameters_file=os.path.join(run_dir,'RunParameters.xml')
                     conn.retrieveFile(share_folder_name, samba_run_parameters_file, r_par_fp)
-                    logger.debug('retrieving the RunParameter.xml file for %s', samba_run_parameters_file)
+                    logger.debug('Retrieving the RunParameter.xml file for %s', samba_run_parameters_file)
                 # look for the experience name  for the new run folder. Then find the run_id valued for it
                 exp_name=fetch_exp_name_from_run_info(local_run_parameter_file)
                 if  RunProcess.objects.filter(runName__icontains = exp_name).exists():
                     exp_name_id=str(RunProcess.objects.get(runName__exact = exp_name).id)
-                    logger.debug('matching the experimental name %s with database ', exp_name_id)
+                    logger.debug('Matching the experimental name %s with database ', exp_name_id)
                     
                     sample_sheet_tmp_dir=os.path.join('iSkyLIMS/wetlab/tmp/recorded',exp_name_id,'samplesheet.csv')
                     if os.path.exists(sample_sheet_tmp_dir):
                         # copy Sample heet file to samba directory
-                        logger.info('found run directory %s for the experiment name %s', run_dir, exp_name_id)
+                        logger.info('Found run directory %s for the experiment name %s', run_dir, exp_name_id)
                         with open(sample_sheet_tmp_dir ,'rb') as  sample_samba_fp:
                             samba_sample_file= os.path.join(run_dir,'samplesheet.csv')
                             conn.storeFile(share_folder_name, samba_sample_file, sample_samba_fp)
-                            logger.info('saving the samplesheet.csv file on remote node')
+                            logger.info('Saving the samplesheet.csv file on remote node')
                         # retrieve the runInfo.xml file from samba directory
                     # get the runIfnfo.xml to collect the  information for this run    
                     with open(local_run_info_file ,'wb') as r_info_fp :
@@ -186,6 +186,7 @@ def process_run_in_recorded_state(logger):
                     continue
     conn.close()
     fh =open (process_run_file,'w')
+    # update the process_run_file with the new run 
     for process in processed_run:
         fh.write(process)
         fh.write('\n')
