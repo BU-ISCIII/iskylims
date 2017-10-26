@@ -42,14 +42,8 @@ def save_run_info(run_info, run_parameter, run_id, logger):
                  
     running_data['ImageChannel']=image_channel
     running_data['Flowcell']=p_run.find('Flowcell').text
-    if 'ImageDimensions' not in p_run.attrib:
-        print ("There is no ImageDimension Atributes")
-    else:
-        running_data['ImageDimensions']=p_run.find('ImageDimensions').attrib
-    if 'FlowcellLayout' not in p_run.attrib:
-        print ("There is no FlowcellLayout Atributes")
-    else:
-        running_data['FlowcellLayout']=p_run.find('FlowcellLayout').attrib
+    running_data['ImageDimensions']=p_run.find('ImageDimensions').attrib
+    running_data['FlowcellLayout']=p_run.find('FlowcellLayout').attrib
     #################################################
     ## parsing RunParameter.xml file
     #################################################
@@ -108,7 +102,7 @@ def fetch_exp_name_from_run_info (local_run_parameter_file):
 def process_run_in_recorded_state(logger):
     try:
         conn=open_samba_connection()
-        logger.info('Sucessfully connection for the process_run_in_recorded_state')
+        logger.info('Sucessfully  SAMBA connection for the process_run_in_recorded_state')
     except:
         return ('Error')
     processed_run_file, runlist = [] , []
@@ -147,11 +141,12 @@ def process_run_in_recorded_state(logger):
                     logger.debug('Retrieving the RunParameter.xml file for %s', samba_run_parameters_file)
                 # look for the experience name  for the new run folder. Then find the run_id valued for it
                 exp_name=fetch_exp_name_from_run_info(local_run_parameter_file)
+                logger.debug('found the experiment name  , %s', exp_name)
                 if  RunProcess.objects.filter(runName__icontains = exp_name).exists():
                     exp_name_id=str(RunProcess.objects.get(runName__exact = exp_name).id)
                     logger.debug('Matching the experimental name %s with database ', exp_name_id)
                     
-                    sample_sheet_tmp_dir=os.path.join('iSkyLIMS/wetlab/tmp/recorded',exp_name_id,'samplesheet.csv')
+                    sample_sheet_tmp_dir=os.path.join('iSkyLIMS/documents/wetlab/tmp/recorded',exp_name_id,'samplesheet.csv')
                     if os.path.exists(sample_sheet_tmp_dir):
                         # copy Sample heet file to samba directory
                         logger.info('Found run directory %s for the experiment name %s', run_dir, exp_name_id)
@@ -160,6 +155,8 @@ def process_run_in_recorded_state(logger):
                             conn.storeFile(share_folder_name, samba_sample_file, sample_samba_fp)
                             logger.info('Saving the samplesheet.csv file on remote node')
                         # retrieve the runInfo.xml file from samba directory
+                    else:
+                        logger.error('ERROR ---No sample Sheet save to remote dir. Local Directory %s not found ', sample_sheet_tmp_dir)
                     # get the runIfnfo.xml to collect the  information for this run    
                     with open(local_run_info_file ,'wb') as r_info_fp :
                         samba_run_info_file=os.path.join(run_dir,'RunInfo.xml')
@@ -174,8 +171,8 @@ def process_run_in_recorded_state(logger):
                     shutil.rmtree(os.path.join(recorded_dir, exp_name_id))
                     logger.debug('Deleted the recorded folder ')
                         # change the run  to SampleSent state
-                    update_run_state(exp_name_id, 'Sample Sent'. logger)
-                    update_project_state(exp_name_id, 'Sample Sent'. logger)
+                    update_run_state(exp_name_id, 'Sample Sent', logger)
+                    update_project_state(exp_name_id, 'Sample Sent', logger)
                         # add the run_dir inside the processed_run file
                     processed_run.append(run_dir)
                     run_names_processed.append(exp_name)
