@@ -7,10 +7,9 @@ import os , sys
 import logging
 from logging.handlers import RotatingFileHandler
 
-def open_log():
+def open_log(log_name):
     
-    LOG_FILENAME = 'checking_uncompleted_run.log'
-    log_name=os.path.join('iSkyLIMS/wetlab/log/', LOG_FILENAME)
+    log_name=os.path.join('iSkyLIMS/wetlab/log/', log_name)
     #def create_log ():
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
@@ -89,7 +88,7 @@ def check_recorded_folder ():
     time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(time_start )
     print('Starting the process for recorded_folder ')
-    logger=open_log()
+    logger=open_log('check_recorded_folder.log')
     
     logger.info('Looking for new run in directory on documents/wetlab/tmp/recorded ')
     path='iSkyLIMS/documents/wetlab/tmp/recorded/'
@@ -118,7 +117,7 @@ def check_not_finish_run():
     time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(time_start )
     print('Starting the process for searching not completed runs ')
-    logger=open_log()
+    logger=open_log('checking_uncompleted_run.log')
     logger.info('starting execute the crontab for not finish run')
     updated_run=find_not_completed_run(logger)
     logger.debug('Display the list of the updated_run %s', updated_run)
