@@ -702,7 +702,7 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
         logger.info('Fetched the RunInfo.xml')
         # copy all binary files in interop folder to local  documents/wetlab/tmp/processing/interop  
         interop_local_dir_samba= os.path.join(local_dir_samba, 'InterOp')
-        remote_interop_dir=os.path.join('/',run_Id_used,'InterOP')
+        remote_interop_dir=os.path.join('/',run_Id_used,'InterOp')
         file_list = conn.listPath( share_folder_name, remote_interop_dir)
         for sh in file_list:
             if sh.isDirectory:

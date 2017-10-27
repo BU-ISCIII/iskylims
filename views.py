@@ -887,7 +887,7 @@ def nextSeqStats_per_researcher (request):
 
                     if len (r_project_by_researcher) ==1:
                         # get researcher_project id
-                        researcher_project_id = Projects.objects.get(user_id__exact =r_name_id).id
+                        researcher_project_id = Projects.objects.filter(user_id__exact =r_name_id).id
                         project_name = r_project_by_researcher[0].get_project_name()
                         user_name = r_project_by_researcher[0].get_user_name()
                         #import pdb; pdb.set_trace()
