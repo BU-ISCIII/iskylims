@@ -9,7 +9,7 @@ from logging.handlers import RotatingFileHandler
 
 def open_log(log_name):
     
-    log_name=os.path.join('iSkyLIMS/wetlab/log/', log_name)
+    log_name=os.path.join('wetlab/log/', log_name)
     #def create_log ():
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
@@ -91,7 +91,7 @@ def check_recorded_folder ():
     logger=open_log('check_recorded_folder.log')
     
     logger.info('Looking for new run in directory on documents/wetlab/tmp/recorded ')
-    path='iSkyLIMS/documents/wetlab/tmp/recorded/'
+    path='documents/wetlab/tmp/recorded/'
     dir_wetlab=os.getcwd()
     logger.debug('working directory is %s', dir_wetlab)
     if os.listdir(path):

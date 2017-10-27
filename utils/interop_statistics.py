@@ -173,7 +173,7 @@ def create_graphics(run_folder,run_id, graphic_dir, logger):
         plot_command= item_graphic + run_folder + '  | gnuplot'
         os.system(plot_command)
         
-    run_graphic_dir=os.path.join('iSkyLIMS/documents/wetlab/images_plot', graphic_dir)
+    run_graphic_dir=os.path.join('documents/wetlab/images_plot', graphic_dir)
     if not os.path.exists(run_graphic_dir):
         os.mkdir(run_graphic_dir)
         logger.info('created new directory %s', run_graphic_dir)

@@ -182,7 +182,7 @@ def get_sample_file (request):
         run_p.runState='Recorded'
         run_p.save()
         ## update the project state to Recorded
-        project_to_be_updated = Projects.objects.filer(runprocess_id__exact = run_p.id)
+        project_to_be_updated = Projects.objects.filter(runprocess_id__exact = run_p.id)
         for project in project_to_be_updated :
             project.procState='Recorded'
             project.save()

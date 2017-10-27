@@ -17,7 +17,7 @@ def open_samba_connection():
     # client_machine_name can be an arbitary ASCII string
     # server_name should match the remote machine name, or else the connection will be rejected
     
-    conn=SMBConnection('bioinfocifs', 'bioinfocifs', 'flavia', 'barbarroja', use_ntlm_v2=True)
+    conn=SMBConnection('bioinfocifs', 'bioinfocifs', 'NGS_Data_test', 'barbarroja', use_ntlm_v2=True)
     conn.connect('10.15.60.54', 139)
 
     '''
@@ -106,11 +106,11 @@ def process_run_in_recorded_state(logger):
     except:
         return ('Error')
     processed_run_file, runlist = [] , []
-    recorded_dir='iSkyLIMS/documents/wetlab/tmp/recorded/'
-    share_folder_name='Flavia'
-    local_run_parameter_file='iSkyLIMS/documents/wetlab/tmp/tmp/RunParameters.xml'
-    local_run_info_file='iSkyLIMS/documents/wetlab/tmp/tmp/RunInfo.xml'
-    process_run_file='iSkyLIMS/documents/wetlab/tmp/processed_run_file'
+    recorded_dir='documents/wetlab/tmp/recorded/'
+    share_folder_name='NGS_Data_test'
+    local_run_parameter_file='documents/wetlab/tmp/tmp/RunParameters.xml'
+    local_run_info_file='documents/wetlab/tmp/tmp/RunInfo.xml'
+    process_run_file='documents/wetlab/tmp/processed_run_file'
     processed_run=[]
     run_names_processed=[]
     ## get the list of the processed run
@@ -129,7 +129,7 @@ def process_run_in_recorded_state(logger):
             if (run_dir == '.' or run_dir == '..'):
                 continue
                 # if the run folder has been already process continue searching
-            if run_dir in processed_run_file:
+            if run_dir in processed_run:
                 logger.debug('run id %s already processed', run_dir)
                 continue
             else:
@@ -146,7 +146,7 @@ def process_run_in_recorded_state(logger):
                     exp_name_id=str(RunProcess.objects.get(runName__exact = exp_name).id)
                     logger.debug('Matching the experimental name %s with database ', exp_name_id)
                     
-                    sample_sheet_tmp_dir=os.path.join('iSkyLIMS/documents/wetlab/tmp/recorded',exp_name_id,'samplesheet.csv')
+                    sample_sheet_tmp_dir=os.path.join('documents/wetlab/tmp/recorded',exp_name_id,'samplesheet.csv')
                     if os.path.exists(sample_sheet_tmp_dir):
                         # copy Sample heet file to samba directory
                         logger.info('Found run directory %s for the experiment name %s', run_dir, exp_name_id)
@@ -260,7 +260,7 @@ def parsing_statistics_xml(demux_file, conversion_file, logger):
             total_samples += len(samples)
         logger.info('Complete parsing from demux file for project %s', projects[i])
     # overwrite the value for total samples
-    stats_result[projects['total']]['sampleNumber']=total_samples
+   # stats_result[projects['total']]['sampleNumber']=total_samples
     
     conversion_stat=ET.parse(conversion_file)
     root_conv=conversion_stat.getroot()
@@ -463,7 +463,7 @@ def process_xml_stats(stats_projects, run_id, logger):
                 lane_number=str(un_lane + 1)
                 top_number =1
                 for barcode_line in stats_projects[project][un_lane]:
-                    barcode_count= '{0:,}'.format(barcode_line['count'])
+                    barcode_count= '{0:,}'.format(int(barcode_line['count']))
                     barcode_sequence= barcode_line['sequence']
                     
                     raw_unknow_barcode = RawTopUnknowBarcodes(runprocess_id=RunProcess.objects.get(pk=run_id),
@@ -585,15 +585,16 @@ def store_samples_projects(sample_project_stats, run_id, logger):
         for sample in sample_project_stats[project]:
             sample_name = sample
             barcode_name = sample_project_stats[project][sample]['barcodeName']
-            perfect_barcode = '{0:,}'.format(sample_project_stats[project][sample] ['PerfectBarcodeCount'])
-            percent_in_project = format (float(perfect_barcode *100 /total_perfect_barcode_count),'.2f')
+            perfect_barcode = int(sample_project_stats[project][sample] ['PerfectBarcodeCount'])
+            percent_in_project = format (float(perfect_barcode) *100 /total_perfect_barcode_count,'.2f')
+            perfect_barcode = '{0:,}'.format(perfect_barcode)
             yield_mb = '{0:,}'.format(round(float(sample_project_stats[project][sample] ['PF_Yield'])*M_BASE))
             if sample_project_stats[project][sample] ['PF_Yield'] > 0:
-                bigger_q30=format(float(sample_project_stats[project][sample]['PF_YieldQ30'])*100/float( sample_project_stats[project][sample]['PF_Yield']),'.3f')
-                mean_quality=format(float(sample_project_stats[project][sample]['PF_QualityScore'])/float(sample_project_stats[project][sample]['PF_Yield']),'.3f')
+            	bigger_q30=format(float(sample_project_stats[project][sample]['PF_YieldQ30'])*100/float( sample_project_stats[project][sample]['PF_Yield']),'.3f')
+            	mean_quality=format(float(sample_project_stats[project][sample]['PF_QualityScore'])/float(sample_project_stats[project][sample]['PF_Yield']),'.3f')
             else:
-                bigger_q30 = 0
-                mean_quality =0
+            	bigger_q30 = 0
+            	mean_quality =0
             p_name_id=Projects.objects.get(projectName__exact = project).id
             project_id= Projects.objects.get(pk=p_name_id)
             
@@ -626,18 +627,18 @@ def process_run_in_processrunning_state (process_list, logger):
     logger.debug('starting the process_run_in_processrunning_state method')
     try:
         conn=open_samba_connection()
-        logger.info('check the Sucessful connection to Flavia before starting processing runing state method')
+        logger.info('check the Sucessful connection to NGS_Data_test before starting processing runing state method')
 
     except:
         return('Error')
     
-    share_folder_name='Flavia'
+    share_folder_name='NGS_Data_test'
     for run_item in process_list:
         logger.debug ('processing the run %s in process running state' , run_item)
         run_be_processed_id=RunProcess.objects.get(runName__exact=run_item).id
         run_Id_used=str(RunningParameters.objects.get(runName_id= run_be_processed_id))
         logger.debug ('found the run ID  %s' , run_Id_used )
-        run_folder=os.path.join('/',run_Id_used)
+        run_folder=os.path.join('/',run_Id_used,'Data/Intensities/BaseCalls')
         # check if runCompletion is avalilable
         file_list = conn.listPath( share_folder_name, run_folder)
         for sh in file_list:
@@ -665,13 +666,13 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
         logger.info ('Processing the process on bcl2F_q for the run %s', run_item)
         run_processing_id=RunProcess.objects.get(runName__exact=run_item).id
         run_Id_used=str(RunningParameters.objects.get(runName_id= run_processing_id))
-        plot_dir='../../documents/wetlab/images_plot'
+        plot_dir='documents/wetlab/images_plot'
         
         update_run_state(run_processing_id, 'Running Stats', logger)
         
         # get the directory of samba to fetch the files
-        share_folder_name ='Flavia'
-        local_dir_samba= 'iSkyLIMS/documents/wetlab/tmp/processing'
+        share_folder_name ='NGS_Data_test'
+        local_dir_samba= 'documents/wetlab/tmp/processing'
         demux_file=os.path.join(local_dir_samba,'DemultiplexingStats.xml')
         conversion_file=os.path.join(local_dir_samba,'ConversionStats.xml')
         run_info_file=os.path.join(local_dir_samba, 'RunInfo.xml')
