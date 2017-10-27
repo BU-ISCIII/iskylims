@@ -90,10 +90,11 @@ def check_recorded_folder ():
     print('Starting the process for recorded_folder ')
     logger=open_log('check_recorded_folder.log')
     
-    logger.info('Looking for new run in directory on documents/wetlab/tmp/recorded ')
+    logger.info('Looking for new runs in directory --- documents/wetlab/tmp/recorded ')
     path='documents/wetlab/tmp/recorded/'
     dir_wetlab=os.getcwd()
-    logger.debug('working directory is %s', dir_wetlab)
+    logger.debug('check_recorder_folder funtion is running on directory  %s', dir_wetlab)
+    # true if there are folders under the recorded directory
     if os.listdir(path):
         # There are sample sheet files that need to be processed
         updated_run=process_run_in_recorded_state (logger)
@@ -102,16 +103,17 @@ def check_recorded_folder ():
             logger.error('Exiting the process for searching run in recorded state ')
             time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             print(time_stop)
-            print('Exiting the check_recorder_folder module due to error when connecting to Flavia')
+            print('Exiting the check_recorder_folder module due to error when connecting to NGS_Data_test')
         else:
             for run_changed in updated_run:
                 logger.info('The run  %s is now on Sample Sent state', run_changed)
             time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             print(time_stop)
+            logger.info('Exiting the check_recorded_folder')
     else:
         time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         print(time_stop)
-        logger.info( 'Exiting the crontab for record_folder. No directories have been found')
+        logger.info( 'Exiting the crontab for record_folder. No directories under recorded folder have been found')
 
 def check_not_finish_run():
     time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -120,7 +122,8 @@ def check_not_finish_run():
     logger=open_log('checking_uncompleted_run.log')
     logger.info('starting execute the crontab for not finish run')
     updated_run=find_not_completed_run(logger)
-    logger.debug('Display the list of the updated_run %s', updated_run)
+    for run in updated_run :
+        logger.debug('Display the list of the updated_run %s', run)
     
     count=0
     for state in updated_run:

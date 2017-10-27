@@ -16,10 +16,11 @@ def open_samba_connection():
     # There will be some mechanism to capture userID, password, client_machine_name, server_name and server_ip
     # client_machine_name can be an arbitary ASCII string
     # server_name should match the remote machine name, or else the connection will be rejected
-    
-    conn=SMBConnection('bioinfocifs', 'bioinfocifs', 'NGS_Data_test', 'barbarroja', use_ntlm_v2=True)
-    conn.connect('10.15.60.54', 139)
 
+    conn=SMBConnection('Luigi', 'Apple123', 'NGS_Data_test', 'LUIGI-PC', use_ntlm_v2=True)
+    conn.connect('192.168.1.3', 139)    
+    #conn=SMBConnection('bioinfocifs', 'bioinfocifs', 'NGS_Data_test', 'barbarroja', use_ntlm_v2=True)
+    #conn.connect('10.15.60.54', 139)
     '''
     conn = SMBConnection(userid, password, client_machine_name, remote_machine_name, use_ntlm_v2 = True)
     conn.connect(server_ip, 139)
@@ -106,11 +107,13 @@ def process_run_in_recorded_state(logger):
     except:
         return ('Error')
     processed_run_file, runlist = [] , []
-    recorded_dir='documents/wetlab/tmp/recorded/'
     share_folder_name='NGS_Data_test'
-    local_run_parameter_file='documents/wetlab/tmp/tmp/RunParameters.xml'
-    local_run_info_file='documents/wetlab/tmp/tmp/RunInfo.xml'
-    process_run_file='documents/wetlab/tmp/processed_run_file'
+    base_directory = 'documents/wetlab/tmp'
+    recorded_dir = os.path.join(base_directory, 'recorded')
+
+    local_run_parameter_file = os.path.join(base_directory, 'RunParameters.xml')
+    local_run_info_file = os.path.join(base_directory, 'RunInfo.xml')
+    process_run_file = os.path.join(base_directory, 'processed_run_file')
     processed_run=[]
     run_names_processed=[]
     ## get the list of the processed run
@@ -138,30 +141,36 @@ def process_run_in_recorded_state(logger):
                 with open(local_run_parameter_file ,'wb') as r_par_fp :
                     samba_run_parameters_file=os.path.join(run_dir,'RunParameters.xml')
                     conn.retrieveFile(share_folder_name, samba_run_parameters_file, r_par_fp)
-                    logger.debug('Retrieving the RunParameter.xml file for %s', samba_run_parameters_file)
+                    logger.debug('Retrieving the remote RunParameter.xml file for %s', run_dir)
+                    logger.debug('Local dir for getting RunParameters is %s', base_directory)
+                    
                 # look for the experience name  for the new run folder. Then find the run_id valued for it
                 exp_name=fetch_exp_name_from_run_info(local_run_parameter_file)
                 logger.debug('found the experiment name  , %s', exp_name)
-                if  RunProcess.objects.filter(runName__icontains = exp_name).exists():
+                if  RunProcess.objects.filter(runName__icontains = exp_name, runState__exact = 'Recorded').exists():
                     exp_name_id=str(RunProcess.objects.get(runName__exact = exp_name).id)
-                    logger.debug('Matching the experimental name %s with database ', exp_name_id)
+                    logger.debug('Matching the experimental name id %s with database ', exp_name_id)
                     
-                    sample_sheet_tmp_dir=os.path.join('documents/wetlab/tmp/recorded',exp_name_id,'samplesheet.csv')
-                    if os.path.exists(sample_sheet_tmp_dir):
+                    sample_sheet_tmp_file=os.path.join(recorded_dir,exp_name_id,'samplesheet.csv')
+                    if os.path.exists(sample_sheet_tmp_file):
                         # copy Sample heet file to samba directory
                         logger.info('Found run directory %s for the experiment name %s', run_dir, exp_name_id)
-                        with open(sample_sheet_tmp_dir ,'rb') as  sample_samba_fp:
+                        with open(sample_sheet_tmp_file ,'rb') as  sample_samba_fp:
                             samba_sample_file= os.path.join(run_dir,'samplesheet.csv')
+                            logger.debug('Local dir for Shample Sheet %s', sample_sheet_tmp_file)
+                            logger.debug('Remote dir to copy Shample Sheet  is %s', run_dir)
                             conn.storeFile(share_folder_name, samba_sample_file, sample_samba_fp)
-                            logger.info('Saving the samplesheet.csv file on remote node')
+                            logger.info('Samplesheet.csv file has been copied on the remote node')
                         # retrieve the runInfo.xml file from samba directory
                     else:
-                        logger.error('ERROR ---No sample Sheet save to remote dir. Local Directory %s not found ', sample_sheet_tmp_dir)
+                        logger.error('ERROR ---No sample Sheet will be copied to remote dir. Local Directory %s was not found ', sample_sheet_tmp_dir)
                     # get the runIfnfo.xml to collect the  information for this run    
                     with open(local_run_info_file ,'wb') as r_info_fp :
                         samba_run_info_file=os.path.join(run_dir,'RunInfo.xml')
+                        logger.debug('Local dir for RunInfo.xml %s', local_run_info_file)
+                        logger.debug('Remote file of RunInfo.xml is located in %s', samba_run_info_file)
                         conn.retrieveFile(share_folder_name, samba_run_info_file, r_info_fp)
-                    logger.info('parsing RunInfo and RunParameter files')
+                    logger.info('copied to local the RunInfo.xml and start the parsing for RunInfo and RunParameter files')
                     save_run_info (local_run_info_file, local_run_parameter_file, exp_name_id, logger)
                         # delete the copy of the run files 
                     os.remove(local_run_info_file)
@@ -179,7 +188,8 @@ def process_run_in_recorded_state(logger):
                     logger.info('SampleSheet.csv file for %s has been sucessful sent to remote server', run_dir)
                 else:
                     # error in log file
-                    logger.warn ('The run ID ' , run_dir, 'does not match any run in the RunProcess object.\n') 
+                    logger.warn ('The run ID %s does not match any run in the RunProcess object.', run_dir)
+                    os.remove(local_run_parameter_file) 
                     continue
     conn.close()
     fh =open (process_run_file,'w')
@@ -192,7 +202,8 @@ def process_run_in_recorded_state(logger):
  
     list_dir=os.listdir(recorded_dir)
     if list_dir:
-        print ('Warning: There are run in Recorded state that were not processed \n')
+        print ('Warning: There are runs in Recorded state that were not matching on the remote server \n')
+        print ('These runs are waiting that the folder exists on the remote server:  \n')
         for item in list_dir:
             print('directory for the run Id : ', item, '\n')
     return(run_names_processed)
@@ -260,7 +271,7 @@ def parsing_statistics_xml(demux_file, conversion_file, logger):
             total_samples += len(samples)
         logger.info('Complete parsing from demux file for project %s', projects[i])
     # overwrite the value for total samples
-   # stats_result[projects['total']]['sampleNumber']=total_samples
+    stats_result['all']['sampleNumber']=total_samples
     
     conversion_stat=ET.parse(conversion_file)
     root_conv=conversion_stat.getroot()
@@ -614,12 +625,15 @@ def store_samples_projects(sample_project_stats, run_id, logger):
                                            
 def process_run_in_samplesent_state (process_list, logger):
      # prepare a dictionary with key as run_name and value the RunID
+     processed_run=[]
      for run_item in process_list:
-        logger.info ('running the process sample sent stata for %s', run_item)
+        logger.info ('running the process sample sent state for %s', run_item)
         run_be_processed_id=RunProcess.objects.get(runName__exact=run_item).id
         logger.debug ('Run ID for the run process to be update is:  %s', run_be_processed_id)
         #run_Id_for_searching=RunningParameters.objects.get(runName_id= run_be_processed_id)
         update_run_state(run_be_processed_id, 'Process Running', logger)
+        processed_run.append(run_be_processed_id)
+    return processed_run
 
         
 def process_run_in_processrunning_state (process_list, logger):
