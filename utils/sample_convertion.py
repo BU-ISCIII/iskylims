@@ -10,10 +10,10 @@ from Bio.Seq import Seq
 
 
 
-def include_csv_header (library_kit, out_file):
+def include_csv_header (library_kit, out_file, plate,container):
     csv_header=['FileVersion','LibraryPrepKit','ContainerType','ContainerID','Notes']
     
-    header_settings=['1','','Plate96','ContainerID_00001','automatic generated file form SampleSheet']
+    header_settings=['1','',plate,container,'automatic generated file from iSkyLIMS']
     
     index_kit=csv_header.index('LibraryPrepKit')
     header_settings[index_kit]=library_kit
@@ -24,12 +24,13 @@ def include_csv_header (library_kit, out_file):
     #### adding additional line
     out_file.write('\n')
     
-def sample_sheet_map_basespace(in_file, library_kit, projects):
-    target_data_header = ['SampleID','Name','Species','Sample_Project','NucleicAcid',
+def sample_sheet_map_basespace(in_file, library_kit, projects, plate, container):
+    target_data_header = ['SampleID','Name','Species','Project','NucleicAcid',
                'Well','Index1Name','Index1Sequence','Index2Name','Index2Sequence']
-    
+    ## Note that original header does not exactly match with the real one , but it is defined like this
+    ## to get an easy way to map fields in the sample sheet and the sample to import to base Space
     original_data_header = ['SampleID','Name','Plate', 'Well','Index1Name','Index1Sequence',
-                       'Index2Name','Index2Sequence','Sample_Project','Description']
+                       'Index2Name','Index2Sequence','Project','Description']
     
 
     data_raw=[]
@@ -94,7 +95,7 @@ def sample_sheet_map_basespace(in_file, library_kit, projects):
     #### open file for writting the conversion file 
     fh_out = open (out_file, 'w')
     #####  print csv header
-    include_csv_header(library_kit,fh_out)
+    include_csv_header(library_kit,fh_out,plate,container)
     #####  print data header
     fh_out.write('[Data]\n')
     for i in range(len(target_data_header)):
@@ -117,7 +118,7 @@ def sample_sheet_map_basespace(in_file, library_kit, projects):
                 fh_out.write('\n')
       
     fh_out.close()
-    return (out_file.replace('documents/wetlab/documents/',''))
+    return out_file
 
 def get_projects_in_run(in_file):
     header_found=0

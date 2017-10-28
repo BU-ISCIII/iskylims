@@ -627,15 +627,14 @@ def process_run_in_samplesent_state (process_list, logger):
      # prepare a dictionary with key as run_name and value the RunID
      processed_run=[]
      for run_item in process_list:
-        logger.info ('running the process sample sent state for %s', run_item)
-        run_be_processed_id=RunProcess.objects.get(runName__exact=run_item).id
-        logger.debug ('Run ID for the run process to be update is:  %s', run_be_processed_id)
-        #run_Id_for_searching=RunningParameters.objects.get(runName_id= run_be_processed_id)
-        update_run_state(run_be_processed_id, 'Process Running', logger)
-        processed_run.append(run_be_processed_id)
-    return processed_run
-
-        
+         logger.info ('running the process sample sent state for %s', run_item)
+         run_be_processed_id=RunProcess.objects.get(runName__exact=run_item).id
+         logger.debug ('Run ID for the run process to be update is:  %s', run_be_processed_id)
+         #run_Id_for_searching=RunningParameters.objects.get(runName_id= run_be_processed_id)
+         update_run_state(run_be_processed_id, 'Process Running', logger)
+         processed_run.append(run_be_processed_id)
+     return processed_run
+    
 def process_run_in_processrunning_state (process_list, logger):
     processed_run=[]
     logger.debug('starting the process_run_in_processrunning_state method')
@@ -654,17 +653,26 @@ def process_run_in_processrunning_state (process_list, logger):
         logger.debug ('found the run ID  %s' , run_Id_used )
         run_folder=os.path.join('/',run_Id_used,'Data/Intensities/BaseCalls')
         # check if runCompletion is avalilable
+        logger.debug ('found the run ID  %s' , run_Id_used )
         file_list = conn.listPath( share_folder_name, run_folder)
+        #import pdb; pdb.set_trace()
+        found_report_directory = 0
         for sh in file_list:
             if sh.filename =='Reports' :
                 logger.info('bcl2fastq has been completed for run %s', run_Id_used)
                 processed_run.append(run_Id_used)
                 update_run_state(run_be_processed_id, 'Bcl2Fastq Executed', logger)
                 update_project_state(run_be_processed_id, 'B2FqExecuted', logger)
+                found_report_directory = 1
+                processed_run.append(run_Id_used)
                 break
             else:
-                logger.debug('Report directory not found in file_list %s ', sh.filename)
-        processed_run.append(run_Id_used)
+                logger.debug('The directory %s has been found while looking for the compleation of the execution of bcl2fastq', sh.filename)
+        if found_report_directory:
+            logger.info('blc2fastq has been completed for the Run ID %s  it is now on Bcl2Fastq Executed state', run_Id_used)
+        else:
+            logger.info('blc2fastq was not finish for the Run ID %s  waiting for Bcl2Fastq to be completed', run_Id_used)
+        
             
     # close samba connection 
     conn.close()
@@ -757,6 +765,21 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
         logger.info('run id %s is now on Completed state', run_Id_used)
         update_run_state(run_processing_id, 'Completed', logger)
         update_project_state(run_processing_id, 'Completed', logger)
+        # clean up the used files and directories
+        logger.info('starting the clean up for the copied files from remote server ')
+        os.remve(demux_file)
+        logger.debug('Demultiplexing file have been removed from %s', demux_file)
+        os.remove(conversion_file)
+        logger.debug('ConversionStats file have been removed from %s', conversion_file)
+        os.remove(run_info_file)
+        logger.debug('RunInfo file have been removed from %s', run_info_file)
+        for file_object in os.listdir(interop_local_dir_samba):
+            file_object_path = os.path.join(interop_local_dir_samba, file_object)
+            if os.path.isfile(file_object_path):
+                logger.debug('Deleting file %s' , file_object_path)
+                os.remove(file_object_path)
+        logger.info('xml files and binary files from InterOp folder have been removed')
+        
     return processed_run
 '''
 def find_state_and_save_data(run_name,run_folder):
