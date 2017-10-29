@@ -34,16 +34,16 @@
                 <div class="panel panel-default">
                 <div class="panel-heading">Project State : <b>{{ display_one_project.state}} </b></div> 
                 <div class="panel-body"> 
-                    <div class="progress {{ display_one_project.graphic_color }}">
+                    <div class="circle-progress {{ display_one_project.graphic_color }}">
                     {% if display_one_project.graphic_value > 50 %}
-                        <span class="progress-left">
-                            <span class="progress-bar"></span>
+                        <span class="circle-progress-left">
+                            <span class="circle-progress-bar"></span>
                         </span>
                     {% endif%}
-                        <span class="progress-right">
-                            <span class="progress-bar"></span>
+                        <span class="circle-progress-right">
+                            <span class="circle-progress-bar"></span>
                         </span>
-                        <div class="progress-value">{{ display_one_project.graphic_value }}%</div>
+                        <div class="circle-progress-value">{{ display_one_project.graphic_value }}%</div>
                     </div>
                 </div> <!--  end of panel body -->
               </div> <!--  end of panel  -->

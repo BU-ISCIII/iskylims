@@ -193,7 +193,7 @@ div.dataTables_wrapper {
 }
 /* ************************* */
 /*  CSS for circle progress */
-.progress{
+.circle-progress{
     width: 150px;
     height: 150px;
     line-height: 150px;
@@ -202,7 +202,7 @@ div.dataTables_wrapper {
     box-shadow: none;
     position: relative;
 }
-.progress:after{
+.circle-progress:after{
     content: "";
     width: 100%;
     height: 100%;
@@ -212,7 +212,7 @@ div.dataTables_wrapper {
     top: 0;
     left: 0;
 }
-.progress > span{
+.circle-progress > span{
     width: 50%;
     height: 100%;
     overflow: hidden;
@@ -220,10 +220,10 @@ div.dataTables_wrapper {
     top: 0;
     z-index: 1;
 }
-.progress .progress-left{
+.circle-progress .circle-progress-left{
     left: 0;
 }
-.progress .progress-bar{
+.circle-progress .circle-progress-bar{
     width: 100%;
     height: 100%;
     background: none;
@@ -232,7 +232,7 @@ div.dataTables_wrapper {
     position: absolute;
     top: 0;
 }
-.progress .progress-left .progress-bar{
+.circle-progress .circle-progress-left .circle-progress-bar{
     left: 100%;
     border-top-right-radius: 80px;
     border-bottom-right-radius: 80px;
@@ -240,10 +240,10 @@ div.dataTables_wrapper {
     -webkit-transform-origin: center left;
     transform-origin: center left;
 }
-.progress .progress-right{
+.circle-progress .circle-progress-right{
     right: 0;
 }
-.progress .progress-right .progress-bar{
+.circle-progress .circle-progress-right .circle-progress-bar{
     left: -100%;
     border-top-left-radius: 80px;
     border-bottom-left-radius: 80px;
@@ -252,11 +252,11 @@ div.dataTables_wrapper {
     transform-origin: center right;
     animation: loading-1 1.8s linear forwards;
 }
-.progress .progress-value{
+.circle-progress .circle-progress-value{
     width: 90%;
     height: 90%;
     border-radius: 50%;
-    background: #44484b;
+    background: #a1a6aa;
     font-size: 24px;
     color: #fff;
     line-height: 135px;
@@ -266,61 +266,61 @@ div.dataTables_wrapper {
     left: 5%;
 }
 
-.progress.green .progress-bar{
+.circle-progress.green .circle-progress-bar{
     border-color: #1cca47;
 }
-.progress.green .progress-left .progress-bar{
+.circle-progress.green .circle-progress-left .circle-progress-bar{
     animation: loading-1 1.2s linear forwards 1.8s;
 }
-.progress.blue .progress-bar{
+.circle-progress.blue .circle-progress-bar{
     border-color: #049dff;
 }
-.progress.blue .progress-left .progress-bar{
+.circle-progress.blue .circle-progress-left .circle-progress-bar{
     animation: loading-2 1.5s linear forwards 1.8s;
 }
-.progress.yellow .progress-bar{
+.circle-progress.yellow .circle-progress-bar{
     border-color: #fdba04;
 }
-.progress.yellow .progress-left .progress-bar{
+.circle-progress.yellow .circle-progress-left .circle-progress-bar{
     animation: loading-3 1s linear forwards 1.8s;
 }
 
-.progress.orange .progress-bar{
+.circle-progress.orange .circle-progress-bar{
     border-color: #ff9933;
 }
-.progress.orange .progress-value{
+.circle-progress.orange .circle-progress-value{
     color: #ff9933;
 }
-.progress.orange .progress-left .progress-bar{
+.circle-progress.orange .circle-progress-left .circle-progress-bar{
     animation: loading-5 0.4s linear forwards 1.8s;
 }
 
 
 
 
-.progress.brown .progress-bar{
+.circle-progress.brown .circle-progress-bar{
     border-color: #cc6600;
 }
-.progress.brown .progress-value{
+.circle-progress.brown .circle-progress-value{
     color: #cc6600;
 }
-.progress.brown .progress-right .progress-bar{
+.circle-progress.brown .circle-progress-right .circle-progress-bar{
     animation: loading-6 0.4s linear forwards 1.8s;
 }
 
-.progress.pink .progress-bar{
+.circle-progress.pink .circle-progress-bar{
     border-color: #ed687c;
 }
-.progress.pink .progress-right .progress-bar{
+.circle-progress.pink .circle-progress-right .circle-progress-bar{
     animation: loading-4 0.4s linear forwards 1.8s;
 }
-.progress.violet .progress-bar{
+.circle-progress.violet .circle-progress-bar{
     border-color: #a366ff;
 }
-.progress.violet .progress-value{
+.circle-progress.violet .circle-progress-value{
     color: #a366ff;
 }
-.progress.violet .progress-right .progress-bar{
+.circle-progress.violet .circle-progress-right .circle-progress-bar{
     animation: loading-7 0.4s linear forwards 1.8s;
 }
 
@@ -398,5 +398,184 @@ div.dataTables_wrapper {
     .progress{ margin-bottom: 20px; }
 }
 
-/*   --- End of CSS circle progress --- */S
+/*   --- End of CSS circle progress --- */
 
+/*   --- Start the CSS for progress step in the forms --  */
+ol.progtrckr {
+        display: table;
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        table-layout: fixed;
+        width: 100%;
+    }
+    ol.progtrckr li {
+        display: table-cell;
+        text-align: center;
+        line-height: 3em;
+    }
+
+    ol.progtrckr[data-progtrckr-steps="2"] li { width: 49%; }
+    ol.progtrckr[data-progtrckr-steps="3"] li { width: 33%; }
+    ol.progtrckr[data-progtrckr-steps="4"] li { width: 24%; }
+    ol.progtrckr[data-progtrckr-steps="5"] li { width: 19%; }
+    ol.progtrckr[data-progtrckr-steps="6"] li { width: 16%; }
+    ol.progtrckr[data-progtrckr-steps="7"] li { width: 14%; }
+    ol.progtrckr[data-progtrckr-steps="8"] li { width: 12%; }
+    ol.progtrckr[data-progtrckr-steps="9"] li { width: 11%; }
+
+    ol.progtrckr li.progtrckr-done {
+        color: black;
+        border-bottom: 4px solid yellowgreen;
+    }
+    ol.progtrckr li.progtrckr-todo {
+        color: silver; 
+        border-bottom: 4px solid silver;
+    }
+
+    ol.progtrckr li:after {
+        content: "\00a0\00a0";
+    }
+    ol.progtrckr li:before {
+        position: relative;
+        bottom: -2.5em;
+        float: left;
+        left: 50%;
+        line-height: 1em;
+    }
+    ol.progtrckr li.progtrckr-done:before {
+        content: "\2713";
+        color: white;
+        background-color: yellowgreen;
+        height: 1.2em;
+        width: 1.2em;
+        line-height: 1.2em;
+        border: none;
+        border-radius: 1.2em;
+    }
+    ol.progtrckr li.progtrckr-todo:before {
+        content: "\039F";
+        color: silver;
+        background-color: white;
+        font-size: 1.5em;
+        bottom: -1.6em;
+    }
+/*   --- End the CSS for progress step in the forms --  */
+
+
+/*   --- Start the CSS for track-progress step in the forms --  */
+.track-progress {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.track-progress li {
+  list-style-type: none;
+  display: inline-block;
+
+  position: relative;
+  margin: 0;
+  padding: 0;
+
+  text-align: center;
+  line-height: 30px;
+  height: 30px;
+
+  background-color: #f0f0f0;
+}
+
+.track-progress[data-steps="3"] li { width: 33%; }
+.track-progress[data-steps="4"] li { width: 25%; }
+.track-progress[data-steps="5"] li { width: 20%; }
+
+.track-progress li > span {
+  display: block;
+
+  color: #999;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.track-progress li.done > span {
+  color: #666;
+  background-color: #ccc;
+}
+.track-progress li.active > span {
+  color: #666;
+  background-color: #fc9;
+}
+
+
+.track-progress li > span:after,
+.track-progress li > span:before {
+  content: "";
+  display: block;
+  width: 0px;
+  height: 0px;
+
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  border: solid transparent;
+  border-left-color: #f0f0f0;
+  border-width: 15px;
+}
+
+.track-progress li > span:after {
+  top: -5px;
+  z-index: 1;
+  border-left-color: white;
+  border-width: 20px;
+}
+
+.track-progress li > span:before {
+  z-index: 2;
+}
+
+
+.track-progress li.done + li > span:before {
+  border-left-color: #ccc;
+}
+
+.track-progress li:first-child > span:after,
+.track-progress li:first-child > span:before {
+  display: none;
+}
+
+.track-progress li.active + li > span:before {
+  border-left-color: #fc9;
+}
+
+.track-progress li:first-child > span:after,
+.track-progress li:first-child > span:before {
+  display: none;
+}
+
+.track-progress li:first-child i,
+.track-progress li:last-child i {
+  display: block;
+  height: 0;
+  width: 0;
+
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  border: solid transparent;
+  border-left-color: white;
+  border-width: 15px;
+}
+
+.track-progress li:last-child i {
+  left: auto;
+  right: -15px;
+
+  border-left-color: transparent;
+  border-top-color: white;
+  border-bottom-color: white;
+}
+
+
+/*   --- End the CSS for track-progress step in the forms --  */

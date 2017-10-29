@@ -18,6 +18,19 @@
         </div> <!--  end of row -->
         {%endif%}
       {% endfor %} 
+      <!--    Progress Step bar for the Form -->
+    <BR>
+    
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-8 col-sm-offset-2" >
+            <ol class="track-progress" data-steps="3">
+                <li class="done"> <span>Uploading Sample Sheet</span><i></i></li><!--
+                --><li class="active"><span>Assign Library Kit</span></li><!--
+                --><li><span>Showing Results</span><i></i></li>
+            </ol>
+        </div> <!--// end col-sm-4  -->
+    </div> <!--// end row --> 
+    <BR>
       <div class="row row-space-2 margin-b-4">
         <div class="col-sm-8 col-sm-offset-2">
             <p>The following information have been collected from the Sample Sheet uploaded previously.<br>
@@ -74,6 +87,18 @@
         {% csrf_token %}
         {% for key, val in completed_form%} 
           {%if key == "runname" %}
+          <BR>
+    
+            <div class="row row-space-2 margin-b-4">
+                <div class="col-sm-8 col-sm-offset-2" >
+                    <ol class="track-progress" data-steps="3">
+                        <li class="done"> <span>Uploading Sample Sheet</span><i></i></li><!--
+                        --><li class="done"><span>Assign Library Kit</span></li><!--
+                        --><li class="active"><span>Showing Results</span><i></i></li>
+                    </ol>
+                </div> <!--// end col-sm-4  -->
+            </div> <!--// end row --> 
+        <BR>
              <div class="row row-space-2 margin-b-4">
                <div class="col-sm-8 col-sm-offset-2">
                  <div class="panel panel-default">
@@ -116,12 +141,25 @@
         </div> <!--// end col-sm-4  -->
     </div> <!--// end row --> 
     {%else %}
+<!--    Progress Step bar for the Form -->
+    <BR>
+    
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-8 col-sm-offset-2" >
+            <ol class="track-progress" data-steps="3">
+                <li class="active"> <span>Uploading Sample Sheet</span><i></i></li><!--
+                --><li><span>Assign Library Kit</span></li><!--
+                --><li><span>Showing Results</span><i></i></li>
+            </ol>
+        </div> <!--// end col-sm-4  -->
+    </div> <!--// end row --> 
 
+    <BR>
 
     <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-8 col-sm-offset-2">
+        <div class="col-sm-8 col-sm-offset-1">
             <p>This FORM will be used to generated the input file that <a href="https://basespace.illumina.com/home/index">BaseSpace</a> requires to execute the run</p>
-            <p>.</p>
+            <BR>
 
 
         </div> <!--// end col-sm-8  -->
@@ -167,17 +205,7 @@
         </div> <!--// end panel -->
         </div> <!--// end col-sm-4  -->   
     </div> <!--// end row -->
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-4 col-sm-offset-2" >
-        <!-- Progress Box -->
-            <div class="progress-box">
-                <h5>Sample Sheet progress  <span class="color-heading pull-right">17%</span></h5>
-                <div class="progress">
-                    <div class="progress-bar bg-color-base" role="progressbar" data-width="17"></div>
-                </div>
-            </div>
-        </div> <!--// end col-sm-4  -->
-    </div> <!--// end row -->
+
     {% endif %}
 
 {% endblock %}
