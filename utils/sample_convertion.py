@@ -4,13 +4,13 @@
 
 import os
 import re
-
+from datetime import datetime
 
 from Bio.Seq import Seq
 
 
 
-def include_csv_header (library_kit, out_file, plate,container):
+def include_csv_header (library_kit, out_file, plate, container):
     csv_header=['FileVersion','LibraryPrepKit','ContainerType','ContainerID','Notes']
     
     header_settings=['1','',plate,container,'automatic generated file from iSkyLIMS']
@@ -24,7 +24,7 @@ def include_csv_header (library_kit, out_file, plate,container):
     #### adding additional line
     out_file.write('\n')
     
-def sample_sheet_map_basespace(in_file, library_kit, projects, plate, container):
+def sample_sheet_map_basespace(in_file, library_kit, projects, plate):
     target_data_header = ['SampleID','Name','Species','Project','NucleicAcid',
                'Well','Index1Name','Index1Sequence','Index2Name','Index2Sequence']
     ## Note that original header does not exactly match with the real one , but it is defined like this
@@ -49,6 +49,15 @@ def sample_sheet_map_basespace(in_file, library_kit, projects, plate, container)
         if line == '':
             continue
         #import pdb; pdb.set_trace()
+        date_found = re.search('^Date',line)
+        if date_found :
+            date_line = re.search('^Date,(.*)',line)
+            
+            try:
+                date_object = datetime.strptime(date_line.group(1),'%m/%d/%Y')
+            except:
+                date_object = datetime.strptime(date_line.group(1),'%d/%m/%Y')
+            date_sample = date_object.strftime('%Y%m%d')
         #found=re.search('Assay,(.*)',line)
         #if found:
         #    LibraryPrepKit= found.group(1)
@@ -81,6 +90,8 @@ def sample_sheet_map_basespace(in_file, library_kit, projects, plate, container)
                     
                 data_raw.append(dict_value_data)
     fh.close()
+    # containerID build on the last Sample_Plate and the date in the sample sheet
+    container = str(data_split[2] + date_sample)
     data_found=0
     tmp= re.search('.*/(.*)\.csv',in_file)
     out_tmp=tmp.group(1)

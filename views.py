@@ -156,7 +156,7 @@ def get_sample_file (request):
         ## convert the sample sheet to base space format and have different files according the library kit
         #import pdb; pdb.set_trace()
         for key, value in library.items():
-            bs_file[key]=sample_sheet_map_basespace(in_file, key, value,'PLATE','CONTAINER_ID')
+            bs_file[key]=sample_sheet_map_basespace(in_file, key, value,'Plate96')
             results.append([key, bs_file[key]]) 
             
         ## save the project information on database
