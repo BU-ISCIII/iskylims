@@ -223,9 +223,8 @@ def pie_graphic_for_unknow_barcode (heading, theme, top_count_sequence):
         "exportEnabled": "1"
     }
     data =[]
-    data_dict = {} 
-
     for key , values in top_count_sequence.items() :
+        data_dict = {} 
         data_dict['label'] = key
         data_dict['value'] = values
         data.append(data_dict)
@@ -284,6 +283,31 @@ def graphic_for_quality_angular (heading, value) :
             }
     return data_source
 
-
+def pie_graphic_for_completed_runs (heading, theme, number_of_runs):
+    data_source = {}
+    
+    data_source['chart'] = { 
+        "caption": heading,
+        "subcaption": "Top Sequence found in the Run",
+        "startingangle": "120",
+        "showlabels": "0",
+        "showlegend": "1",
+        "enablemultislicing": "0",
+        "slicingdistance": "15",
+        "showpercentvalues": "1",
+        "showpercentintooltip": "0",
+        "plottooltext": "Sequence : $label Total count : $datavalue",
+        "theme": theme,
+        "exportEnabled": "1"
+    }
+    data =[]
+    for key , values in number_of_runs.items() :
+        data_dict = {} 
+        data_dict['label'] = key
+        data_dict['value'] = values
+        data.append(data_dict)
+    data_source['data'] = data    
+    
+    return data_source
 
 

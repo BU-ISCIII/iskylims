@@ -1,0 +1,55 @@
+{% extends 'wetlab/base.html' %}
+{% load static %}
+{% block content %}
+    {% csrf_token %}
+{% if display_anual_report %}
+
+
+   
+{% else %}
+    <!-- FORM for selecting Monthly Report Information -->
+  
+    <div class="row row-space-2 margin-b-4">
+      <div class="col-sm-7" >
+        <div class="panel panel-default">
+          <div class="panel-heading"><strong>Form for Monthly Report</strong></div>
+          <div class="panel-body">
+            <form method="post" enctype="multipart/form-data" name="searchmonthlyreport" id="searchmonthlyreport" class="form-horizontal well">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="searchmonthlyreport"/>
+             <br>
+                <div class="form-group required">
+                  <label class="col-sm-6 control-label" for="moth_year_selected" >Select the month and the year for <BR>Monthly Report (MM/YYYY)</label>
+                  <div class="col-sm-4"><input class="form-control" type="month" name="moth_year_selected" value="" id="moth_year_selected"></div>
+                </div>  <!-- end from-group   -->
+            <br>
+                <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
+                <input class="btn pull-right btn-primary" type="submit" value="Submit">
+            </form>
+         </div>  <!--  end of panel body  -->
+        <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
+        </div> <!--// end panel -->
+
+        </div> <!--// end col-sm-7  -->
+        
+        <!-- Insert the help panel -->
+        <BR><BR>
+        <div class="col-sm-3 col-sm-offset-1">
+          <div class="panel panel-default">
+             <div class="panel-heading">Monthly Report information</div>
+             <div class="panel-body">
+             <p>Monthly reports generate graphics and data for all runs that have been started on the selected month of the year. <BR>
+             <p>For extended help click on the button below.</p>
+            <center><button id="myBtn"> Help </button></center>
+            </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        <!-- Insert the Help window when clicking on the button -->
+        {% include 'wetlab/monthly-Report-help.html' %}
+ 
+    </div> <!--// end row -->
+
+    <!-- End of FORM for Anual Report information -->
+
+
+{% endif %}
+{% endblock %}

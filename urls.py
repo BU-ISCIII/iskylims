@@ -9,13 +9,12 @@ from django.views.generic import ListView, DetailView
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
+    url(r'^getSampleSheet', views.get_sample_file, name='get_sample_file'),
+    url(r'^latest_run/',views.latest_run, name='latest_run'),
     url(r'^searchNextSeq', views.search_nextSeq, name='search_nextSeq'),
     url(r'^searchNextProject', views.search_nextProject, name ='search_nextProject'),
     url(r'^searchNextSample', views.search_nextSample, name = 'search_nextSample'),
-    url(r'^getSampleSheet', views.get_sample_file, name='get_sample_file'),
-    #url(r'^documents/', views.downloadFile, name='downloadFile'),
     url(r'^search_run=(?P<run_id>[0-9]+)/$', views.search_run, name='search_run'),
-    url(r'^latest_run/',views.latest_run, name='latest_run'),
     url(r'^search_project=(?P<project_id>[0-9]+)$', views.search_project, name='search_project'),
     url(r'^search_sample=(?P<sample_id>[0-9]+)$', views.search_sample, name= 'search_sample'),
     url(r'^NextSeqStatistics', views.next_seq_statistics, name ='next_seq_statistics'),
@@ -24,6 +23,8 @@ urlpatterns = [
     url('^graphic', views.test_graphic, name='test_graphic'),
     url('^NextSeqStatsPerTime', views.nextSeqStats_per_time, name ='nextSeqStats_per_time'),
     url(r'^NextSeqStatsLibrary', views.nextSeqStats_per_library , name ='nextSeqStats_per_library'),
+    url(r'^AnualReport',views.anual_report, name='anual_report'),
+    url(r'^MonthlyReport', views.monthly_report, name='montly_report'),
     #url(r'^documents/images_plot$', 'django.views.static.serve',{'document_root': settings.MEDIA_ROOT}),
     #url(r'^documents/(?P<path>.*)$', 'django.views.static.serve',{'document_root': settings.MEDIA_ROOT,}),
 

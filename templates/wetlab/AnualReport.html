@@ -1,0 +1,117 @@
+{% extends 'wetlab/base.html' %}
+{% load static %}
+{% block content %}
+    {% csrf_token %}
+{% if display_anual_report %}
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>              
+ <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>                   
+ <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
+ <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>  
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Runs performed on the year {{ display_anual_report.year }}.</h3></div>
+                <div class="panel-body"> 
+                {% if display_anual_report.completed_run %}
+                    <div class="col-sm-5">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr><th>Runs on Completed state </th></tr>
+                            </thead>
+                            <tbody>
+                            {% for runs in display_anual_report.completed_run %}
+                                <tr>
+                                    <td>{{ runs }} </td> 
+                                </tr>
+                            {%endfor%}
+                            </tbody>
+                        </table>
+                    </div> <!--  end of col-sm-5 -->
+                {% endif %}
+                {% if display_anual_report.uncompleted_run %}
+                    <div class="col-sm-5 col-sm-offset-1">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr><th>Not Completed Runs </th></tr>
+                            </thead>
+                            <tbody>
+                            {% for runs in display_anual_report.uncompleted_run %}
+                                <tr>
+                                    <td>{{ runs }} </td> 
+                                </tr>
+                            {%endfor%}
+                            </tbody>
+                        </table>
+                    </div> <!--  end of col-sm-5 -->
+                {% endif %}
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-6 -->
+        {% if display_anual_report.graphic_completed_run %}
+        <div class="col-sm-5">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Relation of Completed and Unfinished Runs.</h3></div>
+                <div class="panel-body"> 
+                <!-- Pie chart for number of Runs comparations chart will start here-->
+                    <div id="chart-1"> </div>
+                    <!-- dumping JavaScript code here -->
+                    {{ display_anual_report.graphic_completed_run |safe }}
+
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        {% endif %}
+        </div> <!--  end of col-sm-5 -->                  
+    </div> <!--  end of row -->
+                
+                
+                
+
+
+   
+{% else %}
+    <!-- FORM for selecting Anual Report Information -->
+  
+    <div class="row row-space-2 margin-b-4">
+      <div class="col-sm-7" >
+        <div class="panel panel-default">
+          <div class="panel-heading"><strong>Form for Anual Report</strong></div>
+          <div class="panel-body">
+            <form method="post" enctype="multipart/form-data" name="searchanualreport" id="searchanualreport" class="form-horizontal well">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="searchAnualReport"/>
+             <br>
+                <div class="form-group required">
+                  <label class="col-sm-6 control-label" for="yearselected" >Select the year for the anual Report (YYYY)</label>
+                  <div class="col-sm-4"><input class="form-control" type="number" min="2016" max="2199" step="1" value="" name="yearselected"  id="yearselected"></div>
+                </div>  <!-- end from-group   -->
+            <br>
+                <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
+                <input class="btn pull-right btn-primary" type="submit" value="Submit">
+            </form>
+         </div>  <!--  end of panel body  -->
+        <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
+        </div> <!--// end panel -->
+
+        </div> <!--// end col-sm-7  -->
+        
+        <!-- Insert the help panel -->
+        <BR><BR>
+        <div class="col-sm-3 col-sm-offset-1">
+          <div class="panel panel-default">
+             <div class="panel-heading">Anual Report information</div>
+             <div class="panel-body">
+             <p>Anual reports generate graphics and data for all runs that have been started on the selected year. <BR>
+             <p>For extended help click on the button below.</p>
+            <center><button id="myBtn"> Help </button></center>
+            </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        <!-- Insert the Help window when clicking on the button -->
+        {% include 'wetlab/anual-Report-help.html' %}
+ 
+    </div> <!--// end row -->
+
+    <!-- End of FORM for Anual Report information -->
+
+
+{% endif %}
+{% endblock %}

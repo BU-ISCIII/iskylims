@@ -1159,7 +1159,7 @@ def nextSeqStats_per_library (request):
             if Projects.objects.filter(libraryKit__contains = library_kit_name, procState = 'Completed').exists():
                 library_found = Projects.objects.filter(libraryKit__contains = library_kit_name, procState = 'Completed')
         else:
-            library_found = Projects.objects.filter(procState == 'Completed')
+            library_found = Projects.objects.filter(procState__exact = 'Completed')
         if (start_date != '' and end_date != ''):
             if library_found.filter(generatedat__range=(start_date, end_date)).exists():
                  library_found = library_found.filter(generatedat__range=(start_date, end_date))
@@ -1403,8 +1403,59 @@ def nextSeqStats_per_library (request):
 
     else:
         return render (request,'wetlab/NextSeqStatsPerLibrary.html')
+
+
+def anual_report (request) :
+    if request.method=='POST' :
+        year_selected = int(request.POST['yearselected'])
+        # get the current year to compare with the input
+        present_year = datetime.datetime.now().year
+        if year_selected > present_year:
+            return render (request,'wetlab/error_page.html', {'content':['Annual Report cannot be done on the future  ', 
+                            'the input year in the Form  ',year_selected , 'is not allowed']})
+        
+        completed_run_in_year = RunProcess.objects.filter(generatedat__contains = year_selected, runState__exact = 'Completed')
+        
+        uncompleted_run_in_year = RunProcess.objects.filter(generatedat__contains = year_selected).exclude(runState__exact = 'Completed')
+        if len (completed_run_in_year)  == 0 and len (uncompleted_run_in_year) == 0:
+            return render (request,'wetlab/error_page.html', {'content':['Annual Report cannot be generated because there is no runs performed the year ', year_selected ]})
+        
+        anual_report_information = {}
+        anual_report_information['year'] = year_selected
+        number_of_runs = {}
+        number_of_runs['Completed Runs'] = 0
+        number_of_runs['Not Finish Runs'] = 0
+        if len ( completed_run_in_year) > 0 :
+            completed_run = []
+            for run in completed_run_in_year :
+                completed_run.append(run.get_run_name)
+            anual_report_information['completed_run'] = completed_run
+            number_of_runs['Completed Runs'] = len ( completed_run_in_year)
+        if len ( uncompleted_run_in_year) > 0 :
+            uncompleted_run = []
+            for run_uncompleted in uncompleted_run_in_year :
+                uncompleted_run.append(run_uncompleted.get_run_name)
+            anual_report_information['uncompleted_run'] = uncompleted_run
+            number_of_runs['Not Finish Runs'] = len ( uncompleted_run_in_year)
+        # prepare the pie graphic for the number of top Unknow Barcode per sequence
+        data_source = pie_graphic_for_completed_runs('Number of count for the Undetermined Sequences', 'ocean',number_of_runs)
+        graphic_completed_run = FusionCharts("pie3d", "ex1" , "400", "300", "chart-1", "json", data_source)
+        anual_report_information ['graphic_completed_run'] = graphic_completed_run.render()
+        
+        #import pdb; pdb.set_trace()
+        
+        return render (request, 'wetlab/AnualReport.html',{'display_anual_report': anual_report_information})
+    else:
+        return render (request, 'wetlab/AnualReport.html')
+
+
+
+
+def monthly_report (request) :
     
-    
+    return render (request, 'wetlab/MonthlyReport.html')
+
+'''    
 def downloadFile(request):
     #from urllib.parse import urlparse
     #from os.path import splitext, basename
@@ -1444,6 +1495,10 @@ def downloadFile(request):
             response = HttpResponse(fh.read(), content_type="application/pdf")
             response['Content-Disposition'] = 'attachment; filename=download.pdf'
     return response
+
+
+'''
+
 
 
 #def result_form (request):
