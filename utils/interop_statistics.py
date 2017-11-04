@@ -202,7 +202,7 @@ def create_graphics(run_folder,run_id, graphic_dir, logger):
     ns_graphic_stats.save()
     logger.info('Graphic plots saved on database')
 
-print('Executing interop_statstics.py')
+
 
 '''
 columns = ( ('Yield Total (G)', 'yield_g'), ('Projected Yield (G)', 'projected_yield_g'), ('% Aligned', 'percent_aligned'))

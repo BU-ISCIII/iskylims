@@ -125,6 +125,7 @@ class NextSeqStatsBinRunSummary (models.Model):
     errorRate=models.CharField(max_length=10)
     intensityCycle= models.CharField(max_length=10)
     biggerQ30= models.CharField(max_length=10)
+    generatedat = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
         return '%s' %(self.level)
@@ -156,6 +157,7 @@ class NextSeqStatsBinRunRead (models.Model):
     errorRate75 = models.CharField(max_length=40)
     errorRate100 = models.CharField(max_length=40)
     intensityCycle = models.CharField(max_length=40)
+    generatedat = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
         return '%s' %(self.read)

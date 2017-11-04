@@ -51,13 +51,14 @@ def sample_sheet_map_basespace(in_file, library_kit, projects, plate):
         #import pdb; pdb.set_trace()
         date_found = re.search('^Date',line)
         if date_found :
-            date_line = re.search('^Date,(.*)',line)
+            date_line = line.split(',')
             
             try:
-                date_object = datetime.strptime(date_line.group(1),'%m/%d/%Y')
+                date_object = datetime.strptime(date_line[1],'%m/%d/%Y')
             except:
-                date_object = datetime.strptime(date_line.group(1),'%d/%m/%Y')
+                date_object = datetime.strptime(date_line[1],'%d/%m/%Y')
             date_sample = date_object.strftime('%Y%m%d')
+            date_found = False
         #found=re.search('Assay,(.*)',line)
         #if found:
         #    LibraryPrepKit= found.group(1)

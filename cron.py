@@ -1,4 +1,4 @@
-import paramiko
+#import paramiko
 from datetime import datetime
 from .utils.stats_calculation import *
 from .utils.parsing_run_info import *
@@ -9,7 +9,7 @@ from logging.handlers import RotatingFileHandler
 
 def open_log(log_name):
     
-    log_name=os.path.join('wetlab/log/', log_name)
+    log_name=os.path.join('/srv/iSkyLIMS/wetlab/log/', log_name)
     #def create_log ():
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
@@ -25,75 +25,19 @@ def open_log(log_name):
     
     return logger
     
-'''
-def check_crontab():
-    time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(time_start ,'  checking the time for starting crontab')
 
-def check_crontab2():
-    time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(time_start ,'  checking the time for starting crontab2 has to be on min 28 ')
-
-
-def createSSHClient(server, port, user, password):
-    client = paramiko.SSHClient()
-    client.load_system_host_keys()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(server, port, user, password)
-    return client 
-
-
-
-
-def fetching_stats_scheduled_job ():
-    barbarroja = '10.15.60.54'
-    remote_dir_stats_xml='161123_NS500454_0096_AHFGV5BGXY/fastq_files4/Stats/'
-    remote_dir_run='161123_NS500454_0096_AHFGV5BGXY/'
-    remote_interop = '161123_NS500454_0096_AHFGV5BGXY/Interop/'
-
-    demux_file= remote_dir_stats_xml + 'DemultiplexingStats.xml'
-    conversion_file=remote_dir_stats_xml + 'ConversionStats.xml'
-    run_file=remote_dir_run + 'RunInfo.xml'
-    run_parameter=remote_dir_run + 'RunParameters.xml'
-    
-    local_working_dir = '/home/bioinfo/web_carlosIII/polls/documents/uploadFromServer/'
-    local_stats = '/home/bioinfo/web_carlosIII/polls/documents/uploadFromServer/Stats/'
-    local_interop= '/home/bioinfo/web_carlosIII/polls/documents/uploadFromServer/Interop/'
-    run_file = local_working_dir + 'RunInfo.xml'
-    run_parameter=  local_working_dir + 'RunParameters.xml'
-    copied_files = 0
-    time_start= datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print('Transfer files started at:', time_start,'\n')
-    #ssh = createSSHClient(barbarroja, 22, 'lchapado', 'chapadomaster')
-    #ftp = ssh.open_sftp()
-    #ftp.get('luis3_result.log', '/home/bioinfo/web_carlosIII/polls/uploadFromServer/barba-luis3-result.log')
-    #ftp.put('localfile', 'remotefile')
-    #for f in ftp.listdir(remote_interop):
-    #    ftp.get(remote_interop+f, local_interop+f)
-    #    copied_files +=1
-    #ftp.close()
-    print('Total files copied: ',copied_files)
-    time_end= datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print('Transfer files ended at:', time_end,'\n')
-    print('Working on getting statistics\n')
-
-    running_data = get_running_data(run_file,run_parameter)
-    store_in_db(running_data, 'running_table')
-    #xml_statistics = get_statistics_xml(demux_file, conversion_file)
-    #store_in_db(xml_statistics, 'nextSeq_xml_table')
-    
-    return True
-'''
 def check_recorded_folder ():
     time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(time_start )
+    working_path = '/srv/iSkyLIMS'
     print('Starting the process for recorded_folder ')
     logger=open_log('check_recorded_folder.log')
+    os.chdir(working_path)
+    path=os.path.join(working_path,'documents/wetlab/tmp/recorded/')
+    logger.info('Looking for new runs in directory %s', path)
     
-    logger.info('Looking for new runs in directory --- documents/wetlab/tmp/recorded ')
-    path='documents/wetlab/tmp/recorded/'
     dir_wetlab=os.getcwd()
-    logger.debug('check_recorder_folder funtion is running on directory  %s', dir_wetlab)
+    logger.debug('check_recorder_folder function is running on directory  %s', dir_wetlab)
     # true if there are folders under the recorded directory
     if os.listdir(path):
         # There are sample sheet files that need to be processed
@@ -103,7 +47,7 @@ def check_recorded_folder ():
             logger.error('Exiting the process for searching run in recorded state ')
             time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             print(time_stop)
-            print('Exiting the check_recorder_folder module due to error when connecting to NGS_Data_test')
+            print('******* Exiting the check_recorder_folder module due to error when connecting to NGS_Data_test')
         else:
             for run_changed in updated_run:
                 logger.info('The run  %s is now on Sample Sent state', run_changed)
@@ -121,6 +65,10 @@ def check_not_finish_run():
     print('Starting the process for searching not completed runs ')
     logger=open_log('checking_uncompleted_run.log')
     logger.info('starting execute the crontab for not finish run')
+    working_path = '/srv/iSkyLIMS'
+    os.chdir(working_path)
+    dir_wetlab=os.getcwd()
+    logger.info('Running the check_not_finish_run  module in directory %s', dir_wetlab)
     updated_run=find_not_completed_run(logger)
     for run in updated_run :
         logger.debug('Display the list of the updated_run %s', run)

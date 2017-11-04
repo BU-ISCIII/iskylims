@@ -1437,13 +1437,41 @@ def anual_report (request) :
                 uncompleted_run.append(run_uncompleted.get_run_name)
             anual_report_information['uncompleted_run'] = uncompleted_run
             number_of_runs['Not Finish Runs'] = len ( uncompleted_run_in_year)
-        # prepare the pie graphic for the number of top Unknow Barcode per sequence
+        # prepare the pie graphic for the number of completed/ unfinished runs
         data_source = pie_graphic_for_completed_runs('Number of count for the Undetermined Sequences', 'ocean',number_of_runs)
         graphic_completed_run = FusionCharts("pie3d", "ex1" , "400", "300", "chart-1", "json", data_source)
         anual_report_information ['graphic_completed_run'] = graphic_completed_run.render()
         
         #import pdb; pdb.set_trace()
+        ### Collecting information from NextSeqStatsBinRunSummary
+        run_found_bin_summary_year = NextSeqStatsBinRunSummary.objects.filter(generatedat__contains = year_selected, level__exact = 'Total')
+        q30_year, aligned_year, error_rate_year  = {} , {} , {}
+        for run_bin_summary in run_found_bin_summary_year :
+            bin_summary_data = run_bin_summary.get_bin_run_summary().split(';')
+            run_name = run_bin_summary.runprocess_id.get_run_name()
+            aligned_year[run_name]= bin_summary_data[2]
+            error_rate_year[run_name]= bin_summary_data[3]
+            q30_year[run_name]= bin_summary_data[5]
+        anual_report_information ['aligned_data'] = aligned_year
+        anual_report_information ['error_rate_data'] = error_rate_year
+        anual_report_information ['q30_data'] = q30_year
+        # graphics for NextSeqStatsBinRunSummary
+        heading = 'Aligned % for the runs done on year '+ str(year_selected )
+        data_source = column_graphic_for_year_report (heading, 'Aligned  ' , 'Run names ', 'Aligned (in %)', 'ocean', aligned_year)
+        aligned_year_graphic = FusionCharts("column3d", 'aligned_year' , "600", "300", 'aligned_chart-3', "json", data_source)
+        anual_report_information ['aligned_graphic'] = aligned_year_graphic.render()
         
+        heading = 'Error Rate for the runs done on year '+ str(year_selected )
+        data_source = column_graphic_for_year_report (heading, 'Error rate ' , 'Run names ', 'Error rate', 'carbon', error_rate_year)
+        error_rate_year_graphic = FusionCharts("column3d", 'error_rate_year' , "600", "300", 'error_rate_chart-4', "json", data_source)
+        anual_report_information ['error_rate_graphic'] = error_rate_year_graphic.render()
+        
+        heading = '>Q30 for the runs done on year '+ str(year_selected )
+        data_source = column_graphic_for_year_report (heading, 'Q30  ' , 'Run names ', '>Q 30 (in %)', 'fint', q30_year)
+        q30_year_graphic = FusionCharts("column3d", 'q30_year' , "600", "300", 'q30_chart-2', "json", data_source)
+        #import pdb; pdb.set_trace()
+        anual_report_information ['q30_graphic'] = q30_year_graphic.render()
+        #import pdb; pdb.set_trace()
         return render (request, 'wetlab/AnualReport.html',{'display_anual_report': anual_report_information})
     else:
         return render (request, 'wetlab/AnualReport.html')

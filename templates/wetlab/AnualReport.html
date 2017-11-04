@@ -4,9 +4,11 @@
     {% csrf_token %}
 {% if display_anual_report %}
 <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>              
- <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>                   
- <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
- <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>  
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>                   
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script> 
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-7">
             <div class="panel panel-default">
@@ -62,10 +64,140 @@
         {% endif %}
         </div> <!--  end of col-sm-5 -->                  
     </div> <!--  end of row -->
-                
-                
-                
+    <!--  Q30 year report -->
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-4">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Percentage of quality >30 for the year {{ display_anual_report.year }}.</h3></div>
+                <div class="panel-body"> 
+                {% if display_anual_report.q30_data %}
+                    <div class="col-sm-5">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th> Run name </th>
+                                    <th> >Q30_%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for key, values in display_anual_report.q30_data.items %}
+                                <tr>
+                                    <td>{{ key }} </td> 
+                                    <td>{{ values }} </td> 
+                                </tr>
+                            {%endfor%}
+                            </tbody>
+                        </table>
+                    </div> <!--  end of col-sm-5 -->
+                {% endif %}
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-6 -->
+        {% if display_anual_report.q30_graphic %}
+        <div class="col-sm-7 col-sm-offset-1">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Relation of Q 30 for the year {{ display_anual_report.year }}.</h3></div>
+                <div class="panel-body"> 
+                <!-- Pie chart for number of Runs comparations chart will start here-->
+                    <div id="q30_chart-2"> </div>
+                    <!-- dumping JavaScript code here -->
+                    {{ display_anual_report.q30_graphic |safe }}
 
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        {% endif %}
+        </div> <!--  end of col-sm-5 -->                  
+    </div> <!--  end of row -->
+
+    <!--  Aligned year report -->
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-4">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Percentage of aligned for the year {{ display_anual_report.year }}.</h3></div>
+                <div class="panel-body"> 
+                {% if display_anual_report.aligned_data %}
+                    <div class="col-sm-5">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th> Run name </th>
+                                    <th> Aligned_%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for key, values in display_anual_report.aligned_data.items %}
+                                <tr>
+                                    <td>{{ key }} </td> 
+                                    <td>{{ values }} </td> 
+                                </tr>
+                            {%endfor%}
+                            </tbody>
+                        </table>
+                    </div> <!--  end of col-sm-5 -->
+                {% endif %}
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-6 -->
+        {% if display_anual_report.aligned_graphic %}
+        <div class="col-sm-7 col-sm-offset-1">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Aligned for the year {{ display_anual_report.year }}.</h3></div>
+                <div class="panel-body"> 
+                <!-- Pie chart for number of Runs comparations chart will start here-->
+                    <div id="aligned_chart-3"> </div>
+                    <!-- dumping JavaScript code here -->
+                    {{ display_anual_report.aligned_graphic |safe }}
+
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        {% endif %}
+        </div> <!--  end of col-sm-5 -->                  
+    </div> <!--  end of row -->
+                
+    <!--  Error Rate year report -->
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-4">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Error rate for the year {{ display_anual_report.year }}.</h3></div>
+                <div class="panel-body"> 
+                {% if display_anual_report.error_rate_data %}
+                    <div class="col-sm-5">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th> Run name </th>
+                                    <th> Error rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for key, values in display_anual_report.error_rate_data.items %}
+                                <tr>
+                                    <td>{{ key }} </td> 
+                                    <td>{{ values }} </td> 
+                                </tr>
+                            {%endfor%}
+                            </tbody>
+                        </table>
+                    </div> <!--  end of col-sm-5 -->
+                {% endif %}
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-6 -->
+        {% if display_anual_report.error_rate_graphic %}
+        <div class="col-sm-7 col-sm-offset-1">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Error Rate for the year {{ display_anual_report.year }}.</h3></div>
+                <div class="panel-body"> 
+                <!-- Pie chart for number of Runs comparations chart will start here-->
+                    <div id="error_rate_chart-4"> </div>
+                    <!-- dumping JavaScript code here -->
+                    {{ display_anual_report.error_rate_graphic |safe }}
+
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        {% endif %}
+        </div> <!--  end of col-sm-5 -->                  
+    </div> <!--  end of row -->
 
    
 {% else %}

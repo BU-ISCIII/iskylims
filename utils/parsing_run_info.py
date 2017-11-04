@@ -110,7 +110,7 @@ def process_run_in_recorded_state(logger):
     share_folder_name='NGS_Data_test'
     base_directory = 'documents/wetlab/tmp'
     recorded_dir = os.path.join(base_directory, 'recorded')
-
+    logger.debug('working directory is %s', os.getcwd())
     local_run_parameter_file = os.path.join(base_directory, 'RunParameters.xml')
     local_run_info_file = os.path.join(base_directory, 'RunInfo.xml')
     process_run_file = os.path.join(base_directory, 'processed_run_file')
@@ -123,6 +123,7 @@ def process_run_in_recorded_state(logger):
             line=line.rstrip()
             processed_run.append(line)
         fh.close()
+        logger.info('processed_run file was read')
         
     # Check if the directory from flavia has been processed
     file_list = conn.listPath( share_folder_name, '/')
@@ -137,7 +138,7 @@ def process_run_in_recorded_state(logger):
                 continue
             else:
                 #copy the runParameter.xml file to wetlab/tmp/tmp
-                logger.info ('Found a new run  %s ,that was not in the processed run file',run_dir)
+                logger.warning ('Found a new run  %s ,that was not in the processed run file',run_dir)
                 with open(local_run_parameter_file ,'wb') as r_par_fp :
                     samba_run_parameters_file=os.path.join(run_dir,'RunParameters.xml')
                     conn.retrieveFile(share_folder_name, samba_run_parameters_file, r_par_fp)
@@ -188,7 +189,7 @@ def process_run_in_recorded_state(logger):
                     logger.info('SampleSheet.csv file for %s has been sucessful sent to remote server', run_dir)
                 else:
                     # error in log file
-                    logger.warn ('The run ID %s does not match any run in the RunProcess object.', run_dir)
+                    logger.warning ('The run ID %s does not match any run in the RunProcess object.', run_dir)
                     os.remove(local_run_parameter_file) 
                     continue
     conn.close()
