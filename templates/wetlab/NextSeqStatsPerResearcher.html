@@ -10,7 +10,7 @@
     <div class="row row-space-2 margin-b-4">
       <div class="col-sm-8 col-sm-offset-1" >
         <div class="panel panel-default">
-          <div class="panel-heading"><h2>Statistics result for researcher {{researcher_one_project.user_name}} </h2></div>
+          <div class="panel-heading"><h2>Statistics result for Investigator {{researcher_one_project.user_name}} </h2></div>
            <div class="panel-body">
                 <h3> Project Name : {{researcher_one_project.project_name}}</h3>
           
@@ -23,7 +23,7 @@
     <div class="row row-space-2 margin-b-4">
       <div class="col-sm-7" >
         <div class="panel panel-default">
-          <div class="panel-heading"><h2>Statistics result for researcher </h2>
+          <div class="panel-heading"><h2>Statistics result for Investigator </h2>
           <div class="panel-body">
                 <!-- Column 2 Chart will start here-->
             <div id="chart-1"> </div>
@@ -37,7 +37,7 @@
     <div class="row row-space-2 margin-b-3">
       <div class="col-sm-8 col-sm-offset-1" >
         <div class="panel panel-default">
-          <div class="panel-heading"><h2>Statistics result for researcher</h2></div>
+          <div class="panel-heading"><h2>Statistics result for Investigator</h2></div>
           <div class="panel-body">
                 <!-- Column 2 Chart will start here-->
             <div id="chart-2"> </div>
@@ -55,13 +55,13 @@
     <div class="row row-space-2 margin-b-4">
       <div class="col-sm-7" >
         <div class="panel panel-default">
-          <div class="panel-heading"><h2>Statistics per researcher</h2></div>
+          <div class="panel-heading"><h2>Statistics per Investigator</h2></div>
           <div class="panel-body">
             <form method="post" enctype="multipart/form-data" name="statsresearcher" id="statsresearcher" class="form-horizontal well">
             {% csrf_token %}
             <input type="hidden" name="action" value="researcher"/>
              <div class="form-group required"> 
-                  <label class="col-sm-5  control-label" for="researchername" >Fill the researcher name </label>
+                  <label class="col-sm-5  control-label" for="researchername" >Fill the Investigator name </label>
                   <div class="col-sm-5"><input class="form-control" type="text" required = "required" name="researchername" id="reserchername" size="100" maxlength="100"></div>
              </div>  <!-- end from-group   -->
  
@@ -90,9 +90,9 @@
         <BR><BR>
         <div class="col-sm-3 col-sm-offset-1">
           <div class="panel panel-default">
-             <div class="panel-heading">Searching information project Researcher</div>
+             <div class="panel-heading">Searching information project per Investigator</div>
              <div class="panel-body">
-             <p>Searching information for the projects created by a researcher<BR>
+             <p>Searching information for the projects created by a Investigator<BR>
              <p>For extended help click on the button below.</p>
             <center><button id="myBtn"> Help </button></center>
             </div>  <!--  end of panel body  -->

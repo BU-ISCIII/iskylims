@@ -283,12 +283,12 @@ def graphic_for_quality_angular (heading, value) :
             }
     return data_source
 
-def pie_graphic_for_completed_runs (heading, theme, number_of_runs):
+def pie_graphic_year (heading, subcaption, theme, number_of_runs):
     data_source = {}
     
     data_source['chart'] = { 
         "caption": heading,
-        "subcaption": "Top Sequence found in the Run",
+        "subcaption": subcaption,
         "startingangle": "120",
         "showlabels": "0",
         "showlegend": "1",

@@ -1438,7 +1438,7 @@ def anual_report (request) :
             anual_report_information['uncompleted_run'] = uncompleted_run
             number_of_runs['Not Finish Runs'] = len ( uncompleted_run_in_year)
         # prepare the pie graphic for the number of completed/ unfinished runs
-        data_source = pie_graphic_for_completed_runs('Number of count for the Undetermined Sequences', 'ocean',number_of_runs)
+        data_source = pie_graphic_year('Number of Runs performed on the year', "",'ocean',number_of_runs)
         graphic_completed_run = FusionCharts("pie3d", "ex1" , "400", "300", "chart-1", "json", data_source)
         anual_report_information ['graphic_completed_run'] = graphic_completed_run.render()
         
@@ -1471,6 +1471,44 @@ def anual_report (request) :
         q30_year_graphic = FusionCharts("column3d", 'q30_year' , "600", "300", 'q30_chart-2', "json", data_source)
         #import pdb; pdb.set_trace()
         anual_report_information ['q30_graphic'] = q30_year_graphic.render()
+        #import pdb; pdb.set_trace()
+        
+        # Get the information for investigator name and the projects done
+        # number_proyects_investigator contains a dict with 3 ranges 1-5, 6-10, more than 11
+        investigator_projects = Projects.objects.filter(generatedat__contains = year_selected).order_by('user_id')
+        project_by_user = {}
+        investigator_5_project, investigator_10_project, investigator_more_10_project = {}, {} , {}
+        #import pdb; pdb.set_trace()
+        for investigator in investigator_projects:
+            user_name = investigator.get_user_name()
+            if user_name in project_by_user:
+                project_by_user [user_name].append(investigator.get_project_name())
+            else:
+                project_by_user [user_name]=([investigator.get_project_name()])
+        for key, value in project_by_user.items():
+            if len(value) <= 5 :
+                investigator_5_project[key]= value
+            elif len (value) <=10:
+                investigator_10_project[key]= value
+            else:
+                investigator_more_10_project[key]= value
+        anual_report_information['user_5_projects'] = investigator_5_project
+        anual_report_information['user_10_projects'] = investigator_10_project
+        anual_report_information['user_more_10_projects'] = investigator_more_10_project
+        
+        # Create the bar graphic for user projects
+        p_user_year ={}
+        p_user_year['1 - 5']= len(investigator_5_project)
+        p_user_year['6 - 10']= len(investigator_10_project)
+        p_user_year['more than 10']= len(investigator_more_10_project)
+        heading = 'Projects done per investigator on year '+ str(year_selected )
+        data_source = column_graphic_for_year_report (heading, '  ' , 'Projects ', 'number of users', 'ocean', p_user_year)
+        p_user_year_graphic = FusionCharts("column3d", 'bar_project_user_year' , "400", "300", 'p_user_chart-1', "json", data_source)
+        anual_report_information ['p_user_year_graphic'] = p_user_year_graphic.render()
+
+        data_source = pie_graphic_year (heading, 'Percentage' ,'carbon', p_user_year)
+        pie_p_user_year_graphic = FusionCharts("pie3d", "pie_project_user_year" , "400", "300", "p_user_chart-2", "json", data_source)
+        anual_report_information ['pie_p_user_year_graphic'] = pie_p_user_year_graphic.render()
         #import pdb; pdb.set_trace()
         return render (request, 'wetlab/AnualReport.html',{'display_anual_report': anual_report_information})
     else:
