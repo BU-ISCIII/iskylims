@@ -94,7 +94,7 @@ def json_2_column_graphic(heading, q_30_project_lane,q_30_media_lane):
     ]
     return data_source
 
-def json_unknow_barcode_graphic (heading, barcode_seq, barcode_value) :
+def json_unknow_barcode_graphic (heading, barcode_data) :
     data_source = {}
     
     # Chart data is passed to the `dataSource` parameter, as hashes, in the form of
@@ -113,19 +113,14 @@ def json_unknow_barcode_graphic (heading, barcode_seq, barcode_value) :
         "theme": "ocean",
         "exportEnabled": "1"
     }
-    data_source['data']= [
-                    {"label": barcode_seq[0], "value": barcode_value[0]},
-                    {"label": barcode_seq[1], "value": barcode_value[1]},
-                    {"label": barcode_seq[2], "value": barcode_value[2]},
-                    {"label": barcode_seq[3], "value": barcode_value[3]},
-                    {"label": barcode_seq[4], "value": barcode_value[4]},
-                    {"label": barcode_seq[5], "value": barcode_value[5]},
-                    {"label": barcode_seq[6], "value": barcode_value[6]},
-                    {"label": barcode_seq[7], "value": barcode_value[7]},
-                    {"label": barcode_seq[8], "value": barcode_value[8]},
-                    {"label": barcode_seq[9], "value": barcode_value[9]}
-                    
-    ]
+    data =[]
+    for key , values in barcode_data.items() :
+        data_dict = {} 
+        data_dict['label'] = key
+        data_dict['value'] = values
+        data.append(data_dict)
+    data_source['data'] = data   
+
     return data_source
 
 def graphic_for_top_unbarcodes (heading, theme, lane_unbarcode) :

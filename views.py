@@ -318,13 +318,17 @@ def get_information_run(run_name_found,run_id):
             #import pdb; pdb.set_trace()    
             # keep the top 10 unknow bar by deleting the lowest values
             unknow_dict_len = len (unknow_dict) 
+            '''
             if unknow_dict_len> 10:
-                while (len (unknow_dict_len) > 10):
+                while (len (unknow_dict) > 10):
                     min_val = min(unknow_dict, key=unknow_dict.get)
                     del unknow_dict [min_val]
+            #import pdb; pdb.set_trace()
+            '''
         # create chart with the top unknown barcode in the run
         #import pdb; pdb.set_trace()
-        data_source = json_unknow_barcode_graphic('Unknow Sequence', list(unknow_dict.keys()),list(unknow_dict.values()))
+        data_source = json_unknow_barcode_graphic('Unknow Sequence', unknow_dict)
+        #data_source = json_unknow_barcode_graphic('Unknow Sequence', list(unknow_dict.keys()),list(unknow_dict.values()))
         unknow_pie3d = FusionCharts("pie3d", "ex1" , "600", "400", "chart-1", "json", data_source)
         #import pdb; pdb.set_trace()
         
