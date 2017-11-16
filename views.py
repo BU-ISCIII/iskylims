@@ -632,21 +632,21 @@ def search_nextSample (request):
         # Check the start and end date
         if start_date !='' and end_date != '':
             
-            if sample_found.filter(generatedat__range=(start_date, end_date)).exists():
-                 sample_found = projects_found.filter(generatedat__range=(start_date, end_date))
+            if sample_found.filter(generated_at__range=(start_date, end_date)).exists():
+                 sample_found = projects_found.filter(generated_at__range=(start_date, end_date))
             else:
                 return render (request,'wetlab/error_page.html', {'content':['There are no Projects containing ', sample_name,
                                         ' created between ', start_date, 'and the ', end_date]})
         if start_date !='' and end_date == '':
-            if sample_found.filter(generatedat__gte = start_date).exists():
-                 sample_found = projects_found.filter(generatedat__gte = start_date)
+            if sample_found.filter(generated_at__gte = start_date).exists():
+                 sample_found = projects_found.filter(generated_at__gte = start_date)
                  #import pdb; pdb.set_trace()
             else:
                 return render (request,'wetlab/error_page.html', {'content':['There are no Projects containing ', sample_name,
                                         ' starting from', start_date]})
         if start_date =='' and end_date != '':
-            if sample_found.filter(generatedat__lte = end_date).exists():
-                 sample_found = projects_found.filter(generatedat__lte = end_date)
+            if sample_found.filter(generated_at__lte = end_date).exists():
+                 sample_found = projects_found.filter(generated_at__lte = end_date)
             else:
                 return render (request,'wetlab/error_page.html', {'content':['There are no Projects containing ', sample_name,
                                         ' finish before ', end_date]})
@@ -1049,7 +1049,7 @@ def nextSeqStats_per_time (request):
                 if len (run_stats_list) == 1:
                     number_of_runs = '1 Run'
                 else:
-                    number_of_runs = len (run_stats_list) + '  Runs'
+                    number_of_runs = str(len (run_stats_list)) + '  Runs'
                 stat_per_time ['number_of_runs'] = number_of_runs
                 stat_per_time ['dates'] = start_date + ' and  ' + end_date
                 #import pdb; pdb.set_trace()

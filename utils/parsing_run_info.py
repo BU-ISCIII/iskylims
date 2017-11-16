@@ -139,12 +139,16 @@ def process_run_in_recorded_state(logger):
             else:
                 #copy the runParameter.xml file to wetlab/tmp/tmp
                 logger.warning ('Found a new run  %s ,that was not in the processed run file',run_dir)
-                with open(local_run_parameter_file ,'wb') as r_par_fp :
-                    samba_run_parameters_file=os.path.join(run_dir,'RunParameters.xml')
-                    conn.retrieveFile(share_folder_name, samba_run_parameters_file, r_par_fp)
-                    logger.debug('Retrieving the remote RunParameter.xml file for %s', run_dir)
-                    logger.debug('Local dir for getting RunParameters is %s', base_directory)
+                try:
+                    with open(local_run_parameter_file ,'wb') as r_par_fp :
+                        samba_run_parameters_file=os.path.join(run_dir,'RunParameters.xml')
+                        conn.retrieveFile(share_folder_name, samba_run_parameters_file, r_par_fp)
+                        logger.debug('Retrieving the remote RunParameter.xml file for %s', run_dir)
+                        logger.debug('Local dir for getting RunParameters is %s', base_directory)
                     
+                except:
+                    logger.debug('There is no run_parameter file in the directory')
+                    continue
                 # look for the experience name  for the new run folder. Then find the run_id valued for it
                 exp_name=fetch_exp_name_from_run_info(local_run_parameter_file)
                 logger.debug('found the experiment name  , %s', exp_name)
