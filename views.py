@@ -39,7 +39,11 @@ def get_sample_file (request):
         myfile = request.FILES['myfile']
         ## check that runName is not already used in the database. Error page is showed if runName is already  defined
         if (RunProcess.objects.filter(runName = run_name)).exists():
-            return render (request,'wetlab/error_page.html', {'content':['Run Name is already used. ','Run Name must be unique in database.',' ',
+            if RunProcess.objects.filter(runName = run_name, runState__exact ='Pre-Recorded'):
+                delete_run = RunProcess.objects.filter(runName = run_name, runState__exact ='Pre-Recorded')
+                delete_run[0].delete()
+            else:
+                return render (request,'wetlab/error_page.html', {'content':['Run Name is already used. ','Run Name must be unique in database.',' ',
                                                             'ADVICE:','Change the value of run name in the "run name Field"']})
         ## check if file contains the extension. Error page is showed if file does not contain any extension
         try:
@@ -85,7 +89,6 @@ def get_sample_file (request):
             ## convert the list into string to display the user names on error page
             display_user= ' ,  '.join(user_already_defined)
             ## delete sample sheet file before showing the error page
-            #import pdb; pdb.set_trace()
             fs.delete(file_name)
                 
             return render (request,'wetlab/error_page.html', {'content':[ head_text,'', display_user,'', 
@@ -94,8 +97,14 @@ def get_sample_file (request):
         #import pdb; pdb.set_trace()
         project_already_defined=[]
         for key, val  in project_list.items():
+            # check if project was already saved in database in Not Started State.
+            # if found delete the projects, becuase the previous attempt to complete the run was unsuccessful
             if ( Projects.objects.filter(projectName__icontains = key).exists()):
-                project_already_defined.append(val)
+                if ( Projects.objects.filter(projectName__icontains = key).exclude(procState__exact = 'Not Started').exists()):
+                    delete_project = Projects.objects.filter(projectName__icontains = key).exclude(procState__exact = 'Not Started')
+                    delete_project[0].delete()
+                else:
+                    project_already_defined.append(val)
         if (len(project_already_defined)>0):
             if (len(project_already_defined)>1):
                 head_text='The following projects are already defined in database:'
@@ -115,10 +124,11 @@ def get_sample_file (request):
         ## store data in runProcess table, run is in pre-recorded state
         run_proc_data = RunProcess(runName=run_name,sampleSheet= file_name, runState='Pre-Recorded')
         run_proc_data.save()
-        
+               
         ## create new project tables based on the project involved in the run and 
         ## include the project information in projects variable to build the new FORM
         #import pdb; pdb.set_trace()
+        
         for key, val  in project_list.items():
             userid=User.objects.get(username__exact = val)
             p_data=Projects(runprocess_id=RunProcess.objects.get(runName =run_name), projectName=key, user_id=userid)

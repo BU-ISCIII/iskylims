@@ -93,7 +93,7 @@
                     {% if display_anual_report.user_10_projects %}
                         <table class="table table-hover" >
                             <thead>
-                                <tr><th>Investigators with projects < 10</th></tr>
+                                <tr><th colspan="2">Investigators with projects < 10</th></tr>
                             </thead>
                             <tbody>
                             {% for investigator, projects in display_anual_report.user_10_projects.items %}
@@ -110,7 +110,7 @@
                     {% if display_anual_report.user_more_10_projects %}
                         <table class="table table-hover" >
                             <thead>
-                                <tr><th>investigators with more than 10 projects</th></tr>
+                                <tr><th colspan="2">investigators with more than 10 projects</th></tr>
                             </thead>
                             <tbody>
                             {% for investigator, projects in display_anual_report.user_more_10_projects.items %}

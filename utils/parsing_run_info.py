@@ -17,10 +17,10 @@ def open_samba_connection():
     # client_machine_name can be an arbitary ASCII string
     # server_name should match the remote machine name, or else the connection will be rejected
 
-    #conn=SMBConnection('Luigi', 'Apple123', 'NGS_Data_test', 'LUIGI-PC', use_ntlm_v2=True)
-    #conn.connect('192.168.1.3', 139)    
-    conn=SMBConnection('bioinfocifs', 'bioinfocifs', 'NGS_Data_test', 'barbarroja', use_ntlm_v2=True)
-    conn.connect('10.15.60.54', 139)
+    conn=SMBConnection('Luigi', 'Apple123', 'NGS_Data_test', 'LUIGI-PC', use_ntlm_v2=True)
+    conn.connect('192.168.1.3', 139)    
+    #conn=SMBConnection('bioinfocifs', 'bioinfocifs', 'NGS_Data_test', 'barbarroja', use_ntlm_v2=True)
+    #conn.connect('10.15.60.54', 139)
     '''
     conn = SMBConnection(userid, password, client_machine_name, remote_machine_name, use_ntlm_v2 = True)
     conn.connect(server_ip, 139)
@@ -138,7 +138,7 @@ def process_run_in_recorded_state(logger):
                 continue
             else:
                 #copy the runParameter.xml file to wetlab/tmp/tmp
-                logger.warning ('Found a new run  %s ,that was not in the processed run file',run_dir)
+                logger.info ('Found a new run  %s ,that was not in the processed run file',run_dir)
                 try:
                     with open(local_run_parameter_file ,'wb') as r_par_fp :
                         samba_run_parameters_file=os.path.join(run_dir,'RunParameters.xml')
@@ -147,10 +147,15 @@ def process_run_in_recorded_state(logger):
                         logger.debug('Local dir for getting RunParameters is %s', base_directory)
                     
                 except:
-                    logger.debug('There is no run_parameter file in the directory')
+                    logger.error('There is no run_parameter file in the directory')
+                    print ('ERROR:: RunParameters.xml not found for run ', run_dir)
                     continue
                 # look for the experience name  for the new run folder. Then find the run_id valued for it
                 exp_name=fetch_exp_name_from_run_info(local_run_parameter_file)
+                if exp_name == '':
+                    logger.error('NO experiment name  is defined for run %s', run_dir)
+                    print ('ERROR:: No experiment name was found inside RunParameters.xml for run ', run_dir)
+                    continue
                 logger.debug('found the experiment name  , %s', exp_name)
                 if  RunProcess.objects.filter(runName__icontains = exp_name, runState__exact = 'Recorded').exists():
                     exp_name_id=str(RunProcess.objects.get(runName__exact = exp_name).id)
@@ -160,21 +165,33 @@ def process_run_in_recorded_state(logger):
                     if os.path.exists(sample_sheet_tmp_file):
                         # copy Sample heet file to samba directory
                         logger.info('Found run directory %s for the experiment name %s', run_dir, exp_name_id)
-                        with open(sample_sheet_tmp_file ,'rb') as  sample_samba_fp:
-                            samba_sample_file= os.path.join(run_dir,'samplesheet.csv')
-                            logger.debug('Local dir for Shample Sheet %s', sample_sheet_tmp_file)
-                            logger.debug('Remote dir to copy Shample Sheet  is %s', run_dir)
-                            conn.storeFile(share_folder_name, samba_sample_file, sample_samba_fp)
-                            logger.info('Samplesheet.csv file has been copied on the remote node')
+                        try:
+                            with open(sample_sheet_tmp_file ,'rb') as  sample_samba_fp:
+                                samba_sample_file= os.path.join(run_dir,'samplesheet.csv')
+                                logger.debug('Local dir for Shample Sheet %s', sample_sheet_tmp_file)
+                                logger.debug('Remote dir to copy Shample Sheet  is %s', run_dir)
+                                conn.storeFile(share_folder_name, samba_sample_file, sample_samba_fp)
+                                logger.info('Samplesheet.csv file has been copied on the remote node')
+                        except:
+                            logger.error('Unable to copy Sample Sheet for run %s', run_dir)
+                            print ('ERROR:: Unable to copy Sample Sheet for run ', run_dir)
+                            continue
                         # retrieve the runInfo.xml file from samba directory
                     else:
                         logger.error('ERROR ---No sample Sheet will be copied to remote dir. Local Directory %s was not found ', sample_sheet_tmp_dir)
                     # get the runIfnfo.xml to collect the  information for this run    
-                    with open(local_run_info_file ,'wb') as r_info_fp :
-                        samba_run_info_file=os.path.join(run_dir,'RunInfo.xml')
-                        logger.debug('Local dir for RunInfo.xml %s', local_run_info_file)
-                        logger.debug('Remote file of RunInfo.xml is located in %s', samba_run_info_file)
-                        conn.retrieveFile(share_folder_name, samba_run_info_file, r_info_fp)
+                    try:
+                        with open(local_run_info_file ,'wb') as r_info_fp :
+                            samba_run_info_file=os.path.join(run_dir,'RunInfo.xml')
+                            logger.debug('Local dir for RunInfo.xml %s', local_run_info_file)
+                            logger.debug('Remote file of RunInfo.xml is located in %s', samba_run_info_file)
+                            conn.retrieveFile(share_folder_name, samba_run_info_file, r_info_fp)
+                    except:
+                        logger.error('Unable to get the RunInfo.xml file for run %s', run_dir)
+                        print ('ERROR:: Unable to get the RunInfo.xml filet for run ', run_dir)
+                        logger.error('Deleting RunParameter.xml file ')
+                        os.remove(local_run_parameter_file)
+                        continue
                     logger.info('copied to local the RunInfo.xml and start the parsing for RunInfo and RunParameter files')
                     save_run_info (local_run_info_file, local_run_parameter_file, exp_name_id, logger)
                         # delete the copy of the run files 
