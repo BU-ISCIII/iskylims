@@ -72,7 +72,7 @@ def save_run_info(run_info, run_parameter, run_id, logger):
     ###########################################
     ## saving data into database
     ###########################################
-    logger.info ('Saving to database  the run id ', run_id)
+    logger.info ('Saving to database  the run id %s', run_id)
     running_parameters= RunningParameters (runName_id=RunProcess.objects.get(pk=run_id),
                          RunID=running_data['RunID'], ExperimentName=running_data['ExperimentName'],
                          RTAVersion=running_data['RTAVersion'], SystemSuiteVersion= running_data['SystemSuiteVersion'],
@@ -98,7 +98,15 @@ def fetch_exp_name_from_run_info (local_run_parameter_file):
             fh.close()
             return exp_name.group(1)
 
-
+def completion_status_run (local_run_completion_status_file):
+    fh = open (local_run_completion_status_file, 'r')
+    for line in fh:
+        completion_status = re.search('^\s+<CompletionStatus>(.*)</CompletionStatus>', line)
+        if completion_status:
+            fh.close()
+            # delete the RunCompletionStatus.xml file
+            os.remove(local_run_completion_status_file)
+            return completion_status.group(1)
            
 def process_run_in_recorded_state(logger):
     try:
@@ -113,6 +121,7 @@ def process_run_in_recorded_state(logger):
     logger.debug('working directory is %s', os.getcwd())
     local_run_parameter_file = os.path.join(base_directory, 'RunParameters.xml')
     local_run_info_file = os.path.join(base_directory, 'RunInfo.xml')
+    local_run_completion_status_file = os.path.join(base_directory, 'RunCompletionStatus.xml')
     process_run_file = os.path.join(base_directory, 'processed_run_file')
     processed_run=[]
     run_names_processed=[]
@@ -149,6 +158,7 @@ def process_run_in_recorded_state(logger):
                 except:
                     logger.error('There is no run_parameter file in the directory')
                     print ('ERROR:: RunParameters.xml not found for run ', run_dir)
+                    os.remove(local_run_parameter_file)
                     continue
                 # look for the experience name  for the new run folder. Then find the run_id valued for it
                 exp_name=fetch_exp_name_from_run_info(local_run_parameter_file)
@@ -160,6 +170,25 @@ def process_run_in_recorded_state(logger):
                 if  RunProcess.objects.filter(runName__icontains = exp_name, runState__exact = 'Recorded').exists():
                     exp_name_id=str(RunProcess.objects.get(runName__exact = exp_name).id)
                     logger.debug('Matching the experimental name id %s with database ', exp_name_id)
+                    # check if run have been successful completed
+                    samba_completion_status_file = os.path.join(run_dir,'RunCompletionStatus.xml')
+                    logger.debug('runCompletion file is in %s', samba_completion_status_file)
+                    try:
+                        with open (local_run_completion_status_file, 'wb') as c_status_fp :
+                            
+                            #logger.debug('Reading RunCompletationStatus.xml file for remote directory')
+                            conn.retrieveFile(share_folder_name, samba_completion_status_file, c_status_fp )
+                    except:
+                        logger.error ('ERROR:: unable to fetch the RunCompletionStatus.xml file at %s', run_dir)
+                        logger.debug ('Deleting RunParameters.xml for run %s ', run_dir)
+                        os.remove(local_run_parameter_file)
+                        continue
+                    status_run = completion_status_run (local_run_completion_status_file)
+                    if  status_run != 'CompletedAsPlanned':
+                        logger.error('ERROR::  run status was %s for the runID %s', status_run, run_dir)
+                        print('ERROR:: Status for run ', run_dir , ' is not completed ')
+                        os.remove(local_run_parameter_file)
+                        continue
                     
                     sample_sheet_tmp_file=os.path.join(recorded_dir,exp_name_id,'samplesheet.csv')
                     if os.path.exists(sample_sheet_tmp_file):
@@ -191,6 +220,7 @@ def process_run_in_recorded_state(logger):
                         print ('ERROR:: Unable to get the RunInfo.xml filet for run ', run_dir)
                         logger.error('Deleting RunParameter.xml file ')
                         os.remove(local_run_parameter_file)
+                        os.remove(local_run_info_file)
                         continue
                     logger.info('copied to local the RunInfo.xml and start the parsing for RunInfo and RunParameter files')
                     save_run_info (local_run_info_file, local_run_parameter_file, exp_name_id, logger)
@@ -649,7 +679,7 @@ def process_run_in_samplesent_state (process_list, logger):
      # prepare a dictionary with key as run_name and value the RunID
      processed_run=[]
      for run_item in process_list:
-         logger.info ('running the process sample sent state for %s', run_item)
+         logger.info ('Running the process sample sent state for %s', run_item)
          run_be_processed_id=RunProcess.objects.get(runName__exact=run_item).id
          logger.debug ('Run ID for the run process to be update is:  %s', run_be_processed_id)
          #run_Id_for_searching=RunningParameters.objects.get(runName_id= run_be_processed_id)
@@ -685,11 +715,9 @@ def process_run_in_processrunning_state (process_list, logger):
                 processed_run.append(run_Id_used)
                 update_run_state(run_be_processed_id, 'Bcl2Fastq Executed', logger)
                 update_project_state(run_be_processed_id, 'B2FqExecuted', logger)
-                found_report_directory = 1
-                processed_run.append(run_Id_used)
                 break
             else:
-                logger.debug('The directory %s has been found while looking for the compleation of the execution of bcl2fastq', sh.filename)
+                logger.debug('The directory %s has been found while looking for completion of the execution of bcl2fastq', sh.filename)
         if found_report_directory:
             logger.info('blc2fastq has been completed for the Run ID %s  it is now on Bcl2Fastq Executed state', run_Id_used)
         else:
@@ -698,56 +726,92 @@ def process_run_in_processrunning_state (process_list, logger):
             
     # close samba connection 
     conn.close()
+    logger.info('Closing the remote connection ')
     return processed_run
 
 
 
 def process_run_in_bcl2F_q_executed_state (process_list, logger):
     processed_run=[]
+    plot_dir='documents/wetlab/images_plot'
+    # get the directory of samba to fetch the files
+    share_folder_name ='NGS_Data_test'
+    local_dir_samba= 'documents/wetlab/tmp/processing'
+    remote_stats_dir= 'Data/Intensities/BaseCalls/Stats/'
+    demux_file=os.path.join(local_dir_samba,'DemultiplexingStats.xml')
+    conversion_file=os.path.join(local_dir_samba,'ConversionStats.xml')
+    run_info_file=os.path.join(local_dir_samba, 'RunInfo.xml')
     logger.debug('Executing process_run_in_bcl2F_q_executed_state method')
+    
+    # check the connectivity to remote server
+    try:
+        conn=open_samba_connection()
+        logger.info('Successful connection for updating run on bcl2F_q' )
+    except:
+        logger.error('ERROR:: Unable to connect to remote server')
+        return 'Error'
+            
     for run_item in process_list:
-        # change the state to Running Stats
+        
         logger.info ('Processing the process on bcl2F_q for the run %s', run_item)
         run_processing_id=RunProcess.objects.get(runName__exact=run_item).id
         run_Id_used=str(RunningParameters.objects.get(runName_id= run_processing_id))
-        plot_dir='documents/wetlab/images_plot'
-        
+       
         update_run_state(run_processing_id, 'Running Stats', logger)
-        
-        # get the directory of samba to fetch the files
-        share_folder_name ='NGS_Data_test'
-        local_dir_samba= 'documents/wetlab/tmp/processing'
-        demux_file=os.path.join(local_dir_samba,'DemultiplexingStats.xml')
-        conversion_file=os.path.join(local_dir_samba,'ConversionStats.xml')
-        run_info_file=os.path.join(local_dir_samba, 'RunInfo.xml')
         #copy the demultiplexingStats.xml file to wetlab/tmp/processing
         
-        try:
-            conn=open_samba_connection()
-            logger.info('Successful connection for updating run on bcl2F_q' )
-        except:
-            return 'Error'
-        remote_stats_dir= 'Data/Intensities/BaseCalls/Stats/'
+        
         samba_demux_file=os.path.join('/',run_Id_used,remote_stats_dir, 'DemultiplexingStats.xml')
         logger.debug('path to fetch demultiplexingStats is %s',  samba_demux_file)
-        with open(demux_file ,'wb') as demux_fp :
-            conn.retrieveFile(share_folder_name, samba_demux_file, demux_fp)
+        try:
+            with open(demux_file ,'wb') as demux_fp :
+                conn.retrieveFile(share_folder_name, samba_demux_file, demux_fp)
+        except:
+            logger.error('Unable to fetch the DemultiplexingStats.xml file for RunID %s', run_Id_used)
+            os.remove(demux_file)
+            logger.debug('deleting DemultiplexingStats file  for RunID %s' , run_Id_used)
+            continue
         logger.info('Fetched the DemultiplexingStats.xml')
-        #copy the demultiplexingStats.xml file to wetlab/tmp/processing
+        #copy the ConversionStats.xml file to wetlab/tmp/processing
         samba_conversion_file=os.path.join('/', run_Id_used,remote_stats_dir,'ConversionStats.xml')
-        with open(conversion_file ,'wb') as conv_fp :
-            conn.retrieveFile(share_folder_name, samba_conversion_file, conv_fp)
+        try:
+            with open(conversion_file ,'wb') as conv_fp :
+                conn.retrieveFile(share_folder_name, samba_conversion_file, conv_fp)
+        except:
+            logger.error('Unable to fetch the ConversionStats.xml file for RunID %s', run_Id_used)
+            os.remove(conversion_file)
+            os.remove(demux_file)
+            logger.debug('deleting ConversionStats and DemultiplexingStats file  for RunID %s' , run_Id_used)
+            continue
         logger.info('Fetched the conversionStats.xml')
         # copy RunInfo.xml  file to process the interop files
-        with open(run_info_file ,'wb') as runinfo_fp :
-            samba_conversion_file=os.path.join('/', run_Id_used,'RunInfo.xml')
-                #conn.retrieveFile('share', '/path/to/remote_file', fp)
-            conn.retrieveFile(share_folder_name, samba_conversion_file, runinfo_fp)
-        logger.info('Fetched the RunInfo.xml')
+        try:
+            with open(run_info_file ,'wb') as runinfo_fp :
+                samba_conversion_file=os.path.join('/', run_Id_used,'RunInfo.xml')
+                conn.retrieveFile(share_folder_name, samba_conversion_file, runinfo_fp)
+        except:
+            logger.error('Unable to fetch the RunInfo.xml file for RunID %s', run_Id_used)
+            os.remove(run_info_file)
+            os.remove(conversion_file)
+            os.remove(demux_file)
+            logger.debug('deleting RunInfo, ConversionStats and DemultiplexingStats file  for RunID %s' , run_Id_used)
+            continue
+        logger.info('Fetched the RunInfo.xml file')
         # copy all binary files in interop folder to local  documents/wetlab/tmp/processing/interop  
         interop_local_dir_samba= os.path.join(local_dir_samba, 'InterOp')
         remote_interop_dir=os.path.join('/',run_Id_used,'InterOp')
-        file_list = conn.listPath( share_folder_name, remote_interop_dir)
+        try:
+            file_list = conn.listPath( share_folder_name, remote_interop_dir)
+            logger.info('InterOp folder exists on the RunID %s', run_Id_used)
+        except:
+            logger.error('ERROR:: InterOP folder does not exist on RunID %s', run_Id_used)
+            os.remove(run_info_file)
+            os.remove(conversion_file)
+            os.remove(demux_file)
+            logger.debug('deleting RunInfo, ConversionStats and DemultiplexingStats file  for RunID %s' , run_Id_used)
+            print('ERROR:: InterOP folder does not exist on RunID ', run_Id_used)
+            continue
+        error_in_interop = False
         for sh in file_list:
             if sh.isDirectory:
                 continue
@@ -763,45 +827,53 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
                         logger.info('Copied %s to local Interop folder', interop_file_name)
                 except:
                     logger.error("Not be able to fetch the file %s", interop_file_name)
-                    return ('Error')
-            # close samba connection 
-        conn.close()
-        
-        # parsing the files to get the xml Stats
-        logger.info('processing the XML files')
-        xml_stats=parsing_statistics_xml(demux_file, conversion_file, logger)
-        store_raw_xml_stats(xml_stats,run_processing_id, logger)
-        process_xml_stats(xml_stats,run_processing_id, logger)
-        
-        # parsing and processing the project samples
-        sample_project_stats = parsing_sample_project_xml (demux_file, conversion_file, logger)
-        store_samples_projects (sample_project_stats, run_processing_id, logger)
-        
-        logger.info('processing interop files')
-        # processing information for the interop files
-
-        process_binStats(local_dir_samba, run_processing_id, logger)
-        graphic_dir=os.path.join(plot_dir,run_Id_used)
-        create_graphics(local_dir_samba, run_processing_id, run_Id_used, logger)
-        processed_run.append(run_Id_used)
-        logger.info('run id %s is now on Completed state', run_Id_used)
-        update_run_state(run_processing_id, 'Completed', logger)
-        update_project_state(run_processing_id, 'Completed', logger)
-        # clean up the used files and directories
-        logger.info('starting the clean up for the copied files from remote server ')
-        os.remve(demux_file)
-        logger.debug('Demultiplexing file have been removed from %s', demux_file)
-        os.remove(conversion_file)
-        logger.debug('ConversionStats file have been removed from %s', conversion_file)
-        os.remove(run_info_file)
-        logger.debug('RunInfo file have been removed from %s', run_info_file)
-        for file_object in os.listdir(interop_local_dir_samba):
-            file_object_path = os.path.join(interop_local_dir_samba, file_object)
-            if os.path.isfile(file_object_path):
-                logger.debug('Deleting file %s' , file_object_path)
-                os.remove(file_object_path)
-        logger.info('xml files and binary files from InterOp folder have been removed')
-        
+                    os.remove(run_info_file)
+                    os.remove(conversion_file)
+                    os.remove(demux_file)
+                    logger.debug('deleting files RunInfo, ConversionStats and DemultiplexingStats ')
+                    logger.debug('because of error when fetching interop files for RunID  %s' , run_Id_used)
+                    error_in_interop= True
+                    break
+        if error_in_interop : 
+            continue
+        else:
+            # parsing the files to get the xml Stats
+            logger.info('processing the XML files')
+            xml_stats=parsing_statistics_xml(demux_file, conversion_file, logger)
+            store_raw_xml_stats(xml_stats,run_processing_id, logger)
+            process_xml_stats(xml_stats,run_processing_id, logger)
+            
+            # parsing and processing the project samples
+            sample_project_stats = parsing_sample_project_xml (demux_file, conversion_file, logger)
+            store_samples_projects (sample_project_stats, run_processing_id, logger)
+            
+            logger.info('processing interop files')
+            # processing information for the interop files
+    
+            process_binStats(local_dir_samba, run_processing_id, logger)
+            graphic_dir=os.path.join(plot_dir,run_Id_used)
+            create_graphics(local_dir_samba, run_processing_id, run_Id_used, logger)
+            processed_run.append(run_Id_used)
+            logger.info('run id %s is now on Completed state', run_Id_used)
+            update_run_state(run_processing_id, 'Completed', logger)
+            update_project_state(run_processing_id, 'Completed', logger)
+            # clean up the used files and directories
+            logger.info('starting the clean up for the copied files from remote server ')
+            os.remove(demux_file)
+            logger.debug('Demultiplexing file have been removed from %s', demux_file)
+            os.remove(conversion_file)
+            logger.debug('ConversionStats file have been removed from %s', conversion_file)
+            os.remove(run_info_file)
+            logger.debug('RunInfo file have been removed from %s', run_info_file)
+            for file_object in os.listdir(interop_local_dir_samba):
+                file_object_path = os.path.join(interop_local_dir_samba, file_object)
+                if os.path.isfile(file_object_path):
+                    logger.debug('Deleting file %s' , file_object_path)
+                    os.remove(file_object_path)
+            logger.info('xml files and binary files from InterOp folder have been removed')
+    # close samba connection 
+    conn.close()
+    logger.info('Samba connection close. Sucessful copy of files form remote server')    
     return processed_run
 '''
 def find_state_and_save_data(run_name,run_folder):
@@ -844,9 +916,9 @@ def find_not_completed_run (logger):
 
     processed_run={}
     for state in working_list:
-        logger.info ('Start processing the run founding runs for state %s', state)
+        logger.info ('Start processing the run found for state %s', state)
         if state == 'Sample Sent':
-            logger.debug ('found sample sent in state %s ')
+            logger.debug ('found sample sent in state ')
             processed_run[state]=process_run_in_samplesent_state(working_list['Sample Sent'], logger)
         elif state == 'Process Running':
             logger.debug('Found runs for Process running %s', working_list['Process Running'])
@@ -854,7 +926,7 @@ def find_not_completed_run (logger):
             
         else:
             logger.debug('Found runs for Bcl2Fastq %s', working_list['Bcl2Fastq Executed'])
-            processed_run[state]=process_run_in_bcl2F_q_executed_state(working_list['Bcl2Fastq Executed'], logger)
+            #processed_run[state]=process_run_in_bcl2F_q_executed_state(working_list['Bcl2Fastq Executed'], logger)
     
     return (processed_run)
     
