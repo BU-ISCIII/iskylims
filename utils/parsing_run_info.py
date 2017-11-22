@@ -17,10 +17,10 @@ def open_samba_connection():
     # client_machine_name can be an arbitary ASCII string
     # server_name should match the remote machine name, or else the connection will be rejected
 
-    conn=SMBConnection('Luigi', 'Apple123', 'NGS_Data_test', 'LUIGI-PC', use_ntlm_v2=True)
-    conn.connect('192.168.1.3', 139)    
-    #conn=SMBConnection('bioinfocifs', 'bioinfocifs', 'NGS_Data_test', 'barbarroja', use_ntlm_v2=True)
-    #conn.connect('10.15.60.54', 139)
+    #conn=SMBConnection('Luigi', 'Apple123', 'NGS_Data_test', 'LUIGI-PC', use_ntlm_v2=True)
+    #conn.connect('192.168.1.3', 139)    
+    conn=SMBConnection('bioinfocifs', 'bioinfocifs', 'NGS_Data_test', 'barbarroja', use_ntlm_v2=True)
+    conn.connect('10.15.60.54', 139)
     '''
     conn = SMBConnection(userid, password, client_machine_name, remote_machine_name, use_ntlm_v2 = True)
     conn.connect(server_ip, 139)
@@ -97,6 +97,7 @@ def fetch_exp_name_from_run_info (local_run_parameter_file):
         if exp_name:
             fh.close()
             return exp_name.group(1)
+    return ''
 
 def completion_status_run (local_run_completion_status_file):
     fh = open (local_run_completion_status_file, 'r')
