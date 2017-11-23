@@ -105,9 +105,8 @@ def completion_status_run (local_run_completion_status_file):
         completion_status = re.search('^\s+<CompletionStatus>(.*)</CompletionStatus>', line)
         if completion_status:
             fh.close()
-            # delete the RunCompletionStatus.xml file
-            os.remove(local_run_completion_status_file)
             return completion_status.group(1)
+    return ''
            
 def process_run_in_recorded_state(logger):
     try:
@@ -149,6 +148,25 @@ def process_run_in_recorded_state(logger):
             else:
                 #copy the runParameter.xml file to wetlab/tmp/tmp
                 logger.info ('Found a new run  %s ,that was not in the processed run file',run_dir)
+                logger.info ('checking if exists completion status file ')
+                try:
+                    with open (local_run_completion_status_file, 'wb') as c_status_fp :
+                        conn.retrieveFile(share_folder_name, samba_completion_status_file, c_status_fp )
+                except:
+                    logger.error ('ERROR:: unable to fetch the RunCompletionStatus.xml file at %s', run_dir)
+                    logger.debug ('Deleting RunParameters.xml for run %s ', run_dir)
+                    os.remove(local_run_completion_status_file)
+                    continue
+                status_run = completion_status_run (local_run_completion_status_file)
+                if  status_run != 'CompletedAsPlanned':
+                    logger.error('ERROR::  run status was %s for the runID %s', status_run, run_dir)
+                    print('ERROR:: Status for run ', run_dir , ' is not completed ')
+                    os.remove(local_run_completion_status_file)
+                    continue
+                else:
+                    logger.debug('Deleting RunCompletionStatus.xml file')
+                    os.remove(local_run_completion_status_file)
+                    logger.info ('Run completed for Run ID %s ', run_dir)
                 try:
                     with open(local_run_parameter_file ,'wb') as r_par_fp :
                         samba_run_parameters_file=os.path.join(run_dir,'RunParameters.xml')
@@ -174,22 +192,7 @@ def process_run_in_recorded_state(logger):
                     # check if run have been successful completed
                     samba_completion_status_file = os.path.join(run_dir,'RunCompletionStatus.xml')
                     logger.debug('runCompletion file is in %s', samba_completion_status_file)
-                    try:
-                        with open (local_run_completion_status_file, 'wb') as c_status_fp :
-                            
-                            #logger.debug('Reading RunCompletationStatus.xml file for remote directory')
-                            conn.retrieveFile(share_folder_name, samba_completion_status_file, c_status_fp )
-                    except:
-                        logger.error ('ERROR:: unable to fetch the RunCompletionStatus.xml file at %s', run_dir)
-                        logger.debug ('Deleting RunParameters.xml for run %s ', run_dir)
-                        os.remove(local_run_parameter_file)
-                        continue
-                    status_run = completion_status_run (local_run_completion_status_file)
-                    if  status_run != 'CompletedAsPlanned':
-                        logger.error('ERROR::  run status was %s for the runID %s', status_run, run_dir)
-                        print('ERROR:: Status for run ', run_dir , ' is not completed ')
-                        os.remove(local_run_parameter_file)
-                        continue
+                    
                     
                     sample_sheet_tmp_file=os.path.join(recorded_dir,exp_name_id,'samplesheet.csv')
                     if os.path.exists(sample_sheet_tmp_file):
