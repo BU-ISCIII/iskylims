@@ -146,9 +146,12 @@ def process_run_in_recorded_state(logger):
                 logger.debug('run id %s already processed', run_dir)
                 continue
             else:
-                #copy the runParameter.xml file to wetlab/tmp/tmp
+                
                 logger.info ('Found a new run  %s ,that was not in the processed run file',run_dir)
                 logger.info ('checking if exists completion status file ')
+                # check if run have been successful completed
+                samba_completion_status_file = os.path.join(run_dir,'RunCompletionStatus.xml')
+                logger.debug('runCompletion file is in %s', samba_completion_status_file)
                 try:
                     with open (local_run_completion_status_file, 'wb') as c_status_fp :
                         conn.retrieveFile(share_folder_name, samba_completion_status_file, c_status_fp )
@@ -167,7 +170,9 @@ def process_run_in_recorded_state(logger):
                     logger.debug('Deleting RunCompletionStatus.xml file')
                     os.remove(local_run_completion_status_file)
                     logger.info ('Run completed for Run ID %s ', run_dir)
+                #### Get Run_parameter_file
                 try:
+                    #copy the runParameter.xml file to wetlab/tmp/tmp
                     with open(local_run_parameter_file ,'wb') as r_par_fp :
                         samba_run_parameters_file=os.path.join(run_dir,'RunParameters.xml')
                         conn.retrieveFile(share_folder_name, samba_run_parameters_file, r_par_fp)
@@ -189,9 +194,7 @@ def process_run_in_recorded_state(logger):
                 if  RunProcess.objects.filter(runName__icontains = exp_name, runState__exact = 'Recorded').exists():
                     exp_name_id=str(RunProcess.objects.get(runName__exact = exp_name).id)
                     logger.debug('Matching the experimental name id %s with database ', exp_name_id)
-                    # check if run have been successful completed
-                    samba_completion_status_file = os.path.join(run_dir,'RunCompletionStatus.xml')
-                    logger.debug('runCompletion file is in %s', samba_completion_status_file)
+                    
                     
                     
                     sample_sheet_tmp_file=os.path.join(recorded_dir,exp_name_id,'samplesheet.csv')
