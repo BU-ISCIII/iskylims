@@ -164,12 +164,12 @@ def process_run_in_recorded_state(logger):
                 if  status_run != 'CompletedAsPlanned':
                     logger.error('ERROR::  run status was %s for the runID %s', status_run, run_dir)
                     print('ERROR:: Status for run ', run_dir , ' is not completed ')
-                    os.remove(local_run_completion_status_file)
-                    continue
+                    #continue  # lets continue the process to check if the experiment name can fetch from RunParameter file
                 else:
-                    logger.debug('Deleting RunCompletionStatus.xml file')
-                    os.remove(local_run_completion_status_file)
                     logger.info ('Run completed for Run ID %s ', run_dir)
+                
+                logger.debug('Deleting RunCompletionStatus.xml file')
+                os.remove(local_run_completion_status_file)
                 #### Get Run_parameter_file
                 try:
                     #copy the runParameter.xml file to wetlab/tmp/tmp
@@ -194,12 +194,24 @@ def process_run_in_recorded_state(logger):
                 if  RunProcess.objects.filter(runName__icontains = exp_name, runState__exact = 'Recorded').exists():
                     exp_name_id=str(RunProcess.objects.get(runName__exact = exp_name).id)
                     logger.debug('Matching the experimental name id %s with database ', exp_name_id)
-                    
-                    
+                    if status_run != 'CompletedAsPlanned':
+                        # set the run in error state 
+                        exp_name = RunProcess.objects.get(runName__exact = exp_name)
+                        exp_name.runState = 'CANCELED'
+                        exp_name.save()
+                        project_name_list = Projects.objects.filter(runprocess_id__exact = exp_name_id)
+                        for project in project_name_list:
+                            project.procState= 'CANCELED'
+                            project.save()
+                        # delelete the runParameter file
+                        os.delete(local_run_parameter_file)
+                        # Updated the processed file  and continue with the next item
+                        processed_run.append(run_dir)
+                        continue
                     
                     sample_sheet_tmp_file=os.path.join(recorded_dir,exp_name_id,'samplesheet.csv')
                     if os.path.exists(sample_sheet_tmp_file):
-                        # copy Sample heet file to samba directory
+                        # copy Sample heet file to remote directory
                         logger.info('Found run directory %s for the experiment name %s', run_dir, exp_name_id)
                         try:
                             with open(sample_sheet_tmp_file ,'rb') as  sample_samba_fp:
@@ -212,7 +224,7 @@ def process_run_in_recorded_state(logger):
                             logger.error('Unable to copy Sample Sheet for run %s', run_dir)
                             print ('ERROR:: Unable to copy Sample Sheet for run ', run_dir)
                             continue
-                        # retrieve the runInfo.xml file from samba directory
+                        # retrieve the runInfo.xml file from remote directory
                     else:
                         logger.error('ERROR ---No sample Sheet will be copied to remote dir. Local Directory %s was not found ', sample_sheet_tmp_dir)
                     # get the runIfnfo.xml to collect the  information for this run    
@@ -675,7 +687,7 @@ def store_samples_projects(sample_project_stats, run_id, logger):
                
             sample_to_store.save()  
             logger.debug('Stored sample %s', sample_name)
-        logger.info('Stored sample for the project $s', project)
+        logger.info('Stored sample for the project %s', project)
 
         #store in database
         logger.info('Processed information sample %s', project)
@@ -839,6 +851,14 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
                     os.remove(demux_file)
                     logger.debug('deleting files RunInfo, ConversionStats and DemultiplexingStats ')
                     logger.debug('because of error when fetching interop files for RunID  %s' , run_Id_used)
+                    # deleting local Interop files  
+                    file_list_to_delete = os.list(interop_local_dir_samba)
+                    logger.debug ('Deleting the local interop files ')
+                    for file_name in file_list_to_delete:
+                        if file_name == '.' or '..' :
+                            continue
+                        else:
+                            os.delete(file_name)
                     error_in_interop= True
                     break
         if error_in_interop : 
@@ -933,7 +953,7 @@ def find_not_completed_run (logger):
             
         else:
             logger.debug('Found runs for Bcl2Fastq %s', working_list['Bcl2Fastq Executed'])
-            #processed_run[state]=process_run_in_bcl2F_q_executed_state(working_list['Bcl2Fastq Executed'], logger)
+            processed_run[state]=process_run_in_bcl2F_q_executed_state(working_list['Bcl2Fastq Executed'], logger)
     
     return (processed_run)
     

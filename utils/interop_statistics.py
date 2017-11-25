@@ -164,13 +164,14 @@ def process_binStats(run_folder, run_id, logger):
     logger.info ('Exiting the binary stats ')
     
 def create_graphics(run_folder,run_id, graphic_dir, logger):
-    graphic_list=['plot_by_cycle  ', 'plot_by_lane  ', 'plot_flowcell  ', 'plot_qscore_histogram  ',
-                  'plot_qscore_heatmap  ', 'plot_sample_qc  ' ]
-
+    graphic_list=['/opt/interop/bin/plot_by_cycle  ', '/opt/interop/bin/plot_by_lane  ', '/opt/interop/bin/plot_flowcell  ', '/opt/interop/bin/plot_qscore_histogram  ',
+                  '/opt/interop/bin/plot_qscore_heatmap  ', '/opt/interop/bin/plot_sample_qc  ' ]
+    logger.debug ('Run folder for graphic stats is %s', run_folder)
     # create the graphics
     logger.info('Creating plot graphics for run id %s', run_id)
     for item_graphic in graphic_list:
         plot_command= item_graphic + run_folder + '  | gnuplot'
+        logger.debug('command used to create graphic is : %s', plot_command)
         os.system(plot_command)
         
     run_graphic_dir=os.path.join('documents/wetlab/images_plot', graphic_dir)
@@ -178,9 +179,10 @@ def create_graphics(run_folder,run_id, graphic_dir, logger):
         os.mkdir(run_graphic_dir)
         logger.info('created new directory %s', run_graphic_dir)
     #move the graphic files to wetlab directory
-    source = os.listdir("./")
+    source = os.listdir('./')
     for files in source:
         if files.endswith(".png"):
+            logger.debug('moving file %s', files)
             shutil.move(files,run_graphic_dir)
             
     #removing the processing_ character in the file names
@@ -190,6 +192,9 @@ def create_graphics(run_folder,run_id, graphic_dir, logger):
         move_file=files.split('_')
         old_file=os.path.join(run_graphic_dir,files)
         new_file=os.path.join(run_graphic_dir,move_file[1])
+        if not new_file.endswith(".png"):
+            new_file = new_file + '.png'
+        logger.debug('Renaming files from %s to %s', old_file, new_file)
         shutil.move(old_file,new_file)
     
     folder_run_graphic=graphic_dir.replace('../','')
