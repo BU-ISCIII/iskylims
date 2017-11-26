@@ -37,6 +37,7 @@ def get_sample_file (request):
         projects=[]
         run_name=request.POST['runname']
         myfile = request.FILES['myfile']
+        requested_center = request.POST['center']
         ## check that runName is not already used in the database. Error page is showed if runName is already  defined
         if (RunProcess.objects.filter(runName = run_name)).exists():
             if RunProcess.objects.filter(runName = run_name, runState__exact ='Pre-Recorded'):
@@ -117,12 +118,9 @@ def get_sample_file (request):
             return render (request,'wetlab/error_page.html', {'content':[ head_text,'', display_project,'', 
                           'Project names must be unique','', 'ADVICE:','Edit the installed in the database before uploading the Sample sheet']})
         ##Once the information looks good. it will be stores in runProcess and projects table 
-        
-
-        #import pdb; pdb.set_trace()
 
         ## store data in runProcess table, run is in pre-recorded state
-        run_proc_data = RunProcess(runName=run_name,sampleSheet= file_name, runState='Pre-Recorded')
+        run_proc_data = RunProcess(runName=run_name,sampleSheet= file_name, runState='Pre-Recorded', requestedCenter= requested_center)
         run_proc_data.save()
                
         ## create new project tables based on the project involved in the run and 
@@ -144,7 +142,9 @@ def get_sample_file (request):
         library_kit=request.POST.getlist('librarykit')
         run_name= request.POST['runname']
         ## get the sample sheet used in the run
-        
+        if not RunProcess.objects.filter (runName__exact = run_name).exists():
+            return render (request, 'wetlab/error_page.html', {'content':['You get this error page because you use the back Buttom to return to previous page where asking for library kit name',
+                            'To upload again the shample sheet, use the "Upload the Run" option from the top menu']})
         run_p = RunProcess.objects.get(runName__exact = run_name)
         s_file=run_p.get_sample_file()
         ## get the different type of library kit used in the run and 
@@ -166,8 +166,23 @@ def get_sample_file (request):
         ## convert the sample sheet to base space format and have different files according the library kit
         #import pdb; pdb.set_trace()
         for key, value in library.items():
-            bs_file[key]=sample_sheet_map_basespace(in_file, key, value,'Plate96')
-            results.append([key, bs_file[key]]) 
+            library_file = sample_sheet_map_basespace(in_file, key, value,'Plate96')
+            if library_file == 'ERROR':
+                # deleting the sample sheet file
+                os.remove(in_file)
+                # Deleting projects related to the shample sheet
+                for p in range(len( projects)):
+                    my_project = projects [p]
+                    delete_proj=Projects.objects.get(projectName = my_project)
+                    delete_proj.delete()
+                # delete the run used when uploading the sample sheet
+                run_p.delete()
+                # show the error page 
+                return render (request,'wetlab/error_page.html', {'content':[ 'The information on  the Library kit ', key,' For the project ', value, 
+                          'Does not meet the requirements to perform the conversion to import to Base Space','ADVICE', 'Check the sample sheet that was uploaded ']})
+            else:
+                bs_file[key] = library_file
+                results.append([key, bs_file[key]]) 
             
         ## save the project information on database
          

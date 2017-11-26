@@ -204,7 +204,7 @@ def process_run_in_recorded_state(logger):
                             project.procState= 'CANCELED'
                             project.save()
                         # delelete the runParameter file
-                        os.delete(local_run_parameter_file)
+                        os.remove(local_run_parameter_file)
                         # Updated the processed file  and continue with the next item
                         processed_run.append(run_dir)
                         continue
@@ -858,7 +858,7 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
                         if file_name == '.' or '..' :
                             continue
                         else:
-                            os.delete(file_name)
+                            os.remove(file_name)
                     error_in_interop= True
                     break
         if error_in_interop : 

@@ -74,6 +74,9 @@ def sample_sheet_map_basespace(in_file, library_kit, projects, plate):
         if (data_found and header_found):
             dict_value_data={}
             data_split=line.split(',')
+            if len(data_split) < 9 :
+                # smaple sheet doe not include the index 2. Return error to stop the conversion
+                return 'ERROR'
             if (data_split[8] in projects):
                 for ind in range(len(original_data_header)):
                     dict_value_data[original_data_header[ind]]= data_split[ind]
