@@ -256,7 +256,7 @@ div.dataTables_wrapper {
     width: 90%;
     height: 90%;
     border-radius: 50%;
-    background: #a1a6aa;
+    background: #c9cccf;
     font-size: 24px;
     color: #fff;
     line-height: 135px;
@@ -295,9 +295,6 @@ div.dataTables_wrapper {
     animation: loading-5 0.4s linear forwards 1.8s;
 }
 
-
-
-
 .circle-progress.brown .circle-progress-bar{
     border-color: #cc6600;
 }
@@ -323,7 +320,15 @@ div.dataTables_wrapper {
 .circle-progress.violet .circle-progress-right .circle-progress-bar{
     animation: loading-7 0.4s linear forwards 1.8s;
 }
-
+.circle-progress.red .circle-progress-bar{
+    border-color: #ff6666;
+}
+.circle-progress.red .circle-progress-value{
+    color: #ff6666;
+}
+.circle-progress.red .circle-progress-right .circle-progress-bar{
+    animation: loading-8 0.4s linear forwards 1.8s;
+}
 @keyframes loading-1{
     0%{
         -webkit-transform: rotate(0deg);
@@ -392,6 +397,16 @@ div.dataTables_wrapper {
     100%{
         -webkit-transform: rotate(90deg);
         transform: rotate(90deg);
+    }
+}
+@keyframes loading-8{
+   0%{
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+    100%{
+        -webkit-transform: rotate(45deg);
+        transform: rotate(45deg);
     }
 }
 @media only screen and (max-width: 990px){

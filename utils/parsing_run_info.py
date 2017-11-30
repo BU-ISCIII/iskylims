@@ -17,10 +17,10 @@ def open_samba_connection():
     # client_machine_name can be an arbitary ASCII string
     # server_name should match the remote machine name, or else the connection will be rejected
 
-    #conn=SMBConnection('Luigi', 'Apple123', 'NGS_Data_test', 'LUIGI-PC', use_ntlm_v2=True)
-    #conn.connect('192.168.1.3', 139)    
-    conn=SMBConnection('bioinfocifs', 'bioinfocifs', 'NGS_Data_test', 'barbarroja', use_ntlm_v2=True)
-    conn.connect('10.15.60.54', 139)
+    conn=SMBConnection('Luigi', 'Apple123', 'NGS_Data_test', 'LUIGI-PC', use_ntlm_v2=True)
+    conn.connect('192.168.1.3', 139)    
+    #conn=SMBConnection('bioinfocifs', 'bioinfocifs', 'NGS_Data_test', 'barbarroja', use_ntlm_v2=True)
+    #conn.connect('10.15.60.54', 139)
     '''
     conn = SMBConnection(userid, password, client_machine_name, remote_machine_name, use_ntlm_v2 = True)
     conn.connect(server_ip, 139)
@@ -424,6 +424,7 @@ def parsing_statistics_xml(demux_file, conversion_file, logger):
 
 
 def store_raw_xml_stats(stats_projects, run_id,logger):
+    error_found = False
     for project in stats_projects:
         if project == 'TopUnknownBarcodes':
             continue
@@ -433,19 +434,38 @@ def store_raw_xml_stats(stats_projects, run_id,logger):
             project_id= None
             default_all = project
         else:
-            p_name_id=Projects.objects.get(projectName__exact = project).id
+            if Projects.objects.filter (projectName__exact = project).exists():
+                p_name_id=Projects.objects.get(projectName__exact = project).id
+            else:
+                logger.error('ERROR:: Project name inside the report does not match with the one define in the sample sheet')
+                print ('ERROR::: Project name ', project ,' is not include in the Sample Sheet ')
+                error_found = True
+                continue
             project_id= Projects.objects.get(pk=p_name_id)
             default_all = None
-           
-        raw_stats_xml = RawStatisticsXml (runprocess_id=RunProcess.objects.get(pk=run_id),
+        # save the information when no error is found. This condition is set to avoid saving information on database
+        # because the information stored before getting the error must be deleted
+        if not error_found :   
+            raw_stats_xml = RawStatisticsXml (runprocess_id=RunProcess.objects.get(pk=run_id),
                                           project_id = project_id, defaultAll = default_all,
                                           rawYield= stats_projects[project]['RAW_Yield'], rawYieldQ30= stats_projects[project]['RAW_YieldQ30'],
                                           rawQuality= stats_projects[project]['RAW_QualityScore'], PF_Yield= stats_projects[project]['PF_Yield'],
                                           PF_YieldQ30= stats_projects[project]['PF_YieldQ30'], PF_QualityScore =stats_projects[project]['PF_QualityScore'])
         
-        logger.info('saving raw stats for %s project', project)
-        raw_stats_xml.save()
+            logger.info('saving raw stats for %s project', project)
+            raw_stats_xml.save()
+    if error_found :
+        # delete all information stored on database
+        if RawStatisticsXml.objects.filter (runprocess_id__exact = run_id).exists():
+            projects_to_delete = RawStatisticsXml.objects.filter (runprocess_id__exact = run_id)
+            logger.info('Deleting stored RawStatisticsXml information ')
+            for project in projects_to_delete :
+                project.delete()
+                logger.debug('Deleted the RawStatisticsXml for project %s', project)
+        return 'ERROR'
+            
     logger.info('Raw XML data have been stored for all projects ')
+    return ''
     
     
 def process_xml_stats(stats_projects, run_id, logger):
@@ -867,23 +887,27 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
             # parsing the files to get the xml Stats
             logger.info('processing the XML files')
             xml_stats=parsing_statistics_xml(demux_file, conversion_file, logger)
-            store_raw_xml_stats(xml_stats,run_processing_id, logger)
-            process_xml_stats(xml_stats,run_processing_id, logger)
-            
-            # parsing and processing the project samples
-            sample_project_stats = parsing_sample_project_xml (demux_file, conversion_file, logger)
-            store_samples_projects (sample_project_stats, run_processing_id, logger)
-            
-            logger.info('processing interop files')
-            # processing information for the interop files
-    
-            process_binStats(local_dir_samba, run_processing_id, logger)
-            graphic_dir=os.path.join(plot_dir,run_Id_used)
-            create_graphics(local_dir_samba, run_processing_id, run_Id_used, logger)
-            processed_run.append(run_Id_used)
-            logger.info('run id %s is now on Completed state', run_Id_used)
-            update_run_state(run_processing_id, 'Completed', logger)
-            update_project_state(run_processing_id, 'Completed', logger)
+            result_of_raw_saving = store_raw_xml_stats(xml_stats,run_processing_id, logger)
+            if result_of_raw_saving == 'ERROR':
+                update_run_state(run_processing_id, 'ERROR-on-Raw-SavingStats', logger)
+                update_project_state(run_processing_id, 'ERROR-on-Raw-SavingStats', logger)
+                logger.error('Stopping process for this run an starting deleting the files')
+            else:
+                process_xml_stats(xml_stats,run_processing_id, logger)
+                # parsing and processing the project samples
+                sample_project_stats = parsing_sample_project_xml (demux_file, conversion_file, logger)
+                store_samples_projects (sample_project_stats, run_processing_id, logger)
+                
+                logger.info('processing interop files')
+                # processing information for the interop files
+        
+                process_binStats(local_dir_samba, run_processing_id, logger)
+                graphic_dir=os.path.join(plot_dir,run_Id_used)
+                create_graphics(local_dir_samba, run_processing_id, run_Id_used, logger)
+                processed_run.append(run_Id_used)
+                logger.info('run id %s is now on Completed state', run_Id_used)
+                update_run_state(run_processing_id, 'Completed', logger)
+                update_project_state(run_processing_id, 'Completed', logger)
             # clean up the used files and directories
             logger.info('starting the clean up for the copied files from remote server ')
             os.remove(demux_file)

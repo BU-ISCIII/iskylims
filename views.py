@@ -236,6 +236,9 @@ def get_information_run(run_name_found,run_id):
         r_data_display.append([d_list[i],run_info_data[i]])
     info_dict['data']=r_data_display
     info_dict['run_state'] = run_state
+    if (run_state.startswith('ERROR')):
+        info_dict['graphic_value']=10
+        info_dict['graphic_color']= 'red'
     if (run_state == 'Recorded'):
         info_dict['graphic_value']=25
         info_dict['graphic_color']= 'violet'
@@ -448,8 +451,8 @@ def search_nextSeq (request):
                 runs_found=RunProcess.objects.filter(runName__contains =run_name)
             else:
                 return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ,
-                                                                    'ADVICE:', 'Select the Fuzzy search button to get the match']})
-        if run_state != '':
+                                                                   'ADVICE:', 'Select the Fuzzy search button to get the match']})
+        if run_state == '' or run_name =='' :
             runs_found=RunProcess.objects.all()
         
         ### Check if state is not empty
@@ -772,6 +775,9 @@ def get_information_project (project_id):
     project_info_dict ['user_name'] = project_id.get_user_name()
     p_state = project_id.get_state()
     project_info_dict['state'] = p_state
+    if p_state.startswith('ERROR'):
+        project_info_dict['graphic_value']=10
+        project_info_dict['graphic_color']='red'
     if p_state == 'Recorded':
         project_info_dict['graphic_value']=25
         project_info_dict['graphic_color']='violet'
@@ -780,7 +786,7 @@ def get_information_project (project_id):
         project_info_dict['graphic_color']='brown'
     if p_state == 'B2FqExecuted':
         project_info_dict['graphic_value']= 75
-        project_info_dict['graphic_color']='yelllow'
+        project_info_dict['graphic_color']='yellow'
     if p_state == 'Completed':
         project_info_dict['graphic_value']= 100
         project_info_dict['graphic_color']='green'
