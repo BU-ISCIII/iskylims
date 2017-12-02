@@ -1193,6 +1193,8 @@ def nextSeqStats_per_library (request):
         if library_kit_name != '':
             if Projects.objects.filter(libraryKit__contains = library_kit_name, procState = 'Completed').exists():
                 library_found = Projects.objects.filter(libraryKit__contains = library_kit_name, procState = 'Completed')
+            else:
+                return render (request,'wetlab/error_page.html', {'content':['There are no Library containing ', library_kit_name]})
         else:
             library_found = Projects.objects.filter(procState__exact = 'Completed')
         if (start_date != '' and end_date != ''):
