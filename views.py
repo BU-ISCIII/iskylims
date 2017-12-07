@@ -450,8 +450,7 @@ def search_nextSeq (request):
             if (RunProcess.objects.filter(runName__contains =run_name).exists()):
                 runs_found=RunProcess.objects.filter(runName__contains =run_name)
             else:
-                return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ,
-                                                                   'ADVICE:', 'Select the Fuzzy search button to get the match']})
+                return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ]})
         if run_state == '' or run_name =='' :
             runs_found=RunProcess.objects.all()
         
