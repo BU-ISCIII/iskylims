@@ -343,3 +343,136 @@ def column_graphic_for_year_report (heading, sub_caption, x_axis_name, y_axis_na
         
     return data_source
 
+def researcher_project_column_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme, lane_report_data) :
+    data_source = {}
+    data_source['chart'] = { 
+                "caption": heading,
+                "subCaption": sub_caption,
+                "xAxisName": x_axis_name,
+                "yAxisName": y_axis_name,
+                #"theme": "fint",
+                "theme": theme,
+                "numberPrefix": "",
+                "placevaluesInside": "1",
+                "rotatevalues": "1",
+                #Showing canvas bg to apply background color
+                "showCanvasBg": "1",
+                #Shwoing canvas base to apply base color
+                "showCanvasBase": "1",
+                #Changing canvas base depth
+                "canvasBaseDepth": "14",
+                #Changing canvas background depth
+                "canvasBgDepth": "5",
+                #Changing canvas base color
+                "canvasBaseColor": "#aaaaaa",
+                #Changing canvas background color
+                "canvasBgColor": "#eeeeee",
+                "exportEnabled": "1"
+            }
+
+    data =[]
+    
+    for key , values in lane_report_data.items() :
+        data_dict = {} 
+        data_dict['label'] = key
+        data_dict['value'] = values
+        data.append(data_dict)
+    data_source['data'] = data    
+        
+    return data_source
+
+def researcher_project_mean_column_graphic(heading,  x_axis_name, y_axis_name, user_project_lane,q_30_media_lane, user_average, overall_average, investigator):
+    data_source = {}
+    
+    # Chart data is passed to the `dataSource` parameter, as hashes, in the form of
+    # key-value pairs.
+    data_source['chart'] = { 
+        "caption": heading,
+        "xAxisname": x_axis_name,
+        "yAxisName": y_axis_name,
+        "numberPrefix": "%",
+        "plotFillAlpha": "80",
+        "paletteColors": "#0075c2,#1aaf5d",
+        "baseFontColor": "#333333",
+        "baseFont": "Helvetica Neue,Arial",
+        "captionFontSize": "14",
+        "subcaptionFontSize": "14",
+        "subcaptionFontBold": "0",
+        "showBorder": "0",
+        "bgColor": "#ffffff",
+        "showShadow": "0",
+        "canvasBgColor": "#ffffff",
+        "canvasBorderAlpha": "0",
+        "divlineAlpha": "100",
+        "divlineColor": "#999999",
+        "divlineThickness": "1",
+        "divLineIsDashed": "1",
+        "divLineDashLen": "1",
+        "divLineGapLen": "1",
+        "usePlotGradientColor": "0",
+        "showplotborder": "0",
+        "valueFontColor": "#ffffff",
+        "placeValuesInside": "1",
+        "showHoverEffect": "1",
+        "rotateValues": "1",
+        "showXAxisLine": "1",
+        "xAxisLineThickness": "1",
+        "xAxisLineColor": "#999999",
+        "showAlternateHGridColor": "0",
+        "legendBgAlpha": "0",
+        "legendBorderAlpha": "0",
+        "legendShadow": "0",
+        "legendItemFontSize": "10",
+        "legendItemFontColor": "#666666",
+        "exportEnabled": "1"
+    }
+    data_source["categories"] = [
+        {"category": [
+                { "label": "Lane 1"},
+                { "label": "Lane 2"},
+                { "label": "Lane 3"},
+                { "label": "Lane 4"}
+            ]
+        }
+    ]
+    data_source ["dataset"] = [
+        {"seriesname": investigator +  '  Projects',
+            "data": [ 
+                    {"value": user_project_lane[0] },
+                    {"value": user_project_lane[1] },
+                    {"value": user_project_lane[2] },
+                    {"value": user_project_lane[3] }
+            ]
+        },
+        {"seriesname": "Average for all Projects",
+            "data": [
+                    {"value": q_30_media_lane[0]},
+                    {"value": q_30_media_lane[1]},
+                    {"value": q_30_media_lane[2]},
+                    {"value": q_30_media_lane[3]}
+            ]
+        }
+    ]
+    data_source["trendlines"] = [
+        {"line": [
+                {   "startvalue": user_average,
+                    "color": "#0075c2",
+                    "displayvalue": "Investigator",
+                    "valueOnRight": "1",
+                    "thickness": "1",
+                    "showBelow": "1",
+                    "tooltext": "Investigator mean value " + user_average
+                },
+                {
+                    "startvalue": overall_average,
+                    "color": "#1aaf5d",
+                    "displayvalue": "All Projects",
+                    "valueOnRight": "1",
+                    "thickness": "1",
+                    "showBelow": "1",
+                    "tooltext": "Mean value for all projects " + overall_average
+                }
+            ]
+        }
+    ]
+    return data_source
