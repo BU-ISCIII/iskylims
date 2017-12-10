@@ -52,7 +52,14 @@ def sample_sheet_map_basespace(in_file, library_kit, projects, plate):
         date_found = re.search('^Date',line)
         if date_found :
             date_line = line.split(',')
-            
+            # check if the year contains only 2 digits
+            temp_date = date_line[1].split('/')
+            if len (temp_date[2]) == 2 :
+                 # add the 20 century to the year
+                 year_four_digits = '20' + temp_date[2]
+                 temp_date[2] = year_four_digits
+                 date_line[1] = '/'.join(temp_date)
+                 
             try:
                 date_object = datetime.strptime(date_line[1],'%m/%d/%Y')
             except:
