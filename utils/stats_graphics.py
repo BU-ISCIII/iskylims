@@ -247,7 +247,7 @@ def graphic_for_quality_angular (heading, value) :
         "tickvaluedistance": "10",
         "showvalue": "0",
         # inner white radious 
-        "gaugeinnerradius": "25",
+        "gaugeinnerradius": "45",
         "bgcolor": "FFFFFF",
         "pivotfillcolor": "333333",
         "pivotradius": "8",
@@ -267,9 +267,9 @@ def graphic_for_quality_angular (heading, value) :
     data_source['dials'] = {
                 "dial": [ {
                     "value": value,
-                    "rearextension": "15",
+                    "rearextension": "25",
                     # length fo the arrow
-                    "radius": "50",
+                    "radius": "80",
                     "bgcolor": "333333",
                     "bordercolor": "333333",
                     "basewidth": "8"
@@ -475,4 +475,47 @@ def researcher_project_mean_column_graphic(heading,  x_axis_name, y_axis_name, u
             ]
         }
     ]
+    return data_source
+
+def column_graphic_samples_in_project (heading, sub_caption, x_axis_name, y_axis_name, theme, percentage_in_project, sample_name) :
+    data_source = {}
+    data_source['chart'] = { 
+                "caption": heading,
+                "subCaption": sub_caption,
+                "xAxisName": x_axis_name,
+                "yAxisName": y_axis_name,
+                "theme": theme,
+                "numberPrefix": "",
+                "placevaluesInside": "1",
+                "rotatevalues": "1",
+                #Showing canvas bg to apply background color
+                "showCanvasBg": "1",
+                #Shwoing canvas base to apply base color
+                "showCanvasBase": "1",
+                #Changing canvas base depth
+                "canvasBaseDepth": "14",
+                #Changing canvas background depth
+                "canvasBgDepth": "5",
+                #Changing canvas base color
+                "canvasBaseColor": "#aaaaaa",
+                #Changing canvas background color
+                "canvasBgColor": "#eeeeee",
+                "exportEnabled": "1"   
+                    
+                    
+                
+            }
+
+    data =[]
+    
+    for key , values in percentage_in_project.items() :
+        data_dict = {} 
+        data_dict['label'] = key
+        data_dict['value'] = values
+        if key == sample_name :
+            data_dict['dashed'] = "1" 
+            data_dict['color']= 'ff0000'          
+        data.append(data_dict)
+    data_source['data'] = data    
+        
     return data_source

@@ -24,8 +24,6 @@ import datetime, time
 
 
 def index(request):
-    #latest_question_list = Question.objects.order_by('-pub_date')[:5]
-    #context = {'latest_question_list': latest_question_list}
     #import pdb; pdb.set_trace()
     return render(request, 'wetlab/index.html')
 
@@ -410,7 +408,6 @@ def get_information_run(run_name_found,run_id):
     return info_dict
     
 
-
 def search_nextSeq (request):
     #############################################################
     ## Search for runs that fullfil the input values 
@@ -608,6 +605,44 @@ def search_nextProject (request):
         return render(request, 'wetlab/NextSearchProject.html')
 
 
+def get_info_sample (sample_id):
+    sample_info_dict ={}
+    #collect the general information from the Sample
+    sample_info_dict['sample_name'] = sample_id.sampleName
+    sample_info_dict['project_name'] = sample_id.get_project_name()
+    project_id= sample_id.project_id.id
+    sample_info_dict['project_id'] = project_id
+    #import pdb; pdb.set_trace()
+    sample_info_dict['run_id'] = sample_id.project_id.runprocess_id.id
+    sample_info_dict['run_name'] = sample_id.project_id.runprocess_id.runName
+    user_name_id = sample_id.project_id.user_id
+    sample_info_dict['investigator_name'] = user_name_id.username
+    # collect the Sample information
+    sample_info_dict['heading_samples_info'] = ['Sample', 'Barcode', 'PF Cluster', '% of Project','Yield (Mbases)','>= Q30 bases','Mean Quality Score']
+    sample_info_dict['data_samples_info'] = sample_id.get_sample_information().split(';')
+    # Quality graphic
+    heading_chart_quality = 'Quality for the Sample ' + sample_id.sampleName
+    data_source = graphic_for_quality_angular(heading_chart_quality, 80)
+    quality_sample_angular = FusionCharts("angulargauge", "ex1" , "350", "200", "chart-1", "json", data_source)
+    sample_info_dict['quality_chart1'] = quality_sample_angular.render()
+    percentage_in_project ={}
+    samples_in_project = SamplesInProject.objects.filter(project_id__exact = project_id)
+    for sample in samples_in_project:
+        percentage_in_project[sample.sampleName] = sample.percentInProject
+    heading_samples_in_project = 'Samples belonging to the same project'
+    sub_caption = ''
+    x_axis_name = 'Samples in project ' + sample_id.get_project_name()
+    y_axis_name = '% of Project '
+    theme = 'fint'
+    data_source = column_graphic_samples_in_project (heading_samples_in_project, sub_caption, x_axis_name, y_axis_name, theme, percentage_in_project, sample_id.sampleName)
+    #import pdb; pdb.set_trace()
+    percentage_chart = FusionCharts("column3d", 'samplesProject' , "750", "300", 'samples-chart-2', "json", data_source)
+    sample_info_dict['percentage_chart'] = percentage_chart.render()
+    return sample_info_dict
+    
+
+    
+
 def search_nextSample (request):
     ############################################################# 
     ###  Find the projects that match the input values
@@ -618,8 +653,9 @@ def search_nextSample (request):
         start_date=request.POST['startdate']
         end_date=request.POST['enddate']    
         user_name = request.POST['username']
+        
         # check that some values are in the request if not return the form
-        if user_name == '' and start_date == '' and end_date == '' and user_name =='':
+        if user_name == '' and start_date == '' and end_date == '' and sample_name =='':
             return render(request, 'wetlab/SearchNextSample.html')
         
         if user_name !=''  and len(user_name) <5 :
@@ -638,67 +674,57 @@ def search_nextSample (request):
             except:
                 return render (request,'wetlab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ', 
                                                                     'ADVICE:', 'Use the format  (YYYY-MM-DD)']})    
-        ### Get projects when project name is not empty 
+        ### Get projects when sample name is not empty 
         if sample_name != '' :
+            
             if SamplesInProject.objects.filter(sampleName__exact = sample_name).exists():
                 sample_found = SamplesInProject.objects.filter(sampleName__exact = sample_name)
                 if len(sample_found) == 1:
-                    # display sample 
-                    return render(request, 'wetlab/SearchNextSample.html')
-                else:
-                    pass
-            if SamplesInProject.objects.filter(sampleName__contains = sample_name).exists():
-                sample_found = SamplesInProject.objects.filter(sampleName__exact = sample_name)
+                    # get information from the sample found 
+                    ########################################
+                    sample_data_information = get_info_sample (sample_found[0])
+                    return render(request, 'wetlab/SearchNextSample.html',{'display_one_sample': sample_data_information })
+            elif SamplesInProject.objects.filter(sampleName__contains = sample_name).exists():
+                sample_found = SamplesInProject.objects.filter(sampleName__contains = sample_name)
+                #import pdb; pdb.set_trace()
             else:
                 return render (request,'wetlab/error_page.html', {'content':['No sample found with the string , ', sample_name ]})
             
         ### if there is no project name, then get all which will be filtered by other conditions set by user
         #import pdb; pdb.set_trace()
-        if sample_name == '':
+        else :
             sample_found = SamplesInProject.objects.all()
         # Check the start and end date
         if start_date !='' and end_date != '':
             
             if sample_found.filter(generated_at__range=(start_date, end_date)).exists():
-                 sample_found = projects_found.filter(generated_at__range=(start_date, end_date))
+                 sample_found = sample_found.filter(generated_at__range=(start_date, end_date))
             else:
                 return render (request,'wetlab/error_page.html', {'content':['There are no Projects containing ', sample_name,
                                         ' created between ', start_date, 'and the ', end_date]})
         if start_date !='' and end_date == '':
             if sample_found.filter(generated_at__gte = start_date).exists():
-                 sample_found = projects_found.filter(generated_at__gte = start_date)
+                 sample_found = sample_found.filter(generated_at__gte = start_date)
                  #import pdb; pdb.set_trace()
             else:
                 return render (request,'wetlab/error_page.html', {'content':['There are no Projects containing ', sample_name,
                                         ' starting from', start_date]})
         if start_date =='' and end_date != '':
             if sample_found.filter(generated_at__lte = end_date).exists():
-                 sample_found = projects_found.filter(generated_at__lte = end_date)
+                 sample_found = sample_found.filter(generated_at__lte = end_date)
             else:
                 return render (request,'wetlab/error_page.html', {'content':['There are no Projects containing ', sample_name,
                                         ' finish before ', end_date]})
                 # check if user name is not empty
         if user_name != '':
-            
-            if User.objects.filter(username__icontains = user_name).exists():
-                users = User.objects.filter (username__icontains = user_name)
+            import pdb; pdb.set_trace()
+            if User.objects.filter(username__contains = user_name).exists():
+                users = User.objects.filter (username__contains = user_name)
                 if len(users) == 1:
                     user_id= users[0].id
-                    
                     project_id_list = Projects.objects.prefetch_related('user_id').filter(user_id = user_id)
-                    if len(project_id_list) == 1:
-                        project_id_list[0].id
-                        #import pdb; pdb.set_trace()
-                        if sample_found.filter(project_id = project_id_list[0]).exists():
-                            sample_found = sample_found.filter(project_id = project_id_list[0])
-                            
-                        else:
-                            text_error = 'User ' + user_name +' does not have yet any samples'
-                            return render (request,'wetlab/error_page.html', {'content':[text_error, 
-                                        'ADVICE:', 'Contact with your administrator' ]})
-                    else:
-                        sample_found = sample_found.filter(project_id__in = project_id_list) 
-                            
+                    sample_found = sample_found.filter(project_id__in = project_id_list)
+   
                 else:
                     text_error= 'There are too many users names containing ' + sample_name  + '  which match your query'
                     return render (request,'wetlab/error_page.html', {'content':[text_error, 
@@ -708,8 +734,31 @@ def search_nextSample (request):
 
             else:
                 return render (request,'wetlab/error_page.html', {'content':['The samples found did not belong to the user, ', user_name ]})
+
+        if len(sample_found) == 0:
+            text_error = 'User ' + user_name +' does not have yet any samples'
+            return render (request,'wetlab/error_page.html', {'content':[text_error, 
+                            'ADVICE:', 'Contact with your administrator to find out the reason for not matching any result' ]})
+        if len(sample_found) == 1:
+            sample_data_information = get_info_sample (sample_found[0])
+            return render(request, 'wetlab/SearchNextSample.html',{'display_one_sample': sample_data_information })
+                
+        else:
+            sample_list= {}
+            s_list  = {} 
+            for sample in sample_found:
+                #sample_name= sample.sampleName
+                s_list [sample.id] = sample.sampleName
+            sample_list ['s_list'] = s_list
             
-        
+            #import pdb; pdb.set_trace()
+            
+            return render (request, 'wetlab/SearchNextSample.html', {'multiple_samples': sample_list})
+    else:
+    #import pdb; pdb.set_trace()
+        return render(request, 'wetlab/SearchNextSample.html')        
+            
+'''        
         if len(project_id_list) == 1:
             
             # get the project  name for the match 
@@ -736,15 +785,9 @@ def search_nextSample (request):
                 return render (request,'wetlab/error_page.html', {'content':['There are too many samples that match your query',
                             'ADVICE:', 'Include more caracters in the Sample Name field']})
         return render(request, 'wetlab/SearchNextSample.html')           
+'''    
+
     
-    else:
-    #import pdb; pdb.set_trace()
-        return render(request, 'wetlab/SearchNextSample.html')
-    
-
-
-
-
 def search_run (request, run_id):
     #import pdb; pdb.set_trace()
     if (RunProcess.objects.filter(pk=run_id).exists()):
@@ -765,8 +808,11 @@ def latest_run (request) :
 def get_information_project (project_id):
     project_info_dict = {}
     p_data = []
-    project_info_text = ['Project Name','Library Kit','File to upload to BaseSpace']
+    project_info_text = ['Project Name','Library Kit','File to upload to BaseSpace','Run name']
     project_values = project_id.get_project_info().split(';')
+    run_name = project_id.runprocess_id.runName
+    project_info_dict['run_id'] = project_id.runprocess_id.id
+    project_values.append(run_name )
     for item in range(len(project_info_text)):
         p_data.append([project_info_text[item], project_values[item]])
     project_info_dict['p_data'] = p_data
@@ -824,23 +870,7 @@ def get_information_project (project_id):
         project_info_dict['sample_table'] = sample_list
     return project_info_dict
 
-def get_sample_information (sample_id):
-    sample_info_dict ={}
-    data_surce= {}
-    heading = 'Graphic for quality Sample'
-    table_heading = ['Sample Name', 'Barcode Sequence', 'PF Clusters','% in Project','Yield (MB)','% >= Q30 bases','Mean Quality Score']
-    #import pdb; pdb.set_trace()
-    table_values = SamplesInProject.objects.get (pk = sample_id).get_sample_information().split(';') 
-    sample_info_dict ['table_heading'] = table_heading
-    sample_info_dict ['table_values'] = table_values
-    data_source = graphic_for_quality_angular(heading, 80)
-    quality_sample_angular = FusionCharts("angulargauge", "ex1" , "250", "200", "chart-1", "json", data_source)
-    sample_info_dict['quality_chart1'] = quality_sample_angular.render()
-    #import pdb; pdb.set_trace()
-    project_name = SamplesInProject.objects.get (pk = sample_id).get_project_name()
-    sample_info_dict ['project_name'] = project_name
-    
-    return sample_info_dict
+
 
 
 def search_project (request, project_id):
@@ -852,15 +882,16 @@ def search_project (request, project_id):
     else:
         return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the project  ' ]})
 
-
 def search_sample (request, sample_id):
     
     if (SamplesInProject.objects.filter(pk=sample_id).exists()):
-        #sample_found_id = SamplesInProject.objects.get(pk=sample_id)
-        sample_data_display  = get_sample_information (sample_id)
-        return render(request, 'wetlab/SearchNextSample.html', {'display_one_sample': sample_data_display })
+        sample_found_id = SamplesInProject.objects.get(pk=sample_id)
+        sample_data_information = get_info_sample (sample_found_id)
+        return render(request, 'wetlab/SearchNextSample.html',{'display_one_sample': sample_data_information })
     else:
-        return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the sample ' ]})
+        return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the sample  ' ]})
+        
+
     
 def next_seq_statistics (request):
     return render (request, 'wetlab/NextSeqStatistics.html', {})

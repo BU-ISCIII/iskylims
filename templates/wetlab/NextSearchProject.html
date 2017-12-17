@@ -18,8 +18,11 @@
              {% for key, values in display_one_project.p_data %}
                {% if "File to upload to BaseSpace" in key %}
                 <div class="col-sm-6">{{ key }}</div>
-                <div class="col-sm-6"><a href="{{ values }}" download>Library Kit File  <span class="glyphicon glyphicon-download-alt"></span></a></div><BR> <BR>
+                <div class="col-sm-6"><a href="{{ values }}" download>Library Kit File  <span class="glyphicon glyphicon-download-alt"></span></a></div>
                {% elif key == 'Project Name'%}
+               {% elif key == 'Run name'%}
+                     <div class="col-sm-6">{{ key }}</div>
+                        <div class="con-sm-6"><a href="/wetlab/search_run={{ display_one_project.run_id }}">{{ values }}</a></div>
                {% else %}
                 <div class="col-sm-6">{{ key }}</div>
                 <div class="col-sm-6">   {{ values }}</div><BR> <BR>
