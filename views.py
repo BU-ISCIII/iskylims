@@ -1541,7 +1541,7 @@ def anual_report (request) :
                             'the input year in the Form  ',year_selected , 'is not allowed']})
         
         completed_run_in_year = RunProcess.objects.filter(generatedat__year__lte = year_selected, runState__exact = 'Completed')
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         uncompleted_run_in_year = RunProcess.objects.filter(generatedat__year__lte = year_selected).exclude(runState__exact = 'Completed')
         if len (completed_run_in_year)  == 0 and len (uncompleted_run_in_year) == 0:
             return render (request,'wetlab/error_page.html', {'content':['Annual Report cannot be generated because there is no runs performed the year ', year_selected ]})
