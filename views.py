@@ -1540,9 +1540,9 @@ def anual_report (request) :
             return render (request,'wetlab/error_page.html', {'content':['Annual Report cannot be done on the future  ', 
                             'the input year in the Form  ',year_selected , 'is not allowed']})
         
-        completed_run_in_year = RunProcess.objects.filter(generatedat__contains = year_selected, runState__exact = 'Completed')
-        
-        uncompleted_run_in_year = RunProcess.objects.filter(generatedat__contains = year_selected).exclude(runState__exact = 'Completed')
+        completed_run_in_year = RunProcess.objects.filter(generatedat__year__lte = year_selected, runState__exact = 'Completed')
+        import pdb; pdb.set_trace()
+        uncompleted_run_in_year = RunProcess.objects.filter(generatedat__year__lte = year_selected).exclude(runState__exact = 'Completed')
         if len (completed_run_in_year)  == 0 and len (uncompleted_run_in_year) == 0:
             return render (request,'wetlab/error_page.html', {'content':['Annual Report cannot be generated because there is no runs performed the year ', year_selected ]})
         
@@ -1570,7 +1570,7 @@ def anual_report (request) :
         
         #import pdb; pdb.set_trace()
         ### Collecting information from NextSeqStatsBinRunSummary
-        run_found_bin_summary_year = NextSeqStatsBinRunSummary.objects.filter(generatedat__contains = year_selected, level__exact = 'Total')
+        run_found_bin_summary_year = NextSeqStatsBinRunSummary.objects.filter(generatedat__year__lte = year_selected, level__exact = 'Total')
         q30_year, aligned_year, error_rate_year  = {} , {} , {}
         for run_bin_summary in run_found_bin_summary_year :
             bin_summary_data = run_bin_summary.get_bin_run_summary().split(';')
@@ -1601,7 +1601,7 @@ def anual_report (request) :
         
         # Get the information for investigator name and the projects done
         # number_proyects_investigator contains a dict with 3 ranges 1-5, 6-10, more than 11
-        investigator_projects = Projects.objects.filter(generatedat__contains = year_selected).order_by('user_id')
+        investigator_projects = Projects.objects.filter(generatedat__year__lte = year_selected).order_by('user_id')
         project_by_user = {}
         investigator_5_project, investigator_10_project, investigator_more_10_project = {}, {} , {}
         #import pdb; pdb.set_trace()
