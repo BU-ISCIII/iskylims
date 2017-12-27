@@ -27,6 +27,7 @@ urlpatterns = [
     url(r'^MonthlyReport', views.monthly_report, name='montly_report'),
     #url(r'^documents/images_plot$', 'django.views.static.serve',{'document_root': settings.MEDIA_ROOT}),
     #url(r'^documents/(?P<path>.*)$', 'django.views.static.serve',{'document_root': settings.MEDIA_ROOT,}),
+    url(r'^mail',views.email, name='email'),
 
 ] 
 #+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 from .utils.sample_convertion import *
 from .utils.stats_calculation import *
 from .utils.stats_graphics import *
+from .utils.email_features import *
 
 from .models import *
 
@@ -1647,6 +1648,15 @@ def monthly_report (request) :
     
     return render (request, 'wetlab/MonthlyReport.html')
 
+
+def email (request):
+    subject = 'iSkyLIMS te desea una Feliz Navidad'
+    body_message = ' Feliz Navidad Sara. Ya enviamos correo desde iSkyLIMS ;-)'
+    from_user = 'luis.chapado@amgitt.es'
+    to_user = ['smonzon@isciii.es']
+    request_send_mail (subject, body_message, from_user, to_user)
+    #import pdb; pdb.set_trace()
+    return render (request,'wetlab/error_page.html', {'content':['correo enviado  ']})
 '''    
 def downloadFile(request):
     #from urllib.parse import urlparse
