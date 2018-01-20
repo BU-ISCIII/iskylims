@@ -2,27 +2,27 @@
 {% load static %}
 {% block content %}
     {% csrf_token %}
-{% if display_anual_report %}
+{% if display_quarter_report %}
 <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>              
 <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>                   
 <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
 <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
 <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>
 <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script> 
-<!--  Start Run created during the year   -->
+<!--  Start Run created during the Quarter   -->
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-7">
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>Runs performed on the year {{ display_anual_report.year }}.</h3></div>
+                <div class="panel-heading"><h3>Runs performed on the Quarter {{ display_quarter_report.quarter_year }}.</h3></div>
                 <div class="panel-body"> 
-                {% if display_anual_report.completed_run %}
+                {% if display_quarter_report.completed_run %}
                     <div class="col-sm-5">
                         <table class="table table-hover" >
                             <thead>
                                 <tr><th>Runs on Completed state </th></tr>
                             </thead>
                             <tbody>
-                            {% for runs in display_anual_report.completed_run %}
+                            {% for runs in display_quarter_report.completed_run %}
                                 <tr>
                                     <td>{{ runs }} </td> 
                                 </tr>
@@ -31,14 +31,14 @@
                         </table>
                     </div> <!--  end of col-sm-5 -->
                 {% endif %}
-                {% if display_anual_report.uncompleted_run %}
+                {% if display_quarter_report.uncompleted_run %}
                     <div class="col-sm-5 col-sm-offset-1">
                         <table class="table table-hover">
                             <thead>
                                 <tr><th>Not Completed Runs </th></tr>
                             </thead>
                             <tbody>
-                            {% for runs in display_anual_report.uncompleted_run %}
+                            {% for runs in display_quarter_report.uncompleted_run %}
                                 <tr>
                                     <td>{{ runs }} </td> 
                                 </tr>
@@ -50,7 +50,7 @@
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-6 -->
-        {% if display_anual_report.graphic_completed_run %}
+        {% if display_quarter_report.graphic_completed_run %}
         <div class="col-sm-5">
             <div class="panel panel-default">
                 <div class="panel-heading"><h3>Relation of Completed and Unfinished Runs.</h3></div>
@@ -58,7 +58,7 @@
                 <!-- Pie chart for number of Runs comparations chart will start here-->
                     <div id="chart-1"> </div>
                     <!-- dumping JavaScript code here -->
-                    {{ display_anual_report.graphic_completed_run |safe }}
+                    {{ display_quarter_report.graphic_completed_run |safe }}
 
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
@@ -66,20 +66,20 @@
         </div> <!--  end of col-sm-5 -->                  
     </div> <!--  end of row -->
 <!--  End Run created during the year   -->
-<!--  Start Projects created by investigator during the year   -->
+<!--  Start Projects created by investigator during the Quarter   -->
     <div class="row row-space-2 margin-b-4">
         <div class="panel panel-default">
-            <div class="panel-heading"><h3>Projects performed by investigator during year {{ display_anual_report.year }}.</h3></div>
+            <div class="panel-heading"><h3>Projects performed by investigator during Quarter {{ display_quarter_report.quarter_year }}.</h3></div>
             <div class="panel-body">
                 <div class="col-sm-12">
                     <div class="col-sm-4">
-                    {% if display_anual_report.user_5_projects %}
+                    {% if display_quarter_report.user_5_projects %}
                         <table class="table table-hover" >
                             <thead>
                                 <tr><th colspan="2">Investigators with projects < 5</th></tr>
                             </thead>
                             <tbody>
-                            {% for investigator, projects in display_anual_report.user_5_projects.items %}
+                            {% for investigator, projects in display_quarter_report.user_5_projects.items %}
                                 <tr>
                                     <td>{{ investigator }} </td> 
                                     <td>{{ projects|cut:"[" |cut:"]"}} </td> 
@@ -90,13 +90,13 @@
                     {% endif %}
                     </div> <!--  end of col-sm-4 -->
                     <div class="col-sm-4">
-                    {% if display_anual_report.user_10_projects %}
+                    {% if display_quarter_report.user_10_projects %}
                         <table class="table table-hover" >
                             <thead>
                                 <tr><th colspan="2">Investigators with projects < 10</th></tr>
                             </thead>
                             <tbody>
-                            {% for investigator, projects in display_anual_report.user_10_projects.items %}
+                            {% for investigator, projects in display_quarter_report.user_10_projects.items %}
                                 <tr>
                                     <td>{{ investigator }} </td> 
                                     <td>{{ projects|cut:"[" |cut:"]"}} </td> 
@@ -107,13 +107,13 @@
                     {% endif %}
                     </div> <!--  end of col-sm-4 -->
                     <div class="col-sm-4">
-                    {% if display_anual_report.user_more_10_projects %}
+                    {% if display_quarter_report.user_more_10_projects %}
                         <table class="table table-hover" >
                             <thead>
                                 <tr><th colspan="2">investigators with more than 10 projects</th></tr>
                             </thead>
                             <tbody>
-                            {% for investigator, projects in display_anual_report.user_more_10_projects.items %}
+                            {% for investigator, projects in display_quarter_report.user_more_10_projects.items %}
                                 <tr>
                                     <td>{{ investigator }} </td> 
                                     <td>{{ projects|cut:"[" |cut:"]"}} </td> 
@@ -129,13 +129,13 @@
                     <!-- Start graphics for projects created by investigator during the year   -->
                         <div id="p_user_chart-1"> </div>
                     <!-- dumping JavaScript code here -->
-                    {{ display_anual_report.p_user_year_graphic |safe }}
+                    {{ display_quarter_report.p_user_quarter_graphic |safe }}
                     </div>   <!--  end of col-sm-5 --> 
                     <div class="col-sm-5 col-sm-offset-1">
                     <!-- Start graphics for projects created by investigator during the year   -->
                         <div id="p_user_chart-2"> </div>
                     <!-- dumping JavaScript code here -->
-                    {{ display_anual_report.pie_p_user_year_graphic |safe }}
+                    {{ display_quarter_report.pie_p_user_quarter_graphic |safe }}
                         
                         
                     <!-- End graphics for projects created by investigator during the year   -->    
@@ -146,21 +146,14 @@
           
     </div> <!--  end of row -->
 
-
-                
-                
-
-                        
-                
-
 <!--  End Projects created by investigator during the year   -->
     <!--  Q30 year report -->
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-4">
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>Percentage of quality >30 for the year {{ display_anual_report.year }}.</h3></div>
+                <div class="panel-heading"><h3>Percentage of quality >30 for the Quarter {{ display_quarter_report.quarter_year }}.</h3></div>
                 <div class="panel-body"> 
-                {% if display_anual_report.q30_data %}
+                {% if display_quarter_report.q30_data %}
                         <table class="table table-hover">
                             <thead>
                                 <tr>
@@ -169,7 +162,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                            {% for key, values in display_anual_report.q30_data.items %}
+                            {% for key, values in display_quarter_report.q30_data.items %}
                                 <tr>
                                     <td>{{ key }} </td> 
                                     <td>{{ values }} </td> 
@@ -181,15 +174,15 @@
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-6 -->
-        {% if display_anual_report.q30_graphic %}
+        {% if display_quarter_report.q30_graphic %}
         <div class="col-sm-7 col-sm-offset-1">
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>Relation of Q 30 for the year {{ display_anual_report.year }}.</h3></div>
+                <div class="panel-heading"><h3>Relation of Q 30 for the Quarter {{ display_quarter_report.quarter_year }}.</h3></div>
                 <div class="panel-body"> 
                 <!-- Pie chart for number of Runs comparations chart will start here-->
                     <div id="q30_chart-2"> </div>
                     <!-- dumping JavaScript code here -->
-                    {{ display_anual_report.q30_graphic |safe }}
+                    {{ display_quarter_report.q30_graphic |safe }}
 
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
@@ -201,9 +194,9 @@
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-4">
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>Percentage of aligned for the year {{ display_anual_report.year }}.</h3></div>
+                <div class="panel-heading"><h3>Percentage of aligned for the Quarter {{ display_quarter_report.quarter_year }}.</h3></div>
                 <div class="panel-body"> 
-                {% if display_anual_report.aligned_data %}
+                {% if display_quarter_report.aligned_data %}
                         <table class="table table-hover">
                             <thead>
                                 <tr>
@@ -212,7 +205,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                            {% for key, values in display_anual_report.aligned_data.items %}
+                            {% for key, values in display_quarter_report.aligned_data.items %}
                                 <tr>
                                     <td>{{ key }} </td> 
                                     <td>{{ values }} </td> 
@@ -224,15 +217,15 @@
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-6 -->
-        {% if display_anual_report.aligned_graphic %}
+        {% if display_quarter_report.aligned_graphic %}
         <div class="col-sm-7 col-sm-offset-1">
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>Aligned for the year {{ display_anual_report.year }}.</h3></div>
+                <div class="panel-heading"><h3>Aligned for the Quarter {{ display_quarter_report.quarter_year }}.</h3></div>
                 <div class="panel-body"> 
                 <!-- Pie chart for number of Runs comparations chart will start here-->
                     <div id="aligned_chart-3"> </div>
                     <!-- dumping JavaScript code here -->
-                    {{ display_anual_report.aligned_graphic |safe }}
+                    {{ display_quarter_report.aligned_graphic |safe }}
 
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
@@ -244,9 +237,9 @@
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-4">
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>Error rate for the year {{ display_anual_report.year }}.</h3></div>
+                <div class="panel-heading"><h3>Error rate for the Quarter {{ display_quarter_report.quarter_year }}.</h3></div>
                 <div class="panel-body"> 
-                {% if display_anual_report.error_rate_data %}
+                {% if display_quarter_report.error_rate_data %}
                         <table class="table table-hover">
                             <thead>
                                 <tr>
@@ -255,7 +248,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                            {% for key, values in display_anual_report.error_rate_data.items %}
+                            {% for key, values in display_quarter_report.error_rate_data.items %}
                                 <tr>
                                     <td>{{ key }} </td> 
                                     <td>{{ values }} </td> 
@@ -267,15 +260,15 @@
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-6 -->
-        {% if display_anual_report.error_rate_graphic %}
+        {% if display_quarter_report.error_rate_graphic %}
         <div class="col-sm-7 col-sm-offset-1">
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>Error Rate for the year {{ display_anual_report.year }}.</h3></div>
+                <div class="panel-heading"><h3>Error Rate for the Quarter {{ display_quarter_report.quarter_year }}.</h3></div>
                 <div class="panel-body"> 
                 <!-- Pie chart for number of Runs comparations chart will start here-->
                     <div id="error_rate_chart-4"> </div>
                     <!-- dumping JavaScript code here -->
-                    {{ display_anual_report.error_rate_graphic |safe }}
+                    {{ display_quarter_report.error_rate_graphic |safe }}
 
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
@@ -285,20 +278,32 @@
 
    
 {% else %}
-    <!-- FORM for selecting Anual Report Information -->
+    <!-- FORM for selecting Quarter Report Information -->
   
     <div class="row row-space-2 margin-b-4">
       <div class="col-sm-7" >
         <div class="panel panel-default">
-          <div class="panel-heading"><strong>Form for Anual Report</strong></div>
+          <div class="panel-heading"><strong>Form for Quarter Report</strong></div>
           <div class="panel-body">
-            <form method="post" enctype="multipart/form-data" name="searchanualreport" id="searchanualreport" class="form-horizontal well">
+            <form method="post" enctype="multipart/form-data" name="searchquarterreport" id="searchquarterreport" class="form-horizontal well">
             {% csrf_token %}
-            <input type="hidden" name="action" value="searchAnualReport"/>
+            <input type="hidden" name="action" value="searchQuarterReport"/>
              <br>
                 <div class="form-group required">
-                  <label class="col-sm-6 control-label" for="yearselected" >Select the year for the anual Report (YYYY)</label>
-                  <div class="col-sm-4"><input class="form-control" type="number" min="2016" max="2199" step="1" required = "required" value="" name="yearselected"  id="yearselected"></div>
+                    <label class="col-sm-6 control-label" for="yearselected" >Select the year for the anual Report (YYYY)</label>
+                    <div class="col-sm-4"><input class="form-control" type="number" min="2016" max="2199" step="1" required = "required" value="" name="yearselected"  id="yearselected"></div>
+                </div>  <!-- end from-group   -->
+                <div class="form-group required">
+                    <label class="col-sm-6 control-label" for="quarter" >Select the Quarter </label>
+                    <div class="col-sm-4"><select class="form-control" name="quarter" id="quarter" required = "required">
+                               				<option value="">Choose a value</option>
+                                            <option value="1">First Quarter (January -- March)</option>
+                                            <option value="2">Second Quarter (Appril -- June)</option>
+                                            <option value="3">Third Quarter (July -- September)</option>
+                                            <option value="4">Fourth Quarter (October -- December)</option>
+                                      </select>
+               </div>  <!-- end select input -->
+                
                 </div>  <!-- end from-group   -->
             <br>
                 <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
@@ -314,9 +319,9 @@
         <BR><BR>
         <div class="col-sm-3 col-sm-offset-1">
           <div class="panel panel-default">
-             <div class="panel-heading">Anual Report information</div>
+             <div class="panel-heading">Quarter Report information</div>
              <div class="panel-body">
-             <p>Anual reports generate graphics and data for all runs that have been started on the selected year. <BR>
+             <p>Quarter reports generate graphics and data for all runs that have been started on the selected quarter of the year. <BR>
              <p>For extended help click on the button below.</p>
             <center><button id="myBtn"> Help </button></center>
             </div>  <!--  end of panel body  -->

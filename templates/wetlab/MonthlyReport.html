@@ -2,7 +2,279 @@
 {% load static %}
 {% block content %}
     {% csrf_token %}
-{% if display_anual_report %}
+{% if display_monthly_report %}
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>              
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>                   
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>
+<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script> 
+<!--  Start Run created during the month and the year selected  -->
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Runs performed on the month  {{ display_monthly_report.month_year }}.</h3></div>
+                <div class="panel-body"> 
+                {% if display_monthly_report.completed_run %}
+                    <div class="col-sm-5">
+                        <table class="table table-hover" >
+                            <thead>
+                                <tr><th>Runs on Completed state </th></tr>
+                            </thead>
+                            <tbody>
+                            {% for runs in display_monthly_report.completed_run %}
+                                <tr>
+                                    <td>{{ runs }} </td> 
+                                </tr>
+                            {%endfor%}
+                            </tbody>
+                        </table>
+                    </div> <!--  end of col-sm-5 -->
+                {% endif %}
+                {% if display_monthly_report.uncompleted_run %}
+                    <div class="col-sm-5 col-sm-offset-1">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr><th>Not Completed Runs </th></tr>
+                            </thead>
+                            <tbody>
+                            {% for runs in display_monthly_report.uncompleted_run %}
+                                <tr>
+                                    <td>{{ runs }} </td> 
+                                </tr>
+                            {%endfor%}
+                            </tbody>
+                        </table>
+                    </div> <!--  end of col-sm-5 -->
+                {% endif %}
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-6 -->
+        {% if display_monthly_report.graphic_completed_run %}
+        <div class="col-sm-5">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Relation of Completed and Unfinished Runs.</h3></div>
+                <div class="panel-body"> 
+                <!-- Pie chart for number of Runs comparations chart will start here-->
+                    <div id="chart-1"> </div>
+                    <!-- dumping JavaScript code here -->
+                    {{ display_monthly_report.graphic_completed_run |safe }}
+
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        {% endif %}
+        </div> <!--  end of col-sm-5 -->                  
+    </div> <!--  end of row -->
+<!--  End Run created during the year   -->
+<!--  Start Projects created by investigator during the year   -->
+    <div class="row row-space-2 margin-b-4">
+        <div class="panel panel-default">
+            <div class="panel-heading"><h3>Projects performed by investigator during  {{ display_monthly_report.month_year }}.</h3></div>
+            <div class="panel-body">
+                <div class="col-sm-12">
+                    <div class="col-sm-4">
+                        <table class="table table-hover" >
+                            <thead>
+                                <tr><th colspan="2">Investigators with  1 project </th></tr>
+                            </thead>
+                            <tbody>
+                            {% if display_monthly_report.user_1_project %}
+                                {% for investigator, projects in display_monthly_report.user_1_project.items %}
+                                <tr>
+                                    <td>{{ investigator }} </td> 
+                                    <td>{{ projects|cut:"[" |cut:"]"}} </td> 
+                                </tr>
+                                {%endfor%}
+                            {% endif %}
+                            </tbody>
+                        </table>
+                    </div> <!--  end of col-sm-4 -->
+                    <div class="col-sm-4">
+                    
+                        <table class="table table-hover" >
+                            <thead>
+                                <tr><th colspan="2">Investigators with  2 projects </th></tr>
+                            </thead>
+                            <tbody>
+                            {% if display_monthly_report.user_2_projects %}
+                                {% for investigator, projects in display_monthly_report.user_2_projects.items %}
+                                <tr>
+                                    <td>{{ investigator }} </td> 
+                                    <td>{{ projects|cut:"[" |cut:"]"}} </td> 
+                                </tr>
+                                {%endfor%}
+                            {% endif %}
+                            </tbody>
+                        </table>
+                    </div> <!--  end of col-sm-4 -->
+                    <div class="col-sm-4">
+                    
+                        <table class="table table-hover" >
+                            <thead>
+                                <tr><th colspan="2">investigators with more than 2 projects</th></tr>
+                            </thead>
+                            <tbody>
+                            {% if display_monthly_report.user_more_2_projects %}
+                                {% for investigator, projects in display_monthly_report.user_more_2_projects.items %}
+                                <tr>
+                                    <td>{{ investigator }} </td> 
+                                    <td>{{ projects|cut:"[" |cut:"]"}} </td> 
+                                </tr>
+                                {%endfor%}
+                            {% endif %}
+                            </tbody>
+                        </table>
+                    </div> <!--  end of col-sm-4 -->
+                </div>   <!--  end of col-sm-12 --> 
+                <div class="col-sm-12">
+                    <div class="col-sm-5">
+                    <!-- Start graphics for projects created by investigator during the month   -->
+                        <div id="p_user_chart-1"> </div>
+                    <!-- dumping JavaScript code here -->
+                    {{ display_monthly_report.p_user_monthly_graphic |safe }}
+                    </div>   <!--  end of col-sm-5 --> 
+                    <div class="col-sm-5 col-sm-offset-1">
+                    <!-- Start graphics for projects created by investigator during the month   -->
+                        <div id="p_user_chart-2"> </div>
+                    <!-- dumping JavaScript code here -->
+                    {{ display_monthly_report.pie_p_user_monthly_graphic |safe }}
+                    <!-- End graphics for projects created by investigator during the month   -->    
+                    </div>   <!--  end of col-sm-5 --> 
+                </div>   <!--  end of col-sm-12 --> 
+            </div> <!--  end of panel body -->
+        </div> <!--  end of panel  -->
+          
+    </div> <!--  end of row -->
+<!--  End Projects created by investigator during the year   -->
+
+    <!--  Q30 year report -->
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-4">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Percentage of quality >30 for the  {{ display_monthly_report.month_year }}.</h3></div>
+                <div class="panel-body"> 
+                {% if display_monthly_report.q30_data %}
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th> Run name </th>
+                                    <th> >Q30 (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for key, values in display_monthly_report.q30_data.items %}
+                                <tr>
+                                    <td>{{ key }} </td> 
+                                    <td>{{ values }} </td> 
+                                </tr>
+                            {%endfor%}
+                            </tbody>
+                        </table>
+                {% endif %}
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-6 -->
+        {% if display_monthly_report.q30_graphic %}
+        <div class="col-sm-7 col-sm-offset-1">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Relation of Q 30 for the  {{ display_monthly_report.month_year }}.</h3></div>
+                <div class="panel-body"> 
+                <!-- Pie chart for number of Runs comparations chart will start here-->
+                    <div id="q30_chart-2"> </div>
+                    <!-- dumping JavaScript code here -->
+                    {{ display_monthly_report.q30_graphic |safe }}
+
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        {% endif %}
+        </div> <!--  end of col-sm-5 -->                  
+    </div> <!--  end of row -->
+
+    <!--  Aligned year report -->
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-4">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Percentage of aligned for the year {{ display_monthly_report.month_year }}.</h3></div>
+                <div class="panel-body"> 
+                {% if display_monthly_report.aligned_data %}
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th> Run name </th>
+                                    <th> Aligned (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for key, values in display_monthly_report.aligned_data.items %}
+                                <tr>
+                                    <td>{{ key }} </td> 
+                                    <td>{{ values }} </td> 
+                                </tr>
+                            {%endfor%}
+                            </tbody>
+                        </table>
+                {% endif %}
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-6 -->
+        {% if display_monthly_report.aligned_graphic %}
+        <div class="col-sm-7 col-sm-offset-1">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Aligned for the year {{ display_monthly_report.year }}.</h3></div>
+                <div class="panel-body"> 
+                <!-- Pie chart for number of Runs comparations chart will start here-->
+                    <div id="aligned_chart-3"> </div>
+                    <!-- dumping JavaScript code here -->
+                    {{ display_monthly_report.aligned_graphic |safe }}
+
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        {% endif %}
+        </div> <!--  end of col-sm-5 -->                  
+    </div> <!--  end of row -->
+                
+    <!--  Error Rate year report -->
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-4">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Error rate for the year {{ display_monthly_report.month_year }}.</h3></div>
+                <div class="panel-body"> 
+                {% if display_monthly_report.error_rate_data %}
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th> Run name </th>
+                                    <th> Error rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for key, values in display_monthly_report.error_rate_data.items %}
+                                <tr>
+                                    <td>{{ key }} </td> 
+                                    <td>{{ values }} </td> 
+                                </tr>
+                            {%endfor%}
+                            </tbody>
+                        </table>
+                {% endif %}
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-6 -->
+        {% if display_monthly_report.error_rate_graphic %}
+        <div class="col-sm-7 col-sm-offset-1">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Error Rate for the year {{ display_monthly_report.month_year }}.</h3></div>
+                <div class="panel-body"> 
+                <!-- Pie chart for number of Runs comparations chart will start here-->
+                    <div id="error_rate_chart-4"> </div>
+                    <!-- dumping JavaScript code here -->
+                    {{ display_monthly_report.error_rate_graphic |safe }}
+
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        {% endif %}
+        </div> <!--  end of col-sm-5 -->                  
+    </div> <!--  end of row -->
 
 
    
@@ -19,8 +291,8 @@
             <input type="hidden" name="action" value="searchmonthlyreport"/>
              <br>
                 <div class="form-group required">
-                  <label class="col-sm-6 control-label" for="moth_year_selected" >Select the month and the year for <BR>Monthly Report (MM/YYYY)</label>
-                  <div class="col-sm-4"><input class="form-control" type="month" name="moth_year_selected" value="" id="moth_year_selected"></div>
+                  <label class="col-sm-6 control-label" for="moth_year_selected" >Select the month and the year for <BR>Monthly Report (MM-YYYY)</label>
+                  <div class="col-sm-4"><input class="form-control" type="month" required = "required" name="month_year_selected" value="" id="moth_year_selected"></div>
                 </div>  <!-- end from-group   -->
             <br>
                 <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">

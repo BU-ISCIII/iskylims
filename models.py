@@ -10,6 +10,7 @@ class RunProcess(models.Model):
     runName = models.CharField(max_length=45)
     sampleSheet = models.FileField(upload_to='wetlab/SampleSheets')
     generatedat = models.DateTimeField(auto_now_add=True)
+    run_date = models.DateField(auto_now = False, null=True)
     runState = models.CharField(max_length=25)
     generatedBSFile = models.BooleanField(default=False)
     samples= models.CharField(max_length=45)
@@ -44,12 +45,13 @@ class Projects(models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
             on_delete=models.CASCADE)
-    user_id= models.ForeignKey(User)
+    user_id= models.ForeignKey(User,on_delete=models.CASCADE,)
     projectName= models.CharField(max_length=45)
     procState=models.CharField(max_length=25, default='Not Started')
     libraryKit=models.CharField(max_length=45)
     baseSpaceFile = models.CharField(max_length=255)
     generatedat = models.DateTimeField(auto_now_add=True)
+    project_run_date = models.DateField(auto_now = False, null=True)
     
     def __str__(self):
         return '%s' %(self.projectName)
@@ -126,6 +128,7 @@ class NextSeqStatsBinRunSummary (models.Model):
     intensityCycle= models.CharField(max_length=10)
     biggerQ30= models.CharField(max_length=10)
     generatedat = models.DateTimeField(auto_now_add=True)
+    stats_summary_run_date = models.DateField(auto_now = False, null=True)
     
     def __str__(self):
         return '%s' %(self.level)
@@ -158,6 +161,7 @@ class NextSeqStatsBinRunRead (models.Model):
     errorRate100 = models.CharField(max_length=40)
     intensityCycle = models.CharField(max_length=40)
     generatedat = models.DateTimeField(auto_now_add=True)
+    stats_read_run_date = models.DateField(auto_now = False, null=True)
     
     def __str__(self):
         return '%s' %(self.read)
@@ -173,8 +177,8 @@ class NextSeqStatsBinRunRead (models.Model):
 class RawStatisticsXml (models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
-            on_delete=models.CASCADE)
-    project_id = models.ForeignKey(Projects,  null=True)
+            on_delete=models.CASCADE,)
+    project_id = models.ForeignKey(Projects, on_delete=models.CASCADE, null=True)
     defaultAll =models.CharField(max_length=40, null=True)
     rawYield = models.CharField(max_length=255)
     rawYieldQ30= models.CharField(max_length=255)
@@ -214,7 +218,7 @@ class NextSeqStatsFlSummary(models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
             on_delete=models.CASCADE)
-    project_id = models.ForeignKey(Projects,  null=True)
+    project_id = models.ForeignKey(Projects, on_delete=models.CASCADE, null=True)
     defaultAll =models.CharField(max_length=40, null=True)  
     flowRawCluster = models.CharField(max_length=40)
     flowPfCluster= models.CharField(max_length=40)
@@ -230,7 +234,7 @@ class NextSeqStatsLaneSummary (models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
             on_delete=models.CASCADE)
-    project_id = models.ForeignKey(Projects,  null=True)
+    project_id = models.ForeignKey(Projects, on_delete=models.CASCADE,  null=True)
     defaultAll =models.CharField(max_length=40, null=True)
     lane= models.CharField(max_length=10)
     pfCluster = models.CharField(max_length=64)

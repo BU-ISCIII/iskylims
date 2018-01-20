@@ -6,6 +6,7 @@ from django.template import loader
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 
 ## import methods defined on utils.py
 from .utils.sample_convertion import *
@@ -27,6 +28,7 @@ import datetime, time
 def index(request):
     #import pdb; pdb.set_trace()
     return render(request, 'wetlab/index.html')
+    
 
 def get_sample_file (request):
     if request.method == 'POST' and (request.POST['action']=='uploadFile'):
@@ -428,13 +430,13 @@ def search_nextSeq (request):
                 datetime.datetime.strptime(start_date, '%Y-%m-%d')
             except:
                 return render (request,'wetlab/error_page.html', {'content':['The format for the "Start Date Search" Field is incorrect ', 
-                                                                    'ADVICE:', 'Use the format  (YYYY-MM-DD)']})
+                                                                    'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
         if end_date != '':
             try: 
                 datetime.datetime.strptime(end_date, '%Y-%m-%d')
             except:
                 return render (request,'wetlab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ', 
-                                                                    'ADVICE:', 'Use the format  (YYYY-MM-DD)']})    
+                                                                    'ADVICE:', 'Use the format  (DD-MM-YYYY)']})    
         ### Get runs when run name is not empty 
         if run_name !='':
             if (RunProcess.objects.filter(runName__exact =run_name).exists()):
@@ -462,21 +464,21 @@ def search_nextSeq (request):
         ### Check if start_date is not empty
         if start_date !='' and end_date != '':
             
-            if runs_found.filter(generatedat__range=(start_date, end_date)).exists():
-                 runs_found = runs_found.filter(generatedat__range=(start_date, end_date))
+            if runs_found.filter(run_date__range=(start_date, end_date)).exists():
+                 runs_found = runs_found.filter(run_date__range=(start_date, end_date))
             else:
                 return render (request,'wetlab/error_page.html', {'content':['There are no runs containing ', run_name,
                                         ' created between ', start_date, 'and the ', end_date]})
         if start_date !='' and end_date == '':
-            if runs_found.filter(generatedat__gte = start_date).exists():
-                 runs_found = runs_found.filter(generatedat__gte = start_date)
+            if runs_found.filter(run_date__gte = start_date).exists():
+                 runs_found = runs_found.filter(run_date__gte = start_date)
                  #import pdb; pdb.set_trace()
             else:
                 return render (request,'wetlab/error_page.html', {'content':['There are no Projects containing ', run_name,
                                         ' starting from', start_date]})
         if start_date =='' and end_date != '':
-            if runs_found.filter(generatedat__lte = end_date).exists():
-                 runs_found = runs_found.filter(generatedat__lte = end_date)
+            if runs_found.filter(run_date__lte = end_date).exists():
+                 runs_found = runs_found.filter(run_date__lte = end_date)
             else:
                 return render (request,'wetlab/error_page.html', {'content':['There are no Projects containing ', run_name,
                                         ' finish before ', end_date]})
@@ -520,13 +522,13 @@ def search_nextProject (request):
                 datetime.datetime.strptime(start_date, '%Y-%m-%d')
             except:
                 return render (request,'wetlab/error_page.html', {'content':['The format for the "Start Date Search" Field is incorrect ', 
-                                                                    'ADVICE:', 'Use the format  (YYYY-MM-DD)']})
+                                                                    'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
         if end_date != '':
             try: 
                 datetime.datetime.strptime(end_date, '%Y-%m-%d')
             except:
                 return render (request,'wetlab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ', 
-                                                                    'ADVICE:', 'Use the format  (YYYY-MM-DD)']})    
+                                                                    'ADVICE:', 'Use the format  (DD-MM-YYYY)']})    
         ### Get projects when project name is not empty 
         if project_name != '' :
             
@@ -564,21 +566,21 @@ def search_nextProject (request):
                                                'in state', project_state ]})
         if start_date !='' and end_date != '':
             
-            if projects_found.filter(generatedat__range=(start_date, end_date)).exists():
-                 projects_found = projects_found.filter(generatedat__range=(start_date, end_date))
+            if projects_found.filter(project_run_date__range=(start_date, end_date)).exists():
+                 projects_found = projects_found.filter(project_run_date__range=(start_date, end_date))
             else:
                 return render (request,'wetlab/error_page.html', {'content':['There are no Projects containing ', project_name,
                                         ' created between ', start_date, 'and the ', end_date]})
         if start_date !='' and end_date == '':
-            if projects_found.filter(generatedat__gte = start_date).exists():
-                 projects_found = projects_found.filter(generatedat__gte = start_date)
+            if projects_found.filter(project_run_date__gte = start_date).exists():
+                 projects_found = projects_found.filter(project_run_date__gte = start_date)
                  #import pdb; pdb.set_trace()
             else:
                 return render (request,'wetlab/error_page.html', {'content':['There are no Projects containing ', project_name,
                                         ' starting from', start_date]})
         if start_date =='' and end_date != '':
-            if projects_found.filter(generatedat__lte = end_date).exists():
-                 projects_found = projects_found.filter(generatedat__lte = end_date)
+            if projects_found.filter(project_run_date__lte = end_date).exists():
+                 projects_found = projects_found.filter(project_run_date__lte = end_date)
             else:
                 return render (request,'wetlab/error_page.html', {'content':['There are no Projects containing ', project_name,
                                         ' finish before ', end_date]})
@@ -668,13 +670,13 @@ def search_nextSample (request):
                 datetime.datetime.strptime(start_date, '%Y-%m-%d')
             except:
                 return render (request,'wetlab/error_page.html', {'content':['The format for the "Start Date Search" Field is incorrect ', 
-                                                                    'ADVICE:', 'Use the format  (YYYY-MM-DD)']})
+                                                                    'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
         if end_date != '':
             try: 
                 datetime.datetime.strptime(end_date, '%Y-%m-%d')
             except:
                 return render (request,'wetlab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ', 
-                                                                    'ADVICE:', 'Use the format  (YYYY-MM-DD)']})    
+                                                                    'ADVICE:', 'Use the format  (DD-MM-YYYY)']})    
         ### Get projects when sample name is not empty 
         if sample_name != '' :
             
@@ -931,8 +933,8 @@ def nextSeqStats_per_researcher (request):
                
                 # check if start and end date are present in the form
                     if start_date != '' and end_date !='':
-                        if Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed", generatedat__range=(start_date, end_date)).exists():
-                            r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed", generatedat__range=(start_date, end_date))
+                        if Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed", project_run_date__range=(start_date, end_date)).exists():
+                            r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed", project_run_date__range=(start_date, end_date))
                             #r_project_by_researcher = r_project_by_researcher.filter(generatedat__range=(start_date, end_date))
                         else:
                             return render (request,'wetlab/error_page.html', {'content':['Researcher does not have projects associated for the period ',
@@ -940,15 +942,15 @@ def nextSeqStats_per_researcher (request):
                                                                 'ADVICE:', 'Contact with your administrator']})
                     if start_date != '' and end_date =='':
                         end_date = str(datetime.datetime.now().date())
-                        if Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed", generatedat__range=(start_date, end_date)).exists():
-                            r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed", generatedat__range=(start_date, end_date))
+                        if Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed", project_run_date__range=(start_date, end_date)).exists():
+                            r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed", project_run_date__range=(start_date, end_date))
                         else:
                             return render (request,'wetlab/error_page.html', {'content':['Researcher does not have projects associated for the period ',
                                                     'starting date  = ', start_date, 
                                                                 'ADVICE:', 'Contact with your administrator']})    
                     if start_date == '' and end_date !='':
-                        if Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed", generatedat__lte= end_date).exists():
-                            r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed", generatedat__lte = end_date)
+                        if Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed", project_run_date__lte= end_date).exists():
+                            r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed", project_run_date__lte = end_date)
                         else:
                             return render (request,'wetlab/error_page.html', {'content':['Researcher does not have projects associated for the period ',
                                                     'ending date  = ', end_date, 
@@ -1157,8 +1159,8 @@ def nextSeqStats_per_time (request):
         #############################################################
         if (start_date != '' and end_date != ''):
             stat_per_time ={}
-            if (RunProcess.objects.filter( runState='Completed', generatedat__range=(start_date, end_date)).exists()):
-                run_stats_list=RunProcess.objects.filter(runState='Completed', generatedat__range=(start_date, end_date))
+            if (RunProcess.objects.filter( runState='Completed', run_date__range=(start_date, end_date)).exists()):
+                run_stats_list=RunProcess.objects.filter(runState='Completed', run_date__range=(start_date, end_date))
                 #import pdb; pdb.set_trace()
                 
                 run_list=[]
@@ -1288,22 +1290,22 @@ def nextSeqStats_per_library (request):
         else:
             library_found = Projects.objects.filter(procState__exact = 'Completed')
         if (start_date != '' and end_date != ''):
-            if library_found.filter(generatedat__range=(start_date, end_date)).exists():
-                 library_found = library_found.filter(generatedat__range=(start_date, end_date))
+            if library_found.filter(project_run_date__range=(start_date, end_date)).exists():
+                 library_found = library_found.filter(project_run_date__range=(start_date, end_date))
             else:
                 return render (request,'wetlab/error_page.html', {'content':['There are no Library containing ', library_kit_name,
                                         ' created between ', start_date, 'and the ', end_date]})
         if start_date !='' and end_date == '':
-            if library_found.filter(generatedat__gte = start_date).exists():
-                 library_found = library_found.filter(generatedat__gte = start_date)
+            if library_found.filter(project_run_date__gte = start_date).exists():
+                 library_found = library_found.filter(project_run_date__gte = start_date)
                  #import pdb; pdb.set_trace()
             else:
                 return render (request,'wetlab/error_page.html', {'content':['There are no Library containing ', library_kit_name,
                                         ' starting from', start_date]})
         if start_date =='' and end_date != '':
-            if library_found.filter(generatedat__lte = end_date).exists():
+            if library_found.filter(project_run_date__lte = end_date).exists():
                 #import pdb; pdb.set_trace()
-                library_found = library_found.filter(generatedat__lte = end_date)
+                library_found = library_found.filter(project_run_date__lte = end_date)
             else:
                 return render (request,'wetlab/error_page.html', {'content':['There are no Library containing ', library_kit_name,
                                         ' finish before ', end_date]})
@@ -1319,6 +1321,7 @@ def nextSeqStats_per_library (request):
         library_names ={}
         for library in library_found :
             library_names [library.libraryKit] = 1
+        #import pdb; pdb.set_trace()
         if len(library_names) == 1:
             # There is only 1 library in the query. Results displays all projects data which have this library kit
             mean_lane_graphic ={}
@@ -1330,7 +1333,7 @@ def nextSeqStats_per_library (request):
                 for project in library_found :
                     project_id = project.id
                     # Get quality information for each Lane summary of the project id
-                                        
+                    #import pdb; pdb.set_trace()
                     lane_in_project = NextSeqStatsLaneSummary.objects.get(project_id__exact = project_id, lane__exact = lane_number)
                     q_30_value, mean_q_value, yield_mb = lane_in_project.get_stats_info().split(';')
                     project_name = project.get_project_name()
@@ -1506,7 +1509,7 @@ def nextSeqStats_per_library (request):
             
             q30_comparations , mean_comparations , n_bases_comparations = {}, {} , {} 
             get_list_of_libraries_values (all_libraries, q30_comparations, mean_comparations , n_bases_comparations)
-            
+            #import pdb; pdb.set_trace()
             heading = 'Library kits of Percent of bases > Q30  ' 
             data_source = graphic_for_library_kit (heading, 'Q30 library kits ' ,'Library Names', 'Percent of Q 30', '', q30_comparations)
             lib_q30_lib_graphic = FusionCharts("column3d", 'lib-q30-lib' , "500", "300", 'lib-q30-chart-1', "json", data_source)
@@ -1541,9 +1544,9 @@ def anual_report (request) :
             return render (request,'wetlab/error_page.html', {'content':['Annual Report cannot be done on the future  ', 
                             'the input year in the Form  ',year_selected , 'is not allowed']})
         
-        completed_run_in_year = RunProcess.objects.filter(generatedat__year__lte = year_selected, runState__exact = 'Completed')
+        completed_run_in_year = RunProcess.objects.filter(run_date__year = year_selected, runState__exact = 'Completed')
         #import pdb; pdb.set_trace()
-        uncompleted_run_in_year = RunProcess.objects.filter(generatedat__year__lte = year_selected).exclude(runState__exact = 'Completed')
+        uncompleted_run_in_year = RunProcess.objects.filter(run_date__year = year_selected).exclude(runState__exact = 'Completed')
         if len (completed_run_in_year)  == 0 and len (uncompleted_run_in_year) == 0:
             return render (request,'wetlab/error_page.html', {'content':['Annual Report cannot be generated because there is no runs performed the year ', year_selected ]})
         
@@ -1571,7 +1574,7 @@ def anual_report (request) :
         
         #import pdb; pdb.set_trace()
         ### Collecting information from NextSeqStatsBinRunSummary
-        run_found_bin_summary_year = NextSeqStatsBinRunSummary.objects.filter(generatedat__year__lte = year_selected, level__exact = 'Total')
+        run_found_bin_summary_year = NextSeqStatsBinRunSummary.objects.filter(stats_summary_run_date__year = year_selected, level__exact = 'Total')
         q30_year, aligned_year, error_rate_year  = {} , {} , {}
         for run_bin_summary in run_found_bin_summary_year :
             bin_summary_data = run_bin_summary.get_bin_run_summary().split(';')
@@ -1602,7 +1605,7 @@ def anual_report (request) :
         
         # Get the information for investigator name and the projects done
         # number_proyects_investigator contains a dict with 3 ranges 1-5, 6-10, more than 11
-        investigator_projects = Projects.objects.filter(generatedat__year__lte = year_selected).order_by('user_id')
+        investigator_projects = Projects.objects.filter(project_run_date__year = year_selected).order_by('user_id')
         project_by_user = {}
         investigator_5_project, investigator_10_project, investigator_more_10_project = {}, {} , {}
         #import pdb; pdb.set_trace()
@@ -1645,8 +1648,265 @@ def anual_report (request) :
 
 
 def monthly_report (request) :
-    
-    return render (request, 'wetlab/MonthlyReport.html')
+    if request.method=='POST' :
+        
+        input_value = request.POST['month_year_selected']
+        browser_used = request.META['HTTP_USER_AGENT']
+        if 'Firefox' in browser_used :
+            try: 
+                datetime.datetime.strptime(input_value, '%m-%Y')
+                month_selected, year_selected = input_value.split('-')
+            except:
+                return render (request,'wetlab/error_page.html', {'content':['Input field does not have the right format  ', 
+                            'the right input format is MM-YYYY   the entry ', input_value , ' is not allowed']})
+            
+        else:
+            try: 
+                datetime.datetime.strptime(input_value, '%Y-%m')
+                year_selected , month_selected = input_value.split('-')
+            except:
+                return render (request,'wetlab/error_page.html', {'content':['Monthly Report input field does not have the right format  ', 
+                            'the right input format is MM-YYYY  ' ,' the entry ', input_value , ' is not allowed']})
+                
+        # get the current year to compare with the input
+        present_year = datetime.datetime.now().year
+        #import pdb; pdb.set_trace()
+        if (int(year_selected) > present_year) :
+            return render (request,'wetlab/error_page.html', {'content':['Monthly Report cannot be done on the future  ', 
+                            'the input year in the Form  ', year_selected , 'is not allowed']})
+        
+        present_month = datetime.datetime.now().month
+        if (int(year_selected) == present_year) and (int(month_selected) > present_month) :
+            return render (request,'wetlab/error_page.html', {'content':['Monthly Report cannot be done on the future  ', 
+                            'the input month in the Form  ', month_selected , 'is not allowed']})
+        
+        completed_run_in_year_month = RunProcess.objects.filter(run_date__year = year_selected,  run_date__month = month_selected ,runState__exact = 'Completed')
+        #import pdb; pdb.set_trace()
+        uncompleted_run_in_year_month = RunProcess.objects.filter(run_date__year = year_selected, run_date__month = month_selected).exclude(runState__exact = 'Completed')
+        if len (completed_run_in_year_month)  == 0 and len (uncompleted_run_in_year_month) == 0:
+            return render (request,'wetlab/error_page.html', {'content':['Montly Report cannot be generated because there is no runs performed the year ', year_selected ]})
+        
+        monthly_report_information = {}
+        monthly_report_information['month_year'] = str(month_selected + '  ' +  year_selected )
+        number_of_runs = {}
+        number_of_runs['Completed Runs'] = 0
+        number_of_runs['Not Finish Runs'] = 0
+        if len ( completed_run_in_year_month) > 0 :
+            completed_run = []
+            for run in completed_run_in_year_month :
+                completed_run.append(run.get_run_name)
+            monthly_report_information['completed_run'] = completed_run
+            number_of_runs['Completed Runs'] = len ( completed_run_in_year_month)
+        if len ( uncompleted_run_in_year_month) > 0 :
+            uncompleted_run = []
+            for run_uncompleted in uncompleted_run_in_year_month :
+                uncompleted_run.append(run_uncompleted.get_run_name)
+            anual_report_information['uncompleted_run'] = uncompleted_run
+            number_of_runs['Not Finish Runs'] = len ( uncompleted_run_in_year)
+        # prepare the pie graphic for the number of completed/ unfinished runs
+        heading = str ('Graphics of the Runs performed on the ' + month_selected + ' - ' + year_selected)
+        data_source = pie_graphic_year(heading, "",'ocean',number_of_runs)
+        graphic_completed_run = FusionCharts("pie3d", "ex1" , "400", "300", "chart-1", "json", data_source)
+        monthly_report_information ['graphic_completed_run'] = graphic_completed_run.render()
+        
+        # Get the information for investigator name and the projects done
+        # number_proyects_investigator contains a dict with 3 ranges 1, 2, more than 2
+        investigator_projects = Projects.objects.filter(project_run_date__year = year_selected, project_run_date__month = month_selected).order_by('user_id')
+        project_by_user = {}
+        investigator_1_project, investigator_2_projects, investigator_more_2_projects = {}, {} , {}
+        #import pdb; pdb.set_trace()
+        for investigator in investigator_projects:
+            user_name = investigator.get_user_name()
+            if user_name in project_by_user:
+                project_by_user [user_name].append(investigator.get_project_name())
+            else:
+                project_by_user [user_name]=([investigator.get_project_name()])
+        for key, value in project_by_user.items():
+            
+            if len(value) == 1 :
+                investigator_1_project[key]= value
+            elif len (value) == 2:
+                investigator_2_projects[key]= value
+            else:
+                investigator_more_2_projects[key]= value
+        monthly_report_information['user_1_project'] = investigator_1_project
+        monthly_report_information['user_2_projects'] = investigator_2_projects
+        monthly_report_information['user_more_2_projects'] = investigator_more_2_projects
+        
+        # Create the bar graphic for user projects
+        p_user_month ={}
+        p_user_month['1 project']= len(investigator_1_project)
+        p_user_month['2 projects']= len(investigator_2_projects)
+        p_user_month['more than 2']= len(investigator_more_2_projects)
+        
+        heading = 'Projects done per investigator on '+ str(month_selected + ' - ' + year_selected )
+        data_source = column_graphic_for_year_report (heading, '  ' , 'Projects ', 'number of users', 'ocean', p_user_month)
+        p_user_monthly_graphic = FusionCharts("column3d", 'bar_project_user_month' , "400", "300", 'p_user_chart-1', "json", data_source)
+        monthly_report_information ['p_user_monthly_graphic'] = p_user_monthly_graphic.render()
+
+        data_source = pie_graphic_year (heading, 'Percentage' ,'carbon', p_user_month)
+        pie_p_user_monthly_graphic = FusionCharts("pie3d", "pie_project_user_month" , "400", "300", "p_user_chart-2", "json", data_source)
+        monthly_report_information ['pie_p_user_monthly_graphic'] = pie_p_user_monthly_graphic.render()
+        
+        ### Collecting information from NextSeqStatsBinRunSummary
+        run_found_bin_summary_month = NextSeqStatsBinRunSummary.objects.filter(stats_summary_run_date__year = year_selected, stats_summary_run_date__month = month_selected, level__exact = 'Total')
+        q30_month, aligned_month, error_rate_month  = {} , {} , {}
+        for run_bin_summary in run_found_bin_summary_month :
+            bin_summary_data = run_bin_summary.get_bin_run_summary().split(';')
+            run_name = run_bin_summary.runprocess_id.get_run_name()
+            aligned_month[run_name]= bin_summary_data[2]
+            error_rate_month[run_name]= bin_summary_data[3]
+            q30_month[run_name]= bin_summary_data[5]
+        monthly_report_information ['aligned_data'] = aligned_month
+        monthly_report_information ['error_rate_data'] = error_rate_month
+        monthly_report_information ['q30_data'] = q30_month
+        # graphics for NextSeqStatsBinRunSummary
+        heading = 'Aligned % for the runs done on '+ str(month_selected + ' - ' + year_selected)
+        data_source = column_graphic_for_year_report (heading, 'Aligned  ' , 'Run names ', 'Aligned (in %)', 'ocean', aligned_month)
+        aligned_month_graphic = FusionCharts("column3d", 'aligned_year' , "600", "300", 'aligned_chart-3', "json", data_source)
+        monthly_report_information ['aligned_graphic'] = aligned_month_graphic.render()
+        
+        heading = 'Error Rate for the runs done on  '+ str(month_selected + ' - ' + year_selected)
+        data_source = column_graphic_for_year_report (heading, 'Error rate ' , 'Run names ', 'Error rate', 'carbon', error_rate_month)
+        error_rate_month_graphic = FusionCharts("column3d", 'error_rate_year' , "600", "300", 'error_rate_chart-4', "json", data_source)
+        monthly_report_information ['error_rate_graphic'] = error_rate_month_graphic.render()
+        
+        heading = '>Q30 for the runs done on  '+ str(month_selected + ' - ' + year_selected)
+        data_source = column_graphic_for_year_report (heading, 'Q30  ' , 'Run names ', '>Q 30 (in %)', 'fint', q30_month)
+        q30_month_graphic = FusionCharts("column3d", 'q30_year' , "600", "300", 'q30_chart-2', "json", data_source)
+        #import pdb; pdb.set_trace()
+        monthly_report_information ['q30_graphic'] = q30_month_graphic.render()
+        
+        #import pdb; pdb.set_trace()
+        
+        return render (request, 'wetlab/MonthlyReport.html',{'display_monthly_report': monthly_report_information})
+    else:
+        return render (request, 'wetlab/MonthlyReport.html')
+
+
+def quarter_report (request) :
+    if request.method=='POST' :      
+        year_selected = request.POST['yearselected']
+        quarter_selected = int(request.POST['quarter'])
+        quarter_string = ['', 'First Quarter (January -- March) ', 'Second Quarter (April -- June) ', 
+                            'Third Quarter (July -- September) ', 'Fourth Quarter (October -- Decemmber) ' ]
+        days_in_end_quarter = ['0','31','30','30','31']
+        start_quarter = str(quarter_selected *3 -2)
+        end_quarter = str(quarter_selected *3)
+        start_date = str(year_selected + '-' + start_quarter + '-01') 
+        end_date = str(year_selected + '-' + end_quarter + '-' + days_in_end_quarter[quarter_selected])
+        # get the current year to compare with the input
+        present_year = datetime.datetime.now().year
+        if int (year_selected) > present_year:
+            return render (request,'wetlab/error_page.html', {'content':['Quarter Report cannot be done on the future  ', 
+                            'the input year in the Form  ',year_selected , 'is not allowed']})
+        
+        present_month = datetime.datetime.now().month
+        if (int(year_selected) == present_year) and (int(end_quarter) > present_month) :
+            return render (request,'wetlab/error_page.html', {'content':['Quater Report cannot be done on the future  ', 
+                            'the selected Quarter ', quarter_string [quarter_selected] + str(year_selected) , 'is not allowed']})
+                            
+        #import pdb; pdb.set_trace()
+        completed_run_in_quarter = RunProcess.objects.filter( run_date__range =(start_date, end_date) , runState__exact = 'Completed')
+        #import pdb; pdb.set_trace()
+        uncompleted_run_in_quarter = RunProcess.objects.filter(run_date__range =(start_date, end_date)).exclude(runState__exact = 'Completed')
+        if len (completed_run_in_quarter)  == 0 and len (uncompleted_run_in_quarter) == 0:
+            return render (request,'wetlab/error_page.html', {'content':['Quater Report cannot be generated because there is no runs performed the Quarter ', 
+                            quarter_string [quarter_selected] + str(year_selected) ]})
+        
+        quarter_report_information = {}
+        quarter_report_information['quarter_year'] = quarter_string [quarter_selected] + str(year_selected)
+        number_of_runs = {}
+        number_of_runs['Completed Runs'] = 0
+        number_of_runs['Not Finish Runs'] = 0
+        if len ( completed_run_in_quarter) > 0 :
+            completed_run = []
+            for run in completed_run_in_quarter :
+                completed_run.append(run.get_run_name)
+            quarter_report_information['completed_run'] = completed_run
+            number_of_runs['Completed Runs'] = len ( completed_run_in_quarter)
+        if len ( uncompleted_run_in_quarter) > 0 :
+            uncompleted_run = []
+            for run_uncompleted in uncompleted_run_in_quarter :
+                uncompleted_run.append(run_uncompleted.get_run_name)
+            quarter_report_information['uncompleted_run'] = uncompleted_run
+            number_of_runs['Not Finish Runs'] = len ( uncompleted_run_in_quarter)
+        # prepare the pie graphic for the number of completed/ unfinished runs
+        data_source = pie_graphic_year('Number of Runs performed on the year', "",'ocean',number_of_runs)
+        graphic_completed_run = FusionCharts("pie3d", "ex1" , "400", "300", "chart-1", "json", data_source)
+        quarter_report_information ['graphic_completed_run'] = graphic_completed_run.render()
+        
+        #import pdb; pdb.set_trace()
+        ### Collecting information from NextSeqStatsBinRunSummary
+        run_found_bin_summary_quarter = NextSeqStatsBinRunSummary.objects.filter(stats_summary_run_date__range = (start_date, end_date), level__exact = 'Total')
+        q30_quarter, aligned_quarter, error_rate_quarter  = {} , {} , {}
+        for run_bin_summary in run_found_bin_summary_quarter :
+            bin_summary_data = run_bin_summary.get_bin_run_summary().split(';')
+            run_name = run_bin_summary.runprocess_id.get_run_name()
+            aligned_quarter[run_name]= bin_summary_data[2]
+            error_rate_quarter[run_name]= bin_summary_data[3]
+            q30_quarter[run_name]= bin_summary_data[5]
+        quarter_report_information ['aligned_data'] = aligned_quarter
+        quarter_report_information ['error_rate_data'] = error_rate_quarter
+        quarter_report_information ['q30_data'] = q30_quarter
+        # graphics for NextSeqStatsBinRunSummary
+        heading = 'Aligned % for the runs done on  ' + quarter_string [quarter_selected] + str(year_selected)
+        data_source = column_graphic_for_year_report (heading, 'Aligned  ' , 'Run names ', 'Aligned (in %)', 'ocean', aligned_quarter)
+        aligned_quarter_graphic = FusionCharts("column3d", 'aligned_year' , "600", "300", 'aligned_chart-3', "json", data_source)
+        quarter_report_information ['aligned_graphic'] = aligned_quarter_graphic.render()
+        
+        heading = 'Error Rate for the runs done on year '+ quarter_string [quarter_selected] + str(year_selected)
+        data_source = column_graphic_for_year_report (heading, 'Error rate ' , 'Run names ', 'Error rate', 'carbon', error_rate_quarter)
+        error_rate_quarter_graphic = FusionCharts("column3d", 'error_rate_year' , "600", "300", 'error_rate_chart-4', "json", data_source)
+        quarter_report_information ['error_rate_graphic'] = error_rate_quarter_graphic.render()
+        
+        heading = '>Q30 for the runs done on year '+ quarter_string [quarter_selected] + str(year_selected)
+        data_source = column_graphic_for_year_report (heading, 'Q30  ' , 'Run names ', '>Q 30 (in %)', 'fint', q30_quarter)
+        q30_quarter_graphic = FusionCharts("column3d", 'q30_year' , "600", "300", 'q30_chart-2', "json", data_source)
+        #import pdb; pdb.set_trace()
+        quarter_report_information ['q30_graphic'] = q30_quarter_graphic.render()
+        #import pdb; pdb.set_trace()
+        
+        # Get the information for investigator name and the projects done
+        # number_proyects_investigator contains a dict with 3 ranges 1-5, 6-10, more than 11
+        investigator_projects = Projects.objects.filter(project_run_date__range = (start_date, end_date)).order_by('user_id')
+        project_by_user = {}
+        investigator_5_project, investigator_10_project, investigator_more_10_project = {}, {} , {}
+        #import pdb; pdb.set_trace()
+        for investigator in investigator_projects:
+            user_name = investigator.get_user_name()
+            if user_name in project_by_user:
+                project_by_user [user_name].append(investigator.get_project_name())
+            else:
+                project_by_user [user_name]=([investigator.get_project_name()])
+        for key, value in project_by_user.items():
+            if len(value) <= 5 :
+                investigator_5_project[key]= value
+            elif len (value) <=10:
+                investigator_10_project[key]= value
+            else:
+                investigator_more_10_project[key]= value
+        quarter_report_information['user_5_projects'] = investigator_5_project
+        quarter_report_information['user_10_projects'] = investigator_10_project
+        quarter_report_information['user_more_10_projects'] = investigator_more_10_project
+        
+        # Create the bar graphic for user projects
+        p_user_quarter ={}
+        p_user_quarter['1 - 5']= len(investigator_5_project)
+        p_user_quarter['6 - 10']= len(investigator_10_project)
+        p_user_quarter['more than 10']= len(investigator_more_10_project)
+        heading = 'Projects done per investigator on year '+ str(year_selected )
+        data_source = column_graphic_for_year_report (heading, '  ' , 'Projects ', 'number of users', 'ocean', p_user_quarter)
+        p_user_quarter_graphic = FusionCharts("column3d", 'bar_project_user_year' , "400", "300", 'p_user_chart-1', "json", data_source)
+        quarter_report_information ['p_user_year_graphic'] = p_user_quarter_graphic.render()
+
+        data_source = pie_graphic_year (heading, 'Percentage' ,'carbon', p_user_quarter)
+        pie_p_user_quarter_graphic = FusionCharts("pie3d", "pie_project_user_year" , "400", "300", "p_user_chart-2", "json", data_source)
+        quarter_report_information ['pie_p_user_year_graphic'] = pie_p_user_quarter_graphic.render()
+        #import pdb; pdb.set_trace()
+        return render (request, 'wetlab/QuarterReport.html',{'display_quarter_report': quarter_report_information})
+    else:
+        return render (request, 'wetlab/QuarterReport.html')
 
 
 def email (request):
@@ -1656,7 +1916,32 @@ def email (request):
     to_user = ['smonzon@isciii.es']
     request_send_mail (subject, body_message, from_user, to_user)
     #import pdb; pdb.set_trace()
-    return render (request,'wetlab/error_page.html', {'content':['correo enviado  ']})
+    return render (request,'wetlab/info_page.html', {'content':['Your email was sent to ', to_user, ' with the following message ', body_message]})
+
+def update_tables (request):
+    '''
+    run_founds = RunProcess.objects.all()
+    for run in run_founds :
+        run_id = run.id
+        run_date = run.run_date
+        projects_to_update = Projects.objects.filter(runprocess_id__exact = run_id)
+        for project in projects_to_update :
+            project.project_run_date = run_date
+            project.save()
+        stats_run_to_update = NextSeqStatsBinRunSummary.objects.filter(runprocess_id__exact = run_id)
+        for stats_run in stats_run_to_update :
+            stats_run.stats_summary_run_date = run_date
+            stats_run.save()
+        stats_read_to_update = NextSeqStatsBinRunRead.objects.filter(runprocess_id__exact = run_id)
+        for  stats_read in stats_read_to_update :
+            stats_read.stats_read_run_date = run_date
+            stats_read.save()
+    import pdb; pdb.set_trace()
+    return render(request, 'wetlab/info_page.html', {'content':['tablas actualizadas']})    
+    '''
+    return redirect ('wetlab/info_page.html', {'content':['tablas actualizadas']})
+    
+
 '''    
 def downloadFile(request):
     #from urllib.parse import urlparse

@@ -533,7 +533,7 @@
    
 {% else %}
     <!-- FORM for searching RUN  Information -->
-  
+<div style="background-image: url(/static/wetlab/img/lab-matraz-2B&W.jpg);">  
     <div class="row row-space-2 margin-b-4">
       <div class="col-sm-7" >
         <div class="panel panel-default">
@@ -562,12 +562,12 @@
              </div>  <!-- end from-group   -->
              <br>
                 <div class="form-group">
-                  <label class="col-sm-5 control-label" for="startdate" >From Start Date (YYYY-MM-DD)</label>
+                  <label class="col-sm-5 control-label" for="startdate" >From Start Date (DD-MM-YYYY)</label>
                   <div class="col-sm-5"><input class="form-control" type="date" name="startdate" value="" id="startdate"></div>
             </div>  <!-- end from-group   -->
                 <br>
                 <div class="form-group">
-                  <label class="col-sm-5 control-label" for="enddate" >End Date Search (YYYY-MM-DD)</label>
+                  <label class="col-sm-5 control-label" for="enddate" >End Date Search (DD-MM-YYYY)</label>
                   <div class="col-sm-5"><input class="form-control" type="date" name="enddate" value="" id="enddate"></div>
             </div>  <!-- end from-group   -->
             <br>
@@ -593,7 +593,7 @@
         {% include 'wetlab/search-help.html' %}
  
     </div> <!--// end row -->
-
+</div> <!-- Background  -->
     <!-- End of FORM for searching RUN information -->
 
 
