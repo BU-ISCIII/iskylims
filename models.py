@@ -53,12 +53,12 @@ class AvailableService(MPTTModel):
 		verbose_name_plural = ("AvailableServices")
 
 class Service(models.Model):
-	serviceUsername=models.ForeignKey(Profile)
+	serviceUsername=models.ForeignKey(Profile ,on_delete=models.CASCADE)
 	serviceSeqCenter=models.CharField(_("Sequencing center"),max_length=50,blank=False,null=True)
-	serviceRunID=models.ForeignKey(RunProcess,null=True)
-	servicePlatform=models.ForeignKey(Platform,verbose_name=_("Sequencing platform"),blank=False,null=True)
+	serviceRunID=models.ForeignKey(RunProcess,null=True ,on_delete=models.CASCADE)
+	servicePlatform=models.ForeignKey(Platform ,on_delete=models.CASCADE , verbose_name=_("Sequencing platform"),blank=False,null=True)
 	serviceRunSpecs=models.CharField(_("Run specifications"),max_length=10,blank=False,null=True)
-	serviceFileExt=models.ForeignKey(FileExt,verbose_name=_("File extension"),blank=False,null=True)
+	serviceFileExt=models.ForeignKey(FileExt ,on_delete=models.CASCADE ,verbose_name=_("File extension"),blank=False,null=True)
 	serviceAvailableService=TreeManyToManyField(AvailableService,verbose_name=_("AvailableServices"))
 	serviceFile=models.FileField(_("Service description file"),upload_to=service_files_upload)
 	serviceStatus=models.CharField(_("Service status"),max_length=10,choices=STATUS_CHOICES)
@@ -68,14 +68,14 @@ class Service(models.Model):
 		return '%s' %(self.serviceName)
 
 class Resolution(models.Model):
-	resolutionServiceID=models.ForeignKey(Service)
+	resolutionServiceID=models.ForeignKey(Service ,on_delete=models.CASCADE)
 	resolutionNumber=models.IntegerField(_("Number of resolutions"))
 	resolutionServiceSRV=models.CharField(_("Service identifier"),max_length=10)
 	resolutionDate=models.DateField(_("Resolution date"),auto_now_add=True)
 
 
 class Delivery(models.Model):
-	deliveryResolutionID=models.ForeignKey(Resolution)
+	deliveryResolutionID=models.ForeignKey(Resolution ,on_delete=models.CASCADE )
 	deliveryNumber=models.IntegerField(_("Number of deliveries"))
 	deliveryEstimatedDate=models.DateField(_("Delivery estimated date"))
 	deliveryDate=models.DateField(_("Delivery date"),auto_now_add=True)
