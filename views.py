@@ -1919,7 +1919,7 @@ def email (request):
     return render (request,'wetlab/info_page.html', {'content':['Your email was sent to ', to_user, ' with the following message ', body_message]})
 
 def update_tables (request):
-    '''
+    
     run_founds = RunProcess.objects.all()
     for run in run_founds :
         run_id = run.id
@@ -1937,9 +1937,9 @@ def update_tables (request):
             stats_read.stats_read_run_date = run_date
             stats_read.save()
     import pdb; pdb.set_trace()
-    return render(request, 'wetlab/info_page.html', {'content':['tablas actualizadas']})    
-    '''
-    return redirect ('wetlab/info_page.html', {'content':['tablas actualizadas']})
+    return render(request, 'wetlab/info_page.html', {'content':['The tables have been updated']})    
+    
+
     
 
 '''    
