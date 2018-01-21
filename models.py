@@ -19,18 +19,18 @@ class Center(models.Model):
 class Profile(models.Model):                                               
      profileUserID = models.OneToOneField(User, on_delete=models.CASCADE)   
      profilePosition=models.CharField(_("Position"),max_length=50)          
-     profileCenter=models.ForeignKey(Center,verbose_name=_("Center"))       
+     profileCenter=models.ForeignKey(Center, on_delete=models.CASCADE, verbose_name=_("Center"))       
      profileArea=models.CharField(_("Area / Unit"),max_length=50)           
      profileExtension=models.CharField(_("Phone extension"),max_length=5)   
                                                                              
      def __str__ (self):                                                     
       	return '%s' %(self.pk)                                              
 
-@receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-	if created:
-		Profile.objects.create(user=instance)
-
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-	instance.profile.save()
+# @receiver(post_save, sender=User)
+# def create_user_profile(sender, instance, created, **kwargs):
+# 	if created:
+# 		Profile.objects.create(user=instance)
+# 
+# @receiver(post_save, sender=User)
+# def save_user_profile(sender, instance, **kwargs):
+# 	instance.profile.save()
