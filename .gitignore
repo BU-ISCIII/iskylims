@@ -1,7 +1,6 @@
 ## Custom
 *.xml
 *.bin
-documents/
 migrations/
 tmp/
 log/

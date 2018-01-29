@@ -8,6 +8,7 @@ from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 
+
 ## import methods defined on utils.py
 from .utils.sample_convertion import *
 from .utils.stats_calculation import *
@@ -24,12 +25,16 @@ import datetime, time
 
 #import pdb; pdb.set_trace()
 
-
 def index(request):
     #import pdb; pdb.set_trace()
     return render(request, 'wetlab/index.html')
-    
 
+@login_required
+def register_wetlab(request):
+    #import pdb; pdb.set_trace()
+    return render(request, 'wetlab/index.html')
+ 
+@login_required    
 def get_sample_file (request):
     if request.method == 'POST' and (request.POST['action']=='uploadFile'):
         ### First step in collecting data from the NextSeq run. Sample Sheet and experiment name are required
@@ -410,7 +415,7 @@ def get_information_run(run_name_found,run_id):
   
     return info_dict
     
-
+@login_required
 def search_nextSeq (request):
     #############################################################
     ## Search for runs that fullfil the input values 
@@ -499,6 +504,7 @@ def search_nextSeq (request):
     #import pdb; pdb.set_trace()
         return render(request, 'wetlab/SearchNextSeq.html')        
 
+@login_required
 def search_nextProject (request):
     ############################################################# 
     ###  Find the projects that match the input values
@@ -643,9 +649,8 @@ def get_info_sample (sample_id):
     sample_info_dict['percentage_chart'] = percentage_chart.render()
     return sample_info_dict
     
-
     
-
+@login_required
 def search_nextSample (request):
     ############################################################# 
     ###  Find the projects that match the input values
@@ -790,7 +795,7 @@ def search_nextSample (request):
         return render(request, 'wetlab/SearchNextSample.html')           
 '''    
 
-    
+@login_required    
 def search_run (request, run_id):
     #import pdb; pdb.set_trace()
     if (RunProcess.objects.filter(pk=run_id).exists()):
@@ -800,7 +805,8 @@ def search_run (request, run_id):
     else:
         return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the run  ', 
                                                                              'ADVICE:', 'Select the Fuzzy search button to get the match']})
-                                                                             
+
+@login_required                                                                             
 def latest_run (request) :
     latest_run = RunProcess.objects.order_by('id').last()
     #import pdb; pdb.set_trace()
@@ -875,7 +881,7 @@ def get_information_project (project_id):
 
 
 
-
+@login_required
 def search_project (request, project_id):
     
     if (Projects.objects.filter(pk=project_id).exists()):
@@ -885,6 +891,7 @@ def search_project (request, project_id):
     else:
         return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the project  ' ]})
 
+@login_required
 def search_sample (request, sample_id):
     
     if (SamplesInProject.objects.filter(pk=sample_id).exists()):
@@ -895,10 +902,11 @@ def search_sample (request, sample_id):
         return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the sample  ' ]})
         
 
-    
-def next_seq_statistics (request):
+@login_required    
+def next_seq_stats_experiment (request):
     return render (request, 'wetlab/NextSeqStatistics.html', {})
 
+@login_required
 def nextSeqStats_per_researcher (request):
     if request.method == 'POST':
         
@@ -1135,7 +1143,7 @@ def nextSeqStats_per_researcher (request):
         return render (request, 'wetlab/NextSeqStatsPerResearcher.html', {})
 
 
-
+@login_required
 def nextSeqStats_per_time (request):
     if request.method=='POST':
         start_date=request.POST['startdate']
@@ -1160,13 +1168,20 @@ def nextSeqStats_per_time (request):
         if (start_date != '' and end_date != ''):
             stat_per_time ={}
             if (RunProcess.objects.filter( runState='Completed', run_date__range=(start_date, end_date)).exists()):
-                run_stats_list=RunProcess.objects.filter(runState='Completed', run_date__range=(start_date, end_date))
+                run_stats_list=RunProcess.objects.filter(runState='Completed', run_date__range=(start_date, end_date)).order_by('run_date')
                 #import pdb; pdb.set_trace()
                 
-                run_list=[]
+                run_list={}
+                run_date_name ={}
                 ## get the run names that matches de conditions
                 for run in run_stats_list:
-                        run_list.append([run.get_run_name(),run.id])
+                    #run_list.append([run.get_run_name(),run.id])
+                    run_date = str(run.run_date)
+                    if run_date in run_date_name:
+                        run_date_name [run_date] +=1
+                    else:
+                        run_date_name[run_date] = 1
+                    run_list [run.id] = [[run.get_run_name(), run_date]]
                     #import pdb; pdb.set_trace()
                 stat_per_time ['run_names'] = run_list
                 if len (run_stats_list) == 1:
@@ -1176,6 +1191,59 @@ def nextSeqStats_per_time (request):
                 stat_per_time ['number_of_runs'] = number_of_runs
                 stat_per_time ['dates'] = start_date + ' and  ' + end_date
                 #import pdb; pdb.set_trace()
+                ############################################################
+                ### define the graphics for found run in the period
+                heading = 'Runs found during the period ' + str(start_date) + ' and ' + str(end_date)
+                sub_caption = ''
+                x_axis_name = 'Date'
+                y_axis_name = 'Number of runs'
+                run_period_chart_number = 'run_period_chart-1'
+                run_period_index_graph = 'exq1'
+                
+                data_source = researcher_project_column_graphic (heading, sub_caption, x_axis_name, y_axis_name, 'ocean', run_date_name)
+                stat_per_time['run_period_graphic'] = FusionCharts("column3d", run_period_index_graph , "550", "350", run_period_chart_number, "json", data_source).render()
+                
+                ####### end creation run preparation graphics
+                
+                #############################################################
+                ### collect statistics for Projects
+                if (Projects.objects.filter( procState='Completed', project_run_date__range=(start_date, end_date)).exists()):
+                    project_found_list = Projects.objects.filter( procState='Completed', project_run_date__range=(start_date, end_date))
+                                          
+                    project_list={}
+                    project_date_name ={}
+                    ## get the project names that matches de conditions
+                    for project in project_found_list:
+                        project_run_date = str(project.project_run_date)
+                        if project_run_date in project_date_name:
+                            project_date_name [project_run_date] +=1
+                        else:
+                            project_date_name[project_run_date] = 1
+                        project_list [project.id] = [[project.get_project_name(), project_run_date]]
+                        #import pdb; pdb.set_trace()
+                    stat_per_time ['project_names'] = project_list
+                    if len (project_found_list) == 1:
+                        number_of_projects = '1 Project'
+                    else:
+                        number_of_projects = str(len (project_found_list)) + '  Projects'
+                    stat_per_time ['number_of_projects'] = number_of_projects
+                    stat_per_time ['dates'] = start_date + ' and  ' + end_date
+                    #import pdb; pdb.set_trace()
+                    ############################################################
+                    ### define the graphics for found run in the period
+                    heading = 'Projects found during the period ' + str(start_date) + ' and ' + str(end_date)
+                    sub_caption = ''
+                    x_axis_name = 'Date'
+                    y_axis_name = 'Number of Projects'
+                    run_period_chart_number = 'project_period_chart-1'
+                    run_period_index_graph = 'project_period-1'
+                    
+                    data_source = researcher_project_column_graphic (heading, sub_caption, x_axis_name, y_axis_name, 'carbon', project_date_name)
+                    stat_per_time['project_period_graphic'] = FusionCharts("column3d", run_period_index_graph , "550", "350", run_period_chart_number, "json", data_source).render()
+                
+                ####### end creation run preparation graphics
+                
+                
                 #############################################################
                 ### collect statistics for unkow Barcodes
                 top_unbarcode_list = []
@@ -1256,7 +1324,8 @@ def get_list_of_libraries_values (library_found, q30_comparations, mean_comparat
             mean_comparations [library_to_compare_name] = format(statistics.mean (mean_compare_lib), '.2f')
             n_bases_comparations [library_to_compare_name] = format(statistics.mean (yield_mb_compare_lib), '.2f') 
  
- 
+
+@login_required 
 def nextSeqStats_per_library (request):
     if request.method=='POST' :
         library_kit_name=request.POST['libraryKitName']
@@ -1534,7 +1603,7 @@ def nextSeqStats_per_library (request):
     else:
         return render (request,'wetlab/NextSeqStatsPerLibrary.html')
 
-
+@login_required
 def anual_report (request) :
     if request.method=='POST' :
         year_selected = int(request.POST['yearselected'])
@@ -1644,9 +1713,7 @@ def anual_report (request) :
     else:
         return render (request, 'wetlab/AnualReport.html')
 
-
-
-
+@login_required
 def monthly_report (request) :
     if request.method=='POST' :
         
@@ -1783,7 +1850,7 @@ def monthly_report (request) :
     else:
         return render (request, 'wetlab/MonthlyReport.html')
 
-
+@login_required
 def quarter_report (request) :
     if request.method=='POST' :      
         year_selected = request.POST['yearselected']
@@ -1986,19 +2053,6 @@ def downloadFile(request):
 
 '''
 
-
-
-#def result_form (request):
-#    doc= Document.object.all()
-#    return render(request , 'wetlab/result_form.html', {'form':doc})
-
-#def results_run_folder (request):
-
-#    return 
-    #return render (request, 'results_run_folder.html', {'d_list':[info_data]})
-
-
-
     
 '''    
 def simple_upload(request):
@@ -2072,7 +2126,7 @@ def model_form_upload(request):
     return render(request, 'wetlab/modelForm_upload.html', {'form': form })
 '''
 
-
+'''
 def get_run_data(request):
     if request.method =='POST':
         #form = DocumentForm(request.POST)
@@ -2109,24 +2163,10 @@ def get_run_data(request):
         #form = DocumentForm()
         #return render (request, 'wetlab/get_run_data.html',{'form': form})
         return render (request, 'wetlab/get_run_data.html')
+'''
 
 
-    
-
-    
-def test_stats (request):
-    local_working_dir = '/home/bioinfo/web_carlosIII/wetlab/documents/uploadFromServer/'
-    local_stats = '/home/bioinfo/web_carlosIII/wetlab/documents/uploadFromServer/Stats/'
-    local_interop= '/home/bioinfo/web_carlosIII/wetlab/documents/uploadFromServer/Interop/'
-    run_file = local_working_dir + 'RunInfo.xml'
-    run_parameter=  local_working_dir + 'RunParameters.xml'
-    running_data = get_running_data(run_file,run_parameter)
-    ### get the run name to link the run with statistics data
-    run_name_value= running_data['RunID']
-    store_in_db(running_data, 'running_table',run_name_value)
-    xml_statistics = get_statistics_xml(demux_file, conversion_file)
-    store_in_db(xml_statistics, 'nextSeqXml_table',run_name_value)
-    
+'''    
 def test_graphic (request):
     from .fusioncharts.fusioncharts import FusionCharts
      # Loading Data from a Static JSON String
@@ -2255,7 +2295,7 @@ def test_graphic (request):
     #return  render(request, 'wetlab/graphic.html', {'output' : pie3d.render()})
 
     
-  
+'''  
 
 
 

@@ -29,6 +29,7 @@
 	
     <!-- Place favicon.ico in the root directory -->
     
+    {% load user_groups %}
 
   </head>
   <!-- END HEAD -->
@@ -54,44 +55,52 @@
                             </a>
                         </div>
                         <!-- End Logo -->
-                    </div>
-
+                    
                     <!-- Collect the nav links, forms, and other content for toggling -->
                     <div class="collapse navbar-collapse nav-collapse">
                         <div class="menu-container">
                             <ul class="nav navbar-nav navbar-nav-right">
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/wetlab/">Home</a></li>
+				{% if user.is_authenticated %} 
 				<li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">WET LAB<span class="caret"></span></a>
 				  <ul class="dropdown-menu">
-				   {% if user.is_authenticated %} 
-					
+					{% if request.user|has_group:"WetlabManager" %}
 					    <li><a href="/wetlab/getSampleSheet/">Upload the Run </a></li>
 					    <li><a href="/wetlab/searchNextSeq/">Search by RUN</a></li>
 					    <li><a href="/wetlab/latest_run">Get Latest Run</a></li>
-					
+					{% endif %}  
 					<li><a href="/wetlab/searchNextProject/">Search by Project</a></li>
 					<li><a href="/wetlab/searchNextSample/">Search by Sample</a></li>
-				    {% else %}
-					<li>Need to be logged</li>
-				    {% endif%}
 				  </ul>
 				</li>
+				{% else %}
+				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">wet LAB</a></li>
+				{% endif%}
+				{% if user.is_authenticated %} 
                                 <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">WetLAB Statistics<span class="caret"></span></a>
 				    <ul class="dropdown-menu">
 				    <li><a href="/wetlab/NextSeqStatsPerResearcher/">Projects per Investigator </a></li>
 				    <li><a href="/wetlab/NextSeqStatsPerTime/">Period of time</a></li>
-				    <li><a href="/wetlab/NextSeqStatistics">Experiment Type</a></li>
+				    <li><a href="/wetlab/NextSeqStatsExperiment">Experiment Type</a></li>
 				    <li><a href="/wetlab/NextSeqStatsLibrary">Library Kit Qualitty</a></li>
 				  </ul>
 				</li>
+				{% else %}
+				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">WetLAB Statistics</a></li>
+				{% endif%}
+				{% if user.is_authenticated %}
 				<li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Reports<span class="caret"></span></a>
+				    {% if request.user|has_group:"WetlabManager" %}
 				    <ul class="dropdown-menu">
 				    <li><a href="/wetlab/AnualReport">Annual Reports</a></li>
 				    <li><a href="/wetlab/QuarterReport">Quarter Reports</a></li>
 				    <li><a href="/wetlab/MonthlyReport">Monthly Reports</a></li>
 				    </ul>
-
+				    {% endif %}
 				</li>
+				{% else %}
+				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">Reports</a></li>
+				{% endif%}
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#">Work</a></li>
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#contact">Contact</a></li>
                             </ul>
@@ -102,6 +111,7 @@
                 </div>
             </nav>
             <!-- Navbar -->
+	    </div>
         </header>
         <!--========== END HEADER ==========-->
 	
@@ -111,15 +121,19 @@
 	<div class="bg-color-sky-light">
           <div class="container content-lg">
             <div class="row margin-b-40">
-          
+	    <!-- Loggin pannel -->
+		<div class="row row-space-2 margin-b-4">                                
+		    <div class="col-sm-6 col-sm-offset-6">                
+			{% include 'registration/login_inline.html' %}   
+		    </div>                                                
+		</div> 
+	    <!-- End Loggin pannel -->
             {% block content %}
 	<!--========== HERE WILL BE THE INFORMATION FROM DJANGO CODE  ==========-->     
             {% endblock %}
             </div> <!--// end row -->
         </div> <!--// end container -->
         </div> <!--// end bg-color -->
-
-
 <!-- Contact -->
         <div id="contact">
             <div class="bg-color-sky-light">
@@ -135,19 +149,19 @@
                     <div class="row">
                         <div class="col-md-3 col-xs-6 md-margin-b-30">
                             <h4>Location</h4>
-                            <a href="#">Brookyln, New York</a>
+                            <a href="#">ISCIII, Majadohonda Campus, Madrid</a>
                         </div>
                         <div class="col-md-3 col-xs-6 md-margin-b-30">
                             <h4>Phone</h4>
-                            <a href="#">+77 234 548 00 00</a>
+                            <a href="#">+34 914 548 352</a>
                         </div>
                         <div class="col-md-3 col-xs-6">
                             <h4>Email</h4>
-                            <a href="mailto:#">alex.teseira@gmail.com</a>
+                            <a href="mailto:bioinformatica@iscii.es">bioinformatica@iscii.es</a>
                         </div>
                         <div class="col-md-3 col-xs-6">
                             <h4>Web</h4>
-                            <a href="#">alex.teseira.com</a>
+                            <a href="http://www.isciii.es/">www.isciii.es</a>
                         </div>
                     </div>
                     <!--// end row -->

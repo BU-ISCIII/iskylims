@@ -231,7 +231,7 @@ def pie_graphic_for_unknow_barcode (heading, theme, top_count_sequence):
 
     
 ########
- #JSON para la calidad de la muestra/project/Run
+ #JSON for the quality of sample/project/Run
 ########
 def graphic_for_quality_angular (heading, value) :
     data_source = {}

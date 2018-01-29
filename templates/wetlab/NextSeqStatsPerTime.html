@@ -8,7 +8,7 @@
 <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
 <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>
 <script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script>
-
+    <!--  Start Run information -->
     <div class="row row-space-2 margin-b-4">
         <BR>
         <div class="col-sm-6">
@@ -18,30 +18,98 @@
     
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
+            <div class="panel panel-default">
+                <div class="panel-heading"><h4>Runs graphics  </h4></div>
+                <div class="panel-body"> 
+                    <!-- Run Column Chart will start here-->
+                    <div id="run_period_chart-1"> </div>
+                    <!-- dumping JavaScript code here -->
+                        {{ display_stats_per_time_list.run_period_graphic |safe }}    
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-6 -->
         
 
         <BR>
         <div class="col-sm-3 col-sm-offset-1"">
             <div class="panel panel-default">
+                <div class="panel-heading">These are the Runs found according your query. To get all information of the run , click on it:</div>
                 <table class="table table-hover">
                    <thead>
                       <tr>
-                        <th>The following runs were found for your search:</th>
+                        <th>Run Name</th>
+                        <th>Date</th>
                       </tr>
                    </thead>
                    <tbody>
-                    {% for key, values in display_stats_per_time_list.run_names %}  
+                       
+                    {% for key, values in display_stats_per_time_list.run_names.items %}  
                      <tr>
-                       <td><a href="/wetlab/search_run={{ values }}">{{ key }}</a> </td>
+                        {% for value, data in values %}
+                       <td><a href="/wetlab/search_run={{ key }}">{{ value }}</a> </td>
+                       <td> {{ data }} </td>
+                        {%endfor%}
                      </tr>
                     {%endfor%}
                    </tbody>
                  </table>
           </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-3 -->
-    </div> <!--// end row -->    
+    </div> <!--// end row --> 
+    <!--  End Run information -->   
     
+    <!--  Start Project information -->
+    <div class="row row-space-2 margin-b-4">
+        <BR>
+        <div class="col-sm-6">
+            <div class="panel panel-default">
+                <div class="panel-body"><h4>Have been found {{ display_stats_per_time_list.number_of_projects }} associated to the {{ display_stats_per_time_list.number_of_runs }} </h4> 
+                    For the selected period from : {{ display_stats_per_time_list.dates }}
+    
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+            <div class="panel panel-default">
+                <div class="panel-heading"><h4>Projects graphics  </h4></div>
+                <div class="panel-body"> 
+                    <!-- Run Column Chart will start here-->
+                    <div id="project_period_chart-1"> </div>
+                    <!-- dumping JavaScript code here -->
+                        {{ display_stats_per_time_list.project_period_graphic |safe }}    
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-6 -->
+        
+
+        <BR>
+        <div class="col-sm-4 col-sm-offset-1"">
+            <div class="panel panel-default">
+                <div class="panel-heading">These are the Projects found according your query. To get all information of the Project , click on it:</div>
+                <table class="table table-hover">
+                   <thead>
+                      <tr>
+                        <th>Project Name</th>
+                        <th>Date</th>
+                      </tr>
+                   </thead>
+                   <tbody>
+                       
+                    {% for key, values in display_stats_per_time_list.project_names.items %}  
+                     <tr>
+                        {% for value, data in values %}
+                       <td><a href="/wetlab/search_project={{ key }}">{{ value }}</a> </td>
+                       <td> {{ data }} </td>
+                        {%endfor%}
+                     </tr>
+                    {%endfor%}
+                   </tbody>
+                 </table>
+          </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-3 -->
+    </div> <!--// end row --> 
+    
+    <!--  End Project information -->
+    
+    <!--  Start Undetermined Barcode information -->
     <div class="row row-space-2 margin-b-4">
       <div class="col-sm-6" >
         <div class="panel panel-default">
@@ -105,7 +173,7 @@
         </div> <!--// end panel -->
         </div> <!--// end col-sm-6  -->
     </div> <!--// end row -->
-    
+    <!--  End Undetermined Barcode information -->
 {% else %}
     <!-- FORM for searching RUN  Information -->
     <BR>

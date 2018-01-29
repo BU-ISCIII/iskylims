@@ -38,7 +38,8 @@ def process_binStats(run_folder, run_id, logger):
                                                   level=str(read_level+1), yieldTotal = read_summary_yield_g,
                                                   projectedTotalYield= read_summary_projected_yield_g,
                                                   aligned= read_summary_percent_aligned, errorRate= read_summary_error_rate,
-                                                  intensityCycle= read_summary_first_cycle_intensity, biggerQ30= read_percent_gt_q30)
+                                                  intensityCycle= read_summary_first_cycle_intensity, biggerQ30= read_percent_gt_q30,
+                                                  stats_summary_run_date = RunProcess.objects.get(pk=run_id).run_date)
         ns_bin_run_summary.save()
         
     # get the run summary for Total
@@ -60,7 +61,8 @@ def process_binStats(run_folder, run_id, logger):
                                                   level='Total', yieldTotal = total_s_yield_g,
                                                   projectedTotalYield= total_s_projected_yield_g,
                                                   aligned= total_s_percent_aligned, errorRate= total_s_error_rate,
-                                                  intensityCycle= total_s_first_cycle_intensity, biggerQ30= total_s_percent_gt_q30)
+                                                  intensityCycle= total_s_first_cycle_intensity, biggerQ30= total_s_percent_gt_q30,
+                                                  stats_summary_run_date = RunProcess.objects.get(pk=run_id).run_date)
     ns_bin_run_summary.save()
      
      # get the run summary for non index
@@ -82,7 +84,8 @@ def process_binStats(run_folder, run_id, logger):
                                                   level='Non Index', yieldTotal = nonindex_s_yield_g,
                                                   projectedTotalYield= nonindex_s_projected_yield_g,
                                                   aligned= nonindex_s_percent_aligned, errorRate= nonindex_s_error_rate,
-                                                  intensityCycle= nonindex_s_first_cycle_intensity, biggerQ30= nonindex_s_percent_gt_q30)   
+                                                  intensityCycle= nonindex_s_first_cycle_intensity, biggerQ30= nonindex_s_percent_gt_q30,
+                                                  stats_summary_run_date = RunProcess.objects.get(pk=run_id).run_date)   
 
     ns_bin_run_summary.save()
     
@@ -158,7 +161,8 @@ def process_binStats(run_folder, run_id, logger):
                                                        cyclesErrRated= read_lane_cycles_error_rate, aligned= read_lane_percent_aligned_field,
                                                        errorRate= read_lane_error_rate_field, errorRate35= read_lane_error_rate_35_field,
                                                        errorRate50= read_lane_error_rate_50_field, errorRate75= read_lane_error_rate_75_field,
-                                                       errorRate100= read_lane_error_rate_100_field, intensityCycle= read_lane_intensity_cycle_field)
+                                                       errorRate100= read_lane_error_rate_100_field, intensityCycle= read_lane_intensity_cycle_field,
+                                                       stats_read_run_date = RunProcess.objects.get(pk=run_id).run_date)
             ns_bin_read_lane.save()
 
     logger.info ('Exiting the binary stats ')

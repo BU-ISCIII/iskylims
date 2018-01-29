@@ -86,6 +86,22 @@ def save_run_info(run_info, run_parameter, run_id, logger):
                          FlowcellLayout= running_data['FlowcellLayout'])
 
     running_parameters.save()
+    ##############################################
+    ## updating the date fetched from the Date tag for run and project
+    ##############################################
+    date = p_run.find('Date').attrib
+    run_date = datetime.datetime.strptime(date, '%y%m%d')
+    
+    run_to_be_updated = RunProcess.objects.get(pk=run_id)
+    run_to_be_updated.run_date = run_date
+    run_to_be_updated.save()
+    logger.info('Updated the run date for the runProcess table ')
+    
+    projects_to_update = Projects.objects.filter(runprocess_id__exact = run_id)
+    for project in projects_to_update :
+        project.project_run_date = run_date
+        project.save()
+        logger.info('Updated the project date for the Project table ')
     
 
 def fetch_exp_name_from_run_info (local_run_parameter_file):
