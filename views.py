@@ -7,6 +7,7 @@ from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group
 
 
 ## import methods defined on utils.py
@@ -36,6 +37,17 @@ def register_wetlab(request):
  
 @login_required    
 def get_sample_file (request):
+    if request.user.is_authenticated:
+        try:
+            groups = Group.objects.get(name='WetlabManager') 
+            if groups not in request.user.groups.all():
+                return render (request,'wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+        except:
+            return render (request,'wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+        
     if request.method == 'POST' and (request.POST['action']=='uploadFile'):
         ### First step in collecting data from the NextSeq run. Sample Sheet and experiment name are required
         
@@ -417,6 +429,17 @@ def get_information_run(run_name_found,run_id):
     
 @login_required
 def search_nextSeq (request):
+    # check user privileges
+    if request.user.is_authenticated:
+        try:
+            groups = Group.objects.get(name='WetlabManager') 
+            if groups not in request.user.groups.all():
+                return render (request,'wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+        except:
+            return render (request,'wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
     #############################################################
     ## Search for runs that fullfil the input values 
     #############################################################
@@ -506,6 +529,17 @@ def search_nextSeq (request):
 
 @login_required
 def search_nextProject (request):
+    # check user privileges
+    if request.user.is_authenticated:
+        try:
+            groups = Group.objects.get(name='WetlabManager') 
+            if groups not in request.user.groups.all():
+                return render (request,'wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+        except:
+            return render (request,'wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
     ############################################################# 
     ###  Find the projects that match the input values
     ############################################################# 
@@ -797,6 +831,18 @@ def search_nextSample (request):
 
 @login_required    
 def search_run (request, run_id):
+    # check user privileges
+    if request.user.is_authenticated:
+        try:
+            groups = Group.objects.get(name='WetlabManager') 
+            if groups not in request.user.groups.all():
+                return render (request,'wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+        except:
+            return render (request,'wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+        
     #import pdb; pdb.set_trace()
     if (RunProcess.objects.filter(pk=run_id).exists()):
         run_name_found = RunProcess.objects.filter(pk=run_id)
@@ -808,6 +854,18 @@ def search_run (request, run_id):
 
 @login_required                                                                             
 def latest_run (request) :
+    # check user privileges
+    if request.user.is_authenticated:
+        try:
+            groups = Group.objects.get(name='WetlabManager') 
+            if groups not in request.user.groups.all():
+                return render (request,'wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+        except:
+            return render (request,'wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+        
     latest_run = RunProcess.objects.order_by('id').last()
     #import pdb; pdb.set_trace()
     run_id = latest_run.id
@@ -1605,6 +1663,18 @@ def nextSeqStats_per_library (request):
 
 @login_required
 def anual_report (request) :
+    # check user privileges
+    if request.user.is_authenticated:
+        try:
+            groups = Group.objects.get(name='WetlabManager') 
+            if groups not in request.user.groups.all():
+                return render (request,'wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+        except:
+            return render (request,'wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+        
     if request.method=='POST' :
         year_selected = int(request.POST['yearselected'])
         # get the current year to compare with the input
@@ -1715,6 +1785,18 @@ def anual_report (request) :
 
 @login_required
 def monthly_report (request) :
+    # check user privileges
+    if request.user.is_authenticated:
+        try:
+            groups = Group.objects.get(name='WetlabManager') 
+            if groups not in request.user.groups.all():
+                return render (request,'wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+        except:
+            return render (request,'wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+        
     if request.method=='POST' :
         
         input_value = request.POST['month_year_selected']
@@ -1852,6 +1934,18 @@ def monthly_report (request) :
 
 @login_required
 def quarter_report (request) :
+    # check user privileges
+    if request.user.is_authenticated:
+        try:
+            groups = Group.objects.get(name='WetlabManager') 
+            if groups not in request.user.groups.all():
+                return render (request,'wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+        except:
+            return render (request,'wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+        
     if request.method=='POST' :      
         year_selected = request.POST['yearselected']
         quarter_selected = int(request.POST['quarter'])
@@ -1980,7 +2074,8 @@ def email (request):
     subject = 'iSkyLIMS te desea una Feliz Navidad'
     body_message = ' Feliz Navidad Sara. Ya enviamos correo desde iSkyLIMS ;-)'
     from_user = 'luis.chapado@amgitt.es'
-    to_user = ['smonzon@isciii.es']
+    #to_user = ['luis.chapado@amgitt.es']
+    to_user = ['chapado.l@gmail.com']
     request_send_mail (subject, body_message, from_user, to_user)
     #import pdb; pdb.set_trace()
     return render (request,'wetlab/info_page.html', {'content':['Your email was sent to ', to_user, ' with the following message ', body_message]})

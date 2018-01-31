@@ -22,15 +22,15 @@ urlpatterns = [
     path('NextSeqStatsPerResearcher/',views.nextSeqStats_per_researcher, name='nextSeqStats_per_researcher'),
     path('NextSeqStatsPerTime/', views.nextSeqStats_per_time, name ='nextSeqStats_per_time'),
     path('NextSeqStatsLibrary/', views.nextSeqStats_per_library , name ='nextSeqStats_per_library'),
-    path('AnualReport',views.anual_report, name='anual_report'),
-    path('MonthlyReport', views.monthly_report, name='montly_report'),
-    path('QuarterReport', views.quarter_report, name='quarter_report'),
-    path('updateTables',views.update_tables, name='update_tables'),
-    path('register_wetlab',views.register_wetlab, name='register_wetlab')
+    path('AnualReport/',views.anual_report, name='anual_report'),
+    path('MonthlyReport/', views.monthly_report, name='montly_report'),
+    path('QuarterReport/', views.quarter_report, name='quarter_report'),
+    path('updateTables/',views.update_tables, name='update_tables'),
+    path('register_wetlab/',views.register_wetlab, name='register_wetlab'),
     
     #url(r'^documents/images_plot$', 'django.views.static.serve',{'document_root': settings.MEDIA_ROOT}),
     #url(r'^documents/(?P<path>.*)$', 'django.views.static.serve',{'document_root': settings.MEDIA_ROOT,}),
-    #url(r'^mail',views.email, name='email'),
+    path('mail/',views.email, name='email')
 
 ] 
 #+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
