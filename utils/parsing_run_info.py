@@ -16,9 +16,11 @@ def open_samba_connection():
     # There will be some mechanism to capture userID, password, client_machine_name, server_name and server_ip
     # client_machine_name can be an arbitary ASCII string
     # server_name should match the remote machine name, or else the connection will be rejected
+    conn=SMBConnection('bioinfocifs', 'fCdEg979I-W.gUx-teDr', 'NGS_Data', 'quibitka', use_ntlm_v2=True)
+    conn.connect('172.21.7.11', 139)
 
-    conn=SMBConnection('Luigi', 'Apple123', 'NGS_Data_test', 'LUIGI-PC', use_ntlm_v2=True)
-    conn.connect('192.168.1.3', 139)    
+    #conn=SMBConnection('Luigi', 'Apple123', 'NGS_Data_test', 'LUIGI-PC', use_ntlm_v2=True)
+    #conn.connect('192.168.1.3', 139)    
     #conn=SMBConnection('bioinfocifs', 'bioinfocifs', 'NGS_Data_test', 'barbarroja', use_ntlm_v2=True)
     #conn.connect('10.15.60.54', 139)
     '''
