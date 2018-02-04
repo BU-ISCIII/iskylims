@@ -18,11 +18,18 @@
              {% for key, values in display_one_project.p_data %}
                {% if "File to upload to BaseSpace" in key %}
                 <div class="col-sm-6">{{ key }}</div>
-                <div class="col-sm-6"><a href="{{ values }}" download>Library Kit File  <span class="glyphicon glyphicon-download-alt"></span></a></div>
+                <div class="col-sm-6"><a href="/{{ values }}" download>Library Kit File  <span class="glyphicon glyphicon-download-alt"></span></a></div>
+               {% elif key == 'Library Kit'%}
+                    <div class="col-sm-6">{{ key }}</div>
+                    <div class="col-sm-6"><a href="/wetlab/change_project_libKit={{ display_one_project.project_id }}" > {{ values }} <span class="glyphicon glyphicon-pencil"></span></a></div>
                {% elif key == 'Project Name'%}
                {% elif key == 'Run name'%}
                      <div class="col-sm-6">{{ key }}</div>
-                        <div class="con-sm-6"><a href="/wetlab/search_run={{ display_one_project.run_id }}">{{ values }}</a></div>
+                        {% if display_one_project.run_id == '' %}
+                        <div class="col-sm-6">{{ values }}</a></div>
+                        {% else %}
+                        <div class="col-sm-6"><a href="/wetlab/search_run={{ display_one_project.run_id }}">{{ values }}</a></div>
+                        {% endif %}
                {% else %}
                 <div class="col-sm-6">{{ key }}</div>
                 <div class="col-sm-6">   {{ values }}</div><BR> <BR>
@@ -180,8 +187,9 @@
         </div> <!--  end of col-sm-7 -->
    
 {% else %}
+    {% load user_groups %}
 <!-- FORM for searching  Project Information -->
- <div style="background-image: url(/static/wetlab/img/lab-matraz1-B&W.jpg);">
+ <div style="background-image: url(/static/wetlab/img/search_projects2.jpg); background-attachment: fixed;">
           
     <div class="row row-space-4 margin-b-4">
       <div class="col-sm-7 col-sm-offset-1" >
@@ -223,7 +231,11 @@
              <br>
             <div class="form-group"> 
                   <label class="col-sm-5  control-label" for="username" >Search from user name</label>
-                  <div class="col-sm-5"><input class="form-control" type="text" name="username" id="username" size="100" maxlength="100"></div>
+                  {% if request.user|has_group:"WetlabManager" %}
+                    <div class="col-sm-5"><input class="form-control" type="text" name="username" id="username" size="100" maxlength="100"></div>
+                  {% else %}
+                    <div class="col-sm-5"><input class="form-control" type="text" name="username" id="username" value="{{user.get_username}}"  size="100" maxlength="100" placeholder="{{user.get_username}}" readonly></div>
+                  {% endif %}
              </div>  <!-- end from-group   -->
             <br>
             <br>

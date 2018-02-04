@@ -29,11 +29,16 @@ class RunProcess(models.Model):
         return '%s' %(self.runState)
         
     def get_info_process (self):
-        str_date=self.generatedat.strftime("%I:%M%p on %B %d, %Y")
+        generated_date=self.generatedat.strftime("%I:%M%p on %B %d, %Y")
+        if self.run_date is None :
+            rundate = 'Run NOT started'
+        else :
+            rundate=self.run_date.strftime("%B %d, %Y")
         if (self.runState == 'Completed'):
-            return '%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.runState, 
+            return '%s;%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.runState, 
                             self.requestedCenter, self.useSpaceImgMb, 
-                            self.useSpaceFastaMb, self.useSpaceOtherMb, str_date)
+                            self.useSpaceFastaMb, self.useSpaceOtherMb,
+                            generated_date, rundate)
         else:
             return '%s;%s;%s;%s;%s'  %(self.runName, self.runState, 
                             self.requestedCenter, self.sampleSheet, str_date )
@@ -60,7 +65,23 @@ class Projects(models.Model):
         return '%s' %(self.procState)
         
     def get_project_info (self):
-        return '%s;%s;%s' %(self.projectName, self.libraryKit, self.baseSpaceFile)
+        generated_date=self.generatedat.strftime("%I:%M%p on %B %d, %Y")
+        if self.project_run_date is None:
+            projectdate = 'Run NOT started'
+        else :
+            projectdate=self.project_run_date.strftime("%B %d, %Y")
+        return '%s;%s;%s;%s;%s' %(self.projectName, self.libraryKit, 
+                        self.baseSpaceFile, generated_date, projectdate )
+    
+    def get_p_info_change_library (self):
+        run_name = self.runprocess_id.runName
+        user_name = self.user_id.username
+        if self.project_run_date is None:
+            projectdate = 'Run NOT started'
+        else :
+            projectdate=self.project_run_date.strftime("%B %d, %Y")
+            
+        return '%s;%s;%s;%s;%s'%(run_name, self.projectName, projectdate, user_name, self.libraryKit)
         
     def get_user_name (self):
         user_name = self.user_id.username

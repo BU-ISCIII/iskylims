@@ -87,10 +87,9 @@ def get_sample_file (request):
         stored_file=str('documents/' + file_name)
         #import pdb; pdb.set_trace()
         ## Fetch from the Sample Sheet file the projects included in the run and the user. Error page is showed if not project/description colunms are found
-        try:        
-            project_list=get_projects_in_run(stored_file)
-        except:
+        project_list=get_projects_in_run(stored_file)
 
+        if len (project_list) == 0 : 
             ## delete sample sheet file 
             fs.delete(file_name)
             return render (request,'wetlab/error_page.html', {'content':['Sample Sheet does not contain "Sample project" and/or "Description" fields','',
@@ -184,7 +183,8 @@ def get_sample_file (request):
         ## convert the sample sheet to base space format and have different files according the library kit
         #import pdb; pdb.set_trace()
         for key, value in library.items():
-            library_file = sample_sheet_map_basespace(in_file, key, value,'Plate96')
+            lib_kit_file =key.replace(' ', '_')
+            library_file = sample_sheet_map_basespace(in_file, key, lib_kit_file, value,'Plate96')
             if library_file == 'ERROR':
                 # deleting the sample sheet file
                 os.remove(in_file)
@@ -247,8 +247,9 @@ def get_information_run(run_name_found,run_id):
     else:
         d_list=['Run name','State of the Run is','Run was requested by',
                 'Disk space used for Images','Disk space used for Fasta Files',
-                'Disk space used for other Files','Run recorded date'] 
+                'Disk space used for other Files','Run recorded date','Run date'] 
     run_info_data=run_name_found.get_info_process().split(';')
+    info_dict['Sample_Sheet'] = [['Sample Sheet File', run_name_found.get_sample_file()]]
     r_data_display=[] 
     for i in range (len (d_list)):
         r_data_display.append([d_list[i],run_info_data[i]])
@@ -296,10 +297,21 @@ def get_information_run(run_name_found,run_id):
     if p_list !='':
         #import pdb; pdb.set_trace()
         p_data_list=[]
+        p_library_kit_list = []
         for p in range (len(p_list)):
             p_data_list.append([p_list[p].projectName,p_list[p].id])
+            # get information about the library kits used for this run
+            lib_kit = p_list[p].libraryKit
+            if not lib_kit in p_library_kit_list :
+                p_library_kit_list.append(lib_kit)
         info_dict['projects']=p_data_list
+        info_dict['library_kit'] = p_library_kit_list
+        info_dict['run_id'] = run_id
     #import pdb; pdb.set_trace()
+    
+    
+    
+    
     ## get the stats information if run is completed
     if run_state == 'Completed':
         fl_data_display=[]
@@ -424,7 +436,7 @@ def get_information_run(run_name_found,run_id):
             graphics[index_graph] = [graphic_text[index_graph], folder_graphic + tmp_value]
             
         info_dict['runGraphic'] = graphics
-  
+    
     return info_dict
     
 @login_required
@@ -529,17 +541,7 @@ def search_nextSeq (request):
 
 @login_required
 def search_nextProject (request):
-    # check user privileges
-    if request.user.is_authenticated:
-        try:
-            groups = Group.objects.get(name='WetlabManager') 
-            if groups not in request.user.groups.all():
-                return render (request,'wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
-        except:
-            return render (request,'wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
-    else:
-        #redirect to login webpage
-        return redirect ('/accounts/login')
+    
     ############################################################# 
     ###  Find the projects that match the input values
     ############################################################# 
@@ -575,7 +577,7 @@ def search_nextProject (request):
             if Projects.objects.filter(projectName__exact = project_name).exists():
                 project_id = Projects.objects.get (projectName__exact = project_name).id
                 project_found_id = Projects.objects.get(pk=project_id)
-                p_data_display  = get_information_project(project_found_id)
+                p_data_display  = get_information_project(project_found_id, request)
                 return render(request, 'wetlab/projectInfo.html', {'display_one_project': p_data_display })
             if  Projects.objects.filter (projectName__contains = project_name).exists():
                 #import pdb; pdb.set_trace()
@@ -629,7 +631,7 @@ def search_nextProject (request):
         if len (projects_found) == 1:
             project_id = projects_found[0].id
             project_found_id = Projects.objects.get(pk=project_id)
-            p_data_display  = get_information_project(project_found_id)
+            p_data_display  = get_information_project(project_found_id, request)
             return render(request, 'wetlab/NextSearchProject.html', {'display_one_project': p_data_display })
         else :
             # Display a list with all projects that matches the conditions
@@ -856,6 +858,7 @@ def search_run (request, run_id):
 def latest_run (request) :
     # check user privileges
     if request.user.is_authenticated:
+        
         try:
             groups = Group.objects.get(name='WetlabManager') 
             if groups not in request.user.groups.all():
@@ -872,13 +875,20 @@ def latest_run (request) :
     r_data_display  = get_information_run(latest_run,run_id)
     return render(request, 'wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
 
-def get_information_project (project_id):
+#### login not required because is called from internal function
+def get_information_project (project_id, request):
     project_info_dict = {}
     p_data = []
-    project_info_text = ['Project Name','Library Kit','File to upload to BaseSpace','Run name']
+    project_info_dict['project_id'] = project_id.id
+    project_info_text = ['Project Name','Library Kit','File to upload to BaseSpace','Project Recorder date', 'Project date','Run name']
     project_values = project_id.get_project_info().split(';')
     run_name = project_id.runprocess_id.runName
-    project_info_dict['run_id'] = project_id.runprocess_id.id
+    groups = Group.objects.get(name='WetlabManager')
+    #import pdb; pdb.set_trace()
+    if groups not in request.user.groups.all():
+        project_info_dict['run_id'] = ''
+    else:
+        project_info_dict['run_id'] = project_id.runprocess_id.id
     project_values.append(run_name )
     for item in range(len(project_info_text)):
         p_data.append([project_info_text[item], project_values[item]])
@@ -937,14 +947,37 @@ def get_information_project (project_id):
         project_info_dict['sample_table'] = sample_list
     return project_info_dict
 
-
+def check_user_access (request, project_found_id ) :
+    
+    groups = Group.objects.get(name='WetlabManager') 
+    # check if user belongs to WetlabManager . If true allow to see the page
+    if groups not in request.user.groups.all():
+        #check if project belongs to the same user as the one requesting the page
+        if project_found_id.user_id.id != request.user.id :
+           return False 
+    return True
+    
+def check_user_group (request, group_name):
+    group = Group.objects.get(name=group_name)
+    if group not in request.user.groups.all():
+        return False
+    return True
 
 @login_required
 def search_project (request, project_id):
-    
+        
     if (Projects.objects.filter(pk=project_id).exists()):
         project_found_id = Projects.objects.get(pk=project_id)
-        p_data_display  = get_information_project(project_found_id)
+        if request.user.is_authenticated:
+            # check that user is allow to make the change
+            allowed_access = check_user_access (request, project_found_id)
+            if not allowed_access :
+                return render (request,'wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+        else:
+            #redirect to login webpage
+            return redirect ('/accounts/login')
+        # Display the proyect information 
+        p_data_display  = get_information_project(project_found_id, request)
         return render(request, 'wetlab/NextSearchProject.html', {'display_one_project': p_data_display })
     else:
         return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the project  ' ]})
@@ -958,7 +991,201 @@ def search_sample (request, sample_id):
         return render(request, 'wetlab/SearchNextSample.html',{'display_one_sample': sample_data_information })
     else:
         return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the sample  ' ]})
+
+       
+@login_required
+def change_project_libKit (request, project_id) :
+    # check if project exists 
+    if Projects.objects.filter(pk = project_id).exists():
+        project = Projects.objects.get(pk = project_id)
+        if not request.user.is_authenticated:
+            #redirect to login webpage
+            return redirect ('/accounts/login')
+        # check that user is allow to make the change
+        allowed_access = check_user_access (request, project)
+        if not allowed_access :
+            return render (request,'wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
         
+        
+        if request.method == 'POST' and request.POST['action'] == 'change_project_libKit':
+            new_library_name = request.POST['projectlibkit']
+            old_library_name = project.get_library_name()
+            if old_library_name == new_library_name :
+                return render (request, 'wetlab/info_page.html', {'content': ['The library kit from the input text is the same to the existing defined for this project', 'No change is done']})
+            # check if there is no other project in the same Run with the same Library Kit
+            # if the library is shared with other project then error message is displayed 
+            
+            if not check_user_group (request, 'WetlabManager') :
+                project_run_id = project.runprocess_id.id
+                project_lib_kit = project.libraryKit
+                if Projects.objects.filter(runprocess_id = project_run_id).exclude(pk = project_id).exists():
+                    all_project_with_same_run_id = Projects.objects.filter(runprocess_id = project_run_id).exclude(pk = project_id)
+                    # there are more than 1 project on the same Run.
+                    # check if these projects have in common the same library kit
+                    other_lib_kits = []
+                    for other_project in all_project_with_same_run_id:
+                        other_lib_kits.append(other_project.libraryKit)
+                    if  project_lib_kit in other_lib_kits:
+                        message = str('The library Kit ' + old_library_name + 'is shared with other projects in the same Run ')
+                        import pdb; pdb.set_trace()
+                        return render (request,'wetlab/error_page.html', {'content':[message, '', 'Contact with your administrator .']})
+            old_lib_kit_file = project.baseSpaceFile
+            new_file_name = new_library_name.replace(' ' , '_')
+            #import pdb; pdb.set_trace()
+            new_file = update_library_kit_field(old_lib_kit_file,new_file_name,new_library_name)
+            if new_file == 'ERROR':
+                return render (request, 'wetlab/error_page.html', {'content':['']})
+            # update the database with new file 
+            project.baseSpaceFile = new_file
+            project.libraryKit = new_library_name
+            project.save()
+            # Preparing the data to show in the web page
+            new_file = project.baseSpaceFile
+            change_library_kit_dict ={}
+            change_library_kit_dict['project']= project.projectName
+            change_library_kit_dict['library_name'] = new_library_name
+            change_library_kit_dict['file_to_download'] = new_file
+
+            #import pdb; pdb.set_trace()
+            return render (request, 'wetlab/ChangeProjectLibraryKit.html',{'changed_lib_kit':change_library_kit_dict})
+        else:
+            form_change_lib_kit ={}
+            project_data =[]
+            project_name = project.projectName
+            form_change_lib_kit['project_name'] = project_name
+            
+            project_info_text = ['Run Name', 'Project Name', 'Project date', 'User Name', 'Library Kit']
+            project_values = project.get_p_info_change_library().split(';')
+            
+            for item in range (len(project_info_text)):
+                project_data.append([project_info_text[item], project_values[item]])
+                form_change_lib_kit['project_data'] = project_data 
+            return render (request, 'wetlab/ChangeProjectLibraryKit.html',{'form_change_lib_kit': form_change_lib_kit})
+    else:
+        return render (request,'wetlab/error_page.html', {'content':['No project has been found for changing the library Kit ' ]})
+
+
+@login_required
+def change_run_libKit (request, run_id):
+    #check if run exist
+    if RunProcess.objects.filter(pk = run_id).exists():
+        run = RunProcess.objects.get(pk = run_id)
+        if not request.user.is_authenticated :
+            return redirect ('/accounts/login')
+        # check if user is allow to make the change
+        groups = Group.objects.get(name='WetlabManager') 
+        # check if user belongs to WetlabManager . If true allow to see the page
+        if groups not in request.user.groups.all():
+            return render (request,'wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+        if request.method == 'POST' and request.POST['action'] == 'change_run_libKit':
+            new_library_kit = request.POST.getlist('runlibraryKit')
+            projects_name = request.POST.getlist('projectInRun')
+            changed_lib_kit_dict = {}
+
+            # check if there is only one library kit associated to the run
+            if len(new_library_kit) == 1 :
+                # Check if new library kit was set in the form
+                project = Projects.objects.get(projectName__exact = projects_name[0])
+                old_library_kit = project.get_library_name()
+                if new_library_kit[0] == old_library_kit :
+                    return render (request, 'wetlab/info_page.html', {'content': ['The library kit from the input text is the same to the existing defined for this project', 'No change is done']})
+                # change the library name 
+                old_lib_kit_file = project.baseSpaceFile
+                new_file_name = new_library_kit[0].replace(' ' , '_')
+                #import pdb; pdb.set_trace()
+                
+                new_file = update_library_kit_field(old_lib_kit_file,new_file_name,new_library_kit[0])
+                if new_file == 'ERROR':
+                    return render (request, 'wetlab/error_page.html', {'content':['']})
+                # update the database with new file 
+                project.baseSpaceFile = new_file
+                project.libraryKit = new_library_kit[0]
+                project.save()
+                
+            else:
+                old_files_to_be_deleted = []
+                # check if any of the library has change
+                need_to_be_updated = False
+                for item in range(len(projects_name)):
+                    project = Projects.objects.get(projectName__exact = projects_name[item])
+                    old_library_kit = project.libraryKit
+                    # get the library kit file name to delete it later
+                    old_file = project.baseSpaceFile
+                    # build the list to delete later the old library kit files
+                    if old_file not in old_files_to_be_deleted :
+                        old_files_to_be_deleted.append(old_file)
+                    if new_library_kit[item] != old_library_kit:
+                        need_to_be_updated = True
+                if not need_to_be_updated:
+                    return render (request, 'wetlab/info_page.html', {'content': ['The library kits from the input text are the same to the existing ones defined for the Run', 'No change is done']})
+                # get the Sample Sheet file related to the run
+                sample_file = run.get_sample_file()
+
+                lib_kit_dict = {}
+                in_file=str('documents/' + sample_file)
+                #import pdb; pdb.set_trace()
+                ## build the project list for each library kit 
+                for x in range(len(new_library_kit)):
+                    if new_library_kit[x] in lib_kit_dict :
+                        lib_kit_dict[new_library_kit[x]].append(projects_name[x])
+                    else:
+                        lib_kit_dict[new_library_kit[x]]= [projects_name[x]]
+
+                ## convert the sample sheet to base space format and have different files according the library kit
+                #import pdb; pdb.set_trace()
+
+                for key, value in lib_kit_dict.items():
+                    lib_kit_file =key.replace(' ', '_')
+                    library_file = sample_sheet_map_basespace(in_file, key, lib_kit_file, value,'Plate96')
+                    if library_file == 'ERROR':
+                        return render (request,'wetlab/error_page.html', {'content':[ 'The information on  the Library kit ', key,' For the project ', value, 
+                          'could not be changed to the new value of the library kit ','ADVICE', 'Contact your administrator']})
+                    for updated_project_name in value :
+                        p_updated = Projects.objects.get(projectName__exact = updated_project_name)
+                        p_updated.libraryKit = key
+                        p_updated.baseSpaceFile = library_file
+                        p_updated.save()
+                # delete old library kit files
+                for delete_file in old_files_to_be_deleted :
+                    os.remove(delete_file)
+                # prepare the information to be displayed
+            changed_lib_kit_dict = {}
+            run_data = {}
+            for item in range(len(projects_name)) :
+                project = Projects.objects.get(projectName__exact = projects_name[item])
+                p_name =project.projectName
+                lib_name = project.libraryKit
+                lib_file = project.baseSpaceFile
+                run_data[p_name] = ([[lib_name, lib_file]])
+            
+            changed_lib_kit_dict['run_name'] = run.get_run_name()
+            changed_lib_kit_dict['run_data'] = run_data
+
+            return render (request, 'wetlab/ChangeRunLibraryKit.html',{'changed_lib_kit': changed_lib_kit_dict})
+          
+        else:
+            form_change_lib_kit = {}
+            run_library_data = []
+            project_list = []
+            #library_kit_list = []
+            library_kit_dict = {}
+            form_change_lib_kit['run_name'] = run.get_run_name()
+            # get the projects and the library Kits used in each project
+            project_list = Projects.objects.filter(runprocess_id = run_id)
+            for project in project_list :
+                lib_kit = project.libraryKit
+                run_library_data.append([project.projectName, lib_kit])
+                if lib_kit in library_kit_dict :
+                    library_kit_dict[project.libraryKit].append(project.projectName)
+                else :
+                    library_kit_dict[project.libraryKit] = [project.projectName]
+                    
+            form_change_lib_kit['run_data'] = library_kit_dict
+            form_change_lib_kit['run_library_data'] = run_library_data
+            
+            return render (request, 'wetlab/ChangeRunLibraryKit.html',{'form_change_lib_kit': form_change_lib_kit})
+    else:
+        return render (request,'wetlab/error_page.html', {'content':['No run has been found for changing the library Kit ' ]})
 
 @login_required    
 def next_seq_stats_experiment (request):
@@ -1064,9 +1291,6 @@ def nextSeqStats_per_researcher (request):
                         heading = 'Comparison of bases with Q value bigger than 30'
                         x_axis_name = 'Lanes'
                         y_axis_name = 'Q > 30 (in %)'
-                        
-                        
-                        
                         
                         data_source = researcher_project_mean_column_graphic(heading, x_axis_name, y_axis_name , q_30_project_lane , q_30_media, user_q30_average,overall_q30_average, r_name)
                             

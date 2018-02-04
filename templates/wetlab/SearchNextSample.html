@@ -116,7 +116,7 @@
 
   
 {% else %}
-
+{% load user_groups %}
 <!-- FORM for searching  Sample Information -->
 
  <div style="background-image: url(/static/wetlab/img/search_image_background.jpg);">
@@ -152,7 +152,11 @@
              <br>
             <div class="form-group"> 
                   <label class="col-sm-5  control-label" for="username" >Search from user name</label>
-                  <div class="col-sm-5"><input class="form-control" type="text" name="username" id="username" size="100" maxlength="100"></div>
+                  {% if request.user|has_group:"WetlabManager" %}
+                    <div class="col-sm-5"><input class="form-control" type="text" name="username" id="username" size="100" maxlength="100"></div>
+                  {% else %}
+                    <div class="col-sm-5"><input class="form-control" type="text" name="username" id="username" value="{{user.get_username}}"  size="100" maxlength="100" placeholder="{{user.get_username}}" readonly></div>
+                  {% endif %}
              </div>  <!-- end from-group   -->
             <br>
             <br>

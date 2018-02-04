@@ -25,7 +25,13 @@
                 <div class="col-sm-6">{{ key }}</div>
                 <div class="col-sm-6">   {{ values }}</div><BR> <BR>
                {% endif %}
-            {% endfor %} 
+            {% endfor %}
+            {%if display_one_run.Sample_Sheet %}
+                {% for key, value in display_one_run.Sample_Sheet %} 
+                    <div class="col-sm-6">{{ key }}</div>
+                    <div class="col-sm-6"><a href="/wetlab/documents/{{ value }}" download>Sample Sheet File  <span class="glyphicon glyphicon-download-alt"></span></a></div>
+                {% endfor%}
+            {% endif %}
            </div> <!--  end of panel body -->
           </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-7 -->
@@ -105,6 +111,37 @@
       {% endif%}
                 </div> <!--  end of panel body -->
              </div> <!--  end of panel  -->
+             
+        <BR>
+      {%if display_one_run.library_kit%}
+            <div class="panel panel-default">
+                <div class="panel-heading">Associated library Kit using on this run : </div> 
+                <div class="panel-body">
+                  <table class="table table-hover">
+                   <thead>
+                      <tr>
+                        <th>The following Library kits are associate to the run:</th>
+                      </tr>
+                   </thead>
+                   <tbody>
+                     {% for values in display_one_run.library_kit %}  
+                     <tr>
+                       <td><a href="/wetlab/change_run_libKit={{ display_one_run.run_id }}" > {{ values }} <span class="glyphicon glyphicon-pencil"></span></a> </td>
+                     </tr>
+                    {%endfor%}
+                    </tbody>
+                 </table>
+      {% else%}
+            <div class="panel panel-danger">
+                <div class="panel-heading">Associated Library Kits: </div> 
+                <div class="panel-body"> There is no Library Kits associated to the run.
+                <BR> Contact with your system administrator to get more information.
+      {% endif%}
+                </div> <!--  end of panel body -->
+             </div> <!--  end of panel  -->             
+             
+             
+            
         </div> <!--  end of col-sm-4 --> 
      </div> <!--  end of row -->
      
@@ -533,7 +570,7 @@
    
 {% else %}
     <!-- FORM for searching RUN  Information -->
-<div style="background-image: url(/static/wetlab/img/lab-matraz-2B&W.jpg);">  
+<div style="background-image: url(/static/wetlab/img/search_background_image_library.jpg); background-attachment: fixed;">  
     <div class="row row-space-2 margin-b-4">
       <div class="col-sm-7" >
         <div class="panel panel-default">

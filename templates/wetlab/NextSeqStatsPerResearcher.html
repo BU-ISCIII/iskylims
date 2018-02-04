@@ -170,6 +170,7 @@
 
 
 {% else %}
+    {% load user_groups %}
     <!-- FORM for searching project research  Information -->
  <div style="background-image: url(/static/wetlab/img/samples-1.jpg);">  
     <div class="row row-space-2 margin-b-4">
@@ -182,7 +183,11 @@
             <input type="hidden" name="action" value="researcher"/>
              <div class="form-group required"> 
                   <label class="col-sm-5  control-label" for="researchername" >Fill the Investigator name </label>
+                  {% if request.user|has_group:"WetlabManager" %}
                   <div class="col-sm-5"><input class="form-control" type="text" required = "required" name="researchername" id="reserchername" size="100" maxlength="100"></div>
+                  {% else %}
+                  <div class="col-sm-5"><input class="form-control" type="text" name="researchername" id="reserchername" value="{{user.get_username}}"  size="100" maxlength="100" placeholder="{{user.get_username}}" readonly></div>
+                  {% endif %}
              </div>  <!-- end from-group   -->
  
                 <br>

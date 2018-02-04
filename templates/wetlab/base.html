@@ -80,7 +80,9 @@
                                 <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">WetLAB Statistics<span class="caret"></span></a>
 				    <ul class="dropdown-menu">
 				    <li><a href="/wetlab/NextSeqStatsPerResearcher/">Projects per Investigator </a></li>
+				    {% if request.user|has_group:"WetlabManager" %}
 				    <li><a href="/wetlab/NextSeqStatsPerTime/">Period of time</a></li>
+				    {% endif %}
 				    <li><a href="/wetlab/NextSeqStatsExperiment">Experiment Type</a></li>
 				    <li><a href="/wetlab/NextSeqStatsLibrary">Library Kit Qualitty</a></li>
 				  </ul>

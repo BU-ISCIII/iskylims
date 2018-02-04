@@ -5,6 +5,7 @@
 import os
 import re
 from datetime import datetime
+import time
 
 from Bio.Seq import Seq
 
@@ -24,7 +25,7 @@ def include_csv_header (library_kit, out_file, plate, container):
     #### adding additional line
     out_file.write('\n')
     
-def sample_sheet_map_basespace(in_file, library_kit, projects, plate):
+def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects, plate):
     target_data_header = ['SampleID','Name','Species','Project','NucleicAcid',
                'Well','Index1Name','Index1Sequence','Index2Name','Index2Sequence']
     ## Note that original header does not exactly match with the real one , but it is defined like this
@@ -106,7 +107,7 @@ def sample_sheet_map_basespace(in_file, library_kit, projects, plate):
     data_found=0
     tmp= re.search('.*/(.*)\.csv',in_file)
     out_tmp=tmp.group(1)
-    out_file = str(result_directory +  out_tmp + '_for_basespace' + '_'+ library_kit + '.csv')
+    out_file = str(result_directory +  out_tmp + '_for_basespace' + '_'+ library_kit_file + '.csv')
 
     
     #### check for validation of the shample file 
@@ -163,3 +164,27 @@ def get_projects_in_run(in_file):
             projects[line.split(',')[p_index]]=line.split(',')[description_index]
     fh.close()
     return projects
+
+def update_library_kit_field (library_file_name, library_kit_name, library_name):
+    #result_directory='documents/wetlab/BaseSpaceMigrationFiles/'
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+    tmp= re.search('(.*)\d{8}-\d+.*\.csv',library_file_name)
+    out_file = str(  tmp.group(1) + timestr +'_for_basespace_'+ library_kit_name + '.csv')
+    #import pdb; pdb.set_trace()
+    try:
+        fh_in = open (library_file_name, 'r')
+        fh_out = open (out_file, 'w')
+    except:
+        return 'ERROR:'
+
+    for line in fh_in:
+        found_library_kit = re.search('LibraryPrepKit', line)
+        # library kit found. Replace line with new library kit
+        if found_library_kit:
+            line = str ('LibraryPrepKit,' + library_name + '\n')
+        fh_out.write(line)
+    fh_in.close()
+    fh_out.close()
+    os.remove(library_file_name)
+
+    return out_file
