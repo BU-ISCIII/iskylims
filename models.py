@@ -41,7 +41,7 @@ class RunProcess(models.Model):
                             generated_date, rundate)
         else:
             return '%s;%s;%s;%s;%s'  %(self.runName, self.runState, 
-                            self.requestedCenter, self.sampleSheet, str_date )
+                            self.requestedCenter, self.sampleSheet, generated_date )
     
     def get_run_name (self):
         return '%s' %(self.runName)
