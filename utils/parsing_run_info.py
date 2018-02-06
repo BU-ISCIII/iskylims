@@ -133,7 +133,7 @@ def process_run_in_recorded_state(logger):
     except:
         return ('Error')
     processed_run_file, runlist = [] , []
-    share_folder_name='NGS_Data_test'
+    share_folder_name='NGS_Data'
     base_directory = 'documents/wetlab/tmp'
     recorded_dir = os.path.join(base_directory, 'recorded')
     logger.debug('working directory is %s', os.getcwd())
@@ -749,12 +749,12 @@ def process_run_in_processrunning_state (process_list, logger):
     logger.debug('starting the process_run_in_processrunning_state method')
     try:
         conn=open_samba_connection()
-        logger.info('check the Sucessful connection to NGS_Data_test before starting processing runing state method')
+        logger.info('check the Sucessful connection to NGS_Data before starting processing runing state method')
 
     except:
         return('Error')
     
-    share_folder_name='NGS_Data_test'
+    share_folder_name='NGS_Data'
     for run_item in process_list:
         logger.debug ('processing the run %s in process running state' , run_item)
         run_be_processed_id=RunProcess.objects.get(runName__exact=run_item).id
@@ -792,7 +792,7 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
     processed_run=[]
     plot_dir='documents/wetlab/images_plot'
     # get the directory of samba to fetch the files
-    share_folder_name ='NGS_Data_test'
+    share_folder_name ='NGS_Data'
     local_dir_samba= 'documents/wetlab/tmp/processing'
     remote_stats_dir= 'Data/Intensities/BaseCalls/Stats/'
     demux_file=os.path.join(local_dir_samba,'DemultiplexingStats.xml')

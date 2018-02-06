@@ -41,7 +41,7 @@ def check_recorded_folder ():
     # true if there are folders under the recorded directory
     if os.listdir(path):
         # There are sample sheet files that need to be processed
-        updated_run=process_run_in_recorded_state (logger)
+        updated_run=process_run_in_recorded_state(logger)
         if updated_run == 'Error':
             logger.error('No connection is available to Flavia')
             logger.error('Exiting the process for searching run in recorded state ')
