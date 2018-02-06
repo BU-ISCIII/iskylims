@@ -17,7 +17,7 @@ def open_samba_connection():
     # client_machine_name can be an arbitary ASCII string
     # server_name should match the remote machine name, or else the connection will be rejected
     conn=SMBConnection('bioinfocifs', 'fCdEg979I-W.gUx-teDr', 'NGS_Data', 'quibitka', use_ntlm_v2=True)
-    conn.connect('172.21.7.11', 139)
+    conn.connect('172.21.7.11', 445)
 
     #conn=SMBConnection('Luigi', 'Apple123', 'NGS_Data_test', 'LUIGI-PC', use_ntlm_v2=True)
     #conn.connect('192.168.1.3', 139)    
@@ -91,7 +91,8 @@ def save_run_info(run_info, run_parameter, run_id, logger):
     ##############################################
     ## updating the date fetched from the Date tag for run and project
     ##############################################
-    date = p_run.find('Date').attrib
+    date = p_run.find('Date').text
+    logger.debug('Found the de date that was recorded the Run %s', date)
     run_date = datetime.datetime.strptime(date, '%y%m%d')
     
     run_to_be_updated = RunProcess.objects.get(pk=run_id)
@@ -231,17 +232,17 @@ def process_run_in_recorded_state(logger):
                     if os.path.exists(sample_sheet_tmp_file):
                         # copy Sample heet file to remote directory
                         logger.info('Found run directory %s for the experiment name %s', run_dir, exp_name_id)
-                        try:
-                            with open(sample_sheet_tmp_file ,'rb') as  sample_samba_fp:
-                                samba_sample_file= os.path.join(run_dir,'samplesheet.csv')
-                                logger.debug('Local dir for Shample Sheet %s', sample_sheet_tmp_file)
-                                logger.debug('Remote dir to copy Shample Sheet  is %s', run_dir)
-                                conn.storeFile(share_folder_name, samba_sample_file, sample_samba_fp)
-                                logger.info('Samplesheet.csv file has been copied on the remote node')
-                        except:
-                            logger.error('Unable to copy Sample Sheet for run %s', run_dir)
-                            print ('ERROR:: Unable to copy Sample Sheet for run ', run_dir)
-                            continue
+                        #try:
+                        #    with open(sample_sheet_tmp_file ,'rb') as  sample_samba_fp:
+                        #        samba_sample_file= os.path.join(run_dir,'samplesheet.csv')
+                        #        logger.debug('Local dir for Shample Sheet %s', sample_sheet_tmp_file)
+                        #        logger.debug('Remote dir to copy Shample Sheet  is %s', run_dir)
+                        #        conn.storeFile(share_folder_name, samba_sample_file, sample_samba_fp)
+                        #        logger.info('Samplesheet.csv file has been copied on the remote node')
+                        #except:
+                        #    logger.error('Unable to copy Sample Sheet for run %s', run_dir)
+                        #    print ('ERROR:: Unable to copy Sample Sheet for run ', run_dir)
+                        #    continue
                         # retrieve the runInfo.xml file from remote directory
                     else:
                         logger.error('ERROR ---No sample Sheet will be copied to remote dir. Local Directory %s was not found ', sample_sheet_tmp_dir)
