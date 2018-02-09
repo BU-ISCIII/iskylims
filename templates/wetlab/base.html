@@ -8,24 +8,22 @@
     {% load staticfiles  %}
     <!-- GLOBAL MANDATORY STYLES -->
         <link href="http://fonts.googleapis.com/css?family=Hind:300,400,500,600,700" rel="stylesheet" type="text/css">
-        <link href="{% static "wetlab/vendor/simple-line-icons/css/simple-line-icons.css" %}" rel="stylesheet" type="text/css"/>
-        <link href="{% static "wetlab/vendor/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css"/>
-	<link href= "https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css"/>
+        <link href="{% static "/vendor/simple-line-icons/css/simple-line-icons.css" %}" rel="stylesheet" type="text/css"/>
+        <link href="{% static "/vendor/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css"/>
+		<link href= "https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css"/>
 	
      <!-- GLOBAL MANDATORY JAVA SCRIPTS -->
 	<!-- script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> -->
-	<script src="{% static "wetlab/js/jquery-3.2.1.min.js" %}"></script>
+	<script src="{% static "/js/jquery-3.2.1.min.js" %}"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> <!-- drop menus -->
-
-
 	
     <!-- PAGE LEVEL PLUGIN STYLES -->
-        <link href="{% static "wetlab/css/animate.css" %}" rel="stylesheet">
-        <link href="{% static "wetlab/vendor/swiper/css/swiper.min.css" %}"rel="stylesheet" type="text/css"/>
-	<link href="{% static "wetlab/css/wetlab.css" %}" rel="stylesheet" type="text/css"/>
+        <link href="{% static "/css/animate.css" %}" rel="stylesheet">
+        <link href="{% static "/vendor/swiper/css/swiper.min.css" %}"rel="stylesheet" type="text/css"/>
+		<link href="{% static "/css/wetlab.css" %}" rel="stylesheet" type="text/css"/>
 	
     <!-- THEME STYLES -->
-        <link href="{% static "wetlab/css/layout.min.css" %}" rel="stylesheet" type="text/css"/>
+        <link href="{% static "/css/layout.min.css" %}" rel="stylesheet" type="text/css"/>
 	
     <!-- Place favicon.ico in the root directory -->
     
@@ -51,7 +49,7 @@
                         <!-- Logo -->
                         <div class="logo">
                             <a class="logo-wrap" href="/">
-                                <img src="{% static "wetlab/img/logo_iSkyLIMS2.png" %}" alt="iSkyLIMS_Logo">
+                                <img src="{% static "/img/logo_iSkyLIMS2.png" %}" alt="iSkyLIMS_Logo">
                             </a>
                         </div>
                         <!-- End Logo -->
@@ -65,19 +63,19 @@
 				<li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">WET LAB<span class="caret"></span></a>
 				  <ul class="dropdown-menu">
 					{% if request.user|has_group:"WetlabManager" %}
-					    <li><a href="/wetlab/getSampleSheet/">Upload the Run </a></li>
-					    <li><a href="/wetlab/searchNextSeq/">Search by RUN</a></li>
+					    <li><a href="/wetlab/getSampleSheet">Upload the Run </a></li>
+					    <li><a href="/wetlab/searchNextSeq">Search by RUN</a></li>
 					    <li><a href="/wetlab/latest_run">Get Latest Run</a></li>
 					{% endif %}  
-					<li><a href="/wetlab/searchNextProject/">Search by Project</a></li>
-					<li><a href="/wetlab/searchNextSample/">Search by Sample</a></li>
+					<li><a href="/wetlab/searchNextProject">Search by Project</a></li>
+					<li><a href="/wetlab/searchNextSample">Search by Sample</a></li>
 				  </ul>
 				</li>
 				{% else %}
-				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">wet LAB</a></li>
+				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_">wet LAB</a></li>
 				{% endif%}
 				{% if user.is_authenticated %} 
-                                <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">WetLAB Statistics<span class="caret"></span></a>
+                                <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#"> Statistics<span class="caret"></span></a>
 				    <ul class="dropdown-menu">
 				    <li><a href="/wetlab/NextSeqStatsPerResearcher/">Projects per Investigator </a></li>
 				    {% if request.user|has_group:"WetlabManager" %}
@@ -88,7 +86,7 @@
 				  </ul>
 				</li>
 				{% else %}
-				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">WetLAB Statistics</a></li>
+				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_"> Statistics</a></li>
 				{% endif%}
 				{% if user.is_authenticated %}
 				<li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Reports<span class="caret"></span></a>
@@ -101,7 +99,7 @@
 				    {% endif %}
 				</li>
 				{% else %}
-				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">Reports</a></li>
+				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_">Reports</a></li>
 				{% endif%}
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#">Work</a></li>
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#contact">Contact</a></li>
@@ -178,7 +176,7 @@
             <div class="content container">
                 <div class="row">
                     <div class="col-xs-6">
-                        <img class="footer-logo" src="{% static "wetlab/img/isciii_logo_2017.png" %}" alt="iSkyLIMS_Logo">
+                        <img class="footer-logo" src="{% static "/img/isciii_logo_2017.png" %}" alt="iSkyLIMS_Logo">
                     </div>
                     <div class="col-xs-6 text-right sm-text-left">
                         <p class="margin-b-0"><a class="fweight-700" href="http://keenthemes.com/preview/acecv/">Acecv</a> Theme Powered by: <a class="fweight-700" href="http://www.keenthemes.com/">KeenThemes.com</a></p>
@@ -195,30 +193,30 @@
 
 	<!-- CORE PLUGINS -->
 	<!--
-        <script src="{% static "wetlab/vendor/jquery-migrate.min.js" %}" type="text/javascript"></script>
-	<script src="{% static "wetlab/vendor/bootstrap/js/bootstrap.min.js" %}" type="text/javascript"></script>	
+        <script src="{% static "/vendor/jquery-migrate.min.js" %}" type="text/javascript"></script>
+	<script src="{% static "/vendor/bootstrap/js/bootstrap.min.js" %}" type="text/javascript"></script>	
 	-->
 	<!-- PAGE LEVEL PLUGINS -->
-	<script src="{% static "wetlab/vendor/jquery.back-to-top.js" %}" type="text/javascript"></script>	
+	<script src="{% static "/vendor/jquery.back-to-top.js" %}" type="text/javascript"></script>	
 	<!--
-        <script src="{% static "wetlab/vendor/jquery.easing.js" %}" type="text/javascript"></script>
-	<script src="{% static "wetlab/vendor/jquery.smooth-scroll.js"%}"  type="text/javascript"></script>
-	<script src="{% static "wetlab/vendor/jquery.wow.min.js" %}"type="text/javascript"></script>
-        <script src="{% static "wetlab/vendor/jquery.appear.js" %}" type="text/javascript"></script>
-	<script src="{% static "wetlab/vendor/swiper/js/swiper.jquery.min.js" %}"type="text/javascript"></script>
+        <script src="{% static "/vendor/jquery.easing.js" %}" type="text/javascript"></script>
+	<script src="{% static "/vendor/jquery.smooth-scroll.js"%}"  type="text/javascript"></script>
+	<script src="{% static "/vendor/jquery.wow.min.js" %}"type="text/javascript"></script>
+        <script src="{% static "/vendor/jquery.appear.js" %}" type="text/javascript"></script>
+	<script src="{% static "/vendor/swiper/js/swiper.jquery.min.js" %}"type="text/javascript"></script>
 	-->	
 	<!-- PAGE LEVEL SCRIPTS -->
 	<!--
-	<script src="{% static "wetlab/js/layout.min.js" %}" type="text/javascript"></script>
-	<script src="{% static "wetlab/js/components/progress-bar.min.js" %}" type="text/javascript"></script>
-	<script src="{% static "wetlab/js/components/swiper.min.js"%}" type="text/javascript"></script>
-        <script src="{% static "wetlab/js/components/wow.min.js" %}" type="text/javascript"></script>
+	<script src="{% static "/js/layout.min.js" %}" type="text/javascript"></script>
+	<script src="{% static "/js/components/progress-bar.min.js" %}" type="text/javascript"></script>
+	<script src="{% static "/js/components/swiper.min.js"%}" type="text/javascript"></script>
+        <script src="{% static "/js/components/wow.min.js" %}" type="text/javascript"></script>
 	-->
 	
 	<!-- CUSTOMIZED SCRIPTS -->
 	
-	<script src="{% static "wetlab/js/customized.js" %}" type="text/javascript"></script>
-	<script src="{% static "wetlab/js/wetlab.js" %}" type="text/javascript"></script>
+	<script src="{% static "/js/customized.js" %}" type="text/javascript"></script>
+	<script src="{% static "/js/wetlab.js" %}" type="text/javascript"></script>
 	
      
 	

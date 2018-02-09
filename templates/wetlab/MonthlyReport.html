@@ -3,12 +3,12 @@
 {% block content %}
     {% csrf_token %}
 {% if display_monthly_report %}
-<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>              
-<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>                   
-<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
-<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
-<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>
-<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script> 
+<script type="text/javascript" src="{% static "js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>              
+<script type="text/javascript" src="{% static "js/fusioncharts/js/fusioncharts.js" %}"></script>                   
+<script type="text/javascript" src="{% static "js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
+<script type="text/javascript" src="{% static "js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
+<script type="text/javascript" src="{% static "js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>
+<script type="text/javascript" src="{% static "js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script> 
 <!--  Start Run created during the month and the year selected  -->
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-7">
