@@ -8,7 +8,7 @@ from datetime import datetime
 import time
 
 from Bio.Seq import Seq
-
+from django.conf import settings
 
 
 def include_csv_header (library_kit, out_file, plate, container):
@@ -39,7 +39,7 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
     well_row={}
     letter_well='A'
     number_well='01'
-    result_directory='documents/wetlab/BaseSpaceMigrationFiles/'
+    result_directory='wetlab/BaseSpaceMigrationFiles/'
     cwd = os.getcwd()
     data_found=0
     header_found=0
@@ -107,7 +107,9 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
     data_found=0
     tmp= re.search('.*/(.*)\.csv',in_file)
     out_tmp=tmp.group(1)
-    out_file = str(result_directory +  out_tmp + '_for_basespace' + '_'+ library_kit_file + '.csv')
+    #base_dir=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    base_dir = settings.MEDIA_ROOT
+    out_file = str(base_dir + result_directory +  out_tmp + '_for_basespace' + '_'+ library_kit_file + '.csv')
 
     
     #### check for validation of the shample file 
@@ -141,7 +143,10 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
                 fh_out.write('\n')
       
     fh_out.close()
-    return out_file
+    # remove the absolute path of the library file_name
+    absolute_path = str(settings.BASE_DIR + '/')
+    file_name_in_database = out_file.replace(absolute_path,'')
+    return file_name_in_database
 
 def get_projects_in_run(in_file):
     header_found=0
@@ -169,7 +174,8 @@ def update_library_kit_field (library_file_name, library_kit_name, library_name)
     #result_directory='documents/wetlab/BaseSpaceMigrationFiles/'
     timestr = time.strftime("%Y%m%d-%H%M%S")
     tmp= re.search('(.*)\d{8}-\d+.*\.csv',library_file_name)
-    out_file = str(  tmp.group(1) + timestr +'_for_basespace_'+ library_kit_name + '.csv')
+    absolute_path = str(settings.BASE_DIR + '/')
+    out_file = str( absolute_path +  tmp.group(1) + timestr +'_for_basespace_'+ library_kit_name + '.csv')
     #import pdb; pdb.set_trace()
     try:
         fh_in = open (library_file_name, 'r')
@@ -186,5 +192,7 @@ def update_library_kit_field (library_file_name, library_kit_name, library_name)
     fh_in.close()
     fh_out.close()
     os.remove(library_file_name)
-
-    return out_file
+    # remove absolute path from file_name
+    absolute_path = str(settings.BASE_DIR + '/')
+    file_name_in_database = out_file.replace(absolute_path,'')
+    return file_name_in_database

@@ -252,7 +252,7 @@ def get_sample_file (request):
 
 def get_information_run(run_name_found,run_id):
     info_dict={}
-    ## collect the state to get the valid information of run that matches the run name
+    ## collect the state to get the valid information of run that matches the run name 
     run_state=run_name_found.get_state()
     if (run_state != 'Completed'):
         d_list=['Run name','State of the Run is','Run was requested by',
@@ -449,6 +449,7 @@ def get_information_run(run_name_found,run_id):
             graphics[index_graph] = [graphic_text[index_graph], folder_graphic + tmp_value]
             
         info_dict['runGraphic'] = graphics
+    
     return info_dict
     
 @login_required

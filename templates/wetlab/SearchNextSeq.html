@@ -15,7 +15,7 @@
                 <div class="panel-heading">Information for the run : <strong>{{ values }}</strong>  </div>
                {%endif%}
             {% endfor %}
-           <div class="panel-body"> 
+           <div class="panel-body">
              {% for key, values in display_one_run.data %}
                {% if "Sample" in key %}
                 <div class="col-sm-6">{{ key }}</div>
