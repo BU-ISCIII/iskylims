@@ -1,40 +1,40 @@
 ## drylab/forms.py
-from django import forms                                                                                                                           
-from django.utils.translation import ugettext_lazy as _, ugettext                                                                                  
-from crispy_forms.helper import FormHelper                                                                                                         
-from crispy_forms import layout, bootstrap                                                                                                         
-#from utils.fields import MultipleChoiceTreeField                                                                                                  
-from mptt.forms import TreeNodeMultipleChoiceField                                                                                                 
-from .models import *                                                                                                                              
-#import pdb                                                                                                                                        
-from django.contrib.auth.forms import UserCreationForm                                                                                             
+from django import forms
+from django.utils.translation import ugettext_lazy as _, ugettext
+from crispy_forms.helper import FormHelper
+from crispy_forms import layout, bootstrap
+#from utils.fields import MultipleChoiceTreeField
+from mptt.forms import TreeNodeMultipleChoiceField
+from .models import *
+#import pdb
+from django.contrib.auth.forms import UserCreationForm
 
 class ServiceRequestForm(forms.ModelForm):
- 	class Meta:
- 		model = Service
- 		fields = ['serviceSeqCenter','servicePlatform','serviceRunSpecs','serviceFileExt','serviceAvailableService','serviceFile','serviceNotes']
- 		field_classes = {
+	class Meta:
+		model = Service
+		fields = ['serviceSeqCenter','servicePlatform','serviceRunSpecs','serviceFileExt','serviceAvailableService','serviceFile','serviceNotes']
+		field_classes = {
 				'serviceAvailableService': TreeNodeMultipleChoiceField,
 				}
 
- 	def __init__(self,*args, **kwargs):
- 		super(ServiceRequestForm, self).__init__(*args, **kwargs)
- 		self.helper = FormHelper()
- 		self.helper.form_action=""
- 		self.helper.form_method="POST"
- 		#pdb.set_trace()
- 		
- 		self.helper.layout = layout.Layout(
-				layout.Div(               
- 					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Sequencing Data</h3></div>"""),
- 					layout.Div(
- 						layout.Div(
- 							layout.Field('serviceSeqCenter'),
- 							layout.Field('servicePlatform'),
- 							css_class="col-md-6",
- 						),
- 						layout.Div(
- 							layout.Field('serviceRunSpecs'),
+	def __init__(self,*args, **kwargs):
+		super(ServiceRequestForm, self).__init__(*args, **kwargs)
+		self.helper = FormHelper()
+		self.helper.form_action=""
+		self.helper.form_method="POST"
+		#pdb.set_trace()
+
+		self.helper.layout = layout.Layout(
+				layout.Div(
+					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Sequencing Data</h3></div>"""),
+					layout.Div(
+						layout.Div(
+							layout.Field('serviceSeqCenter'),
+							layout.Field('servicePlatform'),
+							css_class="col-md-6",
+						),
+						layout.Div(
+							layout.Field('serviceRunSpecs'),
 							layout.Field('serviceFileExt'),
 							css_class="col-md-6",
 						),
@@ -42,17 +42,17 @@ class ServiceRequestForm(forms.ModelForm):
 						),
 					css_class = "panel panel-default"
 					),
-                layout.Div(                                                                                                
-                	layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Service selection</h3></div>"""), 
-                	layout.Div(                                                                                            
-                		layout.Div(                                                                                        
-                			layout.Field('serviceAvailableService',template="utils/checkbox_select_multiple_tree.html"),                                                                   
-                			css_class="col-md-12"                                                                          
-                			),                                                                                             
-                    	css_class="row panel-body"                                                                         
-                    	),                                                                                                 
-                	css_class = "panel panel-default"                                                                      
-                	),                                                                                                     
+                layout.Div(
+				layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Service selection</h3></div>"""),
+					layout.Div(
+						layout.Div(
+						layout.Field('serviceAvailableService',template="utils/checkbox_select_multiple_tree.html"),
+							css_class="col-md-12"
+						),
+							css_class="row panel-body"
+					),
+						css_class = "panel panel-default"
+				),
 				layout.Div(
 					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Service Description</h3></div>"""),
 					layout.Div(
@@ -61,8 +61,8 @@ class ServiceRequestForm(forms.ModelForm):
 							layout.Field('serviceNotes'),
 							css_class="col-md-12"
 							),
-                    	css_class="row panel-body"
-                    	),
+					css_class="row panel-body"
+					),
 					css_class = "panel panel-default"
 					),
 				bootstrap.FormActions(
@@ -70,7 +70,7 @@ class ServiceRequestForm(forms.ModelForm):
                     )
 				)
 class ServiceRequestForm_extended(ServiceRequestForm):
-	
+
 	class Meta:
 		model = Service
 		exclude = [
@@ -79,7 +79,7 @@ class ServiceRequestForm_extended(ServiceRequestForm):
 				'serviceRunSpecs',
 				'serviceFileExt',
 				'serviceStatus',
-				] 
+				]
 
 	def __init__(self,*args, **kwargs):
 		super(ServiceRequestForm_extended, self).__init__(*args, **kwargs)

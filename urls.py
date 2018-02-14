@@ -11,9 +11,9 @@ urlpatterns = [
     # ex: /polls/
     url(r'^$', views.index, name='index'),
     url(r'^service_request',views.service_request, name='request_service'),
- 	url(r'^counseling_request',views.counseling_request, name='counseling_service'),
- 	url(r'^infrastructure_request',views.infrastructure_request, name='infrastructure_service'),
-] 
+	url(r'^counseling_request',views.counseling_request, name='counseling_service'),
+	url(r'^infrastructure_request',views.infrastructure_request, name='infrastructure_service'),
+]
 #+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 if settings.DEBUG:
