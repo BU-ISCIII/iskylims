@@ -1,20 +1,22 @@
 {% extends 'wetlab/base.html' %}
-{% load static %}<script src="{% static "vendor/jquery.easing.js" %}" type="text/javascript"></script>
+{% load static %}
 {% block content %}
-
-{% if display_stats_per_time_list.run_names %}
+{% csrf_token %}
+{% if display_stats_per_time.run_names %}
+<script type="text/javascript" src="{% static "js/fusioncharts/js/fusioncharts.widgets.js" %}"></script> 
 <script type="text/javascript" src="{% static "js/fusioncharts/js/fusioncharts.js" %}"></script>
 <script type="text/javascript" src="{% static "js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script>
 <script type="text/javascript" src="{% static "js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
 <script type="text/javascript" src="{% static "js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>
 <script type="text/javascript" src="{% static "js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script>
+
     <!--  Start Run information -->
     <div class="row row-space-2 margin-b-4">
         <BR>
         <div class="col-sm-6">
             <div class="panel panel-default">
-                <div class="panel-body"><h4>The statistics results are based on the {{ display_stats_per_time_list.number_of_runs }}  </h4> 
-                That have been found for the selected period from : {{ display_stats_per_time_list.dates }}
+                <div class="panel-body"><h4>The statistics results are based on the {{ display_stats_per_time.number_of_runs }}  </h4> 
+                That have been found for the selected period from : {{ display_stats_per_time.dates }}
     
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
@@ -24,14 +26,14 @@
                     <!-- Run Column Chart will start here-->
                     <div id="run_period_chart-1"> </div>
                     <!-- dumping JavaScript code here -->
-                        {{ display_stats_per_time_list.run_period_graphic |safe }}    
+                        {{ display_stats_per_time.run_period_graphic |safe }}    
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-6 -->
         
 
         <BR>
-        <div class="col-sm-3 col-sm-offset-1"">
+        <div class="col-sm-3 col-sm-offset-1">
             <div class="panel panel-default">
                 <div class="panel-heading">These are the Runs found according your query. To get all information of the run , click on it:</div>
                 <table class="table table-hover">
@@ -43,7 +45,7 @@
                    </thead>
                    <tbody>
                        
-                    {% for key, values in display_stats_per_time_list.run_names.items %}  
+                    {% for key, values in display_stats_per_time.run_names.items %}  
                      <tr>
                         {% for value, data in values %}
                        <td><a href="/wetlab/search_run={{ key }}">{{ value }}</a> </td>
@@ -66,7 +68,7 @@
                     <!-- Run Column Chart will start here-->
                     <div id="disk_usage_chart-1"> </div>
                     <!-- dumping JavaScript code here -->
-                        {{ display_stats_per_time_list.disk_space_period_graphic |safe }}    
+                        {{ display_stats_per_time.disk_space_period_graphic |safe }}    
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-6 -->
@@ -79,8 +81,8 @@
         <BR>
         <div class="col-sm-6">
             <div class="panel panel-default">
-                <div class="panel-body"><h4>Have been found {{ display_stats_per_time_list.number_of_projects }} associated to the {{ display_stats_per_time_list.number_of_runs }} </h4> 
-                    For the selected period from : {{ display_stats_per_time_list.dates }}
+                <div class="panel-body"><h4>Have been found {{ display_stats_per_time.number_of_projects }} associated to the {{ display_stats_per_time.number_of_runs }} </h4> 
+                    For the selected period from : {{ display_stats_per_time.dates }}
     
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
@@ -90,7 +92,7 @@
                     <!-- Run Column Chart will start here-->
                     <div id="project_period_chart-1"> </div>
                     <!-- dumping JavaScript code here -->
-                        {{ display_stats_per_time_list.project_period_graphic |safe }}    
+                        {{ display_stats_per_time.project_period_graphic |safe }}    
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-6 -->
@@ -109,7 +111,7 @@
                    </thead>
                    <tbody>
                        
-                    {% for key, values in display_stats_per_time_list.project_names.items %}  
+                    {% for key, values in display_stats_per_time.project_names.items %}  
                      <tr>
                         {% for value, data in values %}
                        <td><a href="/wetlab/search_project={{ key }}">{{ value }}</a> </td>
@@ -134,7 +136,7 @@
                 <!-- Column 2 Chart will start here-->
             <div id="chart-1"> </div>
                 <!-- dumping JavaScript code here -->
-                {{ display_stats_per_time_list.lane_chart1 |safe }}
+                {{ display_stats_per_time.lane_chart1 |safe }}
          </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
         </div> <!--// end col-sm-6  -->
@@ -145,7 +147,7 @@
                 <!-- Column 2 Chart will start here-->
             <div id="chart-2"> </div>
                 <!-- dumping JavaScript code here -->
-                {{ display_stats_per_time_list.lane_chart2 |safe }}
+                {{ display_stats_per_time.lane_chart2 |safe }}
          </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
         </div> <!--// end col-sm-6  -->
@@ -159,7 +161,7 @@
                 <!-- Column 2 Chart will start here-->
             <div id="chart-3"> </div>
                 <!-- dumping JavaScript code here -->
-                {{ display_stats_per_time_list.lane_chart3 |safe }}
+                {{ display_stats_per_time.lane_chart3 |safe }}
          </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
         </div> <!--// end col-sm-6  -->
@@ -170,7 +172,7 @@
                 <!-- Column 2 Chart will start here-->
             <div id="chart-4"> </div>
                 <!-- dumping JavaScript code here -->
-                {{ display_stats_per_time_list.lane_chart4 |safe }}
+                {{ display_stats_per_time.lane_chart4 |safe }}
          </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
         </div> <!--// end col-sm-6  -->
@@ -184,7 +186,7 @@
                 <!-- Unknow Barcode Pie Chart will start here-->
             <div id="chart-5"> </div>
                 <!-- dumping JavaScript code here -->
-                {{ display_stats_per_time_list.unknow_pie3d |safe }}
+                {{ display_stats_per_time.unknow_pie3d |safe }}
          </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
         </div> <!--// end col-sm-6  -->

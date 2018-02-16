@@ -1631,7 +1631,7 @@ def nextSeqStats_per_time (request):
                 stat_per_time['disk_space_period_graphic'] = FusionCharts("column3d", disk_space_period_index_graph , "550", "350", disk_space_period_chart_number, "json", data_source).render()
 
                 #import pdb; pdb.set_trace()
-                return render(request, 'wetlab/NextSeqStatsPerTime.html', {'display_stats_per_time_list': stat_per_time })
+                return render(request, 'wetlab/NextSeqStatsPerTime.html', {'display_stats_per_time': stat_per_time })
 
             else:
                 return render (request,'wetlab/error_page.html', {'content':['No matches have been found for Runs created between', start_date, ' and the ',  end_date ]})
