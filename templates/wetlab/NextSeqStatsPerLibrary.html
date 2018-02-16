@@ -2,14 +2,14 @@
 {% load static %}
 {% block content %}
     {% csrf_token %}
-{% if display_library_stats %}
+
 <script type="text/javascript" src="{% static "js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>           
 <script type="text/javascript" src="{% static "js/fusioncharts/js/fusioncharts.js" %}"></script>                   
 <script type="text/javascript" src="{% static "js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
 <script type="text/javascript" src="{% static "js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>  
 <script type="text/javascript" src="{% static "js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script>   
 <script type="text/javascript" src="{% static "js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>     
-
+{% if display_library_stats %}
 <div class="row row-space-2 margin-b-4">
       <div class="col-sm-8 col-sm-offset-1" >
         <div class="panel panel-default">

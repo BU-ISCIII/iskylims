@@ -254,6 +254,9 @@ def get_information_run(run_name_found,run_id):
     info_dict={}
     ## collect the state to get the valid information of run that matches the run name
     run_state=run_name_found.get_state()
+    # allow to change the run name in case that run state was recorded or Sample Sent
+    if run_state == 'Recorded' or run_state == 'Sample Sent':
+        info_dict['change_run_name'] = [[run_name_found.runName, run_id]]
     if (run_state != 'Completed'):
         d_list=['Run name','State of the Run is','Run was requested by',
                 'The Sample Sheet used is','Run was recorded on date']
@@ -321,10 +324,7 @@ def get_information_run(run_name_found,run_id):
         info_dict['library_kit'] = p_library_kit_list
         info_dict['run_id'] = run_id
     #import pdb; pdb.set_trace()
-    
-    
-    
-    
+
     ## get the stats information if run is completed
     if run_state == 'Completed':
         fl_data_display=[]
@@ -1004,6 +1004,35 @@ def search_sample (request, sample_id):
     else:
         return render (request,'wetlab/error_page.html', {'content':['No matches have been found for the sample  ' ]})
 
+@login_required
+def change_run_name (request, run_id):
+    if RunProcess.objects.filter(pk=run_id).exists():
+        run = RunProcess.objects.get(pk = run_id)
+        if not request.user.is_authenticated :
+            return redirect ('/accounts/login')
+        # check if user is allow to make the change
+        groups = Group.objects.get(name='WetlabManager') 
+        # check if user belongs to WetlabManager . If true allow to see the page
+        if groups not in request.user.groups.all():
+            return render (request,'wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+        if request.method == 'POST' and request.POST['action'] == 'change_run_name':
+            new_run_name = request.POST['runName']
+            if new_run_name == '':
+                return render (request,'wetlab/error_page.html', {'content':['Empty value is not allowed for the Run Name ']})
+            changed_run_name ={}
+            old_run_name = run.runName
+            run.runName = new_run_name
+            run.save()
+            changed_run_name ['new_run_name'] = [[new_run_name, run_id]]
+            changed_run_name ['old_run_name'] = old_run_name
+            
+            return render (request, 'wetlab/ChangeRunName.html', {'changed_run_name': changed_run_name})
+        else:
+            form_change_run_name ={}
+            form_change_run_name['run_name'] = run.runName
+            return render (request, 'wetlab/ChangeRunName.html', {'form_change_run_name':form_change_run_name})
+    else:
+        return render (request,'wetlab/error_page.html', {'content':['There is no Run for your query  ' ]})
        
 @login_required
 def change_project_libKit (request, project_id) :
@@ -1582,6 +1611,25 @@ def nextSeqStats_per_time (request):
                 data_source = pie_graphic_for_unknow_barcode('Number of count for the Undetermined Sequences', 'fint',top_count_sequence)
                 unknow_pie3d = FusionCharts("pie3d", "ex5" , "500", "400", "chart-5", "json", data_source)
                 stat_per_time ['unknow_pie3d'] = unknow_pie3d.render()
+                
+                #########################
+                ### Insert information for disk space utilization
+                run_disk_utilization ={}
+                for run_disk_stats in run_stats_list :
+                    run_name_disk = run_disk_stats.runName
+                    run_disk_utilization[run_name_disk] = run_disk_stats.get_disk_space_utilization()
+                    
+                    
+                heading = 'Disk space used for each Run found during the period ' + str(start_date) + ' and ' + str(end_date)
+                sub_caption = ''
+                x_axis_name = 'Date'
+                y_axis_name = 'Disk space used (MB)'
+                disk_space_period_chart_number = 'disk_usage_chart-1'
+                disk_space_period_index_graph = 'diskusage1'
+                
+                data_source = researcher_project_column_graphic (heading, sub_caption, x_axis_name, y_axis_name, 'carbon', run_disk_utilization)
+                stat_per_time['disk_space_period_graphic'] = FusionCharts("column3d", disk_space_period_index_graph , "550", "350", disk_space_period_chart_number, "json", data_source).render()
+                
                 #import pdb; pdb.set_trace()
                 return render(request, 'wetlab/NextSeqStatsPerTime.html', {'display_stats_per_time_list': stat_per_time })
                 
@@ -2316,8 +2364,34 @@ def email (request):
     #import pdb; pdb.set_trace()
     return render (request,'wetlab/info_page.html', {'content':['Your email was sent to ', to_user, ' with the following message ', body_message]})
 
-def update_tables (request):
+def open_samba_connection ():
     
+    conn=SMBConnection('bioinfocifs', 'fCdEg979I-W.gUx-teDr', 'NGS_Data', 'quibitka', use_ntlm_v2=True)
+    conn.connect('172.21.7.11', 445)
+    return conn
+    
+def get_size_dir (directory, conn, ):
+    count_file_size = 0
+    file_list = conn.listPath('NGS_Data', directory)
+    for sh_file in file_list:
+        if sh_file.isDirectory:
+            if (sh_file.filename == '.' or sh_file.filename == '..'):
+                continue
+
+            sub_directory = os.path.join (directory,sh_file.filename)
+            count_file_size += get_size_dir (sub_directory, conn)
+        else:
+            count_file_size += sh_file.file_size
+
+    return count_file_size
+    
+
+
+
+def update_tables (request):
+    #### Update the run date for the projects. NextSeqStatsBinRunRead and  NextSeqStatsBinRunSummary
+    #### tables when they were not updated. It takes the run date from the run date
+    '''
     run_founds = RunProcess.objects.all()
     for run in run_founds :
         run_id = run.id
@@ -2336,9 +2410,68 @@ def update_tables (request):
             stats_read.save()
     import pdb; pdb.set_trace()
     return render(request, 'wetlab/info_page.html', {'content':['The tables have been updated']})    
+    '''
+    ### Update the disc space used of each run
+    ### It will connect to quibitka to get the size of the file for each run
     
 
-    
+    if RunProcess.objects.filter(runState__exact ='Completed', useSpaceImgMb = '').exists():
+        conn = open_samba_connection()
+        run_list_be_updated = RunProcess.objects.filter(runState__exact = 'Completed' , useSpaceImgMb = '')
+        for run_be_updated in run_list_be_updated:
+            run_id = run_be_updated.id
+            run_parameter_id=RunningParameters.objects.get(pk=run_id)
+            
+            runID_value = run_parameter_id.RunID
+            get_full_list = conn.listPath('NGS_Data' ,runID_value)
+            rest_of_dir_size = 0
+            data_dir_size = 0
+            images_dir_size = 0
+            in_mega_bytes = 1024*1024
+            
+            for item_list in get_full_list:
+                if item_list.filename == '.' or item_list.filename == '..':
+                    continue
+                if item_list.filename == 'Data':
+                    dir_data = os.path.join(run_name,'Data')
+                    data_dir_size = get_size_dir(dir_data , conn)
+                    continue
+            
+                elif item_list.filename == 'Images':
+                    dir_images = os.path.join(run_name, 'Images')
+                    images_dir_size = get_size_dir(dir_images , conn)
+                    continue
+            
+                if item_list.isDirectory:
+                    item_dir = os.path.join(run_name, item_list.filename)
+                    rest_of_dir_size += get_size_dir(item_dir, conn)
+                else:
+                    rest_of_dir_size += item_list.file_size
+            
+            # format file space and save it into database
+            data_dir_size_formated = '{0:,}'.format(round(data_dir_size/in_mega_bytes))
+            images_dir_size_formated = '{0:,}'.format(round(images_dir_size/in_mega_bytes))
+            rest_of_dir_size_formated = '{0:,}'.format(round(rest_of_dir_size/in_mega_bytes))        
+            run_be_updated.useSpaceImgMb= images_dir_size
+            run_be_updated.useSpaceFastaMb= data_dir_size
+            run_be_updated.useSpaceOtherMb= rest_of_dir_size
+            import pdb; pdb.set_trace()
+        
+        '''
+        
+        get_full_list = conn.listPath('NGS_Data' ,run_name)
+        rest_of_dir_size = 0
+        data_dir_size = 0
+        images_dir_size = 0
+        
+        
+        conn.close()        
+        
+        '''
+        return render(request, 'wetlab/info_page.html', {'content':['The Disk space usage have been updated']}) 
+    else:
+        return render(request, 'wetlab/error_page.html', {'content':['There is no tables which requiered to update with Disk space usage information']}) 
+
 
 '''    
 def downloadFile(request):

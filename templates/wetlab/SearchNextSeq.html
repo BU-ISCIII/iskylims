@@ -15,11 +15,17 @@
                 <div class="panel-heading">Information for the run : <strong>{{ values }}</strong>  </div>
                {%endif%}
             {% endfor %}
-           <div class="panel-body">
+                <div class="panel-body">
+                    {% if display_one_run.change_run_name %}
+                        {% for key, value in display_one_run.change_run_name %}
+                            <div class="col-sm-6">Run Name </div>
+                            <div class="col-sm-6"><a href="/wetlab/ChangeRunName={{ value }}"> {{ key }} <span class="glyphicon glyphicon-pencil"></span></a></div>
+                        {% endfor %}
+                    {% endif %}
              {% for key, values in display_one_run.data %}
                {% if "Sample" in key %}
                 <div class="col-sm-6">{{ key }}</div>
-                <div class="col-sm-6"><a href="/wetlab/documents/{{ values }}" download>{{ values|cut:"wetlab/SampleSheets/" }}<span class="glyphicon glyphicon-download-alt"></span></a></div><BR> <BR>
+                <div class="col-sm-6"><a href="/wetlab/documents/{{ values }}" download>{{ values|cut:"wetlab/SampleSheets/" }} <span class="glyphicon glyphicon-download-alt"></span></a></div><BR> <BR>
                {% elif key == 'Run name'%}
                {% else %}
                 <div class="col-sm-6">{{ key }}</div>

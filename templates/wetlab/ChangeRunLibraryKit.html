@@ -76,7 +76,7 @@ function goBack() {
                              <label class="col-sm-10" for="projectInRun">Project name : {{ key }}</label><br>
                                <input type="hidden" name="projectInRun" value="{{key}}"/>
                             <label class="col-sm-5 control-label for="runlibraryKit" >Enter the new Library Kit name </label>
-                             <div class="col-sm-5"><input class="form-control" type="text" name="runlibraryKit" size="60" maxlength="50" value="{{ values }}"></div>
+                             <div class="col-sm-5"><input class="form-control" type="text" required="required" name="runlibraryKit" size="60" maxlength="50" value="{{ values }}"></div>
                             <br><br>
                          </div>                     
                         {% endfor %}                      

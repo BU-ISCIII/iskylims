@@ -55,7 +55,23 @@
                  </table>
           </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-3 -->
+    </div> <!--// end row -->
+        <BR>
+        <!--  start the disk space utilization  -->
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-6">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h4>Disk space utilization per each Run  </h4></div>
+                <div class="panel-body"> 
+                    <!-- Run Column Chart will start here-->
+                    <div id="disk_usage_chart-1"> </div>
+                    <!-- dumping JavaScript code here -->
+                        {{ display_stats_per_time_list.disk_space_period_graphic |safe }}    
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-6 -->
     </div> <!--// end row --> 
+
     <!--  End Run information -->   
     
     <!--  Start Project information -->

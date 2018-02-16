@@ -29,6 +29,64 @@ def open_samba_connection():
     '''
     return conn
 
+def get_size_dir (directory, conn, logger):
+    count_file_size = 0
+    file_list = conn.listPath('NGS_Data', directory)
+    for sh_file in file_list:
+        if sh_file.isDirectory:
+            if (sh_file.filename == '.' or sh_file.filename == '..'):
+                continue
+            
+            logger.debug('Checking space for directory %s', sh_file.filename)
+            sub_directory = os.path.join (directory,sh_file.filename)
+            count_file_size += get_size_dir (sub_directory, conn)
+        else:
+            count_file_size += sh_file.file_size
+
+    return count_file_size
+
+
+def get_run_disk_utilization (conn, run_Id_used, run_processing_id, logger):
+    if RunProcess.objects.filter(pk = run_processing_id).exists()
+        run_be_updated = RunProcess.objects.get(pk = run_processing_id)
+
+        get_full_list = conn.listPath('NGS_Data' ,run_Id_used)
+        rest_of_dir_size = 0
+        data_dir_size = 0
+        images_dir_size = 0
+        in_mega_bytes = 1024*1024
+        logger.info('Starting getting disk space utilization for runID  %s', run_Id_used)
+        for item_list in get_full_list:
+            if item_list.filename == '.' or item_list.filename == '..':
+                continue
+            if item_list.filename == 'Data':
+                dir_data = os.path.join(run_name,'Data')
+                data_dir_size = get_size_dir(dir_data , conn)
+                continue
+        
+            elif item_list.filename == 'Images':
+                dir_images = os.path.join(run_name, 'Images')
+                images_dir_size = get_size_dir(dir_images , conn)
+                continue
+        
+            if item_list.isDirectory:
+                item_dir = os.path.join(run_name, item_list.filename)
+                rest_of_dir_size += get_size_dir(item_dir, conn)
+            else:
+                rest_of_dir_size += item_list.file_size
+        
+        # format file space and save it into database
+        data_dir_size_formated = '{0:,}'.format(round(data_dir_size/in_mega_bytes))
+        images_dir_size_formated = '{0:,}'.format(round(images_dir_size/in_mega_bytes))
+        rest_of_dir_size_formated = '{0:,}'.format(round(rest_of_dir_size/in_mega_bytes))        
+        run_be_updated.useSpaceImgMb= images_dir_size
+        run_be_updated.useSpaceFastaMb= data_dir_size
+        run_be_updated.useSpaceOtherMb= rest_of_dir_size
+        run_be_updated.save()
+        logger.info('End  disk space utilization for runID  %s', run_Id_used)
+            
+
+
 
 def save_run_info(run_info, run_parameter, run_id, logger):
     running_data={}
@@ -357,8 +415,8 @@ def parsing_statistics_xml(demux_file, conversion_file, logger):
         dict_stats['sampleNumber']=len(samples) -1
         dict_stats['OneMismatchBarcodeCount']=one_mismatch_count
         stats_result[projects[i]]=dict_stats
-        if projects[i] != 'default':
-            total_samples += len(samples)
+        if projects[i] != 'default' and != 'all':
+            total_samples += len(samples) -1
         logger.info('Complete parsing from demux file for project %s', projects[i])
     # overwrite the value for total samples
     stats_result['all']['sampleNumber']=total_samples
@@ -941,6 +999,9 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
                     logger.debug('Deleting file %s' , file_object_path)
                     os.remove(file_object_path)
             logger.info('xml files and binary files from InterOp folder have been removed')
+            ## connect to server to get the disk space utilization of the folders
+            get_run_disk_utilization (conn, run_Id_used, run_processing_id, logger)
+                
     # close samba connection 
     conn.close()
     logger.info('Samba connection close. Sucessful copy of files form remote server')    

@@ -45,6 +45,18 @@ class RunProcess(models.Model):
     
     def get_run_name (self):
         return '%s' %(self.runName)
+        
+    def get_disk_space_utilization (self):
+        image_size_str = '0' if self.useSpaceImgMb == '' else self.useSpaceImgMb
+        data_size_str = '0' if self.useSpaceFastaMb == '' else self.useSpaceFastaMb
+        other_size_str = '0' if self.useSpaceOtherMb == '' else self.useSpaceOtherMb 
+        image_size = int(image_size_str.replace(',',''))
+        data_size = int(data_size_str.replace(',',''))
+        other_size = int(other_size_str.replace(',',''))
+        total_size = image_size + data_size + other_size
+        return '%s'%(total_size)
+        
+        
             
 class Projects(models.Model):
     runprocess_id = models.ForeignKey(
@@ -133,6 +145,7 @@ class RunningParameters (models.Model):
              img_channel, self.Flowcell, self.ImageDimensions, self.FlowcellLayout)
     
 
+        
 
 
 
