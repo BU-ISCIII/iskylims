@@ -349,6 +349,9 @@ class SamplesInProject (models.Model):
        project_name =Projects.objects.get(projectName=p_id).get_project_name()
        #Projects.objects.prefetch_related('user_id').filter(user_id = user_id)
        return '%s' %(project_name)
+       
+    def get_quality_sample (self):
+        return '%s' %(self.qualityQ30)
 '''    
 class MiSeqStatisticsBin (models.Model):
     document = models.OneToOneField(

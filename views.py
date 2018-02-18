@@ -590,7 +590,7 @@ def search_nextProject (request):
                 project_id = Projects.objects.get (projectName__exact = project_name).id
                 project_found_id = Projects.objects.get(pk=project_id)
                 p_data_display  = get_information_project(project_found_id, request)
-                return render(request, 'wetlab/projectInfo.html', {'display_one_project': p_data_display })
+                return render(request, 'wetlab/NextSearchProject.html', {'display_one_project': p_data_display })
             if  Projects.objects.filter (projectName__contains = project_name).exists():
                 #import pdb; pdb.set_trace()
                 projects_found = Projects.objects.filter (projectName__contains = project_name)
@@ -678,8 +678,9 @@ def get_info_sample (sample_id):
     sample_info_dict['heading_samples_info'] = ['Sample', 'Barcode', 'PF Cluster', '% of Project','Yield (Mbases)','>= Q30 bases','Mean Quality Score']
     sample_info_dict['data_samples_info'] = sample_id.get_sample_information().split(';')
     # Quality graphic
+    quality_sample = sample_id.get_quality_sample()
     heading_chart_quality = 'Quality for the Sample ' + sample_id.sampleName
-    data_source = graphic_for_quality_angular(heading_chart_quality, 80)
+    data_source = graphic_for_quality_angular(heading_chart_quality, quality_sample)
     quality_sample_angular = FusionCharts("angulargauge", "ex1" , "350", "200", "chart-1", "json", data_source)
     sample_info_dict['quality_chart1'] = quality_sample_angular.render()
     percentage_in_project ={}
