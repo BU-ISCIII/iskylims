@@ -13,9 +13,9 @@ from django.conf import settings
 
 def include_csv_header (library_kit, out_file, plate, container):
     csv_header=['FileVersion','LibraryPrepKit','ContainerType','ContainerID','Notes']
-    
+
     header_settings=['1','',plate,container,'automatic generated file from iSkyLIMS']
-    
+
     index_kit=csv_header.index('LibraryPrepKit')
     header_settings[index_kit]=library_kit
     out_file.write('[Header]\n')
@@ -24,7 +24,7 @@ def include_csv_header (library_kit, out_file, plate, container):
         out_file.write(header_line)
     #### adding additional line
     out_file.write('\n')
-    
+
 def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects, plate):
     target_data_header = ['SampleID','Name','Species','Project','NucleicAcid',
                'Well','Index1Name','Index1Sequence','Index2Name','Index2Sequence']
@@ -32,7 +32,7 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
     ## to get an easy way to map fields in the sample sheet and the sample to import to base Space
     original_data_header = ['SampleID','Name','Plate', 'Well','Index1Name','Index1Sequence',
                        'Index2Name','Index2Sequence','Project','Description']
-    
+
 
     data_raw=[]
     well_column={}
@@ -43,7 +43,7 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
     cwd = os.getcwd()
     data_found=0
     header_found=0
-  
+
     fh = open(in_file,'r')
     for line in fh:
         line=line.rstrip()
@@ -60,7 +60,7 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
                  year_four_digits = '20' + temp_date[2]
                  temp_date[2] = year_four_digits
                  date_line[1] = '/'.join(temp_date)
-                 
+
             try:
                 date_object = datetime.strptime(date_line[1],'%m/%d/%Y')
             except:
@@ -91,7 +91,7 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
                #### adding empty values of species and NucleicAccid
                 dict_value_data['Species']=''
                 dict_value_data['NucleicAcid']='DNA'
-           
+
                 if not dict_value_data['Index2Name'] in well_row:
                     well_row[dict_value_data['Index2Name']]=letter_well
                     letter_well=chr(ord(letter_well)+1)
@@ -99,7 +99,7 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
                     well_column[dict_value_data['Index1Name']]=number_well
                     number_well =str(int(number_well)+1).zfill(2)
                 dict_value_data['Well']=str(well_row[dict_value_data['Index2Name']]+ well_column[dict_value_data['Index1Name']])
-                    
+
                 data_raw.append(dict_value_data)
     fh.close()
     # containerID build on the last Sample_Plate and the date in the sample sheet
@@ -111,13 +111,13 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
     base_dir = settings.MEDIA_ROOT
     out_file = str(base_dir + result_directory +  out_tmp + '_for_basespace' + '_'+ library_kit_file + '.csv')
 
-    
-    #### check for validation of the shample file 
+
+    #### check for validation of the shample file
     try:
         dict_value_data
     except:
         return ('Error')
-    #### open file for writting the conversion file 
+    #### open file for writting the conversion file
     fh_out = open (out_file, 'w')
     #####  print csv header
     include_csv_header(library_kit,fh_out,plate,container)
@@ -129,19 +129,19 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
             fh_out.write(',')
         else:
             fh_out.write('\n')
-        
+
     for line in data_raw:
         #### reverse order for Index2
         seq=Seq(line['Index2Sequence'])
         line['Index2Sequence']=str(seq.reverse_complement())
-        
-        for i in  range(len(target_data_header)):      
+
+        for i in  range(len(target_data_header)):
             fh_out.write(line[target_data_header[i]])
             if i < len(target_data_header)-1:
                 fh_out.write(',')
             else:
                 fh_out.write('\n')
-      
+
     fh_out.close()
     # remove the absolute path of the library file_name
     absolute_path = str(settings.BASE_DIR + '/')

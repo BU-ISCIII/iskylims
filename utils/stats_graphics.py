@@ -1,9 +1,8 @@
 def json_2_column_graphic(heading, q_30_project_lane,q_30_media_lane):
     data_source = {}
-    
     # Chart data is passed to the `dataSource` parameter, as hashes, in the form of
     # key-value pairs.
-    data_source['chart'] = { 
+    data_source['chart'] = {
         "caption": heading,
         "xAxisname": "Lanes",
         "yAxisName": " Q 30 (In %)",
@@ -54,7 +53,7 @@ def json_2_column_graphic(heading, q_30_project_lane,q_30_media_lane):
     ]
     data_source ["dataset"] = [
         {"seriesname": "Researcher Project",
-            "data": [ 
+            "data": [
                     {"value": q_30_project_lane[0] },
                     {"value": q_30_project_lane[1] },
                     {"value": q_30_project_lane[2] },
@@ -96,10 +95,10 @@ def json_2_column_graphic(heading, q_30_project_lane,q_30_media_lane):
 
 def json_unknow_barcode_graphic (heading, barcode_data) :
     data_source = {}
-    
+
     # Chart data is passed to the `dataSource` parameter, as hashes, in the form of
     # key-value pairs.
-    data_source['chart'] = { 
+    data_source['chart'] = {
         "caption": heading,
         "subcaption": "Top Sequence found in the Run",
         "startingangle": "120",
@@ -115,17 +114,17 @@ def json_unknow_barcode_graphic (heading, barcode_data) :
     }
     data =[]
     for key , values in barcode_data.items() :
-        data_dict = {} 
+        data_dict = {}
         data_dict['label'] = key
         data_dict['value'] = values
         data.append(data_dict)
-    data_source['data'] = data   
+    data_source['data'] = data
 
     return data_source
 
 def graphic_for_top_unbarcodes (heading, theme, lane_unbarcode) :
     data_source = {}
-    data_source['chart'] = { 
+    data_source['chart'] = {
                 "caption": heading,
                 "subCaption": "Found in the runs",
                 "xAxisName": "Sequence",
@@ -151,19 +150,19 @@ def graphic_for_top_unbarcodes (heading, theme, lane_unbarcode) :
             }
 
     data =[]
-    
+
     for key , values in lane_unbarcode.items() :
-        data_dict = {} 
+        data_dict = {}
         data_dict['label'] = key
         data_dict['value'] = values
         data.append(data_dict)
-    data_source['data'] = data    
-        
+    data_source['data'] = data
+
     return data_source
-    
+
 def graphic_for_library_kit (heading, sub_caption, x_axis_name, y_axis_name, theme, lane_quality) :
     data_source = {}
-    data_source['chart'] = { 
+    data_source['chart'] = {
                 "caption": heading,
                 "subCaption": sub_caption,
                 "xAxisName": x_axis_name,
@@ -189,21 +188,21 @@ def graphic_for_library_kit (heading, sub_caption, x_axis_name, y_axis_name, the
             }
 
     data =[]
-    
+
     for key , values in lane_quality.items() :
-        data_dict = {} 
+        data_dict = {}
         data_dict['label'] = key
         data_dict['value'] = values
         data.append(data_dict)
-    data_source['data'] = data    
-        
+    data_source['data'] = data
+
     return data_source
-    
+
 
 def pie_graphic_for_unknow_barcode (heading, theme, top_count_sequence):
     data_source = {}
-    
-    data_source['chart'] = { 
+
+    data_source['chart'] = {
         "caption": heading,
         "subcaption": "Top Sequence found in the Run",
         "startingangle": "120",
@@ -219,23 +218,19 @@ def pie_graphic_for_unknow_barcode (heading, theme, top_count_sequence):
     }
     data =[]
     for key , values in top_count_sequence.items() :
-        data_dict = {} 
+        data_dict = {}
         data_dict['label'] = key
         data_dict['value'] = values
         data.append(data_dict)
-    data_source['data'] = data    
-    
-    return data_source
-    
-    
+    data_source['data'] = data
 
-    
+    return data_source
+
 ########
  #JSON for the quality of sample/project/Run
 ########
 def graphic_for_quality_angular (heading, value) :
     data_source = {}
-    
     data_source ['chart'] = {
         "caption": heading,
         "lowerlimit": "0",
@@ -246,7 +241,7 @@ def graphic_for_quality_angular (heading, value) :
         "numbersuffix": "%",
         "tickvaluedistance": "10",
         "showvalue": "0",
-        # inner white radious 
+        # inner white radious
         "gaugeinnerradius": "45",
         "bgcolor": "FFFFFF",
         "pivotfillcolor": "333333",
@@ -280,8 +275,7 @@ def graphic_for_quality_angular (heading, value) :
 
 def pie_graphic_year (heading, subcaption, theme, number_of_runs):
     data_source = {}
-    
-    data_source['chart'] = { 
+    data_source['chart'] = {
         "caption": heading,
         "subcaption": subcaption,
         "startingangle": "120",
@@ -297,17 +291,17 @@ def pie_graphic_year (heading, subcaption, theme, number_of_runs):
     }
     data =[]
     for key , values in number_of_runs.items() :
-        data_dict = {} 
+        data_dict = {}
         data_dict['label'] = key
         data_dict['value'] = values
         data.append(data_dict)
-    data_source['data'] = data    
-    
+    data_source['data'] = data
+
     return data_source
 
 def column_graphic_for_year_report (heading, sub_caption, x_axis_name, y_axis_name, theme, year_report_data) :
     data_source = {}
-    data_source['chart'] = { 
+    data_source['chart'] = {
                 "caption": heading,
                 "subCaption": sub_caption,
                 "xAxisName": x_axis_name,
@@ -333,19 +327,19 @@ def column_graphic_for_year_report (heading, sub_caption, x_axis_name, y_axis_na
             }
 
     data =[]
-    
+
     for key , values in year_report_data.items() :
-        data_dict = {} 
+        data_dict = {}
         data_dict['label'] = key
         data_dict['value'] = values
         data.append(data_dict)
-    data_source['data'] = data    
-        
+    data_source['data'] = data
+
     return data_source
 
 def researcher_project_column_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme, lane_report_data) :
     data_source = {}
-    data_source['chart'] = { 
+    data_source['chart'] = {
                 "caption": heading,
                 "subCaption": sub_caption,
                 "xAxisName": x_axis_name,
@@ -371,22 +365,21 @@ def researcher_project_column_graphic (heading, sub_caption, x_axis_name, y_axis
             }
 
     data =[]
-    
+
     for key , values in lane_report_data.items() :
-        data_dict = {} 
+        data_dict = {}
         data_dict['label'] = key
         data_dict['value'] = values
         data.append(data_dict)
-    data_source['data'] = data    
-        
+    data_source['data'] = data
+
     return data_source
 
 def researcher_project_mean_column_graphic(heading,  x_axis_name, y_axis_name, user_project_lane,q_30_media_lane, user_average, overall_average, investigator):
     data_source = {}
-    
     # Chart data is passed to the `dataSource` parameter, as hashes, in the form of
     # key-value pairs.
-    data_source['chart'] = { 
+    data_source['chart'] = {
         "caption": heading,
         "xAxisname": x_axis_name,
         "yAxisName": y_axis_name,
@@ -437,7 +430,7 @@ def researcher_project_mean_column_graphic(heading,  x_axis_name, y_axis_name, u
     ]
     data_source ["dataset"] = [
         {"seriesname": investigator +  '  Projects',
-            "data": [ 
+            "data": [
                     {"value": user_project_lane[0] },
                     {"value": user_project_lane[1] },
                     {"value": user_project_lane[2] },
@@ -479,7 +472,7 @@ def researcher_project_mean_column_graphic(heading,  x_axis_name, y_axis_name, u
 
 def column_graphic_samples_in_project (heading, sub_caption, x_axis_name, y_axis_name, theme, percentage_in_project, sample_name) :
     data_source = {}
-    data_source['chart'] = { 
+    data_source['chart'] = {
                 "caption": heading,
                 "subCaption": sub_caption,
                 "xAxisName": x_axis_name,
@@ -500,22 +493,19 @@ def column_graphic_samples_in_project (heading, sub_caption, x_axis_name, y_axis
                 "canvasBaseColor": "#aaaaaa",
                 #Changing canvas background color
                 "canvasBgColor": "#eeeeee",
-                "exportEnabled": "1"   
-                    
-                    
-                
+                "exportEnabled": "1"
             }
 
     data =[]
-    
+
     for key , values in percentage_in_project.items() :
-        data_dict = {} 
+        data_dict = {}
         data_dict['label'] = key
         data_dict['value'] = values
         if key == sample_name :
-            data_dict['dashed'] = "1" 
-            data_dict['color']= 'ff0000'          
+            data_dict['dashed'] = "1"
+            data_dict['color']= 'ff0000'
         data.append(data_dict)
-    data_source['data'] = data    
-        
+    data_source['data'] = data
+
     return data_source

@@ -3,11 +3,11 @@ import xml.etree.ElementTree as ET
 from wetlab.models import *
 
 
-  
+
 
 
 def get_statistics_xml(demux_file, conversion_file):
- 
+
     stats_result={}
 
     #demux_file='example.xml'
@@ -16,7 +16,7 @@ def get_statistics_xml(demux_file, conversion_file):
     projects=[]
     for child in root.iter('Project'):
         projects.append(child.attrib['name'])
-    
+
     for i in range(len(projects)):
         p_temp=root[0][i]
         samples=p_temp.findall('Sample')
@@ -35,14 +35,13 @@ def get_statistics_xml(demux_file, conversion_file):
         dict_stats['BarcodeCount']=barcodeCount
         dict_stats['PerfectBarcodeCount']=perfectBarcodeCount
         stats_result[projects[i]]=dict_stats
-    
-    
+
+
     #demux_file='example.xml'
     conversion_stat=ET.parse(conversion_file)
     root_conv=conversion_stat.getroot()
     projects=[]
-    
-    
+
     for child in root_conv.iter('Project'):
         projects.append(child.attrib['name'])
     for i in range(len(projects)):
@@ -57,16 +56,16 @@ def get_statistics_xml(demux_file, conversion_file):
         list_pf_yield=[]
         list_pf_yield_q30=[]
         list_pf_quality=[]
-    
+
         for l_index in range(4):
             raw_yield_value = 0
             raw_yield_q30_value = 0
-            raw_quality_value = 0   
+            raw_quality_value = 0
             pf_yield_value = 0
             pf_yield_q30_value = 0
             pf_quality_value = 0
             for t_index in range(tiles_index):
-                
+
                      # get the yield value for RAW and for read 1 and 2
                 for c in p_temp[sample_all_index][0][l_index][t_index][0].iter('Yield'):
                     raw_yield_value +=int(c.text)
@@ -89,7 +88,7 @@ def get_statistics_xml(demux_file, conversion_file):
             list_pf_yield.append(str(pf_yield_value))
             list_pf_yield_q30.append(str(pf_yield_q30_value))
             list_pf_quality.append(str(pf_quality_value))
-                
+
         stats_result[projects[i]]['RAW_Yield']=list_raw_yield
         stats_result[projects[i]]['RAW_YieldQ30']=list_raw_yield_q30
         stats_result[projects[i]]['RAW_Quality']=list_raw_quality
@@ -101,7 +100,6 @@ def get_statistics_xml(demux_file, conversion_file):
 def get_running_data(run_file, run_parameter):
     running_data={}
     image_channel=[]
-    
     run_data=ET.parse(run_file)
     run_root=run_data.getroot()
     p_run=run_root[0]
@@ -111,7 +109,6 @@ def get_running_data(run_file, run_parameter):
     running_data['Flowcell']=p_run.find('Flowcell').text
     running_data['ImageDimensions']=p_run.find('ImageDimensions').attrib
     running_data['FlowcellLayout']=p_run.find('FlowcellLayout').attrib
-    
     parameter_data=ET.parse(run_parameter)
     parameter_data_root=parameter_data.getroot()
     p_parameter=parameter_data_root[1]
@@ -130,13 +127,12 @@ def get_running_data(run_file, run_parameter):
     running_data['PlannedIndex2ReadCycles']=parameter_data_root.find('PlannedIndex2ReadCycles').text
     running_data['ApplicationVersion']=p_parameter.find('ApplicationVersion').text
     running_data['NumTilesPerSwath']=p_parameter.find('NumTilesPerSwath').text
-   
+
     return running_data
 
 
 
 def store_in_db(statistics, used_table,run_name_value):
-    
     if (used_table == 'running_table'):
         run_name_value = statistics['RunID']
         run_db= RunDataParameters(document=Document.objects.get(run_name__icontains = run_name_value),
@@ -149,16 +145,16 @@ def store_in_db(statistics, used_table,run_name_value):
             RunManagementType = statistics['RunManagementType'], PlannedRead1Cycles = statistics['PlannedRead1Cycles'],
             PlannedRead2Cycles = statistics['PlannedRead2Cycles'],  PlannedIndex1ReadCycles= statistics['PlannedIndex1ReadCycles'],
             ApplicationVersion = statistics['ApplicationVersion'],  NumTilesPerSwath= statistics['NumTilesPerSwath'])
-                        
+
         #run_db.save()
-        return 
+        return
     if (used_table == 'nextSeqXml_table'):
         for project in statistics:
             stats_db = NextSeqStatisticsXml(document=Document.objects.get(run_name__icontains = run_name_value),
                 RAW_Yield = xml_statistics[project]['RAW_Yield'], RAW_YieldQ30 = xml_statistics[project]['RAW_YieldQ30'],
                 RAW_Quality= xml_statistics[project]['RAW_Quality'],  PF_Yield= xml_statistics[project]['PF_Yield'],
                 PF_YieldQ30= xml_statistics[project]['PF_YieldQ30'],  PF_Quality= xml_statistics[project]['PF_Quality'],
-                BarcodeCount= xml_statistics[project]['BarcodeCount'],  
+                BarcodeCount= xml_statistics[project]['BarcodeCount'],
                 PerfectBarcodeCount= xml_statistics[project]['PerfectBarcodeCount'],
                 project=project)
             #stats_db.save()
@@ -169,4 +165,4 @@ def get_nextSeq_stats_fromDB(run_name_value):
     stats_index=NextSeqStatisticsXml.objects.filter(document__icontains =run_name_value)
     for index in stats_index:
         stats_values=index.
-'''            
+'''

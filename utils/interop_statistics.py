@@ -16,15 +16,14 @@ def process_binStats(run_folder, run_id, logger):
 
     summary = py_interop_summary.run_summary()
     py_interop_summary.summarize_run_metrics(run_metrics, summary)
-    
+
     # get the Run Summary for Read 1 to 4
     for read_level in range(4):
-        
         # summary yield total
         read_summary_yield_g=format(summary.at(read_level).summary().yield_g(),'.3f')
         # summary projected total yield
         read_summary_projected_yield_g=format(summary.at(read_level).summary().projected_yield_g(),'.3f')
-        # 
+        #
         # percent yield
         read_summary_percent_aligned=format(summary.at(read_level).summary().percent_aligned(),'.3f')
         # Error rate
@@ -41,7 +40,7 @@ def process_binStats(run_folder, run_id, logger):
                                                   intensityCycle= read_summary_first_cycle_intensity, biggerQ30= read_percent_gt_q30,
                                                   stats_summary_run_date = RunProcess.objects.get(pk=run_id).run_date)
         ns_bin_run_summary.save()
-        
+
     # get the run summary for Total
     # total summary
     total_s_yield_g=format(summary.total_summary().yield_g(),'.3f')
@@ -64,13 +63,13 @@ def process_binStats(run_folder, run_id, logger):
                                                   intensityCycle= total_s_first_cycle_intensity, biggerQ30= total_s_percent_gt_q30,
                                                   stats_summary_run_date = RunProcess.objects.get(pk=run_id).run_date)
     ns_bin_run_summary.save()
-     
+
      # get the run summary for non index
      # non index yield
     nonindex_s_yield_g=format(summary.nonindex_summary().yield_g(),'.3f')
     #  non index projected yield
     nonindex_s_projected_yield_g=format(summary.nonindex_summary().projected_yield_g(),'.3f')
-    
+
     # non index percent aligned
     nonindex_s_percent_aligned=format(summary.nonindex_summary().percent_aligned(),'.3f')
     # non index percent error rate
@@ -85,27 +84,26 @@ def process_binStats(run_folder, run_id, logger):
                                                   projectedTotalYield= nonindex_s_projected_yield_g,
                                                   aligned= nonindex_s_percent_aligned, errorRate= nonindex_s_error_rate,
                                                   intensityCycle= nonindex_s_first_cycle_intensity, biggerQ30= nonindex_s_percent_gt_q30,
-                                                  stats_summary_run_date = RunProcess.objects.get(pk=run_id).run_date)   
+                                                  stats_summary_run_date = RunProcess.objects.get(pk=run_id).run_date)
 
     ns_bin_run_summary.save()
-    
+
     ### information per reads
-    
+
     #lan_summary= py_interop_summary.lane_summary()
     # Tiles
     for read_number in range(4):
         logger.info('Processing bin stats for Read %s', read_number)
         for lane_number in range(4):
-            
             read_lane_tiles=str(int(summary.at(read_number).at(lane_number).tile_count() )*2)
             # Density (k/mm2) divide the value by 1000 to have it K/mm2
             # get the +/- with the steddev
             read_lane_density_mean=str(round(float(summary.at(read_number).at(lane_number).density().mean())/1000))
             read_lane_density_stddev=str(round(float(summary.at(read_number).at(lane_number).density().stddev())/1000))
             read_lane_density_field=read_lane_density_mean + '  ' + chr(177) + '  ' +read_lane_density_stddev
-            # cluster _pf  in % 
+            # cluster _pf  in %
             read_lane_percent_pf_mean=format(summary.at(read_number).at(lane_number).percent_pf().mean(),'.3f')
-            read_lane_percent_pf_stddev=format(summary.at(read_number).at(lane_number).percent_pf().stddev(),'.3f')  
+            read_lane_percent_pf_stddev=format(summary.at(read_number).at(lane_number).percent_pf().stddev(),'.3f')
             read_lane_percent_pf_field=read_lane_percent_pf_mean + '  ' + chr(177) + '  ' +read_lane_percent_pf_stddev
             # phas/ prepas in %
             read_lane_phasing_mean=format(summary.at(read_number).at(lane_number).phasing().mean(),'.3f')
@@ -151,7 +149,7 @@ def process_binStats(run_folder, run_id, logger):
             read_lane_intensity_cycle_mean=format(summary.at(read_number).at(lane_number).first_cycle_intensity().mean(),'.3f') # get tiles for read 1 and lane 1
             read_lane_intensity_cycle_stddev=format(summary.at(read_number).at(lane_number).first_cycle_intensity().stddev(),'.3f')
             read_lane_intensity_cycle_field=read_lane_intensity_cycle_mean + '  ' + chr(177) + '  ' + read_lane_intensity_cycle_stddev
-    
+
             ns_bin_read_lane = NextSeqStatsBinRunRead (runprocess_id=RunProcess.objects.get(pk=run_id),
                                                        read= str(read_number+1), lane = str(lane_number+1),
                                                        tiles= read_lane_tiles, density= read_lane_density_field,
@@ -166,7 +164,7 @@ def process_binStats(run_folder, run_id, logger):
             ns_bin_read_lane.save()
 
     logger.info ('Exiting the binary stats ')
-    
+
 def create_graphics(run_folder,run_id, graphic_dir, logger):
     graphic_list=['/opt/interop/bin/plot_by_cycle  ', '/opt/interop/bin/plot_by_lane  ', '/opt/interop/bin/plot_flowcell  ', '/opt/interop/bin/plot_qscore_histogram  ',
                   '/opt/interop/bin/plot_qscore_heatmap  ', '/opt/interop/bin/plot_sample_qc  ' ]
@@ -177,7 +175,7 @@ def create_graphics(run_folder,run_id, graphic_dir, logger):
         plot_command= item_graphic + run_folder + '  | gnuplot'
         logger.debug('command used to create graphic is : %s', plot_command)
         os.system(plot_command)
-        
+
     run_graphic_dir=os.path.join('documents/wetlab/images_plot', graphic_dir)
     if not os.path.exists(run_graphic_dir):
         os.mkdir(run_graphic_dir)
@@ -188,7 +186,7 @@ def create_graphics(run_folder,run_id, graphic_dir, logger):
         if files.endswith(".png"):
             logger.debug('moving file %s', files)
             shutil.move(files,run_graphic_dir)
-            
+
     #removing the processing_ character in the file names
     source = os.listdir(run_graphic_dir)
     logger.info('Renaming the graphic files')
@@ -200,7 +198,7 @@ def create_graphics(run_folder,run_id, graphic_dir, logger):
             new_file = new_file + '.png'
         logger.debug('Renaming files from %s to %s', old_file, new_file)
         shutil.move(old_file,new_file)
-    
+
     folder_run_graphic=graphic_dir.replace('../','')
     # saving the graphic location in database
     ns_graphic_stats= NextSeqGraphicsStats (runprocess_id=RunProcess.objects.get(pk=run_id),
@@ -267,12 +265,12 @@ print('hello')
 
 ####codigo de ejemplo
 from interop.py_interop_run_metrics import run_metrics as RunMetrics
- 
+
 run_dir = r"/home/bioinfo/Documentos/practicas-CarlosIII/bcl2fastq/InterOp/nextSeq"
 run_metrics = RunMetrics()
 run_metrics.read(run_dir)
- 
-# Run metrics contains 
+
+# Run metrics contains
 # corrected_intensity_metric_set
 # error_metric_set
 # extraction_metric_set
@@ -280,13 +278,13 @@ run_metrics.read(run_dir)
 # index_metric_set
 # q_by_lane_metric_set
 # q_collapsed_metric_set
-# q_metric_set
- 
+# q_metric_se
+
 q_metric_set = run_metrics.q_metric_set()
-# q_metric_set contains metrics but is not a python list 
+# q_metric_set contains metrics but is not a python list
 # it has a size() that give the length of the list
 # it contains one metric for each lane/tile/cycle
- 
+
 metrics = q_metric_set.metrics_for_cycle(1)
 metrics = q_metric_set.metrics_for_lane(1)
 metrics = q_metric_set.metrics()
@@ -307,7 +305,7 @@ metrics[0].cycle()
 # 1
 # the cycle for this metric
 
-############ otro ejemplo de  summarise_metrics_per_tile.py 
+############ otro ejemplo de  summarise_metrics_per_tile.py
 
 from interop.py_interop_run_metrics import run_metrics as RunMetrics
 run_dir=r"/home/bioinfo/Documentos/practicas-CarlosIII/bcl2fastq/InterOp/nextSeq"
@@ -331,7 +329,7 @@ def get_run_metrics_per_tile(run_dir, start_cycle=0, end_cycle=310):
   all_lanes = {}
   for lane in range(1,9):
     all_lanes[lane] = {}
-    
+
   for i in range(metrics.size()):
     tile_set = all_lanes[metrics[i].lane()]
     if metrics[i].cycle() > start_cycle and metrics[i].cycle() < end_cycle:
@@ -342,11 +340,11 @@ def get_run_metrics_per_tile(run_dir, start_cycle=0, end_cycle=310):
 
 run_dir = r"/home/bioinfo/Documentos/practicas-CarlosIII/bcl2fastq/InterOp/nextSeq"
 all_lanes = get_run_metrics_per_tile(run_dir)
-lane = 4 
+lane = 4
 for tile in sorted(all_lanes[lane]):
     print(lane, tile, calc_avg_q(all_lanes[lane][tile]))
-    
- ###############################################################   
+
+ ###############################################################
 
 from interop import py_interop_run_metrics
 from interop import py_interop_summary
@@ -355,8 +353,8 @@ import numpy
 import logging
 import sys
 import os
-  
-  
+
+
 def main():
     """ Retrieve run folder paths from the command line
       Ensure only metrics required for summary are loaded
@@ -365,13 +363,13 @@ def main():
       Display error by lane, read
       """
     logging.basicConfig(level=logging.INFO)
- 
+
     run_metrics = py_interop_run_metrics.run_metrics()
     summary = py_interop_summary.run_summary()
 
     valid_to_load = py_interop_run.uchar_vector(py_interop_run.MetricCount, 0)
-    py_interop_run_metrics.list_summary_metrics_to_load(valid_to_load)
- 
+    py_interop_run_metrics.list_summary_metrics_to_load(valid_to_load
+
     for run_folder_path in sys.argv[1:]:
         run_folder = os.path.basename(run_folder_path)
         try:
@@ -390,17 +388,17 @@ def main():
         for read_index in xrange(summary.size()):
             read_summary = summary.at(read_index)
             logging.info("Read "+str(read_summary.read().number())+" - Top Surface Mean Error: "+str(error_rate_read_lane_surface[read_index, :, 0].mean()))
- 
+
 if __name__ == '__main__':
     main()
 
 
 
 
-    
+
     options = py_interop_plot.filter_options(run_metrics.run_info().flowcell().naming_method())
     bufferSize = py_interop_plot.calculate_flowcell_buffer_size(run_metrics, options)
-       
+
     print(options)
     print(bufferSize)
 '''
