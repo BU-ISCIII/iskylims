@@ -6,13 +6,22 @@ from crispy_forms import layout, bootstrap
 #from utils.fields import MultipleChoiceTreeField                                                                                                  
 from mptt.forms import TreeNodeMultipleChoiceField                                                                                                 
 from .models import *                                                                                                                              
-#import pdb                                                                                                                                        
 from django.contrib.auth.forms import UserCreationForm                                                                                             
 
 class ServiceRequestForm(forms.ModelForm):
  	class Meta:
  		model = Service
- 		fields = ['serviceSeqCenter','servicePlatform','serviceRunSpecs','serviceFileExt','serviceAvailableService','serviceFile','serviceNotes']
+ 		##jlgarcia 01/02/2018. Displaying Run Id's. Elimination of serviceSeqCenter
+		#fields = ['serviceSeqCenter','servicePlatform','serviceRunSpecs','serviceFileExt','serviceAvailableService','serviceFile','serviceNotes']
+		##jlgarcia 02/02/2018. Addition of serviceProjectNames for
+		# implementation of drop down menu to choose a project name of a list of projects
+		# belonging to the logged-in user in the service request form
+
+
+ 		##jlgarcia 02/02/2018. Uncomment to test.
+ 		#import pdb; pdb.set_trace()
+ 
+ 		fields = ['serviceProjectNames','servicePlatform','serviceRunSpecs','serviceFileExt','serviceAvailableService','serviceFile','serviceNotes']
  		field_classes = {
 				'serviceAvailableService': TreeNodeMultipleChoiceField,
 				}
@@ -25,12 +34,31 @@ class ServiceRequestForm(forms.ModelForm):
  		#pdb.set_trace()
  		
  		self.helper.layout = layout.Layout(
-				layout.Div(               
+
+				#layout.Div(               
+ 				#	layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Sequencing Data</h3></div>"""),
+ 				#	layout.Div(
+ 				#		layout.Div(
+ 				#			layout.Field('serviceProjectNames'),
+ 				#			layout.Field('servicePlatform'),
+ 				#			css_class="col-md-6",
+ 				#		),
+ 				#		layout.Div(
+ 				#			layout.Field('serviceRunSpecs'),
+				#			layout.Field('serviceFileExt'),
+				#			css_class="col-md-6",
+				#		),
+				#		css_class="row panel-body"
+				#		),
+				#	css_class = "panel panel-default"
+				#	),
+
+#			layout.Div( 
+				layout.Div(              
  					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Sequencing Data</h3></div>"""),
  					layout.Div(
  						layout.Div(
- 							layout.Field('serviceSeqCenter'),
- 							layout.Field('servicePlatform'),
+ 							layout.Field('serviceProjectNames'),
  							css_class="col-md-6",
  						),
  						layout.Div(
@@ -39,9 +67,21 @@ class ServiceRequestForm(forms.ModelForm):
 							css_class="col-md-6",
 						),
 						css_class="row panel-body"
+						)
+,
+ 					layout.Div(
+ 						layout.Div(
+ 							layout.Field('servicePlatform'),
+ 							css_class="col-md-12",
+ 						),
+						css_class="row panel-body"
 						),
+
 					css_class = "panel panel-default"
 					),
+
+
+
                 layout.Div(                                                                                                
                 	layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Service selection</h3></div>"""), 
                 	layout.Div(                                                                                            

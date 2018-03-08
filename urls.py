@@ -1,22 +1,23 @@
-from django.conf.urls import include , url
+##jlgarcia 02/02/2018. Adaptation of code to django 2.0:
+# "from django.conf.urls import include , url" replaced by "import" for "path"
+# "url(r'^" replaced by "path('"
+
+from django.urls import path
 from django.conf import settings
 
 from . import views
 from django.conf.urls.static import static
 from django.views.generic import ListView, DetailView
-#from polls.models import Document
-
 
 urlpatterns = [
-    # ex: /polls/
-    url(r'^$', views.index, name='index'),
-    url(r'^service_request',views.service_request, name='request_service'),
- 	url(r'^counseling_request',views.counseling_request, name='counseling_service'),
- 	url(r'^infrastructure_request',views.infrastructure_request, name='infrastructure_service'),
+	path('', views.index, name='index'),
+	path('service_request',views.service_request, name='request_service'),
+ 	path('counseling_request',views.counseling_request, name='counseling_service'),
+ 	path('infrastructure_request',views.infrastructure_request, name='infrastructure_service'),
 ] 
 #+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+	urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

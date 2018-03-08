@@ -10,8 +10,12 @@ class FileExtAdmin(admin.ModelAdmin):
 class PlatformAdmin(admin.ModelAdmin):
 	list_display=('platformName',)
 
+
+##jlgarcia 09/02/2018. Refactoring:'serviceUsername' --> 'serviceUserid'
+# which is its real nature
+
 class ServiceAdmin(admin.ModelAdmin):
-	list_display=('serviceUsername','serviceSeqCenter','servicePlatform','serviceRunSpecs','serviceFileExt','serviceFile','serviceStatus','serviceNotes')
+	list_display=('serviceUserId','serviceSeqCenter','servicePlatform','serviceRunSpecs','serviceFileExt','serviceFile','serviceStatus','serviceNotes')
 
 class AvailableServiceAdmin(DjangoMpttAdmin):
 	list_display=('availServiceDescription',)

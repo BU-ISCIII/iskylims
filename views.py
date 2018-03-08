@@ -7,8 +7,6 @@ from django.contrib.auth.decorators import login_required
 ####### Import libraries for static files
 #from django.shortcuts import render_to_response
 #from django.shortcuts import RequestContext
-import pdb 
-#pdb.set_trace()
 
 @login_required
 def index(request):
@@ -17,17 +15,43 @@ def index(request):
 @login_required
 def service_request(request):
 	if request.method == "POST":
+		##jlgarcia(legacy). Create a form instance with POST data
+		# more information in: 
+                # https://docs.djangoproject.com/en/2.0/topics/forms/modelforms/
 		form = ServiceRequestForm(data=request.POST,files=request.FILES)
+		##jlgarcia 02/02/2018. Uncomment to test.
+		#import pdb 
+		#pdb.set_trace()
+
 		if form.is_valid():
+			##jlgarcia(legacy). Create but dont save for following modif		
 			new_service = form.save(commit=False)
+			##jlgarcia(legacy). Modification of 'serviceStatus'
 			new_service.serviceStatus = "recorded"
+			##jlgarcia 09/02/2018. Local ("here :)") sequencing
+			new_service.serviceSeqCenter = "GENOMIC_SEQ_UNIT"
+			##jlgarcia 07/02/2018. Requesting user in 'serviceUsername'
+			##jlgarcia 09/02/2018. Refactoring:'serviceUsername' --> 'serviceUserid'
+			# which is its real nature
+
+			new_service.serviceUserId = User.objects.get(id=request.user.id)
+			##jlgarcia(legacy). Save the new instance
 			new_service.save()
+			##jlgarcia(legacy). Save the many-to-many data for the form
+			##jlgarcia(legacy) (just needed in the form.save(commit=False) like this one
 			form.save_m2m()
 			return render(request,'utils/info_page.html',{'content':['Your service request has been successfully recorded.','You will be contacted shortly.']})
 	else:
 		form = ServiceRequestForm()
 	
 	form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True) 
+	##jlgarcia 02/02/2018. Addition of serviceProjectName for
+	# implementation of drop down menu to choose a project name of a list of projects
+	# belonging to the logged-in user in the service request form
+#	form.fields['serviceProjectNames'].queryset = Projects.objects.filter(user_id__exact = request.user.id)
+
+	form.fields['serviceProjectNames'].queryset = Projects.objects.filter(user_id__exact = request.user.id)
+	
 	return render(request, 'drylab/RequestForm.html' , { 'form' : form })
 
 @login_required
