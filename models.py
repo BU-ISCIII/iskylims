@@ -12,7 +12,8 @@ class RunProcess(models.Model):
     generatedat = models.DateTimeField(auto_now_add=True)
     run_date = models.DateField(auto_now = False, null=True)
     runState = models.CharField(max_length=25)
-    generatedBSFile = models.BooleanField(default=False)
+    #generatedBSFile = models.BooleanField(default=False)
+    index_library = models.CharField(max_length=85)
     samples= models.CharField(max_length=45)
     useSpaceImgMb=models.CharField(max_length=10)
     useSpaceFastaMb=models.CharField(max_length=10)
@@ -56,16 +57,37 @@ class RunProcess(models.Model):
         total_size = image_size + data_size + other_size
         return '%s'%(total_size)
         
-        
+class LibraryKit (models.Model):
+    libraryName = models.CharField(max_length=125)
+    #sampleNumber = models.CharField(max_length = 25)
+    #indexNumber = models.CharField(max_length = 25)
+    generatedat = models.DateTimeField(auto_now_add=True)
+
+## To be include in version 2.0
+#class LibKitInformation (models.Model):
+#    librarykitId = models.ForeignKey(
+#                LibraryKit,
+#                on_delete= models.CASCADE)
+#    batch_id = models.CharField(max_length= 255)
+#    provider = models.CharField(max_length =150)
+#    sampleNumber = models.CharField(max_length = 25)
+#    indexNumber = models.CharField(max_length = 25)
+#    expirationDate = models.DateField(auto_now_add=False)
+#    generatedat = models.DateTimeField(auto_now_add=True, null=True)
+    
+
             
 class Projects(models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
             on_delete=models.CASCADE)
     user_id= models.ForeignKey(User,on_delete=models.CASCADE,)
+    LibraryKit_id = models.ForeignKey(
+            LibraryKit,
+            on_delete=models.CASCADE , null=True)
     projectName= models.CharField(max_length=45)
     procState=models.CharField(max_length=25, default='Not Started')
-    libraryKit=models.CharField(max_length=45)
+    libraryKit=models.CharField(max_length=125)
     baseSpaceFile = models.CharField(max_length=255)
     generatedat = models.DateTimeField(auto_now_add=True)
     project_run_date = models.DateField(auto_now = False, null=True)
@@ -104,6 +126,7 @@ class Projects(models.Model):
     
     def get_library_name (self):
         return '%s' %(self.libraryKit)
+        
 
 class RunningParameters (models.Model):
     runName_id = models.OneToOneField(
