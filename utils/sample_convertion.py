@@ -240,9 +240,7 @@ def update_sample_sheet (in_file, experiment_name):
     experiment_line_found  = False
     for line in fh_in:
         # find experiment name line
-        
         found_experiment = re.search('^Experiment Name',line)
-
         if found_experiment :
             fh_out.write(out_line)
             experiment_line_found = True
@@ -258,5 +256,55 @@ def update_sample_sheet (in_file, experiment_name):
     fh_out.close()
     os.rename('temp.txt', in_file)
             
-            
-    
+def create_unique_sample_id_values (infile, index_file):
+    found_sample_line = False
+
+    fh = open (infile, 'r')
+    fh_out_file = open ('temp_sample_sheet', 'w')
+    with open(index_file) as fh_index:
+        index = fh_index.readline()
+        index =index.rstrip()
+        index_number_str, index_letter = index.split('-')
+        fh_index.close()
+
+    for line in fh:
+        if 'Sample_ID' in line:
+            found_sample_line =True
+            fh_out_file.write(line)
+            continue
+        if found_sample_line :
+            data_line = line.split(',')
+            data_line [0] = str(index_number_str + '-' + index_letter)
+            new_line = ','.join(data_line)
+            fh_out_file.write(new_line)
+            # increase the index number
+            index_number = int(index_number_str) +1
+            if index_number > 9999:
+                index_number = 0
+                #increase a letter
+                split_index_letter = list(index_letter)
+                if split_index_letter[1] == 'Z':
+                    last_letter = chr(ord(split_index_letter[0])+1)
+                    split_index_letter[0] = last_letter
+                    split_index_letter[1] = 'A'
+                    index_letter = ''.join(split_index_letter)
+                else:
+                    first_letter=chr(ord(split_index_letter[1])+1)
+                    split_index_letter[1] = first_letter
+                    index_letter = ''.join(split_index_letter)
+                
+            index_number_str = str(index_number)
+            index_number_str = index_number_str.zfill(4)
+
+        else:
+            fh_out_file. write(line)
+
+    #dump the index value to file
+    fh_index = open(index_file, 'w')
+    index_line = str(index_number_str + '-' + index_letter)
+    fh_index.write(index_line)
+    fh_index.close()
+    fh.close()
+    fh_out_file.close()
+    os.rename('temp_sample_sheet', infile)
+

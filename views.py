@@ -199,9 +199,10 @@ def get_sample_file (request):
         bs_file={}
         results=[]
 
-        #import pdb; pdb.set_trace()
-        #base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         in_file = os.path.join(settings.MEDIA_ROOT,s_file)
+        # Set unique Sample_ID in the sample sheet
+        index_file = os.path.join(settings.MEDIA_ROOT,'wetlab', 'index_file')
+        create_unique_sample_id_values (in_file, index_file)
         #in_file=str('documents/' + s_file)
         #import pdb; pdb.set_trace()
         ## build the project list for each project_library kit
