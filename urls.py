@@ -1,5 +1,5 @@
-##jlgarcia 02/02/2018. Adaptation of code to django 2.0:
-# "from django.conf.urls import include , url" replaced by "import" for "path"
+##Adaptation of code to django 2.0:
+# "from django.conf.urls import include , url" replaced by "from django.urls import path" 
 # "url(r'^" replaced by "path('"
 
 from django.urls import path

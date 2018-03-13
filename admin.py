@@ -11,9 +11,7 @@ class PlatformAdmin(admin.ModelAdmin):
 	list_display=('platformName',)
 
 
-##jlgarcia 09/02/2018. Refactoring:'serviceUsername' --> 'serviceUserid'
-# which is its real nature
-
+# 'serviceUsername' refactored to 'serviceUserid' which shows better its real nature
 class ServiceAdmin(admin.ModelAdmin):
 	list_display=('serviceUserId','serviceSeqCenter','servicePlatform','serviceRunSpecs','serviceFileExt','serviceFile','serviceStatus','serviceNotes')
 

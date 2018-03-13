@@ -8,7 +8,6 @@ from mptt.fields import TreeForeignKey, TreeManyToManyField
 from django.utils.timezone import now as timezone_now
 from wetlab.models import RunProcess, Projects
 from utils.models import Profile,Center
-##jlgarcia 08/02/2018
 from django.contrib.auth.models import User
 
 STATUS_CHOICES = (
@@ -55,26 +54,17 @@ class AvailableService(MPTTModel):
 		verbose_name_plural = ("AvailableServices")
 
 class Service(models.Model):
-	##jlgarcia 07/02/2018. Changed serviceUsername's foreign key to 'User'
-	# workaround to store 'Service' instances in the database 
-	#serviceUsername=models.ForeignKey(Profile ,on_delete=models.CASCADE)
-	##jlgarcia 09/02/2018. Refactoring:'serviceUsername' --> 'serviceUserid'
-	# which is its real nature
-	#serviceUsername=models.ForeignKey(User ,on_delete=models.CASCADE, null=True)
-	#User-requesting service#User-requesting service
+	## User requesting service:
+	# 'serviceUsername' refactored to 'serviceUserid' which shows better its true nature 
+	#  decision taken to change Foreign Key from 'Profile'  to 'User' until full develop of "user registration"
 	serviceUserId=models.ForeignKey(User ,on_delete=models.CASCADE, null=True)
 	serviceSeqCenter=models.CharField(_("Sequencing center"),max_length=50,blank=False,null=True)
-	##jlgarcia 01/02/2018.  serviceRunID not used in forms.py/serviceRequestForm()
-	#serviceRunID=models.ForeignKey(RunProcess,null=True ,on_delete=models.CASCADE)
 
-	##jlgarcia 02/02/2018. Addition of member 'serviceProjectNames' to support 
+	## 'serviceRunID' is not used in forms.py/serviceRequestForm() or rest of code
+
+	## Addition of member 'serviceProjectNames' to support 
 	# implementation of drop down menu to choose a project name of a list of projects
 	# belonging to the logged-in user in the service request form
-	# serviceProjectNames=models.ForeignKey(Projects,on_delete=models.CASCADE, verbose_name=_("User's project names"),blank=False,null=True)
-	##jlgarcia 07/02/2018. Dropdown menu needs "ManyToManyField" support. 
-	# "null has no effect" (according to docs.djangoproject.com, Model field reference)
-	# and execution of makemigrations 
-	#serviceProjectNames=models.ForeignKey(Projects,on_delete=models.CASCADE, verbose_name=_("User's project names"),blank=False,null=True)
 	serviceProjectNames=models.ManyToManyField(Projects,verbose_name=_("User's projects"),blank=False)
 	servicePlatform=models.ForeignKey(Platform ,on_delete=models.CASCADE , verbose_name=_("Sequencing platform"),blank=False,null=True)
 	serviceRunSpecs=models.CharField(_("Run specifications"),max_length=10,blank=False,null=True)

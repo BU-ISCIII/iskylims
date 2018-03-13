@@ -11,16 +11,9 @@ from django.contrib.auth.forms import UserCreationForm
 class ServiceRequestForm(forms.ModelForm):
  	class Meta:
  		model = Service
- 		##jlgarcia 01/02/2018. Displaying Run Id's. Elimination of serviceSeqCenter
-		#fields = ['serviceSeqCenter','servicePlatform','serviceRunSpecs','serviceFileExt','serviceAvailableService','serviceFile','serviceNotes']
-		##jlgarcia 02/02/2018. Addition of serviceProjectNames for
+		##Addition of serviceProjectNames for
 		# implementation of drop down menu to choose a project name of a list of projects
 		# belonging to the logged-in user in the service request form
-
-
- 		##jlgarcia 02/02/2018. Uncomment to test.
- 		#import pdb; pdb.set_trace()
- 
  		fields = ['serviceProjectNames','servicePlatform','serviceRunSpecs','serviceFileExt','serviceAvailableService','serviceFile','serviceNotes']
  		field_classes = {
 				'serviceAvailableService': TreeNodeMultipleChoiceField,
@@ -31,29 +24,8 @@ class ServiceRequestForm(forms.ModelForm):
  		self.helper = FormHelper()
  		self.helper.form_action=""
  		self.helper.form_method="POST"
- 		#pdb.set_trace()
  		
  		self.helper.layout = layout.Layout(
-
-				#layout.Div(               
- 				#	layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Sequencing Data</h3></div>"""),
- 				#	layout.Div(
- 				#		layout.Div(
- 				#			layout.Field('serviceProjectNames'),
- 				#			layout.Field('servicePlatform'),
- 				#			css_class="col-md-6",
- 				#		),
- 				#		layout.Div(
- 				#			layout.Field('serviceRunSpecs'),
-				#			layout.Field('serviceFileExt'),
-				#			css_class="col-md-6",
-				#		),
-				#		css_class="row panel-body"
-				#		),
-				#	css_class = "panel panel-default"
-				#	),
-
-#			layout.Div( 
 				layout.Div(              
  					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Sequencing Data</h3></div>"""),
  					layout.Div(
