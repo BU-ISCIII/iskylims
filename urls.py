@@ -10,14 +10,13 @@ from django.conf.urls.static import static
 from django.views.generic import ListView, DetailView
 
 urlpatterns = [
-	path('', views.index, name='index'),
-	path('service_request',views.service_request, name='request_service'),
- 	path('counseling_request',views.counseling_request, name='counseling_service'),
- 	path('infrastructure_request',views.infrastructure_request, name='infrastructure_service'),
+     path('', views.index, name='index'),
+     path('service_request',views.service_request, name='request_service'),
+     path('counseling_request',views.counseling_request, name='counseling_service'),
+     path('infrastructure_request',views.infrastructure_request, name='infrastructure_service'),
 ] 
-#+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 if settings.DEBUG:
-	urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

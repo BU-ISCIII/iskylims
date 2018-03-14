@@ -8,24 +8,24 @@
     {% load staticfiles  %}
     <!-- GLOBAL MANDATORY STYLES -->
     <link href="http://fonts.googleapis.com/css?family=Hind:300,400,500,600,700" rel="stylesheet" type="text/css">
-    <link href="{% static "drylab/vendor/simple-line-icons/css/simple-line-icons.css" %}" rel="stylesheet" type="text/css"/>
-    <link href="{% static "drylab/vendor/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css"/>
-    <link href="{% static "drylab/css/custom.css" %}" rel="stylesheet" type="text/css"/> 
+    <link href="{% static "/vendor/simple-line-icons/css/simple-line-icons.css" %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static "/vendor/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static "/css/custom.css" %}" rel="stylesheet" type="text/css"/>
 
 	<!-- GLOBAL MANDATORY JAVA SCRIPTS -->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> <!-- drop menus -->
-	
+
     <!-- PAGE LEVEL PLUGIN STYLES -->
-    <link href="{% static "drylab/css/animate.css" %}" rel="stylesheet">
-    <link href="{% static "drylab/vendor/swiper/css/swiper.min.css" %}"rel="stylesheet" type="text/css"/>
-	<link href="{% static "drylab/css/form.css" %}" rel="stylesheet" type="text/css"/>
-    
+    <link href="{% static "/css/animate.css" %}" rel="stylesheet">
+    <link href="{% static "/vendor/swiper/css/swiper.min.css" %}"rel="stylesheet" type="text/css"/>
+	<link href="{% static "/css/form.css" %}" rel="stylesheet" type="text/css"/>
+
     <!-- THEME STYLES -->
-    <link href="{% static "drylab/css/layout.min.css" %}" rel="stylesheet" type="text/css"/>
-	
+    <link href="{% static "/css/layout.min.css" %}" rel="stylesheet" type="text/css"/>
+
     <!-- Place favicon.ico in the root directory -->
-    
+
 
   </head>
   <!-- END HEAD -->
@@ -47,7 +47,7 @@
                         <!-- Logo -->
                         <div class="logo">
                             <a class="logo-wrap" href="/">
-                                <img class="logo-img" src="{% static "drylab/img/LogoBioInfo.jpg" %}" alt="ISCiii_Bio_Informatic_Logo">
+                                <img src="{% static "/img/logo_iSkyLIMS2.png" %}" alt="ISCiii_Bio_Informatic_Logo">
                             </a>
                         </div>
                         <!-- End Logo -->
@@ -69,7 +69,7 @@
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#">STATISTICS</a></li>
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#contact">CONTACT</a></li>
                             </ul>
-			    
+
                         </div>
                     </div>
                     <!-- End Navbar Collapse -->
@@ -78,16 +78,16 @@
             <!-- Navbar -->
         </header>
         <!--========== END HEADER ==========-->
-	
-	
-        <!--========== PAGE LAYOUT ==========-->    
- 
+
+
+        <!--========== PAGE LAYOUT ==========-->
+
 	<div class="bg-color-sky-light">
           <div class="container content-lg">
             <div class="row margin-b-40">
-          
+
             {% block content %}
-	<!--========== HERE WILL BE THE INFORMATION FROM DJANGO CODE  ==========-->     
+	<!--========== HERE WILL BE THE INFORMATION FROM DJANGO CODE  ==========-->
             {% endblock %}
             </div> <!--// end row -->
         </div> <!--// end container -->
@@ -136,7 +136,7 @@
             <div class="content container">
                 <div class="row">
                     <div class="col-xs-6">
-                        <img class="footer-logo" src="{% static "drylab/img/LogoBioInfo.jpg" %}" alt="ISCiii_Bio_Informatic_Logo">
+                        <img class="footer-logo" src="{% static "/img/isciii_logo_2017.png" %}" alt="ISCiii_Bio_Informatic_Logo">
                     </div>
                     <div class="col-xs-6 text-right sm-text-left">
                         <p class="margin-b-0"><a class="fweight-700" href="http://keenthemes.com/preview/acecv/">Acecv</a> Theme Powered by: <a class="fweight-700" href="http://www.keenthemes.com/">KeenThemes.com</a></p>
@@ -152,23 +152,23 @@
 	<!-- JAVASCRIPTS(Load javascripts at bottom, this will reduce page load time) -->
 
 	<!-- CORE PLUGINS -->
-	
-    <script src="{% static "drylab/vendor/jquery-migrate.min.js" %}" type="text/javascript"></script>
-	<script src="{% static "drylab/vendor/bootstrap/js/bootstrap.min.js" %}" type="text/javascript"></script>	
+
+    <script src="{% static "/vendor/jquery-migrate.min.js" %}" type="text/javascript"></script>
+	<script src="{% static "/vendor/bootstrap/js/bootstrap.min.js" %}" type="text/javascript"></script>
 
 	<!-- PAGE LEVEL PLUGINS -->
-    <script src="{% static "drylab/vendor/jquery.easing.js" %}" type="text/javascript"></script>
-	<script src="{% static "drylab/vendor/jquery.back-to-top.js" %}" type="text/javascript"></script>
-	<script src="{% static "drylab/vendor/jquery.smooth-scroll.js"%}"  type="text/javascript"></script>
-	<script src="{% static "drylab/vendor/jquery.wow.min.js" %}"type="text/javascript"></script>
-    <script src="{% static "drylab/vendor/jquery.appear.js" %}" type="text/javascript"></script>
-	<script src="{% static "drylab/vendor/swiper/js/swiper.jquery.min.js" %}"type="text/javascript"></script>
-	
+    <script src="{% static "/vendor/jquery.easing.js" %}" type="text/javascript"></script>
+	<script src="{% static "/vendor/jquery.back-to-top.js" %}" type="text/javascript"></script>
+	<script src="{% static "/vendor/jquery.smooth-scroll.js"%}"  type="text/javascript"></script>
+	<script src="{% static "/vendor/jquery.wow.min.js" %}"type="text/javascript"></script>
+    <script src="{% static "/vendor/jquery.appear.js" %}" type="text/javascript"></script>
+	<script src="{% static "/vendor/swiper/js/swiper.jquery.min.js" %}"type="text/javascript"></script>
+
 	<!-- PAGE LEVEL SCRIPTS -->
-	<script src="{% static "drylab/js/layout.min.js" %}" type="text/javascript"></script>
-	<script src="{% static "drylab/js/components/progress-bar.min.js" %}" type="text/javascript"></script>
-	<script src="{% static "drylab/js/components/swiper.min.js"%}" type="text/javascript"></script>
-    <script src="{% static "drylab/js/components/wow.min.js" %}" type="text/javascript"></script>
+	<script src="{% static "/js/layout.min.js" %}" type="text/javascript"></script>
+	<script src="{% static "/js/components/progress-bar.min.js" %}" type="text/javascript"></script>
+	<script src="{% static "/js/components/swiper.min.js"%}" type="text/javascript"></script>
+    <script src="{% static "/js/components/wow.min.js" %}" type="text/javascript"></script>
   </body>
   <!-- END BODY -->
 </html>

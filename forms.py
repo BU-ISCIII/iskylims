@@ -73,8 +73,8 @@ class ServiceRequestForm(forms.ModelForm):
 							layout.Field('serviceNotes'),
 							css_class="col-md-12"
 							),
-                    	css_class="row panel-body"
-                    	),
+					css_class="row panel-body"
+					),
 					css_class = "panel panel-default"
 					),
 				bootstrap.FormActions(
@@ -82,7 +82,7 @@ class ServiceRequestForm(forms.ModelForm):
                     )
 				)
 class ServiceRequestForm_extended(ServiceRequestForm):
-	
+
 	class Meta:
 		model = Service
 		exclude = [
@@ -91,7 +91,7 @@ class ServiceRequestForm_extended(ServiceRequestForm):
 				'serviceRunSpecs',
 				'serviceFileExt',
 				'serviceStatus',
-				] 
+				]
 
 	def __init__(self,*args, **kwargs):
 		super(ServiceRequestForm_extended, self).__init__(*args, **kwargs)
