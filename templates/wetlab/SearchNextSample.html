@@ -95,16 +95,21 @@
         <BR>
         <div class="col-sm-5 col-sm-offset-1">
             <div class="panel panel-default">
+                <div class="panel-heading"><h3> These samples have matched your query as  :</h3></div>
                 <table class="table table-hover">
                    <thead>
                       <tr>
-                        <th>These samples have matched your query as  :</th>
+                        <th>Sample name</th>
+                        <th>Included in project</th>
                       </tr>
                    </thead>
                    <tbody>
-                    {% for key, value in multiple_samples.s_list.items %}  
+                    {% for key, values in multiple_samples.s_list.items %}  
                      <tr>
-                       <td><a href="/wetlab/search_sample={{ key }}">{{ value }}</a> </td>
+                        {% for value, data in values %}
+                       <td><a href="/wetlab/search_run={{ key }}">{{ value }}</a> </td>
+                       <td> {{ data }} </td>
+                        {%endfor%}
                      </tr>
                     {%endfor%}
                    </tbody>

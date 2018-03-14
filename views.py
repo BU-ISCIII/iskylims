@@ -50,20 +50,12 @@ def get_sample_file (request):
 
     if request.method == 'POST' and (request.POST['action']=='uploadFile'):
         ### First step in collecting data from the NextSeq run. Sample Sheet and experiment name are required
-
         get_user_names={}
         projects=[]
-        run_name=request.POST['runname']
+        #run_name=request.POST['runname']
         myfile = request.FILES['myfile']
         requested_center = request.POST['center']
-        ## check that runName is not already used in the database. Error page is showed if runName is already  defined
-        if (RunProcess.objects.filter(runName = run_name)).exists():
-            if RunProcess.objects.filter(runName = run_name, runState__exact ='Pre-Recorded'):
-                delete_run = RunProcess.objects.filter(runName = run_name, runState__exact ='Pre-Recorded')
-                delete_run[0].delete()
-            else:
-                return render (request,'wetlab/error_page.html', {'content':['Run Name is already used. ','Run Name must be unique in database.',' ',
-                                                            'ADVICE:','Change the value of run name in the "run name Field"']})
+
         ## check if file contains the extension. Error page is showed if file does not contain any extension
         try:
             split_filename=re.search('(.*)(\.\w+$)',myfile.name)
@@ -79,17 +71,34 @@ def get_sample_file (request):
         timestr = time.strftime("%Y%m%d-%H%M%S")
         ## including the timestamp to the sample sheet file
         #import pdb; pdb.set_trace()
-        # do not need to include the absolute path because django use the MEDIA_ROOT variable defined on settings to upload the filer
+        # do not need to include the absolute path because django use the MEDIA_ROOT variable defined on settings to upload the file
         file_name=str('wetlab/SampleSheets/' +  split_filename.group(1) + timestr + ext_file)
         filename = fs.save(file_name,  myfile)
         uploaded_file_url = fs.url(filename)
 
         ### add the document directory to read the csv file
-        #base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         stored_file = os.path.join(settings.MEDIA_ROOT, file_name)
-        #stored_file=str('/srv/iSkyLIMS/documents/' + file_name)
-        #stored_file=str('documents/' + file_name)
         #import pdb; pdb.set_trace()
+        ## Fetch the experiment name and the library name from the sample sheet file
+        run_name, index_library_name = get_experiment_library_name(stored_file)
+        if run_name == '':
+            run_name = timestr  ## define an unique value for the run name until the real value is get from the form
+        ## check that runName is not already used in the database. Error page is showed if runName is already  defined
+        #import pdb; pdb.set_trace()
+        if (RunProcess.objects.filter(runName = run_name)).exists():
+            if RunProcess.objects.filter(runName = run_name, runState__exact ='Pre-Recorded'):
+                ## Delete the Sample Sheet file and the row in database
+                delete_run = RunProcess.objects.filter(runName = run_name, runState__exact ='Pre-Recorded')
+                sample_sheet_file = str(delete_run[0].sampleSheet)
+                #import pdb; pdb.set_trace()
+                full_path_sample_sheet_file = os.path.join(settings.MEDIA_ROOT, sample_sheet_file)
+                os.remove(full_path_sample_sheet_file)
+                delete_run[0].delete()
+            else:
+                return render (request,'wetlab/error_page.html', {'content':['Run Name is already used. ','Run Name must be unique in database.',' ',
+                                                            'ADVICE:','Change the value in the Sample Sheet  file ']})
+        
+        
         ## Fetch from the Sample Sheet file the projects included in the run and the user. Error page is showed if not project/description colunms are found
         project_list=get_projects_in_run(stored_file)
 
@@ -120,13 +129,14 @@ def get_sample_file (request):
         project_already_defined=[]
         for key, val  in project_list.items():
             # check if project was already saved in database in Not Started State.
-            # if found delete the projects, becuase the previous attempt to complete the run was unsuccessful
+            # if found delete the projects, because the previous attempt to complete the run was unsuccessful
             if ( Projects.objects.filter(projectName__icontains = key).exists()):
-                if ( Projects.objects.filter(projectName__icontains = key).exclude(procState__exact = 'Not Started').exists()):
-                    delete_project = Projects.objects.filter(projectName__icontains = key).exclude(procState__exact = 'Not Started')
+                if ( Projects.objects.filter(projectName__icontains = key, procState__exact = 'Not Started').exists()):
+                    delete_project = Projects.objects.filter(projectName__icontains = key , procState__exact = 'Not Started')
                     delete_project[0].delete()
                 else:
-                    project_already_defined.append(val)
+                    project_already_defined.append(key)
+        #import pdb; pdb.set_trace()
         if (len(project_already_defined)>0):
             if (len(project_already_defined)>1):
                 head_text='The following projects are already defined in database:'
@@ -137,31 +147,45 @@ def get_sample_file (request):
                 ## delete sample sheet file before showing the error page
             fs.delete(file_name)
             return render (request,'wetlab/error_page.html', {'content':[ head_text,'', display_project,'',
-                          'Project names must be unique','', 'ADVICE:','Edit the installed in the database before uploading the Sample sheet']})
+                          'Project names must be unique','', 'ADVICE:','Edit the Sample Sheet file to correct this error']})
         ##Once the information looks good. it will be stores in runProcess and projects table
 
         ## store data in runProcess table, run is in pre-recorded state
         run_proc_data = RunProcess(runName=run_name,sampleSheet= file_name, runState='Pre-Recorded', requestedCenter= requested_center)
         run_proc_data.save()
+        experiment_name = '' if run_name == timestr else run_name
 
         ## create new project tables based on the project involved in the run and
         ## include the project information in projects variable to build the new FORM
         #import pdb; pdb.set_trace()
-
+        run_info_values ={}
+        run_info_values['experiment_name'] = experiment_name
+        run_info_values['index_library_name'] = index_library_name
         for key, val  in project_list.items():
             userid=User.objects.get(username__exact = val)
             p_data=Projects(runprocess_id=RunProcess.objects.get(runName =run_name), projectName=key, user_id=userid)
             p_data.save()
             projects.append([key, val])
-        projects.append(['runname', request.POST['runname']])
+        run_info_values['projects_user'] = projects
+        run_info_values['runname']= run_name
+        ## Get the list of the library kit used (libraryKit)
+        #import pdb; pdb.set_trace()
+        used_libraries = []
+        list_libraries = LibraryKit.objects.order_by().values_list('libraryName', flat=True)
+        run_info_values['used_libraryKit'] =  list_libraries
+        
         ## displays the list of projects and the user names found on Sample Sheet
-        return render(request, 'wetlab/getSampleSheet.html', {'get_user_names': projects })
+        return render(request, 'wetlab/getSampleSheet.html', {'get_user_names': run_info_values })
 
     elif request.method=='POST' and (request.POST['action']=='displayResult'):
+        experiment_name = request.POST['experimentname']
+        run_index_library_name = request.POST['runindexlibraryname']
+        run_name= request.POST['runname']
         projects=request.POST.getlist('project')
         user_name=request.POST.getlist('username')
-        library_kit=request.POST.getlist('librarykit')
-        run_name= request.POST['runname']
+        library_kit=request.POST.getlist('libraryKit')
+        project_index_kit=request.POST.getlist('projectindexlibraryname')
+        
         ## get the sample sheet used in the run
         if not RunProcess.objects.filter (runName__exact = run_name).exists():
             return render (request, 'wetlab/error_page.html', {'content':['You get this error page because you use the back Buttom to return to previous page where asking for library kit name',
@@ -175,17 +199,18 @@ def get_sample_file (request):
         bs_file={}
         results=[]
 
-        #import pdb; pdb.set_trace()
-        #base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         in_file = os.path.join(settings.MEDIA_ROOT,s_file)
+        # Set unique Sample_ID in the sample sheet
+        index_file = os.path.join(settings.MEDIA_ROOT,'wetlab', 'index_file')
+        create_unique_sample_id_values (in_file, index_file)
         #in_file=str('documents/' + s_file)
         #import pdb; pdb.set_trace()
-        ## build the project list for each library kit
-        for x in range(len(library_kit)):
-            if library_kit[x] in library :
-                library[library_kit[x]].append(projects[x])
+        ## build the project list for each project_library kit
+        for x in range(len(project_index_kit)):
+            if project_index_kit[x] in library :
+                library[project_index_kit[x]].append(projects[x])
             else:
-                library[library_kit[x]]= [projects[x]]
+                library[project_index_kit[x]]= [projects[x]]
         ## convert the sample sheet to base space format and have different files according the library kit
         #import pdb; pdb.set_trace()
         for key, value in library.items():
@@ -207,25 +232,23 @@ def get_sample_file (request):
             else:
                 bs_file[key] = library_file
                 results.append([key, bs_file[key]])
-
+        
         ## save the project information on database
-
+        
         for p in range(len( projects)):
             my_project = projects [p]
             my_name = user_name[p]
             my_libkit = library_kit[p]
+            library_kit_id = LibraryKit.objects.get(libraryName__exact = library_kit[p])
             update_info_proj=Projects.objects.get(projectName = my_project)
-            update_info_proj.libraryKit=my_libkit
-            update_info_proj.baseSpaceFile=bs_file[my_libkit]
+            update_info_proj.libraryKit=project_index_kit[p]
+            update_info_proj.baseSpaceFile=bs_file[project_index_kit[p]]
+            update_info_proj.LibraryKit_id = library_kit_id
             update_info_proj.proState='Recorded'
             update_info_proj.save()
-        #import pdb; pdb.set_trace()
-        results.append(['runname', run_name])
-
-        #import pdb; pdb.set_trace()
+        results.append(['runname', experiment_name])
         ## save the sample sheet file under tmp/recorded to be processed when run folder was created
         subfolder_name=str(run_p.id)
-        #import pdb; pdb.set_trace()
         #base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         temp_directory = os.path.join(settings.MEDIA_ROOT , 'wetlab/tmp/recorded', subfolder_name)
         os.mkdir(temp_directory)
@@ -236,7 +259,12 @@ def get_sample_file (request):
         shutil.copy(in_file,sample_sheet_copy)
         # set the group write permission to the Sample Sheet File
         os.chmod(sample_sheet_copy, 0o664)
-        ## update the state of the run to 'Recorded'
+        # update the sample sheet with the experiment name
+        if run_name != experiment_name :
+            update_sample_sheet (in_file, experiment_name)
+        ## update the Experiment name and the state of the run to 'Recorded'
+        run_p.runName = experiment_name
+        run_p.index_library = run_index_library_name
         run_p.runState='Recorded'
         run_p.save()
         ## update the project state to Recorded
@@ -244,11 +272,44 @@ def get_sample_file (request):
         for project in project_to_be_updated :
             project.procState='Recorded'
             project.save()
-
+            
+        import pdb; pdb.set_trace()
         return render (request, 'wetlab/getSampleSheet.html', {'completed_form':results})
 
 
     return render(request, 'wetlab/getSampleSheet.html')
+
+@login_required   
+def add_library_kit (request):
+    #get the list of the already loaded library kits to be displayed 
+    libraries_information ={}
+    libraryKit_list = LibraryKit.objects.all()
+    libraryKit_dict = []
+    if len(libraryKit_list) >0 :
+        for library in libraryKit_list :
+            libraryKit_dict.append(library.libraryName) 
+    
+    if request.method == 'POST' and request.POST['action'] == 'addNewLibraryKit':
+        new_library_kit_name = request.POST['newLibraryKit']
+        #new_index_number = request.POST['indexLibraryKit']
+        #new_sample_number = request.POST['samplesLibraryKit']
+        ## Check that library kit is not already defined in database
+        if LibraryKit.objects.filter(libraryName__icontains = new_library_kit_name).exists():
+            return render (request, 'wetlab/error_page.html', {'content':['The Library Kit ', new_library_kit_name, 'is already defined on the system']})
+        library_kit_information ={}
+        library_kit_information['new_library_kit'] = new_library_kit_name
+        #library_kit_information['index_number'] = new_index_number
+        #library_kit_information['sample_number'] = new_sample_number
+        #import pdb; pdb.set_trace()
+        library_kit_information ['libraries']  = libraryKit_dict
+        #save the new library on database
+        library = LibraryKit(libraryName= new_library_kit_name)
+        library.save()
+        return render (request, 'wetlab/AddLibraryKit.html',{'library_kit_info':library_kit_information})
+    else:
+        
+        libraries_information ['libraries'] = libraryKit_dict
+        return render(request,'wetlab/AddLibraryKit.html',{'list_of_libraries': libraries_information})
 
 def get_information_run(run_name_found,run_id):
     info_dict={}
@@ -774,7 +835,7 @@ def search_nextSample (request):
                                         ' finish before ', end_date]})
                 # check if user name is not empty
         if user_name != '':
-            import pdb; pdb.set_trace()
+            #import pdb; pdb.set_trace()
             if User.objects.filter(username__contains = user_name).exists():
                 users = User.objects.filter (username__contains = user_name)
                 if len(users) == 1:
@@ -804,8 +865,8 @@ def search_nextSample (request):
             sample_list= {}
             s_list  = {}
             for sample in sample_found:
-                #sample_name= sample.sampleName
-                s_list [sample.id] = sample.sampleName
+                sample_project =  sample.get_project_name()
+                s_list [sample.id] = [[sample.sampleName, sample_project]]
             sample_list ['s_list'] = s_list
 
             #import pdb; pdb.set_trace()
@@ -1947,7 +2008,7 @@ def nextSeqStats_per_library (request):
         return render (request,'wetlab/NextSeqStatsPerLibrary.html')
 
 @login_required
-def anual_report (request) :
+def annual_report (request) :
     # check user privileges
     if request.user.is_authenticated:
         try:
@@ -1974,8 +2035,8 @@ def anual_report (request) :
         if len (completed_run_in_year)  == 0 and len (uncompleted_run_in_year) == 0:
             return render (request,'wetlab/error_page.html', {'content':['Annual Report cannot be generated because there is no runs performed the year ', year_selected ]})
 
-        anual_report_information = {}
-        anual_report_information['year'] = year_selected
+        annual_report_information = {}
+        annual_report_information['year'] = year_selected
         number_of_runs = {}
         number_of_runs['Completed Runs'] = 0
         number_of_runs['Not Finish Runs'] = 0
@@ -1983,18 +2044,18 @@ def anual_report (request) :
             completed_run = []
             for run in completed_run_in_year :
                 completed_run.append(run.get_run_name)
-            anual_report_information['completed_run'] = completed_run
+            annual_report_information['completed_run'] = completed_run
             number_of_runs['Completed Runs'] = len ( completed_run_in_year)
         if len ( uncompleted_run_in_year) > 0 :
             uncompleted_run = []
             for run_uncompleted in uncompleted_run_in_year :
                 uncompleted_run.append(run_uncompleted.get_run_name)
-            anual_report_information['uncompleted_run'] = uncompleted_run
+            annual_report_information['uncompleted_run'] = uncompleted_run
             number_of_runs['Not Finish Runs'] = len ( uncompleted_run_in_year)
         # prepare the pie graphic for the number of completed/ unfinished runs
         data_source = pie_graphic_year('Number of Runs performed on the year', "",'ocean',number_of_runs)
         graphic_completed_run = FusionCharts("pie3d", "ex1" , "400", "300", "chart-1", "json", data_source)
-        anual_report_information ['graphic_completed_run'] = graphic_completed_run.render()
+        annual_report_information ['graphic_completed_run'] = graphic_completed_run.render()
 
         #import pdb; pdb.set_trace()
         ### Collecting information from NextSeqStatsBinRunSummary
@@ -2006,25 +2067,25 @@ def anual_report (request) :
             aligned_year[run_name]= bin_summary_data[2]
             error_rate_year[run_name]= bin_summary_data[3]
             q30_year[run_name]= bin_summary_data[5]
-        anual_report_information ['aligned_data'] = aligned_year
-        anual_report_information ['error_rate_data'] = error_rate_year
-        anual_report_information ['q30_data'] = q30_year
+        annual_report_information ['aligned_data'] = aligned_year
+        annual_report_information ['error_rate_data'] = error_rate_year
+        annual_report_information ['q30_data'] = q30_year
         # graphics for NextSeqStatsBinRunSummary
         heading = 'Aligned % for the runs done on year '+ str(year_selected )
         data_source = column_graphic_for_year_report (heading, 'Aligned  ' , 'Run names ', 'Aligned (in %)', 'ocean', aligned_year)
         aligned_year_graphic = FusionCharts("column3d", 'aligned_year' , "600", "300", 'aligned_chart-3', "json", data_source)
-        anual_report_information ['aligned_graphic'] = aligned_year_graphic.render()
+        annual_report_information ['aligned_graphic'] = aligned_year_graphic.render()
 
         heading = 'Error Rate for the runs done on year '+ str(year_selected )
         data_source = column_graphic_for_year_report (heading, 'Error rate ' , 'Run names ', 'Error rate', 'carbon', error_rate_year)
         error_rate_year_graphic = FusionCharts("column3d", 'error_rate_year' , "600", "300", 'error_rate_chart-4', "json", data_source)
-        anual_report_information ['error_rate_graphic'] = error_rate_year_graphic.render()
+        annual_report_information ['error_rate_graphic'] = error_rate_year_graphic.render()
 
         heading = '>Q30 for the runs done on year '+ str(year_selected )
         data_source = column_graphic_for_year_report (heading, 'Q30  ' , 'Run names ', '>Q 30 (in %)', 'fint', q30_year)
         q30_year_graphic = FusionCharts("column3d", 'q30_year' , "600", "300", 'q30_chart-2', "json", data_source)
         #import pdb; pdb.set_trace()
-        anual_report_information ['q30_graphic'] = q30_year_graphic.render()
+        annual_report_information ['q30_graphic'] = q30_year_graphic.render()
         #import pdb; pdb.set_trace()
 
         # Get the information for investigator name and the projects done
@@ -2046,9 +2107,9 @@ def anual_report (request) :
                 investigator_10_project[key]= value
             else:
                 investigator_more_10_project[key]= value
-        anual_report_information['user_5_projects'] = investigator_5_project
-        anual_report_information['user_10_projects'] = investigator_10_project
-        anual_report_information['user_more_10_projects'] = investigator_more_10_project
+        annual_report_information['user_5_projects'] = investigator_5_project
+        annual_report_information['user_10_projects'] = investigator_10_project
+        annual_report_information['user_more_10_projects'] = investigator_more_10_project
 
         # Create the bar graphic for user projects
         p_user_year ={}
@@ -2058,15 +2119,15 @@ def anual_report (request) :
         heading = 'Projects done per investigator on year '+ str(year_selected )
         data_source = column_graphic_for_year_report (heading, '  ' , 'Projects ', 'number of users', 'ocean', p_user_year)
         p_user_year_graphic = FusionCharts("column3d", 'bar_project_user_year' , "400", "300", 'p_user_chart-1', "json", data_source)
-        anual_report_information ['p_user_year_graphic'] = p_user_year_graphic.render()
+        annual_report_information ['p_user_year_graphic'] = p_user_year_graphic.render()
 
         data_source = pie_graphic_year (heading, 'Percentage' ,'carbon', p_user_year)
         pie_p_user_year_graphic = FusionCharts("pie3d", "pie_project_user_year" , "400", "300", "p_user_chart-2", "json", data_source)
-        anual_report_information ['pie_p_user_year_graphic'] = pie_p_user_year_graphic.render()
+        annual_report_information ['pie_p_user_year_graphic'] = pie_p_user_year_graphic.render()
         #import pdb; pdb.set_trace()
-        return render (request, 'wetlab/AnualReport.html',{'display_anual_report': anual_report_information})
+        return render (request, 'wetlab/AnnualReport.html',{'display_annual_report': annual_report_information})
     else:
-        return render (request, 'wetlab/AnualReport.html')
+        return render (request, 'wetlab/AnnualReport.html')
 
 @login_required
 def monthly_report (request) :
@@ -2135,7 +2196,7 @@ def monthly_report (request) :
             uncompleted_run = []
             for run_uncompleted in uncompleted_run_in_year_month :
                 uncompleted_run.append(run_uncompleted.get_run_name)
-            anual_report_information['uncompleted_run'] = uncompleted_run
+            annual_report_information['uncompleted_run'] = uncompleted_run
             number_of_runs['Not Finish Runs'] = len ( uncompleted_run_in_year)
         # prepare the pie graphic for the number of completed/ unfinished runs
         heading = str ('Graphics of the Runs performed on the ' + month_selected + ' - ' + year_selected)
@@ -2477,6 +2538,12 @@ def update_tables (request):
         return render(request, 'wetlab/error_page.html', {'content':['There is no tables which requiered to update with Disk space usage information']})
 
 
+
+def test (request):
+    if request.method=='POST' and (request.POST['action']=='displayResult') :
+        import pdb; pdb.set_trace() 
+    return render(request, 'wetlab/test.html')
+
 '''
 def downloadFile(request):
     #from urllib.parse import urlparse
@@ -2522,248 +2589,6 @@ def downloadFile(request):
 '''
 
 
-'''
-def simple_upload(request):
-    if request.method == 'POST' and request.FILES['myfile']:
-        myfile = request.FILES['myfile']
-        fs = FileSystemStorage()
-        filename = fs.save(myfile.name,  myfile)
-        uploaded_file_url = fs.url(filename)
-        import pdb; pdb.set_trace()
-        return render(request, 'wetlab/simple_upload.html', {
-            'uploaded_file_url': uploaded_file_url
-        })
-    return render(request, 'wetlab/simple_upload.html')
-'''
-'''
-def model_form_upload(request):
-    if request.method == 'POST':
-        form = DocumentForm(request.POST, request.FILES)
-        if form.is_valid():
-
-            doc_tmp=str(form.cleaned_data.get('csv_file'))
-            run_name_value=str(form.cleaned_data.get('run_name'))
-            #import pdb; pdb.set_trace()
-            tmp_name = re.search('(.*\.csv$)',doc_tmp)
-            if (tmp_name):
-                form.save()
-                name_in_file=tmp_name.group(1)
-                if (re.search('\.csv$',name_in_file)):
-                    #doc=str(name_in_file)
-                    doc=str('wetlab/documents/documents/'+ name_in_file)
-                    #import pdb; pdb.set_trace()
-                    mapped_file=sample_sheet_map_basespace(doc).replace('wetlab/','')
-                    #mapped_file=True ## checking the file can upload and download
-                    if (mapped_file != 'Error'):
-                        space_base = BaseSpaceFile( document=Document.objects.get(run_name=run_name_value), baseSpace_file = mapped_file)
-                        space_base.save()
-
-                        #import pdb; pdb.set_trace()
-                        ## ejemplo de conseguir el documento de base space con el nombre de la carrera
-                        #dd = BaseSpaceFile.objects.get(document=Document.objects.get(run_name='juan run4'))
-                        run_data=[]
-                        tmp_data=[]
-                        d_list=['Run folder name','Project name','User identity','Description of the run',
-                                'User name','Sample Sheet file', 'File was uploaded at date']
-                        run_index= Document.objects.filter(run_name__icontains = run_name_value)
-                        run_values=run_index[0].get_run_info().split(';')
-                        #import pdb; pdb.set_trace()
-                        for i in range (len (d_list)):
-                            #tmp_data = d_list[i],run_values[i]
-                            #run_data.append(tmp_data)
-                            run_data.append([d_list[i],run_values[i]])
-                            #tmp_data=[]
-                        #import pdb; pdb.set_trace()
-                        #tmp_data = 'BaseSpace file', mapped_file
-                        run_data.append(['BaseSpace file', mapped_file])
-                        return render (request , 'wetlab/resultsForm.html', {'r_data' : run_data} )
-
-                    else:
-                        #import pdb; pdb.set_trace()
-                        Document.objects.get(run_name__icontains=run_name_value).delete() ## using django-clenup app to delete the uploaded file
-                        return render (request,'wetlab/error_page.html', {'content':['Sample Sheet does not meet with the format']})
-                else:
-                    Document.objects.get(run_name__icontains=run_name_value).delete() ## using django-clenup app to delete the uploaded file
-                    return render (request, 'wetlab/error_page.html',  {'content':['invalid extension of Sample Sheet file' , 'Extension must be csv']})
-            else:
-                return render (request, 'wetlab/error_page.html', {'content':['invalid extension of Sample Sheet file', 'Extension must be csv']})
-    else:
-
-        #form = DocumentForm()
-        form = Docutres()
-    return render(request, 'wetlab/modelForm_upload.html', {'form': form })
-'''
-
-'''
-def get_run_data(request):
-    if request.method =='POST':
-        #form = DocumentForm(request.POST)
-        run_data=[]
-        tmp_data=[]
-        d_list=['Run folder name','Project name','User identity','Description of the run',
-                'User name','Sample Sheet file', 'File was uploaded at date']
-                #'File was uploaded at time:']
-        form=request.POST
-        r_name = str(form.get('run_name'))
-        try:
-            run_index= Document.objects.filter(run_name__icontains = r_name)
-
-        except:
-            return render (request, 'wetlab/error_page.html', {'content':['The run  folder name   ', r_name, '  does not exist']})
-        run_values=run_index[0].get_run_info().split(';')
-        #import pdb; pdb.set_trace()
-        for i in range (len (d_list)):
-            if (d_list[i] == 'Run folder name'):
-                run_name_value=run_values[i]
-
-            #tmp_data = d_list[i],run_values[i]
-            #run_data.append(tmp_data)
-            #tmp_data=[]
-            run_data.append([d_list[i],run_values[i]])
-        #import pdb; pdb.set_trace()
-        bs_file= BaseSpaceFile.objects.get(pk=Document.objects.get(run_name=run_name_value).id)
-        #tmp_data = 'BaseSpace file', bs_file.baseSpace_file
-        #run_data.append(tmp_data)
-        run_data.append(['BaseSpace file', bs_file.baseSpace_file])
-        #import pdb; pdb.set_trace()
-        return render (request , 'wetlab/results_run_folder.html', {'r_data' : run_data} )
-    else:
-        #form = DocumentForm()
-        #return render (request, 'wetlab/get_run_data.html',{'form': form})
-        return render (request, 'wetlab/get_run_data.html')
-'''
-
-
-'''
-def test_graphic (request):
-    from .fusioncharts.fusioncharts import FusionCharts
-     # Loading Data from a Static JSON String
-    # It is a example to show a Pie 3D chart where data is passed as JSON string format.
-    # The `chart` method is defined to load chart data from an JSON string.
-    test = {}
-
-    # Create an object for the pie3d chart using the FusionCharts class constructor
-    pie3d = FusionCharts("pie3d", "ex1" , "100%", "400", "chart-1", "json",
-        # The data is passed as a string in the `dataSource` as parameter.
-        """{
-                "chart": {
-                "caption": "Age profile of website visitors",
-                "subcaption": "Last Year",
-                "startingangle": "120",
-                "showlabels": "0",
-                "showlegend": "1",
-                "enablemultislicing": "0",
-                "slicingdistance": "15",
-                "showpercentvalues": "1",
-                "showpercentintooltip": "0",
-                "plottooltext": "Age group : $label Total visit : $datavalue",
-                "theme": "ocean"
-                },
-                "data": [
-                    {"label": "Teenage", "value": "1250400"},
-                    {"label": "Adult", "value": "1463300"},
-                    {"label": "Mid-age", "value": "1050700"},
-                    {"label": "Senior", "value": "491000"}
-                ]
-        }""")
-    chart2d = FusionCharts("column2d", "ex2" , "100%", "200", "chart-2", "json",
-        """{
-                "chart": {
-                "caption": "Age profile of website visitors",
-                "subcaption": "Last Year",
-                "startingangle": "120",
-                "showlabels": "0",
-                "showlegend": "1",
-                "enablemultislicing": "0",
-                "slicingdistance": "15",
-                "showpercentvalues": "1",
-                "showpercentintooltip": "0",
-                "plottooltext": "Age group : $label Total visit : $datavalue",
-                "theme": "zune"
-                },
-                "data": [
-                    {"label": "Tiinage", "value": "1250400"},
-                    {"label": "Adult", "value": "1463300"},
-                    {"label": "Mid-age", "value": "1050700"},
-                    {"label": "Senior", "value": "491000"}
-                ]
-        }""")
-
-    deviation = FusionCharts("boxandwhisker2d","ex3","90%", "400", "chart-13", "json",
-        """{
-    "chart": {
-        "caption": "Distribution for Q >= 30",
-        "subCaption": "By Gender",
-        "xAxisName": "Pay Grades",
-        "YAxisName": "Q > 30",
-        "numberPrefix": "%",
-        "theme": "fint",
-        "showValues": "0",
-        "showSD": "1",
-        "SDIconSides": "5",
-        "exportEnabled": "1"
-    },
-    "categories": [
-        {
-            "category": [
-                {
-                    "label": "Grade 1"
-                },
-                {
-                    "label": "Grade 2"
-                },
-                {
-                    "label": "Grade 3"
-                }
-            ]
-        }
-    ],
-    "dataset": [
-        {
-            "seriesname": "project 3 and  4",
-            "lowerBoxColor": "#008ee4",
-            "upperBoxColor": "#6baa01",
-            "data": [
-                {
-                    "value": "81,82,79,79"
-                },
-                {
-                    "value": "85,86,84,83"
-                },
-                {
-                    "value": "81,82,79,79"
-                }
-            ]
-        },
-        {
-            "seriesname": "project-2 and 1",
-            "lowerBoxColor": "#e44a00",
-            "upperBoxColor": "#f8bd19",
-            "data": [
-                {
-                    "value": "81,82,79,79"
-                },
-                {
-                    "value": "79,80,77,78"
-                },
-                {
-                    "value": "81,82,79,79"
-                }
-            ]
-        }
-    ]
-}""")
-
-    test ['pie3d'] = pie3d.render()
-    test ['chart2d'] = chart2d.render()
-    test ['deviation'] = deviation.render()
-    #import pdb; pdb.set_trace()
-        # returning complete JavaScript and HTML code, which is used to generate chart in the browsers.
-    return  render(request, 'wetlab/graphic.html', {'output' : test})
-    #return  render(request, 'wetlab/graphic.html', {'output' : pie3d.render()})
-
-
-'''
 
 
 

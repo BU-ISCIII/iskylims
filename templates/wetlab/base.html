@@ -10,7 +10,7 @@
         <link href="http://fonts.googleapis.com/css?family=Hind:300,400,500,600,700" rel="stylesheet" type="text/css">
         <link href="{% static "/vendor/simple-line-icons/css/simple-line-icons.css" %}" rel="stylesheet" type="text/css"/>
         <link href="{% static "/vendor/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css"/>
-		<link href= "https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css"/>
+	<link href= "https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css"/>
 	
      <!-- GLOBAL MANDATORY JAVA SCRIPTS -->
 	<!-- script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> -->
@@ -60,20 +60,32 @@
                             <ul class="nav navbar-nav navbar-nav-right">
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/wetlab/">Home</a></li>
 				{% if user.is_authenticated %} 
-				<li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">WET LAB<span class="caret"></span></a>
+				<li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Run Preparation<span class="caret"></span></a>
 				  <ul class="dropdown-menu">
 					{% if request.user|has_group:"WetlabManager" %}
 					    <li><a href="/wetlab/getSampleSheet">Upload the Run </a></li>
-					    <li><a href="/wetlab/searchNextSeq">Search by RUN</a></li>
-					    <li><a href="/wetlab/latest_run">Get Latest Run</a></li>
-					{% endif %}  
+					{% endif %}
+					<li><a href="/wetlab/AddLibraryKit">Add Library Kit</a></li>  
+
+				  </ul>
+				</li>
+				{% else %}
+				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">Run Preparation</a></li>
+				{% endif%}
+				{% if user.is_authenticated %} 
+                                <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Search<span class="caret"></span></a>
+				    <ul class="dropdown-menu">
+				    {% if request.user|has_group:"WetlabManager" %}
+					<li><a href="/wetlab/searchNextSeq">Search by RUN</a></li>
+					<li><a href="/wetlab/latest_run">Get Latest Run</a></li>
+				    {% endif %}
 					<li><a href="/wetlab/searchNextProject">Search by Project</a></li>
 					<li><a href="/wetlab/searchNextSample">Search by Sample</a></li>
 				  </ul>
 				</li>
 				{% else %}
-				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">wet LAB</a></li>
-				{% endif%}
+				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">Search</a></li>
+				{% endif%}				
 				{% if user.is_authenticated %} 
                                 <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#"> Statistics<span class="caret"></span></a>
 				    <ul class="dropdown-menu">
@@ -92,7 +104,7 @@
 				<li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Reports<span class="caret"></span></a>
 				    {% if request.user|has_group:"WetlabManager" %}
 				    <ul class="dropdown-menu">
-				    <li><a href="/wetlab/AnualReport">Annual Reports</a></li>
+				    <li><a href="/wetlab/AnnualReport">Annual Reports</a></li>
 				    <li><a href="/wetlab/QuarterReport">Quarter Reports</a></li>
 				    <li><a href="/wetlab/MonthlyReport">Monthly Reports</a></li>
 				    </ul>
@@ -101,7 +113,6 @@
 				{% else %}
 				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">Reports</a></li>
 				{% endif%}
-                                <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#">Work</a></li>
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#contact">Contact</a></li>
                             </ul>
 			    

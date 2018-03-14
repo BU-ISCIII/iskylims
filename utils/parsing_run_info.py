@@ -58,15 +58,15 @@ def get_run_disk_utilization (conn, run_Id_used, run_processing_id, logger):
             if item_list.filename == '.' or item_list.filename == '..':
                 continue
             if item_list.filename == 'Data':
-                dir_data = os.path.join(run_name,'Data')
+                dir_data = os.path.join(run_Id_used,'Data')
                 data_dir_size = get_size_dir(dir_data , conn)
                 continue
             elif item_list.filename == 'Images':
-                dir_images = os.path.join(run_name, 'Images')
+                dir_images = os.path.join(run_Id_used, 'Images')
                 images_dir_size = get_size_dir(dir_images , conn)
                 continue
             if item_list.isDirectory:
-                item_dir = os.path.join(run_name, item_list.filename)
+                item_dir = os.path.join(run_Id_used, item_list.filename)
                 rest_of_dir_size += get_size_dir(item_dir, conn)
             else:
                 rest_of_dir_size += item_list.file_size

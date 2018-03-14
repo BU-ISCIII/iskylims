@@ -22,7 +22,7 @@ urlpatterns = [
     path('NextSeqStatsPerResearcher/',views.nextSeqStats_per_researcher, name='nextSeqStats_per_researcher'),
     path('NextSeqStatsPerTime/', views.nextSeqStats_per_time, name ='nextSeqStats_per_time'),
     path('NextSeqStatsLibrary/', views.nextSeqStats_per_library , name ='nextSeqStats_per_library'),
-    path('AnualReport/',views.anual_report, name='anual_report'),
+    path('AnnualReport/',views.annual_report, name='annual_report'),
     path('MonthlyReport/', views.monthly_report, name='montly_report'),
     path('QuarterReport/', views.quarter_report, name='quarter_report'),
     path('updateTables/',views.update_tables, name='update_tables'),
@@ -30,10 +30,12 @@ urlpatterns = [
     path('change_project_libKit=<int:project_id>',views.change_project_libKit, name ='change_project_libKit'),
     path('change_run_libKit=<int:run_id>',views.change_run_libKit, name ='change_run_libKit'),
     path('ChangeRunName=<int:run_id>',views.change_run_name, name='change_run_name'),
+    path('AddLibraryKit/',views.add_library_kit, name='add_library_kit'),
     
     #url(r'^documents/images_plot$', 'django.views.static.serve',{'document_root': settings.MEDIA_ROOT}),
     #url(r'^documents/(?P<path>.*)$', 'django.views.static.serve',{'document_root': settings.MEDIA_ROOT,}),
-    path('mail/',views.email, name='email')
+    path('mail/',views.email, name='email'),
+    path('test/',views.test, name='test')
 
 ] 
 #+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

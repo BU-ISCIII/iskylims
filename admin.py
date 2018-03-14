@@ -29,7 +29,7 @@ class UserInfoAdmin (admin.ModelAdmin):
     list_display = ('userid','userFirstName','userLastName','userArea','userEmail')    
    
 class RunProcessAdmin (admin.ModelAdmin):
-    list_display = ('runName','sampleSheet','generatedBSFile', 'requestedCenter')
+    list_display = ('runName','sampleSheet','index_library', 'requestedCenter')
 
 
 class ProjectsAdmin (admin.ModelAdmin):
