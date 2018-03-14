@@ -1,4 +1,4 @@
-##jlgarcia 02/02/2018. Adaptation of code to django 2.0:
+# Adaptation of code to django 2.0:
 # "from django.conf.urls import include , url" replaced by "import" for "path"
 # "url(r'^" replaced by "path('"
 
@@ -11,7 +11,6 @@ from django.views.generic import ListView, DetailView
                                                                                                   
 urlpatterns = [                                                                                   
      path('', LoginView.as_view(template_name='iSkyLIMS_home/index.html'), name="index"),
-     ##jlgarcia 02/02/2018. Adaptation of code to django 2.0: deleted entry for 'infrastructure_request'
 ]                                                                                                 
                                                                                                    
 if settings.DEBUG:                                                                                
