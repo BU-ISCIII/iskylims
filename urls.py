@@ -31,13 +31,13 @@ urlpatterns = [
     path('change_run_libKit=<int:run_id>',views.change_run_libKit, name ='change_run_libKit'),
     path('ChangeRunName=<int:run_id>',views.change_run_name, name='change_run_name'),
     path('AddLibraryKit/',views.add_library_kit, name='add_library_kit'),
-    
+
     #url(r'^documents/images_plot$', 'django.views.static.serve',{'document_root': settings.MEDIA_ROOT}),
     #url(r'^documents/(?P<path>.*)$', 'django.views.static.serve',{'document_root': settings.MEDIA_ROOT,}),
     path('mail/',views.email, name='email'),
     path('test/',views.test, name='test')
 
-] 
+]
 #+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 if settings.DEBUG:
