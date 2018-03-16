@@ -11,7 +11,7 @@ from django.views.generic import ListView, DetailView
 
 urlpatterns = [
      path('', views.index, name='index'),
-     path('service_request',views.service_request, name='request_service'),
+     path('service_request_<str:serviceRequestType>',views.service_request, name='service_request'),
      path('counseling_request',views.counseling_request, name='counseling_service'),
      path('infrastructure_request',views.infrastructure_request, name='infrastructure_service'),
 ] 

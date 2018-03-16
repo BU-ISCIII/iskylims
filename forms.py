@@ -8,7 +8,9 @@ from mptt.forms import TreeNodeMultipleChoiceField
 from .models import *                                                                                                                              
 from django.contrib.auth.forms import UserCreationForm                                                                                             
 
-class ServiceRequestForm(forms.ModelForm):
+## Management of a 'Services request':
+# case a) (internal) GENOMICS_UNIT_SEQUENCING
+class ServiceRequestFormInternalSequencing(forms.ModelForm):
  	class Meta:
  		model = Service
 		##Addition of serviceProjectNames for
@@ -20,7 +22,7 @@ class ServiceRequestForm(forms.ModelForm):
 				}
 
  	def __init__(self,*args, **kwargs):
- 		super(ServiceRequestForm, self).__init__(*args, **kwargs)
+ 		super(ServiceRequestFormInternalSequencing, self).__init__(*args, **kwargs)
  		self.helper = FormHelper()
  		self.helper.form_action=""
  		self.helper.form_method="POST"
@@ -81,12 +83,79 @@ class ServiceRequestForm(forms.ModelForm):
 					layout.Submit(('submit'),_('Save')),
                     )
 				)
-class ServiceRequestForm_extended(ServiceRequestForm):
+
+# case b) (external) EXTERNAL_SEQUENCING
+class ServiceRequestFormExternalSequencing(forms.ModelForm):
+ 	class Meta:
+ 		model = Service
+ 		fields = ['serviceSeqCenter','servicePlatform','serviceRunSpecs','serviceFileExt','serviceAvailableService','serviceFile','serviceNotes']
+ 		field_classes = {
+				'serviceAvailableService': TreeNodeMultipleChoiceField,
+				}
+
+ 	def __init__(self,*args, **kwargs):
+ 		super(ServiceRequestFormExternalSequencing, self).__init__(*args, **kwargs)
+ 		self.helper = FormHelper()
+ 		self.helper.form_action=""
+ 		self.helper.form_method="POST"
+ 		self.helper.layout = layout.Layout(
+				layout.Div(               
+ 					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Sequencing Data</h3></div>"""),
+ 					layout.Div(
+ 						layout.Div(
+ 							layout.Field('serviceSeqCenter'),
+ 							layout.Field('servicePlatform'),
+ 							css_class="col-md-6",
+ 						),
+ 						layout.Div(
+ 							layout.Field('serviceRunSpecs'),
+							layout.Field('serviceFileExt'),
+							css_class="col-md-6",
+						),
+						css_class="row panel-body"
+						),
+					css_class = "panel panel-default"
+					),
+                layout.Div(                                                                                                
+                	layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Service selection</h3></div>"""), 
+                	layout.Div(                                                                                            
+                		layout.Div(                                                                                        
+                			layout.Field('serviceAvailableService',template="utils/checkbox_select_multiple_tree.html"),                                                                   
+                			css_class="col-md-12"                                                                          
+                			),                                                                                             
+                    	css_class="row panel-body"                                                                         
+                    	),                                                                                                 
+                	css_class = "panel panel-default"                                                                      
+                	),                                                                                                     
+				layout.Div(
+					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Service Description</h3></div>"""),
+					layout.Div(
+						layout.Div(
+							layout.Field('serviceFile'),
+							layout.Field('serviceNotes'),
+							css_class="col-md-12"
+							),
+                    	css_class="row panel-body"
+                    	),
+					css_class = "panel panel-default"
+					),
+				bootstrap.FormActions(
+					layout.Submit(('submit'),_('Save')),
+                    )
+				) 		
+
+
+## Management of request forms for services OTHER THAN 'Services Request' :
+# This form 1) extends the one used for 'Services request' and 2) excludes fields not filled-in through
+# the corresponding service form (they are filled in 'by hand' in views.py)
+class ServiceRequestForm_extended(ServiceRequestFormExternalSequencing):
 
 	class Meta:
 		model = Service
 		exclude = [
 				'serviceSeqCenter',
+				'serviceProjectNames',
+				'serviceUserId',
 				'servicePlatform',
 				'serviceRunSpecs',
 				'serviceFileExt',
