@@ -85,7 +85,6 @@ def counseling_request(request):
 	if request.method == "POST":
 		form = ServiceRequestForm_extended(data=request.POST,files=request.FILES)
 
-		pdb.set_trace() 
 		if form.is_valid():
 			new_service = form.save(commit=False)
 			new_service.serviceStatus = "recorded"
