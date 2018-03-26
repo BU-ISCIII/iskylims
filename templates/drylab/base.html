@@ -25,7 +25,7 @@
     <link href="{% static "/css/layout.min.css" %}" rel="stylesheet" type="text/css"/>
 
     <!-- Place favicon.ico in the root directory -->
-
+    {% load user_groups %}
 
   </head>
   <!-- END HEAD -->
@@ -58,15 +58,25 @@
                         <div class="menu-container">
                             <ul class="nav navbar-nav navbar-nav-right">
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/drylab/">Home</a></li>
-								<li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">SERVICES REQUEST<span class="caret"></span></a>
-				  					<ul class="dropdown-menu">
-				    					<li><a href="/drylab/service_request_internal_sequencing">GENOMICS UNIT SEQUENCING</a></li>
-				    					<li><a href="/drylab/service_request_external_sequencing">EXTERNAL SEQUENCING</a></li>
-				  					</ul>
-								</li>
+                                 {% if user.is_authenticated and not request.user|has_group:"admin_iSkyLIMS" %}
+                                    <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">SERVICES REQUEST<span class="caret"></span></a>
+                                        <ul class="dropdown-menu">
+                                            <li><a href="/drylab/service_request_internal_sequencing">GENOMICS UNIT SEQUENCING</a></li>
+                                            <li><a href="/drylab/service_request_external_sequencing">EXTERNAL SEQUENCING</a></li>
+                                        </ul>
+                                    </li>
+                                {% endif %}
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/drylab/counseling_request">COUNSELING REQUEST</a></li>
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/drylab/infrastructure_request">INFRASTRUCTURE REQUEST</a></li>
-                                <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#">STATISTICS</a></li>
+                                {% if user.is_authenticated and request.user|has_group:"Admin_iSkyLIMS" %}
+                                <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">MANAGE SERVICES</a>
+                                    <ul class="dropdown-menu">
+				    					<li><a href="/drylab/searchService">SEARCH SERVICE</a></li>
+				    					<li><a href="/drylab/pendingServices">PENDING SERVICES</a></li>
+									<li><a href="/drylab/updateService">UPDATE SERVICE</a></li>
+				  					</ul>
+                                </li>
+                                {% endif %}
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#contact">CONTACT</a></li>
                             </ul>
 
@@ -85,7 +95,13 @@
 	<div class="bg-color-sky-light">
           <div class="container content-lg">
             <div class="row margin-b-40">
-
+                <!-- Loggin pannel -->
+                <div class="row row-space-2 margin-b-4">                                
+                    <div class="col-sm-6 col-sm-offset-6">                
+                    {% include 'registration/login_inline.html' %}   
+                    </div>                                                
+                </div> 
+	    <!-- End Loggin pannel -->
             {% block content %}
 	<!--========== HERE WILL BE THE INFORMATION FROM DJANGO CODE  ==========-->
             {% endblock %}

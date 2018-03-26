@@ -10,6 +10,7 @@ from django.contrib.auth.forms import UserCreationForm
 
 ## Management of a 'Services request':
 # case a) (internal) GENOMICS_UNIT_SEQUENCING
+
 class ServiceRequestFormInternalSequencing(forms.ModelForm):
  	class Meta:
  		model = Service
@@ -160,8 +161,15 @@ class ServiceRequestForm_extended(ServiceRequestFormExternalSequencing):
 				'serviceRunSpecs',
 				'serviceFileExt',
 				'serviceStatus',
+				'serviceOnApprovedDate',
+				'serviceOnRejectedDate',
+				'serviceOnQueuedDate',
+				'serviceOnInProgressDate',
+				'serviceOnDeliveredDate',
+				'serviceOnArchivedDate',
 				]
 
 	def __init__(self,*args, **kwargs):
 		super(ServiceRequestForm_extended, self).__init__(*args, **kwargs)
 		self.helper.layout.pop(0)
+

@@ -73,9 +73,39 @@ class Service(models.Model):
 	serviceFile=models.FileField(_("Service description file"),upload_to=service_files_upload)
 	serviceStatus=models.CharField(_("Service status"),max_length=10,choices=STATUS_CHOICES)
 	serviceNotes=models.TextField(_("Service Notes"),max_length=500)
+	serviceCreatedOnDate= models.DateField(auto_now_add=True)
+	serviceOnApprovedDate = models.DateField(auto_now_add=False, null=True)
+	serviceOnRejectedDate = models.DateField(auto_now_add=False, null=True)
+	serviceOnQueuedDate = models.DateField(auto_now_add=False, null=True)
+	serviceOnInProgressDate = models.DateField(auto_now_add=False, null=True)
+	serviceOnDeliveredDate = models.DateField(auto_now_add=False, null=True)
+	serviceOnArchivedDate = models.DateField(auto_now_add=False, null=True)
+	
+
 	
 	def __str__ (self):
-		return '%s' %(self.serviceName)
+		return '%s' %(self.serviceUserId)
+
+	def get_service_information (self):
+		platform = str(self.servicePlatform)
+		
+		return '%s;%s;%s'  %(self.serviceRunSpecs, self.serviceSeqCenter, platform)
+
+	def get_service_dates (self):
+		service_dates =[]
+		service_dates.append(self.serviceCreatedOnDate.strftime("%B %d, %Y"))
+		if self.serviceOnApprovedDate is None:
+			service_dates.append('Approved Date not set')
+		else:
+			service_dates.append(self.serviceOnApprovedDate.strftime("%B %d, %Y"))
+		if self.serviceOnRejectedDate is None:
+			service_dates.append('Rejected Date not set')
+		else:
+			service_dates.append(self.serviceOnRejectedDate.strftime("%B %d, %Y"))
+		
+		
+		
+		return service_dates
 
 class Resolution(models.Model):
 	resolutionServiceID=models.ForeignKey(Service ,on_delete=models.CASCADE)
@@ -90,4 +120,5 @@ class Delivery(models.Model):
 	deliveryEstimatedDate=models.DateField(_("Delivery estimated date"))
 	deliveryDate=models.DateField(_("Delivery date"),auto_now_add=True)
 	deliveryNotes=models.TextField(_("Delivery notes"))
+
 

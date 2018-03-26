@@ -30,3 +30,4 @@ admin.site.register(Service,ServiceAdmin)
 admin.site.register(AvailableService,AvailableServiceAdmin)
 admin.site.register(Resolution,ResolutionAdmin)
 admin.site.register(Delivery,DeliveryAdmin)
+

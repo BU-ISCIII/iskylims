@@ -1,0 +1,67 @@
+{% extends 'drylab/base.html' %}
+{% load static %}
+{% block content %}
+{% csrf_token %}
+{% if display_service %}  
+    <h1><div class="color-heading">Service Information for the service {{ display_service.service_name}}</div></h1>
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-6">  <!-- general information from service -->
+            <div class="panel panel-default">
+              <div class="panel-heading">Service requested information</div>
+              <div class="panel-body">
+                  <table class="table table-hover">
+                       <tbody>
+                         <tr>
+                           <td>Service Requested by:  </td>
+                           <td> {{ display_service.user_name }} </td>
+                         </tr>
+                           <td>Service is in State:  </td>
+                           <td> {{ display_service.state }} </td>
+                         </tr>
+                         </tr>
+                           <td>File uploaded for the service:  </td>
+                           <td><a href="/{{ display_service.file }}" download> File used  <span class="glyphicon glyphicon-download-alt"></span></a></td>
+                         </tr>
+                       </tbody>
+                    </table>
+                </div> <!--// end panel body -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-6  general information from service  -->
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-5 col-sm-offset-1">  <!-- Projects Requested services -->
+            <div class="panel panel-default">
+              <div class="panel-heading">Projects requested in the service</div>
+              <div class="panel-body">
+                  <table class="table table-hover">
+                       <tbody>
+                          {% for key, value in display_service.projects.items %}  
+                             <tr>
+                               <td><a href="/wetlab/search_project={{ key }}">{{ value }}</a> </td>
+                             </tr>
+                          {% endfor %}   
+                       </tbody>
+                    </table>
+                </div> <!--// end panel body -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-5  Projects Requested services  -->
+    </div> <!--// end row --> 
+        <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-6">  <!-- Requested Services -->
+            <div class="panel panel-default">
+              <div class="panel-heading">Requested Services</div>
+              <div class="panel-body">
+                  <table class="table table-hover">
+                       <tbody>
+                        {% for values in display_service.requested_services %}
+                         <tr>
+                           <td> {{ values }} </td>
+                         </tr>
+                         {% endfor %}
+                       </tbody>
+                    </table>
+                </div> <!--// end panel body -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-6  Requested Services  -->
+    </div> <!--// end row -->
+{% endif %}
+{% endblock %}
