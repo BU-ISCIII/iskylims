@@ -1,0 +1,68 @@
+{% extends 'drylab/base.html' %}
+{% load static %}
+{% block content %}
+{% csrf_token %}
+{% if display_one_service %}
+
+{% elif display_multiple_services %}
+
+
+{% else %}
+    {% load user_groups %}
+<!-- FORM for searching  Service  -->
+          
+    <div class="row row-space-4 margin-b-4">
+      <div class="col-sm-7 col-sm-offset-1" >
+        <div class="panel panel-default">
+          <div class="panel-heading"><strong>Searching Service</strong></div>
+          <div class="panel-body">
+            <form method="post" enctype="multipart/form-data" name="searchservice" id="searchservice" class="form-horizontal well">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="searchservice"/>
+            <div class="form-group"> 
+                  <label class="col-sm-5  control-label" for="servicename" >Fill the service name </label>
+                  <div class="col-sm-5"><input class="form-control" type="text" name="servicename" id="servicename" size="100" maxlength="100"></div>
+             </div>  <!-- end from-group   -->
+            <BR>
+             <div class="form-group">
+               <label class="col-sm-5 control-label" for="servicectstate" >Service state</label>
+               <div class="col-sm-4"><select class="form-control" name="servicestate" id="servicestate">
+                   <option value="">Choose a value  </option>
+                   {% for key, value in services_state_list %}
+                         <option value="{{ key }}">{{value}}</option>
+                    {% endfor %}
+                    </select>
+               </div>  <!-- end select input -->
+                <br>
+             </div>  <!-- end from-group   -->
+             <div class="form-group">
+                <label class="col-sm-5 control-label" for="startdate" >From Date (DD-MM-YYYY)</label>
+                <div class="col-sm-5"><input class="form-control" type="date" name="startdate" id="startdate" size="100" maxlength="100"></div>
+                <br>
+             </div>  <!-- end from-group   -->
+             <br>
+             <div class="form-group">
+                <label class="col-sm-5 control-label" for="enddate" >End Date (DD-MM-YYYY)</label>
+                <div class="col-sm-5"><input class="form-control" type="date" name="enddate" id="enddate" size="100" maxlength="100"></div>
+                <br>
+             </div>  <!-- end from-group   -->
+             <br>
+             <br>
+            <div class="form-group"> 
+                  <label class="col-sm-5  control-label" for="username" >Search from user name</label>
+                    <div class="col-sm-5"><input class="form-control" type="text" name="username" id="username" size="100" maxlength="100"></div>
+             </div>  <!-- end from-group   -->
+            <br>
+            <br>
+                <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
+                <input class="btn pull-right btn-primary" type="submit" value="Submit">
+            </form>
+         </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  -->
+    </div> <!--// end row -->
+    <!-- End of FORM for searching Service  -->
+    
+{% endif %} 
+    
+{% endblock %}

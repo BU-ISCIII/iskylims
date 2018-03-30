@@ -180,6 +180,29 @@ def display_service (request, service_id):
 		return render (request,'drylab/error_page.html', {'content':['The service that you are trying to get does not exist ','Contact with your administrator .']})
 
 
+@login_required
+def search_service (request):
+	if request.user.is_authenticated:
+		try:
+			groups = Group.objects.get(name='Admin_iSkyLIMS')
+			if groups not in request.user.groups.all():
+				return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+		except:
+			return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+	else:
+		#redirect to login webpage
+		return redirect ('/accounts/login')
+	if request.method == 'POST' and request.POST['action'] == 'searchservice':
+		import pdb; pdb.set_trace()
+		service_name_request = request.POST['servicename']
+		service_state = request.POST['servicestate']
+		start_date=request.POST['startdate']
+		end_date=request.POST['enddate']
+		user_name = request.POST['username']
+	
+	#import pdb; pdb.set_trace()
+	return render( request,'drylab/searchService.html',{'services_state_list':STATUS_CHOICES})
+
 
 @login_required
 def pending_services (request):
