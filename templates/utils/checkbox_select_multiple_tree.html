@@ -1,0 +1,37 @@
+{#templates/utils/checkbox_select_multiple_tree.html#}
+
+{% load crispy_forms_filters %}
+{% load mptt_tags %}
+{% load l10n %}
+
+<div id="div_{{ field.auto_id }}" class="form-group{% if wrapper_class %}{{ wrapper_class }}{% endif %}{% if form_show_errors %}{% if field.errors %} has-error{% endif %}{% endif %}{% if field.css_classes %}{{ field.css_classes }} {% endif %}">
+	{% if field.label and form_show_labels %}
+		<label for="{{ field.id_for_label }}" class="control-label {{label_class}} {% if field.field.required %} requiredField {% endif %}">
+			{{field.label|safe}}{% if field.field.required %} <span class="asterixField">*</span>{% endif %}
+		</label>
+	{% endif %}
+	<div class="controls {{field_class}}" {% if flat_attrs %} {{flat_attrs|safe}} {% endif %} >
+		{% include "bootstrap3/layout/field_errors_block.html" %}
+		{% for category,structure in field.field.queryset.all|tree_info %}
+		{% if structure.new_level %}<ul class="level-{{category.level}}" id="ul_{{forloop.counter}}"><li>{% else %}</li><li>{% endif %}
+		    	<label class="checkbox{% if inline_class %}-{{ inline_class }}{% endif %}" >                                                                                                                                                                                                            
+					<input type="checkbox" {% if category.pk in field.value or category.pk|stringformat:"s" == field.value|stringformat:"s" %} checked="checked"{% endif %} class="level-{{category.level}}" name="{{ field.html_name }}" id="id_{{ field.html_name }}_{{forloop.counter}}" value="{{ category.pk }}" {{field.field.widget.attrs|flatatt}}>  
+			 		{{ category }}                                                                                                                                                                                                                                                                                                 
+			 	</label>                                                                                                                                                                                                                                                                                                                  
+			{% for level in structure.closed_levels %}</li></ul>{% endfor %}
+		{% endfor %}
+		{% include "bootstrap3/layout/help_text.html" %}
+	</div>
+</div>
+<script>
+$(document).ready(function() {
+	$("input:checkbox").change(function() {
+		var ischecked= $(this).is(':checked');
+		if (ischecked) {
+			$(this).parents().prevAll("label.checkbox").children("input:checkbox").prop("checked",true)	
+		}else{
+		    $(this).parents().prevAll("label.checkbox").children("input:checkbox").prop("checked",false)	 
+		}
+	});
+});
+</script>

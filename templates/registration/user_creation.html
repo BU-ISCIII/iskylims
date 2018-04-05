@@ -1,0 +1,15 @@
+{% extends 'iSkyLIMS_home/base.html' %}             
+{% load crispy_forms_tags %}                 
+                                              
+{% block content %}                          
+<div class="container-fluid margin-t-40">	 
+	{% csrf_token %}
+	<form action="" method="POST" enctype="multipart/form-data">
+		{% crispy form1 %}
+		{% crispy form2 %}
+	<div>                                                                                                                                   
+		<button type="submit" class="btn btn-primary"> Submit </button>                                                                     
+	</div>                                                                                                                                  
+	</form>
+</div>                                       
+{% endblock %}                               
