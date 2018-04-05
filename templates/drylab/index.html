@@ -1,0 +1,49 @@
+{% extends 'drylab/base.html' %}
+{% load static %}
+{% block content %}
+    {% csrf_token %}
+    <div class="row margin-b-4">                                  
+    	<div class="col-sm-6 col-sm-offset-6">                    
+    		{% include 'registration/login_inline.html' %}        
+    	</div>                                                    
+    </div>                                                        
+    <h1><div class="color-heading">BioInformatics</div></h1>
+    <h2>iSkyLIMS: DryLab</h2>
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-8">
+        <div class="panel panel-default">
+          <div class="panel-heading">Welcome</div>
+          <div class="panel-body">
+			  This section will allow you to check BU-ISCIII service activity. Available processes are request new services,<br>
+			  colaborations, counseling and infrastructure. You will be able to check the status of your ongoing services.
+		  </div> <!--// end panel body -->
+        </div> <!--// end panel -->
+      </div> <!--// end col-sm-8 -->
+      <div class="col-sm-2 col-sm-offset-1">
+            <img class="promo-block-img img-responsive" src="{% static "img/illumina/nextseqReduced.png" %}" align="Avatar">
+        </div> <!--// end img --> 
+      </div> <!--// end col-sm-4 -->
+    </div> <!--// end row -->
+        
+        <!--  Second paragraph -->
+        
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">Services ongoing and queued</div>
+          <div class="panel-body">
+          		Under construction. This will be a table with services ongoing or queued
+		  </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+      </div> <!--// end col-sm-6 -->
+      <div class="col-sm-4 col-sm-offset-2">
+        <div class="panel panel-default">
+          <div class="panel-heading">Timeline of services</div>
+          <div class="panel-body">
+          	Under construction. Kind of diagram with services dates.
+		  </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+      </div> <!--// end col-sm-4 -->
+    </div> <!--// end row -->
+
+{% endblock %}
