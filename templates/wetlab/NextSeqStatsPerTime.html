@@ -1,0 +1,242 @@
+{% extends 'wetlab/base.html' %}
+{% load static %}
+{% block content %}
+{% csrf_token %}
+{% if display_stats_per_time.run_names %}
+<script type="text/javascript" src="{% static "js/fusioncharts/js/fusioncharts.widgets.js" %}"></script> 
+<script type="text/javascript" src="{% static "js/fusioncharts/js/fusioncharts.js" %}"></script>
+<script type="text/javascript" src="{% static "js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script>
+<script type="text/javascript" src="{% static "js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
+<script type="text/javascript" src="{% static "js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>
+<script type="text/javascript" src="{% static "js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script>
+
+    <!--  Start Run information -->
+    <div class="row row-space-2 margin-b-4">
+        <BR>
+        <div class="col-sm-6">
+            <div class="panel panel-default">
+                <div class="panel-body"><h4>The statistics results are based on the {{ display_stats_per_time.number_of_runs }}  </h4> 
+                That have been found for the selected period from : {{ display_stats_per_time.dates }}
+    
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+            <div class="panel panel-default">
+                <div class="panel-heading"><h4>Runs graphics  </h4></div>
+                <div class="panel-body"> 
+                    <!-- Run Column Chart will start here-->
+                    <div id="run_period_chart-1"> </div>
+                    <!-- dumping JavaScript code here -->
+                        {{ display_stats_per_time.run_period_graphic |safe }}    
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-6 -->
+        
+
+        <BR>
+        <div class="col-sm-3 col-sm-offset-1">
+            <div class="panel panel-default">
+                <div class="panel-heading">These are the Runs found according your query. To get all information of the run , click on it:</div>
+                <table class="table table-hover">
+                   <thead>
+                      <tr>
+                        <th>Run Name</th>
+                        <th>Date</th>
+                      </tr>
+                   </thead>
+                   <tbody>
+                       
+                    {% for key, values in display_stats_per_time.run_names.items %}  
+                     <tr>
+                        {% for value, data in values %}
+                       <td><a href="/wetlab/search_run={{ key }}">{{ value }}</a> </td>
+                       <td> {{ data }} </td>
+                        {%endfor%}
+                     </tr>
+                    {%endfor%}
+                   </tbody>
+                 </table>
+          </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-3 -->
+    </div> <!--// end row -->
+        <BR>
+        <!--  start the disk space utilization  -->
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-6">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h4>Disk space utilization per each Run  </h4></div>
+                <div class="panel-body"> 
+                    <!-- Run Column Chart will start here-->
+                    <div id="disk_usage_chart-1"> </div>
+                    <!-- dumping JavaScript code here -->
+                        {{ display_stats_per_time.disk_space_period_graphic |safe }}    
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-6 -->
+    </div> <!--// end row --> 
+
+    <!--  End Run information -->   
+    
+    <!--  Start Project information -->
+    <div class="row row-space-2 margin-b-4">
+        <BR>
+        <div class="col-sm-6">
+            <div class="panel panel-default">
+                <div class="panel-body"><h4>Have been found {{ display_stats_per_time.number_of_projects }} associated to the {{ display_stats_per_time.number_of_runs }} </h4> 
+                    For the selected period from : {{ display_stats_per_time.dates }}
+    
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+            <div class="panel panel-default">
+                <div class="panel-heading"><h4>Projects graphics  </h4></div>
+                <div class="panel-body"> 
+                    <!-- Run Column Chart will start here-->
+                    <div id="project_period_chart-1"> </div>
+                    <!-- dumping JavaScript code here -->
+                        {{ display_stats_per_time.project_period_graphic |safe }}    
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-6 -->
+        
+
+        <BR>
+        <div class="col-sm-4 col-sm-offset-1"">
+            <div class="panel panel-default">
+                <div class="panel-heading">These are the Projects found according your query. To get all information of the Project , click on it:</div>
+                <table class="table table-hover">
+                   <thead>
+                      <tr>
+                        <th>Project Name</th>
+                        <th>Date</th>
+                      </tr>
+                   </thead>
+                   <tbody>
+                       
+                    {% for key, values in display_stats_per_time.project_names.items %}  
+                     <tr>
+                        {% for value, data in values %}
+                       <td><a href="/wetlab/search_project={{ key }}">{{ value }}</a> </td>
+                       <td> {{ data }} </td>
+                        {%endfor%}
+                     </tr>
+                    {%endfor%}
+                   </tbody>
+                 </table>
+          </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-3 -->
+    </div> <!--// end row --> 
+    
+    <!--  End Project information -->
+    
+    <!--  Start Undetermined Barcode information -->
+    <div class="row row-space-2 margin-b-4">
+      <div class="col-sm-6" >
+        <div class="panel panel-default">
+          <div class="panel-heading"><h3>Undetermined Barcode Statistics for Lane 1</h3></div>
+          <div class="panel-body">
+                <!-- Column 2 Chart will start here-->
+            <div id="chart-1"> </div>
+                <!-- dumping JavaScript code here -->
+                {{ display_stats_per_time.lane_chart1 |safe }}
+         </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        </div> <!--// end col-sm-6  -->
+      <div class="col-sm-6" >
+        <div class="panel panel-default">
+          <div class="panel-heading"><h3>Undetermined Barcode Statistics for Lane 2</h3></div>
+          <div class="panel-body">
+                <!-- Column 2 Chart will start here-->
+            <div id="chart-2"> </div>
+                <!-- dumping JavaScript code here -->
+                {{ display_stats_per_time.lane_chart2 |safe }}
+         </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        </div> <!--// end col-sm-6  -->
+    </div> <!--// end row -->
+
+    <div class="row row-space-2 margin-b-4">
+      <div class="col-sm-6" >
+        <div class="panel panel-default">
+          <div class="panel-heading"><h3>Undetermined Barcode Statistics for Lane 3</h3></div>
+          <div class="panel-body">
+                <!-- Column 2 Chart will start here-->
+            <div id="chart-3"> </div>
+                <!-- dumping JavaScript code here -->
+                {{ display_stats_per_time.lane_chart3 |safe }}
+         </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        </div> <!--// end col-sm-6  -->
+      <div class="col-sm-6" >
+        <div class="panel panel-default">
+          <div class="panel-heading"><h3>Undetermined Barcode Statistics for Lane 4</h3></div>
+          <div class="panel-body">
+                <!-- Column 2 Chart will start here-->
+            <div id="chart-4"> </div>
+                <!-- dumping JavaScript code here -->
+                {{ display_stats_per_time.lane_chart4 |safe }}
+         </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        </div> <!--// end col-sm-6  -->
+    </div> <!--// end row -->
+    
+    <div class="row row-space-2 margin-b-4">
+      <div class="col-sm-6 col-sm-offset-2" >
+        <div class="panel panel-default">
+          <div class="panel-heading"><h3>Unknow Barcode Statistics all Lanes</h3></div>
+          <div class="panel-body">
+                <!-- Unknow Barcode Pie Chart will start here-->
+            <div id="chart-5"> </div>
+                <!-- dumping JavaScript code here -->
+                {{ display_stats_per_time.unknow_pie3d |safe }}
+         </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        </div> <!--// end col-sm-6  -->
+    </div> <!--// end row -->
+    <!--  End Undetermined Barcode information -->
+{% else %}
+    <!-- FORM for searching RUN  Information -->
+    <BR>
+    <div class="row row-space-2 margin-b-4">
+      <div class="col-sm-7" >
+        <div class="panel panel-default">
+          <div class="panel-heading"><h3>Creating Run Statatistics per period of time</h3></div>
+          <div class="panel-body">
+           <form method="post" enctype="multipart/form-data" name="statisticsPerPeriod" id="statisticsPerPeriod" class="form-horizontal"> 
+            {% csrf_token %} 
+            <div class="form-group required" >
+                  <label class="col-sm-5 control-label" for="startdate" >From Start Date (DD-MM-YYYY) </label>
+                  <div class="col-sm-5"><input class="form-control" type="date" required = "required" name="startdate" value="" id="startdate"></div>
+                <br>
+            </div>  <!-- end from-group   -->
+            <div class="form-group required">
+                  <label class="col-sm-5 control-label" for="enddate" >End Date Search (DD-MM-YYYY) </label>
+                  <div class="col-sm-5"><input class="form-control" type="date" required = "required" name="enddate" value="" id="enddate"></div>
+                <br>
+            </div>  <!-- end from-group   -->
+                <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
+                <input class="btn pull-right btn-primary" type="submit" value="Submit">
+            </form>
+            </div>  <!--  end of panel body  -->
+            <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
+
+        </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  -->
+ 
+        <!-- Insert the help panel -->
+        <BR><BR>
+        <div class="col-sm-3 col-sm-offset-1">
+          <div class="panel panel-default">
+             <div class="panel-heading">Creating Run Statistics </div>
+             <div class="panel-body">
+             <p>This form will be used to create Run Statistics. The Tool will search for all those runs which the creation date is between the Start Date and the End Date: <BR>
+             <p>For extended help click on the button below.</p>
+            <center><button id="myBtn"> Help </button></center>
+            </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        <!-- Insert the Help window when clicking on the button -->
+        {% include 'wetlab/search-help.html' %}
+ 
+    </div> <!--// end row -->
+
+    <!-- End of FORM for searching RUN information -->
+{% endif %}
+{% endblock %}

@@ -1,0 +1,189 @@
+{% extends 'wetlab/base.html' %}
+{% load static %}
+{% block content %}
+{% csrf_token %}
+{% if display_one_sample %}
+<script type="text/javascript" src="{% static "js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>
+<script type="text/javascript" src="{% static "js/fusioncharts/js/fusioncharts.js" %}"></script>
+<script type="text/javascript" src="{% static "js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script>
+
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-6 col-sm-offset-1">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>The Sample {{ display_one_sample.sample_name }}  has matched the criteria from your query.</h3></div>
+                <div class="panel-body">
+                    This Sample is inside the project  {{ display_one_sample.project_name }}</a>"
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th> Related Information from the Sample</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Run Name </td> 
+                                <td> <a href="/wetlab/search_run={{ display_one_sample.run_id }}">{{ display_one_sample.run_name }}</a></td>
+                            </tr>
+                            <tr>
+                                <td>Project Name </td> 
+                                <td> <a href="/wetlab/search_project={{ display_one_sample.project_id }}">{{ display_one_sample.project_name }}</a></td>
+                            </tr>
+                            <tr>
+                                <td>Investigator Name </td> 
+                                <td>{{ display_one_sample.investigator_name }}</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-6 -->
+        <div class="col-sm-4 col-sm-offset-1" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3> Overall Quality of the Sample</h3></div>
+                <div class="panel-body">
+                <!-- Quality Sample graphic -->
+                    <div id="chart-1"> </div>
+                <!-- dumping JavaScript code here -->
+                {{ display_one_sample.quality_chart1 |safe }}
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-4  --> 
+    </div> <!--  end of row -->
+    <!-- #################################################  -->
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-10 col-sm-offset-1" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3> Sample Quality Information</h3></div>
+                <div class="panel-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                {% for values in display_one_sample.heading_samples_info %}
+                                    <th>{{ values }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                {% for values in display_one_sample.data_samples_info %}
+                                    <td>{{ values }}</td>
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-6  -->      
+   </div> <!--  end of row -->
+
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-10 col-sm-offset-1" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3> Percentage of the Sample inside the project</h3></div>
+                <div class="panel-body">
+                    <!-- Quality Sample graphic -->
+                    <div id="samples-chart-2"> </div>
+                <!-- dumping JavaScript code here -->
+                {{ display_one_sample.percentage_chart |safe }}
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-6  -->      
+   </div> <!--  end of row -->
+
+{% elif multiple_samples %}
+        <div class="row row-space-2 margin-b-4">
+        <BR>
+        <div class="col-sm-5 col-sm-offset-1">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3> These samples have matched your query as  :</h3></div>
+                <table class="table table-hover">
+                   <thead>
+                      <tr>
+                        <th>Sample name</th>
+                        <th>Included in project</th>
+                      </tr>
+                   </thead>
+                   <tbody>
+                    {% for key, values in multiple_samples.s_list.items %}  
+                     <tr>
+                        {% for value, data in values %}
+                       <td><a href="/wetlab/search_run={{ key }}">{{ value }}</a> </td>
+                       <td> {{ data }} </td>
+                        {%endfor%}
+                     </tr>
+                    {%endfor%}
+                   </tbody>
+                 </table>
+           </div> <!--  end of panel body -->
+          </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-7 -->     
+      
+
+  
+{% else %}
+{% load user_groups %}
+<!-- FORM for searching  Sample Information -->
+
+ <div style="background-image: url(/static/wetlab/img/search_image_background.jpg);">
+      
+    <div class="row row-space-4 margin-b-4">
+
+      <div class="col-sm-7 col-sm-offset-1" >
+
+        <div class="panel panel-default">
+          <div class="panel-heading"><h3>Form for Searching Samples </h3></div>
+          <div class="panel-body">
+            <form method="post" enctype="multipart/form-data" name="searchsample" id="searchsample" class="form-horizontal well">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="searchsample"/>
+            <div class="form-group"> 
+                  <label class="col-sm-5  control-label" for="samplename" >Fill the sample name </label>
+                  <div class="col-sm-5"><input class="form-control" type="text" name="samplename" id="samplename" size="100" maxlength="100"></div>
+             </div>  <!-- end from-group   -->
+            <BR>
+             
+             <div class="form-group">
+                <label class="col-sm-5 control-label" for="startdate" >From Date (DD-MM-YYYY)</label>
+                <div class="col-sm-5"><input class="form-control" type="date" name="startdate" id="startdate" size="100" maxlength="100"></div>
+                <br>
+             </div>  <!-- end from-group   -->
+             <br>
+             <div class="form-group">
+                <label class="col-sm-5 control-label" for="enddate" >End Date (DD-MM-YYYY)</label>
+                <div class="col-sm-5"><input class="form-control" type="date" name="enddate" id="enddate" size="100" maxlength="100"></div>
+                <br>
+             </div>  <!-- end from-group   -->
+             <br>
+             <br>
+            <div class="form-group"> 
+                  <label class="col-sm-5  control-label" for="username" >Search from user name</label>
+                  {% if request.user|has_group:"WetlabManager" %}
+                    <div class="col-sm-5"><input class="form-control" type="text" name="username" id="username" size="100" maxlength="100"></div>
+                  {% else %}
+                    <div class="col-sm-5"><input class="form-control" type="text" name="username" id="username" value="{{user.get_username}}"  size="100" maxlength="100" placeholder="{{user.get_username}}" readonly></div>
+                  {% endif %}
+             </div>  <!-- end from-group   -->
+            <br>
+            <br>
+                <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
+                <input class="btn pull-right btn-primary" type="submit" value="Submit">
+            </form>
+         </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+
+        </div> <!--// end col-sm-7  -->
+
+    </div> <!--// end row -->
+</div> <!-- Background  -->
+
+            
+    <!-- End of FORM for searching Project information -->
+    
+{% endif %} 
+    
+{% endblock %}
+
+
+
+
+
