@@ -16,7 +16,7 @@
                           <table class="table table-hover">
                                <thead>
                                   <tr>
-                                    <th>Services ID</th>
+                                    <th>Services Request ID</th>
                                     <th>Run Specifications</th>
                                     <th>Center</th>
                                     <th>Platform</th>
@@ -25,8 +25,8 @@
                                <tbody>
                                 {% for key, values in pending_services.recorded.items %}  
                                  <tr>
-                                    {% for specification, center, platform in values %}
-                                   <td><a href="/drylab/display_service={{ key }}">{{ key }}</a> </td>
+                                    {% for requestID, specification, center, platform in values %}
+                                   <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
                                    <td> {{ specification }} </td>
                                    <td> {{ center }} </td>
                                    <td> {{ platform }} </td>
@@ -45,7 +45,7 @@
                 <div class="panel panel-default">
                   <div class="panel-heading">List of Services in Approved State</div>
                   <div class="panel-body">
-                      {% if peding_services.approved %}
+                      {% if pending_services.approved %}
                           <table class="table table-hover">
                                <thead>
                                   <tr>
@@ -58,8 +58,8 @@
                                <tbody>
                                 {% for key, values in pending_services.approved.items %}  
                                  <tr>
-                                    {% for specification, center, platform in values %}
-                                   <td><a href="/drylab/display_service={{ key }}">{{ key }}</a> </td>
+                                    {% for requestID, specification, center, platform in values %}
+                                   <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
                                    <td> {{ specification }} </td>
                                    <td> {{ center }} </td>
                                    <td> {{ platform }} </td>
@@ -78,7 +78,7 @@
                 <div class="panel panel-default">
                   <div class="panel-heading">List of Services in Queued State</div>
                   <div class="panel-body">
-                      {% if peding_services.queued %}
+                      {% if pending_services.queued %}
                          <table class="table table-hover">
                                <thead>
                                   <tr>
@@ -91,8 +91,8 @@
                                <tbody>
                                 {% for key, values in pending_services.queued.items %}  
                                  <tr>
-                                    {% for specification, center, platform in values %}
-                                   <td><a href="/drylab/display_service={{ key }}">{{ key }}</a> </td>
+                                    {% for requestID, specification, center, platform in values %}
+                                   <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
                                    <td> {{ specification }} </td>
                                    <td> {{ center }} </td>
                                    <td> {{ platform }} </td>
@@ -113,7 +113,7 @@
                 <div class="panel panel-default">
                   <div class="panel-heading">List of Services in In Progress State</div>
                   <div class="panel-body">
-                      {% if peding_services.in_progress %}
+                      {% if pending_services.in_progress %}
                          <table class="table table-hover">
                                <thead>
                                   <tr>
@@ -126,8 +126,9 @@
                                <tbody>
                                 {% for key, values in pending_services.in_progress.items %}  
                                  <tr>
-                                    {% for specification, center, platform in values %}
-                                   <td><a href="/drylab/display_service={{ key }}">{{ specification }}</a> </td>
+                                    {% for requestID, specification, center, platform in values %}
+                                   <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
+                                   <td> {{ specification }} </td>
                                    <td> {{ center }} </td>
                                    <td> {{ platform }} </td>
                                     {%endfor%}

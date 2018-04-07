@@ -2,30 +2,57 @@
 {% load static %}
 {% block content %}
 {% csrf_token %}
-{% if display_one_service %}
-
-{% elif display_multiple_services %}
-
+{% if display_multiple_services %}
+    <div class="row row-space-2 margin-b-4">
+        <BR>
+        <div class="col-sm-9 col-sm-offset-1">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3> These Services have matched your query :</h3></div>
+                <div class="panel-body">
+                    <table class="table table-hover">
+                       <thead>
+                          <tr>
+                            <th>Service Request ID </th>
+                            <th>Status</th>
+                            <th>Center</th>
+                          </tr>
+                       </thead>
+                       <tbody>
+                        {% for key, values in display_multiple_services.s_list.items %}  
+                         <tr>
+                            {% for serviceID, status, center in values %}
+                           <td><a href="/drylab/display_service={{ key }}">{{ serviceID }}</a> </td>
+                           <td> {{ status }} </td>
+                           <td> {{ center }} </td>
+                            {%endfor%}
+                         </tr>
+                        {%endfor%}
+                       </tbody>
+                     </table>
+           </div> <!--  end of panel body -->
+          </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-9 --> 
+    </div> <!--// end row -->
 
 {% else %}
-    {% load user_groups %}
+
 <!-- FORM for searching  Service  -->
           
     <div class="row row-space-4 margin-b-4">
       <div class="col-sm-7 col-sm-offset-1" >
         <div class="panel panel-default">
-          <div class="panel-heading"><strong>Searching Service</strong></div>
+          <div class="panel-heading"><strong>Searching Services</strong></div>
           <div class="panel-body">
             <form method="post" enctype="multipart/form-data" name="searchservice" id="searchservice" class="form-horizontal well">
             {% csrf_token %}
             <input type="hidden" name="action" value="searchservice"/>
             <div class="form-group"> 
-                  <label class="col-sm-5  control-label" for="servicename" >Fill the service name </label>
-                  <div class="col-sm-5"><input class="form-control" type="text" name="servicename" id="servicename" size="100" maxlength="100"></div>
+                  <label class="col-sm-5  control-label" for="servicenumber" >Search by service number </label>
+                  <div class="col-sm-5"><input class="form-control" type="text" name="servicenumber" id="servicenumber" size="100" maxlength="100"></div>
              </div>  <!-- end from-group   -->
             <BR>
              <div class="form-group">
-               <label class="col-sm-5 control-label" for="servicectstate" >Service state</label>
+               <label class="col-sm-5 control-label" for="servicestate" >Service state</label>
                <div class="col-sm-4"><select class="form-control" name="servicestate" id="servicestate">
                    <option value="">Choose a value  </option>
                    {% for key, value in services_state_list %}

@@ -4,6 +4,7 @@
 
 from django.urls import path
 from django.conf import settings
+from django.shortcuts import redirect
 
 from . import views
 from django.conf.urls.static import static
@@ -17,8 +18,10 @@ urlpatterns = [
      path('searchService', views.search_service, name='search_service'),
      path('pendingServices', views.pending_services, name ='peding_services'),
      path('display_service=<int:service_id>/',views.display_service, name= 'display_service'),
+     path('addResolution=<int:service_id>/',views.add_resolution, name='add_resolution'),
+     #path('addResolution',views.add_resolution, name='add_resolution'),
 ] 
-
+    
 if settings.DEBUG:
      urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

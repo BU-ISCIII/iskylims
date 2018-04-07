@@ -25,8 +25,9 @@
     <link href="{% static "/css/layout.min.css" %}" rel="stylesheet" type="text/css"/>
 
     <!-- Place favicon.ico in the root directory -->
+    
     {% load user_groups %}
-
+    {% load mptt_tags %}
   </head>
   <!-- END HEAD -->
 
@@ -65,15 +66,14 @@
                                             <li><a href="/drylab/service_request_external_sequencing">EXTERNAL SEQUENCING</a></li>
                                         </ul>
                                     </li>
-                                {% endif %}
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/drylab/counseling_request">COUNSELING REQUEST</a></li>
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/drylab/infrastructure_request">INFRASTRUCTURE REQUEST</a></li>
+                                {% endif %}
                                 {% if user.is_authenticated and request.user|has_group:"Admin_iSkyLIMS" %}
                                 <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">MANAGE SERVICES</a>
                                     <ul class="dropdown-menu">
 				    					<li><a href="/drylab/searchService">SEARCH SERVICE</a></li>
 				    					<li><a href="/drylab/pendingServices">PENDING SERVICES</a></li>
-									<li><a href="/drylab/updateService">UPDATE SERVICE</a></li>
 				  					</ul>
                                 </li>
                                 <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">SERVICES STATISTICS</a>

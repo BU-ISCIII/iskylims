@@ -10,6 +10,8 @@ from wetlab.models import RunProcess, Projects
 from utils.models import Profile,Center
 from django.contrib.auth.models import User
 
+
+
 STATUS_CHOICES = (
 			('recorded',_("Recorded")),
 	   		('approved',_("Approved")),
@@ -59,7 +61,7 @@ class Service(models.Model):
 	#  decision taken to change Foreign Key from 'Profile'  to 'User' until full develop of "user registration"
 	serviceUserId=models.ForeignKey(User ,on_delete=models.CASCADE, null=True)
 	serviceSeqCenter=models.CharField(_("Sequencing center"),max_length=50,blank=False,null=True)
-
+	serviceRequestNumber=models.CharField(max_length=80, null=True)
 	## 'serviceRunID' is not used in forms.py/serviceRequestForm() or rest of code
 
 	## Addition of member 'serviceProjectNames' to support 
@@ -76,10 +78,10 @@ class Service(models.Model):
 	serviceCreatedOnDate= models.DateField(auto_now_add=True)
 	serviceOnApprovedDate = models.DateField(auto_now_add=False, null=True)
 	serviceOnRejectedDate = models.DateField(auto_now_add=False, null=True)
-	serviceOnQueuedDate = models.DateField(auto_now_add=False, null=True)
-	serviceOnInProgressDate = models.DateField(auto_now_add=False, null=True)
-	serviceOnDeliveredDate = models.DateField(auto_now_add=False, null=True)
-	serviceOnArchivedDate = models.DateField(auto_now_add=False, null=True)
+	#serviceOnQueuedDate = models.DateField(auto_now_add=False, null=True)
+	#serviceOnInProgressDate = models.DateField(auto_now_add=False, null=True)
+	#serviceOnDeliveredDate = models.DateField(auto_now_add=False, null=True)
+	#serviceOnArchivedDate = models.DateField(auto_now_add=False, null=True)
 	
 
 	
@@ -89,19 +91,25 @@ class Service(models.Model):
 	def get_service_information (self):
 		platform = str(self.servicePlatform)
 		
-		return '%s;%s;%s'  %(self.serviceRunSpecs, self.serviceSeqCenter, platform)
+		return '%s;%s;%s;%s'  %(self.serviceRequestNumber ,self.serviceRunSpecs, self.serviceSeqCenter, platform)
 
 	def get_service_dates (self):
 		service_dates =[]
-		service_dates.append(self.serviceCreatedOnDate.strftime("%B %d, %Y"))
+		service_dates.append(self.serviceCreatedOnDate.strftime("%d %B, %Y"))
 		if self.serviceOnApprovedDate is None:
-			service_dates.append('Approved Date not set')
+			if self.serviceStatus == 'rejected':
+				service_dates.append('--')
+			else:
+				service_dates.append('Approved Date not set')
 		else:
-			service_dates.append(self.serviceOnApprovedDate.strftime("%B %d, %Y"))
+			service_dates.append(self.serviceOnApprovedDate.strftime("%d %B, %Y"))
 		if self.serviceOnRejectedDate is None:
-			service_dates.append('Rejected Date not set')
+			if self.serviceStatus != 'recorded':
+				service_dates.append('--')
+			else:
+				service_dates.append('Rejected Date not set')
 		else:
-			service_dates.append(self.serviceOnRejectedDate.strftime("%B %d, %Y"))
+			service_dates.append(self.serviceOnRejectedDate.strftime("%d %B, %Y"))
 		
 		
 		
@@ -110,15 +118,21 @@ class Service(models.Model):
 class Resolution(models.Model):
 	resolutionServiceID=models.ForeignKey(Service ,on_delete=models.CASCADE)
 	resolutionNumber=models.IntegerField(_("Number of resolutions"))
-	resolutionServiceSRV=models.CharField(_("Service identifier"),max_length=10)
+	#resolutionServiceSRV=models.CharField(_("Service identifier"),max_length=10)
+	resolutionEstimatedDate=models.DateField(_(" Estimated resolution date"), null = True)
 	resolutionDate=models.DateField(_("Resolution date"),auto_now_add=True)
+	resolutionOnQueuedDate = models.DateField(auto_now_add=False, null=True)
+	resolutionOnInProgressDate = models.DateField(auto_now_add=False, null=True)
+	deliveryNotes=models.TextField(_("Delivery notes"),max_length=255, null=True)
 
 
 class Delivery(models.Model):
-	deliveryResolutionID=models.ForeignKey(Resolution ,on_delete=models.CASCADE )
-	deliveryNumber=models.IntegerField(_("Number of deliveries"))
-	deliveryEstimatedDate=models.DateField(_("Delivery estimated date"))
+	#deliveryResolutionID=models.ForeignKey(Resolution ,on_delete=models.CASCADE )
+	deliveryResolutionID=models.OneToOneField(Resolution ,on_delete=models.CASCADE )
+	#deliveryNumber=models.IntegerField(_("Number of deliveries"))
+	#deliveryEstimatedDate=models.DateField(_("Delivery estimated date"))
 	deliveryDate=models.DateField(_("Delivery date"),auto_now_add=True)
-	deliveryNotes=models.TextField(_("Delivery notes"))
+	deliveryNotes=models.TextField(_("Delivery notes"),max_length=255, null=True)
+	
 
 

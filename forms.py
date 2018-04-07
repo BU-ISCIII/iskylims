@@ -2,11 +2,13 @@
 from django import forms                                                                                                                           
 from django.utils.translation import ugettext_lazy as _, ugettext                                                                                  
 from crispy_forms.helper import FormHelper                                                                                                         
-from crispy_forms import layout, bootstrap                                                                                                         
+from crispy_forms import layout, bootstrap 
+#from crispy_forms.bootstrap import InlineField                                                                                                        
 #from utils.fields import MultipleChoiceTreeField                                                                                                  
 from mptt.forms import TreeNodeMultipleChoiceField                                                                                                 
 from .models import *                                                                                                                              
 from django.contrib.auth.forms import UserCreationForm                                                                                             
+
 
 ## Management of a 'Services request':
 # case a) (internal) GENOMICS_UNIT_SEQUENCING
@@ -157,19 +159,64 @@ class ServiceRequestForm_extended(ServiceRequestFormExternalSequencing):
 				'serviceSeqCenter',
 				'serviceProjectNames',
 				'serviceUserId',
+				'serviceRequestNumber',
 				'servicePlatform',
 				'serviceRunSpecs',
 				'serviceFileExt',
 				'serviceStatus',
 				'serviceOnApprovedDate',
 				'serviceOnRejectedDate',
-				'serviceOnQueuedDate',
-				'serviceOnInProgressDate',
-				'serviceOnDeliveredDate',
-				'serviceOnArchivedDate',
+				'serviceRequestID',
 				]
 
 	def __init__(self,*args, **kwargs):
 		super(ServiceRequestForm_extended, self).__init__(*args, **kwargs)
 		self.helper.layout.pop(0)
 
+
+class DateInput(forms.DateInput):
+    input_type = 'date'
+
+
+class addResolutionService(forms.ModelForm):
+	class Meta:
+		model = Resolution
+		fields = ['resolutionServiceID','resolutionEstimatedDate','deliveryNotes']
+		widgets = {'resolutionEstimatedDate': DateInput(),}
+		exclude = ['resolutionNumber',
+			    'resolutionDate',
+			    'resolutionOnQueuedDate',
+			    'resolutionOnInProgressDate',
+			    #'resolutionServiceID',
+			    ]
+		
+
+	def __init__(self,*args, **kwargs):
+		super(addResolutionService, self).__init__(*args, **kwargs)
+		self.helper = FormHelper()
+		self.helper.form_class = 'form-horizontal'
+		self.helper.label_class = 'col-lg-4'
+		self.helper.field_class = 'col-lg-6'
+		self.helper.form_action=""
+		self.helper.form_method="POST"
+		
+		self.helper.layout = layout.Layout(
+					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Resolution Form for Service </h3></div>"""),
+ 					layout.Div(
+						layout.Div(
+ 							layout.Field('resolutionServiceID'),
+ 							css_class="col-md-10",
+ 						),
+ 						layout.Div(
+ 							layout.Field('resolutionEstimatedDate'),
+ 							css_class="col-md-10",
+ 						),
+						layout.Div(
+ 							layout.Field('deliveryNotes'),
+ 							css_class="col-md-6",
+ 						),
+						
+						bootstrap.FormActions( layout.Submit(('submit'),_('Save')),)
+					    )
+					   
+					)
