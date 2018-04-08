@@ -20,6 +20,8 @@ urlpatterns = [
      path('display_service=<int:service_id>/',views.display_service, name= 'display_service'),
      path('addResolution=<int:service_id>/',views.add_resolution, name='add_resolution'),
      #path('addResolution',views.add_resolution, name='add_resolution'),
+     path('openSessions', views.open_sessions, name='open_sessions'),
+     path('userLogin', views.user_login, name = 'user_login'),
 ] 
     
 if settings.DEBUG:

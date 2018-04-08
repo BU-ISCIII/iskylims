@@ -205,6 +205,7 @@ def get_service_information (service_id):
 	display_service_details['user_name'] = service.serviceUserId.username
 	display_service_details['file'] = os.path.join(settings.MEDIA_URL,str(service.serviceFile))
 	display_service_details['state'] = service.serviceStatus
+	display_service_details['service_notes'] = service.serviceNotes
 	dates_for_services = service.get_service_dates()
 	for i in range(len(dates_for_services)):
 		service_dates.append([text_for_dates[i],dates_for_services[i]])
@@ -447,3 +448,66 @@ def add_resolution (request, service_id):
 			import pdb ; pdb.set_trace()
 
 			return render(request, 'drylab/addResolution.html' , { 'form' : form ,'prueba':'pepe'})
+
+def get_current_users():
+	from django.contrib.sessions.models import Session
+	from django.utils import timezone
+	active_sessions = Session.objects.filter(expire_date__gte=timezone.now())
+	user_id_list = []
+	for session in active_sessions:
+		data = session.get_decoded()
+		user_id_list.append(data.get('_auth_user_id', None))
+	# Query all logged in users based on id list
+	return User.objects.filter(id__in=user_id_list)
+    
+'''
+Define in settings.py 
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+'''
+@login_required
+def open_sessions (request):
+	if request.user.is_authenticated:
+		try:
+			groups = Group.objects.get(name='Admin_iSkyLIMS')
+			if groups not in request.user.groups.all():
+				return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+		except:
+			return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+	else:
+		#redirect to login webpage
+		return redirect ('/accounts/login')
+	user_connected = {}
+	if get_current_users().exists():
+		user_list_connected = get_current_users()
+		user_data = []
+		for user in user_list_connected:
+			user_data.append([user.username, user.first_name, user.last_name, user.email])
+
+		user_connected['user_data']= user_data
+			
+		user_connected['number_of_users'] = user_list_connected.count()
+		import pdb ; pdb.set_trace()
+	return render (request, 'drylab/openSessions.html', {'user_connected': user_connected })
+
+@login_required
+def user_login (request):
+	if request.user.is_authenticated:
+		try:
+			groups = Group.objects.get(name='Admin_iSkyLIMS')
+			if groups not in request.user.groups.all():
+				return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+		except:
+			return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+	else:
+		#redirect to login webpage
+		return redirect ('/accounts/login')
+	user_data = []
+	login_data = {}
+	user_list = User.objects.all().order_by('-last_login')
+	for user in user_list:
+		user_data.append([user.username, user.first_name, user.last_name, user.email, user.last_login])
+	login_data['user_data'] = user_data
+
+	return render(request, 'drylab/userLogin.html', {'login_data': login_data})
+

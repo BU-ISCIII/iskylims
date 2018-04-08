@@ -72,15 +72,22 @@
                                 {% if user.is_authenticated and request.user|has_group:"Admin_iSkyLIMS" %}
                                 <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">MANAGE SERVICES</a>
                                     <ul class="dropdown-menu">
-				    					<li><a href="/drylab/searchService">SEARCH SERVICE</a></li>
-				    					<li><a href="/drylab/pendingServices">PENDING SERVICES</a></li>
-				  					</ul>
+	    					<li><a href="/drylab/searchService">SEARCH SERVICE</a></li>
+	    					<li><a href="/drylab/pendingServices">PENDING SERVICES</a></li>
+					</ul>
                                 </li>
                                 <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">SERVICES STATISTICS</a>
                                     <ul class="dropdown-menu">
-				    					<li><a href="/drylab/#">REQUESTED BY USER</a></li>
-				    					<li><a href="/drylab/#">ORDERED USERS</a></li>
-									<li><a href="/drylab/#">SERVICES REQUESTED</a></li>
+						<li><a href="/drylab/#">REQUESTED BY USER</a></li>
+						<li><a href="/drylab/#">ORDERED USERS</a></li>
+						<li><a href="/drylab/#">SERVICES REQUESTED</a></li>
+				  					</ul>
+                                </li>
+				<li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">USER ACTIVITY</a>
+                                    <ul class="dropdown-menu">
+						<li><a href="/drylab/openSessions">CURRENT OPEN USER SESSIONS</a></li>
+						<li><a href="/drylab/userLogin">USER LAST LOGING</a></li>
+						<li><a href="/drylab/#">MORE TO ADD</a></li>
 				  					</ul>
                                 </li>
                                 {% endif %}

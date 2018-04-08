@@ -37,22 +37,32 @@
             </div> <!--// end panel -->
         </div> <!--// end col-sm-6  general information from service  -->
     <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-5 col-sm-offset-1">  <!-- Projects Requested services -->
-            <div class="panel panel-default">
-              <div class="panel-heading">Projects requested in the service</div>
-              <div class="panel-body">
-                  <table class="table table-hover">
-                       <tbody>
-                          {% for key, value in display_service.projects.items %}  
-                             <tr>
-                               <td><a href="/wetlab/search_project={{ key }}">{{ value }}</a> </td>
-                             </tr>
-                          {% endfor %}   
-                       </tbody>
-                    </table>
-                </div> <!--// end panel body -->
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-5  Projects Requested services  -->
+        <div class="col-sm-5 col-sm-offset-1">  
+            <div class="col-sm-12">  <!-- Projects Requested services -->
+                <div class="panel panel-default">
+                  <div class="panel-heading">Projects requested in the service</div>
+                  <div class="panel-body">
+                      <table class="table table-hover">
+                           <tbody>
+                              {% for key, value in display_service.projects.items %}  
+                                 <tr>
+                                   <td><a href="/wetlab/search_project={{ key }}">{{ value }}</a> </td>
+                                 </tr>
+                              {% endfor %}   
+                           </tbody>
+                        </table>
+                    </div> <!--// end panel body -->
+                </div> <!--// end panel -->
+        </div> <!--// end col-sm-12   Requested services  -->
+            <div class="col-sm-12">  <!-- Notes in the Requested services -->
+                <div class="panel panel-default">
+                  <div class="panel-heading">Notes</div>
+                  <div class="panel-body">
+                      {{display_service.service_notes}}
+                    </div> <!--// end panel body -->
+                </div> <!--// end panel -->
+        </div> <!--// end col-sm-12  Projects Requested services  -->        
+      </div> <!--// end col-sm-5 -->
     </div> <!--// end row --> 
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-6">  <!-- Requested Services -->
