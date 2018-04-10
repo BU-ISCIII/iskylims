@@ -10,7 +10,7 @@
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-6">  <!-- general information from service -->
             <div class="panel panel-default">
-              <div class="panel-heading">Service requested information</div>
+              <div class="panel-heading"><h3>Service requested information</div></h3>
               <div class="panel-body">
                   <table class="table table-hover">
                        <tbody>
@@ -18,10 +18,11 @@
                            <td>Service Requested by:  </td>
                            <td> {{ display_service.user_name }} </td>
                          </tr>
+                         <tr>
                            <td>Service is in State:  </td>
                            <td> {{ display_service.state }} </td>
                          </tr>
-                         </tr>
+                         <tr>
                            <td>File uploaded for the service:  </td>
                            <td><a href="/{{ display_service.file }}" download> File used  <span class="glyphicon glyphicon-download-alt"></span></a></td>
                          </tr>
@@ -31,6 +32,10 @@
                                 <td>{{ value }}</td>
                             </tr>
                          {% endfor%}
+                         <tr>
+                                <td>Estimated Delivery date </td>
+                                <td>{{ display_service.estimated_delivery_date }}</td>
+                        </tr>
                        </tbody>
                     </table>
                 </div> <!--// end panel body -->
@@ -40,7 +45,7 @@
         <div class="col-sm-5 col-sm-offset-1">  
             <div class="col-sm-12">  <!-- Projects Requested services -->
                 <div class="panel panel-default">
-                  <div class="panel-heading">Projects requested in the service</div>
+                  <div class="panel-heading"><h3>Projects requested in the service</div></h3>
                   <div class="panel-body">
                       <table class="table table-hover">
                            <tbody>
@@ -56,7 +61,7 @@
         </div> <!--// end col-sm-12   Requested services  -->
             <div class="col-sm-12">  <!-- Notes in the Requested services -->
                 <div class="panel panel-default">
-                  <div class="panel-heading">Notes</div>
+                  <div class="panel-heading"><h3>Notes included in the service request</div></h3>
                   <div class="panel-body">
                       {{display_service.service_notes}}
                     </div> <!--// end panel body -->
@@ -67,7 +72,7 @@
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-6">  <!-- Requested Services -->
             <div class="panel panel-default">
-              <div class="panel-heading">Requested Services for {{ display_service.service_name}}</div>
+              <div class="panel-heading"><h3>Requested Services for {{ display_service.service_name}}</div></h3>
               <div class="panel-body">
                   <ul class="root">
                     {% recursetree display_service.nodes %}
@@ -87,39 +92,105 @@
         </div> <!--// end col-sm-6  Requested Services  -->
         <div class="col-sm-5 col-sm-offset-1 ">  <!-- Actions  allowed-->
             <div class="panel panel-default">
-              <div class="panel-heading">Allowed actions on  {{ display_service.service_name}}</div>
+              <div class="panel-heading"><h3>Allowed actions on  {{ display_service.service_name}}</div></h3>
               <div class="panel-body">
-                  {% if display_service.allowed_action_appr_reject %}
-                    <form method="post" enctype="multipart/form-data" name="updateServiceState" id="updateServiceState" class="form-horizontal well">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="action_appr_reject"/>
-                        <div class="form-group"> 
-                            <div class="form-check form-check-inline">
-                                  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="accepted">
-                                  <label class="form-check-label" for="inlineRadio1">Accept Service</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="rejected">
-                                  <label class="form-check-label" for="inlineRadio2">Reject Service</label>
-                            </div>
-                           
-                            <input class="btn pull-right btn-primary" type="submit" value="Submit">
-                    </form>
-                  {%elif display_service.allowed_action_queued %}
-                     <form method="post" enctype="multipart/form-data" name="updateServiceState" id="updateServiceState" class="form-horizontal well">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="action_queued"/>
-                        <div class="form-group"> 
-                            <div class="form-check">
-                                  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="queued">
-                                  <label class="form-check-label" for="inlineRadio1">Queued the  Service</label>
-                            </div>                          
-                            <input class="btn pull-right btn-primary" type="submit" value="Submit">
-                    </form>   
+                  Click on the following buttons to update the service<BR><BR>
+                  {% if display_service.add_resolution_action %}
+                    <div class="col-sm-4 ">  <!-- col-sm-4  resolution button  -->
+                         <a href="/drylab/addResolution={{ display_service.add_resolution_action }}" class="btn btn-primary" role="button">Add Resolution</a>
+                    </div> <!--// end col-sm-4   resolution button  -->
+                  {% endif%}
+                  {% if display_service.add_in_progress_action %}
+                    <div class="col-sm-3 col-sm-offset-1">  <!-- col-sm-4  in Progress  button  -->
+                         <a href="/drylab/addinProgress={{ display_service.add_in_progress_action }}" class="btn btn-primary" role="button">In Progress</a>
+                    </div> <!--// end col-sm-4   in Progress button  -->
+                  {% endif%}
+                  {% if display_service.add_delivery_action %}
+                    <div class="col-sm-3 col-sm-offset-1">  <!-- col-sm-3  delivery button  -->
+                         <a href="/drylab/addDelivery={{ display_service.add_delivery_action }}" class="btn btn-primary" role="button">Add Delivery</a>
+                    </div> <!--// end col-sm-4   delivery button  -->
                   {% endif%}
                 </div> <!--// end panel body -->
             </div> <!--// end panel -->
         </div> <!--// end col-sm-5  Actions  allowed  -->
     </div> <!--// end row -->
+    
+    
+    
+    <div class="row row-space-2 margin-b-4">
+      <div class="col-sm-12">  <!-- Resolution and Delivery Information from service -->
+        <div class="col-sm-6">  <!-- Resolution information from service -->
+            <div class="panel panel-default">
+              <div class="panel-heading"><h3>Resolution requested information</h3></div>
+              <div class="panel-body">
+                  {% if display_service.resolutions %}
+                        {% for resolutions  in display_service.resolutions %}
+                            {% for resolution_number, estimate_date, queued_date, inprog_date, notes in resolutions %}
+                                <table class="table table-hover">
+                                   <thead>
+                                        <tr>
+                                            <th "colspan= 2">Resolution information for {{ resolution_number }}</th>
+                                        </tr>
+                                   </thead>
+                                   <tbody>
+                                     <tr>
+                                       <td>Estimated Delivery Date:  </td>
+                                       <td> {{ estimate_date }} </td>
+                                     </tr>
+                                     <tr>
+                                       <td>Queued Date:  </td>
+                                       <td> {{ queued_date }} </td>
+                                    </tr>
+                                    <tr>
+                                        <td>In Progress Date: </td>
+                                        <td>{{ inprog_date }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Notes: </td>
+                                        <td>{{ notes }}</td>
+                                    </tr>
+                                   </tbody>
+                                </table> 
+                            {% endfor %}
+                            <BR><BR>
+                        {% endfor %}
+                  {% endif %}
+                </div> <!--// end panel body -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  Resolution information from service  -->
+    
+    
+    
+    
+    <div class="col-sm-6">  <!-- Resolution information from service -->
+            <div class="panel panel-default">
+              <div class="panel-heading"><h3>Delivery information</h3></div>
+              <div class="panel-body">
+                  {% if display_service.delivery %}
+                            {% for  delivery_date, notes in display_service.delivery %}
+                                <table class="table table-hover">
+                                   <thead>
+                                        <tr>
+                                            <th colspan= "2">Delivery information </th>
+                                        </tr>
+                                   </thead>
+                                   <tbody>
+                                     <tr>
+                                       <td>Delivery Date:  </td>
+                                       <td> {{ delivery_date }} </td>
+                                     </tr>
+                                    <tr>
+                                        <td>Notes: </td>
+                                        <td>{{ notes }}</td>
+                                    </tr>
+                                   </tbody>
+                                </table> 
+                            {% endfor %}
+                  {% endif %}
+                </div> <!--// end panel body -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  Resolution information from service  -->
+    </div> <!--// end row --> 
+    </div>   <!-- // end Resolution and Delivery Information from service -->
 {% endif %}
 {% endblock %}

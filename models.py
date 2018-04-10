@@ -73,14 +73,14 @@ class Service(models.Model):
 	serviceFileExt=models.ForeignKey(FileExt ,on_delete=models.CASCADE ,verbose_name=_("File extension"),blank=False,null=True)
 	serviceAvailableService=TreeManyToManyField(AvailableService,verbose_name=_("AvailableServices"))
 	serviceFile=models.FileField(_("Service description file"),upload_to=service_files_upload)
-	serviceStatus=models.CharField(_("Service status"),max_length=10,choices=STATUS_CHOICES)
+	serviceStatus=models.CharField(_("Service status"),max_length=15,choices=STATUS_CHOICES)
 	serviceNotes=models.TextField(_("Service Notes"),max_length=500)
 	serviceCreatedOnDate= models.DateField(auto_now_add=True)
 	serviceOnApprovedDate = models.DateField(auto_now_add=False, null=True)
 	serviceOnRejectedDate = models.DateField(auto_now_add=False, null=True)
 	#serviceOnQueuedDate = models.DateField(auto_now_add=False, null=True)
 	#serviceOnInProgressDate = models.DateField(auto_now_add=False, null=True)
-	#serviceOnDeliveredDate = models.DateField(auto_now_add=False, null=True)
+	serviceOnDeliveredDate = models.DateField(auto_now_add=False, null=True)
 	#serviceOnArchivedDate = models.DateField(auto_now_add=False, null=True)
 	
 
@@ -117,22 +117,40 @@ class Service(models.Model):
 
 class Resolution(models.Model):
 	resolutionServiceID=models.ForeignKey(Service ,on_delete=models.CASCADE)
-	resolutionNumber=models.IntegerField(_("Number of resolutions"))
+	resolutionNumber=models.CharField(_("Resolutions number"),max_length=255,null=True)
 	#resolutionServiceSRV=models.CharField(_("Service identifier"),max_length=10)
 	resolutionEstimatedDate=models.DateField(_(" Estimated resolution date"), null = True)
 	resolutionDate=models.DateField(_("Resolution date"),auto_now_add=True)
 	resolutionOnQueuedDate = models.DateField(auto_now_add=False, null=True)
 	resolutionOnInProgressDate = models.DateField(auto_now_add=False, null=True)
-	deliveryNotes=models.TextField(_("Delivery notes"),max_length=255, null=True)
+	resolutionNotes=models.TextField(_("Resolution notes"),max_length=255, null=True)
+	
+	def get_resolution_information (self):
+		resolution_info =[]
+		resolution_info.append(self.resolutionNumber)
+		resolution_info.append(self.resolutionEstimatedDate.strftime("%d %B, %Y"))
+		resolution_info.append(self.resolutionOnQueuedDate.strftime("%d %B, %Y"))
+		if self.resolutionOnInProgressDate is None:
+			resolution_info.append('--')
+		else:
+			resolution_info.append(self.resolutionOnInProgressDate.strftime("%d %B, %Y"))
+		resolution_info.append(self.resolutionNotes)
+		
+		return resolution_info
 
 
 class Delivery(models.Model):
-	#deliveryResolutionID=models.ForeignKey(Resolution ,on_delete=models.CASCADE )
-	deliveryResolutionID=models.OneToOneField(Resolution ,on_delete=models.CASCADE )
+	deliveryResolutionID=models.ForeignKey(Resolution ,on_delete=models.CASCADE )
+	#deliveryResolutionID=models.OneToOneField(Resolution ,on_delete=models.CASCADE )
 	#deliveryNumber=models.IntegerField(_("Number of deliveries"))
 	#deliveryEstimatedDate=models.DateField(_("Delivery estimated date"))
 	deliveryDate=models.DateField(_("Delivery date"),auto_now_add=True)
 	deliveryNotes=models.TextField(_("Delivery notes"),max_length=255, null=True)
 	
+	def get_delivery_information (self):
+		delivery_info = []
+		delivery_info.append(self.deliveryDate.strftime("%d %B, %Y"))
+		delivery_info.append(self.deliveryNotes)
+		return delivery_info
 
 

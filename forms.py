@@ -3,11 +3,13 @@ from django import forms
 from django.utils.translation import ugettext_lazy as _, ugettext                                                                                  
 from crispy_forms.helper import FormHelper                                                                                                         
 from crispy_forms import layout, bootstrap 
+from crispy_forms.layout import Field
+from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field
 #from crispy_forms.bootstrap import InlineField                                                                                                        
 #from utils.fields import MultipleChoiceTreeField                                                                                                  
 from mptt.forms import TreeNodeMultipleChoiceField                                                                                                 
 from .models import *                                                                                                                              
-from django.contrib.auth.forms import UserCreationForm                                                                                             
+#from django.contrib.auth.forms import UserCreationForm                                                                                             
 
 
 ## Management of a 'Services request':
@@ -167,6 +169,7 @@ class ServiceRequestForm_extended(ServiceRequestFormExternalSequencing):
 				'serviceOnApprovedDate',
 				'serviceOnRejectedDate',
 				'serviceRequestID',
+				'serviceOnDeliveredDate'
 				]
 
 	def __init__(self,*args, **kwargs):
@@ -179,44 +182,101 @@ class DateInput(forms.DateInput):
 
 
 class addResolutionService(forms.ModelForm):
+
 	class Meta:
 		model = Resolution
-		fields = ['resolutionServiceID','resolutionEstimatedDate','deliveryNotes']
+		fields = ['resolutionEstimatedDate','resolutionNotes']
 		widgets = {'resolutionEstimatedDate': DateInput(),}
 		exclude = ['resolutionNumber',
 			    'resolutionDate',
 			    'resolutionOnQueuedDate',
 			    'resolutionOnInProgressDate',
-			    #'resolutionServiceID',
+			    'resolutionServiceID',
 			    ]
-		
+	radio_buttons = forms.ChoiceField(
+		label = 'Action to be done for the service',
+		choices = (
+			('accepted', "Service is Accepted"), 
+			('rejected', "Service is Rejected")
+		),
+		widget = forms.RadioSelect,
+		initial = 'accepted',
+		required = True,
+	)
 
 	def __init__(self,*args, **kwargs):
 		super(addResolutionService, self).__init__(*args, **kwargs)
 		self.helper = FormHelper()
 		self.helper.form_class = 'form-horizontal'
 		self.helper.label_class = 'col-lg-4'
-		self.helper.field_class = 'col-lg-6'
+		self.helper.field_class = 'col-lg-7'
 		self.helper.form_action=""
 		self.helper.form_method="POST"
 		
 		self.helper.layout = layout.Layout(
+
+				layout.Div(
 					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Resolution Form for Service </h3></div>"""),
  					layout.Div(
-						layout.Div(
- 							layout.Field('resolutionServiceID'),
- 							css_class="col-md-10",
- 						),
  						layout.Div(
  							layout.Field('resolutionEstimatedDate'),
  							css_class="col-md-10",
  						),
 						layout.Div(
- 							layout.Field('deliveryNotes'),
- 							css_class="col-md-6",
+ 							layout.Field('resolutionNotes'),
+ 							css_class="col-md-10",
  						),
-						
-						bootstrap.FormActions( layout.Submit(('submit'),_('Save')),)
-					    )
-					   
-					)
+						layout.Div(
+							Field ('radio_buttons' , ), 
+							css_class="col-md-10",
+						),
+						layout.Div(
+						    bootstrap.FormActions( layout.Reset(('Reset'),_('Reset')),
+									    layout.Submit(('submit'),_('Save'),style='margin-left: 80px')),
+						    css_class="col-md-10"
+						),
+						css_class="row panel-body",
+					),
+					css_class = "panel panel-default"
+					),
+				)
+
+class addDeliveryService (forms.ModelForm) :
+	
+	class Meta:
+		model = Delivery
+		fields = ['deliveryNotes']
+		exclude = ['deliveryResolutionID', 'deliveryDate'
+			    ]
+
+
+	def __init__(self,*args, **kwargs):
+		super(addDeliveryService, self).__init__(*args, **kwargs)
+		self.helper = FormHelper()
+		self.helper.form_class = 'form-horizontal'
+		self.helper.label_class = 'col-lg-4'
+		self.helper.field_class = 'col-lg-7'
+		self.helper.form_action=""
+		self.helper.form_method="POST"
+		
+		self.helper.layout = layout.Layout(
+				layout.Div(
+					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Delivery Form for Service </h3></div>"""),
+ 					layout.Div(
+						layout.Div(
+							layout.Field('deliveryNotes'),
+							css_class="col-md-10",
+						),
+						layout.Div(
+							bootstrap.FormActions( layout.Reset(('Reset'),_('Reset')),
+										layout.Submit(('submit'),_('Save'),style='margin-left: 80px')),
+										#layout.Submit(('submit'),_('Save'), css_class= "col-md-2 offset-md-3")),
+							css_class="col-md-10"
+						),
+						css_class="row panel-body",
+					),
+					css_class = "panel panel-default"
+					),
+				)
+
+

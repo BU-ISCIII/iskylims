@@ -31,7 +31,8 @@ def index(request):
 				service_delivery_date = 'Not defined yet'
 			else:
 				if Resolution.objects.filter(resolutionServiceID = service).exists():
-					service_delivery_date = Resolution.objects.get(resolutionServiceID = service).last()
+					#import pdb; pdb.set_trace()
+					service_delivery_date = Resolution.objects.filter(resolutionServiceID = service).last().resolutionEstimatedDate.strftime("%d %B, %Y")
 				else:
 					service_delivery_date = 'Not defined yet'
 			service_info.append(service_delivery_date)
@@ -210,19 +211,38 @@ def get_service_information (service_id):
 	for i in range(len(dates_for_services)):
 		service_dates.append([text_for_dates[i],dates_for_services[i]])
 	display_service_details['service_dates'] = service_dates
+	if service.serviceStatus != 'approved'and service.serviceStatus != 'recorded':
+		# get the proposal for the delivery date
+		#import pdb; pdb.set_trace()
+		resolution_date = Resolution.objects.filter(resolutionServiceID = service).last().resolutionEstimatedDate
+		display_service_details['estimated_delivery_date'] = resolution_date
 	
 	# get all services
 	display_service_details['nodes']= service.serviceAvailableService.all()
+	# adding actions fields 
+	if service.serviceStatus != 'rejected' or service.serviceStatus != 'archived':
+		display_service_details['add_resolution_action'] = service_id
+	if service.serviceStatus == 'queued':
+		resolution_id = Resolution.objects.filter(resolutionServiceID = service).last().id
+		display_service_details['add_in_progress_action'] = resolution_id
+	if service.serviceStatus == 'in_progress':
+		resolution_id = Resolution.objects.filter(resolutionServiceID = service).last().id
+		display_service_details['add_delivery_action'] = resolution_id
 	
-	if service.serviceStatus == 'recorded':
-		display_service_details['allowed_action_appr_reject'] = True
-	elif service.serviceStatus == 'approved':
-		display_service_details['allowed_action_queued'] = True
-	elif service.serviceStatus == 'queued':
-		display_service_details['allowed_action_inProgress'] = True
-	else:
-		display_service_details['not_allowed_actions'] = True
-
+	
+	if Resolution.objects.filter(resolutionServiceID = service).exists():
+		resolution_list = Resolution.objects.filter(resolutionServiceID = service)
+		resolution_info =[]
+		for resolution_item in resolution_list :
+			resolution_info.append([resolution_item.get_resolution_information()])
+		display_service_details['resolutions'] = resolution_info
+	#import pdb; pdb.set_trace()
+	if Resolution.objects.filter(resolutionServiceID = service).exists():
+		resolution_id = Resolution.objects.filter(resolutionServiceID = service).last().id
+		if Delivery.objects.filter(deliveryResolutionID = resolution_id).exists():
+			delivery = Delivery.objects.get(deliveryResolutionID = resolution_id)
+			display_service_details['delivery'] = [delivery.get_delivery_information()]
+	
 	return display_service_details
 
 @login_required
@@ -239,7 +259,7 @@ def display_service (request, service_id):
 		return redirect ('/accounts/login')
 	if Service.objects.filter(pk=service_id).exists():
 		
-		
+		'''
 		if request.method == 'POST':
 			#import pdb; pdb.set_trace()
 			service= Service.objects.get(pk=service_id)
@@ -258,6 +278,7 @@ def display_service (request, service_id):
 					# update state and dates for accepted service
 					service.serviceStatus = 'queued'
 					service.save()
+		'''
 		# displays the service information with the latest changes done using the forms
 		display_service_details = get_service_information(service_id)
 			
@@ -414,7 +435,6 @@ def pending_services (request):
 
 @login_required
 def add_resolution (request, service_id):
-#def add_resolution (request):
 	if request.user.is_authenticated:
 		try:
 			groups = Group.objects.get(name='Admin_iSkyLIMS')
@@ -427,27 +447,108 @@ def add_resolution (request, service_id):
 		return redirect ('/accounts/login')
 		
 	if request.method == "POST":
-		
 		form = addResolutionService(data=request.POST)
-		import pdb ; pdb.set_trace()
+		#import pdb ; pdb.set_trace()
 		if form.is_valid():
-			
+			service_acepted_rejected = request.POST['radio_buttons']
 			new_resolution = form.save(commit=False)
-			#service_id =  new_resolution.
-			#new_resolution.serviceStatus = "queued"
-			#new_service.serviceUserId = User.objects.get(id=request.user.id)
-			#new_service.serviceRequestID = increment_service_number(request.user.id)
-			#new_resolution.save()
-			#form.save_m2m()
-			return render(request,'utils/info_page.html',{'content':['Your resolution proposal has been successfully recorded.','You will be contacted shortly.']})
+			service_reference = Service.objects.get(pk=service_id)
+			if service_acepted_rejected == 'accepted':
+				service_reference.serviceStatus = "approved"
+				service_reference.serviceOnApprovedDate = datetime.date.today()
+			else:
+				service_reference.serviceStatus = "rejected"
+				service_reference.serviceOnRejectedDate = datetime.date.today()
+			service_reference.save()
+			if Resolution.objects.filter(resolutionServiceID = service_reference).exists():
+				resolution_count =  Resolution.objects.filter(resolutionServiceID = service_reference).count()
+				resolution_number = service_reference.serviceRequestNumber + '.' + str(resolution_count +1 )
+			else:
+				resolution_number = service_reference.serviceRequestNumber + '.1'
+			new_resolution.resolutionServiceID = service_reference
+			new_resolution.resolutionNumber = resolution_number
+			new_resolution.resolutionOnQueuedDate = datetime.date.today()
+			if service_reference.serviceStatus == "approved":
+				service_reference.serviceStatus = "queued"
+				service_reference.save()
+			new_resolution.save()
+			form.save_m2m()
+			#import pdb ; pdb.set_trace()
+			return render(request,'drylab/info_page.html',{'content':['Your resolution proposal has been successfully recorded with Resolution Number.', resolution_number]})
 	else:
 		if Service.objects.filter(pk=service_id).exists():
 			service_id= Service.objects.get(pk=service_id)
 			form = addResolutionService()
-			#form.fields['resolutionServiceID'].queryset = service_id
-			import pdb ; pdb.set_trace()
+			#import pdb ; pdb.set_trace()
 
 			return render(request, 'drylab/addResolution.html' , { 'form' : form ,'prueba':'pepe'})
+
+def add_in_progress (request, resolution_id):
+	if request.user.is_authenticated:
+		try:
+			groups = Group.objects.get(name='Admin_iSkyLIMS')
+			if groups not in request.user.groups.all():
+				return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+		except:
+			return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+	else:
+		#redirect to login webpage
+		return redirect ('/accounts/login')
+	
+	if Resolution.objects.filter(pk = resolution_id).exists():
+		resolution = Resolution.objects.get(pk = resolution_id)
+		service_to_update = resolution.resolutionServiceID
+		# update the service status and in_porgress date
+		#import pdb ; pdb.set_trace()
+		service_to_update.serviceStatus = 'in_progress'
+		service_to_update.save()
+		resolution.resolutionOnInProgressDate = datetime.date.today()
+		resolution.save()
+		return render (request,'drylab/info_page.html',{'content':['Your resolution  request ', resolution.resolutionNumber, 
+								'has been successfully upated to In Progress state']})
+	else:
+		#import pdb ; pdb.set_trace()
+		return render (request,'drylab/error_page.html', {'content':['The resolution that you are trying to upadate does not exists ','Contact with your administrator .']})
+	return
+
+
+def add_delivery (request , resolution_id):
+	if request.user.is_authenticated:
+		try:
+			groups = Group.objects.get(name='Admin_iSkyLIMS')
+			if groups not in request.user.groups.all():
+				return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+		except:
+			return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+	else:
+		#redirect to login webpage
+		return redirect ('/accounts/login')
+	if request.method == 'POST' :
+		form = addDeliveryService(data=request.POST)
+		if form.is_valid():
+			#import pdb ; pdb.set_trace()
+			resolution_id = Resolution.objects.get(pk = resolution_id)
+			new_delivery = form.save(commit=False)
+			new_delivery.deliveryDate = datetime.date.today()
+			new_delivery.deliveryResolutionID = resolution_id
+			new_delivery.save()
+			form.save_m2m()
+			# Update the status service to delivery
+			service_id = resolution_id.resolutionServiceID
+			service_id.serviceStatus = 'delivered'
+			service_id.serviceOnDeliveredDate = datetime.date.today()
+			service_id.save()
+			return render(request,'drylab/info_page.html',{'content':['The service is now on Delivery status ']})
+	else:
+		if Resolution.objects.filter(pk = resolution_id).exists():
+			#import pdb ; pdb.set_trace()
+			form = addDeliveryService()
+			delivery_info = {}
+			return render (request, 'drylab/addDelivery.html', {'form':form, 'delivery_info': delivery_info})
+		else:
+			#import pdb ; pdb.set_trace()
+			return render (request,'drylab/error_page.html', {'content':['The resolution that you are trying to upadate does not exists ','Contact with your administrator .']})
+	return
 
 def get_current_users():
 	from django.contrib.sessions.models import Session
@@ -487,7 +588,7 @@ def open_sessions (request):
 		user_connected['user_data']= user_data
 			
 		user_connected['number_of_users'] = user_list_connected.count()
-		import pdb ; pdb.set_trace()
+		#import pdb ; pdb.set_trace()
 	return render (request, 'drylab/openSessions.html', {'user_connected': user_connected })
 
 @login_required

@@ -19,7 +19,8 @@ urlpatterns = [
      path('pendingServices', views.pending_services, name ='peding_services'),
      path('display_service=<int:service_id>/',views.display_service, name= 'display_service'),
      path('addResolution=<int:service_id>/',views.add_resolution, name='add_resolution'),
-     #path('addResolution',views.add_resolution, name='add_resolution'),
+     path('addinProgress=<int:resolution_id>/', views.add_in_progress, name='add_in_progress'),
+     path('addDelivery=<int:resolution_id>/', views.add_delivery, name= 'add_delivery'),
      path('openSessions', views.open_sessions, name='open_sessions'),
      path('userLogin', views.user_login, name = 'user_login'),
 ] 

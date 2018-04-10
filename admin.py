@@ -19,7 +19,7 @@ class AvailableServiceAdmin(DjangoMpttAdmin):
 	list_display=('availServiceDescription',)
 
 class ResolutionAdmin(admin.ModelAdmin):
-	list_display=('resolutionServiceID','resolutionDate','deliveryNotes')
+	list_display=('resolutionServiceID','resolutionDate','resolutionNotes')
 
 class DeliveryAdmin(admin.ModelAdmin):
 	list_display=('deliveryResolutionID','deliveryDate','deliveryNotes')
