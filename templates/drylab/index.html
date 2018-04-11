@@ -1,12 +1,7 @@
 {% extends 'drylab/base.html' %}
 {% load static %}
 {% block content %}
-    {% csrf_token %}
-    <div class="row margin-b-4">                                  
-    	<div class="col-sm-6 col-sm-offset-6">                    
-    		{% include 'registration/login_inline.html' %}        
-    	</div>                                                    
-    </div>                                                        
+    {% csrf_token %}                                                        
     <h1><div class="color-heading">BioInformatics</div></h1>
     <h2>iSkyLIMS: DryLab</h2>
     <div class="row row-space-2 margin-b-4">
@@ -30,9 +25,30 @@
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-6">
         <div class="panel panel-default">
-          <div class="panel-heading">Services ongoing and queued</div>
+          <div class="panel-heading"><h3>Services ongoing and queued</h3></div>
           <div class="panel-body">
-          		Under construction. This will be a table with services ongoing or queued
+                {% if service_list %}
+                     <table class="table table-hover" >
+                            <thead>
+                                <tr>
+                                    <th>Service Number</th>
+                                    <th>Status</th>
+                                    <th>Expected delivery date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for values in service_list %}
+                                    <tr>
+                                        {% for value in values %}
+                                        <td>{{ value }} </td> 
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                {% else %}
+                    There are no Services pending to delivery 
+                {% endif %}
 		  </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
       </div> <!--// end col-sm-6 -->

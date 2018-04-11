@@ -19,10 +19,10 @@ class AvailableServiceAdmin(DjangoMpttAdmin):
 	list_display=('availServiceDescription',)
 
 class ResolutionAdmin(admin.ModelAdmin):
-	list_display=('resolutionServiceID','resolutionNumber','resolutionServiceSRV','resolutionDate')
+	list_display=('resolutionServiceID','resolutionDate','resolutionNotes')
 
 class DeliveryAdmin(admin.ModelAdmin):
-	list_display=('deliveryResolutionID','deliveryEstimatedDate','deliveryDate','deliveryNumber','deliveryNotes')
+	list_display=('deliveryResolutionID','deliveryDate','deliveryNotes')
 
 admin.site.register(FileExt,FileExtAdmin)
 admin.site.register(Platform,PlatformAdmin)
@@ -30,3 +30,4 @@ admin.site.register(Service,ServiceAdmin)
 admin.site.register(AvailableService,AvailableServiceAdmin)
 admin.site.register(Resolution,ResolutionAdmin)
 admin.site.register(Delivery,DeliveryAdmin)
+
