@@ -6,6 +6,9 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {% load staticfiles  %}
+    {% load i18n %}
+
+
     <!-- GLOBAL MANDATORY STYLES -->
     <link href="http://fonts.googleapis.com/css?family=Hind:300,400,500,600,700" rel="stylesheet" type="text/css">
     <link href="{% static "/vendor/simple-line-icons/css/simple-line-icons.css" %}" rel="stylesheet" type="text/css"/>
@@ -27,6 +30,8 @@
     <!-- Place favicon.ico in the root directory -->
 
 
+
+
   </head>
   <!-- END HEAD -->
 
@@ -38,14 +43,7 @@
             <nav class="navbar" role="navigation">
                 <div class="container">
                     <!-- Brand and toggle get grouped for better mobile display -->
-					<!--<div>
-                         {% if user.is_authenticated %}
-                         User: {{ user.get_username }}<a href="{% url 'logout'%}?next={{request.path}}">LOGOUT</a></li>
-					     {% else %}
-					     <a href="{% url 'login'%}?next={{request.path}}">LOGIN</a></li>
-					     {% endif %}
-								  </div>-->
-					<div class="menu-container js_nav-item">
+                    <div class="menu-container js_nav-item">
                         <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
                             <span class="sr-only">Toggle navigation</span>
                             <span class="toggle-icon"></span>
@@ -71,7 +69,7 @@
 				    					<li><a href="#">BU-ISCIII</a></li>
 				  					</ul>
 								</li>
-                                <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/tutorials">TUTORIALS</a></li>
+                                <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/tutorials/">TUTORIALS</a></li>
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#">FAQS</a></li>
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="utils/user_creation">REGISTER</a></li>
                             </ul>
@@ -90,12 +88,39 @@
 
 	<div class="bg-color-sky-light">
           <div class="container content-lg">
-			  <!--<div class="row margin-b-40">-->
+            <div class="row margin-b-40">
 
-            {% block content %}
-	<!--========== HERE WILL BE THE INFORMATION FROM DJANGO CODE  ==========-->
-            {% endblock %}
-			<!--</div>--!> <!--// end row -->
+
+
+{#  ========== BLOG (== bootstrap layout) ================= #}
+    <h1><div class="color-heading">Tutorials</div></h1>
+    <h3>...by the iSkyLIMS team...</h3>
+
+	<div class="row">
+	<div class="col-sm-3">
+      <div id="sidebar" role="complementary">
+        {% block sidebar %}
+        {% endblock sidebar %}
+      </div> {# end div sidebar #}
+	</div> {# col #}
+
+	<div class="col-sm-9">
+      {% block slider %}{% endblock slider %}
+      <div id="content" class="hfeed" role="main">
+
+        {% block content %}
+        {% endblock content %}
+      </div>
+
+	</div> {# col #}
+	</div> {# row #}
+
+
+{#  ========= END BLOG ==================================== #}
+
+
+
+            </div> <!--// end row -->
         </div> <!--// end container -->
         </div> <!--// end bg-color -->
 
