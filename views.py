@@ -214,6 +214,8 @@ def get_service_information (service_id):
 	if service.serviceStatus != 'approved'and service.serviceStatus != 'recorded':
 		# get the proposal for the delivery date
 		#import pdb; pdb.set_trace()
+		resolution_folder = Resolution.objects.filter(resolutionServiceID = service).last().resolutionFullNumber
+		display_service_details['resolution_folder'] = resolution_folder
 		resolution_date = Resolution.objects.filter(resolutionServiceID = service).last().resolutionEstimatedDate
 		display_service_details['estimated_delivery_date'] = resolution_date
 	
@@ -447,24 +449,33 @@ def add_resolution (request, service_id):
 		return redirect ('/accounts/login')
 		
 	if request.method == "POST":
-		form = addResolutionService(data=request.POST)
+		
+		form = AddResolutionService(data=request.POST)
 		#import pdb ; pdb.set_trace()
 		if form.is_valid():
 			service_acepted_rejected = request.POST['radio_buttons']
 			new_resolution = form.save(commit=False)
+			#import pdb ; pdb.set_trace()
 			service_reference = Service.objects.get(pk=service_id)
 			if service_acepted_rejected == 'accepted':
 				service_reference.serviceStatus = "approved"
 				service_reference.serviceOnApprovedDate = datetime.date.today()
+				number_list = []
+				number_list.append(str(service_reference.serviceRequestNumber))
+				number_list.append(str(datetime.date.today()).replace('-',''))
+				number_list.append(new_resolution.resolutionFullNumber)
+				number_list.append(str(service_reference.serviceUserId))
+				number_list.append('S')
+				new_resolution.resolutionFullNumber = '_'.join(number_list)
 			else:
 				service_reference.serviceStatus = "rejected"
 				service_reference.serviceOnRejectedDate = datetime.date.today()
 			service_reference.save()
 			if Resolution.objects.filter(resolutionServiceID = service_reference).exists():
 				resolution_count =  Resolution.objects.filter(resolutionServiceID = service_reference).count()
-				resolution_number = service_reference.serviceRequestNumber + '.' + str(resolution_count +1 )
+				resolution_number = str(service_reference.serviceRequestNumber) + '.' + str(resolution_count +1 )
 			else:
-				resolution_number = service_reference.serviceRequestNumber + '.1'
+				resolution_number = str(service_reference.serviceRequestNumber) + '.1'
 			new_resolution.resolutionServiceID = service_reference
 			new_resolution.resolutionNumber = resolution_number
 			new_resolution.resolutionOnQueuedDate = datetime.date.today()
@@ -478,11 +489,12 @@ def add_resolution (request, service_id):
 	else:
 		if Service.objects.filter(pk=service_id).exists():
 			service_id= Service.objects.get(pk=service_id)
-			form = addResolutionService()
+			service_number = service_id.serviceRequestNumber
+			form = AddResolutionService()
 			#import pdb ; pdb.set_trace()
 
 			return render(request, 'drylab/addResolution.html' , { 'form' : form ,'prueba':'pepe'})
-
+@login_required
 def add_in_progress (request, resolution_id):
 	if request.user.is_authenticated:
 		try:
@@ -511,7 +523,7 @@ def add_in_progress (request, resolution_id):
 		return render (request,'drylab/error_page.html', {'content':['The resolution that you are trying to upadate does not exists ','Contact with your administrator .']})
 	return
 
-
+@login_required
 def add_delivery (request , resolution_id):
 	if request.user.is_authenticated:
 		try:
@@ -524,7 +536,7 @@ def add_delivery (request , resolution_id):
 		#redirect to login webpage
 		return redirect ('/accounts/login')
 	if request.method == 'POST' :
-		form = addDeliveryService(data=request.POST)
+		form = AddDeliveryService(data=request.POST)
 		if form.is_valid():
 			#import pdb ; pdb.set_trace()
 			resolution_id = Resolution.objects.get(pk = resolution_id)
@@ -542,13 +554,139 @@ def add_delivery (request , resolution_id):
 	else:
 		if Resolution.objects.filter(pk = resolution_id).exists():
 			#import pdb ; pdb.set_trace()
-			form = addDeliveryService()
+			form = AddDeliveryService()
 			delivery_info = {}
 			return render (request, 'drylab/addDelivery.html', {'form':form, 'delivery_info': delivery_info})
 		else:
 			#import pdb ; pdb.set_trace()
 			return render (request,'drylab/error_page.html', {'content':['The resolution that you are trying to upadate does not exists ','Contact with your administrator .']})
 	return
+
+@login_required
+def stats_by_date_user (request):
+	if request.user.is_authenticated:
+		try:
+			groups = Group.objects.get(name='Admin_iSkyLIMS')
+			if groups not in request.user.groups.all():
+				return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+		except:
+			return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+	else:
+		#redirect to login webpage
+		return redirect ('/accounts/login')
+	if request.method == 'POST':
+		form = ByDateUserStats(data=request.POST)
+		if form.is_valid():
+			# validate the input data in the form
+			user_name = form['user_name'].data
+			start_date = form['start_date'].data
+			end_date = form['end_date'].data
+			if User.objects.filter(username__icontains = user_name).exists():
+				matched_names = User.objects.filter(username__icontains = user_name)
+				if len(matched_names) > 1:
+					name_list =[]
+					for names in matched_names:
+						name_list.append(names.username)
+					name_string = '  ,  '.join(name_list)
+					return render (request,'drylab/error_page.html', {'content':['Too many matches have been found for the user name field', user_name,
+																				'ADVICE:', 'Please write down one of the following user name and repeate again the search',
+																				name_string,]})
+			if start_date != '':
+				try:
+					datetime.datetime.strptime(start_date, '%Y-%m-%d')
+				except:
+					return render (request,'drylab/error_page.html', {'content':['The format for the "Start Date Search" Field is incorrect ',
+																				'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
+			if end_date != '':
+				try:
+					datetime.datetime.strptime(end_date, '%Y-%m-%d')
+				except:
+					return render (request,'drylab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
+																				'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
+			import pdb ; pdb.set_trace()
+		pass
+	else:
+		form = ByDateUserStats()
+		return render(request, 'drylab/statsByDateUser.html', {'form':form})
+
+	
+@login_required
+def stats_by_users (request):
+	if request.user.is_authenticated:
+		try:
+			groups = Group.objects.get(name='Admin_iSkyLIMS')
+			if groups not in request.user.groups.all():
+				return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+		except:
+			return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+	else:
+		#redirect to login webpage
+		return redirect ('/accounts/login')
+	if request.method == 'POST':
+		form = ByUserStats(data=request.POST)
+		if form.is_valid():
+			# validate the input data in the form
+			start_date = form['start_date'].data
+			end_date = form['end_date'].data
+	else:
+		form = ByUserStats()
+	return render(request, 'drylab/statsByUsers.html', {'form':form})
+
+
+@login_required
+def stats_by_services_request (request):
+	if request.user.is_authenticated:
+		try:
+			groups = Group.objects.get(name='Admin_iSkyLIMS')
+			if groups not in request.user.groups.all():
+				return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+		except:
+			return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+	else:
+		#redirect to login webpage
+		return redirect ('/accounts/login')
+	if request.method == 'POST':
+		form = ByUserStats(data=request.POST)
+		if form.is_valid():
+			# validate the input data in the form
+			start_date = form['start_date'].data
+			end_date = form['end_date'].data
+			
+	else:
+		form = ByUserStats()
+	return render(request, 'drylab/statsByUsers.html', {'form':form})
+
+
+@login_required
+def stats_time_delivery (request):
+	if request.user.is_authenticated:
+		try:
+			groups = Group.objects.get(name='Admin_iSkyLIMS')
+			if groups not in request.user.groups.all():
+				return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+		except:
+			return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+	else:
+		#redirect to login webpage
+		return redirect ('/accounts/login')
+	if request.method == 'POST':
+		form = ByDateUserStats(data=request.POST)
+		if form.is_valid():
+			# validate the input data in the form
+			user_name = form['user_name'].data
+			start_date = form['start_date'].data
+			end_date = form['end_date'].data
+			
+	
+	else:
+		form = ByDateUserStats()
+		return render(request, 'drylab/statsByDateUser.html', {'form':form})
+
+
+
+
+
+
 
 def get_current_users():
 	from django.contrib.sessions.models import Session

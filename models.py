@@ -124,10 +124,15 @@ class Resolution(models.Model):
 	resolutionOnQueuedDate = models.DateField(auto_now_add=False, null=True)
 	resolutionOnInProgressDate = models.DateField(auto_now_add=False, null=True)
 	resolutionNotes=models.TextField(_("Resolution notes"),max_length=255, null=True)
+	resolutionFullNumber = models.CharField(_("Resolutions number"),max_length=255,null=True)
+	resolutionAsignedUser = models.ForeignKey(User, related_name='groups+', on_delete=models.CASCADE, null=True )
+	#resolutionAsignedUser = models.ForeignKey(User ,on_delete=models.CASCADE, null=True)
 	
 	def get_resolution_information (self):
 		resolution_info =[]
 		resolution_info.append(self.resolutionNumber)
+		resolution_info.append(self.resolutionFullNumber)
+		resolution_info.append(self.resolutionAsignedUser)
 		resolution_info.append(self.resolutionEstimatedDate.strftime("%d %B, %Y"))
 		resolution_info.append(self.resolutionOnQueuedDate.strftime("%d %B, %Y"))
 		if self.resolutionOnInProgressDate is None:

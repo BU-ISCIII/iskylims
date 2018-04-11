@@ -14,6 +14,12 @@
               <div class="panel-body">
                   <table class="table table-hover">
                        <tbody>
+                         {% if display_service.resolution_folder %}
+                         <tr>
+                           <td>Folder Name </td>
+                           <td>{{ display_service.resolution_folder }} </td>
+                         </tr>
+                         {% endif %}  
                          <tr>
                            <td>Service Requested by:  </td>
                            <td> {{ display_service.user_name }} </td>
@@ -125,7 +131,7 @@
               <div class="panel-body">
                   {% if display_service.resolutions %}
                         {% for resolutions  in display_service.resolutions %}
-                            {% for resolution_number, estimate_date, queued_date, inprog_date, notes in resolutions %}
+                            {% for resolution_number, folder_name, assigned_to, estimate_date, queued_date, inprog_date, notes in resolutions %}
                                 <table class="table table-hover">
                                    <thead>
                                         <tr>
@@ -133,6 +139,14 @@
                                         </tr>
                                    </thead>
                                    <tbody>
+                                     <tr>
+                                       <td>Folder name:  </td>
+                                       <td> {{ folder_name }} </td>
+                                     </tr>
+                                     <tr>
+                                       <td>Service assigned to:  </td>
+                                       <td> {{ assigned_to }} </td>
+                                     </tr>
                                      <tr>
                                        <td>Estimated Delivery Date:  </td>
                                        <td> {{ estimate_date }} </td>

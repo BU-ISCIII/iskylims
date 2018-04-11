@@ -181,11 +181,11 @@ class DateInput(forms.DateInput):
     input_type = 'date'
 
 
-class addResolutionService(forms.ModelForm):
+class AddResolutionService(forms.ModelForm):
 
 	class Meta:
 		model = Resolution
-		fields = ['resolutionEstimatedDate','resolutionNotes']
+		fields = ['resolutionEstimatedDate','resolutionFullNumber','resolutionAsignedUser','resolutionNotes']
 		widgets = {'resolutionEstimatedDate': DateInput(),}
 		exclude = ['resolutionNumber',
 			    'resolutionDate',
@@ -205,7 +205,8 @@ class addResolutionService(forms.ModelForm):
 	)
 
 	def __init__(self,*args, **kwargs):
-		super(addResolutionService, self).__init__(*args, **kwargs)
+		super(AddResolutionService, self).__init__(*args, **kwargs)
+		self.fields['resolutionAsignedUser'].queryset = User.objects.filter( groups__name='Admin_iSkyLIMS')
 		self.helper = FormHelper()
 		self.helper.form_class = 'form-horizontal'
 		self.helper.label_class = 'col-lg-4'
@@ -220,6 +221,14 @@ class addResolutionService(forms.ModelForm):
  					layout.Div(
  						layout.Div(
  							layout.Field('resolutionEstimatedDate'),
+ 							css_class="col-md-10",
+ 						),
+						layout.Div(
+ 							layout.Field('resolutionFullNumber'),
+ 							css_class="col-md-10",
+ 						),
+						layout.Div(
+ 							layout.Field('resolutionAsignedUser'),
  							css_class="col-md-10",
  						),
 						layout.Div(
@@ -241,7 +250,7 @@ class addResolutionService(forms.ModelForm):
 					),
 				)
 
-class addDeliveryService (forms.ModelForm) :
+class AddDeliveryService (forms.ModelForm) :
 	
 	class Meta:
 		model = Delivery
@@ -251,7 +260,7 @@ class addDeliveryService (forms.ModelForm) :
 
 
 	def __init__(self,*args, **kwargs):
-		super(addDeliveryService, self).__init__(*args, **kwargs)
+		super(AddDeliveryService, self).__init__(*args, **kwargs)
 		self.helper = FormHelper()
 		self.helper.form_class = 'form-horizontal'
 		self.helper.label_class = 'col-lg-4'
@@ -280,3 +289,105 @@ class addDeliveryService (forms.ModelForm) :
 				)
 
 
+class ByDateUserStats (forms.Form):
+
+	user_name = forms.CharField(
+		label = "User Name",
+		max_length = 40,
+		required = True,
+		)
+	start_date = forms.DateField(widget=forms.TextInput( attrs={'type': 'date'} ) ,
+		label = 'Start Date',
+		required = False,
+		)
+	end_date = forms.DateField(widget=forms.TextInput( attrs={'type': 'date'} ) ,
+		label = 'End Date',
+		required = False,
+		)
+	
+	
+	def __init__(self,*args, **kwargs):
+		super(ByDateUserStats, self).__init__(*args, **kwargs)
+		self.helper = FormHelper()
+		self.helper.form_class = 'form-horizontal'
+		self.helper.label_class = 'col-lg-4'
+		self.helper.field_class = 'col-lg-7'
+		self.helper.form_action=""
+		self.helper.form_method="POST"
+		
+		self.helper.layout = layout.Layout(
+				layout.Div(
+					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Form for getting User statatistics </h3></div>"""),
+ 					layout.Div(
+						layout.Div(
+							layout.Field('user_name'),
+							css_class="col-md-10",
+						),
+						layout.Div(
+							layout.Field('start_date'),
+							css_class="col-md-10",
+						),
+						layout.Div(
+							layout.Field('end_date'),
+							css_class="col-md-10",
+						),
+						layout.Div(
+							bootstrap.FormActions( layout.Reset(('Reset'),_('Reset')),
+										layout.Submit(('submit'),_('Submit'),style='margin-left: 80px')),
+							css_class="col-md-10"
+						),
+						css_class="row panel-body",
+					),
+					css_class = "panel panel-default"
+					),
+				)
+
+class ByUserStats (forms.Form):
+
+
+	start_date = forms.DateField(widget=forms.TextInput( attrs={'type': 'date'} ) ,
+		label = 'Start Date',
+		required = False,
+		)
+	end_date = forms.DateField(widget=forms.TextInput( attrs={'type': 'date'} ) ,
+		label = 'End Date',
+		required = False,
+		)
+	
+	
+	def __init__(self,*args, **kwargs):
+		super(ByDateUserStats, self).__init__(*args, **kwargs)
+		self.helper = FormHelper()
+		self.helper.form_class = 'form-horizontal'
+		self.helper.label_class = 'col-lg-4'
+		self.helper.field_class = 'col-lg-7'
+		self.helper.form_action=""
+		self.helper.form_method="POST"
+		
+		self.helper.layout = layout.Layout(
+				layout.Div(
+					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Form for getting User statatistics </h3></div>"""),
+ 					layout.Div(
+						layout.Div(
+							layout.Field('user_name'),
+							css_class="col-md-10",
+						),
+						layout.Div(
+							layout.Field('start_date'),
+							css_class="col-md-10",
+						),
+						layout.Div(
+							layout.Field('end_date'),
+							css_class="col-md-10",
+						),
+						layout.Div(
+							bootstrap.FormActions( layout.Reset(('Reset'),_('Reset')),
+										layout.Submit(('submit'),_('Submit'),style='margin-left: 80px')),
+							css_class="col-md-10"
+						),
+						css_class="row panel-body",
+					),
+					css_class = "panel panel-default"
+					),
+				)
+	

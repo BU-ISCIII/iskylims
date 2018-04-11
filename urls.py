@@ -21,6 +21,10 @@ urlpatterns = [
      path('addResolution=<int:service_id>/',views.add_resolution, name='add_resolution'),
      path('addinProgress=<int:resolution_id>/', views.add_in_progress, name='add_in_progress'),
      path('addDelivery=<int:resolution_id>/', views.add_delivery, name= 'add_delivery'),
+     path('statsByDateUser',views.stats_by_date_user, name = 'stats_by_date_user'),
+     path('stastByUsers',views.stats_by_users, name = 'stats_by_users'),
+     path('statsByServicesRequest',views.stats_by_services_request, name = 'stats_by_services_request'),
+     path('statsTimeDelivery', views.stats_time_delivery, name = 'stats_time_delivery'),
      path('openSessions', views.open_sessions, name='open_sessions'),
      path('userLogin', views.user_login, name = 'user_login'),
 ] 
