@@ -647,13 +647,46 @@ def stats_by_date_user (request):
 			else:
 				number_of_services ['DELIVERED'] = 0
 			
-
-			data_source = graphic_3D_pie('Requested Services by:', user_name, '', '','fint',number_of_services)
+			data_source = graphic_3D_pie('Status of Requested Services of:', user_name, '', '','fint',number_of_services)
 			graphic_by_user_date_services = FusionCharts("pie3d", "ex1" , "600", "350", "chart-1", "json", data_source)
 			stats_info ['graphic_by_user_date_services'] = graphic_by_user_date_services.render() 
 			
+			# getting statistics of the created services
 			
-			#import pdb ; pdb.set_trace()
+			service_dict ={}
+			for service_available in services_user :
+				service_list = service_available.serviceAvailableService.filter(level=3)
+				for service in service_list:
+					service_name = service.availServiceDescription
+					if service_name in service_dict:
+						service_dict [service_name] += 1
+					else:
+						service_dict [service_name] = 1
+			#creating the graphic for requested services
+			data_source = column_graphic_dict('Requested Services by:', user_name, '', '','fint',service_dict)
+			graphic_requested_services = FusionCharts("column3d", "ex2" , "600", "350", "chart-2", "json", data_source)
+			stats_info ['graphic_requested_services'] = graphic_requested_services.render() 
+			
+			# getting statistics for requested per time
+			service_time_dict ={}
+			for service_per_time in services_user :
+				date_service = service_per_time.serviceCreatedOnDate.strftime("%m_%Y")
+				if date_service in service_time_dict:
+					service_time_dict[date_service] +=1
+				else:
+					service_time_dict[date_service] =1
+			# sorting the dictionary to get 
+			#creating the graphic for monthly requested services
+			service_time_tupla =[]
+			for key , value in sorted(service_time_dict.items()):
+				#import pdb ; pdb.set_trace()
+				service_time_tupla.append([key,service_time_dict[key]])
+			import pdb ; pdb.set_trace()
+			data_source = column_graphic_tupla('Requested Services by:', user_name, '', '','fint',service_time_tupla)
+			graphic_date_requested_services = FusionCharts("column3d", "ex3" , "600", "350", "chart-3", "json", data_source)
+			stats_info ['graphic_date_requested_services'] = graphic_date_requested_services.render() 
+			
+			import pdb ; pdb.set_trace()
 			return render (request, 'drylab/statsByDateUser.html', {'stats_info':stats_info})
 	else:
 		form = ByDateUserStats()
