@@ -11,7 +11,6 @@ from utils.models import Profile,Center
 from django.contrib.auth.models import User
 
 
-
 STATUS_CHOICES = (
 			('recorded',_("Recorded")),
 	   		('approved',_("Approved")),
@@ -111,9 +110,39 @@ class Service(models.Model):
 		else:
 			service_dates.append(self.serviceOnRejectedDate.strftime("%d %B, %Y"))
 		
-		
-		
 		return service_dates
+
+	def get_stats_information (self):
+		
+		stats_information =[]
+		stats_information.append(self.id)
+		stats_information.append(self.serviceRequestNumber)
+		stats_information.append(self.serviceStatus)
+		
+		stats_information.append(self.serviceCreatedOnDate.strftime("%d %B, %Y"))
+		if self.serviceOnApprovedDate is None:
+			if self.serviceOnRejectedDate is None:
+				stats_information.append('--')
+			else:
+				stats_information.append(self.serviceOnRejectedDate.strftime("%d %B, %Y"))
+		else:
+			stats_information.append(self.serviceOnApprovedDate.strftime("%d %B, %Y"))
+		if self.serviceOnDeliveredDate is None:
+			stats_information.append('--')
+		else:
+			stats_information.append(self.serviceOnDeliveredDate.strftime("%d %B, %Y")) 
+		
+		return stats_information
+		
+
+	def get_time_to_delivery (self):
+		
+		if self.serviceOnDeliveredDate == self.serviceCreatedOnDate :
+			return 1
+		else:
+			number_days, time = str(self.serviceOnDeliveredDate - self.serviceCreatedOnDate).split(',')
+			number, string_value = number_days.split(' ')
+		return number
 
 class Resolution(models.Model):
 	resolutionServiceID=models.ForeignKey(Service ,on_delete=models.CASCADE)

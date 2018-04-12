@@ -11,6 +11,7 @@ from django.conf import settings
 from utils.fusioncharts.fusioncharts import FusionCharts
 
 import datetime
+import statistics
 
 ####### Import libraries for static files
 #from django.shortcuts import render_to_response
@@ -261,30 +262,9 @@ def display_service (request, service_id):
 		return redirect ('/accounts/login')
 	if Service.objects.filter(pk=service_id).exists():
 		
-		'''
-		if request.method == 'POST':
-			#import pdb; pdb.set_trace()
-			service= Service.objects.get(pk=service_id)
-			if request.POST['action'] == 'action_appr_reject' and 'inlineRadioOptions' in request.POST :
-				
-				if request.POST['inlineRadioOptions'] == 'accepted':
-					# update state and dates for accepted service
-					service.serviceStatus = 'approved'
-					service.serviceOnApprovedDate = datetime.date.today()
-				else:
-					service.serviceStatus = 'rejected'
-					service.serviceOnRejectedDate = datetime.date.today()
-				service.save()
-			elif request.POST['action'] == 'action_queued' and 'inlineRadioOptions' in request.POST:  
-				if request.POST['inlineRadioOptions'] == 'queued':
-					# update state and dates for accepted service
-					service.serviceStatus = 'queued'
-					service.save()
-		'''
 		# displays the service information with the latest changes done using the forms
 		display_service_details = get_service_information(service_id)
-			
-			
+
 		#import pdb; pdb.set_trace()
 		return render (request,'drylab/display_service.html',{'display_service': display_service_details})
 	else:
@@ -591,6 +571,9 @@ def stats_by_date_user (request):
 					return render (request,'drylab/error_page.html', {'content':['Too many matches have been found for the user name field', user_name,
 																				'ADVICE:', 'Please write down one of the following user name and repeate again the search',
 																				name_string,]})
+				else:
+					user_name_id = matched_names[0].id
+					user_name = matched_names[0].username
 			if start_date != '':
 				try:
 					datetime.datetime.strptime(start_date, '%Y-%m-%d')
@@ -603,8 +586,75 @@ def stats_by_date_user (request):
 				except:
 					return render (request,'drylab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
 																				'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
-			import pdb ; pdb.set_trace()
-		pass
+			#import pdb ; pdb.set_trace()
+			services_user = Service.objects.filter(serviceUserId__exact = user_name_id).order_by('-serviceRequestNumber')
+			if start_date != '' and end_date !='':
+				if services_user.filter(serviceCreatedOnDate__range=(start_date,end_date)).exists():
+					services_user = services_user.filter(serviceCreatedOnDate__range(start_date,end_date))
+				else:
+					return render (request,'drylab/error_page.html', {'content':['There are no services created by ', user_name , 'For the time of period of between:',
+																start_date , 'and', end_date]})
+			if start_date !='' and end_date == '':
+				if services_user.filter(serviceCreatedOnDate__gte = end_date).exists():
+					services_user = services_user.filter(serviceCreatedOnDate__lte = end_date)
+				else:
+					return render (request,'drylab/error_page.html', {'content':['There are no services created by ', user_name , 'Starting from ', start_date ]})
+			if start_date =='' and end_date != '':
+				if services_user.filter(serviceCreatedOnDate__lte = end_date).exists():
+					services_user = services_user.filter(serviceCreatedOnDate__lte = end_date)
+				else:
+					return render (request,'drylab/error_page.html', {'content':['There are no services created by ', user_name , 'Finish before ', end_date ]})
+			
+			
+			stats_info = {}
+			service_by_user=[]
+			for service_item in services_user:
+				service_by_user.append(service_item.get_stats_information())
+			
+			#import pdb ; pdb.set_trace()
+			stats_info ['user_name'] = user_name
+			stats_info ['service_by_user'] = service_by_user
+			
+			# perform calculation time media delivery for user
+			if services_user.filter(serviceStatus__exact = 'delivered').exists():
+				delivery_services = services_user.filter(serviceStatus__exact = 'delivered')
+				
+				delivery_time_in_days = []
+				for service_item in delivery_services :
+					delivery_time_in_days.append(int (service_item.get_time_to_delivery()))
+				
+				stats_info['time_mean_for_user']=  format(statistics.mean (delivery_time_in_days), '.2f')
+				
+			else:
+				# there are not delivery services for the user in the specified period of time
+				pass
+			# preparing graphic for status of the services
+			number_of_services = {}
+			if services_user.filter(serviceStatus__exact = 'recorded').exists():
+				number_of_services ['RECORDED'] = len (services_user.filter(serviceStatus__exact = 'recorded'))
+			else:
+				number_of_services ['RECORDED'] = 0
+			if services_user.filter(serviceStatus__exact = 'queued').exists():
+				number_of_services ['QUEUED'] = len (services_user.filter(serviceStatus__exact = 'queued'))
+			else:
+				number_of_services ['QUEUED'] = 0
+			if services_user.filter(serviceStatus__exact = 'in_progress').exists():
+				number_of_services ['IN PROGRESS'] = len (services_user.filter(serviceStatus__exact = 'in_progress'))
+			else:
+				number_of_services ['IN PROGRESS'] = 0
+			if services_user.filter(serviceStatus__exact = 'delivered').exists():
+				number_of_services ['DELIVERED'] = len (services_user.filter(serviceStatus__exact = 'delivered'))
+			else:
+				number_of_services ['DELIVERED'] = 0
+			
+
+			data_source = graphic_3D_pie('Requested Services by:', user_name, '', '','fint',number_of_services)
+			graphic_by_user_date_services = FusionCharts("pie3d", "ex1" , "600", "350", "chart-1", "json", data_source)
+			stats_info ['graphic_by_user_date_services'] = graphic_by_user_date_services.render() 
+			
+			
+			#import pdb ; pdb.set_trace()
+			return render (request, 'drylab/statsByDateUser.html', {'stats_info':stats_info})
 	else:
 		form = ByDateUserStats()
 		return render(request, 'drylab/statsByDateUser.html', {'form':form})
