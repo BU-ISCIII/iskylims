@@ -29,8 +29,10 @@ def user_creation(request):
  		form1 = UserCreationForm(data=request.POST)                                                                                                                           
  		form2 = ProfileCreationForm(data=request.POST)                                                                                                                        
  		if form1.is_valid() and form2.is_valid():                                                                                                                              
- 			form1.save()                                                                                                                                               
- 			form2.save(commit=False)                                                                                                                                
+ 			#form1.save()
+ 			import pdb ; pdb.set_trace()
+ 			#form2.save(commit=False)
+ 			#form2.save()
  			return render(request,'utils/info_page.html',{'content':["Your user has been successfully created"]})
  		else:
  			return render(request,'utils/error_page.html',{'content':[form1.errors,form2.errors]}) 

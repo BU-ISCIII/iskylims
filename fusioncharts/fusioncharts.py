@@ -20,7 +20,8 @@ class FusionCharts:
    """
    # constructor
    def __init__(self, type, id, width, height, renderAt, dataFormat, dataSource): 
-      self.constructorOptions = {}  
+      self.constructorOptions = {} 
+      #import pdb ; pdb.set_trace() 
       self.constructorOptions['type'] = type
       self.constructorOptions['id'] = id
       self.constructorOptions['width'] = width
@@ -32,16 +33,18 @@ class FusionCharts:
    # render the chart created
    # It prints a script and calls the FusionCharts javascript render method of created chart   
    def render(self):
-    self.readyJson = json.dumps(self.constructorOptions)
+    
+    #self.readyJson = json.dumps(self.constructorOptions)
+    self.readyJson = json.dumps(self.constructorOptions, ensure_ascii=False)
     self.readyJson = FusionCharts.constructorTemplate.replace('__constructorOptions__', self.readyJson)
     self.readyJson = self.readyJson + FusionCharts.renderTemplate.replace('__chartId__', self.constructorOptions['id'])
     self.readyJson = self.readyJson.replace('\\n', '')
     self.readyJson = self.readyJson.replace('\\t', '')
-
+    
     if(self.constructorOptions['dataFormat'] == 'json'):
       self.readyJson = self.readyJson.replace('\\', '')
       self.readyJson = self.readyJson.replace('"{', "{")
       self.readyJson = self.readyJson.replace('}"', "}")
-      
+  
     return self.readyJson
  
