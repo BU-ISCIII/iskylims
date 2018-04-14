@@ -107,10 +107,50 @@ def column_graphic_tupla (heading, sub_caption, x_axis_name, y_axis_name, theme,
 
     for key , values in source_data :
         data_dict = {}
-        import pdb ; pdb.set_trace()
         data_dict['label'] = key
         data_dict['value'] = int(values)
         data.append(data_dict)
     data_source['data'] = data
+
+    return data_source
+
+def column_graphic_per_time (heading, sub_caption, x_axis_name, y_axis_name, time_values , service_values):
+    data_source = {}
+    # Chart data is passed to the `dataSource` parameter, as hashes, in the form of
+    # key-value pairs.
+    data_source['chart'] = {
+        "caption": heading,
+        "subCaption": sub_caption,
+        "xAxisName": x_axis_name,
+        "yAxisName": y_axis_name,
+        #"theme": theme,
+        "palette": "2",
+        "numberprefix": "",
+        "showvalues": "0",
+        "legendshadow": "0",
+        "legendborderalpha": "0",
+        #"yaxismaxvalue": "90",
+        "legendbgcolor": "FFFFFF",
+        "exportEnabled": "1"
+    }
+
+    category_list = []
+    for key  in time_values :
+        category_list.append({ "label": key, "stepSkipped": 'false',"appliedSmartLabel": 'true'})
+    data_source["categories"] = [{"category": category_list}]
+    index_color = ["005476", "a1c74a", "9966ff", "ffcc66","cc8800","ccff66", "0086b3" , "5c5c8a", "cc6699", "006699"]
+    data_set_list =[]
+    counter = 0
+    for key ,values in service_values.items():
+        
+        series_name_list =[]
+        for date in time_values :
+            series_name_list.append({"value" : service_values[key][date]})
+        data_set_list.append({"seriesname": key, "color": index_color[counter],'data' : series_name_list})
+        counter +=1
+        if counter > len(index_color):
+            counter = 0
+    
+    data_source ["dataset"] =data_set_list
 
     return data_source

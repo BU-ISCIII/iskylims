@@ -681,41 +681,17 @@ def stats_by_date_user (request):
 			for key , value in sorted(service_time_dict.items()):
 				#import pdb ; pdb.set_trace()
 				service_time_tupla.append([key,service_time_dict[key]])
-			import pdb ; pdb.set_trace()
 			data_source = column_graphic_tupla('Requested Services by:', user_name, '', '','fint',service_time_tupla)
 			graphic_date_requested_services = FusionCharts("column3d", "ex3" , "600", "350", "chart-3", "json", data_source)
 			stats_info ['graphic_date_requested_services'] = graphic_date_requested_services.render() 
 			
-			import pdb ; pdb.set_trace()
+			#import pdb ; pdb.set_trace()
 			return render (request, 'drylab/statsByDateUser.html', {'stats_info':stats_info})
 	else:
 		form = ByDateUserStats()
 		return render(request, 'drylab/statsByDateUser.html', {'form':form})
 
 	
-@login_required
-def stats_by_users (request):
-	if request.user.is_authenticated:
-		try:
-			groups = Group.objects.get(name='Admin_iSkyLIMS')
-			if groups not in request.user.groups.all():
-				return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
-		except:
-			return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
-	else:
-		#redirect to login webpage
-		return redirect ('/accounts/login')
-	if request.method == 'POST':
-		form = ByUserStats(data=request.POST)
-		if form.is_valid():
-			# validate the input data in the form
-			start_date = form['start_date'].data
-			end_date = form['end_date'].data
-	else:
-		form = ByUserStats()
-	return render(request, 'drylab/statsByUsers.html', {'form':form})
-
-
 @login_required
 def stats_by_services_request (request):
 	if request.user.is_authenticated:
@@ -729,15 +705,172 @@ def stats_by_services_request (request):
 		#redirect to login webpage
 		return redirect ('/accounts/login')
 	if request.method == 'POST':
-		form = ByUserStats(data=request.POST)
+		form = ByServicesRequest(data=request.POST)
 		if form.is_valid():
 			# validate the input data in the form
 			start_date = form['start_date'].data
 			end_date = form['end_date'].data
-			
+			if start_date != '':
+				try:
+					start_date_format = datetime.datetime.strptime(start_date, '%Y-%m-%d')
+				except:
+					return render (request,'drylab/error_page.html', {'content':['The format for the "Start Date Search" Field is incorrect ',
+																				'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
+			if end_date != '':
+				try:
+					end_date_format = datetime.datetime.strptime(end_date, '%Y-%m-%d')
+				except:
+					return render (request,'drylab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
+																				'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
+
+			if Service.objects.filter(serviceCreatedOnDate__range=(start_date,end_date)).exists():
+				services_found = Service.objects.filter(serviceCreatedOnDate__range=(start_date,end_date)). order_by('-serviceCreatedOnDate')
+				services_stats_info = {}
+				#preparing stats for services request by users
+				user_services ={}
+				for service in services_found:
+					user = service.serviceUserId.username
+					if user in user_services :
+						user_services[user] +=1
+					else:
+						user_services[user] = 1
+				#import pdb ; pdb.set_trace()
+				period_of_time_selected = str(' For the period between ' + start_date + ' and ' + end_date)
+				#creating the graphic for requested services
+				data_source = column_graphic_dict('Requested Services by:', period_of_time_selected , 'User names', 'Number of Services','fint',user_services)
+				graphic_requested_services = FusionCharts("column3d", "ex1" , "525", "350", "chart-1", "json", data_source)
+				services_stats_info ['graphic_requested_services'] = graphic_requested_services.render()
+				#preparing stats for status of the services
+				status_services ={}
+				for service in services_found:
+					#user_id = service.serviceUserId.id
+					#import pdb ; pdb.set_trace()
+					status = service.serviceStatus
+					if status in status_services :
+						status_services[status] +=1
+					else:
+						status_services[status] = 1
+				#creating the graphic for status services
+				data_source = graphic_3D_pie('Status of Requested Services', period_of_time_selected ,'', '','fint',status_services)
+				graphic_status_requested_services = FusionCharts("pie3d", "ex2" , "525", "350", "chart-2", "json", data_source)
+				services_stats_info ['graphic_status_requested_services'] = graphic_status_requested_services.render() 
+
+				#preparing stats for request by Area
+				user_area_dict ={}
+				for service in services_found:
+					user_id = service.serviceUserId.id
+					user_area = Profile.objects.get(profileUserID = user_id).profileArea
+					
+					if user_area in user_area_dict:
+						user_area_dict[user_area] +=1
+					else:
+						user_area_dict[user_area] = 1
+				#creating the graphic for areas
+				data_source = column_graphic_dict('Services requested per Area', period_of_time_selected, 'Area ', 'Number of Services','fint',user_area_dict)
+				graphic_area_services = FusionCharts("column3d", "ex3" , "600", "350", "chart-3", "json", data_source)
+				services_stats_info ['graphic_area_services'] = graphic_area_services.render()
+				
+				#preparing stats for services request by Center
+				user_center_dict ={}
+				for service in services_found:
+					user_id = service.serviceUserId.id
+					user_center = Profile.objects.get(profileUserID = user_id).profileCenter.centerAbbr
+					
+					if user_center in user_center_dict:
+						user_center_dict[user_center] +=1
+					else:
+						user_center_dict[user_center] = 1
+				#creating the graphic for areas
+				data_source = column_graphic_dict('Services requested per Center', period_of_time_selected, 'Center ', 'Number of Services','fint',user_center_dict)
+				graphic_center_services = FusionCharts("column3d", "ex4" , "600", "350", "chart-4", "json", data_source)
+				services_stats_info ['graphic_center_services'] = graphic_center_services.render()
+				#import pdb ; pdb.set_trace()
+				
+				################################################
+				## Preparing the statistics per period of time
+				################################################
+				# calculating the period to be displayed the graphic (per month o per year)
+				delta_dates = (end_date_format - start_date_format).days
+				if delta_dates > 366 :
+					period_year_month = '%Y'
+				else:
+					period_year_month = '%m_%Y'
+				
+				## Preparing the statistics for Center on period of time
+				user_services_period ={}
+				center_period = {}
+				time_values_dict = {}
+				for service in services_found:
+					user_id = service.serviceUserId.id
+					date_service = service.serviceCreatedOnDate.strftime(period_year_month)
+					user_center = Profile.objects.get(profileUserID = user_id).profileCenter.centerAbbr
+					if not date_service in time_values_dict:
+						time_values_dict[date_service] = 1
+					if user_center in user_services_period:
+						if date_service in user_services_period[user_center] :
+							user_services_period[user_center][date_service] +=1
+						else:
+							user_services_period[user_center][date_service] = 1
+					else:
+						user_services_period[user_center]= {}
+						user_services_period[user_center][date_service] = 1
+				time_values =[]
+				for key , values in sorted(time_values_dict.items()):
+					time_values.append(key)
+				# fill with zero for the centers that have no sevice during some period 
+				for center , value in user_services_period.items():
+					for d_period in time_values:
+						if not d_period in user_services_period[center]:
+							user_services_period[center][d_period] = 0
+
+				data_source = column_graphic_per_time ('Services requested by center ',period_of_time_selected,  'date', 'number of services', time_values , user_services_period)
+				graphic_center_services_per_time = FusionCharts("mscolumn3d", "ex5" , "525", "350", "chart-5", "json", data_source)
+				services_stats_info ['graphic_center_services_per_time'] = graphic_center_services_per_time.render()
+				#import pdb ; pdb.set_trace()
+				
+				## Preparing the statistics for Area on period of time
+				user_area_services_period ={}
+				area_period = {}
+				time_values_dict = {}
+				for service in services_found:
+					user_id = service.serviceUserId.id
+					date_service = service.serviceCreatedOnDate.strftime(period_year_month)
+					user_area =  Profile.objects.get(profileUserID = user_id).profileArea
+					if not date_service in time_values_dict:
+						time_values_dict[date_service] = 1
+					if user_area in user_area_services_period:
+						if date_service in user_area_services_period[user_area] :
+							user_area_services_period[user_area][date_service] +=1
+						else:
+							user_area_services_period[user_area][date_service] = 1
+					else:
+						user_area_services_period[user_area]= {}
+						user_area_services_period[user_area][date_service] = 1
+				time_values =[]
+				for key , values in sorted(time_values_dict.items()):
+					time_values.append(key)
+				# fill with zero for the centers that have no sevice during some period 
+				for area , value in user_area_services_period.items():
+					for d_period in time_values:
+						if not d_period in user_area_services_period[area]:
+							user_area_services_period[area][d_period] = 0
+				#import pdb ; pdb.set_trace()
+				data_source = column_graphic_per_time ('Services requested by Area ',period_of_time_selected,  'date', 'number of services', time_values , user_area_services_period)
+				graphic_area_services_per_time = FusionCharts("mscolumn3d", "ex6" , "525", "350", "chart-6", "json", data_source)
+				services_stats_info ['graphic_area_services_per_time'] = graphic_area_services_per_time.render()
+					
+				services_stats_info['period_time']= period_of_time_selected
+				return render (request, 'drylab/statsByServicesRequest.html', {'services_stats_info':services_stats_info})
+
+			else:
+				return render (request,'drylab/error_page.html', {'content':['There are no services created by ', 'For the time of period of between:',
+																start_date , 'and', end_date]})
 	else:
-		form = ByUserStats()
-	return render(request, 'drylab/statsByUsers.html', {'form':form})
+		form = ByServicesRequest()
+	return render(request, 'drylab/statsByServicesRequest.html', {'form':form})
+
+
+
 
 
 @login_required

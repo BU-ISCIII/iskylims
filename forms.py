@@ -342,21 +342,20 @@ class ByDateUserStats (forms.Form):
 					),
 				)
 
-class ByUserStats (forms.Form):
-
+class ByServicesRequest (forms.Form):
 
 	start_date = forms.DateField(widget=forms.TextInput( attrs={'type': 'date'} ) ,
 		label = 'Start Date',
-		required = False,
+		required = True,
 		)
 	end_date = forms.DateField(widget=forms.TextInput( attrs={'type': 'date'} ) ,
 		label = 'End Date',
-		required = False,
+		required = True,
 		)
 	
 	
 	def __init__(self,*args, **kwargs):
-		super(ByDateUserStats, self).__init__(*args, **kwargs)
+		super(ByServicesRequest, self).__init__(*args, **kwargs)
 		self.helper = FormHelper()
 		self.helper.form_class = 'form-horizontal'
 		self.helper.label_class = 'col-lg-4'
@@ -368,10 +367,6 @@ class ByUserStats (forms.Form):
 				layout.Div(
 					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Form for getting User statatistics </h3></div>"""),
  					layout.Div(
-						layout.Div(
-							layout.Field('user_name'),
-							css_class="col-md-10",
-						),
 						layout.Div(
 							layout.Field('start_date'),
 							css_class="col-md-10",
