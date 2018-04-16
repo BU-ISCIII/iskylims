@@ -1,4 +1,4 @@
-#import paramiko
+
 from datetime import datetime
 from .utils.stats_calculation import *
 from .utils.parsing_run_info import *
@@ -89,4 +89,25 @@ def check_not_finish_run():
     time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(time_stop)
     print ('****** Exiting the process for searching not completed runs')
-            
+
+def delete_unregister_run ():
+    from datetime import datetime, timedelta
+    
+    time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(time_start )
+    print('Starting the process for deleting runs in register state older than ', today_date)
+    date_for_removing = datetime.today() - timedelta(days=days_to_subtract)
+    run_found_for_deleting = RunProcess.objects.filter(runState__exact ='Pre-Recorded', generatedat__lte = date_for_removing)
+    for run_found in run_found_for_deleting:
+        run_id = run_found.id
+        if Projects.objects.filter(runprocess_id__exact = run_id).exists():
+            projects_to_be_deleted = Projects.objects.filter(runprocess_id__exact = run_id)
+            for projects in projects_to_be_deleted:
+                projects.delete()
+        sample_sheet_file = os.paht.join(settings.MEDIA_ROOT, run_found.sampleSheet)
+        os.remove(sample_sheet_file)
+        print('deleting run ' , run_found.runName,'\n')
+        run_found.delete()
+    end_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(end_time)
+    print('End of deleting process ')

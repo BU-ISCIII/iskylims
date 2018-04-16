@@ -499,7 +499,7 @@ def get_information_run(run_name_found,run_id):
             info_dict[read_number_index] = read_summary_values
 
         # prepare the graphics for the run
-        folder_for_plot='/wetlab/documents/wetlab/images_plot/'
+        folder_for_plot='/documents/wetlab/images_plot/'
 
         run_graphics_id = NextSeqGraphicsStats.objects.filter(runprocess_id__exact =run_id)
         folder_graphic = folder_for_plot + run_graphics_id[0].get_folder_graphic()+ '/'
