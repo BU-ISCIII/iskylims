@@ -85,7 +85,7 @@ class Service(models.Model):
 
 	
 	def __str__ (self):
-		return '%s' %(self.serviceUserId)
+		return '%s' %(self.serviceRequestNumber)
 
 	def get_service_information (self):
 		platform = str(self.servicePlatform)
@@ -156,7 +156,8 @@ class Resolution(models.Model):
 	resolutionFullNumber = models.CharField(_("Resolutions number"),max_length=255,null=True)
 	resolutionAsignedUser = models.ForeignKey(User, related_name='groups+', on_delete=models.CASCADE, null=True )
 	#resolutionAsignedUser = models.ForeignKey(User ,on_delete=models.CASCADE, null=True)
-	
+	def __str__ (self):
+		return '%s' %(self.resolutionNumber)
 	def get_resolution_information (self):
 		resolution_info =[]
 		resolution_info.append(self.resolutionNumber)
@@ -180,7 +181,8 @@ class Delivery(models.Model):
 	#deliveryEstimatedDate=models.DateField(_("Delivery estimated date"))
 	deliveryDate=models.DateField(_("Delivery date"),auto_now_add=True)
 	deliveryNotes=models.TextField(_("Delivery notes"),max_length=255, null=True)
-	
+	def __str__ (self):
+		return '%s' %(self.deliveryResolutionID)
 	def get_delivery_information (self):
 		delivery_info = []
 		delivery_info.append(self.deliveryDate.strftime("%d %B, %Y"))

@@ -13,7 +13,7 @@ class PlatformAdmin(admin.ModelAdmin):
 
 # 'serviceUsername' refactored to 'serviceUserid' which shows better its real nature
 class ServiceAdmin(admin.ModelAdmin):
-	list_display=('serviceUserId','serviceSeqCenter','servicePlatform','serviceRunSpecs','serviceFileExt','serviceFile','serviceStatus','serviceNotes')
+	list_display=('serviceRequestNumber','serviceUserId','serviceSeqCenter','servicePlatform','serviceRunSpecs','serviceFileExt','serviceFile','serviceStatus','serviceNotes')
 
 class AvailableServiceAdmin(DjangoMpttAdmin):
 	list_display=('availServiceDescription',)
