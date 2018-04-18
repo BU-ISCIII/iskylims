@@ -1,0 +1,14 @@
+{% extends 'iSkyLIMS_home/base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block content %}
+<h1>Contact Us</h1>
+    {% csrf_token %}
+<div class="row row-space-2 margin-b-4">
+    <div class="col-sm-8">  <!--col-sm-8  User statatistics Form  -->
+	<div class="container-fluid margin-t-40">	
+	    {% crispy form %}
+	</div>
+    </div> <!--// end col-sm-8  User statatistics Form  -->
+</div> <!-- //  end row -->
+{% endblock %}

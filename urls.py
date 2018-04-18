@@ -11,6 +11,8 @@ from django.views.generic import ListView, DetailView
 
 urlpatterns = [
     path('', LoginView.as_view(template_name='iSkyLIMS_home/index.html'), name="index"),
+    path('contact_email',views.contact_email, name='contact_email'),
+    path('thanks', views.thanks, name='thanks'),
 ]
 
 if settings.DEBUG:
