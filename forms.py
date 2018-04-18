@@ -365,7 +365,7 @@ class ByServicesRequest (forms.Form):
 		
 		self.helper.layout = layout.Layout(
 				layout.Div(
-					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Form for getting User statatistics </h3></div>"""),
+					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Form for getting Services Requested statatistics </h3></div>"""),
  					layout.Div(
 						layout.Div(
 							layout.Field('start_date'),
@@ -385,4 +385,92 @@ class ByServicesRequest (forms.Form):
 					css_class = "panel panel-default"
 					),
 				)
+
+class BySampleProcessed (forms.Form):
+
+	start_date = forms.DateField(widget=forms.TextInput( attrs={'type': 'date'} ) ,
+		label = 'Start Date',
+		required = True,
+		)
+	end_date = forms.DateField(widget=forms.TextInput( attrs={'type': 'date'} ) ,
+		label = 'End Date',
+		required = True,
+		)
 	
+	
+	def __init__(self,*args, **kwargs):
+		super(BySampleProcessed, self).__init__(*args, **kwargs)
+		self.helper = FormHelper()
+		self.helper.form_class = 'form-horizontal'
+		self.helper.label_class = 'col-lg-4'
+		self.helper.field_class = 'col-lg-7'
+		self.helper.form_action=""
+		self.helper.form_method="POST"
+		
+		self.helper.layout = layout.Layout(
+				layout.Div(
+					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Form for getting Sample Processed statatistics </h3></div>"""),
+ 					layout.Div(
+						layout.Div(
+							layout.Field('start_date'),
+							css_class="col-md-10",
+						),
+						layout.Div(
+							layout.Field('end_date'),
+							css_class="col-md-10",
+						),
+						layout.Div(
+							bootstrap.FormActions( layout.Reset(('Reset'),_('Reset')),
+										layout.Submit(('submit'),_('Submit'),style='margin-left: 80px')),
+							css_class="col-md-10"
+						),
+						css_class="row panel-body",
+					),
+					css_class = "panel panel-default"
+					),
+				)
+
+
+class TimeDelivery (forms.Form):
+
+	start_date = forms.DateField(widget=forms.TextInput( attrs={'type': 'date'} ) ,
+		label = 'Start Date',
+		required = True,
+		)
+	end_date = forms.DateField(widget=forms.TextInput( attrs={'type': 'date'} ) ,
+		label = 'End Date',
+		required = True,
+		)
+	
+	
+	def __init__(self,*args, **kwargs):
+		super(TimeDelivery, self).__init__(*args, **kwargs)
+		self.helper = FormHelper()
+		self.helper.form_class = 'form-horizontal'
+		self.helper.label_class = 'col-lg-4'
+		self.helper.field_class = 'col-lg-7'
+		self.helper.form_action=""
+		self.helper.form_method="POST"
+		
+		self.helper.layout = layout.Layout(
+				layout.Div(
+					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Form for getting the delivery time for the requested services</h3></div>"""),
+ 					layout.Div(
+						layout.Div(
+							layout.Field('start_date'),
+							css_class="col-md-10",
+						),
+						layout.Div(
+							layout.Field('end_date'),
+							css_class="col-md-10",
+						),
+						layout.Div(
+							bootstrap.FormActions( layout.Reset(('Reset'),_('Reset')),
+										layout.Submit(('submit'),_('Submit'),style='margin-left: 80px')),
+							css_class="col-md-10"
+						),
+						css_class="row panel-body",
+					),
+					css_class = "panel panel-default"
+					),
+				)

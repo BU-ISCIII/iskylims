@@ -23,6 +23,7 @@ urlpatterns = [
      path('addDelivery=<int:resolution_id>/', views.add_delivery, name= 'add_delivery'),
      path('statsByDateUser',views.stats_by_date_user, name = 'stats_by_date_user'),
      path('statsByServicesRequest',views.stats_by_services_request, name = 'stats_by_services_request'),
+     path('statsBySamplesProcessed',views.stats_by_samples_processed, name = 'stats_by_samples_processed'),
      path('statsTimeDelivery', views.stats_time_delivery, name = 'stats_time_delivery'),
      path('openSessions', views.open_sessions, name='open_sessions'),
      path('userLogin', views.user_login, name = 'user_login'),

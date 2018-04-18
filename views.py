@@ -874,6 +874,32 @@ def stats_by_services_request (request):
 
 
 @login_required
+def stats_by_samples_processed (request):
+	if request.user.is_authenticated:
+		try:
+			groups = Group.objects.get(name='Admin_iSkyLIMS')
+			if groups not in request.user.groups.all():
+				return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+		except:
+			return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+	else:
+		#redirect to login webpage
+		return redirect ('/accounts/login')
+	if request.method == 'POST':
+		form = ByDateUserStats(data=request.POST)
+		if form.is_valid():
+			# validate the input data in the form
+			start_date = form['start_date'].data
+			end_date = form['end_date'].data
+			
+	
+	else:
+		form = BySampleProcessed()
+		return render(request, 'drylab/statsBySamplesProcessed.html', {'form':form})
+
+
+
+@login_required
 def stats_time_delivery (request):
 	if request.user.is_authenticated:
 		try:
@@ -889,13 +915,12 @@ def stats_time_delivery (request):
 		form = ByDateUserStats(data=request.POST)
 		if form.is_valid():
 			# validate the input data in the form
-			user_name = form['user_name'].data
 			start_date = form['start_date'].data
 			end_date = form['end_date'].data
 			
 	
 	else:
-		form = ByDateUserStats()
+		form = TimeDelivery()
 		return render(request, 'drylab/statsByDateUser.html', {'form':form})
 
 
