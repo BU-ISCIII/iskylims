@@ -9,7 +9,7 @@
     <!-- GLOBAL MANDATORY STYLES -->
     <link href="http://fonts.googleapis.com/css?family=Hind:300,400,500,600,700" rel="stylesheet" type="text/css">
     <!--<link href="{% static "/vendor/simple-line-icons/css/simple-line-icons.css" %}" rel="stylesheet" type="text/css"/>-->
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.10/css/all.css" integrity="sha384-+d0P83n9kaQMCwj8F4RJB66tzIwOKmrdb46+porD/OvrJ+37WqIM7UoBtwHO6Nlg" crossorigin="anonymous">
     <link href="{% static "/css/icons.css" %}" rel="stylesheet" type="text/css"/>
     <link href="{% static "/vendor/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css"/>
 	<link href= "https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css"/>
@@ -103,8 +103,8 @@
 				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab"> Statistics</a></li>
 				{% endif%}
 				{% if user.is_authenticated %}
-				<li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Reports<span class="caret"></span></a>
 				    {% if request.user|has_group:"WetlabManager" %}
+				<li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Reports<span class="caret"></span></a>
 				    <ul class="dropdown-menu">
 				    <li><a href="/wetlab/AnnualReport">Annual Reports</a></li>
 				    <li><a href="/wetlab/QuarterReport">Quarter Reports</a></li>
@@ -113,9 +113,9 @@
 				    {% endif %}
 				</li>
 				{% else %}
-				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">Reports</a></li>
+				    <!--<li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">Reports</a></li>-->
 				{% endif%}
-                                <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#contact">Contact</a></li>
+                                <!--<li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#contact">Contact</a></li>-->
                             </ul>
 
                         </div>
@@ -148,39 +148,7 @@
         </div> <!--// end container -->
         </div> <!--// end bg-color -->
 
-        <!--========== FOOTER ==========-->
-        <footer class="footer">
-            <div class="content container">
-                <div class="row">
-                    <div class="col-md-4">
-                    <h4>Logos</h4>
-                        <img class="footer-logo" src="{% static "/img/logo_bu_isciii.png" %}" alt="ISCiii_Bio_Informatic_Logo">
-                        <img class="footer-logo" src="{% static "/img/isciii_logo.jpg" %}" alt="ISCiii_Bio_Informatic_Logo">
-                    </div>
-                    <div class="col-md-4">
-                    <h4>Connect</h4>
-					<a href="mailto:#">bioinformatica@isciii.es</a>
-  					<div>
-	    				<ul class="social-icons icon-round list-unstyled list-inline">
-	      					<!--<li> <a href="#"><i class="fa fa-envelope-square"></i></a></li>-->
-	      					<li> <a href="#"><i class="fa fa-twitter"></i></a></li>
-	      					<li> <a href="#"><i class="fa fa-github"></i></a></li>
-	      				</ul>
-  					</div>
-                    </div>
-                    <div class="col-md-4">
-                    <h4>Links</h4>
-                    <ul>
-						<li><a href="#">Contact</a></li>
-						<li><a href="#">Getting started</a></li>
-						<li><a href="#">FAQs</a></li>
-					</ul>
-                    </div>
-                </div>
-                <!--// end row -->
-            </div>
-        </footer>
-        <!--========== END FOOTER ==========-->
+{% include "iSkyLIMS_home/footer.html" %}
 
         <!-- Back To Top -->
         <a href="javascript:void(0);" class="js-back-to-top back-to-top">Top</a>
