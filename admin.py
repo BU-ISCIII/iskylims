@@ -13,13 +13,13 @@ class PlatformAdmin(admin.ModelAdmin):
 
 # 'serviceUsername' refactored to 'serviceUserid' which shows better its real nature
 class ServiceAdmin(admin.ModelAdmin):
-	list_display=('serviceRequestNumber','serviceUserId','serviceSeqCenter','servicePlatform','serviceRunSpecs','serviceFileExt','serviceFile','serviceStatus','serviceNotes')
+	list_display=('serviceRequestNumber','serviceUserId','serviceSeqCenter','servicePlatform','serviceRunSpecs','serviceFileExt','serviceFile','serviceStatus','serviceNotes','serviceCreatedOnDate','serviceOnApprovedDate','serviceOnRejectedDate','serviceOnDeliveredDate')
 
 class AvailableServiceAdmin(DjangoMpttAdmin):
 	list_display=('availServiceDescription',)
 
 class ResolutionAdmin(admin.ModelAdmin):
-	list_display=('resolutionServiceID','resolutionDate','resolutionNotes')
+	list_display=('resolutionServiceID','resolutionNumber','resolutionDate','resolutionEstimatedDate','resolutionOnQueuedDate','resolutionOnInProgressDate','resolutionFullNumber','resolutionAsignedUser','resolutionNotes')
 
 class DeliveryAdmin(admin.ModelAdmin):
 	list_display=('deliveryResolutionID','deliveryDate','deliveryNotes')

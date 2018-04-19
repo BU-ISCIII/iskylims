@@ -44,26 +44,26 @@ class Platform(models.Model):
 
 class AvailableService(MPTTModel):
 	availServiceDescription=models.CharField(_("Available services"),max_length=100)
-	parent=TreeForeignKey('self',models.SET_NULL,null=True,blank=True) 
+	parent=TreeForeignKey('self',models.SET_NULL,null=True,blank=True)
 
 	def __str__(self):
 		return '%s' %(self.availServiceDescription)
-	
-	class Meta: 
+
+	class Meta:
 		ordering = ["tree_id","lft"]
 		verbose_name = ("AvailableService")
 		verbose_name_plural = ("AvailableServices")
 
 class Service(models.Model):
 	## User requesting service:
-	# 'serviceUsername' refactored to 'serviceUserid' which shows better its true nature 
+	# 'serviceUsername' refactored to 'serviceUserid' which shows better its true nature
 	#  decision taken to change Foreign Key from 'Profile'  to 'User' until full develop of "user registration"
 	serviceUserId=models.ForeignKey(User ,on_delete=models.CASCADE, null=True)
 	serviceSeqCenter=models.CharField(_("Sequencing center"),max_length=50,blank=False,null=True)
 	serviceRequestNumber=models.CharField(max_length=80, null=True)
 	## 'serviceRunID' is not used in forms.py/serviceRequestForm() or rest of code
 
-	## Addition of member 'serviceProjectNames' to support 
+	## Addition of member 'serviceProjectNames' to support
 	# implementation of drop down menu to choose a project name of a list of projects
 	# belonging to the logged-in user in the service request form
 	serviceProjectNames=models.ManyToManyField(Projects,verbose_name=_("User's projects"),blank=False)
@@ -71,7 +71,7 @@ class Service(models.Model):
 	serviceRunSpecs=models.CharField(_("Run specifications"),max_length=10,blank=False,null=True)
 	serviceFileExt=models.ForeignKey(FileExt ,on_delete=models.CASCADE ,verbose_name=_("File extension"),blank=False,null=True)
 	serviceAvailableService=TreeManyToManyField(AvailableService,verbose_name=_("AvailableServices"))
-	serviceFile=models.FileField(_("Service description file"),upload_to=service_files_upload)
+	serviceFile=models.FileField(_("Service description file"),upload_to=service_files_upload, null=True,blank=True)
 	serviceStatus=models.CharField(_("Service status"),max_length=15,choices=STATUS_CHOICES)
 	serviceNotes=models.TextField(_("Service Notes"),max_length=500)
 	serviceCreatedOnDate= models.DateField(auto_now_add=True)
@@ -81,15 +81,15 @@ class Service(models.Model):
 	#serviceOnInProgressDate = models.DateField(auto_now_add=False, null=True)
 	serviceOnDeliveredDate = models.DateField(auto_now_add=False, null=True)
 	#serviceOnArchivedDate = models.DateField(auto_now_add=False, null=True)
-	
 
-	
+
+
 	def __str__ (self):
 		return '%s' %(self.serviceRequestNumber)
 
 	def get_service_information (self):
 		platform = str(self.servicePlatform)
-		
+
 		return '%s;%s;%s;%s'  %(self.serviceRequestNumber ,self.serviceRunSpecs, self.serviceSeqCenter, platform)
 
 	def get_service_dates (self):
@@ -109,16 +109,16 @@ class Service(models.Model):
 				service_dates.append('Rejected Date not set')
 		else:
 			service_dates.append(self.serviceOnRejectedDate.strftime("%d %B, %Y"))
-		
+
 		return service_dates
 
 	def get_stats_information (self):
-		
+
 		stats_information =[]
 		stats_information.append(self.id)
 		stats_information.append(self.serviceRequestNumber)
 		stats_information.append(self.serviceStatus)
-		
+
 		stats_information.append(self.serviceCreatedOnDate.strftime("%d %B, %Y"))
 		if self.serviceOnApprovedDate is None:
 			if self.serviceOnRejectedDate is None:
@@ -130,13 +130,13 @@ class Service(models.Model):
 		if self.serviceOnDeliveredDate is None:
 			stats_information.append('--')
 		else:
-			stats_information.append(self.serviceOnDeliveredDate.strftime("%d %B, %Y")) 
-		
+			stats_information.append(self.serviceOnDeliveredDate.strftime("%d %B, %Y"))
+
 		return stats_information
-		
+
 
 	def get_time_to_delivery (self):
-		
+
 		if self.serviceOnDeliveredDate == self.serviceCreatedOnDate :
 			return 1
 		else:
@@ -146,7 +146,7 @@ class Service(models.Model):
 
 class Resolution(models.Model):
 	resolutionServiceID=models.ForeignKey(Service ,on_delete=models.CASCADE)
-	resolutionNumber=models.CharField(_("Resolutions number"),max_length=255,null=True)
+	resolutionNumber=models.CharField(_("Resolutions name"),max_length=255,null=True)
 	#resolutionServiceSRV=models.CharField(_("Service identifier"),max_length=10)
 	resolutionEstimatedDate=models.DateField(_(" Estimated resolution date"), null = True)
 	resolutionDate=models.DateField(_("Resolution date"),auto_now_add=True)
@@ -170,7 +170,7 @@ class Resolution(models.Model):
 		else:
 			resolution_info.append(self.resolutionOnInProgressDate.strftime("%d %B, %Y"))
 		resolution_info.append(self.resolutionNotes)
-		
+
 		return resolution_info
 
 

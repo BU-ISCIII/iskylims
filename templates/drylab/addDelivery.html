@@ -5,7 +5,18 @@
 {% if delivery_info %}
 esto es una prueba {{ prueba }}
 {% endif %}
-<div class="container-fluid margin-t-40">	
+<div class="container-fluid margin-t-40">
 	{% crispy form %}
 </div>
+<script>
+    $(document).ready(function () {
+        $("form").submit(function (e) {
+            //stop submitting the form to see the disabled button effect
+            // e.preventDefault();
+            //disable the submit button
+            $("input:submit").attr("disabled", true);
+            return true;
+        });
+    });
+</script>
 {% endblock %}

@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from django.conf import settings
 from utils.fusioncharts.fusioncharts import FusionCharts
+from django.core.mail import send_mail
 
 import datetime
 import statistics
@@ -21,8 +22,8 @@ import statistics
 
 @login_required
 def index(request):
-	if Service.objects.all().exclude(serviceStatus = 'delivered').exists():
-		ongoing_services = Service.objects.all().exclude(serviceStatus = 'delivered').order_by('serviceCreatedOnDate')
+	if Service.objects.all().exclude(serviceStatus = 'delivered').exclude(serviceStatus = 'rejected').exists():
+		ongoing_services = Service.objects.all().exclude(serviceStatus = 'delivered').exclude(serviceStatus = 'rejected').order_by('serviceCreatedOnDate')
 		service_list = []
 		for service in ongoing_services:
 			service_info = []
@@ -56,19 +57,19 @@ def increment_service_number ( user_name):
 		service_number = service_center.group(1)  + new_service_number
 	else:
 		service_number = 'SRV'+ user_center + '001'
-	return service_number 
+	return service_number
 
 @login_required
 def service_request(request, serviceRequestType):
 	if serviceRequestType == 'internal_sequencing':
 		if request.method == "POST":
 			##Create a form instance with POST data
-			# more information in: 
+			# more information in:
 			# https://docs.djangoproject.com/en/2.0/topics/forms/modelforms/
 			form = ServiceRequestFormInternalSequencing(data=request.POST,files=request.FILES)
 			#import pdb; pdb.set_trace()
 			if form.is_valid():
-				# Create but dont save for following modif		
+				# Create but dont save for following modif
 				new_service = form.save(commit=False)
 				# Modification of 'serviceStatus'
 				new_service.serviceStatus = "recorded"
@@ -81,12 +82,19 @@ def service_request(request, serviceRequestType):
 				# Save the new instance
 				new_service.save()
 				# Save the many-to-many data for the form
-				# (required for cases like this one where form.save(commit=False)) 
-				
+				# (required for cases like this one where form.save(commit=False))
+
 				form.save_m2m()
+				## Send mail to user and bioinfo admins
+				subject = 'Service ' + new_service.serviceRequestNumber + " has been recorded"
+				body_message = 'Dear ' + request.user.username + "\n Your service " + new_service.serviceRequestNumber + " has been recorded. You will recieved the resolution of the request as soon as possible.\n Kind regards \n BU-ISCIII \n bioinformatica@isciii.es"
+				from_user = 'bioinformatica@isciii.es'
+				to_user = [request.user.email,'bioinformatica@isciii.es']
+				send_mail (subject, body_message, from_user, to_user)
+
 				#import pdb; pdb.set_trace()
 				return render(request,'drylab/info_page.html',{'content':['Your service request has been successfully recorded.',
-								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber, 
+								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
 								'Keep this number safe for refering your request','You will be contacted shortly.']})
 		else: #No POST
 			form = ServiceRequestFormInternalSequencing()
@@ -94,9 +102,9 @@ def service_request(request, serviceRequestType):
 			# implementation of drop down menu to choose a project name of a list of projects
 			# belonging to the logged-in user in the service request form
 			form.fields['serviceProjectNames'].queryset = Projects.objects.filter(user_id__exact = request.user.id)
-			form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True) 
+			form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
 			return render(request, 'drylab/RequestForm.html' , { 'form' : form , 'request_internal': 'request_internal'})
-	
+
 
 	if serviceRequestType == 'external_sequencing':
 		if request.method == "POST":
@@ -108,12 +116,19 @@ def service_request(request, serviceRequestType):
 				new_service.serviceRequestNumber = increment_service_number(request.user)
 				new_service.save()
 				form.save_m2m()
+				## Send email
+				subject = 'Service ' + new_service.serviceRequestNumber + " has been recorded"
+				body_message = 'Dear ' + request.user.username + "\n Your service " + new_service.serviceRequestNumber + " has been recorded. You will recieved the resolution of the request as soon as possible.\n Kind regards \n BU-ISCIII \n bioinformatica@isciii.es"
+				from_user = 'bioinformatica@isciii.es'
+				to_user = [request.user.email,'bioinformatica@isciii.es']
+				send_mail (subject, body_message, from_user, to_user)
+
 				return render(request,'drylab/info_page.html',{'content':['Your service request has been successfully recorded.',
-								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber, 
+								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
 								'Keep this number safe for refering your request','You will be contacted shortly.']})
 		else: #No POST
 			form = ServiceRequestFormExternalSequencing()
-			form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True) 
+			form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
 			return render(request, 'drylab/RequestForm.html' , { 'form' : form ,  'request_external': 'request_external' })
 
 
@@ -129,12 +144,12 @@ def service_request_external_sequencing(request):
 			new_service.save()
 			form.save_m2m()
 			return render(request,'utils/info_page.html',{'content':['Your service request has been successfully recorded.',
-								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber, 
+								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
 								'Keep this number safe for refering your request','You will be contacted shortly.']})
 	else:
 		form = ServiceRequestFormExternalSequencing()
-	
-	form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True) 
+
+	form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
 	return render(request, 'drylab/RequestForm.html' , { 'form' : form })
 
 
@@ -150,8 +165,14 @@ def counseling_request(request):
 			new_service.serviceRequestNumber = increment_service_number(request.user)
 			new_service.save()
 			form.save_m2m()
+			## Send email
+			subject = 'Service ' + new_service.serviceRequestNumber + " has been recorded"
+			body_message = 'Dear ' + request.user.username + "\n Your service " + new_service.serviceRequestNumber + " has been recorded. You will recieved the resolution of the request as soon as possible.\n Kind regards \n BU-ISCIII \n bioinformatica@isciii.es"
+			from_user = 'bioinformatica@isciii.es'
+			to_user = [request.user.email,'bioinformatica@isciii.es']
+			send_mail (subject, body_message, from_user, to_user)
 			return render(request,'drylab/info_page.html',{'content':['Your service request has been successfully recorded.',
-								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber, 
+								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
 								'Keep this number safe for refering your request','You will be contacted shortly.']})
 		else:
 			#import pdb; pdb.set_trace()
@@ -176,8 +197,14 @@ def infrastructure_request(request):
 			#import pdb; pdb.set_trace()
 			new_service.save()
 			form.save_m2m()
+			## Send email
+			subject = 'Service ' + new_service.serviceRequestNumber + " has been recorded"
+			body_message = 'Dear ' + request.user.username + "\n Your service " + new_service.serviceRequestNumber + " has been recorded. You will recieved the resolution of the request as soon as possible.\n Kind regards \n BU-ISCIII \n bioinformatica@isciii.es"
+			from_user = 'bioinformatica@isciii.es'
+			to_user = [request.user.email,'bioinformatica@isciii.es']
+			send_mail (subject, body_message, from_user, to_user)
 			return render(request,'drylab/info_page.html',{'content':['Your service request has been successfully recorded.',
-								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber, 
+								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
 								'Keep this number safe for refering your request','You will be contacted shortly.']})
 		else:
 			#import pdb; pdb.set_trace()
@@ -219,10 +246,10 @@ def get_service_information (service_id):
 		display_service_details['resolution_folder'] = resolution_folder
 		resolution_date = Resolution.objects.filter(resolutionServiceID = service).last().resolutionEstimatedDate
 		display_service_details['estimated_delivery_date'] = resolution_date
-	
+
 	# get all services
 	display_service_details['nodes']= service.serviceAvailableService.all()
-	# adding actions fields 
+	# adding actions fields
 	if service.serviceStatus != 'rejected' or service.serviceStatus != 'archived':
 		display_service_details['add_resolution_action'] = service_id
 	if service.serviceStatus == 'queued':
@@ -231,8 +258,8 @@ def get_service_information (service_id):
 	if service.serviceStatus == 'in_progress':
 		resolution_id = Resolution.objects.filter(resolutionServiceID = service).last().id
 		display_service_details['add_delivery_action'] = resolution_id
-	
-	
+
+
 	if Resolution.objects.filter(resolutionServiceID = service).exists():
 		resolution_list = Resolution.objects.filter(resolutionServiceID = service)
 		resolution_info =[]
@@ -245,7 +272,7 @@ def get_service_information (service_id):
 		if Delivery.objects.filter(deliveryResolutionID = resolution_id).exists():
 			delivery = Delivery.objects.get(deliveryResolutionID = resolution_id)
 			display_service_details['delivery'] = [delivery.get_delivery_information()]
-	
+
 	return display_service_details
 
 @login_required
@@ -261,7 +288,7 @@ def display_service (request, service_id):
 		#redirect to login webpage
 		return redirect ('/accounts/login')
 	if Service.objects.filter(pk=service_id).exists():
-		
+
 		# displays the service information with the latest changes done using the forms
 		display_service_details = get_service_information(service_id)
 
@@ -284,8 +311,8 @@ def search_service (request):
 		#redirect to login webpage
 		return redirect ('/accounts/login')
 	if request.method == 'POST' and request.POST['action'] == 'searchservice':
-		
-		
+
+
 		service_number_request = request.POST['servicenumber']
 		service_state = request.POST['servicestate']
 		start_date=request.POST['startdate']
@@ -346,7 +373,7 @@ def search_service (request):
 			else:
 				return render (request,'drylab/error_page.html', {'content':['There are no services containing ', service_number,
 														' finish before ', end_date]})
-		
+
 		#If only 1 service mathes the user conditions, then get the user information
 		if len(services_found) == 1 :
 			redirect_page = '/drylab/display_service=' + str(services_found[0].id)
@@ -410,9 +437,9 @@ def pending_services (request):
 	data_source = graphic_3D_pie('Number of Pending Services', '', '', '','fint',number_of_services)
 	graphic_pending_services = FusionCharts("pie3d", "ex1" , "425", "350", "chart-1", "json", data_source)
 	pending_services_details ['graphic_pending_services'] = graphic_pending_services.render()
-	
+
 	#import pdb ; pdb.set_trace()
-	
+
 	return render (request, 'drylab/pendingServices.html', {'pending_services': pending_services_details})
 
 @login_required
@@ -427,9 +454,9 @@ def add_resolution (request, service_id):
 	else:
 		#redirect to login webpage
 		return redirect ('/accounts/login')
-		
+
 	if request.method == "POST":
-		
+
 		form = AddResolutionService(data=request.POST)
 		#import pdb ; pdb.set_trace()
 		if form.is_valid():
@@ -464,6 +491,16 @@ def add_resolution (request, service_id):
 				service_reference.save()
 			new_resolution.save()
 			form.save_m2m()
+			## Send email
+			service_user_mail = service_reference.serviceUserId.email
+			subject = 'Service ' + service_reference.serviceRequestNumber + " has been updated"
+			if service_acepted_rejected == "accepted":
+			    body_message = 'Dear ' + service_reference.serviceUserId.username + "\n A new resolution has been added for your service: " + resolution_number + "\n. Your service has been "+ service_reference.serviceStatus + " and your delivery estimated date is " + new_resolution.resolutionEstimatedDate.strftime('%d %B %Y') + ".\n Your service is now queued and you will be notified when it is updated. \n Kind regards \n BU-ISCIII \n bioinformatica@isciii.es"
+			else:
+			    body_message= 'Dear ' + service_reference.serviceUserId.username + "\n A new resolution has been added for your service: " + resolution_number + "\n. Your service  has been "+ service_reference.serviceStatus + " because it does not fullfil our requirements or is not in our services portfolio. If you have any question please contact us. \n Kind regards \n BU-ISCIII \n bioinformatica@isciii.es"
+			from_user = 'bioinformatica@isciii.es'
+			to_user = [service_user_mail,'bioinformatica@isciii.es']
+			send_mail (subject, body_message, from_user, to_user)
 			#import pdb ; pdb.set_trace()
 			return render(request,'drylab/info_page.html',{'content':['Your resolution proposal has been successfully recorded with Resolution Number.', resolution_number]})
 	else:
@@ -486,7 +523,7 @@ def add_in_progress (request, resolution_id):
 	else:
 		#redirect to login webpage
 		return redirect ('/accounts/login')
-	
+
 	if Resolution.objects.filter(pk = resolution_id).exists():
 		resolution = Resolution.objects.get(pk = resolution_id)
 		service_to_update = resolution.resolutionServiceID
@@ -496,7 +533,14 @@ def add_in_progress (request, resolution_id):
 		service_to_update.save()
 		resolution.resolutionOnInProgressDate = datetime.date.today()
 		resolution.save()
-		return render (request,'drylab/info_page.html',{'content':['Your resolution  request ', resolution.resolutionNumber, 
+		service_user_mail = service_to_update.serviceUserId.email
+		## Send email
+		subject = 'Service ' + service_to_update.serviceRequestNumber + " has been updated"
+		body_message = 'Dear ' + service_to_update.serviceUserId.username + "\n Your service with resolution id: " + resolution.resolutionNumber + " is now in progress." + "\n Kind regards \n BU-ISCIII \n bioinformatica@isciii.es"
+		from_user = 'bioinformatica@isciii.es'
+		to_user = [service_user_mail,'bioinformatica@isciii.es']
+		send_mail (subject, body_message, from_user, to_user)
+		return render (request,'drylab/info_page.html',{'content':['Your resolution  request ', resolution.resolutionNumber,
 								'has been successfully upated to In Progress state']})
 	else:
 		#import pdb ; pdb.set_trace()
@@ -530,6 +574,13 @@ def add_delivery (request , resolution_id):
 			service_id.serviceStatus = 'delivered'
 			service_id.serviceOnDeliveredDate = datetime.date.today()
 			service_id.save()
+			service_user_mail = service_id.serviceUserId.email
+			## Send email
+			subject = 'Service ' + service_id.serviceRequestNumber + " has been updated"
+			body_message = 'Dear ' + service_id.serviceUserId.username + "\n. Your service with resolution id: " + resolution_id.resolutionNumber + " is finished. A mail with instructions for downloading the results will be shortly sent to you." + "\n Kind regards \n BU-ISCIII \n bioinformatica@isciii.es"
+			from_user = 'bioinformatica@isciii.es'
+			to_user = [service_user_mail,'bioinformatica@isciii.es']
+			send_mail (subject, body_message, from_user, to_user)
 			return render(request,'drylab/info_page.html',{'content':['The service is now on Delivery status ']})
 	else:
 		if Resolution.objects.filter(pk = resolution_id).exists():
@@ -604,27 +655,27 @@ def stats_by_date_user (request):
 					services_user = services_user.filter(serviceCreatedOnDate__lte = end_date)
 				else:
 					return render (request,'drylab/error_page.html', {'content':['There are no services created by ', user_name , 'Finish before ', end_date ]})
-			
-			
+
+
 			stats_info = {}
 			service_by_user=[]
 			for service_item in services_user:
 				service_by_user.append(service_item.get_stats_information())
-			
+
 			#import pdb ; pdb.set_trace()
 			stats_info ['user_name'] = user_name
 			stats_info ['service_by_user'] = service_by_user
-			
+
 			# perform calculation time media delivery for user
 			if services_user.filter(serviceStatus__exact = 'delivered').exists():
 				delivery_services = services_user.filter(serviceStatus__exact = 'delivered')
-				
+
 				delivery_time_in_days = []
 				for service_item in delivery_services :
 					delivery_time_in_days.append(int (service_item.get_time_to_delivery()))
-				
+
 				stats_info['time_mean_for_user']=  format(statistics.mean (delivery_time_in_days), '.2f')
-				
+
 			else:
 				# there are not delivery services for the user in the specified period of time
 				pass
@@ -646,13 +697,13 @@ def stats_by_date_user (request):
 				number_of_services ['DELIVERED'] = len (services_user.filter(serviceStatus__exact = 'delivered'))
 			else:
 				number_of_services ['DELIVERED'] = 0
-			
+
 			data_source = graphic_3D_pie('Status of Requested Services of:', user_name, '', '','fint',number_of_services)
 			graphic_by_user_date_services = FusionCharts("pie3d", "ex1" , "600", "350", "chart-1", "json", data_source)
-			stats_info ['graphic_by_user_date_services'] = graphic_by_user_date_services.render() 
-			
+			stats_info ['graphic_by_user_date_services'] = graphic_by_user_date_services.render()
+
 			# getting statistics of the created services
-			
+
 			service_dict ={}
 			for service_available in services_user :
 				service_list = service_available.serviceAvailableService.filter(level=3)
@@ -665,8 +716,8 @@ def stats_by_date_user (request):
 			#creating the graphic for requested services
 			data_source = column_graphic_dict('Requested Services by:', user_name, '', '','fint',service_dict)
 			graphic_requested_services = FusionCharts("column3d", "ex2" , "600", "350", "chart-2", "json", data_source)
-			stats_info ['graphic_requested_services'] = graphic_requested_services.render() 
-			
+			stats_info ['graphic_requested_services'] = graphic_requested_services.render()
+
 			# getting statistics for requested per time
 			service_time_dict ={}
 			for service_per_time in services_user :
@@ -675,7 +726,7 @@ def stats_by_date_user (request):
 					service_time_dict[date_service] +=1
 				else:
 					service_time_dict[date_service] =1
-			# sorting the dictionary to get 
+			# sorting the dictionary to get
 			#creating the graphic for monthly requested services
 			service_time_tupla =[]
 			for key , value in sorted(service_time_dict.items()):
@@ -683,15 +734,15 @@ def stats_by_date_user (request):
 				service_time_tupla.append([key,service_time_dict[key]])
 			data_source = column_graphic_tupla('Requested Services by:', user_name, '', '','fint',service_time_tupla)
 			graphic_date_requested_services = FusionCharts("column3d", "ex3" , "600", "350", "chart-3", "json", data_source)
-			stats_info ['graphic_date_requested_services'] = graphic_date_requested_services.render() 
-			
+			stats_info ['graphic_date_requested_services'] = graphic_date_requested_services.render()
+
 			#import pdb ; pdb.set_trace()
 			return render (request, 'drylab/statsByDateUser.html', {'stats_info':stats_info})
 	else:
 		form = ByDateUserStats()
 		return render(request, 'drylab/statsByDateUser.html', {'form':form})
 
-	
+
 @login_required
 def stats_by_services_request (request):
 	if request.user.is_authenticated:
@@ -753,14 +804,14 @@ def stats_by_services_request (request):
 				#creating the graphic for status services
 				data_source = graphic_3D_pie('Status of Requested Services', period_of_time_selected ,'', '','fint',status_services)
 				graphic_status_requested_services = FusionCharts("pie3d", "ex2" , "525", "350", "chart-2", "json", data_source)
-				services_stats_info ['graphic_status_requested_services'] = graphic_status_requested_services.render() 
+				services_stats_info ['graphic_status_requested_services'] = graphic_status_requested_services.render()
 
 				#preparing stats for request by Area
 				user_area_dict ={}
 				for service in services_found:
 					user_id = service.serviceUserId.id
 					user_area = Profile.objects.get(profileUserID = user_id).profileArea
-					
+
 					if user_area in user_area_dict:
 						user_area_dict[user_area] +=1
 					else:
@@ -769,13 +820,13 @@ def stats_by_services_request (request):
 				data_source = column_graphic_dict('Services requested per Area', period_of_time_selected, 'Area ', 'Number of Services','fint',user_area_dict)
 				graphic_area_services = FusionCharts("column3d", "ex3" , "600", "350", "chart-3", "json", data_source)
 				services_stats_info ['graphic_area_services'] = graphic_area_services.render()
-				
+
 				#preparing stats for services request by Center
 				user_center_dict ={}
 				for service in services_found:
 					user_id = service.serviceUserId.id
 					user_center = Profile.objects.get(profileUserID = user_id).profileCenter.centerAbbr
-					
+
 					if user_center in user_center_dict:
 						user_center_dict[user_center] +=1
 					else:
@@ -785,7 +836,7 @@ def stats_by_services_request (request):
 				graphic_center_services = FusionCharts("column3d", "ex4" , "600", "350", "chart-4", "json", data_source)
 				services_stats_info ['graphic_center_services'] = graphic_center_services.render()
 				#import pdb ; pdb.set_trace()
-				
+
 				################################################
 				## Preparing the statistics per period of time
 				################################################
@@ -795,7 +846,7 @@ def stats_by_services_request (request):
 					period_year_month = '%Y'
 				else:
 					period_year_month = '%m_%Y'
-				
+
 				## Preparing the statistics for Center on period of time
 				user_services_period ={}
 				center_period = {}
@@ -817,7 +868,7 @@ def stats_by_services_request (request):
 				time_values =[]
 				for key , values in sorted(time_values_dict.items()):
 					time_values.append(key)
-				# fill with zero for the centers that have no sevice during some period 
+				# fill with zero for the centers that have no sevice during some period
 				for center , value in user_services_period.items():
 					for d_period in time_values:
 						if not d_period in user_services_period[center]:
@@ -827,7 +878,7 @@ def stats_by_services_request (request):
 				graphic_center_services_per_time = FusionCharts("mscolumn3d", "ex5" , "525", "350", "chart-5", "json", data_source)
 				services_stats_info ['graphic_center_services_per_time'] = graphic_center_services_per_time.render()
 				#import pdb ; pdb.set_trace()
-				
+
 				## Preparing the statistics for Area on period of time
 				user_area_services_period ={}
 				area_period = {}
@@ -849,7 +900,7 @@ def stats_by_services_request (request):
 				time_values =[]
 				for key , values in sorted(time_values_dict.items()):
 					time_values.append(key)
-				# fill with zero for the centers that have no sevice during some period 
+				# fill with zero for the centers that have no sevice during some period
 				for area , value in user_area_services_period.items():
 					for d_period in time_values:
 						if not d_period in user_area_services_period[area]:
@@ -858,7 +909,7 @@ def stats_by_services_request (request):
 				data_source = column_graphic_per_time ('Services requested by Area ',period_of_time_selected,  'date', 'number of services', time_values , user_area_services_period)
 				graphic_area_services_per_time = FusionCharts("mscolumn3d", "ex6" , "525", "350", "chart-6", "json", data_source)
 				services_stats_info ['graphic_area_services_per_time'] = graphic_area_services_per_time.render()
-					
+
 				services_stats_info['period_time']= period_of_time_selected
 				return render (request, 'drylab/statsByServicesRequest.html', {'services_stats_info':services_stats_info})
 
@@ -891,8 +942,8 @@ def stats_by_samples_processed (request):
 			# validate the input data in the form
 			start_date = form['start_date'].data
 			end_date = form['end_date'].data
-			
-	
+
+
 	else:
 		form = BySampleProcessed()
 		return render(request, 'drylab/statsBySamplesProcessed.html', {'form':form})
@@ -917,8 +968,8 @@ def stats_time_delivery (request):
 			# validate the input data in the form
 			start_date = form['start_date'].data
 			end_date = form['end_date'].data
-			
-	
+
+
 	else:
 		form = TimeDelivery()
 		return render(request, 'drylab/statsByDateUser.html', {'form':form})
@@ -939,9 +990,9 @@ def get_current_users():
 		user_id_list.append(data.get('_auth_user_id', None))
 	# Query all logged in users based on id list
 	return User.objects.filter(id__in=user_id_list)
-    
+
 '''
-Define in settings.py 
+Define in settings.py
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 '''
@@ -965,7 +1016,7 @@ def open_sessions (request):
 			user_data.append([user.username, user.first_name, user.last_name, user.email])
 
 		user_connected['user_data']= user_data
-			
+
 		user_connected['number_of_users'] = user_list_connected.count()
 		#import pdb ; pdb.set_trace()
 	return render (request, 'drylab/openSessions.html', {'user_connected': user_connected })
