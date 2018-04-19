@@ -8,7 +8,10 @@
     {% load staticfiles  %}
     <!-- GLOBAL MANDATORY STYLES -->
     <link href="http://fonts.googleapis.com/css?family=Hind:300,400,500,600,700" rel="stylesheet" type="text/css">
-    <link href="{% static "/vendor/simple-line-icons/css/simple-line-icons.css" %}" rel="stylesheet" type="text/css"/>
+    <!--<link href="{% static "/vendor/simple-line-icons/css/simple-line-icons.css" %}" rel="stylesheet" type="text/css"/>-->
+    <!-- ICON STYLES -->
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.10/css/all.css" integrity="sha384-+d0P83n9kaQMCwj8F4RJB66tzIwOKmrdb46+porD/OvrJ+37WqIM7UoBtwHO6Nlg" crossorigin="anonymous">
+    <link href="{% static "/css/icons.css" %}" rel="stylesheet" type="text/css"/>
     <link href="{% static "/vendor/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css"/>
     <link href="{% static "/css/custom.css" %}" rel="stylesheet" type="text/css"/>
 
@@ -22,11 +25,12 @@
 	<link href="{% static "/css/form.css" %}" rel="stylesheet" type="text/css"/>
 
     <!-- THEME STYLES -->
-    <link href="{% static "/css/layout.min.css" %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static "/css/layout.css" %}" rel="stylesheet" type="text/css"/>
 
     <!-- Place favicon.ico in the root directory -->
 
-
+    {% load user_groups %}
+    {% load mptt_tags %}
   </head>
   <!-- END HEAD -->
 
@@ -58,16 +62,40 @@
                         <div class="menu-container">
                             <ul class="nav navbar-nav navbar-nav-right">
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/drylab/">Home</a></li>
-								<li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">SERVICES REQUEST<span class="caret"></span></a>
-				  					<ul class="dropdown-menu">
-				    					<li><a href="/drylab/service_request_internal_sequencing">GENOMICS UNIT SEQUENCING</a></li>
-				    					<li><a href="/drylab/service_request_external_sequencing">EXTERNAL SEQUENCING</a></li>
-				  					</ul>
-								</li>
+                                 {% if user.is_authenticated and not request.user|has_group:"admin_iSkyLIMS" %}
+                                    <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">SERVICES REQUEST<span class="caret"></span></a>
+                                        <ul class="dropdown-menu">
+                                            <li><a href="/drylab/service_request_internal_sequencing">GENOMICS UNIT SEQUENCING</a></li>
+                                            <li><a href="/drylab/service_request_external_sequencing">EXTERNAL SEQUENCING</a></li>
+                                        </ul>
+                                    </li>
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/drylab/counseling_request">COUNSELING REQUEST</a></li>
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/drylab/infrastructure_request">INFRASTRUCTURE REQUEST</a></li>
-                                <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#">STATISTICS</a></li>
-                                <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#contact">CONTACT</a></li>
+                                {% endif %}
+                                {% if user.is_authenticated and request.user|has_group:"Admin_iSkyLIMS" %}
+                                <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">MANAGE SERVICES</a>
+                                    <ul class="dropdown-menu">
+	    					<li><a href="/drylab/searchService">SEARCH SERVICE</a></li>
+	    					<li><a href="/drylab/pendingServices">PENDING SERVICES</a></li>
+					</ul>
+                                </li>
+                                <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">SERVICES STATISTICS</a>
+                                    <ul class="dropdown-menu">
+						<li><a href="/drylab/statsByDateUser">REQUESTED BY USER</a></li>
+						<li><a href="/drylab/statsByServicesRequest">SERVICES REQUESTED</a></li>
+                        <li><a href="/drylab/statsBySamplesProcessed">SAMPLES PROCESSED</a></li>
+						<li><a href="/drylab/statsTimeDelivery">STATS TIME DELIVERY</a></li>
+				  					</ul>
+                                </li>
+				<li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">USER ACTIVITY</a>
+                                    <ul class="dropdown-menu">
+						<li><a href="/drylab/openSessions">CURRENT OPEN USER SESSIONS</a></li>
+						<li><a href="/drylab/userLogin">USER LAST LOGING</a></li>
+						<li><a href="/drylab/#">MORE TO ADD</a></li>
+				  					</ul>
+                                </li>
+                                {% endif %}
+                                <!--<li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#contact">CONTACT</a></li>-->
                             </ul>
 
                         </div>
@@ -83,9 +111,15 @@
         <!--========== PAGE LAYOUT ==========-->
 
 	<div class="bg-color-sky-light">
-          <div class="container content-lg">
+          <div class="container content-lg fill-height">
             <div class="row margin-b-40">
-
+                <!-- Loggin pannel -->
+                <div class="row row-space-2 margin-b-4">
+                    <div class="col-sm-6 col-sm-offset-6">
+                    {% include 'registration/login_inline.html' %}
+                    </div>
+                </div>
+	    <!-- End Loggin pannel -->
             {% block content %}
 	<!--========== HERE WILL BE THE INFORMATION FROM DJANGO CODE  ==========-->
             {% endblock %}
@@ -94,57 +128,7 @@
         </div> <!--// end bg-color -->
 
 
-<!-- Contact -->
-        <div id="contact">
-            <div class="bg-color-sky-light">
-                <div class="container content-lg">
-                    <div class="row margin-b-40">
-                        <div class="col-sm-6">
-                           <h2>Contact Me</h2>
-                            <p>Lorem ipsum dolor sit amet consectetur adipiscing elit sed tempor incididunt ut laboret dolore magna aliqua enim minim veniam exercitation</p>
-                        </div>
-                    </div>
-                    <!--// end row -->
-
-                    <div class="row">
-                        <div class="col-md-3 col-xs-6 md-margin-b-30">
-                            <h4>Location</h4>
-                            <a href="#">ISCIII, Majadahonda Campus ,Madrid</a>
-                        </div>
-                        <div class="col-md-3 col-xs-6 md-margin-b-30">
-                            <h4>Phone</h4>
-                            <a href="#">22352</a>
-                        </div>
-                        <div class="col-md-3 col-xs-6">
-                            <h4>Email</h4>
-                            <a href="mailto:#">bioinformatica@isciii.es</a>
-                        </div>
-                        <div class="col-md-3 col-xs-6">
-                            <h4>Web</h4>
-                            <a href="#">bu.isciii.es</a>
-                        </div>
-                    </div>
-                    <!--// end row -->
-                </div>
-            </div>
-        </div>
-        <!-- End Contact -->
-        <!--========== END PAGE LAYOUT ==========-->
-
-        <!--========== FOOTER ==========-->
-        <footer class="footer">
-            <div class="content container">
-                <div class="row">
-                    <div class="col-xs-6">
-                        <img class="footer-logo" src="{% static "/img/isciii_logo_2017.png" %}" alt="ISCiii_Bio_Informatic_Logo">
-                    </div>
-                    <div class="col-xs-6 text-right sm-text-left">
-                        <p class="margin-b-0"><a class="fweight-700" href="http://keenthemes.com/preview/acecv/">Acecv</a> Theme Powered by: <a class="fweight-700" href="http://www.keenthemes.com/">KeenThemes.com</a></p>
-                    </div>
-                </div>
-                <!--// end row -->
-            </div>
-        </footer>
+		{% include "iSkyLIMS_home/footer.html" %}
         <!--========== END FOOTER ==========-->
 
         <!-- Back To Top -->

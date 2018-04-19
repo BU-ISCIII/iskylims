@@ -13,16 +13,16 @@ class PlatformAdmin(admin.ModelAdmin):
 
 # 'serviceUsername' refactored to 'serviceUserid' which shows better its real nature
 class ServiceAdmin(admin.ModelAdmin):
-	list_display=('serviceUserId','serviceSeqCenter','servicePlatform','serviceRunSpecs','serviceFileExt','serviceFile','serviceStatus','serviceNotes')
+	list_display=('serviceRequestNumber','serviceUserId','serviceSeqCenter','servicePlatform','serviceRunSpecs','serviceFileExt','serviceFile','serviceStatus','serviceNotes','serviceCreatedOnDate','serviceOnApprovedDate','serviceOnRejectedDate','serviceOnDeliveredDate')
 
 class AvailableServiceAdmin(DjangoMpttAdmin):
 	list_display=('availServiceDescription',)
 
 class ResolutionAdmin(admin.ModelAdmin):
-	list_display=('resolutionServiceID','resolutionNumber','resolutionServiceSRV','resolutionDate')
+	list_display=('resolutionServiceID','resolutionNumber','resolutionDate','resolutionEstimatedDate','resolutionOnQueuedDate','resolutionOnInProgressDate','resolutionFullNumber','resolutionAsignedUser','resolutionNotes')
 
 class DeliveryAdmin(admin.ModelAdmin):
-	list_display=('deliveryResolutionID','deliveryEstimatedDate','deliveryDate','deliveryNumber','deliveryNotes')
+	list_display=('deliveryResolutionID','deliveryDate','deliveryNotes')
 
 admin.site.register(FileExt,FileExtAdmin)
 admin.site.register(Platform,PlatformAdmin)
@@ -30,3 +30,4 @@ admin.site.register(Service,ServiceAdmin)
 admin.site.register(AvailableService,AvailableServiceAdmin)
 admin.site.register(Resolution,ResolutionAdmin)
 admin.site.register(Delivery,DeliveryAdmin)
+

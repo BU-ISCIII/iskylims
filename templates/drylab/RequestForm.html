@@ -2,7 +2,71 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-<div class="container-fluid margin-t-40">	
+{% if request_internal %}
+<h1><div class="color-heading">Service Request Form</div></h1>
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7">
+			<div class="panel panel-default">
+                  <div class="panel-heading">Form for requesting internal service to Bioinformatic Unit</div>
+                  <div class="panel-body">
+
+
+                  </div> <!--// end panel body -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  Recorded  pending services  -->
+	</div> <!-- //  end row -->
+{%elif request_external%}
+<h1><div class="color-heading">Service Request Form</div></h1>
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7">
+			<div class="panel panel-default">
+                  <div class="panel-heading">Form for requesting external service to Bioinformatic Unit</div>
+                  <div class="panel-body">
+
+
+                  </div> <!--// end panel body -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  Recorded  pending services  -->
+	</div> <!-- //  end row -->
+{%elif consulting_request%}
+<h1><div class="color-heading">Consulting Service Request Form</div></h1>
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7">
+			<div class="panel panel-default">
+                  <div class="panel-heading">Form for requesting consulting service to Bioinformatic Unit</div>
+                  <div class="panel-body">
+
+
+                  </div> <!--// end panel body -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  Recorded  pending services  -->
+	</div> <!-- //  end row -->
+{%elif infrastructure_request%}
+<h1><div class="color-heading">Infrastructure Service Request Form</div></h1>
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7">
+			<div class="panel panel-default">
+                  <div class="panel-heading">Form for requesting Infrastructure service to Bioinformatic Unit</div>
+                  <div class="panel-body">
+
+
+                  </div> <!--// end panel body -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  Recorded  pending services  -->
+	</div> <!-- //  end row -->
+{% endif %}
+<div class="container-fluid margin-t-40">
 	{% crispy form %}
 </div>
+<script>
+    $(document).ready(function () {
+        $("form").submit(function (e) {
+            //stop submitting the form to see the disabled button effect
+            // e.preventDefault();
+            //disable the submit button
+            $("input:submit").attr("disabled", true);
+            return true;
+        });
+    });
+</script>
 {% endblock %}
