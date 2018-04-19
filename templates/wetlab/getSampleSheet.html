@@ -9,7 +9,7 @@
             <div class="panel-heading">Fill the <b>user name</b> and the <b>Used Library Kit</b> for each project in the run {{ get_user_names.experiment_name }} </div>
             <div class="panel-body"> This is the second, and the last, FORM that user need to fill down to have the information about the run<BR>
              Once the name of the user and the libray Kit used in the run, were filled and submited, the next page will show the link to download the files
-             that can be used to import to illumina Base Space  
+             that can be used to import to illumina Base Space
              </div> <!--  end of panel body -->
           </div> <!--  end of panel  -->
        </div> <!--  end of col-sm-8 -->
@@ -24,7 +24,7 @@
                 --><li><span>Show Results</span><i></i></li>
             </ol>
         </div> <!--// end col-sm-4  -->
-    </div> <!--// end row --> 
+    </div> <!--// end row -->
     <BR>
       <div class="row row-space-2 margin-b-4">
         <div class="col-sm-8 col-sm-offset-2">
@@ -33,7 +33,7 @@
             <p>Write down the Library kit used for each project</p>
         </div> <!--// end col-sm-8  -->
     </div> <!--// end row -->
-    
+
     <!-- Prepare the FORM for step 2 -->
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-8" >
@@ -67,12 +67,12 @@
                                     {% endfor %}
                                  </select>
                             </div>
-                            
+
                             <br><br>
                             <label class="col-sm-4" for="projectindexlibraryname">Index Library Name : </label>
                         <div class="col-sm-6"><input class="form-control" type="text" name="projectindexlibraryname" size="60" maxlength="50" value="{{ get_user_names.index_library_name }}"></div>
                         <br><br>
-                         </div>                       
+                         </div>
                     {% endfor %}
                      <input type="hidden" name="runname" value="{{get_user_names.runname}}"/>
                     <br>
@@ -84,7 +84,7 @@
           <p> Fields marked with <FONT COLOR= "Red">*</FONT> are mandatory</p>
 
 
-<!--script to disable the submit button -->  
+<!--script to disable the submit button -->
 
 <script>
     $(document).ready(function () {
@@ -97,14 +97,14 @@
         });
     });
 </script>
- <!--script ends here--> 
-             
+ <!--script ends here-->
+
     {% elif completed_form %}
         {% csrf_token %}
-        {% for key, val in completed_form%} 
+        {% for key, val in completed_form%}
           {%if key == "runname" %}
           <BR>
-    
+
             <div class="row row-space-2 margin-b-4">
                 <div class="col-sm-8 col-sm-offset-2" >
                     <ol class="track-progress" data-steps="3">
@@ -113,43 +113,43 @@
                         --><li class="active"><span>Show Results</span><i></i></li>
                     </ol>
                 </div> <!--// end col-sm-4  -->
-            </div> <!--// end row --> 
+            </div> <!--// end row -->
         <BR>
              <div class="row row-space-2 margin-b-4">
                <div class="col-sm-8 col-sm-offset-2">
                  <div class="panel panel-default">
                    <div class="panel-heading"><b>Run configuration have been sucessfully stored</b><BR>For the run name : <b>{{ val }} </b></div>
                    <div class="panel-body"> All the required information is stored now on database. <BR>
-                    The files to be imported to Illumina Base Space that can be downloaded in the links below  
+                    The files to be imported to Illumina Base Space that can be downloaded in the links below
                     </div> <!--  end of panel body -->
                 </div> <!--  end of panel  -->
              </div> <!--  end of col-sm-8 -->
            </div> <!--  end of row -->
         {%endif%}
-        {% endfor %} 
-        
+        {% endfor %}
+
         {% for key, values in completed_form %}
           {% if key != 'runname'%}
             <div class="row row-space-2 margin-b-4">
              <div class="col-sm-8 col-sm-offset-2">
               <div class="panel panel-default">
                     <div class="panel-heading">Library Kit : for the run name <b>{{ key }} </b></div>
-                    <div class="panel-body"> Download the file for Illumina Base Space : 
+                    <div class="panel-body"> Download the file for Illumina Base Space :
                         <a href="/wetlab/{{ values }}" download>{{ values|cut:"documents/wetlab/BaseSpaceMigrationFiles/" }}<span class="glyphicon glyphicon-download-alt"></span></a>
-                        
+
                     </div> <!--  end of panel body -->
                 </div> <!--  end of panel  -->
              </div> <!--  end of col-sm-8 -->
-           </div> <!--  end of row -->                
-                  
+           </div> <!--  end of row -->
+
           {%endif%}
-        {% endfor %}          
-          
+        {% endfor %}
+
 
     {%else %}
 <!--    Progress Step bar for the Form -->
     <BR>
-    
+
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-8 col-sm-offset-2" >
             <ol class="track-progress" data-steps="3">
@@ -158,7 +158,7 @@
                 --><li><span>Show Results</span><i></i></li>
             </ol>
         </div> <!--// end col-sm-4  -->
-    </div> <!--// end row --> 
+    </div> <!--// end row -->
 
     <BR>
 
@@ -176,7 +176,7 @@
           <div class="panel-heading">Form to upload the Sample Sheet file</div>
           <div class="panel-body">
             <form method="post" enctype="multipart/form-data" name="getSample" id="getSample" class="form-horizontal">
-            {% csrf_token %}        
+            {% csrf_token %}
                 <div class="form-group required">
                   <input type="hidden" name="action" value="uploadFile"/>
                   <label class="col-sm-4 control-label" for="filecsv" >Upload Sample Sheet file </label>
@@ -186,16 +186,16 @@
                 </div>
                 <div class="form-group required">
                   <label class="col-sm-4 control-label" for="center" >Fill the Request Center </label>
-                  <div class="col-sm-8"><input class="form-control" type="text" required = "required" name="center" size="60" maxlength="100"></div>
+                  <div class="col-sm-8"><input class="form-control" type="text" name="center" size="60" maxlength="100"></div>
                 </div>
                 <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
             </form>
-            
+
          </div>  <!--  end of panel body  -->
          <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
         </div> <!--// end panel -->
         </div> <!--// end col-sm-7  -->
-        
+
         <div class="col-sm-4 col-sm-offset-1" >
             <BR> <BR> <BR>
         <div class="panel panel-default">
@@ -205,10 +205,10 @@
           <BR> Click <a href="https://www.illumina.com/informatics/research/experimental-design/illumina-experiment-manager.html" target="_blank"> here</a> for getting this information.
           </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
-        </div> <!--// end col-sm-4  -->   
+        </div> <!--// end col-sm-4  -->
     </div> <!--// end row -->
 
-<!--script to disable the submit button -->  
+<!--script to disable the submit button -->
 
 <script>
     $(document).ready(function () {
@@ -221,8 +221,8 @@
         });
     });
 </script>
- <!--script ends here--> 
-    
+ <!--script ends here-->
+
     {% endif %}
 
 {% endblock %}
