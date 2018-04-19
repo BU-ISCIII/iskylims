@@ -11,7 +11,7 @@ from django.views.generic import ListView, DetailView
 
 urlpatterns = [
     path('', LoginView.as_view(template_name='iSkyLIMS_home/index.html'), name="index"),
-    path('contact_email',views.contact_email, name='contact_email'),
+    path('contact',views.contact, name='contact'),
     path('thanks', views.thanks, name='thanks'),
     path('about-us', LoginView.as_view(template_name='iSkyLIMS_home/about_us.html'), name="about-us"),
 ]

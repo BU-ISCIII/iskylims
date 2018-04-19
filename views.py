@@ -10,12 +10,12 @@ from django.conf import settings
 
 # Create your views here.
 
-def index(request):                             
-     return render(request, 'iSkyLIMS_home/index.html') 
+def index(request):
+     return render(request, 'iSkyLIMS_home/index.html')
 
 
 
-def contact_email(request):
+def contact(request):
     if request.method == 'GET':
         form = ContactForm()
     else:
