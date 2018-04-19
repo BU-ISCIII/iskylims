@@ -97,8 +97,8 @@ def get_sample_file (request):
             else:
                 return render (request,'wetlab/error_page.html', {'content':['Run Name is already used. ','Run Name must be unique in database.',' ',
                                                             'ADVICE:','Change the value in the Sample Sheet  file ']})
-        
-        
+
+
         ## Fetch from the Sample Sheet file the projects included in the run and the user. Error page is showed if not project/description colunms are found
         project_list=get_projects_in_run(stored_file)
 
@@ -173,7 +173,7 @@ def get_sample_file (request):
         used_libraries = []
         list_libraries = LibraryKit.objects.order_by().values_list('libraryName', flat=True)
         run_info_values['used_libraryKit'] =  list_libraries
-        
+
         ## displays the list of projects and the user names found on Sample Sheet
         return render(request, 'wetlab/getSampleSheet.html', {'get_user_names': run_info_values })
 
@@ -185,7 +185,7 @@ def get_sample_file (request):
         user_name=request.POST.getlist('username')
         library_kit=request.POST.getlist('libraryKit')
         project_index_kit=request.POST.getlist('projectindexlibraryname')
-        
+
         ## get the sample sheet used in the run
         if not RunProcess.objects.filter (runName__exact = run_name).exists():
             return render (request, 'wetlab/error_page.html', {'content':['You get this error page because you use the back Buttom to return to previous page where asking for library kit name',
@@ -232,9 +232,9 @@ def get_sample_file (request):
             else:
                 bs_file[key] = library_file
                 results.append([key, bs_file[key]])
-        
+
         ## save the project information on database
-        
+
         for p in range(len( projects)):
             my_project = projects [p]
             my_name = user_name[p]
@@ -272,23 +272,23 @@ def get_sample_file (request):
         for project in project_to_be_updated :
             project.procState='Recorded'
             project.save()
-            
+
         import pdb; pdb.set_trace()
         return render (request, 'wetlab/getSampleSheet.html', {'completed_form':results})
 
 
     return render(request, 'wetlab/getSampleSheet.html')
 
-@login_required   
+@login_required
 def add_library_kit (request):
-    #get the list of the already loaded library kits to be displayed 
+    #get the list of the already loaded library kits to be displayed
     libraries_information ={}
     libraryKit_list = LibraryKit.objects.all()
     libraryKit_dict = []
     if len(libraryKit_list) >0 :
         for library in libraryKit_list :
-            libraryKit_dict.append(library.libraryName) 
-    
+            libraryKit_dict.append(library.libraryName)
+
     if request.method == 'POST' and request.POST['action'] == 'addNewLibraryKit':
         new_library_kit_name = request.POST['newLibraryKit']
         #new_index_number = request.POST['indexLibraryKit']
@@ -307,7 +307,7 @@ def add_library_kit (request):
         library.save()
         return render (request, 'wetlab/AddLibraryKit.html',{'library_kit_info':library_kit_information})
     else:
-        
+
         libraries_information ['libraries'] = libraryKit_dict
         return render(request,'wetlab/AddLibraryKit.html',{'list_of_libraries': libraries_information})
 
@@ -499,7 +499,7 @@ def get_information_run(run_name_found,run_id):
             info_dict[read_number_index] = read_summary_values
 
         # prepare the graphics for the run
-        folder_for_plot='/wetlab/documents/wetlab/images_plot/'
+        folder_for_plot='/documents/wetlab/images_plot/'
 
         run_graphics_id = NextSeqGraphicsStats.objects.filter(runprocess_id__exact =run_id)
         folder_graphic = folder_for_plot + run_graphics_id[0].get_folder_graphic()+ '/'
@@ -2418,10 +2418,10 @@ def quarter_report (request) :
 
 def email (request):
     subject = 'iSkyLIMS te desea una Feliz Navidad'
-    body_message = ' Feliz Navidad Sara. Ya enviamos correo desde iSkyLIMS ;-)'
-    from_user = 'luis.chapado@amgitt.es'
+    body_message = 'Feliz Navidad Sara. Ya enviamos correo desde iSkyLIMS ;-)'
+    from_user = 'bioinformatica@isciii.es'
     #to_user = ['luis.chapado@amgitt.es']
-    to_user = ['chapado.l@gmail.com']
+    to_user = ['smonzon@isciii.es']
     request_send_mail (subject, body_message, from_user, to_user)
     #import pdb; pdb.set_trace()
     return render (request,'wetlab/info_page.html', {'content':['Your email was sent to ', to_user, ' with the following message ', body_message]})
@@ -2541,7 +2541,7 @@ def update_tables (request):
 
 def test (request):
     if request.method=='POST' and (request.POST['action']=='displayResult') :
-        import pdb; pdb.set_trace() 
+        import pdb; pdb.set_trace()
     return render(request, 'wetlab/test.html')
 
 '''
