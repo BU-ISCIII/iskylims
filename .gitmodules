@@ -7,3 +7,6 @@
 [submodule "django-utils"]
 	path = django-utils
 	url = https://github.com/BU-ISCIII/django-utils
+[submodule "iSkyLIMS_home"]
+	path = iSkyLIMS_home
+	url = https://github.com/BU-ISCIII/iSkyLIMS_home
