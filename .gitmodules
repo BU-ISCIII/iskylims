@@ -1,0 +1,12 @@
+[submodule "iSkyLIMS-wetlab"]
+	path = iSkyLIMS-wetlab
+	url = https://github.com/BU-ISCIII/iSkyLIMS-wetlab
+[submodule "iSkyLIMS-drylab"]
+	path = iSkyLIMS-drylab
+	url = https://github.com/BU-ISCIII/iSkyLIMS-drylab
+[submodule "iSkyLIMS-home"]
+	path = iSkyLIMS-home
+	url = https://github.com/BU-ISCIII/iSkyLIMS-home
+[submodule "django-utils"]
+	path = django-utils
+	url = https://github.com/BU-ISCIII/django-utils
