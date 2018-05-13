@@ -134,6 +134,8 @@ class Service(models.Model):
 
 		return stats_information
 
+	def get_service_creation_time (self):
+		return self.serviceCreatedOnDate.strftime("%d %B, %Y")
 
 	def get_time_to_delivery (self):
 
