@@ -136,6 +136,11 @@ def get_data_for_service_confirmation (service_requested):
 	user['position'] = Profile.objects.get(profileUserID = user_id).profilePosition
 	user['email'] = service.serviceUserId.email
 	information['user'] = user
+	projects_in_service = []
+	projects_class = service.serviceProjectNames.all()
+	for project in projects_class:
+		projects_in_service.append(project.get_project_name())
+	service_data['projects'] = projects_in_service
 	service_data['platform'] = platform
 	service_data['run_specifications'] = run_specs
 	service_data['center'] = center
@@ -162,7 +167,7 @@ def create_pdf(request,information, template_file, pdf_file_name):
 	#import pdb; pdb.set_trace()
 	#font_config = FontConfiguration()
 	html_string = render_to_string(template_file, {'information': information})
-	pdf_file = drylab_config.OUTPUT_DIR_TEMPLATE + pdf_file_name +'.pdf'
+	pdf_file = drylab_config.OUTPUT_DIR_TEMPLATE + pdf_file_name
 	html = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf(pdf_file,stylesheets=[CSS(settings.STATIC_ROOT + drylab_config.CSS_FOR_PDF)])
 
 	return pdf_file
@@ -206,18 +211,20 @@ def service_request(request, serviceRequestType):
 				# PDF preparation file for confirmation of service request
 				information_to_include = get_data_for_service_confirmation(str(new_service.serviceRequestNumber))
 				pdf_file_name = str(new_service.serviceRequestNumber) + '.pdf'
-				create_pdf(request, information_to_include, drylab_config.RESOLUTION_TEMPLATE, pdf_file_name)
-				
+				pdf_file = create_pdf(request, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name)
+				'''
 				fs = FileSystemStorage(drylab_config.OUTPUT_DIR_TEMPLATE)
 				with fs.open(pdf_file_name) as pdf:
 					response = HttpResponse(pdf, content_type='application/pdf')
 					response['Content-Disposition'] = 'inline;filename=' + pdf_file_name 
 				return response
 				'''
+				download_file = '<a href="'+ pdf_file + '">Download the service request confirmation file</a>'
 				return render(request,'drylab/info_page.html',{'content':['Your service request has been successfully recorded.',
 								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
-								'Keep this number safe for refering your request','You will be contacted shortly.']})
-				'''
+								'Keep this number safe for refering your request', download_file ,
+								'You will be contacted shortly.']})
+				
 		else: #No POST
 			form = ServiceRequestFormInternalSequencing()
 			## Addition of serviceProjectName for
@@ -247,18 +254,20 @@ def service_request(request, serviceRequestType):
 				# PDF preparation file for confirmation of service request
 				information_to_include = get_data_for_service_confirmation(str(new_service.serviceRequestNumber))
 				pdf_file_name = str(new_service.serviceRequestNumber) + '.pdf'
-				create_pdf(request, information_to_include, drylab_config.RESOLUTION_TEMPLATE, pdf_file_name)
-				
+				pdf_file = create_pdf(request, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name)
+				'''
 				fs = FileSystemStorage(drylab_config.OUTPUT_DIR_TEMPLATE)
 				with fs.open(pdf_file_name) as pdf:
 					response = HttpResponse(pdf, content_type='application/pdf')
 					response['Content-Disposition'] = 'inline;filename=' + pdf_file_name 
 				return response
 				'''
+				download_file = '<a href="'+ pdf_file + '">Download the service request confirmation file</a>'
 				return render(request,'drylab/info_page.html',{'content':['Your service request has been successfully recorded.',
 								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
-								'Keep this number safe for refering your request','You will be contacted shortly.']})
-				'''
+								'Keep this number safe for refering your request', download_file ,
+								'You will be contacted shortly.']})
+				
 		else: #No POST
 			form = ServiceRequestFormExternalSequencing()
 			form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
@@ -279,18 +288,20 @@ def service_request_external_sequencing(request):
 			# PDF preparation file for confirmation of service request
 			information_to_include = get_data_for_service_confirmation(str(new_service.serviceRequestNumber))
 			pdf_file_name = str(new_service.serviceRequestNumber) + '.pdf'
-			create_pdf(request, information_to_include, drylab_config.RESOLUTION_TEMPLATE, pdf_file_name)
-			
+			pdf_file = create_pdf(request, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name)
+			'''
 			fs = FileSystemStorage(drylab_config.OUTPUT_DIR_TEMPLATE)
 			with fs.open(pdf_file_name) as pdf:
 				response = HttpResponse(pdf, content_type='application/pdf')
 				response['Content-Disposition'] = 'inline;filename=' + pdf_file_name 
 			return response
 			'''
+			download_file = '<a href="'+ pdf_file + '">Download the service request confirmation file</a>'
 			return render(request,'utils/info_page.html',{'content':['Your service request has been successfully recorded.',
 								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
-								'Keep this number safe for refering your request','You will be contacted shortly.']})
-			'''
+								'Keep this number safe for refering your request', download_file ,
+								'You will be contacted shortly.']})
+			
 	else:
 		form = ServiceRequestFormExternalSequencing()
 
@@ -319,18 +330,20 @@ def counseling_request(request):
 			# PDF preparation file for confirmation of service request
 			information_to_include = get_data_for_service_confirmation(str(new_service.serviceRequestNumber))
 			pdf_file_name = str(new_service.serviceRequestNumber) + '.pdf'
-			create_pdf(request, information_to_include, drylab_config.RESOLUTION_TEMPLATE, pdf_file_name)
-			
+			pdf_file = create_pdf(request, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name)
+			'''
 			fs = FileSystemStorage(drylab_config.OUTPUT_DIR_TEMPLATE)
 			with fs.open(pdf_file_name) as pdf:
 				response = HttpResponse(pdf, content_type='application/pdf')
 				response['Content-Disposition'] = 'inline;filename=' + pdf_file_name 
 			return response
 			'''
+			download_file = '<a href="'+ pdf_file + '">Download the service request confirmation file</a>'
 			return render(request,'drylab/info_page.html',{'content':['Your service request has been successfully recorded.',
 								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
-								'Keep this number safe for refering your request','You will be contacted shortly.']})
-			'''
+								'Keep this number safe for refering your request', download_file ,
+								'You will be contacted shortly.']})
+			
 		else:
 			#import pdb; pdb.set_trace()
 			return render(request,'drylab/error_page.html',{'content':['Your service request cannot be recorded.',
