@@ -977,6 +977,8 @@ def stats_by_date_user (request):
 				else:
 					user_name_id = matched_names[0].id
 					user_name = matched_names[0].username
+			else:
+				return render (request,'drylab/error_page.html', {'content':[user_name,'is not defined on database']}) 
 			if start_date != '':
 				try:
 					datetime.datetime.strptime(start_date, '%Y-%m-%d')
