@@ -7,7 +7,7 @@ CSS_FOR_PDF = '/css/print_services.css'
 ## template files for generating the PDF files
 REQUESTED_CONFIRMATION_SERVICE = 'request_service_template'
 RESOLUTION_TEMPLATE = 'resolution_template.html'
-OUTPUT_DIR_TEMPLATE ='documents/drylab/' # Directory to store the templates before moving to service folder
+OUTPUT_DIR_TEMPLATE ='documents/drylab/' # Directory to store the pdf templates before moving to service folder
 
 ## SAMBA settings for connect to bioinfodoc server to create the folder request services
 SAMBA_USER_ID = 'lchapado'

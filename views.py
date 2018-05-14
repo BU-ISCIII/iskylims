@@ -642,7 +642,7 @@ def add_resolution (request, service_id):
 				service_reference.save()
 			new_resolution.save()
 			form.save_m2m()
-			# create a new resolution to be added to the service folder
+			# create a new resolution to be added to the service folder including the path where file is stored 
 			information = get_data_for_resolution(str(service_reference.serviceRequestNumber), resolution_number )
 			resolution_file = create_pdf(request,information, drylab_config.RESOLUTION_TEMPLATE, resolution_number)
 			if len(Resolution.objects.filter(resolutionServiceID = service_reference)) == 1:
@@ -654,13 +654,8 @@ def add_resolution (request, service_id):
 			else:
 				# connect to SAMBA server and copy the new resolution file into resolution folder
 				conn = open_samba_connection()
-				
-			
-			
-			
-			
-			
-			
+				add_new_resolution_file (conn, resolution_file)
+
 			## Send email
 			service_user_mail = service_reference.serviceUserId.email
 			subject = 'Service ' + service_reference.serviceRequestNumber + " has been updated"
@@ -793,16 +788,29 @@ def test (request):
 	return response
 	
 	
-	
-	
-	
-	
-	
-	
 	#return render (request, 'drylab/info_page.html', {'content': ['test ']})
 	
+def add_new_resolution_file (conn, resolution_file):
+	
+	temp_file=resolution_file.split('/')
+	resolution_name_file = temp_file[-1]
+	resolution_remote_file = os.path.join(service_path,drylab_config.FOLDERS_FOR_SERVICES[1],resolution_name_file)
+	
+	try:
+		with open(resolution_file ,'rb') as  res_samba_fp:
+			conn.storeFile(drylab_config.SAMBA_SHARED_FOLDER_NAME, resolution_remote_file, res_samba_fp)
+	except:
+		print ('ERROR:: Unable to copy resolution file')
+		
+	
 def create_service_structure (service_request_file,full_service_path, resolution_file):
-
+	## service_request_file and resolution_file contains the full path where these files 
+	## are stored on iSkyLIMS. It means that OUTPUT_DIR_TEMPLATE value is added to thes variable
+	## to store the files on the remote system we need to have the full pathe where these files
+	## are located, but also the file name without including the path, in order to add only
+	## the file name to the remote path. To get only the file name we split the variable (containing
+	## path and file name ) to fetch only the file name
+	
 	try:
 		conn=open_samba_connection()
 	except:
