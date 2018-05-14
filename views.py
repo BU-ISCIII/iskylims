@@ -126,11 +126,15 @@ def get_data_for_service_confirmation (service_requested):
 	information['service_number'] = service_number
 	information['requested_date'] = service.get_service_creation_time()
 	information['nodes']= service.serviceAvailableService.all()
-	user['name'] = 'Silvia'
-	user['surname'] = 'Valdezate Ramos'
-	user['position'] = 'Científico'
-	user['phone'] = '23734'
-	user['email'] = 'svaldezate@isciii.es'
+	user['name'] = service.serviceUserId.first_name
+	user['surname'] = service.serviceUserId.last_name
+	
+	user_id = service.serviceUserId.id
+	user['area'] = Profile.objects.get(profileUserID = user_id).profileArea
+	user['center'] = Profile.objects.get(profileUserID = user_id).profileCenter
+	user['phone'] = Profile.objects.get(profileUserID = user_id).profileExtension
+	user['position'] = Profile.objects.get(profileUserID = user_id).profilePosition
+	user['email'] = service.serviceUserId.email
 	information['user'] = user
 	service_data['platform'] = platform
 	service_data['run_specifications'] = run_specs
@@ -158,10 +162,10 @@ def create_pdf(request,information, template_file, pdf_file_name):
 	#import pdb; pdb.set_trace()
 	#font_config = FontConfiguration()
 	html_string = render_to_string(template_file, {'information': information})
-	pdf_file = drylab_config.OUTPUT_DIR_TEMPLATE + pdf_file_name 
+	pdf_file = drylab_config.OUTPUT_DIR_TEMPLATE + pdf_file_name +'.pdf'
 	html = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf(pdf_file,stylesheets=[CSS(settings.STATIC_ROOT + drylab_config.CSS_FOR_PDF)])
 
-	return None
+	return pdf_file
 
 
 @login_required
@@ -611,16 +615,16 @@ def add_resolution (request, service_id):
 			new_resolution = form.save(commit=False)
 			#import pdb ; pdb.set_trace()
 			service_reference = Service.objects.get(pk=service_id)
+			service_reference.serviceOnApprovedDate = datetime.date.today()
+			number_list = []
+			number_list.append(str(service_reference.serviceRequestNumber))
+			number_list.append(str(datetime.date.today()).replace('-',''))
+			number_list.append(new_resolution.resolutionFullNumber)
+			number_list.append(str(service_reference.serviceUserId))
+			number_list.append('S')
+			new_resolution.resolutionFullNumber = '_'.join(number_list)
 			if service_acepted_rejected == 'accepted':
 				service_reference.serviceStatus = "approved"
-				service_reference.serviceOnApprovedDate = datetime.date.today()
-				number_list = []
-				number_list.append(str(service_reference.serviceRequestNumber))
-				number_list.append(str(datetime.date.today()).replace('-',''))
-				number_list.append(new_resolution.resolutionFullNumber)
-				number_list.append(str(service_reference.serviceUserId))
-				number_list.append('S')
-				new_resolution.resolutionFullNumber = '_'.join(number_list)
 			else:
 				service_reference.serviceStatus = "rejected"
 				service_reference.serviceOnRejectedDate = datetime.date.today()
@@ -638,9 +642,20 @@ def add_resolution (request, service_id):
 				service_reference.save()
 			new_resolution.save()
 			form.save_m2m()
-			## create service folder structure on the samba server if it is the first time to create a resolution
-			# if 
-			#create_service_structure (service_name)
+			# create a new resolution to be added to the service folder
+			information = get_data_for_resolution(str(service_reference.serviceRequestNumber), resolution_number )
+			resolution_file = create_pdf(request,information, drylab_config.RESOLUTION_TEMPLATE, resolution_number)
+			if len(Resolution.objects.filter(resolutionServiceID = service_reference)) == 1:
+				## create service folder structure on the samba server. It is the first time to create a resolution
+				# move the resolution and the service request to the right folders
+				service_request_file =os.path.join (drylab_config.OUTPUT_DIR_TEMPLATE,str(service_reference.serviceRequestNumber+ '.pdf'))
+				conn = create_service_structure (service_request_file , new_resolution.resolutionFullNumber ,resolution_file)
+				
+			else:
+				# connect to SAMBA server and copy the new resolution file into resolution folder
+				conn = open_samba_connection()
+				
+			
 			
 			
 			
@@ -667,31 +682,132 @@ def add_resolution (request, service_id):
 
 			return render(request, 'drylab/addResolution.html' , { 'form' : form ,'prueba':'pepe'})
 
-def open_samba_connection1():
+def open_samba_connection():
 	## open samba connection
 	# There will be some mechanism to capture userID, password, client_machine_name, server_name and server_ip
 	# client_machine_name can be an arbitary ASCII string
 	# server_name should match the remote machine name, or else the connection will be rejected
-
-	#conn=SMBConnection(drylab_config.SAMBA_USER_ID, drylab_config.SAMBA_USER_PASSWORD, drylab_config.SAMBA_SHARED_FOLDER_NAME, 
-	#					drylab_config.SAMBA_REMOTE_SERVER_NAME, use_ntlm_v2=drylab_config.SAMBA_NTLM_USED)
-	#conn.connect(drylab_config.SAMBA_IP_SERVER, drylab_config.SAMBA_PORT_SERVER)
-	conn=SMBConnection('Luigi', 'Apple123', 'bioinfo_doc', 'LUIGI-PC', use_ntlm_v2=True)
-	conn.connect('192.168.1.3', 139)
+	
+	conn=SMBConnection(drylab_config.SAMBA_USER_ID, drylab_config.SAMBA_USER_PASSWORD, drylab_config.SAMBA_SHARED_FOLDER_NAME, 
+						drylab_config.SAMBA_REMOTE_SERVER_NAME, use_ntlm_v2=drylab_config.SAMBA_NTLM_USED, domain = drylab_config.SAMBA_DOMAIN)
+	conn.connect(drylab_config.SAMBA_IP_SERVER, int(drylab_config.SAMBA_PORT_SERVER))
+	#conn=SMBConnection('Luigi', 'Apple123', 'bioinfo_doc', 'LUIGI-PC', use_ntlm_v2=True)
+	#conn.connect('192.168.1.3', 139)
 	
 	return conn
 
-def test (request):
-	return render (request, 'drylab/info_page.html', {'content': ['test ']})
-	
-def create_service_structure (service_name):
-	service_name = 'SRVSIER002'
-	try:
-		conn=open_samba_connection1()
 
-	except:
-		print ('Samba connection cannot be stablished')
+def get_data_for_resolution(service_requested, resolution_number ):
+	information, user, resolution_data = {}, {}, {}
+	# get service object
+	service = Service.objects.get(serviceRequestNumber = service_requested)
+	service_number ,run_specs, center, platform = service.get_service_information().split(';')
+	# get resolution object
+	resolution = Resolution.objects.get(resolutionNumber = resolution_number)
+	resolution_info = resolution.get_resolution_information()
+	# get profile object
+	user_id = service.serviceUserId.id
 	
+	information['resolution_number'] = resolution_number
+	information['requested_date'] = service.get_service_creation_time()
+	information['resolution_date'] = resolution_info[4]
+	information['nodes']= service.serviceAvailableService.all()
+	user['name'] = service.serviceUserId.first_name
+	user['surname'] = service.serviceUserId.last_name
+	 
+	user['area'] = Profile.objects.get(profileUserID = user_id).profileArea
+	user['center'] = Profile.objects.get(profileUserID = user_id).profileCenter
+	user['position'] = Profile.objects.get(profileUserID = user_id).profilePosition
+	user['phone'] = Profile.objects.get(profileUserID = user_id).profileExtension
+	user['email'] = service.serviceUserId.email
+	information['user'] = user
+	resolution_data['folder'] = resolution_info[1]
+	resolution_data['estimated_date'] = resolution_info[3]
+	resolution_data['notes'] = resolution_info[6]
+	resolution_data['decission'] = service.serviceStatus
+	information['service_data'] = service.serviceNotes
+	
+	resolution_data['folder'] = resolution_info[1]
+	information['resolution_data'] = resolution_data
+	
+	return information
+
+def test (request):
+	resolution_number = 'SRVIIER001.1'
+	service_requested = 'SRVIIER001'
+	from weasyprint import HTML, CSS
+	from django.template.loader import get_template
+	from django.core.files.storage import FileSystemStorage
+	from django.http import HttpResponse
+	from weasyprint.fonts import FontConfiguration
+	
+	
+	
+	information, user, resolution_data = {}, {}, {}
+	# get service object
+	service = Service.objects.get(serviceRequestNumber = service_requested)
+	service_number ,run_specs, center, platform = service.get_service_information().split(';')
+	# get resolution object
+	resolution = Resolution.objects.get(resolutionNumber = resolution_number)
+	resolution_info = resolution.get_resolution_information()
+	# get profile object
+	user_id = service.serviceUserId.id
+	
+	information['resolution_number'] = resolution_number
+	information['requested_date'] = service.get_service_creation_time()
+	information['resolution_date'] = resolution_info[4]
+	information['nodes']= service.serviceAvailableService.all()
+	user['name'] = service.serviceUserId.first_name
+	user['surname'] = service.serviceUserId.last_name
+	 
+	
+	user_id = service.serviceUserId.id
+	user['area'] = Profile.objects.get(profileUserID = user_id).profileArea
+	user['center'] = Profile.objects.get(profileUserID = user_id).profileCenter
+	user['position'] = Profile.objects.get(profileUserID = user_id).profilePosition
+	user['phone'] = Profile.objects.get(profileUserID = user_id).profileExtension
+	user['email'] = service.serviceUserId.email
+	information['user'] = user
+	resolution_data['folder'] = resolution_info[1]
+	resolution_data['estimated_date'] = resolution_info[3]
+	resolution_data['notes'] = resolution_info[6]
+	resolution_data['decission'] = service.serviceStatus
+	information['service_data'] = service.serviceNotes
+	
+	resolution_data['folder'] = resolution_info[1]
+	information['resolution_data'] = resolution_data
+	html_string = render_to_string('resolution_template.html', {'information': information})
+	
+	html = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf('documents/drylab/res_pdf.pdf',stylesheets=[CSS(settings.STATIC_ROOT + 
+								drylab_config.CSS_FOR_PDF)])
+
+	fs = FileSystemStorage('documents/drylab')
+	with fs.open('res_pdf.pdf') as pdf:
+		response = HttpResponse(pdf, content_type='application/pdf')
+		# save pdf file as attachment
+		#response['Content-Disposition'] = 'attachment; filename="mypdf.pdf"'
+		
+
+		response['Content-Disposition'] = 'inline;filename=res_pdf.pdf'
+
+	return response
+	
+	
+	
+	
+	
+	
+	
+	
+	#return render (request, 'drylab/info_page.html', {'content': ['test ']})
+	
+def create_service_structure (service_request_file,full_service_path, resolution_file):
+
+	try:
+		conn=open_samba_connection()
+	except:
+		print ('*********************************Samba connection cannot be stablished')
+
 	# get the information for creating the subfolders
 	time_now = datetime.datetime.now()
 	year = str(time_now.year)
@@ -705,7 +821,7 @@ def create_service_structure (service_name):
 	if not year_folder_exists :
 		conn.createDirectory (drylab_config.SAMBA_SHARED_FOLDER_NAME, year_folder)
 	#import pdb ; pdb.set_trace()
-	service_path = os.path.join(year_folder, service_name)
+	service_path = os.path.join(year_folder, full_service_path)
 	#create the directory for the new service
 	conn.createDirectory (drylab_config.SAMBA_SHARED_FOLDER_NAME, service_path)
 	for sub_folder in drylab_config.FOLDERS_FOR_SERVICES:
@@ -713,7 +829,31 @@ def create_service_structure (service_name):
 		conn.createDirectory(drylab_config.SAMBA_SHARED_FOLDER_NAME, sub_folder_path)
 	#import pdb ; pdb.set_trace()
 	#copy service confirmation file into request folder
-	return True
+	temp_file=resolution_file.split('/')
+	resolution_name_file = temp_file[-1]
+	resolution_remote_file = os.path.join(service_path,drylab_config.FOLDERS_FOR_SERVICES[1],resolution_name_file)
+	
+	try:
+		with open(resolution_file ,'rb') as  res_samba_fp:
+			conn.storeFile(drylab_config.SAMBA_SHARED_FOLDER_NAME, resolution_remote_file, res_samba_fp)
+	except:
+		print ('ERROR:: Unable to copy resolution file')
+	temp_file=service_request_file.split('/')
+	import pdb; pdb.set_trace()
+	request_name_file = temp_file[-1]
+	request_remote_file = os.path.join(service_path,drylab_config.FOLDERS_FOR_SERVICES[0],request_name_file)
+	import pdb; pdb.set_trace()
+	try:
+		with open(service_request_file ,'rb') as  req_samba_fp:
+			conn.storeFile(drylab_config.SAMBA_SHARED_FOLDER_NAME, request_remote_file, req_samba_fp)
+		
+	except:
+			print ('ERROR:: Unable to copy request service file')
+
+	
+	
+	
+	return conn
 
 @login_required
 def add_in_progress (request, resolution_id):
