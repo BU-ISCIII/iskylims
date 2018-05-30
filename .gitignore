@@ -8,6 +8,8 @@ static/
 #--- updates introduced for iSkyLIMS in submodules packaging ---
 virtualenv/
 iSkyLIMS/
+manage.py
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
