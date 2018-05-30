@@ -13,20 +13,32 @@ For any problems or bug reporting please post us an [issue](https://github.com/B
 
 ## iSkyLIMS Demo
 iSkyLIMS demo is available for your convenience, in a virtual machine image, running on VirtualBox.  
-To start using iSkyLIMS you can download the VM image using with your favorite ftp client with the following information:
-Server: sftpbioinfo.isciii.es
-Port : 50122
-user: iskylims
-Password: 3skyL3MS_2018
-After successful loging transfer the file demo_iSkyLIMS.ova which it is inside the iSkyLIMS folder.
-On the VirtualBox Manager, import the image selecting on the menu --> File --> Import.
-Once completion, click on the Start icon to run the VM.
-For loging to the VM use the following credential:
-user: django
-Password : djangoPass
-Open Mozilla navigator and it will automatically start with iSkyLIMS (http://localhost)
-To login with investigator role use the user Eva_user and password iSkyLIMS
-To use iSkyLIMS with as wetlab manager role the user is John_manager and password iSkyLIMS
+Download the VM image using with your favorite ftp client with the following information:
 
-If you need to login as django administrator type the url (http://localhost/admin) using user : admin and password : iSkyLIMS
+Server: sftpbioinfo.isciii.es
+
+Port : 50122
+
+user: iskylims
+
+Password: 3skyL3MS_2018
+### Run VM image on VirtualBox 
+After successful loging transfer the file demo_iSkyLIMS.ova which it is inside the iSkyLIMS folder.
+On the VirtualBox Manager, import the image selecting on the menu 
+
+File --> Import.
+
+Once import taks is completed, click on the Start icon to run the VM.
+
+For loging to the VM use the following credential:
+
+user: django 
+
+Password : djangoPass
+
+Open Mozilla navigator and it will automatically start with iSkyLIMS http://localhost
+
+- To login with investigator role use the user Eva_user and password iSkyLIMS
+- To use iSkyLIMS with as wetlab manager role the user is John_manager and password iSkyLIMS
+- If you need to login as django administrator type the url http://localhost/admin using user : admin and password : iSkyLIMS
 
