@@ -10,3 +10,6 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
 ## Installation and usage
 For installation and usage instructions please refer to the [wiki](https://github.com/BU-ISCIII/iSkyLIMS/wiki).
 For any problems or bug reporting please post us an [issue](https://github.com/BU-ISCIII/iSkyLIMS/issues)
+
+## Download VM with iSkyLIMS
+To start using iSkyLIMS you can download the VM on this link (sftp://sftpbioinfo.isciii.es:50122) 
