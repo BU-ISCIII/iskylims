@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = ''
+SECRET_KEY = 'n2d2ix))247%tr4+ue9i+(0ac5q0l6bv5zrp6%3zg#icjujjdv'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -31,10 +31,10 @@ ALLOWED_HOSTS = ['localhost','127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
-    'wetlab.apps.WetlabConfig',
-    'drylab.apps.DrylabConfig',
-    'utils.apps.UtilsConfig',
-    'iSkyLIMS_home',
+    'iSkyLIMS-wetlab.apps.WetlabConfig',
+    'iSkyLIMS-drylab.apps.DrylabConfig',
+    'django-utils.apps.UtilsConfig',
+    'iSkyLIMS-home',
     'mptt',
     'crispy_forms',
     'django_crontab',
@@ -162,8 +162,8 @@ DEFAULT_FROM_EMAIL = "email"
 
 # Crontab settings
 CRONJOBS = [
-        ('2-59/5 * * * *', 'wetlab.cron.check_recorded_folder', '>> PATH2LOG'), # run every 5 min wit an offset of 2 minutes
-        ('*/5 * * * *', 'wetlab.cron.check_not_finish_run', '>> PATH2LOG') # run every 5 min
+        ('2-59/5 * * * *', 'iSkyLIMS-wetlab.cron.check_recorded_folder', '>> PATH2LOG'), # run every 5 min wit an offset of 2 minutes
+        ('*/5 * * * *', 'iSkyLIMS-wetlab.cron.check_not_finish_run', '>> PATH2LOG') # run every 5 min
 		]
 
 CRONTAB_COMMAND_SUFFIX = '2>&1'
