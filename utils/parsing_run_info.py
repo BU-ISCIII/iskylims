@@ -10,14 +10,18 @@ from  ..models import *
 from .interop_statistics import *
 
 from smb.SMBConnection import SMBConnection
+from wetlab import wetlab_config
 
 def open_samba_connection():
     ## open samba connection
     # There will be some mechanism to capture userID, password, client_machine_name, server_name and server_ip
     # client_machine_name can be an arbitary ASCII string
     # server_name should match the remote machine name, or else the connection will be rejected
-    conn=SMBConnection('bioinfocifs', 'fCdEg979I-W.gUx-teDr', 'NGS_Data', 'quibitka', use_ntlm_v2=True)
-    conn.connect('172.21.7.11', 445)
+    conn=SMBConnection(wetlab_config.SAMBA_USER_ID, wetlab_config.SAMBA_USER_PASSWORD, wetlab_config.SAMBA_SHARED_FOLDER_NAME, 
+						wetlab_config.SAMBA_REMOTE_SERVER_NAME, use_ntlm_v2=wetlab_config.SAMBA_NTLM_USED)
+	conn.connect(wetlab_config.SAMBA_IP_SERVER, int(wetlab_config.SAMBA_PORT_SERVER))
+    #conn=SMBConnection('bioinfocifs', 'fCdEg979I-W.gUx-teDr', 'NGS_Data', 'quibitka', use_ntlm_v2=True)
+    #conn.connect('172.21.7.11', 445)
 
     #conn=SMBConnection('Luigi', 'Apple123', 'NGS_Data_test', 'LUIGI-PC', use_ntlm_v2=True)
     #conn.connect('192.168.1.3', 139)
@@ -31,7 +35,7 @@ def open_samba_connection():
 
 def get_size_dir (directory, conn, logger):
     count_file_size = 0
-    file_list = conn.listPath('NGS_Data', directory)
+    file_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME, directory)
     for sh_file in file_list:
         if sh_file.isDirectory:
             if (sh_file.filename == '.' or sh_file.filename == '..'):
@@ -48,7 +52,7 @@ def get_size_dir (directory, conn, logger):
 def get_run_disk_utilization (conn, run_Id_used, run_processing_id, logger):
     if RunProcess.objects.filter(pk = run_processing_id).exists():
         run_be_updated = RunProcess.objects.get(pk = run_processing_id)
-        get_full_list = conn.listPath('NGS_Data' ,run_Id_used)
+        get_full_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,run_Id_used)
         rest_of_dir_size = 0
         data_dir_size = 0
         images_dir_size = 0
@@ -184,9 +188,9 @@ def process_run_in_recorded_state(logger):
     except:
         return ('Error')
     processed_run_file, runlist = [] , []
-    share_folder_name='NGS_Data'
-    base_directory = 'documents/wetlab/tmp'
-    recorded_dir = os.path.join(base_directory, 'recorded')
+    share_folder_name = wetlab_config.SAMBA_SHARED_FOLDER_NAME
+    base_directory = wetlab_config.RUN_TEMP_DIRECTORY
+    recorded_dir = wetlab_config.RUN_TEMP_DIRECTORY_RECORDED
     logger.debug('working directory is %s', os.getcwd())
     local_run_parameter_file = os.path.join(base_directory, 'RunParameters.xml')
     local_run_info_file = os.path.join(base_directory, 'RunInfo.xml')
@@ -805,7 +809,7 @@ def process_run_in_processrunning_state (process_list, logger):
     except:
         return('Error')
 
-    share_folder_name='NGS_Data'
+    share_folder_name = wetlab_config.SAMBA_SHARED_FOLDER_NAME
     for run_item in process_list:
         logger.debug ('processing the run %s in process running state' , run_item)
         run_be_processed_id=RunProcess.objects.get(runName__exact=run_item).id
@@ -841,10 +845,10 @@ def process_run_in_processrunning_state (process_list, logger):
 
 def process_run_in_bcl2F_q_executed_state (process_list, logger):
     processed_run=[]
-    plot_dir='documents/wetlab/images_plot'
+    plot_dir= wetlab_config.RUN_IMAGES_DIRECTORY
     # get the directory of samba to fetch the files
-    share_folder_name ='NGS_Data'
-    local_dir_samba= 'documents/wetlab/tmp/processing'
+    share_folder_name = wetlab_config.SAMBA_SHARED_FOLDER_NAME
+    local_dir_samba= wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING
     remote_stats_dir= 'Data/Intensities/BaseCalls/Stats/'
     demux_file=os.path.join(local_dir_samba,'DemultiplexingStats.xml')
     conversion_file=os.path.join(local_dir_samba,'ConversionStats.xml')

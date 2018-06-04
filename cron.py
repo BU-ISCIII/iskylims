@@ -1,3 +1,5 @@
+from django.conf import settings
+from wetlab import wetlab_config
 
 from datetime import datetime
 from .utils.stats_calculation import *
@@ -7,9 +9,10 @@ import os , sys
 import logging
 from logging.handlers import RotatingFileHandler
 
+
 def open_log(log_name):
     
-    log_name=os.path.join('/srv/iSkyLIMS/wetlab/log/', log_name)
+    log_name=os.path.join(settings.MEDIA_ROOT, wetlab_config.LOG_DIRECTORY, log_name)
     #def create_log ():
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
@@ -29,11 +32,11 @@ def open_log(log_name):
 def check_recorded_folder ():
     time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(time_start )
-    working_path = '/srv/iSkyLIMS'
+    working_path = settings.MEDIA_ROOT
     print('Starting the process for recorded_folder ')
     logger=open_log('check_recorded_folder.log')
     os.chdir(working_path)
-    path=os.path.join(working_path,'documents/wetlab/tmp/recorded/')
+    path=os.path.join(working_path,wetlab_config.RUN_TEMP_DIRECTORY_RECORDED )
     logger.info('Looking for new runs in directory %s', path)
     
     dir_wetlab=os.getcwd()
@@ -65,7 +68,7 @@ def check_not_finish_run():
     print('Starting the process for searching not completed runs ')
     logger=open_log('checking_uncompleted_run.log')
     logger.info('starting execute the crontab for not finish run')
-    working_path = '/srv/iSkyLIMS'
+    working_path = settings.MEDIA_ROOT
     os.chdir(working_path)
     dir_wetlab=os.getcwd()
     logger.info('Running the check_not_finish_run  module in directory %s', dir_wetlab)

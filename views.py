@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 
-
+from wetlab import wetlab_config
 ## import methods defined on utils.py
 from .utils.sample_convertion import *
 from .utils.stats_calculation import *
@@ -72,7 +72,7 @@ def get_sample_file (request):
         ## including the timestamp to the sample sheet file
         #import pdb; pdb.set_trace()
         # do not need to include the absolute path because django use the MEDIA_ROOT variable defined on settings to upload the file
-        file_name=str('wetlab/SampleSheets/' +  split_filename.group(1) + timestr + ext_file)
+        file_name=str(wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY +  split_filename.group(1) + timestr + ext_file)
         filename = fs.save(file_name,  myfile)
         uploaded_file_url = fs.url(filename)
 
@@ -250,7 +250,7 @@ def get_sample_file (request):
         ## save the sample sheet file under tmp/recorded to be processed when run folder was created
         subfolder_name=str(run_p.id)
         #base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        temp_directory = os.path.join(settings.MEDIA_ROOT , 'wetlab/tmp/recorded', subfolder_name)
+        temp_directory = os.path.join(settings.MEDIA_ROOT , wetlab_config.RUN_TEMP_DIRECTORY_RECORDED, subfolder_name)
         os.mkdir(temp_directory)
         # set group writing permission to the temporary directory
         os.chmod(temp_directory, 0o774)

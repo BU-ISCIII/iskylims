@@ -10,6 +10,7 @@ import time
 from Bio.Seq import Seq
 from django.conf import settings
 
+from wetlab import wetlab_config
 
 def include_csv_header (library_kit, out_file, plate, container):
     csv_header=['FileVersion','LibraryPrepKit','ContainerType','ContainerID','Notes']
@@ -43,7 +44,7 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
     well_row={}
     letter_well='A'
     number_well='01'
-    result_directory='wetlab/BaseSpaceMigrationFiles/'
+    result_directory=wetlab_config.MIGRATION_DIRECTORY_FILES
     cwd = os.getcwd()
     data_found=0
     header_found=0
