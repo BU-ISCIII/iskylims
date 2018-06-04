@@ -31,10 +31,10 @@ ALLOWED_HOSTS = ['localhost','127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
-    'iSkyLIMS-wetlab.apps.WetlabConfig',
-    'iSkyLIMS-drylab.apps.DrylabConfig',
-    'django-utils.apps.UtilsConfig',
-    'iSkyLIMS-home',
+    'iSkyLIMS_wetlab.apps.WetlabConfig',
+    'iSkyLIMS_drylab.apps.DrylabConfig',
+    'django_utils.apps.UtilsConfig',
+    'iSkyLIMS_home',
     'mptt',
     'crispy_forms',
     'django_crontab',
@@ -162,8 +162,8 @@ DEFAULT_FROM_EMAIL = "email"
 
 # Crontab settings
 CRONJOBS = [
-        ('2-59/5 * * * *', 'iSkyLIMS-wetlab.cron.check_recorded_folder', '>> PATH2LOG'), # run every 5 min wit an offset of 2 minutes
-        ('*/5 * * * *', 'iSkyLIMS-wetlab.cron.check_not_finish_run', '>> PATH2LOG') # run every 5 min
+        ('2-59/5 * * * *', 'iSkyLIMS_wetlab.cron.check_recorded_folder', '>> PATH2LOG'), # run every 5 min wit an offset of 2 minutes
+        ('*/5 * * * *', 'iSkyLIMS_wetlab.cron.check_not_finish_run', '>> PATH2LOG') # run every 5 min
 		]
 
 CRONTAB_COMMAND_SUFFIX = '2>&1'

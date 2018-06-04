@@ -38,15 +38,15 @@ from django.contrib import admin
 from django.contrib.auth.views import LoginView
 
 urlpatterns = [
-    path('',include('iSkyLIMS-home.urls')),
-    path('background', LoginView.as_view(template_name='iSkyLIMS-home/background.html'), name="background"),
-    path('bu-isciii', LoginView.as_view(template_name='iSkyLIMS-home/bu_isciii.html'), name="about-us"),
-    path('faqs', LoginView.as_view(template_name='iSkyLIMS-home/faqs.html'), name="faqs"),
-    path('contact', LoginView.as_view(template_name='iSkyLIMS-home/contact.html'), name="contact"),
+    path('',include('iSkyLIMS_home.urls')),
+    path('background', LoginView.as_view(template_name='iSkyLIMS_home/background.html'), name="background"),
+    path('bu-isciii', LoginView.as_view(template_name='iSkyLIMS_home/bu_isciii.html'), name="about-us"),
+    path('faqs', LoginView.as_view(template_name='iSkyLIMS_home/faqs.html'), name="faqs"),
+    path('contact', LoginView.as_view(template_name='iSkyLIMS_home/contact.html'), name="contact"),
     path('admin/', admin.site.urls),
-    path('iSkyLIMS-wetlab/', include('iSkyLIMS-wetlab.urls')),
-    path('iSkyLIMS-drylab/',include('iSkyLIMS-drylab.urls')),
-    path('django-utils/',include('django-utils.urls')),
+    path('iSkyLIMS_wetlab/', include('iSkyLIMS_wetlab.urls')),
+    path('iSkyLIMS_drylab/',include('iSkyLIMS_drylab.urls')),
+    path('django_utils/',include('django_utils.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
     path('tutorials/', include('zinnia.urls')),
 ]
