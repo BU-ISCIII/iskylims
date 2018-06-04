@@ -23,11 +23,12 @@ Password: 3skyL3MS_2018
 ```
 ### Run VM image on VirtualBox 
 After successful loging transfer the file demo_iSkyLIMS.ova which it is inside the iSkyLIMS folder.
+
 On the VirtualBox Manager, import the image selecting on the menu 
 
 File --> Import.
 
-Once import taks is completed, click on the Start icon to run the VM.
+Once **import** task is completed, click on the Start icon to run the VM.
 
 For loging to the VM use the following credential:
 
