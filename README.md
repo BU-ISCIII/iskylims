@@ -31,11 +31,10 @@ File --> Import.
 Once **import** task is completed, click on the Start icon to run the VM.
 
 For loging to the VM use the following credential:
-
-`
+```
 user: django 
 Password : djangoPass
-`
+```
 
 Open Mozilla navigator and it will automatically shows iSkyLIMS homepage located on http://localhost
 
