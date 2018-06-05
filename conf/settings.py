@@ -31,9 +31,9 @@ ALLOWED_HOSTS = ['localhost','127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
-    'iSkyLIMS_wetlab.apps.WetlabConfig',
-    'iSkyLIMS_drylab.apps.DrylabConfig',
-    'django_utils.apps.UtilsConfig',
+    'iSkyLIMS_wetlab',
+    'iSkyLIMS_drylab',
+    'django_utils',
     'iSkyLIMS_home',
     'mptt',
     'crispy_forms',
