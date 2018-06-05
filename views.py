@@ -8,7 +8,7 @@ import os, re
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from django.conf import settings
-from utils.fusioncharts.fusioncharts import FusionCharts
+from django_utils.fusioncharts.fusioncharts import FusionCharts
 from django.core.mail import send_mail
 
 import datetime
@@ -143,7 +143,7 @@ def service_request_external_sequencing(request):
 			new_service.serviceRequestNumber = increment_service_number(request.user)
 			new_service.save()
 			form.save_m2m()
-			return render(request,'utils/info_page.html',{'content':['Your service request has been successfully recorded.',
+			return render(request,'iSkyLIMS_drylab_utils/info_page.html',{'content':['Your service request has been successfully recorded.',
 								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
 								'Keep this number safe for refering your request','You will be contacted shortly.']})
 	else:
