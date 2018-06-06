@@ -1,4 +1,4 @@
-{% extends 'wetlab/base.html' %}
+{% extends 'iSkyLIMS_wetlab/base.html' %}
 {% load static %}
 {% block content %}
 {% csrf_token %}
@@ -172,7 +172,7 @@
 {% else %}
     {% load user_groups %}
     <!-- FORM for searching project research  Information -->
- <div style="background-image: url(/static/wetlab/img/samples-1.jpg);">  
+ <div style="background-image: url(/static/iSkyLIMS_wetlab/img/samples-1.jpg);">  
     <div class="row row-space-2 margin-b-4">
       <div class="col-sm-7" >
         <div class="panel panel-default">
@@ -223,7 +223,7 @@
             </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
         <!-- Insert the Help window when clicking on the button -->
-        {% include 'wetlab/search-researcher-help.html' %}
+        {% include 'iSkyLIMS_wetlab/search-researcher-help.html' %}
  
     </div> <!--// end row -->
 </div> <!-- Background  -->

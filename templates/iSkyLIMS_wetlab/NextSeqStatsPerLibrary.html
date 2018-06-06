@@ -1,4 +1,4 @@
-{% extends 'wetlab/base.html' %}
+{% extends 'iSkyLIMS_wetlab/base.html' %}
 {% load static %}
 {% block content %}
     {% csrf_token %}
@@ -254,12 +254,12 @@
     </div> <!--// end row -->
 
 {% elif display_list_of_library_stats %}
-<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>           
-<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>                   
-<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
-<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>  
-<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script>   
-<script type="text/javascript" src="{% static "wetlab/js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>     
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>           
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>                   
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>  
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script>   
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>     
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-7 col-sm-offset-3" >
             <div class="panel panel-default">
@@ -385,7 +385,7 @@
 
 {% else %}
     <!-- FORM for Lobrary Kit statistics -->
- <div style="background-image: url(/static/wetlab/img/search_background_image_library.jpg); background-attachment: fixed;">  
+ <div style="background-image: url(/static/iSkyLIMS_wetlab/img/search_background_image_library.jpg); background-attachment: fixed;">  
     <div class="row row-space-2 margin-b-4">
       <div class="col-sm-7  col-sm-offset-1">
         <div class="panel panel-default">
@@ -439,4 +439,4 @@
             </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
         <!-- Insert the Help window when clicking on the button -->
-        {% include 'wetlab/search-researcher-help.html' %}
+        {% include 'iSkyLIMS_wetlab/search-researcher-help.html' %}

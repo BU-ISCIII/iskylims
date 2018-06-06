@@ -60,14 +60,14 @@
                     <div class="collapse navbar-collapse nav-collapse">
                         <div class="menu-container">
                             <ul class="nav navbar-nav navbar-nav-right">
-                                <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/wetlab/">Home</a></li>
+                                <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/iSkyLIMS_wetlab/">Home</a></li>
 				{% if user.is_authenticated %}
 				<li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Run Preparation<span class="caret"></span></a>
 				  <ul class="dropdown-menu">
 					{% if request.user|has_group:"WetlabManager" %}
-					    <li><a href="/wetlab/getSampleSheet">Upload the Run </a></li>
+					    <li><a href="/iSkyLIMS_wetlab/getSampleSheet">Upload the Run </a></li>
 					{% endif %}
-					<li><a href="/wetlab/AddLibraryKit">Add Library Kit</a></li>
+					<li><a href="/iSkyLIMS_wetlab/AddLibraryKit">Add Library Kit</a></li>
 
 				  </ul>
 				</li>
@@ -78,11 +78,11 @@
                                 <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Search<span class="caret"></span></a>
 				    <ul class="dropdown-menu">
 				    {% if request.user|has_group:"WetlabManager" %}
-					<li><a href="/wetlab/searchNextSeq">Search by RUN</a></li>
-					<li><a href="/wetlab/latest_run">Get Latest Run</a></li>
+					<li><a href="/iSkyLIMS_wetlab/searchNextSeq">Search by RUN</a></li>
+					<li><a href="/iSkyLIMS_wetlab/latest_run">Get Latest Run</a></li>
 				    {% endif %}
-					<li><a href="/wetlab/searchNextProject">Search by Project</a></li>
-					<li><a href="/wetlab/searchNextSample">Search by Sample</a></li>
+					<li><a href="/iSkyLIMS_wetlab/searchNextProject">Search by Project</a></li>
+					<li><a href="/iSkyLIMS_wetlab/searchNextSample">Search by Sample</a></li>
 				  </ul>
 				</li>
 				{% else %}
@@ -91,12 +91,12 @@
 				{% if user.is_authenticated %}
                                 <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#"> Statistics<span class="caret"></span></a>
 				    <ul class="dropdown-menu">
-				    <li><a href="/wetlab/NextSeqStatsPerResearcher/">Projects per Investigator </a></li>
+				    <li><a href="/iSkyLIMS_wetlab/NextSeqStatsPerResearcher/">Projects per Investigator </a></li>
 				    {% if request.user|has_group:"WetlabManager" %}
-				    <li><a href="/wetlab/NextSeqStatsPerTime/">Period of time</a></li>
+				    <li><a href="/iSkyLIMS_wetlab/NextSeqStatsPerTime/">Period of time</a></li>
 				    {% endif %}
-				    <li><a href="/wetlab/NextSeqStatsExperiment">Experiment Type</a></li>
-				    <li><a href="/wetlab/NextSeqStatsLibrary">Library Kit Qualitty</a></li>
+				    <li><a href="/iSkyLIMS_wetlab/NextSeqStatsExperiment">Experiment Type</a></li>
+				    <li><a href="/iSkyLIMS_wetlab/NextSeqStatsLibrary">Library Kit Qualitty</a></li>
 				  </ul>
 				</li>
 				{% else %}
@@ -106,9 +106,9 @@
 				    {% if request.user|has_group:"WetlabManager" %}
 				<li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Reports<span class="caret"></span></a>
 				    <ul class="dropdown-menu">
-				    <li><a href="/wetlab/AnnualReport">Annual Reports</a></li>
-				    <li><a href="/wetlab/QuarterReport">Quarter Reports</a></li>
-				    <li><a href="/wetlab/MonthlyReport">Monthly Reports</a></li>
+				    <li><a href="/iSkyLIMS_wetlab/AnnualReport">Annual Reports</a></li>
+				    <li><a href="/iSkyLIMS_wetlab/QuarterReport">Quarter Reports</a></li>
+				    <li><a href="/iSkyLIMS_wetlab/MonthlyReport">Monthly Reports</a></li>
 				    </ul>
 				    {% endif %}
 				</li>

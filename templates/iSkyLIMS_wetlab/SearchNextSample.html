@@ -1,4 +1,4 @@
-{% extends 'wetlab/base.html' %}
+{% extends 'iSkyLIMS_wetlab/base.html' %}
 {% load static %}
 {% block content %}
 {% csrf_token %}
@@ -22,11 +22,11 @@
                         <tbody>
                             <tr>
                                 <td>Run Name </td> 
-                                <td> <a href="/wetlab/search_run={{ display_one_sample.run_id }}">{{ display_one_sample.run_name }}</a></td>
+                                <td> <a href="/iSkyLIMS_wetlab/search_run={{ display_one_sample.run_id }}">{{ display_one_sample.run_name }}</a></td>
                             </tr>
                             <tr>
                                 <td>Project Name </td> 
-                                <td> <a href="/wetlab/search_project={{ display_one_sample.project_id }}">{{ display_one_sample.project_name }}</a></td>
+                                <td> <a href="/iSkyLIMS_wetlab/search_project={{ display_one_sample.project_id }}">{{ display_one_sample.project_name }}</a></td>
                             </tr>
                             <tr>
                                 <td>Investigator Name </td> 
@@ -107,7 +107,7 @@
                     {% for key, values in multiple_samples.s_list.items %}  
                      <tr>
                         {% for value, data in values %}
-                       <td><a href="/wetlab/search_sample={{ key }}">{{ value }}</a> </td>
+                       <td><a href="/iSkyLIMS_wetlab/search_sample={{ key }}">{{ value }}</a> </td>
                        <td> {{ data }} </td>
                         {%endfor%}
                      </tr>
@@ -124,7 +124,7 @@
 {% load user_groups %}
 <!-- FORM for searching  Sample Information -->
 
- <div style="background-image: url(/static/wetlab/img/search_image_background.jpg);">
+ <div style="background-image: url(/static/iSkyLIMS_wetlab/img/search_image_background.jpg);">
       
     <div class="row row-space-4 margin-b-4">
 

@@ -1,4 +1,4 @@
-{% extends 'wetlab/base.html' %}
+{% extends 'iSkyLIMS_wetlab/base.html' %}
 
 {% block content %}
 {% load static %}
@@ -7,17 +7,17 @@ function goBack() {
     window.history.back();
 }
 </script>
-<div class="alert alert-danger">
-  <strong>ERROR!</strong> Your last action request was unsuccessful.
+<div class="alert alert-info">
+  <strong>INFO!</strong> Your last action.
 </div>
 <div class="row row-space-2 margin-b-4">
         <div class="col-sm-4 col-sm-offset-4">
-        <div class="panel panel-danger">
-          <div class="panel-heading">ERROR</div>
+        <div class="panel panel-info">
+          <div class="panel-heading">INFO</div>
           <div class="panel-body">
-              <img class="promo-block-img  img-responsive img-center" src="{% static "wetlab/img/icons/error-icon.jpg" %}">
+              <img class="promo-block-img  img-responsive img-center" src="{% static "iSkyLIMS_wetlab/img/icons/info_icon.jpeg" %}">
               <p></p>
-              <p>You are geting this error page because:</p><BR>
+              <p>You are geting this info page because:</p><BR>
               
               <p>
                  {% for c in content %}

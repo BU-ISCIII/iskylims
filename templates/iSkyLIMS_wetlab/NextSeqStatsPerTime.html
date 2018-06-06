@@ -1,4 +1,4 @@
-{% extends 'wetlab/base.html' %}
+{% extends 'iSkyLIMS_wetlab/base.html' %}
 {% load static %}
 {% block content %}
 {% csrf_token %}
@@ -48,7 +48,7 @@
                     {% for key, values in display_stats_per_time.run_names.items %}  
                      <tr>
                         {% for value, data in values %}
-                       <td><a href="/wetlab/search_run={{ key }}">{{ value }}</a> </td>
+                       <td><a href="/iSkyLIMS_wetlab/search_run={{ key }}">{{ value }}</a> </td>
                        <td> {{ data }} </td>
                         {%endfor%}
                      </tr>
@@ -114,7 +114,7 @@
                     {% for key, values in display_stats_per_time.project_names.items %}  
                      <tr>
                         {% for value, data in values %}
-                       <td><a href="/wetlab/search_project={{ key }}">{{ value }}</a> </td>
+                       <td><a href="/iSkyLIMS_wetlab/search_project={{ key }}">{{ value }}</a> </td>
                        <td> {{ data }} </td>
                         {%endfor%}
                      </tr>
@@ -233,7 +233,7 @@
             </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
         <!-- Insert the Help window when clicking on the button -->
-        {% include 'wetlab/search-help.html' %}
+        {% include 'iSkyLIMS_wetlab/search-help.html' %}
  
     </div> <!--// end row -->
 

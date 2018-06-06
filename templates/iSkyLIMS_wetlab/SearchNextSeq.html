@@ -1,4 +1,4 @@
-{% extends 'wetlab/base.html' %}
+{% extends 'iSkyLIMS_wetlab/base.html' %}
 {% load static %}
 {% block content %}
     {% csrf_token %}
@@ -19,13 +19,13 @@
                     {% if display_one_run.change_run_name %}
                         {% for key, value in display_one_run.change_run_name %}
                             <div class="col-sm-6">Run Name </div>
-                            <div class="col-sm-6"><a href="/wetlab/ChangeRunName={{ value }}"> {{ key }} <span class="glyphicon glyphicon-pencil"></span></a></div>
+                            <div class="col-sm-6"><a href="/iSkyLIMS_wetlab/ChangeRunName={{ value }}"> {{ key }} <span class="glyphicon glyphicon-pencil"></span></a></div>
                         {% endfor %}
                     {% endif %}
              {% for key, values in display_one_run.data %}
                {% if "Sample" in key %}
                 <div class="col-sm-6">{{ key }}</div>
-                <div class="col-sm-6"><a href="/wetlab/documents/{{ values }}" download>{{ values|cut:"wetlab/SampleSheets/" }} <span class="glyphicon glyphicon-download-alt"></span></a></div><BR> <BR>
+                <div class="col-sm-6"><a href="/iSkyLIMS_wetlab/documents/{{ values }}" download>{{ values|cut:"iSkyLIMS_wetlab/SampleSheets/" }} <span class="glyphicon glyphicon-download-alt"></span></a></div><BR> <BR>
                {% elif key == 'Run name'%}
                {% else %}
                 <div class="col-sm-6">{{ key }}</div>
@@ -35,7 +35,7 @@
             {%if display_one_run.Sample_Sheet %}
                 {% for key, value in display_one_run.Sample_Sheet %} 
                     <div class="col-sm-6">{{ key }}</div>
-                    <div class="col-sm-6"><a href="/wetlab/documents/{{ value }}" download>Sample Sheet File  <span class="glyphicon glyphicon-download-alt"></span></a></div>
+                    <div class="col-sm-6"><a href="/iSkyLIMS_wetlab/documents/{{ value }}" download>Sample Sheet File  <span class="glyphicon glyphicon-download-alt"></span></a></div>
                 {% endfor%}
             {% endif %}
            </div> <!--  end of panel body -->
@@ -104,7 +104,7 @@
                    <tbody>
                      {% for key, values in display_one_run.projects %}  
                      <tr>
-                       <td><a href="/wetlab/search_project={{ values }}">{{ key }}</a> </td>
+                       <td><a href="/iSkyLIMS_wetlab/search_project={{ values }}">{{ key }}</a> </td>
                      </tr>
                 {%endfor%}
                     </tbody>
@@ -132,7 +132,7 @@
                    <tbody>
                      {% for values in display_one_run.library_kit %}  
                      <tr>
-                       <td><a href="/wetlab/change_run_libKit={{ display_one_run.run_id }}" > {{ values }} <span class="glyphicon glyphicon-pencil"></span></a> </td>
+                       <td><a href="/iSkyLIMS_wetlab/change_run_libKit={{ display_one_run.run_id }}" > {{ values }} <span class="glyphicon glyphicon-pencil"></span></a> </td>
                      </tr>
                     {%endfor%}
                     </tbody>
@@ -566,7 +566,7 @@
                 <div class="panel-heading">The following list matches with yor search: </div>
                 <div class="panel-body">
                 {% for key, values in display_run_list %} 
-                    <div class="col-sm-6"><a href="/wetlab/search_run={{ values }}">{{ key }}</a></div><BR>
+                    <div class="col-sm-6"><a href="/iSkyLIMS_wetlab/search_run={{ values }}">{{ key }}</a></div><BR>
                  {% endfor %}     
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
@@ -576,7 +576,7 @@
    
 {% else %}
     <!-- FORM for searching RUN  Information -->
-<div style="background-image: url(/static/wetlab/img/search_background_image_library.jpg); background-attachment: fixed;">  
+<div style="background-image: url(/static/iSkyLIMS_wetlab/img/search_background_image_library.jpg); background-attachment: fixed;">  
     <div class="row row-space-2 margin-b-4">
       <div class="col-sm-7" >
         <div class="panel panel-default">
@@ -633,7 +633,7 @@
             </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
         <!-- Insert the Help window when clicking on the button -->
-        {% include 'wetlab/search-help.html' %}
+        {% include 'iSkyLIMS_wetlab/search-help.html' %}
  
     </div> <!--// end row -->
 </div> <!-- Background  -->

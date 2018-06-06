@@ -1,5 +1,5 @@
 from django.contrib import admin
-from wetlab.models import *
+from iSkyLIMS_wetlab.models import *
 
 
 

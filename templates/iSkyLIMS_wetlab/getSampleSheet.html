@@ -1,4 +1,4 @@
-{% extends 'wetlab/base.html' %}
+{% extends 'iSkyLIMS_wetlab/base.html' %}
 {% load static %}_
 {% block content %}
 {% csrf_token %}
@@ -135,7 +135,7 @@
               <div class="panel panel-default">
                     <div class="panel-heading">Library Kit : for the run name <b>{{ key }} </b></div>
                     <div class="panel-body"> Download the file for Illumina Base Space :
-                        <a href="/wetlab/{{ values }}" download>{{ values|cut:"documents/wetlab/BaseSpaceMigrationFiles/" }}<span class="glyphicon glyphicon-download-alt"></span></a>
+                        <a href="/iSkyLIMS_wetlab/{{ values }}" download>{{ values|cut:"documents/iSkyLIMS_wetlab/BaseSpaceMigrationFiles/" }}<span class="glyphicon glyphicon-download-alt"></span></a>
 
                     </div> <!--  end of panel body -->
                 </div> <!--  end of panel  -->
