@@ -10,8 +10,8 @@
 {% else %}
     {% load user_groups %}
 <!-- FORM for searching  Project Information -->
- <div style="background-image: url(/static/wetlab/img/search_projects2.jpg); background-attachment: fixed;">
-          
+ <div style="background-image: url(/static/iSkyLIMS_wetlab/img/search_projects2.jpg); background-attachment: fixed;">
+
     <div class="row row-space-4 margin-b-4">
       <div class="col-sm-7 col-sm-offset-1" >
         <div class="panel panel-default">
@@ -20,7 +20,7 @@
             <form method="post" enctype="multipart/form-data" name="searchproject" id="searchproject" class="form-horizontal well">
             {% csrf_token %}
             <input type="hidden" name="action" value="searchproject"/>
-            <div class="form-group"> 
+            <div class="form-group">
                   <label class="col-sm-5  control-label" for="projectname" >Fill the Project name </label>
                   <div class="col-sm-5"><input class="form-control" type="text" name="projectname" id="projectname" size="100" maxlength="100"></div>
              </div>  <!-- end from-group   -->
@@ -50,7 +50,7 @@
              </div>  <!-- end from-group   -->
              <br>
              <br>
-            <div class="form-group"> 
+            <div class="form-group">
                   <label class="col-sm-5  control-label" for="username" >Search from user name</label>
                   {% if request.user|has_group:"WetlabManager" %}
                     <div class="col-sm-5"><input class="form-control" type="text" name="username" id="username" size="100" maxlength="100"></div>
@@ -69,7 +69,7 @@
     </div> <!--// end row -->
 </div> <!-- Background  -->
     <!-- End of FORM for searching Project information -->
-    
-{% endif %} 
-    
+
+{% endif %}
+
 {% endblock %}
