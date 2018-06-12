@@ -1,4 +1,4 @@
-{% extends 'drylab/base.html' %}
+{% extends 'iSkyLIMS_drylab/base.html' %}
 {% load static %}
 
 {% block content %}
@@ -103,17 +103,17 @@
                   Click on the following buttons to update the service<BR><BR>
                   {% if display_service.add_resolution_action %}
                     <div class="col-sm-4 ">  <!-- col-sm-4  resolution button  -->
-                         <a href="/drylab/addResolution={{ display_service.add_resolution_action }}" class="btn btn-primary" role="button">Add Resolution</a>
+                         <a href="/iSkyLIMS_drylab/addResolution={{ display_service.add_resolution_action }}" class="btn btn-primary" role="button">Add Resolution</a>
                     </div> <!--// end col-sm-4   resolution button  -->
                   {% endif%}
                   {% if display_service.add_in_progress_action %}
                     <div class="col-sm-3 col-sm-offset-1">  <!-- col-sm-4  in Progress  button  -->
-                         <a href="/drylab/addinProgress={{ display_service.add_in_progress_action }}" class="btn btn-primary" role="button">In Progress</a>
+                         <a href="/iSkyLIMS_drylab/addinProgress={{ display_service.add_in_progress_action }}" class="btn btn-primary" role="button">In Progress</a>
                     </div> <!--// end col-sm-4   in Progress button  -->
                   {% endif%}
                   {% if display_service.add_delivery_action %}
                     <div class="col-sm-3 col-sm-offset-1">  <!-- col-sm-3  delivery button  -->
-                         <a href="/drylab/addDelivery={{ display_service.add_delivery_action }}" class="btn btn-primary" role="button">Add Delivery</a>
+                         <a href="/iSkyLIMS_drylab/addDelivery={{ display_service.add_delivery_action }}" class="btn btn-primary" role="button">Add Delivery</a>
                     </div> <!--// end col-sm-4   delivery button  -->
                   {% endif%}
                 </div> <!--// end panel body -->

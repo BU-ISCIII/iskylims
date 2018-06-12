@@ -1,4 +1,4 @@
-## drylab/forms.py
+## iSkyLIMS_drylab/forms.py
 from django import forms
 from django.utils.translation import ugettext_lazy as _, ugettext
 from crispy_forms.helper import FormHelper

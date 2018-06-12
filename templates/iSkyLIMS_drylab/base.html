@@ -61,37 +61,37 @@
                     <div class="collapse navbar-collapse nav-collapse">
                         <div class="menu-container">
                             <ul class="nav navbar-nav navbar-nav-right">
-                                <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/drylab/">Home</a></li>
+                                <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/iSkyLIMS_drylab/">Home</a></li>
                                  {% if user.is_authenticated and not request.user|has_group:"admin_iSkyLIMS" %}
                                     <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">SERVICES REQUEST<span class="caret"></span></a>
                                         <ul class="dropdown-menu">
-                                            <li><a href="/drylab/service_request_internal_sequencing">GENOMICS UNIT SEQUENCING</a></li>
-                                            <li><a href="/drylab/service_request_external_sequencing">EXTERNAL SEQUENCING</a></li>
+                                            <li><a href="/iSkyLIMS_drylab/service_request_internal_sequencing">GENOMICS UNIT SEQUENCING</a></li>
+                                            <li><a href="/iSkyLIMS_drylab/service_request_external_sequencing">EXTERNAL SEQUENCING</a></li>
                                         </ul>
                                     </li>
-                                <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/drylab/counseling_request">COUNSELING REQUEST</a></li>
-                                <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/drylab/infrastructure_request">INFRASTRUCTURE REQUEST</a></li>
+                                <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/iSkyLIMS_drylab/counseling_request">COUNSELING REQUEST</a></li>
+                                <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/iSkyLIMS_drylab/infrastructure_request">INFRASTRUCTURE REQUEST</a></li>
                                 {% endif %}
                                 {% if user.is_authenticated and request.user|has_group:"Admin_iSkyLIMS" %}
                                 <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">MANAGE SERVICES</a>
                                     <ul class="dropdown-menu">
-	    					<li><a href="/drylab/searchService">SEARCH SERVICE</a></li>
-	    					<li><a href="/drylab/pendingServices">PENDING SERVICES</a></li>
+	    					<li><a href="/iSkyLIMS_drylab/searchService">SEARCH SERVICE</a></li>
+	    					<li><a href="/iSkyLIMS_drylab/pendingServices">PENDING SERVICES</a></li>
 					</ul>
                                 </li>
                                 <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">SERVICES STATISTICS</a>
                                     <ul class="dropdown-menu">
-						<li><a href="/drylab/statsByDateUser">REQUESTED BY USER</a></li>
-						<li><a href="/drylab/statsByServicesRequest">SERVICES REQUESTED</a></li>
-                        <li><a href="/drylab/statsBySamplesProcessed">SAMPLES PROCESSED</a></li>
-						<li><a href="/drylab/statsTimeDelivery">STATS TIME DELIVERY</a></li>
+						<li><a href="/iSkyLIMS_drylab/statsByDateUser">REQUESTED BY USER</a></li>
+						<li><a href="/iSkyLIMS_drylab/statsByServicesRequest">SERVICES REQUESTED</a></li>
+                        <li><a href="/iSkyLIMS_drylab/statsBySamplesProcessed">SAMPLES PROCESSED</a></li>
+						<li><a href="/iSkyLIMS_drylab/statsTimeDelivery">STATS TIME DELIVERY</a></li>
 				  					</ul>
                                 </li>
 				<li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">USER ACTIVITY</a>
                                     <ul class="dropdown-menu">
-						<li><a href="/drylab/openSessions">CURRENT OPEN USER SESSIONS</a></li>
-						<li><a href="/drylab/userLogin">USER LAST LOGING</a></li>
-						<li><a href="/drylab/#">MORE TO ADD</a></li>
+						<li><a href="/iSkyLIMS_drylab/openSessions">CURRENT OPEN USER SESSIONS</a></li>
+						<li><a href="/iSkyLIMS_drylab/userLogin">USER LAST LOGING</a></li>
+						<li><a href="/iSkyLIMS_drylab/#">MORE TO ADD</a></li>
 				  					</ul>
                                 </li>
                                 {% endif %}

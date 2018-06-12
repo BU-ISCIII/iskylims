@@ -24,7 +24,7 @@ STATUS_CHOICES = (
 def service_files_upload(instance,filename):
 	now = timezone_now()
 	filename_base,filename_ext = os.path.splitext(filename)
-	return 'drylab/servicesRequest/%s_%s%s' % (
+	return 'iSkyLIMS_drylab/servicesRequest/%s_%s%s' % (
 			now.strftime("%Y%m%d%H%M%S"),
 			filename_base.lower(),
 			filename_ext.lower(),

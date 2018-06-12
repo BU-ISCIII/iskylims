@@ -40,9 +40,9 @@ def index(request):
 			service_info.append(service_delivery_date)
 			service_list.append(service_info)
 		#import pdb; pdb.set_trace()
-		return render(request, 'drylab/index.html',{'service_list': service_list})
+		return render(request, 'iSkyLIMS_drylab/index.html',{'service_list': service_list})
 	else:
-		return render(request, 'drylab/index.html')
+		return render(request, 'iSkyLIMS_drylab/index.html')
 
 def increment_service_number ( user_name):
 	# check user center
@@ -93,7 +93,7 @@ def service_request(request, serviceRequestType):
 				send_mail (subject, body_message, from_user, to_user)
 
 				#import pdb; pdb.set_trace()
-				return render(request,'drylab/info_page.html',{'content':['Your service request has been successfully recorded.',
+				return render(request,'iSkyLIMS_drylab/info_page.html',{'content':['Your service request has been successfully recorded.',
 								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
 								'Keep this number safe for refering your request','You will be contacted shortly.']})
 		else: #No POST
@@ -103,7 +103,7 @@ def service_request(request, serviceRequestType):
 			# belonging to the logged-in user in the service request form
 			form.fields['serviceProjectNames'].queryset = Projects.objects.filter(user_id__exact = request.user.id)
 			form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
-			return render(request, 'drylab/RequestForm.html' , { 'form' : form , 'request_internal': 'request_internal'})
+			return render(request, 'iSkyLIMS_drylab/RequestForm.html' , { 'form' : form , 'request_internal': 'request_internal'})
 
 
 	if serviceRequestType == 'external_sequencing':
@@ -123,13 +123,13 @@ def service_request(request, serviceRequestType):
 				to_user = [request.user.email,'bioinformatica@isciii.es']
 				send_mail (subject, body_message, from_user, to_user)
 
-				return render(request,'drylab/info_page.html',{'content':['Your service request has been successfully recorded.',
+				return render(request,'iSkyLIMS_drylab/info_page.html',{'content':['Your service request has been successfully recorded.',
 								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
 								'Keep this number safe for refering your request','You will be contacted shortly.']})
 		else: #No POST
 			form = ServiceRequestFormExternalSequencing()
 			form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
-			return render(request, 'drylab/RequestForm.html' , { 'form' : form ,  'request_external': 'request_external' })
+			return render(request, 'iSkyLIMS_drylab/RequestForm.html' , { 'form' : form ,  'request_external': 'request_external' })
 
 
 @login_required
@@ -143,14 +143,14 @@ def service_request_external_sequencing(request):
 			new_service.serviceRequestNumber = increment_service_number(request.user)
 			new_service.save()
 			form.save_m2m()
-			return render(request,'iSkyLIMS_drylab_utils/info_page.html',{'content':['Your service request has been successfully recorded.',
+			return render(request,'django_utils/info_page.html',{'content':['Your service request has been successfully recorded.',
 								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
 								'Keep this number safe for refering your request','You will be contacted shortly.']})
 	else:
 		form = ServiceRequestFormExternalSequencing()
 
 	form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
-	return render(request, 'drylab/RequestForm.html' , { 'form' : form })
+	return render(request, 'iSkyLIMS_drylab/RequestForm.html' , { 'form' : form })
 
 
 @login_required
@@ -171,18 +171,18 @@ def counseling_request(request):
 			from_user = 'bioinformatica@isciii.es'
 			to_user = [request.user.email,'bioinformatica@isciii.es']
 			send_mail (subject, body_message, from_user, to_user)
-			return render(request,'drylab/info_page.html',{'content':['Your service request has been successfully recorded.',
+			return render(request,'iSkyLIMS_drylab/info_page.html',{'content':['Your service request has been successfully recorded.',
 								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
 								'Keep this number safe for refering your request','You will be contacted shortly.']})
 		else:
 			#import pdb; pdb.set_trace()
-			return render(request,'drylab/error_page.html',{'content':['Your service request cannot be recorded.',
+			return render(request,'iSkyLIMS_drylab/error_page.html',{'content':['Your service request cannot be recorded.',
 												'Check that all information is provided correctly.']})
 	else:
 		form = ServiceRequestForm_extended()
 
 	form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Bioinformatics consulting and training").get_descendants(include_self=True)
-	return render(request, 'drylab/RequestForm.html' , { 'form' : form ,  'consulting_request': 'consulting_request'})
+	return render(request, 'iSkyLIMS_drylab/RequestForm.html' , { 'form' : form ,  'consulting_request': 'consulting_request'})
 
 @login_required
 def infrastructure_request(request):
@@ -203,12 +203,12 @@ def infrastructure_request(request):
 			from_user = 'bioinformatica@isciii.es'
 			to_user = [request.user.email,'bioinformatica@isciii.es']
 			send_mail (subject, body_message, from_user, to_user)
-			return render(request,'drylab/info_page.html',{'content':['Your service request has been successfully recorded.',
+			return render(request,'iSkyLIMS_drylab/info_page.html',{'content':['Your service request has been successfully recorded.',
 								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
 								'Keep this number safe for refering your request','You will be contacted shortly.']})
 		else:
 			#import pdb; pdb.set_trace()
-			return render(request,'drylab/error_page.html',{'content':['Your service request cannot be recorded.',
+			return render(request,'iSkyLIMS_drylab/error_page.html',{'content':['Your service request cannot be recorded.',
 												'Check that all information is provided correctly.']})
 	else:
 		form = ServiceRequestForm_extended()
@@ -216,7 +216,7 @@ def infrastructure_request(request):
 	form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="User support").get_descendants(include_self=True)
 	#pdb.set_trace()
 	#form.helper[1].update_atrributes(hidden="true")
-	return render(request, 'drylab/RequestForm.html' , { 'form' : form , 'infrastructure_request': 'infrastructure_request'})
+	return render(request, 'iSkyLIMS_drylab/RequestForm.html' , { 'form' : form , 'infrastructure_request': 'infrastructure_request'})
 
 def get_service_information (service_id):
 	service= Service.objects.get(pk=service_id)
@@ -281,9 +281,9 @@ def display_service (request, service_id):
 		try:
 			groups = Group.objects.get(name='Admin_iSkyLIMS')
 			if groups not in request.user.groups.all():
-				return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 		except:
-			return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+			return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 	else:
 		#redirect to login webpage
 		return redirect ('/accounts/login')
@@ -293,9 +293,9 @@ def display_service (request, service_id):
 		display_service_details = get_service_information(service_id)
 
 		#import pdb; pdb.set_trace()
-		return render (request,'drylab/display_service.html',{'display_service': display_service_details})
+		return render (request,'iSkyLIMS_drylab/display_service.html',{'display_service': display_service_details})
 	else:
-		return render (request,'drylab/error_page.html', {'content':['The service that you are trying to get does not exist ','Contact with your administrator .']})
+		return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The service that you are trying to get does not exist ','Contact with your administrator .']})
 
 
 @login_required
@@ -304,9 +304,9 @@ def search_service (request):
 		try:
 			groups = Group.objects.get(name='Admin_iSkyLIMS')
 			if groups not in request.user.groups.all():
-				return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 		except:
-			return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+			return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 	else:
 		#redirect to login webpage
 		return redirect ('/accounts/login')
@@ -319,19 +319,19 @@ def search_service (request):
 		end_date=request.POST['enddate']
 		user_name = request.POST['username']
 		if service_number_request == '' and service_state == '' and start_date == '' and end_date == '' and user_name =='':
-			 return render( request,'drylab/searchService.html',{'services_state_list':STATUS_CHOICES})
+			 return render( request,'iSkyLIMS_drylab/searchService.html',{'services_state_list':STATUS_CHOICES})
 		### check the right format of start and end date
 		if start_date != '':
 			try:
 				datetime.datetime.strptime(start_date, '%Y-%m-%d')
 			except:
-				return render (request,'drylab/error_page.html', {'content':['The format for the "Start Date Search" Field is incorrect ',
+				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The format for the "Start Date Search" Field is incorrect ',
 																			'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
 		if end_date != '':
 			try:
 				datetime.datetime.strptime(end_date, '%Y-%m-%d')
 			except:
-				return render (request,'drylab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
+				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
 																			'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
 		if service_number_request == '' and service_state == '':
 			services_found = Service.objects.all()
@@ -341,12 +341,12 @@ def search_service (request):
 			if Service.objects.filter(serviceRequestNumber__exact = service_number_request).exists():
 				#import pdb; pdb.set_trace()
 				services_found = Service.objects.get(serviceRequestNumber__exact = service_number_request)
-				redirect_page = '/drylab/display_service=' + str(services_found.id)
+				redirect_page = '/iSkyLIMS_drylab/display_service=' + str(services_found.id)
 				return redirect (redirect_page)
 			if Service.objects.filter(serviceRequestNumber__icontains = service_number_request).exists():
 				services_found = Service.objects.filter(serviceRequestNumber__icontains = service_number_request)
 			else:
-				return render (request,'drylab/error_page.html', {'content':['No matches have been found for the service number ', service_number_request ]})
+				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['No matches have been found for the service number ', service_number_request ]})
 
 		if service_state != '':
 			if service_number_request =='':
@@ -354,29 +354,29 @@ def search_service (request):
 			if services_found.filter(serviceStatus__exact = service_state).exists():
 				services_found = services_found.filter(serviceStatus__exact = service_state)
 			else:
-				return render (request,'drylab/error_page.html', {'content':['No matches have been found for the service number in state', service_state ]})
+				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['No matches have been found for the service number in state', service_state ]})
 		if start_date !='' and end_date != '':
 			if services_found.filter(serviceCreatedOnDate__range=(start_date, end_date)).exists():
 				 services_found = services_found.filter(serviceCreatedOnDate__range=(start_date, end_date))
 			else:
-				return render (request,'drylab/error_page.html', {'content':['There are no services containing ', service_number,
+				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['There are no services containing ', service_number,
 														' created between ', start_date, 'and the ', end_date]})
 		if start_date !='' and end_date == '':
 			if services_found.filter(serviceCreatedOnDate__gte = start_date).exists():
 				services_found = services_found.filter(serviceCreatedOnDate__gte = start_date)
 			else:
-				return render (request,'drylab/error_page.html', {'content':['There are no services containing ', service_number,
+				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['There are no services containing ', service_number,
 														' created before ', start_date]})
 		if start_date =='' and end_date != '':
 			if services_found.filter(serviceCreatedOnDate__lte = end_date).exists():
 				services_found = services_found.filter(serviceCreatedOnDate__lte = end_date)
 			else:
-				return render (request,'drylab/error_page.html', {'content':['There are no services containing ', service_number,
+				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['There are no services containing ', service_number,
 														' finish before ', end_date]})
 
 		#If only 1 service mathes the user conditions, then get the user information
 		if len(services_found) == 1 :
-			redirect_page = '/drylab/display_service=' + str(services_found[0].id)
+			redirect_page = '/iSkyLIMS_drylab/display_service=' + str(services_found[0].id)
 			return redirect (redirect_page)
 		else:
 			display_multiple_services ={}
@@ -388,9 +388,9 @@ def search_service (request):
 				service_center = service_item.serviceSeqCenter
 				s_list [service_id]=[[service_number, service_status, service_center]]
 			display_multiple_services['s_list'] = s_list
-			return render (request,'drylab/searchService.html', {'display_multiple_services': display_multiple_services})
+			return render (request,'iSkyLIMS_drylab/searchService.html', {'display_multiple_services': display_multiple_services})
 	#import pdb; pdb.set_trace()
-	return render( request,'drylab/searchService.html',{'services_state_list':STATUS_CHOICES})
+	return render( request,'iSkyLIMS_drylab/searchService.html',{'services_state_list':STATUS_CHOICES})
 
 
 @login_required
@@ -399,9 +399,9 @@ def pending_services (request):
 		try:
 			groups = Group.objects.get(name='Admin_iSkyLIMS')
 			if groups not in request.user.groups.all():
-				return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 		except:
-			return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+			return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 	else:
 		#redirect to login webpage
 		return redirect ('/accounts/login')
@@ -440,7 +440,7 @@ def pending_services (request):
 
 	#import pdb ; pdb.set_trace()
 
-	return render (request, 'drylab/pendingServices.html', {'pending_services': pending_services_details})
+	return render (request, 'iSkyLIMS_drylab/pendingServices.html', {'pending_services': pending_services_details})
 
 @login_required
 def add_resolution (request, service_id):
@@ -448,9 +448,9 @@ def add_resolution (request, service_id):
 		try:
 			groups = Group.objects.get(name='Admin_iSkyLIMS')
 			if groups not in request.user.groups.all():
-				return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 		except:
-			return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+			return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 	else:
 		#redirect to login webpage
 		return redirect ('/accounts/login')
@@ -502,7 +502,7 @@ def add_resolution (request, service_id):
 			to_user = [service_user_mail,'bioinformatica@isciii.es']
 			send_mail (subject, body_message, from_user, to_user)
 			#import pdb ; pdb.set_trace()
-			return render(request,'drylab/info_page.html',{'content':['Your resolution proposal has been successfully recorded with Resolution Number.', resolution_number]})
+			return render(request,'iSkyLIMS_drylab/info_page.html',{'content':['Your resolution proposal has been successfully recorded with Resolution Number.', resolution_number]})
 	else:
 		if Service.objects.filter(pk=service_id).exists():
 			service_id= Service.objects.get(pk=service_id)
@@ -510,16 +510,16 @@ def add_resolution (request, service_id):
 			form = AddResolutionService()
 			#import pdb ; pdb.set_trace()
 
-			return render(request, 'drylab/addResolution.html' , { 'form' : form ,'prueba':'pepe'})
+			return render(request, 'iSkyLIMS_drylab/addResolution.html' , { 'form' : form ,'prueba':'pepe'})
 @login_required
 def add_in_progress (request, resolution_id):
 	if request.user.is_authenticated:
 		try:
 			groups = Group.objects.get(name='Admin_iSkyLIMS')
 			if groups not in request.user.groups.all():
-				return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 		except:
-			return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+			return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 	else:
 		#redirect to login webpage
 		return redirect ('/accounts/login')
@@ -540,11 +540,11 @@ def add_in_progress (request, resolution_id):
 		from_user = 'bioinformatica@isciii.es'
 		to_user = [service_user_mail,'bioinformatica@isciii.es']
 		send_mail (subject, body_message, from_user, to_user)
-		return render (request,'drylab/info_page.html',{'content':['Your resolution  request ', resolution.resolutionNumber,
+		return render (request,'iSkyLIMS_drylab/info_page.html',{'content':['Your resolution  request ', resolution.resolutionNumber,
 								'has been successfully upated to In Progress state']})
 	else:
 		#import pdb ; pdb.set_trace()
-		return render (request,'drylab/error_page.html', {'content':['The resolution that you are trying to upadate does not exists ','Contact with your administrator .']})
+		return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The resolution that you are trying to upadate does not exists ','Contact with your administrator .']})
 	return
 
 @login_required
@@ -553,9 +553,9 @@ def add_delivery (request , resolution_id):
 		try:
 			groups = Group.objects.get(name='Admin_iSkyLIMS')
 			if groups not in request.user.groups.all():
-				return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 		except:
-			return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+			return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 	else:
 		#redirect to login webpage
 		return redirect ('/accounts/login')
@@ -581,16 +581,16 @@ def add_delivery (request , resolution_id):
 			from_user = 'bioinformatica@isciii.es'
 			to_user = [service_user_mail,'bioinformatica@isciii.es']
 			send_mail (subject, body_message, from_user, to_user)
-			return render(request,'drylab/info_page.html',{'content':['The service is now on Delivery status ']})
+			return render(request,'iSkyLIMS_drylab/info_page.html',{'content':['The service is now on Delivery status ']})
 	else:
 		if Resolution.objects.filter(pk = resolution_id).exists():
 			#import pdb ; pdb.set_trace()
 			form = AddDeliveryService()
 			delivery_info = {}
-			return render (request, 'drylab/addDelivery.html', {'form':form, 'delivery_info': delivery_info})
+			return render (request, 'iSkyLIMS_drylab/addDelivery.html', {'form':form, 'delivery_info': delivery_info})
 		else:
 			#import pdb ; pdb.set_trace()
-			return render (request,'drylab/error_page.html', {'content':['The resolution that you are trying to upadate does not exists ','Contact with your administrator .']})
+			return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The resolution that you are trying to upadate does not exists ','Contact with your administrator .']})
 	return
 
 @login_required
@@ -599,9 +599,9 @@ def stats_by_date_user (request):
 		try:
 			groups = Group.objects.get(name='Admin_iSkyLIMS')
 			if groups not in request.user.groups.all():
-				return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 		except:
-			return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+			return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 	else:
 		#redirect to login webpage
 		return redirect ('/accounts/login')
@@ -619,7 +619,7 @@ def stats_by_date_user (request):
 					for names in matched_names:
 						name_list.append(names.username)
 					name_string = '  ,  '.join(name_list)
-					return render (request,'drylab/error_page.html', {'content':['Too many matches have been found for the user name field', user_name,
+					return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['Too many matches have been found for the user name field', user_name,
 																				'ADVICE:', 'Please write down one of the following user name and repeate again the search',
 																				name_string,]})
 				else:
@@ -629,13 +629,13 @@ def stats_by_date_user (request):
 				try:
 					datetime.datetime.strptime(start_date, '%Y-%m-%d')
 				except:
-					return render (request,'drylab/error_page.html', {'content':['The format for the "Start Date Search" Field is incorrect ',
+					return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The format for the "Start Date Search" Field is incorrect ',
 																				'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
 			if end_date != '':
 				try:
 					datetime.datetime.strptime(end_date, '%Y-%m-%d')
 				except:
-					return render (request,'drylab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
+					return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
 																				'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
 			#import pdb ; pdb.set_trace()
 			services_user = Service.objects.filter(serviceUserId__exact = user_name_id).order_by('-serviceRequestNumber')
@@ -643,18 +643,18 @@ def stats_by_date_user (request):
 				if services_user.filter(serviceCreatedOnDate__range=(start_date,end_date)).exists():
 					services_user = services_user.filter(serviceCreatedOnDate__range(start_date,end_date))
 				else:
-					return render (request,'drylab/error_page.html', {'content':['There are no services created by ', user_name , 'For the time of period of between:',
+					return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['There are no services created by ', user_name , 'For the time of period of between:',
 																start_date , 'and', end_date]})
 			if start_date !='' and end_date == '':
 				if services_user.filter(serviceCreatedOnDate__gte = end_date).exists():
 					services_user = services_user.filter(serviceCreatedOnDate__lte = end_date)
 				else:
-					return render (request,'drylab/error_page.html', {'content':['There are no services created by ', user_name , 'Starting from ', start_date ]})
+					return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['There are no services created by ', user_name , 'Starting from ', start_date ]})
 			if start_date =='' and end_date != '':
 				if services_user.filter(serviceCreatedOnDate__lte = end_date).exists():
 					services_user = services_user.filter(serviceCreatedOnDate__lte = end_date)
 				else:
-					return render (request,'drylab/error_page.html', {'content':['There are no services created by ', user_name , 'Finish before ', end_date ]})
+					return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['There are no services created by ', user_name , 'Finish before ', end_date ]})
 
 
 			stats_info = {}
@@ -737,10 +737,10 @@ def stats_by_date_user (request):
 			stats_info ['graphic_date_requested_services'] = graphic_date_requested_services.render()
 
 			#import pdb ; pdb.set_trace()
-			return render (request, 'drylab/statsByDateUser.html', {'stats_info':stats_info})
+			return render (request, 'iSkyLIMS_drylab/statsByDateUser.html', {'stats_info':stats_info})
 	else:
 		form = ByDateUserStats()
-		return render(request, 'drylab/statsByDateUser.html', {'form':form})
+		return render(request, 'iSkyLIMS_drylab/statsByDateUser.html', {'form':form})
 
 
 @login_required
@@ -749,9 +749,9 @@ def stats_by_services_request (request):
 		try:
 			groups = Group.objects.get(name='Admin_iSkyLIMS')
 			if groups not in request.user.groups.all():
-				return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 		except:
-			return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+			return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 	else:
 		#redirect to login webpage
 		return redirect ('/accounts/login')
@@ -765,13 +765,13 @@ def stats_by_services_request (request):
 				try:
 					start_date_format = datetime.datetime.strptime(start_date, '%Y-%m-%d')
 				except:
-					return render (request,'drylab/error_page.html', {'content':['The format for the "Start Date Search" Field is incorrect ',
+					return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The format for the "Start Date Search" Field is incorrect ',
 																				'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
 			if end_date != '':
 				try:
 					end_date_format = datetime.datetime.strptime(end_date, '%Y-%m-%d')
 				except:
-					return render (request,'drylab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
+					return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
 																				'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
 
 			if Service.objects.filter(serviceCreatedOnDate__range=(start_date,end_date)).exists():
@@ -911,14 +911,14 @@ def stats_by_services_request (request):
 				services_stats_info ['graphic_area_services_per_time'] = graphic_area_services_per_time.render()
 
 				services_stats_info['period_time']= period_of_time_selected
-				return render (request, 'drylab/statsByServicesRequest.html', {'services_stats_info':services_stats_info})
+				return render (request, 'iSkyLIMS_drylab/statsByServicesRequest.html', {'services_stats_info':services_stats_info})
 
 			else:
-				return render (request,'drylab/error_page.html', {'content':['There are no services created by ', 'For the time of period of between:',
+				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['There are no services created by ', 'For the time of period of between:',
 																start_date , 'and', end_date]})
 	else:
 		form = ByServicesRequest()
-	return render(request, 'drylab/statsByServicesRequest.html', {'form':form})
+	return render(request, 'iSkyLIMS_drylab/statsByServicesRequest.html', {'form':form})
 
 
 
@@ -930,9 +930,9 @@ def stats_by_samples_processed (request):
 		try:
 			groups = Group.objects.get(name='Admin_iSkyLIMS')
 			if groups not in request.user.groups.all():
-				return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 		except:
-			return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+			return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 	else:
 		#redirect to login webpage
 		return redirect ('/accounts/login')
@@ -946,7 +946,7 @@ def stats_by_samples_processed (request):
 
 	else:
 		form = BySampleProcessed()
-		return render(request, 'drylab/statsBySamplesProcessed.html', {'form':form})
+		return render(request, 'iSkyLIMS_drylab/statsBySamplesProcessed.html', {'form':form})
 
 
 
@@ -956,9 +956,9 @@ def stats_time_delivery (request):
 		try:
 			groups = Group.objects.get(name='Admin_iSkyLIMS')
 			if groups not in request.user.groups.all():
-				return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 		except:
-			return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+			return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 	else:
 		#redirect to login webpage
 		return redirect ('/accounts/login')
@@ -972,7 +972,7 @@ def stats_time_delivery (request):
 
 	else:
 		form = TimeDelivery()
-		return render(request, 'drylab/statsByDateUser.html', {'form':form})
+		return render(request, 'iSkyLIMS_drylab/statsByDateUser.html', {'form':form})
 
 
 
@@ -1002,9 +1002,9 @@ def open_sessions (request):
 		try:
 			groups = Group.objects.get(name='Admin_iSkyLIMS')
 			if groups not in request.user.groups.all():
-				return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 		except:
-			return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+			return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 	else:
 		#redirect to login webpage
 		return redirect ('/accounts/login')
@@ -1019,7 +1019,7 @@ def open_sessions (request):
 
 		user_connected['number_of_users'] = user_list_connected.count()
 		#import pdb ; pdb.set_trace()
-	return render (request, 'drylab/openSessions.html', {'user_connected': user_connected })
+	return render (request, 'iSkyLIMS_drylab/openSessions.html', {'user_connected': user_connected })
 
 @login_required
 def user_login (request):
@@ -1027,9 +1027,9 @@ def user_login (request):
 		try:
 			groups = Group.objects.get(name='Admin_iSkyLIMS')
 			if groups not in request.user.groups.all():
-				return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 		except:
-			return render (request,'drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+			return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 	else:
 		#redirect to login webpage
 		return redirect ('/accounts/login')
@@ -1040,5 +1040,5 @@ def user_login (request):
 		user_data.append([user.username, user.first_name, user.last_name, user.email, user.last_login])
 	login_data['user_data'] = user_data
 
-	return render(request, 'drylab/userLogin.html', {'login_data': login_data})
+	return render(request, 'iSkyLIMS_drylab/userLogin.html', {'login_data': login_data})
 

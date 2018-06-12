@@ -1,4 +1,4 @@
-{% extends 'drylab/base.html' %}
+{% extends 'iSkyLIMS_drylab/base.html' %}
 {% load static %}
 {% block content %}
 {% csrf_token %}
@@ -26,7 +26,7 @@
                                 {% for key, values in pending_services.recorded.items %}  
                                  <tr>
                                     {% for requestID, specification, center, platform in values %}
-                                   <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
+                                   <td><a href="/iSkyLIMS_drylab/display_service={{ key }}">{{ requestID }}</a> </td>
                                    <td> {{ specification }} </td>
                                    <td> {{ center }} </td>
                                    <td> {{ platform }} </td>
@@ -59,7 +59,7 @@
                                 {% for key, values in pending_services.approved.items %}  
                                  <tr>
                                     {% for requestID, specification, center, platform in values %}
-                                   <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
+                                   <td><a href="/iSkyLIMS_drylab/display_service={{ key }}">{{ requestID }}</a> </td>
                                    <td> {{ specification }} </td>
                                    <td> {{ center }} </td>
                                    <td> {{ platform }} </td>
@@ -92,7 +92,7 @@
                                 {% for key, values in pending_services.queued.items %}  
                                  <tr>
                                     {% for requestID, specification, center, platform in values %}
-                                   <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
+                                   <td><a href="/iSkyLIMS_drylab/display_service={{ key }}">{{ requestID }}</a> </td>
                                    <td> {{ specification }} </td>
                                    <td> {{ center }} </td>
                                    <td> {{ platform }} </td>
@@ -127,7 +127,7 @@
                                 {% for key, values in pending_services.in_progress.items %}  
                                  <tr>
                                     {% for requestID, specification, center, platform in values %}
-                                   <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
+                                   <td><a href="/iSkyLIMS_drylab/display_service={{ key }}">{{ requestID }}</a> </td>
                                    <td> {{ specification }} </td>
                                    <td> {{ center }} </td>
                                    <td> {{ platform }} </td>

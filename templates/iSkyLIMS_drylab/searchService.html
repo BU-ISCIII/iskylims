@@ -1,4 +1,4 @@
-{% extends 'drylab/base.html' %}
+{% extends 'iSkyLIMS_drylab/base.html' %}
 {% load static %}
 {% block content %}
 {% csrf_token %}
@@ -21,7 +21,7 @@
                         {% for key, values in display_multiple_services.s_list.items %}  
                          <tr>
                             {% for serviceID, status, center in values %}
-                           <td><a href="/drylab/display_service={{ key }}">{{ serviceID }}</a> </td>
+                           <td><a href="/iSkyLIMS_drylab/display_service={{ key }}">{{ serviceID }}</a> </td>
                            <td> {{ status }} </td>
                            <td> {{ center }} </td>
                             {%endfor%}
