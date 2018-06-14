@@ -4,7 +4,6 @@
 migrations/
 tmp/
 log/
-static/
 ## Default for python projects
 # Byte-compiled / optimized / DLL files
 __pycache__/
