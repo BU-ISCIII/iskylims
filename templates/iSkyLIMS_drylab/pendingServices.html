@@ -2,8 +2,8 @@
 {% load static %}
 {% block content %}
 {% csrf_token %}
-<script type="text/javascript" src="{% static "js/fusioncharts/js/fusioncharts.js" %}"></script>                   
-<script type="text/javascript" src="{% static "js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
+<script type="text/javascript" src="{% static "iSkyLIMS_common_static/js/fusioncharts/js/fusioncharts.js" %}"></script>                   
+<script type="text/javascript" src="{% static "iSkyLIMS_common_static/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
 
     <h1><div class="color-heading">Pending Services</div></h1>
     <div class="row row-space-2 margin-b-4">
@@ -147,7 +147,7 @@
       </div> <!--// end col-sm-7 first column with list of pending services -->
       <div class="col-sm-5 ">
           <div class="col-sm-11 col-sm-offset-3">
-            <img class="promo-block-img img-responsive" src="{% static "img/illumina/nextseqReduced.png" %}" align="Avatar">
+            <img class="promo-block-img img-responsive" src="{% static "iSkyLIMS_common_static/img/illumina/nextseqReduced.png" %}" align="Avatar">
           </div> <!--// end img --> 
       {% if pending_services.graphic_pending_services %}
         <div class="col-sm-12">

@@ -1,4 +1,4 @@
-// Custom drylab css
+/*  Custom drylab css */
 
 .gi-2x{font-size: 2em;}
 .gi-3x{font-size: 3em;}
@@ -54,3 +54,4 @@ ul.paginator li.index, ul.paginator li.previous, ul.paginator li.next, ul.pagina
     display: none; }
   .entry-content .highlight {
     background: yellow; }
+
