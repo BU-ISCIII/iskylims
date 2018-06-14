@@ -3,12 +3,12 @@
 {% block content %}
     {% csrf_token %}
 
-<script type="text/javascript" src="{% static "js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>           
-<script type="text/javascript" src="{% static "js/fusioncharts/js/fusioncharts.js" %}"></script>                   
-<script type="text/javascript" src="{% static "js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
-<script type="text/javascript" src="{% static "js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>  
-<script type="text/javascript" src="{% static "js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script>   
-<script type="text/javascript" src="{% static "js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>     
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script>
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script>
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>
 {% if display_library_stats %}
 <div class="row row-space-2 margin-b-4">
       <div class="col-sm-8 col-sm-offset-1" >
@@ -20,7 +20,7 @@
                         {{ value }} <BR>
                     {% endfor%}
                 </h3>
-          
+
             </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
         </div> <!--// end col-sm-8  -->
@@ -53,7 +53,7 @@
             </div> <!--// end col-sm-6  -->
         </div> <!--// end col-sm 12 -->
     </div> <!--// end row -->
-    
+
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
             <div class="col-sm-6" >
@@ -81,9 +81,9 @@
             </div> <!--// end col-sm-6  -->
         </div> <!--// end col-sm 12 -->
     </div> <!--// end row -->
-   
-    <!-- Q 30 quality stats graphics-->    
-    
+
+    <!-- Q 30 quality stats graphics-->
+
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
             <div class="col-sm-6" >
@@ -111,7 +111,7 @@
             </div> <!--// end col-sm-6  -->
         </div> <!--// end col-sm 12 -->
     </div> <!--// end row -->
-    
+
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
             <div class="col-sm-6" >
@@ -223,7 +223,7 @@
                     </div>  <!--  end of panel body  -->
                 </div> <!--// end panel -->
             </div> <!--// end col-sm-6  -->
-            
+
             <div class="col-sm-6" >
                 <div class="panel panel-default">
                     <div class="panel-heading"><h3>Comparation of Mean Quality Score Statistics </h3></div>
@@ -237,7 +237,7 @@
             </div> <!--// end col-sm-6  -->
         </div> <!--// end col-sm 12 -->
     </div> <!--// end row -->
-    
+
     <div class="row row-space-2 margin-b-4">
     <div class="col-sm-12" >
         <div class="col-sm-6" >
@@ -254,18 +254,18 @@
     </div> <!--// end row -->
 
 {% elif display_list_of_library_stats %}
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>           
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>                   
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>  
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script>   
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>     
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script>
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script>
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-7 col-sm-offset-3" >
             <div class="panel panel-default">
                 <div class="panel-heading"><h2>These libraries match the searching criteria </h2></div>
                 <div class="panel-body">
-                    
+
                     {% for values in display_list_of_library_stats.library_names %}
                         <h5>{{ values }}</h5>
                     {% endfor%}
@@ -288,7 +288,7 @@
                     </div>  <!--  end of panel body  -->
                 </div> <!--// end panel -->
             </div> <!--// end col-sm-6  -->
-            
+
             <div class="col-sm-6" >
                 <div class="panel panel-default">
                     <div class="panel-heading"><h3>Comparision of Mean Quality Score Statistics </h3></div>
@@ -302,7 +302,7 @@
             </div> <!--// end col-sm-6  -->
         </div> <!--// end col-sm 12 -->
     </div> <!--// end row -->
-    
+
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
             <div class="col-sm-6" >
@@ -318,10 +318,10 @@
             </div> <!--// end col-sm-6  -->
         </div> <!--// end col-sm-12  -->
     </div> <!--// end row -->
-    
-    
-    
-    
+
+
+
+
     <!--   display the library kits found based on the form            -->
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-7 col-sm-offset-3" >
@@ -333,9 +333,9 @@
             </div> <!--// end panel -->
         </div> <!--// end col-sm-8  -->
     </div> <!--// end row -->
-    
+
     <!-- Q 30 quality Library statistics graphics -->
-    
+
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
             <div class="col-sm-6" >
@@ -349,7 +349,7 @@
                     </div>  <!--  end of panel body  -->
                 </div> <!--// end panel -->
             </div> <!--// end col-sm-6  -->
-            
+
             <div class="col-sm-6" >
                 <div class="panel panel-default">
                     <div class="panel-heading"><h3>Mean Quality Score Statistics per Library Kit</h3></div>
@@ -363,7 +363,7 @@
             </div> <!--// end col-sm-6  -->
         </div> <!--// end col-sm 12 -->
     </div> <!--// end row -->
-    
+
     <div class="row row-space-2 margin-b-4">
     <div class="col-sm-12" >
         <div class="col-sm-6" >
@@ -385,7 +385,7 @@
 
 {% else %}
     <!-- FORM for Lobrary Kit statistics -->
- <div style="background-image: url(/static/iSkyLIMS_wetlab/img/search_background_image_library.jpg); background-attachment: fixed;">  
+ <div style="background-image: url(/static/iSkyLIMS_wetlab/img/search_background_image_library.jpg); background-attachment: fixed;">
     <div class="row row-space-2 margin-b-4">
       <div class="col-sm-7  col-sm-offset-1">
         <div class="panel panel-default">
@@ -394,11 +394,11 @@
             <form method="post" enctype="multipart/form-data" name="statslibraryKit" id="statslibraryKit" class="form-horizontal well">
             {% csrf_token %}
             <input type="hidden" name="action" value="libraryKit"/>
-             <div class="form-group"> 
+             <div class="form-group">
                   <label class="col-sm-5  control-label" for="libraryKitName" >Fill the Library Kit name </label>
                   <div class="col-sm-5"><input class="form-control" type="text" name="libraryKitName" id="libraryKitName" size="100" maxlength="100"></div>
              </div>  <!-- end from-group   -->
- 
+
                 <br>
 
                 <div class="form-group">
@@ -410,7 +410,7 @@
                   <label class="col-sm-5 control-label" for="enddate" >End Date Search (DD-MM-YYYY)</label>
                   <div class="col-sm-5"><input class="form-control" type="date" name="enddate" value="" id="enddate"></div>
                 <br>
-             
+
             </div>  <!-- end from-group   -->
                 <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
                 <input class="btn pull-right btn-primary" type="submit" value="Submit">
@@ -418,9 +418,9 @@
          </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
         </div> <!--// end col-sm-7  -->
- 
-        
- 
+
+
+
     </div> <!--// end row -->
 </div> <!-- Background  -->
     <!-- End of FORM for searching RUN information -->
