@@ -250,7 +250,7 @@ def get_sample_file (request):
         ## save the sample sheet file under tmp/recorded to be processed when run folder was created
         subfolder_name=str(run_p.id)
         #base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        temp_directory = os.path.join(settings.MEDIA_ROOT , wetlab_config.RUN_TEMP_DIRECTORY_RECORDED, subfolder_name)
+        temp_directory = os.path.join(settings.BASE_DIR , wetlab_config.RUN_TEMP_DIRECTORY_RECORDED, subfolder_name)
         os.mkdir(temp_directory)
         # set group writing permission to the temporary directory
         os.chmod(temp_directory, 0o774)
@@ -273,7 +273,7 @@ def get_sample_file (request):
             project.procState='Recorded'
             project.save()
 
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         return render (request, 'iSkyLIMS_wetlab/getSampleSheet.html', {'completed_form':results})
 
 
