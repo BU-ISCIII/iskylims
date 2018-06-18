@@ -1,9 +1,9 @@
-{% extends 'iSkyLIMS_drylab/base.html' %}
+{% extends 'drylab/base.html' %}
 {% load static %}
 {% block content %}
 {% csrf_token %}
-<script type="text/javascript" src="{% static "iSkyLIMS_common_static/js/fusioncharts/js/fusioncharts.js" %}"></script>
-<script type="text/javascript" src="{% static "iSkyLIMS_common_static/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script>
+<script type="text/javascript" src="{% static "js/fusioncharts/js/fusioncharts.js" %}"></script>                   
+<script type="text/javascript" src="{% static "js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
 
     <h1><div class="color-heading">Pending Services</div></h1>
     <div class="row row-space-2 margin-b-4">
@@ -23,10 +23,10 @@
                                   </tr>
                                </thead>
                                <tbody>
-                                {% for key, values in pending_services.recorded.items %}
+                                {% for key, values in pending_services.recorded.items %}  
                                  <tr>
                                     {% for requestID, specification, center, platform in values %}
-                                   <td><a href="/iSkyLIMS_drylab/display_service={{ key }}">{{ requestID }}</a> </td>
+                                   <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
                                    <td> {{ specification }} </td>
                                    <td> {{ center }} </td>
                                    <td> {{ platform }} </td>
@@ -56,10 +56,10 @@
                                   </tr>
                                </thead>
                                <tbody>
-                                {% for key, values in pending_services.approved.items %}
+                                {% for key, values in pending_services.approved.items %}  
                                  <tr>
                                     {% for requestID, specification, center, platform in values %}
-                                   <td><a href="/iSkyLIMS_drylab/display_service={{ key }}">{{ requestID }}</a> </td>
+                                   <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
                                    <td> {{ specification }} </td>
                                    <td> {{ center }} </td>
                                    <td> {{ platform }} </td>
@@ -89,10 +89,10 @@
                                   </tr>
                                </thead>
                                <tbody>
-                                {% for key, values in pending_services.queued.items %}
+                                {% for key, values in pending_services.queued.items %}  
                                  <tr>
                                     {% for requestID, specification, center, platform in values %}
-                                   <td><a href="/iSkyLIMS_drylab/display_service={{ key }}">{{ requestID }}</a> </td>
+                                   <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
                                    <td> {{ specification }} </td>
                                    <td> {{ center }} </td>
                                    <td> {{ platform }} </td>
@@ -101,9 +101,9 @@
                                 {%endfor%}
                                </tbody>
                              </table>
-
+                      
                       {% else %}
-
+                      
                       There is not pending services in <b>QUEUED</b> state.
                       {% endif%}
                   </div> <!--// end panel body -->
@@ -124,10 +124,10 @@
                                   </tr>
                                </thead>
                                <tbody>
-                                {% for key, values in pending_services.in_progress.items %}
+                                {% for key, values in pending_services.in_progress.items %}  
                                  <tr>
                                     {% for requestID, specification, center, platform in values %}
-                                   <td><a href="/iSkyLIMS_drylab/display_service={{ key }}">{{ requestID }}</a> </td>
+                                   <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
                                    <td> {{ specification }} </td>
                                    <td> {{ center }} </td>
                                    <td> {{ platform }} </td>
@@ -136,9 +136,9 @@
                                 {%endfor%}
                                </tbody>
                              </table>
-
+                      
                       {% else %}
-
+                      
                       There is not pending services in <b>IN PROGRESS</b> state.
                       {% endif%}
                   </div> <!--// end panel body -->
@@ -147,13 +147,13 @@
       </div> <!--// end col-sm-7 first column with list of pending services -->
       <div class="col-sm-5 ">
           <div class="col-sm-11 col-sm-offset-3">
-            <img class="promo-block-img img-responsive" src="{% static "iSkyLIMS_common_static/img/illumina/nextseqReduced.png" %}" align="Avatar">
-          </div> <!--// end img -->
+            <img class="promo-block-img img-responsive" src="{% static "img/illumina/nextseqReduced.png" %}" align="Avatar">
+          </div> <!--// end img --> 
       {% if pending_services.graphic_pending_services %}
         <div class="col-sm-12">
             <div class="panel panel-default">
                 <div class="panel-heading"><h3>Percentage of pending Services.</h3></div>
-                <div class="panel-body">
+                <div class="panel-body"> 
                 <!-- Pie chart for number of pending Services chart will start here-->
                     <div id="chart-1"> </div>
                     <!-- dumping JavaScript code here -->

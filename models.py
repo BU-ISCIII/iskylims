@@ -66,17 +66,19 @@ class Service(models.Model):
 	## Addition of member 'serviceProjectNames' to support
 	# implementation of drop down menu to choose a project name of a list of projects
 	# belonging to the logged-in user in the service request form
-	serviceProjectNames=models.ManyToManyField(Projects,verbose_name=_("User's projects"),blank=False)
-	servicePlatform=models.ForeignKey(Platform ,on_delete=models.CASCADE , verbose_name=_("Sequencing platform"),blank=False,null=True)
-	serviceRunSpecs=models.CharField(_("Run specifications"),max_length=10,blank=False,null=True)
-	serviceFileExt=models.ForeignKey(FileExt ,on_delete=models.CASCADE ,verbose_name=_("File extension"),blank=False,null=True)
+	serviceProjectNames=models.ManyToManyField(Projects,verbose_name=_("User's projects"),blank=True)
+	servicePlatform=models.ForeignKey(Platform ,on_delete=models.CASCADE , verbose_name=_("Sequencing platform"),blank=True,null=True)
+	serviceRunSpecs=models.CharField(_("Run specifications"),max_length=10,blank=True,null=True)
+	serviceFileExt=models.ForeignKey(FileExt ,on_delete=models.CASCADE ,verbose_name=_("File extension"),blank=True,null=True)
 	serviceAvailableService=TreeManyToManyField(AvailableService,verbose_name=_("AvailableServices"))
 	serviceFile=models.FileField(_("Service description file"),upload_to=service_files_upload, null=True,blank=True)
 	serviceStatus=models.CharField(_("Service status"),max_length=15,choices=STATUS_CHOICES)
 	serviceNotes=models.TextField(_("Service Notes"),max_length=500)
-	serviceCreatedOnDate= models.DateField(auto_now_add=True)
-	serviceOnApprovedDate = models.DateField(auto_now_add=False, null=True)
-	serviceOnRejectedDate = models.DateField(auto_now_add=False, null=True)
+	#serviceCreatedOnDate= models.DateField(auto_now_add=True)
+
+	serviceCreatedOnDate= models.DateField(auto_now_add=False)
+	serviceOnApprovedDate = models.DateField(auto_now_add=False, null=True,blank=True)
+	serviceOnRejectedDate = models.DateField(auto_now_add=False, null=True,blank=True)
 	#serviceOnQueuedDate = models.DateField(auto_now_add=False, null=True)
 	#serviceOnInProgressDate = models.DateField(auto_now_add=False, null=True)
 	serviceOnDeliveredDate = models.DateField(auto_now_add=False, null=True)
@@ -134,6 +136,8 @@ class Service(models.Model):
 
 		return stats_information
 
+	def get_service_creation_time (self):
+		return self.serviceCreatedOnDate.strftime("%d %B, %Y")
 
 	def get_time_to_delivery (self):
 
@@ -148,13 +152,13 @@ class Resolution(models.Model):
 	resolutionServiceID=models.ForeignKey(Service ,on_delete=models.CASCADE)
 	resolutionNumber=models.CharField(_("Resolutions name"),max_length=255,null=True)
 	#resolutionServiceSRV=models.CharField(_("Service identifier"),max_length=10)
-	resolutionEstimatedDate=models.DateField(_(" Estimated resolution date"), null = True)
-	resolutionDate=models.DateField(_("Resolution date"),auto_now_add=True)
-	resolutionOnQueuedDate = models.DateField(auto_now_add=False, null=True)
-	resolutionOnInProgressDate = models.DateField(auto_now_add=False, null=True)
+	resolutionEstimatedDate=models.DateField(_(" Estimated resolution date"), null = True,blank=True)
+	resolutionDate=models.DateField(_("Resolution date"),auto_now_add=False,blank=True)
+	resolutionOnQueuedDate = models.DateField(auto_now_add=False, null=True,blank=True)
+	resolutionOnInProgressDate = models.DateField(auto_now_add=False, null=True,blank=True)
 	resolutionNotes=models.TextField(_("Resolution notes"),max_length=255, null=True)
-	resolutionFullNumber = models.CharField(_("Resolutions number"),max_length=255,null=True)
-	resolutionAsignedUser = models.ForeignKey(User, related_name='groups+', on_delete=models.CASCADE, null=True )
+	resolutionFullNumber = models.CharField(_("Folder Name"),max_length=255,null=True,blank=True)
+	resolutionAsignedUser = models.ForeignKey(User, related_name='groups+', on_delete=models.CASCADE, null=True,blank=True )
 	#resolutionAsignedUser = models.ForeignKey(User ,on_delete=models.CASCADE, null=True)
 	def __str__ (self):
 		return '%s' %(self.resolutionNumber)

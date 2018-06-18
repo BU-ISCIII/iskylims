@@ -8,11 +8,18 @@ import os, re
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from django.conf import settings
+from django.template.loader import render_to_string
 from django_utils.fusioncharts.fusioncharts import FusionCharts
 from django.core.mail import send_mail
+from django.http import HttpResponse
+from django.core.files.storage import FileSystemStorage
 
 import datetime
 import statistics
+from django.conf import settings
+from drylab import drylab_config
+
+from smb.SMBConnection import SMBConnection
 
 ####### Import libraries for static files
 #from django.shortcuts import render_to_response
@@ -22,8 +29,8 @@ import statistics
 
 @login_required
 def index(request):
-	if Service.objects.all().exclude(serviceStatus = 'delivered').exclude(serviceStatus = 'rejected').exists():
-		ongoing_services = Service.objects.all().exclude(serviceStatus = 'delivered').exclude(serviceStatus = 'rejected').order_by('serviceCreatedOnDate')
+	if Service.objects.all().exclude(serviceStatus = 'delivered').exclude(serviceStatus = 'rejected').exclude(serviceStatus = 'approved').exists():
+		ongoing_services = Service.objects.all().exclude(serviceStatus = 'delivered').exclude(serviceStatus = 'rejected').exclude(serviceStatus = 'approved').order_by('serviceCreatedOnDate')
 		service_list = []
 		for service in ongoing_services:
 			service_info = []
@@ -59,6 +66,113 @@ def increment_service_number ( user_name):
 		service_number = 'SRV'+ user_center + '001'
 	return service_number
 
+
+
+def pdf(request):
+	from weasyprint import HTML, CSS
+	from django.template.loader import get_template
+	from django.core.files.storage import FileSystemStorage
+	from django.http import HttpResponse
+	from weasyprint.fonts import FontConfiguration
+	information = {}
+	user = {}
+	service_data ={}
+	service = Service.objects.get(serviceRequestNumber = 'SRVIIER007')
+	service_number ,run_specs, center, platform = service.get_service_information().split(';')
+	information['service_number'] = service_number
+	information['requested_date'] = service.get_service_creation_time()
+	information['nodes']= service.serviceAvailableService.all()
+	user['name'] = 'Silvia'
+	user['surname'] = 'Valdezate Ramos'
+	user['position'] = 'Científico'
+	user['phone'] = '23734'
+	user['email'] = 'svaldezate@isciii.es'
+	information['user'] = user
+	service_data['platform'] = platform
+	service_data['run_specifications'] = run_specs
+	service_data['center'] = center
+	service_data['notes'] = service.serviceNotes
+	#import pdb; pdb.set_trace()
+	full_path_file = str(service.serviceFile).split('/')
+	stored_file = full_path_file[-1]
+	temp_string_file = re.search('^\d+_(.*)', stored_file)
+	service_data['file'] = temp_string_file.group(1)
+	information['service_data'] = service_data
+	paragraphs = ['first paragraph', 'second paragraph', 'third paragraph']
+	#font_config = FontConfiguration()
+	html_string = render_to_string('request_service_template.html', {'information': information})
+
+	html = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf('documents/drylab/mypdf5.pdf',stylesheets=[CSS(settings.STATIC_ROOT +
+								drylab_config.CSS_FOR_PDF)])
+#								'/css/print_services.css')])
+
+	fs = FileSystemStorage('documents/drylab')
+	with fs.open('mypdf5.pdf') as pdf:
+		response = HttpResponse(pdf, content_type='application/pdf')
+		# save pdf file as attachment
+		#response['Content-Disposition'] = 'attachment; filename="mypdf.pdf"'
+
+
+		response['Content-Disposition'] = 'inline;filename=mypdf5.pdf'
+		return response
+	return response
+
+def get_data_for_service_confirmation (service_requested):
+	information = {}
+	user = {}
+	service_data ={}
+	service = Service.objects.get(serviceRequestNumber = service_requested)
+	service_number ,run_specs, center, platform = service.get_service_information().split(';')
+	information['service_number'] = service_number
+	information['requested_date'] = service.get_service_creation_time()
+	information['nodes']= service.serviceAvailableService.all()
+	user['name'] = service.serviceUserId.first_name
+	user['surname'] = service.serviceUserId.last_name
+
+	user_id = service.serviceUserId.id
+	user['area'] = Profile.objects.get(profileUserID = user_id).profileArea
+	user['center'] = Profile.objects.get(profileUserID = user_id).profileCenter
+	user['phone'] = Profile.objects.get(profileUserID = user_id).profileExtension
+	user['position'] = Profile.objects.get(profileUserID = user_id).profilePosition
+	user['email'] = service.serviceUserId.email
+	information['user'] = user
+	projects_in_service = []
+	projects_class = service.serviceProjectNames.all()
+	for project in projects_class:
+		projects_in_service.append(project.get_project_name())
+	service_data['projects'] = projects_in_service
+	service_data['platform'] = platform
+	service_data['run_specifications'] = run_specs
+	service_data['center'] = center
+	service_data['notes'] = service.serviceNotes
+	if str(service.serviceFile) != '':
+		full_path_file = str(service.serviceFile).split('/')
+		stored_file = full_path_file[-1]
+		temp_string_file = re.search('^\d+_(.*)', stored_file)
+		service_data['file'] = temp_string_file.group(1)
+	else:
+		service_data['file'] = 'Not provided'
+	information['service_data'] = service_data
+
+	return information
+
+
+def create_pdf(request,information, template_file, pdf_file_name):
+	from weasyprint import HTML, CSS
+	from django.template.loader import get_template
+
+	from weasyprint.fonts import FontConfiguration
+
+
+	#import pdb; pdb.set_trace()
+	#font_config = FontConfiguration()
+	html_string = render_to_string(template_file, {'information': information})
+	pdf_file = drylab_config.OUTPUT_DIR_TEMPLATE + pdf_file_name
+	html = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf(pdf_file,stylesheets=[CSS(settings.STATIC_ROOT + drylab_config.CSS_FOR_PDF)])
+
+	return pdf_file
+
+
 @login_required
 def service_request(request, serviceRequestType):
 	if serviceRequestType == 'internal_sequencing':
@@ -85,6 +199,7 @@ def service_request(request, serviceRequestType):
 				# (required for cases like this one where form.save(commit=False))
 
 				form.save_m2m()
+
 				## Send mail to user and bioinfo admins
 				subject = 'Service ' + new_service.serviceRequestNumber + " has been recorded"
 				body_message = 'Dear ' + request.user.username + "\n Your service " + new_service.serviceRequestNumber + " has been recorded. You will recieved the resolution of the request as soon as possible.\n Kind regards \n BU-ISCIII \n bioinformatica@isciii.es"
@@ -93,9 +208,23 @@ def service_request(request, serviceRequestType):
 				send_mail (subject, body_message, from_user, to_user)
 
 				#import pdb; pdb.set_trace()
+				# PDF preparation file for confirmation of service request
+				information_to_include = get_data_for_service_confirmation(str(new_service.serviceRequestNumber))
+				pdf_file_name = str(new_service.serviceRequestNumber) + '.pdf'
+				pdf_file = create_pdf(request, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name)
+				'''
+				fs = FileSystemStorage(drylab_config.OUTPUT_DIR_TEMPLATE)
+				with fs.open(pdf_file_name) as pdf:
+					response = HttpResponse(pdf, content_type='application/pdf')
+					response['Content-Disposition'] = 'inline;filename=' + pdf_file_name
+				return response
+				'''
+				download_file = '<a href="'+ pdf_file + '">Download the service request confirmation file</a>'
 				return render(request,'iSkyLIMS_drylab/info_page.html',{'content':['Your service request has been successfully recorded.',
 								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
-								'Keep this number safe for refering your request','You will be contacted shortly.']})
+								'Keep this number safe for refering your request', download_file ,
+								'You will be contacted shortly.']})
+
 		else: #No POST
 			form = ServiceRequestFormInternalSequencing()
 			## Addition of serviceProjectName for
@@ -122,10 +251,23 @@ def service_request(request, serviceRequestType):
 				from_user = 'bioinformatica@isciii.es'
 				to_user = [request.user.email,'bioinformatica@isciii.es']
 				send_mail (subject, body_message, from_user, to_user)
-
+				# PDF preparation file for confirmation of service request
+				information_to_include = get_data_for_service_confirmation(str(new_service.serviceRequestNumber))
+				pdf_file_name = str(new_service.serviceRequestNumber) + '.pdf'
+				pdf_file = create_pdf(request, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name)
+				'''
+				fs = FileSystemStorage(drylab_config.OUTPUT_DIR_TEMPLATE)
+				with fs.open(pdf_file_name) as pdf:
+					response = HttpResponse(pdf, content_type='application/pdf')
+					response['Content-Disposition'] = 'inline;filename=' + pdf_file_name
+				return response
+				'''
+				download_file = '<a href="'+ pdf_file + '">Download the service request confirmation file</a>'
 				return render(request,'iSkyLIMS_drylab/info_page.html',{'content':['Your service request has been successfully recorded.',
 								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
-								'Keep this number safe for refering your request','You will be contacted shortly.']})
+								'Keep this number safe for refering your request', download_file ,
+								'You will be contacted shortly.']})
+
 		else: #No POST
 			form = ServiceRequestFormExternalSequencing()
 			form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
@@ -143,9 +285,23 @@ def service_request_external_sequencing(request):
 			new_service.serviceRequestNumber = increment_service_number(request.user)
 			new_service.save()
 			form.save_m2m()
+			# PDF preparation file for confirmation of service request
+			information_to_include = get_data_for_service_confirmation(str(new_service.serviceRequestNumber))
+			pdf_file_name = str(new_service.serviceRequestNumber) + '.pdf'
+			pdf_file = create_pdf(request, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name)
+			'''
+			fs = FileSystemStorage(drylab_config.OUTPUT_DIR_TEMPLATE)
+			with fs.open(pdf_file_name) as pdf:
+				response = HttpResponse(pdf, content_type='application/pdf')
+				response['Content-Disposition'] = 'inline;filename=' + pdf_file_name
+			return response
+			'''
+			download_file = '<a href="'+ pdf_file + '">Download the service request confirmation file</a>'
 			return render(request,'django_utils/info_page.html',{'content':['Your service request has been successfully recorded.',
 								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
-								'Keep this number safe for refering your request','You will be contacted shortly.']})
+								'Keep this number safe for refering your request', download_file ,
+								'You will be contacted shortly.']})
+
 	else:
 		form = ServiceRequestFormExternalSequencing()
 
@@ -171,9 +327,23 @@ def counseling_request(request):
 			from_user = 'bioinformatica@isciii.es'
 			to_user = [request.user.email,'bioinformatica@isciii.es']
 			send_mail (subject, body_message, from_user, to_user)
+			# PDF preparation file for confirmation of service request
+			information_to_include = get_data_for_service_confirmation(str(new_service.serviceRequestNumber))
+			pdf_file_name = str(new_service.serviceRequestNumber) + '.pdf'
+			pdf_file = create_pdf(request, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name)
+			'''
+			fs = FileSystemStorage(drylab_config.OUTPUT_DIR_TEMPLATE)
+			with fs.open(pdf_file_name) as pdf:
+				response = HttpResponse(pdf, content_type='application/pdf')
+				response['Content-Disposition'] = 'inline;filename=' + pdf_file_name
+			return response
+			'''
+			download_file = '<a href="'+ pdf_file + '">Download the service request confirmation file</a>'
 			return render(request,'iSkyLIMS_drylab/info_page.html',{'content':['Your service request has been successfully recorded.',
 								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
-								'Keep this number safe for refering your request','You will be contacted shortly.']})
+								'Keep this number safe for refering your request', download_file ,
+								'You will be contacted shortly.']})
+
 		else:
 			#import pdb; pdb.set_trace()
 			return render(request,'iSkyLIMS_drylab/error_page.html',{'content':['Your service request cannot be recorded.',
@@ -319,7 +489,7 @@ def search_service (request):
 		end_date=request.POST['enddate']
 		user_name = request.POST['username']
 		if service_number_request == '' and service_state == '' and start_date == '' and end_date == '' and user_name =='':
-			 return render( request,'iSkyLIMS_drylab/searchService.html',{'services_state_list':STATUS_CHOICES})
+            return render( request,'iSkyLIMS_drylab/searchService.html',{'services_state_list':STATUS_CHOICES})
 		### check the right format of start and end date
 		if start_date != '':
 			try:
@@ -357,7 +527,7 @@ def search_service (request):
 				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['No matches have been found for the service number in state', service_state ]})
 		if start_date !='' and end_date != '':
 			if services_found.filter(serviceCreatedOnDate__range=(start_date, end_date)).exists():
-				 services_found = services_found.filter(serviceCreatedOnDate__range=(start_date, end_date))
+                services_found = services_found.filter(serviceCreatedOnDate__range=(start_date, end_date))
 			else:
 				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['There are no services containing ', service_number,
 														' created between ', start_date, 'and the ', end_date]})
@@ -407,17 +577,12 @@ def pending_services (request):
 		return redirect ('/accounts/login')
 
 	pending_services_details = {}
-	recorded, approved, queued, in_progress = {}, {}, {}, {}
+	recorded, queued, in_progress = {}, {}, {}
 	if Service.objects.filter(serviceStatus__exact = 'recorded').exists():
 		services_in_request = Service.objects.filter(serviceStatus__exact = 'recorded').order_by('-serviceCreatedOnDate')
 		for services in services_in_request:
 			recorded[services.id]= [services.get_service_information().split(';')]
 		pending_services_details['recorded'] = recorded
-	if Service.objects.filter(serviceStatus__exact = 'approved').exists():
-		services_in_approved = Service.objects.filter(serviceStatus__exact = 'approved').order_by('-serviceCreatedOnDate')
-		for services in services_in_approved:
-			approved[services.id]= [services.get_service_information().split(';')]
-		pending_services_details['approved'] = approved
 	if Service.objects.filter(serviceStatus__exact = 'queued').exists():
 		services_in_queued = Service.objects.filter(serviceStatus__exact = 'queued').order_by('-serviceCreatedOnDate')
 		for services in services_in_queued:
@@ -431,7 +596,6 @@ def pending_services (request):
 
 	number_of_services = {}
 	number_of_services ['RECORDED'] = len (recorded)
-	number_of_services ['APPROVED'] = len (approved)
 	number_of_services ['QUEUED'] = len (queued)
 	number_of_services ['IN PROGRESS'] = len (in_progress)
 	data_source = graphic_3D_pie('Number of Pending Services', '', '', '','fint',number_of_services)
@@ -464,16 +628,16 @@ def add_resolution (request, service_id):
 			new_resolution = form.save(commit=False)
 			#import pdb ; pdb.set_trace()
 			service_reference = Service.objects.get(pk=service_id)
+			service_reference.serviceOnApprovedDate = datetime.date.today()
+			number_list = []
+			number_list.append(str(service_reference.serviceRequestNumber))
+			number_list.append(str(datetime.date.today()).replace('-',''))
+			number_list.append(new_resolution.resolutionFullNumber)
+			number_list.append(str(service_reference.serviceUserId))
+			number_list.append('S')
+			new_resolution.resolutionFullNumber = '_'.join(number_list)
 			if service_acepted_rejected == 'accepted':
 				service_reference.serviceStatus = "approved"
-				service_reference.serviceOnApprovedDate = datetime.date.today()
-				number_list = []
-				number_list.append(str(service_reference.serviceRequestNumber))
-				number_list.append(str(datetime.date.today()).replace('-',''))
-				number_list.append(new_resolution.resolutionFullNumber)
-				number_list.append(str(service_reference.serviceUserId))
-				number_list.append('S')
-				new_resolution.resolutionFullNumber = '_'.join(number_list)
 			else:
 				service_reference.serviceStatus = "rejected"
 				service_reference.serviceOnRejectedDate = datetime.date.today()
@@ -491,6 +655,20 @@ def add_resolution (request, service_id):
 				service_reference.save()
 			new_resolution.save()
 			form.save_m2m()
+			# create a new resolution to be added to the service folder including the path where file is stored
+			information = get_data_for_resolution(str(service_reference.serviceRequestNumber), resolution_number )
+			resolution_file = create_pdf(request,information, drylab_config.RESOLUTION_TEMPLATE, resolution_number)
+			if len(Resolution.objects.filter(resolutionServiceID = service_reference)) == 1:
+				## create service folder structure on the samba server. It is the first time to create a resolution
+				# move the resolution and the service request to the right folders
+				service_request_file =os.path.join (drylab_config.OUTPUT_DIR_TEMPLATE,str(service_reference.serviceRequestNumber+ '.pdf'))
+				conn = create_service_structure (service_request_file , new_resolution.resolutionFullNumber ,resolution_file)
+
+			else:
+				# connect to SAMBA server and copy the new resolution file into resolution folder
+				conn = open_samba_connection()
+				add_new_resolution_file (conn, resolution_file)
+
 			## Send email
 			service_user_mail = service_reference.serviceUserId.email
 			subject = 'Service ' + service_reference.serviceRequestNumber + " has been updated"
@@ -511,6 +689,192 @@ def add_resolution (request, service_id):
 			#import pdb ; pdb.set_trace()
 
 			return render(request, 'iSkyLIMS_drylab/addResolution.html' , { 'form' : form ,'prueba':'pepe'})
+
+def open_samba_connection():
+	## open samba connection
+	# There will be some mechanism to capture userID, password, client_machine_name, server_name and server_ip
+	# client_machine_name can be an arbitary ASCII string
+	# server_name should match the remote machine name, or else the connection will be rejected
+
+	conn=SMBConnection(drylab_config.SAMBA_USER_ID, drylab_config.SAMBA_USER_PASSWORD, drylab_config.SAMBA_SHARED_FOLDER_NAME,
+						drylab_config.SAMBA_REMOTE_SERVER_NAME, use_ntlm_v2=drylab_config.SAMBA_NTLM_USED, domain = drylab_config.SAMBA_DOMAIN)
+	conn.connect(drylab_config.SAMBA_IP_SERVER, int(drylab_config.SAMBA_PORT_SERVER))
+	#conn=SMBConnection('Luigi', 'Apple123', 'bioinfo_doc', 'LUIGI-PC', use_ntlm_v2=True)
+	#conn.connect('192.168.1.3', 139)
+
+	return conn
+
+
+def get_data_for_resolution(service_requested, resolution_number ):
+	information, user, resolution_data = {}, {}, {}
+	# get service object
+	service = Service.objects.get(serviceRequestNumber = service_requested)
+	service_number ,run_specs, center, platform = service.get_service_information().split(';')
+	# get resolution object
+	resolution = Resolution.objects.get(resolutionNumber = resolution_number)
+	resolution_info = resolution.get_resolution_information()
+	# get profile object
+	user_id = service.serviceUserId.id
+
+	information['resolution_number'] = resolution_number
+	information['requested_date'] = service.get_service_creation_time()
+	information['resolution_date'] = resolution_info[4]
+	information['nodes']= service.serviceAvailableService.all()
+	user['name'] = service.serviceUserId.first_name
+	user['surname'] = service.serviceUserId.last_name
+
+	user['area'] = Profile.objects.get(profileUserID = user_id).profileArea
+	user['center'] = Profile.objects.get(profileUserID = user_id).profileCenter
+	user['position'] = Profile.objects.get(profileUserID = user_id).profilePosition
+	user['phone'] = Profile.objects.get(profileUserID = user_id).profileExtension
+	user['email'] = service.serviceUserId.email
+	information['user'] = user
+	resolution_data['folder'] = resolution_info[1]
+	resolution_data['estimated_date'] = resolution_info[3]
+	resolution_data['notes'] = resolution_info[6]
+	resolution_data['decission'] = service.serviceStatus
+	information['service_data'] = service.serviceNotes
+
+	resolution_data['folder'] = resolution_info[1]
+	information['resolution_data'] = resolution_data
+
+	return information
+
+def test (request):
+	resolution_number = 'SRVIIER001.1'
+	service_requested = 'SRVIIER001'
+	from weasyprint import HTML, CSS
+	from django.template.loader import get_template
+	from django.core.files.storage import FileSystemStorage
+	from django.http import HttpResponse
+	from weasyprint.fonts import FontConfiguration
+
+
+
+	information, user, resolution_data = {}, {}, {}
+	# get service object
+	service = Service.objects.get(serviceRequestNumber = service_requested)
+	service_number ,run_specs, center, platform = service.get_service_information().split(';')
+	# get resolution object
+	resolution = Resolution.objects.get(resolutionNumber = resolution_number)
+	resolution_info = resolution.get_resolution_information()
+	# get profile object
+	user_id = service.serviceUserId.id
+
+	information['resolution_number'] = resolution_number
+	information['requested_date'] = service.get_service_creation_time()
+	information['resolution_date'] = resolution_info[4]
+	information['nodes']= service.serviceAvailableService.all()
+	user['name'] = service.serviceUserId.first_name
+	user['surname'] = service.serviceUserId.last_name
+
+
+	user_id = service.serviceUserId.id
+	user['area'] = Profile.objects.get(profileUserID = user_id).profileArea
+	user['center'] = Profile.objects.get(profileUserID = user_id).profileCenter
+	user['position'] = Profile.objects.get(profileUserID = user_id).profilePosition
+	user['phone'] = Profile.objects.get(profileUserID = user_id).profileExtension
+	user['email'] = service.serviceUserId.email
+	information['user'] = user
+	resolution_data['folder'] = resolution_info[1]
+	resolution_data['estimated_date'] = resolution_info[3]
+	resolution_data['notes'] = resolution_info[6]
+	resolution_data['decission'] = service.serviceStatus
+	information['service_data'] = service.serviceNotes
+
+	resolution_data['folder'] = resolution_info[1]
+	information['resolution_data'] = resolution_data
+	html_string = render_to_string('resolution_template.html', {'information': information})
+
+	html = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf('documents/drylab/res_pdf.pdf',stylesheets=[CSS(settings.STATIC_ROOT +
+								drylab_config.CSS_FOR_PDF)])
+
+	fs = FileSystemStorage('documents/drylab')
+	with fs.open('res_pdf.pdf') as pdf:
+		response = HttpResponse(pdf, content_type='application/pdf')
+		# save pdf file as attachment
+		#response['Content-Disposition'] = 'attachment; filename="mypdf.pdf"'
+
+
+		response['Content-Disposition'] = 'inline;filename=res_pdf.pdf'
+
+	return response
+
+
+
+def add_new_resolution_file (conn, resolution_file):
+
+	temp_file=resolution_file.split('/')
+	resolution_name_file = temp_file[-1]
+	resolution_remote_file = os.path.join(service_path,drylab_config.FOLDERS_FOR_SERVICES[1],resolution_name_file)
+
+	try:
+		with open(resolution_file ,'rb') as  res_samba_fp:
+			conn.storeFile(drylab_config.SAMBA_SHARED_FOLDER_NAME, resolution_remote_file, res_samba_fp)
+	except:
+		print ('ERROR:: Unable to copy resolution file')
+
+
+def create_service_structure (service_request_file,full_service_path, resolution_file):
+	## service_request_file and resolution_file contains the full path where these files
+	## are stored on iSkyLIMS. It means that OUTPUT_DIR_TEMPLATE value is added to thes variable
+	## to store the files on the remote system we need to have the full pathe where these files
+	## are located, but also the file name without including the path, in order to add only
+	## the file name to the remote path. To get only the file name we split the variable (containing
+	## path and file name ) to fetch only the file name
+
+	try:
+		conn=open_samba_connection()
+	except:
+		print ('*********************************Samba connection cannot be stablished')
+
+	# get the information for creating the subfolders
+	time_now = datetime.datetime.now()
+	year = str(time_now.year)
+	# check if year directory already exists on remote server
+	file_list = conn.listPath( drylab_config.SAMBA_SHARED_FOLDER_NAME, drylab_config.SAMBA_SERVICE_FOLDER)
+	year_folder_exists = False
+	for sh_file in file_list:
+		if sh_file.filename == year:
+			year_folder_exists = True
+	year_folder = os.path.join(drylab_config.SAMBA_SERVICE_FOLDER, year)
+	if not year_folder_exists :
+		conn.createDirectory (drylab_config.SAMBA_SHARED_FOLDER_NAME, year_folder)
+	#import pdb ; pdb.set_trace()
+	service_path = os.path.join(year_folder, full_service_path)
+	#create the directory for the new service
+	conn.createDirectory (drylab_config.SAMBA_SHARED_FOLDER_NAME, service_path)
+	for sub_folder in drylab_config.FOLDERS_FOR_SERVICES:
+		sub_folder_path = os.path.join(service_path,sub_folder)
+		conn.createDirectory(drylab_config.SAMBA_SHARED_FOLDER_NAME, sub_folder_path)
+	#import pdb ; pdb.set_trace()
+	#copy service confirmation file into request folder
+	temp_file=resolution_file.split('/')
+	resolution_name_file = temp_file[-1]
+	resolution_remote_file = os.path.join(service_path,drylab_config.FOLDERS_FOR_SERVICES[1],resolution_name_file)
+
+	try:
+		with open(resolution_file ,'rb') as  res_samba_fp:
+			conn.storeFile(drylab_config.SAMBA_SHARED_FOLDER_NAME, resolution_remote_file, res_samba_fp)
+	except:
+		print ('ERROR:: Unable to copy resolution file')
+	temp_file=service_request_file.split('/')
+	import pdb; pdb.set_trace()
+	request_name_file = temp_file[-1]
+	request_remote_file = os.path.join(service_path,drylab_config.FOLDERS_FOR_SERVICES[0],request_name_file)
+	import pdb; pdb.set_trace()
+	try:
+		with open(service_request_file ,'rb') as  req_samba_fp:
+			conn.storeFile(drylab_config.SAMBA_SHARED_FOLDER_NAME, request_remote_file, req_samba_fp)
+
+	except:
+			print ('ERROR:: Unable to copy request service file')
+
+
+
+
+	return conn
+
 @login_required
 def add_in_progress (request, resolution_id):
 	if request.user.is_authenticated:
@@ -625,6 +989,8 @@ def stats_by_date_user (request):
 				else:
 					user_name_id = matched_names[0].id
 					user_name = matched_names[0].username
+			else:
+				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':[user_name,'is not defined on database']})
 			if start_date != '':
 				try:
 					datetime.datetime.strptime(start_date, '%Y-%m-%d')
@@ -942,7 +1308,7 @@ def stats_by_samples_processed (request):
 			# validate the input data in the form
 			start_date = form['start_date'].data
 			end_date = form['end_date'].data
-
+		return render (request,'iSkyLIMS_drylab/info_page.html', {'content':['Under construction page']})
 
 	else:
 		form = BySampleProcessed()
@@ -968,7 +1334,7 @@ def stats_time_delivery (request):
 			# validate the input data in the form
 			start_date = form['start_date'].data
 			end_date = form['end_date'].data
-
+		return render (request,'iSkyLIMS_drylab/info_page.html', {'content':['Under construction page']})
 
 	else:
 		form = TimeDelivery()
