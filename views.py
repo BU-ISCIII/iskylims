@@ -17,7 +17,7 @@ from django.core.files.storage import FileSystemStorage
 import datetime
 import statistics
 from django.conf import settings
-from drylab import drylab_config
+from iSkyLIMS_drylab import drylab_config
 
 from smb.SMBConnection import SMBConnection
 
@@ -489,7 +489,7 @@ def search_service (request):
 		end_date=request.POST['enddate']
 		user_name = request.POST['username']
 		if service_number_request == '' and service_state == '' and start_date == '' and end_date == '' and user_name =='':
-            return render( request,'iSkyLIMS_drylab/searchService.html',{'services_state_list':STATUS_CHOICES})
+		    return render( request,'iSkyLIMS_drylab/searchService.html',{'services_state_list':STATUS_CHOICES})
 		### check the right format of start and end date
 		if start_date != '':
 			try:
@@ -527,7 +527,7 @@ def search_service (request):
 				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['No matches have been found for the service number in state', service_state ]})
 		if start_date !='' and end_date != '':
 			if services_found.filter(serviceCreatedOnDate__range=(start_date, end_date)).exists():
-                services_found = services_found.filter(serviceCreatedOnDate__range=(start_date, end_date))
+			    services_found = services_found.filter(serviceCreatedOnDate__range=(start_date, end_date))
 			else:
 				return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['There are no services containing ', service_number,
 														' created between ', start_date, 'and the ', end_date]})
