@@ -11,7 +11,7 @@ from logging.handlers import RotatingFileHandler
 
 
 def open_log(log_name):
-    
+
     log_name=os.path.join(settings.MEDIA_ROOT, wetlab_config.LOG_DIRECTORY, log_name)
     #def create_log ():
     logger = logging.getLogger(__name__)
@@ -19,15 +19,15 @@ def open_log(log_name):
     #create the file handler
     handler = logging.handlers.RotatingFileHandler(log_name, maxBytes=40000, backupCount=5)
     handler.setLevel(logging.DEBUG)
-    
+
     #create a Logging format
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
     #add the handlers to the logger
     logger.addHandler(handler)
-    
+
     return logger
-    
+
 
 def check_recorded_folder ():
     time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -38,7 +38,7 @@ def check_recorded_folder ():
     os.chdir(working_path)
     path=os.path.join(working_path,wetlab_config.RUN_TEMP_DIRECTORY_RECORDED )
     logger.info('Looking for new runs in directory %s', path)
-    
+
     dir_wetlab=os.getcwd()
     logger.debug('check_recorder_folder function is running on directory  %s', dir_wetlab)
     # true if there are folders under the recorded directory
@@ -75,7 +75,7 @@ def check_not_finish_run():
     updated_run=find_not_completed_run(logger)
     for run in updated_run :
         logger.debug('Display the list of the updated_run %s', run)
-    
+
     count=0
     for state in updated_run:
         if (updated_run[state] == "" ):
@@ -86,7 +86,7 @@ def check_not_finish_run():
             for run_changed in updated_run[state]:
                 logger.info('the run  %s was changed from %s', run_changed, state)
                 count +=1
-         
+
     if count == 0:
         logger.info('***** Exiting the crontab without performing any changes')
     time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -95,7 +95,7 @@ def check_not_finish_run():
 
 def delete_unregister_run ():
     from datetime import datetime, timedelta
-    
+
     time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(time_start )
     print('Starting the process for deleting runs in register state older than ', today_date)

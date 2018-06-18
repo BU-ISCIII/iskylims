@@ -1,0 +1,71 @@
+{% extends 'iSkyLIMS_wetlab/base.html' %}
+{% load static %}
+{% block content %}
+{% csrf_token %}
+<script>
+function goBack() {
+    window.history.back();
+}
+</script>
+{% if changed_run_name %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7">
+            <div class="panel panel-default">
+                <div class="panel-heading">Successful change for Run Name  </div>
+                <div class="panel-body">
+                    <div class="col-sm-10"> <!-- start run information   -->
+                        <div class="col-sm-6"> Old Run name  </div>
+                        <div class="col-sm-6"> {{ changed_run_name.old_run_name }} </div>
+                        
+                        {% for key , values in changed_run_name.new_run_name %}
+                        <div class="col-sm-6"> <strong>New Run name </strong> </div>
+                        <div class="col-sm-6"> <a href= "/iSkyLIMS_wetlab/search_run={{ values }}"> <strong>{{ key }}</strong></a> </div>
+
+                    </div> <!-- end run information   -->
+                    {% endfor %}
+                </div> <!--  end of panel body -->
+          </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-7 -->
+    </div> <!--  end of row-space -->
+
+  
+{% else %}
+{% load user_groups %}
+<!-- FORM for Updating the library Kit in the Run -->
+          
+<div class="row row-space-4 margin-b-4">
+    <div class="col-sm-7 col-sm-offset-1" >
+        <div class="panel panel-default">
+            <div class="panel-heading">Change the Run Name </div>
+            <div class="panel-body">
+                <div class="col-sm-10"> <!-- start run information   -->
+                    
+                </div> <!-- end run information   -->
+                <div class="col-sm-12"> <!-- start from-group   -->
+                    {%if form_change_run_name.run_name %}
+                    <form method="post" enctype="multipart/form-data" name="change_run_name" id="change_run_name" class="form-horizontal well">
+                        {% csrf_token %}
+                        <input type="hidden"name="action" value="change_run_name"/>
+                            <div class="form-group required">
+                             <label class="col-sm-10" for="runName">Run Name : {{ form_change_run_name.run_name }}</label><br>
+                               <input type="hidden" name="runName" />
+                            <label class="col-sm-5 control-label for="runName" >Enter the new name for the Run </label>
+                             <div class="col-sm-5"><input class="form-control" required="required" type="text" name="runName" size="60" maxlength="50" ></div>
+                            <br><br>
+                         </div>                                          
+                        <br>          
+                        <button type="button" class="btn btn-primary" onclick="goBack()">Go Back</button>
+                        <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                    </form>
+                    {%endif%}  
+                </div>  <!-- end from-group   -->
+            </div><!--  end of panel body  -->
+            <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
+        </div> <!--// end panel -->
+    </div> <!--// end col-sm-7  -->
+</div> <!--// end row -->
+    <!-- End of FORM for searching Project information -->
+    
+{% endif %} 
+ 
+{% endblock %}

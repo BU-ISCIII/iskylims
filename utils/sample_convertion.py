@@ -10,7 +10,7 @@ import time
 from Bio.Seq import Seq
 from django.conf import settings
 
-from wetlab import wetlab_config
+from iSkyLIMS_wetlab import wetlab_config
 
 def include_csv_header (library_kit, out_file, plate, container):
     csv_header=['FileVersion','LibraryPrepKit','ContainerType','ContainerID','Notes']
@@ -183,7 +183,7 @@ def get_projects_in_run(in_file):
             projects[line.split(',')[p_index]]=line.split(',')[description_index]
     fh.close()
     return projects
-    
+
 def get_experiment_library_name (in_file):
     experiment_name = ''
     library_name = ''
@@ -203,7 +203,7 @@ def get_experiment_library_name (in_file):
                 library_name = library_value[1]
                 found_library = 0
     fh.close()
-    
+
     return experiment_name, library_name
 
 def update_library_kit_field (library_file_name, library_kit_name, library_name):
@@ -234,7 +234,7 @@ def update_library_kit_field (library_file_name, library_kit_name, library_name)
     return file_name_in_database
 
 def update_sample_sheet (in_file, experiment_name):
-    
+
     out_line = str ( 'Experiment Name,'+ experiment_name+ '\n')
     fh_in = open (in_file, 'r')
     fh_out = open ('temp.txt' ,'w')
@@ -245,7 +245,7 @@ def update_sample_sheet (in_file, experiment_name):
         if found_experiment :
             fh_out.write(out_line)
             experiment_line_found = True
-            
+
         elif line == '\n' and experiment_line_found == False:
             fh_out.write(out_line)
             fh_out.write('\n')
@@ -256,7 +256,7 @@ def update_sample_sheet (in_file, experiment_name):
     fh_in.close()
     fh_out.close()
     os.rename('temp.txt', in_file)
-            
+
 def create_unique_sample_id_values (infile, index_file):
     found_sample_line = False
 
@@ -293,7 +293,7 @@ def create_unique_sample_id_values (infile, index_file):
                     first_letter=chr(ord(split_index_letter[1])+1)
                     split_index_letter[1] = first_letter
                     index_letter = ''.join(split_index_letter)
-                
+
             index_number_str = str(index_number)
             index_number_str = index_number_str.zfill(4)
 
