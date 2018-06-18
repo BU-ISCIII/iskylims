@@ -41,7 +41,10 @@ def index(request):
 			else:
 				if Resolution.objects.filter(resolutionServiceID = service).exists():
 					#import pdb; pdb.set_trace()
-					service_delivery_date = Resolution.objects.filter(resolutionServiceID = service).last().resolutionEstimatedDate.strftime("%d %B, %Y")
+					if Resolution.objects.filter(resolutionServiceID = service).last().resolutionEstimatedDate is not None:
+					    service_delivery_date = Resolution.objects.filter(resolutionServiceID = service).last().resolutionEstimatedDate.strftime("%d %B, %Y")
+					else:
+					    service_delivery_date = 'Not defined yet'
 				else:
 					service_delivery_date = 'Not defined yet'
 			service_info.append(service_delivery_date)
