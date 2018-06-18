@@ -5,6 +5,12 @@ migrations/
 tmp/
 log/
 static/
+#--- updates introduced for iSkyLIMS in submodules packaging ---
+virtualenv/
+iSkyLIMS/
+documents/
+manage.py
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
