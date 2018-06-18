@@ -1,22 +1,22 @@
 from django import forms
-from django.utils.translation import ugettext_lazy as _, ugettext                                                                                  
-from crispy_forms.helper import FormHelper                                                                                                         
-from crispy_forms import layout, bootstrap 
+from django.utils.translation import ugettext_lazy as _, ugettext
+from crispy_forms.helper import FormHelper
+from crispy_forms import layout, bootstrap
 from crispy_forms.layout import Field
 from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field
 
 class ContactForm(forms.Form):
 
     #from_email = forms.EmailField(required=True)
-    
+
 
     #subject = forms.CharField(required=True)
     #message = forms.CharField(widget=forms.Textarea,required=True)
-    
+
     email_contact = forms.EmailField( label = "Write your email ",  required = True)
     subject = forms.CharField( label = "Write the Subject of the email ", max_length = 40, required = True)
     message = forms.CharField( label = "Describe your request ", widget=forms.Textarea, required = True)
-    
+
     def __init__(self,*args, **kwargs):
         super(ContactForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
