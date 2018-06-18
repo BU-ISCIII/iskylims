@@ -1,9 +1,9 @@
-{% extends 'drylab/base.html' %}
+{% extends 'iSkyLIMS_drylab/base.html' %}
 {% load static %}
 
 {% block content %}
 {% csrf_token %}
-{% if display_service %} 
+{% if display_service %}
 {% load mptt_tags %}
 {% load l10n %}
     <h1><div class="color-heading">Service Information for the service {{ display_service.service_name}}</div></h1>
@@ -19,7 +19,7 @@
                            <td>Folder Name </td>
                            <td>{{ display_service.resolution_folder }} </td>
                          </tr>
-                         {% endif %}  
+                         {% endif %}
                          <tr>
                            <td>Service Requested by:  </td>
                            <td> {{ display_service.user_name }} </td>
@@ -48,18 +48,18 @@
             </div> <!--// end panel -->
         </div> <!--// end col-sm-6  general information from service  -->
     <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-5 col-sm-offset-1">  
+        <div class="col-sm-5 col-sm-offset-1">
             <div class="col-sm-12">  <!-- Projects Requested services -->
                 <div class="panel panel-default">
                   <div class="panel-heading"><h3>Projects requested in the service</div></h3>
                   <div class="panel-body">
                       <table class="table table-hover">
                            <tbody>
-                              {% for key, value in display_service.projects.items %}  
+                              {% for key, value in display_service.projects.items %}
                                  <tr>
-                                   <td><a href="/wetlab/search_project={{ key }}">{{ value }}</a> </td>
+                                   <td><a href="/iSkyLIMS_wetlab/search_project={{ key }}">{{ value }}</a> </td>
                                  </tr>
-                              {% endfor %}   
+                              {% endfor %}
                            </tbody>
                         </table>
                     </div> <!--// end panel body -->
@@ -72,9 +72,9 @@
                       {{display_service.service_notes}}
                     </div> <!--// end panel body -->
                 </div> <!--// end panel -->
-        </div> <!--// end col-sm-12  Projects Requested services  -->        
+        </div> <!--// end col-sm-12  Projects Requested services  -->
       </div> <!--// end col-sm-5 -->
-    </div> <!--// end row --> 
+    </div> <!--// end row -->
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-6">  <!-- Requested Services -->
             <div class="panel panel-default">
@@ -83,7 +83,7 @@
                   <ul class="root">
                     {% recursetree display_service.nodes %}
                         <li>
-                            {{ node }} 
+                            {{ node }}
                             {% if not node.is_leaf_node %}
                                 <ul class="children">
                                     {{ children }}
@@ -103,26 +103,26 @@
                   Click on the following buttons to update the service<BR><BR>
                   {% if display_service.add_resolution_action %}
                     <div class="col-sm-4 ">  <!-- col-sm-4  resolution button  -->
-                         <a href="/drylab/addResolution={{ display_service.add_resolution_action }}" class="btn btn-primary" role="button">Add Resolution</a>
+                         <a href="/iSkyLIMS_drylab/addResolution={{ display_service.add_resolution_action }}" class="btn btn-primary" role="button">Add Resolution</a>
                     </div> <!--// end col-sm-4   resolution button  -->
                   {% endif%}
                   {% if display_service.add_in_progress_action %}
                     <div class="col-sm-3 col-sm-offset-1">  <!-- col-sm-4  in Progress  button  -->
-                         <a href="/drylab/addinProgress={{ display_service.add_in_progress_action }}" class="btn btn-primary" role="button">In Progress</a>
+                         <a href="/iSkyLIMS_drylab/addinProgress={{ display_service.add_in_progress_action }}" class="btn btn-primary" role="button">In Progress</a>
                     </div> <!--// end col-sm-4   in Progress button  -->
                   {% endif%}
                   {% if display_service.add_delivery_action %}
                     <div class="col-sm-3 col-sm-offset-1">  <!-- col-sm-3  delivery button  -->
-                         <a href="/drylab/addDelivery={{ display_service.add_delivery_action }}" class="btn btn-primary" role="button">Add Delivery</a>
+                         <a href="/iSkyLIMS_drylab/addDelivery={{ display_service.add_delivery_action }}" class="btn btn-primary" role="button">Add Delivery</a>
                     </div> <!--// end col-sm-4   delivery button  -->
                   {% endif%}
                 </div> <!--// end panel body -->
             </div> <!--// end panel -->
         </div> <!--// end col-sm-5  Actions  allowed  -->
     </div> <!--// end row -->
-    
-    
-    
+
+
+
     <div class="row row-space-2 margin-b-4">
       <div class="col-sm-12">  <!-- Resolution and Delivery Information from service -->
         <div class="col-sm-6">  <!-- Resolution information from service -->
@@ -164,7 +164,7 @@
                                         <td>{{ notes }}</td>
                                     </tr>
                                    </tbody>
-                                </table> 
+                                </table>
                             {% endfor %}
                             <BR><BR>
                         {% endfor %}
@@ -172,10 +172,10 @@
                 </div> <!--// end panel body -->
             </div> <!--// end panel -->
         </div> <!--// end col-sm-7  Resolution information from service  -->
-    
-    
-    
-    
+
+
+
+
     <div class="col-sm-6">  <!-- Resolution information from service -->
             <div class="panel panel-default">
               <div class="panel-heading"><h3>Delivery information</h3></div>
@@ -198,13 +198,13 @@
                                         <td>{{ notes }}</td>
                                     </tr>
                                    </tbody>
-                                </table> 
+                                </table>
                             {% endfor %}
                   {% endif %}
                 </div> <!--// end panel body -->
             </div> <!--// end panel -->
         </div> <!--// end col-sm-7  Resolution information from service  -->
-    </div> <!--// end row --> 
+    </div> <!--// end row -->
     </div>   <!-- // end Resolution and Delivery Information from service -->
 {% endif %}
 {% endblock %}

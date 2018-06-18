@@ -1,12 +1,12 @@
-{% extends 'drylab/base.html' %}
+{% extends 'iSkyLIMS_drylab/base.html' %}
 {% load static %}
 {% block content %}
 {% csrf_token %}
-    <h1><div class="color-heading">User connected to iSkyLIMS</div></h1>
+    <h1><div class="color-heading">User defined on iSkyLIMS</div></h1>
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-8">  <!-- general information from service -->
             <div class="panel panel-default">
-                  <div class="panel-heading">There are {{ user_connected.number_of_users}} users connected to iSkyLIMs </div>
+                  <div class="panel-heading">The following tabla displays the last user login to iSkyLIMs </div>
                   <div class="panel-body">
                       <table class="table table-hover">
                           <thead>
@@ -15,15 +15,17 @@
                                 <th>First Name</th>
                                 <th>Last Name</th>
                                 <th>email</th>
+                                <th>last_login</th>
                             </tr>
                           </thead>
                            <tbody>
-                              {% for user, fname, lname, email in user_connected.user_data %}  
+                              {% for user, fname, lname, email, login_date in login_data.user_data %}  
                                  <tr>
                                    <td>{{ user }}</td>
                                    <td>{{ fname }}</td>
                                    <td>{{ lname }}</td>
                                    <td>{{ email }}</td>
+                                   <td>{{ login_date }}</td>
                                  </tr>
                               {% endfor %}   
                            </tbody>

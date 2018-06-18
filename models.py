@@ -6,8 +6,8 @@ from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel
 from mptt.fields import TreeForeignKey, TreeManyToManyField
 from django.utils.timezone import now as timezone_now
-from wetlab.models import RunProcess, Projects
-from utils.models import Profile,Center
+from iSkyLIMS_wetlab.models import RunProcess, Projects
+from django_utils.models import Profile,Center
 from django.contrib.auth.models import User
 
 
@@ -24,7 +24,7 @@ STATUS_CHOICES = (
 def service_files_upload(instance,filename):
 	now = timezone_now()
 	filename_base,filename_ext = os.path.splitext(filename)
-	return 'drylab/servicesRequest/%s_%s%s' % (
+	return 'iSkyLIMS_drylab/servicesRequest/%s_%s%s' % (
 			now.strftime("%Y%m%d%H%M%S"),
 			filename_base.lower(),
 			filename_ext.lower(),
