@@ -183,7 +183,7 @@ class Delivery(models.Model):
 	#deliveryResolutionID=models.OneToOneField(Resolution ,on_delete=models.CASCADE )
 	#deliveryNumber=models.IntegerField(_("Number of deliveries"))
 	#deliveryEstimatedDate=models.DateField(_("Delivery estimated date"))
-	deliveryDate=models.DateField(_("Delivery date"),auto_now_add=True)
+	deliveryDate=models.DateField(_("Delivery date"),auto_now_add=False,null=True,blank=True)
 	deliveryNotes=models.TextField(_("Delivery notes"),max_length=255, null=True)
 	def __str__ (self):
 		return '%s' %(self.deliveryResolutionID)
