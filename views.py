@@ -14,9 +14,9 @@ def user_edit(request):
         if form1.is_valid() and form2.is_valid():
             user = form1.save()  
             profile = form2.save(commit=False)  
-            return render(request,'utils/info_page.html',{'content':["Your user has been successfully created"]})
+            return render(request,'django_utils/info_page.html',{'content':["Your user has been successfully created"]})
         else:
-            return render(request,'utils/error_page.html',{'content':[form1.errors,form2.errors]})
+            return render(request,'django_utils/error_page.html',{'content':[form1.errors,form2.errors]})
 
     else:
         form1 = UserCreationForm(instance=request.user)  
@@ -37,9 +37,9 @@ def user_creation(request):
             profile.profileUserID = profileUserID
           
             profile.save()
-            return render(request,'utils/info_page.html',{'content':["Your user has been successfully created"]})
+            return render(request,'django_utils/info_page.html',{'content':["Your user has been successfully created"]})
         else:
-            return render(request,'utils/error_page.html',{'content':[form1.errors,form2.errors]}) 
+            return render(request,'django_utils/error_page.html',{'content':[form1.errors,form2.errors]}) 
     else:
         form1 = UserCreationForm()  
         form2 = ProfileCreationForm()  
