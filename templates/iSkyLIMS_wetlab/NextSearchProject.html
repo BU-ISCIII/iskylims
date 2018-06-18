@@ -21,14 +21,14 @@
                 <div class="col-sm-6"><a href="/{{ values }}" download>Library Kit File  <span class="glyphicon glyphicon-download-alt"></span></a></div>
                {% elif key == 'Library Kit'%}
                     <div class="col-sm-6">{{ key }}</div>
-                    <div class="col-sm-6"><a href="/iSkyLIMS_wetlab/change_project_libKit={{ display_one_project.project_id }}" > {{ values }} <span class="glyphicon glyphicon-pencil"></span></a></div>
+                    <div class="col-sm-6"><a href="/wetlab/change_project_libKit={{ display_one_project.project_id }}" > {{ values }} <span class="glyphicon glyphicon-pencil"></span></a></div>
                {% elif key == 'Project Name'%}
                {% elif key == 'Run name'%}
                      <div class="col-sm-6">{{ key }}</div>
                         {% if display_one_project.run_id == '' %}
                         <div class="col-sm-6">{{ values }}</a></div>
                         {% else %}
-                        <div class="col-sm-6"><a href="/iSkyLIMS_wetlab/search_run={{ display_one_project.run_id }}">{{ values }}</a></div>
+                        <div class="col-sm-6"><a href="/wetlab/search_run={{ display_one_project.run_id }}">{{ values }}</a></div>
                         {% endif %}
                {% else %}
                 <div class="col-sm-6">{{ key }}</div>
@@ -177,7 +177,7 @@
                    <tbody>
                     {% for key, values in display_project_list.projects %}
                      <tr>
-                       <td><a href="/iSkyLIMS_wetlab/search_project={{ values }}">{{ key }}</a> </td>
+                       <td><a href="/wetlab/search_project={{ values }}">{{ key }}</a> </td>
                      </tr>
                     {%endfor%}
                    </tbody>
@@ -189,8 +189,6 @@
 {% else %}
     {% load user_groups %}
 <!-- FORM for searching  Project Information -->
- <div style="background-image: url(/static/iSkyLIMS_wetlab/img/search_projects2.jpg); background-attachment: fixed;">
-
     <div class="row row-space-4 margin-b-4">
       <div class="col-sm-7 col-sm-offset-1" >
         <div class="panel panel-default">
@@ -246,7 +244,6 @@
         </div> <!--// end panel -->
         </div> <!--// end col-sm-7  -->
     </div> <!--// end row -->
-</div> <!-- Background  -->
     <!-- End of FORM for searching Project information -->
 
 {% endif %}

@@ -21,11 +21,11 @@
                      </tr>
                     </tbody>
                 </table>
-                       
+
             </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
         </div> <!--// end col-sm-6  -->
-        
+
         <div class="col-sm-5 col-sm-offset-1" >
             <BR> <BR> <BR>
         <div class="panel panel-default">
@@ -39,7 +39,7 @@
                       </tr>
                    </thead>
                    <tbody>
-                    {% for  values in library_kit_info.libraries %}
+                    {% for  value in library_kit_info.libraries %}
                         <tr>
                        <td>{{ value }}</td>
                      </tr>
@@ -47,11 +47,11 @@
                     </tbody>
                 </table>
           {% else %}
-                No library Kit have been defined so far 
+                No library Kit have been defined so far
           {% endif %}
           </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
-        </div> <!--// end col-sm-4  -->   
+        </div> <!--// end col-sm-4  -->
     </div> <!--// end row -->
 
 {% else %}
@@ -62,7 +62,7 @@
           <div class="panel-heading">Form to add a new Library Kit</div>
           <div class="panel-body">
             <form method="post" enctype="multipart/form-data" name="addLibrarykit" id="addLibrarykit" class="form-horizontal">
-            {% csrf_token %}        
+            {% csrf_token %}
                 <div class="form-group required">
                   <input type="hidden" name="action" value="addNewLibraryKit"/>
                   <label class="col-sm-4 control-label">New Library Kit </label>
@@ -71,12 +71,12 @@
                 </div>
                 <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
             </form>
-            
+
          </div>  <!--  end of panel body  -->
          <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
         </div> <!--// end panel -->
         </div> <!--// end col-sm-7  -->
-        
+
         <div class="col-sm-5 col-sm-offset-1" >
             <BR> <BR> <BR>
         <div class="panel panel-default">
@@ -97,14 +97,14 @@
                     </tbody>
                 </table>
           {% else %}
-                No library Kit have been defined so far 
+                No library Kit have been defined so far
           {% endif %}
           </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
-        </div> <!--// end col-sm-4  -->   
+        </div> <!--// end col-sm-4  -->
     </div> <!--// end row -->
 
-<!--script to disable the submit button -->  
+<!--script to disable the submit button -->
 
 <script>
     $(document).ready(function () {
@@ -117,8 +117,8 @@
         });
     });
 </script>
- <!--script ends here--> 
- 
+ <!--script ends here-->
+
 
 
 {% endif %}

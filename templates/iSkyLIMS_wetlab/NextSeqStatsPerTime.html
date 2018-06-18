@@ -3,7 +3,7 @@
 {% block content %}
 {% csrf_token %}
 {% if display_stats_per_time.run_names %}
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script> 
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>
 <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>
 <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script>
 <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
@@ -15,22 +15,22 @@
         <BR>
         <div class="col-sm-6">
             <div class="panel panel-default">
-                <div class="panel-body"><h4>The statistics results are based on the {{ display_stats_per_time.number_of_runs }}  </h4> 
+                <div class="panel-body"><h4>The statistics results are based on the {{ display_stats_per_time.number_of_runs }}  </h4>
                 That have been found for the selected period from : {{ display_stats_per_time.dates }}
-    
+
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
             <div class="panel panel-default">
                 <div class="panel-heading"><h4>Runs graphics  </h4></div>
-                <div class="panel-body"> 
+                <div class="panel-body">
                     <!-- Run Column Chart will start here-->
                     <div id="run_period_chart-1"> </div>
                     <!-- dumping JavaScript code here -->
-                        {{ display_stats_per_time.run_period_graphic |safe }}    
+                        {{ display_stats_per_time.run_period_graphic |safe }}
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-6 -->
-        
+
 
         <BR>
         <div class="col-sm-3 col-sm-offset-1">
@@ -44,11 +44,11 @@
                       </tr>
                    </thead>
                    <tbody>
-                       
-                    {% for key, values in display_stats_per_time.run_names.items %}  
+
+                    {% for key, values in display_stats_per_time.run_names.items %}
                      <tr>
                         {% for value, data in values %}
-                       <td><a href="/iSkyLIMS_wetlab/search_run={{ key }}">{{ value }}</a> </td>
+                       <td><a href="/wetlab/search_run={{ key }}">{{ value }}</a> </td>
                        <td> {{ data }} </td>
                         {%endfor%}
                      </tr>
@@ -64,39 +64,39 @@
         <div class="col-sm-6">
             <div class="panel panel-default">
                 <div class="panel-heading"><h4>Disk space utilization per each Run  </h4></div>
-                <div class="panel-body"> 
+                <div class="panel-body">
                     <!-- Run Column Chart will start here-->
                     <div id="disk_usage_chart-1"> </div>
                     <!-- dumping JavaScript code here -->
-                        {{ display_stats_per_time.disk_space_period_graphic |safe }}    
+                        {{ display_stats_per_time.disk_space_period_graphic |safe }}
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-6 -->
-    </div> <!--// end row --> 
+    </div> <!--// end row -->
 
-    <!--  End Run information -->   
-    
+    <!--  End Run information -->
+
     <!--  Start Project information -->
     <div class="row row-space-2 margin-b-4">
         <BR>
         <div class="col-sm-6">
             <div class="panel panel-default">
-                <div class="panel-body"><h4>Have been found {{ display_stats_per_time.number_of_projects }} associated to the {{ display_stats_per_time.number_of_runs }} </h4> 
+                <div class="panel-body"><h4>Have been found {{ display_stats_per_time.number_of_projects }} associated to the {{ display_stats_per_time.number_of_runs }} </h4>
                     For the selected period from : {{ display_stats_per_time.dates }}
-    
+
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
             <div class="panel panel-default">
                 <div class="panel-heading"><h4>Projects graphics  </h4></div>
-                <div class="panel-body"> 
+                <div class="panel-body">
                     <!-- Run Column Chart will start here-->
                     <div id="project_period_chart-1"> </div>
                     <!-- dumping JavaScript code here -->
-                        {{ display_stats_per_time.project_period_graphic |safe }}    
+                        {{ display_stats_per_time.project_period_graphic |safe }}
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-6 -->
-        
+
 
         <BR>
         <div class="col-sm-4 col-sm-offset-1"">
@@ -110,11 +110,11 @@
                       </tr>
                    </thead>
                    <tbody>
-                       
-                    {% for key, values in display_stats_per_time.project_names.items %}  
+
+                    {% for key, values in display_stats_per_time.project_names.items %}
                      <tr>
                         {% for value, data in values %}
-                       <td><a href="/iSkyLIMS_wetlab/search_project={{ key }}">{{ value }}</a> </td>
+                       <td><a href="/wetlab/search_project={{ key }}">{{ value }}</a> </td>
                        <td> {{ data }} </td>
                         {%endfor%}
                      </tr>
@@ -123,10 +123,10 @@
                  </table>
           </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-3 -->
-    </div> <!--// end row --> 
-    
+    </div> <!--// end row -->
+
     <!--  End Project information -->
-    
+
     <!--  Start Undetermined Barcode information -->
     <div class="row row-space-2 margin-b-4">
       <div class="col-sm-6" >
@@ -177,7 +177,7 @@
         </div> <!--// end panel -->
         </div> <!--// end col-sm-6  -->
     </div> <!--// end row -->
-    
+
     <div class="row row-space-2 margin-b-4">
       <div class="col-sm-6 col-sm-offset-2" >
         <div class="panel panel-default">
@@ -200,8 +200,8 @@
         <div class="panel panel-default">
           <div class="panel-heading"><h3>Creating Run Statatistics per period of time</h3></div>
           <div class="panel-body">
-           <form method="post" enctype="multipart/form-data" name="statisticsPerPeriod" id="statisticsPerPeriod" class="form-horizontal"> 
-            {% csrf_token %} 
+           <form method="post" enctype="multipart/form-data" name="statisticsPerPeriod" id="statisticsPerPeriod" class="form-horizontal">
+            {% csrf_token %}
             <div class="form-group required" >
                   <label class="col-sm-5 control-label" for="startdate" >From Start Date (DD-MM-YYYY) </label>
                   <div class="col-sm-5"><input class="form-control" type="date" required = "required" name="startdate" value="" id="startdate"></div>
@@ -220,7 +220,7 @@
 
         </div> <!--// end panel -->
         </div> <!--// end col-sm-7  -->
- 
+
         <!-- Insert the help panel -->
         <BR><BR>
         <div class="col-sm-3 col-sm-offset-1">
@@ -234,7 +234,7 @@
         </div> <!--// end panel -->
         <!-- Insert the Help window when clicking on the button -->
         {% include 'iSkyLIMS_wetlab/search-help.html' %}
- 
+
     </div> <!--// end row -->
 
     <!-- End of FORM for searching RUN information -->

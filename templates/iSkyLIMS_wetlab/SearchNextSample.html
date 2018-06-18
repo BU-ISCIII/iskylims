@@ -21,15 +21,15 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td>Run Name </td> 
-                                <td> <a href="/iSkyLIMS_wetlab/search_run={{ display_one_sample.run_id }}">{{ display_one_sample.run_name }}</a></td>
+                                <td>Run Name </td>
+                                <td> <a href="/wetlab/search_run={{ display_one_sample.run_id }}">{{ display_one_sample.run_name }}</a></td>
                             </tr>
                             <tr>
-                                <td>Project Name </td> 
-                                <td> <a href="/iSkyLIMS_wetlab/search_project={{ display_one_sample.project_id }}">{{ display_one_sample.project_name }}</a></td>
+                                <td>Project Name </td>
+                                <td> <a href="/wetlab/search_project={{ display_one_sample.project_id }}">{{ display_one_sample.project_name }}</a></td>
                             </tr>
                             <tr>
-                                <td>Investigator Name </td> 
+                                <td>Investigator Name </td>
                                 <td>{{ display_one_sample.investigator_name }}</a></td>
                             </tr>
                         </tbody>
@@ -47,7 +47,7 @@
                 {{ display_one_sample.quality_chart1 |safe }}
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->
-        </div> <!--// end col-sm-4  --> 
+        </div> <!--// end col-sm-4  -->
     </div> <!--  end of row -->
     <!-- #################################################  -->
     <div class="row row-space-2 margin-b-4">
@@ -73,7 +73,7 @@
                     </table>
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->
-        </div> <!--// end col-sm-6  -->      
+        </div> <!--// end col-sm-6  -->
    </div> <!--  end of row -->
 
     <div class="row row-space-2 margin-b-4">
@@ -87,7 +87,7 @@
                 {{ display_one_sample.percentage_chart |safe }}
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->
-        </div> <!--// end col-sm-6  -->      
+        </div> <!--// end col-sm-6  -->
    </div> <!--  end of row -->
 
 {% elif multiple_samples %}
@@ -104,10 +104,10 @@
                       </tr>
                    </thead>
                    <tbody>
-                    {% for key, values in multiple_samples.s_list.items %}  
+                    {% for key, values in multiple_samples.s_list.items %}
                      <tr>
                         {% for value, data in values %}
-                       <td><a href="/iSkyLIMS_wetlab/search_sample={{ key }}">{{ value }}</a> </td>
+                       <td><a href="/wetlab/search_sample={{ key }}">{{ value }}</a> </td>
                        <td> {{ data }} </td>
                         {%endfor%}
                      </tr>
@@ -116,16 +116,13 @@
                  </table>
            </div> <!--  end of panel body -->
           </div> <!--  end of panel  -->
-        </div> <!--  end of col-sm-7 -->     
-      
+        </div> <!--  end of col-sm-7 -->
 
-  
+
+
 {% else %}
 {% load user_groups %}
 <!-- FORM for searching  Sample Information -->
-
- <div style="background-image: url(/static/iSkyLIMS_wetlab/img/search_image_background.jpg);">
-      
     <div class="row row-space-4 margin-b-4">
 
       <div class="col-sm-7 col-sm-offset-1" >
@@ -136,12 +133,12 @@
             <form method="post" enctype="multipart/form-data" name="searchsample" id="searchsample" class="form-horizontal well">
             {% csrf_token %}
             <input type="hidden" name="action" value="searchsample"/>
-            <div class="form-group"> 
+            <div class="form-group">
                   <label class="col-sm-5  control-label" for="samplename" >Fill the sample name </label>
                   <div class="col-sm-5"><input class="form-control" type="text" name="samplename" id="samplename" size="100" maxlength="100"></div>
              </div>  <!-- end from-group   -->
             <BR>
-             
+
              <div class="form-group">
                 <label class="col-sm-5 control-label" for="startdate" >From Date (DD-MM-YYYY)</label>
                 <div class="col-sm-5"><input class="form-control" type="date" name="startdate" id="startdate" size="100" maxlength="100"></div>
@@ -155,7 +152,7 @@
              </div>  <!-- end from-group   -->
              <br>
              <br>
-            <div class="form-group"> 
+            <div class="form-group">
                   <label class="col-sm-5  control-label" for="username" >Search from user name</label>
                   {% if request.user|has_group:"WetlabManager" %}
                     <div class="col-sm-5"><input class="form-control" type="text" name="username" id="username" size="100" maxlength="100"></div>
@@ -174,13 +171,11 @@
         </div> <!--// end col-sm-7  -->
 
     </div> <!--// end row -->
-</div> <!-- Background  -->
 
-            
     <!-- End of FORM for searching Project information -->
-    
-{% endif %} 
-    
+
+{% endif %}
+
 {% endblock %}
 
 
