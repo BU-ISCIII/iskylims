@@ -167,12 +167,21 @@ class Resolution(models.Model):
 		resolution_info.append(self.resolutionNumber)
 		resolution_info.append(self.resolutionFullNumber)
 		resolution_info.append(self.resolutionAsignedUser)
-		resolution_info.append(self.resolutionEstimatedDate.strftime("%d %B, %Y"))
-		resolution_info.append(self.resolutionOnQueuedDate.strftime("%d %B, %Y"))
+		if self.resolutionEstimatedDate is not None:
+		    resolution_info.append(self.resolutionEstimatedDate.strftime("%d %B, %Y"))
+		else:
+		    resolution_info.append("Not defined yet")
+
+		if self.resolutionOnQueuedDate is not None:
+		    resolution_info.append(self.resolutionOnQueuedDate.strftime("%d %B, %Y"))
+		else:
+		    resolution_info.append("Not defined yet")
+
 		if self.resolutionOnInProgressDate is None:
 			resolution_info.append('--')
 		else:
 			resolution_info.append(self.resolutionOnInProgressDate.strftime("%d %B, %Y"))
+
 		resolution_info.append(self.resolutionNotes)
 
 		return resolution_info

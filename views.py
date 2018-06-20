@@ -417,8 +417,10 @@ def get_service_information (service_id):
 		#import pdb; pdb.set_trace()
 		resolution_folder = Resolution.objects.filter(resolutionServiceID = service).last().resolutionFullNumber
 		display_service_details['resolution_folder'] = resolution_folder
-		resolution_date = Resolution.objects.filter(resolutionServiceID = service).last().resolutionEstimatedDate
-		display_service_details['estimated_delivery_date'] = resolution_date
+		resolution_estimated_date = Resolution.objects.filter(resolutionServiceID = service).last().resolutionEstimatedDate
+		if resolution_estimated_date is None:
+		    resolution_estimated_date = "Not defined yet"
+		display_service_details['estimated_delivery_date'] = resolution_estimated_date
 
 	# get all services
 	display_service_details['nodes']= service.serviceAvailableService.all()
