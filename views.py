@@ -223,7 +223,7 @@ def service_request(request, serviceRequestType):
 				return response
 				'''
 				#import pdb;pdb.set_trace()
-				pdf_url=pdf_file.replace(settings.BASE_DIR,"")
+				pdf_url=pdf_file.replace(settings.BASE_DIR,'')
 				download_file = '<a href="'+ pdf_url + '">Download the service request confirmation file</a>'
 				return render(request,'django_utils/info_page.html',{'content':['Your service request has been successfully recorded.',
 								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
@@ -267,7 +267,8 @@ def service_request(request, serviceRequestType):
 					response['Content-Disposition'] = 'inline;filename=' + pdf_file_name
 				return response
 				'''
-				download_file = '<a href="'+ pdf_file + '">Download the service request confirmation file</a>'
+				pdf_url = pdf_file.replace(settings.BASE_DIR,'')
+				download_file = '<a href="'+ pdf_url + '">Download the service request confirmation file</a>'
 				return render(request,'django_utils/info_page.html',{'content':['Your service request has been successfully recorded.',
 								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
 								'Keep this number safe for refering your request', download_file ,
@@ -301,7 +302,8 @@ def service_request_external_sequencing(request):
 				response['Content-Disposition'] = 'inline;filename=' + pdf_file_name
 			return response
 			'''
-			download_file = '<a href="'+ pdf_file + '">Download the service request confirmation file</a>'
+			pdf_url = pdf_file.replace(settings.BASE_DIR,'')
+			download_file = '<a href="'+ pdf_url + '">Download the service request confirmation file</a>'
 			return render(request,'django_utils/info_page.html',{'content':['Your service request has been successfully recorded.',
 								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
 								'Keep this number safe for refering your request', download_file ,
@@ -343,7 +345,8 @@ def counseling_request(request):
 				response['Content-Disposition'] = 'inline;filename=' + pdf_file_name
 			return response
 			'''
-			download_file = '<a href="'+ pdf_file + '">Download the service request confirmation file</a>'
+			pdf_url = pdf_file.replace(settings.BASE_DIR,'')
+			download_file = '<a href="'+ pdf_url + '">Download the service request confirmation file</a>'
 			return render(request,'django_utils/info_page.html',{'content':['Your service request has been successfully recorded.',
 								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
 								'Keep this number safe for refering your request', download_file ,
@@ -866,10 +869,10 @@ def create_service_structure (service_request_file,full_service_path, resolution
 	except:
 		print ('ERROR:: Unable to copy resolution file')
 	temp_file=service_request_file.split('/')
-	import pdb; pdb.set_trace()
+	#import pdb; pdb.set_trace()
 	request_name_file = temp_file[-1]
 	request_remote_file = os.path.join(service_path,drylab_config.FOLDERS_FOR_SERVICES[0],request_name_file)
-	import pdb; pdb.set_trace()
+	#import pdb; pdb.set_trace()
 	try:
 		with open(service_request_file ,'rb') as  req_samba_fp:
 			conn.storeFile(drylab_config.SAMBA_SHARED_FOLDER_NAME, request_remote_file, req_samba_fp)
