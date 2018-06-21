@@ -1,5 +1,5 @@
 from django.conf import settings
-from wetlab import wetlab_config
+from iSkyLIMS_wetlab import wetlab_config
 
 from datetime import datetime
 from .utils.stats_calculation import *
@@ -12,7 +12,7 @@ from logging.handlers import RotatingFileHandler
 
 def open_log(log_name):
 
-    log_name=os.path.join(settings.MEDIA_ROOT, wetlab_config.LOG_DIRECTORY, log_name)
+    log_name=os.path.join(settings.BASE_DIR, wetlab_config.LOG_DIRECTORY, log_name)
     #def create_log ():
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)

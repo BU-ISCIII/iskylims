@@ -10,16 +10,15 @@ from  ..models import *
 from .interop_statistics import *
 
 from smb.SMBConnection import SMBConnection
-from wetlab import wetlab_config
+from iSkyLIMS_wetlab import wetlab_config
 
 def open_samba_connection():
     ## open samba connection
     # There will be some mechanism to capture userID, password, client_machine_name, server_name and server_ip
     # client_machine_name can be an arbitary ASCII string
     # server_name should match the remote machine name, or else the connection will be rejected
-    conn=SMBConnection(wetlab_config.SAMBA_USER_ID, wetlab_config.SAMBA_USER_PASSWORD, wetlab_config.SAMBA_SHARED_FOLDER_NAME, 
-						wetlab_config.SAMBA_REMOTE_SERVER_NAME, use_ntlm_v2=wetlab_config.SAMBA_NTLM_USED)
-	conn.connect(wetlab_config.SAMBA_IP_SERVER, int(wetlab_config.SAMBA_PORT_SERVER))
+    conn=SMBConnection(wetlab_config.SAMBA_USER_ID, wetlab_config.SAMBA_USER_PASSWORD, wetlab_config.SAMBA_SHARED_FOLDER_NAME,wetlab_config.SAMBA_REMOTE_SERVER_NAME, use_ntlm_v2=wetlab_config.SAMBA_NTLM_USED)
+    conn.connect(wetlab_config.SAMBA_IP_SERVER, int(wetlab_config.SAMBA_PORT_SERVER))
     #conn=SMBConnection('bioinfocifs', 'fCdEg979I-W.gUx-teDr', 'NGS_Data', 'quibitka', use_ntlm_v2=True)
     #conn.connect('172.21.7.11', 445)
 

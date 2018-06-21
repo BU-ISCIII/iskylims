@@ -19,13 +19,13 @@
                     {% if display_one_run.change_run_name %}
                         {% for key, value in display_one_run.change_run_name %}
                             <div class="col-sm-6">Run Name </div>
-                            <div class="col-sm-6"><a href="/iSkyLIMS_wetlab/ChangeRunName={{ value }}"> {{ key }} <span class="glyphicon glyphicon-pencil"></span></a></div>
+                            <div class="col-sm-6"><a href="/wetlab/ChangeRunName={{ value }}"> {{ key }} <span class="glyphicon glyphicon-pencil"></span></a></div>
                         {% endfor %}
                     {% endif %}
              {% for key, values in display_one_run.data %}
                {% if "Sample" in key %}
                 <div class="col-sm-6">{{ key }}</div>
-                <div class="col-sm-6"><a href="/wetlab/documents/{{ values }}" download>{{ values|cut:"iSkyLIMS_wetlab/SampleSheets/" }} <span class="glyphicon glyphicon-download-alt"></span></a></div><BR> <BR>
+                <div class="col-sm-6"><a href="/wetlab/documents/{{ values }}" download>{{ values|cut:"_wetlab/SampleSheets/" }} <span class="glyphicon glyphicon-download-alt"></span></a></div><BR> <BR>
                {% elif key == 'Run name'%}
                {% else %}
                 <div class="col-sm-6">{{ key }}</div>

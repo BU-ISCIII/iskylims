@@ -176,7 +176,7 @@ def create_graphics(run_folder,run_id, graphic_dir, logger):
         logger.debug('command used to create graphic is : %s', plot_command)
         os.system(plot_command)
 
-    run_graphic_dir=os.path.join('documents/wetlab/images_plot', graphic_dir)
+    run_graphic_dir=os.path.join(settings.MEDIA_ROOT,wetlab_config.RUN_IMAGES_DIRECTORY, graphic_dir)
     if not os.path.exists(run_graphic_dir):
         os.mkdir(run_graphic_dir)
         logger.info('created new directory %s', run_graphic_dir)

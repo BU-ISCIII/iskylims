@@ -9,12 +9,14 @@ SAMBA_NTLM_USED = True
 SAMBA_IP_SERVER = '172.21.7.11'
 SAMBA_PORT_SERVER = '445'
 
-## Directory settings for processing the run execution process 
-LOG_DIRECTORY = 'wetlab/log/'
-RUN_TEMP_DIRECTORY_RECORDED = 'documents/wetlab/tmp/recorded/'
-RUN_TEMP_DIRECTORY = 'documents/wetlab/tmp'
-RUN_TEMP_DIRECTORY_PROCESSING = 'documents/wetlab/tmp/processing'
-RUN_IMAGES_DIRECTORY = 'documents/wetlab/images_plot'
+## Directory settings for processing the run execution process
+## Relative path from settings.BASE_DIR
+LOG_DIRECTORY = 'logs/'
+## Relative path from settings.MEDIA_ROOT
+RUN_TEMP_DIRECTORY_RECORDED = 'wetlab/tmp/recorded/'
+RUN_TEMP_DIRECTORY = 'wetlab/tmp'
+RUN_TEMP_DIRECTORY_PROCESSING = 'wetlab/tmp/processing'
+RUN_IMAGES_DIRECTORY = 'wetlab/images_plot'
 RUN_SAMPLE_SHEET_DIRECTORY = 'wetlab/SampleSheets/'
 
 
