@@ -237,7 +237,8 @@ def update_sample_sheet (in_file, experiment_name):
 
     out_line = str ( 'Experiment Name,'+ experiment_name+ '\n')
     fh_in = open (in_file, 'r')
-    fh_out = open ('temp.txt' ,'w')
+    temp = os.path.join(settings.MEDIA_ROOT, 'wetlab','tmp.txt')
+    fh_out = open (temp ,'w')
     experiment_line_found  = False
     for line in fh_in:
         # find experiment name line
@@ -255,7 +256,7 @@ def update_sample_sheet (in_file, experiment_name):
 
     fh_in.close()
     fh_out.close()
-    os.rename('temp.txt', in_file)
+    os.rename(temp, in_file)
 
 def create_unique_sample_id_values (infile, index_file):
     found_sample_line = False
@@ -308,5 +309,5 @@ def create_unique_sample_id_values (infile, index_file):
     fh_index.close()
     fh.close()
     fh_out_file.close()
-    os.rename('temp_sample_sheet', infile)
+    os.rename(temp_sample_sheet, infile)
 
