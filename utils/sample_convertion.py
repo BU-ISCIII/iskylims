@@ -261,7 +261,8 @@ def create_unique_sample_id_values (infile, index_file):
     found_sample_line = False
 
     fh = open (infile, 'r')
-    fh_out_file = open ('temp_sample_sheet', 'w')
+    temp_sample_sheet = os.path.join(settings.MEDIA_ROOT, 'wetlab','tmp_file')
+    fh_out_file = open (temp_sample_sheet, 'w')
     with open(index_file) as fh_index:
         index = fh_index.readline()
         index =index.rstrip()
