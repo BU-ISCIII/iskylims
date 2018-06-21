@@ -25,7 +25,7 @@
              {% for key, values in display_one_run.data %}
                {% if "Sample" in key %}
                 <div class="col-sm-6">{{ key }}</div>
-                <div class="col-sm-6"><a href="/wetlab/documents/{{ values }}" download>{{ values|cut:"_wetlab/SampleSheets/" }} <span class="glyphicon glyphicon-download-alt"></span></a></div><BR> <BR>
+                <div class="col-sm-6"><a href="/wetlab/documents/{{ values }}" download>{{ values|cut:"wetlab/SampleSheets/" }} <span class="glyphicon glyphicon-download-alt"></span></a></div><BR> <BR>
                {% elif key == 'Run name'%}
                {% else %}
                 <div class="col-sm-6">{{ key }}</div>
