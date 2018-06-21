@@ -381,7 +381,7 @@ def infrastructure_request(request):
 			from_user = 'bioinformatica@isciii.es'
 			to_user = [request.user.email,'bioinformatica@isciii.es']
 			send_mail (subject, body_message, from_user, to_user)
-			
+
 			information_to_include = get_data_for_service_confirmation(str(new_service.serviceRequestNumber))
 			pdf_file_name = str(new_service.serviceRequestNumber) + '.pdf'
 			pdf_file = create_pdf(request, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name)
@@ -390,7 +390,7 @@ def infrastructure_request(request):
 			download_file = '<a href="'+ pdf_url + '">Download the service request confirmation file</a>'
 			return render(request,'django_utils/info_page.html',{'content':['Your service request has been successfully recorded.',
 								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
-								'Keep this number safe for refering your request','You will be contacted shortly.']})
+								'Keep this number safe for refering your request',download_file,'You will be contacted shortly.']})
 		else:
 			#import pdb; pdb.set_trace()
 			return render(request,'django_utils/error_page.html',{'content':['Your service request cannot be recorded.',
