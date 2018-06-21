@@ -638,14 +638,18 @@ def add_resolution (request, service_id):
 			new_resolution = form.save(commit=False)
 			#import pdb ; pdb.set_trace()
 			service_reference = Service.objects.get(pk=service_id)
-			service_reference.serviceOnApprovedDate = datetime.date.today()
-			number_list = []
-			number_list.append(str(service_reference.serviceRequestNumber))
-			number_list.append(str(datetime.date.today()).replace('-',''))
-			number_list.append(new_resolution.resolutionFullNumber)
-			number_list.append(str(service_reference.serviceUserId))
-			number_list.append('S')
-			new_resolution.resolutionFullNumber = '_'.join(number_list)
+			if len(Resolution.objects.filter(resolutionServiceID = service_reference)) == 0:
+			    service_reference.serviceOnApprovedDate = datetime.date.today()
+			    number_list = []
+			    number_list.append(str(service_reference.serviceRequestNumber))
+			    number_list.append(str(datetime.date.today()).replace('-',''))
+			    number_list.append(new_resolution.resolutionFullNumber)
+			    number_list.append(str(service_reference.serviceUserId))
+			    number_list.append('S')
+			    new_resolution.resolutionFullNumber = '_'.join(number_list)
+			else:
+			    new_resolution.resolutionFullNumber = Resolution.objects.filter(resolutionServiceID = service_reference).last().resolutionFullNumber
+
 			if service_acepted_rejected == 'accepted':
 				service_reference.serviceStatus = "approved"
 			else:
@@ -667,7 +671,8 @@ def add_resolution (request, service_id):
 			form.save_m2m()
 			# create a new resolution to be added to the service folder including the path where file is stored
 			information = get_data_for_resolution(str(service_reference.serviceRequestNumber), resolution_number )
-			resolution_file = create_pdf(request,information, drylab_config.RESOLUTION_TEMPLATE, resolution_number)
+			pdf_name = resolution_number + ".pdf"
+			resolution_file = create_pdf(request,information, drylab_config.RESOLUTION_TEMPLATE, pdf_name)
 			if len(Resolution.objects.filter(resolutionServiceID = service_reference)) == 1:
 				## create service folder structure on the samba server. It is the first time to create a resolution
 				# move the resolution and the service request to the right folders
@@ -677,7 +682,7 @@ def add_resolution (request, service_id):
 			else:
 				# connect to SAMBA server and copy the new resolution file into resolution folder
 				conn = open_samba_connection()
-				add_new_resolution_file (conn, resolution_file)
+				add_new_resolution_file (conn, new_resolution.resolutionFullNumber,resolution_file,service_reference.serviceCreatedOnDate.year)
 
 			## Send email
 			service_user_mail = service_reference.serviceUserId.email
@@ -812,17 +817,17 @@ def test (request):
 
 
 
-def add_new_resolution_file (conn, resolution_file):
+def add_new_resolution_file (conn, full_service_path,resolution_file,year):
 
 	temp_file=resolution_file.split('/')
 	resolution_name_file = temp_file[-1]
-	resolution_remote_file = os.path.join(service_path,drylab_config.FOLDERS_FOR_SERVICES[1],resolution_name_file)
+	resolution_remote_file = os.path.join(drylab_config.SAMBA_SERVICE_FOLDER,str(year),full_service_path,drylab_config.FOLDERS_FOR_SERVICES[1],resolution_name_file)
 
 	try:
 		with open(resolution_file ,'rb') as  res_samba_fp:
 			conn.storeFile(drylab_config.SAMBA_SHARED_FOLDER_NAME, resolution_remote_file, res_samba_fp)
 	except:
-		print ('ERROR:: Unable to copy resolution file')
+		print ('ERROR:: Unable to copy resolution file',resolution_remote_file,resolution_name_file)
 
 
 def create_service_structure (service_request_file,full_service_path, resolution_file):
