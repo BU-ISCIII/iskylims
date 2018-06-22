@@ -844,7 +844,6 @@ def process_run_in_processrunning_state (process_list, logger):
 
 def process_run_in_bcl2F_q_executed_state (process_list, logger):
     processed_run=[]
-    plot_dir= wetlab_config.RUN_IMAGES_DIRECTORY
     # get the directory of samba to fetch the files
     share_folder_name = wetlab_config.SAMBA_SHARED_FOLDER_NAME
     local_dir_samba= wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING
@@ -972,10 +971,11 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
 
                 logger.info('processing interop files')
                 # processing information for the interop files
-
                 process_binStats(local_dir_samba, run_processing_id, logger)
-                graphic_dir=os.path.join(plot_dir,run_Id_used)
-                create_graphics(local_dir_samba, run_processing_id, run_Id_used, logger)
+                # Create graphics
+                graphic_dir=os.path.join(settings.MEDIA,wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING)
+                create_graphics(graphic_dir, run_processing_id, run_Id_used, logger)
+
                 processed_run.append(run_Id_used)
                 logger.info('run id %s is now on Completed state', run_Id_used)
                 update_run_state(run_processing_id, 'Completed', logger)

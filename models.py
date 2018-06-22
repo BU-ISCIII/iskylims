@@ -18,7 +18,7 @@ class RunProcess(models.Model):
     useSpaceImgMb=models.CharField(max_length=10)
     useSpaceFastaMb=models.CharField(max_length=10)
     useSpaceOtherMb=models.CharField(max_length=10)
-    requestedCenter= models.CharField(max_length=45)
+    #requestedCenter= models.CharField(max_length=45)
 
     def __str__(self):
         return '%s' %(self.runName)

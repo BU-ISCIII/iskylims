@@ -54,7 +54,7 @@ def get_sample_file (request):
         projects=[]
         #run_name=request.POST['runname']
         myfile = request.FILES['myfile']
-        requested_center = request.POST['center']
+        #requested_center = request.POST['center']
 
         ## check if file contains the extension. Error page is showed if file does not contain any extension
         try:
@@ -151,7 +151,7 @@ def get_sample_file (request):
         ##Once the information looks good. it will be stores in runProcess and projects table
 
         ## store data in runProcess table, run is in pre-recorded state
-        run_proc_data = RunProcess(runName=run_name,sampleSheet= file_name, runState='Pre-Recorded', requestedCenter= requested_center)
+        run_proc_data = RunProcess(runName=run_name,sampleSheet= file_name, runState='Pre-Recorded')
         run_proc_data.save()
         experiment_name = '' if run_name == timestr else run_name
 
@@ -250,7 +250,7 @@ def get_sample_file (request):
         ## save the sample sheet file under tmp/recorded to be processed when run folder was created
         subfolder_name=str(run_p.id)
         #base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        temp_directory = os.path.join(settings.BASE_DIR , wetlab_config.RUN_TEMP_DIRECTORY_RECORDED, subfolder_name)
+        temp_directory = os.path.join(settings.MEDIA_ROOT , wetlab_config.RUN_TEMP_DIRECTORY_RECORDED, subfolder_name)
         os.mkdir(temp_directory)
         # set group writing permission to the temporary directory
         os.chmod(temp_directory, 0o774)
