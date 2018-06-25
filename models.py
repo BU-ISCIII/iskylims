@@ -37,12 +37,12 @@ class RunProcess(models.Model):
             rundate=self.run_date.strftime("%B %d, %Y")
         if (self.runState == 'Completed'):
             return '%s;%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.runState,
-                            self.requestedCenter, self.useSpaceImgMb,
+                            self.useSpaceImgMb,
                             self.useSpaceFastaMb, self.useSpaceOtherMb,
                             generated_date, rundate)
         else:
             return '%s;%s;%s;%s;%s'  %(self.runName, self.runState,
-                            self.requestedCenter, self.sampleSheet, generated_date )
+                            self.sampleSheet, generated_date )
 
     def get_run_name (self):
         return '%s' %(self.runName)
