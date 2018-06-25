@@ -27,29 +27,15 @@ def include_csv_header (library_kit, out_file, plate, container):
     out_file.write('\n')
 
 def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects, plate):
-    target_data_header_one_index = ['SampleID','Name','Species','Project','NucleicAcid',
-               'Well','Index1Name','Index1Sequence']
-    target_data_header_two_index = ['SampleID','Name','Species','Project','NucleicAcid',
-               'Well','Index1Name','Index1Sequence','Index2Name','Index2Sequence']
-    ## Note that original header does not exactly match with the real one , but it is defined like this
-    ## to get an easy way to map fields in the sample sheet and the sample to import to base Space
-    original_data_header_one_index = ['SampleID','Name','Plate', 'Well','Index1Name','Index1Sequence',
-                       'Project','Description']
-    original_data_header_two_index = ['SampleID','Name','Plate', 'Well','Index1Name','Index1Sequence',
-                       'Index2Name','Index2Sequence','Project','Description']
-
-
     data_raw=[]
     well_column={}
     well_row={}
     letter_well='A'
     number_well='01'
     result_directory=wetlab_config.MIGRATION_DIRECTORY_FILES
-    cwd = os.getcwd()
     data_found=0
     header_found=0
-    only_one_index = False
-
+    
     fh = open(in_file,'r')
     for line in fh:
         line=line.rstrip()
@@ -81,38 +67,55 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
         found_header=re.search('^Sample_ID,Sample_Name',line)
         if found_header:
             header_found=1
+            table_index = []
+            if 'index2' in line :
+                only_one_index = False
+                using_header = wetlab_config.BASESPACE_FILE_TWO_INDEX
+                using_map_table = wetlab_config.MAP_BASESPACE_SAMPLE_SHEET_TWO_INDEX
+            else:
+                only_one_index = True
+                using_header = wetlab_config.BASESPACE_FILE_ONE_INDEX
+                using_map_table = wetlab_config.MAP_BASESPACE_SAMPLE_SHEET_ONE_INDEX
+            table_mapping = [0 for x in range(len(using_map_table))]
+            header_split = line.split(',')
+            
+            for i in range(len(using_map_table)):
+                table_mapping[i]= header_split.index(using_map_table[i][1])
+                # getting index value for project column
+                if using_map_table[i][0] == 'Project':
+                    project_index = i
             continue
-        if (data_found and header_found):
+        if (data_found and header_found and projects in line):
             dict_value_data={}
             data_split=line.split(',')
-            if len(data_split) < 9 :
-                # sample sheet does not include the index 2.
-                only_one_index = True
-                original_data_header = original_data_header_one_index
-                project_index = 6
-            else:
-                original_data_header = original_data_header_two_index
-                project_index = 8
-            if (data_split[project_index] in projects):
-            #if projects in line :
-                for ind in range(len(original_data_header)):
-                    dict_value_data[original_data_header[ind]]= data_split[ind]
-               #### adding empty values of species and NucleicAccid
+            # get only the samples that are related to the specific project
+            if data_split[table_mapping[project_index]] == projects:
+                for i in range(len(using_map_table)):
+                    dict_value_data[using_map_table[i][0]] = data_split[table_mapping[i]]
+                    print ('valor :', using_map_table[i][0] , 'es  ', data_split[table_mapping[i]])
+                #### adding empty values of species and NucleicAccid
                 dict_value_data['Species']=''
                 dict_value_data['NucleicAcid']='DNA'
-
-                if not dict_value_data['Index2Name'] in well_row:
-                    well_row[dict_value_data['Index2Name']]=letter_well
-                    letter_well=chr(ord(letter_well)+1)
+                ### adding well information
                 if not dict_value_data['Index1Name'] in well_column:
                     well_column[dict_value_data['Index1Name']]=number_well
                     number_well =str(int(number_well)+1).zfill(2)
-                dict_value_data['Well']=str(well_row[dict_value_data['Index2Name']]+ well_column[dict_value_data['Index1Name']])
+                if only_one_index == False:
+                    if not dict_value_data['Index2Name'] in well_row:
+                        well_row[dict_value_data['Index2Name']]=letter_well
+                        letter_well=chr(ord(letter_well)+1)
+                        dict_value_data['Well']=str(well_row[dict_value_data['Index2Name']]+ well_column[dict_value_data['Index1Name']])
+                else:
+                    letter_well = 'A'
+                    dict_value_data['Well']=str(letter_well + well_column[dict_value_data['Index1Name']])
+                
 
                 data_raw.append(dict_value_data)
+            
+            
     fh.close()
-    # containerID build on the last Sample_Plate and the date in the sample sheet
-    container = str(data_split[2] + date_sample)
+    # containerID build on the last Letter Well and the date in the sample sheet
+    container = str(letter_well + date_sample)
     data_found=0
     tmp= re.search('.*/(.*)\.csv',in_file)
     out_tmp=tmp.group(1)
@@ -132,16 +135,11 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
     include_csv_header(library_kit,fh_out,plate,container)
     #####  print data header
     fh_out.write('[Data]\n')
-    if only_one_index == True :
-        target_data_header = target_data_header_one_index
-    else :
-        target_data_header = target_data_header_two_index
-    for i in range(len(target_data_header)):
-        fh_out.write(target_data_header[i])
-        if i < len(target_data_header)-1:
-            fh_out.write(',')
-        else:
-            fh_out.write('\n')
+    ### use the column names of 2 index because it is mandatory on BaseSpace to have index2 even if the sample sheet
+    ### was done using one single index
+    fh_out.write(','.join(wetlab_config.BASESPACE_FILE_TWO_INDEX))
+    fh_out.write('\n')
+            
 
     for line in data_raw:
         #### reverse order for Index2
@@ -149,9 +147,9 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
             seq=Seq(line['Index2Sequence'])
             line['Index2Sequence']=str(seq.reverse_complement())
 
-        for i in  range(len(target_data_header)):
-            fh_out.write(line[target_data_header[i]])
-            if i < len(target_data_header)-1:
+        for i in  range(len(using_header)):
+            fh_out.write(line[using_header[i]])
+            if i < len(using_header)-1:
                 fh_out.write(',')
             else:
                 fh_out.write('\n')
