@@ -185,7 +185,9 @@ def get_projects_in_run(in_file):
 def get_experiment_library_name (in_file):
     experiment_name = ''
     library_name = ''
-    fh = open(in_file, 'r')
+    import codecs
+    fh = codecs.open(in_file, 'r', 'utf-8')
+    #fh = open(in_file, 'r')
     for line in fh:
         line = line.rstrip()
         found_experiment = re.search('^Experiment Name',line)

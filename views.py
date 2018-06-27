@@ -16,6 +16,8 @@ from .utils.stats_calculation import *
 from .utils.stats_graphics import *
 from .utils.email_features import *
 
+from django_utils.models import Profile, Center
+
 from .models import *
 
 from .fusioncharts.fusioncharts import FusionCharts
@@ -54,8 +56,7 @@ def get_sample_file (request):
         projects=[]
         #run_name=request.POST['runname']
         myfile = request.FILES['myfile']
-        #requested_center = request.POST['center']
-
+        
         ## check if file contains the extension. Error page is showed if file does not contain any extension
         try:
             split_filename=re.search('(.*)(\.\w+$)',myfile.name)
@@ -151,7 +152,9 @@ def get_sample_file (request):
         ##Once the information looks good. it will be stores in runProcess and projects table
 
         ## store data in runProcess table, run is in pre-recorded state
-        run_proc_data = RunProcess(runName=run_name,sampleSheet= file_name, runState='Pre-Recorded')
+        import pdb; pdb.set_trace()
+        center_requested_by = Profile.objects.get(profileUserID = request.user).profileCenter.centerAbbr.id
+        run_proc_data = RunProcess(runName=run_name,sampleSheet= file_name, runState='Pre-Recorded', center_requested_by = center_requested_by)
         run_proc_data.save()
         experiment_name = '' if run_name == timestr else run_name
 
@@ -942,9 +945,9 @@ def latest_run (request) :
     else:
         #redirect to login webpage
         return redirect ('/accounts/login')
-
+    
     latest_run = RunProcess.objects.order_by('id').last()
-    #import pdb; pdb.set_trace()
+    import pdb; pdb.set_trace()
     run_id = latest_run.id
     r_data_display  = get_information_run(latest_run,run_id)
     return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })

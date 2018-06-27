@@ -5,6 +5,7 @@ from django import forms
 from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
+from django_utils.models import Center
 
 class RunProcess(models.Model):
     runName = models.CharField(max_length=45)
@@ -19,6 +20,7 @@ class RunProcess(models.Model):
     useSpaceFastaMb=models.CharField(max_length=10)
     useSpaceOtherMb=models.CharField(max_length=10)
     #requestedCenter= models.CharField(max_length=45)
+    centerRequestedBy = models.ForeignKey (Center, on_delete=models.CASCADE)
 
     def __str__(self):
         return '%s' %(self.runName)
@@ -41,8 +43,8 @@ class RunProcess(models.Model):
                             self.useSpaceFastaMb, self.useSpaceOtherMb,
                             generated_date, rundate)
         else:
-            return '%s;%s;%s;%s;%s'  %(self.runName, self.runState,
-                            self.sampleSheet, generated_date )
+            return '%s;%s;%s;%s;%s'  %(self.runName, self.runState, self.centerRequestedBy,
+                            self.sampleSheet, generated_date)
 
     def get_run_name (self):
         return '%s' %(self.runName)
