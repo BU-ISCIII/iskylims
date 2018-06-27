@@ -50,6 +50,7 @@
                                <thead>
                                   <tr>
                                     <th>Services ID</th>
+                                    <th>Folder Service</th>
                                     <th>Run Specifications</th>
                                     <th>Center</th>
                                     <th>Platform</th>
@@ -58,8 +59,9 @@
                                <tbody>
                                 {% for key, values in pending_services.approved.items %}
                                  <tr>
-                                    {% for requestID, specification, center, platform in values %}
+                                    {% for requestID, folderService, specification, center, platform in values %}
                                    <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
+                                   <td> {{ folderService }}</td>
                                    <td> {{ specification }} </td>
                                    <td> {{ center }} </td>
                                    <td> {{ platform }} </td>
@@ -83,6 +85,7 @@
                                <thead>
                                   <tr>
                                     <th>Services ID</th>
+                                    <th>Folder Service</th>
                                     <th>Run Specifications</th>
                                     <th>Center</th>
                                     <th>Platform</th>
@@ -91,8 +94,9 @@
                                <tbody>
                                 {% for key, values in pending_services.queued.items %}
                                  <tr>
-                                    {% for requestID, specification, center, platform in values %}
+                                    {% for requestID, folderService, specification, center, platform in values %}
                                    <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
+                                   <td> {{ folderService }}</td>
                                    <td> {{ specification }} </td>
                                    <td> {{ center }} </td>
                                    <td> {{ platform }} </td>
@@ -118,6 +122,7 @@
                                <thead>
                                   <tr>
                                     <th>Services ID</th>
+                                    <th>Folder Service</th>
                                     <th>Run Specifications</th>
                                     <th>Center</th>
                                     <th>Platform</th>
@@ -126,8 +131,9 @@
                                <tbody>
                                 {% for key, values in pending_services.in_progress.items %}
                                  <tr>
-                                    {% for requestID, specification, center, platform in values %}
+                                    {% for requestID, folderService, specification, center, platform in values %}
                                    <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
+                                   <td> {{ folderService }}</td>
                                    <td> {{ specification }} </td>
                                    <td> {{ center }} </td>
                                    <td> {{ platform }} </td>

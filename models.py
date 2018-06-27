@@ -90,8 +90,22 @@ class Service(models.Model):
 
 	def get_service_information (self):
 		platform = str(self.servicePlatform)
-
+		
 		return '%s;%s;%s;%s'  %(self.serviceRequestNumber ,self.serviceRunSpecs, self.serviceSeqCenter, platform)
+	
+	def get_service_information_with_service_name (self):
+		platform = str(self.servicePlatform)
+		if Resolution.objects.filter(resolutionServiceID__exact = self).exists():
+			resolutions = Resolution.objects.filter(resolutionServiceID__exact = self)
+			folder_name = resolutions[0].resolutionFullNumber
+			if folder_name is None:
+				resolution_for_service = ''
+			else:
+				folder_name_split= folder_name.split('_')
+				resolution_for_service= '_'.join( folder_name_split[2:-1])
+		else:
+			resolutions_for_service = ''
+		return '%s;%s;%s;%s;%s'  %(self.serviceRequestNumber ,resolution_for_service ,self.serviceRunSpecs, self.serviceSeqCenter, platform)
 
 	def get_service_dates (self):
 		service_dates =[]

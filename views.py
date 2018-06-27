@@ -603,12 +603,12 @@ def pending_services (request):
 	if Service.objects.filter(serviceStatus__exact = 'queued').exists():
 		services_in_queued = Service.objects.filter(serviceStatus__exact = 'queued').order_by('-serviceCreatedOnDate')
 		for services in services_in_queued:
-			queued[services.id]= [services.get_service_information().split(';')]
+			queued[services.id]= [services.get_service_information_with_service_name().split(';')]
 		pending_services_details['queued'] = queued
 	if Service.objects.filter(serviceStatus__exact = 'in_progress').exists():
 		services_in_progress = Service.objects.filter(serviceStatus__exact = 'in_progress').order_by('-serviceCreatedOnDate')
 		for services in services_in_progress:
-			in_progress[services.id]= [services.get_service_information().split(';')]
+			in_progress[services.id]= [services.get_service_information_with_service_name().split(';')]
 		pending_services_details['in_progress'] = in_progress
 
 	number_of_services = {}
