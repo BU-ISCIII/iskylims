@@ -947,7 +947,7 @@ def latest_run (request) :
         return redirect ('/accounts/login')
     
     latest_run = RunProcess.objects.order_by('id').last()
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
     run_id = latest_run.id
     r_data_display  = get_information_run(latest_run,run_id)
     return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
