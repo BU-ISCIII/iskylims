@@ -86,6 +86,7 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
                     project_index = i
             continue
         if (data_found and header_found and projects in line):
+            #import pdb; pdb.set_trace()
             dict_value_data={}
             data_split=line.split(',')
             # get only the samples that are related to the specific project
@@ -100,11 +101,13 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
                 if not dict_value_data['Index1Name'] in well_column:
                     well_column[dict_value_data['Index1Name']]=number_well
                     number_well =str(int(number_well)+1).zfill(2)
+                #else:
+                #    number_well = well_column[dict_value_data['Index1Name']]
                 if only_one_index == False:
                     if not dict_value_data['Index2Name'] in well_row:
                         well_row[dict_value_data['Index2Name']]=letter_well
                         letter_well=chr(ord(letter_well)+1)
-                        dict_value_data['Well']=str(well_row[dict_value_data['Index2Name']]+ well_column[dict_value_data['Index1Name']])
+                    dict_value_data['Well']=str(well_row[dict_value_data['Index2Name']]+ well_column[dict_value_data['Index1Name']])    
                 else:
                     letter_well = 'A'
                     dict_value_data['Well']=str(letter_well + well_column[dict_value_data['Index1Name']])
@@ -142,6 +145,7 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
             
 
     for line in data_raw:
+        #import pdb; pdb.set_trace()
         #### reverse order for Index2
         if only_one_index == False :
             seq=Seq(line['Index2Sequence'])

@@ -152,9 +152,10 @@ def get_sample_file (request):
         ##Once the information looks good. it will be stores in runProcess and projects table
 
         ## store data in runProcess table, run is in pre-recorded state
-        import pdb; pdb.set_trace()
-        center_requested_by = Profile.objects.get(profileUserID = request.user).profileCenter.centerAbbr.id
-        run_proc_data = RunProcess(runName=run_name,sampleSheet= file_name, runState='Pre-Recorded', center_requested_by = center_requested_by)
+        #import pdb; pdb.set_trace()
+        center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
+        center_requested_by = Center.objects.get(pk = center_requested_id)
+        run_proc_data = RunProcess(runName=run_name,sampleSheet= file_name, runState='Pre-Recorded', centerRequestedBy = center_requested_by)
         run_proc_data.save()
         experiment_name = '' if run_name == timestr else run_name
 
@@ -218,7 +219,7 @@ def get_sample_file (request):
         #import pdb; pdb.set_trace()
         for key, value in library.items():
             lib_kit_file =key.replace(' ', '_')
-            library_file = sample_sheet_map_basespace(in_file, key, lib_kit_file, value,'Plate96')
+            library_file = sample_sheet_map_basespace(in_file, key, lib_kit_file, value[0],'Plate96')
             if library_file == 'ERROR':
                 # deleting the sample sheet file
                 os.remove(in_file)
