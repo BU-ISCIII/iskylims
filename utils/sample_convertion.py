@@ -85,15 +85,15 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
                 if using_map_table[i][0] == 'Project':
                     project_index = i
             continue
-        if (data_found and header_found and projects in line):
+        if (data_found and header_found ):
             #import pdb; pdb.set_trace()
             dict_value_data={}
             data_split=line.split(',')
             # get only the samples that are related to the specific project
-            if data_split[table_mapping[project_index]] == projects:
+            if data_split[table_mapping[project_index]] in projects:
                 for i in range(len(using_map_table)):
                     dict_value_data[using_map_table[i][0]] = data_split[table_mapping[i]]
-                    print ('valor :', using_map_table[i][0] , 'es  ', data_split[table_mapping[i]])
+
                 #### adding empty values of species and NucleicAccid
                 dict_value_data['Species']=''
                 dict_value_data['NucleicAcid']='DNA'
@@ -114,8 +114,7 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
                 
 
                 data_raw.append(dict_value_data)
-            
-            
+
     fh.close()
     # containerID build on the last Letter Well and the date in the sample sheet
     container = str(letter_well + date_sample)
@@ -170,6 +169,8 @@ def get_projects_in_run(in_file):
     fh = open(in_file,'r')
     for line in fh:
         line=line.rstrip()
+        if line == '':
+            continue
         found_header=re.search('^Sample_ID,Sample_Name',line)
         if found_header:
             header_found=1
@@ -178,8 +179,9 @@ def get_projects_in_run(in_file):
             description_index=line.split(',').index('Description')
             continue
         if header_found :
-            ### ignore the empty lines
-            if line == '':
+            ### ignore the empty lines separated by commas
+            valid_line = re.search('^\w+',line)
+            if not valid_line :
                 continue
             ## store the project name and the user name (Description) inside projects dict
             projects[line.split(',')[p_index]]=line.split(',')[description_index]
@@ -194,6 +196,8 @@ def get_experiment_library_name (in_file):
     #fh = open(in_file, 'r')
     for line in fh:
         line = line.rstrip()
+        if line == '':
+            continue
         found_experiment = re.search('^Experiment Name',line)
         found_library = re.search('^Assay',line)
         if found_experiment :
@@ -280,6 +284,10 @@ def create_unique_sample_id_values (infile, index_file):
             fh_out_file.write(line)
             continue
         if found_sample_line :
+            # discard the empty lines or the lines that contains empty lines separated by comma
+            if line == '\n' or re.search('^\W',line):
+                continue
+            
             data_line = line.split(',')
             data_line [0] = str(index_number_str + '-' + index_letter)
             new_line = ','.join(data_line)

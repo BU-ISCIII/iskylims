@@ -48,19 +48,18 @@
                         <div class="col-sm-6"><input class="form-control" required = "required" type="text" name="experimentname" size="60" maxlength="50" value="{{ get_user_names.experiment_name }}"></div>
                         <br><br>
                         <label class="col-sm-4" for="runindexlibraryname">Index Library Name : </label>
-                        <div class="col-sm-6"><input class="form-control" type="text" name="runindexlibraryname" size="60" maxlength="50" value="{{ get_user_names.index_library_name }}"></div>
+                        <div class="col-sm-6"><input class="form-control"  required = "required" type="text" name="runindexlibraryname" size="60" maxlength="50" value="{{ get_user_names.index_library_name }}"></div>
                         <br><br>
                     </div>
                     {% for key, values in get_user_names.projects_user %}
                          <div class="form-group required">
-                             <label class="col-sm-10" for="project">Project name : {{ key }}</label><br>
+                             <label class="col-sm-10" for="project">Project name : {{ key }}</label><br><br>
                                <input type="hidden" name="project" value="{{key}}"/>
                              <label class="col-sm-4 control-label" for="username" >User name : </label>
                             <div class="col-sm-6"><input class="form-control" required = "required" type="text" name="username" size="60" maxlength="50" value="{{ values }}"></div>
                              <br><br>
                             <label class="col-sm-4 control-label for="libkit" >UsedLibrary Kit : </label>
                              <div class="col-sm-6">
-                            <br><br>
                                  <select class="form-control" id="dropdown" name="libraryKit">
                                     {% for value in get_user_names.used_libraryKit %}
                                         <option value="{{ value }}">{{ value }}</option>
@@ -70,7 +69,7 @@
 
                             <br><br>
                             <label class="col-sm-4" for="projectindexlibraryname">Index Library Name : </label>
-                        <div class="col-sm-6"><input class="form-control" type="text" name="projectindexlibraryname" size="60" maxlength="50" value="{{ get_user_names.index_library_name }}"></div>
+                        <div class="col-sm-6"><input class="form-control"  required = "required" type="text" name="projectindexlibraryname" size="60" maxlength="50" value="{{ get_user_names.index_library_name }}"></div>
                         <br><br>
                          </div>
                     {% endfor %}
