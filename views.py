@@ -707,7 +707,13 @@ def add_resolution (request, service_id):
 		if Service.objects.filter(pk=service_id).exists():
 			service_id= Service.objects.get(pk=service_id)
 			service_number = service_id.serviceRequestNumber
-			form = AddResolutionService()
+			#import pdb ; pdb.set_trace()
+			if Resolution.objects.filter(resolutionServiceID__exact = service_id).exists():
+				existing_resolution = Resolution.objects.filter(resolutionServiceID__exact = service_id).last()
+				resolutionFullNumber = existing_resolution.resolutionFullNumber
+			else :
+				resolutionFullNumber =''
+			form = AddResolutionService(initial= {'resolutionFullNumber': resolutionFullNumber})
 			#import pdb ; pdb.set_trace()
 
 			return render(request, 'iSkyLIMS_drylab/addResolution.html' , { 'form' : form ,'prueba':'pepe'})
