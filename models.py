@@ -103,9 +103,13 @@ class Service(models.Model):
 			else:
 				folder_name_split= folder_name.split('_')
 				resolution_for_service= '_'.join( folder_name_split[2:-1])
+			assigned_to = resolutions[0].resolutionAsignedUser
+			if assigned_to is None:
+				assigned_to = ''
 		else:
 			resolutions_for_service = ''
-		return '%s;%s;%s;%s;%s'  %(self.serviceRequestNumber ,resolution_for_service ,self.serviceRunSpecs, self.serviceSeqCenter, platform)
+			assigned_to = ''
+		return '%s;%s;%s;%s;%s;%s'  %(self.serviceRequestNumber ,resolution_for_service , assigned_to, self.serviceRunSpecs, self.serviceSeqCenter, platform)
 
 	def get_service_dates (self):
 		service_dates =[]

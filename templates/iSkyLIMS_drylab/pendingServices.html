@@ -7,7 +7,7 @@
 
     <h1><div class="color-heading">Pending Services</div></h1>
     <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-7">  <!-- first column with list of pending services -->
+        <div class="col-sm-7">  <!-- first column with list of pending services in state Recorded and Approved -->
             <div class="col-sm-12">  <!-- Recorded  pending services -->
                 <div class="panel panel-default">
                   <div class="panel-heading">List of Services in Recorded State</div>
@@ -76,7 +76,28 @@
                   </div> <!--// end panel body -->
                 </div> <!--// end panel -->
             </div> <!--// end col-sm-12  Approved  pending services  -->
-            <div class="col-sm-12">  <!-- Queued  pending services -->
+          </div> <!--// end col-sm-7 first column with list of pending services in state Recorded and Approved -->  
+          <div class="col-sm-5 ">
+            {% if pending_services.graphic_pending_services %}
+                <div class="col-sm-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h3>Percentage of pending Services.</h3></div>
+                        <div class="panel-body">
+                        <!-- Pie chart for number of pending Services chart will start here-->
+                            <div id="chart-1"> </div>
+                            <!-- dumping JavaScript code here -->
+                            {{ pending_services.graphic_pending_services |safe }}
+                        </div> <!--  end of panel body -->
+                    </div> <!--  end of panel  -->
+                    </div> <!--// end col-sm-12  graphics for pending services  -->
+                {% endif %}  
+            </div> <!--  end of col-sm-5  -->
+        </div> <!--// end row -->
+            
+            
+            
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-10">  <!-- Queued  pending services -->
                 <div class="panel panel-default">
                   <div class="panel-heading">List of Services in Queued State</div>
                   <div class="panel-body">
@@ -85,7 +106,8 @@
                                <thead>
                                   <tr>
                                     <th>Services ID</th>
-                                    <th>Folder Service</th>
+                                    <th>Service Nemonic name</th>
+                                    <th>Assigned to</th>
                                     <th>Run Specifications</th>
                                     <th>Center</th>
                                     <th>Platform</th>
@@ -94,9 +116,10 @@
                                <tbody>
                                 {% for key, values in pending_services.queued.items %}
                                  <tr>
-                                    {% for requestID, folderService, specification, center, platform in values %}
+                                    {% for requestID, serviceNemonic, assigned, specification, center, platform in values %}
                                    <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
-                                   <td> {{ folderService }}</td>
+                                   <td> {{ serviceNemonic }}</td>
+                                   <td> {{ assigned }}</td>
                                    <td> {{ specification }} </td>
                                    <td> {{ center }} </td>
                                    <td> {{ platform }} </td>
@@ -112,8 +135,8 @@
                       {% endif%}
                   </div> <!--// end panel body -->
                 </div> <!--// end panel -->
-            </div> <!--// end col-sm-12  Queued  pending services  -->
-            <div class="col-sm-12">  <!-- In Progress  pending services -->
+            </div> <!--// end col-sm-10  Queued  pending services  -->
+            <div class="col-sm-10">  <!-- In Progress  pending services -->
                 <div class="panel panel-default">
                   <div class="panel-heading">List of Services in In Progress State</div>
                   <div class="panel-body">
@@ -122,7 +145,8 @@
                                <thead>
                                   <tr>
                                     <th>Services ID</th>
-                                    <th>Folder Service</th>
+                                    <th>Service Nemonic name</th>
+                                    <th>Assigned to</th>
                                     <th>Run Specifications</th>
                                     <th>Center</th>
                                     <th>Platform</th>
@@ -131,9 +155,10 @@
                                <tbody>
                                 {% for key, values in pending_services.in_progress.items %}
                                  <tr>
-                                    {% for requestID, folderService, specification, center, platform in values %}
+                                    {% for requestID, serviceNemonic, assigned, specification, center, platform in values %}
                                    <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
-                                   <td> {{ folderService }}</td>
+                                   <td> {{ serviceNemonic }}</td>
+                                   <td> {{ assigned }}</td>
                                    <td> {{ specification }} </td>
                                    <td> {{ center }} </td>
                                    <td> {{ platform }} </td>
@@ -149,24 +174,7 @@
                       {% endif%}
                   </div> <!--// end panel body -->
                 </div> <!--// end panel -->
-            </div> <!--// end col-sm-12  In Progress  pending services  -->
-      </div> <!--// end col-sm-7 first column with list of pending services -->
-      <div class="col-sm-5 ">
-          <div class="col-sm-11 col-sm-offset-3">
-            <img class="promo-block-img img-responsive" src="{% static "iSkyLIMS_common_static/img/illumina/nextseqReduced.png" %}" align="Avatar">
-          </div> <!--// end img -->
-      {% if pending_services.graphic_pending_services %}
-        <div class="col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Percentage of pending Services.</h3></div>
-                <div class="panel-body">
-                <!-- Pie chart for number of pending Services chart will start here-->
-                    <div id="chart-1"> </div>
-                    <!-- dumping JavaScript code here -->
-                    {{ pending_services.graphic_pending_services |safe }}
-                </div> <!--  end of panel body -->
-            </div> <!--  end of panel  -->
-            </div> <!--// end col-sm-12  graphics for pending services  -->
-        {% endif %}
+            </div> <!--// end col-sm-10  In Progress  pending services  -->
+      
     </div> <!--// end row -->
 {% endblock %}
