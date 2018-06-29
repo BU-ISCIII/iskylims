@@ -96,20 +96,33 @@ class Service(models.Model):
 	def get_service_information_with_service_name (self):
 		platform = str(self.servicePlatform)
 		if Resolution.objects.filter(resolutionServiceID__exact = self).exists():
-			resolutions = Resolution.objects.filter(resolutionServiceID__exact = self)
-			folder_name = resolutions[0].resolutionFullNumber
+			resolutions = Resolution.objects.filter(resolutionServiceID__exact = self).last()
+			folder_name = resolutions.resolutionFullNumber
 			if folder_name is None:
 				resolution_for_service = ''
 			else:
 				folder_name_split= folder_name.split('_')
 				resolution_for_service= '_'.join( folder_name_split[2:-1])
-			assigned_to = resolutions[0].resolutionAsignedUser
+			assigned_to = resolutions.resolutionAsignedUser
 			if assigned_to is None:
 				assigned_to = ''
 		else:
 			resolutions_for_service = ''
 			assigned_to = ''
-		return '%s;%s;%s;%s;%s;%s'  %(self.serviceRequestNumber ,resolution_for_service , assigned_to, self.serviceRunSpecs, self.serviceSeqCenter, platform)
+		if self.serviceOnApprovedDate is None:
+			approved_date = 'Not defined'
+		else:
+			approved_date = self.serviceOnApprovedDate.strftime("%d %B, %Y")
+		
+		
+		
+		if resolutions.resolutionEstimatedDate is None:
+			estimated_date = 'Not defined'
+		else:
+			estimated_date = resolutions.resolutionEstimatedDate.strftime("%d %B, %Y")
+			
+		return '%s;%s;%s;%s;%s;%s;%s;%s'  %(self.serviceRequestNumber ,resolution_for_service , assigned_to, approved_date, 
+										estimated_date, self.serviceRunSpecs, self.serviceSeqCenter, platform)
 
 	def get_service_dates (self):
 		service_dates =[]

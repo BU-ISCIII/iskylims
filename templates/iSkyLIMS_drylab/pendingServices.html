@@ -108,6 +108,8 @@
                                     <th>Services ID</th>
                                     <th>Acronym name</th>
                                     <th>Assigned to</th>
+                                    <th>Approved date</th>
+                                    <th>Estimated date</th>
                                     <th>Run Specifications</th>
                                     <th>Center</th>
                                     <th>Platform</th>
@@ -116,10 +118,12 @@
                                <tbody>
                                 {% for key, values in pending_services.queued.items %}
                                  <tr>
-                                    {% for requestID, serviceNemonic, assigned, specification, center, platform in values %}
+                                    {% for requestID, serviceNemonic, assigned, approved_date, estimated_date, specification, center, platform in values %}
                                    <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
                                    <td> {{ serviceNemonic }}</td>
                                    <td> {{ assigned }}</td>
+                                   <td> {{ approved_date }}</td>
+                                   <td> {{ estimated_date }}</td>
                                    <td> {{ specification }} </td>
                                    <td> {{ center }} </td>
                                    <td> {{ platform }} </td>
@@ -147,6 +151,8 @@
                                     <th>Services ID</th>
                                     <th>Acronym name</th>
                                     <th>Assigned to</th>
+                                    <th>Approved date</th>
+                                    <th>Estimated date</th>
                                     <th>Run Specifications</th>
                                     <th>Center</th>
                                     <th>Platform</th>
@@ -155,10 +161,12 @@
                                <tbody>
                                 {% for key, values in pending_services.in_progress.items %}
                                  <tr>
-                                    {% for requestID, serviceNemonic, assigned, specification, center, platform in values %}
+                                    {% for requestID, serviceNemonic, assigned, approved_date, estimated_date, specification, center, platform in values %}
                                    <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
                                    <td> {{ serviceNemonic }}</td>
                                    <td> {{ assigned }}</td>
+                                   <td> {{ approved_date }}</td>
+                                   <td> {{ estimated_date }}</td>
                                    <td> {{ specification }} </td>
                                    <td> {{ center }} </td>
                                    <td> {{ platform }} </td>
