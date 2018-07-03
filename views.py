@@ -575,7 +575,7 @@ def search_service (request):
 				services_found.filter(serviceRequestNumber__contains  = center)
 			else:
 				return render (request,'django_utils/error_page.html', {'content':['There are no services related to the requested center', center]})
-		import pdb; pdb.set_trace()
+		#import pdb; pdb.set_trace()
 		if  user_name != '':
 			if User.objects.filter (username__contains = user_name).exists():
 				user_id = User.objects.get (username__contains = user_name).id
