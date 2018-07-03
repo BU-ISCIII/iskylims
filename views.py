@@ -499,14 +499,23 @@ def search_service (request):
 		return redirect ('/accounts/login')
 	if request.method == 'POST' and request.POST['action'] == 'searchservice':
 
-
 		service_number_request = request.POST['servicenumber']
 		service_state = request.POST['servicestate']
 		start_date=request.POST['startdate']
 		end_date=request.POST['enddate']
+		center = request.POST['center']
 		user_name = request.POST['username']
-		if service_number_request == '' and service_state == '' and start_date == '' and end_date == '' and user_name =='':
-		    return render( request,'iSkyLIMS_drylab/searchService.html',{'services_state_list':STATUS_CHOICES})
+		if service_number_request == '' and service_state == '' and start_date == '' and end_date == '' and center == '' and user_name =='':
+			services_search_list = {}
+			center_list_abbr = []
+			center_availables = Center.objects.all().order_by ('centerAbbr')
+			for center in center_availables:
+				center_list_abbr.append (center.centerAbbr)
+			services_search_list ['centers'] = center_list_abbr
+			services_search_list ['status'] = STATUS_CHOICES
+			#import pdb; pdb.set_trace()
+			return render( request,'iSkyLIMS_drylab/searchService.html',{'services_search_list': services_search_list })
+
 		### check the right format of start and end date
 		if start_date != '':
 			try:
@@ -560,6 +569,22 @@ def search_service (request):
 			else:
 				return render (request,'django_utils/error_page.html', {'content':['There are no services containing ', service_number,
 														' finish before ', end_date]})
+		if center != '':
+			
+			if services_found.filter(serviceRequestNumber__contains = center).exists():
+				services_found.filter(serviceRequestNumber__contains  = center)
+			else:
+				return render (request,'django_utils/error_page.html', {'content':['There are no services related to the requested center', center]})
+		import pdb; pdb.set_trace()
+		if  user_name != '':
+			if User.objects.filter (username__contains = user_name).exists():
+				user_id = User.objects.get (username__contains = user_name).id
+			else:
+				return render (request,'django_utils/error_page.html', {'content':['The user name  ', user_name, 'is not defined in iSkyLIMS']})
+			if services_found.filter(serviceUserId = user_id).exists():
+				services_found = services_found.filter(serviceUserId  = user_id)
+			else:
+				return render (request,'django_utils/error_page.html', {'content':['There are no services requested by the user', center]})
 
 		#If only 1 service mathes the user conditions, then get the user information
 		if len(services_found) == 1 :
@@ -576,8 +601,16 @@ def search_service (request):
 				s_list [service_id]=[[service_number, service_status, service_center]]
 			display_multiple_services['s_list'] = s_list
 			return render (request,'iSkyLIMS_drylab/searchService.html', {'display_multiple_services': display_multiple_services})
+	services_search_list = {}
 	#import pdb; pdb.set_trace()
-	return render( request,'iSkyLIMS_drylab/searchService.html',{'services_state_list':STATUS_CHOICES})
+	center_list_abbr = []
+	center_availables = Center.objects.all().order_by ('centerAbbr')
+	for center in center_availables:
+		center_list_abbr.append (center.centerAbbr)
+	services_search_list ['centers'] = center_list_abbr
+	services_search_list ['status'] = STATUS_CHOICES
+	#import pdb; pdb.set_trace()
+	return render( request,'iSkyLIMS_drylab/searchService.html',{'services_search_list': services_search_list })
 
 
 @login_required

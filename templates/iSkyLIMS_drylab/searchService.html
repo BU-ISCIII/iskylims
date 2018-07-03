@@ -55,7 +55,7 @@
                <label class="col-sm-5 control-label" for="servicestate" >Service state</label>
                <div class="col-sm-4"><select class="form-control" name="servicestate" id="servicestate">
                    <option value="">Choose a value  </option>
-                   {% for key, value in services_state_list %}
+                   {% for key, value in services_search_list.status %}
                          <option value="{{ key }}">{{value}}</option>
                     {% endfor %}
                     </select>
@@ -75,6 +75,19 @@
              </div>  <!-- end from-group   -->
              <br>
              <br>
+             <div class="form-group">
+               <label class="col-sm-5 control-label" for="center" >Center</label>
+               <div class="col-sm-4"><select class="form-control" name="center" id="center">
+                   <option value="">Choose a value  </option>
+                   {% for value in services_search_list.centers %}
+                         <option value="{{ value }}">{{value}}</option>
+                    {% endfor %}
+                    </select>
+               </div>  <!-- end select input -->
+               <br>
+            </div>  <!-- end from-group   -->
+               <br>
+               <br>
             <div class="form-group">
                   <label class="col-sm-5  control-label" for="username" >Search from user name</label>
                     <div class="col-sm-5"><input class="form-control" type="text" name="username" id="username" size="100" maxlength="100"></div>
