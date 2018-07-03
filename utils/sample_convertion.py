@@ -93,7 +93,7 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
             if data_split[table_mapping[project_index]] in projects:
                 for i in range(len(using_map_table)):
                     dict_value_data[using_map_table[i][0]] = data_split[table_mapping[i]]
-
+               
                 #### adding empty values of species and NucleicAccid
                 dict_value_data['Species']=''
                 dict_value_data['NucleicAcid']='DNA'
@@ -149,12 +149,17 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
         if only_one_index == False :
             seq=Seq(line['Index2Sequence'])
             line['Index2Sequence']=str(seq.reverse_complement())
+            ### removing the index value when there is only 1 index, in order to be imported to Base Space
+        else:
+            line['Index1Name'] = ''
 
         for i in  range(len(using_header)):
             fh_out.write(line[using_header[i]])
             if i < len(using_header)-1:
                 fh_out.write(',')
             else:
+                if only_one_index == True:
+                    fh_out.write(',,')
                 fh_out.write('\n')
 
     fh_out.close()
