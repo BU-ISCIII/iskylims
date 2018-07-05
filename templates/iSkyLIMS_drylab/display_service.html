@@ -30,7 +30,7 @@
                          </tr>
                          <tr>
                            <td>File uploaded for the service:  </td>
-                           <td><a href="/{{ display_service.file }}" download> File used  <span class="glyphicon glyphicon-download-alt"></span></a></td>
+                           <td><a href="{{ display_service.file }}" download> File used  <span class="glyphicon glyphicon-download-alt"></span></a></td>
                          </tr>
                          {% for text, value in display_service.service_dates %}
                             <tr>
@@ -135,7 +135,7 @@
                                 <table class="table table-hover">
                                    <thead>
                                         <tr>
-                                            <th "colspan= 2">Resolution information for {{ resolution_number }}</th>
+                                            <th colspan= "2">Resolution information for {{ resolution_number }}</th>
                                         </tr>
                                    </thead>
                                    <tbody>

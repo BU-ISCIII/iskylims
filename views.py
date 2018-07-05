@@ -170,7 +170,7 @@ def create_pdf(request,information, template_file, pdf_file_name):
 	#import pdb; pdb.set_trace()
 	#font_config = FontConfiguration()
 	html_string = render_to_string(template_file, {'information': information})
-	pdf_file =  settings.BASE_DIR + drylab_config.OUTPUT_DIR_TEMPLATE + pdf_file_name
+	pdf_file =  os.path.join (settings.BASE_DIR, drylab_config.OUTPUT_DIR_TEMPLATE , pdf_file_name)
 	html = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf(pdf_file,stylesheets=[CSS(settings.BASE_DIR + drylab_config.CSS_FOR_PDF)])
 
 	return pdf_file
@@ -202,10 +202,10 @@ def service_request(request, serviceRequestType):
 				# (required for cases like this one where form.save(commit=False))
 
 				form.save_m2m()
-
+				#import pdb; pdb.set_trace()
 				## Send mail to user and bioinfo admins
 				subject = 'Service ' + new_service.serviceRequestNumber + " has been recorded"
-				body_message = 'Dear ' + request.user.username + "\n Your service " + new_service.serviceRequestNumber + " has been recorded. You will recieved the resolution of the request as soon as possible.\n Kind regards \n BU-ISCIII \n bioinformatica@isciii.es"
+				body_message = 'Dear ' + request.user.username + "\n Your service " + new_service.serviceRequestNumber + " has been recorded. You will received the resolution of the request as soon as possible.\n Kind regards \n BU-ISCIII \n bioinformatica@isciii.es"
 				from_user = 'bioinformatica@isciii.es'
 				to_user = [request.user.email,'bioinformatica@isciii.es']
 				send_mail (subject, body_message, from_user, to_user)
@@ -252,7 +252,7 @@ def service_request(request, serviceRequestType):
 				form.save_m2m()
 				## Send email
 				subject = 'Service ' + new_service.serviceRequestNumber + " has been recorded"
-				body_message = 'Dear ' + request.user.username + "\n Your service " + new_service.serviceRequestNumber + " has been recorded. You will recieved the resolution of the request as soon as possible.\n Kind regards \n BU-ISCIII \n bioinformatica@isciii.es"
+				body_message = 'Dear ' + request.user.username + "\n Your service " + new_service.serviceRequestNumber + " has been recorded. You will received the resolution of the request as soon as possible.\n Kind regards \n BU-ISCIII \n bioinformatica@isciii.es"
 				from_user = 'bioinformatica@isciii.es'
 				to_user = [request.user.email,'bioinformatica@isciii.es']
 				send_mail (subject, body_message, from_user, to_user)
@@ -377,7 +377,7 @@ def infrastructure_request(request):
 			form.save_m2m()
 			## Send email
 			subject = 'Service ' + new_service.serviceRequestNumber + " has been recorded"
-			body_message = 'Dear ' + request.user.username + "\n Your service " + new_service.serviceRequestNumber + " has been recorded. You will recieved the resolution of the request as soon as possible.\n Kind regards \n BU-ISCIII \n bioinformatica@isciii.es"
+			body_message = 'Dear ' + request.user.username + "\n Your service " + new_service.serviceRequestNumber + " has been recorded. You will received the resolution of the request as soon as possible.\n Kind regards \n BU-ISCIII \n bioinformatica@isciii.es"
 			from_user = 'bioinformatica@isciii.es'
 			to_user = [request.user.email,'bioinformatica@isciii.es']
 			send_mail (subject, body_message, from_user, to_user)
@@ -570,15 +570,14 @@ def search_service (request):
 				return render (request,'django_utils/error_page.html', {'content':['There are no services containing ', service_number,
 														' finish before ', end_date]})
 		if center != '':
-			
-			if services_found.filter(serviceRequestNumber__contains = center).exists():
-				services_found.filter(serviceRequestNumber__contains  = center)
+			if services_found.filter(serviceRequestNumber__icontains = center).exists():
+				services_found = services_found.filter(serviceRequestNumber__icontains  = center)
 			else:
 				return render (request,'django_utils/error_page.html', {'content':['There are no services related to the requested center', center]})
-		#import pdb; pdb.set_trace()
+		
 		if  user_name != '':
-			if User.objects.filter (username__contains = user_name).exists():
-				user_id = User.objects.get (username__contains = user_name).id
+			if User.objects.filter (username__icontains = user_name).exists():
+				user_id = User.objects.get (username__icontains = user_name).id
 			else:
 				return render (request,'django_utils/error_page.html', {'content':['The user name  ', user_name, 'is not defined in iSkyLIMS']})
 			if services_found.filter(serviceUserId = user_id).exists():
@@ -713,16 +712,33 @@ def add_resolution (request, service_id):
 			information = get_data_for_resolution(str(service_reference.serviceRequestNumber), resolution_number )
 			pdf_name = resolution_number + ".pdf"
 			resolution_file = create_pdf(request,information, drylab_config.RESOLUTION_TEMPLATE, pdf_name)
+			
 			if len(Resolution.objects.filter(resolutionServiceID = service_reference)) == 1:
 				## create service folder structure on the samba server. It is the first time to create a resolution
 				# move the resolution and the service request to the right folders
-				service_request_file =os.path.join (drylab_config.OUTPUT_DIR_TEMPLATE,str(service_reference.serviceRequestNumber+ '.pdf'))
-				conn = create_service_structure (service_request_file , new_resolution.resolutionFullNumber ,resolution_file)
+				service_request_file =os.path.join (settings.BASE_DIR, drylab_config.OUTPUT_DIR_TEMPLATE,str(service_reference.serviceRequestNumber+ '.pdf'))
+				if service_reference.serviceFile != '' :
+					service_file_uploaded = os.path.join (settings.MEDIA_ROOT, str(service_reference.serviceFile))
+				else :
+					service_file_uploaded = ''
+				
+				conn = open_samba_connection()
+				if conn is False:
+					return render (request, 'django_utils/error_page.html', {'content': ['Creation of the structure can not be done because there is not communication to : ',  drylab_config.SAMBA_REMOTE_SERVER_NAME]})
+				#import pdb ; pdb.set_trace()
+				result_creation_structure = create_service_structure (conn, service_request_file , service_file_uploaded, new_resolution.resolutionFullNumber ,resolution_file)
+				if result_creation_structure != True:
+					return render (request, 'django_utils/error_page.html', {'content': ['Creation of the structure can not be done because of ' , result_creation_structure]})
 
 			else:
 				# connect to SAMBA server and copy the new resolution file into resolution folder
 				conn = open_samba_connection()
-				add_new_resolution_file (conn, new_resolution.resolutionFullNumber,resolution_file,service_reference.serviceCreatedOnDate.year)
+				if conn is False:
+					return render (request, 'django_utils/error_page.html', {'content': ['Creation of the structure can not be done because there is not communication to : ',  drylab_config.SAMBA_REMOTE_SERVER_NAME]})
+
+				result_adding_resolution_file = add_new_resolution_file (conn, new_resolution.resolutionFullNumber,resolution_file,service_reference.serviceCreatedOnDate.year)
+				if result_adding_resolution_file is not True:
+					return render (request, 'django_utils/error_page.html', {'content':['Error when adding the new resolution file ', result_adding_resolution_file]})
 
 			## Send email
 			service_user_mail = service_reference.serviceUserId.email
@@ -753,15 +769,14 @@ def add_resolution (request, service_id):
 
 def open_samba_connection():
 	## open samba connection
-	# There will be some mechanism to capture userID, password, client_machine_name, server_name and server_ip
-	# client_machine_name can be an arbitary ASCII string
-	# server_name should match the remote machine name, or else the connection will be rejected
+	try:
 
-	conn=SMBConnection(drylab_config.SAMBA_USER_ID, drylab_config.SAMBA_USER_PASSWORD, drylab_config.SAMBA_SHARED_FOLDER_NAME,
-						drylab_config.SAMBA_REMOTE_SERVER_NAME, use_ntlm_v2=drylab_config.SAMBA_NTLM_USED, domain = drylab_config.SAMBA_DOMAIN)
-	conn.connect(drylab_config.SAMBA_IP_SERVER, int(drylab_config.SAMBA_PORT_SERVER))
-	#conn=SMBConnection('Luigi', 'Apple123', 'bioinfo_doc', 'LUIGI-PC', use_ntlm_v2=True)
-	#conn.connect('192.168.1.3', 139)
+		conn=SMBConnection(drylab_config.SAMBA_USER_ID, drylab_config.SAMBA_USER_PASSWORD, drylab_config.SAMBA_SHARED_FOLDER_NAME,
+							drylab_config.SAMBA_REMOTE_SERVER_NAME, use_ntlm_v2=drylab_config.SAMBA_NTLM_USED, domain = drylab_config.SAMBA_DOMAIN)
+		conn.connect(drylab_config.SAMBA_IP_SERVER, int(drylab_config.SAMBA_PORT_SERVER))
+	except:
+		return False
+
 
 	return conn
 
@@ -790,7 +805,8 @@ def get_data_for_resolution(service_requested, resolution_number ):
 	user['phone'] = Profile.objects.get(profileUserID = user_id).profileExtension
 	user['email'] = service.serviceUserId.email
 	information['user'] = user
-	resolution_data['folder'] = resolution_info[1]
+	resolution_info_split = resolution_info[1].split('_')
+	resolution_data['acronym'] = resolution_info_split[2]
 	resolution_data['estimated_date'] = resolution_info[3]
 	resolution_data['notes'] = resolution_info[6]
 	resolution_data['decission'] = service.serviceStatus
@@ -873,10 +889,12 @@ def add_new_resolution_file (conn, full_service_path,resolution_file,year):
 		with open(resolution_file ,'rb') as  res_samba_fp:
 			conn.storeFile(drylab_config.SAMBA_SHARED_FOLDER_NAME, resolution_remote_file, res_samba_fp)
 	except:
-		print ('ERROR:: Unable to copy resolution file',resolution_remote_file,resolution_name_file)
+		return ( 'Unable to copy the resolution file ',resolution_remote_file,resolution_name_file)
+	
+	return True
 
 
-def create_service_structure (service_request_file,full_service_path, resolution_file):
+def create_service_structure (conn, service_request_file, service_file_uploaded, full_service_path, resolution_file):
 	## service_request_file and resolution_file contains the full path where these files
 	## are stored on iSkyLIMS. It means that OUTPUT_DIR_TEMPLATE value is added to thes variable
 	## to store the files on the remote system we need to have the full pathe where these files
@@ -884,11 +902,7 @@ def create_service_structure (service_request_file,full_service_path, resolution
 	## the file name to the remote path. To get only the file name we split the variable (containing
 	## path and file name ) to fetch only the file name
 
-	try:
-		conn=open_samba_connection()
-	except:
-		print ('*********************************Samba connection cannot be stablished')
-
+	
 	# get the information for creating the subfolders
 	time_now = datetime.datetime.now()
 	year = str(time_now.year)
@@ -918,7 +932,7 @@ def create_service_structure (service_request_file,full_service_path, resolution
 		with open(resolution_file ,'rb') as  res_samba_fp:
 			conn.storeFile(drylab_config.SAMBA_SHARED_FOLDER_NAME, resolution_remote_file, res_samba_fp)
 	except:
-		print ('ERROR:: Unable to copy resolution file')
+		return 'ERROR:: Unable to copy resolution file'
 	temp_file=service_request_file.split('/')
 	#import pdb; pdb.set_trace()
 	request_name_file = temp_file[-1]
@@ -929,12 +943,28 @@ def create_service_structure (service_request_file,full_service_path, resolution
 			conn.storeFile(drylab_config.SAMBA_SHARED_FOLDER_NAME, request_remote_file, req_samba_fp)
 
 	except:
-			print ('ERROR:: Unable to copy request service file')
+			return 'ERROR:: Unable to copy service requested file '
+	if service_file_uploaded != '':
+		temp_file_name = service_file_uploaded.split('/')
+		uploaded_name_file = temp_file_name [-1]
+		uploaded_remote_file = os.path.join(service_path, drylab_config.FOLDERS_FOR_SERVICES[0],uploaded_name_file)
+		#import pdb; pdb.set_trace()
+		try:
+			with open(service_file_uploaded ,'rb') as  upload_samba_fp:
+				conn.storeFile(drylab_config.SAMBA_SHARED_FOLDER_NAME, uploaded_remote_file, upload_samba_fp)
+		except:
+			return 'ERROR:: Unable to copy file uploaded by the investigator'
+
+	# deleting the service_request_file and resolution_file from iSkyLIMS
+	try:
+		os.remove(service_request_file)
+		os.remove(resolution_file)
+	except:
+		return 'ERROR:: Unable to delete the service_requested_file/ resolution_file'
 
 
 
-
-	return conn
+	return True
 
 @login_required
 def add_in_progress (request, resolution_id):
