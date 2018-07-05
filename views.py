@@ -1248,7 +1248,7 @@ def stats_by_services_request (request):
 				#creating the graphic for requested services
 				data_source = column_graphic_dict('Requested Services by:', period_of_time_selected , 'User names', 'Number of Services','fint',user_services)
 				graphic_requested_services = FusionCharts("column3d", "ex1" , "525", "350", "chart-1", "json", data_source)
-				services_stats_info ['graphic_requested_services'] = graphic_requested_services.render()
+				services_stats_info ['graphic_requested_services_per_user'] = graphic_requested_services.render()
 				#preparing stats for status of the services
 				status_services ={}
 				for service in services_found:
@@ -1363,12 +1363,52 @@ def stats_by_services_request (request):
 					for d_period in time_values:
 						if not d_period in user_area_services_period[area]:
 							user_area_services_period[area][d_period] = 0
-				#import pdb ; pdb.set_trace()
+				
 				data_source = column_graphic_per_time ('Services requested by Area ',period_of_time_selected,  'date', 'number of services', time_values , user_area_services_period)
 				graphic_area_services_per_time = FusionCharts("mscolumn3d", "ex6" , "525", "350", "chart-6", "json", data_source)
 				services_stats_info ['graphic_area_services_per_time'] = graphic_area_services_per_time.render()
 
 				services_stats_info['period_time']= period_of_time_selected
+				#import pdb ; pdb.set_trace()
+				
+				# statistics on Requested Level 2 Services 
+				
+				service_dict ={}
+				for service in services_found :
+					service_request_list = service.serviceAvailableService.filter(level=2)
+					for service_requested in service_request_list:
+						service_name = service_requested.availServiceDescription
+						if service_name in service_dict:
+							service_dict [service_name] += 1
+						else:
+							service_dict [service_name] = 1
+				#import pdb ; pdb.set_trace()
+				#creating the graphic for requested services
+				data_source = column_graphic_dict('Requested Services:', 'level 2 ', '', '','fint',service_dict)
+				graphic_req_l2_services = FusionCharts("column3d", "ex7" , "800", "375", "chart-7", "json", data_source)
+				services_stats_info ['graphic_req_l2_services'] = graphic_req_l2_services.render()
+				
+				# statistics on Requested Level 3 Services 
+				
+				service_dict ={}
+				for service in services_found :
+					service_request_list = service.serviceAvailableService.filter(level=3)
+					for service_requested in service_request_list:
+						service_name = service_requested.availServiceDescription
+						if service_name in service_dict:
+							service_dict [service_name] += 1
+						else:
+							service_dict [service_name] = 1
+				#import pdb ; pdb.set_trace()
+				#creating the graphic for requested services
+				data_source = column_graphic_dict('Requested Services:', 'level 3 ', '', '','fint',service_dict)
+				graphic_req_l3_services = FusionCharts("column3d", "ex8" , "800", "375", "chart-8", "json", data_source)
+				services_stats_info ['graphic_req_l3_services'] = graphic_req_l3_services.render()
+				
+			
+			
+			
+				#import pdb ; pdb.set_trace()
 				return render (request, 'iSkyLIMS_drylab/statsByServicesRequest.html', {'services_stats_info':services_stats_info})
 
 			else:
