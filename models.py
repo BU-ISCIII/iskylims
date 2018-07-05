@@ -39,7 +39,7 @@ class RunProcess(models.Model):
         else :
             rundate=self.run_date.strftime("%B %d, %Y")
         if (self.runState == 'Completed'):
-            import pdb; pdb.set_trace()
+            #import pdb; pdb.set_trace()
             return '%s;%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.runState,
                             requested_center, self.useSpaceImgMb,
                             self.useSpaceFastaMb, self.useSpaceOtherMb,
