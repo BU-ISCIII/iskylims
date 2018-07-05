@@ -33,13 +33,15 @@ class RunProcess(models.Model):
 
     def get_info_process (self):
         generated_date=self.generatedat.strftime("%I:%M%p on %B %d, %Y")
+        requested_center = str(self.centerRequestedBy)
         if self.run_date is None :
             rundate = 'Run NOT started'
         else :
             rundate=self.run_date.strftime("%B %d, %Y")
         if (self.runState == 'Completed'):
+            import pdb; pdb.set_trace()
             return '%s;%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.runState,
-                            self.useSpaceImgMb,
+                            requested_center, self.useSpaceImgMb,
                             self.useSpaceFastaMb, self.useSpaceOtherMb,
                             generated_date, rundate)
         else:
