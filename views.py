@@ -1082,6 +1082,7 @@ def stats_by_date_user (request):
 					user_name = matched_names[0].username
 			else:
 				return render (request,'django_utils/error_page.html', {'content':[user_name,'is not defined on database']})
+			
 			if start_date != '':
 				try:
 					datetime.datetime.strptime(start_date, '%Y-%m-%d')
@@ -1094,17 +1095,17 @@ def stats_by_date_user (request):
 				except:
 					return render (request,'django_utils/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
 																				'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
-			#import pdb ; pdb.set_trace()
+			import pdb ; pdb.set_trace()
 			services_user = Service.objects.filter(serviceUserId__exact = user_name_id).order_by('-serviceRequestNumber')
 			if start_date != '' and end_date !='':
 				if services_user.filter(serviceCreatedOnDate__range=(start_date,end_date)).exists():
-					services_user = services_user.filter(serviceCreatedOnDate__range(start_date,end_date))
+					services_user = services_user.filter(serviceCreatedOnDate__range=(start_date,end_date))
 				else:
 					return render (request,'django_utils/error_page.html', {'content':['There are no services created by ', user_name , 'For the time of period of between:',
 																start_date , 'and', end_date]})
 			if start_date !='' and end_date == '':
-				if services_user.filter(serviceCreatedOnDate__gte = end_date).exists():
-					services_user = services_user.filter(serviceCreatedOnDate__lte = end_date)
+				if services_user.filter(serviceCreatedOnDate__gte = start_date).exists():
+					services_user = services_user.filter(serviceCreatedOnDate__lte = start_date)
 				else:
 					return render (request,'django_utils/error_page.html', {'content':['There are no services created by ', user_name , 'Starting from ', start_date ]})
 			if start_date =='' and end_date != '':
