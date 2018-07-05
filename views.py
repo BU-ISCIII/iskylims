@@ -1095,7 +1095,7 @@ def stats_by_date_user (request):
 				except:
 					return render (request,'django_utils/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
 																				'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
-			import pdb ; pdb.set_trace()
+
 			services_user = Service.objects.filter(serviceUserId__exact = user_name_id).order_by('-serviceRequestNumber')
 			if start_date != '' and end_date !='':
 				if services_user.filter(serviceCreatedOnDate__range=(start_date,end_date)).exists():
