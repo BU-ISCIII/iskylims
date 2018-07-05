@@ -553,6 +553,9 @@ def search_nextSeq (request):
             except:
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
                                                                     'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
+        ### Get all the available runs to start the filtering
+        runs_found=RunProcess.objects.all().order_by('runName')
+        
         ### Get runs when run name is not empty
         if run_name !='':
             if (RunProcess.objects.filter(runName__exact =run_name).exists()):
@@ -561,19 +564,19 @@ def search_nextSeq (request):
                     return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Too many matches found when searching for the run name ', run_name ,
                                                                     'ADVICE:', 'Select additional filter to find the run that you are looking for']})
                 r_data_display= get_information_run(run_name_found[0],run_name_found[0].id)
-                #import pdb; pdb.set_trace()
+                
                 return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
-            if (RunProcess.objects.filter(runName__contains =run_name).exists()):
-                runs_found=RunProcess.objects.filter(runName__contains =run_name)
+            #import pdb; pdb.set_trace()
+            
+            if (runs_found.filter(runName__icontains =run_name).exists()):
+                runs_found=runs_found.filter(runName__icontains =run_name).order_by('runName')
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ]})
-        if run_state == '' or run_name =='' :
-            runs_found=RunProcess.objects.all()
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ]})            
 
         ### Check if state is not empty
         if run_state != '':
             if runs_found.filter(runState__exact = run_state).exists():
-                runs_found = runs_found.filter(runState__exact = run_state)
+                runs_found = runs_found.filter(runState__exact = run_state).order_by('runName')
             else :
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ,
                                                                     'and the state', run_state ]})
