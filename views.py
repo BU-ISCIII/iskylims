@@ -1303,7 +1303,7 @@ def stats_by_services_request (request):
 				if delta_dates > 366 :
 					period_year_month = '%Y'
 				else:
-					period_year_month = '%m_%Y'
+					period_year_month = '%Y_%m'
 
 				## Preparing the statistics for Center on period of time
 				user_services_period ={}
