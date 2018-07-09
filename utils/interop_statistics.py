@@ -5,6 +5,9 @@ from interop import py_interop_run_metrics, py_interop_run, py_interop_summary, 
 import os, shutil
 from  ..models import *
 
+from django.conf import settings
+from iSkyLIMS_wetlab import wetlab_config
+
 def process_binStats(run_folder, run_id, logger):
     logger.info('starting analyzing the binary statistics ')
     run_metrics = py_interop_run_metrics.run_metrics()

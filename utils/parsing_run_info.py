@@ -12,6 +12,8 @@ from .interop_statistics import *
 from smb.SMBConnection import SMBConnection
 from iSkyLIMS_wetlab import wetlab_config
 
+from django.conf import settings
+
 def open_samba_connection():
     ## open samba connection
     # There will be some mechanism to capture userID, password, client_machine_name, server_name and server_ip
@@ -41,7 +43,7 @@ def get_size_dir (directory, conn, logger):
                 continue
             logger.debug('Checking space for directory %s', sh_file.filename)
             sub_directory = os.path.join (directory,sh_file.filename)
-            count_file_size += get_size_dir (sub_directory, conn)
+            count_file_size += get_size_dir (sub_directory, conn, logger)
         else:
             count_file_size += sh_file.file_size
 
@@ -62,15 +64,15 @@ def get_run_disk_utilization (conn, run_Id_used, run_processing_id, logger):
                 continue
             if item_list.filename == 'Data':
                 dir_data = os.path.join(run_Id_used,'Data')
-                data_dir_size = get_size_dir(dir_data , conn)
+                data_dir_size = get_size_dir(dir_data , conn,logger)
                 continue
             elif item_list.filename == 'Images':
                 dir_images = os.path.join(run_Id_used, 'Images')
-                images_dir_size = get_size_dir(dir_images , conn)
+                images_dir_size = get_size_dir(dir_images , conn,logger)
                 continue
             if item_list.isDirectory:
                 item_dir = os.path.join(run_Id_used, item_list.filename)
-                rest_of_dir_size += get_size_dir(item_dir, conn)
+                rest_of_dir_size += get_size_dir(item_dir, conn,logger)
             else:
                 rest_of_dir_size += item_list.file_size
         # format file space and save it into database
@@ -974,7 +976,7 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
                 # processing information for the interop files
                 process_binStats(local_dir_samba, run_processing_id, logger)
                 # Create graphics
-                graphic_dir=os.path.join(settings.MEDIA,wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING)
+                graphic_dir=os.path.join(settings.MEDIA_ROOT,wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING)
                 create_graphics(graphic_dir, run_processing_id, run_Id_used, logger)
 
                 processed_run.append(run_Id_used)
