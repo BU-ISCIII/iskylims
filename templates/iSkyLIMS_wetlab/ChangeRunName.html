@@ -19,7 +19,7 @@ function goBack() {
                         
                         {% for key , values in changed_run_name.new_run_name %}
                         <div class="col-sm-6"> <strong>New Run name </strong> </div>
-                        <div class="col-sm-6"> <a href= "/iSkyLIMS_wetlab/search_run={{ values }}"> <strong>{{ key }}</strong></a> </div>
+                        <div class="col-sm-6"> <a href= "/wetlab/search_run={{ values }}"> <strong>{{ key }}</strong></a> </div>
 
                     </div> <!-- end run information   -->
                     {% endfor %}
