@@ -13,12 +13,18 @@ def process_binStats(run_folder, run_id, logger):
     py_interop_run_metrics.list_summary_metrics_to_load(valid_to_load)
     run_folder = run_metrics.read(run_folder)
     #run_folder = run_metrics.read(run_folder, valid_to_load)
-
+    
+    
     summary = py_interop_summary.run_summary()
     py_interop_summary.summarize_run_metrics(run_metrics, summary)
-
-    # get the Run Summary for Read 1 to 4
-    for read_level in range(4):
+    
+    # get the number of the read used in the run.
+    #import pdb; pdb.set_trace()
+    run_parameters = RunningParameters.objects.get(runName_id__exact = run_id)
+    num_of_reads = run_parameters.get_number_of_reads ()
+    logger.info('number of reads used are: %s', num_of_reads)
+    # get the Run Summary for each Read
+    for read_level in range(num_of_reads):
         # summary yield total
         read_summary_yield_g=format(summary.at(read_level).summary().yield_g(),'.3f')
         # summary projected total yield

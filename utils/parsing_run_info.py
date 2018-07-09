@@ -964,10 +964,11 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
                 update_project_state(run_processing_id, 'ERROR-on-Raw-SavingStats', logger)
                 logger.error('Stopping process for this run an starting deleting the files')
             else:
-                process_xml_stats(xml_stats,run_processing_id, logger)
+                #process_xml_stats(xml_stats,run_processing_id, logger)
+                
                 # parsing and processing the project samples
-                sample_project_stats = parsing_sample_project_xml (demux_file, conversion_file, logger)
-                store_samples_projects (sample_project_stats, run_processing_id, logger)
+                #sample_project_stats = parsing_sample_project_xml (demux_file, conversion_file, logger)
+                #store_samples_projects (sample_project_stats, run_processing_id, logger)
 
                 logger.info('processing interop files')
                 # processing information for the interop files
