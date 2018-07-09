@@ -40,7 +40,7 @@ def get_size_dir (directory, conn, logger):
     for sh_file in file_list:
         if sh_file.isDirectory:
             if (sh_file.filename == '.' or sh_file.filename == '..'):
-                continue
+                continu, loggere
             logger.debug('Checking space for directory %s', sh_file.filename)
             sub_directory = os.path.join (directory,sh_file.filename)
             count_file_size += get_size_dir (sub_directory, conn, logger)
@@ -79,9 +79,9 @@ def get_run_disk_utilization (conn, run_Id_used, run_processing_id, logger):
         data_dir_size_formated = '{0:,}'.format(round(data_dir_size/in_mega_bytes))
         images_dir_size_formated = '{0:,}'.format(round(images_dir_size/in_mega_bytes))
         rest_of_dir_size_formated = '{0:,}'.format(round(rest_of_dir_size/in_mega_bytes))
-        run_be_updated.useSpaceImgMb= images_dir_size
-        run_be_updated.useSpaceFastaMb= data_dir_size
-        run_be_updated.useSpaceOtherMb= rest_of_dir_size
+        run_be_updated.useSpaceImgMb= images_dir_size_formated
+        run_be_updated.useSpaceFastaMb= data_dir_size_formated
+        run_be_updated.useSpaceOtherMb= rest_of_dir_size_formated
         run_be_updated.save()
         logger.info('End  disk space utilization for runID  %s', run_Id_used)
 
