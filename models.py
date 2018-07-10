@@ -90,9 +90,9 @@ class Service(models.Model):
 
 	def get_service_information (self):
 		platform = str(self.servicePlatform)
-		
+
 		return '%s;%s;%s;%s'  %(self.serviceRequestNumber ,self.serviceRunSpecs, self.serviceSeqCenter, platform)
-	
+
 	def get_service_information_with_service_name (self):
 		platform = str(self.servicePlatform)
 		if Resolution.objects.filter(resolutionServiceID__exact = self).exists():
@@ -113,15 +113,15 @@ class Service(models.Model):
 			approved_date = 'Not defined'
 		else:
 			approved_date = self.serviceOnApprovedDate.strftime("%d %B, %Y")
-		
-		
-		
+
+
+
 		if resolutions.resolutionEstimatedDate is None:
 			estimated_date = 'Not defined'
 		else:
 			estimated_date = resolutions.resolutionEstimatedDate.strftime("%d %B, %Y")
-			
-		return '%s;%s;%s;%s;%s;%s;%s;%s'  %(self.serviceRequestNumber ,resolution_for_service , assigned_to, approved_date, 
+
+		return '%s;%s;%s;%s;%s;%s;%s;%s'  %(self.serviceRequestNumber ,resolution_for_service , assigned_to, approved_date,
 										estimated_date, self.serviceRunSpecs, self.serviceSeqCenter, platform)
 
 	def get_service_dates (self):
@@ -182,7 +182,7 @@ class Resolution(models.Model):
 	resolutionServiceID=models.ForeignKey(Service ,on_delete=models.CASCADE)
 	resolutionNumber=models.CharField(_("Resolutions name"),max_length=255,null=True)
 	#resolutionServiceSRV=models.CharField(_("Service identifier"),max_length=10)
-	resolutionEstimatedDate=models.DateField(_(" Estimated resolution date"), null = True,blank=True)
+	resolutionEstimatedDate=models.DateField(_(" Estimated resolution date"), null = True,blank=False)
 	resolutionDate=models.DateField(_("Resolution date"),auto_now_add=True,blank=True)
 	#resolutionDate=models.DateField(_("Resolution date"),auto_now_add=False,blank=True)
 	resolutionOnQueuedDate = models.DateField(auto_now_add=False, null=True,blank=True)
