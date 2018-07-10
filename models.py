@@ -176,13 +176,13 @@ class RunningParameters (models.Model):
 
     def get_number_of_reads (self):
         count = 0
-        if self.PlannedRead1Cycles != 0 :
+        if self.PlannedRead1Cycles != "0" :
             count +=1
-        if self.PlannedRead2Cycles != 0 :
+        if self.PlannedRead2Cycles != "0" :
             count +=1
-        if self.PlannedIndex1ReadCycles != 0 :
+        if self.PlannedIndex1ReadCycles != "0" :
             count +=1
-        if self.PlannedIndex2ReadCycles != 0 :
+        if self.PlannedIndex2ReadCycles != "0" :
             count +=1
         return count
 

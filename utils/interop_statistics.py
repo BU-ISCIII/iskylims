@@ -16,11 +16,11 @@ def process_binStats(run_folder, run_id, logger):
     py_interop_run_metrics.list_summary_metrics_to_load(valid_to_load)
     run_folder = run_metrics.read(run_folder)
     #run_folder = run_metrics.read(run_folder, valid_to_load)
-    
-    
+
+
     summary = py_interop_summary.run_summary()
     py_interop_summary.summarize_run_metrics(run_metrics, summary)
-    
+
     # get the number of the read used in the run.
     #import pdb; pdb.set_trace()
     run_parameters = RunningParameters.objects.get(runName_id__exact = run_id)
@@ -101,9 +101,9 @@ def process_binStats(run_folder, run_id, logger):
 
     #lan_summary= py_interop_summary.lane_summary()
     # Tiles
-    for read_number in range(4):
+    for read_number in range(num_of_reads):
         logger.info('Processing bin stats for Read %s', read_number)
-        for lane_number in range(4):
+        for lane_number in range(num_of_reads):
             read_lane_tiles=str(int(summary.at(read_number).at(lane_number).tile_count() )*2)
             # Density (k/mm2) divide the value by 1000 to have it K/mm2
             # get the +/- with the steddev
