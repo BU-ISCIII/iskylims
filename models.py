@@ -12,6 +12,9 @@ class RunProcess(models.Model):
     sampleSheet = models.FileField(upload_to='wetlab/SampleSheets')
     generatedat = models.DateTimeField(auto_now_add=True)
     run_date = models.DateField(auto_now = False, null=True)
+    run_finish_date = models.DateTimeField(auto_now = False, null=True)
+    bcl2fastq_finish_date = models.DateTimeField(auto_now = False, null=True)
+    process_completed_date = models.DateTimeField(auto_now = False, null=True)
     runState = models.CharField(max_length=25)
     #generatedBSFile = models.BooleanField(default=False)
     index_library = models.CharField(max_length=85)
@@ -63,6 +66,10 @@ class RunProcess(models.Model):
         other_size = int(other_size_str.replace(',',''))
         total_size = image_size + data_size + other_size
         return '%s'%(total_size)
+
+    def get_run_dates (self):
+        
+        return 
 
 class LibraryKit (models.Model):
     libraryName = models.CharField(max_length=125)

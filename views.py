@@ -2577,6 +2577,28 @@ def update_tables (request):
     else:
         return render(request, 'iSkyLIMS_wetlab/error_page.html', {'content':['There is no tables which requiered to update with Disk space usage information']})
 
+def update_tables_date (request):
+    if RunProcess.objects.filter(runState__exact ='Completed', run_finish_date ='').exists():
+        conn = open_samba_connection()
+        run_list_be_updated = RunProcess.objects.filter(runState__exact = 'Completed' , run_finish_date ='' )
+        for run_be_updated in run_list_be_updated:
+            run_id = run_be_updated.id
+            run_parameter_id=RunningParameters.objects.get(pk=run_id)
+            runID_value = run_parameter_id.RunID
+            completion_file = os.path.join(runID_value, 'RunCompletionStatus.xml')
+            completion_attributes = conn.getAttributes('NGS_Data' ,completion_file)
+            # fetching the time creation on the RunCompletionStatus.xml for Run finish date
+            run_be_updated.run_finish_date = datetime.datetime.fromtimestamp(int(completion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
+            conversion_stats_file = os.path.join (runID_value,'Data/Intensities/BaseCalls/Stats/', 'ConversionStats.xml')
+            conversion_attributes = conn.getAttributes('NGS_Data' ,conversion_stats_file)
+            run_be_updated.bcl2fastq_finish_date = datetime.datetime.fromtimestamp(int(conversion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
+
+            process_completed_date = NextSeqStatsBinRunSummary.objects.get(runprocess_id__exact = run_id).generatedat
+    
+
+        return render(request, 'iSkyLIMS_wetlab/info_page.html', {'content':['The dates for the Runs have been updated']})
+    else:
+        return render(request, 'iSkyLIMS_wetlab/error_page.html', {'content':['There is no tables which requiered to update with date information']})
 
 
 def test (request):

@@ -27,6 +27,7 @@ urlpatterns = [
     path('MonthlyReport/', views.monthly_report, name='montly_report'),
     path('QuarterReport/', views.quarter_report, name='quarter_report'),
     path('updateTables/',views.update_tables, name='update_tables'),
+    path('updateTablesDate/',views.update_tables_date, name='update_tables_date'),
     path('register_wetlab/',views.register_wetlab, name='register_wetlab'),
     path('change_project_libKit=<int:project_id>',views.change_project_libKit, name ='change_project_libKit'),
     path('change_run_libKit=<int:run_id>',views.change_run_libKit, name ='change_run_libKit'),
