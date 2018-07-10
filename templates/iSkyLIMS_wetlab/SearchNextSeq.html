@@ -444,8 +444,9 @@
 
         <div id="laneMetrics" class="tabcontent">
           <div class="col-sm-12 ">
-            <h3>Lane Metrics</h3>
-            <h3>Read 1</h3>
+            <h3>Lane Metrics pppp</h3>
+            {% for key, values_read in display_one_run.reads.items %}
+            <h3>{{ key }}</h3>
             <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
@@ -456,7 +457,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for values in display_one_run.laneSummary1 %}
+                    {% for values in values_read %}
                     <tr>
                         {% for value in values %}
                         <td>{{ value }}</td>
@@ -466,75 +467,7 @@
                 </tbody>
             </table>
             </div> <!--  end of col-table-responsive -->
-            </div>  <!--  end of col-sm-12 -->
-          <div class="col-sm-12 ">
-            <h3>Read 2</h3>
-            <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                    {% for values in display_one_run.laneSummaryHeading %}
-                      <th>{{ values }} </th>
-                    {%endfor%}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for values in display_one_run.laneSummary2 %}
-                    <tr>
-                        {% for value in values %}
-                        <td nowrap>{{ value }}</td>
-                        {% endfor %}
-                    </tr>
-                    {% endfor%}
-                </tbody>
-            </table>
-            </div> <!--  end of col-table-responsive -->
-            </div>  <!--  end of col-sm-12 -->
-          <div class="col-sm-12 ">
-            <h3>Read 3</h3>
-            <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                    {% for values in display_one_run.laneSummaryHeading %}
-                      <th>{{ values }} </th>
-                    {%endfor%}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for values in display_one_run.laneSummary3 %}
-                    <tr>
-                        {% for value in values %}
-                        <td nowrap>{{ value }}</td>
-                        {% endfor %}
-                    </tr>
-                    {% endfor%}
-                </tbody>
-            </table>
-            </div> <!--  end of col-table-responsive -->
-            </div>  <!--  end of col-sm-12 -->
-          <div class="col-sm-12 ">
-            <h3>Read 4</h3>
-            <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                    {% for values in display_one_run.laneSummaryHeading %}
-                      <th>{{ values }} </th>
-                    {%endfor%}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for values in display_one_run.laneSummary4 %}
-                    <tr>
-                        {% for value in values %}
-                        <td nowrap>{{ value }}</td>
-                        {% endfor %}
-                    </tr>
-                    {% endfor%}
-                </tbody>
-            </table>
-            </div> <!--  end of col-table-responsive -->
+            {% endfor%}
             </div>  <!--  end of col-sm-12 -->
 
         </div>
