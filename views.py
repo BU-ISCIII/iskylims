@@ -322,8 +322,7 @@ def get_information_run(run_name_found,run_id):
     if run_state == 'Recorded' or run_state == 'Sample Sent':
         info_dict['change_run_name'] = [[run_name_found.runName, run_id]]
     if (run_state != 'Completed'):
-        d_list=['Run name','State of the Run is','Run was requested by',
-                'The Sample Sheet used is','Run was recorded on date']
+        d_list=['Run name','State of the Run is','Run was requested by','Run was recorded on date', 'RunID']
     else:
         d_list=['Run name','State of the Run is','Run was requested by',
                 'Disk space used for Images','Disk space used for Fasta Files',
@@ -453,26 +452,28 @@ def get_information_run(run_name_found,run_id):
             #import pdb; pdb.set_trace()
             # keep the top 10 unknow bar by deleting the lowest values
             unknow_dict_len = len (unknow_dict)
-            '''
-            if unknow_dict_len> 10:
-                while (len (unknow_dict) > 10):
-                    min_val = min(unknow_dict, key=unknow_dict.get)
-                    del unknow_dict [min_val]
-            #import pdb; pdb.set_trace()
-            '''
+
         # create chart with the top unknown barcode in the run
-        #import pdb; pdb.set_trace()
         data_source = json_unknow_barcode_graphic('Unknow Sequence', unknow_dict)
         #data_source = json_unknow_barcode_graphic('Unknow Sequence', list(unknow_dict.keys()),list(unknow_dict.values()))
         unknow_pie3d = FusionCharts("pie3d", "ex1" , "600", "400", "chart-1", "json", data_source)
-        #import pdb; pdb.set_trace()
 
         info_dict ['unknow_pie3d'] = unknow_pie3d.render()
 
         # prepare the data for Run Binary summary stats
-        index_run_summary = ['1','2','3','4', 'Non Index', 'Total']
+        
+        run_parameters = RunningParameters.objects.get(runName_id__exact = run_id)
+        num_of_reads = run_parameters.get_number_of_reads ()
+        index_run_summary = [i +1 for i in range(num_of_reads)]
+        index_run_summary.append('Non Index')
+        index_run_summary.append('Total')
+        #index_run_summary = ['1','2','3','4', 'Non Index', 'Total']
         info_dict ['runSummaryHeading']= ['Level','Yield','Projected Yield','Aligned (%)','Error Rate (%)','Intensity Cycle 1','Quality >=30 (%)']
-        line_description=['Read 1','Read 2','Read 3','Read 4','Non Index','Totals']
+        line_description = ['Read ' +str( i+1) for i in range (num_of_reads)]
+        line_description.append('Non Index')
+        line_description.append('Totals')
+        
+        #line_description=['Read 1','Read 2','Read 3','Read 4','Non Index','Totals']
         line_run_summary = []
         for index in range (len(index_run_summary)):
             #import pdb; pdb.set_trace()
@@ -492,14 +493,19 @@ def get_information_run(run_name_found,run_id):
                     'Aligned (%)','Error Rate (%)','Error Rate 35 cycle (%)',
                     'Error Rate 50 cycle (%)','Error Rate 75 cycle (%)',
                     'Error Rate 100 cycle (%)','Intensity Cycle 1']
-        for read_number in range (1, 5):
+        info_reads_dict ={}
+        for read_number in range (1, num_of_reads +1) :
+        #for read_number in range (1, 5):
             read_summary_values=[]
             for lane_number in range(1, 5):
                 read_lane_id= NextSeqStatsBinRunRead.objects.filter(runprocess_id__exact =run_id, read__exact = read_number, lane__exact = lane_number)
                 lane_values=read_lane_id[0].get_bin_run_read().split(';')
                 read_summary_values.append(lane_values)
-            read_number_index = str('laneSummary'+str(read_number))
-            info_dict[read_number_index] = read_summary_values
+            #read_number_index = str('laneSummary'+str(read_number))
+            read_number_index2 = str('Read '+str(read_number))
+            info_reads_dict[read_number_index2] = read_summary_values
+            #info_dict[read_number_index] = read_summary_values
+        info_dict['reads']= info_reads_dict
 
         # prepare the graphics for the run
         folder_for_plot='/documents/wetlab/images_plot/'
@@ -955,6 +961,32 @@ def latest_run (request) :
     r_data_display  = get_information_run(latest_run,run_id)
     return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
 
+@login_required    
+def incompleted_runs (request) :
+    # check user privileges
+    if request.user.is_authenticated:
+
+        try:
+            groups = Group.objects.get(name='WetlabManager')
+            if groups not in request.user.groups.all():
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+        except:
+            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+    
+    if RunProcess.objects.all().exclude(runState = 'Completed').exists() :
+        display_incomplete_run_list = {}
+        unfinished_runs = RunProcess.objects.all().exclude(runState = 'Completed').order_by('runName')
+        for run in unfinished_runs:
+            display_incomplete_run_list[run.id] = [[run.runName, run.get_state()]]
+    else:
+        return render (request,'iSkyLIMS_wetlab/info_page.html', {'content':['There is no project in incompleted state' , 'All Runs are finished']})
+    
+    return render (request, 'iSkyLIMS_wetlab/incompletedRuns.html',{'display_incomplete_run_list':display_incomplete_run_list})
+    
+
 #### login not required because is called from internal function
 def get_information_project (project_id, request):
     project_info_dict = {}
@@ -1087,6 +1119,8 @@ def change_run_name (request, run_id):
             new_run_name = request.POST['runName']
             if new_run_name == '':
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Empty value is not allowed for the Run Name ']})
+            if RunProcess.objects.filter(runName__exact = new_run_name).exists():
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The given Run Name is already in use', 'Go back to the previous page and change the run name']})
             changed_run_name ={}
             old_run_name = run.runName
             run.runName = new_run_name

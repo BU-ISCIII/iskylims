@@ -39,14 +39,17 @@ class RunProcess(models.Model):
         else :
             rundate=self.run_date.strftime("%B %d, %Y")
         if (self.runState == 'Completed'):
-            #import pdb; pdb.set_trace()
+            
             return '%s;%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.runState,
                             requested_center, self.useSpaceImgMb,
                             self.useSpaceFastaMb, self.useSpaceOtherMb,
                             generated_date, rundate)
         else:
-            return '%s;%s;%s;%s;%s'  %(self.runName, self.runState, self.centerRequestedBy,
-                            self.sampleSheet, generated_date)
+            if RunningParameters.objects.filter(runName_id__exact = self).exists():
+                run_folder = RunningParameters.objects.get(runName_id__exact = self).RunID
+            else :
+                run_folder = 'Run folder is not created yet'
+            return '%s;%s;%s;%s;%s'  %(self.runName, self.runState, self.centerRequestedBy, generated_date,run_folder)
 
     def get_run_name (self):
         return '%s' %(self.runName)

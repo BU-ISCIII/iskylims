@@ -12,6 +12,7 @@ urlpatterns = [
     path('',views.index, name = 'index'),
     path('getSampleSheet/', views.get_sample_file, name='get_sample_file'),
     path('latest_run/',views.latest_run, name='latest_run'),
+    path('incompletedRuns', views.incompleted_runs, name = 'incompleted_runs'),
     path('searchNextSeq/', views.search_nextSeq, name='search_nextSeq'),
     path('searchNextProject/', views.search_nextProject, name ='search_nextProject'),
     path('searchNextSample/', views.search_nextSample, name = 'search_nextSample'),
