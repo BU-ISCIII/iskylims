@@ -40,7 +40,7 @@ def get_size_dir (directory, conn, logger):
     for sh_file in file_list:
         if sh_file.isDirectory:
             if (sh_file.filename == '.' or sh_file.filename == '..'):
-                continu, loggere
+                continue
             logger.debug('Checking space for directory %s', sh_file.filename)
             sub_directory = os.path.join (directory,sh_file.filename)
             count_file_size += get_size_dir (sub_directory, conn, logger)
@@ -271,11 +271,11 @@ def process_run_in_recorded_state(logger):
                     if status_run != 'CompletedAsPlanned':
                         # set the run in error state
                         exp_name = RunProcess.objects.get(runName__exact = exp_name)
-                        exp_name.runState = 'CANCELED'
+                        exp_name.runState = 'CANCELLED'
                         exp_name.save()
                         project_name_list = Projects.objects.filter(runprocess_id__exact = exp_name_id)
                         for project in project_name_list:
-                            project.procState= 'CANCELED'
+                            project.procState= 'CANCELLED'
                             project.save()
                         # delelete the runParameter file
                         os.remove(local_run_parameter_file)
@@ -853,6 +853,9 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
     demux_file=os.path.join(local_dir_samba,'DemultiplexingStats.xml')
     conversion_file=os.path.join(local_dir_samba,'ConversionStats.xml')
     run_info_file=os.path.join(local_dir_samba, 'RunInfo.xml')
+    ## Prepared for possible new machines.
+    machine = "NextSeq"
+
     logger.debug('Executing process_run_in_bcl2F_q_executed_state method')
 
     # check the connectivity to remote server
@@ -974,7 +977,10 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
 
                 logger.info('processing interop files')
                 # processing information for the interop files
-                process_binStats(local_dir_samba, run_processing_id, logger)
+                if(machine == "NextSeq"):
+                    number_of_lanes = 4
+
+                process_binStats(local_dir_samba, run_processing_id, logger,number_of_lanes)
                 # Create graphics
                 graphic_dir=os.path.join(settings.MEDIA_ROOT,wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING)
                 create_graphics(graphic_dir, run_processing_id, run_Id_used, logger)

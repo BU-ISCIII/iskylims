@@ -56,7 +56,7 @@ def get_sample_file (request):
         projects=[]
         #run_name=request.POST['runname']
         myfile = request.FILES['myfile']
-        
+
         ## check if file contains the extension. Error page is showed if file does not contain any extension
         try:
             split_filename=re.search('(.*)(\.\w+$)',myfile.name)
@@ -160,7 +160,7 @@ def get_sample_file (request):
 
         ## create new project tables based on the project involved in the run and
         ## include the project information in projects variable to build the new FORM
-        
+
         run_info_values ={}
         run_info_values['experiment_name'] = experiment_name
         run_info_values['index_library_name'] = index_library_name
@@ -461,7 +461,7 @@ def get_information_run(run_name_found,run_id):
         info_dict ['unknow_pie3d'] = unknow_pie3d.render()
 
         # prepare the data for Run Binary summary stats
-        
+
         run_parameters = RunningParameters.objects.get(runName_id__exact = run_id)
         num_of_reads = run_parameters.get_number_of_reads ()
         index_run_summary = [i +1 for i in range(num_of_reads)]
@@ -472,7 +472,7 @@ def get_information_run(run_name_found,run_id):
         line_description = ['Read ' +str( i+1) for i in range (num_of_reads)]
         line_description.append('Non Index')
         line_description.append('Totals')
-        
+
         #line_description=['Read 1','Read 2','Read 3','Read 4','Non Index','Totals']
         line_run_summary = []
         for index in range (len(index_run_summary)):
@@ -561,7 +561,7 @@ def search_nextSeq (request):
                                                                     'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
         ### Get all the available runs to start the filtering
         runs_found=RunProcess.objects.all().order_by('runName')
-        
+
         ### Get runs when run name is not empty
         if run_name !='':
             if (RunProcess.objects.filter(runName__exact =run_name).exists()):
@@ -570,14 +570,14 @@ def search_nextSeq (request):
                     return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Too many matches found when searching for the run name ', run_name ,
                                                                     'ADVICE:', 'Select additional filter to find the run that you are looking for']})
                 r_data_display= get_information_run(run_name_found[0],run_name_found[0].id)
-                
+
                 return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
             #import pdb; pdb.set_trace()
-            
+
             if (runs_found.filter(runName__icontains =run_name).exists()):
                 runs_found=runs_found.filter(runName__icontains =run_name).order_by('runName')
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ]})            
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ]})
 
         ### Check if state is not empty
         if run_state != '':
@@ -954,14 +954,14 @@ def latest_run (request) :
     else:
         #redirect to login webpage
         return redirect ('/accounts/login')
-    
+
     latest_run = RunProcess.objects.order_by('id').last()
     #import pdb; pdb.set_trace()
     run_id = latest_run.id
     r_data_display  = get_information_run(latest_run,run_id)
     return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
 
-@login_required    
+@login_required
 def incompleted_runs (request) :
     # check user privileges
     if request.user.is_authenticated:
@@ -975,7 +975,7 @@ def incompleted_runs (request) :
     else:
         #redirect to login webpage
         return redirect ('/accounts/login')
-    
+
     if RunProcess.objects.all().exclude(runState = 'Completed').exists() :
         display_incomplete_run_list = {}
         unfinished_runs = RunProcess.objects.all().exclude(runState = 'Completed').order_by('runName')
@@ -983,9 +983,9 @@ def incompleted_runs (request) :
             display_incomplete_run_list[run.id] = [[run.runName, run.get_state()]]
     else:
         return render (request,'iSkyLIMS_wetlab/info_page.html', {'content':['There is no project in incompleted state' , 'All Runs are finished']})
-    
+
     return render (request, 'iSkyLIMS_wetlab/incompletedRuns.html',{'display_incomplete_run_list':display_incomplete_run_list})
-    
+
 
 #### login not required because is called from internal function
 def get_information_project (project_id, request):
@@ -2236,8 +2236,8 @@ def monthly_report (request) :
             uncompleted_run = []
             for run_uncompleted in uncompleted_run_in_year_month :
                 uncompleted_run.append(run_uncompleted.get_run_name)
-            annual_report_information['uncompleted_run'] = uncompleted_run
-            number_of_runs['Not Finish Runs'] = len ( uncompleted_run_in_year)
+            monthly_report_information['uncompleted_run'] = uncompleted_run
+            number_of_runs['Not Finish Runs'] = len ( uncompleted_run_in_year_month)
         # prepare the pie graphic for the number of completed/ unfinished runs
         heading = str ('Graphics of the Runs performed on the ' + month_selected + ' - ' + year_selected)
         data_source = pie_graphic_year(heading, "",'ocean',number_of_runs)
@@ -2511,7 +2511,6 @@ def update_tables (request):
         for  stats_read in stats_read_to_update :
             stats_read.stats_read_run_date = run_date
             stats_read.save()
-    import pdb; pdb.set_trace()
     return render(request, 'iSkyLIMS_wetlab/info_page.html', {'content':['The tables have been updated']})
     '''
     ### Update the disc space used of each run

@@ -8,7 +8,7 @@ from  ..models import *
 from django.conf import settings
 from iSkyLIMS_wetlab import wetlab_config
 
-def process_binStats(run_folder, run_id, logger):
+def process_binStats(run_folder, run_id, logger,number_of_lanes):
     logger.info('starting analyzing the binary statistics ')
     run_metrics = py_interop_run_metrics.run_metrics()
     #run_folder = run_metrics.read(run_folder)
@@ -103,7 +103,7 @@ def process_binStats(run_folder, run_id, logger):
     # Tiles
     for read_number in range(num_of_reads):
         logger.info('Processing bin stats for Read %s', read_number)
-        for lane_number in range(num_of_reads):
+        for lane_number in range(number_of_lanes):
             read_lane_tiles=str(int(summary.at(read_number).at(lane_number).tile_count() )*2)
             # Density (k/mm2) divide the value by 1000 to have it K/mm2
             # get the +/- with the steddev
