@@ -2236,8 +2236,8 @@ def monthly_report (request) :
             uncompleted_run = []
             for run_uncompleted in uncompleted_run_in_year_month :
                 uncompleted_run.append(run_uncompleted.get_run_name)
-            annual_report_information['uncompleted_run'] = uncompleted_run
-            number_of_runs['Not Finish Runs'] = len ( uncompleted_run_in_year)
+            monthly_report_information['uncompleted_run'] = uncompleted_run
+            number_of_runs['Not Finish Runs'] = len ( uncompleted_run_in_year_month)
         # prepare the pie graphic for the number of completed/ unfinished runs
         heading = str ('Graphics of the Runs performed on the ' + month_selected + ' - ' + year_selected)
         data_source = pie_graphic_year(heading, "",'ocean',number_of_runs)
