@@ -145,10 +145,16 @@
                         </tr>
                       </thead>
                       <tbody>
-                          {% for values in display_one_project.sample_table %}
+                          {% for key, values_sample in display_one_project.sample_table.items %}
                             <tr>
-                                {% for value in values %}
-                                <td>{{ value }} </td>
+                                {% for sample, barcode, pf_cluster, percent, yield, q30 ,mean in values_sample %}
+                                <td><a href="/wetlab/search_sample={{ key }}">{{ sample }}</a> </td>
+                                <td>{{ barcode }} </td>
+                                <td>{{ pf_cluster }} </td>
+                                <td>{{ percent }} </td>
+                                <td>{{ yield }} </td>
+                                <td>{{ q30 }} </td>
+                                <td>{{ mean }} </td>
                                 {%endfor%}
                             </tr>
                           {%endfor%}

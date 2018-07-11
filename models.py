@@ -36,23 +36,41 @@ class RunProcess(models.Model):
 
     def get_info_process (self):
         generated_date=self.generatedat.strftime("%I:%M%p on %B %d, %Y")
+       
         requested_center = str(self.centerRequestedBy)
         if self.run_date is None :
             rundate = 'Run NOT started'
         else :
             rundate=self.run_date.strftime("%B %d, %Y")
+        
+        if self.run_finish_date is None:
+            finish_date = 'Run multiplexation is not completed'
+        else:
+            finish_date = self.run_finish_date.strftime("%I:%M%p on %B %d, %Y")
+        
+        if self.bcl2fastq_finish_date is None:
+            bcl2fastq_date = 'bcl2fastq process is not completed'
+        else:
+            bcl2fastq_date = self.bcl2fastq_finish_date.strftime("%I:%M%p on %B %d, %Y")
+        
+        if self.process_completed_date is None:
+            completed_date = 'Run process is not completed'
+        else:
+            completed_date = self.process_completed_date.strftime("%I:%M%p on %B %d, %Y")
+        
         if (self.runState == 'Completed'):
-            
-            return '%s;%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.runState,
+        
+            return '%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.runState,
                             requested_center, self.useSpaceImgMb,
                             self.useSpaceFastaMb, self.useSpaceOtherMb,
-                            generated_date, rundate)
+                            generated_date, rundate,finish_date,  bcl2fastq_date, completed_date)
         else:
             if RunningParameters.objects.filter(runName_id__exact = self).exists():
                 run_folder = RunningParameters.objects.get(runName_id__exact = self).RunID
             else :
                 run_folder = 'Run folder is not created yet'
-            return '%s;%s;%s;%s;%s'  %(self.runName, self.runState, self.centerRequestedBy, generated_date,run_folder)
+            return '%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.runState, self.centerRequestedBy, 
+                                        generated_date, rundate, finish_date, run_folder)
 
     def get_run_name (self):
         return '%s' %(self.runName)
@@ -67,9 +85,7 @@ class RunProcess(models.Model):
         total_size = image_size + data_size + other_size
         return '%s'%(total_size)
 
-    def get_run_dates (self):
-        
-        return 
+
 
 class LibraryKit (models.Model):
     libraryName = models.CharField(max_length=125)

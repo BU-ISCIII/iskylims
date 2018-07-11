@@ -322,11 +322,12 @@ def get_information_run(run_name_found,run_id):
     if run_state == 'Recorded' or run_state == 'Sample Sent':
         info_dict['change_run_name'] = [[run_name_found.runName, run_id]]
     if (run_state != 'Completed'):
-        d_list=['Run name','State of the Run is','Run was requested by','Run was recorded on date', 'RunID']
+        d_list=['Run name','State of the Run is','Run was requested by','Run was recorded on date', 'Run date', 'Run Finish Date','RunID']
     else:
         d_list=['Run name','State of the Run is','Run was requested by',
-                'Disk space used for Images','Disk space used for Fasta Files',
-                'Disk space used for other Files','Run recorded date','Run date']
+                'Disk space used for Images(in MB)','Disk space used for Fasta Files(in MB)',
+                'Disk space used for other Files(in MB)','Run recorded date','Run date', 'Run Finish Date',
+                'Bcl2Fastq finish Date','Run Completion Date']
     run_info_data=run_name_found.get_info_process().split(';')
     info_dict['Sample_Sheet'] = [['Sample Sheet File', run_name_found.get_sample_file()]]
     r_data_display=[]
@@ -1051,10 +1052,14 @@ def get_information_project (project_id, request):
         sample_found_list = SamplesInProject.objects.filter(project_id__exact = project_id)
         sample_heading_list = ['Sample','Barcode','PF Clusters','Percent of Project', 'Yield (Mbases)','% >= Q30 bases', 'Mean Quality Score']
         project_info_dict['sample_heading'] = sample_heading_list
-        sample_list =[]
-        for sample_item in range(len(sample_found_list)) :
-            sample_line = sample_found_list[sample_item].get_sample_information().split(';')
-            sample_list.append(sample_line)
+        sample_list ={}
+        for sample_item in sample_found_list :
+        #for sample_item in range(len(sample_found_list)) :
+            sample_line = sample_item.get_sample_information().split(';')
+            
+            #sample_line = sample_found_list[sample_item].get_sample_information().split(';')
+            #sample_list.append(sample_line)
+            sample_list[sample_item.id] = [sample_line]
         #import pdb; pdb.set_trace()
         project_info_dict['sample_table'] = sample_list
     return project_info_dict
@@ -2577,7 +2582,8 @@ def update_tables (request):
         return render(request, 'iSkyLIMS_wetlab/error_page.html', {'content':['There is no tables which requiered to update with Disk space usage information']})
 
 def update_tables_date (request):
-    if RunProcess.objects.filter(runState__exact ='Completed', run_finish_date ='').exists():
+    if RunProcess.objects.filter(runState__exact ='Completed', run_finish_date = None).exists():
+        import pdb; pdb.set_trace()
         conn = open_samba_connection()
         run_list_be_updated = RunProcess.objects.filter(runState__exact = 'Completed' , run_finish_date ='' )
         for run_be_updated in run_list_be_updated:
@@ -2592,9 +2598,11 @@ def update_tables_date (request):
             conversion_attributes = conn.getAttributes('NGS_Data' ,conversion_stats_file)
             run_be_updated.bcl2fastq_finish_date = datetime.datetime.fromtimestamp(int(conversion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
 
-            process_completed_date = NextSeqStatsBinRunSummary.objects.get(runprocess_id__exact = run_id).generatedat
-    
-
+            finish_process_date = NextSeqStatsBinRunSummary.objects.filter(runprocess_id__exact = run_id).generatedat
+            run_be_updated.process_completed_date = finish_process_date[0]
+            
+            run_be_updated.save()
+            
         return render(request, 'iSkyLIMS_wetlab/info_page.html', {'content':['The dates for the Runs have been updated']})
     else:
         return render(request, 'iSkyLIMS_wetlab/error_page.html', {'content':['There is no tables which requiered to update with date information']})
