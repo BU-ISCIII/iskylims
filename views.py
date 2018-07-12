@@ -1056,7 +1056,7 @@ def get_information_project (project_id, request):
         for sample_item in sample_found_list :
         #for sample_item in range(len(sample_found_list)) :
             sample_line = sample_item.get_sample_information().split(';')
-            
+
             #sample_line = sample_found_list[sample_item].get_sample_information().split(';')
             #sample_list.append(sample_line)
             sample_list[sample_item.id] = [sample_line]
@@ -2606,67 +2606,9 @@ def update_tables_date (request):
             	pass
             finish_process_date = NextSeqStatsBinRunSummary.objects.filter(runprocess_id__exact = run_id)
             run_be_updated.process_completed_date = finish_process_date[0].generatedat
-            
+
             run_be_updated.save()
-            
+
         return render(request, 'iSkyLIMS_wetlab/info_page.html', {'content':['The dates for the Runs have been updated']})
     else:
         return render(request, 'iSkyLIMS_wetlab/error_page.html', {'content':['There is no tables which requiered to update with date information']})
-
-
-def test (request):
-    if request.method=='POST' and (request.POST['action']=='displayResult') :
-        #import pdb; pdb.set_trace()
-    return render(request, 'iSkyLIMS_wetlab/test.html')
-
-'''
-def downloadFile(request):
-    #from urllib.parse import urlparse
-    #from os.path import splitext, basename
-    #filename = object_name.file.name.split('/')[-1]
-    #path_to_file = '/home/bioinfo/web_carlosIII/wetlab/documents/test.pdf'
-    #f = open(path_to_file, 'r',encoding='utf-8')
-    #myfile = File(f)
-
-    found=re.search('.*/wetlab/documents/(.*)\'>',str(request))
-    if found:
-        file_name=found.group(1)
-    else:
-        return render (request, 'iSkyLIMS_wetlab/error_page.html', {'content':['File not found ', 'check with your administator']})
-    #file_tmp_name=str(request).split('/')[-1]
-    #temp_1=file_tmp_name.replace(">","")
-    #file_name=temp_1.replace("'","")
-
-    #disassembled = urlparse(str(request))
-    #filename, file_ext = splitext(basename(disassembled.path))
-    #file_name=str(filename + file_ext)
-    #import pdb; pdb.set_trace()
-    extension = file_name[-4:]
-    if (extension == '.csv'):
-        with open(os.path.join(settings.MEDIA_ROOT, file_name), 'r') as fh:
-            response = HttpResponse(fh.read(),content_type="text/csv")
-            response['Content-Disposition'] = 'attachment; filename=download.csv'
-    #to open the file as text but pdf is binary. Change 'r' to 'rb' in open
-    if (extension == 'xlsx'):
-        #### For excel files use the  content_type='application/vnd.ms-excel'
-        with open(os.path.join(settings.MEDIA_ROOT, file_name), 'rb') as fh:
-            response = HttpResponse(fh.read(),content_type='application/vnd.ms-excel')
-            response['Content-Disposition'] = 'attachment; filename=download.xlsx'
-    if  (extension == '.pdf'):
-         # PDF file to be downloaded
-        with open(os.path.join(settings.MEDIA_ROOT, file_name), 'rb') as fh:
-        #with open(os.path.join(settings.MEDIA_ROOT, 'test.pdf'), 'rb') as fh:
-            response = HttpResponse(fh.read(), content_type="application/pdf")
-            response['Content-Disposition'] = 'attachment; filename=download.pdf'
-    return response
-
-
-'''
-
-
-
-
-
-
-
-

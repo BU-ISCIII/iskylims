@@ -37,7 +37,6 @@ urlpatterns = [
     #url(r'^documents/images_plot$', 'django.views.static.serve',{'document_root': settings.MEDIA_ROOT}),
     #url(r'^documents/(?P<path>.*)$', 'django.views.static.serve',{'document_root': settings.MEDIA_ROOT,}),
     path('mail/',views.email, name='email'),
-    path('test/',views.test, name='test')
 
 ]
 #+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
