@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 import time
 import shutil
 import locale
-
+import datetime, time
 from  ..models import *
 from .interop_statistics import *
 
@@ -13,6 +13,7 @@ from smb.SMBConnection import SMBConnection
 from iSkyLIMS_wetlab import wetlab_config
 
 from django.conf import settings
+
 
 def open_samba_connection():
     ## open samba connection
@@ -229,6 +230,10 @@ def process_run_in_recorded_state(logger):
                 try:
                     with open (local_run_completion_status_file, 'wb') as c_status_fp :
                         conn.retrieveFile(share_folder_name, samba_completion_status_file, c_status_fp )
+                        # Get the date and time when the RunCompletionStatus is created
+                        completion_attributes = conn.getAttributes(share_folder_name , samba_completion_status_file)
+                        run_completion_date = datetime.datetime.fromtimestamp(int(completion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
+
                 except:
                     logger.error ('ERROR:: unable to fetch the RunCompletionStatus.xml file at %s', run_dir)
                     logger.debug ('Deleting RunParameters.xml for run %s ', run_dir)
@@ -272,6 +277,7 @@ def process_run_in_recorded_state(logger):
                         # set the run in error state
                         exp_name = RunProcess.objects.get(runName__exact = exp_name)
                         exp_name.runState = 'CANCELLED'
+                        exp_name.run_finish_date = run_completion_date
                         exp_name.save()
                         project_name_list = Projects.objects.filter(runprocess_id__exact = exp_name_id)
                         for project in project_name_list:
@@ -327,6 +333,11 @@ def process_run_in_recorded_state(logger):
                         # change the run  to SampleSent state
                     update_run_state(exp_name_id, 'Sample Sent', logger)
                     update_project_state(exp_name_id, 'Sample Sent', logger)
+                        # add the completion date in the run
+                    logger.info('Saving completion date for %s' , exp_name)
+                    run_update_date = RunProcess.objects.get(pk=exp_name_id)
+                    run_update_date.run_finish_date = run_completion_date
+                    run_update_date.save()
                         # add the run_dir inside the processed_run file
                     processed_run.append(run_dir)
                     run_names_processed.append(exp_name)
@@ -828,6 +839,13 @@ def process_run_in_processrunning_state (process_list, logger):
                 processed_run.append(run_Id_used)
                 update_run_state(run_be_processed_id, 'Bcl2Fastq Executed', logger)
                 update_project_state(run_be_processed_id, 'B2FqExecuted', logger)
+                # Get the time when  the Bcl2Fastq process is ending
+                conversion_stats_file = os.path.join (run_Id_used,'Data/Intensities/BaseCalls/Stats/', 'ConversionStats.xml')
+                conversion_attributes = conn.getAttributes('NGS_Data' ,conversion_stats_file)
+                run_date = RunProcess.objects.get(pk=run_be_processed_id)
+                run_date.bcl2fastq_finish_date = datetime.datetime.fromtimestamp(int(conversion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
+                run_date.save()
+                logger.info ('Updated the Bcl2Fastq time in the run %s', run_item)
                 break
             else:
                 logger.debug('The directory %s has been found while looking for completion of the execution of bcl2fastq', sh.filename)
@@ -1005,6 +1023,11 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
             logger.info('xml files and binary files from InterOp folder have been removed')
             ## connect to server to get the disk space utilization of the folders
             get_run_disk_utilization (conn, run_Id_used, run_processing_id, logger)
+            # Update the run with the date of the run completion 
+            completion_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            run_date_to_update = RunProcess.objects.get(pk = run_processing_id)
+            run_date_to_update.process_completed_date = completion_date
+            run_date_to_update.save()
 
     # close samba connection
     conn.close()
