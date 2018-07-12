@@ -17,7 +17,7 @@ function goBack() {
 			  <div class="glyphicon glyphicon-saved gi-3x" aria-hidden="true"></div>
               <p>
                  {% for c in content %}
-                    {{c}}<BR>
+                    {{c | safe}}<BR>
                  {% endfor%}
               </p>
             </div> <!--// end panel body -->

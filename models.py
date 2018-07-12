@@ -32,7 +32,7 @@ class Profile(models.Model):
 #        center = Center.objects.get(pk=1)
 #        Profile.objects.create(profileCenter=center, profileUserID=instance)
 
- 
+
 #@receiver(post_save, sender=User)
 #def save_user_profile(sender, instance, **kwargs):
 #    instance.profile.save()
