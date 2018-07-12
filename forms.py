@@ -1,15 +1,15 @@
-## drylab/forms.py
-from django import forms                                                                                                                           
-from django.utils.translation import ugettext_lazy as _, ugettext                                                                                  
-from crispy_forms.helper import FormHelper                                                                                                         
-from crispy_forms import layout, bootstrap 
+## iSkyLIMS_drylab/forms.py
+from django import forms
+from django.utils.translation import ugettext_lazy as _, ugettext
+from crispy_forms.helper import FormHelper
+from crispy_forms import layout, bootstrap
 from crispy_forms.layout import Field
 from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field
-#from crispy_forms.bootstrap import InlineField                                                                                                        
-#from utils.fields import MultipleChoiceTreeField                                                                                                  
-from mptt.forms import TreeNodeMultipleChoiceField                                                                                                 
-from .models import *                                                                                                                              
-#from django.contrib.auth.forms import UserCreationForm                                                                                             
+#from crispy_forms.bootstrap import InlineField
+#from django_utils.fields import MultipleChoiceTreeField
+from mptt.forms import TreeNodeMultipleChoiceField
+from .models import *
+#from django.contrib.auth.forms import UserCreationForm
 
 
 ## Management of a 'Services request':
@@ -31,9 +31,9 @@ class ServiceRequestFormInternalSequencing(forms.ModelForm):
  		self.helper = FormHelper()
  		self.helper.form_action=""
  		self.helper.form_method="POST"
- 		
+
  		self.helper.layout = layout.Layout(
-				layout.Div(              
+				layout.Div(
  					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Sequencing Data</h3></div>"""),
  					layout.Div(
  						layout.Div(
@@ -61,17 +61,17 @@ class ServiceRequestFormInternalSequencing(forms.ModelForm):
 
 
 
-                layout.Div(                                                                                                
-                	layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Service selection</h3></div>"""), 
-                	layout.Div(                                                                                            
-                		layout.Div(                                                                                        
-                			layout.Field('serviceAvailableService',template="utils/checkbox_select_multiple_tree.html"),                                                                   
-                			css_class="col-md-12"                                                                          
-                			),                                                                                             
-                    	css_class="row panel-body"                                                                         
-                    	),                                                                                                 
-                	css_class = "panel panel-default"                                                                      
-                	),                                                                                                     
+                layout.Div(
+                	layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Service selection</h3></div>"""),
+                	layout.Div(
+                		layout.Div(
+                			layout.Field('serviceAvailableService',template="django_utils/checkbox_select_multiple_tree.html"),
+                			css_class="col-md-12"
+                			),
+                    	css_class="row panel-body"
+                    	),
+                	css_class = "panel panel-default"
+                	),
 				layout.Div(
 					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Service Description</h3></div>"""),
 					layout.Div(
@@ -104,7 +104,7 @@ class ServiceRequestFormExternalSequencing(forms.ModelForm):
  		self.helper.form_action=""
  		self.helper.form_method="POST"
  		self.helper.layout = layout.Layout(
-				layout.Div(               
+				layout.Div(
  					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Sequencing Data</h3></div>"""),
  					layout.Div(
  						layout.Div(
@@ -121,17 +121,17 @@ class ServiceRequestFormExternalSequencing(forms.ModelForm):
 						),
 					css_class = "panel panel-default"
 					),
-                layout.Div(                                                                                                
-                	layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Service selection</h3></div>"""), 
-                	layout.Div(                                                                                            
-                		layout.Div(                                                                                        
-                			layout.Field('serviceAvailableService',template="utils/checkbox_select_multiple_tree.html"),                                                                   
-                			css_class="col-md-12"                                                                          
-                			),                                                                                             
-                    	css_class="row panel-body"                                                                         
-                    	),                                                                                                 
-                	css_class = "panel panel-default"                                                                      
-                	),                                                                                                     
+                layout.Div(
+                	layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Service selection</h3></div>"""),
+                	layout.Div(
+                		layout.Div(
+                			layout.Field('serviceAvailableService',template="django_utils/checkbox_select_multiple_tree.html"),
+                			css_class="col-md-12"
+                			),
+                    	css_class="row panel-body"
+                    	),
+                	css_class = "panel panel-default"
+                	),
 				layout.Div(
 					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Service Description</h3></div>"""),
 					layout.Div(
@@ -147,7 +147,7 @@ class ServiceRequestFormExternalSequencing(forms.ModelForm):
 				bootstrap.FormActions(
 					layout.Submit(('submit'),_('Save')),
                     )
-				) 		
+				)
 
 
 ## Management of request forms for services OTHER THAN 'Services Request' :
@@ -196,7 +196,7 @@ class AddResolutionService(forms.ModelForm):
 	radio_buttons = forms.ChoiceField(
 		label = 'Action to be done for the service',
 		choices = (
-			('accepted', "Service is Accepted"), 
+			('accepted', "Service is Accepted"),
 			('rejected', "Service is Rejected")
 		),
 		widget = forms.RadioSelect,
@@ -213,7 +213,7 @@ class AddResolutionService(forms.ModelForm):
 		self.helper.field_class = 'col-lg-7'
 		self.helper.form_action=""
 		self.helper.form_method="POST"
-		
+
 		self.helper.layout = layout.Layout(
 
 				layout.Div(
@@ -236,7 +236,7 @@ class AddResolutionService(forms.ModelForm):
  							css_class="col-md-10",
  						),
 						layout.Div(
-							Field ('radio_buttons' , ), 
+							Field ('radio_buttons' , ),
 							css_class="col-md-10",
 						),
 						layout.Div(
@@ -251,7 +251,7 @@ class AddResolutionService(forms.ModelForm):
 				)
 
 class AddDeliveryService (forms.ModelForm) :
-	
+
 	class Meta:
 		model = Delivery
 		fields = ['deliveryNotes']
@@ -267,7 +267,7 @@ class AddDeliveryService (forms.ModelForm) :
 		self.helper.field_class = 'col-lg-7'
 		self.helper.form_action=""
 		self.helper.form_method="POST"
-		
+
 		self.helper.layout = layout.Layout(
 				layout.Div(
 					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Delivery Form for Service </h3></div>"""),
@@ -304,8 +304,8 @@ class ByDateUserStats (forms.Form):
 		label = 'End Date',
 		required = False,
 		)
-	
-	
+
+
 	def __init__(self,*args, **kwargs):
 		super(ByDateUserStats, self).__init__(*args, **kwargs)
 		self.helper = FormHelper()
@@ -314,7 +314,7 @@ class ByDateUserStats (forms.Form):
 		self.helper.field_class = 'col-lg-7'
 		self.helper.form_action=""
 		self.helper.form_method="POST"
-		
+
 		self.helper.layout = layout.Layout(
 				layout.Div(
 					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Form for getting User statatistics </h3></div>"""),
@@ -352,8 +352,8 @@ class ByServicesRequest (forms.Form):
 		label = 'End Date',
 		required = True,
 		)
-	
-	
+
+
 	def __init__(self,*args, **kwargs):
 		super(ByServicesRequest, self).__init__(*args, **kwargs)
 		self.helper = FormHelper()
@@ -362,7 +362,7 @@ class ByServicesRequest (forms.Form):
 		self.helper.field_class = 'col-lg-7'
 		self.helper.form_action=""
 		self.helper.form_method="POST"
-		
+
 		self.helper.layout = layout.Layout(
 				layout.Div(
 					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Form for getting Services Requested statatistics </h3></div>"""),
@@ -396,8 +396,8 @@ class BySampleProcessed (forms.Form):
 		label = 'End Date',
 		required = True,
 		)
-	
-	
+
+
 	def __init__(self,*args, **kwargs):
 		super(BySampleProcessed, self).__init__(*args, **kwargs)
 		self.helper = FormHelper()
@@ -406,7 +406,7 @@ class BySampleProcessed (forms.Form):
 		self.helper.field_class = 'col-lg-7'
 		self.helper.form_action=""
 		self.helper.form_method="POST"
-		
+
 		self.helper.layout = layout.Layout(
 				layout.Div(
 					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Form for getting Sample Processed statatistics </h3></div>"""),
@@ -441,8 +441,8 @@ class TimeDelivery (forms.Form):
 		label = 'End Date',
 		required = True,
 		)
-	
-	
+
+
 	def __init__(self,*args, **kwargs):
 		super(TimeDelivery, self).__init__(*args, **kwargs)
 		self.helper = FormHelper()
@@ -451,7 +451,7 @@ class TimeDelivery (forms.Form):
 		self.helper.field_class = 'col-lg-7'
 		self.helper.form_action=""
 		self.helper.form_method="POST"
-		
+
 		self.helper.layout = layout.Layout(
 				layout.Div(
 					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Form for getting the delivery time for the requested services</h3></div>"""),

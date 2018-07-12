@@ -1,5 +1,5 @@
 from django.contrib import admin
-from drylab.models import *
+from iSkyLIMS_drylab.models import *
 from django_mptt_admin.admin import DjangoMpttAdmin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
@@ -14,6 +14,8 @@ class PlatformAdmin(admin.ModelAdmin):
 # 'serviceUsername' refactored to 'serviceUserid' which shows better its real nature
 class ServiceAdmin(admin.ModelAdmin):
 	list_display=('serviceRequestNumber','serviceUserId','serviceSeqCenter','servicePlatform','serviceRunSpecs','serviceFileExt','serviceFile','serviceStatus','serviceNotes','serviceCreatedOnDate','serviceOnApprovedDate','serviceOnRejectedDate','serviceOnDeliveredDate')
+#	list_display=('serviceUserId','serviceUserId')
+
 
 class AvailableServiceAdmin(DjangoMpttAdmin):
 	list_display=('availServiceDescription',)

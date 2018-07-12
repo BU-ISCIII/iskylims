@@ -1,4 +1,4 @@
-{% extends 'drylab/base.html' %}
+{% extends 'iSkyLIMS_drylab/base.html' %}
 {% load static %}
 {% block content %}
 {% csrf_token %}
@@ -18,7 +18,7 @@
                           </tr>
                        </thead>
                        <tbody>
-                        {% for key, values in display_multiple_services.s_list.items %}  
+                        {% for key, values in display_multiple_services.s_list.items %}
                          <tr>
                             {% for serviceID, status, center in values %}
                            <td><a href="/drylab/display_service={{ key }}">{{ serviceID }}</a> </td>
@@ -31,13 +31,13 @@
                      </table>
            </div> <!--  end of panel body -->
           </div> <!--  end of panel  -->
-        </div> <!--  end of col-sm-9 --> 
+        </div> <!--  end of col-sm-9 -->
     </div> <!--// end row -->
 
 {% else %}
 
 <!-- FORM for searching  Service  -->
-          
+
     <div class="row row-space-4 margin-b-4">
       <div class="col-sm-7 col-sm-offset-1" >
         <div class="panel panel-default">
@@ -46,7 +46,7 @@
             <form method="post" enctype="multipart/form-data" name="searchservice" id="searchservice" class="form-horizontal well">
             {% csrf_token %}
             <input type="hidden" name="action" value="searchservice"/>
-            <div class="form-group"> 
+            <div class="form-group">
                   <label class="col-sm-5  control-label" for="servicenumber" >Search by service number </label>
                   <div class="col-sm-5"><input class="form-control" type="text" name="servicenumber" id="servicenumber" size="100" maxlength="100"></div>
              </div>  <!-- end from-group   -->
@@ -55,7 +55,7 @@
                <label class="col-sm-5 control-label" for="servicestate" >Service state</label>
                <div class="col-sm-4"><select class="form-control" name="servicestate" id="servicestate">
                    <option value="">Choose a value  </option>
-                   {% for key, value in services_state_list %}
+                   {% for key, value in services_search_list.status %}
                          <option value="{{ key }}">{{value}}</option>
                     {% endfor %}
                     </select>
@@ -75,7 +75,20 @@
              </div>  <!-- end from-group   -->
              <br>
              <br>
-            <div class="form-group"> 
+             <div class="form-group">
+               <label class="col-sm-5 control-label" for="center" >Center</label>
+               <div class="col-sm-4"><select class="form-control" name="center" id="center">
+                   <option value="">Choose a value  </option>
+                   {% for value in services_search_list.centers %}
+                         <option value="{{ value }}">{{value}}</option>
+                    {% endfor %}
+                    </select>
+               </div>  <!-- end select input -->
+               <br>
+            </div>  <!-- end from-group   -->
+               <br>
+               <br>
+            <div class="form-group">
                   <label class="col-sm-5  control-label" for="username" >Search from user name</label>
                     <div class="col-sm-5"><input class="form-control" type="text" name="username" id="username" size="100" maxlength="100"></div>
              </div>  <!-- end from-group   -->
@@ -89,7 +102,7 @@
         </div> <!--// end col-sm-7  -->
     </div> <!--// end row -->
     <!-- End of FORM for searching Service  -->
-    
-{% endif %} 
-    
+
+{% endif %}
+
 {% endblock %}

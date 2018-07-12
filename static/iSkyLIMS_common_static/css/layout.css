@@ -23,6 +23,7 @@
 ------------------------------------------------------------------*/
 html {
   overflow-x: hidden;
+  height:80% !important;
 }
 
 html, html a, body {
@@ -32,6 +33,7 @@ html, html a, body {
 body {
   position: relative;
   font-family: Hind, sans-serif;
+  height:100% !important;
 }
 
 p {
@@ -166,6 +168,11 @@ h4 {
   text-decoration: none;
 }
 
+.fill-height {
+	height:100% !important;
+	min-height:100% !important;
+}
+
 /*------------------------------------------------------------------
   	[Button]
 ------------------------------------------------------------------*/
@@ -288,7 +295,7 @@ fieldset[disabled] .btn-theme {
 /*------------------------------------------------------------------
   	[Social Icons]
 ------------------------------------------------------------------*/
-.social-icons {
+/*.social-icons {
   display: inline-block;
   width: 40px;
   height: 40px;
@@ -310,7 +317,7 @@ fieldset[disabled] .btn-theme {
   transition-duration: 300ms;
   transition-property: all;
   transition-timing-function: cubic-bezier(0.7, 1, 0.7, 1);
-}
+}*/
 
 /*------------------------------------------------------------------
   	[Promo Banner]
@@ -434,7 +441,7 @@ fieldset[disabled] .btn-theme {
   	[Footer]
 ------------------------------------------------------------------*/
 .footer .footer-logo {
-  width: 76px;
+  width: 200px;
   height: auto;
 }
 
@@ -467,7 +474,7 @@ fieldset[disabled] .btn-theme {
 
 .header .navbar-toggle .toggle-icon {
   position: relative;
-  width: 21px; 
+  width: 21px;
   height: 1px;
   display: inline-block;
   background: #515769;
@@ -880,6 +887,7 @@ fieldset[disabled] .btn-theme {
 
 .bg-color-sky-light {
   background: #fafafa !important;
+  min-height:100% !important;
 }
 
 /*------------------------------------------------------------------
@@ -949,23 +957,27 @@ fieldset[disabled] .btn-theme {
   	[Content]
 ------------------------------------------------------------------*/
 .content {
-  padding-top: 40px;
-  padding-bottom: 40px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  height:100%;
 }
 
 .content-sm {
   padding-top: 60px;
   padding-bottom: 60px;
+  height:100%;
 }
 
 .content-md {
   padding-top: 80px;
   padding-bottom: 80px;
+  height:100%;
 }
 
 .content-lg {
   padding-top: 100px;
   padding-bottom: 100px;
+  height:100%;
 }
 
 /*------------------------------------------------------------------

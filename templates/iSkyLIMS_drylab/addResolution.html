@@ -1,10 +1,7 @@
-{% extends 'drylab/base.html' %}
+{% extends 'iSkyLIMS_drylab/base.html' %}
 {% load crispy_forms_tags %}
-{% block content %}
 
-{% if delivery_info %}
-esto es una prueba {{ prueba }}
-{% endif %}
+{% block content %}
 <div class="container-fluid margin-t-40">
 	{% crispy form %}
 </div>

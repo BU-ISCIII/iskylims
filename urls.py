@@ -27,6 +27,8 @@ urlpatterns = [
      path('statsTimeDelivery', views.stats_time_delivery, name = 'stats_time_delivery'),
      path('openSessions', views.open_sessions, name='open_sessions'),
      path('userLogin', views.user_login, name = 'user_login'),
+     path('pdf',views.pdf, name= 'pdf'),
+     path('test',views.test, name ='test'),
 ] 
     
 if settings.DEBUG:

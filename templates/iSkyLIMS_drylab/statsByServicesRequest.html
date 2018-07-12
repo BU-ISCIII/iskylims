@@ -1,9 +1,9 @@
-{% extends 'drylab/base.html' %}
+{% extends 'iSkyLIMS_drylab/base.html' %}
 {% load crispy_forms_tags %}
 {% load static %}
 {% block content %}
-<script type="text/javascript" src="{% static "js/fusioncharts/js/fusioncharts.js" %}"></script>                   
-<script type="text/javascript" src="{% static "js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
+<script type="text/javascript" src="{% static "iSkyLIMS_drylab/js/fusioncharts/js/fusioncharts.js" %}"></script>                   
+<script type="text/javascript" src="{% static "iSkyLIMS_drylab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
 <h1><div class="color-heading">Services Request Statistics</div></h1>
 {% if services_stats_info %}
 
@@ -13,10 +13,10 @@
 		<div class="panel panel-default">
 		    <div class="panel-heading"><h3>Number of Requested Services per users.</h3></div>
 		    <div class="panel-body"> 
-		     {% if services_stats_info.graphic_requested_services %}
+		     {% if services_stats_info.graphic_requested_services_per_user %}
 			<div id="chart-1"> </div>
 			<!-- dumping JavaScript code here -->
-			{{ services_stats_info.graphic_requested_services |safe }}
+			{{ services_stats_info.graphic_requested_services_per_user |safe }}
 		    {% endif %}
 		    </div> <!--  end of panel body -->
 		</div> <!--  end of panel  -->
@@ -101,7 +101,42 @@
 	    </div> <!--// end col-sm-6  graphics for area  -->
 	</div> <!--// end col-sm-12  graphics for area  --> 
     </div> <!--// end row -->
-   
+
+    <div class="row row-space-2 margin-b-4">    
+	<div class="col-sm-12 ">  <!--col-sm-12  Statistics per Service request -->
+	    <div class="col-sm-10 ">  <!--col-sm-10  Services on level 2 -->
+		<div class="panel panel-default">
+		    <div class="panel-heading"><h3>Requested Level 2 Services </h3></div>
+		    <div class="panel-body"> 
+			<h4> {{services_stats_info.period_time}}.</h4>
+		     {% if services_stats_info.graphic_req_l2_services %}
+			<div id="chart-7"> </div>
+			<!-- dumping JavaScript code here -->
+			{{ services_stats_info.graphic_req_l2_services |safe }}
+		    {% endif %}
+		    </div> <!--  end of panel body -->
+		</div> <!--  end of panel  -->
+	    </div> <!--// end col-sm-10  graphics for area  -->
+	</div> <!--// end col-sm-12  graphics for area  --> 
+    </div> <!--// end row -->
+    <div class="row row-space-2 margin-b-4">    
+	<div class="col-sm-12 ">  <!--col-sm-12  Statistics per Service request -->
+	    <div class="col-sm-10 ">  <!--col-sm-10  Services on level 3-->
+		<div class="panel panel-default">
+		    <div class="panel-heading"><h3>Requested Level 3 Services </h3></div>
+		    <div class="panel-body"> 
+			<h4> {{services_stats_info.period_time}}.</h4>
+		     {% if services_stats_info.graphic_req_l3_services %}
+			<div id="chart-8"> </div>
+			<!-- dumping JavaScript code here -->
+			{{ services_stats_info.graphic_req_l3_services |safe }}
+		    {% endif %}
+		    </div> <!--  end of panel body -->
+		</div> <!--  end of panel  -->
+	    </div> <!--// end col-sm-10  graphics for area  -->
+	</div> <!--// end col-sm-12  graphics for area  --> 
+    </div> <!--// end row -->
+
 {% else %}
 
 <div class="row row-space-2 margin-b-4">
