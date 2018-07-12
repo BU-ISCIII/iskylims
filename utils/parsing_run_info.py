@@ -5,19 +5,25 @@ import xml.etree.ElementTree as ET
 import time
 import shutil
 import locale
-
+import datetime, time
 from  ..models import *
 from .interop_statistics import *
 
 from smb.SMBConnection import SMBConnection
+from iSkyLIMS_wetlab import wetlab_config
+
+from django.conf import settings
+
 
 def open_samba_connection():
     ## open samba connection
     # There will be some mechanism to capture userID, password, client_machine_name, server_name and server_ip
     # client_machine_name can be an arbitary ASCII string
     # server_name should match the remote machine name, or else the connection will be rejected
-    conn=SMBConnection('bioinfocifs', 'fCdEg979I-W.gUx-teDr', 'NGS_Data', 'quibitka', use_ntlm_v2=True)
-    conn.connect('172.21.7.11', 445)
+    conn=SMBConnection(wetlab_config.SAMBA_USER_ID, wetlab_config.SAMBA_USER_PASSWORD, wetlab_config.SAMBA_SHARED_FOLDER_NAME,wetlab_config.SAMBA_REMOTE_SERVER_NAME, use_ntlm_v2=wetlab_config.SAMBA_NTLM_USED)
+    conn.connect(wetlab_config.SAMBA_IP_SERVER, int(wetlab_config.SAMBA_PORT_SERVER))
+    #conn=SMBConnection('bioinfocifs', 'fCdEg979I-W.gUx-teDr', 'NGS_Data', 'quibitka', use_ntlm_v2=True)
+    #conn.connect('172.21.7.11', 445)
 
     #conn=SMBConnection('Luigi', 'Apple123', 'NGS_Data_test', 'LUIGI-PC', use_ntlm_v2=True)
     #conn.connect('192.168.1.3', 139)
@@ -31,14 +37,14 @@ def open_samba_connection():
 
 def get_size_dir (directory, conn, logger):
     count_file_size = 0
-    file_list = conn.listPath('NGS_Data', directory)
+    file_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME, directory)
     for sh_file in file_list:
         if sh_file.isDirectory:
             if (sh_file.filename == '.' or sh_file.filename == '..'):
                 continue
             logger.debug('Checking space for directory %s', sh_file.filename)
             sub_directory = os.path.join (directory,sh_file.filename)
-            count_file_size += get_size_dir (sub_directory, conn)
+            count_file_size += get_size_dir (sub_directory, conn, logger)
         else:
             count_file_size += sh_file.file_size
 
@@ -48,7 +54,7 @@ def get_size_dir (directory, conn, logger):
 def get_run_disk_utilization (conn, run_Id_used, run_processing_id, logger):
     if RunProcess.objects.filter(pk = run_processing_id).exists():
         run_be_updated = RunProcess.objects.get(pk = run_processing_id)
-        get_full_list = conn.listPath('NGS_Data' ,run_Id_used)
+        get_full_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,run_Id_used)
         rest_of_dir_size = 0
         data_dir_size = 0
         images_dir_size = 0
@@ -59,24 +65,24 @@ def get_run_disk_utilization (conn, run_Id_used, run_processing_id, logger):
                 continue
             if item_list.filename == 'Data':
                 dir_data = os.path.join(run_Id_used,'Data')
-                data_dir_size = get_size_dir(dir_data , conn)
+                data_dir_size = get_size_dir(dir_data , conn,logger)
                 continue
             elif item_list.filename == 'Images':
                 dir_images = os.path.join(run_Id_used, 'Images')
-                images_dir_size = get_size_dir(dir_images , conn)
+                images_dir_size = get_size_dir(dir_images , conn,logger)
                 continue
             if item_list.isDirectory:
                 item_dir = os.path.join(run_Id_used, item_list.filename)
-                rest_of_dir_size += get_size_dir(item_dir, conn)
+                rest_of_dir_size += get_size_dir(item_dir, conn,logger)
             else:
                 rest_of_dir_size += item_list.file_size
         # format file space and save it into database
         data_dir_size_formated = '{0:,}'.format(round(data_dir_size/in_mega_bytes))
         images_dir_size_formated = '{0:,}'.format(round(images_dir_size/in_mega_bytes))
         rest_of_dir_size_formated = '{0:,}'.format(round(rest_of_dir_size/in_mega_bytes))
-        run_be_updated.useSpaceImgMb= images_dir_size
-        run_be_updated.useSpaceFastaMb= data_dir_size
-        run_be_updated.useSpaceOtherMb= rest_of_dir_size
+        run_be_updated.useSpaceImgMb= images_dir_size_formated
+        run_be_updated.useSpaceFastaMb= data_dir_size_formated
+        run_be_updated.useSpaceOtherMb= rest_of_dir_size_formated
         run_be_updated.save()
         logger.info('End  disk space utilization for runID  %s', run_Id_used)
 
@@ -184,9 +190,9 @@ def process_run_in_recorded_state(logger):
     except:
         return ('Error')
     processed_run_file, runlist = [] , []
-    share_folder_name='NGS_Data'
-    base_directory = 'documents/wetlab/tmp'
-    recorded_dir = os.path.join(base_directory, 'recorded')
+    share_folder_name = wetlab_config.SAMBA_SHARED_FOLDER_NAME
+    base_directory = wetlab_config.RUN_TEMP_DIRECTORY
+    recorded_dir = wetlab_config.RUN_TEMP_DIRECTORY_RECORDED
     logger.debug('working directory is %s', os.getcwd())
     local_run_parameter_file = os.path.join(base_directory, 'RunParameters.xml')
     local_run_info_file = os.path.join(base_directory, 'RunInfo.xml')
@@ -224,6 +230,10 @@ def process_run_in_recorded_state(logger):
                 try:
                     with open (local_run_completion_status_file, 'wb') as c_status_fp :
                         conn.retrieveFile(share_folder_name, samba_completion_status_file, c_status_fp )
+                        # Get the date and time when the RunCompletionStatus is created
+                        completion_attributes = conn.getAttributes(share_folder_name , samba_completion_status_file)
+                        run_completion_date = datetime.datetime.fromtimestamp(int(completion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
+
                 except:
                     logger.error ('ERROR:: unable to fetch the RunCompletionStatus.xml file at %s', run_dir)
                     logger.debug ('Deleting RunParameters.xml for run %s ', run_dir)
@@ -266,11 +276,12 @@ def process_run_in_recorded_state(logger):
                     if status_run != 'CompletedAsPlanned':
                         # set the run in error state
                         exp_name = RunProcess.objects.get(runName__exact = exp_name)
-                        exp_name.runState = 'CANCELED'
+                        exp_name.runState = 'CANCELLED'
+                        exp_name.run_finish_date = run_completion_date
                         exp_name.save()
                         project_name_list = Projects.objects.filter(runprocess_id__exact = exp_name_id)
                         for project in project_name_list:
-                            project.procState= 'CANCELED'
+                            project.procState= 'CANCELLED'
                             project.save()
                         # delelete the runParameter file
                         os.remove(local_run_parameter_file)
@@ -322,6 +333,11 @@ def process_run_in_recorded_state(logger):
                         # change the run  to SampleSent state
                     update_run_state(exp_name_id, 'Sample Sent', logger)
                     update_project_state(exp_name_id, 'Sample Sent', logger)
+                        # add the completion date in the run
+                    logger.info('Saving completion date for %s' , exp_name)
+                    run_update_date = RunProcess.objects.get(pk=exp_name_id)
+                    run_update_date.run_finish_date = run_completion_date
+                    run_update_date.save()
                         # add the run_dir inside the processed_run file
                     processed_run.append(run_dir)
                     run_names_processed.append(exp_name)
@@ -805,7 +821,7 @@ def process_run_in_processrunning_state (process_list, logger):
     except:
         return('Error')
 
-    share_folder_name='NGS_Data'
+    share_folder_name = wetlab_config.SAMBA_SHARED_FOLDER_NAME
     for run_item in process_list:
         logger.debug ('processing the run %s in process running state' , run_item)
         run_be_processed_id=RunProcess.objects.get(runName__exact=run_item).id
@@ -823,6 +839,13 @@ def process_run_in_processrunning_state (process_list, logger):
                 processed_run.append(run_Id_used)
                 update_run_state(run_be_processed_id, 'Bcl2Fastq Executed', logger)
                 update_project_state(run_be_processed_id, 'B2FqExecuted', logger)
+                # Get the time when  the Bcl2Fastq process is ending
+                conversion_stats_file = os.path.join (run_Id_used,'Data/Intensities/BaseCalls/Stats/', 'ConversionStats.xml')
+                conversion_attributes = conn.getAttributes('NGS_Data' ,conversion_stats_file)
+                run_date = RunProcess.objects.get(pk=run_be_processed_id)
+                run_date.bcl2fastq_finish_date = datetime.datetime.fromtimestamp(int(conversion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
+                run_date.save()
+                logger.info ('Updated the Bcl2Fastq time in the run %s', run_item)
                 break
             else:
                 logger.debug('The directory %s has been found while looking for completion of the execution of bcl2fastq', sh.filename)
@@ -841,14 +864,16 @@ def process_run_in_processrunning_state (process_list, logger):
 
 def process_run_in_bcl2F_q_executed_state (process_list, logger):
     processed_run=[]
-    plot_dir='documents/wetlab/images_plot'
     # get the directory of samba to fetch the files
-    share_folder_name ='NGS_Data'
-    local_dir_samba= 'documents/wetlab/tmp/processing'
+    share_folder_name = wetlab_config.SAMBA_SHARED_FOLDER_NAME
+    local_dir_samba= wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING
     remote_stats_dir= 'Data/Intensities/BaseCalls/Stats/'
     demux_file=os.path.join(local_dir_samba,'DemultiplexingStats.xml')
     conversion_file=os.path.join(local_dir_samba,'ConversionStats.xml')
     run_info_file=os.path.join(local_dir_samba, 'RunInfo.xml')
+    ## Prepared for possible new machines.
+    machine = "NextSeq"
+
     logger.debug('Executing process_run_in_bcl2F_q_executed_state method')
 
     # check the connectivity to remote server
@@ -963,16 +988,21 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
                 logger.error('Stopping process for this run an starting deleting the files')
             else:
                 process_xml_stats(xml_stats,run_processing_id, logger)
+
                 # parsing and processing the project samples
                 sample_project_stats = parsing_sample_project_xml (demux_file, conversion_file, logger)
                 store_samples_projects (sample_project_stats, run_processing_id, logger)
 
                 logger.info('processing interop files')
                 # processing information for the interop files
+                if(machine == "NextSeq"):
+                    number_of_lanes = 4
 
-                process_binStats(local_dir_samba, run_processing_id, logger)
-                graphic_dir=os.path.join(plot_dir,run_Id_used)
-                create_graphics(local_dir_samba, run_processing_id, run_Id_used, logger)
+                process_binStats(local_dir_samba, run_processing_id, logger,number_of_lanes)
+                # Create graphics
+                graphic_dir=os.path.join(settings.MEDIA_ROOT,wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING)
+                create_graphics(graphic_dir, run_processing_id, run_Id_used, logger)
+
                 processed_run.append(run_Id_used)
                 logger.info('run id %s is now on Completed state', run_Id_used)
                 update_run_state(run_processing_id, 'Completed', logger)
@@ -993,6 +1023,11 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
             logger.info('xml files and binary files from InterOp folder have been removed')
             ## connect to server to get the disk space utilization of the folders
             get_run_disk_utilization (conn, run_Id_used, run_processing_id, logger)
+            # Update the run with the date of the run completion 
+            completion_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            run_date_to_update = RunProcess.objects.get(pk = run_processing_id)
+            run_date_to_update.process_completed_date = completion_date
+            run_date_to_update.save()
 
     # close samba connection
     conn.close()

@@ -1,6 +1,6 @@
 import sys
 import xml.etree.ElementTree as ET
-from wetlab.models import *
+from iSkyLIMS_wetlab.models import *
 
 
 

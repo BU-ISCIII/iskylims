@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>iSkyLIMS</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% load staticfiles  %}
+    <!-- GLOBAL MANDATORY STYLES -->
+    <link href="http://fonts.googleapis.com/css?family=Hind:300,400,500,600,700" rel="stylesheet" type="text/css">
+    <!--<link href="{% static "iSkyLIMS_common_static/vendor/simple-line-icons/css/simple-line-icons.css" %}" rel="stylesheet" type="text/css"/>-->
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.10/css/all.css" integrity="sha384-+d0P83n9kaQMCwj8F4RJB66tzIwOKmrdb46+porD/OvrJ+37WqIM7UoBtwHO6Nlg" crossorigin="anonymous">
+    <link href="{% static "iSkyLIMS_common_static/css/icons.css" %}" rel="stylesheet" type="text/css"/>
+    <link href="{% static "iSkyLIMS_common_static/vendor/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css"/>
+	<link href= "https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css"/>
+
+    <!-- GLOBAL MANDATORY JAVA SCRIPTS -->
+	<!-- script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> -->
+	<script src="{% static "iSkyLIMS_wetlab/js/jquery-3.2.1.min.js" %}"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> <!-- drop menus -->
+
+    <!-- PAGE LEVEL PLUGIN STYLES -->
+    <link href="{% static "iSkyLIMS_common_static/css/animate.css" %}" rel="stylesheet">
+    <link href="{% static "iSkyLIMS_common_static/vendor/swiper/css/swiper.min.css" %}"rel="stylesheet" type="text/css"/>
+	<link href="{% static "iSkyLIMS_wetlab/css/wetlab.css" %}" rel="stylesheet" type="text/css"/>
+
+    <!-- THEME STYLES -->
+   <link href="{% static "iSkyLIMS_common_static/css/layout.css" %}" rel="stylesheet" type="text/css"/>
+
+    <!-- Place favicon.ico in the root directory -->
+
+    {% load user_groups %}
+
+  </head>
+  <!-- END HEAD -->
+
+  <!-- BODY -->
+  <body id="body" data-spy="scroll" data-target=".header">
+              <!--========== HEADER ==========-->
+        <header class="header navbar-fixed-top">
+            <!-- Navbar -->
+            <nav class="navbar" role="navigation">
+                <div class="container">
+                    <!-- Brand and toggle get grouped for better mobile display -->
+                    <div class="menu-container js_nav-item">
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="toggle-icon"></span>
+                        </button>
+
+                        <!-- Logo -->
+                        <div class="logo">
+                            <a class="logo-wrap" href="/">
+                                <img src="{% static "iSkyLIMS_common_static/img/logo_iSkyLIMS2.png" %}" alt="iSkyLIMS_Logo">
+                            </a>
+                        </div>
+                        <!-- End Logo -->
+
+                    <!-- Collect the nav links, forms, and other content for toggling -->
+                    <div class="collapse navbar-collapse nav-collapse">
+                        <div class="menu-container">
+                            <ul class="nav navbar-nav navbar-nav-right">
+                                <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/wetlab/">Home</a></li>
+				{% if user.is_authenticated %}
+				<li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Run Preparation<span class="caret"></span></a>
+				  <ul class="dropdown-menu">
+					{% if request.user|has_group:"WetlabManager" %}
+					    <li><a href="/wetlab/getSampleSheet">Upload the Run </a></li>
+					{% endif %}
+					<li><a href="/wetlab/AddLibraryKit">Add Library Kit</a></li>
+
+				  </ul>
+				</li>
+				{% else %}
+				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">Run Preparation</a></li>
+				{% endif%}
+				{% if user.is_authenticated %}
+                                <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Search<span class="caret"></span></a>
+				    <ul class="dropdown-menu">
+				    {% if request.user|has_group:"WetlabManager" %}
+					<li><a href="/wetlab/searchNextSeq">Search by RUN</a></li>
+					<li><a href="/wetlab/latest_run">Get Latest Run</a></li>
+					<li><a href="/wetlab/incompletedRuns">Get incompleted Runs</a></li>
+				    {% endif %}
+					<li><a href="/wetlab/searchNextProject">Search by Project</a></li>
+					<li><a href="/wetlab/searchNextSample">Search by Sample</a></li>
+				  </ul>
+				</li>
+				{% else %}
+				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">Search</a></li>
+				{% endif%}
+				{% if user.is_authenticated %}
+                                <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#"> Statistics<span class="caret"></span></a>
+				    <ul class="dropdown-menu">
+				    <li><a href="/wetlab/NextSeqStatsPerResearcher/">Projects per Investigator </a></li>
+				    {% if request.user|has_group:"WetlabManager" %}
+				    <li><a href="/wetlab/NextSeqStatsPerTime/">Period of time</a></li>
+				    {% endif %}
+				    <li><a href="/wetlab/NextSeqStatsExperiment">Experiment Type</a></li>
+				    <li><a href="/wetlab/NextSeqStatsLibrary">Library Kit Qualitty</a></li>
+				  </ul>
+				</li>
+				{% else %}
+				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab"> Statistics</a></li>
+				{% endif%}
+				{% if user.is_authenticated %}
+				    {% if request.user|has_group:"WetlabManager" %}
+				<li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Reports<span class="caret"></span></a>
+				    <ul class="dropdown-menu">
+				    <li><a href="/wetlab/AnnualReport">Annual Reports</a></li>
+				    <li><a href="/wetlab/QuarterReport">Quarter Reports</a></li>
+				    <li><a href="/wetlab/MonthlyReport">Monthly Reports</a></li>
+				    </ul>
+				    {% endif %}
+				</li>
+				{% else %}
+				    <!--<li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">Reports</a></li>-->
+				{% endif%}
+                                <!--<li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#contact">Contact</a></li>-->
+                            </ul>
+
+                        </div> <!-- menu- container -->
+                    </div> <!--  class Collapse navbar -->
+                    <!-- End Navbar Collapse -->
+                </div> <!-- class menu-container -->
+              </div> <!-- class container -->
+            </nav>
+            <!-- Navbar -->
+        </header>
+        <!--========== END HEADER ==========-->
+
+
+        <!--========== PAGE LAYOUT ==========-->
+
+	<div class="bg-color-sky-light">
+          <div class="container content-lg fill-height">
+            <div class="row margin-b-40">
+	    <!-- Logging pannel -->
+		<div class="row row-space-2 margin-b-4">
+		    <div class="col-sm-6 col-sm-offset-6">
+			{% include 'registration/login_inline.html' %}
+		    </div>
+		</div>
+	    <!-- End Loggin pannel -->
+            {% block content %}
+	<!--========== HERE WILL BE THE INFORMATION FROM DJANGO CODE  ==========-->
+            {% endblock %}
+            </div> <!--// end row -->
+        </div> <!--// end container -->
+        </div> <!--// end bg-color -->
+
+{% include "iSkyLIMS_home/footer.html" %}
+
+        <!-- Back To Top -->
+        <a href="javascript:void(0);" class="js-back-to-top back-to-top">Top</a>
+	<!-- JAVASCRIPTS(Load javascripts at bottom, this will reduce page load time) -->
+
+	<!-- CORE PLUGINS -->
+	<!--
+        <script src="{% static "iSkyLIMS_common_static/vendor/jquery-migrate.min.js" %}" type="text/javascript"></script>
+	<script src="{% static "iSkyLIMS_common_static/vendor/bootstrap/js/bootstrap.min.js" %}" type="text/javascript"></script>
+	-->
+	<!-- PAGE LEVEL PLUGINS -->
+	<script src="{% static "iSkyLIMS_common_static/vendor/jquery.back-to-top.js" %}" type="text/javascript"></script>
+	<!--
+        <script src="{% static "iSkyLIMS_common_static/vendor/jquery.easing.js" %}" type="text/javascript"></script>
+	<script src="{% static "iSkyLIMS_common_static/vendor/jquery.smooth-scroll.js"%}"  type="text/javascript"></script>
+	<script src="{% static "iSkyLIMS_common_static/vendor/jquery.wow.min.js" %}"type="text/javascript"></script>
+        <script src="{% static "iSkyLIMS_common_static/vendor/jquery.appear.js" %}" type="text/javascript"></script>
+	<script src="{% static "iSkyLIMS_common_static/vendor/swiper/js/swiper.jquery.min.js" %}"type="text/javascript"></script>
+	-->
+	<!-- PAGE LEVEL SCRIPTS -->
+	<!--
+	<script src="{% static "iSkyLIMS_common_static/js/layout.min.js" %}" type="text/javascript"></script>
+	<script src="{% static "iSkyLIMS_common_static/js/components/progress-bar.min.js" %}" type="text/javascript"></script>
+	<script src="{% static "iSkyLIMS_common_static/js/components/swiper.min.js"%}" type="text/javascript"></script>
+        <script src="{% static "iSkyLIMS_common_static/js/components/wow.min.js" %}" type="text/javascript"></script>
+	-->
+
+	<!-- CUSTOMIZED SCRIPTS -->
+
+	<script src="{% static "iSkyLIMS_wetlab/js/customized.js" %}" type="text/javascript"></script>
+	<script src="{% static "iSkyLIMS_wetlab/js/wetlab.js" %}" type="text/javascript"></script>
+
+  </body>
+  <!-- END BODY -->
+</html>

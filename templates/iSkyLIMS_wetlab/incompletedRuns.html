@@ -1,0 +1,35 @@
+{% extends 'iSkyLIMS_wetlab/base.html' %}
+{% load static %}
+{% block content %}
+
+{% if display_incomplete_run_list %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7">
+            <div class="panel panel-default">
+                <div class="panel-heading">The following list contains the Runs taht are not Completed </div>
+                <div class="panel-body">
+                    <table class="table table-hover">
+                        <thead>
+                           <tr>
+                               <th>Run Name </th>
+                               <th>State of the Run</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                          {% for key, values in display_incomplete_run_list.items %}
+                             <tr>
+                                {% for runName, state in values %}
+                                   <td><a href="/wetlab/search_run={{ key }}">{{ runName }}</a> </td>
+                                   <td> {{ state }} </td>
+                                {%endfor%}
+                              </tr>
+                          {%endfor%}
+                          </tbody>
+                    </table>
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-7 -->
+    </div> <!--  end of row -->
+
+{% endif %}
+{% endblock %}

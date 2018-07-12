@@ -5,7 +5,10 @@ from interop import py_interop_run_metrics, py_interop_run, py_interop_summary, 
 import os, shutil
 from  ..models import *
 
-def process_binStats(run_folder, run_id, logger):
+from django.conf import settings
+from iSkyLIMS_wetlab import wetlab_config
+
+def process_binStats(run_folder, run_id, logger,number_of_lanes):
     logger.info('starting analyzing the binary statistics ')
     run_metrics = py_interop_run_metrics.run_metrics()
     #run_folder = run_metrics.read(run_folder)
@@ -14,11 +17,17 @@ def process_binStats(run_folder, run_id, logger):
     run_folder = run_metrics.read(run_folder)
     #run_folder = run_metrics.read(run_folder, valid_to_load)
 
+
     summary = py_interop_summary.run_summary()
     py_interop_summary.summarize_run_metrics(run_metrics, summary)
 
-    # get the Run Summary for Read 1 to 4
-    for read_level in range(4):
+    # get the number of the read used in the run.
+    #import pdb; pdb.set_trace()
+    run_parameters = RunningParameters.objects.get(runName_id__exact = run_id)
+    num_of_reads = run_parameters.get_number_of_reads ()
+    logger.info('number of reads used are: %s', num_of_reads)
+    # get the Run Summary for each Read
+    for read_level in range(num_of_reads):
         # summary yield total
         read_summary_yield_g=format(summary.at(read_level).summary().yield_g(),'.3f')
         # summary projected total yield
@@ -92,9 +101,9 @@ def process_binStats(run_folder, run_id, logger):
 
     #lan_summary= py_interop_summary.lane_summary()
     # Tiles
-    for read_number in range(4):
+    for read_number in range(num_of_reads):
         logger.info('Processing bin stats for Read %s', read_number)
-        for lane_number in range(4):
+        for lane_number in range(number_of_lanes):
             read_lane_tiles=str(int(summary.at(read_number).at(lane_number).tile_count() )*2)
             # Density (k/mm2) divide the value by 1000 to have it K/mm2
             # get the +/- with the steddev
@@ -176,7 +185,7 @@ def create_graphics(run_folder,run_id, graphic_dir, logger):
         logger.debug('command used to create graphic is : %s', plot_command)
         os.system(plot_command)
 
-    run_graphic_dir=os.path.join('documents/wetlab/images_plot', graphic_dir)
+    run_graphic_dir=os.path.join(settings.MEDIA_ROOT,wetlab_config.RUN_IMAGES_DIRECTORY, graphic_dir)
     if not os.path.exists(run_graphic_dir):
         os.mkdir(run_graphic_dir)
         logger.info('created new directory %s', run_graphic_dir)
