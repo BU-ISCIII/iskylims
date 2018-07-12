@@ -2583,23 +2583,29 @@ def update_tables (request):
 
 def update_tables_date (request):
     if RunProcess.objects.filter(runState__exact ='Completed', run_finish_date = None).exists():
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         conn = open_samba_connection()
-        run_list_be_updated = RunProcess.objects.filter(runState__exact = 'Completed' , run_finish_date ='' )
+        run_list_be_updated = RunProcess.objects.filter(runState__exact = 'Completed' , run_finish_date = None )
         for run_be_updated in run_list_be_updated:
             run_id = run_be_updated.id
             run_parameter_id=RunningParameters.objects.get(pk=run_id)
             runID_value = run_parameter_id.RunID
             completion_file = os.path.join(runID_value, 'RunCompletionStatus.xml')
-            completion_attributes = conn.getAttributes('NGS_Data' ,completion_file)
-            # fetching the time creation on the RunCompletionStatus.xml for Run finish date
-            run_be_updated.run_finish_date = datetime.datetime.fromtimestamp(int(completion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
+            try:
+            	completion_attributes = conn.getAttributes('NGS_Data' ,completion_file)
+            	# fetching the time creation on the RunCompletionStatus.xml for Run finish datetime
+            	run_be_updated.run_finish_date = datetime.datetime.fromtimestamp(int(completion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
+            except:
+            	pass
             conversion_stats_file = os.path.join (runID_value,'Data/Intensities/BaseCalls/Stats/', 'ConversionStats.xml')
-            conversion_attributes = conn.getAttributes('NGS_Data' ,conversion_stats_file)
-            run_be_updated.bcl2fastq_finish_date = datetime.datetime.fromtimestamp(int(conversion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
-
-            finish_process_date = NextSeqStatsBinRunSummary.objects.filter(runprocess_id__exact = run_id).generatedat
-            run_be_updated.process_completed_date = finish_process_date[0]
+            try:
+            	conversion_attributes = conn.getAttributes('NGS_Data' ,conversion_stats_file)
+            	#import pdb; pdb.set_trace()
+            	run_be_updated.bcl2fastq_finish_date = datetime.datetime.fromtimestamp(int(conversion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
+            except:
+            	pass
+            finish_process_date = NextSeqStatsBinRunSummary.objects.filter(runprocess_id__exact = run_id)
+            run_be_updated.process_completed_date = finish_process_date[0].generatedat
             
             run_be_updated.save()
             
@@ -2610,7 +2616,7 @@ def update_tables_date (request):
 
 def test (request):
     if request.method=='POST' and (request.POST['action']=='displayResult') :
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
     return render(request, 'iSkyLIMS_wetlab/test.html')
 
 '''
