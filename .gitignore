@@ -1,6 +1,7 @@
 ## Custom
 *.xml
 *.bin
+*.gz
 migrations/
 tmp/
 log/
