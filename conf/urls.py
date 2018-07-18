@@ -44,9 +44,9 @@ urlpatterns = [
     path('faqs', LoginView.as_view(template_name='iSkyLIMS_home/faqs.html'), name="faqs"),
     path('contact', LoginView.as_view(template_name='iSkyLIMS_home/contact.html'), name="contact"),
     path('admin/', admin.site.urls),
-    path('iSkyLIMS_wetlab/', include('iSkyLIMS_wetlab.urls')),
-    path('iSkyLIMS_drylab/',include('iSkyLIMS_drylab.urls')),
-    path('django_utils/',include('django_utils.urls')),
+    path('wetlab/', include('iSkyLIMS_wetlab.urls')),
+    path('drylab/',include('iSkyLIMS_drylab.urls')),
+    path('utils/',include('django_utils.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
     path('tutorials/', include('zinnia.urls')),
 ]
