@@ -1,5 +1,9 @@
 {% extends 'iSkyLIMS_wetlab/base.html' %}
-{% load static %}_
+
+{% comment  "TBD this static might not be needed" %}
+{% load static %}
+{% endcomment %}
+
 {% block content %}
 {% csrf_token %}
 {% if get_user_names %}
