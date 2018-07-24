@@ -369,6 +369,7 @@ class NextSeqGraphicsStats (models.Model):
     heatMapGraph= models.CharField(max_length=255)
     histogramGraph= models.CharField(max_length=255)
     sampleQcGraph= models.CharField(max_length=255)
+    ## Fix 24/07/2018: null=True added at definition of "generated_at" to allow json load
     generated_at = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
