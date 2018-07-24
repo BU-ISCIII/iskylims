@@ -36,30 +36,30 @@ class RunProcess(models.Model):
 
     def get_info_process (self):
         generated_date=self.generatedat.strftime("%I:%M%p on %B %d, %Y")
-       
+
         requested_center = str(self.centerRequestedBy)
         if self.run_date is None :
             rundate = 'Run NOT started'
         else :
             rundate=self.run_date.strftime("%B %d, %Y")
-        
+
         if self.run_finish_date is None:
             finish_date = 'Run multiplexation is not completed'
         else:
             finish_date = self.run_finish_date.strftime("%I:%M%p on %B %d, %Y")
-        
+
         if self.bcl2fastq_finish_date is None:
             bcl2fastq_date = 'bcl2fastq process is not completed'
         else:
             bcl2fastq_date = self.bcl2fastq_finish_date.strftime("%I:%M%p on %B %d, %Y")
-        
+
         if self.process_completed_date is None:
             completed_date = 'Run process is not completed'
         else:
             completed_date = self.process_completed_date.strftime("%I:%M%p on %B %d, %Y")
-        
+
         if (self.runState == 'Completed'):
-        
+
             return '%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.runState,
                             requested_center, self.useSpaceImgMb,
                             self.useSpaceFastaMb, self.useSpaceOtherMb,
@@ -69,7 +69,7 @@ class RunProcess(models.Model):
                 run_folder = RunningParameters.objects.get(runName_id__exact = self).RunID
             else :
                 run_folder = 'Run folder is not created yet'
-            return '%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.runState, self.centerRequestedBy, 
+            return '%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.runState, self.centerRequestedBy,
                                         generated_date, rundate, finish_date, run_folder)
 
     def get_run_name (self):
@@ -369,7 +369,8 @@ class NextSeqGraphicsStats (models.Model):
     heatMapGraph= models.CharField(max_length=255)
     histogramGraph= models.CharField(max_length=255)
     sampleQcGraph= models.CharField(max_length=255)
-    generated_at = models.DateTimeField(auto_now_add=True)
+    ## Fix 24/07/2018: null=True added at definition of "generated_at" to allow json load
+    generated_at = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
         return '%s' %(self.folderRunGraphic)
