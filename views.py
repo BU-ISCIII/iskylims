@@ -455,10 +455,12 @@ def get_service_information (service_id):
 		display_service_details['resolutions'] = resolution_info
 	#import pdb; pdb.set_trace()
 	if Resolution.objects.filter(resolutionServiceID = service).exists():
-		resolution_id = Resolution.objects.filter(resolutionServiceID = service).last().id
-		if Delivery.objects.filter(deliveryResolutionID = resolution_id).exists():
-			delivery = Delivery.objects.get(deliveryResolutionID = resolution_id)
-			display_service_details['delivery'] = [delivery.get_delivery_information()]
+		resolution_list = Resolution.objects.filter(resolutionServiceID = service)
+		delivery_info = []
+		for resolution_id in resolution_list :
+			if Delivery.objects.filter(deliveryResolutionID = resolution_id).exists():
+				delivery = Delivery.objects.get(deliveryResolutionID = resolution_id)
+				display_service_details['delivery'] = [delivery.get_delivery_information()]
 
 	return display_service_details
 

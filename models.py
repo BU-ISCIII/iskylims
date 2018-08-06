@@ -230,6 +230,7 @@ class Delivery(models.Model):
 		return '%s' %(self.deliveryResolutionID)
 	def get_delivery_information (self):
 		delivery_info = []
+		delivery_info.append(self.deliveryResolutionID.resolutionNumber)
 		delivery_info.append(self.deliveryDate.strftime("%d %B, %Y"))
 		delivery_info.append(self.deliveryNotes)
 		return delivery_info
