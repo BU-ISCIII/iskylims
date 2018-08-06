@@ -460,7 +460,8 @@ def get_service_information (service_id):
 		for resolution_id in resolution_list :
 			if Delivery.objects.filter(deliveryResolutionID = resolution_id).exists():
 				delivery = Delivery.objects.get(deliveryResolutionID = resolution_id)
-				display_service_details['delivery'] = [delivery.get_delivery_information()]
+				delivery_info.append([delivery.get_delivery_information()])
+				display_service_details['delivery'] = delivery_info
 
 	return display_service_details
 
