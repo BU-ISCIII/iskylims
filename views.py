@@ -462,6 +462,7 @@ def get_service_information (service_id):
 				delivery = Delivery.objects.get(deliveryResolutionID = resolution_id)
 				delivery_info.append([delivery.get_delivery_information()])
 				display_service_details['delivery'] = delivery_info
+		import pdb; pdb.set_trace()
 
 	return display_service_details
 
