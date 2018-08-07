@@ -189,7 +189,10 @@ def process_run_in_recorded_state(logger):
         logger.info('Sucessfully  SAMBA connection for the process_run_in_recorded_state')
     except:
         return ('Error')
+    ## TODO is the following line really used?
     processed_run_file, runlist = [] , []
+    ## end TODO
+
     share_folder_name = wetlab_config.SAMBA_SHARED_FOLDER_NAME
     base_directory = wetlab_config.RUN_TEMP_DIRECTORY
     recorded_dir = wetlab_config.RUN_TEMP_DIRECTORY_RECORDED
@@ -197,6 +200,8 @@ def process_run_in_recorded_state(logger):
     local_run_parameter_file = os.path.join(base_directory, 'RunParameters.xml')
     local_run_info_file = os.path.join(base_directory, 'RunInfo.xml')
     local_run_completion_status_file = os.path.join(base_directory, 'RunCompletionStatus.xml')
+
+    #'processed_run_file' contains the runs already processed (
     process_run_file = os.path.join(base_directory, 'processed_run_file')
     processed_run=[]
     run_names_processed=[]
@@ -1023,7 +1028,7 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
             logger.info('xml files and binary files from InterOp folder have been removed')
             ## connect to server to get the disk space utilization of the folders
             get_run_disk_utilization (conn, run_Id_used, run_processing_id, logger)
-            # Update the run with the date of the run completion 
+            # Update the run with the date of the run completion
             completion_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             run_date_to_update = RunProcess.objects.get(pk = run_processing_id)
             run_date_to_update.process_completed_date = completion_date

@@ -24,6 +24,9 @@ class RunProcess(models.Model):
     useSpaceOtherMb=models.CharField(max_length=10)
     #requestedCenter= models.CharField(max_length=45)
     centerRequestedBy = models.ForeignKey (Center, on_delete=models.CASCADE)
+    # TODO sequencer model will be stored as in "MiSeq XXXX" or "NextSeq XXXX"
+    # (as for today, not exported through RunProcess members -i.e. def get_xxxxx-)
+    sequencerModel=models.CharField(max_length=20,null=True, default="Model_TBD")
 
     def __str__(self):
         return '%s' %(self.runName)

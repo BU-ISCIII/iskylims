@@ -95,10 +95,10 @@ def get_sample_file (request):
         ## including the timestamp to the sample sheet file
         #import pdb; pdb.set_trace()
         # do not need to include the absolute path because django use the MEDIA_ROOT variable defined on settings to upload the file
-        file_name=str(wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY +
-                     split_filename.group(1) +
-                     timestr +
-                     ext_file)
+        file_name=str(wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY
+                     + split_filename.group(1)
+                     + timestr
+                     + ext_file)
         filename = fs.save(file_name,  myfile)
         uploaded_file_url = fs.url(filename)
 
@@ -112,24 +112,31 @@ def get_sample_file (request):
             ## define an unique value for the run name until the real value is get from the FORM
             run_name = timestr
 
+        # TODO
+        ### CHECK that runName is not already used in the database.
+        ### Error page is showed if runName is already  defined
+        ##import pdb; pdb.set_trace()
+        #if (RunProcess.objects.filter(runName = run_name)).exists():
+        #    if RunProcess.objects.filter(runName = run_name, runState__exact ='Pre-Recorded'):
+        #        ## Delete the Sample Sheet file and the row in database
+        #        delete_run = RunProcess.objects.filter(runName = run_name, runState__exact ='Pre-Recorded')
+        #        sample_sheet_file = str(delete_run[0].sampleSheet)
+        #        #import pdb; pdb.set_trace()
+        #        full_path_sample_sheet_file = os.path.join(settings.MEDIA_ROOT, sample_sheet_file)
+        #        os.remove(full_path_sample_sheet_file)
+        #        delete_run[0].delete()
+        #    else:
+        #        return render (
+        #            request,'iSkyLIMS_wetlab/error_page.html',
+        #            {'content':['Run Name is already used. ',
+        #                        'Run Name must be unique in database.', ' ', 'ADVICE:',
+        #                        'Change the value in the Sample Sheet  file ']})
+
         ## CHECK that runName is not already used in the database.
-        ## Error page is showed if runName is already  defined
-        #import pdb; pdb.set_trace()
-        if (RunProcess.objects.filter(runName = run_name)).exists():
-            if RunProcess.objects.filter(runName = run_name, runState__exact ='Pre-Recorded'):
-                ## Delete the Sample Sheet file and the row in database
-                delete_run = RunProcess.objects.filter(runName = run_name, runState__exact ='Pre-Recorded')
-                sample_sheet_file = str(delete_run[0].sampleSheet)
-                #import pdb; pdb.set_trace()
-                full_path_sample_sheet_file = os.path.join(settings.MEDIA_ROOT, sample_sheet_file)
-                os.remove(full_path_sample_sheet_file)
-                delete_run[0].delete()
-            else:
-                return render (
-                    request,'iSkyLIMS_wetlab/error_page.html',
-                    {'content':['Run Name is already used. ',
-                                'Run Name must be unique in database.', ' ', 'ADVICE:',
-                                'Change the value in the Sample Sheet  file ']})
+        if (check_run_name_already_used != "OK"):
+           request,'iSkyLIMS_wetlab/error_page.html',
+           {'content':check_run_name_result})
+
 
 
         ## Fetch from the Sample Sheet file the projects included in the run and the user.
@@ -202,11 +209,13 @@ def get_sample_file (request):
         #import pdb; pdb.set_trace()
         center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
         center_requested_by = Center.objects.get(pk = center_requested_id)
-        run_proc_data = RunProcess(runName=run_name,sampleSheet= file_name, runState='Pre-Recorded', centerRequestedBy = center_requested_by)
+        run_proc_data = RunProcess(
+            runName=run_name,sampleSheet= file_name, runState='Pre-Recorded',
+            centerRequestedBy = center_requested_by)
         run_proc_data.save()
         experiment_name = '' if run_name == timestr else run_name
 
-        ## create new project tables based on the project involved in the run and
+        ## create new project records based on the project involved in the run and
         ## include the project information in projects variable to build the new FORM
 
         run_info_values ={}
