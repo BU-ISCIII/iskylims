@@ -15,6 +15,7 @@ from .utils.sample_convertion import *
 from .utils.stats_calculation import *
 from .utils.stats_graphics import *
 from .utils.email_features import *
+from .utils.library_kits import *
 
 from django_utils.models import Profile, Center
 
@@ -313,6 +314,82 @@ def add_library_kit (request):
 
         libraries_information ['libraries'] = libraryKit_dict
         return render(request,'iSkyLIMS_wetlab/AddLibraryKit.html',{'list_of_libraries': libraries_information})
+
+@login_required
+def add_index_library (request):
+    
+    if request.method == 'POST' and request.POST['action'] == 'addNewIndexLibraryFile':
+        
+        index_library_file = request.FILES['newIndexLibraryFile']
+        
+        split_filename=re.search('(.*)(\.\w+$)',index_library_file.name)
+        f_name = split_filename[1]
+        f_extension = split_filename[2]
+        
+        fs = FileSystemStorage()
+        timestr = time.strftime("%Y%m%d-%H%M%S")
+        ## including the timestamp to the index library file
+        #import pdb; pdb.set_trace()
+        # do not need to include the absolute path because django use the MEDIA_ROOT variable defined on settings to upload the file
+        file_name=os.path.join(wetlab_config.LIBRARY_KITS_DIRECTORY ,  str(f_name + '_' +timestr + f_extension))
+        filename = fs.save(file_name,  index_library_file)
+        saved_file = os.path.join(settings.MEDIA_ROOT, file_name)
+        # check the file is not bigger that maximum allowed size file for index library
+        file_stat = os.stat(saved_file)
+        if file_stat.st_size > int(wetlab_config.LIBRARY_MAXIMUM_SIZE) :
+            # removing the uploaded file
+            os.remove(saved_file)
+            return render (request, 'iSkyLIMS_wetlab/error_page.html', {'content':['The Index Library Kit file ', split_filename[0], 'exceed from the maximum allowed size']})
+        uploaded_file_url = fs.url(filename)
+
+        ### add the document directory to read the csv file
+        
+        #import pdb; pdb.set_trace()
+        ## check format file 
+        
+        if not check_index_library_file_format(saved_file):
+            # removing the uploaded file
+            os.remove(saved_file)
+            return render (request, 'iSkyLIMS_wetlab/error_page.html', {'content':['The Index Library Kit file', split_filename[0], 'does not have the right format']})
+        library_name = getting_index_library_name(saved_file)
+        if library_name == '' :
+            # removing the uploaded file
+            os.remove(saved_file)
+            return render (request, 'iSkyLIMS_wetlab/error_page.html', {'content':['The Index Library Kit file', split_filename[0], 'does not contain the library name']})
+        # check if library name is already defined on database
+        if LibraryKit.objects.filter (libraryName__exact = library_name).exists():
+            # removing the uploaded file
+            os.remove(saved_file)
+            return render (request, 'iSkyLIMS_wetlab/error_page.html', {'content':['The Library Kit Name ', library_name, 'is already defined on iSkyLIMS']})
+        # Get the library settings included in the file
+        library_settings = get_library_settings(saved_file)
+        
+        # get the index name and index bases for the library
+        library_index = get_index_values(saved_file)
+        # saving library settings into database
+        if len(library_settings['adapters']) == 1:
+            adapter_2 = ''
+        else :
+            adapter_2 = library_settings['adapters'][1]
+        lib_settings_to_store = IndexLibraryKit(indexLibraryName = library_settings['name'], version =  library_settings ['version'],
+                    plateExtension = library_settings['plate_extension'] , adapter1 = library_settings['adapters'][0], adapter2 = adapter_2,
+                    indexLibraryFile = file_name)
+        lib_settings_to_store.save()
+        # saving index values into database
+        for index_7 in library_index['I7'] :
+            index_name, index_base = index_7
+            index_to_store = IndexLibraryValues(indexLibraryKit_id = lib_settings_to_store, indexNumber = 'I7',
+                        indexName = index_name, indexBase = index_base)
+            index_to_store.save()
+        for index_5 in library_index['I5'] :
+            index_name, index_base = index_5
+            index_to_store = IndexLibraryValues(indexLibraryKit_id = lib_settings_to_store, indexNumber = 'I5',
+                        indexName = index_name, indexBase = index_base)
+            index_to_store.save()
+        import pdb; pdb.set_trace()
+    return render (request, 'iSkyLIMS_wetlab/AddIndexLibrary.html',{})
+
+
 
 def get_information_run(run_name_found,run_id):
     info_dict={}

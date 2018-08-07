@@ -1,0 +1,77 @@
+{% extends 'iSkyLIMS_wetlab/base.html' %}
+{% load static %}_
+{% block content %}
+{% csrf_token %}
+{% if index_library_info %}
+    <BR>
+    
+{% else %}
+    <BR>
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-6" >
+        <div class="panel panel-default">
+          <div class="panel-heading"><h3>Form to add a new index Library</h3> </div>
+          <div class="panel-body">
+            <form method="post" enctype="multipart/form-data" name="addLibrarykit" id="addLibrarykit" class="form-horizontal">
+            {% csrf_token %}
+                <div class="form-group required">
+                  <input type="hidden" name="action" value="addNewIndexLibraryFile"/>
+                  <label class="col-sm-4 control-label">Upload Index Library file</label>
+                  <div class="col-sm-8"><input class="form-control" required = "required" type="file"  name="newIndexLibraryFile"size="80"></div>
+                  <BR> <BR> <BR>
+                </div>
+                <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
+            </form>
+
+         </div>  <!--  end of panel body  -->
+         <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
+        </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  -->
+
+        <div class="col-sm-5 col-sm-offset-1" >
+            <BR> <BR> <BR>
+        <div class="panel panel-default">
+          <div class="panel-heading"><h3>Index Library already defined</h3></div>
+          <div class="panel-body">
+          {% if list_of_index_libraries.index_libraries %}
+                <table class="table table-hover">
+                   <thead>
+                      <tr>
+                        <th>Libarary Kit Name</th>
+                      </tr>
+                   </thead>
+                   <tbody>
+                    {% for  value in list_of_libraries.libraries %}
+                        <tr>
+                       <td>{{ value }}</td>
+                    {% endfor %}
+                    </tbody>
+                </table>
+          {% else %}
+                No Index Library has been defined so far
+          {% endif %}
+          </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        </div> <!--// end col-sm-4  -->
+    </div> <!--// end row -->
+
+<!--script to disable the submit button -->
+
+<script>
+    $(document).ready(function () {
+        $("#getSample").submit(function (e) {
+            //stop submitting the form to see the disabled button effect
+            // e.preventDefault();
+            //disable the submit button
+            $("#btnSubmit").attr("disabled", true);
+            return true;
+        });
+    });
+</script>
+ <!--script ends here-->
+
+
+
+{% endif %}
+
+{% endblock %}

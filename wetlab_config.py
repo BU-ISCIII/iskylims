@@ -20,6 +20,12 @@ RUN_IMAGES_DIRECTORY = 'wetlab/images_plot'
 RUN_SAMPLE_SHEET_DIRECTORY = 'wetlab/SampleSheets/'
 
 
+## Directory settings for processing the library kits
+## Relative path from settings.BASE_DIR
+LIBRARY_KITS_DIRECTORY = 'wetlab/library_kits/'
+## Maximum file size allowed for the index library kits (in bytes)
+LIBRARY_MAXIMUM_SIZE = '3145728'  
+
 MIGRATION_DIRECTORY_FILES = 'wetlab/BaseSpaceMigrationFiles/'
 
 ## Configuration for the sample sheet conversion file to BaseSpace format

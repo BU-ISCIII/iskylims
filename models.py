@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
 from django_utils.models import Center
+from .  import wetlab_config
 
 class RunProcess(models.Model):
     runName = models.CharField(max_length=45)
@@ -105,7 +106,26 @@ class LibraryKit (models.Model):
 #    expirationDate = models.DateField(auto_now_add=False)
 #    generatedat = models.DateTimeField(auto_now_add=True, null=True)
 
+class IndexLibraryKit (models.Model):
+    indexLibraryName = models.CharField(max_length=125)
+    version = models.CharField(max_length=80,null=True)
+    plateExtension = models.CharField(max_length=125, null=True)
+    adapter1 = models.CharField(max_length=125,null=True)
+    adapter2 = models.CharField(max_length=125, null=True)
+    indexLibraryFile =  models.FileField(upload_to=wetlab_config.LIBRARY_KITS_DIRECTORY )
+    
+    def __srt__ (self):
+        return '%s'(self.indexLibraryName)
 
+
+class IndexLibraryValues (models.Model):
+    indexLibraryKit_id = models.ForeignKey(
+        IndexLibraryKit,
+        on_delete=models.CASCADE)
+    indexNumber = models.CharField(max_length=12)
+    indexName = models.CharField(max_length=12)
+    indexBase = models.CharField(max_length=25)
+    
 
 class Projects(models.Model):
     runprocess_id = models.ForeignKey(
