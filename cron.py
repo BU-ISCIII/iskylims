@@ -31,29 +31,28 @@ def open_log(log_name):
 
 
 def getSampleSheetFromSequencer():
-    ## This function is the entry point for sequencers (as of today, MiSeq) that
+    ## This function is used for sequencers (as of today, MiSeq) that
     ## generate runs from samplesheets which do not require further treatment
     ## once firstly defined in the experiment management tool when creating the run
-    ## Its counter part for sequencers needing sample sheet adapting is
-    ## get_sample_file() (views.py)
+    ## Its counter part for sequencers needing sample sheet adapting (so far, NextSeq
+    ## is get_sample_file() (views.py)
 
-    ## 1 Search for potential new runs not treated yet
-    ##    1.1 go through SAMBA remote dir.
-    ##    1.2 check whether each MiSeq run has been already treated: if yes, skip; if no:
-    ##        1.2.1 we treat it: checks + update DB (getSampleSheetFromSequencer() ???)
-    ##        1.2.2. state="SampleSent"
-
-    ## 2 For each new run:
-    ##  2.1 Perform sanity checks:
-    ##    Fetch the experiment name and the library name from the sample sheet file
-    ##
+    ## Search for new runs which have finished primary analysis
+    ##    no_samplesheet_form_run_list=
+    ##      list of runs in SAMBA remote dir not needing samplesheet form (
+    ##          as for today, MiSeq)
+    ##      and not present already in the DB as "Recorded"
+    ##      and having finished primary analysis OK (optimisation: in true sense,
+    ##      such a run is already in "SampleSent": focusing only on these ones let
+    ##      avoid dealing with not good or abandoned runs)
+    ## For each run in no_samplesheet_form_run_list:
+    ##   -copy of samplesheet
+    ##   -sanity checks
     ##    run_name, index_library_name = get_experiment_library_name(stored_file)
+    ##    if ko, delete sampleSheet
+    ##
+    ##   -update DB tables  (run state= "Recorded"  (run state= "Recorded"))
 
-
-    ## if run 'sanity' checks OK -->
-    ## ...
-    ## ...
-    ## update of DB (tables Projects and RunProcess)
 
             ## Calculate project_list (--> profileUserIDs) -- take center of the 1st user by default
             center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
@@ -133,7 +132,7 @@ def getSampleSheetFromSequencer():
 
 
 def check_recorded_folder ():
-    ## This function will intend to place runs in the "Sample Sent" state
+    ## This function will intend to take runs to the "Sample Sent" state
     ## A run in state="SampleSent" implies that :
     ##  the run primary analysis has been succesfully executed  (secondary
     ##      analysis will be performed subsequently via 'Bcl2Fastq')
