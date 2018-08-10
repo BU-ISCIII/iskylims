@@ -32,26 +32,28 @@ def open_log(log_name):
 
 def getSampleSheetFromSequencer():
     ## This function is used for sequencers (as of today, MiSeq) that
-    ## generate runs from samplesheets which do not require further treatment
-    ## once firstly defined in the experiment management tool when creating the run
-    ## Its counter part for sequencers needing sample sheet adapting (so far, NextSeq
-    ## is get_sample_file() (views.py)
+    ## generate samplesheets directly in BaseSpace format.
+    ## So far, we just consider the case of just one "library index name"
 
     ## Search for new runs which have finished primary analysis
-    ##    no_samplesheet_form_run_list=
-    ##      list of runs in SAMBA remote dir not needing samplesheet form (
-    ##          as for today, MiSeq)
-    ##      and not present already in the DB as "Recorded"
-    ##      and having finished primary analysis OK (optimisation: in true sense,
-    ##      such a run is already in "SampleSent": focusing only on these ones let
-    ##      avoid dealing with not good or abandoned runs)
-    ## For each run in no_samplesheet_form_run_list:
-    ##   -copy of samplesheet
-    ##   -sanity checks
+    ##    primary_analysis_run_list=
+    ##      list of runs in SAMBA remote dir for our type(s) of sequencer(s):MiSeq
+    ##      and still not present in the DB (otherwise, present in state
+    ##          CANCELLED, RECORDED or the following ones until COMPLETED}
+
+    ## For each run in primary_analysis_run_list:
+    ##   -local copy of samplesheet
     ##    run_name, index_library_name = get_experiment_library_name(stored_file)
-    ##    if ko, delete sampleSheet
+    ##   -sanity checks
+    ##    if ko, delete sampleSheet (cómo avisar al usuario (mail)? vs CANCELLED)
     ##
+    ##   -Ensure unique ids for sampleSheetç
+    ##   (-No BaseSpace formatting needed for samplesheet)
     ##   -update DB tables  (run state= "Recorded"  (run state= "Recorded"))
+    ##      Since the protocol of the preparation of the library (library kit) is
+    ##      not provided via a form, it will be stored as "Unknown"
+
+
 
 
             ## Calculate project_list (--> profileUserIDs) -- take center of the 1st user by default
