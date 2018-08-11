@@ -551,6 +551,43 @@ def get_information_run(run_name_found,run_id):
 
         info_dict ['unknow_pie3d'] = unknow_pie3d.render()
 
+        # prepare the data to match unknow barcodes against the index base sequence
+        index_match_list = []
+        for key , value in unknow_dict.items(): 
+            found_unknow_index = []
+            found_unknow_index.append(key)
+            index_temp = ''
+            #import pdb; pdb.set_trace()
+            if '+' in key:
+                split_base = key.split('+')
+                
+                if IndexLibraryValues.objects.filter(indexBase__exact = split_base[0]).exists():
+                    libraries_using_base = IndexLibraryValues.objects.filter(indexBase__exact = split_base[0])
+                    index_temp = split_base[0]
+                    #for library in libraries_using_base :
+                    #    index_temp= library.indexBase
+
+                if IndexLibraryValues.objects.filter(indexBase__exact = split_base[1]).exists():
+                    if len(index_temp) == 1:
+                        index_temp += (str (' + ' + split_base[1]))
+                    else:
+                        index_temp = split_base[1]
+            else:
+                if IndexLibraryValues.objects.filter(indexBase__exact = key).exists():
+                    found_unknow_index.append(key)
+                    
+            if len (index_temp) == 0 :
+                index_temp= 'Index not match '
+                #libraries_using_base = IndexLibraryValues.objects.filter(indexBase__exact = split_base[1])
+                #for library in libraries_using_base :
+                #    found_unknow_index.append(library.indexBase)
+            #index_item = 5 
+            found_unknow_index.append(index_temp)
+            index_match_list.append(found_unknow_index)
+        #import pdb; pdb.set_trace()
+        
+        info_dict['match_unknows']= index_match_list
+
         # prepare the data for Run Binary summary stats
 
         run_parameters = RunningParameters.objects.get(runName_id__exact = run_id)
@@ -1260,8 +1297,8 @@ def search_index_library (request):
         if index_library_name == '' and start_date == '' and end_date == '' and adapter_1 =='' and adapter_2 == '' and index_name == '' and index_base == '' :
             return render(request, 'iSkyLIMS_wetlab/searchIndexLibrary.html')
 
-        if index_base !=''  and len(index_base) != 8 :
-             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Index Sequence must contains 8 caracters ']})
+        if index_base !=''  and len(index_base) < 6 :
+             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Index Sequence must contains at leat 6  caracters ']})
         ### check the right format of start and end date
         if start_date != '':
             try:
@@ -1336,7 +1373,7 @@ def search_index_library (request):
                 index_library_found = index_library_found.filter(indexlibraryvalues__in = index_base_list)
                 #index_library_found = index_library_found.filter(
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no libraries contaning index_name ', index_name]})
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no libraries contaning Base Sequence ', index_base]})
         
         if len(index_library_found) == 1 :
             index_library_dict = index_library_information (index_library_found[0].id)

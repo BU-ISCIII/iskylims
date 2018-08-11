@@ -404,6 +404,40 @@
       </div> <!--  end of row -->
 
      {% endif%}
+     
+     {% if display_one_run.match_unknows %}
+          <div class="row row-space-4 margin-b-1">
+         <div class="col-sm-7 col-sm-offset-1 ">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Matching the unknowbarcodes against the indexes library.</h3></div>
+                <div class="panel-body">
+                    <table class="table table-hover">
+                   <thead>
+                      <tr>
+                        <th>Unknow Sequence</th>
+                        <th>Index Matching</th>
+                      </tr>
+                   </thead>
+                   <tbody>
+                    {% for barcode, matching in display_one_run.match_unknows %}
+                    <tr>
+                        <td>{{ barcode }}</td>
+                        <td>{{ matching }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+              </div> <!--  end of panel body -->
+             </div> <!--  end of panel  -->
+           </div> <!--  end of col-sm-8 -->
+      </div> <!--  end of row -->
+
+     
+     
+     
+     
+     {% endif %}
+     
      {% if display_one_run.runSummary %}
 
      <div class="row row-space-4 margin-b-1">
