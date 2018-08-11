@@ -25,12 +25,12 @@ S517	GCGTAAGA
 '''
 def check_index_library_file_format (input_file):
     heading_checks = ['[Version]','[Name]', '[PlateExtension]','[Settings]', '[I7]','[I5]']
-    with open (input_file ) as fh:
+    with open (input_file , encoding="utf-8" ) as fh:
        read_data = fh.read()
     for check in heading_checks :
         if check not in read_data:
             return False
-    
+
     return True
 
 
@@ -38,7 +38,7 @@ def check_index_library_file_format (input_file):
 def getting_index_library_name (input_file):
     found_name = False
     library_name = ''
-    with open (input_file ) as fh:
+    with open (input_file , encoding="utf-8" ) as fh:
         for line in fh:
             found_name_library = re.search('^\[Name\]',line)
             if found_name_library :
@@ -47,14 +47,14 @@ def getting_index_library_name (input_file):
             if found_name:
                 library_name= line.rstrip()
                 break
-    
+
     return library_name
-    
+
 
 def get_library_settings (input_file):
     library_settings ={}
     adapter_list = []
-    with open (input_file) as fh:
+    with open (input_file, encoding="utf-8") as fh:
         for line in fh:
             if '[Version]' in line :
                found_version = True
@@ -89,19 +89,19 @@ def get_library_settings (input_file):
                     break
                 else:
                     adapter_list.append(line_split[-1])
-                    
-                
+
+
     return library_settings
 
 def get_index_values (input_file):
-    
-    
-    with open (input_file) as fh :
+
+
+    with open (input_file , encoding="utf-8") as fh :
         index_7 , index_5 = [] , []
         found_I7 = False
         found_I5 = False
         index_values = {}
-        
+
         for line in fh:
             if '[I7]' in line :
                 found_I7 = True
@@ -127,5 +127,5 @@ def get_index_values (input_file):
                     break
         index_values['I7'] = index_7
         index_values['I5'] = index_5
-        
+
     return index_values
