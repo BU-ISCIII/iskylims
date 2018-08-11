@@ -113,9 +113,19 @@ class IndexLibraryKit (models.Model):
     adapter1 = models.CharField(max_length=125,null=True)
     adapter2 = models.CharField(max_length=125, null=True)
     indexLibraryFile =  models.FileField(upload_to=wetlab_config.LIBRARY_KITS_DIRECTORY )
+    generatedat = models.DateTimeField(auto_now_add=True, null=True)
     
     def __srt__ (self):
         return '%s'(self.indexLibraryName)
+        
+    def get_index_library_information (self):
+        if self.adapter2 =='':
+            adapter2 = 'Not used on this library'
+        else:
+            adapter2 = self.adapter2
+        return '%s;%s;%s;%s;%s;%s' %(self.indexLibraryName, self.version, self.plateExtension ,
+                            self.adapter1  , adapter2, self.indexLibraryFile)
+    
 
 
 class IndexLibraryValues (models.Model):
@@ -126,6 +136,10 @@ class IndexLibraryValues (models.Model):
     indexName = models.CharField(max_length=12)
     indexBase = models.CharField(max_length=25)
     
+
+    def get_index_information (self):
+        return '%s;%s' %(self.indexName, self.indexBase)
+
 
 class Projects(models.Model):
     runprocess_id = models.ForeignKey(

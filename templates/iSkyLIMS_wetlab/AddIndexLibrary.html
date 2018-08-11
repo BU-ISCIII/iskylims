@@ -4,7 +4,55 @@
 {% csrf_token %}
 {% if index_library_info %}
     <BR>
-    
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-6" >
+            <div class="panel panel-default">
+              <div class="panel-heading">New Index Library Kit has been added </div>
+              <div class="panel-body">
+                  <table class="table ">
+                   <thead>
+                      <tr>
+                        <th>Index Library Name</th>
+                      </tr>
+                   </thead>
+                   <tbody>
+                        <tr>
+                       <td>{{ index_library_info.new_index_library }}</td>
+                     </tr>
+                    </tbody>
+                </table>
+
+            </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        </div> <!--// end col-sm-6  -->
+
+        <div class="col-sm-5 col-sm-offset-1" >
+            <BR> <BR> <BR>
+        <div class="panel panel-default">
+          <div class="panel-heading"><h3>Index Library already defined</h3></div>
+          <div class="panel-body">
+          {% if index_library_info.index_libraries %}
+                <table class="table table-hover">
+                   <thead>
+                      <tr>
+                        <th>Index Library Name</th>
+                      </tr>
+                   </thead>
+                   <tbody>
+                    {% for  key, value in index_library_info.index_libraries %}
+                        <tr>
+                       <td><a href="/wetlab/DisplayIndexLibrary={{ key }}">{{ value }}</a></td>
+                       </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+          {% else %}
+                No Index Library has been defined so far
+          {% endif %}
+          </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        </div> <!--// end col-sm-4  -->
+        </div> <!--// end row -->
 {% else %}
     <BR>
     <div class="row row-space-2 margin-b-4">
@@ -28,6 +76,7 @@
         </div> <!--// end panel -->
         </div> <!--// end col-sm-7  -->
 
+
         <div class="col-sm-5 col-sm-offset-1" >
             <BR> <BR> <BR>
         <div class="panel panel-default">
@@ -37,13 +86,13 @@
                 <table class="table table-hover">
                    <thead>
                       <tr>
-                        <th>Libarary Kit Name</th>
+                        <th>Index Library Name</th>
                       </tr>
                    </thead>
                    <tbody>
-                    {% for  value in list_of_libraries.libraries %}
+                    {% for  key, value in list_of_index_libraries.index_libraries %}
                         <tr>
-                       <td>{{ value }}</td>
+                       <td><a href="/wetlab/DisplayIndexLibrary={{ key }}">{{ value }}</a></td>
                     {% endfor %}
                     </tbody>
                 </table>
@@ -54,7 +103,7 @@
         </div> <!--// end panel -->
         </div> <!--// end col-sm-4  -->
     </div> <!--// end row -->
-
+{% endif %}
 <!--script to disable the submit button -->
 
 <script>
@@ -72,6 +121,6 @@
 
 
 
-{% endif %}
+
 
 {% endblock %}

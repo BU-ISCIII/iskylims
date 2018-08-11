@@ -34,6 +34,8 @@ urlpatterns = [
     path('ChangeRunName=<int:run_id>',views.change_run_name, name='change_run_name'),
     path('AddLibraryKit/',views.add_library_kit, name='add_library_kit'),
     path('AddIndexLibrary', views.add_index_library, name = 'add_index_library'),
+    path('DisplayIndexLibrary=<int:index_library_id>/', views.display_index_library, name= 'display_index_library'),
+    path('searchIndexLibrary', views.search_index_library, name='search_index_library'),
 
     #url(r'^documents/images_plot$', 'django.views.static.serve',{'document_root': settings.MEDIA_ROOT}),
     #url(r'^documents/(?P<path>.*)$', 'django.views.static.serve',{'document_root': settings.MEDIA_ROOT,}),
