@@ -7,6 +7,17 @@
  <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>
  <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script>
  <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
+<script>
+  $( function() {
+    $( document ).tooltip();
+  } );
+</script>
+  <style>
+  label {
+    display: inline-block;
+    width: 5em;
+  }
+  </style>
 <div class="row row-space-2 margin-b-4">
         <div class="col-sm-7">
             <div class="panel panel-default">
@@ -415,14 +426,14 @@
                    <thead>
                       <tr>
                         <th>Unknow Sequence</th>
-                        <th>Index Matching</th>
+                        <th title="We ask">Index Matching</th>
                       </tr>
                    </thead>
                    <tbody>
-                    {% for barcode, matching in display_one_run.match_unknows %}
+                    {% for barcode, matching, library_info in display_one_run.match_unknows %}
                     <tr>
                         <td>{{ barcode }}</td>
-                        <td>{{ matching }}</td>
+                        <td title="{% for info in library_info %}{{ info }}{% endfor %}">{{ matching }}</td>
                     </tr>
                     {% endfor %}
                     </tbody>

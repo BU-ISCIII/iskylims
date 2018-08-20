@@ -557,6 +557,7 @@ def get_information_run(run_name_found,run_id):
             found_unknow_index = []
             found_unknow_index.append(key)
             index_temp = ''
+            library_info = []
             #import pdb; pdb.set_trace()
             if '+' in key:
                 split_base = key.split('+')
@@ -564,25 +565,36 @@ def get_information_run(run_name_found,run_id):
                 if IndexLibraryValues.objects.filter(indexBase__exact = split_base[0]).exists():
                     libraries_using_base = IndexLibraryValues.objects.filter(indexBase__exact = split_base[0])
                     index_temp = split_base[0]
-                    #for library in libraries_using_base :
-                    #    index_temp= library.indexBase
+                    for library in libraries_using_base :
+                        library_info.append([library.indexName,library.indexLibraryKit_id.indexLibraryName])
+
 
                 if IndexLibraryValues.objects.filter(indexBase__exact = split_base[1]).exists():
                     if len(index_temp) == 1:
                         index_temp += (str (' + ' + split_base[1]))
                     else:
                         index_temp = split_base[1]
+                    libraries_using_base = IndexLibraryValues.objects.filter(indexBase__exact = split_base[1])
+                    for library in libraries_using_base :
+                        library_info.append([library.indexName,library.indexLibraryKit_id.indexLibraryName])
+                    
             else:
                 if IndexLibraryValues.objects.filter(indexBase__exact = key).exists():
                     found_unknow_index.append(key)
+                    libraries_using_base = IndexLibraryValues.objects.filter(indexBase__exact = key)
+                    for library in libraries_using_base :
+                        library_info.append([library.indexName,library.indexLibraryKit_id.indexLibraryName])
 
             if len (index_temp) == 0 :
                 index_temp= 'Index not match '
+            if len (library_info) == 0 :
+                library_info = ['Index bases not found in library']
                 #libraries_using_base = IndexLibraryValues.objects.filter(indexBase__exact = split_base[1])
                 #for library in libraries_using_base :
                 #    found_unknow_index.append(library.indexBase)
             #index_item = 5
             found_unknow_index.append(index_temp)
+            found_unknow_index.append(library_info)
             index_match_list.append(found_unknow_index)
         #import pdb; pdb.set_trace()
 
