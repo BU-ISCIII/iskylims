@@ -138,7 +138,7 @@ def get_sample_file (request):
         ## CHECK if the users are already defined on database.
         ## Error page is showed if users are not defined on database
         error_form_message=check_run_users_definition(stored_file)
-        if (error_form_message!= 'OK_users':
+        if error_form_message != 'OK_users':
             ## delete sample sheet file before showing the error page
             fs.delete(file_name)
             return render (
@@ -150,8 +150,10 @@ def get_sample_file (request):
         ## CHECK if the projects are already defined on database.
         ## Error page is shown if projects are already defined on database
         #import pdb; pdb.set_trace()
-        error_form_message=check_run_users_definition(stored_file)
-        if (error_form_message!= 'OK_projects_in_db':
+        project_list=get_projects_in_run(stored_file)
+
+        error_form_message=check_run_projects_definition(project_list)
+        if error_form_message!= 'OK_projects_in_db':
             ## delete sample sheet file before showing the error page
             fs.delete(file_name)
             return render (
@@ -1672,7 +1674,7 @@ def nextSeqStats_per_time (request):
                             project_date_name[project_run_date] = 1
                         project_list [project.id] = [[project.get_project_name(), project_run_date]]
                         #import pdb; pdb.set_trace()
-                    stat_per_time ['project_names'] = project_list
+                    stat_per_time ['project_names'] = Project_list
                     if len (project_found_list) == 1:
                         number_of_projects = '1 Project'
                     else:

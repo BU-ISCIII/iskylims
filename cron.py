@@ -31,8 +31,10 @@ def open_log(log_name):
 
 
 def getSampleSheetFromSequencer():
-    ## This function is used for sequencers (as of today, MiSeq) that
-    ## generate samplesheets directly in BaseSpace format.
+    ## This function is used for sequencers (as of today, MiSeq) for which
+    ## the system do not interact with the wetlab manager via web forms
+    ## when dealing with the samplesheet:it fetches it straight from the
+    ## sequencer storage directory.
     ## So far, we just consider the case of just one "library index name"
 
     ## Search for new runs which have finished primary analysis

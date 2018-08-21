@@ -73,10 +73,9 @@ def check_run_users_definition(samplesheet):
 
 
 
-def check_run_projects_definition(samplesheet):
+def check_run_projects_definition(project_list):
     ## Check that the projects are already defined in the database
     message_output='KO in check_run_projects_definition'
-    project_list=get_projects_in_run(samplesheet)
     project_already_defined=[]
     for key, val  in project_list.items():
         # check if project was already saved in database in Not Started State.
