@@ -237,6 +237,8 @@ def process_run_in_recorded_state(logger):
 
                 logger.info ('Found a new run  %s ,that was not in the processed run file',run_dir)
                 logger.info ('checking if exists completion status file ')
+
+
                 # check if run have been successful completed
                 samba_completion_status_file = os.path.join(run_dir,'RunCompletionStatus.xml')
                 logger.debug('runCompletion file is in %s', samba_completion_status_file)
@@ -262,6 +264,8 @@ def process_run_in_recorded_state(logger):
 
                 logger.debug('Deleting RunCompletionStatus.xml file')
                 os.remove(local_run_completion_status_file)
+
+
                 #### Get Run_parameter_file
                 try:
                     #copy the runParameter.xml file to wetlab/tmp/tmp
