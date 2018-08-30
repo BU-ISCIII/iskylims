@@ -198,7 +198,7 @@ def process_run_in_recorded_state(logger):
     except:
         return ('Error')
     ## TODO is the following line really used?
-    processed_run_file, runlist = [] , []
+    ## processed_run_fils, runlist = [] , []
     ## end TODO
 
     share_folder_name = wetlab_config.SAMBA_SHARED_FOLDER_NAME
@@ -324,6 +324,8 @@ def process_run_in_recorded_state(logger):
                         # retrieve the runInfo.xml file from remote directory
                     else:
                         logger.error('ERROR ---No sample Sheet will be copied to remote dir. Local Directory %s was not found ', sample_sheet_tmp_dir)
+
+
                     # get the runIfnfo.xml to collect the  information for this run
                     try:
                         with open(local_run_info_file ,'wb') as r_info_fp :

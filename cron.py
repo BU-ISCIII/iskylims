@@ -30,12 +30,29 @@ def open_log(log_name):
 
 
 
+def get_miseqruns_samplesheets_list():
+    ## Function to identify stored MiSeq runs whose samplesheets must be treated
+
+    ## 1st: scan of wetlab_config.SAMBA_SHARED_FOLDER_NAME to build a list
+    ## with runs containing 'M0' (MiSeq)
+
+    ## 2nd: construction of sublist with runs which fullfil:
+    ## a) have a samplesheet b) are not terminated sequences (i.e. already
+    ## finished primary analysis) c) are not runs featuring faulty samplesheets
+
+
+
+
+
 def getSampleSheetFromSequencer():
     ## This function is used for sequencers (as of today, MiSeq) for which
     ## the system do not interact with the wetlab manager via web forms
     ## when dealing with the samplesheet:it fetches it straight from the
-    ## sequencer storage directory.
+    ## sequencer storage directory. The process is periodically kicked off by 'crontab'
     ## So far, we just consider the case of just one "library index name"
+
+
+
 
     ## Search for new runs which have finished primary analysis
     ##    primary_analysis_run_list=
