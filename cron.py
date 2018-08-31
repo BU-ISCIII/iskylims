@@ -157,7 +157,7 @@ def check_recorded_folder ():
     ## A run in state="SampleSent" implies that :
     ##  the run primary analysis has been succesfully executed  (secondary
     ##      analysis will be performed subsequently via 'Bcl2Fastq')
-    ##  and the file 'processed_run_file' has been updated with the run directory name
+    ##  and the file 'PROCESSED_RUN_FILE' has been updated with the run directory name
     ##
     ## TODO
     ## if case 'MiSeq':

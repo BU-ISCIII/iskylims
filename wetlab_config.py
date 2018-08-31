@@ -18,6 +18,9 @@ RUN_TEMP_DIRECTORY = 'wetlab/tmp'
 RUN_TEMP_DIRECTORY_PROCESSING = 'wetlab/tmp/processing'
 RUN_IMAGES_DIRECTORY = 'wetlab/images_plot'
 RUN_SAMPLE_SHEET_DIRECTORY = 'wetlab/SampleSheets/'
+PROCESSED_RUN_FILE='processed_run_file'
+## file with MiSeq runs whose samplesheets fail sanity checks
+UNEXPECTED_SAMPLESHEET_MISEQ_RUNS_FILE='unexpected_samplesheet_miseq_runs_file'
 
 
 MIGRATION_DIRECTORY_FILES = 'wetlab/BaseSpaceMigrationFiles/'
