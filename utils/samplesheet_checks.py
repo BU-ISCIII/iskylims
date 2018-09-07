@@ -4,7 +4,7 @@ import os
 import pdb
 
 
-def check_run_name_free_to_use(run_name, sequencer):
+def check_run_name_free_to_use(run_name):
     ## Function checks whether run_name is already used in the database.
     ## Error page is shown if run_name is already  defined
     ##

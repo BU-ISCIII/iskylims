@@ -30,15 +30,49 @@ def open_log(log_name):
 
 
 
-def get_miseqruns_samplesheets_list():
-    ## Function to identify stored MiSeq runs whose samplesheets must be treated
-
+def get_miseqruns_samplesheets():
+    ## Identification of runs whose samplesheets must be treated:
     ## 1st: scan of wetlab_config.SAMBA_SHARED_FOLDER_NAME to build a list
-    ## with runs containing 'M0' (MiSeq)
+    ## with runs containing '_M0\d\d\d\d_' (MiSeq in python RE)
 
     ## 2nd: construction of sublist with runs which fullfil:
-    ## a) have a samplesheet b) are not terminated sequences (i.e. already
-    ## finished primary analysis) c) are not runs featuring faulty samplesheets
+    ## a) have a samplesheet b) have not been processed
+    ## c) are not runs featuring faulty samplesheets
+
+
+    ## Reading NGS_Data:
+    try:
+        conn=open_samba_connection()
+        if (conn != True):  ##https://pysmb.readthedocs.io/en/latest/api/smb_SMBConnection.html
+            logger.error('Error when trying to set up SMB (samba) connection. Potential authentication error')
+            raise Exception ('Error when trying to set up SMB (samba) connection. Potential authentication error')
+
+        logger.info('Succesfully SAMBA connection for" ##this function (macro or something to include it?)
+        file_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME, '/')
+            if len(file_list) < 1:
+                logger.error('Unexpected empty folder: nº of elements= ',len(file_list))
+                raise Exception ('Unexpected empty folder: nº of elements= ',len(file_list))
+
+
+    except: ##
+        print('Exception when trying to set up SMB (samba) connection')
+        raise
+    finally: #always: either if execution of try was OK or KO
+        conn.close()
+
+    temp_run_folders= {}  ## total available miSeq runs  format {run_dir=... ,{samplesheet_filename=..., sequencer_family=..., sequencer_model= ....}}
+    target_run_folders={}: ##subset of runs of temp_run_folders with MiSeq runs retained (Same format)
+    unexpected_samplesheet_miseqruns = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.UNEXPECTED_SAMPLESHEET_MISEQRUNS_FILE)
+
+
+
+
+
+
+
+
+
+
 
 
 

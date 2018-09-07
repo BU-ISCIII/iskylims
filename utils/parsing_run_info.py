@@ -235,7 +235,7 @@ def process_run_in_recorded_state(logger):
                 continue
             else:
 
-                logger.info ('Found a new run  %s ,that was not in the processed run file',run_dir)
+                logger.info ('Found a new run  %s ,thatODO was not in the processed run file',run_dir)
                 logger.info ('checking if exists completion status file ')
 
 
