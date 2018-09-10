@@ -35,7 +35,7 @@ def check_run_name_free_to_use(run_name):
 def check_run_projects_in_samplesheet(samplesheet):
     ## Check that there are projects declared within the run
     project_list=get_projects_in_run(samplesheet)
-    message_output='KO in check_run_projects_in_samplesheet'
+    message_output='KO n check_run_projects_in_samplesheet'
 
     if len (project_list) == 0 :
         message_output=[

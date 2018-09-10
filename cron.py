@@ -40,7 +40,7 @@ def get_miseqruns_samplesheets():
     ## c) are not runs featuring faulty samplesheets
 
 
-    ## Reading NGS_Data:
+    ## Reading wetlab_config.SAMBA_SHARED_FOLDER_NAME (NGS_Data in production):
     try:
         conn=open_samba_connection()
         if (conn != True):  ##https://pysmb.readthedocs.io/en/latest/api/smb_SMBConnection.html
@@ -222,7 +222,7 @@ def check_recorded_folder ():
             logger.error('Exiting the process for searching run in recorded state ')
             time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             print(time_stop)
-            print('******* Exiting the check_recorder_folder module due to error when connecting to NGS_Data_test')
+            print('******* Exiting the check_recorder_folder module due to error when connecting to ',wetlab_config.SAMBA_SHARED_FOLDER_NAME)
         else:
             for run_changed in updated_run:
                 logger.info('The run  %s is now on Sample Sent state', run_changed)

@@ -235,7 +235,7 @@ def process_run_in_recorded_state(logger):
                 continue
             else:
 
-                logger.info ('Found a new run  %s ,thatODO was not in the processed run file',run_dir)
+                logger.info ('Found a new run  %s ,that was not in the processed run file',run_dir)
                 logger.info ('checking if exists completion status file ')
 
 
@@ -860,7 +860,7 @@ def process_run_in_processrunning_state (process_list, logger):
                 update_project_state(run_be_processed_id, 'B2FqExecuted', logger)
                 # Get the time when  the Bcl2Fastq process is ending
                 conversion_stats_file = os.path.join (run_Id_used,'Data/Intensities/BaseCalls/Stats/', 'ConversionStats.xml')
-                conversion_attributes = conn.getAttributes('NGS_Data' ,conversion_stats_file)
+                conversion_attributes = conn.getAttributes(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,conversion_stats_file)
                 run_date = RunProcess.objects.get(pk=run_be_processed_id)
                 run_date.bcl2fastq_finish_date = datetime.datetime.fromtimestamp(int(conversion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
                 run_date.save()

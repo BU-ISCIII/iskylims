@@ -1,14 +1,14 @@
 
+## TODO
 ## (PARAMETERS FOR TESTING) SAMBA settings for connecting quibitka server to fetch the run files
-SAMBA_USER_ID = 'bioinfocifs'
-SAMBA_USER_PASSWORD = 'fCdEg979I-W.gUx-teDr'
+SAMBA_USER_ID = 'panoramix\smbuser'
+SAMBA_USER_PASSWORD = 'ywSghrSftHEVYaHBTbqH'
 SAMBA_SHARED_FOLDER_NAME = 'NGS_Data_test'
-#SAMBA_SHARED_FOLDER_NAME = 'NGS_Data' ##commented out for testing
 SAMBA_REMOTE_SERVER_NAME = 'panoramix'
-#SAMBA_REMOTE_SERVER_NAME = 'quibitka'  ##commented out for testing
 SAMBA_NTLM_USED = True
-SAMBA_IP_SERVER = '172.21.7.11'
+SAMBA_IP_SERVER = '172.23.2.11'
 SAMBA_PORT_SERVER = '445'
+
 
 '''
 ## SAMBA settings for connecting quibitka server to fetch the run files
@@ -20,6 +20,8 @@ SAMBA_NTLM_USED = True
 SAMBA_IP_SERVER = '172.21.7.11'
 SAMBA_PORT_SERVER = '445'
 '''
+##end TODO
+
 
 ## Directory settings for processing the run execution process
 ## Relative path from settings.BASE_DIR

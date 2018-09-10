@@ -2497,13 +2497,15 @@ def email (request):
 def open_samba_connection ():
 
     from smb.SMBConnection import SMBConnection
-    conn=SMBConnection('bioinfocifs', 'fCdEg979I-W.gUx-teDr', 'NGS_Data', 'quibitka', use_ntlm_v2=True)
-    conn.connect('172.21.7.11', 445)
+    ##conn=SMBConnection('bioinfocifs', 'fCdEg979I-W.gUx-teDr', 'NGS_Data', 'quibitka', use_ntlm_v2=True)
+    conn=SMBConnection(wetlab_config.SAMBA_USER_ID, wetlab_config.SAMBA_USER_PASSWORD, wetlab_config.SAMBA_SHARED_FOLDER_NAME,wetlab_config.SAMBA_REMOTE_SERVER_NAME, use_ntlm_v2=True)
+    ##conn.connect('172.21.7.11', 445)
+    conn.connect(wetlab_config.SAMBA_IP_SERVER, 445)
     return conn
 
 def get_size_dir (directory, conn, ):
     count_file_size = 0
-    file_list = conn.listPath('NGS_Data', directory)
+    file_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME, directory)
     for sh_file in file_list:
         if sh_file.isDirectory:
             if (sh_file.filename == '.' or sh_file.filename == '..'):
@@ -2554,7 +2556,7 @@ def update_tables (request):
             run_parameter_id=RunningParameters.objects.get(pk=run_id)
 
             runID_value = run_parameter_id.RunID
-            get_full_list = conn.listPath('NGS_Data' ,runID_value)
+            get_full_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,runID_value)
             rest_of_dir_size = 0
             data_dir_size = 0
             images_dir_size = 0
@@ -2615,14 +2617,14 @@ def update_tables_date (request):
             runID_value = run_parameter_id.RunID
             completion_file = os.path.join(runID_value, 'RunCompletionStatus.xml')
             try:
-            	completion_attributes = conn.getAttributes('NGS_Data' ,completion_file)
+            	completion_attributes = conn.getAttributes(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,completion_file)
             	# fetching the time creation on the RunCompletionStatus.xml for Run finish datetime
             	run_be_updated.run_finish_date = datetime.datetime.fromtimestamp(int(completion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
             except:
             	pass
             conversion_stats_file = os.path.join (runID_value,'Data/Intensities/BaseCalls/Stats/', 'ConversionStats.xml')
             try:
-            	conversion_attributes = conn.getAttributes('NGS_Data' ,conversion_stats_file)
+            	conversion_attributes = conn.getAttributes(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,conversion_stats_file)
             	#import pdb; pdb.set_trace()
             	run_be_updated.bcl2fastq_finish_date = datetime.datetime.fromtimestamp(int(conversion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
             except:
