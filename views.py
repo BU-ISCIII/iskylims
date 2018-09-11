@@ -127,7 +127,7 @@ def get_sample_file (request):
         ## CHECK if not project/description colunms are found
         ## Error page is show if not project/description colunms are found
         error_form_message= check_run_projects_in_samplesheet(stored_file)
-        if error_form_message != 'OK_projects_in_samplesheet':
+        if error_form_message != 'OK_projects_samplesheet':
             ## delete sample sheet file
             fs.delete(file_name)
             return render (
@@ -153,7 +153,7 @@ def get_sample_file (request):
         project_list=get_projects_in_run(stored_file)
 
         error_form_message=check_run_projects_definition(project_list)
-        if error_form_message!= 'OK_projects_in_db':
+        if error_form_message!= 'OK_projects_db':
             ## delete sample sheet file before showing the error page
             fs.delete(file_name)
             return render (
@@ -164,7 +164,7 @@ def get_sample_file (request):
 
         ## Once the information looks good. it will be stores in runProcess and projects table
         ## store data in runProcess table, run is in pre-recorded state
-        #import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
         center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
         center_requested_by = Center.objects.get(pk = center_requested_id)
         run_proc_data = RunProcess(

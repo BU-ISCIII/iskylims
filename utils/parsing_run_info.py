@@ -184,22 +184,12 @@ def completion_status_run (local_run_completion_status_file):
     return ''
 
 def process_run_in_recorded_state(logger):
-    ## TODO
-    ##  [yes] continue
-    ##  [no]  check RTACompleted
-    ##              [no] Continue #run in process or abandoned TODO ? EndTODO
-    ##              [yes] run treatment:
-
-    ##        nd file 'process_run_file' (state="SampleSent")
-    ## End TODO
     try:
         conn=open_samba_connection()
         logger.info('Sucessfully  SAMBA connection for the process_run_in_recorded_state')
     except:
         return ('Error')
-    ## TODO is the following line really used?
-    ## processed_run_fils, runlist = [] , []
-    ## end TODO
+    processed_run_fils, runlist = [] , []
 
     share_folder_name = wetlab_config.SAMBA_SHARED_FOLDER_NAME
     base_directory = wetlab_config.RUN_TEMP_DIRECTORY
