@@ -35,7 +35,7 @@ def get_miseqruns_samplesheets():
     ## 1st: scan of wetlab_config.SAMBA_SHARED_FOLDER_NAME to build a list
     ## with runs containing '_M0\d\d\d\d_' (MiSeq in python RE)
 
-    ## 2nd: construction of sublist with runs which fullfil:
+    ## 2nd: construction of sublist with runs which fullfill:
     ## a) have a samplesheet b) have not been processed
     ## c) are not runs featuring faulty samplesheets
 
@@ -47,12 +47,11 @@ def get_miseqruns_samplesheets():
             logger.error('Error when trying to set up SMB (samba) connection. Potential authentication error')
             raise Exception ('Error when trying to set up SMB (samba) connection. Potential authentication error')
 
-        logger.info('Succesfully SAMBA connection for" ##this function (macro or something to include it?)
+        logger.info('Succesfully SAMBA connection for get_miseqruns_samplesheetsr'
         file_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME, '/')
             if len(file_list) < 1:
                 logger.error('Unexpected empty folder: nº of elements= ',len(file_list))
                 raise Exception ('Unexpected empty folder: nº of elements= ',len(file_list))
-
 
     except: ##
         print('Exception when trying to set up SMB (samba) connection')
@@ -60,9 +59,188 @@ def get_miseqruns_samplesheets():
     finally: #always: either if execution of try was OK or KO
         conn.close()
 
-    temp_run_folders= {}  ## total available miSeq runs  format {run_dir=... ,{samplesheet_filename=..., sequencer_family=..., sequencer_model= ....}}
+    ## total available miSeq runs format
+    ## {run_dir=... ,{samplesheet_filename=..., sequencer_family=..., sequencer_model= ....}}
+    temp_run_folders= {}
     target_run_folders={}: ##subset of runs of temp_run_folders with MiSeq runs retained (Same format)
-    unexpected_samplesheet_miseqruns = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.UNEXPECTED_SAMPLESHEET_MISEQRUNS_FILE)
+    unexpected_samplesheet_miseqruns = os.path.join(
+        wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.UNEXPECTED_SAMPLESHEET_MISEQRUNS_FILE)
+
+
+    for sfh in file_list:
+        if sfh.isDirectory:
+            run_dir=(sfh.filename)
+            if ('.' == run_dir or '..'== run_dir):
+                continue
+            sequencer_info=re.search('_M0\d\d\d\d_', sfh.filename) ## MiSeq run_dir_path
+
+            if None != sequencer_info
+                run_dir_path = os.path.join(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,run_dir)
+                file_list = conn.listPath( run_dir_path, '/')
+                samplesheet_found=false
+                for file in file_list:
+                    ##  E samplesheet.csv   ?
+                    ## usually present as "SampleSheet.csv".
+                    ## Once as "samplesheet.csv" ( 180725_M03352_0112_000000000-D38LV).
+                    if file.filename.lower() == "samplesheet.csv":
+                        samplesheet_found = True
+                        temp_run_folders.append(run_dir)
+                        temp_run_folders[run_dir]={}
+                        temp_run_folder[run_dir]['samplesheet_filename']=file.filename
+                        temp_run_folder[run_dir]['sequencer_family']=sequencer_info[1:2] ## MiSeq
+                        temp_run_folder[run_dir]['sequencer_model']= sequencer_info[3:4]
+                        break
+
+                    else: ## no sample sheet found:
+                        logger.error('Run',run_dir,'without samplesheet').
+                        ####Treatment of samplesheet non existent... TODO
+                        try:
+                            with open (unexpected_samplesheet_miseqruns, "a") as unexpected_samplesheet_file:
+                                unexpected_samplesheet_file.write(run_dir)
+                        except:
+                            print('Exception when trying to record run ', run_dir,
+                                ' without sample sheet in file ',
+                                wetlab_config.UNEXPECTED_SAMPLESHEET_MISEQRUNS_FILE)
+                            raise
+
+                        logger.error('Recorded in: ', wetlab_config.PROCESSED_RUN_FILE)
+                        print('Run',run_dir,'without samplesheet'. Recorded in: ', wetlab_config.PROCESSED_RUN_FILE)
+                        ### End TODO
+
+    if len(temp_run_folders) < 1:  ## There are not MiSeq runs
+        print("No MiSeq runs at this moment")
+        logger.info("No MiSeq runs at this moment")
+        return miseqruns_update_dir_list
+
+
+    process_run_file_miseqelements=[]
+    process_run_file = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.PROCESSED_RUN_FILE)
+
+    try:
+        with open (process_run_file,'r') as fh:
+            for line in fh:
+                line=line.rstrip()
+                if 'M0' in line:
+                    process_run_file_miseqelements.append(line)
+    except:
+        time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        logger.error('Exception when opening (and scanning) the file containing the processed runs. Time stop=  ', time_stop)
+        print('Exception when opening (and scanning) the file containing the processed runs. Time stop= ', time_stop)
+        raise
+
+    ##TODO
+    ## Getting info about runs with unexpected samplesheets
+    try:
+        with open (unexpected_samplesheet_miseqruns,'r') as fh:
+            for line in fh:
+                line=line.rstrip()
+                if 'M0' in line: ## TODO endTODO
+                    process_run_file_miseqelements.append(line)
+    except:
+        time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        logger.error('Exception when opening (and scanning) the file containing the processed runs. Time stop=  ', time_stop)
+        print('Exception when opening (and scanning) the file containing the processed runs. Time stop= ', time_stop)
+        raise
+###End TODO
+
+    for run,val in temp_run_folders:
+        if (run in process_run_file_miseqelements) or (run in unexpected_samplesheet_ miseqruns):
+            continue;
+        else:
+            run_dir_name = os.path.join(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,run)
+            file_list = conn.listPath( run_dir_name, '/')
+                for file in file_list:
+                    if file == "SampleSheet.csv"exactly:
+                        target_run_folders.append(run)=val
+                        break
+                    else:
+                        continue
+
+    return target_run_folders
+
+
+
+def fetch_remote_samplesheets(run_dir_dict):
+    ## run_dir_dict= {run_dir:{samplesheet_filename:..., sequencer_family:..., sequencer_model:...}}
+    ##Open samba connection and copy the remote samplesheet locally. If exception happens, delete the (locally) copied files
+
+    ##Treatment of the selected runs:
+    local_samplesheet_filepaths=[] ##filepaths of transfered (locally copied) samplesheets. Used to clean up in case things go wrong
+    try:
+        conn=open_samba_connection()
+        for run_index, run_info_dict in run_dir_dict:
+            ##Storage of the original samplesheet:
+            samba_samplesheet_filepath = os.path.join(run_index,runinfodict[samplesheet_filename])
+            ##Construction of local_samplesheet_filename:
+            split_filename=re.search('(.*)(\.\w+$)',run_info_dict[samplesheet_filename])
+            sequencer=  re.search('_M0\d+_', run_index)
+            if None==sequencer: ##this should be impossible...
+                print ('Sequencer == None in run name= ',run_index)
+                logger.error
+                raise exception RunTimeError?
+            ext_filename=split_filename.group(2)
+            local_samplesheet_filename = str(split_filename.group(1)+ + timestr +ext_file
+            local_samplesheet_filepath= os.path.join(
+                settings.MEDIA_ROOT, wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY,local_samplesheet_filename)
+
+            run_info_dict.append['samplesheet_filepath']=local_samplesheet_filepath ## used at  the second part of the function
+            ## now run_dir_dict= {run_dir:{samplesheet_filename:..., sequencer_family:..., sequencer_model:..., local_samplesheet_filepath:...}}
+            try:
+                with open (local_samplesheet_filepath, 'wb') as file_handler:
+                    conn.retrieveFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME,
+                        samba_samplesheet_filepath, file_handler)
+                    transfered_samplesheet_filepaths.append(local_samplesheet_filepath)
+            except:
+                exception treatment:
+                raise
+
+    except:
+        exception treatment:
+                                                                                                                                                                                                                                                                            for transfered_file in transfered_samplesheet_filepaths:
+                                                                                                                                                                                                                                                                                        os.delete(transfered_file)
+                                                                                                                                                                                                                                                                                                    logger
+                                                                                                                                                                                                                                                                                                            -raise
+                                                                                                                                                                                                                                                                                                                finally: #always
+                                                                                                                                                                                                                                                                                                                        conn.close()
+
+                                                                                                                                                                                                                                                                                                                        database_update_info={} ## Information to be returned
+                                                                                                                                                                                                                                                                                                                        for run_index, run_info_dict in run_dir_list:
+
+                                                                                                                                                                                                                                                                                                                                run_name, index_library_name=get_experiment_library_name(run_info_dict['local_samplesheet_filepath'])
+                                                                                                                                                                                                                                                                                                                                    if run_name='' :
+                                                                                                                                                                                                                                                                                                                                                run_name= timestr #unique value
+                                                                                                                                                                                                                                                                                                                                                            print('empty run_name in samplesheet: ',local_samplesheet_filepath,'. run_name allocated timestamp value= ',timestr)
+                                                                                                                                                                                                                                                                                                                                                                        logger.error
+
+
+                                                                                                                                                                                                                                                                                                                                                                            samplesheet checks:     ## if KO: tratamiento:
+                                                                                                                                                                                                                                                                                                                                                                                                            ## registrar en 'unexpected_samplesheet_ miseq_runs' (file)
+                                                                                                                                                                                                                                                                                                                                                                                                                                            ## error behaviour: log? something else? TODO
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ## mail angel y nosotros
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ## filtro wetlab: "Get Incompleted" + causa error
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                -check_run_name_free_to_use(run_name)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    -check_run_projects_in_samplesheet(run_info_dict['local_samplesheet_filepath'])
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        -check_run_users_definition(run_info_dict['local_samplesheet_filepath'])
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            -check_run_projects_definition(project_list) #project_list=get_projects_in_run(stored_file) ##project_list is a dict
+
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                database_update_info['run_name']={}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    database_update_info['run_name']['samplesheet']=wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY+samplesheet_filename
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        database_update_info['run_name']['run_projects']=project_list
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            key= next.iter(project_list) ## 1st (and maybe only) project in run
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                value=project_list(key) ## researcher
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        database_update_info['run_name']'userId']=User.objects.get(username_exact=researcher) ## For MiSeq runs we take the 1st researcher
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            database_update_info['run_name']['index_library']=index_library_name
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                database_update_info['run_name']['sequencer_family']=run_info_dict['sequencer_family']
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    database_update.info['sequencer_model']=run_info_dict['sequencer_model']
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    return database_update_info
+
+
+
+
+
 
 
 
