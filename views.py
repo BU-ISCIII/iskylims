@@ -15,6 +15,8 @@ from .utils.sample_convertion import *
 from .utils.stats_calculation import *
 from .utils.stats_graphics import *
 from .utils.email_features import *
+from .utils.samplesheet_checks import *
+
 
 from django_utils.models import Profile, Center
 
@@ -73,9 +75,8 @@ def get_sample_file (request):
 
         ## CHECK if file contains the extension.
         ## Error page is showed if file does not contain any extension
-        try:
-            split_filename=re.search('(.*)(\.\w+$)',myfile.name)
-        except:
+        split_filename=re.search('(.*)(\.\w+$)',myfile.name)
+        if None==split_filename:
             return render (
                 request,'iSkyLIMS_wetlab/error_page.html',
                 {'content':['Uploaded file does not containt extension',
@@ -115,11 +116,11 @@ def get_sample_file (request):
         ## CHECK that runName is not already used in the database.
         ## Error page is showed if runName is already  defined
         #import pdb; pdb.set_trace()
-        error_form_message =check_run_name_free_to_use(run_name,sequencer)
+        error_form_message =check_run_name_free_to_use(run_name)
         if error_form_message != 'Free':
             return render (
                 request,'iSkyLIMS_wetlab/error_page.html',
-                {'content':check_run_name_result})
+                {'content':error_form_message})
 
 
 
@@ -141,6 +142,7 @@ def get_sample_file (request):
         if error_form_message != 'OK_users':
             ## delete sample sheet file before showing the error page
             fs.delete(file_name)
+            import pdb; pdb.set_trace()
             return render (
                 request,'iSkyLIMS_wetlab/error_page.html',
                 {'content':error_form_message})
@@ -164,9 +166,11 @@ def get_sample_file (request):
 
         ## Once the information looks good. it will be stores in runProcess and projects table
         ## store data in runProcess table, run is in pre-recorded state
+
         import pdb; pdb.set_trace()
         center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
         center_requested_by = Center.objects.get(pk = center_requested_id)
+        import pdb; pdb.set_trace()
         run_proc_data = RunProcess(
             runName=run_name,sampleSheet= file_name, runState='Pre-Recorded',
             centerRequestedBy = center_requested_by)

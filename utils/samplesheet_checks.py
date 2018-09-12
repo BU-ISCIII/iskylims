@@ -1,8 +1,10 @@
 ## Module containing checks performed on a SampleSheet file for Illumina sequencers
-from  .models import *
+from  iSkyLIMS_wetlab.models import *
 import os
 import pdb
 
+from django.conf import settings
+from .sample_convertion import get_projects_in_run
 
 def check_run_name_free_to_use(run_name):
     ## Function checks whether run_name is already used in the database.
@@ -16,7 +18,6 @@ def check_run_name_free_to_use(run_name):
             ## Delete the sample sheet file and the row in database
             delete_run = RunProcess.objects.filter(runName = run_name, runState__exact ='Pre-Recorded')
             sample_sheet_file = str(delete_run[0].sampleSheet)
-            import pdb; pdb.set_trace()
             full_path_sample_sheet_file = os.path.join(settings.MEDIA_ROOT, sample_sheet_file)
             os.remove(full_path_sample_sheet_file)
             delete_run[0].delete()

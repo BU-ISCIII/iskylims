@@ -6,7 +6,6 @@ from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
 from django_utils.models import Center
-from iSkyLIMS_drylab.models import Platorm, PlatformModel
 
 class RunProcess(models.Model):
     runName = models.CharField(max_length=45)
@@ -25,7 +24,7 @@ class RunProcess(models.Model):
     useSpaceOtherMb=models.CharField(max_length=10)
     #requestedCenter= models.CharField(max_length=45)
     centerRequestedBy = models.ForeignKey (Center, on_delete=models.CASCADE)
-    sequencerPlatformModel_id=models.ForeignKey(PlatformModel, on_delete.CASCADE, null=True)
+    sequencerPlatformModel=models.CharField(max_length=20, default='seq_model')
 
     def __str__(self):
         return '%s' %(self.runName)
