@@ -33,10 +33,10 @@ def open_log(log_name):
 def get_miseqruns_samplesheets():
     ## Identification of runs whose samplesheets must be treated:
     ## 1st: scan of wetlab_config.SAMBA_SHARED_FOLDER_NAME to build a list
-    ## with runs containing '_M0\d\d\d\d_' (MiSeq in python RE)
+    ## with MiSeq runs
 
     ## 2nd: construction of sublist with runs which fullfill:
-    ## a) have a samplesheet b) have not been processed
+    ## a) have a samplesheet b) have not been already processed
     ## c) are not runs featuring faulty samplesheets
 
 
@@ -49,9 +49,9 @@ def get_miseqruns_samplesheets():
 
         logger.info('Succesfully SAMBA connection for get_miseqruns_samplesheetsr'
         file_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME, '/')
-            if len(file_list) < 1:
-                logger.error('Unexpected empty folder: nº of elements= ',len(file_list))
-                raise Exception ('Unexpected empty folder: nº of elements= ',len(file_list))
+        if len(file_list) < 1:
+            logger.error('Unexpected empty folder: nº of elements= ',len(file_list))
+            raise Exception ('Unexpected empty folder: nº of elements= ',len(file_list))
 
     except: ##
         print('Exception when trying to set up SMB (samba) connection')
@@ -72,7 +72,7 @@ def get_miseqruns_samplesheets():
             run_dir=(sfh.filename)
             if ('.' == run_dir or '..'== run_dir):
                 continue
-            sequencer_info=re.search('_M0\d\d\d\d_', sfh.filename) ## MiSeq run_dir_path
+            sequencer_info=re.search('_M0\d+_', sfh.filename) ## MiSeq run_dir_path
 
             if None != sequencer_info
                 run_dir_path = os.path.join(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,run_dir)
@@ -87,8 +87,7 @@ def get_miseqruns_samplesheets():
                         temp_run_folders.append(run_dir)
                         temp_run_folders[run_dir]={}
                         temp_run_folder[run_dir]['samplesheet_filename']=file.filename
-                        temp_run_folder[run_dir]['sequencer_family']=sequencer_info[1:2] ## MiSeq
-                        temp_run_folder[run_dir]['sequencer_model']= sequencer_info[3:4]
+                        temp_run_folder[run_dir]['sequencer_......]= ## MiSeq
                         break
 
                     else: ## no sample sheet found:
@@ -179,9 +178,10 @@ def fetch_remote_samplesheets(run_dir_dict):
                 logger.error
                 raise exception RunTimeError?
             ext_filename=split_filename.group(2)
-            local_samplesheet_filename = str(split_filename.group(1)+ + timestr +ext_file
+            local_samplesheet_filename = str(split_filename.group(1)+ timestr +ext_file)
             local_samplesheet_filepath= os.path.join(
-                settings.MEDIA_ROOT, wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY,local_samplesheet_filename)
+                settings.MEDIA_ROOT, wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY,
+                local_samplesheet_filename)
 
             run_info_dict.append['samplesheet_filepath']=local_samplesheet_filepath ## used later in the function
             ## now run_dir_dict= {run_dir:{samplesheet_filename:..., sequencer_family:...,
@@ -205,10 +205,11 @@ def fetch_remote_samplesheets(run_dir_dict):
     finally: #always
         conn.close()
 
-    database_update_info={} ## Information to be returned
+    database_info={} ## Information to be returned
     for run_index, run_info_dict in run_dir_list:
 
-        run_name, index_library_name=get_experiment_library_name(run_info_dict['local_samplesheet_filepath'])
+        run_name,index_library_name=get_experiment_library_name(
+            run_info_dict['local_samplesheet_filepath'])
         if run_name='' :
             run_name= timestr #unique value
             print('empty run_name in samplesheet: ',local_samplesheet_filepath,
@@ -224,22 +225,23 @@ def fetch_remote_samplesheets(run_dir_dict):
         check_run_name_free_to_use(run_name)
         check_run_projects_in_samplesheet(run_info_dict['local_samplesheet_filepath'])
         check_run_users_definition(run_info_dict['local_samplesheet_filepath'])
-        check_run_projects_definition(project_list) #project_list=get_projects_in_run(stored_file) ##project_list is a dict
+
+        project_dict=get_projects_in_run(stored_file) ##project_dict is a dict
+        check_run_projects_definition(project_dict)
+
+        database_info['run_name']={}
+        database_info['run_name']['samplesheet']=wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY+samplesheet_filename
+        database_info['run_name']['run_projects']=project_dict
+
+        ## For MiSeq runs we take the 1st researcher as user for the 'center requested'
+        key= next.iter(project_dict) ## 1st (and maybe only) project in run
+        researcher=project_dict[key]
+        database_info['run_name']'userId']=User.objects.get(username_exact=researcher)
+        database_info['run_name']['index_library']=index_library_name
+        database.info['sequencer_model']=run_info_dict['sequencer_model']
 
 
-        database_update_info['run_name']={}
-        database_update_info['run_name']['samplesheet']=wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY+samplesheet_filename
-        database_update_info['run_name']['run_projects']=project_list
-        key= next.iter(project_list) ## 1st (and maybe only) project in run
-        value=project_list(key) ## researcher
-
-        database_update_info['run_name']'userId']=User.objects.get(username_exact=researcher) ## For MiSeq runs we take the 1st researcher
-        database_update_info['run_name']['index_library']=index_library_name
-        database_update_info['run_name']['sequencer_family']=run_info_dict['sequencer_family']
-        database_update.info['sequencer_model']=run_info_dict['sequencer_model']
-
-
-    return database_update_info
+    return database_info
 
 
 
@@ -254,78 +256,78 @@ def getSampleSheetFromSequencer():
     ## sequencer storage directory. The process is periodically kicked off by 'cron'
     ## So far, we just consider the case of just one "library index name"
 
-
-
-
-    ## Search for new runs which have finished primary analysis
-    ##    primary_analysis_run_list=
-    ##      list of runs in SAMBA remote dir for our type(s) of sequencer(s):MiSeq
-    ##      and still not present in the DB (otherwise, present in state
-    ##          CANCELLED, RECORDED or the following ones until COMPLETED}
-
     ## For each run in primary_analysis_run_list:
     ##   -local copy of samplesheet
     ##    run_name, index_library_name = get_experiment_library_name(stored_file)
     ##   -sanity checks
     ##    if ko, delete sampleSheet (cómo avisar al usuario (mail)? vs CANCELLED)
     ##
-    ##   -Ensure unique ids for sampleSheetç
-    ##   (-No BaseSpace formatting needed for samplesheet)
-    ##   -update DB tables  (run state= "Recorded"  (run state= "Recorded"))
-    ##      Since the protocol of the preparation of the library (library kit) is
+    ##   -At this stage, no need to ensure unique ids for sampleSheet
+    ##   -No BaseSpace formatting needed for samplesheet)
+    ##   -Since the protocol of the preparation of the library (LibraryKit_id) is
     ##      not provided via a form, it will be stored as "Unknown"
 
     try:
         ## Launch elaboration of the list of the MiSeq samplesheets to study:
         target_run_folders= get_miseqruns_samplesheets()
 
+
+        if len(target_run_folders) < 1:
+            time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            logger.info('No new MiSeq runs available. Time stop= ',time_stop)
+            logger.info('****** Leaving crontab')
+            print('No new MiSeq runs available. Time stop= ',time_stop)
+            print('****** Leaving crontab')
+        else:
+            ##Launch treatment of selected runs
+            database_info=fetch_remote_samplesheets(temp_miseqrun_folders)
+            if database_info: ## information fetched :)
+                ##Store in DB the information corresponding to the fetched set of samplesheets / runs
+                for key, val in database_info:
+
+                    ##1.- table 'RunProcess' data:
+                    runName= key
+                    sampleSheet= val[file_name] # file_name = wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY
+                                                # + split_filename.group(1)+timestr +
+
+                    center_requested_id = Profile.objects.get(
+                        profileUserID = val[userId]).profileCenter.id
+                    centerRequestedBy=Center.objects.get(pk=center_requested_id)
+                    index_library = val['index_library']
+                    sequencerPlatformModel= val['sequencerPlatformModel']
+                    runState='Recorded'
+                    new_run_info=RunProcess(runName,sampleSheet,centerRequestedBy,index_library,
+                        sequencerPlatformModel,runState)
+                    new_run_info.save()
+
+                    ##2.- table 'Projects' data:
+                    project_dict=val['run_projects']
+                    for key2, val2 in project_dict.items()
+                        runprocess_id=RunProcess.objects.get(runName=key)
+                        projectName= key2
+                        user_id=User.objects.get(username_exact=val2['Description'])
+                        ##for the moment, no info about the library prep protocol
+                        LibraryKit_id=LibraryKit.objects.get(libraryName__exact = 'Unknown')
+                        ## as of today, only one set of indexes is being considered
+                        libraryKit=val['index_library']
+                        procState='Recorded'
+                        new_project_info=Projects(
+                            runprocess_id,projectName,user_id,LibraryKit_id,procState)
+                        new_project_info.save()
+
+            else: ## no information fetched
+                time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                logger.info('No MiSeq runs to introduce in database. Time stop= ',time_stop)
+                logger.info('****** Leaving crontab')
+                print('No MiSeq runs to introduce in database. Time stop= ',time_stop)
+                print('****** Leaving crontab')
+
     except:
-        ## generic exception handling (exception info). Print() and logger in originating function
+        ## generic exception handling (exception info).
         var =traceback.format_exc()  " "
         time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         print('getSampleSheetFromSequencer: exception handling. Time stop= ', time_stop,'.  Traceback info= ',var)
         logger.error ('getSampleSheetFromSequencer: exception handling. Time stop= ', time_stop,'.  Traceback info= ',var)
-
-    if len(target_run_folders) < 1:
-        time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        logger.info('No new MiSeq runs available. Time stop= ',time_stop)
-        logger.info('****** Leaving crontab')
-        print('No new MiSeq runs available. Time stop= ',time_stop)
-        print('****** Leaving crontab')
-    else: ##
-        try:
-            ##Launch treatment of selected runs
-            database_update_info=fetch_remote_samplesheets(temp_miseqrun_folders)
-
-        except:
-
-        try:
-            ##Update DB for the fetched set of samplesheets / runs
-            for len database_update_info:
-
-                ##table 'RunProcess' data:
-                runName= run_name;
-                sampleSheet= file_name; #file_name = wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY+split_filename.group(1)+timestr +
-                centerRequestedBy=center_requested_by ##center_requested_by=Center.objects.get(pk=center_requested_id
-                ##center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
-                Sequencer model= ## for ex. NS3352
-
-                ##table 'Projects' data:
-                for key, val in project_list.items()
-                    runprocess_id=RunProcess.objects.get(runName=run_name)
-                    projectName= key
-                    user_id=userid  #User.objects.get(username_exact = val)
-                    library_kit##  TODO END TODO
-
-                ## run_p.runName = experiment_name
-                run_p.index_library = run_index_library_name
-                run_p.runState='Recorded'
-
-                project.procState='Recorded' #for project in project_to_be_updated
-                # project_to_be_updated = Projects.objects.filter(runprocess_id__exact = run_p.id)
-
-                ## RunProcess y Projects: save info
-        except:
 
 
 
@@ -345,9 +347,6 @@ def check_recorded_folder ():
     ## if case 'MiSeq':
     ##  -checks, database update and update state (getSampleSheetFromSequencer())
     ##
-
-
-
     ## case "NextSeq" (and all???):
     ## end TODO
     time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
