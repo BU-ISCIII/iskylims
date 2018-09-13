@@ -183,8 +183,9 @@ def fetch_remote_samplesheets(run_dir_dict):
             local_samplesheet_filepath= os.path.join(
                 settings.MEDIA_ROOT, wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY,local_samplesheet_filename)
 
-            run_info_dict.append['samplesheet_filepath']=local_samplesheet_filepath ## used at  the second part of the function
-            ## now run_dir_dict= {run_dir:{samplesheet_filename:..., sequencer_family:..., sequencer_model:..., local_samplesheet_filepath:...}}
+            run_info_dict.append['samplesheet_filepath']=local_samplesheet_filepath ## used later in the function
+            ## now run_dir_dict= {run_dir:{samplesheet_filename:..., sequencer_family:...,
+            ##              sequencer_model:..., local_samplesheet_filepath:...}}
             try:
                 with open (local_samplesheet_filepath, 'wb') as file_handler:
                     conn.retrieveFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME,
@@ -196,59 +197,49 @@ def fetch_remote_samplesheets(run_dir_dict):
 
     except:
         exception treatment:
-                                                                                                                                                                                                                                                                            for transfered_file in transfered_samplesheet_filepaths:
-                                                                                                                                                                                                                                                                                        os.delete(transfered_file)
-                                                                                                                                                                                                                                                                                                    logger
-                                                                                                                                                                                                                                                                                                            -raise
-                                                                                                                                                                                                                                                                                                                finally: #always
-                                                                                                                                                                                                                                                                                                                        conn.close()
+            for transfered_file in transfered_samplesheet_filepaths:
+                os.delete(transfered_file)
+                logger
+            raise
 
-                                                                                                                                                                                                                                                                                                                        database_update_info={} ## Information to be returned
-                                                                                                                                                                                                                                                                                                                        for run_index, run_info_dict in run_dir_list:
+    finally: #always
+        conn.close()
 
-                                                                                                                                                                                                                                                                                                                                run_name, index_library_name=get_experiment_library_name(run_info_dict['local_samplesheet_filepath'])
-                                                                                                                                                                                                                                                                                                                                    if run_name='' :
-                                                                                                                                                                                                                                                                                                                                                run_name= timestr #unique value
-                                                                                                                                                                                                                                                                                                                                                            print('empty run_name in samplesheet: ',local_samplesheet_filepath,'. run_name allocated timestamp value= ',timestr)
-                                                                                                                                                                                                                                                                                                                                                                        logger.error
+    database_update_info={} ## Information to be returned
+    for run_index, run_info_dict in run_dir_list:
 
+        run_name, index_library_name=get_experiment_library_name(run_info_dict['local_samplesheet_filepath'])
+        if run_name='' :
+            run_name= timestr #unique value
+            print('empty run_name in samplesheet: ',local_samplesheet_filepath,
+                '. run_name allocated timestamp value= ',timestr)
+            logger.error
 
-                                                                                                                                                                                                                                                                                                                                                                            samplesheet checks:     ## if KO: tratamiento:
-                                                                                                                                                                                                                                                                                                                                                                                                            ## registrar en 'unexpected_samplesheet_ miseq_runs' (file)
-                                                                                                                                                                                                                                                                                                                                                                                                                                            ## error behaviour: log? something else? TODO
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ## mail angel y nosotros
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ## filtro wetlab: "Get Incompleted" + causa error
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                -check_run_name_free_to_use(run_name)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    -check_run_projects_in_samplesheet(run_info_dict['local_samplesheet_filepath'])
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        -check_run_users_definition(run_info_dict['local_samplesheet_filepath'])
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            -check_run_projects_definition(project_list) #project_list=get_projects_in_run(stored_file) ##project_list is a dict
-
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                database_update_info['run_name']={}
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    database_update_info['run_name']['samplesheet']=wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY+samplesheet_filename
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        database_update_info['run_name']['run_projects']=project_list
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            key= next.iter(project_list) ## 1st (and maybe only) project in run
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                value=project_list(key) ## researcher
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        database_update_info['run_name']'userId']=User.objects.get(username_exact=researcher) ## For MiSeq runs we take the 1st researcher
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            database_update_info['run_name']['index_library']=index_library_name
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                database_update_info['run_name']['sequencer_family']=run_info_dict['sequencer_family']
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    database_update.info['sequencer_model']=run_info_dict['sequencer_model']
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    return database_update_info
+        ##samplesheet checks:
+        ## if KO: tratamiento:
+        ##  registrar en 'unexpected_samplesheet_ miseq_runs'
+        ##  error behaviour: log? something else? TODO
+        ## mail angel y nosotros
+        ## filtro wetlab: "Get Incompleted" + causa error
+        check_run_name_free_to_use(run_name)
+        check_run_projects_in_samplesheet(run_info_dict['local_samplesheet_filepath'])
+        check_run_users_definition(run_info_dict['local_samplesheet_filepath'])
+        check_run_projects_definition(project_list) #project_list=get_projects_in_run(stored_file) ##project_list is a dict
 
 
+        database_update_info['run_name']={}
+        database_update_info['run_name']['samplesheet']=wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY+samplesheet_filename
+        database_update_info['run_name']['run_projects']=project_list
+        key= next.iter(project_list) ## 1st (and maybe only) project in run
+        value=project_list(key) ## researcher
+
+        database_update_info['run_name']'userId']=User.objects.get(username_exact=researcher) ## For MiSeq runs we take the 1st researcher
+        database_update_info['run_name']['index_library']=index_library_name
+        database_update_info['run_name']['sequencer_family']=run_info_dict['sequencer_family']
+        database_update.info['sequencer_model']=run_info_dict['sequencer_model']
 
 
-
-
-
-
-
-
-
-
-
+    return database_update_info
 
 
 
@@ -259,8 +250,8 @@ def fetch_remote_samplesheets(run_dir_dict):
 def getSampleSheetFromSequencer():
     ## This function is used for sequencers (as of today, MiSeq) for which
     ## the system do not interact with the wetlab manager via web forms
-    ## when dealing with the samplesheet:it fetches it straight from the
-    ## sequencer storage directory. The process is periodically kicked off by 'crontab'
+    ## when dealing with the run samplesheet:it fetches it straight from the
+    ## sequencer storage directory. The process is periodically kicked off by 'cron'
     ## So far, we just consider the case of just one "library index name"
 
 
@@ -284,82 +275,61 @@ def getSampleSheetFromSequencer():
     ##      Since the protocol of the preparation of the library (library kit) is
     ##      not provided via a form, it will be stored as "Unknown"
 
+    try:
+        ## Launch elaboration of the list of the MiSeq samplesheets to study:
+        target_run_folders= get_miseqruns_samplesheets()
 
+    except:
+        ## generic exception handling (exception info). Print() and logger in originating function
+        var =traceback.format_exc()  " "
+        time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print('getSampleSheetFromSequencer: exception handling. Time stop= ', time_stop,'.  Traceback info= ',var)
+        logger.error ('getSampleSheetFromSequencer: exception handling. Time stop= ', time_stop,'.  Traceback info= ',var)
 
+    if len(target_run_folders) < 1:
+        time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        logger.info('No new MiSeq runs available. Time stop= ',time_stop)
+        logger.info('****** Leaving crontab')
+        print('No new MiSeq runs available. Time stop= ',time_stop)
+        print('****** Leaving crontab')
+    else: ##
+        try:
+            ##Launch treatment of selected runs
+            database_update_info=fetch_remote_samplesheets(temp_miseqrun_folders)
 
-            ## Calculate project_list (--> profileUserIDs) -- take center of the 1st user by default
-            center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
-            center_requested_by = Center.objects.get(pk = center_requested_id)
-            run_proc_data = RunProcess(
-                runName=run_name,sampleSheet= file_name, runState='Pre-Recorded',
-                centerRequestedBy = center_requested_by)
-            run_proc_data.save()
-            experiment_name = '' if run_name == timestr else run_name
+        except:
 
-            ## create new project record based on the project involved in the run and
-            ## include the project information in projects variable to build the new FORM
-            run_info_values ={}
-            run_info_values['experiment_name'] = experiment_name
-            run_info_values['index_library_name'] = index_library_name
-            for key, val  in project_list.items():
-                userid=User.objects.get(username__exact = val)
-                p_data=Projects(runprocess_id=RunProcess.objects.get(runName =run_name), projectName=key, user_i
-                p_data.save()
-                projects.append([key, val])
-            run_info_values['projects_user'] = projects
-            run_info_values['runname']= run_name
-            ## Get the list of the library kit used (libraryKit)
-            #import pdb; pdb.set_trace()
-            used_libraries = []
-            list_libraries = LibraryKit.objects.order_by().valuejs_list('libraryName', flat=True)
-            run_info_values['used_libraryKit'] =  list_libraries
+        try:
+            ##Update DB for the fetched set of samplesheets / runs
+            for len database_update_info:
 
+                ##table 'RunProcess' data:
+                runName= run_name;
+                sampleSheet= file_name; #file_name = wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY+split_filename.group(1)+timestr +
+                centerRequestedBy=center_requested_by ##center_requested_by=Center.objects.get(pk=center_requested_id
+                ##center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
+                Sequencer model= ## for ex. NS3352
 
+                ##table 'Projects' data:
+                for key, val in project_list.items()
+                    runprocess_id=RunProcess.objects.get(runName=run_name)
+                    projectName= key
+                    user_id=userid  #User.objects.get(username_exact = val)
+                    library_kit##  TODO END TODO
 
-           for p in range(len( projects)):
-               my_project = projects [p]
-               my_name = user_name[p]
-               my_libkit = library_kit[p]
-               library_kit_id = LibraryKit.objects.get(libraryName__exact = library_kit[p])
-               update_info_proj=Projects.objects.get(projectName = my_project)
-               update_info_proj.libraryKit=project_index_kit[p]
-               update_info_proj.baseSpaceFile=bs_file[project_index_kit[p]]
-               update_info_proj.LibraryKit_id = library_kit_id
-               update_info_proj.proState='Recorded'
-               update_info_proj.save()
-           results.append(['runname', experiment_name])
-           ## save the sample sheet file under tmp/recorded to be processed when run folder was created
-           subfolder_name=str(run_p.id)
-           #base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                ## run_p.runName = experiment_name
+                run_p.index_library = run_index_library_name
+                run_p.runState='Recorded'
 
+                project.procState='Recorded' #for project in project_to_be_updated
+                # project_to_be_updated = Projects.objects.filter(runprocess_id__exact = run_p.id)
 
-           # update the sample sheet with the experiment name
-           if run_name != experiment_name :
-               update_sample_sheet (in_file, experiment_name)
-           ## update the Experiment name and the state of the run to 'Recorded'
-           run_p.runName = experiment_name
-           run_p.index_library = run_index_library_name
-           run_p.runState='Recorded'
-           run_p.save()
-           ## update the project state to Recorded
-           project_to_be_updated = Projects.objects.filter(runprocess_id__exact = run_p.id)
-           for project in project_to_be_updated :
-               project.procState='Recorded'
-               project.save()
+                ## RunProcess y Projects: save info
+        except:
 
 
 
 
-            ##
-            ##       + state= "SampleSent"
-            ##
-
-    ##  2.2.if ko, log problem on file and show message on console  ???? TODO .. EndTODO
-    ##  2.3 if ok, update database tables: RunProcess, Projects. Run state="Recorded??"
-    ##
-    ## TODO
-    ## ...
-    ## endTODO
 
 
 
