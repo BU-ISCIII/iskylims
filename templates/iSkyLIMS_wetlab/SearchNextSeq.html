@@ -36,7 +36,7 @@
              {% for key, values in display_one_run.data %}
                {% if "Sample" in key %}
                 <div class="col-sm-6">{{ key }}</div>
-                <div class="col-sm-6"><a href="/wetlab/documents/{{ values }}" download>{{ values|cut:"wetlab/SampleSheets/" }} <span class="glyphicon glyphicon-download-alt"></span></a></div><BR> <BR>
+                <div class="col-sm-6"><a href="/documents/{{ values }}" download>{{ values|cut:"wetlab/SampleSheets/" }} <span class="glyphicon glyphicon-download-alt"></span></a></div><BR> <BR>
                {% elif key == 'Run name'%}
                {% else %}
                 <div class="col-sm-6">{{ key }}</div>
@@ -46,7 +46,7 @@
             {%if display_one_run.Sample_Sheet %}
                 {% for key, value in display_one_run.Sample_Sheet %}
                     <div class="col-sm-6">{{ key }}</div>
-                    <div class="col-sm-6"><a href="/wetlab/documents/{{ value }}" download>Sample Sheet File  <span class="glyphicon glyphicon-download-alt"></span></a></div>
+                    <div class="col-sm-6"><a href="/documents/{{ value }}" download>Sample Sheet File  <span class="glyphicon glyphicon-download-alt"></span></a></div>
                 {% endfor%}
             {% endif %}
            </div> <!--  end of panel body -->
