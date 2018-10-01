@@ -30,7 +30,7 @@ def open_log(log_name):
 
 
 
-def get_miseqruns_samplesheets():
+def miseqruns_samplesheets_list():
     ## Identification of runs whose samplesheets must be treated:
     ## 1st: scan of wetlab_config.SAMBA_SHARED_FOLDER_NAME to build a list
     ## with MiSeq runs
@@ -39,6 +39,8 @@ def get_miseqruns_samplesheets():
     ## a) have a samplesheet b) have not been already processed
     ## c) are not runs featuring faulty samplesheets
 
+    print('Starting the process for miseqruns_samplesheets_list ')
+    logger=open_log('miseqruns_samplesheets_list.log')
 
     ## Reading wetlab_config.SAMBA_SHARED_FOLDER_NAME (NGS_Data in production):
     try:
@@ -47,8 +49,8 @@ def get_miseqruns_samplesheets():
             logger.error('Error when trying to set up SMB (samba) connection. Potential authentication error')
             raise Exception ('Error when trying to set up SMB (samba) connection. Potential authentication error')
 
-        logger.info('Succesfully SAMBA connection for get_miseqruns_samplesheetsr'
-        file_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME, '/')
+        logger.info('Succesfully SAMBA connection for miseqruns_samplesheets_list')
+        file_list= conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME, '/')
         if len(file_list) < 1:
             logger.error('Unexpected empty folder: nº of elements= ',len(file_list))
             raise Exception ('Unexpected empty folder: nº of elements= ',len(file_list))
@@ -59,10 +61,13 @@ def get_miseqruns_samplesheets():
     finally: #always: either if execution of try was OK or KO
         conn.close()
 
+    import pdb; pdb.set_trace()
+    wait=input("pausa. teclea algo...")
+    print("he tecleado")
     ## total available miSeq runs format
     ## {run_dir=... ,{samplesheet_filename=..., sequencer_family=..., sequencer_model= ....}}
     temp_run_folders= {}
-    target_run_folders={}: ##subset of runs of temp_run_folders with MiSeq runs retained (Same format)
+    target_run_folders={} ##subset of runs of temp_run_folders with MiSeq runs retained (Same format)
     unexpected_samplesheet_miseqruns = os.path.join(
         wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.UNEXPECTED_SAMPLESHEET_MISEQRUNS_FILE)
 
@@ -74,7 +79,7 @@ def get_miseqruns_samplesheets():
                 continue
             sequencer_info=re.search('_M0\d+_', sfh.filename) ## MiSeq run_dir_path
 
-            if None != sequencer_info
+            if None != sequencer_info:
                 run_dir_path = os.path.join(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,run_dir)
                 file_list = conn.listPath( run_dir_path, '/')
                 samplesheet_found=false
@@ -267,9 +272,11 @@ def getSampleSheetFromSequencer():
     ##   -Since the protocol of the preparation of the library (LibraryKit_id) is
     ##      not provided via a form, it will be stored as "Unknown"
 
-    try:
+    print('Starting the process for getSampleSheetFromSequencer')
+    logger=open_log('getSampleSheetFromSequencer.log')
+   try:
         ## Launch elaboration of the list of the MiSeq samplesheets to study:
-        target_run_folders= get_miseqruns_samplesheets()
+        target_run_folders= miseqruns_samplesheets_list()
 
 
         if len(target_run_folders) < 1:
