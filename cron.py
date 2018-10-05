@@ -80,7 +80,7 @@ def determine_target_miseqruns(logger):
             assert len(file_list) >= 1, 'Unexpected empty folder: nº of elements=len(file_list)= '+len(file_list)
 
     except: ##
-        print('Exception when trying to set up SMB (samba) connection')
+        logger.exception('Exception when trying to set up SMB (samba) connection')
         conn.close()
         raise
 
@@ -161,7 +161,6 @@ def determine_target_miseqruns(logger):
     timestamp_print('Samba connection closed')
 
     if len(temp_run_folders) <1 :  ## There are not MiSeq runs
-        print("No MiSeq runs at this moment")
         logger.info("No MiSeq runs at this moment")
         timestamp_print('Leaving the process to determine_target_miseqruns()')
 
@@ -178,24 +177,25 @@ def determine_target_miseqruns(logger):
                     if None != sequencer: ##MiSeq found
                         process_run_file_miseqelements.append(line)
         except:
-            logger.exception('Exception when opening (and scanning) the file containing'
-                ' the processed runs. Time stop=  '+ time_stop)
+            logger.exception('Exception when reading file containing'
+                ' processed runs. Time stop=  '+ time_stop)
             raise
 
-        ##TODO
         ## Getting info about runs with unexpected samplesheets
         try:
-            with open (faulty_samplesheet_miseqruns_file,'r') as fh:
-                for line in fh:
-                    line=line.rstrip()
-                    faulty_samplesheet_miseqruns.append(line)
+            if True== os.path.exists(wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILE):
+                with open (faulty_samplesheet_miseqruns_file,'r') as fh:
+                    for line in fh:
+                        line=line.rstrip()
+                        faulty_samplesheet_miseqruns.append(line)
+            else: ##1st time: file does not exist yet
+                with open (faulty_samplesheet_miseqruns_file,'x') as fh:
+                    timestamp_print('Creation of empty '+faulty_samplesheet_miseqruns_file)
         except:
-            time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            logger.error(
-                'Exception when opening (and scanning) the file containing MiSeq runs',
-                ' with unexpected samplesheets . Time stop=  ', time_stop)
+            logger.exception(
+                'Exception when reading (or creating) the file containing MiSeq runs',
+                ' with faulty samplesheets . Time stop=  ')
             raise
-        ###End TODO
 
         for run,val in temp_run_folders.items():
             if (run in process_run_file_miseqelements) or (run in faulty_samplesheet_miseqruns):
@@ -231,7 +231,6 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
             split_filename=re.search('(.*)(\.\w+$)',run_info_dict[samplesheet_filename])
             sequencer=  re.search('_M0\d+_', run_index)
             if None==sequencer: ##this should be impossible...
-                print ('Sequencer == None in run name= ',run_index)
                 logger.error('Sequencer == None in run name= ',run_index)
                 raise ValueError
             ext_filename=split_filename.group(2)
@@ -373,10 +372,7 @@ def getSampleSheetFromSequencer():
 
         if len(target_run_folders) < 1:
             time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            logger.info('No new MiSeq runs available. Time stop= ',time_stop)
-            logger.info('****** Leaving crontab')
             print('No new MiSeq runs available. Time stop= ',time_stop)
-            print('****** Leaving crontab')
         else:
             ##Launch treatment of selected runs
             database_info=fetch_remote_samplesheets(target_run_folders,logger)
@@ -421,7 +417,11 @@ def getSampleSheetFromSequencer():
                 print('No MiSeq runs to introduce in database. Time stop= ',time_stop)
                 print('****** Leaving crontab')
 
+
+
         timestamp_print('Leaving the process for getSampleSheetFromSequencer()')
+        timestamp_print('****** Leaving crontab')
+
     except:
         ## generic exception handling (exception info).
         var =traceback.format_exc()
