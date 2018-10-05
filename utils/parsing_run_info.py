@@ -1096,9 +1096,9 @@ def find_not_completed_run (logger):
             processed_run[state]=process_run_in_bcl2F_q_executed_state(working_list['Bcl2Fastq Executed'], logger)
 
     return (processed_run)
-
+### TODO why this line here?
 print( 'executing the parsing_run_info.py')
-
+### EndTODO
 
 
 '''
