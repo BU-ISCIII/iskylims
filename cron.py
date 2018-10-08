@@ -2,11 +2,16 @@ from django.conf import settings
 from iSkyLIMS_wetlab import wetlab_config
 
 from datetime import datetime
+from time import strftime
 from .utils.stats_calculation import *
 from .utils.parsing_run_info import *
+from .utils.sample_convertion import get_experiment_library_name
+
 
 import os , sys, traceback
 import logging
+from .utils.samplesheet_checks import *
+from django.conf import settings
 from logging.handlers import RotatingFileHandler
 
 
@@ -21,6 +26,7 @@ def open_samba_connection():
     ## located in utils/parsing_run_info.py)
 
     timestamp_print('Starting the process for open_samba_connection() (cron.py- cuadrix testing)')
+
     ###logger.info('user ID= '+wetlab_config.SAMBA_USER_ID+'. domain= '+wetlab_config.SAMBA_DOMAIN)
     conn=SMBConnection(wetlab_config.SAMBA_USER_ID, wetlab_config.SAMBA_USER_PASSWORD,
         wetlab_config.SAMBA_SHARED_FOLDER_NAME,wetlab_config.SAMBA_REMOTE_SERVER_NAME,
@@ -65,6 +71,7 @@ def determine_target_miseqruns(logger):
     ## c) are not runs featuring faulty samplesheets
 
     timestamp_print('Starting the process to determine_target_miseqruns()')
+    logger.info('Starting the process to determine_target_miseqruns()')
 
     ## Reading wetlab_config.SAMBA_SHARED_FOLDER_NAME (NGS_Data in production):
     try:
@@ -95,7 +102,7 @@ def determine_target_miseqruns(logger):
     temp_run_folders= {}
     target_run_folders={} ##subset of runs of temp_run_folders with MiSeq runs retained (Same format)
     faulty_samplesheet_miseqruns_file = os.path.join(
-        wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILE)
+        settings.MEDIA_ROOT,wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILE)
 
 
     for sfh in file_list:
@@ -167,7 +174,8 @@ def determine_target_miseqruns(logger):
     else:  ## analysis of the MiSeq runs list built to select the final target ones
         logger.debug('temp_run_folders: '+str(temp_run_folders))
         process_run_file_miseqelements=[]
-        process_run_file = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.PROCESSED_RUN_FILE)
+        faulty_samplesheet_miseqruns=[]
+        process_run_file = os.path.join(settings.MEDIA_ROOT,wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.PROCESSED_RUN_FILE)
 
         try:
             with open (process_run_file,'r') as fh:
@@ -176,6 +184,16 @@ def determine_target_miseqruns(logger):
                     sequencer=  re.search('_M0\d+_', line)
                     if None != sequencer: ##MiSeq found
                         process_run_file_miseqelements.append(line)
+        except FileNotFoundError:
+            logger.warning(process_run_file+ ' does not exist. Creating it...')
+            try:
+                with open(process_run_file,'x') as fh:
+                    os.chmod(process_run_file,0o664)
+                    logger.debug('Creation of empty '+process_run_file)
+                    timestamp_print('Creation of empty '+process_run_file)
+            except:
+                logger.exception('Exception when creating empty '+process_run_file)
+                raise
         except:
             logger.exception('Exception when reading file containing'
                 ' processed runs. Time stop=  '+ time_stop)
@@ -183,14 +201,21 @@ def determine_target_miseqruns(logger):
 
         ## Getting info about runs with unexpected samplesheets
         try:
-            if True== os.path.exists(wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILE):
-                with open (faulty_samplesheet_miseqruns_file,'r') as fh:
-                    for line in fh:
-                        line=line.rstrip()
-                        faulty_samplesheet_miseqruns.append(line)
-            else: ##1st time: file does not exist yet
+            with open (faulty_samplesheet_miseqruns_file,'r') as fh:
+                for line in fh:
+                    line=line.rstrip()
+                    faulty_samplesheet_miseqruns.append(line)
+        except FileNotFoundError:
+            logger.warning(faulty_samplesheet_miseqruns_file+ ' does not exist. Creating it...')
+            try:
                 with open (faulty_samplesheet_miseqruns_file,'x') as fh:
+                    os.chmod(faulty_samplesheet_miseqruns_file,0o664)
+                    logger.info('Creation of empty '+faulty_samplesheet_miseqruns_file)
                     timestamp_print('Creation of empty '+faulty_samplesheet_miseqruns_file)
+            except:
+                logger.exception('Exception when creating empty '+faulty_samplesheet_miseqruns_file)
+                raise
+
         except:
             logger.exception(
                 'Exception when reading (or creating) the file containing MiSeq runs',
@@ -201,16 +226,10 @@ def determine_target_miseqruns(logger):
             if (run in process_run_file_miseqelements) or (run in faulty_samplesheet_miseqruns):
                 continue;
             else:
-                run_dir_name = os.path.join(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,run)
-                file_list = conn.listPath( run_dir_name, '/')
-                for file in file_list:
-                    if 'SampleSheet.csv'==file:
-                        target_run_folders.append[run]=val
-                        break
-                    else:
-                        continue
+                target_run_folders[run]=val
 
     timestamp_print('Leaving the process to determine_target_miseqruns()')
+    logger.info('Leaving the process to determine_target_miseqruns()')
     return target_run_folders
 
 
@@ -220,36 +239,41 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
     ##Open samba connection and copy the remote samplesheet locally. If exception happens, delete the (locally) copied files
 
     timestamp_print('Starting the process for fetch_remote_samplesheets()')
-##Treatment of the selected runs:
+    logger.info('Starting the process for fetch_remote_samplesheets()')
+    ##Treatment of the selected runs:
     transfered_samplesheet_filepaths=[] ##filepaths of transfered (locally copied) samplesheets. Used to clean up in case things go wrong
     try:
         conn=open_samba_connection()
-        for run_index, run_info_dict in run_dir_dict:
+        counter=0
+        for run_index, run_info_dict in run_dir_dict.items():
+            counter+=1
             ##Storage of the original samplesheet:
-            samba_samplesheet_filepath = os.path.join(run_index,runinfodict[samplesheet_filename])
+            samba_samplesheet_filepath = os.path.join(run_index,run_info_dict['samplesheet_filename'])
             ##Construction of local_samplesheet_filename:
-            split_filename=re.search('(.*)(\.\w+$)',run_info_dict[samplesheet_filename])
-            sequencer=  re.search('_M0\d+_', run_index)
-            if None==sequencer: ##this should be impossible...
-                logger.error('Sequencer == None in run name= ',run_index)
-                raise ValueError
+            split_filename=re.search('(.*)(\.\w+$)',run_info_dict['samplesheet_filename'])
             ext_filename=split_filename.group(2)
-            local_samplesheet_filename = str(split_filename.group(1)+ timestr +ext_file)
+            timestr=time.strftime('%Y%m%d-%H%M%S')
+            local_samplesheet_filename = str(split_filename.group(1)+ timestr+'-#'
+                +str(counter) +ext_filename)
             local_samplesheet_filepath= os.path.join(
                 settings.MEDIA_ROOT, wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY,
                 local_samplesheet_filename)
 
-            run_info_dict.append['samplesheet_filepath']=local_samplesheet_filepath ## used later in the function
-            ## now run_dir_dict= {run_dir:{samplesheet_filename:..., sequencer_family:...,
-            ##              sequencer_model:..., local_samplesheet_filepath:...}}
+            ## now run_dir_dict= {run_dir:{'samplesheet_filename':...,'sequencer_model':...,
+            ##              ,'local_samplesheet_filepath':...}
+            ##                    run_dir2:{...}...}
+            run_info_dict['local_samplesheet_filepath']=local_samplesheet_filepath ## used later in the function
+            logger.debug('local_samplesheet_filepath= '+local_samplesheet_filepath)
             try:
                 with open (local_samplesheet_filepath, 'wb') as file_handler:
                     conn.retrieveFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME,
                         samba_samplesheet_filepath, file_handler)
                     transfered_samplesheet_filepaths.append(local_samplesheet_filepath)
+                    logger.info('run: '+run_index+'. Local copy of samplesheet: '+local_samplesheet_filepath)
             except:
-                logger.exception('Problem when retrieving MiSeq samplesheets from ',
-                    wetlab_config.SAMBA_SHARED_FOLDER_NAME,' to local storage')
+                logger.exception('Problem when retrieving MiSeq samplesheets from '
+                    + wetlab_config.SAMBA_SHARED_FOLDER_NAME+samba_samplesheet_filepath
+                    + ' to local storage')
                 raise
 
     except:
@@ -263,14 +287,17 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
         conn.close()
 
     database_info={} ## Information to be returned
-    for run_index, run_info_dict in run_dir_list:
-
-        run_name,index_library_name=get_experiment_library_name(
+    for run_index, run_info_dict in run_dir_dict.items():
+        counter=0
+        experiment_run_name,index_library_name=get_experiment_library_name(
             run_info_dict['local_samplesheet_filepath'])
-        if run_name=='' :
-            run_name= timestr #unique value
+        logger.debug('For local_samplesheet_filepath: '+local_samplesheet_filepath
+            + '(samplesheet) experiment_name: ' + experiment_run_name +'. index_library: '+index_library_name)
+        if experiment_run_name=='' :
+            timestr=time.strftime('%Y%m%d-%H%M%S')
+            experiment_run_name= timestr+'-#'+str(counter) #unique value
             logger.info('empty run_name in samplesheet: ',local_samplesheet_filepath,
-                '. run_name allocated timestamp value= ',timestr)
+                '. run_name allocated value= ',experiment_run_name)
 
         ##samplesheet checks:
         ## if KO: tratamiento:
@@ -279,12 +306,13 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
         ## mail angel y nosotros
         ## filtro wetlab: "Get Incompleted" + causa error
 
-        project_dict=get_projects_in_run(stored_file)
-        logger.debug('project_dict= ',project_dict)
+        project_dict=get_projects_in_run(
+            run_info_dict['local_samplesheet_filepath'])
+        logger.debug('project_dict= '+str(project_dict))
         samplesheet_check_error_dict={} ## to register the faulty run and the error cause
         message_output=''
-        if 'Free' != check_run_name_free_to_use(run_name):
-            message_output= check_run_name_free_to_use(run_name)
+        if 'Free' != check_run_name_free_to_use(experiment_run_name):
+            message_output= check_run_name_free_to_use(experiment_run_name)
         elif 'OK_projects_samplesheet' != check_run_projects_in_samplesheet(
                 run_info_dict['local_samplesheet_filepath']):
             message_output=check_run_projects_in_samplesheet(
@@ -297,9 +325,11 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
             message_output=check_run_projects_definition(project_dict)
 
         if '' != message_output:
-            samplesheet_check_error_dict={'run_name':run_name,'error':message_output}
-            logger.error('Run: ',samplesheet_check_error_dict['run_name'],
-                '   ','Error: ',samplesheet_check_error_dict['error'])
+            samplesheet_check_error_dict={'run_name':run_index,
+                'experiment_run_name':experiment_run_name, 'error':message_output}
+            logger.error('Run: '+samplesheet_check_error_dict['run_name']
+                +'experiment run name'+experiment_run_name
+                +'Error: ',samplesheet_check_error_dict['error'])
             try:
                 with open (faulty_samplesheet_miseqruns_file, 'a+') as faulty_samplesheet_file:
                     faulty_samplesheet_file.write(samplesheet_check_error_dict['run_name'])
@@ -307,9 +337,8 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
                     ### faulty_samplesheet_file.write('Run: ',samplesheet_check_error_dict['run_name'],
                     ###    '   ','Error: ',samplesheet_check_error_dict['error'])
                     ### EndTODO
-                    logger.debug('Run: ',samplesheet_check_error_dict['run_name'],
-                        '   ','Error: ',samplesheet_check_error_dict['error'],
-                        ' recorded in: ',wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILE)
+                    logger.debug('Run: '+samplesheet_check_error_dict['run_name']
+                        + 'recorded in: ',faulty_samplesheet_miseqruns_file)
             except:
                 logger.exception('Exception when trying to record run ', run_dir,
                     ' with faulty samplesheet in file ',
@@ -321,6 +350,9 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
         ## filtro wetlab: "Get Incompleted" + causa error
         #EndTODO
 
+        ## TODO
+        assert 1==2,'Debugging...'
+        ## endTODO
 
 
         database_info[run_name]={}
@@ -336,6 +368,7 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
 
 
     timestamp_print('Leaving the process for fetch_remote_samplesheets()')
+    logger.info('Leaving the process for fetch_remote_samplesheets()')
     return database_info
 
 
@@ -345,6 +378,7 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
 
 
 def getSampleSheetFromSequencer():
+    ## TODO
     ## This function is used for sequencers (as of today, MiSeq) for which
     ## the system do not interact with the wetlab manager via web forms
     ## when dealing with the run samplesheet:it fetches it straight from the
@@ -361,10 +395,14 @@ def getSampleSheetFromSequencer():
     ##   -No BaseSpace formatting needed for samplesheet)
     ##   -Since the protocol of the preparation of the library (LibraryKit_id) is
     ##      not provided via a form, it will be stored as "Unknown"
+    ## EndTODO
 
-
-    timestamp_print('Starting the process for getSampleSheetFromSequencer()')
+    ##TBD
+    assert 1==2, 'quitar para empezar :)'
+    #End TBD
     logger=open_log('getSampleSheetFromSequencer.log')
+    timestamp_print('Starting the process for getSampleSheetFromSequencer()')
+    logger.info('Starting the process for getSampleSheetFromSequencer()')
     try:
         ## Launch elaboration of the list of the MiSeq samplesheets to study:
         target_run_folders= determine_target_miseqruns(logger)
@@ -375,6 +413,7 @@ def getSampleSheetFromSequencer():
             print('No new MiSeq runs available. Time stop= ',time_stop)
         else:
             ##Launch treatment of selected runs
+            logger.debug('target_run_folders: '+str(target_run_folders))
             database_info=fetch_remote_samplesheets(target_run_folders,logger)
             if database_info: ## information fetched :)
                 ##Store in DB the information corresponding to the fetched set of samplesheets / runs
@@ -420,6 +459,7 @@ def getSampleSheetFromSequencer():
 
 
         timestamp_print('Leaving the process for getSampleSheetFromSequencer()')
+        logger.info('Leaving the process for getSampleSheetFromSequencer()')
         timestamp_print('****** Leaving crontab')
 
     except:

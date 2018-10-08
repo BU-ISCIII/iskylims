@@ -189,7 +189,7 @@ def process_run_in_recorded_state(logger):
         logger.info('Sucessfully  SAMBA connection for the process_run_in_recorded_state')
     except:
         return ('Error')
-    processed_run_fils, runlist = [] , []
+    processed_run_file, runlist = [] , []
 
     share_folder_name = wetlab_config.SAMBA_SHARED_FOLDER_NAME
     base_directory = wetlab_config.RUN_TEMP_DIRECTORY
