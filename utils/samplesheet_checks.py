@@ -6,13 +6,18 @@ import pdb
 from django.conf import settings
 from .sample_convertion import get_projects_in_run
 
+def timestamp_print(message):
+    starting_time= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(starting_time+' '+message)
+
 def check_run_name_free_to_use(run_name):
     ## Function checks whether run_name is already used in the database.
     ## Error page is shown if run_name is already  defined
     ##
 
-    import pdb; pdb.set_trace()
+    timestamp_print('Starting the process for check_run_name_free_to_use()')
     run_name_free_result='KO in check_run_name_free_to_use()'
+    timestamp_print('(experiment)Run name: '+run_name)
     if (RunProcess.objects.filter(runName = run_name)).exists():
         if RunProcess.objects.filter(runName = run_name, runState__exact ='Pre-Recorded'):
             ## Delete the sample sheet file and the row in database
@@ -29,16 +34,18 @@ def check_run_name_free_to_use(run_name):
                                   'Change the value in the Sample Sheet  file ']
     else: # run_name is new
         run_name_free_result='Free'
+        timestamp_print('Leaving check_run_name_free_to_use(). Returned value= '+run_name_free_result)
     return run_name_free_result
 
 
 
 def check_run_projects_in_samplesheet(samplesheet):
     ## Check that there are projects declared within the run
+    timestamp_print('Starting the process for check_run_projects_in_samplesheet()')
     project_list=get_projects_in_run(samplesheet)
+    timestamp_print('project_list= '+str(project_list))
     message_output='KO in check_run_projects_in_samplesheet'
 
-    import pdb; pdb.set_trace()
     if len (project_list) == 0 :
         message_output=[
             'Sample Sheet does not contain "Sample project" and/or "Description" fields',
@@ -47,21 +54,22 @@ def check_run_projects_in_samplesheet(samplesheet):
             ' (IEM) includes these columns']
     else:
         message_output='OK_projects_samplesheet'
+        timestamp_print('Leaving check_run_projects_in_samplesheet(). Returned value= '+message_output)
     return message_output
 
 
 
 def check_run_users_definition(samplesheet):
     ## CHECK if the users are already defined in database.
+    timestamp_print('Starting the process for check_run_users_definition()')
     message_output='KO in check_run_users_definition'
     user_not_defined=[]
     project_list=get_projects_in_run(samplesheet)
+    timestamp_print('project_list= '+str(project_list))
 
-    import pdb; pdb.set_trace()
     for key, val  in project_list.items():
         if ( not User.objects.filter(username__icontains = val).exists()):
             user_not_defined.append(val)
-    import pdb; pdb.set_trace()
     if (len(user_not_defined)>0):
         if (len(user_not_defined)>1):
             head_text='The following users are not defined in database:'
@@ -73,15 +81,17 @@ def check_run_users_definition(samplesheet):
             'Researcher names must be installed in database before uploading the Sample sheet']
     else:
         message_output='OK_users'
+        timestamp_print('Leaving check_run_users_definition(). Returned value= '+message_output)
     return message_output
 
 
 
 def check_run_projects_definition(project_list):
-    ## Check that the projects are already defined in the database
+    ## Check that the projects are NOT already defined in the database
+    timestamp_print('Starting the process for check_run_projects_definition()')
+    timestamp_print('project_list= '+str(project_list))
     message_output='KO in check_run_projects_definition'
     project_already_defined=[]
-    import pdb; pdb.set_trace()
     for key, val  in project_list.items():
         # check if project was already saved in database in Not Started State.
         # if found delete the projects, because the previous attempt to complete the run was unsuccessful
@@ -91,7 +101,6 @@ def check_run_projects_definition(project_list):
                 delete_project[0].delete()
             else:
                 project_already_defined.append(key)
-    import pdb; pdb.set_trace()
     if (len(project_already_defined)>0):
         if (len(project_already_defined)>1):
             head_text='The following projects are already defined in database:'
@@ -104,4 +113,5 @@ def check_run_projects_definition(project_list):
                         'Edit the Sample Sheet file to correct this error']
     else:
         message_output="OK_projects_db"
+        timestamp_print('Leaving check_run_projects_definition(). Returned value= '+message_output)
     return message_output

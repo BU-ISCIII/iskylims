@@ -76,13 +76,6 @@ class RunProcess(models.Model):
     def get_run_name (self):
         return '%s' %(self.runName)
 
-    def get_run_sequencer_family (self):
-        return '%s' %(self.sequencerFamily)
-
-    def get_run_sequencer_model (self):
-        return '%s' %(self.sequencerFamily)
-
-
     def get_disk_space_utilization (self):
         image_size_str = '0' if self.useSpaceImgMb == '' else self.useSpaceImgMb
         data_size_str = '0' if self.useSpaceFastaMb == '' else self.useSpaceFastaMb
@@ -92,6 +85,12 @@ class RunProcess(models.Model):
         other_size = int(other_size_str.replace(',',''))
         total_size = image_size + data_size + other_size
         return '%s'%(total_size)
+
+    def get_run_sequencerPlatformModel (self):
+        return '%s' %(self.sequencerPlatformModel)
+
+    def get_runprocess_info_debug(self): ##useful for debugging
+        str(self.__dict__)
 
 
 
@@ -164,6 +163,10 @@ class Projects(models.Model):
 
     def get_library_name (self):
         return '%s' %(self.libraryKit)
+
+    def get_project_info_debug(self): ##useful for debugging
+        str(self.__dict__)
+
 
 
 class RunningParameters (models.Model):
