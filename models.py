@@ -90,7 +90,7 @@ class RunProcess(models.Model):
         return '%s' %(self.sequencerPlatformModel)
 
     def get_runprocess_info_debug(self): ##useful for debugging
-        str(self.__dict__)
+        return str(self.__dict__)
 
 
 
@@ -165,7 +165,7 @@ class Projects(models.Model):
         return '%s' %(self.libraryKit)
 
     def get_project_info_debug(self): ##useful for debugging
-        str(self.__dict__)
+        return str(self.__dict__)
 
 
 

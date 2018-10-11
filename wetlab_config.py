@@ -1,4 +1,5 @@
-
+import os
+from django.conf import settings
 ## TODO
 ## (PARAMETERS FOR TESTING) SAMBA settings for connecting quibitka server to fetch the run files
 
@@ -37,6 +38,9 @@ RUN_SAMPLE_SHEET_DIRECTORY = 'wetlab/SampleSheets/'
 PROCESSED_RUN_FILE='processed_run_file'
 ## file with MiSeq runs whose samplesheets fail sanity checks
 FAULTY_SAMPLESHEET_MISEQRUNS_FILE='faulty_samplesheet_miseq_runs'
+FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH=os.path.join(settings.MEDIA_ROOT,
+    RUN_TEMP_DIRECTORY,FAULTY_SAMPLESHEET_MISEQRUNS_FILE)
+
 
 
 MIGRATION_DIRECTORY_FILES = 'wetlab/BaseSpaceMigrationFiles/'
