@@ -7,63 +7,89 @@ from django.contrib.auth.models import User , Group
 
 def user_edit(request):
     if request.method == "POST":
-        
-        items = request.POST.keys()
-        shared_list = []
-        for item in items:
-            if 'shared' in item :
-                shared_list.append(request.POST[item])
+        #items = request.POST.keys()
         form1 = UserCreationForm(data=request.POST,instance=request.user)  
-        #pdb.set_trace()
+
         form2 = ProfileCreationForm(data=request.POST,instance=request.user.profile) 
-        #pdb.set_trace()
+
         if form1.is_valid() and form2.is_valid():
             user = form1.save()  
             profile = form2.save(commit=False)  
             # check the sharing list
-            if len(shared_list) > 0 :
-                #import pdb; pdb.set_trace()
-                # create the group for the user to share their projects
-                if Group.objects.filter(name__exact = request.user.username).exists():
-                    new_group = Group.objects.get(name__exact = request.user.username)
-                else:
+            if Group.objects.filter(name__exact = request.user.username).exists():
+                group = Group.objects.get(name__exact = request.user.username)
+                if 'shared_list' in request.POST :
+                    existing_shared_list = []
+                    shared_list = request.POST.getlist('shared_list')
+                    existing_shared_users = group.user_set.all().exclude(username = request.user.username)
+                    for existing_shared_user in existing_shared_users :
+                        existing_shared_list.append(existing_shared_user.username)
+                    delete_users = list(set(existing_shared_list).difference(shared_list))
+                    added_users = list(set(shared_list).difference(existing_shared_list))
+                    for delete_user in delete_users :
+                        if User.objects.filter(username__exact = delete_user).exists():
+                            user = User.objects.get(username__exact = delete_user)
+                            group.user_set.remove(user)
+                    for added_user in added_users :
+                        if User.objects.filter(username__exact = added_user).exists():
+                            user = User.objects.get(username__exact = added_user)
+                            group.user_set.add(user)
+                    
+                else: #  Remove all existing shared users
+                    users = group.user_set.all()  #.exclude(username = request.user.username)
+                    for user in users :
+                        group.user_set.remove(user)
+                    # delete group
+                    group.delete()
+                    
+                    
+                        
+            else: # creating a new group and add user on it
+                if 'shared_list' in request.POST :
+                    shared_list = request.POST.getlist('shared_list')
                     new_group = Group (name = request.user.username)
                     new_group.save()
-                groups = Group.objects.get(name = request.user.username)
-                for item in shared_list :
-                    if User.objects.filter(username__exact = item).exists():
-                        user = User.objects.get(username__exact = item)
-                        # check if user has already in the shared list
-                        #import pdb; pdb.set_trace()
-                        
-                        if groups not in user.groups.all():
+                    # adding request user to its own group
+                    new_group.user_set.add(User.objects.get(username__exact =request.user.username))
+                    for user in shared_list :
+                        if User.objects.filter(username__exact = user).exists():
+                            user = User.objects.get(username__exact = user)
                             new_group.user_set.add(user)
-                        
-                import pdb; pdb.set_trace()
-                
                 
             return render(request,'django_utils/info_page.html',{'content':["Your user has been successfully updated"]})
         else:
             return render(request,'django_utils/error_page.html',{'content':[form1.errors,form2.errors]})
 
     else:
-        sharing_list = []
+        
+        username_list = []
         form1 = UserCreationForm(instance=request.user)  
         form2 = ProfileCreationForm(instance=request.user.profile) 
-        #form3 = UserShared(instance=request.user)
+
         # get the list of users that are sharing 
         #import pdb; pdb.set_trace()
+        sharing_users = []
+        sharing_list = []
         if Group.objects.filter(name__exact = request.user.username).exists():
-            import pdb; pdb.set_trace()
+            #import pdb; pdb.set_trace()
             group = Group.objects.get(name__exact = request.user.username )
             users = group.user_set.all().exclude(username = request.user.username)
             
             for user in users:
-                sharing_list.append(user.username)
-        
-        #form3.fields['username'].queryset = User.objects.all()
+                sharing_users.append(user.username)
+                sharing_list.append([user.username, user.first_name + ' ' + user.last_name])
         #import pdb; pdb.set_trace()
-    return render(request,'registration/user_creation.html',{'form1' : form1 ,'form2':form2, 'sharing_list':sharing_list })  
+        user_list = User.objects.all().exclude(username = request.user.username).exclude(username__in=sharing_users)
+        for user in user_list:
+            # do not include the user that are not well defined
+            if user.first_name == '' :
+                continue
+            username_list.append([user.username, user.first_name + ' ' + user.last_name])
+        #import pdb; pdb.set_trace()
+        if len(sharing_list) == 0:
+            return render(request,'registration/user_creation.html',{'form1' : form1 ,'form2':form2, 'username_list' : username_list})
+        else:
+            return render(request,'registration/user_creation.html',{'form1' : form1 ,'form2':form2, 'sharing_list':sharing_list ,'username_list' : username_list})  
 
 @transaction.atomic
 def user_creation(request):
