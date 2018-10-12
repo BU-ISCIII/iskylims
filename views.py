@@ -481,6 +481,9 @@ def get_information_run(run_name_found,run_id):
 
     ## get the stats information if run is completed
     if run_state == 'Completed':
+        # prepare the data for q-means
+        
+        
         fl_data_display=[]
         #import pdb; pdb.set_trace()
         fl_summary_id = NextSeqStatsFlSummary.objects.filter(runprocess_id__exact =run_id , project_id__isnull=True, defaultAll='all')
