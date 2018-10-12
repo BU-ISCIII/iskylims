@@ -7,6 +7,17 @@
  <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>
  <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script>
  <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
+<script>
+  $( function() {
+    $( document ).tooltip();
+  } );
+</script>
+  <style>
+  label {
+    display: inline-block;
+    width: 5em;
+  }
+  </style>
 <div class="row row-space-2 margin-b-4">
         <div class="col-sm-7">
             <div class="panel panel-default">
@@ -25,7 +36,7 @@
              {% for key, values in display_one_run.data %}
                {% if "Sample" in key %}
                 <div class="col-sm-6">{{ key }}</div>
-                <div class="col-sm-6"><a href="/wetlab/documents/{{ values }}" download>{{ values|cut:"wetlab/SampleSheets/" }} <span class="glyphicon glyphicon-download-alt"></span></a></div><BR> <BR>
+                <div class="col-sm-6"><a href="/documents/{{ values }}" download>{{ values|cut:"wetlab/SampleSheets/" }} <span class="glyphicon glyphicon-download-alt"></span></a></div><BR> <BR>
                {% elif key == 'Run name'%}
                {% else %}
                 <div class="col-sm-6">{{ key }}</div>
@@ -35,7 +46,7 @@
             {%if display_one_run.Sample_Sheet %}
                 {% for key, value in display_one_run.Sample_Sheet %}
                     <div class="col-sm-6">{{ key }}</div>
-                    <div class="col-sm-6"><a href="/wetlab/documents/{{ value }}" download>Sample Sheet File  <span class="glyphicon glyphicon-download-alt"></span></a></div>
+                    <div class="col-sm-6"><a href="/documents/{{ value }}" download>Sample Sheet File  <span class="glyphicon glyphicon-download-alt"></span></a></div>
                 {% endfor%}
             {% endif %}
            </div> <!--  end of panel body -->
@@ -404,6 +415,40 @@
       </div> <!--  end of row -->
 
      {% endif%}
+     
+     {% if display_one_run.match_unknows %}
+          <div class="row row-space-4 margin-b-1">
+         <div class="col-sm-7 col-sm-offset-1 ">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Matching the unknowbarcodes against the indexes library.</h3></div>
+                <div class="panel-body">
+                    <table class="table table-hover">
+                   <thead>
+                      <tr>
+                        <th>Unknow Sequence</th>
+                        <th title="We ask">Index Matching</th>
+                      </tr>
+                   </thead>
+                   <tbody>
+                    {% for barcode, matching, library_info in display_one_run.match_unknows %}
+                    <tr>
+                        <td>{{ barcode }}</td>
+                        <td title="{% for info in library_info %}{{ info }}{% endfor %}">{{ matching }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+              </div> <!--  end of panel body -->
+             </div> <!--  end of panel  -->
+           </div> <!--  end of col-sm-8 -->
+      </div> <!--  end of row -->
+
+     
+     
+     
+     
+     {% endif %}
+     
      {% if display_one_run.runSummary %}
 
      <div class="row row-space-4 margin-b-1">

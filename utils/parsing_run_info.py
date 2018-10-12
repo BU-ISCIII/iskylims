@@ -208,7 +208,8 @@ def process_run_in_recorded_state(logger):
             processed_run.append(line)
         fh.close()
         logger.info('processed_run file was read')
-
+    # Initialize the variable do not need to update the process run file.
+    process_run_file_update = False
     # Check if the directory from flavia has been processed
     file_list = conn.listPath( share_folder_name, '/')
     for sfh in file_list:
@@ -341,6 +342,8 @@ def process_run_in_recorded_state(logger):
                         # add the run_dir inside the processed_run file
                     processed_run.append(run_dir)
                     run_names_processed.append(exp_name)
+                        # mark to update the processed_run file with the new run folders
+                    process_run_file_update = True
                     logger.info('SampleSheet.csv file for %s has been sucessful sent to remote server', run_dir)
                 else:
                     # error in log file
@@ -348,12 +351,13 @@ def process_run_in_recorded_state(logger):
                     os.remove(local_run_parameter_file)
                     continue
     conn.close()
-    fh =open (process_run_file,'w')
-    # update the process_run_file with the new run
-    for process in processed_run:
-        fh.write(process)
-        fh.write('\n')
-    fh.close()
+    if process_run_file_update :
+        fh =open (process_run_file,'w')
+        # update the process_run_file with the new run
+        for process in processed_run:
+            fh.write(process)
+            fh.write('\n')
+        fh.close()
     # check if all run process file are handled
 
     list_dir=os.listdir(recorded_dir)

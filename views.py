@@ -15,6 +15,7 @@ from .utils.sample_convertion import *
 from .utils.stats_calculation import *
 from .utils.stats_graphics import *
 from .utils.email_features import *
+from .utils.library_kits import *
 
 from django_utils.models import Profile, Center
 
@@ -314,6 +315,95 @@ def add_library_kit (request):
         libraries_information ['libraries'] = libraryKit_dict
         return render(request,'iSkyLIMS_wetlab/AddLibraryKit.html',{'list_of_libraries': libraries_information})
 
+@login_required
+def add_index_library (request):
+    #get the list of the already loaded index library to be displayed
+    index_libraries_information ={}
+    index_library_list = IndexLibraryKit.objects.all()
+    index_library_dict = []
+    if len(index_library_list) >0 :
+        for library in index_library_list :
+            index_library_dict.append([library.id, library.indexLibraryName])
+
+    if request.method == 'POST' and request.POST['action'] == 'addNewIndexLibraryFile':
+
+        index_library_file = request.FILES['newIndexLibraryFile']
+
+        split_filename=re.search('(.*)(\.\w+$)',index_library_file.name)
+        f_name = split_filename[1]
+        f_extension = split_filename[2]
+
+        fs = FileSystemStorage()
+        timestr = time.strftime("%Y%m%d-%H%M%S")
+        ## including the timestamp to the index library file
+        #import pdb; pdb.set_trace()
+        # do not need to include the absolute path because django use the MEDIA_ROOT variable defined on settings to upload the file
+        file_name=os.path.join(wetlab_config.LIBRARY_KITS_DIRECTORY ,  str(f_name + '_' +timestr + f_extension))
+        filename = fs.save(file_name,  index_library_file)
+        saved_file = os.path.join(settings.MEDIA_ROOT, file_name)
+        # check the file is not bigger that maximum allowed size file for index library
+        file_stat = os.stat(saved_file)
+        if file_stat.st_size > int(wetlab_config.LIBRARY_MAXIMUM_SIZE) :
+            # removing the uploaded file
+            os.remove(saved_file)
+            return render (request, 'iSkyLIMS_wetlab/error_page.html', {'content':['The Index Library Kit file ', split_filename[0], 'exceed from the maximum allowed size']})
+        uploaded_file_url = fs.url(filename)
+
+        ### add the document directory to read the csv file
+
+        #import pdb; pdb.set_trace()
+        ## check format file
+
+        if not check_index_library_file_format(saved_file):
+            # removing the uploaded file
+            os.remove(saved_file)
+            return render (request, 'iSkyLIMS_wetlab/error_page.html', {'content':['The Index Library Kit file', split_filename[0], 'does not have the right format']})
+        library_name = getting_index_library_name(saved_file)
+        if library_name == '' :
+            # removing the uploaded file
+            os.remove(saved_file)
+            return render (request, 'iSkyLIMS_wetlab/error_page.html', {'content':['The Index Library Kit file', split_filename[0], 'does not contain the library name']})
+        # check if library name is already defined on database
+        if IndexLibraryKit.objects.filter (indexLibraryName__exact = library_name).exists():
+            # removing the uploaded file
+            os.remove(saved_file)
+            return render (request, 'iSkyLIMS_wetlab/error_page.html', {'content':['The Library Kit Name ', library_name, 'is already defined on iSkyLIMS']})
+        # Get the library settings included in the file
+        library_settings = get_library_settings(saved_file)
+
+        # get the index name and index bases for the library
+        library_index = get_index_values(saved_file)
+        # saving library settings into database
+        if len(library_settings['adapters']) == 1:
+            adapter_2 = ''
+        else :
+            adapter_2 = library_settings['adapters'][1]
+        lib_settings_to_store = IndexLibraryKit(indexLibraryName = library_settings['name'], version =  library_settings ['version'],
+                    plateExtension = library_settings['plate_extension'] , adapter1 = library_settings['adapters'][0], adapter2 = adapter_2,
+                    indexLibraryFile = file_name)
+        lib_settings_to_store.save()
+        # saving index values into database
+        for index_7 in library_index['I7'] :
+            index_name, index_base = index_7
+            index_to_store = IndexLibraryValues(indexLibraryKit_id = lib_settings_to_store, indexNumber = 'I7',
+                        indexName = index_name, indexBase = index_base)
+            index_to_store.save()
+        for index_5 in library_index['I5'] :
+            index_name, index_base = index_5
+            index_to_store = IndexLibraryValues(indexLibraryKit_id = lib_settings_to_store, indexNumber = 'I5',
+                        indexName = index_name, indexBase = index_base)
+            index_to_store.save()
+
+        index_libraries_information['new_index_library'] = library_settings['name']
+        index_libraries_information ['index_libraries'] = index_library_dict
+        #import pdb; pdb.set_trace()
+        return render (request, 'iSkyLIMS_wetlab/AddIndexLibrary.html',{'index_library_info': index_libraries_information })
+    else:
+        index_libraries_information ['index_libraries'] = index_library_dict
+        return render (request, 'iSkyLIMS_wetlab/AddIndexLibrary.html',{'list_of_index_libraries': index_libraries_information })
+
+
+
 def get_information_run(run_name_found,run_id):
     info_dict={}
     ## collect the state to get the valid information of run that matches the run name
@@ -460,6 +550,55 @@ def get_information_run(run_name_found,run_id):
         unknow_pie3d = FusionCharts("pie3d", "ex1" , "600", "400", "chart-1", "json", data_source)
 
         info_dict ['unknow_pie3d'] = unknow_pie3d.render()
+
+        # prepare the data to match unknow barcodes against the index base sequence
+        index_match_list = []
+        for key , value in unknow_dict.items():
+            found_unknow_index = []
+            found_unknow_index.append(key)
+            index_temp = ''
+            library_info = []
+            #import pdb; pdb.set_trace()
+            if '+' in key:
+                split_base = key.split('+')
+
+                if IndexLibraryValues.objects.filter(indexBase__exact = split_base[0]).exists():
+                    libraries_using_base = IndexLibraryValues.objects.filter(indexBase__exact = split_base[0])
+                    index_temp = split_base[0]
+                    for library in libraries_using_base :
+                        library_info.append([library.indexName,library.indexLibraryKit_id.indexLibraryName])
+
+
+                if IndexLibraryValues.objects.filter(indexBase__exact = split_base[1]).exists():
+                    if len(index_temp) == 1:
+                        index_temp += (str (' + ' + split_base[1]))
+                    else:
+                        index_temp = split_base[1]
+                    libraries_using_base = IndexLibraryValues.objects.filter(indexBase__exact = split_base[1])
+                    for library in libraries_using_base :
+                        library_info.append([library.indexName,library.indexLibraryKit_id.indexLibraryName])
+                    
+            else:
+                if IndexLibraryValues.objects.filter(indexBase__exact = key).exists():
+                    found_unknow_index.append(key)
+                    libraries_using_base = IndexLibraryValues.objects.filter(indexBase__exact = key)
+                    for library in libraries_using_base :
+                        library_info.append([library.indexName,library.indexLibraryKit_id.indexLibraryName])
+
+            if len (index_temp) == 0 :
+                index_temp= 'Index not match '
+            if len (library_info) == 0 :
+                library_info = ['Index bases not found in library']
+                #libraries_using_base = IndexLibraryValues.objects.filter(indexBase__exact = split_base[1])
+                #for library in libraries_using_base :
+                #    found_unknow_index.append(library.indexBase)
+            #index_item = 5
+            found_unknow_index.append(index_temp)
+            found_unknow_index.append(library_info)
+            index_match_list.append(found_unknow_index)
+        #import pdb; pdb.set_trace()
+
+        info_dict['match_unknows']= index_match_list
 
         # prepare the data for Run Binary summary stats
 
@@ -1108,6 +1247,171 @@ def search_sample (request, sample_id):
         return render(request, 'iSkyLIMS_wetlab/SearchNextSample.html',{'display_one_sample': sample_data_information })
     else:
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the sample  ' ]})
+
+
+def index_library_information (index_library_id) :
+
+    index_library_dict ={}
+    index_library_found = IndexLibraryKit.objects.get(pk=index_library_id)
+    general_information = [index_library_found.get_index_library_information().split(';')]
+    index_library_dict['general_information'] = general_information
+
+    if IndexLibraryValues.objects.filter(indexLibraryKit_id__exact = index_library_id).exists():
+        index_list = IndexLibraryValues.objects.filter(indexLibraryKit_id__exact = index_library_id)
+
+        I7_indexes, I5_indexes = [], []
+        for index in index_list :
+            # get all I7 index defined on the library
+            if index.indexNumber == 'I7':
+                I7_indexes.append(index.get_index_information().split(';'))
+            elif index.indexNumber == 'I5':
+                #get all I5 index defined on the library
+                I5_indexes.append(index.get_index_information().split(';'))
+            else:
+                pass
+        index_library_dict['I7_indexes'] = I7_indexes
+        index_library_dict['I5_indexes'] = I5_indexes
+        return index_library_dict
+    else:
+        return False
+
+
+
+@login_required
+def display_index_library (request, index_library_id):
+    if (IndexLibraryKit.objects.filter(pk=index_library_id).exists()) :
+
+        index_library_dict = index_library_information (index_library_id)
+        if index_library_dict != False:
+            return render (request, 'iSkyLIMS_wetlab/DisplayIndexLibrary.html', {'display_one_index_library': index_library_dict})
+        else:
+            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are recorded information for the index library for ',  index_library_id]})
+
+    else:
+        return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the index Library  ' ]})
+
+
+
+
+@login_required
+def search_index_library (request):
+
+    if request.method == 'POST' and (request.POST['action'] == 'searchindexlibrary') :
+        index_library_name=request.POST['indexlibraryname']
+        adapter_1=request.POST['adapter1']
+        adapter_2=request.POST['adapter2']
+        index_name=request.POST['indexname']
+        index_base=request.POST['indexbase']
+        start_date=request.POST['startdate']
+        end_date=request.POST['enddate']
+
+        # check that some values are in the request if not return the form
+        if index_library_name == '' and start_date == '' and end_date == '' and adapter_1 =='' and adapter_2 == '' and index_name == '' and index_base == '' :
+            return render(request, 'iSkyLIMS_wetlab/searchIndexLibrary.html')
+
+        if index_base !=''  and len(index_base) < 6 :
+             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Index Sequence must contains at leat 6  caracters ']})
+        ### check the right format of start and end date
+        if start_date != '':
+            try:
+                datetime.datetime.strptime(start_date, '%Y-%m-%d')
+            except:
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The format for the "Start Date Search" Field is incorrect ',
+                                                                    'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
+        if end_date != '':
+            try:
+                datetime.datetime.strptime(end_date, '%Y-%m-%d')
+            except:
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
+                                                                    'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
+
+        index_library_found = IndexLibraryKit.objects.all()
+        if index_library_name != '':
+            if index_library_found.filter(indexLibraryName__contains = index_library_name).exists():
+                index_library_found = index_library_found.filter(indexLibraryName__contains = index_library_name)
+                if len (index_library_found) == 1:
+                    index_library_dict = index_library_information (index_library_found[0].id)
+                    if index_library_dict != False:
+                        return render (request, 'iSkyLIMS_wetlab/DisplayIndexLibrary.html', {'display_one_index_library': index_library_dict})
+                    else:
+                        return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no recorded information for the index library for ',  index_library_id]})
+        if adapter_1 != '':
+            if index_library_found.filter(adapter1__contains =adapter_1).exists():
+                index_library_found = index_library_found.filter(adapter1__contains =adapter_1)
+            else:
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no libraries contaning Adapter 1 ', adapter_1]})
+        if adapter_2 != '':
+            if index_library_found.filter(adapter1__contains =adapter_2).exists():
+                index_library_found = index_library_found.filter(adapter2__contains =adapter_2)
+            else:
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no libraries contaning Adapter 2 ', adapter_2]})
+
+
+
+        # Check the start and end date
+        if start_date !='' and end_date != '':
+
+            if index_library_found.filter(generatedat__range=(start_date, end_date)).exists():
+                 index_library_found = index_library_found.filter(generatedat__range=(start_date, end_date))
+            else:
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no libraries ',
+                                        ' created between ', start_date, 'and the ', end_date]})
+        if start_date !='' and end_date == '':
+            if index_library_found.filter(generatedat__gte = start_date).exists():
+                 index_library_found = index_library_found.filter(generatedat__gte = start_date)
+                 #import pdb; pdb.set_trace()
+            else:
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no libraries ',
+                                        ' starting from', start_date]})
+        if start_date =='' and end_date != '':
+            if index_library_found.filter(generatedat__lte = end_date).exists():
+                 index_library_found = index_library_found.filter(generatedat__lte = end_date)
+            else:
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no libraries ',
+                                        ' finish before ', end_date]})
+
+        if index_name != '':
+            if IndexLibraryValues.objects.filter(indexName__exact =index_name).exists():
+                index_name_list = IndexLibraryValues.objects.prefetch_related('indexLibraryKit_id').filter(indexName = index_name)
+                index_library_found = index_library_found.filter(indexlibraryvalues__in = index_name_list)
+
+                #index_library_found = index_library_found.filter(
+            else:
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no libraries contaning index_name ', index_name]})
+
+        if index_base != '':
+            if IndexLibraryValues.objects.filter(indexBase__exact =index_base).exists():
+                index_base_list = IndexLibraryValues.objects.prefetch_related('indexLibraryKit_id').filter(indexBase = index_base)
+                index_library_found = index_library_found.filter(indexlibraryvalues__in = index_base_list)
+                #index_library_found = index_library_found.filter(
+            else:
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no libraries contaning Base Sequence ', index_base]})
+
+        if len(index_library_found) == 1 :
+            index_library_dict = index_library_information (index_library_found[0].id)
+            if index_library_dict != False:
+                return render (request, 'iSkyLIMS_wetlab/DisplayIndexLibrary.html', {'display_one_index_library': index_library_dict})
+            else:
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no recorded information for the index library for ',  index_library_id]})
+
+        else:
+            # generate the list with all library that matches conditions
+            index_library_dict = {}
+            index_values = []
+            for index_library in index_library_found:
+                values = []
+                values.append(index_library.id)
+                values.append(index_library.indexLibraryName)
+                values.append(index_library.version)
+                index_values.append(values)
+            index_library_dict['index_values'] = index_values
+
+            return render (request, 'iSkyLIMS_wetlab/searchIndexLibrary.html', {'display_list_index_library': index_library_dict})
+
+
+    else:
+        return render (request, 'iSkyLIMS_wetlab/searchIndexLibrary.html')
+
 
 @login_required
 def change_run_name (request, run_id):

@@ -1,0 +1,110 @@
+{% extends 'iSkyLIMS_wetlab/base.html' %}
+{% load static %}
+{% block content %}
+{% if display_one_index_library %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7">
+            <p>The following information belongs to :</p>
+            <div class="panel panel-default">
+                {% for lib_name, version, plate, adapter1, adapter2, index_file in  display_one_index_library.general_information %}
+                
+                <div class="panel-heading"><h3> {{ lib_name }}</h3></div>
+                <div class="panel-body">
+                  <table class="table table-hover">
+                   <thead>
+                      <tr>
+                        <th>Parameter</th>
+                        <th>Value</th>
+                      </tr>
+                   </thead>
+                   <tbody>
+
+                     <tr>
+                       <td>Library Version </td><td>{{ version }} </td>
+                     </tr>
+                     <tr>
+                       <td>Plate Extension </td><td>{{ plate }} </td>
+                     </tr>
+                     <tr>
+                       <td>Adapter 1 </td><td>{{ adapter1 }} </td>
+                     </tr>
+                     <tr>
+                       <td>Adapter 2 </td><td>{{ adapter2 }} </td>
+                     </tr>
+                     <tr>
+                       <td>Index Library File </td><td><a href =" /wetlab/documents/{{ index_file }}" > Download Index File <span class="glyphicon glyphicon-pencil"></span></a></td>
+                     </tr>
+                    {%endfor%}
+                    </tbody>
+                 </table>
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-7 -->
+      </div> <!--  end of row -->
+      <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-5">
+            <div class="panel panel-default">
+              <div class="panel-heading"><h3> Index defined for I7 </h3></div>
+                <div class="panel-body">
+                    {% if display_one_index_library.I7_indexes %}
+                      <table class="table table-hover">
+                       <thead>
+                          <tr>
+                            <th>Index Name</th>
+                            <th>Index Sequence</th>
+                          </tr>
+                       </thead>
+                       <tbody>
+                            {% for index_name, index_sequence in  display_one_index_library.I7_indexes %}
+                                <tr>
+                                    <td>{{index_name}} </td><td>{{ index_sequence }} </td>
+                                </tr>
+                            {% endfor %}
+                       </tbody>
+                     </table>
+                    {% else %}
+                        There is no index sequence for I7 on this library
+                    
+                    {% endif %} 
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-5 -->
+      
+        <div class="col-sm-5 col-sm-offset-1">
+        
+            <div class="panel panel-default">
+              <div class="panel-heading"><h3> Index defined for I5 </h3></div>
+                <div class="panel-body">
+                    {% if display_one_index_library.I5_indexes %}
+                        <table class="table table-hover">
+                           <thead>
+                              <tr>
+                                <th>Index Name</th>
+                                <th>Index Sequence</th>
+                              </tr>
+                           </thead>
+                           <tbody>
+                                {% for index_name, index_sequence in  display_one_index_library.I5_indexes %}
+                                    <tr>
+                                        <td>{{index_name}} </td><td>{{ index_sequence }} </td>
+                                    </tr>
+                                {% endfor %}
+                           </tbody>
+                         </table>
+                    {% else %}
+                        There is no index sequence for I5 on this library
+                    
+                    {% endif %}
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+                    
+                    
+                     
+        </div> <!--  end of col-sm-5 -->
+      </div> <!--  end of row -->
+      
+{% else %}
+
+
+{% endif %}
+{% endblock %}
