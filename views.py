@@ -494,8 +494,8 @@ def get_information_run(run_name_found,run_id):
         q_30_all_value , mean_all_value = [] , []
         for item in run_lane_summary:
             q_30_value, mean_value , yield_mb = item.get_stats_info().split(';')
-            q_30_run_value.append(str(float(q_30_value)*1000))
-            mean_run_value.append(str(float(mean_value)*1000))
+            q_30_run_value.append(str(float(q_30_value)*0.01))
+            mean_run_value.append(str(float(mean_value)*0.028))
         q30_run_str = ','.join(q_30_run_value)
         mean_run_str = ','.join(mean_run_value)
         run_year = run_name_found.run_date.timetuple().tm_year
@@ -508,10 +508,10 @@ def get_information_run(run_name_found,run_id):
             same_runs_in_year_list.append(run.id)
         
         all_lane_summary = NextSeqStatsLaneSummary.objects.filter(runprocess_id__in = same_runs_in_year_list).exclude(defaultAll__isnull = False).exclude(runprocess_id__exact =run_id)
-        for item in run_lane_summary:
+        for item in all_lane_summary:
             q_30_value, mean_value , yield_mb = item.get_stats_info().split(';')
-            q_30_all_value.append(str(float(q_30_value)*1000))
-            mean_all_value.append(str(float(mean_value)*1000))
+            q_30_all_value.append(str(float(q_30_value)*0.01))
+            mean_all_value.append(str(float(mean_value)*0.028))
         q_30_all_str = ','.join(q_30_all_value)
         mean_all_str = ','.join(mean_all_value)
             #q_30_media.append(format(statistics.mean (q_30_list), '.2f'))

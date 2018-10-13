@@ -520,7 +520,7 @@ def bloxplot_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme, cat
         "xAxisName": x_axis_name,
         "YAxisName": y_axis_name,
         "numberPrefix": "%",
-        "legendBorderAlpha": "0",
+        "legendBorderAlpha": "1",
         "legendShadow": "0",
         "legendPosition": "botom",
         "showValues": "0",
@@ -529,7 +529,18 @@ def bloxplot_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme, cat
         "toolTipBgColor": "#000000",
         "toolTipBgAlpha": "80",
         "toolTipBorderRadius": "2",
-        "toolTipPadding": "5"
+        "toolTipPadding": "5",
+        #"numdivline":"4",
+        "yAxisMaxValue": "1",
+        #"yAxisMinValue": "5",
+        #"setAdaptiveYMin":"0",
+        #"adjustDiv":"0",
+        #"medianColor": "ff0000",
+        #"medianThickness": "1",
+        #"medianAplha": "70",
+        "showMean": "1",
+        # "showMD": "0"
+        
     },
     
     category = {}
@@ -557,7 +568,7 @@ def bloxplot_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme, cat
     ],
     '''
     dataset = []
-    '''
+    
     for serie in range(len(series)) :
         dataset_dict ={}
         dataset_dict['seriesname'] = series[serie][0]
@@ -572,16 +583,16 @@ def bloxplot_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme, cat
         dataset.append(dataset_dict)
     data_source['dataset'] = dataset
     '''
-    
+    #"value": "24,20,25,28,35,40, 37, 35, 38, 50,55,35, 41,42, 44, 45, 48, 47, 30, 34"
     data_source["dataset"] = [
         {
             "seriesname": "Male",
             "lowerBoxColor": "#0075c2",
             "upperBoxColor": "#1aaf5d",
             "data": [
-                {"value": "2400,2000,2500,2800,3500,4000, 3700, 3750, 3880, 5000,5500,7500,8000,8200, 8400, 8500, 8550, 8800, 8700, 9000, 14000"
+                {"value": "24,23,25,24,25,24, 27, 25, 23, 25,25,26, 26,27, 26, 24, 24, 25, 25, 23"
                 },
-                {"value": "7500,9000,12000,13000,14000,16500,17000, 18000, 19000, 19500"
+                {"value": "25, 23, 25,25,26, 26,27, 26, 24" #"value": "75,90,82,83,97,95,80, 80, 90, 95"
                 },
             ]
         },
@@ -590,12 +601,12 @@ def bloxplot_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme, cat
             "lowerBoxColor": "#f45b00",
             "upperBoxColor": "#f2c500",
             "data": [
-                {"value": "1900,2100,2300,2350,2400,2550,3000,3500,4000, 6000, 6500, 9000"
+                {"value": "19,21,23,23,24,25,23,25,30, 26, 25, 21"
                 },
-                {"value": "7000,8000,8300,8700,9500,11000,15000, 17000, 21000"
+                {"value": "23,25,24,25,24, 27, 25, 23, 25,25,26" #"value": "70,80,83,87,95,80,85, 87, 71"
                 }
             ]
         }
     ]
-    
+    '''
     return data_source
