@@ -483,6 +483,68 @@ def get_information_run(run_name_found,run_id):
     if run_state == 'Completed':
         # prepare the data for q-means
         
+        # fetch percent of Q>30 and mean_q for all projects per lane to create the median
+        # to be compared with the percent of this project
+        #q_30_media, mean_q_media = [] , []
+        #q_30_media_in_float, mean_q_media_in_float = [] , []
+        
+        run_lane_summary = NextSeqStatsLaneSummary.objects.filter(runprocess_id__exact =run_id ).exclude(defaultAll__isnull = False)
+        q_30_value_list, mean_value_list = [] , []
+        q_30_run_value , mean_run_value = [] , []
+        q_30_all_value , mean_all_value = [] , []
+        for item in run_lane_summary:
+            q_30_value, mean_value , yield_mb = item.get_stats_info().split(';')
+            q_30_run_value.append(str(float(q_30_value)*1000))
+            mean_run_value.append(str(float(mean_value)*1000))
+        q30_run_str = ','.join(q_30_run_value)
+        mean_run_str = ','.join(mean_run_value)
+        run_year = run_name_found.run_date.timetuple().tm_year
+        
+        start_date = str(run_year) + '-1-1'
+        end_date = str(run_year) +'-12-31'
+        same_run_in_year = RunProcess.objects.filter(run_date__range=(start_date, end_date) )
+        same_runs_in_year_list = []
+        for run in same_run_in_year :
+            same_runs_in_year_list.append(run.id)
+        
+        all_lane_summary = NextSeqStatsLaneSummary.objects.filter(runprocess_id__in = same_runs_in_year_list).exclude(defaultAll__isnull = False).exclude(runprocess_id__exact =run_id)
+        for item in run_lane_summary:
+            q_30_value, mean_value , yield_mb = item.get_stats_info().split(';')
+            q_30_all_value.append(str(float(q_30_value)*1000))
+            mean_all_value.append(str(float(mean_value)*1000))
+        q_30_all_str = ','.join(q_30_all_value)
+        mean_all_str = ','.join(mean_all_value)
+            #q_30_media.append(format(statistics.mean (q_30_list), '.2f'))
+            #q_30_media_in_float.append(statistics.mean (q_30_list))
+
+            #mean_q_media.append(format(statistics.mean (mean_q_list), '.2f'))
+            #mean_q_media_in_float.append(statistics.mean (mean_q_list))
+        #run_q30_average = format(statistics.mean(q_30_media_in_float), '.2f')
+        #run_mean_average = format(statistics.mean(mean_q_media_in_float), '.2f')
+        #import pdb; pdb.set_trace()
+        heading = 'Run compared agins the same performed on '
+        sub_caption = str( 'year ' + str(run_year))
+        theme = 'fint'
+        x_axis_name = 'Quatilty measures'
+        y_axis_name = 'values in %'
+        series = [['Run','#0075c2', '#1aaf5d'],['All runs','#f45b00','#f2c500']]
+        data = [[q30_run_str,mean_run_str],[q_30_all_str, mean_all_str]]
+        categories = ['Q > 30', 'Mean Quality Score']
+        #import pdb; pdb.set_trace()
+        data_source = bloxplot_graphic(heading, sub_caption, x_axis_name, y_axis_name, theme, categories, series, data)
+        #import pdb; pdb.set_trace()
+        #data_source = bloxplot_graphic()
+        #data_source = json_2_column_graphic('Comparison of bases with Q value bigger than 30', q_30_project_lane,q_30_media)
+        info_dict ['boxplot'] = FusionCharts("boxandwhisker2d", "box1" , "400", "400", "box_chart1", "json", data_source).render()
+        #import pdb; pdb.set_trace()
+        
+        
+        
+        
+        
+        
+        
+        
         
         fl_data_display=[]
         #import pdb; pdb.set_trace()

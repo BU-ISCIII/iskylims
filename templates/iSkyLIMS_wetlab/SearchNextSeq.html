@@ -5,6 +5,8 @@
 {% if display_one_run %}
  <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>
  <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>
+ <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.powercharts.js" %}"></script>
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.charts.js" %}"></script>
  <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script>
  <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
 <script>
@@ -52,29 +54,47 @@
            </div> <!--  end of panel body -->
           </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-7 -->
-              <!-- new panel on the right to show progress state -->
-              <div class="container">
-              <div class="col-sm-3 col-sm-offset-1">
+        <!-- new panel on the right to show progress state -->
+        <div class="col-sm-5">
+            <div class="col-sm-9 col-sm-offset-1">
                 <BR>
                 <div class="panel panel-default">
-                <div class="panel-heading">State run is : {{ display_one_run.run_state }} </div>
+                    <div class="panel-heading"><h3>State run is : {{ display_one_run.run_state }} </h3></div>
 
-                <div class="panel-body">
-                    <div class="circle-progress {{ display_one_run.graphic_color }}">
-                    {% if display_one_run.graphic_value > 50 %}
-                        <span class="circle-progress-left">
+                    <div class="panel-body">
+                        <div class="circle-progress {{ display_one_run.graphic_color }}">
+                        {% if display_one_run.graphic_value > 50 %}
+                            <span class="circle-progress-left">
                             <span class="circle-progress-bar"></span>
-                        </span>
-                    {% endif%}
-                        <span class="circle-progress-right">
+                            </span>
+                        {% endif%}
+                            <span class="circle-progress-right">
                             <span class="circle-progress-bar"></span>
-                        </span>
-                        <div class="circle-progress-value">{{ display_one_run.graphic_value }}%</div>
-                    </div>
-                    </div>
+                            </span>
+                            <div class="circle-progress-value">{{ display_one_run.graphic_value }}%</div>
+                        </div>
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+            </div> <!--  end of col-sm-7 -->
+              <BR>
+              <div class="col-sm-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Run Quality vs all Runs </h3> </div>
+                        <div id="box_chart1"> </div>
+                    <!-- dumping JavaScript code here -->
+                    {{ display_one_run.boxplot |safe }}
+                
                 </div> <!--  end of panel body -->
               </div> <!--  end of panel  -->
-        </div> <!--  end of col-sm-4 -->
+              </div> <!--  end of col-sm-6 -->
+              
+              
+              
+
+              
+              
+         </div> <!--  end of col-sm-3 -->
+
     </div> <!--  end of row -->
 
      <div class="row row-space-2 margin-b-4">

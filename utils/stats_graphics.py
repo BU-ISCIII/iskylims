@@ -509,3 +509,93 @@ def column_graphic_samples_in_project (heading, sub_caption, x_axis_name, y_axis
     data_source['data'] = data
 
     return data_source
+
+def bloxplot_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme, categories, series, data):
+#def bloxplot_graphic () :
+    data_source = {}
+    data_source['chart'] = {
+        "theme": theme,
+        "caption": heading,
+        "subcaption": sub_caption,
+        "xAxisName": x_axis_name,
+        "YAxisName": y_axis_name,
+        "numberPrefix": "%",
+        "legendBorderAlpha": "0",
+        "legendShadow": "0",
+        "legendPosition": "botom",
+        "showValues": "0",
+        "toolTipColor": "#ffffff",
+        "toolTipBorderThickness": "0",
+        "toolTipBgColor": "#000000",
+        "toolTipBgAlpha": "80",
+        "toolTipBorderRadius": "2",
+        "toolTipPadding": "5"
+    },
+    
+    category = {}
+    category_list = []
+    for item in categories :
+        
+        label_category = {}
+        label_category['label'] = item
+        category_list.append(label_category)
+    category['category'] = category_list
+    
+    data_source ['categories'] = [category]
+    
+    '''
+    data_source["categories"] = [
+        {"category": [
+                {
+                    "label": "Grade 1"
+                },
+                {
+                    "label": "Grade 2"
+                }
+            ]
+        }
+    ],
+    '''
+    dataset = []
+    '''
+    for serie in range(len(series)) :
+        dataset_dict ={}
+        dataset_dict['seriesname'] = series[serie][0]
+        dataset_dict['lowerBoxColor'] = series[serie][1]
+        dataset_dict['upperBoxColor'] = series[serie][2]
+        serie_data = []
+        for item in data[serie] :
+            value = {}
+            value['value']= item
+            serie_data.append(value)
+        dataset_dict['data'] = serie_data  
+        dataset.append(dataset_dict)
+    data_source['dataset'] = dataset
+    '''
+    
+    data_source["dataset"] = [
+        {
+            "seriesname": "Male",
+            "lowerBoxColor": "#0075c2",
+            "upperBoxColor": "#1aaf5d",
+            "data": [
+                {"value": "2400,2000,2500,2800,3500,4000, 3700, 3750, 3880, 5000,5500,7500,8000,8200, 8400, 8500, 8550, 8800, 8700, 9000, 14000"
+                },
+                {"value": "7500,9000,12000,13000,14000,16500,17000, 18000, 19000, 19500"
+                },
+            ]
+        },
+        {
+            "seriesname": "Female",
+            "lowerBoxColor": "#f45b00",
+            "upperBoxColor": "#f2c500",
+            "data": [
+                {"value": "1900,2100,2300,2350,2400,2550,3000,3500,4000, 6000, 6500, 9000"
+                },
+                {"value": "7000,8000,8300,8700,9500,11000,15000, 17000, 21000"
+                }
+            ]
+        }
+    ]
+    
+    return data_source
