@@ -522,11 +522,11 @@ def get_information_run(run_name_found,run_id):
         #run_q30_average = format(statistics.mean(q_30_media_in_float), '.2f')
         #run_mean_average = format(statistics.mean(mean_q_media_in_float), '.2f')
         #import pdb; pdb.set_trace()
-        heading = 'Run compared agins the same performed on '
+        heading =  run_name_found.runName +' versus runs executed on '
         sub_caption = str( 'year ' + str(run_year))
         theme = 'fint'
-        x_axis_name = 'Quatilty measures'
-        y_axis_name = 'values in %'
+        x_axis_name = 'Quatilty measures (normalized data)'
+        y_axis_name = 'Normalized values '
         series = [['Run','#0075c2', '#1aaf5d'],['All runs','#f45b00','#f2c500']]
         data = [[q30_run_str,mean_run_str],[q_30_all_str, mean_all_str]]
         categories = ['Q > 30', 'Mean Quality Score']

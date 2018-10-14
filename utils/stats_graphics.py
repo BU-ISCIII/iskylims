@@ -540,6 +540,7 @@ def bloxplot_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme, cat
         #"medianAplha": "70",
         "showMean": "1",
         # "showMD": "0"
+        "exportEnabled": "1"
         
     },
     
