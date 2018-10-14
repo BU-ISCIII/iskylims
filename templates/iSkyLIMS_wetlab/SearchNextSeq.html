@@ -584,7 +584,11 @@
             <input type="hidden" name="action" value="runsearch"/>
              <div class="form-group">
                   <label class="col-sm-5  control-label" for="runname" >Fill the RUN name </label>
-                  <div class="col-sm-5"><input class="form-control" type="text" name="runname" id="runname" size="100" maxlength="100"></div>
+                  {% if restrict_user %}
+                    <div class="col-sm-5"><input class="form-control" type="text" name="runname" id="runname" size="100" maxlength="100" value={{restrict_user.restrict_user}}  disabled></div>
+                  {% else %}
+                    <div class="col-sm-5"><input class="form-control" type="text" name="runname" id="runname" size="100" maxlength="100"></div>
+                  {% endif %}
              </div>  <!-- end from-group   -->
              <BR>
              <div class="form-group">

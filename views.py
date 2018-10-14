@@ -494,8 +494,8 @@ def get_information_run(run_name_found,run_id):
         q_30_all_value , mean_all_value = [] , []
         for item in run_lane_summary:
             q_30_value, mean_value , yield_mb = item.get_stats_info().split(';')
-            q_30_run_value.append(str(float(q_30_value)*0.01))
-            mean_run_value.append(str(float(mean_value)*0.028))
+            q_30_run_value.append(format(float(q_30_value)/100,'.2f'))
+            mean_run_value.append(format(float(mean_value)/36,'.2f'))
         q30_run_str = ','.join(q_30_run_value)
         mean_run_str = ','.join(mean_run_value)
         run_year = run_name_found.run_date.timetuple().tm_year
@@ -510,8 +510,8 @@ def get_information_run(run_name_found,run_id):
         all_lane_summary = NextSeqStatsLaneSummary.objects.filter(runprocess_id__in = same_runs_in_year_list).exclude(defaultAll__isnull = False).exclude(runprocess_id__exact =run_id)
         for item in all_lane_summary:
             q_30_value, mean_value , yield_mb = item.get_stats_info().split(';')
-            q_30_all_value.append(str(float(q_30_value)*0.01))
-            mean_all_value.append(str(float(mean_value)*0.028))
+            q_30_all_value.append(format(float(q_30_value)/100,'.2f'))
+            mean_all_value.append(format(float(mean_value)/36,'.2f'))
         q_30_all_str = ','.join(q_30_all_value)
         mean_all_str = ','.join(mean_all_value)
             #q_30_media.append(format(statistics.mean (q_30_list), '.2f'))
@@ -733,7 +733,10 @@ def search_nextSeq (request):
         try:
             groups = Group.objects.get(name='WetlabManager')
             if groups not in request.user.groups.all():
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+                allowed_all_runs = False
+               #return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+            else:
+                allowed_all_runs = True
         except:
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
     else:
@@ -826,8 +829,13 @@ def search_nextSeq (request):
                 #import pdb; pdb.set_trace()
             return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html', {'display_run_list': run_list })
     else:
-    #import pdb; pdb.set_trace()
-        return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html')
+        if allowed_all_runs == False:
+            restrict_user = {}
+            user = request.user.username
+            restrict_user['restrict_user'] = user
+            return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html',{'restrict_user': restrict_user})
+        else:
+            return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html')
 
 @login_required
 def search_nextProject (request):
