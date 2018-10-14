@@ -746,6 +746,7 @@ def search_nextSeq (request):
     ## Search for runs that fullfil the input values
     #############################################################
     if request.method=='POST' and (request.POST['action']=='runsearch'):
+        #import pdb; pdb.set_trace()
         run_name=request.POST['runname']
         start_date=request.POST['startdate']
         end_date=request.POST['enddate']
@@ -768,7 +769,20 @@ def search_nextSeq (request):
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
                                                                     'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
         ### Get all the available runs to start the filtering
-        runs_found=RunProcess.objects.all().order_by('runName')
+        if allowed_all_runs :
+            runs_found=RunProcess.objects.all().order_by('runName')
+        else:
+            
+            user_projects = Projects.objects.filter(user_id__exact = request.user.id)
+            #import pdb; pdb.set_trace()
+            run_list =[]
+            for user_project in user_projects :
+                run_list.append(user_project.runprocess_id.id)
+            #import pdb; pdb.set_trace()
+            if RunProcess.objects.filter(pk__in = run_list).exists():
+                runs_found = RunProcess.objects.filter(pk__in = run_list)
+            else:
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are not run where ', request.user.username , 'was involved' ]})
 
         ### Get runs when run name is not empty
         if run_name !='':
@@ -829,13 +843,8 @@ def search_nextSeq (request):
                 #import pdb; pdb.set_trace()
             return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html', {'display_run_list': run_list })
     else:
-        if allowed_all_runs == False:
-            restrict_user = {}
-            user = request.user.username
-            restrict_user['restrict_user'] = user
-            return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html',{'restrict_user': restrict_user})
-        else:
-            return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html')
+
+        return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html')
 
 @login_required
 def search_nextProject (request):
@@ -1137,8 +1146,24 @@ def search_run (request, run_id):
         try:
             groups = Group.objects.get(name='WetlabManager')
             if groups not in request.user.groups.all():
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+                # check if user is owner of the run
+                if Projects.objects.filter(runprocess_id__exact = run_id).exists():
+                    projects = Projects.objects.filter(runprocess_id__exact = run_id)
+                    user_list =[]
+                    for project in projects:
+                        user_list.append(project.user_id.id)
+                    
+                    if  not request.user.id in user_list :
+                        import pdb; pdb.set_trace()
+
+                        return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+
+                else:
+                    return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the run  ']})
+                    
+                #return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
         except:
+            import pdb; pdb.set_trace()
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
     else:
         #redirect to login webpage
@@ -1150,8 +1175,7 @@ def search_run (request, run_id):
         r_data_display  = get_information_run(run_name_found[0],run_id)
         return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
     else:
-        return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the run  ',
-                                                                             'ADVICE:', 'Select the Fuzzy search button to get the match']})
+        return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the run  ']})
 
 @login_required
 def latest_run (request) :
