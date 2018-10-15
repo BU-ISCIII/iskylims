@@ -48,7 +48,9 @@ def open_log(log_name):
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
     #create the file handler
-    handler = logging.handlers.RotatingFileHandler(log_name, maxBytes=40000, backupCount=5)
+    ##TODO ## maxBytes=40000, backupCount=5
+    handler = logging.handlers.RotatingFileHandler(log_name, maxBytes=400000, backupCount=2)
+    ##ENdTODO
     handler.setLevel(logging.DEBUG)
 
     #create a Logging format
@@ -308,7 +310,8 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
 
         project_dict=get_projects_in_run(
             run_info_dict['local_samplesheet_filepath'])
-        logger.debug('project_dict= '+str(project_dict))
+        logger.debug('===================\nproject_dict previous to check:= '+str(project_dict))
+        logger.debug('===================')
         samplesheet_check_error_dict={} ## to register the faulty run and the error cause
         message_output=''
 
@@ -325,7 +328,7 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
         elif 'OK_projects_db' != check_run_projects_definition(project_dict):
             message_output=check_run_projects_definition(project_dict)
 
-
+        logger.debug('====== MESSAGE')
         if message_output: ##there has been a samplesheet check error..
             samplesheet_check_error_dict={'run_name':run_index,
                 'experiment_run_name':experiment_run_name, 'error':message_output}
@@ -358,7 +361,7 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
             ##      ...}
             database_info[experiment_run_name]={}
             ## RunProcess keeps samplesheet paths below '.../documents/'
-            database_info[experiment_run_name]['relative_samplesheet_filepath']= run_info_dict['local_samplesheet_filepath'][0:len(settings.MEDIA_ROOT)]
+            database_info[experiment_run_name]['relative_samplesheet_filepath']= run_info_dict['local_samplesheet_filepath'][len(settings.MEDIA_ROOT):]
 
             database_info[experiment_run_name]['run_projects']={}
             database_info[experiment_run_name]['run_projects']=project_dict
@@ -403,9 +406,6 @@ def getSampleSheetFromSequencer():
     ##      not provided via a form, it will be stored as "Unknown"
     ## EndTODO
 
-    ##TBD
-    assert 0==2, 'quitar para empezar :)'
-    #End TBD
     logger=open_log('getSampleSheetFromSequencer.log')
     timestamp_print('Starting the process for getSampleSheetFromSequencer()')
     logger.info('Starting the process for getSampleSheetFromSequencer()')
@@ -425,6 +425,9 @@ def getSampleSheetFromSequencer():
             logger.debug('new run information to be stored in the database:\n'
                 +str(database_info))
             project_dict={}
+            ##TBD
+            assert 0==2, 'quitar para empezar :)'
+            #End TBD
             if database_info: ## not empty
                 ##Store in DB the information corresponding to the fetched set of samplesheets / runs
                 for key, val in database_info.items():
