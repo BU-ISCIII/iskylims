@@ -531,7 +531,7 @@ def bloxplot_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme, cat
         "toolTipBorderRadius": "2",
         "toolTipPadding": "5",
         #"numdivline":"4",
-        "yAxisMaxValue": "1",
+        "yAxisMaxValue": "0.4",
         #"yAxisMinValue": "5",
         #"setAdaptiveYMin":"0",
         #"adjustDiv":"0",

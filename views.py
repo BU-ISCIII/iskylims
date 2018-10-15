@@ -402,7 +402,20 @@ def add_index_library (request):
         index_libraries_information ['index_libraries'] = index_library_dict
         return render (request, 'iSkyLIMS_wetlab/AddIndexLibrary.html',{'list_of_index_libraries': index_libraries_information })
 
-
+def normalized_data (run_data, all_data) :
+    normalized_run_data, normalized_all_data = [] , []
+    min_value = min(min(run_data),min(all_data))
+    max_value = max(max(run_data), max(all_data))
+    for value in run_data :
+        normalized_run_data.append(format((value - min_value)/max_value,'.2f'))
+    for value in all_data :
+        normalized_all_data.append(format((value - min_value)/max_value,'.2f'))
+    
+    return normalized_run_data, normalized_all_data
+    
+    
+    
+    
 
 def get_information_run(run_name_found,run_id):
     info_dict={}
@@ -491,13 +504,18 @@ def get_information_run(run_name_found,run_id):
         run_lane_summary = NextSeqStatsLaneSummary.objects.filter(runprocess_id__exact =run_id ).exclude(defaultAll__isnull = False)
         q_30_value_list, mean_value_list = [] , []
         q_30_run_value , mean_run_value = [] , []
-        q_30_all_value , mean_all_value = [] , []
+        #q_30_all_value , mean_all_value = [] , []
+        q_30_run_value_float , mean_run_value_float = [] , []
+        q_30_all_value_float , mean_all_value_float = [] , []
         for item in run_lane_summary:
             q_30_value, mean_value , yield_mb = item.get_stats_info().split(';')
+            '''
             q_30_run_value.append(format(float(q_30_value)/100,'.2f'))
             mean_run_value.append(format(float(mean_value)/36,'.2f'))
-        q30_run_str = ','.join(q_30_run_value)
-        mean_run_str = ','.join(mean_run_value)
+            '''
+            q_30_run_value_float.append(float(q_30_value))
+            mean_run_value_float.append(float(mean_value))
+        
         run_year = run_name_found.run_date.timetuple().tm_year
         
         start_date = str(run_year) + '-1-1'
@@ -510,10 +528,20 @@ def get_information_run(run_name_found,run_id):
         all_lane_summary = NextSeqStatsLaneSummary.objects.filter(runprocess_id__in = same_runs_in_year_list).exclude(defaultAll__isnull = False).exclude(runprocess_id__exact =run_id)
         for item in all_lane_summary:
             q_30_value, mean_value , yield_mb = item.get_stats_info().split(';')
+            '''
             q_30_all_value.append(format(float(q_30_value)/100,'.2f'))
             mean_all_value.append(format(float(mean_value)/36,'.2f'))
-        q_30_all_str = ','.join(q_30_all_value)
-        mean_all_str = ','.join(mean_all_value)
+            '''
+            q_30_all_value_float.append(float(q_30_value))
+            mean_all_value_float.append(float(mean_value))
+        
+
+        q_30_run_normalized , q_30_all_normalized = normalized_data (q_30_run_value_float, q_30_all_value_float)
+        mean_run_normalized , mean_all_normalized = normalized_data (mean_run_value_float, mean_all_value_float)
+        q30_run_str = ','.join(q_30_run_normalized)
+        mean_run_str = ','.join(mean_run_normalized)
+        q_30_all_str = ','.join(q_30_all_normalized)
+        mean_all_str = ','.join(mean_all_normalized)
             #q_30_media.append(format(statistics.mean (q_30_list), '.2f'))
             #q_30_media_in_float.append(statistics.mean (q_30_list))
 
