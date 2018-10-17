@@ -37,7 +37,13 @@ RUN_IMAGES_DIRECTORY = 'wetlab/images_plot'
 RUN_SAMPLE_SHEET_DIRECTORY = 'wetlab/SampleSheets/'
 
 MISEQ_PROCESSED_RUN_FILE='miseq_processed_run_file'
+MISEQ_PROCESSED_RUN_FILEPATH=os.path.join(settings.MEDIA_ROOT,
+    RUN_TEMP_DIRECTORY,MISEQ_PROCESSED_RUN_FILE)
+
 PROCESSED_RUN_FILE='processed_run_file'
+PROCESSED_RUN_FILEPATH=os.path.join(settings.MEDIA_ROOT,
+    RUN_TEMP_DIRECTORY,PROCESSED_RUN_FILE)
+
 ## file with MiSeq runs whose samplesheets fail sanity checks
 FAULTY_SAMPLESHEET_MISEQRUNS_FILE='faulty_samplesheet_miseq_runs'
 FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH=os.path.join(settings.MEDIA_ROOT,

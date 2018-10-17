@@ -40,6 +40,29 @@ def open_samba_connection():
 
 ### End TBD
 
+def managed_open_file(logger, file_path,mode='r'):
+    ## Function to open text files managing exceptions logging if something happen
+    file_text_lines_list=[]
+    try:
+        with open (file_path,mode) as fh:
+            file_text_lines_list=[line.rstrip() for line in fh]
+    except FileNotFoundError:
+        logger.warning(file_path+ ' does not exist. Creating it...')
+        try:
+            with open(file_path,'x') as fh:
+                os.chmod(file_path,0o664)
+                logger.debug('Creation of empty '+file_path)
+                timestamp_print('Creation of empty '+file_path)
+        except:
+            logger.exception('Exception when creating empty '+file_path)
+            raise
+    except:
+        logger.exception('Exception when accessing file: '+file_path)
+        raise
+
+    return file_text_lines_list
+
+
 
 def open_log(log_name):
 
@@ -115,15 +138,13 @@ def determine_target_miseqruns(logger):
                 samplesheet_found=False
                 sequencer_info=sequencer.group() ##sequencer string
                 run_dir_file_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME, run_dir)
-                run_dir_file_list=run_dir_file_list[0:2] #TBDtesting
                 run_dir_file_list_filenames_debug=[x.filename for x in run_dir_file_list] ##debug
-                logger.debug('\tlength of run dir file list= '+str(len(run_dir_file_list))
-                    +'. file list=\n\t'+'\n\t'.join(run_dir_file_list_filenames_debug)+'\n')
+                logger.debug('\tlength of run dir file list= '+str(len(run_dir_file_list)))
+                #logger.debug('. file list=\n\t'+'\n\t'.join(run_dir_file_list_filenames_debug)+'\n')
 
                 for file in run_dir_file_list:
                     ## SampleSheet usually present as "SampleSheet.csv".
                     ## Once as "samplesheet.csv" ( 180725_M03352_0112_000000000-D38LV).
-                    logger.debug('file.filename= '+file.filename) ## TBDtesting
                     if file.filename.lower() == "samplesheet.csv":
                         samplesheet_found=True
                         temp_run_folders[run_dir]={}
@@ -134,29 +155,29 @@ def determine_target_miseqruns(logger):
                     else:
                         continue
 
-                if False==samplesheet_found: ## no sample sheet found in run_dir:
+                if False==samplesheet_found:
                     samplesheet_check_error_dict={'run_name':run_dir,'error':'Run without samplesheet'}
                     logger.error('Run: '+samplesheet_check_error_dict['run_name']
                         + '   '+'Error: '+samplesheet_check_error_dict['error'])
-                    try:
-                        with open(wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH, 'r') as faulty_samplesheet_file:
-                            faulty_runs=[line.rstrip() for line in faulty_samplesheet_file]
-                            logger.debug('Runs within FAULTY_SAMPLESHEET_MISEQRUNS_FILE: '+str(faulty_runs)
 
-                        if samplesheet_check_error_dict['run_name'] not in faulty_runs:
+                    try:
+                        registered_faulty_runs=managed_open_file(logger, wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH,'r')
+                        logger.debug('Existing faulty runs:\n'+'\n'.join(registered_faulty_runs))
+
+                        if samplesheet_check_error_dict['run_name'] not in registered_faulty_runs:
                             with open (wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH, 'a+') as faulty_samplesheet_file:
-                                faulty_samplesheet_file.write(samplesheet_check_error_dict['run_name'])
+                                faulty_samplesheet_file.write(samplesheet_check_error_dict['run_name']+'\n')
                                 logger.error('Run: '+samplesheet_check_error_dict['run_name']
-                                 + ' recorded in: '+wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH)
+                                + ' recorded in: '+wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH)
 
                     except:
-                        logger.exception('Exception when trying to record run '+ run_dir
-                            +' without sample sheet in file '
-                            +wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILE)
                         raise
 
             else:##No MiSeq
                 continue
+
+        else: #No directory
+            continue
 
     conn.close()
     logger.debug('SMB connection closed')
@@ -165,56 +186,24 @@ def determine_target_miseqruns(logger):
         logger.info("No MiSeq runs at this moment")
 
     else:  ## analysis of the MiSeq runs list built to select the final target ones
-        assert 0==2, 'Estamos haciendo tests...'
         logger.debug('temp_run_folders: '+str(temp_run_folders))
         process_run_file_miseqelements=[]
         faulty_samplesheet_miseqruns=[]
         process_run_file = os.path.join(settings.MEDIA_ROOT,wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.MISEQ_PROCESSED_RUN_FILE)
 
+
         try:
-            with open (process_run_file,'r') as fh:
-                for line in fh:
-                    line=line.rstrip()
-                    sequencer=  re.search('_M0\d+_', line)
-                    if None != sequencer: ##MiSeq found
-                        process_run_file_miseqelements.append(line)
-        except FileNotFoundError:
-            logger.warning(process_run_file+ ' does not exist. Creating it...')
-            try:
-                with open(process_run_file,'x') as fh:
-                    os.chmod(process_run_file,0o664)
-                    logger.debug('Creation of empty '+process_run_file)
-                    timestamp_print('Creation of empty '+process_run_file)
-            except:
-                logger.exception('Exception when creating empty '+process_run_file)
-                raise
+            process_run_file_miseqelements=managed_open_file(logger, wetlab_config.MISEQ_PROCESSED_RUN_FILEPATH,'r')
+            logger.debug('Existing processed miseq runs:\n'+'\n'.join(process_run_file_miseqelements))
         except:
-            logger.exception('Exception when reading file containing'
-                ' processed runs. Time stop=  '+ time_stop)
             raise
 
-        ## Getting info about runs with unexpected samplesheets
         try:
-            with open (wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH,'r') as fh:
-                for line in fh:
-                    line=line.rstrip()
-                    faulty_samplesheet_miseqruns.append(line)
-        except FileNotFoundError:
-            logger.warning(wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH+ ' does not exist. Creating it...')
-            try:
-                with open (wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH,'x') as fh:
-                    os.chmod(wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH,0o664)
-                    logger.info('Creation of empty '+wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH)
-                    timestamp_print('Creation of empty '+wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH)
-            except:
-                logger.exception('Exception when creating empty '+wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH)
-                raise
-
+            faulty_samplesheet_miseqruns=managed_open_file(logger,wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH,'r')
+            logger.debug('Existing faulty runs:\n'+'\n'.join(faulty_samplesheet_miseqruns))
         except:
-            logger.exception(
-                'Exception when reading (or creating) the file containing MiSeq runs',
-                ' with faulty samplesheets . Time stop=  ')
             raise
+
 
         for run,val in temp_run_folders.items():
             if (run in process_run_file_miseqelements) or (run in faulty_samplesheet_miseqruns):
@@ -412,10 +401,11 @@ def getSampleSheetFromSequencer():
     logger=open_log('getSampleSheetFromSequencer.log')
     timestamp_print('Starting the process for getSampleSheetFromSequencer()')
     logger.info('Starting the process for getSampleSheetFromSequencer()')
+    assert 0==2, 'quitar para arrancar'
     try:
         ## Launch elaboration of the list of the MiSeq samplesheets to study:
         target_run_folders= determine_target_miseqruns(logger)
-
+        logger.debug('target_run_folders: '+str(target_run_folders))
 
         if len(target_run_folders) < 1:
             time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -423,14 +413,11 @@ def getSampleSheetFromSequencer():
             logger.info('No new MiSeq runs available. Time stop= '+time_stop)
         else:
             ##Launch treatment of selected runs
-            logger.debug('target_run_folders: '+str(target_run_folders))
+            assert 1==2, 'quitar para continuar'
             database_info=fetch_remote_samplesheets(target_run_folders,logger)
             logger.debug('new run information to be stored in the database:\n'
                 +str(database_info))
             project_dict={}
-            ##TBD
-            #assert 0==1, 'quitar para empezar :)'
-            #End TBD
             if database_info: ## not empty
                 ##Store in DB the information corresponding to the fetched set of samplesheets / runs
                 for key, val in database_info.items():
