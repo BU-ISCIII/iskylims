@@ -230,12 +230,20 @@ def service_request(request, serviceRequestType):
 								'Keep this number safe for refering your request', download_file ,
 								'You will be contacted shortly.']})
 
-		else: #No POST
+		else: 
 			form = ServiceRequestFormInternalSequencing()
-			## Addition of serviceProjectName for
-			# implementation of drop down menu to choose a project name of a list of projects
-			# belonging to the logged-in user in the service request form
-			form.fields['serviceProjectNames'].queryset = Projects.objects.filter(user_id__exact = request.user.id)
+			# getting projects from user sharing list 
+			user_groups = request.user.groups.values_list('name',flat=True)
+			if len (user_groups) > 0 :
+				sharing_list = []
+				for user in user_groups :
+					#import pdb; pdb.set_trace()
+					if User.objects.filter(username__exact = user).exists():
+						sharing_list.append(User.objects.get(username__exact = user).id)
+				sharing_list.append(request.user.id)
+				form.fields['serviceProjectNames'].queryset = Projects.objects.filter(user_id__in = sharing_list)
+			else: 
+				form.fields['serviceProjectNames'].queryset = Projects.objects.filter(user_id__exact = request.user.id)
 			form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
 			return render(request, 'iSkyLIMS_drylab/RequestForm.html' , { 'form' : form , 'request_internal': 'request_internal'})
 
