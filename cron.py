@@ -34,7 +34,8 @@ def open_samba_connection():
     if True != conn.connect(wetlab_config.SAMBA_IP_SERVER, int(wetlab_config.SAMBA_PORT_SERVER)):
         logger=open_log('open_samba_connection_testing.log')
         logger.error('Cannot set up SMB connection with '+wetlab_config.SAMBA_REMOTE_SERVER_NAME)
-        assert 1==2, 'Cannot set up SMB connection with '+wetlab_config.SAMBA_REMOTE_SERVER_NAME
+        timestamp_print('Cannot set up SMB connection with '+wetlab_config.SAMBA_REMOTE_SERVER_NAME)
+
     timestamp_print('Leaving open_samba_connection() (cron.py- cuadrix testing)')
     return conn
 
@@ -107,10 +108,11 @@ def determine_target_miseqruns(logger):
         conn=open_samba_connection()
         logger.info('Succesfully SAMBA connection for determine_target_miseqruns')
         file_list= conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME, '/')
-
+        file_list=file_list[0:7] ##TBDDebugEndDebug
         file_list_filenames_debug=[x.filename for x in file_list] ##debug
-        logger.debug('number of existing directory runs of any kind= '+str(len(file_list)))
-        ##logger.debug('run dir list=\n'+'\n'.join(file_list_filenames_debug))
+        logger.debug(
+            'number of existing directory runs of any kind= '+str(len(file_list)-2))## -2 ->"." and ".."
+        logger.debug('run dir list=\n'+'\n'.join(file_list_filenames_debug))
 
     except: ##
         logger.exception('==>Exception when trying to set up SMB (samba) connection')
@@ -128,18 +130,18 @@ def determine_target_miseqruns(logger):
     for sfh in file_list:
         if sfh.isDirectory:
             run_dir=(sfh.filename)
-            logger.debug('run_dir= '+run_dir)
+            #logger.debug('run_dir= '+run_dir)
             if ('.' == run_dir or '..'== run_dir):
                 continue
             sequencer=re.search('_M0\d+_', run_dir) ## MiSeq run_dir_path
 
             if None != sequencer: ##found a MiSeq run dir
-                logger.debug('sequencer information= '+sequencer.group())
+                #logger.debug('sequencer information= '+sequencer.group())
                 samplesheet_found=False
                 sequencer_info=sequencer.group() ##sequencer string
                 run_dir_file_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME, run_dir)
                 run_dir_file_list_filenames_debug=[x.filename for x in run_dir_file_list] ##debug
-                logger.debug('\tlength of run dir file list= '+str(len(run_dir_file_list)))
+                #logger.debug('\tlength of run dir file list= '+str(len(run_dir_file_list)))
                 #logger.debug('. file list=\n\t'+'\n\t'.join(run_dir_file_list_filenames_debug)+'\n')
 
                 for file in run_dir_file_list:
@@ -187,16 +189,19 @@ def determine_target_miseqruns(logger):
 
     else:  ## analysis of the MiSeq runs list built to select the final target ones
         logger.debug('temp_run_folders: '+str(temp_run_folders))
-        process_run_file_miseqelements=[]
+        #process_run_file_miseqelements=[]  TBDEndTBD
         faulty_samplesheet_miseqruns=[]
-        process_run_file = os.path.join(settings.MEDIA_ROOT,wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.MISEQ_PROCESSED_RUN_FILE)
+        miseq_runs_already_in_db=[]
+        #process_run_file = os.path.join(settings.MEDIA_ROOT,wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.MISEQ_PROCESSED_RUN_FILE)TBDEndTBD
 
 
-        try:
-            process_run_file_miseqelements=managed_open_file(logger, wetlab_config.MISEQ_PROCESSED_RUN_FILEPATH,'r')
-            logger.debug('Existing processed miseq runs:\n'+'\n'.join(process_run_file_miseqelements))
-        except:
-            raise
+        #TBD
+        #try:
+        #    process_run_file_miseqelements=managed_open_file(logger, wetlab_config.MISEQ_PROCESSED_RUN_FILEPATH,'r')
+        #    logger.debug('Existing processed miseq runs:\n'+'\n'.join(process_run_file_miseqelements))
+        #except:
+        #    raise
+        #EndTBD
 
         try:
             faulty_samplesheet_miseqruns=managed_open_file(logger,wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH,'r')
@@ -204,10 +209,18 @@ def determine_target_miseqruns(logger):
         except:
             raise
 
+        miseq_runs_already_in_db= [
+            run for run in (RunProcess.objects.filter(sequencerPlatformModel__startswith='M0').values_list('runName', flat=True))]
+        logger.debug('MiSeq runs already in database:\n'+'\n'.join(miseq_runs_already_in_db))
 
         for run,val in temp_run_folders.items():
-            if (run in process_run_file_miseqelements) or (run in faulty_samplesheet_miseqruns):
-                continue;
+            #if (run in process_run_file_miseqelements) or (run in faulty_samplesheet_miseqruns): TBDEndTBD
+            if run in miseq_runs_already_in_db:
+                logger.debug('run: '+run+' is already in the database')
+                continue
+            elif run in faulty_samplesheet_miseqruns:
+                logger.debug('run: '+run+' is in '+wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH)
+                continue
             else:
                 target_run_folders[run]=val
 
@@ -286,12 +299,6 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
                 +'.\nexperiment_run_name allocated value= '+experiment_run_name)
 
         ##samplesheet checks:
-        ## if KO: tratamiento:
-        ##  registrar en 'faulty_samplesheet_ miseq_runs'
-        ##  error behaviour: log? something else? TODO
-        ## mail angel y nosotros
-        ## filtro wetlab: "Get Incompleted" + causa error
-
         project_dict=get_projects_in_run(
             run_info_dict['local_samplesheet_filepath'])
         logger.debug('===================\nproject_dict previous to check:= '+str(project_dict))
@@ -401,7 +408,7 @@ def getSampleSheetFromSequencer():
     logger=open_log('getSampleSheetFromSequencer.log')
     timestamp_print('Starting the process for getSampleSheetFromSequencer()')
     logger.info('Starting the process for getSampleSheetFromSequencer()')
-    assert 0==2, 'quitar para arrancar'
+    #assert 0==2, 'quitar para arrancar'
     try:
         ## Launch elaboration of the list of the MiSeq samplesheets to study:
         target_run_folders= determine_target_miseqruns(logger)
@@ -413,7 +420,6 @@ def getSampleSheetFromSequencer():
             logger.info('No new MiSeq runs available. Time stop= '+time_stop)
         else:
             ##Launch treatment of selected runs
-            assert 1==2, 'quitar para continuar'
             database_info=fetch_remote_samplesheets(target_run_folders,logger)
             logger.debug('new run information to be stored in the database:\n'
                 +str(database_info))
@@ -443,8 +449,9 @@ def getSampleSheetFromSequencer():
                     ##2.- table 'Projects' data:
                     project_dict=val['run_projects']
                     for key2, val2 in project_dict.items():
-                        assert 1==2, 'chequear la siguiente línea'
-                        runprocess_id=RunProcess.objects.get(runName==key)
+                        logger.debug('key2: '+key2)
+                        logger.debug('val2: '+str(val2))
+                        runprocess_id=RunProcess.objects.get(runName=key)
                         projectName= key2
                         user_id=User.objects.get(username__exact=val2['Description'])
                         ##for the moment, no info about the library prep protocol
@@ -456,7 +463,7 @@ def getSampleSheetFromSequencer():
                             runprocess_id,projectName,user_id,LibraryKit_id,procState)
 
                         ##TODO
-                       # new_project_info.save()
+                        #new_project_info.save()
                         ##EndTODO
                         logger.info('new record saved in Projects: '
                             +Projects.get_project_info_debug(new_project_info))
