@@ -7,7 +7,9 @@ from .models import RunProcess
 from django_utils.models import Profile
 
 from datetime import datetime
-from time import strftime
+#TBD
+#from time import strftime
+#EndTBD
 from .utils.stats_calculation import *
 from .utils.parsing_run_info import *
 from .utils.sample_convertion import get_experiment_library_name
@@ -189,37 +191,41 @@ def determine_target_miseqruns(logger):
 
     else:  ## analysis of the MiSeq runs list built to select the final target ones
         logger.debug('temp_run_folders: '+str(temp_run_folders))
-        #process_run_file_miseqelements=[]  TBDEndTBD
+        process_run_file_miseqelements=[]
         faulty_samplesheet_miseqruns=[]
-        miseq_runs_already_in_db=[]
-        #process_run_file = os.path.join(settings.MEDIA_ROOT,wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.MISEQ_PROCESSED_RUN_FILE)TBDEndTBD
+        miseqruns_sequencing_in_progress=[]
 
+        try:##runs which already finished sequencing (primary analysis) in the past (can be in later states...)
+            process_run_file_miseqelements=managed_open_file(logger, wetlab_config.MISEQ_PROCESSED_RUN_FILEPATH,'r')
+            logger.debug('Existing processed miseq runs:\n'+'\n'.join(process_run_file_miseqelements))
+        except:
+            raise
 
-        #TBD
-        #try:
-        #    process_run_file_miseqelements=managed_open_file(logger, wetlab_config.MISEQ_PROCESSED_RUN_FILEPATH,'r')
-        #    logger.debug('Existing processed miseq runs:\n'+'\n'.join(process_run_file_miseqelements))
-        #except:
-        #    raise
-        #EndTBD
-
-        try:
+        try: ##runs with 'problematic'/absent samplesheets
             faulty_samplesheet_miseqruns=managed_open_file(logger,wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH,'r')
             logger.debug('Existing faulty runs:\n'+'\n'.join(faulty_samplesheet_miseqruns))
         except:
             raise
 
-        miseq_runs_already_in_db= [
-            run for run in (RunProcess.objects.filter(sequencerPlatformModel__startswith='M0').values_list('runName', flat=True))]
-        logger.debug('MiSeq runs already in database:\n'+'\n'.join(miseq_runs_already_in_db))
+        #TBD
+        #miseqruns_sequencing_in_progress= [
+        #    run for run in (RunProcess.objects.filter(sequencerPlatformModel__startswith='M0').values_list('runName', flat=True))]
+        #logger.debug('Existing MiSeq runs within the database (any state):\n'+'\n'.join(miseqruns_sequencing_in_progress))
+        #EndTBD
 
         for run,val in temp_run_folders.items():
             #if (run in process_run_file_miseqelements) or (run in faulty_samplesheet_miseqruns): TBDEndTBD
-            if run in miseq_runs_already_in_db:
-                logger.debug('run: '+run+' is already in the database')
+            #TBD
+            #if exp_run_name in miseqruns_sequencing_in_progress:
+            #    logger.debug('experiment_run_name: '+exp_run_name+' is already in the database')
+            #    continue
+            #EndTBD
+            if run in process_run_file_miseqelements:
+                logger.debug('run: '+run+' is in '+wetlab_config.MISEQ_PROCESSED_RUN_FILEPATH+': ignoring...')
                 continue
+
             elif run in faulty_samplesheet_miseqruns:
-                logger.debug('run: '+run+' is in '+wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH)
+                logger.debug('run: '+run+' is in '+wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH+': ignoring...')
                 continue
             else:
                 target_run_folders[run]=val
@@ -240,17 +246,17 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
     transfered_samplesheet_filepaths=[] ##filepaths of transfered (locally copied) samplesheets. Used to clean up in case things go wrong
     try:
         conn=open_samba_connection()
-        counter=0
         for run_index, run_info_dict in run_dir_dict.items():
-            counter+=1
             ##Storage of the original samplesheet:
             samba_samplesheet_filepath = os.path.join(run_index,run_info_dict['samplesheet_filename'])
             ##Construction of local_samplesheet_filename:
             split_filename=re.search('(.*)(\.\w+$)',run_info_dict['samplesheet_filename'])
             ext_filename=split_filename.group(2)
-            timestr=time.strftime('%Y%m%d-%H%M%S')
-            local_samplesheet_filename = str(split_filename.group(1)+ timestr+'-#'
-                +str(counter) +ext_filename)
+            #TBD
+            ##timestr=time.strftime('%Y%m%d-%H%M%S')
+            timestr=datetime.datetime.now().strftime('%Y%m%d-%H%M%S.%f') ## till milliseconds :)
+            #EndTODO
+            local_samplesheet_filename = str(split_filename.group(1)+ timestr +ext_filename)
             local_samplesheet_filepath= os.path.join(
                 settings.MEDIA_ROOT, wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY,
                 local_samplesheet_filename)
@@ -274,7 +280,7 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
     except:
         logger.exception('Problem when opening samba connection to retrieve samplesheets')
         for transfered_file in transfered_samplesheet_filepaths:
-            os.delete(transfered_file)
+            os.remove(transfered_file)
             logger.info('Deleted from local storage: ',transfered_file)
         raise
 
@@ -283,54 +289,95 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
         logger.debug('SMB connection closed')
 
     database_info={} ## Information to be returned
-    counter=0
     for run_index, run_info_dict in run_dir_dict.items():
-        counter+=1
-        logger.debug('run_index: '+run_index+'. run_info_dict: '+str(run_info_dict)+' counter='+str(counter))
         experiment_run_name,index_library_name=get_experiment_library_name(
             run_info_dict['local_samplesheet_filepath'])
-        logger.debug('For local_samplesheet_filepath: '+run_info_dict['local_samplesheet_filepath']
-            + '. (samplesheet) experiment_name: ' + experiment_run_name +'. index_library: '
+        logger.debug('============================\n')
+        logger.debug('run_index: '+run_index+'. run_info_dict: '+str(run_info_dict))
+        logger.debug('For local_samplesheet_filepath( '+run_info_dict['local_samplesheet_filepath']
+            + '):\n(samplesheet) experiment_name: ' + experiment_run_name +'\nindex_library: '
             +index_library_name)
         if ''==experiment_run_name :
-            timestr=time.strftime('%Y%m%d-%H%M%S')
-            experiment_run_name= timestr+'-#'+str(counter) #unique value
-            logger.info('empty experiment_run_name in samplesheet: '+run_info_dict['local_samplesheet_filepath']
+            #TBD
+            #timestr=time.strftime('%Y%m%d-%H%M%S')
+            timestr=datetime.datetime.now().strftime('%Y%m%d-%H%M%S.%f') ## till milliseconds :)
+            #experiment_run_name= timestr+'-#'+str(counter) #unique value
+            experiment_run_name= timestr
+            #EndTBD
+            logger.info('==> empty experiment_run_name in samplesheet: '+run_info_dict['local_samplesheet_filepath']
                 +'.\nexperiment_run_name allocated value= '+experiment_run_name)
 
+
         ##samplesheet checks:
+        #TBD
+        logger.debug('Samplesheet checks:\n')
         project_dict=get_projects_in_run(
             run_info_dict['local_samplesheet_filepath'])
-        logger.debug('===================\nproject_dict previous to check:= '+str(project_dict))
-        logger.debug('===================')
+        logger.debug('project_dict previous to check:=\n' +str(project_dict))
         samplesheet_check_error_dict={} ## to register the faulty run and the error cause
-        message_output=''
+        message_output='OK_check'
 
-        if 'Free' != ''.join(check_run_name_free_to_use(experiment_run_name)):
-            message_output= ''.join(check_run_name_free_to_use(experiment_run_name))
-            logger.debug ('check fetch_remote_samplesheets message output: '+message_output)
+        message_output_run_name_free_to_use=''.join(check_run_name_free_to_use(experiment_run_name))
+        logger.debug('message_output_run_name_free_to_use= '+message_output_run_name_free_to_use)
 
-        elif 'OK_projects_samplesheet' != ''.join(check_run_projects_in_samplesheet(
-                run_info_dict['local_samplesheet_filepath'])):
-            message_output=''.join(check_run_projects_in_samplesheet(
+        message_output_run_projects_in_samplesheet=''.join(check_run_projects_in_samplesheet(
                 run_info_dict['local_samplesheet_filepath']))
-            logger.debug ('check fetch_remote_samplesheets message output: '+message_output)
+        logger.debug('message_output_run_projects_in_samplesheet= '+''.join(message_output_run_projects_in_samplesheet))
 
-        elif 'OK_users' != ''.join(check_run_users_definition(
-                run_info_dict['local_samplesheet_filepath'])):
-            message_output=''.join(check_run_users_definition(
+        message_output_run_users_definition=''.join(check_run_users_definition(
                 run_info_dict['local_samplesheet_filepath']))
-            logger.debug ('check fetch_remote_samplesheets message output:'+message_output)
+        logger.debug('message_output_run_users_definition= '+message_output_run_users_definition)
 
-        elif 'OK_projects_db' != ''.join(check_run_projects_definition(project_dict)):
-            message_output=''.join(check_run_projects_definition(project_dict))
-            logger.debug ('check fetch_remote_samplesheets message output: '+message_output)
+        message_output_run_projects_definition=''.join(check_run_projects_definition(project_dict))
+        logger.debug('message_output_run_projects_definition= '+message_output_run_projects_definition)
+        #EndTBD (quitar trazas)
 
-        logger.debug('====== MESSAGE')
-        if message_output: ##there has been a samplesheet check error..
+        ##if 'Free' != ''.join(check_run_name_free_to_use(experiment_run_name)): #TBDEndTBD
+        if 'Free' != message_output_run_name_free_to_use:
+            if 'Recorded'==RunProcess.objects.get(runName=experiment_run_name).runState:
+                message_output='OK_check'
+                logger.info('Sequencing of Run: '+run_index  + '(experiment_run_name: '
+                    +experiment_run_name+' is still in progress...')
+                timestamp_print('Sequencing of Run: '+run_index  + '(experiment_run_name: '
+                    +experiment_run_name+' is still in progress...')
+
+                os.remove(run_info_dict['local_samplesheet_filepath'])
+                logger.info('Deleted file: '+ run_info_dict['local_samplesheet_filepath'])
+                continue
+
+            else:
+                message_output= message_output_run_name_free_to_use
+                logger.info ('Problem detected in check_run_name_free_to_use')
+
+
+
+        ##elif 'OK_projects_samplesheet' != ''.join(check_run_projects_in_samplesheet
+            ##run_info_dict['local_samplesheet_filepath'])):(##TBDEndTBD
+
+        elif 'OK_projects_samplesheet' != message_output_run_projects_in_samplesheet:
+            message_output= message_output_run_projects_in_samplesheet
+            logger.info ('Problem detected in check_run_projects_in_samplesheet')
+
+        ##elif 'OK_users' != ''.join(check_run_users_definition(
+                ##run_info_dict['local_samplesheet_filepath'])):##TBDEndTBD
+        elif 'OK_users' != message_output_run_users_definition:
+            message_output=message_output_run_users_definition
+            logger.info ('Problem detected in check_run_users_definition')
+
+        ##elif 'OK_projects_db' != ''.join(check_run_projects_definition(project_dict)):#TBDEndTBD;
+        elif 'OK_projects_db' !=message_output_run_projects_definition:
+            message_output=message_output_run_projects_definition
+            logger.info ('Problem detected in check_run_projects_definition')
+
+        else: ##everything alright
+            logger.debug('Samplesheet checks message: '+message_output)
+
+        if 'OK_check'!= message_output: ##there has been a samplesheet check error..
             samplesheet_check_error_dict={'run_name':run_index,
                 'experiment_run_name':experiment_run_name, 'error':message_output}
-            timestamp_print('Run: '+samplesheet_check_error_dict['run_name'])
+            timestamp_print('Run: '+samplesheet_check_error_dict['run_name']
+                +'. (experiment) run name'+experiment_run_name
+                +'. Error: '+str(samplesheet_check_error_dict['error']))
             logger.error('Run: '+samplesheet_check_error_dict['run_name']
                 +'. (experiment) run name'+experiment_run_name
                 +'. Error: '+str(samplesheet_check_error_dict['error']))
@@ -346,6 +393,10 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
 
                     logger.debug('Run: '+samplesheet_check_error_dict['run_name']
                         + 'recorded in: ',wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH)
+
+                os.remove(run_info_dict['local_samplesheet_filepath'])
+                logger.info('Deleted file: '+ run_info_dict['local_samplesheet_filepath'])
+
             except:
                 logger.exception('Exception when trying to record run '+ run_index
                     +' with faulty samplesheet in file '
@@ -360,21 +411,25 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
             ##      ...}
             database_info[experiment_run_name]={}
             ## RunProcess keeps samplesheet paths below '.../documents/'
-            database_info[experiment_run_name]['relative_samplesheet_filepath']= run_info_dict['local_samplesheet_filepath'][len(settings.MEDIA_ROOT):]
-
+                #database_info[experiment_run_name]['relative_samplesheet_filepath']= run_info_dict['local_samplesheet_filepath'][len(settings.MEDIA_ROOT+):]
+            database_info[experiment_run_name]['relative_samplesheet_filepath']= run_info_dict['local_samplesheet_filepath'][len(
+                os.path.join(settings.MEDIA_ROOT, wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY)):]
             database_info[experiment_run_name]['run_projects']={}
             database_info[experiment_run_name]['run_projects']=project_dict
 
+            ## TBD
             ## For MiSeq runs we take the "1st" (and potentially only) researcher as user
             ## for later calculation of the center from which the request came
             ## note that dictionaries are not ordered: if there are several researchers, any can be chosen
+            ## ENdTBD
+
             key= next(iter(project_dict))
             researcher=project_dict[key]
             database_info[experiment_run_name]['userId']=User.objects.get(username__exact = researcher)
             database_info[experiment_run_name]['index_library']=index_library_name
             database_info[experiment_run_name]['sequencerPlatformModel']=run_info_dict['sequencer_model']
-            logger.debug('database_info= '+str(database_info))
 
+    #logger.debug('\ndatabase_info= '+str(database_info)+'\n')
     timestamp_print('Leaving the process for fetch_remote_samplesheets()')
     logger.info('Leaving the process for fetch_remote_samplesheets()')
     return database_info
@@ -421,7 +476,7 @@ def getSampleSheetFromSequencer():
         else:
             ##Launch treatment of selected runs
             database_info=fetch_remote_samplesheets(target_run_folders,logger)
-            logger.debug('new run information to be stored in the database:\n'
+            logger.debug('\nnew run information to be stored in the database:\n'
                 +str(database_info))
             project_dict={}
             if database_info: ## not empty
@@ -429,44 +484,47 @@ def getSampleSheetFromSequencer():
                 for key, val in database_info.items():
 
                     ##1.- table 'RunProcess' data:
-                    runName= key
                     relative_samplesheet_filepath= val['relative_samplesheet_filepath']
                     center_requested_id = Profile.objects.get(
                         profileUserID = val['userId']).profileCenter.id
-                    centerRequestedBy=Center.objects.get(pk=center_requested_id)
-                    index_library = val['index_library']
-                    sequencerPlatformModel= val['sequencerPlatformModel']
-                    runState='Recorded'
-                    new_run_info=RunProcess(runName,relative_samplesheet_filepath,
-                        centerRequestedBy,index_library,
-                        sequencerPlatformModel,runState)
-                    ##TODO
-                    #new_run_info.save()
-                    #EndTODO
+
+                    new_run_info=RunProcess(
+                        runName=key,
+                        sampleSheet=relative_samplesheet_filepath,
+                        centerRequestedBy=Center.objects.get(pk=center_requested_id),
+                        index_library = val['index_library'],
+                        sequencerPlatformModel= val['sequencerPlatformModel'],
+                        runState='Recorded')
+                    new_run_info.save()
+                    logger.info('------------------------------')
                     logger.info('new record saved in RunProcess: '
                         +RunProcess.get_runprocess_info_debug(new_run_info))
+                    logger.info('------------------------------')
 
                     ##2.- table 'Projects' data:
                     project_dict=val['run_projects']
                     for key2, val2 in project_dict.items():
                         logger.debug('key2: '+key2)
-                        logger.debug('val2: '+str(val2))
-                        runprocess_id=RunProcess.objects.get(runName=key)
-                        projectName= key2
-                        user_id=User.objects.get(username__exact=val2['Description'])
-                        ##for the moment, no info about the library prep protocol
-                        LibraryKit_id=LibraryKit.objects.get(libraryName__exact = 'Unknown')
-                        ## as of today, only one set of indexes is being considered
-                        libraryKit=val['index_library']
-                        procState='Recorded'
-                        new_project_info=Projects(
-                            runprocess_id,projectName,user_id,LibraryKit_id,procState)
+                        logger.debug('val2: '+val2)
+                        run_id=RunProcess.objects.get(runName=key)
 
-                        ##TODO
-                        #new_project_info.save()
-                        ##EndTODO
+                        new_project_info=Projects(
+                            runprocess_id=run_id,
+                            projectName=key2,
+                            user_id=User.objects.get(username__exact=val2),
+                            ##for the moment, no info about the library prep protocol
+                            LibraryKit_id=LibraryKit.objects.get(libraryName__exact = 'Unknown'),
+                            ## as of today, only one set of indexes is being considered
+                            libraryKit=val['index_library'],
+                            procState='Recorded',
+                            baseSpaceFile="")
+
+
+                        new_project_info.save()
+                        logger.info('------------------------------')
                         logger.info('new record saved in Projects: '
                             +Projects.get_project_info_debug(new_project_info))
+                        logger.info('------------------------------')
 
             else: ## no information fetched
                 time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
