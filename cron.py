@@ -1,15 +1,11 @@
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.conf import settings
-#from iSkyLIMS_wetlab import wetlab_config
 from .wetlab_config import *
 from .models import RunProcess
 from django_utils.models import Profile
 
 from datetime import datetime
-#TBD
-#from time import strftime
-#EndTBD
 from .utils.stats_calculation import *
 from .utils.parsing_run_info import *
 from .utils.sample_convertion import get_experiment_library_name
@@ -40,11 +36,11 @@ def open_samba_connection():
 
     timestamp_print('Leaving open_samba_connection() (cron.py- cuadrix testing)')
     return conn
-
 ### End TBD
 
+
 def managed_open_file(logger, file_path,mode='r'):
-    ## Function to open text files managing exceptions logging if something happen
+    ## Function to open text files managing exception logging if something happen
     file_text_lines_list=[]
     try:
         with open (file_path,mode) as fh:
@@ -90,13 +86,25 @@ def open_log(log_name):
 
 
 def determine_target_miseqruns(logger):
-    ## Identification of runs whose samplesheets must be treated:
+    ##TODO
+    ## Identification of available miseqruns for later study of their samplesheets:
     ## 1st: scan of wetlab_config.SAMBA_SHARED_FOLDER_NAME to build a list
     ## with MiSeq runs
 
     ## 2nd: construction of sublist with runs which fullfill:
     ## a) have a samplesheet b) have not been already processed
     ## c) are not runs featuring faulty samplesheets
+
+
+    ##Unusual case:
+    ##Case where there was NO experiment run name in the original samplesheet (that means
+    ##that the experiment_run_name is a timestamp
+    ##
+    ## To detect that such a run had been already dealt with in the past and is not a new one,
+    ## if no experiment_run_name:
+        ## store in a miseqruns without exp_run_name file when first time allocating timestamp
+        ## check always at the beginning contents of the file to rule out
+    #EndTODO
 
     timestamp_print('Starting the process to determine_target_miseqruns()')
     logger.info('Starting the process to determine_target_miseqruns()')
@@ -195,7 +203,9 @@ def determine_target_miseqruns(logger):
         faulty_samplesheet_miseqruns=[]
         miseqruns_sequencing_in_progress=[]
 
-        try:##runs which already finished sequencing (primary analysis) in the past (can be in later states...)
+        try:##runs which already finished the sequencing (primary analysis)
+            ##in the past (can be in later states...)
+            ##or have been CANCELLED
             process_run_file_miseqelements=managed_open_file(logger, wetlab_config.MISEQ_PROCESSED_RUN_FILEPATH,'r')
             logger.debug('Existing processed miseq runs:\n'+'\n'.join(process_run_file_miseqelements))
         except:
@@ -310,13 +320,14 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
 
         ##samplesheet checks:
         #TBD
-        logger.debug('Samplesheet checks:\n')
+        logger.debug('Beginning Samplesheet checks:\n')
         project_dict=get_projects_in_run(
             run_info_dict['local_samplesheet_filepath'])
         logger.debug('project_dict previous to check:=\n' +str(project_dict))
         samplesheet_check_error_dict={} ## to register the faulty run and the error cause
         message_output='OK_check'
 
+        ##pre-generation of check results previous to analysis
         message_output_run_name_free_to_use=''.join(check_run_name_free_to_use(experiment_run_name))
         logger.debug('message_output_run_name_free_to_use= '+message_output_run_name_free_to_use)
 
@@ -333,23 +344,30 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
         #EndTBD (quitar trazas)
 
         ##if 'Free' != ''.join(check_run_name_free_to_use(experiment_run_name)): #TBDEndTBD
+
+
         if 'Free' != message_output_run_name_free_to_use:
-            if 'Recorded'==RunProcess.objects.get(runName=experiment_run_name).runState:
-                message_output='OK_check'
+            state=RunProcess.objects.get(runName=experiment_run_name).runState
+            logger.debug('\n(Experiment) run name NOT Free: State of the run: '+state+'\n')
+            if 'Recorded'==state:
                 logger.info('Sequencing of Run: '+run_index  + '(experiment_run_name: '
                     +experiment_run_name+' is still in progress...')
                 timestamp_print('Sequencing of Run: '+run_index  + '(experiment_run_name: '
-                    +experiment_run_name+' is still in progress...')
+                    +experiment_run_name+') is still in progress...')
 
+            elif 'CANCELLED'==state:
+                logger.info(' Run: '+run_index  + '(experiment_run_name: '
+                    +experiment_run_name+') was stored as CANCELLED')
+
+            if 'Recorded'==state or 'CANCELLED'==state:
+                message_output='OK_check' #this is a normal behaviour
                 os.remove(run_info_dict['local_samplesheet_filepath'])
                 logger.info('Deleted file: '+ run_info_dict['local_samplesheet_filepath'])
                 continue
-
-            else:
+            else: ##having checked before if run was among sequenced ones, this should not happen
                 message_output= message_output_run_name_free_to_use
                 logger.info ('Problem detected in check_run_name_free_to_use')
-
-
+                raise ValueError('Unexpected status value for: '+experiment_run_name)
 
         ##elif 'OK_projects_samplesheet' != ''.join(check_run_projects_in_samplesheet
             ##run_info_dict['local_samplesheet_filepath'])):(##TBDEndTBD
@@ -366,6 +384,7 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
 
         ##elif 'OK_projects_db' != ''.join(check_run_projects_definition(project_dict)):#TBDEndTBD;
         elif 'OK_projects_db' !=message_output_run_projects_definition:
+
             message_output=message_output_run_projects_definition
             logger.info ('Problem detected in check_run_projects_definition')
 
@@ -376,24 +395,16 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
             samplesheet_check_error_dict={'run_name':run_index,
                 'experiment_run_name':experiment_run_name, 'error':message_output}
             timestamp_print('Run: '+samplesheet_check_error_dict['run_name']
-                +'. (experiment) run name'+experiment_run_name
+                +'. (experiment) run name: '+experiment_run_name
                 +'. Error: '+str(samplesheet_check_error_dict['error']))
             logger.error('Run: '+samplesheet_check_error_dict['run_name']
-                +'. (experiment) run name'+experiment_run_name
+                +'. (experiment) run name: '+experiment_run_name
                 +'. Error: '+str(samplesheet_check_error_dict['error']))
             try:
                 with open (wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH, 'a+') as faulty_samplesheet_file:
                     faulty_samplesheet_file.write(samplesheet_check_error_dict['run_name'])
-                    ### TODO To store the cause
-                    ### faulty_samplesheet_file.write('Run: ',samplesheet_check_error_dict['run_name'],
-                    ###    '   ','Error: ',samplesheet_check_error_dict['error'])
-                    ## mail angel y nosotros
-                    ## filtro wetlab: "Get Incompleted" + causa error
-                    #EndTODO
-
-                    logger.debug('Run: '+samplesheet_check_error_dict['run_name']
+                logger.debug('Run: '+samplesheet_check_error_dict['run_name']
                         + 'recorded in: ',wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH)
-
                 os.remove(run_info_dict['local_samplesheet_filepath'])
                 logger.info('Deleted file: '+ run_info_dict['local_samplesheet_filepath'])
 
@@ -463,7 +474,7 @@ def getSampleSheetFromSequencer():
     logger=open_log('getSampleSheetFromSequencer.log')
     timestamp_print('Starting the process for getSampleSheetFromSequencer()')
     logger.info('Starting the process for getSampleSheetFromSequencer()')
-    #assert 0==2, 'quitar para arrancar'
+    assert 0==2, 'comentar para arrancar'
     try:
         ## Launch elaboration of the list of the MiSeq samplesheets to study:
         target_run_folders= determine_target_miseqruns(logger)
