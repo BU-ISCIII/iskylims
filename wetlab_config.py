@@ -1,6 +1,6 @@
 import os
 from django.conf import settings
-## TODO
+## TBD
 ## (PARAMETERS FOR TESTING) SAMBA settings for connecting quibitka server to fetch the run files
 
 SAMBA_USER_ID = 'smbuser'
@@ -23,7 +23,7 @@ SAMBA_NTLM_USED = True
 SAMBA_IP_SERVER = '172.21.7.11'
 SAMBA_PORT_SERVER = '445'
 '''
-##end TODO
+##endTBD
 
 
 ## Directory settings for processing the run execution process

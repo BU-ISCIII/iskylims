@@ -70,9 +70,9 @@ def open_log(log_name):
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
     #create the file handler
-    ##TODO ## maxBytes=40000, backupCount=5
+    ##TBD ## maxBytes=40000, backupCount=5
     handler = logging.handlers.RotatingFileHandler(log_name, maxBytes=400000, backupCount=2)
-    ##ENdTODO
+    ##EndTBD
     handler.setLevel(logging.DEBUG)
 
     #create a Logging format
@@ -86,16 +86,8 @@ def open_log(log_name):
 
 
 def determine_target_miseqruns(logger):
+
     ##TODO
-    ## Identification of available miseqruns for later study of their samplesheets:
-    ## 1st: scan of wetlab_config.SAMBA_SHARED_FOLDER_NAME to build a list
-    ## with MiSeq runs
-
-    ## 2nd: construction of sublist with runs which fullfill:
-    ## a) have a samplesheet b) have not been already processed
-    ## c) are not runs featuring faulty samplesheets
-
-
     ##Unusual case:
     ##Case where there was NO experiment run name in the original samplesheet (that means
     ##that the experiment_run_name is a timestamp
@@ -217,19 +209,7 @@ def determine_target_miseqruns(logger):
         except:
             raise
 
-        #TBD
-        #miseqruns_sequencing_in_progress= [
-        #    run for run in (RunProcess.objects.filter(sequencerPlatformModel__startswith='M0').values_list('runName', flat=True))]
-        #logger.debug('Existing MiSeq runs within the database (any state):\n'+'\n'.join(miseqruns_sequencing_in_progress))
-        #EndTBD
-
         for run,val in temp_run_folders.items():
-            #if (run in process_run_file_miseqelements) or (run in faulty_samplesheet_miseqruns): TBDEndTBD
-            #TBD
-            #if exp_run_name in miseqruns_sequencing_in_progress:
-            #    logger.debug('experiment_run_name: '+exp_run_name+' is already in the database')
-            #    continue
-            #EndTBD
             if run in process_run_file_miseqelements:
                 logger.debug('run: '+run+' is in '+wetlab_config.MISEQ_PROCESSED_RUN_FILEPATH+': ignoring...')
                 continue
@@ -262,10 +242,7 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
             ##Construction of local_samplesheet_filename:
             split_filename=re.search('(.*)(\.\w+$)',run_info_dict['samplesheet_filename'])
             ext_filename=split_filename.group(2)
-            #TBD
-            ##timestr=time.strftime('%Y%m%d-%H%M%S')
             timestr=datetime.datetime.now().strftime('%Y%m%d-%H%M%S.%f') ## till milliseconds :)
-            #EndTODO
             local_samplesheet_filename = str(split_filename.group(1)+ timestr +ext_filename)
             local_samplesheet_filepath= os.path.join(
                 settings.MEDIA_ROOT, wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY,
@@ -343,8 +320,6 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
         logger.debug('message_output_run_projects_definition= '+message_output_run_projects_definition)
         #EndTBD (quitar trazas)
 
-        ##if 'Free' != ''.join(check_run_name_free_to_use(experiment_run_name)): #TBDEndTBD
-
 
         if 'Free' != message_output_run_name_free_to_use:
             state=RunProcess.objects.get(runName=experiment_run_name).runState
@@ -369,20 +344,15 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
                 logger.info ('Problem detected in check_run_name_free_to_use')
                 raise ValueError('Unexpected status value for: '+experiment_run_name)
 
-        ##elif 'OK_projects_samplesheet' != ''.join(check_run_projects_in_samplesheet
-            ##run_info_dict['local_samplesheet_filepath'])):(##TBDEndTBD
 
         elif 'OK_projects_samplesheet' != message_output_run_projects_in_samplesheet:
             message_output= message_output_run_projects_in_samplesheet
             logger.info ('Problem detected in check_run_projects_in_samplesheet')
 
-        ##elif 'OK_users' != ''.join(check_run_users_definition(
-                ##run_info_dict['local_samplesheet_filepath'])):##TBDEndTBD
         elif 'OK_users' != message_output_run_users_definition:
             message_output=message_output_run_users_definition
             logger.info ('Problem detected in check_run_users_definition')
 
-        ##elif 'OK_projects_db' != ''.join(check_run_projects_definition(project_dict)):#TBDEndTBD;
         elif 'OK_projects_db' !=message_output_run_projects_definition:
 
             message_output=message_output_run_projects_definition
@@ -428,11 +398,8 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
             database_info[experiment_run_name]['run_projects']={}
             database_info[experiment_run_name]['run_projects']=project_dict
 
-            ## TBD
             ## For MiSeq runs we take the "1st" (and potentially only) researcher as user
             ## for later calculation of the center from which the request came
-            ## note that dictionaries are not ordered: if there are several researchers, any can be chosen
-            ## ENdTBD
 
             key= next(iter(project_dict))
             researcher=project_dict[key]
@@ -452,24 +419,19 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
 
 
 def getSampleSheetFromSequencer():
-    ## TODO
     ## This function is used for sequencers (as of today, MiSeq) for which
     ## the system do not interact with the wetlab manager via web forms
     ## when dealing with the run samplesheet:it fetches it straight from the
     ## sequencer storage directory. The process is periodically kicked off by 'cron'
-    ## So far, we just consider the case of just one "library index name"
 
-    ## For each run in primary_analysis_run_list:
+    ## For each new run:
     ##   -local copy of samplesheet
-    ##    run_name, index_library_name = get_experiment_library_name(stored_file)
-    ##   -sanity checks
-    ##    if ko, delete sampleSheet (cómo avisar al usuario (mail)? vs CANCELLED)
+    ##   -samplesheet sanity checks
     ##
     ##   -At this stage, no need to ensure unique ids for sampleSheet
     ##   -No BaseSpace formatting needed for samplesheet)
     ##   -Since the protocol of the preparation of the library (LibraryKit_id) is
     ##      not provided via a form, it will be stored as "Unknown"
-    ## EndTODO
 
     logger=open_log('getSampleSheetFromSequencer.log')
     timestamp_print('Starting the process for getSampleSheetFromSequencer()')
@@ -565,18 +527,6 @@ def getSampleSheetFromSequencer():
 
 
 def check_recorded_folder ():
-    ## TODO
-    ## This function will intend to take runs to the "Sample Sent" state
-    ## A run in state="SampleSent" implies that :
-    ##  the run primary analysis has been succesfully executed  (secondary
-    ##      analysis will be performed subsequently via 'Bcl2Fastq')
-    ##  and the file 'PROCESSED_RUN_FILE' has been updated with the run directory name
-    ##
-    ## if case 'MiSeq':
-    ##  -checks, database update and update state (getSampleSheetFromSequencer())
-    ##
-    ## case "NextSeq" (and all???):
-    ## end TODO
     time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(time_start )
     working_path = settings.MEDIA_ROOT
