@@ -1678,7 +1678,7 @@ def nextSeqStats_per_time (request):
                             project_date_name[project_run_date] = 1
                         project_list [project.id] = [[project.get_project_name(), project_run_date]]
                         #import pdb; pdb.set_trace()
-                    stat_per_time ['project_names'] = Project_list
+                    stat_per_time ['project_names'] = project_list
                     if len (project_found_list) == 1:
                         number_of_projects = '1 Project'
                     else:

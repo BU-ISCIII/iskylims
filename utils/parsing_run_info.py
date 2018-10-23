@@ -199,7 +199,6 @@ def process_run_in_recorded_state(logger):
     local_run_info_file = os.path.join(base_directory, 'RunInfo.xml')
     local_run_completion_status_file = os.path.join(base_directory, 'RunCompletionStatus.xml')
 
-    #'wetlab_config.PROCESSED_RUN_FILE' contains the runs already processed (
     process_run_file = os.path.join(base_directory, wetlab_config.PROCESSED_RUN_FILE)
     processed_run=[]
     run_names_processed=[]
