@@ -86,6 +86,79 @@ def get_run_disk_utilization (conn, run_Id_used, run_processing_id, logger):
         run_be_updated.save()
         logger.info('End  disk space utilization for runID  %s', run_Id_used)
 
+
+
+def save_miseq_run_info(run_info,run_parameter,    logger):
+## Collecting information from MiSeq run to save it in our database
+    running_data={}
+    image_channel=[]
+    #################################################
+    ## parsing RunInfo.xml file
+    #################################################
+    run_data=ET.parse(run_info)
+    run_root=run_data.getroot()
+    logger.info('Processing the MISEQ runInfo.xml file')
+    p_run=run_root[0]
+    running_data['Flowcell']=p_run.find('Flowcell').text
+    running_data['FlowcellLayout']=p_run.find('FlowcellLayout').attrib
+    running_data['ImageChannel']= None #Available in NextSeq but not in MiSeq
+    running_data['ImageDimensions']=None #Available in NextSeq but not in MiSeq
+
+    #################################################
+    ## parsing RunParameter.xml file
+    #################################################
+    logger.info('Processing the MISEQ runParameter.xml file')
+    parameter_data=ET.parse(run_parameter)
+    parameter_data_root=parameter_data.getroot()
+    running_data['RunID']=parameter_data_root.find('RunID').text
+    running_data['ExperimentName']=parameter_data_root.find('ExperimentName').text
+    running_data['RTAVersion']=parameter_data_root.find('RTAVersion').text
+    running_data['SystemSuiteVersion']=None #Available in NextSeq but not in MiSeq
+    running_data['LibraryID']=None #Available in NextSeq but not in MiSeq
+    running_data['Chemistry']=parameter_data_root.find('Chemistry').text
+    running_data['RunStartDate']=parameter_data_root.find('RunStartDate').text
+    running_data['AnalysisWorkflowType']=(parameter_data_root.find('Workflow')).find('Analysis').text
+    for read in root.iter('RunInfoRead'):
+        for attribs, attribs_val in read.attrib.items():
+            if '1'==attribs_val['Number'] and 'N'==attribs_val['IsIndexedRead']:
+                running_data['PlannedRead1Cycles']=attribs_val['NumCycles']
+            elif '4'==attribs_val['Number'] and 'N'==attribs_val['IsIndexedRead']:
+                running_data['PlannedRead2Cycles']=attribs_val['NumCycles']
+            elif '2'==attribs_val['Number'] and 'Y'==attribs_val['IsIndexedRead']:
+                running_data['PlannedIndex1ReadCycles']=attribs_val['NumCycles']
+            elif '3'==attribs_val['Number'] and 'Y'==attribs_val['IsIndexedRead']:
+                running_data['PlannedIndex2ReadCycles']=attribs_val['NumCycles']
+            else:
+                logger.error('Unexpected construction of <RunInfoRead> in RunParameter.xml: '+str(read))
+    running_data['RunManagementType']=parameter_data_root.find('RunManagementType').text
+    p_parameter=parameter_data_root[1]
+    running_data['ApplicationVersion']=p_parameter.find('ApplicationVersion').text
+    running_data['NumTilesPerSwath']=p_parameter.find('NumTilesPerSwath').text
+
+    for key,val in running_data.items():
+        if None==val:
+            if 'ImageChannel'==key or 'ImageDimensions'==key or 'SystemSuiteVersion'==key or 'LibraryID'==key:
+                continue #expected behaviour
+            else:
+                logger.error('Unexpected value to be stored. Field: '+key+ ' Value: '+val)
+
+    logger.debug('running_data information', running_data)
+    ###########################################
+    ## saving data into database
+    ###########################################
+    ##TODO endTODO
+
+
+
+
+
+
+    return
+
+
+
+
+
 def save_run_info(run_info, run_parameter, run_id, logger):
     running_data={}
     image_channel=[]
