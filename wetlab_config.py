@@ -55,6 +55,13 @@ SAMPLESHEET_NOEXPNAME_MISEQRUNS_FILE='no_exp_name_samplesheet_miseq_runs'
 SAMPLESHEET_NOEXPNAME_MISEQRUNS_FILEPATH=os.path.join(settings.MEDIA_ROOT,
     RUN_TEMP_DIRECTORY,SAMPLESHEET_NOEXPNAME_MISEQRUNS_FILE)
 
+## file containing MiSeq runs in RECORDED state to check whether they have evolved or not
+RECORDED_MISEQRUNS_FILE='recorded_miseq_runs'
+RECORDED_MISEQRUNS_FILEPATH=os.path.join(settings.MEDIA_ROOT,
+    RUN_TEMP_DIRECTORY,RECORDED_MISEQRUNS_FILE)
+
+
+
 MIGRATION_DIRECTORY_FILES = 'wetlab/BaseSpaceMigrationFiles/'
 
 ## Configuration for the sample sheet conversion file to BaseSpace format

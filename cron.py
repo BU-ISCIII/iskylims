@@ -335,7 +335,6 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
 
         if 'Free' != message_output_run_name_free_to_use:
             state=RunProcess.objects.get(runName=experiment_run_name).runState
-            logger.debug('\n(Experiment) run name NOT Free: State of the run: '+state+'\n')
             if 'Recorded'==state:
                 logger.info('Sequencing of Run: '+run_index  + '(experiment_run_name: '
                     +experiment_run_name+' is still in progress...')
@@ -397,14 +396,15 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
                 raise
 
         else:#samplesheet checks ok
-            ## database_info= {run_index:{'relative_samplesheet_filepath':...,
+            ## database_info= {experiment_run_name:{'run_dir':..., 'relative_samplesheet_filepath':...,
             ##      'run_projects':{experiment_run_name:researcher,...},
             ##      'userId':...,'index_library':..., 'sequencer_model':...},
-            ##      run_index2:{...},
+            ##
+            ##      experiment_run_name2:{...},
             ##      ...}
             database_info[experiment_run_name]={}
+            database_info[experiment_run_name]['run_dir']=run_index
             ## RunProcess keeps samplesheet paths below '.../documents/'
-                #database_info[experiment_run_name]['relative_samplesheet_filepath']= run_info_dict['local_samplesheet_filepath'][len(settings.MEDIA_ROOT+):]
             database_info[experiment_run_name]['relative_samplesheet_filepath']= run_info_dict['local_samplesheet_filepath'][len(
                 os.path.join(settings.MEDIA_ROOT, wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY)):]
             database_info[experiment_run_name]['run_projects']={}
@@ -508,6 +508,21 @@ def getSampleSheetFromSequencer():
                             +Projects.get_project_info_debug(new_project_info))
                         logger.info('------------------------------')
 
+                    ##3.- Update of MISEQ runs in RECORDED state
+                        try:
+                            with open (wetlab_config.RECORDED_MISEQRUNS_FILEPATH, 'a+') as recorded_miseqruns_file:
+                                recorded_miseqruns_file.write(val['run_dir']+'\n')
+                            os.chmod(wetlab_config.RECORDED_MISEQRUNS_FILEPATH, 0o664)
+                            logger.debug('Run: '+val['run_dir']
+                                    + 'recorded in: ',wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH)
+                        except:
+                            logger.exception('Exception when trying to record run '+val['run_dir']
+                                +' in file '
+                                + wetlab_config.RECORDED_MISEQRUNS_FILEPATH)
+                            raise
+
+
+
             else: ## no information fetched
                 time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 logger.info('No MiSeq runs to introduce in database. Time stop= '+time_stop)
@@ -577,12 +592,50 @@ def test_parsing_xml_files():
         logger.debug('SMB connection closed')    #fetch RunInfo y RunParameters
 
     #parse of files: check trazas
+    ### TODO see 'id' next line EndTODO
     save_miseq_run_info(local_runinfoxml_filepath,local_runparametersxml_filepath,999,logger)
     return
 
 
 
+##TODO
 
+def miseq_check_recorded(): ## to be integrated in common flow...
+    timestamp_print('Starting the process for miseq_check_recorded')
+    logger=open_log('miseq_check_recorded')
+
+    #Build list of runs in RECORDED state
+    # a) check run BCL finished?
+    # b) check run CANCELLED?
+    # c) ...BCL still in progress
+
+    try:
+        ##runs with no 'experiment name' in samplesheet registered iterations
+        recorded_miseqruns=managed_open_file(
+            logger,wetlab_config.RECORDED_MISEQRUNS_FILEPATH,'r')
+        logger.debug('Existing MISEQ run dirs (Recorded state):\n'+'\n'.join(
+            recorded_miseqruns))
+    except:
+        raise
+
+    for run_dir in recorded_miseqruns:
+        # a) check run BCL finished?
+
+        if checkTODO:
+            continue
+        # b) check run CANCELLED?
+        if checkTODO:
+            continue
+
+        # c) ...BCL still in progress
+
+
+    return
+
+
+
+
+'''
 def check_recorded_folder ():
     time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(time_start )
@@ -615,6 +668,10 @@ def check_recorded_folder ():
         time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         print(time_stop)
         logger.info( 'Exiting the crontab for record_folder. No directories under recorded folder have been found')
+'''
+##EndTODO
+
+
 
 def check_not_finish_run():
     time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')

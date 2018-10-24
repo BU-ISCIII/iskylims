@@ -12,7 +12,7 @@ def check_run_name_free_to_use(run_name):
     ## Error page is shown if run_name is already  defined
     ##
 
-    timestamp_print('(experiment)Run name: '+run_name+'\n'
+    timestamp_print('(experiment) Run name: '+run_name+'\n'
         +'Starting the process for check_run_name_free_to_use()')
     run_name_free_result='KO in check_run_name_free_to_use()'
     if (RunProcess.objects.filter(runName = run_name)).exists():
