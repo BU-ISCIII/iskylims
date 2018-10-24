@@ -5,10 +5,7 @@ import pdb
 
 from django.conf import settings
 from .sample_convertion import get_projects_in_run
-
-def timestamp_print(message):
-    starting_time= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(starting_time+' '+message)
+from .wetlab_misc_utilities import timestamp_print
 
 def check_run_name_free_to_use(run_name):
     ## Function checks whether run_name is already used in the database.

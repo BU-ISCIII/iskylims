@@ -40,6 +40,7 @@ MISEQ_PROCESSED_RUN_FILE='miseq_processed_run_file'
 MISEQ_PROCESSED_RUN_FILEPATH=os.path.join(settings.MEDIA_ROOT,
     RUN_TEMP_DIRECTORY,MISEQ_PROCESSED_RUN_FILE)
 
+##file containing processed or cancelled runs
 PROCESSED_RUN_FILE='processed_run_file'
 PROCESSED_RUN_FILEPATH=os.path.join(settings.MEDIA_ROOT,
     RUN_TEMP_DIRECTORY,PROCESSED_RUN_FILE)
@@ -49,7 +50,10 @@ FAULTY_SAMPLESHEET_MISEQRUNS_FILE='faulty_samplesheet_miseq_runs'
 FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH=os.path.join(settings.MEDIA_ROOT,
     RUN_TEMP_DIRECTORY,FAULTY_SAMPLESHEET_MISEQRUNS_FILE)
 
-
+## file containing MiSeq runs whose samplesheets have not 'experiment name'
+SAMPLESHEET_NOEXPNAME_MISEQRUNS_FILE='no_exp_name_samplesheet_miseq_runs'
+SAMPLESHEET_NOEXPNAME_MISEQRUNS_FILEPATH=os.path.join(settings.MEDIA_ROOT,
+    RUN_TEMP_DIRECTORY,SAMPLESHEET_NOEXPNAME_MISEQRUNS_FILE)
 
 MIGRATION_DIRECTORY_FILES = 'wetlab/BaseSpaceMigrationFiles/'
 

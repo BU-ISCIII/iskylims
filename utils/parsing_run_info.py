@@ -11,10 +11,33 @@ from .interop_statistics import *
 
 from smb.SMBConnection import SMBConnection
 from iSkyLIMS_wetlab import wetlab_config
-
+from .wetlab_misc_utilities import open_samba_connection, timestamp_print
 from django.conf import settings
 
 
+### TBD
+'''
+def open_samba_connection():
+    ## needed for testing in cuadrix
+    ## to be commented-out when delivery (will use instead the function
+    ## located in utils/parsing_run_info.py)
+
+    timestamp_print('Starting the process for open_samba_connection() (cron.py- cuadrix testing)')
+
+    ###logger.info('user ID= '+wetlab_config.SAMBA_USER_ID+'. domain= '+wetlab_config.SAMBA_DOMAIN)
+    conn=SMBConnection(wetlab_config.SAMBA_USER_ID, wetlab_config.SAMBA_USER_PASSWORD,
+        wetlab_config.SAMBA_SHARED_FOLDER_NAME,wetlab_config.SAMBA_REMOTE_SERVER_NAME,
+        use_ntlm_v2=wetlab_config.SAMBA_NTLM_USED,domain=wetlab_config.SAMBA_DOMAIN)
+    if True != conn.connect(wetlab_config.SAMBA_IP_SERVER, int(wetlab_config.SAMBA_PORT_SERVER)):
+        logger=open_log('open_samba_connection_testing.log')
+        logger.error('Cannot set up SMB connection with '+wetlab_config.SAMBA_REMOTE_SERVER_NAME)
+        timestamp_print('Cannot set up SMB connection with '+wetlab_config.SAMBA_REMOTE_SERVER_NAME)
+
+    timestamp_print('Leaving open_samba_connection() (cron.py- cuadrix testing)')
+    return conn
+'''
+
+'''
 def open_samba_connection():
     ## open samba connection
     # There will be some mechanism to capture userID, password, client_machine_name, server_name and server_ip
@@ -29,11 +52,14 @@ def open_samba_connection():
     #conn.connect('192.168.1.3', 139)
     #conn=SMBConnection('bioinfocifs', 'bioinfocifs', 'NGS_Data_test', 'barbarroja', use_ntlm_v2=True)
     #conn.connect('10.15.60.54', 139)
-    '''
-    conn = SMBConnection(userid, password, client_machine_name, remote_machine_name, use_ntlm_v2 = True)
-    conn.connect(server_ip, 139)
-    '''
+
+
+    ###conn = SMBConnection(userid, password, client_machine_name, remote_machine_name, use_ntlm_v2 = True)
+    ###conn.connect(server_ip, 139)
     return conn
+'''
+### End TBD
+
 
 def get_size_dir (directory, conn, logger):
     count_file_size = 0
@@ -88,7 +114,7 @@ def get_run_disk_utilization (conn, run_Id_used, run_processing_id, logger):
 
 
 
-def save_miseq_run_info(run_info,run_parameter,    logger):
+def save_miseq_run_info(run_info,run_parameter,run_id,logger):
 ## Collecting information from MiSeq run to save it in our database
     running_data={}
     image_channel=[]
@@ -118,8 +144,12 @@ def save_miseq_run_info(run_info,run_parameter,    logger):
     running_data['Chemistry']=parameter_data_root.find('Chemistry').text
     running_data['RunStartDate']=parameter_data_root.find('RunStartDate').text
     running_data['AnalysisWorkflowType']=(parameter_data_root.find('Workflow')).find('Analysis').text
+    logger.debug('running_data information -intermediate!- only'+ str(running_data))
+
     for read in root.iter('RunInfoRead'):
+        logger.debug('read= '+str(read))
         for attribs, attribs_val in read.attrib.items():
+            logger.debug('attribs: '+str(attribs)+ '\nattribs_val: '+str(attribs_val))
             if '1'==attribs_val['Number'] and 'N'==attribs_val['IsIndexedRead']:
                 running_data['PlannedRead1Cycles']=attribs_val['NumCycles']
             elif '4'==attribs_val['Number'] and 'N'==attribs_val['IsIndexedRead']:
@@ -142,15 +172,53 @@ def save_miseq_run_info(run_info,run_parameter,    logger):
             else:
                 logger.error('Unexpected value to be stored. Field: '+key+ ' Value: '+val)
 
-    logger.debug('running_data information', running_data)
+    logger.debug('running_data information'+ str(running_data))
     ###########################################
     ## saving data into database
     ###########################################
-    ##TODO endTODO
+    logger.info ('Saving to database  the (MiSeq) run id %s', run_id)
+    running_parameters= RunningParameters (runName_id=RunProcess.objects.get(pk=run_id),
+                         RunID=running_data['RunID'],
+                         ExperimentName=running_data['ExperimentName'],
+                         RTAVersion=running_data['RTAVersion'],
+                         SystemSuiteVersion= running_data['SystemSuiteVersion'],
+                         LibraryID= running_data['LibraryID'],
+                         Chemistry= running_data['Chemistry'],
+                         RunStartDate= running_data['RunStartDate'],
+                         AnalysisWorkflowType= running_data['AnalysisWorkflowType'],
+                         RunManagementType= running_data['RunManagementType'],
+                         PlannedRead1Cycles= running_data['PlannedRead1Cycles'],
+                         PlannedRead2Cycles= running_data['PlannedRead2Cycles'],
+                         PlannedIndex1ReadCycles= running_data['PlannedIndex1ReadCycles'],
+                         PlannedIndex2ReadCycles= running_data['PlannedIndex2ReadCycles'],
+                         ApplicationVersion= running_data['ApplicationVersion'],
+                         NumTilesPerSwath= running_data['NumTilesPerSwath'],
+                         ImageChannel= running_data['ImageChannel'],
+                         Flowcell= running_data['Flowcell'],
+                         ImageDimensions= running_data['ImageDimensions'],
+                         FlowcellLayout= running_data['FlowcellLayout'])
 
+    ##running_parameters.save()TBDDebugEndDebug
+    ##############################################
+    ## updating the date fetched from the Date tag for run and project
+    ##############################################
+    date = p_run.find('Date').text
+    logger.debug('Found the de date that was recorded the Run %s', date)
+    run_date = datetime.datetime.strptime(date, '%y%m%d')
 
+    run_to_be_updated = RunProcess.objects.get(pk=run_id)
+    run_to_be_updated.run_date = run_date
+    #run_to_be_updated.save()  #TBDDebugEndDebug
+    logger.info('Updated the run date for the runProcess table ')
 
+    projects_to_update = Projects.objects.filter(runprocess_id__exact = run_id)
+    for project in projects_to_update :
+        project.project_run_date = run_date
+        #project.save() #TBDDebugEndDebug
+        logger.info('Updated the project date for the Project table ')
 
+    ##TODO dont forget to delete the files
+    ##
 
 
     return
