@@ -299,7 +299,7 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
             try:
                 with open (
                     wetlab_config.SAMPLESHEET_NOEXPNAME_MISEQRUNS_FILEPATH, 'a+') as noexpname_file:
-                    noexpname_file.write(run_index)
+                    noexpname_file.write(run_index+'\n')
                     logger.info('Run: '+run_index
                         + ' recorded in: '+wetlab_config.SAMPLESHEET_NOEXPNAME_MISEQRUNS_FILEPATH)
 
@@ -383,7 +383,7 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
                 +'. Error: '+str(samplesheet_check_error_dict['error']))
             try:
                 with open (wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH, 'a+') as faulty_samplesheet_file:
-                    faulty_samplesheet_file.write(samplesheet_check_error_dict['run_name'])
+                    faulty_samplesheet_file.write(samplesheet_check_error_dict['run_name']+'\n')
                 logger.debug('Run: '+samplesheet_check_error_dict['run_name']
                         + 'recorded in: ',wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH)
                 os.remove(run_info_dict['local_samplesheet_filepath'])
@@ -546,12 +546,12 @@ def test_parsing_xml_files():
     logger=open_log('test_parsing_xml_files.log')
     timestamp_print('Starting the process for test_parsing_xml_files()')
     logger.info('Starting the process for test_parsing_xml_files()')
-    assert 0==3, 'comentar para arrancar'
+    #assert 0==3, 'comentar para arrancar'
     #open connection for a rundir
     try:
         conn=open_samba_connection()
         ##Path of original files:
-        run_index='180731_M03352_0113_000000000-D4DJD' ##TBDDebugEndDebug
+        run_index='180713_M03352_0109_000000000-B29DK' ##TBDDebugEndDebug
         samba_runinfoxml_filepath = os.path.join(run_index,'RunInfo.xml')
         samba_runparametersxml_filepath = os.path.join(run_index,'runParameters.xml')
         ##Construction of local_filepaths:
@@ -593,7 +593,7 @@ def test_parsing_xml_files():
 
     #parse of files: check trazas
     ### TODO see 'id' next line EndTODO
-    save_miseq_run_info(local_runinfoxml_filepath,local_runparametersxml_filepath,999,logger)
+    save_miseq_run_info(local_runinfoxml_filepath,local_runparametersxml_filepath,248,logger)
     return
 
 
@@ -628,7 +628,7 @@ def miseq_check_recorded(): ## to be integrated in common flow...
             continue
 
         # c) ...BCL still in progress
-
+        #update file!!! :-)
 
     return
 

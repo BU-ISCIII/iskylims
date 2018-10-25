@@ -146,31 +146,38 @@ def save_miseq_run_info(run_info,run_parameter,run_id,logger):
     running_data['AnalysisWorkflowType']=(parameter_data_root.find('Workflow')).find('Analysis').text
     logger.debug('running_data information -intermediate!- only'+ str(running_data))
 
-    for read in root.iter('RunInfoRead'):
-        logger.debug('read= '+str(read))
-        for attribs, attribs_val in read.attrib.items():
-            logger.debug('attribs: '+str(attribs)+ '\nattribs_val: '+str(attribs_val))
-            if '1'==attribs_val['Number'] and 'N'==attribs_val['IsIndexedRead']:
-                running_data['PlannedRead1Cycles']=attribs_val['NumCycles']
-            elif '4'==attribs_val['Number'] and 'N'==attribs_val['IsIndexedRead']:
-                running_data['PlannedRead2Cycles']=attribs_val['NumCycles']
-            elif '2'==attribs_val['Number'] and 'Y'==attribs_val['IsIndexedRead']:
-                running_data['PlannedIndex1ReadCycles']=attribs_val['NumCycles']
-            elif '3'==attribs_val['Number'] and 'Y'==attribs_val['IsIndexedRead']:
-                running_data['PlannedIndex2ReadCycles']=attribs_val['NumCycles']
-            else:
-                logger.error('Unexpected construction of <RunInfoRead> in RunParameter.xml: '+str(read))
-    running_data['RunManagementType']=parameter_data_root.find('RunManagementType').text
-    p_parameter=parameter_data_root[1]
-    running_data['ApplicationVersion']=p_parameter.find('ApplicationVersion').text
-    running_data['NumTilesPerSwath']=p_parameter.find('NumTilesPerSwath').text
+    reads=parameter_data_root.find('Reads')
+    run_info_read_dict={}
+    for run_info_read in reads.iter('RunInfoRead'):
+        run_info_read_dict[run_info_read.attrib['Number']]={}
+        run_info_read_dict[run_info_read.attrib['Number']]['Cycles']=run_info_read.attrib['NumCycles']
+        run_info_read_dict[run_info_read.attrib['Number']]['IsIndexedRead']=run_info_read.attrib['IsIndexedRead']
+    logger.debug('run_info_read_dict: '+str(run_info_read_dict))
 
-    for key,val in running_data.items():
-        if None==val:
-            if 'ImageChannel'==key or 'ImageDimensions'==key or 'SystemSuiteVersion'==key or 'LibraryID'==key:
-                continue #expected behaviour
-            else:
-                logger.error('Unexpected value to be stored. Field: '+key+ ' Value: '+val)
+    if  ('N'==run_info_read_dict['1']['IsIndexedRead']
+            and 'Y'==run_info_read_dict['2']['IsIndexedRead']
+            and 'Y'==run_info_read_dict['3']['IsIndexedRead']
+            and 'N'==run_info_read_dict['4']['IsIndexedRead']):
+        ## expected structure:
+        running_data['PlannedRead1Cycles']=run_info_read_dict['1']['Cycles']
+        running_data['PlannedIndex1ReadCycles']=run_info_read_dict['2']['Cycles']
+        running_data['PlannedIndex2ReadCycles']=run_info_read_dict['3']['Cycles']
+        running_data['PlannedRead2Cycles']=run_info_read_dict['4']['Cycles']
+
+    else:
+        running_data['PlannedRead1Cycles']=0
+        running_data['PlannedIndex1ReadCycles']=0
+        running_data['PlannedIndex2ReadCycles']=0
+        running_data['PlannedRead2Cycles']=0
+        logger.error('==> Unexpected construction of <RunInfoRead> tags in RunParameter.xml: '
+                +string(run_info_read_dict)
+                +'\nFilling in Planned(Index)ReadCycles with 0')
+
+
+
+    running_data['RunManagementType']=parameter_data_root.find('RunManagementType').text
+    running_data['ApplicationVersion']=parameter_data_root.find('Setup').find('ApplicationVersion').text
+    running_data['NumTilesPerSwath']=parameter_data_root.find('Setup').find('NumTilesPerSwath').text
 
     logger.debug('running_data information'+ str(running_data))
     ###########################################
