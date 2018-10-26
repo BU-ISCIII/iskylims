@@ -12,9 +12,10 @@ from .utils.sample_convertion import get_experiment_library_name
 from .utils.samplesheet_checks import *
 from .utils.wetlab_misc_utilities import timestamp_print
 
-import os , sys, traceback
+import os , sys, traceback,errno
 import logging
 from logging.handlers import RotatingFileHandler
+from shutil import rmtree
 
 
 ### TBD ### moved to utils/wetlab_misc_utilities.py To be deleted here
@@ -87,6 +88,39 @@ def open_log(log_name):
 
 
 
+def fetch_samba_dir_filelist(logger,smb_root_path='/'):
+    ## By default, it returns the contents of the root ==> a list of the run directories (
+    ## + '.' and '..')
+    ## If no exceptions the function will leave a SMB connection opened so that the user can
+    ##interact with SMB server
+    timestamp_print('Starting process to fetch the run-directory list via SAMBA')
+    logger.info('Starting process to fetch the run-directory list via SAMBA'')
+    try:
+        conn=open_samba_connection()
+        logger.info('Succesfully SAMBA connection for determine_target_miseqruns')
+        file_list= conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME,smb_root_path)
+        file_list=file_list[0:7] ##TBDDebugEndDebug
+        file_list_filenames_debug=[x.filename for x in file_list] ##debug
+        logger.debug(
+            'number of existing directory runs of any kind= '+str(len(file_list)-2))## -2 ->"." and ".."
+        logger.debug('run dir list=\n'+'\n'.join(file_list_filenames_debug))
+
+    except: ##
+        logger.exception('==>Exception when trying to set up SMB (samba) connection')
+        timestamp_print('==>Exception when trying to set up SMB (samba) connection')
+        conn.close()
+        raise
+
+    timestamp_print('Leaving the process to fetch the run-directory list via SAMBA')
+    logger.info('Leaving the process to fetch the run-directory list via SAMBA')
+
+    return file_list
+
+
+
+
+
+
 def determine_target_miseqruns(logger):
     #Determination of potential new MISEQ runs in the repository, thus excluding :
     # a) runs already BCL-finished or cancelled;
@@ -101,21 +135,9 @@ def determine_target_miseqruns(logger):
     ##subset of runs of temp_run_folders with MiSeq runs retained (Same format)
     ## Reading wetlab_config.SAMBA_SHARED_FOLDER_NAME (NGS_Data in production):
     try:
-        conn=open_samba_connection()
-        logger.info('Succesfully SAMBA connection for determine_target_miseqruns')
-        file_list= conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME, '/')
-        file_list=file_list[0:7] ##TBDDebugEndDebug
-        file_list_filenames_debug=[x.filename for x in file_list] ##debug
-        logger.debug(
-            'number of existing directory runs of any kind= '+str(len(file_list)-2))## -2 ->"." and ".."
-        logger.debug('run dir list=\n'+'\n'.join(file_list_filenames_debug))
-
-    except: ##
-        logger.exception('==>Exception when trying to set up SMB (samba) connection')
-        timestamp_print('==>Exception when trying to set up SMB (samba) connection')
-        conn.close()
-        return target_run_folders##to avoid exception: we just log it
-
+        file_list=fetch_samba_dir_filelist(logger)
+    except:
+        raise
     ## total available miSeq runs format
     ## {'run_dir#1':{samplesheet_filename:'samplesheet_filename#1', sequencer_family:
     ##  'sequencer_family#1', sequencer_model:'sequencer_model#1'},
@@ -528,6 +550,9 @@ def getSampleSheetFromSequencer():
                 logger.info('No MiSeq runs to introduce in database. Time stop= '+time_stop)
                 print('No MiSeq runs to introduce in database. Time stop= '+time_stop)
 
+        timestamp_print('Straight check to see if the run state can be moved forward...)
+        logger.debug('**Straight check to see if the run state can be moved forward...)
+        miseq_check_recorded()
 
         timestamp_print('Leaving the process for getSampleSheetFromSequencer()')
         logger.info('Leaving the process for getSampleSheetFromSequencer()')
@@ -610,16 +635,142 @@ def miseq_check_recorded(): ## to be integrated in common flow...
     # c) ...BCL still in progress
 
     try:
-        ##runs with no 'experiment name' in samplesheet registered iterations
+        ##run dirs of runs in RECORDED state from a previous action
         recorded_miseqruns=managed_open_file(
             logger,wetlab_config.RECORDED_MISEQRUNS_FILEPATH,'r')
         logger.debug('Existing MISEQ run dirs (Recorded state):\n'+'\n'.join(
             recorded_miseqruns))
+
+        found_xml_files_per_run_dir={}
+        for run_dir in recorded_miseqruns:
+            found_xml_files_per_run_dir[run_dir]={'RTAComplete.txt':'not_found','RunInfo.xml':'not_found',
+                'runParameters.xml':'not_found'} ##initialization
+
+            run_file_list=fetch_samba_dir_filelist(logger,smb_root_path='/'+run_dir)
+            logger.debug('Run: '+run_dir+'\nFiles:\n')
+            try:
+                run_temp_dir=os.path.join(
+                    settings.MEDIA_ROOT, wetlab_config.RUN_TEMP_DIRECTORY,run_dir)
+                logger.debug('Creation of temp run dir: '+run_temp_dir)
+                os.mkdir(run_temp_dir)
+                os.chmod(run_temp_dir,'0o774')
+            except:
+                logger.error('Unexpected problem when creating temp run dir: '+run_temp_dir)
+                raise
+
+            for sfh in run_file_list:
+                if sfh.isDirectory:
+                    continue
+                else:
+                    run_dir_file=(sfh.filename)
+                    logger.debug('run_dir_file: '+run_dir_file)
+
+                    if 'RTAComplete.txt'==run_dir_file:
+                        found_xml_files_per_run_dir[run_dir]['RTAComplete.txt']='found'
+                        try:
+
+
+                        except:
+
+                    elif 'RunInfo.xml' == run_dir_file:
+                        found_xml_files_per_run_dir[run_dir]['RunInfo.xml']='found'
+                        try:
+
+
+                        except:
+                    elif 'runParameters.xml' == run_dir_file:
+                        found_xml_files_per_run_dir[run_dir]['runParameters.xml']='found'
+
+                    else: #expected behaviour.Nothing to do
+
+            logger.debug('found_xml_files_per_run_dir: \n'+'run: '+run_dir
+                +'\nfound_xml_files_per_run_dir= '+str(found_xml_files_per_run_dir))
+
+
+        if found_xml_files_per_run_dir
+            #   if not RunInfo o RunParameter ==> error ==> exception
+            #   fetch the 3 of them
+            #   if some of them 0 bytes ==> error => exception
+            #   parse
+            #   DB (+ state='samplesent') runs / projects
+            #   borrado ficheros temporales (rmtree(path))
+
+            #else
+            #   fetch "right" logs
+            #   parse cancelling
+            #   if ok:
+            #       DB state= CANCELLED
+            #   else:
+            #       still in progress...
+
+
+
+
     except:
         raise
 
+    finally: #always
+        conn.close()
+        logger.debug('SMB connection closed')
+
+
+
+
+
+            sequencer=re.search('_M0\d+_', run_dir) ## MiSeq run_dir_path
+
+            if None != sequencer: ##found a MiSeq run dir
+                #logger.debug('sequencer information= '+sequencer.group())
+                samplesheet_found=False
+                sequencer_info=sequencer.group() ##sequencer string
+                run_dir_file_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME, run_dir)
+                run_dir_file_list_filenames_debug=[x.filename for x in run_dir_file_list] ##debug
+                #logger.debug('\tlength of run dir file list= '+str(len(run_dir_file_list)))
+                #logger.debug('. file list=\n\t'+'\n\t'.join(run_dir_file_list_filenames_debug)+'\n')
+
+                for file in run_dir_file_list:
+                    ## SampleSheet usually present as "SampleSheet.csv".
+                    ## Once as "samplesheet.csv" ( 180725_M03352_0112_000000000-D38LV).
+                    if file.filename.lower() == "samplesheet.csv":
+                        samplesheet_found=True
+                        temp_run_folders[run_dir]={}
+                        temp_run_folders[run_dir]['samplesheet_filename']=file.filename
+                        temp_run_folders[run_dir]['sequencer_model']= sequencer_info[1:-1] # MiSeq
+                        logger.debug('temp_run_folders['+run_dir+']: '+str(temp_run_folders[run_dir]))
+                        break
+                    else:
+                        continue
+
+                if False==samplesheet_found:
+                    samplesheet_check_error_dict={'run_name':run_dir,'error':'Run without samplesheet'}
+                    logger.error('Run: '+samplesheet_check_error_dict['run_name']
+                        + '   '+'Error: '+samplesheet_check_error_dict['error'])
+
+                    try:
+                        registered_faulty_runs=managed_open_file(logger, wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH,'r')
+                        logger.debug('Existing faulty runs:\n'+'\n'.join(registered_faulty_runs))
+
+                        if samplesheet_check_error_dict['run_name'] not in registered_faulty_runs:
+                            with open (wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH, 'a+') as faulty_samplesheet_file:
+                                faulty_samplesheet_file.write(samplesheet_check_error_dict['run_name']+'\n')
+                                logger.error('Run: '+samplesheet_check_error_dict['run_name']
+                                + ' recorded in: '+wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH)
+
+                    except:
+                        raise
+
+            else:##No MiSeq
+                continue
+
+        else: #No directory
+            continue
+
+    conn.close()
+    logger.debug('SMB connection closed')
+
+
     for run_dir in recorded_miseqruns:
-        # a) check run BCL finished?
+        # a) check run BCL finished? == existence of RTAComplete.txt (add check size >0)
 
         if checkTODO:
             continue
