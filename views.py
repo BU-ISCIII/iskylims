@@ -564,12 +564,49 @@ def get_information_run(run_name_found,run_id):
         #data_source = bloxplot_graphic()
         #data_source = json_2_column_graphic('Comparison of bases with Q value bigger than 30', q_30_project_lane,q_30_media)
         info_dict ['boxplot'] = FusionCharts("boxandwhisker2d", "box1" , "400", "400", "box_chart1", "json", data_source).render()
+        
+        
+        series =[]
+        data = []
+        # get the demultiplexion information from the all lanes in run
+        #run_lanes_default_all = NextSeqStatsLaneSummary.objects.filter(runprocess_id__exact =run_id , defaultAll = 'all')
+        #for run_lane_default_all in  run_lanes_default_all :
+        #    q_30_default_all, mean_default_all, yield_mb_default_all = item.get_stats_info().split(';')
+        series = []
+        data = []
+        #import pdb; pdb.set_trace()
+        # get the demultiplexion information for projects included in the run
+        for project_demultiplexion in p_list :
+            percent_lane = []
+            #import pdb; pdb.set_trace()
+            for index_lane in range (1,5) :
+                lanes_for_percent_graphic = NextSeqStatsLaneSummary.objects.get(runprocess_id__exact = run_id, project_id = project_demultiplexion.id, lane = index_lane )
+                percent_lane.append(lanes_for_percent_graphic.percentLane)
+            #for project_for_percent_graphic in projects_for_percent_graphic :
+            data.append(percent_lane)    
+            series.append(project_demultiplexion.projectName)
         #import pdb; pdb.set_trace()
         
+            
+        # get the demultiplexion information for the default
         
+        percent_default_lane = []
+        for index_lane in range(1,5):
+            default_for_percent_graphic = NextSeqStatsLaneSummary.objects.get(runprocess_id__exact = run_id, defaultAll__exact = 'default', lane =index_lane)
+            percent_default_lane.append(default_for_percent_graphic.percentLane)
+        series.append('default')
+        data.append(percent_default_lane)
+        heading = 'Percentage of each project in the Run'
+        sub_caption = ''
+        theme = 'fint'
+        x_axis_name = 'Lanes'
+        y_axis_name = 'Percentage '
+        categories = ['Lane 1', 'Lane 2', 'Lane 3','Lane 4']
+        #import pdb; pdb.set_trace()
+        data_source = column_graphic_with_categories(heading, sub_caption, x_axis_name, y_axis_name, theme, categories, series, data)
+        info_dict ['run_project_comparation'] = FusionCharts("mscolumn3d", "column1" , "400", "400", "column_chart1", "json", data_source).render()
         
-        
-        
+        #import pdb; pdb.set_trace()
         
         
         

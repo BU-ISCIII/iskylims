@@ -519,7 +519,7 @@ def bloxplot_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme, cat
         "subcaption": sub_caption,
         "xAxisName": x_axis_name,
         "YAxisName": y_axis_name,
-        "numberPrefix": "%",
+        #"numberPrefix": "%",
         "legendBorderAlpha": "1",
         "legendShadow": "0",
         "legendPosition": "botom",
@@ -610,4 +610,110 @@ def bloxplot_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme, cat
         }
     ]
     '''
+    return data_source
+
+def column_graphic_with_categories(heading, sub_caption, x_axis_name, y_axis_name, theme, categories, series, data):
+    data_source = {}
+    # Chart data is passed to the `dataSource` parameter, as hashes, in the form of
+    # key-value pairs.
+    data_source['chart'] = {
+        "caption": heading,
+        "xAxisname": x_axis_name,
+        "yAxisName": y_axis_name,
+        "numberPrefix": "%",
+        "plotFillAlpha": "80",
+        "paletteColors": "#0075c2,#1aaf5d",
+        "baseFontColor": "#333333",
+        "baseFont": "Helvetica Neue,Arial",
+        "captionFontSize": "14",
+        "subcaptionFontSize": "14",
+        "subcaptionFontBold": "0",
+        "showBorder": "0",
+        "bgColor": "#ffffff",
+        "showShadow": "0",
+        "canvasBgColor": "#ffffff",
+        "canvasBorderAlpha": "0",
+        "divlineAlpha": "100",
+        "divlineColor": "#999999",
+        "divlineThickness": "1",
+        "divLineIsDashed": "1",
+        "divLineDashLen": "1",
+        "divLineGapLen": "1",
+        "usePlotGradientColor": "0",
+        "showplotborder": "0",
+        "valueFontColor": "#ffffff",
+        "placeValuesInside": "1",
+        "showHoverEffect": "1",
+        "rotateValues": "1",
+        "showXAxisLine": "1",
+        "xAxisLineThickness": "1",
+        "xAxisLineColor": "#999999",
+        "showAlternateHGridColor": "0",
+        "legendBgAlpha": "0",
+        "legendBorderAlpha": "0",
+        "legendShadow": "0",
+        "legendItemFontSize": "10",
+        "legendItemFontColor": "#666666",
+        "exportEnabled": "1"
+    }
+    category = {}
+    category_list = []
+    for item in categories :
+        
+        label_category = {}
+        label_category['label'] = item
+        category_list.append(label_category)
+    category['category'] = category_list
+    
+    data_source ['categories'] = [category]
+    '''
+    data_source["categories"] = [
+        {"category": [
+                { "label": "Lane 1"},
+                { "label": "Lane 2"},
+                { "label": "Lane 3"},
+                { "label": "Lane 4"}
+            ]
+        }
+    ]
+    '''
+    
+    dataset = []
+    
+    #for serie in series :
+    for serie in range(len(series)) :
+        dataset_dict ={}
+        dataset_dict['seriesname'] = series[serie]
+        #dataset_dict['lowerBoxColor'] = series[serie][1]
+        #dataset_dict['upperBoxColor'] = series[serie][2]
+        serie_data = []
+        for item in data[serie] :
+            value = {}
+            value['value']= item
+            serie_data.append(value)
+        dataset_dict['data'] = serie_data  
+        dataset.append(dataset_dict)
+    data_source['dataset'] = dataset
+    
+    '''
+    data_source ["dataset"] = [
+        {"seriesname": "Researcher Project",
+            "data": [
+                    {"value": q_30_project_lane[0] },
+                    {"value": q_30_project_lane[1] },
+                    {"value": q_30_project_lane[2] },
+                    {"value": q_30_project_lane[3] }
+            ]
+        },
+        {"seriesname": "Average for all Projects",
+            "data": [
+                    {"value": q_30_media_lane[0]},
+                    {"value": q_30_media_lane[1]},
+                    {"value": q_30_media_lane[2]},
+                    {"value": q_30_media_lane[3]}
+            ]
+        }
+    ]
+    '''
+
     return data_source

@@ -1,7 +1,7 @@
 {% extends 'iSkyLIMS_wetlab/base.html' %}
 {% load static %}
 {% block content %}
-    {% csrf_token %}
+{% csrf_token %}
 {% if display_one_run %}
  <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>
  <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>
@@ -80,21 +80,29 @@
               <div class="col-sm-12">
                 <div class="panel panel-default">
                     <div class="panel-heading"><h3>Run Quality vs all Runs </h3> </div>
-                        <div id="box_chart1"> </div>
-                    <!-- dumping JavaScript code here -->
-                    {{ display_one_run.boxplot |safe }}
-                
+                    <div class="panel-body">
+                        <p> Poner la calidad de la carrera</p>
+                    </div> <!--  end of panel body -->
                 </div> <!--  end of panel body -->
               </div> <!--  end of panel  -->
               </div> <!--  end of col-sm-6 -->
               
-              
-              
 
-              
-              
          </div> <!--  end of col-sm-3 -->
 
+    </div> <!--  end of row -->
+    
+     <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-8 ">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Graphic showing the run versus all runs on the same year</h3></div>
+                <div class="panel-body">
+                    <div id="box_chart1"> </div>
+                    <!-- dumping JavaScript code here -->
+                    {{ display_one_run.boxplot |safe }}
+                </div> <!--  end of panel body -->
+             </div> <!--  end of panel  -->
+           </div> <!--  end of col-sm-8 -->
     </div> <!--  end of row -->
 
      <div class="row row-space-2 margin-b-4">
@@ -210,6 +218,21 @@
            </div> <!--  end of col-sm-4 -->
       </div> <!--  end of row -->
       {% endif%}
+      
+            
+       <div class="row row-space-8 margin-b-1">
+         <div class="col-sm-8 ">
+            <div class="panel panel-default">
+                <div class="panel-heading">Percent of PF Cluster used for each project in the run.</div>
+                <div class="panel-body">
+                    <div id="column_chart1"> </div>
+                    <!-- dumping JavaScript code here -->
+                    {{ display_one_run.run_project_comparation |safe }}
+                </div> <!--  end of panel body -->
+             </div> <!--  end of panel  -->
+           </div> <!--  end of col-sm-8 -->
+       </div> <!--  end of row -->
+      
       {% if display_one_run.lane_summary %}
       <div class="row row-space-10 margin-b-1">
          <div class="col-sm-10 ">
@@ -281,6 +304,7 @@
            </div> <!--  end of col-sm-4 -->
       </div> <!--  end of row -->
       {% endif%}
+
 
       {% if display_one_run.default_lane_summary %}
       <div class="row row-space-10 margin-b-1">
@@ -420,7 +444,7 @@
      {% endif%}
      {% if display_one_run.unknow_pie3d %}
      <div class="row row-space-4 margin-b-1">
-         <div class="col-sm-7 col-sm-offset-1 ">
+         <div class="col-sm-7 ">
             <div class="panel panel-default">
                 <div class="panel-heading"><h3>Chart for the Top Unknow Barcodes in the Run.</h3></div>
                 <div class="panel-body">
@@ -431,14 +455,9 @@
 
               </div> <!--  end of panel body -->
              </div> <!--  end of panel  -->
-           </div> <!--  end of col-sm-8 -->
-      </div> <!--  end of row -->
+           </div> <!--  end of col-sm-7 -->
 
-     {% endif%}
-     
-     {% if display_one_run.match_unknows %}
-          <div class="row row-space-4 margin-b-1">
-         <div class="col-sm-7 col-sm-offset-1 ">
+         <div class="col-sm-5 ">
             <div class="panel panel-default">
                 <div class="panel-heading"><h3>Matching the unknowbarcodes against the indexes library.</h3></div>
                 <div class="panel-body">
@@ -463,10 +482,6 @@
            </div> <!--  end of col-sm-8 -->
       </div> <!--  end of row -->
 
-     
-     
-     
-     
      {% endif %}
      
      {% if display_one_run.runSummary %}
