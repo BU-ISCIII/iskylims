@@ -178,8 +178,8 @@ class RunningParameters (models.Model):
     RunID= models.CharField(max_length=255)
     ExperimentName= models.CharField(max_length=255)
     RTAVersion= models.CharField(max_length=255)
-    SystemSuiteVersion= models.CharField(max_length=255)
-    LibraryID= models.CharField(max_length=255)
+    SystemSuiteVersion= models.CharField(max_length=255, null=True)
+    LibraryID= models.CharField(max_length=255, null=True)
     Chemistry= models.CharField(max_length=255)
     RunStartDate= models.CharField(max_length=255)
     AnalysisWorkflowType= models.CharField(max_length=255)
@@ -190,9 +190,9 @@ class RunningParameters (models.Model):
     PlannedIndex2ReadCycles= models.CharField(max_length=255)
     ApplicationVersion= models.CharField(max_length=255)
     NumTilesPerSwath= models.CharField(max_length=255)
-    ImageChannel= models.CharField(max_length=255)
+    ImageChannel= models.CharField(max_length=255,null=True)
     Flowcell= models.CharField(max_length=255)
-    ImageDimensions= models.CharField(max_length=255)
+    ImageDimensions= models.CharField(max_length=255,null=True)
     FlowcellLayout= models.CharField(max_length=255)
 
     def __str__(self):

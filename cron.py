@@ -53,13 +53,13 @@ def managed_open_file(logger, file_path,mode='r'):
         try:
             with open(file_path,'x') as fh:
                 os.chmod(file_path,0o664)
-                logger.debug('Creation of empty '+file_path)
+                logger.info('Creation of empty '+file_path)
                 timestamp_print('Creation of empty '+file_path)
         except:
-            logger.exception('Exception when creating empty '+file_path)
+            logger.error('Exception when creating empty '+file_path)
             raise
     except:
-        logger.exception('Exception when accessing file: '+file_path)
+        logger.error('Exception when accessing file: '+file_path)
         raise
 
     return file_text_lines_list
@@ -88,17 +88,15 @@ def open_log(log_name):
 
 
 
-def fetch_samba_dir_filelist(logger,smb_root_path='/'):
+def fetch_samba_dir_filelist(logger,conn, smb_root_path='/'):
     ## By default, it returns the contents of the root ==> a list of the run directories (
     ## + '.' and '..')
     ## If no exceptions the function will leave a SMB connection opened so that the user can
     ##interact with SMB server
     timestamp_print('Starting process to fetch the run-directory list via SAMBA')
-    logger.info('Starting process to fetch the run-directory list via SAMBA'')
+    logger.info('Starting process to fetch the run-directory list via SAMBA')
     file_list=[]
     try:
-        conn=open_samba_connection()
-        logger.info('Succesfully SAMBA connection for determine_target_miseqruns')
         file_list= conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME,smb_root_path)
         file_list=file_list[0:7] ##TBDDebugEndDebug
         file_list_filenames_debug=[x.filename for x in file_list] ##debug
@@ -107,8 +105,8 @@ def fetch_samba_dir_filelist(logger,smb_root_path='/'):
         logger.debug('run dir list=\n'+'\n'.join(file_list_filenames_debug))
 
     except: ##
-        logger.exception('==>Exception when trying to set up SMB (samba) connection')
-        timestamp_print('==>Exception when trying to set up SMB (samba) connection')
+        logger.exception('==>Exception when accessing SMB with listPath')
+        timestamp_print('==>Exception when accessing SMB with listPath')
         conn.close()
         raise
 
@@ -137,9 +135,18 @@ def determine_target_miseqruns(logger):
     ##subset of runs of temp_run_folders with MiSeq runs retained (Same format)
     ## Reading wetlab_config.SAMBA_SHARED_FOLDER_NAME (NGS_Data in production):
     try:
-        file_list=fetch_samba_dir_filelist(logger)
+        conn=open_samba_connection()
+        logger.info('Succesfully SAMBA connection for determine_target_miseqruns')
+    except:
+        logger.exception('==>Exception when trying to set up SMB (samba) connection')
+        timestamp_print('==>Exception when trying to set up SMB (samba) connection')
+        conn.close()
+        raise
+    try:
+        file_list=fetch_samba_dir_filelist(logger,conn)
     except:
         raise
+
     ## total available miSeq runs format
     ## {'run_dir#1':{samplesheet_filename:'samplesheet_filename#1', sequencer_family:
     ##  'sequencer_family#1', sequencer_model:'sequencer_model#1'},
@@ -265,6 +272,8 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
     transfered_samplesheet_filepaths=[] ##filepaths of transfered (locally copied) samplesheets. Used to clean up in case things go wrong
     try:
         conn=open_samba_connection()
+        logger.info('Succesfully SAMBA connection for fetch_remote_samplesheets')
+
         for run_index, run_info_dict in run_dir_dict.items():
             ##Storage of the original samplesheet:
             samba_samplesheet_filepath = os.path.join(run_index,run_info_dict['samplesheet_filename'])
@@ -553,8 +562,8 @@ def getSampleSheetFromSequencer():
                 logger.info('No MiSeq runs to introduce in database. Time stop= '+time_stop)
                 print('No MiSeq runs to introduce in database. Time stop= '+time_stop)
 
-        timestamp_print('Straight check to see if the run state can be moved forward...)
-        logger.debug('**Straight check to see if the run state can be moved forward...)
+        timestamp_print('Straight check to see if the run state can be moved forward...')
+        logger.debug('**Straight check to see if the run state can be moved forward...')
         miseq_check_recorded()
 
         timestamp_print('Leaving the process for getSampleSheetFromSequencer()')
@@ -630,13 +639,30 @@ def test_parsing_xml_files():
 def miseq_check_recorded():
     timestamp_print('Starting the process for miseq_check_recorded')
     logger=open_log('miseq_check_recorded')
+    logger.info('Starting the process for miseq_check_recorded()')
 
     #Build list of runs in RECORDED state
     # a) check if run BCL finished ==> pass to SAMPLE SENT state
     # b) check if run CANCELLED ==> pass to CANCELLED
     # c) ...otherwise BCL is just still in progress
 
+
     try:
+        ##run dirs of runs in RECORDED state from a previous action
+        recorded_miseqruns=managed_open_file(
+            logger,wetlab_config.RECORDED_MISEQRUNS_FILEPATH,'r')
+        logger.debug('Existing MISEQ run dirs (Recorded state):\n'+'\n'.join(
+            recorded_miseqruns))
+    except:
+        raise
+
+
+
+    try:
+        conn=open_samba_connection()
+        logger.info('Succesfully SAMBA connection for miseq_check_recorded')
+        run_temp_dir='no_temp_dir'
+
         ##run dirs of runs in RECORDED state from a previous action
         recorded_miseqruns=managed_open_file(
             logger,wetlab_config.RECORDED_MISEQRUNS_FILEPATH,'r')
@@ -653,13 +679,20 @@ def miseq_check_recorded():
                     'runParameters.xml':'not_found'} ##initialization
 
                 run_file_list=conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME,run_dir)
-                logger.debug('Run: '+run_dir+'\nFiles:\n')
+                logger.debug('Run: '+run_dir)
+                run_file_list_debug=[x.filename for x in run_file_list] ##debug
+                logger.debug('. file list=\n\t'+'\n\t'.join(run_file_list_debug)+'\n')
+                logger.debug('\tlength of run file list= '+str(len(run_file_list)))
+
                 try:
                     run_temp_dir=os.path.join(
                         settings.MEDIA_ROOT, wetlab_config.RUN_TEMP_DIRECTORY,run_dir)
                     logger.debug('Creation of temp run dir: '+run_temp_dir)
-                    os.mkdir(run_temp_dir)
-                    os.chmod(run_temp_dir,'0o774')
+                    if os.path.exists(run_temp_dir):
+                        logger.warning(run_temp_dir+' already exists...')
+                    else:
+                        os.mkdir(run_temp_dir)
+                        os.chmod(run_temp_dir,0o774)
                 except:
                     logger.error('Unexpected problem when creating temp run dir: '+run_temp_dir)
                     raise
@@ -703,7 +736,7 @@ def miseq_check_recorded():
                                         conn.retrieveFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME,
                                             samba_filepath,fh)
                                     logger.debug('run: '+run_dir+' . File stored locally: '
-                                        +local_rtacomplete_filepath)
+                                        +local_runinfoxml_filepath)
                                 else:##should never happen...
                                     raise ValueError('==> Unexpected behaviour: RunInfo.xml empty for run: '
                                         +run_dir)
@@ -719,7 +752,7 @@ def miseq_check_recorded():
                                         conn.retrieveFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME,
                                             samba_filepath,fh)
                                     logger.debug('run: '+run_dir+' . File stored locally: '
-                                        +local_rtacomplete_filepath)
+                                        +local_runparametersxml_filepath)
                                 else:##should never happen...
                                     raise ValueError(
                                         '==>Unexpected behaviour: runParameters.xml empty for run: '
@@ -730,7 +763,7 @@ def miseq_check_recorded():
                                 pass
                         except:
                             logger.error('Exception when retrieving MiSeq '
-                                +local_filepath+' to local storage')
+                                +samba_filepath+' to local storage')
                             raise
 
     except:
@@ -739,27 +772,18 @@ def miseq_check_recorded():
     finally: #always
         conn.close()
         logger.debug('SMB connection closed')
-        if os.path.exists(run_temp_dir):
-            try:
-                rmtree(run_temp_dir)
-                logger.info('Deleted temporal folder: '+run_temp_dir)
-            except:
-                debug.error('Exception happened trying to delete '+run_temp_dir)
-                raise
-        else:
-            logger.debug('There are no temporal run files to delete. Let´s continue...')
 
     if len(recorded_miseqruns)>=1:
-        logger.debug('found_xml_files_per_run_dir: \n'+'run: '+run_dir
+        logger.debug('found_xml_files_per_run_dir. '+'run: '+run_dir
             +'\nfound_xml_files_per_run_dir= '+str(found_xml_files_per_run_dir))
 
         ##Run state analysis (for every available RECORDED run)
         for run_dir,file_dict in found_xml_files_per_run_dir.items():
 
             ## case 1.- BCL sequencing is over
-            if 'found'==found_xml_files_per_run_dir[run_dir]['RTAComplete.txt']:
+            if 'found'==found_xml_files_per_run_dir[run_dir]['RTAComplete.txt'][0]:
                 #   Parse xml files and update database (+ state='samplesent') runs / projects
-                exp_run_name=fetch_exp_name_from_run_info(local_runinfoxml_filepath)
+                exp_run_name=fetch_exp_name_from_run_info(local_runparametersxml_filepath)
 
                 if ''==exp_run_name:
                    logger.error('NO experiment name is defined for run: '+run_dir)
@@ -768,10 +792,24 @@ def miseq_check_recorded():
 
                 if RunProcess.objects.filter(
                     runName__icontains = exp_run_name, runState__exact='Recorded').exists():
-                    exp_name_id=str(RunProcess.objects.get(runName__exact=exp_name).id)
+                    exp_name_id=str(RunProcess.objects.get(runName__exact=exp_run_name).id)
 
 
-                    ## a) Update of RECORDED_MISEQRUNS_FILE
+                    ## a) Update RunParameters table
+                    save_miseq_run_info(local_runinfoxml_filepath,local_runparametersxml_filepath,
+                        exp_name_id,logger)
+
+                    ## b) Update RunProcess and Projects
+                    update_run_state(exp_name_id, 'Sample Sent', logger)
+                    update_project_state(exp_name_id, 'Sample Sent', logger)
+                    # add the completion date in the run
+                    logger.info('Saving completion date for %s' , exp_run_name)
+                    run_update_date = RunProcess.objects.get(pk=exp_name_id)
+                    run_update_date.run_finish_date = run_completion_date
+                    logger.debug('Completion date: '+str(run_update_date.run_finish_date))
+                    run_update_date.save()
+
+                    ## c) Update of RECORDED_MISEQRUNS_FILE
                     try:
                         recorded_state_run_dirs=managed_open_file(
                             logger, wetlab_config.RECORDED_MISEQRUNS_FILEPATH,'r')
@@ -782,6 +820,7 @@ def miseq_check_recorded():
 
                         logger.debug('Writing updated RECORDED runs in '
                             +wetlab_config.RECORDED_MISEQRUNS_FILEPATH+':\n')
+                        logger.debug('Updated RECORDED runs:\n'+'\n'.join(recorded_state_run_dirs_updated))
                         with open(wetlab_config.RECORDED_MISEQRUNS_FILEPATH,'w') as fh:
                             for run in recorded_state_run_dirs_updated:
                                 fh.write(run+'\n')
@@ -791,34 +830,21 @@ def miseq_check_recorded():
                             'Exception happened trying to update '+wetlab_config.RECORDED_MISEQRUNS_FILEPATH)
                         raise
 
-                    ## b) Delete temporary run folder and files within
+                    '''
+                    ## TODO always when exiting. Delete this...?
+                    ## d) Delete temporary run folder and files within
                     finally: #always
                         try:
-                            rmtree(run_temp_dir)
+                            #rmtree(run_temp_dir) #TBDDebugEndTBDDebug
+                            logger.info('Deleted temp dir: '+run_temp_dir)
                         except:
                             debug.error('Exception happened trying to delete '+run_temp_dir)
                             raise
-
-                    ## c) Update RunParameters table
-                    save_miseq_run_info(local_runinfoxml_filepath,local_runparametersxml_filepath,
-                        exp_name_id,logger)
-
-                    ## d) Update RunProcess and Projects
-                    #TODO
-                    '''
-                    update_run_state(exp_name_id, 'Sample Sent', logger)
-                    update_project_state(exp_name_id, 'Sample Sent', logger)
-                        # add the completion date in the run
-                    logger.info('Saving completion date for %s' , exp_name)
-
-
-                    run_update_date = RunProcess.objects.get(pk=exp_name_id)
-                    run_update_date.run_finish_date = run_completion_date
-                    run_update_date.save()
+                    ##EndTODO
                     '''
 
                 else: #No Run with such runName and state=recorded
-                    logger.warning ('Run: '+run_dir+ 'experiment name: '+exp_run_name
+                    logger.warning ('Run: '+run_dir+ ' .experiment name: '+exp_run_name
                         +' is not in RECORDED state...')
                     continue
 
@@ -826,15 +852,35 @@ def miseq_check_recorded():
 
 
             else:
+                logger.debug ('Run not finished. Either is cancelled or still in process.TO DO...')
+                #TODO
                 #   fetch "right" logs
                 #   parse cancelling
                 #   if ok:
                 #       DB state= CANCELLED
                 #   else:
                 #       still in progress...
+                # EndTODO
 
     else:
         pass
+
+    ##Deleting tempory files
+    logger.info('Deleting temporary directories and files...')
+    for run_dir in recorded_miseqruns:
+        run_temp_dir=os.path.join(
+                        settings.MEDIA_ROOT, wetlab_config.RUN_TEMP_DIRECTORY,run_dir)
+        logger.debug('run_temp_dir= '+run_temp_dir)
+
+        if os.path.exists(run_temp_dir):
+            try:
+                #rmtree(run_temp_dir) ##TBDDebugEndTBDDebug
+                logger.info('Deleted temporal folder: '+run_temp_dir)
+            except:
+                debug.error('Exception happened trying to delete '+run_temp_dir)
+                raise
+        else:
+            logger.error('==> temp dir: '+run_temp_dir+ ' does not exist...')
 
     timestamp_print('Leaving the proccess to check state of MiSEQ recorded runs')
     logger.info('Leaving the proccess to check state of MiSEQ recorded runs')
@@ -842,7 +888,7 @@ def miseq_check_recorded():
 
 
 
-
+#TODO
 '''
 def check_recorded_folder ():
     time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')

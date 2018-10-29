@@ -179,7 +179,7 @@ def save_miseq_run_info(run_info,run_parameter,run_id,logger):
     running_data['ApplicationVersion']=parameter_data_root.find('Setup').find('ApplicationVersion').text
     running_data['NumTilesPerSwath']=parameter_data_root.find('Setup').find('NumTilesPerSwath').text
 
-    logger.debug('running_data information'+ str(running_data))
+    logger.debug('running_data information for table RunParameters'+ str(running_data))
     ###########################################
     ## saving data into database
     ###########################################
@@ -205,28 +205,28 @@ def save_miseq_run_info(run_info,run_parameter,run_id,logger):
                          ImageDimensions= running_data['ImageDimensions'],
                          FlowcellLayout= running_data['FlowcellLayout'])
 
-    ##running_parameters.save()TBDDebugEndDebug
+    running_parameters.save()
     ##############################################
     ## updating the date fetched from the Date tag for run and project
     ##############################################
     date = p_run.find('Date').text
-    logger.debug('Found the de date that was recorded the Run %s', date)
+    logger.debug('Found the date that was recorded the Run %s', date)
     run_date = datetime.datetime.strptime(date, '%y%m%d')
 
     run_to_be_updated = RunProcess.objects.get(pk=run_id)
     run_to_be_updated.run_date = run_date
-    #run_to_be_updated.save()  #TBDDebugEndDebug
+    logger.debug('run_to_be_updated: '+run_to_be_updated.runName)
+    logger.debug('run_date: '+str(run_to_be_updated.run_date))
+    run_to_be_updated.save()
     logger.info('Updated the run date for the runProcess table ')
 
     projects_to_update = Projects.objects.filter(runprocess_id__exact = run_id)
     for project in projects_to_update :
         project.project_run_date = run_date
-        #project.save() #TBDDebugEndDebug
+        project.save()
+        logger.debug('project_to_be_updated: '+project.projectName)
+        logger.debug('project_run_date: '+str(project.project_run_date))
         logger.info('Updated the project date for the Project table ')
-
-    ##TODO dont forget to delete the files
-    ##
-
 
     return
 
