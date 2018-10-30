@@ -138,7 +138,7 @@ def determine_target_miseqruns(logger):
         conn=open_samba_connection()
         logger.info('Succesfully SAMBA connection for determine_target_miseqruns')
     except:
-        logger.exception('==>Exception when trying to set up SMB (samba) connection')
+        logger.error('==>Exception when trying to set up SMB (samba) connection')
         timestamp_print('==>Exception when trying to set up SMB (samba) connection')
         conn.close()
         raise
@@ -611,14 +611,14 @@ def test_parsing_xml_files():
                     +local_runparametersxml_filepath)
 
         except:
-            logger.exception('Problem when retrieving RunInfo.xml/RunParameters.xml from:'
+            logger.error('Exception when retrieving RunInfo.xml/RunParameters.xml from:'
                 + wetlab_config.SAMBA_SHARED_FOLDER_NAME+samba_runinfoxml_filepath+'\t'
                 + wetlab_config.SAMBA_SHARED_FOLDER_NAME+samba_runparametersxml_filepath
                 + ' to local storage')
             raise
 
     except:
-        logger.exception('Problem when opening samba connection to retrieve samplesheets')
+        logger.error('Exception when opening samba connection to retrieve samplesheets')
         for transfered_file in transfered_samplesheet_filepaths:
             os.remove(transfered_file)
             logger.info('Deleted from local storage: ',transfered_file)
@@ -852,7 +852,41 @@ def miseq_check_recorded():
 
 
             else:
-                logger.debug ('Run not finished. Either is cancelled or still in process.TO DO...')
+                logger.debug ('Run not finished. Either is cancelled or still in process....')
+                try:
+                    conn=open_samba_connection()
+                    logger.info('Succesfully SAMBA connection for miseq_check_recorded')
+                    run_dir_file_list=fetch_samba_dir_filelist(logger,conn,smb_root_path=run_dir)
+                    logs_dir=[]
+                    cancelled_run=False
+                    logs_dir= [dir for dir in run_dir_file_list if (
+                            dir.isDirectory and dir.filename='Logs')]
+                    if len(logs_dir)==0:
+                        logger.info('Run '+run_dir+ ' does not have a Logs directory...')
+                        cancelled_run=True
+                    else:
+                        smb_path=os.path.join(run_dir,'Logs')
+                        run_dir_file_list=fetch_samba_dir_filelist(logger,conn,smb_root_path=smb_path)
+                        last_cycle_log=False
+                        log_filenames=[file.filename for file in run_dir_file_list if (
+                            file.filename.startswith(run_dir+'_Cycle') and file.filename.endswith('.log'))]
+                        logger.debug('log_filenames: '+str(log_filenames))
+                        for j in log_filenames:
+                            ''' TODO
+                            re.match('_Log.',j)
+                            first_figure=len(run_dir+'_Cycle')
+                            cycle_number
+                            '''
+
+                except:
+                    logger.error('Exception when fetching run logs from SMB (samba) server')
+                    timestamp_print('Exception when fetching run logs from SMB (samba) server')
+                    raise
+
+                finally: #always
+                    conn.close()
+                    logger.debug('SMB connection closed')
+
                 #TODO
                 #   fetch "right" logs
                 #   parse cancelling

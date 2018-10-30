@@ -1230,6 +1230,7 @@ def find_not_completed_run (logger):
 
     processed_run={}
     for state in working_list:
+        logger.debug('find_not_completed_run / working_list= '+str(working_list)) #TBDDebugEndDebug
         logger.info ('Start processing the run found for state %s', state)
         if state == 'Sample Sent':
             logger.debug ('found sample sent in state ')
