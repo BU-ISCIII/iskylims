@@ -860,7 +860,7 @@ def miseq_check_recorded():
                     logs_dir=[]
                     cancelled_run=False
                     logs_dir= [dir for dir in run_dir_file_list if (
-                            dir.isDirectory and dir.filename='Logs')]
+                            dir.isDirectory and dir.filename=='Logs')]
                     if len(logs_dir)==0:
                         logger.info('Run '+run_dir+ ' does not have a Logs directory...')
                         cancelled_run=True

@@ -566,7 +566,10 @@ def parsing_statistics_xml(demux_file, conversion_file, logger):
         # look for One mismatch barcode
 
         if p_temp[sample_all_index].find('OneMismatchBarcodeCount') ==None:
-             for  fill in range(4):
+             #TBD
+             #for  fill in range(4):
+             for  fill in range(1):
+             #EndTBD
                 one_mismatch_count.append('NaN')
         else:
             for c in p_temp[sample_all_index].iter('OneMismatchBarcodeCount'):
@@ -604,7 +607,10 @@ def parsing_statistics_xml(demux_file, conversion_file, logger):
         list_pf_yield_q30=[]
         list_pf_qualityscore=[]
 
-        for l_index in range(4):
+        #TBD
+        #for l_index in range(4):
+        for l_index in range(1):
+        #ENdTBD
             raw_yield_value = 0
             raw_yield_q30_value = 0
             raw_quality_value = 0
@@ -719,7 +725,10 @@ def process_xml_stats(stats_projects, run_id, logger):
         if project == 'TopUnknownBarcodes':
             continue
         flow_raw_cluster, flow_pf_cluster, flow_yield_mb = 0, 0, 0
-        for fl_item in range(4):
+        #TBD
+        #for fl_item in range(4):
+        for fl_item in range(0):
+        #EndTBD
              # make the calculation for Flowcell
 
             flow_raw_cluster +=int(stats_projects[project]['BarcodeCount'][fl_item])
@@ -758,7 +767,10 @@ def process_xml_stats(stats_projects, run_id, logger):
             continue
         logger.info('processing lane stats for %s', project)
 
-        for i in range (4):
+        #TBD
+        #for i in range (4):
+        for i in range (0):
+        #EndTBD
             # get the lane information
             lane_number=str(i + 1)
             pf_cluster_int=(int(stats_projects[project]['PerfectBarcodeCount'][i]))
@@ -800,7 +812,10 @@ def process_xml_stats(stats_projects, run_id, logger):
     logger.info ('processing the TopUnknownBarcodes')
     for project in stats_projects:
         if project == 'TopUnknownBarcodes':
-            for un_lane in range(4) :
+            #TBD
+            #for un_lane in range(4) :
+            for un_lane in range(0) :
+            #EndTBD
                 logger.info('Processing lane %s for TopUnknownBarcodes', un_lane)
                 count_top=0
                 lane_number=str(un_lane + 1)
@@ -878,7 +893,10 @@ def parsing_sample_project_xml(demux_file, conversion_file, logger):
             pf_yield_q30_value = 0
             pf_quality_value = 0
 
-            for l_index in range(4):
+            #TBD
+            #for l_index in range(4):
+            for l_index in range(0):
+            #EndTBD
                 tiles_index = len(p_temp[s_index][0][l_index].findall ('Tile'))
                 for t_index in range(tiles_index):
                          # get the yield value for RAW and for read 1 and 2
@@ -1028,7 +1046,10 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
     conversion_file=os.path.join(local_dir_samba,'ConversionStats.xml')
     run_info_file=os.path.join(local_dir_samba, 'RunInfo.xml')
     ## Prepared for possible new machines.
-    machine = "NextSeq"
+    ##TBD
+    #machine = "NextSeq"
+    machine = "MiSeq"
+    #EndTBD
 
     logger.debug('Executing process_run_in_bcl2F_q_executed_state method')
 
@@ -1086,12 +1107,33 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
             logger.debug('deleting RunInfo, ConversionStats and DemultiplexingStats file  for RunID %s' , run_Id_used)
             continue
         logger.info('Fetched the RunInfo.xml file')
+
         # copy all binary files in interop folder to local  documents/wetlab/tmp/processing/interop
         interop_local_dir_samba= os.path.join(local_dir_samba, 'InterOp')
         remote_interop_dir=os.path.join('/',run_Id_used,'InterOp')
         try:
             file_list = conn.listPath( share_folder_name, remote_interop_dir)
             logger.info('InterOp folder exists on the RunID %s', run_Id_used)
+            #TBD
+            #TODO if case MiSEQ  EndTODO
+            # copy runParameters.xml  file to interop folder. Requested by interop package:
+            # ../site-packages/interop/py_interop_run_metrics.py, line 391 in read :
+            # return _py_interop_run_metrics.run_metrics_read(self, *args)
+            # "interop.py_interop_comm.file_not_found_exception: RunParameters.xml required
+            # for legacy run"
+            run_parameters_file=os.path.join(local_dir_samba,'runParameters.xml')
+            try:
+                with open(run_parameters_file ,'wb') as runparam_fp :
+                    samba_conversion_file=os.path.join('/', run_Id_used,'runParameters.xml')
+                    conn.retrieveFile(share_folder_name, samba_conversion_file, runparam_fp)
+                logger.info('Fetched the runParameters.xml file. Written as: '
+                    +str(run_parameters_file))
+            except:
+                logger.error('Unable to fetch the runParameters.xml file for RunID %s', run_Id_used)
+                os.remove(run_parameters_file)
+                logger.debug('Deleting runParameters file  for RunID %s' , run_Id_used)
+            #EndTBD
+
         except:
             logger.error('ERROR:: InterOP folder does not exist on RunID %s', run_Id_used)
             os.remove(run_info_file)
@@ -1153,10 +1195,26 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
                 # processing information for the interop files
                 if(machine == "NextSeq"):
                     number_of_lanes = 4
+                #TBD
+                elif machine== 'MiSeq':
+                    number_of_lanes = 1
+
+                logger.debug('Machine: '+machine+'. Nº of lanes= '+str(number_of_lanes))
+                #EndTBD
 
                 process_binStats(local_dir_samba, run_processing_id, logger,number_of_lanes)
                 # Create graphics
                 graphic_dir=os.path.join(settings.MEDIA_ROOT,wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING)
+                #TODO: if case MiSEQ
+                #File "/srv/iSkyLIMS/iSkyLIMS_wetlab/utils/interop_statistics.py", line 190,
+                #in create_graphics
+                #os.mkdir(run_graphic_dir)
+                #FileNotFoundError: [Errno 2] No such file or directory:
+                # /srv/iSkyLIMS/documents/wetlab/images_plot/<run dir name>
+
+
+
+                #EndTODO
                 create_graphics(graphic_dir, run_processing_id, run_Id_used, logger)
 
                 processed_run.append(run_Id_used)

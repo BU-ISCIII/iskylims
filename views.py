@@ -525,7 +525,10 @@ def get_information_run(run_name_found,run_id):
         for read_number in range (1, num_of_reads +1) :
         #for read_number in range (1, 5):
             read_summary_values=[]
-            for lane_number in range(1, 5):
+            #TBD
+            #for lane_number in range(1, 5):
+            for lane_number in range(1, 2):
+            #EndTBD
                 read_lane_id= NextSeqStatsBinRunRead.objects.filter(runprocess_id__exact =run_id, read__exact = read_number, lane__exact = lane_number)
                 lane_values=read_lane_id[0].get_bin_run_read().split(';')
                 read_summary_values.append(lane_values)
