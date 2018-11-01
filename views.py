@@ -478,7 +478,6 @@ def get_information_run(run_name_found,run_id):
 
     p_list= Projects.objects.filter(runprocess_id=run_id)
     if p_list !='':
-        #import pdb; pdb.set_trace()
         p_data_list=[]
         p_library_kit_list = []
         for p in range (len(p_list)):
@@ -490,32 +489,30 @@ def get_information_run(run_name_found,run_id):
         info_dict['projects']=p_data_list
         info_dict['library_kit'] = p_library_kit_list
         info_dict['run_id'] = run_id
-    #import pdb; pdb.set_trace()
 
     ## get the stats information if run is completed
     if run_state == 'Completed':
         # prepare the data for q-means
         
-        # fetch percent of Q>30 and mean_q for all projects per lane to create the median
-        # to be compared with the percent of this project
-        #q_30_media, mean_q_media = [] , []
-        #q_30_media_in_float, mean_q_media_in_float = [] , []
-        
+        # fetch Q>30 , mean_q and yield mb for all projects per lane to create the boxplot
+                
         run_lane_summary = NextSeqStatsLaneSummary.objects.filter(runprocess_id__exact =run_id ).exclude(defaultAll__isnull = False)
         q_30_value_list, mean_value_list = [] , []
         q_30_run_value , mean_run_value = [] , []
         #q_30_all_value , mean_all_value = [] , []
-        q_30_run_value_float , mean_run_value_float = [] , []
-        q_30_all_value_float , mean_all_value_float = [] , []
+        q_30_run_value_float , mean_run_value_float , yield_mb_run_value_float, cluster_pf_run_value_float = [] , [], [] , []
+        q_30_all_value_float , mean_all_value_float , yield_mb_all_value_float , cluster_pf_all_value_float = [] , [] , [], []
         for item in run_lane_summary:
-            q_30_value, mean_value , yield_mb = item.get_stats_info().split(';')
+            q_30_value, mean_value , yield_mb_value , cluster_pf_value, = item.get_stats_info().split(';')
             '''
             q_30_run_value.append(format(float(q_30_value)/100,'.2f'))
             mean_run_value.append(format(float(mean_value)/36,'.2f'))
             '''
             q_30_run_value_float.append(float(q_30_value))
             mean_run_value_float.append(float(mean_value))
-        
+            yield_mb_run_value_float.append(float(yield_mb_value.replace(',','')))
+            cluster_pf_run_value_float.append(float(cluster_pf_value.replace(',','')))
+            
         run_year = run_name_found.run_date.timetuple().tm_year
         
         start_date = str(run_year) + '-1-1'
@@ -527,21 +524,29 @@ def get_information_run(run_name_found,run_id):
         
         all_lane_summary = NextSeqStatsLaneSummary.objects.filter(runprocess_id__in = same_runs_in_year_list).exclude(defaultAll__isnull = False).exclude(runprocess_id__exact =run_id)
         for item in all_lane_summary:
-            q_30_value, mean_value , yield_mb = item.get_stats_info().split(';')
+            q_30_value, mean_value , yield_mb_value , cluster_pf_value = item.get_stats_info().split(';')
             '''
             q_30_all_value.append(format(float(q_30_value)/100,'.2f'))
             mean_all_value.append(format(float(mean_value)/36,'.2f'))
             '''
             q_30_all_value_float.append(float(q_30_value))
             mean_all_value_float.append(float(mean_value))
-        
+            yield_mb_all_value_float.append(float(yield_mb_value.replace(',','')))
+            cluster_pf_all_value_float.append(float(cluster_pf_value.replace(',','')))
 
         q_30_run_normalized , q_30_all_normalized = normalized_data (q_30_run_value_float, q_30_all_value_float)
         mean_run_normalized , mean_all_normalized = normalized_data (mean_run_value_float, mean_all_value_float)
+        yield_mb_run_normalized , yield_mb_all_normalized = normalized_data (yield_mb_run_value_float, yield_mb_all_value_float)
+        cluster_pf_run_normalized , cluster_pf_all_normalized = normalized_data (cluster_pf_run_value_float, cluster_pf_all_value_float)
         q30_run_str = ','.join(q_30_run_normalized)
         mean_run_str = ','.join(mean_run_normalized)
+        yield_mb_run_str = ','.join(yield_mb_run_normalized)
+        cluster_pf_run_str = ','.join(cluster_pf_run_normalized)
+        
         q_30_all_str = ','.join(q_30_all_normalized)
         mean_all_str = ','.join(mean_all_normalized)
+        yield_mb_all_str = ','.join(yield_mb_all_normalized)
+        cluster_pf_all_str = ','.join(cluster_pf_all_normalized)
             #q_30_media.append(format(statistics.mean (q_30_list), '.2f'))
             #q_30_media_in_float.append(statistics.mean (q_30_list))
 
@@ -550,20 +555,32 @@ def get_information_run(run_name_found,run_id):
         #run_q30_average = format(statistics.mean(q_30_media_in_float), '.2f')
         #run_mean_average = format(statistics.mean(mean_q_media_in_float), '.2f')
         #import pdb; pdb.set_trace()
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         heading =  run_name_found.runName +' versus runs executed on '
         sub_caption = str( 'year ' + str(run_year))
         theme = 'fint'
         x_axis_name = 'Quatilty measures (normalized data)'
         y_axis_name = 'Normalized values '
-        series = [['Run','#0075c2', '#1aaf5d'],['All runs','#f45b00','#f2c500']]
-        data = [[q30_run_str,mean_run_str],[q_30_all_str, mean_all_str]]
-        categories = ['Q > 30', 'Mean Quality Score']
+        series = [[run_name_found.runName,'#0075c2', '#1aaf5d'],['All runs','#f45b00','#f2c500']]
+        data = [[q30_run_str,mean_run_str, yield_mb_run_str, cluster_pf_run_str],[q_30_all_str, mean_all_str, yield_mb_all_str, cluster_pf_all_str]]
+        
+        
+        categories = ['Q > 30', 'Mean Quality Score', 'Yield MB', 'Cluster PF']
         #import pdb; pdb.set_trace()
         data_source = bloxplot_graphic(heading, sub_caption, x_axis_name, y_axis_name, theme, categories, series, data)
         #import pdb; pdb.set_trace()
         #data_source = bloxplot_graphic()
         #data_source = json_2_column_graphic('Comparison of bases with Q value bigger than 30', q_30_project_lane,q_30_media)
-        info_dict ['boxplot'] = FusionCharts("boxandwhisker2d", "box1" , "400", "400", "box_chart1", "json", data_source).render()
+        info_dict ['boxplot'] = FusionCharts("boxandwhisker2d", "box1" , "800", "400", "box_chart1", "json", data_source).render()
         
         
         series =[]
@@ -574,7 +591,6 @@ def get_information_run(run_name_found,run_id):
         #    q_30_default_all, mean_default_all, yield_mb_default_all = item.get_stats_info().split(';')
         series = []
         data = []
-        #import pdb; pdb.set_trace()
         # get the demultiplexion information for projects included in the run
         for project_demultiplexion in p_list :
             percent_lane = []
@@ -585,16 +601,14 @@ def get_information_run(run_name_found,run_id):
             #for project_for_percent_graphic in projects_for_percent_graphic :
             data.append(percent_lane)    
             series.append(project_demultiplexion.projectName)
-        #import pdb; pdb.set_trace()
-        
-            
+
         # get the demultiplexion information for the default
         
         percent_default_lane = []
         for index_lane in range(1,5):
             default_for_percent_graphic = NextSeqStatsLaneSummary.objects.get(runprocess_id__exact = run_id, defaultAll__exact = 'default', lane =index_lane)
             percent_default_lane.append(default_for_percent_graphic.percentLane)
-        series.append('default')
+        series.append('Unable to identify the project')
         data.append(percent_default_lane)
         heading = 'Percentage of each project in the Run'
         sub_caption = ''
@@ -602,14 +616,8 @@ def get_information_run(run_name_found,run_id):
         x_axis_name = 'Lanes'
         y_axis_name = 'Percentage '
         categories = ['Lane 1', 'Lane 2', 'Lane 3','Lane 4']
-        #import pdb; pdb.set_trace()
         data_source = column_graphic_with_categories(heading, sub_caption, x_axis_name, y_axis_name, theme, categories, series, data)
-        info_dict ['run_project_comparation'] = FusionCharts("mscolumn3d", "column1" , "400", "400", "column_chart1", "json", data_source).render()
-        
-        #import pdb; pdb.set_trace()
-        
-        
-        
+        info_dict ['run_project_comparation'] = FusionCharts("mscolumn3d", "column1" , "600", "400", "column_chart1", "json", data_source).render()
         
         fl_data_display=[]
         #import pdb; pdb.set_trace()
@@ -730,7 +738,7 @@ def get_information_run(run_name_found,run_id):
 
         info_dict['match_unknows']= index_match_list
 
-        # prepare the data for Run Binary summary stats
+        # prepare data for Run Binary summary stats
 
         run_parameters = RunningParameters.objects.get(runName_id__exact = run_id)
         num_of_reads = run_parameters.get_number_of_reads ()
@@ -1878,7 +1886,7 @@ def nextSeqStats_per_researcher (request):
                             found_lane = NextSeqStatsLaneSummary.objects.filter(lane__exact = lane).exclude(defaultAll__isnull = False).exclude (project_id__exact = researcher_project_id)
                             q_30_list , mean_q_list = [] , []
                             for item_lane in found_lane:
-                                q_30_value, mean_q_value , yield_mb = item_lane.get_stats_info().split(';')
+                                q_30_value, mean_q_value , yield_mb , cluster_pf = item_lane.get_stats_info().split(';')
                                 q_30_list.append(float(q_30_value))
                                 mean_q_list.append(float(mean_q_value))
                             #import pdb; pdb.set_trace()
@@ -1896,7 +1904,7 @@ def nextSeqStats_per_researcher (request):
                         for lane in range (1, 5):
                             found_lane = NextSeqStatsLaneSummary.objects.filter(lane__exact = lane , project_id__exact = researcher_project_id )
                             #import pdb; pdb.set_trace()
-                            q_30_value, mean_q_value , yield_mb = found_lane[0].get_stats_info().split(';')
+                            q_30_value, mean_q_value , yield_mb, cluster_pf  = found_lane[0].get_stats_info().split(';')
                             q_30_project_lane.append(float(q_30_value))
                             mean_q_project_lane.append(float(mean_q_value))
                         user_q30_average = format(statistics.mean(q_30_project_lane), '.2f')
@@ -1945,7 +1953,7 @@ def nextSeqStats_per_researcher (request):
                                 p_name = project_researcher.get_project_name()
                                 r_project_id = project_researcher.id
                                 data_lane = NextSeqStatsLaneSummary.objects.get(lane__exact = lane, project_id__exact = r_project_id)
-                                q_30_value, mean_q_value , yield_mb = data_lane.get_stats_info().split(';')
+                                q_30_value, mean_q_value , yield_mb , cluster_pf = data_lane.get_stats_info().split(';')
                                 q_30_dict[p_name] = float(q_30_value)
                                 q30_lane_stats.append(float(q_30_value))
                                 mean_q_dict[p_name] = float(mean_q_value)
@@ -1987,7 +1995,7 @@ def nextSeqStats_per_researcher (request):
                             #import pdb; pdb.set_trace()
                             for item_lane in found_lane:
                                 #import pdb; pdb.set_trace()
-                                q_30_value, mean_q_value , yield_mb = item_lane.get_stats_info().split(';')
+                                q_30_value, mean_q_value , yield_mb , cluster_pf = item_lane.get_stats_info().split(';')
                                 q_30_list.append(float(q_30_value))
                                 mean_q_list.append(float(mean_q_value))
                             #import pdb; pdb.set_trace()
@@ -2223,7 +2231,7 @@ def get_list_of_libraries_values (library_found, q30_comparations, mean_comparat
         q30_compare_lib, mean_compare_lib, yield_mb_compare_lib = [], [] , []
         for lane_number in range (1,5):
             lane_in_project = NextSeqStatsLaneSummary.objects.get(project_id__exact = project_to_compare_id, lane__exact = lane_number)
-            q_30_value, mean_q_value, yield_mb = lane_in_project.get_stats_info().split(';')
+            q_30_value, mean_q_value, yield_mb , cluster_pf = lane_in_project.get_stats_info().split(';')
             q30_compare_lib.append(float(q_30_value))
             mean_compare_lib.append(float(mean_q_value))
             yield_mb_compare_lib.append(float(yield_mb.replace(',','')))
@@ -2319,7 +2327,7 @@ def nextSeqStats_per_library (request):
                     # Get quality information for each Lane summary of the project id
                     #import pdb; pdb.set_trace()
                     lane_in_project = NextSeqStatsLaneSummary.objects.get(project_id__exact = project_id, lane__exact = lane_number)
-                    q_30_value, mean_q_value, yield_mb = lane_in_project.get_stats_info().split(';')
+                    q_30_value, mean_q_value, yield_mb , cluster_pf = lane_in_project.get_stats_info().split(';')
                     project_name = project.get_project_name()
                     q_30_lane[project_name] = q_30_value
                     q30_in_lib.append(float(q_30_value))
@@ -2404,7 +2412,7 @@ def nextSeqStats_per_library (request):
                     q30_compare_lib, mean_compare_lib, yield_mb_compare_lib = [], [] , []
                     for lane_number in range (1,5):
                         lane_in_project = NextSeqStatsLaneSummary.objects.get(project_id__exact = project_to_compare_id, lane__exact = lane_number)
-                        q_30_value, mean_q_value, yield_mb = lane_in_project.get_stats_info().split(';')
+                        q_30_value, mean_q_value, yield_mb , cluster_pf = lane_in_project.get_stats_info().split(';')
                         q30_compare_lib.append(float(q_30_value))
                         mean_compare_lib.append(float(mean_q_value))
                         yield_mb_compare_lib.append(float(yield_mb.replace(',','')))
