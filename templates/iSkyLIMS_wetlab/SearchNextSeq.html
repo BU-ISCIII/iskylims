@@ -1,10 +1,12 @@
 {% extends 'iSkyLIMS_wetlab/base.html' %}
 {% load static %}
 {% block content %}
-    {% csrf_token %}
+{% csrf_token %}
 {% if display_one_run %}
  <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>
  <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>
+ <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.powercharts.js" %}"></script>
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.charts.js" %}"></script>
  <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script>
  <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
 <script>
@@ -52,29 +54,55 @@
            </div> <!--  end of panel body -->
           </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-7 -->
-              <!-- new panel on the right to show progress state -->
-              <div class="container">
-              <div class="col-sm-3 col-sm-offset-1">
+        <!-- new panel on the right to show progress state -->
+        <div class="col-sm-5">
+            <div class="col-sm-9 col-sm-offset-1">
                 <BR>
                 <div class="panel panel-default">
-                <div class="panel-heading">State run is : {{ display_one_run.run_state }} </div>
+                    <div class="panel-heading"><h3>State run is : {{ display_one_run.run_state }} </h3></div>
 
-                <div class="panel-body">
-                    <div class="circle-progress {{ display_one_run.graphic_color }}">
-                    {% if display_one_run.graphic_value > 50 %}
-                        <span class="circle-progress-left">
+                    <div class="panel-body">
+                        <div class="circle-progress {{ display_one_run.graphic_color }}">
+                        {% if display_one_run.graphic_value > 50 %}
+                            <span class="circle-progress-left">
                             <span class="circle-progress-bar"></span>
-                        </span>
-                    {% endif%}
-                        <span class="circle-progress-right">
+                            </span>
+                        {% endif%}
+                            <span class="circle-progress-right">
                             <span class="circle-progress-bar"></span>
-                        </span>
-                        <div class="circle-progress-value">{{ display_one_run.graphic_value }}%</div>
-                    </div>
-                    </div>
+                            </span>
+                            <div class="circle-progress-value">{{ display_one_run.graphic_value }}%</div>
+                        </div>
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+            </div> <!--  end of col-sm-7 -->
+              <BR>
+              <div class="col-sm-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Run Quality vs all Runs </h3> </div>
+                    <div class="panel-body">
+                        <p> Run Quality Graphic</p>
+                    </div> <!--  end of panel body -->
                 </div> <!--  end of panel body -->
               </div> <!--  end of panel  -->
-        </div> <!--  end of col-sm-4 -->
+              </div> <!--  end of col-sm-6 -->
+              
+
+         </div> <!--  end of col-sm-3 -->
+
+    </div> <!--  end of row -->
+    
+     <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-10 ">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Graphic showing the {{ display_one_run.data.0.1 }} versus all runs on the same year</h3></div>
+                <div class="panel-body">
+                    <div id="box_chart1"> </div>
+                    <!-- dumping JavaScript code here -->
+                    {{ display_one_run.boxplot |safe }}
+                </div> <!--  end of panel body -->
+             </div> <!--  end of panel  -->
+           </div> <!--  end of col-sm-10 -->
     </div> <!--  end of row -->
 
      <div class="row row-space-2 margin-b-4">
@@ -164,7 +192,7 @@
 
       {% if display_one_run.fl_summary %}
       <div class="row row-space-8 margin-b-1">
-         <div class="col-sm-8 ">
+         <div class="col-sm-10 ">
             <div class="panel panel-default">
                 <div class="panel-heading">Flowcell Summary for all projects in the run.</div>
                 <div class="panel-body">
@@ -187,9 +215,24 @@
 
                 </div> <!--  end of panel body -->
              </div> <!--  end of panel  -->
-           </div> <!--  end of col-sm-4 -->
+           </div> <!--  end of col-sm-10 -->
       </div> <!--  end of row -->
       {% endif%}
+      
+            
+       <div class="row row-space-8 margin-b-1">
+         <div class="col-sm-10 ">
+            <div class="panel panel-default">
+                <div class="panel-heading">Percent of PF Cluster used for each project in the run.</div>
+                <div class="panel-body">
+                    <div id="column_chart1"> </div>
+                    <!-- dumping JavaScript code here -->
+                    {{ display_one_run.run_project_comparation |safe }}
+                </div> <!--  end of panel body -->
+             </div> <!--  end of panel  -->
+           </div> <!--  end of col-sm-10 -->
+       </div> <!--  end of row -->
+      
       {% if display_one_run.lane_summary %}
       <div class="row row-space-10 margin-b-1">
          <div class="col-sm-10 ">
@@ -235,9 +278,9 @@
       {% endif%}
       {% if display_one_run.default_fl_summary %}
       <div class="row row-space-8 margin-b-1">
-         <div class="col-sm-8 ">
+         <div class="col-sm-10 ">
             <div class="panel panel-default">
-                <div class="panel-heading">Flowcell Summary for default information project in the run.</div>
+                <div class="panel-heading">Flowcell Summary for  lanes that could not identified with any projects in the run.</div>
                 <div class="panel-body">
                   <table class="table">
                       <thead>
@@ -258,9 +301,10 @@
 
                 </div> <!--  end of panel body -->
              </div> <!--  end of panel  -->
-           </div> <!--  end of col-sm-4 -->
+           </div> <!--  end of col-sm-10 -->
       </div> <!--  end of row -->
       {% endif%}
+
 
       {% if display_one_run.default_lane_summary %}
       <div class="row row-space-10 margin-b-1">
@@ -400,7 +444,7 @@
      {% endif%}
      {% if display_one_run.unknow_pie3d %}
      <div class="row row-space-4 margin-b-1">
-         <div class="col-sm-7 col-sm-offset-1 ">
+         <div class="col-sm-7 ">
             <div class="panel panel-default">
                 <div class="panel-heading"><h3>Chart for the Top Unknow Barcodes in the Run.</h3></div>
                 <div class="panel-body">
@@ -411,14 +455,9 @@
 
               </div> <!--  end of panel body -->
              </div> <!--  end of panel  -->
-           </div> <!--  end of col-sm-8 -->
-      </div> <!--  end of row -->
+           </div> <!--  end of col-sm-7 -->
 
-     {% endif%}
-     
-     {% if display_one_run.match_unknows %}
-          <div class="row row-space-4 margin-b-1">
-         <div class="col-sm-7 col-sm-offset-1 ">
+         <div class="col-sm-5 ">
             <div class="panel panel-default">
                 <div class="panel-heading"><h3>Matching the unknowbarcodes against the indexes library.</h3></div>
                 <div class="panel-body">
@@ -443,10 +482,6 @@
            </div> <!--  end of col-sm-8 -->
       </div> <!--  end of row -->
 
-     
-     
-     
-     
      {% endif %}
      
      {% if display_one_run.runSummary %}
@@ -489,7 +524,7 @@
 
         <div id="laneMetrics" class="tabcontent">
           <div class="col-sm-12 ">
-            <h3>Lane Metrics pppp</h3>
+            <h3>Lane Metrics</h3>
             {% for key, values_read in display_one_run.reads.items %}
             <h3>{{ key }}</h3>
             <div class="table-responsive">
@@ -564,7 +599,7 @@
             <input type="hidden" name="action" value="runsearch"/>
              <div class="form-group">
                   <label class="col-sm-5  control-label" for="runname" >Fill the RUN name </label>
-                  <div class="col-sm-5"><input class="form-control" type="text" name="runname" id="runname" size="100" maxlength="100"></div>
+                    <div class="col-sm-5"><input class="form-control" type="text" name="runname" id="runname" size="100" maxlength="100"></div>
              </div>  <!-- end from-group   -->
              <BR>
              <div class="form-group">

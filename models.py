@@ -390,7 +390,7 @@ class NextSeqStatsLaneSummary (models.Model):
 
     def get_stats_info (self):
 
-        return'%s;%s;%s' %(self.biggerQ30, self.meanQuality, self.yieldMb)
+        return'%s;%s;%s;%s' %(self.biggerQ30, self.meanQuality, self.yieldMb, self.pfCluster)
 
 class NextSeqGraphicsStats (models.Model):
     runprocess_id = models.ForeignKey(

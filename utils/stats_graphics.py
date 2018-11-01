@@ -509,3 +509,211 @@ def column_graphic_samples_in_project (heading, sub_caption, x_axis_name, y_axis
     data_source['data'] = data
 
     return data_source
+
+def bloxplot_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme, categories, series, data):
+#def bloxplot_graphic () :
+    data_source = {}
+    data_source['chart'] = {
+        "theme": theme,
+        "caption": heading,
+        "subcaption": sub_caption,
+        "xAxisName": x_axis_name,
+        "YAxisName": y_axis_name,
+        #"numberPrefix": "%",
+        "legendBorderAlpha": "1",
+        "legendShadow": "0",
+        "legendPosition": "botom",
+        "showValues": "0",
+        "toolTipColor": "#ffffff",
+        "toolTipBorderThickness": "0",
+        "toolTipBgColor": "#000000",
+        "toolTipBgAlpha": "80",
+        "toolTipBorderRadius": "2",
+        "toolTipPadding": "5",
+        #"numdivline":"4",
+        "yAxisMaxValue": "0.4",
+        #"yAxisMinValue": "5",
+        #"setAdaptiveYMin":"0",
+        #"adjustDiv":"0",
+        #"medianColor": "ff0000",
+        #"medianThickness": "1",
+        #"medianAplha": "70",
+        "showMean": "1",
+        # "showMD": "0"
+        "exportEnabled": "1"
+        
+    },
+    
+    category = {}
+    category_list = []
+    for item in categories :
+        
+        label_category = {}
+        label_category['label'] = item
+        category_list.append(label_category)
+    category['category'] = category_list
+    
+    data_source ['categories'] = [category]
+    
+    '''
+    data_source["categories"] = [
+        {"category": [
+                {
+                    "label": "Grade 1"
+                },
+                {
+                    "label": "Grade 2"
+                }
+            ]
+        }
+    ],
+    '''
+    dataset = []
+    
+    for serie in range(len(series)) :
+        dataset_dict ={}
+        dataset_dict['seriesname'] = series[serie][0]
+        dataset_dict['lowerBoxColor'] = series[serie][1]
+        dataset_dict['upperBoxColor'] = series[serie][2]
+        serie_data = []
+        for item in data[serie] :
+            value = {}
+            value['value']= item
+            serie_data.append(value)
+        dataset_dict['data'] = serie_data  
+        dataset.append(dataset_dict)
+    data_source['dataset'] = dataset
+    '''
+    #"value": "24,20,25,28,35,40, 37, 35, 38, 50,55,35, 41,42, 44, 45, 48, 47, 30, 34"
+    data_source["dataset"] = [
+        {
+            "seriesname": "Male",
+            "lowerBoxColor": "#0075c2",
+            "upperBoxColor": "#1aaf5d",
+            "data": [
+                {"value": "24,23,25,24,25,24, 27, 25, 23, 25,25,26, 26,27, 26, 24, 24, 25, 25, 23"
+                },
+                {"value": "25, 23, 25,25,26, 26,27, 26, 24" #"value": "75,90,82,83,97,95,80, 80, 90, 95"
+                },
+            ]
+        },
+        {
+            "seriesname": "Female",
+            "lowerBoxColor": "#f45b00",
+            "upperBoxColor": "#f2c500",
+            "data": [
+                {"value": "19,21,23,23,24,25,23,25,30, 26, 25, 21"
+                },
+                {"value": "23,25,24,25,24, 27, 25, 23, 25,25,26" #"value": "70,80,83,87,95,80,85, 87, 71"
+                }
+            ]
+        }
+    ]
+    '''
+    return data_source
+
+def column_graphic_with_categories(heading, sub_caption, x_axis_name, y_axis_name, theme, categories, series, data):
+    data_source = {}
+    # Chart data is passed to the `dataSource` parameter, as hashes, in the form of
+    # key-value pairs.
+    data_source['chart'] = {
+        "caption": heading,
+        "xAxisname": x_axis_name,
+        "yAxisName": y_axis_name,
+        "numberPrefix": "%",
+        "plotFillAlpha": "80",
+        "paletteColors": "#0075c2,#1aaf5d",
+        "baseFontColor": "#333333",
+        "baseFont": "Helvetica Neue,Arial",
+        "captionFontSize": "14",
+        "subcaptionFontSize": "14",
+        "subcaptionFontBold": "0",
+        "showBorder": "0",
+        "bgColor": "#ffffff",
+        "showShadow": "0",
+        "canvasBgColor": "#ffffff",
+        "canvasBorderAlpha": "0",
+        "divlineAlpha": "100",
+        "divlineColor": "#999999",
+        "divlineThickness": "1",
+        "divLineIsDashed": "1",
+        "divLineDashLen": "1",
+        "divLineGapLen": "1",
+        "usePlotGradientColor": "0",
+        "showplotborder": "0",
+        "valueFontColor": "#ffffff",
+        "placeValuesInside": "1",
+        "showHoverEffect": "1",
+        "rotateValues": "1",
+        "showXAxisLine": "1",
+        "xAxisLineThickness": "1",
+        "xAxisLineColor": "#999999",
+        "showAlternateHGridColor": "0",
+        "legendBgAlpha": "0",
+        "legendBorderAlpha": "0",
+        "legendShadow": "0",
+        "legendItemFontSize": "10",
+        "legendItemFontColor": "#666666",
+        "exportEnabled": "1"
+    }
+    category = {}
+    category_list = []
+    for item in categories :
+        
+        label_category = {}
+        label_category['label'] = item
+        category_list.append(label_category)
+    category['category'] = category_list
+    
+    data_source ['categories'] = [category]
+    '''
+    data_source["categories"] = [
+        {"category": [
+                { "label": "Lane 1"},
+                { "label": "Lane 2"},
+                { "label": "Lane 3"},
+                { "label": "Lane 4"}
+            ]
+        }
+    ]
+    '''
+    
+    dataset = []
+    
+    #for serie in series :
+    for serie in range(len(series)) :
+        dataset_dict ={}
+        dataset_dict['seriesname'] = series[serie]
+        #dataset_dict['lowerBoxColor'] = series[serie][1]
+        #dataset_dict['upperBoxColor'] = series[serie][2]
+        serie_data = []
+        for item in data[serie] :
+            value = {}
+            value['value']= item
+            serie_data.append(value)
+        dataset_dict['data'] = serie_data  
+        dataset.append(dataset_dict)
+    data_source['dataset'] = dataset
+    
+    '''
+    data_source ["dataset"] = [
+        {"seriesname": "Researcher Project",
+            "data": [
+                    {"value": q_30_project_lane[0] },
+                    {"value": q_30_project_lane[1] },
+                    {"value": q_30_project_lane[2] },
+                    {"value": q_30_project_lane[3] }
+            ]
+        },
+        {"seriesname": "Average for all Projects",
+            "data": [
+                    {"value": q_30_media_lane[0]},
+                    {"value": q_30_media_lane[1]},
+                    {"value": q_30_media_lane[2]},
+                    {"value": q_30_media_lane[3]}
+            ]
+        }
+    ]
+    '''
+
+    return data_source
