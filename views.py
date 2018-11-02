@@ -1438,7 +1438,10 @@ def nextSeqStats_per_researcher (request):
                         # to be compared with the percent of this project
                         q_30_media, mean_q_media = [] , []
                         q_30_media_in_float, mean_q_media_in_float = [] , []
-                        for lane in range (1,5):
+                        ##TBD
+                        #for lane in range (1,5):
+                        for lane in range (1,2):
+                        #ENdTBD
                             found_lane = NextSeqStatsLaneSummary.objects.filter(lane__exact = lane).exclude(defaultAll__isnull = False).exclude (project_id__exact = researcher_project_id)
                             q_30_list , mean_q_list = [] , []
                             for item_lane in found_lane:
@@ -1457,7 +1460,10 @@ def nextSeqStats_per_researcher (request):
 
                         # fetch the Q>30 and mean_q for the researcher project per lane
                         q_30_project_lane, mean_q_project_lane = [] , []
-                        for lane in range (1, 5):
+                        #TBD
+                        #for lane in range (1, 5):
+                        for lane in range (1, 2):
+                        #EndTBD
                             found_lane = NextSeqStatsLaneSummary.objects.filter(lane__exact = lane , project_id__exact = researcher_project_id )
                             #import pdb; pdb.set_trace()
                             q_30_value, mean_q_value , yield_mb = found_lane[0].get_stats_info().split(';')
@@ -1708,7 +1714,10 @@ def nextSeqStats_per_time (request):
                 ### collect statistics for unkow Barcodes
                 top_unbarcode_list = []
                 top_count_sequence  = {}
-                for lane_number in range (1,5):
+                #TBD
+                #for lane_number in range (1,5):
+                for lane_number in range (1,2):
+                #EndTBD
                     top_unbarcode_dict_lane  = {}
                     for run in run_stats_list:
                         run_id = run.id
@@ -1785,7 +1794,10 @@ def get_list_of_libraries_values (library_found, q30_comparations, mean_comparat
         library_to_compare_name = project_to_compare.get_library_name()
         project_to_compare_id = project_to_compare.id
         q30_compare_lib, mean_compare_lib, yield_mb_compare_lib = [], [] , []
-        for lane_number in range (1,5):
+        #TBD
+        #for lane_number in range (1,5):
+        for lane_number in range (1,2):
+        #EndTBD
             lane_in_project = NextSeqStatsLaneSummary.objects.get(project_id__exact = project_to_compare_id, lane__exact = lane_number)
             q_30_value, mean_q_value, yield_mb = lane_in_project.get_stats_info().split(';')
             q30_compare_lib.append(float(q_30_value))

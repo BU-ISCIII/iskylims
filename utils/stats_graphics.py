@@ -42,6 +42,8 @@ def json_2_column_graphic(heading, q_30_project_lane,q_30_media_lane):
         "legendItemFontColor": "#666666",
         "exportEnabled": "1"
     }
+    #TBD
+    '''
     data_source["categories"] = [
         {"category": [
                 { "label": "Lane 1"},
@@ -51,6 +53,17 @@ def json_2_column_graphic(heading, q_30_project_lane,q_30_media_lane):
             ]
         }
     ]
+    '''
+    data_source["categories"] = [
+        {"category": [
+                { "label": "Lane 1"}
+            ]
+        }
+    ]
+    #EndTBD
+
+    #TBD
+    '''
     data_source ["dataset"] = [
         {"seriesname": "Researcher Project",
             "data": [
@@ -69,6 +82,22 @@ def json_2_column_graphic(heading, q_30_project_lane,q_30_media_lane):
             ]
         }
     ]
+    '''
+
+    data_source ["dataset"] = [
+        {"seriesname": "Researcher Project",
+            "data": [
+                    {"value": q_30_project_lane[0] }
+            ]
+        },
+        {"seriesname": "Average for all Projects",
+            "data": [
+                    {"value": q_30_media_lane[0]}
+            ]
+        }
+    ]
+
+    #EndTBD
     data_source["trendlines"] = [
         {"line": [
                 {   "startvalue": "12",
@@ -419,6 +448,8 @@ def researcher_project_mean_column_graphic(heading,  x_axis_name, y_axis_name, u
         "legendItemFontColor": "#666666",
         "exportEnabled": "1"
     }
+    #TBD
+    '''
     data_source["categories"] = [
         {"category": [
                 { "label": "Lane 1"},
@@ -446,6 +477,28 @@ def researcher_project_mean_column_graphic(heading,  x_axis_name, y_axis_name, u
             ]
         }
     ]
+    '''
+    data_source["categories"] = [
+        {"category": [
+                { "label": "Lane 1"}
+            ]
+        }
+    ]
+    data_source ["dataset"] = [
+        {"seriesname": investigator +  '  Projects',
+            "data": [
+                    {"value": user_project_lane[0] }
+            ]
+        },
+        {"seriesname": "Average for all Projects",
+            "data": [
+                    {"value": q_30_media_lane[0]}
+            ]
+        }
+    ]
+    #EndTBD
+
+
     data_source["trendlines"] = [
         {"line": [
                 {   "startvalue": user_average,

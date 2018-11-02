@@ -727,7 +727,7 @@ def process_xml_stats(stats_projects, run_id, logger):
         flow_raw_cluster, flow_pf_cluster, flow_yield_mb = 0, 0, 0
         #TBD
         #for fl_item in range(4):
-        for fl_item in range(0):
+        for fl_item in range(1):
         #EndTBD
              # make the calculation for Flowcell
 
@@ -769,7 +769,7 @@ def process_xml_stats(stats_projects, run_id, logger):
 
         #TBD
         #for i in range (4):
-        for i in range (0):
+        for i in range (1):
         #EndTBD
             # get the lane information
             lane_number=str(i + 1)
@@ -814,7 +814,7 @@ def process_xml_stats(stats_projects, run_id, logger):
         if project == 'TopUnknownBarcodes':
             #TBD
             #for un_lane in range(4) :
-            for un_lane in range(0) :
+            for un_lane in range(1) :
             #EndTBD
                 logger.info('Processing lane %s for TopUnknownBarcodes', un_lane)
                 count_top=0
@@ -895,7 +895,7 @@ def parsing_sample_project_xml(demux_file, conversion_file, logger):
 
             #TBD
             #for l_index in range(4):
-            for l_index in range(0):
+            for l_index in range(1):
             #EndTBD
                 tiles_index = len(p_temp[s_index][0][l_index].findall ('Tile'))
                 for t_index in range(tiles_index):
