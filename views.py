@@ -3,6 +3,7 @@ from .models import *
 from .forms import *
 from django.db import transaction
 from django.contrib.auth.models import User , Group
+from django.conf import settings
 
 
 def user_edit(request):
@@ -11,8 +12,14 @@ def user_edit(request):
         form1 = UserCreationForm(data=request.POST,instance=request.user)  
 
         form2 = ProfileCreationForm(data=request.POST,instance=request.user.profile) 
-
         if form1.is_valid() and form2.is_valid():
+            email_address = form1.cleaned_data['email']
+
+            domain = email_address.split('@')[1]
+            if not domain in settings.ALLOWED_EMAIL_DOMAINS :
+                error_description = str( 'Invalid email address . Your email domain ' + domain + ' is not allowed')
+                return render(request,'django_utils/error_page.html',{'content':[ error_description ,"Only isciii.es or externos.isciii.es  are allowed"]})
+
             user = form1.save()  
             profile = form2.save(commit=False)  
             # check the sharing list
