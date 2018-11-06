@@ -493,34 +493,35 @@ def get_information_run(run_name_found,run_id):
     ## get the stats information if run is completed
     if run_state == 'Completed':
         # prepare the data for q-means
-        
         # fetch Q>30 , mean_q and yield mb for all projects per lane to create the boxplot
-                
         run_lane_summary = NextSeqStatsLaneSummary.objects.filter(runprocess_id__exact =run_id ).exclude(defaultAll__isnull = False)
         q_30_value_list, mean_value_list = [] , []
         q_30_run_value , mean_run_value = [] , []
-        #q_30_all_value , mean_all_value = [] , []
         q_30_run_value_float , mean_run_value_float , yield_mb_run_value_float, cluster_pf_run_value_float = [] , [], [] , []
         q_30_all_value_float , mean_all_value_float , yield_mb_all_value_float , cluster_pf_all_value_float = [] , [] , [], []
+        
         for item in run_lane_summary:
             q_30_value, mean_value , yield_mb_value , cluster_pf_value, = item.get_stats_info().split(';')
-            '''
-            q_30_run_value.append(format(float(q_30_value)/100,'.2f'))
-            mean_run_value.append(format(float(mean_value)/36,'.2f'))
-            '''
+
             q_30_run_value_float.append(float(q_30_value))
             mean_run_value_float.append(float(mean_value))
             yield_mb_run_value_float.append(float(yield_mb_value.replace(',','')))
             cluster_pf_run_value_float.append(float(cluster_pf_value.replace(',','')))
             
+        # get the chemistry type for the run, that will be used to compare runs with the same chemistry value
+        chem_high_mid = RunningParameters.objects.get(runName_id__exact = run_id).Chemistry
+        run_different_chemistry = RunningParameters.objects.all(). exclude(Chemistry__exact = chem_high_mid)
         run_year = run_name_found.run_date.timetuple().tm_year
         
         start_date = str(run_year) + '-1-1'
         end_date = str(run_year) +'-12-31'
-        same_run_in_year = RunProcess.objects.filter(run_date__range=(start_date, end_date) )
+        same_run_in_year = RunProcess.objects.filter(run_date__range=(start_date, end_date)).exclude(runName__in = run_different_chemistry)
+        
         same_runs_in_year_list = []
         for run in same_run_in_year :
             same_runs_in_year_list.append(run.id)
+        
+        
         
         all_lane_summary = NextSeqStatsLaneSummary.objects.filter(runprocess_id__in = same_runs_in_year_list).exclude(defaultAll__isnull = False).exclude(runprocess_id__exact =run_id)
         for item in all_lane_summary:
@@ -547,23 +548,8 @@ def get_information_run(run_name_found,run_id):
         mean_all_str = ','.join(mean_all_normalized)
         yield_mb_all_str = ','.join(yield_mb_all_normalized)
         cluster_pf_all_str = ','.join(cluster_pf_all_normalized)
-            #q_30_media.append(format(statistics.mean (q_30_list), '.2f'))
-            #q_30_media_in_float.append(statistics.mean (q_30_list))
+     
 
-            #mean_q_media.append(format(statistics.mean (mean_q_list), '.2f'))
-            #mean_q_media_in_float.append(statistics.mean (mean_q_list))
-        #run_q30_average = format(statistics.mean(q_30_media_in_float), '.2f')
-        #run_mean_average = format(statistics.mean(mean_q_media_in_float), '.2f')
-        #import pdb; pdb.set_trace()
-        
-        
-        
-        
-        
-        
-        
-        
-        
         
         heading =  run_name_found.runName +' versus runs executed on '
         sub_caption = str( 'year ' + str(run_year))

@@ -220,6 +220,7 @@ class RunningParameters (models.Model):
 
     def __str__(self):
         return '%s' %(self.RunID)
+        #return '%s' %(self.runName_id)
 
     def get_run_parameters_info (self):
         #str_run_start_date=self.RunStartDate.strftime("%I:%M%p on %B %d, %Y")
