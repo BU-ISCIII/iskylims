@@ -170,7 +170,7 @@ def save_miseq_run_info(run_info,run_parameter,run_id,logger):
         running_data['PlannedIndex2ReadCycles']=0
         running_data['PlannedRead2Cycles']=0
         logger.error('==> Unexpected construction of <RunInfoRead> tags in RunParameter.xml: '
-                +string(run_info_read_dict)
+                +str(run_info_read_dict)
                 +'\nFilling in Planned(Index)ReadCycles with 0')
 
 

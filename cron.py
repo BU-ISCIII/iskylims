@@ -98,7 +98,7 @@ def fetch_samba_dir_filelist(logger,conn, smb_root_path='/'):
     file_list=[]
     try:
         file_list= conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME,smb_root_path)
-        #file_list=file_list[0:7] ##TBDDebugEndDebug
+        #file_list=file_list[3:4] ##TBDDebugEndDebug
         file_list_filenames_debug=[x.filename for x in file_list] ##debug
         logger.debug(
             'number of existing directory runs of any kind= '+str(len(file_list)-2))## -2 ->"." and ".."
@@ -562,9 +562,13 @@ def getSampleSheetFromSequencer():
                 logger.info('No MiSeq runs to introduce in database. Time stop= '+time_stop)
                 print('No MiSeq runs to introduce in database. Time stop= '+time_stop)
 
-        timestamp_print('Straight check to see if the run state can be moved forward...')
-        logger.debug('**Straight check to see if the run state can be moved forward...')
-        miseq_check_recorded()
+        timestamp_print('Straight check to see if the run state can be moved forward to SAMPLE SENT...')
+        logger.debug('**Straight check to see if the run state can be moved forward to SAMPLE SENT...')
+        try:
+            miseq_check_recorded(logger)
+        except:
+            logger.error('Exception when checking recorded state for MiSeq runs')
+            raise
 
         timestamp_print('Leaving the process for getSampleSheetFromSequencer()')
         logger.info('Leaving the process for getSampleSheetFromSequencer()')
@@ -636,9 +640,9 @@ def test_parsing_xml_files():
 
 
 ##TODO## to be integrated in common flow... in try: catch:
-def miseq_check_recorded():
+def miseq_check_recorded(logger):
     timestamp_print('Starting the process for miseq_check_recorded')
-    logger=open_log('miseq_check_recorded')
+    #logger=open_log('miseq_check_recorded')
     logger.info('Starting the process for miseq_check_recorded()')
 
     #Build list of runs in RECORDED state
@@ -814,9 +818,9 @@ def miseq_check_recorded():
                             +wetlab_config.RECORDED_MISEQRUNS_FILEPATH+'\n')
                         logger.debug('Updated RECORDED runs:\n'+'\n'.join(recorded_state_run_dirs_updated))
                         with open(wetlab_config.RECORDED_MISEQRUNS_FILEPATH,'w') as fh:
-                            for run in recorded_state_run_dirs_updated:
-                                fh.write(run+'\n')
-                                logger.debug(run)
+                            for r_index in recorded_state_run_dirs_updated:
+                                fh.write(r_index+'\n')
+                                logger.debug(r)
                     except:
                         debug.error(
                             'Exception happened trying to update '+wetlab_config.RECORDED_MISEQRUNS_FILEPATH)
@@ -932,8 +936,8 @@ def miseq_check_recorded():
         else:
             logger.error('==> temp dir: '+run_temp_dir+ ' does not exist...')
 
-    timestamp_print('Leaving the proccess to check state of MiSEQ recorded runs')
-    logger.info('Leaving the proccess to check state of MiSEQ recorded runs')
+    timestamp_print('Leaving the process to check state of MiSEQ recorded runs')
+    logger.info('Leaving the process to check state of MiSEQ recorded runs')
     return
 
 

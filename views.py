@@ -1507,7 +1507,10 @@ def nextSeqStats_per_researcher (request):
                             project_names.append(p_name)
                         q30_user_stats, mean_user_stats = [] , []
                         # get the lane vales for all projects where user was involved
-                        for lane in range (1,5):
+                        #TBD
+                        #for lane in range (1,5):
+                        for lane in range (1,2):
+                        #EndTBD
                             q_30_dict, mean_q_dict = {} , {}
                             q30_lane_stats, mean_lane_stats = [] , []
                             q30_media_in_float , mean_media_in_float = [] , []
