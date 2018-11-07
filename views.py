@@ -522,7 +522,6 @@ def get_information_run(run_name_found,run_id):
             same_runs_in_year_list.append(run.id)
         
         
-        
         all_lane_summary = NextSeqStatsLaneSummary.objects.filter(runprocess_id__in = same_runs_in_year_list).exclude(defaultAll__isnull = False).exclude(runprocess_id__exact =run_id)
         for item in all_lane_summary:
             q_30_value, mean_value , yield_mb_value , cluster_pf_value = item.get_stats_info().split(';')
