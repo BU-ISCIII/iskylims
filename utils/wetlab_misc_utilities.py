@@ -1,12 +1,17 @@
 ##General purpose utility functions used in different iSkyLIMS_wetlab modules
+## BE CAREFUL if modifying these resources as they are used by other functions in wetlab
+
+
 import datetime
 import logging
+import os, errno
 from smb.SMBConnection import SMBConnection
 from iSkyLIMS_wetlab import wetlab_config
 
 def timestamp_print(message):
     starting_time= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(starting_time+' '+message)
+
 
 
 
@@ -30,6 +35,34 @@ def open_samba_connection():
     timestamp_print('Leaving open_samba_connection() (cron.py- cuadrix testing)')
     return conn
 
+
+
+def fetch_samba_dir_filelist(logger,conn, smb_root_path='/'):
+    ## By default, it returns the contents of the root ==> a list of the run directories (
+    ## + '.' and '..')
+    ## If no exceptions the function will leave a SMB connection opened so that the user can
+    ##interact with SMB server
+    timestamp_print('Starting process to fetch the directory list via SAMBA')
+    logger.info('Starting process to fetch the directory list via SAMBA')
+    file_list=[]
+    try:
+        file_list= conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME,smb_root_path)
+        #file_list=file_list[2:3] ##TBDDebugEndDebug
+        file_list_filenames_debug=[x.filename for x in file_list] ##debug
+        logger.debug(
+            'number of existing directory runs of any kind= '+str(len(file_list)-2))## -2 ->"." and ".."
+        #logger.debug('run dir list=\n'+'\n'.join(file_list_filenames_debug))
+
+    except: ##
+        logger.error('==>Exception when accessing SMB with listPath')
+        timestamp_print('==>Exception when accessing SMB with listPath')
+        conn.close()
+        raise
+
+    timestamp_print('Leaving the process to fetch the run-directory list via SAMBA')
+    logger.info('Leaving the process to fetch the run-directory list via SAMBA')
+
+    return file_list
 
 '''
 def open_samba_connection():

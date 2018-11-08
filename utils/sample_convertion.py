@@ -35,7 +35,7 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
     result_directory=wetlab_config.MIGRATION_DIRECTORY_FILES
     data_found=0
     header_found=0
-    
+
     fh = open(in_file,'r')
     for line in fh:
         line=line.rstrip()
@@ -78,7 +78,7 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
                 using_map_table = wetlab_config.MAP_BASESPACE_SAMPLE_SHEET_ONE_INDEX
             table_mapping = [0 for x in range(len(using_map_table))]
             header_split = line.split(',')
-            
+
             for i in range(len(using_map_table)):
                 table_mapping[i]= header_split.index(using_map_table[i][1])
                 # getting index value for project column
@@ -93,7 +93,7 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
             if data_split[table_mapping[project_index]] in projects:
                 for i in range(len(using_map_table)):
                     dict_value_data[using_map_table[i][0]] = data_split[table_mapping[i]]
-               
+
                 #### adding empty values of species and NucleicAccid
                 dict_value_data['Species']=''
                 dict_value_data['NucleicAcid']='DNA'
@@ -107,11 +107,11 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
                     if not dict_value_data['Index2Name'] in well_row:
                         well_row[dict_value_data['Index2Name']]=letter_well
                         letter_well=chr(ord(letter_well)+1)
-                    dict_value_data['Well']=str(well_row[dict_value_data['Index2Name']]+ well_column[dict_value_data['Index1Name']])    
+                    dict_value_data['Well']=str(well_row[dict_value_data['Index2Name']]+ well_column[dict_value_data['Index1Name']])
                 else:
                     letter_well = 'A'
                     dict_value_data['Well']=str(letter_well + well_column[dict_value_data['Index1Name']])
-                
+
 
                 data_raw.append(dict_value_data)
 
@@ -141,7 +141,7 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
     ### was done using one single index
     fh_out.write(','.join(wetlab_config.BASESPACE_FILE_TWO_INDEX))
     fh_out.write('\n')
-            
+
 
     for line in data_raw:
         #import pdb; pdb.set_trace()
@@ -192,6 +192,7 @@ def get_projects_in_run(in_file):
             projects[line.split(',')[p_index]]=line.split(',')[description_index]
     fh.close()
     return projects
+
 
 def get_experiment_library_name (in_file):
     experiment_name = ''
@@ -292,7 +293,7 @@ def create_unique_sample_id_values (infile, index_file):
             # discard the empty lines or the lines that contains empty lines separated by comma
             if line == '\n' or re.search('^\W',line):
                 continue
-            
+
             data_line = line.split(',')
             data_line [0] = str(index_number_str + '-' + index_letter)
             new_line = ','.join(data_line)
