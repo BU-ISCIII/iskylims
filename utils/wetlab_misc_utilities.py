@@ -42,15 +42,16 @@ def fetch_samba_dir_filelist(logger,conn, smb_root_path='/'):
     ## + '.' and '..')
     ## If no exceptions the function will leave a SMB connection opened so that the user can
     ##interact with SMB server
-    timestamp_print('Starting process to fetch the directory list via SAMBA')
-    logger.info('Starting process to fetch the directory list via SAMBA')
+    timestamp_print('Starting process to fetch the list of elements of directory via SAMBA')
+    logger.info('Starting process to to fetch the list of elements of directory via SAMBA')
     file_list=[]
     try:
         file_list= conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME,smb_root_path)
-        #file_list=file_list[2:3] ##TBDDebugEndDebug
+        #file_list=(file_list[2:4]).append(file_list[9:10]) ##TBDDebugEndDebug
+        file_list=file_list[2:4] ##TBDDebugEndDebug
         file_list_filenames_debug=[x.filename for x in file_list] ##debug
         logger.debug(
-            'number of existing directory runs of any kind= '+str(len(file_list)-2))## -2 ->"." and ".."
+            'number of existing folder elements excluding . and ..= '+str(len(file_list)-2))
         #logger.debug('run dir list=\n'+'\n'.join(file_list_filenames_debug))
 
     except: ##
@@ -59,8 +60,8 @@ def fetch_samba_dir_filelist(logger,conn, smb_root_path='/'):
         conn.close()
         raise
 
-    timestamp_print('Leaving the process to fetch the run-directory list via SAMBA')
-    logger.info('Leaving the process to fetch the run-directory list via SAMBA')
+    timestamp_print('Leaving the process to fetch the list of elements of directory via SAMBA')
+    logger.info('Leaving the process to fetch the list of elements of directory via SAMBA')
 
     return file_list
 
