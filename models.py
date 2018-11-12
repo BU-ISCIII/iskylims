@@ -42,6 +42,21 @@ class Platform(models.Model):
 	def __str__ (self):
  		return '%s' %(self.platformName)
 
+
+class Machines (models.Model) :
+	platformID = models.ForeignKey(Platform ,on_delete=models.CASCADE)
+	machineName = models.CharField(_("Machine Name"),max_length=255)
+	machineDescription = models.CharField(_("Description"),max_length=255,null=True,blank=True)
+	machineLocation = models.CharField(_("Location"),max_length=255,null=True,blank=True)
+	machineProvider = models.CharField(_("Machine owner brand"),max_length=255,null=True,blank=True)
+	machineState =  models.CharField(_("Machine State"),max_length=50,null=True,blank=True)
+	machineOperationStart = models.DateField(auto_now_add=False, null=True,blank=True)
+	machineOperationEnd = models.DateField(auto_now_add=False, null=True,blank=True)
+	
+	def __str__ (self) :
+		return '%s' %(self.machineName)
+	
+	
 class AvailableService(MPTTModel):
 	availServiceDescription=models.CharField(_("Available services"),max_length=100)
 	parent=TreeForeignKey('self',models.SET_NULL,null=True,blank=True)
