@@ -248,7 +248,7 @@ def check_cancelled_miseq_run(logger, run):
                         logger.info(
                             'log file: '+last_log_file+' written as: '+local_lastlog_filepath)
                 except:
-                    logger.exception('Problem when retrieving MiSeq last log file from '
+                    logger.error('Problem when retrieving MiSeq last log file from '
                         + wetlab_config.SAMBA_SHARED_FOLDER_NAME+local_lastlog_filepath
                         + ' to local storage')
                     raise
@@ -353,6 +353,8 @@ def determine_target_miseqruns(logger):
     try:
         file_list=fetch_samba_dir_filelist(logger,conn)
     except:
+        logger.error('Exception when building the SAMBA remote directory dir list')
+        conn.close()
         raise
 
     ## total available miSeq runs format
@@ -502,13 +504,13 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
                     transfered_samplesheet_filepaths.append(local_samplesheet_filepath)
                     logger.info('run: '+run_index+'. Local copy of samplesheet: '+local_samplesheet_filepath)
             except:
-                logger.exception('Problem when retrieving MiSeq samplesheets from '
+                logger.error('Problem when retrieving MiSeq samplesheets from '
                     + wetlab_config.SAMBA_SHARED_FOLDER_NAME+samba_samplesheet_filepath
                     + ' to local storage')
                 raise
 
     except:
-        logger.exception('Problem when opening samba connection to retrieve samplesheets')
+        logger.error('Problem when opening samba connection to retrieve samplesheets')
         for transfered_file in transfered_samplesheet_filepaths:
             os.remove(transfered_file)
             logger.info('Deleted from local storage: ',transfered_file)
@@ -570,7 +572,7 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
                     + ' recorded in: '+wetlab_config.SAMPLESHEET_NOEXPNAME_MISEQRUNS_FILEPATH)
 
         except:
-            logger.exception('Exception when trying to record run '+ run_index
+            logger.error('Exception when trying to record run '+ run_index
                 +' with NO EXPERIMENT NAME in '
                 + wetlab_config.SAMPLESHEET_NOEXPNAME_MISEQRUNS_FILEPATH)
             raise
@@ -661,7 +663,7 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
                 logger.info('Deleted file: '+ run_info_dict['local_samplesheet_filepath'])
 
             except:
-                logger.exception('Exception when trying to record run '+ run_index
+                logger.error('Exception when trying to record run '+ run_index
                     +' with faulty samplesheet in file '
                     + wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH)
                 raise
@@ -716,7 +718,6 @@ def getSampleSheetFromSequencer():
     logger=open_log('getSampleSheetFromSequencer.log')
     timestamp_print('Starting the process for getSampleSheetFromSequencer()')
     logger.info('Starting the process for getSampleSheetFromSequencer()')
-    #assert 0==2, 'comentar para arrancar'
     try:
         ## Launch elaboration of the list of the MiSeq samplesheets to study:
         target_run_folders= determine_target_miseqruns(logger)
@@ -817,7 +818,9 @@ def getSampleSheetFromSequencer():
         ## generic exception handling (exception info).
         var =traceback.format_exc()
         time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        logger.error ('getSampleSheetFromSequencer: exception handling. Time stop= '+
+        timestamp_print ('==>ERROR:getSampleSheetFromSequencer: exception handling. Time stop= '+
+            time_stop+'.  Traceback info= '+var)
+        logger.error ('==> getSampleSheetFromSequencer: exception handling. Time stop= '+
             time_stop+'.  Traceback info= '+var)
 
 
@@ -872,13 +875,12 @@ def test_parsing_xml_files():
         logger.debug('SMB connection closed')    #fetch RunInfo y RunParameters
 
     #parse of files: check trazas
-    ### TODO see 'id' next line EndTODO
+    ###  see 'id' next line
     save_miseq_run_info(local_runinfoxml_filepath,local_runparametersxml_filepath,248,logger)
     return
 '''
 
 
-##TODO## to be integrated in common flow... in try: catch:
 def miseq_check_recorded():
     timestamp_print('Starting the process for miseq_check_recorded')
     logger=open_log('miseq_check_recorded') #TBDDebugEndTBDDebug
@@ -892,10 +894,14 @@ def miseq_check_recorded():
 
     found_xmltxt_files_per_run_dir={}
     ##run dirs of runs in RECORDED state from a previous action
-    recorded_miseqruns=managed_open_file(
-        logger,wetlab_config.RECORDED_MISEQRUNS_FILEPATH,'r')
-    logger.debug('Existing MISEQ run dirs (Recorded state):\n'+'\n'.join(
-        recorded_miseqruns))
+    try:
+        recorded_miseqruns=managed_open_file(
+            logger,wetlab_config.RECORDED_MISEQRUNS_FILEPATH,'r')
+        logger.debug('Existing MISEQ run dirs (Recorded state):\n'+'\n'.join(
+            recorded_miseqruns))
+    except:
+        logger.error('Exception when reading file for RECORDED miseq runs')
+        raise
 
     try:
         fetch_miseqrun_xml_completion_files(logger, recorded_miseqruns,found_xmltxt_files_per_run_dir)
@@ -1072,42 +1078,54 @@ def miseq_check_recorded():
 
 
 
-#TODO
-'''
 def check_recorded_folder ():
     time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(time_start )
     working_path = settings.MEDIA_ROOT
     print('Starting the process for recorded_folder ')
     logger=open_log('check_recorded_folder.log')
-    os.chdir(working_path)
-    path=os.path.join(working_path,wetlab_config.RUN_TEMP_DIRECTORY_RECORDED )
-    logger.info('Looking for new runs in directory %s', path)
 
-    dir_wetlab=os.getcwd()
-    logger.debug('check_recorder_folder function is running on directory  %s', dir_wetlab)
-    # true if there are folders under the recorded directory
-    if os.listdir(path):
-        # There are sample sheet files that need to be processed
-        updated_run=process_run_in_recorded_state(logger)
-        if updated_run == 'Error':
-            logger.error('No connection is available to Flavia')
-            logger.error('Exiting the process for searching run in recorded state ')
-            time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            print(time_stop)
-            print('******* Exiting the check_recorder_folder module due to error when connecting to '+wetlab_config.SAMBA_SHARED_FOLDER_NAME)
-        else:
-            for run_changed in updated_run:
-                logger.info('The run  %s is now on Sample Sent state', run_changed)
-            time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            print(time_stop)
-            logger.info('Exiting the check_recorded_folder')
-    else:
+    logger.info('Checking first potential MiSeq runs...')
+    try:
+        miseq_check_recorded()
+    except:
+        logger.error('Exception when execution miseq check recorded')
+        ## generic exception handling (exception info).
+        var =traceback.format_exc()
         time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        print(time_stop)
-        logger.info( 'Exiting the crontab for record_folder. No directories under recorded folder have been found')
-'''
-##EndTODO
+        timestamp_print ('==>ERROR:getSampleSheetFromSequencer: exception handling. Time stop= '
+            + time_stop+'.  Traceback info= '+var)
+        logger.error ('==> getSampleSheetFromSequencer: exception handling. Time stop= '
+            + time_stop+'.  Traceback info= '+var)
+
+    finally: #always
+        logger.info('...Continue execution of check_recorded_folder for NextSeq .')
+        os.chdir(working_path)
+        path=os.path.join(working_path,wetlab_config.RUN_TEMP_DIRECTORY_RECORDED )
+        logger.info('Looking for new runs in directory %s', path)
+
+        dir_wetlab=os.getcwd()
+        logger.debug('check_recorder_folder function is running on directory  %s', dir_wetlab)
+        # true if there are folders under the recorded directory
+        if os.listdir(path):
+            # There are sample sheet files that need to be processed
+            updated_run=process_run_in_recorded_state(logger)
+            if updated_run == 'Error':
+                logger.error('No connection is available to Flavia')
+                logger.error('Exiting the process for searching run in recorded state ')
+                time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                print(time_stop)
+                print('******* Exiting the check_recorder_folder module due to error when connecting to '+wetlab_config.SAMBA_SHARED_FOLDER_NAME)
+            else:
+                for run_changed in updated_run:
+                    logger.info('The run  %s is now on Sample Sent state', run_changed)
+                time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                print(time_stop)
+                logger.info('Exiting the check_recorded_folder')
+        else:
+            time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            print(time_stop)
+            logger.info( 'Exiting the crontab for record_folder. No directories under recorded folder have been found')
 
 
 

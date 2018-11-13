@@ -48,7 +48,7 @@ def fetch_samba_dir_filelist(logger,conn, smb_root_path='/'):
     try:
         file_list= conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME,smb_root_path)
         #file_list=(file_list[2:4]).append(file_list[9:10]) ##TBDDebugEndDebug
-        file_list=file_list[2:4] ##TBDDebugEndDebug
+        #file_list=file_list[2:4] ##TBDDebugEndDebug
         file_list_filenames_debug=[x.filename for x in file_list] ##debug
         logger.debug(
             'number of existing folder elements excluding . and ..= '+str(len(file_list)-2))
@@ -57,7 +57,6 @@ def fetch_samba_dir_filelist(logger,conn, smb_root_path='/'):
     except: ##
         logger.error('==>Exception when accessing SMB with listPath')
         timestamp_print('==>Exception when accessing SMB with listPath')
-        conn.close()
         raise
 
     timestamp_print('Leaving the process to fetch the list of elements of directory via SAMBA')
