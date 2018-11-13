@@ -17,8 +17,7 @@ from django.core.files.storage import FileSystemStorage
 import datetime
 import statistics
 from django.conf import settings
-from iSkyLIMS_drylab import drylab_config
-
+from iSkyLIMS_drylab import drylab_config  
 from smb.SMBConnection import SMBConnection
 
 ####### Import libraries for static files
@@ -230,12 +229,20 @@ def service_request(request, serviceRequestType):
 								'Keep this number safe for refering your request', download_file ,
 								'You will be contacted shortly.']})
 
-		else: #No POST
+		else: 
 			form = ServiceRequestFormInternalSequencing()
-			## Addition of serviceProjectName for
-			# implementation of drop down menu to choose a project name of a list of projects
-			# belonging to the logged-in user in the service request form
-			form.fields['serviceProjectNames'].queryset = Projects.objects.filter(user_id__exact = request.user.id)
+			# getting projects from user sharing list 
+			user_groups = request.user.groups.values_list('name',flat=True)
+			if len (user_groups) > 0 :
+				sharing_list = []
+				for user in user_groups :
+					#import pdb; pdb.set_trace()
+					if User.objects.filter(username__exact = user).exists():
+						sharing_list.append(User.objects.get(username__exact = user).id)
+				sharing_list.append(request.user.id)
+				form.fields['serviceProjectNames'].queryset = Projects.objects.filter(user_id__in = sharing_list)
+			else: 
+				form.fields['serviceProjectNames'].queryset = Projects.objects.filter(user_id__exact = request.user.id)
 			form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
 			return render(request, 'iSkyLIMS_drylab/RequestForm.html' , { 'form' : form , 'request_internal': 'request_internal'})
 
@@ -455,10 +462,13 @@ def get_service_information (service_id):
 		display_service_details['resolutions'] = resolution_info
 	#import pdb; pdb.set_trace()
 	if Resolution.objects.filter(resolutionServiceID = service).exists():
-		resolution_id = Resolution.objects.filter(resolutionServiceID = service).last().id
-		if Delivery.objects.filter(deliveryResolutionID = resolution_id).exists():
-			delivery = Delivery.objects.get(deliveryResolutionID = resolution_id)
-			display_service_details['delivery'] = [delivery.get_delivery_information()]
+		resolution_list = Resolution.objects.filter(resolutionServiceID = service)
+		delivery_info = []
+		for resolution_id in resolution_list :
+			if Delivery.objects.filter(deliveryResolutionID = resolution_id).exists():
+				delivery = Delivery.objects.get(deliveryResolutionID = resolution_id)
+				delivery_info.append([delivery.get_delivery_information()])
+				display_service_details['delivery'] = delivery_info
 
 	return display_service_details
 

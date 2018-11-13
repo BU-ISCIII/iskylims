@@ -6,7 +6,11 @@ from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel
 from mptt.fields import TreeForeignKey, TreeManyToManyField
 from django.utils.timezone import now as timezone_now
-from iSkyLIMS_wetlab.models import RunProcess, Projects
+try : #adding this error handling because the import request from iSkyLIMS_wetlab
+	# which requires to import classes Platform and Machines 
+	from .models import RunProcess, Projects
+except:
+	from iSkyLIMS_wetlab.models import RunProcess, Projects
 from django_utils.models import Profile,Center
 from django.contrib.auth.models import User
 
@@ -42,6 +46,21 @@ class Platform(models.Model):
 	def __str__ (self):
  		return '%s' %(self.platformName)
 
+
+class Machines (models.Model) :
+	platformID = models.ForeignKey(Platform ,on_delete=models.CASCADE)
+	machineName = models.CharField(_("Machine Name"),max_length=255)
+	machineDescription = models.CharField(_("Description"),max_length=255,null=True,blank=True)
+	machineLocation = models.CharField(_("Location"),max_length=255,null=True,blank=True)
+	machineProvider = models.CharField(_("Machine owner brand"),max_length=255,null=True,blank=True)
+	machineState =  models.CharField(_("Machine State"),max_length=50,null=True,blank=True)
+	machineOperationStart = models.DateField(auto_now_add=False, null=True,blank=True)
+	machineOperationEnd = models.DateField(auto_now_add=False, null=True,blank=True)
+	
+	def __str__ (self) :
+		return '%s' %(self.machineName)
+	
+	
 class AvailableService(MPTTModel):
 	availServiceDescription=models.CharField(_("Available services"),max_length=100)
 	parent=TreeForeignKey('self',models.SET_NULL,null=True,blank=True)
@@ -230,6 +249,7 @@ class Delivery(models.Model):
 		return '%s' %(self.deliveryResolutionID)
 	def get_delivery_information (self):
 		delivery_info = []
+		delivery_info.append(self.deliveryResolutionID.resolutionNumber)
 		delivery_info.append(self.deliveryDate.strftime("%d %B, %Y"))
 		delivery_info.append(self.deliveryNotes)
 		return delivery_info
