@@ -10,9 +10,6 @@ class FileExtAdmin(admin.ModelAdmin):
 class PlatformAdmin(admin.ModelAdmin):
 	list_display=('platformName',)
 
-class MachinesAdmin (admin.ModelAdmin) :
-	list_display=('machineName','machineDescription', 'machineLocation','machineProvider','machineState','machineOperationStart','machineOperationEnd')
-
 # 'serviceUsername' refactored to 'serviceUserid' which shows better its real nature
 class ServiceAdmin(admin.ModelAdmin):
 	list_display=('serviceRequestNumber','serviceUserId','serviceSeqCenter','servicePlatform','serviceRunSpecs','serviceFileExt','serviceFile','serviceStatus','serviceNotes','serviceCreatedOnDate','serviceOnApprovedDate','serviceOnRejectedDate','serviceOnDeliveredDate')
@@ -30,7 +27,6 @@ class DeliveryAdmin(admin.ModelAdmin):
 
 admin.site.register(FileExt,FileExtAdmin)
 admin.site.register(Platform,PlatformAdmin)
-admin.site.register(Machines,MachinesAdmin)
 admin.site.register(Service,ServiceAdmin)
 admin.site.register(AvailableService,AvailableServiceAdmin)
 admin.site.register(Resolution,ResolutionAdmin)
