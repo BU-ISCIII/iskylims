@@ -18,7 +18,6 @@ from .utils.email_features import *
 from .utils.library_kits import *
 
 from django_utils.models import Profile, Center
-
 from .models import *
 
 from .fusioncharts.fusioncharts import FusionCharts
@@ -568,44 +567,48 @@ def get_information_run(run_name_found,run_id):
         info_dict ['boxplot'] = FusionCharts("boxandwhisker2d", "box1" , "800", "400", "box_chart1", "json", data_source).render()
         
         
-        series =[]
-        data = []
+        #series =[]
+        #data = []
         # get the demultiplexion information from the all lanes in run
         #run_lanes_default_all = NextSeqStatsLaneSummary.objects.filter(runprocess_id__exact =run_id , defaultAll = 'all')
         #for run_lane_default_all in  run_lanes_default_all :
         #    q_30_default_all, mean_default_all, yield_mb_default_all = item.get_stats_info().split(';')
-        series = []
-        data = []
+        #series = []
+        percent_projects = {}
         # get the demultiplexion information for projects included in the run
+        percent_lane = []
         for project_demultiplexion in p_list :
-            percent_lane = []
-            #import pdb; pdb.set_trace()
-            for index_lane in range (1,5) :
-                lanes_for_percent_graphic = NextSeqStatsLaneSummary.objects.get(runprocess_id__exact = run_id, project_id = project_demultiplexion.id, lane = index_lane )
-                percent_lane.append(lanes_for_percent_graphic.percentLane)
-            #for project_for_percent_graphic in projects_for_percent_graphic :
-            data.append(percent_lane)    
-            series.append(project_demultiplexion.projectName)
+            lanes_for_percent_graphic = NextSeqStatsLaneSummary.objects.filter(runprocess_id__exact = run_id, project_id = project_demultiplexion.id )
+            for lane in lanes_for_percent_graphic :
+                percent_lane.append(float(lane.percentLane))
+            percent_projects[project_demultiplexion.projectName] =format(statistics.mean(percent_lane),'2f')
+            #series.append(project_demultiplexion.projectName)
 
         # get the demultiplexion information for the default
         
         percent_default_lane = []
-        for index_lane in range(1,5):
-            default_for_percent_graphic = NextSeqStatsLaneSummary.objects.get(runprocess_id__exact = run_id, defaultAll__exact = 'default', lane =index_lane)
-            percent_default_lane.append(default_for_percent_graphic.percentLane)
-        series.append('Unable to identify the project')
-        data.append(percent_default_lane)
+
+        default_lanes_for_percent_graphic = NextSeqStatsLaneSummary.objects.filter(runprocess_id__exact = run_id, defaultAll__exact = 'default')
+        for default_lane in default_lanes_for_percent_graphic :
+            percent_default_lane.append(float(default_lane.percentLane))
+        
+        #series.append('Unable to identify the project')
+        #data.append(statistics.mean(percent_default_lane))
+        percent_projects['Unable to identify the project'] = format(statistics.mean(percent_default_lane),'2f')
         heading = 'Percentage of each project in the Run'
         sub_caption = ''
         theme = 'fint'
-        x_axis_name = 'Lanes'
+        #x_axis_name = 'Lanes'
+        x_axis_name = 'Projects names'
         y_axis_name = 'Percentage '
-        categories = ['Lane 1', 'Lane 2', 'Lane 3','Lane 4']
-        data_source = column_graphic_with_categories(heading, sub_caption, x_axis_name, y_axis_name, theme, categories, series, data)
-        info_dict ['run_project_comparation'] = FusionCharts("mscolumn3d", "column1" , "600", "400", "column_chart1", "json", data_source).render()
+        #categories = ['Lane 1', 'Lane 2', 'Lane 3','Lane 4']
+        data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, percent_projects)
+        #data_source = column_graphic_with_categories(heading, sub_caption, x_axis_name, y_axis_name, theme, categories, series, data)
+        #import pdb; pdb.set_trace()
+        info_dict ['run_project_comparation'] = FusionCharts("column3d", "column1" , "600", "400", "column_chart1", "json", data_source).render()
         
         fl_data_display=[]
-        #import pdb; pdb.set_trace()
+
         fl_summary_id = NextSeqStatsFlSummary.objects.filter(runprocess_id__exact =run_id , project_id__isnull=True, defaultAll='all')
         fl_list = ['Cluster (Raw)', 'Cluster (PF)', 'Yield (MBases)', 'Number of Samples']
         fl_data_display.append(fl_list)
@@ -627,7 +630,7 @@ def get_information_run(run_name_found,run_id):
 
         # prepare the data for default Flowcell summary
         default_fl_data_display=[]
-        #import pdb; pdb.set_trace()
+
         default_fl_summary_id = NextSeqStatsFlSummary.objects.filter(runprocess_id__exact =run_id , project_id__isnull=True, defaultAll='default')
         default_fl_data_display.append(fl_list)
         default_fl_values = default_fl_summary_id[0].get_fl_summary().split(';')

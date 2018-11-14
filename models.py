@@ -6,7 +6,9 @@ from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
 from django_utils.models import Center
+
 from .  import wetlab_config
+
 
 class RunProcess(models.Model):
     runName = models.CharField(max_length=45)
@@ -25,6 +27,7 @@ class RunProcess(models.Model):
     useSpaceOtherMb=models.CharField(max_length=10)
     #requestedCenter= models.CharField(max_length=45)
     centerRequestedBy = models.ForeignKey (Center, on_delete=models.CASCADE)
+    #sequencerModel = models.Foreingkey (Machines, on_delete=models.CASCADE)
 
     def __str__(self):
         return '%s' %(self.runName)
@@ -450,6 +453,10 @@ class SamplesInProject (models.Model):
 
     def get_quality_sample (self):
         return '%s' %(self.qualityQ30)
+
+
+
+
 '''
 class MiSeqStatisticsBin (models.Model):
     document = models.OneToOneField(

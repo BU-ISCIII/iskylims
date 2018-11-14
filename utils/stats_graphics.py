@@ -717,3 +717,41 @@ def column_graphic_with_categories(heading, sub_caption, x_axis_name, y_axis_nam
     '''
 
     return data_source
+
+def column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, input_data) :
+    data_source = {}
+    data_source['chart'] = {
+                "caption": heading,
+                "subCaption": sub_caption,
+                "xAxisName": x_axis_name,
+                "yAxisName": y_axis_name,
+                #"theme": "fint",
+                "theme": theme,
+                "numberPrefix": "",
+                "placevaluesInside": "1",
+                "rotatevalues": "1",
+                #Showing canvas bg to apply background color
+                "showCanvasBg": "1",
+                #Shwoing canvas base to apply base color
+                "showCanvasBase": "1",
+                #Changing canvas base depth
+                "canvasBaseDepth": "14",
+                #Changing canvas background depth
+                "canvasBgDepth": "5",
+                #Changing canvas base color
+                "canvasBaseColor": "#aaaaaa",
+                #Changing canvas background color
+                "canvasBgColor": "#eeeeee",
+                "exportEnabled": "1"
+            }
+
+    data =[]
+
+    for key , values in input_data.items() :
+        data_dict = {}
+        data_dict['label'] = key
+        data_dict['value'] = values
+        data.append(data_dict)
+    data_source['data'] = data
+
+    return data_source
