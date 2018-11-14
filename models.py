@@ -6,6 +6,33 @@ from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
 from django_utils.models import Center
+from django.utils.translation import ugettext_lazy as _
+
+
+class SequencingPlatform(models.Model):
+    platformName=models.CharField(_("Sequencing platform"),max_length=20)
+
+    def __str__ (self):
+         return '%s' %(self.platformName)
+
+
+class Machines (models.Model) :
+    platformID = models.ForeignKey(SequencingPlatform ,on_delete=models.CASCADE)
+    machineName = models.CharField(_("Machine Name"),max_length=255) #Example M03352
+    machineDescription = models.CharField(_("Description"),max_length=255,null=True,blank=True)
+    machineLocation = models.CharField(
+        _("Location"),max_length=255,null=True,blank=True)  #Physical location
+    machineProvider = models.CharField(
+        _("Machine owner brand"),max_length=255,null=True,blank=True) #Equipement maker
+    machineSerialNumber = models.CharField(_("Serial Number"),max_length=255,null=True,blank=True)
+    machineState =  models.CharField(
+        _("Machine State"),max_length=50,null=True,blank=True) #operational state
+    machineOperationStart = models.DateField(auto_now_add=False, null=True,blank=True) #Commissioning
+    machineOperationEnd = models.DateField(auto_now_add=False, null=True,blank=True) #Decomissioning
+
+
+    def __str__ (self) :
+        return '%s' %(self.machineName)
 
 class RunProcess(models.Model):
     runName = models.CharField(max_length=45)
@@ -24,7 +51,7 @@ class RunProcess(models.Model):
     useSpaceOtherMb=models.CharField(max_length=10)
     #requestedCenter= models.CharField(max_length=45)
     centerRequestedBy = models.ForeignKey (Center, on_delete=models.CASCADE)
-    sequencerPlatformModel=models.CharField(max_length=20, default='seq_model')
+    sequencerModel=models.ForeignKey(Machines, on_delete=models.CASCADE)
 
     def __str__(self):
         return '%s' %(self.runName)
@@ -86,8 +113,8 @@ class RunProcess(models.Model):
         total_size = image_size + data_size + other_size
         return '%s'%(total_size)
 
-    def get_run_sequencerPlatformModel (self):
-        return '%s' %(self.sequencerPlatformModel)
+    def get_run_sequencerModel (self):
+        return '%s' %(self.sequencerModel)
 
     def get_runprocess_info_debug(self): ##useful for debugging
         return str(self.__dict__)

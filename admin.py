@@ -31,8 +31,20 @@ class LibraryKitAdmin(admin.ModelAdmin):
     list_display = ('libraryName','generatedat')
 
 
+class SequencingPlatformAdmin(admin.ModelAdmin):
+    list_display= ('platformName',)
+
+class MachinesAdmin (admin.ModelAdmin):
+    list_display=(
+        'platformID','machineName','machineDescription','machineLocation','machineProvider',
+        'machineSerialNumber','machineState','machineOperationStart','machineOperationEnd')
+
+
+
 #admin.site.register(Document , AppAdmin)
 admin.site.register(RunningParameters , RunningParametersAdmin)
 admin.site.register(RunProcess , RunProcessAdmin)
 admin.site.register(LibraryKit,LibraryKitAdmin)
 admin.site.register(Projects, ProjectsAdmin)
+admin.site.register(SequencingPlatform, SequencingPlatformAdmin)
+admin.site.register(Machines, MachinesAdmin)

@@ -106,9 +106,7 @@ def fetch_miseqrun_xml_completion_files(logger,miseqruns, found_xmltxt_files_per
 
                 run_file_list=conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME,run_dir)
                 logger.debug('Run: '+run_dir)
-                run_file_list_debug=[x.filename for x in run_file_list] ##debug
-                logger.debug('. file list=\n\t'+'\n\t'.join(run_file_list_debug)+'\n')
-                logger.debug('\tlength of run file list= '+str(len(run_file_list)))
+                logger.debug('\tlength of run file list (excluding . ..)= '+str(len(run_file_list)-2))
                 try:
                     run_temp_dir=os.path.join(
                         settings.MEDIA_ROOT, wetlab_config.RUN_TEMP_DIRECTORY,run_dir)
@@ -325,6 +323,48 @@ def update_miseq_processed_file(run):
         raise
 
 
+def get_machine_for_sequencer(sequencer):
+    ## 1.-check if there is a 'sequencer' already registered (Machines). Otherwise, register it
+    timestamp_print('Starting the process to get machine instance for a sequencer()')
+    logger.info('Starting the process to get machine instance for a sequencer()')
+
+    if 'M0'==sequencer[0:2]:
+        platform='Mi-Seq'
+    elif 'NS'==sequencer[0:2]:
+        platform='Next-Seq'
+    ##complete with available platforms
+    else:
+        platform='unknown'
+        raise ValueError('platform value:'+platform)
+
+    try:
+        machine=Machines.Objects.get(machineName=sequencer)
+    except Machines.DoesNotExist:
+        logger.warning('The following machine does not exist in table Machines: '+sequencer
+            +'\nUpdating table \"Machines\" with new sequencer)
+        try:
+            seqPlat=SequencingPlatform.objects.get(platformName__iendswith=platform)
+        except SequencingPlatform.DoesNotExist:
+            logger.error('Table SequencingPlatforms should be pre-charged for Mi-Seq')
+            timestamp_print('==> ERROR: Table SequencingPlatforms should be pre-charged for Mi-Seq')
+            raise
+        try:
+            machine=Machines(platformID=seqPlat, machineName=sequencer)
+            machine.save()
+        except:
+            timestamp_print('Unexpected exception when saving new machine: '+sequencer
+                + ' platformID= '+seqPlat)
+            logger.error('Unexpected exception when saving new machine: '+sequencer
+                + ' platformID= '+seqPlat)
+            raise
+    except:
+        logger.error('Unexpected exception when accessing table Machines for: '+sequencer)
+        timestamp_print(
+            '==> Unexpected exception when accesing table Machines for: '+sequencer)
+        raise
+    timestamp_print('Leaving the process to get a machine instance for a sequencer()')
+    logger.info('Leaving the process to get machine instance for a sequencer()')
+    return machine
 
 
 
@@ -376,7 +416,13 @@ def determine_target_miseqruns(logger):
                 #logger.debug('sequencer information= '+sequencer.group())
                 samplesheet_found=False
                 sequencer_info=sequencer.group() ##sequencer string
-                run_dir_file_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME, run_dir)
+
+                try:
+                    run_dir_file_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME, run_dir)
+                except:
+                    logger.error('Exception happened trying to obtain the file list of :'+run_dir)
+                    timestamp_print('==> Exception happened trying to obtain the file list of :'+run_dir)
+                    raise
                 run_dir_file_list_filenames_debug=[x.filename for x in run_dir_file_list] ##debug
                 #logger.debug('\tlength of run dir file list= '+str(len(run_dir_file_list)))
                 #logger.debug('. file list=\n\t'+'\n\t'.join(run_dir_file_list_filenames_debug)+'\n')
@@ -388,7 +434,7 @@ def determine_target_miseqruns(logger):
                         samplesheet_found=True
                         temp_run_folders[run_dir]={}
                         temp_run_folders[run_dir]['samplesheet_filename']=file.filename
-                        temp_run_folders[run_dir]['sequencer_model']= sequencer_info[1:-1] # MiSeq
+                        temp_run_folders[run_dir]['sequencer_model']= sequencer_info# MiSeq
                         logger.debug('temp_run_folders['+run_dir+']: '+str(temp_run_folders[run_dir]))
                         break
                     else:
@@ -434,31 +480,31 @@ def determine_target_miseqruns(logger):
         try:##runs which already finished the sequencing (primary analysis)
             ##in the past (can be in later states...)
             ##or have been CANCELLED
-            process_run_file_miseqelements=managed_open_file(logger, wetlab_config.MISEQ_PROCESSED_RUN_FILEPATH,'r')
+            process_run_file_miseqelements=managed_open_file(
+                logger, wetlab_config.MISEQ_PROCESSED_RUN_FILEPATH,'r')
             logger.debug('Existing processed miseq runs:\n'+'\n'.join(process_run_file_miseqelements))
 
             ##runs with 'problematic'/absent samplesheets registered in previous iterations
-            faulty_samplesheet_miseqruns=managed_open_file(logger,wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH,'r')
+            faulty_samplesheet_miseqruns=managed_open_file(
+                logger,wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH,'r')
             logger.debug('Existing faulty runs:\n'+'\n'.join(faulty_samplesheet_miseqruns))
 
-            '''TBD
-            ##runs with no 'experiment name' in samplesheet registered iterations
-            noexpname_samplesheet_miseqruns=managed_open_file(
-                logger,wetlab_config.SAMPLESHEET_NOEXPNAME_MISEQRUNS_FILEPATH,'r')
-            logger.debug('Existing no exp name runs:\n'+'\n'.join(noexpname_samplesheet_miseqruns))
-            EndTBD
-            '''
         except:
-            logger.error('==>Exception when accessing MISEQ_PROCESSED_RUN_FILEPATH- FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH')
+            logger.error(
+                '==>Exception when accessing MISEQ PROCESSED RUN FILEPATH-'
+                ' FAULTY SAMPLESHEET MISEQRUNS _FILEPATH')
             raise
 
         for run,val in temp_run_folders.items():
             if run in process_run_file_miseqelements:
-                logger.debug('run: '+run+' is in '+wetlab_config.MISEQ_PROCESSED_RUN_FILEPATH+': ignoring...')
+                logger.debug(
+                    'run: '+run+' is in '+wetlab_config.MISEQ_PROCESSED_RUN_FILEPATH+': ignoring...')
                 continue
 
             elif run in faulty_samplesheet_miseqruns:
-                logger.debug('run: '+run+' is in '+wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH+': ignoring...')
+                logger.debug(
+                    'run: '+run+' is in '+wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH
+                    +': ignoring...')
                 continue
             else:
                 target_run_folders[run]=val
@@ -543,7 +589,7 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
 
         try:
             local_runparametersxml= os.path.join(
-                settings.MEDIA_ROOT, wetlab_config.RUN_TEMP_DIRECTORY,'runParameters.xml')
+                settings.MEDIA_ROOT, wetlab_config.RUN_TEMP_DIRECTORY,run_index,'runParameters.xml')
 
             experiment_run_name=fetch_exp_name_from_run_info(local_runparametersxml)
             logger.debug('value of exp_run_name: '+experiment_run_name) #TBDDebugEndDebug
@@ -563,45 +609,25 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
             continue
 
         logger.info('==>Experiment_run_name allocated value= '+experiment_run_name)
-        ''' TBD
-        try:
-            with open (
-                wetlab_config.SAMPLESHEET_NOEXPNAME_MISEQRUNS_FILEPATH, 'a+') as noexpname_file:
-                noexpname_file.write(run_index+'\n')
-                logger.info('Run: '+run_index
-                    + ' recorded in: '+wetlab_config.SAMPLESHEET_NOEXPNAME_MISEQRUNS_FILEPATH)
-
-        except:
-            logger.error('Exception when trying to record run '+ run_index
-                +' with NO EXPERIMENT NAME in '
-                + wetlab_config.SAMPLESHEET_NOEXPNAME_MISEQRUNS_FILEPATH)
-            raise
-        EndTBD'''
 
         ##samplesheet checks:
         logger.debug('\n\nBeginning Samplesheet checks:')
-        ''' TBD
         project_dict=get_projects_in_run(
             run_info_dict['local_samplesheet_filepath'])
         logger.debug('project_dict previous to checks:=\n' +str(project_dict))
 
-        EndTBD
-        '''
         samplesheet_check_error_dict={} ## to register the faulty run and the error cause
         message_output='OK_check'
 
         ##pre-generation of check results so to have them available
         message_output_run_name_free_to_use=''.join(check_run_name_free_to_use(experiment_run_name))
         #logger.debug('message_output_run_name_free_to_use= '+message_output_run_name_free_to_use)
-
         message_output_run_projects_in_samplesheet=''.join(check_run_projects_in_samplesheet(
                 run_info_dict['local_samplesheet_filepath']))
         #logger.debug('message_output_run_projects_in_samplesheet= '+''.join(message_output_run_projects_in_samplesheet))
-
         message_output_run_users_definition=''.join(check_run_users_definition(
                 run_info_dict['local_samplesheet_filepath']))
         #logger.debug('message_output_run_users_definition= '+message_output_run_users_definition)
-
         message_output_run_projects_definition=''.join(check_run_projects_definition(project_dict))
         #logger.debug('message_output_run_projects_definition= '+message_output_run_projects_definition)
 
@@ -690,7 +716,7 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
             researcher=project_dict[key]
             database_info[experiment_run_name]['userId']=User.objects.get(username__exact = researcher)
             database_info[experiment_run_name]['index_library']=index_library_name
-            database_info[experiment_run_name]['sequencerPlatformModel']=run_info_dict['sequencer_model']
+            database_info[experiment_run_name]['sequencer_model']=run_info_dict['sequencer_model']
 
     #logger.debug('\ndatabase_info= '+str(database_info)+'\n')
     timestamp_print('Leaving the process for fetch_remote_samplesheets()')
@@ -738,6 +764,33 @@ def getSampleSheetFromSequencer():
                 for key, val in database_info.items():
 
                     ##1.- table 'RunProcess' data:
+                    #getting_sequencerModel_for_runprocess (platformName, sequencer=val['sequencer_model'],
+                    try:
+                        machine=Machines.Objects.get(machineName=sequencer)
+                    except Machines.DoesNotExist:
+                        logger.warning('The following machine does not exist in table Machines: '+sequencer
+                            +'\nUpdating table \"Machines\" with new sequencer)
+                        try:
+                            seqPlat=SequencingPlatform.objects.get(platformName__iendswith='Mi-Seq')
+                        except SequencingPlatform.DoesNotExist:
+                            logger.error('Table SequencingPlatforms should be pre-charged for Mi-Seq')
+                            timestamp_print('==> ERROR: Table SequencingPlatforms should be pre-charged for Mi-Seq')
+                            raise
+                        try:
+                            machine=Machines(platformID=seqPlat, machineName=sequencer)
+                            machine.save()
+                        except:
+                            timestamp_print('Unexpected exception when saving new machine: '+sequencer
+                                + ' platformID= '+seqPlat)
+                            logger.error('Unexpected exception when saving new machine: '+sequencer
+                                + ' platformID= '+seqPlat)
+                            raise
+                    except:
+                        logger.error('Unexpected exception when accessing table Machines for: '+sequencer)
+                        timestamp_print(
+                            '==> Unexpected exception when accesing table Machines for: '+sequencer)
+                        raise
+
                     relative_samplesheet_filepath= val['relative_samplesheet_filepath']
                     center_requested_id = Profile.objects.get(
                         profileUserID = val['userId']).profileCenter.id
@@ -747,7 +800,7 @@ def getSampleSheetFromSequencer():
                         sampleSheet=relative_samplesheet_filepath,
                         centerRequestedBy=Center.objects.get(pk=center_requested_id),
                         index_library = val['index_library'],
-                        sequencerPlatformModel= val['sequencerPlatformModel'],
+                        sequencerModel= machine,
                         runState='Recorded')
                     new_run_info.save()
                     logger.info('------------------------------')
@@ -825,6 +878,7 @@ def getSampleSheetFromSequencer():
 
 
 '''
+TBD
 def test_parsing_xml_files():
     logger=open_log('test_parsing_xml_files.log')
     timestamp_print('Starting the process for test_parsing_xml_files()')
@@ -878,6 +932,7 @@ def test_parsing_xml_files():
     ###  see 'id' next line
     save_miseq_run_info(local_runinfoxml_filepath,local_runparametersxml_filepath,248,logger)
     return
+EndTBD
 '''
 
 
@@ -920,6 +975,9 @@ def miseq_check_recorded():
             logger.debug('value of run: '+run) #TBDDebugEndDebug
             local_runparametersxml=os.path.join(
                         settings.MEDIA_ROOT, wetlab_config.RUN_TEMP_DIRECTORY,run,'runParameters.xml')
+            local_runinfoxml_filepath=os.path.join(
+                        settings.MEDIA_ROOT, wetlab_config.RUN_TEMP_DIRECTORY,run,'RunInfo.xml')
+
 
             ##################################
             ## 1.- Check if sequencing is over
@@ -930,11 +988,12 @@ def miseq_check_recorded():
                 logger.debug('RTAComplete FOUND') #TBDDebugEndTBDDebug
                 if ('found' != found_xmltxt_files_per_run_dir[run]['RunInfo.xml']):
                     logger.error('==> not found RunInfo.xml')
+                    timestamp_print('==> ERROR: not found RunInfo.xml')
                     continue
                 if ( 'found' != found_xmltxt_files_per_run_dir[run]['runParameters.xml']):
                     logger.error('==> not found runParameters.xml')
+                    timestamp_print('==> ERROR: not found runParameters.xml')
                     continue
-
 
 
                 try:
@@ -968,7 +1027,7 @@ def miseq_check_recorded():
                     # add the completion date in the run
                     logger.info('Saving completion date for %s' , exp_run_name)
                     run_update_date = RunProcess.objects.get(pk=exp_name_id)
-                    run_update_date.run_finish_date = run_completion_date
+                    run_update_date.run_finish_date = found_xmltxt_files_per_run_dir[run]['RTAComplete.txt'][1]
                     logger.debug('Completion date: '+str(run_update_date.run_finish_date))
                     run_update_date.save()
 
