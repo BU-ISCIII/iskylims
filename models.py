@@ -27,7 +27,7 @@ class RunProcess(models.Model):
     useSpaceOtherMb=models.CharField(max_length=10)
     #requestedCenter= models.CharField(max_length=45)
     centerRequestedBy = models.ForeignKey (Center, on_delete=models.CASCADE)
-    #sequencerModel = models.Foreingkey (Machines, on_delete=models.CASCADE)
+    sequencerModel = models.ForeignKey ('iSkyLIMS_drylab.Machines', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return '%s' %(self.runName)

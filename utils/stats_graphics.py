@@ -470,7 +470,7 @@ def researcher_project_mean_column_graphic(heading,  x_axis_name, y_axis_name, u
     ]
     return data_source
 
-def column_graphic_samples_in_project (heading, sub_caption, x_axis_name, y_axis_name, theme, percentage_in_project, sample_name) :
+def column_graphic_one_column_highligthed (heading, sub_caption, x_axis_name, y_axis_name, theme, percentage_in_project, sample_name) :
     data_source = {}
     data_source['chart'] = {
                 "caption": heading,

@@ -9,56 +9,15 @@
 <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script>   
 <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>     
 
-{% if researcher_one_project %}
-    <div class="row row-space-2 margin-b-4">
-      <div class="col-sm-8 col-sm-offset-1" >
-        <div class="panel panel-default">
-          <div class="panel-heading"><h2>Statistics result for Investigator {{researcher_one_project.user_name}} </h2></div>
-           <div class="panel-body">
-                <h3> Project Name : {{researcher_one_project.project_name}}</h3>
-          
-          
-            </div>  <!--  end of panel body  -->
-        </div> <!--// end panel -->
-        </div> <!--// end col-sm-8  -->
-    </div> <!--// end row -->
-    <BR>
-    <div class="row row-space-2 margin-b-4">
-      <div class="col-sm-7" >
-        <div class="panel panel-default">
-          <div class="panel-heading"><h2>Statistics result for Investigator </h2>
-          <div class="panel-body">
-                <!-- Column 2 Chart will start here-->
-            <div id="chart-1"> </div>
-                <!-- dumping JavaScript code here -->
-                {{ researcher_one_project.q_30_chart |safe }}
-         </div>  <!--  end of panel body  -->
-        </div> <!--// end panel -->
-        </div> <!--// end col-sm-7  -->
-    </div> <!--// end row -->
 
-    <div class="row row-space-2 margin-b-3">
-      <div class="col-sm-8 col-sm-offset-1" >
-        <div class="panel panel-default">
-          <div class="panel-heading"><h2>Statistics result for Investigator</h2></div>
-          <div class="panel-body">
-                <!-- Column 2 Chart will start here-->
-            <div id="chart-2"> </div>
-                <!-- dumping JavaScript code here -->
-                {{ researcher_one_project.mean_q_chart |safe }}
-         </div>  <!--  end of panel body  -->
-        </div> <!--// end panel -->
-        </div> <!--// end col-sm-8  -->
-    </div> <!--// end row -->
-
-{% elif researcher_several_projects %}
+{% if researcher_statistics %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-8 col-sm-offset-1" >
             <div class="panel panel-default">
-                <div class="panel-heading"><h2>Statistics result for Investigator {{researcher_several_projects.researcher_name}} </h2></div>
+                <div class="panel-heading"><h2>Statistics result for Investigator {{researcher_statistics.researcher_name}} </h2></div>
                 <div class="panel-body">
                 <h3> The following Projects  Name have been performed : </h3>
-                {% for values  in researcher_several_projects.projects %} 
+                {% for values  in researcher_statistics.projects %} 
                 {{ values }} <BR>
                 {% endfor%}
           
@@ -71,32 +30,27 @@
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
             <div class="panel panel-default">
-                <div class="panel-heading"><h3><center>Statistics for Q>30 for the Investigator {{researcher_several_projects.researcher_name}} </center></h3></div>
+                <div class="panel-heading"><h3><center>Graphic Statistics for Investigator {{researcher_statistics.researcher_name}} </center></h3></div>
                 <div class="panel-body"> 
-                <!-- Pie chart for number of Runs comparations chart will start here-->
                     <div class="col-sm-6" >
-                    <!-- Column 2 Chart will start here-->
-                        <div id="q30_chart1"> </div>
-                        <!-- dumping JavaScript code for graphics -->
-                        {{ researcher_several_projects.q30_researcher_graph.1 |safe }}
+                    <!-- Showing Q 30 graph-->
+                        <div id="q30_chart"> </div>
+                        {{ researcher_statistics.q30_researcher_graph |safe }}
                     </div> <!--// end col-sm-6  -->
                     <div class="col-sm-6" >
-                    <!-- Column 2 Chart will start here-->
-                        <div id="q30_chart2"> </div>
-                        <!-- dumping JavaScript code for graphics -->
-                        {{ researcher_several_projects.q30_researcher_graph.2 |safe }}
+                    <!-- Showing Mean graph-->
+                        <div id="mean_chart"> </div>
+                        {{ researcher_statistics.mean_q_researcher_graph |safe }}
                     </div> <!--// end col-sm-6  -->
                     <div class="col-sm-6" >
-                    <!-- Column 2 Chart will start here-->
-                        <div id="q30_chart3"> </div>
-                        <!-- dumping JavaScript code for graphics -->
-                        {{ researcher_several_projects.q30_researcher_graph.3 |safe }}
+                    <!--Showing yield mb graph-->
+                        <div id="yield_mb_chart"> </div>
+                        {{ researcher_statistics.yield_mb_researcher_graph |safe }}
                     </div> <!--// end col-sm-6  -->
                     <div class="col-sm-6" >
-                    <!-- Column 2 Chart will start here-->
-                        <div id="q30_chart4"> </div>
-                        <!-- dumping JavaScript code for graphics -->
-                        {{ researcher_several_projects.q30_researcher_graph.4 |safe }}
+                    <!-- Showing cluster pf graph-->
+                        <div id="cluster_pf_chart"> </div>
+                        {{ researcher_statistics.cluster_pf_researcher_graph |safe }}
                     </div> <!--// end col-sm-6  -->                    
                 </div> <!--  end of panel body -->
             </div> <!--// end panel -->
@@ -106,32 +60,32 @@
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
             <div class="panel panel-default">
-                <div class="panel-heading"><h3><center>Statistics for Mean Quality for Investigator {{researcher_several_projects.researcher_name}} </center></h3></div>
+                <div class="panel-heading"><h3><center>Statistics for Mean Quality for Investigator {{researcher_statistics.researcher_name}} </center></h3></div>
                 <div class="panel-body"> 
                 <!-- Pie chart for number of Runs comparations chart will start here-->
                     <div class="col-sm-6" >
                     <!-- Column 2 Chart will start here-->
                         <div id="mean-chart1"> </div>
                         <!-- dumping JavaScript code for graphics -->
-                        {{ researcher_several_projects.mean_q_researcher_graph.1 |safe }}
+                        {{ researcher_statistics.mean_q_researcher_graph.1 |safe }}
                     </div> <!--// end col-sm-6  -->
                     <div class="col-sm-6" >
                     <!-- Column 2 Chart will start here-->
                         <div id="mean-chart2"> </div>
                         <!-- dumping JavaScript code for graphics -->
-                        {{ researcher_several_projects.mean_q_researcher_graph.2 |safe }}
+                        {{ researcher_statistics.mean_q_researcher_graph.2 |safe }}
                     </div> <!--// end col-sm-6  -->
                     <div class="col-sm-6" >
                     <!-- Column 2 Chart will start here-->
                         <div id="mean-chart3"> </div>
                         <!-- dumping JavaScript code for graphics -->
-                        {{ researcher_several_projects.mean_q_researcher_graph.3 |safe }}
+                        {{ researcher_statistics.mean_q_researcher_graph.3 |safe }}
                     </div> <!--// end col-sm-6  -->
                     <div class="col-sm-6" >
                     <!-- Column 2 Chart will start here-->
                         <div id="mean-chart4"> </div>
                         <!-- dumping JavaScript code for graphics -->
-                        {{ researcher_several_projects.mean_q_researcher_graph.4 |safe }}
+                        {{ researcher_statistics.mean_q_researcher_graph.4 |safe }}
                     </div> <!--// end col-sm-6  -->                    
                 </div> <!--  end of panel body -->
             </div> <!--// end panel -->
@@ -141,13 +95,13 @@
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-8" >
             <div class="panel panel-default">
-                <div class="panel-heading"><h3><center>Statistics comparation for Q >30 for Investigator {{researcher_several_projects.researcher_name}} </center></h3></div>
+                <div class="panel-heading"><h3><center>Statistics comparation for Q >30 for Investigator {{researcher_statistics.researcher_name}} </center></h3></div>
                 <div class="panel-body"> 
                 <!-- Pie chart for number of Runs comparations chart will start here-->
                     <!-- Column 2 Chart will start here-->
                         <div id="comparation_q30_chart"> </div>
                         <!-- dumping JavaScript code for graphics -->
-                        {{ researcher_several_projects.comparation_q_30_chart |safe }}
+                        {{ researcher_statistics.comparation_q_30_chart |safe }}
                 </div> <!--  end of panel body -->
             </div> <!--// end panel -->
         </div> <!--// end col-sm-8  -->
@@ -155,13 +109,13 @@
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-8" >
             <div class="panel panel-default">
-                <div class="panel-heading"><h3><center>Statistics comparation for Mean Quality Investigator {{researcher_several_projects.researcher_name}} </center></h3></div>
+                <div class="panel-heading"><h3><center>Statistics comparation for Mean Quality Investigator {{researcher_statistics.researcher_name}} </center></h3></div>
                 <div class="panel-body">     
                     <div class="col-sm-6" >
                     <!-- Column 2 Chart will start here-->
                         <div id="comparation_mean_chart"> </div>
                         <!-- dumping JavaScript code for graphics -->
-                        {{ researcher_several_projects.comparations_mean_q_chart |safe }}
+                        {{ researcher_statistics.comparations_mean_q_chart |safe }}
                     </div> <!--// end col-sm-6  -->
                 </div> <!--  end of panel body -->
             </div> <!--// end panel -->

@@ -11,7 +11,7 @@ from .interop_statistics import *
 
 from smb.SMBConnection import SMBConnection
 from iSkyLIMS_wetlab import wetlab_config
-
+from iSkyLIMS_drylab.models import Machines, Platform
 from django.conf import settings
 
 
@@ -125,12 +125,25 @@ def save_run_info(run_info, run_parameter, run_id, logger):
     running_data['PlannedIndex2ReadCycles']=parameter_data_root.find('PlannedIndex2ReadCycles').text
     running_data['ApplicationVersion']=p_parameter.find('ApplicationVersion').text
     running_data['NumTilesPerSwath']=p_parameter.find('NumTilesPerSwath').text
+    InstrumentID = p_parameter.find('InstrumentID').text
+    Chemistry = p_parameter.find('Chemistry').text
+    ## check if InstrumentID exists on database
+    if not Machines.objects.filter(machineName__exact = InstrumentID).exists() :
+        if not Platform.objects.filter(platformName__exact = Chemistry).exists():
+            new_platform = Platform (platformName = Chemistry)
+            new_platform.save()
+        platform = Platform.objects.get(platformName__exact = Chemistry)
+        new_machine = Machines(platformID= platform, machineName = InstrumentID )
+        new_machine.save()
+    ## Update the run information with the instrumentID
+    sequencer = Machines.objects.get(machineName__exact = InstrumentID)
 
     logger.debug('running_data information', running_data)
     ###########################################
     ## saving data into database
     ###########################################
     logger.info ('Saving to database  the run id %s', run_id)
+        
     running_parameters= RunningParameters (runName_id=RunProcess.objects.get(pk=run_id),
                          RunID=running_data['RunID'], ExperimentName=running_data['ExperimentName'],
                          RTAVersion=running_data['RTAVersion'], SystemSuiteVersion= running_data['SystemSuiteVersion'],
@@ -153,8 +166,9 @@ def save_run_info(run_info, run_parameter, run_id, logger):
 
     run_to_be_updated = RunProcess.objects.get(pk=run_id)
     run_to_be_updated.run_date = run_date
+    run_to_be_updated.sequencerModel = sequencer
     run_to_be_updated.save()
-    logger.info('Updated the run date for the runProcess table ')
+    logger.info('Updated the run date and sequencer used for the runProcess table ')
 
     projects_to_update = Projects.objects.filter(runprocess_id__exact = run_id)
     for project in projects_to_update :
