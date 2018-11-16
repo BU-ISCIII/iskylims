@@ -147,32 +147,58 @@ def save_miseq_run_info(run_info,run_parameter,run_id,logger):
     logger.debug('running_data information -intermediate!- only'+ str(running_data))
 
     reads=parameter_data_root.find('Reads')
+    '''
+    #initialization of expected structure
     run_info_read_dict={}
+    run_info_read_dict['1']={}; run_info_read_dict['1']['Cycles']=0
+    run_info_read_dict['2']={}; run_info_read_dict['2']['Cycles']=0
+    run_info_read_dict['3']={}; run_info_read_dict['3']['Cycles']=0
+    run_info_read_dict['4']={}; run_info_read_dict['4']['Cycles']=0
+    '''
     for run_info_read in reads.iter('RunInfoRead'):
+        pir=1 #PlannedIndexNread:1 or 2
+        pr=1 #PlannedNRead: 1 or 2
+        '''
         run_info_read_dict[run_info_read.attrib['Number']]={}
         run_info_read_dict[run_info_read.attrib['Number']]['Cycles']=run_info_read.attrib['NumCycles']
         run_info_read_dict[run_info_read.attrib['Number']]['IsIndexedRead']=run_info_read.attrib['IsIndexedRead']
+        '''
+        if 'Y'== run_info_read.attrib['IsIndexedRead']:
+            if 1==pir:
+                running_data['PlannedIndex1ReadCycles']=run_info_read.attrib['NumCycles']
+                pir=2
+            else:
+                running_data['PlannedIndex2ReadCycles']=run_info_read.attrib['NumCycles']
+        else:
+            if 1==pr:
+                running_data['PlannedRead1Cycles']=run_info_read.attrib['NumCycles']
+                pr=2
+            else:
+                running_data['PlannedRead2Cycles']=run_info_read.attrib['NumCycles']
+
+
+    '''
     logger.debug('run_info_read_dict: '+str(run_info_read_dict))
+    ## expected structure:
+    if 'Y' == run_info_read_dict['1']['IsIndexedRead']:
+        running_data['PlannedIndex1ReadCycles']=run_info_read_dict['1']['Cycles']
+    else:
+        running_data['Planned1ReadCycles']=run_info_read_dict['1']['Cycles']
+
+    running_data['PlannedRead1Cycles']=run_info_read_dict['1']['Cycles']
+    running_data['PlannedIndex1ReadCycles']=run_info_read_dict['2']['Cycles']
+    running_data['PlannedIndex2ReadCycles']=run_info_read_dict['3']['Cycles']
+    running_data['PlannedRead2Cycles']=run_info_read_dict['4']['Cycles']
 
     if  ('N'==run_info_read_dict['1']['IsIndexedRead']
             and 'Y'==run_info_read_dict['2']['IsIndexedRead']
             and 'Y'==run_info_read_dict['3']['IsIndexedRead']
             and 'N'==run_info_read_dict['4']['IsIndexedRead']):
-        ## expected structure:
-        running_data['PlannedRead1Cycles']=run_info_read_dict['1']['Cycles']
-        running_data['PlannedIndex1ReadCycles']=run_info_read_dict['2']['Cycles']
-        running_data['PlannedIndex2ReadCycles']=run_info_read_dict['3']['Cycles']
-        running_data['PlannedRead2Cycles']=run_info_read_dict['4']['Cycles']
-
+        pass #expected structure
     else:
-        running_data['PlannedRead1Cycles']=0
-        running_data['PlannedIndex1ReadCycles']=0
-        running_data['PlannedIndex2ReadCycles']=0
-        running_data['PlannedRead2Cycles']=0
-        logger.error('==> Unexpected construction of <RunInfoRead> tags in RunParameter.xml: '
-                +str(run_info_read_dict)
-                +'\nFilling in Planned(Index)ReadCycles with 0')
-
+        logger.warning('==> Unexpected construction of <RunInfoRead> tags in RunParameter.xml: '
+            +str(run_info_read_dict))
+    '''
 
 
     running_data['RunManagementType']=parameter_data_root.find('RunManagementType').text

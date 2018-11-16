@@ -307,7 +307,7 @@ def update_recorded_miseqruns_file(logger,run):
         raise
 
 
-def update_miseq_processed_file(run):
+def update_miseq_processed_file(logger,run):
     try:
         with open (
             wetlab_config.MISEQ_PROCESSED_RUN_FILEPATH, 'a') as miseq_processed_file:
@@ -323,7 +323,7 @@ def update_miseq_processed_file(run):
         raise
 
 
-def get_machine_for_sequencer(sequencer):
+def get_machine_for_sequencer(logger,sequencer):
     ## 1.-check if there is a 'sequencer' already registered (Machines). Otherwise, register it
     timestamp_print('Starting the process to get machine instance for a sequencer()')
     logger.info('Starting the process to get machine instance for a sequencer()')
@@ -338,10 +338,10 @@ def get_machine_for_sequencer(sequencer):
         raise ValueError('platform value:'+platform)
 
     try:
-        machine=Machines.Objects.get(machineName=sequencer)
+        machine=Machines.objects.get(machineName=sequencer)
     except Machines.DoesNotExist:
         logger.warning('The following machine does not exist in table Machines: '+sequencer
-            +'\nUpdating table \"Machines\" with new sequencer)
+            +'\nUpdating table \"Machines\" with new sequencer')
         try:
             seqPlat=SequencingPlatform.objects.get(platformName__iendswith=platform)
         except SequencingPlatform.DoesNotExist:
@@ -362,6 +362,7 @@ def get_machine_for_sequencer(sequencer):
         timestamp_print(
             '==> Unexpected exception when accesing table Machines for: '+sequencer)
         raise
+
     timestamp_print('Leaving the process to get a machine instance for a sequencer()')
     logger.info('Leaving the process to get machine instance for a sequencer()')
     return machine
@@ -434,7 +435,7 @@ def determine_target_miseqruns(logger):
                         samplesheet_found=True
                         temp_run_folders[run_dir]={}
                         temp_run_folders[run_dir]['samplesheet_filename']=file.filename
-                        temp_run_folders[run_dir]['sequencer_model']= sequencer_info# MiSeq
+                        temp_run_folders[run_dir]['sequencer_model']= sequencer_info[1:-1]# MiSeq
                         logger.debug('temp_run_folders['+run_dir+']: '+str(temp_run_folders[run_dir]))
                         break
                     else:
@@ -764,31 +765,10 @@ def getSampleSheetFromSequencer():
                 for key, val in database_info.items():
 
                     ##1.- table 'RunProcess' data:
-                    #getting_sequencerModel_for_runprocess (platformName, sequencer=val['sequencer_model'],
                     try:
-                        machine=Machines.Objects.get(machineName=sequencer)
-                    except Machines.DoesNotExist:
-                        logger.warning('The following machine does not exist in table Machines: '+sequencer
-                            +'\nUpdating table \"Machines\" with new sequencer)
-                        try:
-                            seqPlat=SequencingPlatform.objects.get(platformName__iendswith='Mi-Seq')
-                        except SequencingPlatform.DoesNotExist:
-                            logger.error('Table SequencingPlatforms should be pre-charged for Mi-Seq')
-                            timestamp_print('==> ERROR: Table SequencingPlatforms should be pre-charged for Mi-Seq')
-                            raise
-                        try:
-                            machine=Machines(platformID=seqPlat, machineName=sequencer)
-                            machine.save()
-                        except:
-                            timestamp_print('Unexpected exception when saving new machine: '+sequencer
-                                + ' platformID= '+seqPlat)
-                            logger.error('Unexpected exception when saving new machine: '+sequencer
-                                + ' platformID= '+seqPlat)
-                            raise
+                        machine=get_machine_for_sequencer(logger,val['sequencer_model'])
                     except:
-                        logger.error('Unexpected exception when accessing table Machines for: '+sequencer)
-                        timestamp_print(
-                            '==> Unexpected exception when accesing table Machines for: '+sequencer)
+                        logger.error('Exception in get_machine_for_sequencer')
                         raise
 
                     relative_samplesheet_filepath= val['relative_samplesheet_filepath']
@@ -974,9 +954,11 @@ def miseq_check_recorded():
 
             logger.debug('value of run: '+run) #TBDDebugEndDebug
             local_runparametersxml=os.path.join(
-                        settings.MEDIA_ROOT, wetlab_config.RUN_TEMP_DIRECTORY,run,'runParameters.xml')
+               settings.MEDIA_ROOT, wetlab_config.RUN_TEMP_DIRECTORY,run,'runParameters.xml')
             local_runinfoxml_filepath=os.path.join(
-                        settings.MEDIA_ROOT, wetlab_config.RUN_TEMP_DIRECTORY,run,'RunInfo.xml')
+               settings.MEDIA_ROOT, wetlab_config.RUN_TEMP_DIRECTORY,run,'RunInfo.xml')
+            run_temp_dir=os.path.join(
+                settings.MEDIA_ROOT, wetlab_config.RUN_TEMP_DIRECTORY,run)
 
 
             ##################################
@@ -1032,9 +1014,9 @@ def miseq_check_recorded():
                     run_update_date.save()
 
                     ## c) Update of RECORDED_MISEQRUNS_FILE (delete treated run)
-                    update_recorded_miseqruns_file(run)
+                    update_recorded_miseqruns_file(logger,run)
                     ## d) Update of MISEQ_PROCESSED_RUN_FILEPATH
-                    update_miseq_processed_file(run)
+                    update_miseq_processed_file(logger,run)
 
                     ## TODO always when exiting. Delete this...?
                     ## e) Delete temporary run folder and files within
@@ -1095,7 +1077,7 @@ def miseq_check_recorded():
                             update_recorded_miseqruns_file(logger,run)
 
                             ## d) Update of MISEQ_PROCESSED_RUN_FILEPATH
-                            update_miseq_processed_file(run)
+                            update_miseq_processed_file(logger,run)
 
                             ## TODO always when exiting. Delete this...?
                             ## e) Delete temporary run folder and files within
