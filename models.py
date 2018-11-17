@@ -21,7 +21,7 @@ class RunProcess(models.Model):
     runState = models.CharField(max_length=25)
     #generatedBSFile = models.BooleanField(default=False)
     index_library = models.CharField(max_length=85)
-    samples= models.CharField(max_length=45)
+    samples= models.CharField(max_length=45,blank=True)
     useSpaceImgMb=models.CharField(max_length=10)
     useSpaceFastaMb=models.CharField(max_length=10)
     useSpaceOtherMb=models.CharField(max_length=10)
