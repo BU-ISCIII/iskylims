@@ -9,22 +9,37 @@
 <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script>   
 <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>     
 
-
 {% if researcher_statistics %}
     <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-8 col-sm-offset-1" >
+        <div class="col-sm-12" >
             <div class="panel panel-default">
-                <div class="panel-heading"><h2>Statistics result for Investigator {{researcher_statistics.researcher_name}} </h2></div>
+                <div class="panel-heading"><h2>Statistics results for Investigator {{researcher_statistics.researcher_name}} </h2></div>
                 <div class="panel-body">
-                <h3> The following Projects  Name have been performed : </h3>
-                {% for values  in researcher_statistics.projects %} 
-                {{ values }} <BR>
-                {% endfor%}
-          
-          
+                <h3> Project information : </h3>
+                <div class="table-wrapper-scroll-y ">
+                    <table class="table  table-hover">
+                        <thead>
+                            <tr>
+                            {% for values  in researcher_statistics.projects_heading %}
+                                <th>{{ values }} </th>
+                            {%endfor%}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for values in researcher_statistics.projects_data %}
+                            <tr>
+                                {% for value in values %}
+                                    <td>{{ value }}</td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor%}
+                        </tbody>
+                    </table>
+                </div> <!--  end of col-table-responsive -->
+
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->
-        </div> <!--// end col-sm-8  -->
+        </div> <!--// end col-sm-12  -->
     </div> <!--// end row -->
     
     <div class="row row-space-2 margin-b-4">
@@ -60,32 +75,24 @@
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
             <div class="panel panel-default">
-                <div class="panel-heading"><h3><center>Statistics for Mean Quality for Investigator {{researcher_statistics.researcher_name}} </center></h3></div>
+                <div class="panel-heading"><h3><center> {{researcher_statistics.researcher_name}} projects comparison </center></h3></div>
                 <div class="panel-body"> 
-                <!-- Pie chart for number of Runs comparations chart will start here-->
+                <!-- comparations chart starts here-->
                     <div class="col-sm-6" >
-                    <!-- Column 2 Chart will start here-->
-                        <div id="mean-chart1"> </div>
-                        <!-- dumping JavaScript code for graphics -->
-                        {{ researcher_statistics.mean_q_researcher_graph.1 |safe }}
+                        <div id="comp_q30_chart"> </div>
+                        {{ researcher_statistics.comp_q30_graph |safe }}
                     </div> <!--// end col-sm-6  -->
                     <div class="col-sm-6" >
-                    <!-- Column 2 Chart will start here-->
-                        <div id="mean-chart2"> </div>
-                        <!-- dumping JavaScript code for graphics -->
-                        {{ researcher_statistics.mean_q_researcher_graph.2 |safe }}
+                        <div id="comp_mean_q_chart"> </div>
+                        {{ researcher_statistics.comp_mean_q_graph |safe }}
                     </div> <!--// end col-sm-6  -->
                     <div class="col-sm-6" >
-                    <!-- Column 2 Chart will start here-->
-                        <div id="mean-chart3"> </div>
-                        <!-- dumping JavaScript code for graphics -->
-                        {{ researcher_statistics.mean_q_researcher_graph.3 |safe }}
+                        <div id="comp_yield_mb_chart"> </div>
+                        {{ researcher_statistics.comp_yield_mb_graph |safe }}
                     </div> <!--// end col-sm-6  -->
                     <div class="col-sm-6" >
-                    <!-- Column 2 Chart will start here-->
-                        <div id="mean-chart4"> </div>
-                        <!-- dumping JavaScript code for graphics -->
-                        {{ researcher_statistics.mean_q_researcher_graph.4 |safe }}
+                        <div id="comp_cluster_pf_chart"> </div>
+                        {{ researcher_statistics.comp_cluster_pf_graph |safe }}
                     </div> <!--// end col-sm-6  -->                    
                 </div> <!--  end of panel body -->
             </div> <!--// end panel -->
@@ -95,28 +102,11 @@
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-8" >
             <div class="panel panel-default">
-                <div class="panel-heading"><h3><center>Statistics comparation for Q >30 for Investigator {{researcher_statistics.researcher_name}} </center></h3></div>
+                <div class="panel-heading"><h3><center>Statistics Sequencer utilization for  {{researcher_statistics.researcher_name}} </center></h3></div>
                 <div class="panel-body"> 
-                <!-- Pie chart for number of Runs comparations chart will start here-->
-                    <!-- Column 2 Chart will start here-->
-                        <div id="comparation_q30_chart"> </div>
-                        <!-- dumping JavaScript code for graphics -->
-                        {{ researcher_statistics.comparation_q_30_chart |safe }}
-                </div> <!--  end of panel body -->
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-8  -->
-    </div> <!--// end row -->
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-8" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3><center>Statistics comparation for Mean Quality Investigator {{researcher_statistics.researcher_name}} </center></h3></div>
-                <div class="panel-body">     
-                    <div class="col-sm-6" >
-                    <!-- Column 2 Chart will start here-->
-                        <div id="comparation_mean_chart"> </div>
-                        <!-- dumping JavaScript code for graphics -->
-                        {{ researcher_statistics.comparations_mean_q_chart |safe }}
-                    </div> <!--// end col-sm-6  -->
+                    <!-- Sequencer pie Chart starts here-->
+                        <div id="sequencer_pie_chart"> </div>
+                        {{ researcher_statistics.sequencer_pie_graph |safe }}
                 </div> <!--  end of panel body -->
             </div> <!--// end panel -->
         </div> <!--// end col-sm-8  -->

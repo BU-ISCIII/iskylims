@@ -1832,7 +1832,7 @@ def nextSeqStats_per_researcher (request):
             #import pdb; pdb.set_trace()
             if Projects.objects.filter(user_id__exact =r_name_id).exists():
                 if Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed").exists():
-                    r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed")
+                    r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed").order_by('project_run_date')
 
                 # check if start and end date are present in the form
                     if start_date != '' and end_date !='':
@@ -1859,253 +1859,189 @@ def nextSeqStats_per_researcher (request):
                                                     'ending date  = ', end_date,
                                                                 'ADVICE:', 'Contact with your administrator']})
 
+                    researcher_statistics = {}
 
-                    if len (r_project_by_researcher) ==1:
-                        # get researcher_project id
-                        researcher_project_id = Projects.objects.get(user_id__exact =r_name_id, procState__exact = "Completed").id
-                        project_name = r_project_by_researcher[0].get_project_name()
-                        r_name = r_project_by_researcher[0].get_user_name()
+                    # Get data from researcher projects
+
+                    researcher_statistics ['projects_heading'] = ['Project name', 'Date', 'Libraty Kit','Samples', 'Cluster PF', 'Yield Mb', '% Q> 30', 'Mean','Sequencer ID'] 
+                    projects_data =[]
+                    p_researcher_date , p_researcher_num_sample = {} , {}
+                    p_researcher_lib_kit, p_researcher_sequencer = {}, {}
+                    p_researcher_q30_dict, p_researcher_mean_dict = {} , {}
+                    p_researcher_yield_mb_dict, p_researcher_cluster_pf_dict ={} , {}
+                    projects_name_list , projects_id_list = [], []
+                    q_30_list , mean_q_list = [] , []
+                    yield_mb_list,  cluster_pf_list = [], []
+                    for project_researcher in r_project_by_researcher:
+                        p_name = project_researcher.get_project_name()
+                        projects_name_list.append(p_name)
+                        r_project_id = project_researcher.id
+                        projects_id_list.append(r_project_id)
+                        p_researcher_num_sample[p_name] = NextSeqStatsFlSummary.objects.get(project_id__exact = r_project_id).sampleNumber
+                        p_researcher_date [p_name] = project_researcher.get_date()
+                        p_researcher_lib_kit[p_name]= project_researcher.get_library_name()
                         #import pdb; pdb.set_trace()
-                        # fetch percent of Q>30 and mean_q for all projects per lane to create the median
-                        # to be compared with the percent of this project
-                        q_30_media, mean_q_media = [] , []
-                        q_30_media_in_float, mean_q_media_in_float = [] , []
-                        
-                        
-                        
-                        
-                        
-                        '''
-                        for lane in range (1,5):
-                            found_lane = NextSeqStatsLaneSummary.objects.filter(lane__exact = lane).exclude(defaultAll__isnull = False).exclude (project_id__exact = researcher_project_id)
-                            q_30_list , mean_q_list = [] , []
-                            for item_lane in found_lane:
-                                q_30_value, mean_q_value , yield_mb , cluster_pf = item_lane.get_stats_info().split(';')
-                                q_30_list.append(float(q_30_value))
-                                mean_q_list.append(float(mean_q_value))
-                            #import pdb; pdb.set_trace()
-
-                            q_30_media.append(format(statistics.mean (q_30_list), '.2f'))
-                            q_30_media_in_float.append(statistics.mean (q_30_list))
-
-                            mean_q_media.append(format(statistics.mean (mean_q_list), '.2f'))
-                            mean_q_media_in_float.append(statistics.mean (mean_q_list))
-                        '''
-                        all_projects_lanes = NextSeqStatsLaneSummary.objects.all().exclude(defaultAll__isnull = False).exclude (project_id__exact = researcher_project_id)
-                        q_30_list , mean_q_list = [] , []
-                        yield_mb_list,  cluster_pf_list = [], []
-                        for lane in all_projects_lanes :
-                            q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = item_lane.get_stats_info().split(';')
+                        p_researcher_sequencer[p_name] = str(project_researcher.runprocess_id.sequencerModel)
+                        lanes_in_project = NextSeqStatsLaneSummary.objects.filter( project_id__exact = r_project_id)
+                        for lane in lanes_in_project :
+                            q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane.get_stats_info().split(';')
                             q_30_list.append(float(q_30_value))
                             mean_q_list.append(float(mean_q_value))
-                            yield_mb_list.append(float(yield_mb_value))
-                            cluster_pf_list.append(float(cluster_pf_value))
+                            yield_mb_list.append(float(yield_mb_value.replace(',','')))
+                            cluster_pf_list.append(float(cluster_pf_value.replace(',','')))
+                        p_researcher_q30_dict [p_name]= format(statistics.mean(q_30_list), '.2f')
+                        p_researcher_mean_dict[p_name] = format(statistics.mean(mean_q_list), '.2f')
+                        p_researcher_yield_mb_dict[p_name] = round(statistics.mean(yield_mb_list))
+                        p_researcher_cluster_pf_dict[p_name] = round(statistics.mean(cluster_pf_list))
                         
-                        overall_q30_average = format(statistics.mean(q_30_list), '.2f')
-                        overall_mean_average = format(statistics.mean(mean_q_list), '.2f')
-                        overall_yield_mb_mean_average = format(statistics.mean(yield_mb_list), '.2f')
-                        overall_cluster_pf_mean_average = format(statistics.mean(cluster_pf_list), '.2f')
-
-                        # fetch the information from researcher project 
-                        q_30_list , mean_q_list = [] , []
-                        yield_mb_list,  cluster_pf_list = [], []
-                        #q_30_project_lane, mean_q_project_lane = [] , []
-                        '''
-                        for lane in range (1, 5):
-                            found_lane = NextSeqStatsLaneSummary.objects.filter(lane__exact = lane , project_id__exact = researcher_project_id )
-                            #import pdb; pdb.set_trace()
-                            q_30_value, mean_q_value , yield_mb, cluster_pf  = found_lane[0].get_stats_info().split(';')
-                            q_30_project_lane.append(float(q_30_value))
-                            mean_q_project_lane.append(float(mean_q_value))
-                        '''
-                        project_researcher = NextSeqStatsLaneSummary.objects.filter(project_id__exact = researcher_project_id )
-                        for lane in project_researcher :
-                            q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = item_lane.get_stats_info().split(';')
-                            q_30_list.append(float(q_30_value))
-                            mean_q_list.append(float(mean_q_value))
-                            yield_mb_list.append(float(yield_mb_value))
-                            cluster_pf_list.append(float(cluster_pf_value))
-                        p_researcher_q30_average = format(statistics.mean(q_30_list), '.2f')
-                        p_researcher_mean_average = format(statistics.mean(mean_q_list), '.2f')
-                        p_researcher_yield_mb_mean_average = format(statistics.mean(yield_mb_list), '.2f')
-                        p_researcher_cluster_pf_mean_average = format(statistics.mean(cluster_pf_list), '.2f')
+                    # Create the table with projects executed by the researcher
+                    
+                    for project_name in projects_name_list :
+                        projects_data.append([project_name, p_researcher_date[project_name], p_researcher_lib_kit[project_name],
+                                    p_researcher_num_sample[project_name], '{0:,}'.format(int(p_researcher_cluster_pf_dict[project_name])),
+                                    '{0:,}'.format(int(p_researcher_yield_mb_dict[project_name])), p_researcher_q30_dict[project_name],
+                                    p_researcher_mean_dict[project_name], p_researcher_sequencer[project_name]] )
+                    researcher_statistics['projects_data'] = projects_data
+                    # create the graphic for q30 quality
+                    theme = 'ocean'
+                    heading = 'Graphics for Q > 30 for investigator ' + r_name
+                    sub_caption = ''
+                    x_axis_name = 'Projects'
+                    y_axis_name = 'Q 30 (in %)'
                         
+                    data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_q30_dict)
+                    #import pdb; pdb.set_trace()
+                    q30_researcher_graph = FusionCharts("column3d", 'q30_graph' , "500", "350", 'q30_chart', "json", data_source).render()
                         
-                        #user_q30_average = format(statistics.mean(q_30_project_lane), '.2f')
-                        #user_mean_average = format(statistics.mean(mean_q_project_lane), '.2f')
-                        #import pdb; pdb.set_trace()
-                        heading = 'Comparison of bases with Q value bigger than 30'
-                        x_axis_name = 'Lanes'
-                        y_axis_name = 'Q > 30 (in %)'
-
-                        data_source = researcher_project_mean_column_graphic(heading, x_axis_name, y_axis_name , q_30_project_lane , q_30_media, user_q30_average,overall_q30_average, r_name)
-
-                        #data_source = json_2_column_graphic('Comparison of bases with Q value bigger than 30', q_30_project_lane,q_30_media)
-                        q_30_mscol2D = FusionCharts("mscolumn3d", "ex1" , "600", "400", "chart-1", "json", data_source)
-                        heading = 'Comparison of bases with Mean Quality'
-                        y_axis_name = 'Mean in %'
-
-                        data_source = researcher_project_mean_column_graphic(heading, x_axis_name, y_axis_name , mean_q_project_lane , mean_q_media, user_mean_average, overall_mean_average, r_name)
-                        #data_source = json_2_column_graphic('Comparison of mean Quality Score', mean_q_project_lane,mean_q_media)
-                        mean_q_mscol2D = FusionCharts("mscolumn3d", "ex2" , "600", "400", "chart-2", "json", data_source)
-                        #import pdb; pdb.set_trace()
-                        project_chart ={}
-                        project_chart ['project_name'] = project_name
-                        project_chart ['user_name'] = r_name
-                        project_chart ['q_30_chart'] = q_30_mscol2D.render()
-                        project_chart ['mean_q_chart'] = mean_q_mscol2D.render()
-                        #import pdb; pdb.set_trace()
-                        # returning complete JavaScript and HTML code, which is used to generate chart in the browsers.
-                        return  render(request, 'iSkyLIMS_wetlab/NextSeqStatsPerResearcher.html', {'researcher_one_project' : project_chart})
-
-                    else:
-                        researcher_statistics = {}
-                        project_names = []
+                    # create the graphic for mean quality
+                    theme = 'carbon'
+                    heading = 'Graphics for Mean quality for investigator ' + r_name
+                    sub_caption = ''
+                    x_axis_name = 'Projects'
+                    y_axis_name = 'Mean Quality'
+                    data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_mean_dict)
+                    mean_q_researcher_graph = FusionCharts("column3d", 'mean_graph' , "500", "350", 'mean_chart', "json", data_source).render()
                         
-                        theme_mean ='zune'
-                        '''
-                        mean_q_researcher_graph, q30_researcher_graph = {} , {}
-                        for project_researcher in r_project_by_researcher:
-                            p_name = project_researcher.get_project_name()
-                            project_names.append(p_name)
-                        q30_user_stats, mean_user_stats = [] , []
-                        # get the lane vales for all projects where user was involved
-                        
-                        for lane in range (1,5):
-                            q_30_dict, mean_q_dict = {} , {}
-                            q30_lane_stats, mean_lane_stats = [] , []
-                            q30_media_in_float , mean_media_in_float = [] , []
-                            for project_researcher in r_project_by_researcher:
-                                p_name = project_researcher.get_project_name()
-                                r_project_id = project_researcher.id
-                                data_lane = NextSeqStatsLaneSummary.objects.get(lane__exact = lane, project_id__exact = r_project_id)
-                                q_30_value, mean_q_value , yield_mb , cluster_pf = data_lane.get_stats_info().split(';')
-                                q_30_dict[p_name] = float(q_30_value)
-                                q30_lane_stats.append(float(q_30_value))
-                                mean_q_dict[p_name] = float(mean_q_value)
-                                mean_lane_stats.append(float(mean_q_value))
-                        '''
-                        #import pdb ; pdb.set_trace()
-                        p_researcher_q30_dict, p_researcher_mean_dict = {} , {}
-                        p_researcher_yield_mb_dict, p_researcher_cluster_pf_dict ={} , {}
-                        q_30_list , mean_q_list = [] , []
-                        yield_mb_list,  cluster_pf_list = [], []
-                        for project_researcher in r_project_by_researcher:
-                            p_name = project_researcher.get_project_name()
-                            r_project_id = project_researcher.id
-                            lanes_in_project = NextSeqStatsLaneSummary.objects.filter( project_id__exact = r_project_id)
-                            for lane in lanes_in_project :
-                                q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane.get_stats_info().split(';')
-                                q_30_list.append(float(q_30_value))
-                                mean_q_list.append(float(mean_q_value))
-                                yield_mb_list.append(float(yield_mb_value.replace(',','')))
-                                cluster_pf_list.append(float(cluster_pf_value.replace(',','')))
-                            p_researcher_q30_dict [p_name]= format(statistics.mean(q_30_list), '.2f')
-                            p_researcher_mean_dict[p_name] = format(statistics.mean(mean_q_list), '.2f')
-                            p_researcher_yield_mb_dict[p_name] = format(statistics.mean(yield_mb_list), '.2f')
-                            p_researcher_cluster_pf_dict[p_name] = format(statistics.mean(cluster_pf_list), '.2f')
-                        
-                        # create the graphic for q30 quality
-                        theme = 'ocean'
-                        heading = 'Graphics for Q > 30 for investigator ' + r_name
-                        sub_caption = ''
-                        x_axis_name = 'Projects'
-                        y_axis_name = 'Q 30 (in %)'
-                        #q30_chart_number = 'q30_chart' + str(lane)
-                        #q30_index_graph = 'exq'+ str(lane)
-                        ####### end creation q_30
-                        
-                        #data_source = researcher_project_column_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme_q30, q_30_dict)
-                        data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_q30_dict)
-                        #import pdb; pdb.set_trace()
-                        q30_researcher_graph = FusionCharts("column3d", 'q30_graph' , "500", "350", 'q30_chart', "json", data_source).render()
-                        
-                        # create the graphic for mean quality
-                        theme = 'carbon'
-                        heading = 'Graphics for Mean quality for investigator ' + r_name
-                        sub_caption = ''
-                        x_axis_name = 'Projects'
-                        y_axis_name = 'Mean Quality'
-                        data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_mean_dict)
-                        #    data_source = researcher_project_column_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme_mean, mean_q_dict)
-                        mean_q_researcher_graph = FusionCharts("column3d", 'mean_graph' , "500", "350", 'mean_chart', "json", data_source).render()
-                        
-                        # create the graphic for yield Mb
-                        theme = 'zune'
-                        heading = 'Graphics for Yield Mb for investigator ' + r_name
-                        sub_caption = ''
-                        x_axis_name = 'Projects'
-                        y_axis_name = 'Yield Mb'
-                        data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_yield_mb_dict)
-                        #    data_source = researcher_project_column_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme_mean, mean_q_dict)
-                        yield_mb_researcher_graph = FusionCharts("column3d", 'yield_mb_graph' , "500", "350", 'yield_mb_chart', "json", data_source).render()
-                        # create the graphic for cluster Pf
-                        theme = 'ocean'
-                        heading = 'Graphics for Cluster Pf for investigator ' + r_name
-                        sub_caption = ''
-                        x_axis_name = 'Projects'
-                        y_axis_name = 'Cluster Pf'
-                        data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_cluster_pf_dict)
-                        #    data_source = researcher_project_column_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme_mean, mean_q_dict)
-                        cluster_pf_researcher_graph = FusionCharts("column3d", 'cluster_pf_graph' , "500", "350", 'cluster_pf_chart', "json", data_source).render()
+                    # create the graphic for yield Mb
+                    theme = 'zune'
+                    heading = 'Graphics for Yield Mb for investigator ' + r_name
+                    sub_caption = ''
+                    x_axis_name = 'Projects'
+                    y_axis_name = 'Yield Mb'
+                    data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_yield_mb_dict)
+                    yield_mb_researcher_graph = FusionCharts("column3d", 'yield_mb_graph' , "500", "350", 'yield_mb_chart', "json", data_source).render()
+                    # create the graphic for cluster Pf
+                    theme = 'ocean'
+                    heading = 'Graphics for Cluster Pf for investigator ' + r_name
+                    sub_caption = ''
+                    x_axis_name = 'Projects'
+                    y_axis_name = 'Cluster Pf'
+                    data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_cluster_pf_dict)
+                    cluster_pf_researcher_graph = FusionCharts("column3d", 'cluster_pf_graph' , "500", "350", 'cluster_pf_chart', "json", data_source).render()
                         
 
-                        researcher_statistics ['q30_researcher_graph'] = q30_researcher_graph
-                        researcher_statistics ['mean_q_researcher_graph'] = mean_q_researcher_graph
-                        researcher_statistics ['yield_mb_researcher_graph'] = yield_mb_researcher_graph
-                        researcher_statistics ['cluster_pf_researcher_graph'] = cluster_pf_researcher_graph
+                    researcher_statistics ['q30_researcher_graph'] = q30_researcher_graph
+                    researcher_statistics ['mean_q_researcher_graph'] = mean_q_researcher_graph
+                    researcher_statistics ['yield_mb_researcher_graph'] = yield_mb_researcher_graph
+                    researcher_statistics ['cluster_pf_researcher_graph'] = cluster_pf_researcher_graph
                         
-                        researcher_statistics ['researcher_name'] = r_name
-                        researcher_statistics ['projects'] = project_names
-                        #import pdb ; pdb.set_trace()
-                        '''
-                        # fetch percent of Q>30 and mean_q for all projects per lane to create the median
-                        # to be compared with the overall percent that researcher has
-                        q_30_media, mean_q_media = [] , []
-                        for lane in range (1,5):
-                            found_lane = NextSeqStatsLaneSummary.objects.filter(lane__exact = lane).exclude(defaultAll__isnull = False)
-                            q_30_list , mean_q_list = [] , []
-                            #import pdb; pdb.set_trace()
-                            for item_lane in found_lane:
-                                #import pdb; pdb.set_trace()
-                                q_30_value, mean_q_value , yield_mb , cluster_pf = item_lane.get_stats_info().split(';')
-                                q_30_list.append(float(q_30_value))
-                                mean_q_list.append(float(mean_q_value))
-                            #import pdb; pdb.set_trace()
-                            q_30_media_lane = format(statistics.mean (q_30_list),'.2f')
-                            mean_q_media_lane = format(statistics.mean (mean_q_list), '.2f')
-                            q_30_media.append(q_30_media_lane)
-                            q30_media_in_float.append(statistics.mean (q_30_list))
-                            mean_q_media.append(mean_q_media_lane)
-                            mean_media_in_float.append(statistics.mean (mean_q_list))
-                        # getting the average for user and for all projects
-                        #import pdb; pdb.set_trace()
-                        user_q30_average =  format(statistics.mean (q30_user_stats),'.2f')
-                        user_mean_average = format(statistics.mean (mean_user_stats),'.2f')
+                    researcher_statistics ['researcher_name'] = r_name
+                    #researcher_statistics ['projects'] = projects_name_list
+                    
+                    #import pdb ; pdb.set_trace()
+                    # Calculating the mean for all projects performed by researcher
+                    comp_q30_dict, comp_mean_q_dict = {} , {}
+                    comp_yield_mb_dict, comp_cluster_pf_dict = {} , {}
+                    q30_val = p_researcher_q30_dict.values()
+                    mean_q_val = p_researcher_mean_dict.values()
+                    yield_mb_val = p_researcher_yield_mb_dict.values()
+                    cluster_pf = p_researcher_cluster_pf_dict.values()
+                    
+                    comp_q30_dict [r_name] = format(statistics.mean( [float(x) for x in list(p_researcher_q30_dict.values())]),'.2f')
+                    comp_mean_q_dict [r_name] = format(statistics.mean( [float(x) for x in list(p_researcher_mean_dict.values())]),'.2f')
+                    
+                    comp_yield_mb_dict [r_name] = format(statistics.mean(list(p_researcher_yield_mb_dict.values())),'.2f')
+                    comp_cluster_pf_dict [r_name] = format(statistics.mean(list(p_researcher_cluster_pf_dict.values())),'.2f')
+                    
+                    #total_q30_values = []
+                    
+                    
+                    total_q_30_list, total_mean_q_list = [] , []
+                    total_yield_mb_list, total_cluster_pf_list = [] , []
+                    if NextSeqStatsLaneSummary.objects.all().exclude(defaultAll__isnull = False).exclude(project_id__in = projects_id_list).exists():
+                        total_lanes_summary = NextSeqStatsLaneSummary.objects.all().exclude(defaultAll__isnull = False).exclude(project_id__in = projects_id_list)
+                        for lane_summary in total_lanes_summary :
+                            q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane_summary.get_stats_info().split(';')
+                            total_q_30_list.append(float(q_30_value))
+                            total_mean_q_list.append(float(mean_q_value))
+                            total_yield_mb_list.append(float(yield_mb_value.replace(',','')))
+                            total_cluster_pf_list.append(float(cluster_pf_value.replace(',','')))
+                        comp_q30_dict ['Other investigators']= format(statistics.mean(q_30_list), '.2f')
+                        comp_mean_q_dict['Other investigators'] = format(statistics.mean(mean_q_list), '.2f')
+                        comp_yield_mb_dict['Other investigators'] = round(statistics.mean(yield_mb_list))
+                        comp_cluster_pf_dict['Other investigators'] = round(statistics.mean(cluster_pf_list))
+                    #import pdb ; pdb.set_trace()
+                    # create the graphic for q30 quality
+                    theme = ''
+                    heading = 'Comparation graphics for Q > 30 for investigator ' + r_name
+                    sub_caption = ''
+                    x_axis_name = r_name + ' versus other investigators'
+                    y_axis_name = 'Q 30 (in %)'
+                        
+                    data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_q30_dict)
+                    #import pdb; pdb.set_trace()
+                    comp_q30_graph = FusionCharts("column3d", 'comp_q30_graph' , "500", "350", 'comp_q30_chart', "json", data_source).render()
+                    
+                    theme = ''
+                    heading = 'Comparation graphics for Mean Quality for investigator ' + r_name
+                    sub_caption = ''
+                    x_axis_name = r_name + ' versus other investigators'
+                    y_axis_name = 'Mean Quality'
+                        
+                    data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_mean_q_dict)
+                    #import pdb; pdb.set_trace()
+                    comp_mean_q_graph = FusionCharts("column3d", 'comp_mean_q_graph' , "500", "350", 'comp_mean_q_chart', "json", data_source).render()
+                    
+                    theme = ''
+                    heading = 'Comparation graphics for Yield (Mb) for investigator ' + r_name
+                    sub_caption = ''
+                    x_axis_name = r_name + ' versus other investigators'
+                    y_axis_name = '(Mb)'
+                        
+                    data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_yield_mb_dict)
+                    #import pdb; pdb.set_trace()
+                    comp_yield_mb_graph = FusionCharts("column3d", 'comp_yield_mb_graph' , "500", "350", 'comp_yield_mb_chart', "json", data_source).render()
+                    
+                    theme = ''
+                    heading = 'Comparation graphics for Cluster PF for investigator ' + r_name
+                    sub_caption = ''
+                    x_axis_name = r_name + ' versus other investigators'
+                    y_axis_name = 'Cluster pf'
+                        
+                    data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_cluster_pf_dict)
+                    #import pdb; pdb.set_trace()
+                    comp_cluster_pf_graph = FusionCharts("column3d", 'comp_cluster_pf_graph' , "500", "350", 'comp_cluster_pf_chart', "json", data_source).render()
+                    
+                    researcher_statistics ['comp_q30_graph'] = comp_q30_graph
+                    researcher_statistics ['comp_mean_q_graph'] = comp_mean_q_graph
+                    researcher_statistics ['comp_yield_mb_graph'] = comp_yield_mb_graph
+                    researcher_statistics ['comp_cluster_pf_graph'] = comp_cluster_pf_graph
 
-                        overall_q30_average =  format(statistics.mean (q30_media_in_float),'.2f')
-                        overall_mean_average = format(statistics.mean (mean_media_in_float),'.2f')
-
-                        heading = 'Comparison of bases with Q value bigger than 30'
-                        x_axis_name = 'Lanes'
-                        y_axis_name = 'Q > 30 (in %)'
-
-                        data_source = researcher_project_mean_column_graphic(heading, x_axis_name, y_axis_name , q30_user_stats , q_30_media, user_q30_average,overall_q30_average, r_name)
-                        q_30_mscol2D = FusionCharts("mscolumn3d", "ex1" , "600", "400", "comparation_q30_chart", "json", data_source)
-
-                        heading = 'Comparison of bases with Mean Quality'
-                        y_axis_name = 'Mean in %'
-                        data_source = researcher_project_mean_column_graphic(heading, x_axis_name, y_axis_name , mean_user_stats , mean_q_media, user_mean_average, overall_mean_average, r_name)
-                        mean_q_mscol2D = FusionCharts("mscolumn3d", "ex2" , "600", "400", "comparation_mean_chart", "json", data_source)
-                        #import pdb; pdb.set_trace()
-
-                        researcher_statistics ['comparation_q_30_chart'] = q_30_mscol2D.render()
-                        researcher_statistics ['comparations_mean_q_chart'] = mean_q_mscol2D.render()
-
-                        #import pdb; pdb.set_trace()
-                        # returning complete JavaScript and HTML code, which is used to generate chart in the browsers.
-                        '''
-                        return  render(request, 'iSkyLIMS_wetlab/NextSeqStatsPerResearcher.html', {'researcher_statistics' : researcher_statistics})
+                    # Sequencer graphic utilization 
+                    sequencer_used = {}
+                    for project, sequencer in p_researcher_sequencer.items() :
+                        if not sequencer in sequencer_used :
+                            sequencer_used[sequencer] = 1
+                        else:
+                            sequencer_used[sequencer] += 1
+                    theme = 'ocean'
+                    heading = 'Sequencer utilization for investigator ' + r_name
+                    sub_caption = ''
+                    data_source = pie_graphic_standard (heading, sub_caption, theme, sequencer_used)
+                    sequencer_pie_graph = FusionCharts("pie3d", "sequencer_pie_graph" , "500", "400", "sequencer_pie_chart", "json", data_source).render()
+                    researcher_statistics ['sequencer_pie_graph'] = sequencer_pie_graph
+                    import pdb; pdb.set_trace()
+                    return  render(request, 'iSkyLIMS_wetlab/NextSeqStatsPerResearcher.html', {'researcher_statistics' : researcher_statistics})
 
                 else:
                     #import pdb; pdb.set_trace()
@@ -2646,7 +2582,7 @@ def annual_report (request) :
             annual_report_information['uncompleted_run'] = uncompleted_run
             number_of_runs['Not Finish Runs'] = len ( uncompleted_run_in_year)
         # prepare the pie graphic for the number of completed/ unfinished runs
-        data_source = pie_graphic_year('Number of Runs performed on the year', "",'ocean',number_of_runs)
+        data_source = pie_graphic_standard('Number of Runs performed on the year', "",'ocean',number_of_runs)
         graphic_completed_run = FusionCharts("pie3d", "ex1" , "400", "300", "chart-1", "json", data_source)
         annual_report_information ['graphic_completed_run'] = graphic_completed_run.render()
 
@@ -2714,7 +2650,7 @@ def annual_report (request) :
         p_user_year_graphic = FusionCharts("column3d", 'bar_project_user_year' , "400", "300", 'p_user_chart-1', "json", data_source)
         annual_report_information ['p_user_year_graphic'] = p_user_year_graphic.render()
 
-        data_source = pie_graphic_year (heading, 'Percentage' ,'carbon', p_user_year)
+        data_source = pie_graphic_standard (heading, 'Percentage' ,'carbon', p_user_year)
         pie_p_user_year_graphic = FusionCharts("pie3d", "pie_project_user_year" , "400", "300", "p_user_chart-2", "json", data_source)
         annual_report_information ['pie_p_user_year_graphic'] = pie_p_user_year_graphic.render()
         #import pdb; pdb.set_trace()
@@ -2793,7 +2729,7 @@ def monthly_report (request) :
             number_of_runs['Not Finish Runs'] = len ( uncompleted_run_in_year_month)
         # prepare the pie graphic for the number of completed/ unfinished runs
         heading = str ('Graphics of the Runs performed on the ' + month_selected + ' - ' + year_selected)
-        data_source = pie_graphic_year(heading, "",'ocean',number_of_runs)
+        data_source = pie_graphic_standard(heading, "",'ocean',number_of_runs)
         graphic_completed_run = FusionCharts("pie3d", "ex1" , "400", "300", "chart-1", "json", data_source)
         monthly_report_information ['graphic_completed_run'] = graphic_completed_run.render()
 
@@ -2832,7 +2768,7 @@ def monthly_report (request) :
         p_user_monthly_graphic = FusionCharts("column3d", 'bar_project_user_month' , "400", "300", 'p_user_chart-1', "json", data_source)
         monthly_report_information ['p_user_monthly_graphic'] = p_user_monthly_graphic.render()
 
-        data_source = pie_graphic_year (heading, 'Percentage' ,'carbon', p_user_month)
+        data_source = pie_graphic_standard (heading, 'Percentage' ,'carbon', p_user_month)
         pie_p_user_monthly_graphic = FusionCharts("pie3d", "pie_project_user_month" , "400", "300", "p_user_chart-2", "json", data_source)
         monthly_report_information ['pie_p_user_monthly_graphic'] = pie_p_user_monthly_graphic.render()
 
@@ -2932,7 +2868,7 @@ def quarter_report (request) :
             quarter_report_information['uncompleted_run'] = uncompleted_run
             number_of_runs['Not Finish Runs'] = len ( uncompleted_run_in_quarter)
         # prepare the pie graphic for the number of completed/ unfinished runs
-        data_source = pie_graphic_year('Number of Runs performed on the year', "",'ocean',number_of_runs)
+        data_source = pie_graphic_standard('Number of Runs performed on the year', "",'ocean',number_of_runs)
         graphic_completed_run = FusionCharts("pie3d", "ex1" , "400", "300", "chart-1", "json", data_source)
         quarter_report_information ['graphic_completed_run'] = graphic_completed_run.render()
 
@@ -3000,7 +2936,7 @@ def quarter_report (request) :
         p_user_quarter_graphic = FusionCharts("column3d", 'bar_project_user_year' , "400", "300", 'p_user_chart-1', "json", data_source)
         quarter_report_information ['p_user_year_graphic'] = p_user_quarter_graphic.render()
 
-        data_source = pie_graphic_year (heading, 'Percentage' ,'carbon', p_user_quarter)
+        data_source = pie_graphic_standard (heading, 'Percentage' ,'carbon', p_user_quarter)
         pie_p_user_quarter_graphic = FusionCharts("pie3d", "pie_project_user_year" , "400", "300", "p_user_chart-2", "json", data_source)
         quarter_report_information ['pie_p_user_year_graphic'] = pie_p_user_quarter_graphic.render()
         #import pdb; pdb.set_trace()

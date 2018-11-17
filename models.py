@@ -194,6 +194,12 @@ class Projects(models.Model):
     def get_library_name (self):
         return '%s' %(self.libraryKit)
 
+    def get_date (self):
+        if self.project_run_date is None:
+            projectdate = 'No Date'
+        else :
+            projectdate=self.project_run_date.strftime("%B %d, %Y")
+        return '%s' %(projectdate)
 
 class RunningParameters (models.Model):
     runName_id = models.OneToOneField(

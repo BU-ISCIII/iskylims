@@ -273,7 +273,7 @@ def graphic_for_quality_angular (heading, value) :
             }
     return data_source
 
-def pie_graphic_year (heading, subcaption, theme, number_of_runs):
+def pie_graphic_standard (heading, subcaption, theme, input_values):
     data_source = {}
     data_source['chart'] = {
         "caption": heading,
@@ -290,7 +290,7 @@ def pie_graphic_year (heading, subcaption, theme, number_of_runs):
         "exportEnabled": "1"
     }
     data =[]
-    for key , values in number_of_runs.items() :
+    for key , values in input_values.items() :
         data_dict = {}
         data_dict['label'] = key
         data_dict['value'] = values
