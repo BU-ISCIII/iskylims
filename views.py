@@ -2040,7 +2040,7 @@ def nextSeqStats_per_researcher (request):
                     data_source = pie_graphic_standard (heading, sub_caption, theme, sequencer_used)
                     sequencer_pie_graph = FusionCharts("pie3d", "sequencer_pie_graph" , "500", "400", "sequencer_pie_chart", "json", data_source).render()
                     researcher_statistics ['sequencer_pie_graph'] = sequencer_pie_graph
-                    import pdb; pdb.set_trace()
+                    #import pdb; pdb.set_trace()
                     return  render(request, 'iSkyLIMS_wetlab/NextSeqStatsPerResearcher.html', {'researcher_statistics' : researcher_statistics})
 
                 else:
