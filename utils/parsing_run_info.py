@@ -20,13 +20,13 @@ def open_samba_connection():
     # There will be some mechanism to capture userID, password, client_machine_name, server_name and server_ip
     # client_machine_name can be an arbitary ASCII string
     # server_name should match the remote machine name, or else the connection will be rejected
-    conn=SMBConnection(wetlab_config.SAMBA_USER_ID, wetlab_config.SAMBA_USER_PASSWORD, wetlab_config.SAMBA_SHARED_FOLDER_NAME,wetlab_config.SAMBA_REMOTE_SERVER_NAME, use_ntlm_v2=wetlab_config.SAMBA_NTLM_USED)
-    conn.connect(wetlab_config.SAMBA_IP_SERVER, int(wetlab_config.SAMBA_PORT_SERVER))
+    #conn=SMBConnection(wetlab_config.SAMBA_USER_ID, wetlab_config.SAMBA_USER_PASSWORD, wetlab_config.SAMBA_SHARED_FOLDER_NAME,wetlab_config.SAMBA_REMOTE_SERVER_NAME, use_ntlm_v2=wetlab_config.SAMBA_NTLM_USED)
+    #conn.connect(wetlab_config.SAMBA_IP_SERVER, int(wetlab_config.SAMBA_PORT_SERVER))
     #conn=SMBConnection('bioinfocifs', 'fCdEg979I-W.gUx-teDr', 'NGS_Data', 'quibitka', use_ntlm_v2=True)
     #conn.connect('172.21.7.11', 445)
 
-    #conn=SMBConnection('Luigi', 'Apple123', 'NGS_Data_test', 'LUIGI-PC', use_ntlm_v2=True)
-    #conn.connect('192.168.1.3', 139)
+    conn=SMBConnection('Luigi', 'Apple123', 'NGS_Data', 'LUIGI-PC', use_ntlm_v2=True)
+    conn.connect('192.168.1.3', 139)
     #conn=SMBConnection('bioinfocifs', 'bioinfocifs', 'NGS_Data_test', 'barbarroja', use_ntlm_v2=True)
     #conn.connect('10.15.60.54', 139)
     '''
@@ -125,8 +125,8 @@ def save_run_info(run_info, run_parameter, run_id, logger):
     running_data['PlannedIndex2ReadCycles']=parameter_data_root.find('PlannedIndex2ReadCycles').text
     running_data['ApplicationVersion']=p_parameter.find('ApplicationVersion').text
     running_data['NumTilesPerSwath']=p_parameter.find('NumTilesPerSwath').text
-    InstrumentID = p_parameter.find('InstrumentID').text
-    Chemistry = p_parameter.find('Chemistry').text
+    InstrumentID = parameter_data_root.find('InstrumentID').text
+    Chemistry = parameter_data_root.find('Chemistry').text
     ## check if InstrumentID exists on database
     if not Machines.objects.filter(machineName__exact = InstrumentID).exists() :
         if not Platform.objects.filter(platformName__exact = Chemistry).exists():
@@ -848,7 +848,11 @@ def process_run_in_processrunning_state (process_list, logger):
         run_folder=os.path.join('/',run_Id_used,'Data/Intensities/BaseCalls')
         # check if runCompletion is avalilable
         logger.debug ('found the run ID  %s' , run_Id_used )
-        file_list = conn.listPath( share_folder_name, run_folder)
+        try:  #####
+            file_list = conn.listPath( share_folder_name, run_folder)
+        except: #####
+            logger.error('no folder found for run ID %s', run_Id_used)  #####
+            continue  #####
         #import pdb; pdb.set_trace()
         found_report_directory = 0
         for sh in file_list:
