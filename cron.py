@@ -318,9 +318,9 @@ def get_machine_for_sequencer(logger,sequencer):
     logger.info('Starting the process to get machine instance for a sequencer()')
 
     if 'M0'==sequencer[0:2]:
-        platform='Mi-Seq'
+        platform='Illumina: Mi-Seq'
     elif 'NS'==sequencer[0:2]:
-        platform='Next-Seq'
+        platform='Illumina: Next-Seq'
     ##complete with available platforms
     else:
         platform='unknown'
