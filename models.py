@@ -6,6 +6,9 @@ from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
 from django_utils.models import Center
+from django.utils.translation import ugettext_lazy as _
+
+
 
 from .  import wetlab_config
 
@@ -89,6 +92,12 @@ class RunProcess(models.Model):
         total_size = image_size + data_size + other_size
         return '%s'%(total_size)
 
+    def get_run_sequencerModel (self):
+        return '%s' %(self.sequencerModel)
+
+    def get_runprocess_info_debug(self): ##useful for debugging
+        return str(self.__dict__)
+
 
 
 class LibraryKit (models.Model):
@@ -117,10 +126,10 @@ class IndexLibraryKit (models.Model):
     adapter2 = models.CharField(max_length=125, null=True)
     indexLibraryFile =  models.FileField(upload_to=wetlab_config.LIBRARY_KITS_DIRECTORY )
     generatedat = models.DateTimeField(auto_now_add=True, null=True)
-    
+
     def __srt__ (self):
         return '%s'(self.indexLibraryName)
-        
+
     def get_index_library_information (self):
         if self.adapter2 =='':
             adapter2 = 'Not used on this library'
@@ -128,7 +137,7 @@ class IndexLibraryKit (models.Model):
             adapter2 = self.adapter2
         return '%s;%s;%s;%s;%s;%s' %(self.indexLibraryName, self.version, self.plateExtension ,
                             self.adapter1  , adapter2, self.indexLibraryFile)
-    
+
 
 
 class IndexLibraryValues (models.Model):
@@ -138,7 +147,7 @@ class IndexLibraryValues (models.Model):
     indexNumber = models.CharField(max_length=12)
     indexName = models.CharField(max_length=12)
     indexBase = models.CharField(max_length=25)
-    
+
 
     def get_index_information (self):
         return '%s;%s' %(self.indexName, self.indexBase)
@@ -210,8 +219,8 @@ class RunningParameters (models.Model):
     RunID= models.CharField(max_length=255)
     ExperimentName= models.CharField(max_length=255)
     RTAVersion= models.CharField(max_length=255)
-    SystemSuiteVersion= models.CharField(max_length=255)
-    LibraryID= models.CharField(max_length=255)
+    SystemSuiteVersion= models.CharField(max_length=255, null=True)
+    LibraryID= models.CharField(max_length=255, null=True)
     Chemistry= models.CharField(max_length=255)
     RunStartDate= models.CharField(max_length=255)
     AnalysisWorkflowType= models.CharField(max_length=255)
@@ -222,9 +231,9 @@ class RunningParameters (models.Model):
     PlannedIndex2ReadCycles= models.CharField(max_length=255)
     ApplicationVersion= models.CharField(max_length=255)
     NumTilesPerSwath= models.CharField(max_length=255)
-    ImageChannel= models.CharField(max_length=255)
+    ImageChannel= models.CharField(max_length=255,null=True)
     Flowcell= models.CharField(max_length=255)
-    ImageDimensions= models.CharField(max_length=255)
+    ImageDimensions= models.CharField(max_length=255,null=True)
     FlowcellLayout= models.CharField(max_length=255)
 
     def __str__(self):
@@ -233,7 +242,16 @@ class RunningParameters (models.Model):
 
     def get_run_parameters_info (self):
         #str_run_start_date=self.RunStartDate.strftime("%I:%M%p on %B %d, %Y")
-        img_channel=self.ImageChannel.strip('[').strip(']').replace("'","")
+        #TBD
+
+        if self.ImageChannel==None:
+            img_channel=''
+            print("ImageChannel in RunningParameters is NULL")
+        else:
+            img_channel=self.ImageChannel.strip('[').strip(']').replace("'","")
+        #EndTBD
+        #img_channel=self.ImageChannel.strip('[').strip(']').replace("'","")
+
         #import pdb; pdb.set_trace()
         return '%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s' %(self.RunID, self.ExperimentName, self.RTAVersion,
             self.SystemSuiteVersion, self.LibraryID, self.Chemistry, self.RunStartDate,
