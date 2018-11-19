@@ -3,17 +3,15 @@ from django.conf import settings
 ## TBD
 ## (PARAMETERS FOR TESTING) SAMBA settings for connecting quibitka server to fetch the run files
 
-SAMBA_USER_ID = 'smbuser'
-SAMBA_USER_PASSWORD = 'ywSghrSftHEVYaHBTbqH'
-SAMBA_SHARED_FOLDER_NAME = 'NGS_Data_test'
-SAMBA_REMOTE_SERVER_NAME = 'panoramix'
-SAMBA_NTLM_USED = True
-SAMBA_IP_SERVER = '172.23.2.11'
-SAMBA_PORT_SERVER = '445'
-SAMBA_DOMAIN='panoramix'
+# SAMBA_USER_ID = 'smbuser'
+# SAMBA_USER_PASSWORD = 'ywSghrSftHEVYaHBTbqH'
+# SAMBA_SHARED_FOLDER_NAME = 'NGS_Data_test'
+# SAMBA_REMOTE_SERVER_NAME = 'panoramix'
+# SAMBA_NTLM_USED = True
+# SAMBA_IP_SERVER = '172.23.2.11'
+# SAMBA_PORT_SERVER = '445'
+# SAMBA_DOMAIN='panoramix'
 
-
-'''
 ## SAMBA settings for connecting quibitka server to fetch the run files
 SAMBA_USER_ID = 'bioinfocifs'
 SAMBA_USER_PASSWORD = 'fCdEg979I-W.gUx-teDr'
@@ -22,9 +20,8 @@ SAMBA_REMOTE_SERVER_NAME = 'quibitka'
 SAMBA_NTLM_USED = True
 SAMBA_IP_SERVER = '172.21.7.11'
 SAMBA_PORT_SERVER = '445'
-'''
-##endTBD
 
+##endTBD
 
 ## Directory settings for processing the run execution process
 ## Relative path from settings.BASE_DIR
@@ -68,7 +65,7 @@ RECORDED_MISEQRUNS_FILEPATH=os.path.join(settings.MEDIA_ROOT,
 ## Relative path from settings.BASE_DIR
 LIBRARY_KITS_DIRECTORY = 'wetlab/library_kits/'
 ## Maximum file size allowed for the index library kits (in bytes)
-LIBRARY_MAXIMUM_SIZE = '3145728'  
+LIBRARY_MAXIMUM_SIZE = '3145728'
 
 MIGRATION_DIRECTORY_FILES = 'wetlab/BaseSpaceMigrationFiles/'
 
