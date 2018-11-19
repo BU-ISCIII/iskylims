@@ -210,6 +210,9 @@ class Projects(models.Model):
             projectdate=self.project_run_date.strftime("%B %d, %Y")
         return '%s' %(projectdate)
 
+    def get_project_info_debug(self): ##useful for debugging
+        return str(self.__dict__)
+
 class RunningParameters (models.Model):
     runName_id = models.OneToOneField(
             RunProcess,
