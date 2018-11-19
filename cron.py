@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.conf import settings
 from .wetlab_config import *
-from .models import RunProcess
+from .models import RunProcess,RunningParameters
 from django_utils.models import Profile
 
 from datetime import datetime
@@ -589,6 +589,7 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
         ## if file not available yet, let's wait for a later cron iteration
         experiment_run_name=''#variable reset
         found_xmltxt_files={}
+        run_start_date=''
         try:
             fetch_miseqrun_xml_completion_files(logger,[run_index],found_xmltxt_files)
         except:
@@ -609,13 +610,23 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
                     settings.MEDIA_ROOT, wetlab_config.RUN_TEMP_DIRECTORY,run_index,'runParameters.xml')
 
                 experiment_run_name=fetch_exp_name_from_run_info(local_runparametersxml)
-                logger.debug('value of exp_run_name from runParameters.xml: '+experiment_run_name) #TBDDebugEndDebug
+                logger.debug('value of exp_run_name from runParameters.xml: '+experiment_run_name)
                 if ''==experiment_run_name:
                     logger.error(
                         '==>NO exp name is defined for run in '+local_runparametersxml+'. Run no updated')
                     timestamp_print(
                         '==> ERROR: NO exp name is defined for run in '+local_runparametersxml+'. Run no updated')
                     continue
+                temp_date=fetch_run_start_date_from_run_info(local_runparametersxml)
+                run_start_date=datetime.datetime.strptime(temp_date,'%y%m%d')
+                logger.debug('value of RunStartDate from runParameters.xml: '+str(run_start_date))
+                if ''==run_start_date:
+                    logger.error(
+                        '==>NO RunStartDate is defined for run in '+local_runparametersxml+'. Run no updated')
+                    timestamp_print(
+                        '==> ERROR: NO RunStartDate is defined for run in '+local_runparametersxml+'. Run no updated')
+                    continue
+
             except:
                 ## generic exception handling (exception info).
                 var =traceback.format_exc()
@@ -663,29 +674,6 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
 
 
         if 'Free' != message_output_run_name_free_to_use:
-            '''TBD debug delete???
-            state=RunProcess.objects.get(runName=experiment_run_name).runState
-            if 'Recorded'==state:
-                logger.info('Sequencing of Run: '+run_index  + '(experiment_run_name: '
-                    +experiment_run_name+' is still in progress...')
-                timestamp_print('Sequencing of Run: '+run_index  + '(experiment_run_name: '
-                    +experiment_run_name+') is still in progress...')
-
-            elif 'CANCELLED'==state:
-                logger.info(' Run: '+run_index  + '(experiment_run_name: '
-                    +experiment_run_name+') was stored as CANCELLED')
-
-            if 'Recorded'==state or 'CANCELLED'==state:
-                message_output='OK_check' #this is a normal behaviour
-                os.remove(run_info_dict['local_samplesheet_filepath'])
-                logger.info('Deleted file: '+ run_info_dict['local_samplesheet_filepath'])
-                continue
-            else: ##having checked before if run was among sequenced ones, this should not happen
-                message_output= message_output_run_name_free_to_use
-                logger.info ('Problem detected in check_run_name_free_to_use')
-                raise ValueError('Unexpected status value for: '+experiment_run_name)
-            EndTBDDebug --delete???
-            '''
             message_output= message_output_run_name_free_to_use
             logger.info ('Problem detected in check_run_name_free_to_use')
 
@@ -851,7 +839,14 @@ def getSampleSheetFromSequencer():
                             +Projects.get_project_info_debug(new_project_info))
                         logger.info('------------------------------')
 
-                    ##3.- Update of MISEQ runs in RECORDED state
+                    ##3.- Pre-registration of run folder in runParameters.xml for searchs in views.
+                    new_runparams = RunningParameters(
+                        runName_id= RunProcess.objects.get(runName=key),
+                        RunID=val['run_dir']
+                        )
+                    new_runparams.save()
+                    logger.info('New record in RunningParameters')
+                    ##4.- Update of MISEQ runs in RECORDED state
                     try:
                         with open (
                             wetlab_config.RECORDED_MISEQRUNS_FILEPATH, 'a+') as recorded_miseqruns_file:
@@ -875,7 +870,6 @@ def getSampleSheetFromSequencer():
         timestamp_print('Straight check to see if the run state can be moved forward to SAMPLE SENT...')
         logger.debug('**Straight check to see if the run state can be moved forward to SAMPLE SENT...')
         try:
-            #miseq_check_recorded(logger) ##TBD EndTBD
             miseq_check_recorded()
         except:
             logger.error('Exception when checking recorded state for MiSeq runs')
@@ -901,7 +895,7 @@ def getSampleSheetFromSequencer():
 
 def miseq_check_recorded():
     timestamp_print('Starting the process for miseq_check_recorded')
-    logger=open_log('miseq_check_recorded.log') #TBDDebugEndTBDDebug
+    logger=open_log('miseq_check_recorded.log')
     logger.info('Starting the process for miseq_check_recorded()')
 
     #Build list of runs in RECORDED state
@@ -941,12 +935,11 @@ def miseq_check_recorded():
                settings.MEDIA_ROOT, wetlab_config.RUN_TEMP_DIRECTORY,run,'RunInfo.xml')
             run_temp_dir=os.path.join(
                 settings.MEDIA_ROOT, wetlab_config.RUN_TEMP_DIRECTORY,run)
-            '''
+
             ##TBDDEBUG --delete
             if '180725_M03352_0112_000000000-D38LV'==run:
                 found_xmltxt_files_per_run_dir[run]['RTAComplete.txt'][0]='not_found'
             ##EndTDBDebug --delete
-            '''
 
 
             ##################################

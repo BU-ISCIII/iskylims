@@ -306,6 +306,15 @@ def save_run_info(run_info, run_parameter, run_id, logger):
         logger.info('Updated the project date for the Project table ')
 
 
+def fetch_run_start_date_from_run_info (local_run_parameter_file):
+
+    fh=open(local_run_parameter_file ,'r')
+    for line in fh:
+        runStartDate=re.search('^\s+<RunStartDate>(.*)</RunStartDate>',line)
+        if runStartDate:
+            fh.close()
+            return runStartDate.group(1)
+    return ''
 def fetch_exp_name_from_run_info (local_run_parameter_file):
 
     ## look for   <ExperimentName>NextSeq_CNM_041</ExperimentName> in RunParameters.xml file
