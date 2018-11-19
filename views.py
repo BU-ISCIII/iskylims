@@ -2285,8 +2285,8 @@ def nextSeqStats_per_library (request):
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
                                                                     'ADVICE:', 'Use the format  (YYYY-MM-DD)']})
         if library_kit_name != '':
-            if Projects.objects.filter(libraryKit__contains = library_kit_name, procState = 'Completed').exists():
-                library_found = Projects.objects.filter(libraryKit__contains = library_kit_name, procState = 'Completed')
+            if Projects.objects.filter(libraryKit__icontains = library_kit_name, procState = 'Completed').exists():
+                library_found = Projects.objects.filter(libraryKit__icontains = library_kit_name, procState = 'Completed')
             else:
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Library containing ', library_kit_name]})
         else:
