@@ -617,6 +617,7 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
                     timestamp_print(
                         '==> ERROR: NO exp name is defined for run in '+local_runparametersxml+'. Run no updated')
                     continue
+
                 temp_date=fetch_run_start_date_from_run_info(local_runparametersxml)
                 run_start_date=datetime.datetime.strptime(temp_date,'%y%m%d')
                 logger.debug('value of RunStartDate from runParameters.xml: '+str(run_start_date))
@@ -731,10 +732,13 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
             database_info[experiment_run_name]={}
             database_info[experiment_run_name]['run_dir']=run_index
             ## RunProcess keeps samplesheet paths below '.../documents/'
-            database_info[experiment_run_name]['relative_samplesheet_filepath']= run_info_dict['local_samplesheet_filepath'][len(
-                os.path.join(settings.MEDIA_ROOT, wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY)):]
+            # database_info[experiment_run_name]['relative_samplesheet_filepath']= run_info_dict['local_samplesheet_filepath'][len(
+            #    os.path.join(settings.MEDIA_ROOT, wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY)):]
+            database_info[experiment_run_name]['relative_samplesheet_filepath']= (
+                run_info_dict['local_samplesheet_filepath'][len( os.path.join(settings.MEDIA_ROOT)):])
             database_info[experiment_run_name]['run_projects']={}
             database_info[experiment_run_name]['run_projects']=project_dict
+            database_info[experiment_run_name]['run_start_date']=run_start_date
 
             ## For MiSeq runs we take the "1st" (and potentially only) researcher as user
             ## for later calculation of the center from which the request came
@@ -805,6 +809,7 @@ def getSampleSheetFromSequencer():
                         runName=key,
                         sampleSheet=relative_samplesheet_filepath,
                         centerRequestedBy=Center.objects.get(pk=center_requested_id),
+                        run_date=val['run_start_date'],
                         index_library = val['index_library'],
                         sequencerModel= machine,
                         runState='Recorded')
@@ -829,6 +834,7 @@ def getSampleSheetFromSequencer():
                             LibraryKit_id=LibraryKit.objects.get(libraryName__exact = 'Unknown'),
                             ## as of today, only one set of indexes is being considered
                             libraryKit=val['index_library'],
+                            project_run_date=val['run_start_date'],
                             procState='Recorded',
                             baseSpaceFile="")
 
@@ -840,9 +846,12 @@ def getSampleSheetFromSequencer():
                         logger.info('------------------------------')
 
                     ##3.- Pre-registration of run folder in runParameters.xml for searchs in views.
+                    logger.debug('RunProcess.objects.get(runName=key): '+str(
+                        RunProcess.objects.get(runName=key)))
+                    logger.debug ('val[\'run_dir\']: '+val['run_dir'])
                     new_runparams = RunningParameters(
                         runName_id= RunProcess.objects.get(runName=key),
-                        RunID=val['run_dir']
+                        RunID=val['run_dir'],
                         )
                     new_runparams.save()
                     logger.info('New record in RunningParameters')
@@ -935,11 +944,6 @@ def miseq_check_recorded():
                settings.MEDIA_ROOT, wetlab_config.RUN_TEMP_DIRECTORY,run,'RunInfo.xml')
             run_temp_dir=os.path.join(
                 settings.MEDIA_ROOT, wetlab_config.RUN_TEMP_DIRECTORY,run)
-
-            ##TBDDEBUG --delete
-            if '180725_M03352_0112_000000000-D38LV'==run:
-                found_xmltxt_files_per_run_dir[run]['RTAComplete.txt'][0]='not_found'
-            ##EndTDBDebug --delete
 
 
             ##################################
