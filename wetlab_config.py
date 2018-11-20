@@ -1,6 +1,5 @@
 import os
 from django.conf import settings
-## TBD
 ## (PARAMETERS FOR TESTING) SAMBA settings for connecting quibitka server to fetch the run files
 
 # SAMBA_USER_ID = 'smbuser'
@@ -21,7 +20,6 @@ SAMBA_NTLM_USED = True
 SAMBA_IP_SERVER = '172.21.7.11'
 SAMBA_PORT_SERVER = '445'
 
-##endTBD
 
 ## Directory settings for processing the run execution process
 ## Relative path from settings.BASE_DIR
@@ -47,12 +45,6 @@ FAULTY_SAMPLESHEET_MISEQRUNS_FILE='faulty_samplesheet_miseq_runs'
 FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH=os.path.join(settings.MEDIA_ROOT,
     RUN_TEMP_DIRECTORY,FAULTY_SAMPLESHEET_MISEQRUNS_FILE)
 
-'''TBD
-## file containing MiSeq runs whose samplesheets have not 'experiment name'
-SAMPLESHEET_NOEXPNAME_MISEQRUNS_FILE='no_exp_name_samplesheet_miseq_runs'
-SAMPLESHEET_NOEXPNAME_MISEQRUNS_FILEPATH=os.path.join(settings.MEDIA_ROOT,
-    RUN_TEMP_DIRECTORY,SAMPLESHEET_NOEXPNAME_MISEQRUNS_FILE)
-EndTBD'''
 ## file containing MiSeq runs in RECORDED state to check whether they have
 ## already reached SAMPLE SENT
 RECORDED_MISEQRUNS_FILE='recorded_miseq_runs'

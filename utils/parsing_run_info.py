@@ -16,52 +16,6 @@ from .wetlab_misc_utilities import open_samba_connection, timestamp_print
 from django.conf import settings
 
 
-### TBD
-'''
-def open_samba_connection():
-    ## needed for testing in cuadrix
-    ## to be commented-out when delivery (will use instead the function
-    ## located in utils/parsing_run_info.py)
-
-    timestamp_print('Starting the process for open_samba_connection() (cron.py- cuadrix testing)')
-
-    ###logger.info('user ID= '+wetlab_config.SAMBA_USER_ID+'. domain= '+wetlab_config.SAMBA_DOMAIN)
-    conn=SMBConnection(wetlab_config.SAMBA_USER_ID, wetlab_config.SAMBA_USER_PASSWORD,
-        wetlab_config.SAMBA_SHARED_FOLDER_NAME,wetlab_config.SAMBA_REMOTE_SERVER_NAME,
-        use_ntlm_v2=wetlab_config.SAMBA_NTLM_USED,domain=wetlab_config.SAMBA_DOMAIN)
-    if True != conn.connect(wetlab_config.SAMBA_IP_SERVER, int(wetlab_config.SAMBA_PORT_SERVER)):
-        logger=open_log('open_samba_connection_testing.log')
-        logger.error('Cannot set up SMB connection with '+wetlab_config.SAMBA_REMOTE_SERVER_NAME)
-        timestamp_print('Cannot set up SMB connection with '+wetlab_config.SAMBA_REMOTE_SERVER_NAME)
-
-    timestamp_print('Leaving open_samba_connection() (cron.py- cuadrix testing)')
-    return conn
-'''
-
-'''
-def open_samba_connection():
-    ## open samba connection
-    # There will be some mechanism to capture userID, password, client_machine_name, server_name and server_ip
-    # client_machine_name can be an arbitary ASCII string
-    # server_name should match the remote machine name, or else the connection will be rejected
-    conn=SMBConnection(wetlab_config.SAMBA_USER_ID, wetlab_config.SAMBA_USER_PASSWORD, wetlab_config.SAMBA_SHARED_FOLDER_NAME,wetlab_config.SAMBA_REMOTE_SERVER_NAME, use_ntlm_v2=wetlab_config.SAMBA_NTLM_USED)
-    conn.connect(wetlab_config.SAMBA_IP_SERVER, int(wetlab_config.SAMBA_PORT_SERVER))
-    #conn=SMBConnection('bioinfocifs', 'fCdEg979I-W.gUx-teDr', 'NGS_Data', 'quibitka', use_ntlm_v2=True)
-    #conn.connect('172.21.7.11', 445)
-
-    #conn=SMBConnection('Luigi', 'Apple123', 'NGS_Data', 'LUIGI-PC', use_ntlm_v2=True)
-    #conn.connect('192.168.1.3', 139)
-    #conn=SMBConnection('bioinfocifs', 'bioinfocifs', 'NGS_Data_test', 'barbarroja', use_ntlm_v2=True)
-    #conn.connect('10.15.60.54', 139)
-
-
-    ###conn = SMBConnection(userid, password, client_machine_name, remote_machine_name, use_ntlm_v2 = True)
-    ###conn.connect(server_ip, 139)
-    return conn
-'''
-### End TBD
-
-
 def get_size_dir (directory, conn, logger):
     count_file_size = 0
     file_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME, directory)
@@ -544,6 +498,9 @@ def process_run_in_recorded_state(logger):
     return(run_names_processed)
 
 
+def get_machine_lanes(run_id):
+    number_of_lanes = RunProcess.objects.get(pk=run_id).sequencerModel.get_number_of_lanes()
+    return int(number_of_lanes)
 
 
 def update_run_state(run_id, state, logger):
@@ -559,7 +516,7 @@ def update_project_state(run_id, state, logger):
         project.procState = state
         project.save()
 
-def parsing_statistics_xml(demux_file, conversion_file, logger):
+def parsing_statistics_xml(run_id, demux_file, conversion_file, logger):
     total_p_b_count=[0,0,0,0]
     stats_result={}
 
@@ -570,6 +527,7 @@ def parsing_statistics_xml(demux_file, conversion_file, logger):
     for child in root.iter('Project'):
         projects.append(child.attrib['name'])
     total_samples = 0
+    number_of_lanes = get_machine_lanes(run_id)
     for i in range(len(projects)):
         p_temp=root[0][i]
         samples=p_temp.findall('Sample')
@@ -589,10 +547,7 @@ def parsing_statistics_xml(demux_file, conversion_file, logger):
         # look for One mismatch barcode
 
         if p_temp[sample_all_index].find('OneMismatchBarcodeCount') ==None:
-             #TBD
-             #for  fill in range(4):
-             for  fill in range(1):
-             #EndTBD
+             for  fill in range(number_of_lanes):
                 one_mismatch_count.append('NaN')
         else:
             for c in p_temp[sample_all_index].iter('OneMismatchBarcodeCount'):
@@ -630,10 +585,7 @@ def parsing_statistics_xml(demux_file, conversion_file, logger):
         list_pf_yield_q30=[]
         list_pf_qualityscore=[]
 
-        #TBD
-        #for l_index in range(4):
-        for l_index in range(1):
-        #ENdTBD
+        for l_index in range(number_of_lanes):
             raw_yield_value = 0
             raw_yield_q30_value = 0
             raw_quality_value = 0
@@ -744,16 +696,13 @@ def process_xml_stats(stats_projects, run_id, logger):
     logger.debug('starting the process_xml_stats method')
     total_cluster_lane=(stats_projects['all']['PerfectBarcodeCount'])
     logger.info('processing flowcell stats for %s ', run_id)
+    number_of_lanes=get_machine_lanes(run_id)
     for project in stats_projects:
         if project == 'TopUnknownBarcodes':
             continue
         flow_raw_cluster, flow_pf_cluster, flow_yield_mb = 0, 0, 0
-        #TBD
-        #for fl_item in range(4):
-        for fl_item in range(1):
-        #EndTBD
+        for fl_item in range(number_of_lanes):
              # make the calculation for Flowcell
-
             flow_raw_cluster +=int(stats_projects[project]['BarcodeCount'][fl_item])
             flow_pf_cluster +=int(stats_projects[project]['PerfectBarcodeCount'][fl_item])
             flow_yield_mb +=float(stats_projects[project]['PF_Yield'][fl_item])*M_BASE
@@ -790,10 +739,7 @@ def process_xml_stats(stats_projects, run_id, logger):
             continue
         logger.info('processing lane stats for %s', project)
 
-        #TBD
-        #for i in range (4):
-        for i in range (1):
-        #EndTBD
+        for i in range (number_of_lanes):
             # get the lane information
             lane_number=str(i + 1)
             pf_cluster_int=(int(stats_projects[project]['PerfectBarcodeCount'][i]))
@@ -835,10 +781,7 @@ def process_xml_stats(stats_projects, run_id, logger):
     logger.info ('processing the TopUnknownBarcodes')
     for project in stats_projects:
         if project == 'TopUnknownBarcodes':
-            #TBD
-            #for un_lane in range(4) :
-            for un_lane in range(1) :
-            #EndTBD
+            for un_lane in range(number_of_lanes) :
                 logger.info('Processing lane %s for TopUnknownBarcodes', un_lane)
                 count_top=0
                 lane_number=str(un_lane + 1)
@@ -854,13 +797,14 @@ def process_xml_stats(stats_projects, run_id, logger):
                     top_number +=1
 
 
-def parsing_sample_project_xml(demux_file, conversion_file, logger):
+def parsing_sample_project_xml(run_id,demux_file, conversion_file, logger):
     total_p_b_count=[0,0,0,0]
     sample_result_dict={}
     #demux_file='example.xml'
     demux_stat=ET.parse(demux_file)
     root=demux_stat.getroot()
     projects=[]
+    number_of_lanes=get_machine_lanes(run_id)
     logger.info('Starting parsing DemultiplexingStats.XML for getting Sample information')
     for child in root.iter('Project'):
         projects.append(child.attrib['name'])
@@ -916,10 +860,7 @@ def parsing_sample_project_xml(demux_file, conversion_file, logger):
             pf_yield_q30_value = 0
             pf_quality_value = 0
 
-            #TBD
-            #for l_index in range(4):
-            for l_index in range(1):
-            #EndTBD
+            for l_index in range(number_of_lanes):
                 tiles_index = len(p_temp[s_index][0][l_index].findall ('Tile'))
                 for t_index in range(tiles_index):
                          # get the yield value for RAW and for read 1 and 2
@@ -1072,11 +1013,6 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
     demux_file=os.path.join(local_dir_samba,'DemultiplexingStats.xml')
     conversion_file=os.path.join(local_dir_samba,'ConversionStats.xml')
     run_info_file=os.path.join(local_dir_samba, 'RunInfo.xml')
-    ## Prepared for possible new machines.
-    ##TBD
-    #machine = "NextSeq"
-    machine = "MiSeq"
-    #EndTBD
 
     logger.debug('Executing process_run_in_bcl2F_q_executed_state method')
 
@@ -1141,13 +1077,6 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
         try:
             file_list = conn.listPath( share_folder_name, remote_interop_dir)
             logger.info('InterOp folder exists on the RunID %s', run_Id_used)
-            #TBD
-            #TODO if case MiSEQ  EndTODO
-            # copy runParameters.xml  file to interop folder. Requested by interop package:
-            # ../site-packages/interop/py_interop_run_metrics.py, line 391 in read :
-            # return _py_interop_run_metrics.run_metrics_read(self, *args)
-            # "interop.py_interop_comm.file_not_found_exception: RunParameters.xml required
-            # for legacy run"
             run_parameters_file=os.path.join(local_dir_samba,'runParameters.xml')
             try:
                 with open(run_parameters_file ,'wb') as runparam_fp :
@@ -1159,7 +1088,6 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
                 logger.error('Unable to fetch the runParameters.xml file for RunID %s', run_Id_used)
                 os.remove(run_parameters_file)
                 logger.debug('Deleting runParameters file  for RunID %s' , run_Id_used)
-            #EndTBD
 
         except:
             logger.error('ERROR:: InterOP folder does not exist on RunID %s', run_Id_used)
@@ -1205,7 +1133,7 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
         else:
             # parsing the files to get the xml Stats
             logger.info('processing the XML files')
-            xml_stats=parsing_statistics_xml(demux_file, conversion_file, logger)
+            xml_stats=parsing_statistics_xml(run_processing_id, demux_file, conversion_file, logger)
             result_of_raw_saving = store_raw_xml_stats(xml_stats,run_processing_id, logger)
             if result_of_raw_saving == 'ERROR':
                 update_run_state(run_processing_id, 'ERROR-on-Raw-SavingStats', logger)
@@ -1215,33 +1143,17 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
                 process_xml_stats(xml_stats,run_processing_id, logger)
 
                 # parsing and processing the project samples
-                sample_project_stats = parsing_sample_project_xml (demux_file, conversion_file, logger)
+                sample_project_stats = parsing_sample_project_xml (run_processing_id,demux_file, conversion_file, logger)
                 store_samples_projects (sample_project_stats, run_processing_id, logger)
 
                 logger.info('processing interop files')
                 # processing information for the interop files
-                if(machine == "NextSeq"):
-                    number_of_lanes = 4
-                #TBD
-                elif machine== 'MiSeq':
-                    number_of_lanes = 1
+                number_of_lanes = get_machine_lanes(run_processing_id)
 
-                logger.debug('Machine: '+machine+'. Nº of lanes= '+str(number_of_lanes))
-                #EndTBD
-
-                process_binStats(local_dir_samba, run_processing_id, logger,number_of_lanes)
+                process_binStats(local_dir_samba, run_processing_id, logger, number_of_lanes)
                 # Create graphics
                 graphic_dir=os.path.join(settings.MEDIA_ROOT,wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING)
-                #TODO: if case MiSEQ
-                #File "/srv/iSkyLIMS/iSkyLIMS_wetlab/utils/interop_statistics.py", line 190,
-                #in create_graphics
-                #os.mkdir(run_graphic_dir)
-                #FileNotFoundError: [Errno 2] No such file or directory:
-                # /srv/iSkyLIMS/documents/wetlab/images_plot/<run dir name>
 
-
-
-                #EndTODO
                 create_graphics(graphic_dir, run_processing_id, run_Id_used, logger)
 
                 processed_run.append(run_Id_used)
@@ -1315,7 +1227,7 @@ def find_not_completed_run (logger):
 
     processed_run={}
     for state in working_list:
-        logger.debug('find_not_completed_run / working_list= '+str(working_list)) #TBDDebugEndDebug
+        logger.debug('find_not_completed_run / working_list= '+str(working_list)) #Debug
         logger.info ('Start processing the run found for state %s', state)
         if state == 'Sample Sent':
             logger.debug ('found sample sent in state ')
@@ -1329,9 +1241,6 @@ def find_not_completed_run (logger):
             processed_run[state]=process_run_in_bcl2F_q_executed_state(working_list['Bcl2Fastq Executed'], logger)
 
     return (processed_run)
-### TBD why this line here?
-print( 'executing the parsing_run_info.py')
-### EndTBD
 
 
 '''

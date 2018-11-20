@@ -17,6 +17,7 @@ from .utils.stats_graphics import *
 from .utils.email_features import *
 from .utils.library_kits import *
 from .utils.samplesheet_checks import *
+from .utils.parsing_run_info import get_machine_lanes
 
 from django_utils.models import Profile, Center
 from .models import *
@@ -446,6 +447,8 @@ def get_information_run(run_name_found,run_id):
     info_dict={}
     ## collect the state to get the valid information of run that matches the run name
     run_state=run_name_found.get_state()
+    number_of_lanes=get_machine_lanes(run_id)
+
     # allow to change the run name in case that run state was recorded or Sample Sent
     if run_state == 'Recorded' or run_state == 'Sample Sent':
         info_dict['change_run_name'] = [[run_name_found.runName, run_id]]
@@ -674,7 +677,7 @@ def get_information_run(run_name_found,run_id):
 
         # prepare the data for top unknown barcode
         unknow_dict = {}
-        for lane_un in range (4):
+        for lane_un in range (number_of_lanes):
             lane_unknow_barcode = []
             lane_number=str(lane_un +1)
 
@@ -787,12 +790,8 @@ def get_information_run(run_name_found,run_id):
                     'Error Rate 100 cycle (%)','Intensity Cycle 1']
         info_reads_dict ={}
         for read_number in range (1, num_of_reads +1) :
-        #for read_number in range (1, 5):
             read_summary_values=[]
-            #TBD
-            #for lane_number in range(1, 5):
-            for lane_number in range(1, 2):
-            #EndTBD
+            for lane_number in range(1, number_of_lanes+1):
                 read_lane_id= NextSeqStatsBinRunRead.objects.filter(runprocess_id__exact =run_id, read__exact = read_number, lane__exact = lane_number)
                 lane_values=read_lane_id[0].get_bin_run_read().split(';')
                 read_summary_values.append(lane_values)
@@ -2189,10 +2188,9 @@ def nextSeqStats_per_time (request):
                 ### collect statistics for unkow Barcodes
                 top_unbarcode_list = []
                 top_count_sequence  = {}
+
                 #TBD
-                #for lane_number in range (1,5):
-                for lane_number in range (1,2):
-                #EndTBD
+                for lane_number in range (1,5):
                     top_unbarcode_dict_lane  = {}
                     for run in run_stats_list:
                         run_id = run.id
