@@ -447,7 +447,6 @@ def get_information_run(run_name_found,run_id):
     info_dict={}
     ## collect the state to get the valid information of run that matches the run name
     run_state=run_name_found.get_state()
-    number_of_lanes=get_machine_lanes(run_id)
 
     # allow to change the run name in case that run state was recorded or Sample Sent
     if run_state == 'Recorded' or run_state == 'Sample Sent':
@@ -455,6 +454,7 @@ def get_information_run(run_name_found,run_id):
     if (run_state != 'Completed'):
         d_list=['Run name','State of the Run is','Run was requested by','Run was recorded on date', 'Run date', 'Run Finish Date','RunID']
     else:
+        number_of_lanes=get_machine_lanes(run_id)
         d_list=['Run name','State of the Run is','Run was requested by',
                 'Disk space used for Images(in MB)','Disk space used for Fasta Files(in MB)',
                 'Disk space used for other Files(in MB)','Run recorded date','Run date', 'Run Finish Date',
