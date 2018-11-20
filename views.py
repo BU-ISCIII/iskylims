@@ -19,7 +19,7 @@ import statistics
 from django.conf import settings
 from iSkyLIMS_drylab import drylab_config  
 from smb.SMBConnection import SMBConnection
-
+from iSkyLIMS_wetlab.models import RunProcess, Projects
 ####### Import libraries for static files
 #from django.shortcuts import render_to_response
 #from django.shortcuts import RequestContext
