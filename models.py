@@ -50,15 +50,15 @@ class Machines (models.Model) :
 	machineDescription = models.CharField(_("Description"),max_length=255,null=True,blank=True)
 	machineLocation = models.CharField(_("Location"),max_length=255,null=True,blank=True)
 	machineProvider = models.CharField(_("Machine owner brand"),max_length=255,null=True,blank=True)
-	machineSerialNumber = models.CharField(_("Serial Number"),max_length=255,null=True,blank=True)    
+	machineSerialNumber = models.CharField(_("Serial Number"),max_length=255,null=True,blank=True)
 	machineState =  models.CharField(_("Machine State"),max_length=50,null=True,blank=True)
 	machineOperationStart = models.DateField(auto_now_add=False, null=True,blank=True)
 	machineOperationEnd = models.DateField(auto_now_add=False, null=True,blank=True)
-	machineNumberLanes = models.CharField("Number of Lanes"), max_length= 5)
+	machineNumberLanes = models.CharField("Number of Lanes", max_length= 5)
 
 	def __str__ (self) :
 		return '%s' %(self.machineName)
-	
+
 	def get_number_of_lanes(self):
 		return '%s' %(self.machineNumberLanes)
 
