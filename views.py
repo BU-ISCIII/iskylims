@@ -27,15 +27,15 @@ import statistics
 import re, os, shutil
 import datetime, time
 
-#import pdb; pdb.set_trace()
+#
 
 def index(request):
-    #import pdb; pdb.set_trace()
+    #
     return render(request, 'iSkyLIMS_wetlab/index.html')
 
 @login_required
 def register_wetlab(request):
-    #import pdb; pdb.set_trace()
+    #
     return render(request, 'iSkyLIMS_wetlab/index.html')
 
 
@@ -93,7 +93,7 @@ def get_sample_file (request):
         fs = FileSystemStorage()
         timestr = time.strftime("%Y%m%d-%H%M%S")
         ## including the timestamp to the sample sheet file
-        #import pdb; pdb.set_trace()
+        #
         # do not need to include the absolute path because django use the MEDIA_ROOT variable defined on settings to upload the file
         file_name=str(wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY
                      + split_filename.group(1)
@@ -104,7 +104,7 @@ def get_sample_file (request):
 
         ### add the document directory to read the csv file
         stored_file = os.path.join(settings.MEDIA_ROOT, file_name)
-        #import pdb; pdb.set_trace()
+        #
 
         ## Fetch the experiment name and the library name from the sample sheet file
         run_name, index_library_name = get_experiment_library_name(stored_file)
@@ -114,7 +114,7 @@ def get_sample_file (request):
 
         ## CHECK that runName is not already used in the database.
         ## Error page is showed if runName is already  defined
-        #import pdb; pdb.set_trace()
+        #
         error_form_message =check_run_name_free_to_use(run_name)
         if error_form_message != 'Free':
             return render (
@@ -141,7 +141,7 @@ def get_sample_file (request):
         if error_form_message != 'OK_users':
             ## delete sample sheet file before showing the error page
             fs.delete(file_name)
-            import pdb; pdb.set_trace()
+
             return render (
                 request,'iSkyLIMS_wetlab/error_page.html',
                 {'content':error_form_message})
@@ -150,7 +150,7 @@ def get_sample_file (request):
 
         ## CHECK if the projects are already defined on database.
         ## Error page is shown if projects are already defined on database
-        #import pdb; pdb.set_trace()
+        #
         project_list=get_projects_in_run(stored_file)
 
         error_form_message=check_run_projects_definition(project_list)
@@ -166,10 +166,10 @@ def get_sample_file (request):
         ## Once the information looks good. it will be stores in runProcess and projects table
         ## store data in runProcess table, run is in pre-recorded state
 
-        import pdb; pdb.set_trace()
+        #
         center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
         center_requested_by = Center.objects.get(pk = center_requested_id)
-        import pdb; pdb.set_trace()
+        #
         run_proc_data = RunProcess(
             runName=run_name,sampleSheet= file_name, runState='Pre-Recorded',
             centerRequestedBy = center_requested_by)
@@ -190,7 +190,7 @@ def get_sample_file (request):
         run_info_values['projects_user'] = projects
         run_info_values['runname']= run_name
         ## Get the list of the library kit used (libraryKit)
-        #import pdb; pdb.set_trace()
+        #
         used_libraries = []
         list_libraries = LibraryKit.objects.order_by().values_list('libraryName', flat=True)
         run_info_values['used_libraryKit'] =  list_libraries
@@ -229,7 +229,7 @@ def get_sample_file (request):
         index_file = os.path.join(settings.MEDIA_ROOT,'wetlab', 'index_file')
         create_unique_sample_id_values (in_file, index_file)
         #in_file=str('documents/' + s_file)
-        #import pdb; pdb.set_trace()
+        #
         ## build the project list for each project_library kit
         for x in range(len(project_index_kit)):
             if project_index_kit[x] in library :
@@ -237,7 +237,7 @@ def get_sample_file (request):
             else:
                 library[project_index_kit[x]]= [projects[x]]
         ## convert the sample sheet to base space format and have different files according the library kit
-        #import pdb; pdb.set_trace()
+        #
         for key, value in library.items():
             lib_kit_file =key.replace(' ', '_')
             library_file = sample_sheet_map_basespace(in_file, key, lib_kit_file, value,'Plate96')
@@ -302,7 +302,7 @@ def get_sample_file (request):
             project.procState='Recorded'
             project.save()
 
-        #import pdb; pdb.set_trace()
+        #
         return render (request, 'iSkyLIMS_wetlab/getSampleSheet.html', {'completed_form':results})
 
 
@@ -329,7 +329,7 @@ def add_library_kit (request):
         library_kit_information['new_library_kit'] = new_library_kit_name
         #library_kit_information['index_number'] = new_index_number
         #library_kit_information['sample_number'] = new_sample_number
-        #import pdb; pdb.set_trace()
+        #
         library_kit_information ['libraries']  = libraryKit_dict
         #save the new library on database
         library = LibraryKit(libraryName= new_library_kit_name)
@@ -361,7 +361,7 @@ def add_index_library (request):
         fs = FileSystemStorage()
         timestr = time.strftime("%Y%m%d-%H%M%S")
         ## including the timestamp to the index library file
-        #import pdb; pdb.set_trace()
+        #
         # do not need to include the absolute path because django use the MEDIA_ROOT variable defined on settings to upload the file
         file_name=os.path.join(wetlab_config.LIBRARY_KITS_DIRECTORY ,  str(f_name + '_' +timestr + f_extension))
         filename = fs.save(file_name,  index_library_file)
@@ -376,7 +376,7 @@ def add_index_library (request):
 
         ### add the document directory to read the csv file
 
-        #import pdb; pdb.set_trace()
+        #
         ## check format file
 
         if not check_index_library_file_format(saved_file):
@@ -421,7 +421,7 @@ def add_index_library (request):
 
         index_libraries_information['new_index_library'] = library_settings['name']
         index_libraries_information ['index_libraries'] = index_library_dict
-        #import pdb; pdb.set_trace()
+        #
         return render (request, 'iSkyLIMS_wetlab/AddIndexLibrary.html',{'index_library_info': index_libraries_information })
     else:
         index_libraries_information ['index_libraries'] = index_library_dict
@@ -585,9 +585,9 @@ def get_information_run(run_name_found,run_id):
 
 
         categories = ['Q > 30', 'Mean Quality Score', 'Yield MB', 'Cluster PF']
-        #import pdb; pdb.set_trace()
+        #
         data_source = bloxplot_graphic(heading, sub_caption, x_axis_name, y_axis_name, theme, categories, series, data)
-        #import pdb; pdb.set_trace()
+        #
         #data_source = bloxplot_graphic()
         #data_source = json_2_column_graphic('Comparison of bases with Q value bigger than 30', q_30_project_lane,q_30_media)
         info_dict ['boxplot'] = FusionCharts("boxandwhisker2d", "box1" , "800", "400", "box_chart1", "json", data_source).render()
@@ -630,7 +630,7 @@ def get_information_run(run_name_found,run_id):
         #categories = ['Lane 1', 'Lane 2', 'Lane 3','Lane 4']
         data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, percent_projects)
         #data_source = column_graphic_with_categories(heading, sub_caption, x_axis_name, y_axis_name, theme, categories, series, data)
-        #import pdb; pdb.set_trace()
+        #
         info_dict ['run_project_comparation'] = FusionCharts("column3d", "column1" , "600", "400", "column_chart1", "json", data_source).render()
 
         fl_data_display=[]
@@ -679,9 +679,9 @@ def get_information_run(run_name_found,run_id):
             lane_number=str(lane_un +1)
 
             unknow_bar_id = RawTopUnknowBarcodes.objects.filter(runprocess_id__exact =run_id , lane_number__exact = lane_number)
-            #import pdb; pdb.set_trace()
+            #
             for item_id in unknow_bar_id:
-                #import pdb; pdb.set_trace()
+                #
                 unknow_values = item_id.get_unknow_barcodes().split(';')
                 lane_unknow_barcode.append(unknow_values)
                 unknow_bar_value = int(unknow_values[0].replace(',',''))
@@ -692,7 +692,7 @@ def get_information_run(run_name_found,run_id):
 
             lane_number=str('unknow_bar_'+ str(lane_un))
             info_dict[lane_number] = lane_unknow_barcode
-            #import pdb; pdb.set_trace()
+            #
             # keep the top 10 unknow bar by deleting the lowest values
             unknow_dict_len = len (unknow_dict)
 
@@ -710,7 +710,7 @@ def get_information_run(run_name_found,run_id):
             found_unknow_index.append(key)
             index_temp = ''
             library_info = []
-            #import pdb; pdb.set_trace()
+            #
             if '+' in key:
                 split_base = key.split('+')
 
@@ -748,7 +748,7 @@ def get_information_run(run_name_found,run_id):
             found_unknow_index.append(index_temp)
             found_unknow_index.append(library_info)
             index_match_list.append(found_unknow_index)
-        #import pdb; pdb.set_trace()
+        #
 
         info_dict['match_unknows']= index_match_list
 
@@ -768,7 +768,7 @@ def get_information_run(run_name_found,run_id):
         #line_description=['Read 1','Read 2','Read 3','Read 4','Non Index','Totals']
         line_run_summary = []
         for index in range (len(index_run_summary)):
-            #import pdb; pdb.set_trace()
+            #
             run_summary_id = NextSeqStatsBinRunSummary.objects.filter(runprocess_id__exact =run_id , level__exact = index_run_summary[index])
             run_summary_values = run_summary_id[0].get_bin_run_summary().split(';')
             run_summary_values.insert(0, line_description[index])
@@ -776,7 +776,7 @@ def get_information_run(run_name_found,run_id):
                 info_dict ['runSummaryTotal'] = run_summary_values
             else:
                 line_run_summary.append(run_summary_values)
-        #import pdb; pdb.set_trace()
+        #
         info_dict ['runSummary'] = line_run_summary
 
         # prepare the data for Reads Binary summary stats
@@ -836,7 +836,7 @@ def search_nextSeq (request):
     ## Search for runs that fullfil the input values
     #############################################################
     if request.method=='POST' and (request.POST['action']=='runsearch'):
-        #import pdb; pdb.set_trace()
+        #
         run_name=request.POST['runname']
         start_date=request.POST['startdate']
         end_date=request.POST['enddate']
@@ -864,11 +864,11 @@ def search_nextSeq (request):
         else:
 
             user_projects = Projects.objects.filter(user_id__exact = request.user.id)
-            #import pdb; pdb.set_trace()
+            #
             run_list =[]
             for user_project in user_projects :
                 run_list.append(user_project.runprocess_id.id)
-            #import pdb; pdb.set_trace()
+            #
             if RunProcess.objects.filter(pk__in = run_list).exists():
                 runs_found = RunProcess.objects.filter(pk__in = run_list)
             else:
@@ -884,7 +884,7 @@ def search_nextSeq (request):
                 r_data_display= get_information_run(run_name_found[0],run_name_found[0].id)
 
                 return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
-            #import pdb; pdb.set_trace()
+            #
 
             if (runs_found.filter(runName__icontains =run_name).exists()):
                 runs_found=runs_found.filter(runName__icontains =run_name).order_by('runName')
@@ -909,7 +909,7 @@ def search_nextSeq (request):
         if start_date !='' and end_date == '':
             if runs_found.filter(run_date__gte = start_date).exists():
                  runs_found = runs_found.filter(run_date__gte = start_date)
-                 #import pdb; pdb.set_trace()
+                 #
             else:
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Projects containing ', run_name,
                                         ' starting from', start_date]})
@@ -923,14 +923,14 @@ def search_nextSeq (request):
 
         if (len(runs_found)== 1) :
             r_data_display= get_information_run(runs_found[0],runs_found[0].id)
-            #import pdb; pdb.set_trace()
+            #
             return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
         else:
             ## collect the list of run that matches the run date
             run_list=[]
             for i in range(len(runs_found)):
                 run_list.append([runs_found[i],runs_found[i].id])
-                #import pdb; pdb.set_trace()
+                #
             return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html', {'display_run_list': run_list })
     else:
 
@@ -977,12 +977,12 @@ def search_nextProject (request):
                 p_data_display  = get_information_project(project_found_id, request)
                 return render(request, 'iSkyLIMS_wetlab/NextSearchProject.html', {'display_one_project': p_data_display })
             if  Projects.objects.filter (projectName__contains = project_name).exists():
-                #import pdb; pdb.set_trace()
+                #
                 projects_found = Projects.objects.filter (projectName__contains = project_name)
             else:
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No Project found with the string , ', project_name ]})
         ### if there is no project name, then get all which will be filtered by other conditions set by user
-        #import pdb; pdb.set_trace()
+        #
         if project_name == '':
             projects_found = Projects.objects.all()
                 # check if user name is not empty
@@ -1013,7 +1013,7 @@ def search_nextProject (request):
         if start_date !='' and end_date == '':
             if projects_found.filter(project_run_date__gte = start_date).exists():
                  projects_found = projects_found.filter(project_run_date__gte = start_date)
-                 #import pdb; pdb.set_trace()
+                 #
             else:
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Projects containing ', project_name,
                                         ' starting from', start_date]})
@@ -1043,7 +1043,7 @@ def search_nextProject (request):
 
 
     else:
-    #import pdb; pdb.set_trace()
+    #
         return render(request, 'iSkyLIMS_wetlab/NextSearchProject.html')
 
 
@@ -1054,7 +1054,7 @@ def get_info_sample (sample_id):
     sample_info_dict['project_name'] = sample_id.get_project_name()
     project_id= sample_id.project_id.id
     sample_info_dict['project_id'] = project_id
-    #import pdb; pdb.set_trace()
+    #
     sample_info_dict['run_id'] = sample_id.project_id.runprocess_id.id
     sample_info_dict['run_name'] = sample_id.project_id.runprocess_id.runName
     user_name_id = sample_id.project_id.user_id
@@ -1078,7 +1078,7 @@ def get_info_sample (sample_id):
     y_axis_name = '% of Project '
     theme = 'fint'
     data_source = column_graphic_one_column_highligthed (heading_samples_in_project, sub_caption, x_axis_name, y_axis_name, theme, percentage_in_project, sample_id.sampleName)
-    #import pdb; pdb.set_trace()
+    #
     percentage_chart = FusionCharts("column3d", 'samplesProject' , "750", "300", 'samples-chart-2', "json", data_source)
     sample_info_dict['percentage_chart'] = percentage_chart.render()
     return sample_info_dict
@@ -1128,12 +1128,12 @@ def search_nextSample (request):
                     return render(request, 'iSkyLIMS_wetlab/SearchNextSample.html',{'display_one_sample': sample_data_information })
             elif SamplesInProject.objects.filter(sampleName__contains = sample_name).exists():
                 sample_found = SamplesInProject.objects.filter(sampleName__contains = sample_name)
-                #import pdb; pdb.set_trace()
+                #
             else:
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No sample found with the string , ', sample_name ]})
 
         ### if there is no project name, then get all which will be filtered by other conditions set by user
-        #import pdb; pdb.set_trace()
+        #
         else :
             sample_found = SamplesInProject.objects.all()
         # Check the start and end date
@@ -1147,7 +1147,7 @@ def search_nextSample (request):
         if start_date !='' and end_date == '':
             if sample_found.filter(generated_at__gte = start_date).exists():
                  sample_found = sample_found.filter(generated_at__gte = start_date)
-                 #import pdb; pdb.set_trace()
+                 #
             else:
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Projects containing ', sample_name,
                                         ' starting from', start_date]})
@@ -1159,7 +1159,7 @@ def search_nextSample (request):
                                         ' finish before ', end_date]})
                 # check if user name is not empty
         if user_name != '':
-            #import pdb; pdb.set_trace()
+            #
             if User.objects.filter(username__contains = user_name).exists():
                 users = User.objects.filter (username__contains = user_name)
                 if len(users) == 1:
@@ -1193,18 +1193,18 @@ def search_nextSample (request):
                 s_list [sample.id] = [[sample.sampleName, sample_project]]
             sample_list ['s_list'] = s_list
 
-            #import pdb; pdb.set_trace()
+            #
 
             return render (request, 'iSkyLIMS_wetlab/SearchNextSample.html', {'multiple_samples': sample_list})
     else:
-    #import pdb; pdb.set_trace()
+    #
         return render(request, 'iSkyLIMS_wetlab/SearchNextSample.html')
 
 '''
         if len(project_id_list) == 1:
 
             # get the project  name for the match
-            #import pdb; pdb.set_trace()
+            #
             project_name = Projects.objects.get(pk = project_id_list[0].id).get_project_name()
 
             sample_found_count = sample_found.count()
@@ -1216,7 +1216,7 @@ def search_nextSample (request):
                 multiple_samples ={}
                 multiple_samples['project_name'] = project_name
                 samples_list_in_project =[]
-                #import pdb; pdb.set_trace()
+                #
                 for sample_item in sample_found :
                     sample_name = sample_item.get_sample_name()
                     sample_id = sample_item.id
@@ -1244,7 +1244,7 @@ def search_run (request, run_id):
                         user_list.append(project.user_id.id)
 
                     if  not request.user.id in user_list :
-                        import pdb; pdb.set_trace()
+                        #
 
                         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
 
@@ -1253,13 +1253,13 @@ def search_run (request, run_id):
 
                 #return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
         except:
-            import pdb; pdb.set_trace()
+            #
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
     else:
         #redirect to login webpage
         return redirect ('/accounts/login')
 
-    #import pdb; pdb.set_trace()
+    #
     if (RunProcess.objects.filter(pk=run_id).exists()):
         run_name_found = RunProcess.objects.filter(pk=run_id)
         r_data_display  = get_information_run(run_name_found[0],run_id)
@@ -1283,7 +1283,7 @@ def latest_run (request) :
         return redirect ('/accounts/login')
 
     latest_run = RunProcess.objects.order_by('id').last()
-    #import pdb; pdb.set_trace()
+    #
     run_id = latest_run.id
     r_data_display  = get_information_run(latest_run,run_id)
     return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
@@ -1323,7 +1323,7 @@ def get_information_project (project_id, request):
     project_values = project_id.get_project_info().split(';')
     run_name = project_id.runprocess_id.runName
     groups = Group.objects.get(name='WetlabManager')
-    #import pdb; pdb.set_trace()
+    #
     if groups not in request.user.groups.all():
         project_info_dict['run_id'] = ''
     else:
@@ -1332,7 +1332,7 @@ def get_information_project (project_id, request):
     for item in range(len(project_info_text)):
         p_data.append([project_info_text[item], project_values[item]])
     project_info_dict['p_data'] = p_data
-    #import pdb; pdb.set_trace()
+    #
     project_info_dict ['user_name'] = project_id.get_user_name()
     p_state = project_id.get_state()
     project_info_dict['state'] = p_state
@@ -1352,7 +1352,7 @@ def get_information_project (project_id, request):
         project_info_dict['graphic_value']= 100
         project_info_dict['graphic_color']='green'
         fl_data_display=[]
-        #import pdb; pdb.set_trace()
+        #
         # prepare the data for Flowcell Summary
         fl_summary_id = NextSeqStatsFlSummary.objects.get(project_id__exact = project_id)
         fl_list = ['Cluster (Raw)', 'Cluster (PF)', 'Yield (MBases)', 'Number of Samples']
@@ -1386,7 +1386,7 @@ def get_information_project (project_id, request):
             #sample_line = sample_found_list[sample_item].get_sample_information().split(';')
             #sample_list.append(sample_line)
             sample_list[sample_item.id] = [sample_line]
-        #import pdb; pdb.set_trace()
+        #
         project_info_dict['sample_table'] = sample_list
     return project_info_dict
 
@@ -1546,7 +1546,7 @@ def search_index_library (request):
         if start_date !='' and end_date == '':
             if index_library_found.filter(generatedat__gte = start_date).exists():
                  index_library_found = index_library_found.filter(generatedat__gte = start_date)
-                 #import pdb; pdb.set_trace()
+                 #
             else:
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no libraries ',
                                         ' starting from', start_date]})
@@ -1666,11 +1666,11 @@ def change_project_libKit (request, project_id) :
                         other_lib_kits.append(other_project.libraryKit)
                     if  project_lib_kit in other_lib_kits:
                         message = str('The library Kit ' + old_library_name + 'is shared with other projects in the same Run ')
-                        import pdb; pdb.set_trace()
+
                         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':[message, '', 'Contact with your administrator .']})
             old_lib_kit_file = project.baseSpaceFile
             new_file_name = new_library_name.replace(' ' , '_')
-            #import pdb; pdb.set_trace()
+            #
             new_file = update_library_kit_field(old_lib_kit_file,new_file_name,new_library_name)
             if new_file == 'ERROR':
                 return render (request, 'iSkyLIMS_wetlab/error_page.html', {'content':['']})
@@ -1685,7 +1685,7 @@ def change_project_libKit (request, project_id) :
             change_library_kit_dict['library_name'] = new_library_name
             change_library_kit_dict['file_to_download'] = new_file
 
-            #import pdb; pdb.set_trace()
+            #
             return render (request, 'iSkyLIMS_wetlab/ChangeProjectLibraryKit.html',{'changed_lib_kit':change_library_kit_dict})
         else:
             form_change_lib_kit ={}
@@ -1731,7 +1731,7 @@ def change_run_libKit (request, run_id):
                 # change the library name
                 old_lib_kit_file = project.baseSpaceFile
                 new_file_name = new_library_kit[0].replace(' ' , '_')
-                #import pdb; pdb.set_trace()
+                #
 
                 new_file = update_library_kit_field(old_lib_kit_file,new_file_name,new_library_kit[0])
                 if new_file == 'ERROR':
@@ -1762,7 +1762,7 @@ def change_run_libKit (request, run_id):
 
                 lib_kit_dict = {}
                 in_file=str('documents/' + sample_file)
-                #import pdb; pdb.set_trace()
+                #
                 ## build the project list for each library kit
                 for x in range(len(new_library_kit)):
                     if new_library_kit[x] in lib_kit_dict :
@@ -1771,7 +1771,7 @@ def change_run_libKit (request, run_id):
                         lib_kit_dict[new_library_kit[x]]= [projects_name[x]]
 
                 ## convert the sample sheet to base space format and have different files according the library kit
-                #import pdb; pdb.set_trace()
+                #
 
                 for key, value in lib_kit_dict.items():
                     lib_kit_file =key.replace(' ', '_')
@@ -1834,7 +1834,7 @@ def next_seq_stats_experiment (request):
 def nextSeqStats_per_researcher (request):
     if request.method == 'POST':
 
-        #import pdb; pdb.set_trace()
+        #
         r_name = request.POST['researchername']
         start_date=request.POST['startdate']
         end_date=request.POST['enddate']
@@ -1858,7 +1858,7 @@ def nextSeqStats_per_researcher (request):
         if User.objects.filter(username__icontains = r_name).exists():
             r_name = User.objects.get(username__icontains = r_name).username
             r_name_id = User.objects.get(username__icontains = r_name).id
-            #import pdb; pdb.set_trace()
+            #
             if Projects.objects.filter(user_id__exact =r_name_id).exists():
                 if Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed").exists():
                     r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed").order_by('project_run_date')
@@ -1909,7 +1909,7 @@ def nextSeqStats_per_researcher (request):
                         p_researcher_num_sample[p_name] = NextSeqStatsFlSummary.objects.get(project_id__exact = r_project_id).sampleNumber
                         p_researcher_date [p_name] = project_researcher.get_date()
                         p_researcher_lib_kit[p_name]= project_researcher.get_library_name()
-                        #import pdb; pdb.set_trace()
+                        #
                         p_researcher_sequencer[p_name] = str(project_researcher.runprocess_id.sequencerModel)
                         lanes_in_project = NextSeqStatsLaneSummary.objects.filter( project_id__exact = r_project_id)
                         for lane in lanes_in_project :
@@ -1939,7 +1939,7 @@ def nextSeqStats_per_researcher (request):
                     y_axis_name = 'Q 30 (in %)'
 
                     data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_q30_dict)
-                    #import pdb; pdb.set_trace()
+                    #
                     q30_researcher_graph = FusionCharts("column3d", 'q30_graph' , "500", "350", 'q30_chart', "json", data_source).render()
 
                     # create the graphic for mean quality
@@ -1977,7 +1977,6 @@ def nextSeqStats_per_researcher (request):
                     researcher_statistics ['researcher_name'] = r_name
                     #researcher_statistics ['projects'] = projects_name_list
 
-                    #import pdb ; pdb.set_trace()
                     # Calculating the mean for all projects performed by researcher
                     comp_q30_dict, comp_mean_q_dict = {} , {}
                     comp_yield_mb_dict, comp_cluster_pf_dict = {} , {}
@@ -2009,7 +2008,6 @@ def nextSeqStats_per_researcher (request):
                         comp_mean_q_dict['Other investigators'] = format(statistics.mean(mean_q_list), '.2f')
                         comp_yield_mb_dict['Other investigators'] = round(statistics.mean(yield_mb_list))
                         comp_cluster_pf_dict['Other investigators'] = round(statistics.mean(cluster_pf_list))
-                    #import pdb ; pdb.set_trace()
                     # create the graphic for q30 quality
                     theme = ''
                     heading = 'Comparation graphics for Q > 30 for investigator ' + r_name
@@ -2018,7 +2016,7 @@ def nextSeqStats_per_researcher (request):
                     y_axis_name = 'Q 30 (in %)'
 
                     data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_q30_dict)
-                    #import pdb; pdb.set_trace()
+                    #
                     comp_q30_graph = FusionCharts("column3d", 'comp_q30_graph' , "500", "350", 'comp_q30_chart', "json", data_source).render()
 
                     theme = ''
@@ -2028,7 +2026,7 @@ def nextSeqStats_per_researcher (request):
                     y_axis_name = 'Mean Quality'
 
                     data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_mean_q_dict)
-                    #import pdb; pdb.set_trace()
+                    #
                     comp_mean_q_graph = FusionCharts("column3d", 'comp_mean_q_graph' , "500", "350", 'comp_mean_q_chart', "json", data_source).render()
 
                     theme = ''
@@ -2038,7 +2036,7 @@ def nextSeqStats_per_researcher (request):
                     y_axis_name = '(Mb)'
 
                     data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_yield_mb_dict)
-                    #import pdb; pdb.set_trace()
+                    #
                     comp_yield_mb_graph = FusionCharts("column3d", 'comp_yield_mb_graph' , "500", "350", 'comp_yield_mb_chart', "json", data_source).render()
 
                     theme = ''
@@ -2048,7 +2046,7 @@ def nextSeqStats_per_researcher (request):
                     y_axis_name = 'Cluster pf'
 
                     data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_cluster_pf_dict)
-                    #import pdb; pdb.set_trace()
+                    #
                     comp_cluster_pf_graph = FusionCharts("column3d", 'comp_cluster_pf_graph' , "500", "350", 'comp_cluster_pf_chart', "json", data_source).render()
 
                     researcher_statistics ['comp_q30_graph'] = comp_q30_graph
@@ -2069,11 +2067,11 @@ def nextSeqStats_per_researcher (request):
                     data_source = pie_graphic_standard (heading, sub_caption, theme, sequencer_used)
                     sequencer_pie_graph = FusionCharts("pie3d", "sequencer_pie_graph" , "500", "400", "sequencer_pie_chart", "json", data_source).render()
                     researcher_statistics ['sequencer_pie_graph'] = sequencer_pie_graph
-                    #import pdb; pdb.set_trace()
+                    #
                     return  render(request, 'iSkyLIMS_wetlab/NextSeqStatsPerResearcher.html', {'researcher_statistics' : researcher_statistics})
 
                 else:
-                    #import pdb; pdb.set_trace()
+                    #
                     return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Researcher does not have projects in Completed state. ',
                                                             'ADVICE:', 'Contact with your administrator']})
             else:
@@ -2112,7 +2110,7 @@ def nextSeqStats_per_time (request):
             stat_per_time ={}
             if (RunProcess.objects.filter( runState='Completed', run_date__range=(start_date, end_date)).exists()):
                 run_stats_list=RunProcess.objects.filter(runState='Completed', run_date__range=(start_date, end_date)).order_by('run_date')
-                #import pdb; pdb.set_trace()
+                #
 
                 run_list={}
                 run_date_name ={}
@@ -2125,7 +2123,7 @@ def nextSeqStats_per_time (request):
                     else:
                         run_date_name[run_date] = 1
                     run_list [run.id] = [[run.get_run_name(), run_date]]
-                    #import pdb; pdb.set_trace()
+                    #
                 stat_per_time ['run_names'] = run_list
                 if len (run_stats_list) == 1:
                     number_of_runs = '1 Run'
@@ -2133,7 +2131,7 @@ def nextSeqStats_per_time (request):
                     number_of_runs = str(len (run_stats_list)) + '  Runs'
                 stat_per_time ['number_of_runs'] = number_of_runs
                 stat_per_time ['dates'] = start_date + ' and  ' + end_date
-                #import pdb; pdb.set_trace()
+                #
                 ############################################################
                 ### define the graphics for found run in the period
                 heading = 'Runs found during the period ' + str(start_date) + ' and ' + str(end_date)
@@ -2163,7 +2161,7 @@ def nextSeqStats_per_time (request):
                         else:
                             project_date_name[project_run_date] = 1
                         project_list [project.id] = [[project.get_project_name(), project_run_date]]
-                        #import pdb; pdb.set_trace()
+                        #
                     stat_per_time ['project_names'] = project_list
                     if len (project_found_list) == 1:
                         number_of_projects = '1 Project'
@@ -2171,7 +2169,7 @@ def nextSeqStats_per_time (request):
                         number_of_projects = str(len (project_found_list)) + '  Projects'
                     stat_per_time ['number_of_projects'] = number_of_projects
                     stat_per_time ['dates'] = start_date + ' and  ' + end_date
-                    #import pdb; pdb.set_trace()
+                    #
                     ############################################################
                     ### define the graphics for found run in the period
                     heading = 'Projects found during the period ' + str(start_date) + ' and ' + str(end_date)
@@ -2201,7 +2199,7 @@ def nextSeqStats_per_time (request):
                         top_unbarcode = RawTopUnknowBarcodes.objects.filter(runprocess_id__exact =run_id, lane_number__exact = lane_number, top_number__exact = 1)
                         count ,sequence  = top_unbarcode[0].get_unknow_barcodes().split(';')
                         count_float = float(count.replace(',',''))
-                        #import pdb; pdb.set_trace()
+                        #
                         ## Count the number of times that the sequence is found per project and lane
                         if sequence in top_unbarcode_dict_lane :
                             top_unbarcode_dict_lane [sequence] += 1
@@ -2226,7 +2224,7 @@ def nextSeqStats_per_time (request):
                     render_number = 'ex'+ str(l_count)
                     lane_chart = 'lane_chart'+ str(l_count)
                     lane_graphic = FusionCharts("column3d", render_number , "500", "400", chart_number, "json", data_source)
-                    #import pdb; pdb.set_trace()
+                    #
                     stat_per_time [lane_chart] = lane_graphic.render()
                     l_count +=1
 
@@ -2253,7 +2251,7 @@ def nextSeqStats_per_time (request):
                 data_source = researcher_project_column_graphic (heading, sub_caption, x_axis_name, y_axis_name, 'carbon', run_disk_utilization)
                 stat_per_time['disk_space_period_graphic'] = FusionCharts("column3d", disk_space_period_index_graph , "550", "350", disk_space_period_chart_number, "json", data_source).render()
 
-                #import pdb; pdb.set_trace()
+                #
                 return render(request, 'iSkyLIMS_wetlab/NextSeqStatsPerTime.html', {'display_stats_per_time': stat_per_time })
 
             else:
@@ -2335,13 +2333,13 @@ def nextSeqStats_per_library (request):
         if start_date !='' and end_date == '':
             if library_found.filter(project_run_date__gte = start_date).exists():
                  library_found = library_found.filter(project_run_date__gte = start_date)
-                 #import pdb; pdb.set_trace()
+                 #
             else:
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Library containing ', library_kit_name,
                                         ' starting from', start_date]})
         if start_date =='' and end_date != '':
             if library_found.filter(project_run_date__lte = end_date).exists():
-                #import pdb; pdb.set_trace()
+                #
                 library_found = library_found.filter(project_run_date__lte = end_date)
             else:
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Library containing ', library_kit_name,
@@ -2349,7 +2347,7 @@ def nextSeqStats_per_library (request):
 
         #Collecting the statistics for the selected library
         # Get the projects which are using the library kit
-        #import pdb; pdb.set_trace()
+        #
         library_stats ={}
         projects_name_in_library =[]
         q_30_list , mean_q_list , yield_mb_list = [] , [] ,[]
@@ -2358,7 +2356,7 @@ def nextSeqStats_per_library (request):
         library_names ={}
         for library in library_found :
             library_names [library.libraryKit] = 1
-        #import pdb; pdb.set_trace()
+        #
         if len(library_names) == 1:
             # There is only 1 library in the query. Results displays all projects data which have this library kit
             mean_lane_graphic ={}
@@ -2370,7 +2368,7 @@ def nextSeqStats_per_library (request):
                 for project in library_found :
                     project_id = project.id
                     # Get quality information for each Lane summary of the project id
-                    #import pdb; pdb.set_trace()
+                    #
                     lane_in_project = NextSeqStatsLaneSummary.objects.get(project_id__exact = project_id, lane__exact = lane_number)
                     q_30_value, mean_q_value, yield_mb , cluster_pf = lane_in_project.get_stats_info().split(';')
                     project_name = project.get_project_name()
@@ -2380,14 +2378,14 @@ def nextSeqStats_per_library (request):
                     mean_in_lib.append(float(mean_q_value))
                     yield_mb_lane[project_name] = yield_mb.replace(',','')
                     yield_mb_in_lib.append(float(yield_mb.replace(',','')))
-                    #import pdb; pdb.set_trace()
+                    #
                 # creating the Yield MBases graphics
                 chart_number = 'chart-' + str(lane_number)
                 render_number = 'ex'+ str(lane_number)
                 heading = 'Number of MBases in the projects for Lane ' + str(lane_number)
                 data_source = graphic_for_library_kit (heading, 'projects in lane ' ,'Project Names', 'Number of M bases', 'ocean', yield_mb_lane)
                 yield_mb_lane_graphic = FusionCharts("column3d", render_number , "500", "300", chart_number, "json", data_source)
-                #import pdb; pdb.set_trace()
+                #
                 yield_graphic = 'yield_mb_graphic' + str(lane_number)
                 library_stats [yield_graphic] = yield_mb_lane_graphic.render()
 
@@ -2397,7 +2395,7 @@ def nextSeqStats_per_library (request):
                 heading = 'Percent of bases > Q30 in the projects for Lane ' + str(lane_number)
                 data_source = graphic_for_library_kit (heading, 'projects in lane ' ,'Project Names', 'Percent of Q 30', 'zune', q_30_lane)
                 q30_lane_graphic = FusionCharts("column3d", render_number , "400", "300", chart_number, "json", data_source)
-                #import pdb; pdb.set_trace()
+                #
                 q30_graphic = 'q30_graphic' + str(lane_number)
                 library_stats [q30_graphic] = q30_lane_graphic.render()
 
@@ -2407,7 +2405,7 @@ def nextSeqStats_per_library (request):
                 heading = 'Mean Quality Score in the projects for Lane ' + str(lane_number)
                 data_source = graphic_for_library_kit (heading, 'projects in lane ' ,'Project Names', 'Percent of Q 30', 'carbon', mean_q_lane)
                 mean_lane_graphic = FusionCharts("column3d", render_number , "400", "300", chart_number, "json", data_source)
-                #import pdb; pdb.set_trace()
+                #
                 mean_graphic = 'mean_graphic' + str(lane_number)
                 library_stats [mean_graphic] = mean_lane_graphic.render()
 
@@ -2415,7 +2413,7 @@ def nextSeqStats_per_library (request):
             library_name = project.get_library_name()
             library_stats['library_name'] = library_name
             library_stats['project_names'] = projects_name_in_library
-            #import pdb; pdb.set_trace()
+            #
             ########################################################################
             # set the data for the library under study
             ########################################################################
@@ -2480,19 +2478,19 @@ def nextSeqStats_per_library (request):
             heading = 'Comparison of Percent of bases > Q30  '
             data_source = graphic_for_library_kit (heading, 'Q30 comparison ' ,'Library Names', 'Percent of Q 30', '', q30_comparations)
             comp_q30_lib_graphic = FusionCharts("column3d", 'comp-q30-1' , "500", "300", 'comp-q30-chart-1', "json", data_source)
-            #import pdb; pdb.set_trace()
+            #
             library_stats ['comp_q30_graphic'] = comp_q30_lib_graphic.render()
 
             heading = 'Comparison of Mean Quality Score '
             data_source = graphic_for_library_kit (heading, 'Mean Quality Score comparison ' ,'Library Names', 'Mean Quality Score', '', mean_comparations)
             comp_mean_lib_graphic = FusionCharts("column3d", 'comp-mean-1' , "500", "300", 'comp-mean-chart-1', "json", data_source)
-            #import pdb; pdb.set_trace()
+            #
             library_stats ['comp_mean_graphic'] = comp_mean_lib_graphic.render()
 
             heading = 'Number of Bases comparison'
             data_source = graphic_for_library_kit (heading, 'Number of Bases comparison ' ,'Library Names', 'Number of Bases ', '', n_bases_comparations)
             comp_mean_lib_graphic = FusionCharts("column3d", 'comp-n_bases-1' , "500", "300", 'comp-n_bases-chart-1', "json", data_source)
-            #import pdb; pdb.set_trace()
+            #
             library_stats ['comp_n_bases_graphic'] = comp_mean_lib_graphic.render()
 
             return render (request,'iSkyLIMS_wetlab/NextSeqStatsPerLibrary.html', {'display_library_stats': library_stats })
@@ -2504,7 +2502,7 @@ def nextSeqStats_per_library (request):
                 lib_name =library.get_library_name ()
                 if not lib_name in libraries_found_name :
                     libraries_found_name.append(lib_name)
-            #import pdb; pdb.set_trace()
+            #
             library_list_stats['library_names'] = libraries_found_name
             q30_comparations , mean_comparations , n_bases_comparations = {}, {} , {}
             ###
@@ -2515,19 +2513,19 @@ def nextSeqStats_per_library (request):
             heading = 'Comparison of Percent of bases > Q30  '
             data_source = graphic_for_library_kit (heading, 'Q30 comparison ' ,'Library Names', 'Percent of Q 30', '', q30_comparations)
             comp_q30_lib_graphic = FusionCharts("column3d", 'comp-q30-1' , "500", "300", 'comp-q30-chart-1', "json", data_source)
-            #import pdb; pdb.set_trace()
+            #
             library_list_stats ['comp_q30_graphic'] = comp_q30_lib_graphic.render()
 
             heading = 'Comparison of Mean Quality Score '
             data_source = graphic_for_library_kit (heading, 'Mean Quality Score comparison ' ,'Library Names', 'Mean Quality Score', '', mean_comparations)
             comp_mean_lib_graphic = FusionCharts("column3d", 'comp-mean-1' , "500", "300", 'comp-mean-chart-1', "json", data_source)
-            #import pdb; pdb.set_trace()
+            #
             library_list_stats ['comp_mean_graphic'] = comp_mean_lib_graphic.render()
 
             heading = 'Number of Bases comparison'
             data_source = graphic_for_library_kit (heading, 'Number of Bases comparison ' ,'Library Names', 'Number of Bases ', '', n_bases_comparations)
             comp_mean_lib_graphic = FusionCharts("column3d", 'comp-n_bases-1' , "500", "300", 'comp-n_bases-chart-1', "json", data_source)
-            #import pdb; pdb.set_trace()
+            #
             library_list_stats ['comp_n_bases_graphic'] = comp_mean_lib_graphic.render()
             ###
             # get the data for displaying the libraries found in the form request
@@ -2541,31 +2539,31 @@ def nextSeqStats_per_library (request):
                      all_libraries = library_found.filter(generatedat__gte = start_date)
             if start_date =='' and end_date != '':
                 if all_libraries.filter(generatedat__lte = end_date).exists():
-                    #import pdb; pdb.set_trace()
+                    #
                     all_libraries = library_found.filter(generatedat__lte = end_date)
 
             q30_comparations , mean_comparations , n_bases_comparations = {}, {} , {}
             get_list_of_libraries_values (all_libraries, q30_comparations, mean_comparations , n_bases_comparations)
-            #import pdb; pdb.set_trace()
+            #
             heading = 'Library kits of Percent of bases > Q30  '
             data_source = graphic_for_library_kit (heading, 'Q30 library kits ' ,'Library Names', 'Percent of Q 30', '', q30_comparations)
             lib_q30_lib_graphic = FusionCharts("column3d", 'lib-q30-lib' , "500", "300", 'lib-q30-chart-1', "json", data_source)
-            #import pdb; pdb.set_trace()
+            #
             library_list_stats ['lib_q30_graphic'] = lib_q30_lib_graphic.render()
 
             heading = 'Library kits of Mean Quality Score '
             data_source = graphic_for_library_kit (heading, 'Mean Quality Score Library kits ' ,'Library Names', 'Mean Quality Score', '', mean_comparations)
             lib_mean_lib_graphic = FusionCharts("column3d", 'lib-mean-lib' , "500", "300", 'lib-mean-chart-1', "json", data_source)
-            #import pdb; pdb.set_trace()
+            #
             library_list_stats ['lib_mean_graphic'] = lib_mean_lib_graphic.render()
 
             heading = 'Number of Bases per Library kits'
             data_source = graphic_for_library_kit (heading, 'Number of Bases per Library kits ' ,'Library Names', 'Number of Bases ', '', n_bases_comparations)
             lib_mean_lib_graphic = FusionCharts("column3d", 'lib-n_bases-lib' , "500", "300", 'lib-n_bases-chart-1', "json", data_source)
-            #import pdb; pdb.set_trace()
+            #
             library_list_stats ['lib_n_bases_graphic'] = lib_mean_lib_graphic.render()
 
-            #import pdb; pdb.set_trace()
+            #
             return render (request,'iSkyLIMS_wetlab/NextSeqStatsPerLibrary.html', {'display_list_of_library_stats': library_list_stats })
 
     else:
@@ -2594,7 +2592,7 @@ def annual_report (request) :
                             'the input year in the Form  ',year_selected , 'is not allowed']})
 
         completed_run_in_year = RunProcess.objects.filter(run_date__year = year_selected, runState__exact = 'Completed')
-        #import pdb; pdb.set_trace()
+        #
         uncompleted_run_in_year = RunProcess.objects.filter(run_date__year = year_selected).exclude(runState__exact = 'Completed')
         if len (completed_run_in_year)  == 0 and len (uncompleted_run_in_year) == 0:
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Annual Report cannot be generated because there is no runs performed the year ', year_selected ]})
@@ -2621,7 +2619,7 @@ def annual_report (request) :
         graphic_completed_run = FusionCharts("pie3d", "ex1" , "400", "300", "chart-1", "json", data_source)
         annual_report_information ['graphic_completed_run'] = graphic_completed_run.render()
 
-        #import pdb; pdb.set_trace()
+        #
         ### Collecting information from NextSeqStatsBinRunSummary
         run_found_bin_summary_year = NextSeqStatsBinRunSummary.objects.filter(stats_summary_run_date__year = year_selected, level__exact = 'Total')
         q30_year, aligned_year, error_rate_year  = {} , {} , {}
@@ -2648,16 +2646,16 @@ def annual_report (request) :
         heading = '>Q30 for the runs done on year '+ str(year_selected )
         data_source = column_graphic_for_year_report (heading, 'Q30  ' , 'Run names ', '>Q 30 (in %)', 'fint', q30_year)
         q30_year_graphic = FusionCharts("column3d", 'q30_year' , "600", "300", 'q30_chart-2', "json", data_source)
-        #import pdb; pdb.set_trace()
+        #
         annual_report_information ['q30_graphic'] = q30_year_graphic.render()
-        #import pdb; pdb.set_trace()
+        #
 
         # Get the information for investigator name and the projects done
         # number_proyects_investigator contains a dict with 3 ranges 1-5, 6-10, more than 11
         investigator_projects = Projects.objects.filter(project_run_date__year = year_selected).order_by('user_id')
         project_by_user = {}
         investigator_5_project, investigator_10_project, investigator_more_10_project = {}, {} , {}
-        #import pdb; pdb.set_trace()
+        #
         for investigator in investigator_projects:
             user_name = investigator.get_user_name()
             if user_name in project_by_user:
@@ -2688,7 +2686,7 @@ def annual_report (request) :
         data_source = pie_graphic_standard (heading, 'Percentage' ,'carbon', p_user_year)
         pie_p_user_year_graphic = FusionCharts("pie3d", "pie_project_user_year" , "400", "300", "p_user_chart-2", "json", data_source)
         annual_report_information ['pie_p_user_year_graphic'] = pie_p_user_year_graphic.render()
-        #import pdb; pdb.set_trace()
+        #
         return render (request, 'iSkyLIMS_wetlab/AnnualReport.html',{'display_annual_report': annual_report_information})
     else:
         return render (request, 'iSkyLIMS_wetlab/AnnualReport.html')
@@ -2729,7 +2727,7 @@ def monthly_report (request) :
 
         # get the current year to compare with the input
         present_year = datetime.datetime.now().year
-        #import pdb; pdb.set_trace()
+        #
         if (int(year_selected) > present_year) :
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Monthly Report cannot be done on the future  ',
                             'the input year in the Form  ', year_selected , 'is not allowed']})
@@ -2740,7 +2738,7 @@ def monthly_report (request) :
                             'the input month in the Form  ', month_selected , 'is not allowed']})
 
         completed_run_in_year_month = RunProcess.objects.filter(run_date__year = year_selected,  run_date__month = month_selected ,runState__exact = 'Completed')
-        #import pdb; pdb.set_trace()
+        #
         uncompleted_run_in_year_month = RunProcess.objects.filter(run_date__year = year_selected, run_date__month = month_selected).exclude(runState__exact = 'Completed')
         if len (completed_run_in_year_month)  == 0 and len (uncompleted_run_in_year_month) == 0:
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Montly Report cannot be generated because there is no runs performed the year ', year_selected ]})
@@ -2773,7 +2771,7 @@ def monthly_report (request) :
         investigator_projects = Projects.objects.filter(project_run_date__year = year_selected, project_run_date__month = month_selected).order_by('user_id')
         project_by_user = {}
         investigator_1_project, investigator_2_projects, investigator_more_2_projects = {}, {} , {}
-        #import pdb; pdb.set_trace()
+        #
         for investigator in investigator_projects:
             user_name = investigator.get_user_name()
             if user_name in project_by_user:
@@ -2833,10 +2831,10 @@ def monthly_report (request) :
         heading = '>Q30 for the runs done on  '+ str(month_selected + ' - ' + year_selected)
         data_source = column_graphic_for_year_report (heading, 'Q30  ' , 'Run names ', '>Q 30 (in %)', 'fint', q30_month)
         q30_month_graphic = FusionCharts("column3d", 'q30_year' , "600", "300", 'q30_chart-2', "json", data_source)
-        #import pdb; pdb.set_trace()
+        #
         monthly_report_information ['q30_graphic'] = q30_month_graphic.render()
 
-        #import pdb; pdb.set_trace()
+        #
 
         return render (request, 'iSkyLIMS_wetlab/MonthlyReport.html',{'display_monthly_report': monthly_report_information})
     else:
@@ -2877,9 +2875,9 @@ def quarter_report (request) :
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Quater Report cannot be done on the future  ',
                             'the selected Quarter ', quarter_string [quarter_selected] + str(year_selected) , 'is not allowed']})
 
-        #import pdb; pdb.set_trace()
+        #
         completed_run_in_quarter = RunProcess.objects.filter( run_date__range =(start_date, end_date) , runState__exact = 'Completed')
-        #import pdb; pdb.set_trace()
+        #
         uncompleted_run_in_quarter = RunProcess.objects.filter(run_date__range =(start_date, end_date)).exclude(runState__exact = 'Completed')
         if len (completed_run_in_quarter)  == 0 and len (uncompleted_run_in_quarter) == 0:
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Quater Report cannot be generated because there is no runs performed the Quarter ',
@@ -2907,7 +2905,7 @@ def quarter_report (request) :
         graphic_completed_run = FusionCharts("pie3d", "ex1" , "400", "300", "chart-1", "json", data_source)
         quarter_report_information ['graphic_completed_run'] = graphic_completed_run.render()
 
-        #import pdb; pdb.set_trace()
+        #
         ### Collecting information from NextSeqStatsBinRunSummary
         run_found_bin_summary_quarter = NextSeqStatsBinRunSummary.objects.filter(stats_summary_run_date__range = (start_date, end_date), level__exact = 'Total')
         q30_quarter, aligned_quarter, error_rate_quarter  = {} , {} , {}
@@ -2934,16 +2932,16 @@ def quarter_report (request) :
         heading = '>Q30 for the runs done on year '+ quarter_string [quarter_selected] + str(year_selected)
         data_source = column_graphic_for_year_report (heading, 'Q30  ' , 'Run names ', '>Q 30 (in %)', 'fint', q30_quarter)
         q30_quarter_graphic = FusionCharts("column3d", 'q30_year' , "600", "300", 'q30_chart-2', "json", data_source)
-        #import pdb; pdb.set_trace()
+        #
         quarter_report_information ['q30_graphic'] = q30_quarter_graphic.render()
-        #import pdb; pdb.set_trace()
+        #
 
         # Get the information for investigator name and the projects done
         # number_proyects_investigator contains a dict with 3 ranges 1-5, 6-10, more than 11
         investigator_projects = Projects.objects.filter(project_run_date__range = (start_date, end_date)).order_by('user_id')
         project_by_user = {}
         investigator_5_project, investigator_10_project, investigator_more_10_project = {}, {} , {}
-        #import pdb; pdb.set_trace()
+        #
         for investigator in investigator_projects:
             user_name = investigator.get_user_name()
             if user_name in project_by_user:
@@ -2974,7 +2972,7 @@ def quarter_report (request) :
         data_source = pie_graphic_standard (heading, 'Percentage' ,'carbon', p_user_quarter)
         pie_p_user_quarter_graphic = FusionCharts("pie3d", "pie_project_user_year" , "400", "300", "p_user_chart-2", "json", data_source)
         quarter_report_information ['pie_p_user_year_graphic'] = pie_p_user_quarter_graphic.render()
-        #import pdb; pdb.set_trace()
+        #
         return render (request, 'iSkyLIMS_wetlab/QuarterReport.html',{'display_quarter_report': quarter_report_information})
     else:
         return render (request, 'iSkyLIMS_wetlab/QuarterReport.html')
@@ -2987,7 +2985,7 @@ def email (request):
     #to_user = ['luis.chapado@amgitt.es']
     to_user = ['smonzon@isciii.es']
     request_send_mail (subject, body_message, from_user, to_user)
-    #import pdb; pdb.set_trace()
+    #
     return render (request,'iSkyLIMS_wetlab/info_page.html', {'content':['Your email was sent to ', to_user, ' with the following message ', body_message]})
 
 def open_samba_connection ():
@@ -3057,7 +3055,7 @@ def update_tables (request):
             data_dir_size = 0
             images_dir_size = 0
             in_mega_bytes = 1024*1024
-            #import pdb; pdb.set_trace()
+            #
             for item_list in get_full_list:
                 if item_list.filename == '.' or item_list.filename == '..':
                     continue
@@ -3076,7 +3074,7 @@ def update_tables (request):
                     rest_of_dir_size += get_size_dir(item_dir, conn)
                 else:
                     rest_of_dir_size += item_list.file_size
-            #import pdb; pdb.set_trace()
+            #
             # format file space and save it into database
             data_dir_size_formated = '{0:,}'.format(round(data_dir_size/in_mega_bytes))
             images_dir_size_formated = '{0:,}'.format(round(images_dir_size/in_mega_bytes))
@@ -3084,7 +3082,7 @@ def update_tables (request):
             run_be_updated.useSpaceImgMb= images_dir_size_formated
             run_be_updated.useSpaceFastaMb= data_dir_size_formated
             run_be_updated.useSpaceOtherMb= rest_of_dir_size_formated
-            #import pdb; pdb.set_trace()
+            #
             run_be_updated.save()
 
         '''
@@ -3104,7 +3102,7 @@ def update_tables (request):
 
 def update_tables_date (request):
     if RunProcess.objects.filter(runState__exact ='Completed', run_finish_date = None).exists():
-        #import pdb; pdb.set_trace()
+        #
         conn = open_samba_connection()
         run_list_be_updated = RunProcess.objects.filter(runState__exact = 'Completed' , run_finish_date = None )
         for run_be_updated in run_list_be_updated:
@@ -3121,7 +3119,7 @@ def update_tables_date (request):
             conversion_stats_file = os.path.join (runID_value,'Data/Intensities/BaseCalls/Stats/', 'ConversionStats.xml')
             try:
             	conversion_attributes = conn.getAttributes(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,conversion_stats_file)
-            	#import pdb; pdb.set_trace()
+            	#
             	run_be_updated.bcl2fastq_finish_date = datetime.datetime.fromtimestamp(int(conversion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
             except:
             	pass
