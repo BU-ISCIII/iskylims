@@ -1898,9 +1898,11 @@ def nextSeqStats_per_researcher (request):
                     p_researcher_q30_dict, p_researcher_mean_dict = {} , {}
                     p_researcher_yield_mb_dict, p_researcher_cluster_pf_dict ={} , {}
                     projects_name_list , projects_id_list = [], []
-                    q_30_list , mean_q_list = [] , []
-                    yield_mb_list,  cluster_pf_list = [], []
+                    
+                    
                     for project_researcher in r_project_by_researcher:
+                        q_30_list , mean_q_list = [] , []
+                        yield_mb_list,  cluster_pf_list = [], []
                         p_name = project_researcher.get_project_name()
                         projects_name_list.append(p_name)
                         r_project_id = project_researcher.id
@@ -1919,8 +1921,8 @@ def nextSeqStats_per_researcher (request):
                             cluster_pf_list.append(float(cluster_pf_value.replace(',','')))
                         p_researcher_q30_dict [p_name]= format(statistics.mean(q_30_list), '.2f')
                         p_researcher_mean_dict[p_name] = format(statistics.mean(mean_q_list), '.2f')
-                        p_researcher_yield_mb_dict[p_name] = round(statistics.mean(yield_mb_list))
-                        p_researcher_cluster_pf_dict[p_name] = round(statistics.mean(cluster_pf_list))
+                        p_researcher_yield_mb_dict[p_name] = round(sum(yield_mb_list))
+                        p_researcher_cluster_pf_dict[p_name] = round(sum(cluster_pf_list))
 
                     # Create the table with projects executed by the researcher
 
