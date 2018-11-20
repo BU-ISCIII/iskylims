@@ -54,9 +54,13 @@ class Machines (models.Model) :
 	machineState =  models.CharField(_("Machine State"),max_length=50,null=True,blank=True)
 	machineOperationStart = models.DateField(auto_now_add=False, null=True,blank=True)
 	machineOperationEnd = models.DateField(auto_now_add=False, null=True,blank=True)
+	machineNumberLanes = models.CharField("Number of Lanes"), max_length= 5)
 
 	def __str__ (self) :
 		return '%s' %(self.machineName)
+	
+	def get_number_of_lanes(self):
+		return '%s' %(self.machineNumberLanes)
 
 class AvailableService(MPTTModel):
 	availServiceDescription=models.CharField(_("Available services"),max_length=100)
