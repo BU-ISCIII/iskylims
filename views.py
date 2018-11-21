@@ -1832,8 +1832,6 @@ def next_seq_stats_experiment (request):
 @login_required
 def nextSeqStats_per_researcher (request):
     if request.method == 'POST':
-
-        #
         r_name = request.POST['researchername']
         start_date=request.POST['startdate']
         end_date=request.POST['enddate']
@@ -1857,7 +1855,6 @@ def nextSeqStats_per_researcher (request):
         if User.objects.filter(username__icontains = r_name).exists():
             r_name = User.objects.get(username__icontains = r_name).username
             r_name_id = User.objects.get(username__icontains = r_name).id
-            #
             if Projects.objects.filter(user_id__exact =r_name_id).exists():
                 if Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed").exists():
                     r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed").order_by('project_run_date')
@@ -1897,21 +1894,34 @@ def nextSeqStats_per_researcher (request):
                     p_researcher_lib_kit, p_researcher_sequencer = {}, {}
                     p_researcher_q30_dict, p_researcher_mean_dict = {} , {}
                     p_researcher_yield_mb_dict, p_researcher_cluster_pf_dict ={} , {}
-                    projects_name_list , projects_id_list = [], []
+                    projects_name_dict ={}
+                    projects_id_list = []
                     
                     
                     for project_researcher in r_project_by_researcher:
                         q_30_list , mean_q_list = [] , []
                         yield_mb_list,  cluster_pf_list = [], []
                         p_name = project_researcher.get_project_name()
-                        projects_name_list.append(p_name)
+                        
+                        sequencer_in_project = project_researcher.runprocess_id.get_run_sequencerModel()
+                        if not sequencer_in_project in projects_name_dict :
+                            p_researcher_num_sample[sequencer_in_project] ={}
+                            p_researcher_sequencer[sequencer_in_project] ={}
+                            p_researcher_date[sequencer_in_project] ={}
+                            p_researcher_lib_kit[sequencer_in_project] ={}
+                            p_researcher_q30_dict[sequencer_in_project] ={}
+                            p_researcher_mean_dict[sequencer_in_project] ={}
+                            p_researcher_yield_mb_dict[sequencer_in_project] ={}
+                            p_researcher_cluster_pf_dict[sequencer_in_project] ={}
+                            projects_name_dict[sequencer_in_project] = []
+                        projects_name_dict[sequencer_in_project].append(p_name)
                         r_project_id = project_researcher.id
-                        projects_id_list.append(r_project_id)
-                        p_researcher_num_sample[p_name] = NextSeqStatsFlSummary.objects.get(project_id__exact = r_project_id).sampleNumber
-                        p_researcher_date [p_name] = project_researcher.get_date()
-                        p_researcher_lib_kit[p_name]= project_researcher.get_library_name()
+                        #projects_id_list.append(r_project_id)
+                        p_researcher_num_sample[sequencer_in_project][p_name] = NextSeqStatsFlSummary.objects.get(project_id__exact = r_project_id).sampleNumber
+                        p_researcher_date [sequencer_in_project][p_name] = project_researcher.get_date()
+                        p_researcher_lib_kit[sequencer_in_project][p_name]= project_researcher.get_library_name()
                         #
-                        p_researcher_sequencer[p_name] = str(project_researcher.runprocess_id.sequencerModel)
+                        p_researcher_sequencer[sequencer_in_project][p_name] = str(project_researcher.runprocess_id.sequencerModel)
                         lanes_in_project = NextSeqStatsLaneSummary.objects.filter( project_id__exact = r_project_id)
                         for lane in lanes_in_project :
                             q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane.get_stats_info().split(';')
@@ -1919,27 +1929,31 @@ def nextSeqStats_per_researcher (request):
                             mean_q_list.append(float(mean_q_value))
                             yield_mb_list.append(float(yield_mb_value.replace(',','')))
                             cluster_pf_list.append(float(cluster_pf_value.replace(',','')))
-                        p_researcher_q30_dict [p_name]= format(statistics.mean(q_30_list), '.2f')
-                        p_researcher_mean_dict[p_name] = format(statistics.mean(mean_q_list), '.2f')
-                        p_researcher_yield_mb_dict[p_name] = round(sum(yield_mb_list))
-                        p_researcher_cluster_pf_dict[p_name] = round(sum(cluster_pf_list))
+                        p_researcher_q30_dict[sequencer_in_project] [p_name]= format(statistics.mean(q_30_list), '.2f')
+                        p_researcher_mean_dict[sequencer_in_project][p_name] = format(statistics.mean(mean_q_list), '.2f')
+                        p_researcher_yield_mb_dict[sequencer_in_project][p_name] = round(sum(yield_mb_list))
+                        p_researcher_cluster_pf_dict[sequencer_in_project][p_name] = round(sum(cluster_pf_list))
 
                     # Create the table with projects executed by the researcher
+                    for sequencer, projects_name_list in projects_name_dict.items() :
+                        #
+                        sequencer_proj = {}
+                        proj_data =[]
+                        for project_name in projects_name_list :
+                            proj_data.append([project_name, p_researcher_date[sequencer][project_name], p_researcher_lib_kit[sequencer][project_name],
+                                    p_researcher_num_sample[sequencer][project_name], '{0:,}'.format(int(p_researcher_cluster_pf_dict[sequencer][project_name])),
+                                    '{0:,}'.format(int(p_researcher_yield_mb_dict[sequencer][project_name])), p_researcher_q30_dict[sequencer][project_name],
+                                    p_researcher_mean_dict[sequencer][project_name], p_researcher_sequencer[sequencer][project_name]])
+                        sequencer_proj[sequencer] = proj_data
+                        projects_data.append(sequencer_proj)
+                        # create the graphic for q30 quality
+                        theme = 'ocean'
+                        heading = 'Graphics for Q > 30 for investigator ' + r_name
+                        sub_caption = 'Sequencer ' + sequencer
+                        x_axis_name = 'Projects'
+                        y_axis_name = 'Q 30 (in %)'
 
-                    for project_name in projects_name_list :
-                        projects_data.append([project_name, p_researcher_date[project_name], p_researcher_lib_kit[project_name],
-                                    p_researcher_num_sample[project_name], '{0:,}'.format(int(p_researcher_cluster_pf_dict[project_name])),
-                                    '{0:,}'.format(int(p_researcher_yield_mb_dict[project_name])), p_researcher_q30_dict[project_name],
-                                    p_researcher_mean_dict[project_name], p_researcher_sequencer[project_name]] )
-                    researcher_statistics['projects_data'] = projects_data
-                    # create the graphic for q30 quality
-                    theme = 'ocean'
-                    heading = 'Graphics for Q > 30 for investigator ' + r_name
-                    sub_caption = ''
-                    x_axis_name = 'Projects'
-                    y_axis_name = 'Q 30 (in %)'
-
-                    data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_q30_dict)
+                        data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_q30_dict[sequencer])
                     #
                     q30_researcher_graph = FusionCharts("column3d", 'q30_graph' , "500", "350", 'q30_chart', "json", data_source).render()
 
@@ -1949,7 +1963,7 @@ def nextSeqStats_per_researcher (request):
                     sub_caption = ''
                     x_axis_name = 'Projects'
                     y_axis_name = 'Mean Quality'
-                    data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_mean_dict)
+                    data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_mean_dict[sequencer])
                     mean_q_researcher_graph = FusionCharts("column3d", 'mean_graph' , "500", "350", 'mean_chart', "json", data_source).render()
 
                     # create the graphic for yield Mb
@@ -1958,7 +1972,7 @@ def nextSeqStats_per_researcher (request):
                     sub_caption = ''
                     x_axis_name = 'Projects'
                     y_axis_name = 'Yield Mb'
-                    data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_yield_mb_dict)
+                    data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_yield_mb_dict[sequencer])
                     yield_mb_researcher_graph = FusionCharts("column3d", 'yield_mb_graph' , "500", "350", 'yield_mb_chart', "json", data_source).render()
                     # create the graphic for cluster Pf
                     theme = 'ocean'
@@ -1966,7 +1980,7 @@ def nextSeqStats_per_researcher (request):
                     sub_caption = ''
                     x_axis_name = 'Projects'
                     y_axis_name = 'Cluster Pf'
-                    data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_cluster_pf_dict)
+                    data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_cluster_pf_dict[sequencer])
                     cluster_pf_researcher_graph = FusionCharts("column3d", 'cluster_pf_graph' , "500", "350", 'cluster_pf_chart', "json", data_source).render()
 
 
@@ -1976,6 +1990,11 @@ def nextSeqStats_per_researcher (request):
                     researcher_statistics ['cluster_pf_researcher_graph'] = cluster_pf_researcher_graph
 
                     researcher_statistics ['researcher_name'] = r_name
+                    
+                    researcher_statistics['projects_data'] = projects_data
+                    '''
+                    #######
+                    
                     #researcher_statistics ['projects'] = projects_name_list
 
                     # Calculating the mean for all projects performed by researcher
@@ -2047,14 +2066,15 @@ def nextSeqStats_per_researcher (request):
                     y_axis_name = 'Cluster pf'
 
                     data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_cluster_pf_dict)
-                    #
                     comp_cluster_pf_graph = FusionCharts("column3d", 'comp_cluster_pf_graph' , "500", "350", 'comp_cluster_pf_chart', "json", data_source).render()
 
                     researcher_statistics ['comp_q30_graph'] = comp_q30_graph
                     researcher_statistics ['comp_mean_q_graph'] = comp_mean_q_graph
                     researcher_statistics ['comp_yield_mb_graph'] = comp_yield_mb_graph
                     researcher_statistics ['comp_cluster_pf_graph'] = comp_cluster_pf_graph
-
+                    '''
+                    
+                    '''
                     # Sequencer graphic utilization
                     sequencer_used = {}
                     for project, sequencer in p_researcher_sequencer.items() :
@@ -2068,11 +2088,11 @@ def nextSeqStats_per_researcher (request):
                     data_source = pie_graphic_standard (heading, sub_caption, theme, sequencer_used)
                     sequencer_pie_graph = FusionCharts("pie3d", "sequencer_pie_graph" , "500", "400", "sequencer_pie_chart", "json", data_source).render()
                     researcher_statistics ['sequencer_pie_graph'] = sequencer_pie_graph
-                    #
+                    
+                    '''
+                    import pdb; pdb.set_trace()
                     return  render(request, 'iSkyLIMS_wetlab/NextSeqStatsPerResearcher.html', {'researcher_statistics' : researcher_statistics})
-
                 else:
-                    #
                     return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Researcher does not have projects in Completed state. ',
                                                             'ADVICE:', 'Contact with your administrator']})
             else:
