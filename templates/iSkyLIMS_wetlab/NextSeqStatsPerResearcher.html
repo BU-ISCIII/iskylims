@@ -15,31 +15,31 @@
             <div class="panel panel-default">
                 <div class="panel-heading"><h2>Statistics results for Investigator {{researcher_statistics.researcher_name}} </h2></div>
                 <div class="panel-body">
-                <h3> Project information : </h3>
                 {% for sequencer in researcher_statistics.projects_data  %}
-                <div class="table-wrapper-scroll-y ">
-                    <table class="table  table-hover">
-                        <thead>
-                            <tr>
-                            {% for values  in researcher_statistics.projects_heading %}
-                                <th>{{ values }} </th>
-                            {%endfor%}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item, values_in_dict in sequencer.items %}
-                                {% for values in values_in_dict %}
-                                <tr>
-                                    {% for value in values %}
-                                        <td>{{ value }}</td>
+                    {% for sequencer_name, values_in_dict in sequencer.items %}
+                        <h3> Projects using the sequencer {{sequencer_name }} : </h3>
+                        <div class="table-wrapper-scroll-y ">
+                            <table class="table  table-hover">
+                                <thead>
+                                    <tr>
+                                        {% for values  in researcher_statistics.projects_heading %}
+                                            <th>{{ values }} </th>
+                                        {%endfor%}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for values in values_in_dict %}
+                                        <tr>
+                                            {% for value in values %}
+                                                <td>{{ value }}</td>
+                                            {% endfor %}
+                                        </tr>
                                     {% endfor %}
-                                </tr>
-                                {% endfor %}
-                            {% endfor%}
-                        </tbody>
-                    </table>
-                    <BR>
-                </div> <!--  end of col-table-responsive -->
+                                </tbody>
+                            </table>
+                            <BR>
+                        </div> <!--  end of col-table-responsive -->
+                    {% endfor%}
                 {% endfor %}
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->
