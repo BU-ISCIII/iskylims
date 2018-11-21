@@ -2090,7 +2090,7 @@ def nextSeqStats_per_researcher (request):
                     researcher_statistics ['sequencer_pie_graph'] = sequencer_pie_graph
                     
                     '''
-                    import pdb; pdb.set_trace()
+                    #import pdb; pdb.set_trace()
                     return  render(request, 'iSkyLIMS_wetlab/NextSeqStatsPerResearcher.html', {'researcher_statistics' : researcher_statistics})
                 else:
                     return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Researcher does not have projects in Completed state. ',
