@@ -1935,8 +1935,8 @@ def nextSeqStats_per_researcher (request):
                         p_researcher_cluster_pf_dict[sequencer_in_project][p_name] = round(sum(cluster_pf_list))
 
                     # Create the table with projects executed by the researcher
+                    researcher_seq_graphs, researcher_graphs = [], []
                     for sequencer, projects_name_list in projects_name_dict.items() :
-                        #
                         sequencer_proj = {}
                         proj_data =[]
                         for project_name in projects_name_list :
@@ -1954,40 +1954,55 @@ def nextSeqStats_per_researcher (request):
                         y_axis_name = 'Q 30 (in %)'
 
                         data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_q30_dict[sequencer])
-                    #
-                    q30_researcher_graph = FusionCharts("column3d", 'q30_graph' , "500", "350", 'q30_chart', "json", data_source).render()
+                        seq_chart = sequencer + 'q30_chart'
+                        seq_graph = sequencer + 'q30_graph'
+                        q30_researcher_seq_graph = FusionCharts("column3d", seq_graph , "500", "350",seq_chart , "json", data_source).render()
+                    
+                        researcher_seq_graphs.append([seq_chart, q30_researcher_seq_graph])
+                        # create the graphic for mean quality
+                        theme = 'carbon'
+                        heading = 'Graphics for Mean quality for investigator ' + r_name
+                        sub_caption = 'Sequencer ' + sequencer
+                        x_axis_name = 'Projects'
+                        y_axis_name = 'Mean Quality'
+                        data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_mean_dict[sequencer])
+                        seq_chart = sequencer + 'mean_q_chart'
+                        seq_graph = sequencer + 'mean_q_graph'
+                        mean_q_researcher_seq_graph = FusionCharts("column3d", seq_graph , "500", "350", seq_chart, "json", data_source).render()
+                        researcher_seq_graphs.append([seq_chart, mean_q_researcher_seq_graph])
+                        
+                        # create the graphic for yield Mb
+                        theme = 'zune'
+                        heading = 'Graphics for Yield Mb for investigator ' + r_name
+                        sub_caption = 'Sequencer ' + sequencer
+                        x_axis_name = 'Projects'
+                        y_axis_name = 'Yield Mb'
+                        data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_yield_mb_dict[sequencer])
+                        seq_chart = sequencer + 'yield_mb_chart'
+                        seq_graph = sequencer + 'yield_mb_graph'
+                        yield_mb_researcher_graph = FusionCharts("column3d", seq_graph , "500", "350", seq_chart, "json", data_source).render()
+                        researcher_seq_graphs.append([seq_chart, yield_mb_researcher_graph])
+                        # create the graphic for cluster Pf
+                        theme = 'ocean'
+                        heading = 'Graphics for Cluster Pf for investigator ' + r_name
+                        sub_caption = 'Sequencer ' + sequencer
+                        x_axis_name = 'Projects'
+                        y_axis_name = 'Cluster Pf'
+                        data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_cluster_pf_dict[sequencer])
+                        seq_chart = sequencer + 'cluster_pf_chart'
+                        seq_graph = sequencer + 'cluster_pf_graph'
+                        cluster_pf_researcher_graph = FusionCharts("column3d", seq_graph , "500", "350", seq_chart, "json", data_source).render()
+                        researcher_seq_graphs.append([seq_chart, cluster_pf_researcher_graph])
+                        
+                        
+                        researcher_graphs.append(researcher_seq_graphs)
 
-                    # create the graphic for mean quality
-                    theme = 'carbon'
-                    heading = 'Graphics for Mean quality for investigator ' + r_name
-                    sub_caption = ''
-                    x_axis_name = 'Projects'
-                    y_axis_name = 'Mean Quality'
-                    data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_mean_dict[sequencer])
-                    mean_q_researcher_graph = FusionCharts("column3d", 'mean_graph' , "500", "350", 'mean_chart', "json", data_source).render()
 
-                    # create the graphic for yield Mb
-                    theme = 'zune'
-                    heading = 'Graphics for Yield Mb for investigator ' + r_name
-                    sub_caption = ''
-                    x_axis_name = 'Projects'
-                    y_axis_name = 'Yield Mb'
-                    data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_yield_mb_dict[sequencer])
-                    yield_mb_researcher_graph = FusionCharts("column3d", 'yield_mb_graph' , "500", "350", 'yield_mb_chart', "json", data_source).render()
-                    # create the graphic for cluster Pf
-                    theme = 'ocean'
-                    heading = 'Graphics for Cluster Pf for investigator ' + r_name
-                    sub_caption = ''
-                    x_axis_name = 'Projects'
-                    y_axis_name = 'Cluster Pf'
-                    data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_cluster_pf_dict[sequencer])
-                    cluster_pf_researcher_graph = FusionCharts("column3d", 'cluster_pf_graph' , "500", "350", 'cluster_pf_chart', "json", data_source).render()
-
-
-                    researcher_statistics ['q30_researcher_graph'] = q30_researcher_graph
-                    researcher_statistics ['mean_q_researcher_graph'] = mean_q_researcher_graph
-                    researcher_statistics ['yield_mb_researcher_graph'] = yield_mb_researcher_graph
-                    researcher_statistics ['cluster_pf_researcher_graph'] = cluster_pf_researcher_graph
+                    #researcher_statistics ['q30_researcher_graph'] = q30_researcher_graph
+                    #researcher_statistics ['mean_q_researcher_graph'] = mean_q_researcher_graph
+                    #researcher_statistics ['yield_mb_researcher_graph'] = yield_mb_researcher_graph
+                    #researcher_statistics ['cluster_pf_researcher_graph'] = cluster_pf_researcher_graph
+                    researcher_statistics ['researcher_graph'] = researcher_graphs
 
                     researcher_statistics ['researcher_name'] = r_name
                     

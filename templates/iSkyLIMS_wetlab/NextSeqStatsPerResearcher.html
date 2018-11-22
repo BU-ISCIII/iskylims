@@ -51,9 +51,29 @@
             <div class="panel panel-default">
                 <div class="panel-heading"><h3><center>Graphic Statistics for Investigator {{researcher_statistics.researcher_name}} </center></h3></div>
                 <div class="panel-body"> 
+                    {% for seq_researcher_graph in researcher_statistics.researcher_graph %}
+                        {% for id_graph, chart in seq_researcher_graph %}
+                            <div class="col-sm-6" >
+                                <!-- Showing graph-->
+                                <div id="{{id_graph}}"> </div>
+                                    {{ chart|safe }}
+                            </div> <!--// end col-sm-6  -->
+                        {% endfor %}
+                    {% endfor %}
+                </div> <!--  end of panel body -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-8  -->
+    </div> <!--// end row -->
+    
+    
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3><center>Graphic Statistics for Investigator {{researcher_statistics.researcher_name}} </center></h3></div>
+                <div class="panel-body"> 
                     <div class="col-sm-6" >
                     <!-- Showing Q 30 graph-->
-                        <div id="q30_chart"> </div>
+                        <div id="NS500454q30_chart"> </div>
                         {{ researcher_statistics.q30_researcher_graph |safe }}
                     </div> <!--// end col-sm-6  -->
                     <div class="col-sm-6" >
@@ -75,6 +95,7 @@
             </div> <!--// end panel -->
         </div> <!--// end col-sm-8  -->
     </div> <!--// end row -->
+    
 
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
