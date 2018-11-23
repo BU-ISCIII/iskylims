@@ -21,6 +21,7 @@ from .utils.parsing_run_info import get_machine_lanes
 
 from django_utils.models import Profile, Center
 from .models import *
+from iSkyLIMS_drylab.models import Machines
 
 from .fusioncharts.fusioncharts import FusionCharts
 import statistics
@@ -1894,8 +1895,7 @@ def nextSeqStats_per_researcher (request):
                     p_researcher_lib_kit, p_researcher_sequencer = {}, {}
                     p_researcher_q30_dict, p_researcher_mean_dict = {} , {}
                     p_researcher_yield_mb_dict, p_researcher_cluster_pf_dict ={} , {}
-                    projects_name_dict ={}
-                    projects_id_list = []
+                    projects_name_dict , projects_id_list = {} , {}
                     
                     
                     for project_researcher in r_project_by_researcher:
@@ -1914,9 +1914,10 @@ def nextSeqStats_per_researcher (request):
                             p_researcher_yield_mb_dict[sequencer_in_project] ={}
                             p_researcher_cluster_pf_dict[sequencer_in_project] ={}
                             projects_name_dict[sequencer_in_project] = []
+                            projects_id_list[sequencer_in_project] =  []
                         projects_name_dict[sequencer_in_project].append(p_name)
                         r_project_id = project_researcher.id
-                        #projects_id_list.append(r_project_id)
+                        projects_id_list[sequencer_in_project].append(r_project_id)
                         p_researcher_num_sample[sequencer_in_project][p_name] = NextSeqStatsFlSummary.objects.get(project_id__exact = r_project_id).sampleNumber
                         p_researcher_date [sequencer_in_project][p_name] = project_researcher.get_date()
                         p_researcher_lib_kit[sequencer_in_project][p_name]= project_researcher.get_library_name()
@@ -1997,106 +1998,116 @@ def nextSeqStats_per_researcher (request):
                         
                         researcher_graphs.append(researcher_seq_graphs)
 
-
-                    #researcher_statistics ['q30_researcher_graph'] = q30_researcher_graph
-                    #researcher_statistics ['mean_q_researcher_graph'] = mean_q_researcher_graph
-                    #researcher_statistics ['yield_mb_researcher_graph'] = yield_mb_researcher_graph
-                    #researcher_statistics ['cluster_pf_researcher_graph'] = cluster_pf_researcher_graph
                     researcher_statistics ['researcher_graph'] = researcher_graphs
-
                     researcher_statistics ['researcher_name'] = r_name
-                    
                     researcher_statistics['projects_data'] = projects_data
-                    '''
-                    #######
+
                     
-                    #researcher_statistics ['projects'] = projects_name_list
+                    #collecting data for comparation graphics
 
                     # Calculating the mean for all projects performed by researcher
                     comp_q30_dict, comp_mean_q_dict = {} , {}
                     comp_yield_mb_dict, comp_cluster_pf_dict = {} , {}
+                    
                     q30_val = p_researcher_q30_dict.values()
                     mean_q_val = p_researcher_mean_dict.values()
                     yield_mb_val = p_researcher_yield_mb_dict.values()
                     cluster_pf = p_researcher_cluster_pf_dict.values()
+                    
+                    for sequencer in projects_name_dict.keys() :
+                        #sequencer_proj = {}
+                        #proj_data =[]
+                        comp_q30_dict[sequencer] , comp_mean_q_dict [sequencer]= {} , {}
+                        comp_yield_mb_dict[sequencer], comp_cluster_pf_dict [sequencer] = {}, {}
+                        comp_q30_dict [sequencer][r_name] = format(statistics.mean( [float(x) for x in list(p_researcher_q30_dict[sequencer].values())]),'.2f')
+                        comp_mean_q_dict[sequencer] [r_name] = format(statistics.mean( [float(x) for x in list(p_researcher_mean_dict[sequencer].values())]),'.2f')
 
-                    comp_q30_dict [r_name] = format(statistics.mean( [float(x) for x in list(p_researcher_q30_dict.values())]),'.2f')
-                    comp_mean_q_dict [r_name] = format(statistics.mean( [float(x) for x in list(p_researcher_mean_dict.values())]),'.2f')
-
-                    comp_yield_mb_dict [r_name] = format(statistics.mean(list(p_researcher_yield_mb_dict.values())),'.2f')
-                    comp_cluster_pf_dict [r_name] = format(statistics.mean(list(p_researcher_cluster_pf_dict.values())),'.2f')
-
-                    #total_q30_values = []
-
+                        comp_yield_mb_dict[sequencer] [r_name] = sum(list(p_researcher_yield_mb_dict[sequencer].values()))
+                        comp_cluster_pf_dict[sequencer] [r_name] = sum(list(p_researcher_cluster_pf_dict[sequencer].values()))
 
                     total_q_30_list, total_mean_q_list = [] , []
                     total_yield_mb_list, total_cluster_pf_list = [] , []
-                    if NextSeqStatsLaneSummary.objects.all().exclude(defaultAll__isnull = False).exclude(project_id__in = projects_id_list).exists():
-                        total_lanes_summary = NextSeqStatsLaneSummary.objects.all().exclude(defaultAll__isnull = False).exclude(project_id__in = projects_id_list)
-                        for lane_summary in total_lanes_summary :
+                    total_lanes_summary = {}
+                    
+                    for sequencer in projects_name_dict.keys() :
+                        runs_sequencer = RunProcess.objects.filter(sequencerModel__exact = Machines.objects.get(machineName = sequencer).id)
+                        run_sequencer_id_list = []
+                        for run in runs_sequencer :
+                            run_sequencer_id_list.append(run.pk)
+                        
+                        if NextSeqStatsLaneSummary.objects.filter(runprocess_id__in  = run_sequencer_id_list).exclude(defaultAll__isnull = False).exclude(project_id__in = projects_id_list[sequencer]).exists():
+                            total_lanes_summary[sequencer] = NextSeqStatsLaneSummary.objects.filter(runprocess_id__in  = run_sequencer_id_list).exclude(defaultAll__isnull = False).exclude(project_id__in = projects_id_list[sequencer])
+                        else:
+                            total_lanes_summary[sequencer] = ''
+                    
+
+                    comp_graphs, comp_seq_graphs = [] , []
+                    for sequencer in projects_name_dict.keys() :
+                        for lane_summary in total_lanes_summary[sequencer] :
                             q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane_summary.get_stats_info().split(';')
                             total_q_30_list.append(float(q_30_value))
                             total_mean_q_list.append(float(mean_q_value))
-                            total_yield_mb_list.append(float(yield_mb_value.replace(',','')))
-                            total_cluster_pf_list.append(float(cluster_pf_value.replace(',','')))
-                        comp_q30_dict ['Other investigators']= format(statistics.mean(q_30_list), '.2f')
-                        comp_mean_q_dict['Other investigators'] = format(statistics.mean(mean_q_list), '.2f')
-                        comp_yield_mb_dict['Other investigators'] = round(statistics.mean(yield_mb_list))
-                        comp_cluster_pf_dict['Other investigators'] = round(statistics.mean(cluster_pf_list))
-                    # create the graphic for q30 quality
-                    theme = ''
-                    heading = 'Comparation graphics for Q > 30 for investigator ' + r_name
-                    sub_caption = ''
-                    x_axis_name = r_name + ' versus other investigators'
-                    y_axis_name = 'Q 30 (in %)'
+                            total_yield_mb_list.append(int(yield_mb_value.replace(',','')))
+                            total_cluster_pf_list.append(int(cluster_pf_value.replace(',','')))
+                        comp_q30_dict[sequencer]['Other investigators']= format(statistics.mean(total_q_30_list), '.2f')
+                        comp_mean_q_dict[sequencer]['Other investigators'] = format(statistics.mean(total_mean_q_list), '.2f')
+                        comp_yield_mb_dict[sequencer]['Other investigators'] = sum(total_yield_mb_list)
+                        comp_cluster_pf_dict[sequencer]['Other investigators'] = sum(total_cluster_pf_list)
+                        # create the graphic for q30 quality
+                        #import pdb; pdb.set_trace()
+                        theme = ''
+                        heading = 'Comparation graphics for Q > 30 for investigator ' + r_name
+                        sub_caption = ''
+                        x_axis_name = r_name + ' versus other investigators'
+                        y_axis_name = 'Q 30 (in %)'
 
-                    data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_q30_dict)
-                    #
-                    comp_q30_graph = FusionCharts("column3d", 'comp_q30_graph' , "500", "350", 'comp_q30_chart', "json", data_source).render()
-
-                    theme = ''
-                    heading = 'Comparation graphics for Mean Quality for investigator ' + r_name
-                    sub_caption = ''
-                    x_axis_name = r_name + ' versus other investigators'
-                    y_axis_name = 'Mean Quality'
-
-                    data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_mean_q_dict)
-                    #
-                    comp_mean_q_graph = FusionCharts("column3d", 'comp_mean_q_graph' , "500", "350", 'comp_mean_q_chart', "json", data_source).render()
-
-                    theme = ''
-                    heading = 'Comparation graphics for Yield (Mb) for investigator ' + r_name
-                    sub_caption = ''
-                    x_axis_name = r_name + ' versus other investigators'
-                    y_axis_name = '(Mb)'
-
-                    data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_yield_mb_dict)
-                    #
-                    comp_yield_mb_graph = FusionCharts("column3d", 'comp_yield_mb_graph' , "500", "350", 'comp_yield_mb_chart', "json", data_source).render()
-
-                    theme = ''
-                    heading = 'Comparation graphics for Cluster PF for investigator ' + r_name
-                    sub_caption = ''
-                    x_axis_name = r_name + ' versus other investigators'
-                    y_axis_name = 'Cluster pf'
-
-                    data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_cluster_pf_dict)
-                    comp_cluster_pf_graph = FusionCharts("column3d", 'comp_cluster_pf_graph' , "500", "350", 'comp_cluster_pf_chart', "json", data_source).render()
-
-                    researcher_statistics ['comp_q30_graph'] = comp_q30_graph
-                    researcher_statistics ['comp_mean_q_graph'] = comp_mean_q_graph
-                    researcher_statistics ['comp_yield_mb_graph'] = comp_yield_mb_graph
-                    researcher_statistics ['comp_cluster_pf_graph'] = comp_cluster_pf_graph
-                    '''
+                        data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_q30_dict[sequencer])
+                        seq_chart = sequencer + 'comparation_q30_chart'
+                        seq_graph = sequencer + 'comparation_q30_graph'
+                        comp_q30_seq_graph = FusionCharts("column3d", seq_graph , "500", "350",seq_chart , "json", data_source).render()
+                        comp_seq_graphs.append([seq_chart, comp_q30_seq_graph])
                     
-                    '''
+                        theme = ''
+                        heading = 'Comparation graphics for Mean Quality for investigator ' + r_name
+                        sub_caption = ''
+                        x_axis_name = r_name + ' versus other investigators'
+                        y_axis_name = 'Mean Quality'
+                        data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_mean_q_dict[sequencer])
+                        seq_chart = sequencer + 'comparation_mean_q_chart'
+                        seq_graph = sequencer + 'comparation_mean_q_graph'
+                        comp_mean_q_seq_graph = FusionCharts("column3d", seq_graph , "500", "350",seq_chart , "json", data_source).render()
+                        comp_seq_graphs.append([seq_chart, comp_mean_q_seq_graph])
+                        
+                        theme = ''
+                        heading = 'Comparation graphics for Yield (Mb) for investigator ' + r_name
+                        sub_caption = ''
+                        x_axis_name = r_name + ' versus other investigators'
+                        y_axis_name = '(Mb)'
+                        data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_yield_mb_dict[sequencer])
+                        seq_chart = sequencer + 'comparation_yield_mb_chart'
+                        seq_graph = sequencer + 'comparation_yield_mb_graph'
+                        comp_yield_mb_seq_graph = FusionCharts("column3d", seq_graph , "500", "350",seq_chart , "json", data_source).render()
+                        comp_seq_graphs.append([seq_chart, comp_yield_mb_seq_graph])
+
+                        theme = ''
+                        heading = 'Comparation graphics for Cluster PF for investigator ' + r_name
+                        sub_caption = ''
+                        x_axis_name = r_name + ' versus other investigators'
+                        y_axis_name = 'Cluster pf'
+                        data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_cluster_pf_dict[sequencer])
+                        seq_chart = sequencer + 'comparation_cluster_pf_chart'
+                        seq_graph = sequencer + 'comparation_cluster_pf_graph'
+                        comp_cluster_pf_seq_graph = FusionCharts("column3d", seq_graph , "500", "350",seq_chart , "json", data_source).render()
+                        comp_seq_graphs.append([seq_chart, comp_cluster_pf_seq_graph])
+                        comp_graphs.append(comp_seq_graphs)
+                        
+                    researcher_statistics ['comp_graphs'] = comp_graphs
+
                     # Sequencer graphic utilization
                     sequencer_used = {}
-                    for project, sequencer in p_researcher_sequencer.items() :
-                        if not sequencer in sequencer_used :
-                            sequencer_used[sequencer] = 1
-                        else:
-                            sequencer_used[sequencer] += 1
+                    for sequencer in projects_name_dict.keys() :
+                        sequencer_used[sequencer] = len( projects_name_dict[sequencer])
+
                     theme = 'ocean'
                     heading = 'Sequencer utilization for investigator ' + r_name
                     sub_caption = ''
@@ -2104,8 +2115,6 @@ def nextSeqStats_per_researcher (request):
                     sequencer_pie_graph = FusionCharts("pie3d", "sequencer_pie_graph" , "500", "400", "sequencer_pie_chart", "json", data_source).render()
                     researcher_statistics ['sequencer_pie_graph'] = sequencer_pie_graph
                     
-                    '''
-                    #import pdb; pdb.set_trace()
                     return  render(request, 'iSkyLIMS_wetlab/NextSeqStatsPerResearcher.html', {'researcher_statistics' : researcher_statistics})
                 else:
                     return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Researcher does not have projects in Completed state. ',
