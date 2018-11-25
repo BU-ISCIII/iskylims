@@ -589,11 +589,7 @@ def get_information_run(run_name_found,run_id):
 
 
         categories = ['Q > 30', 'Mean Quality Score', 'Yield MB', 'Cluster PF']
-        #
         data_source = bloxplot_graphic(heading, sub_caption, x_axis_name, y_axis_name, theme, categories, series, data)
-        #
-        #data_source = bloxplot_graphic()
-        #data_source = json_2_column_graphic('Comparison of bases with Q value bigger than 30', q_30_project_lane,q_30_media)
         info_dict ['boxplot'] = FusionCharts("boxandwhisker2d", "box1" , "800", "400", "box_chart1", "json", data_source).render()
 
 
