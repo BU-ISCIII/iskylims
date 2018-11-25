@@ -2229,7 +2229,6 @@ def nextSeqStats_per_time (request):
                 #top_unbarcode_list = []
                 count_unbarcode  = {}
 
-                #TBD
                 for run in run_stats_list:
                     run_id = run.id
                     number_of_lanes=get_machine_lanes(run_id)
@@ -2252,7 +2251,6 @@ def nextSeqStats_per_time (request):
 
                 themes = ['','ocean','fint','carbon','zune', '']
                 # prepare the column graphic for nunber of top Unknow Barcode
-                #import pdb; pdb.set_trace()
                 unbar_lane_chart = []
                 for lane_number in range (1, number_of_lanes +1):
                     heading = 'Number of undetermined barcode sequence in lane ' + str(lane_number)
