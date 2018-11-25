@@ -245,17 +245,11 @@ class RunningParameters (models.Model):
 
     def get_run_parameters_info (self):
         #str_run_start_date=self.RunStartDate.strftime("%I:%M%p on %B %d, %Y")
-        #TBD
-
         if self.ImageChannel==None:
-            img_channel=''
-            print("ImageChannel in RunningParameters is NULL")
+            img_channel='None'
         else:
             img_channel=self.ImageChannel.strip('[').strip(']').replace("'","")
-        #EndTBD
-        #img_channel=self.ImageChannel.strip('[').strip(']').replace("'","")
 
-        #import pdb; pdb.set_trace()
         return '%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s' %(self.RunID, self.ExperimentName, self.RTAVersion,
             self.SystemSuiteVersion, self.LibraryID, self.Chemistry, self.RunStartDate,
             self.AnalysisWorkflowType, self.RunManagementType, self.PlannedRead1Cycles, self.PlannedRead2Cycles,

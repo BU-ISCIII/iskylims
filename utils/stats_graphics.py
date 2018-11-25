@@ -228,7 +228,7 @@ def graphic_for_library_kit (heading, sub_caption, x_axis_name, y_axis_name, the
     return data_source
 
 
-def pie_graphic_for_unknow_barcode (heading, theme, top_count_sequence):
+def pie_graphic (heading, theme, top_count_sequence):
     data_source = {}
 
     data_source['chart'] = {
