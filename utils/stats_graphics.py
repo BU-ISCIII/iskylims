@@ -151,14 +151,13 @@ def json_unknow_barcode_graphic (heading, barcode_data) :
 
     return data_source
 
-def graphic_for_top_unbarcodes (heading, theme, lane_unbarcode) :
+def graphic_for_unbarcodes (heading, theme, lane_unbarcode) :
     data_source = {}
     data_source['chart'] = {
                 "caption": heading,
-                "subCaption": "Found in the runs",
+                "subCaption": "",
                 "xAxisName": "Sequence",
-                "yAxisName": "Number of runs",
-                #"theme": "fint",
+                "yAxisName": "Number undetermined barcode",
                 "theme": theme,
                 "numberPrefix": "",
                 "placevaluesInside": "1",
@@ -174,7 +173,7 @@ def graphic_for_top_unbarcodes (heading, theme, lane_unbarcode) :
                 #Changing canvas base color
                 "canvasBaseColor": "#aaaaaa",
                 #Changing canvas background color
-                "canvasBgColor": "#eeeeee",
+                "canvasBgColor": "#8c8c8c",
                 "exportEnabled": "1"
             }
 

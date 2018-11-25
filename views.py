@@ -2050,7 +2050,7 @@ def nextSeqStats_per_researcher (request):
                         comp_yield_mb_dict[sequencer]['Other investigators'] = sum(total_yield_mb_list)
                         comp_cluster_pf_dict[sequencer]['Other investigators'] = sum(total_cluster_pf_list)
                         # create the graphic for q30 quality
-                        #import pdb; pdb.set_trace()
+                        
                         theme = ''
                         heading = 'Comparation graphics for Q > 30 for investigator ' + r_name
                         sub_caption = ''
@@ -2224,54 +2224,49 @@ def nextSeqStats_per_time (request):
                     stat_per_time['project_period_graphic'] = FusionCharts("column3d", run_period_index_graph , "550", "350", run_period_chart_number, "json", data_source).render()
 
                 ####### end creation run preparation graphics
-
-
                 #############################################################
                 ### collect statistics for unkow Barcodes
-                top_unbarcode_list = []
-                top_count_sequence  = {}
+                #top_unbarcode_list = []
+                count_unbarcode  = {}
 
                 #TBD
                 for run in run_stats_list:
                     run_id = run.id
                     number_of_lanes=get_machine_lanes(run_id)
-                    top_unbarcode_dict_lane  = {}
+                    top_unbarcode_all_runs  = {}
                     for lane_number in range (1, number_of_lanes +1):
-                #for lane_number in range (1,5):
-                        top_unbarcode = RawTopUnknowBarcodes.objects.filter(runprocess_id__exact =run_id, lane_number__exact = lane_number, top_number__exact = 1)
-                        count ,sequence  = top_unbarcode[0].get_unknow_barcodes().split(';')
-                        count_float = float(count.replace(',',''))
-                        #
-                        ## Count the number of times that the sequence is found per project and lane
-                        if sequence in top_unbarcode_dict_lane :
-                            top_unbarcode_dict_lane [sequence] += 1
-                        else:
-                            top_unbarcode_dict_lane [sequence] =1
+                        lane_unbarcodes = RawTopUnknowBarcodes.objects.filter(runprocess_id__exact =run_id, lane_number__exact = lane_number)
+                        for lane_unbarcode in lane_unbarcodes :
+                            if not lane_number in count_unbarcode :
+                                count_unbarcode[lane_number] = {}
+                            unbarcode_num , unknown_barcode,  = lane_unbarcode.get_unknow_barcodes().split(';')
+                            value_unbarcode = int(unbarcode_num.replace(',',''))
+                            if not unknown_barcode in count_unbarcode[lane_number] :
+                                count_unbarcode[lane_number][unknown_barcode] = value_unbarcode
+                            else:
+                                count_unbarcode[lane_number][unknown_barcode] += value_unbarcode
+                            if not unknown_barcode in top_unbarcode_all_runs :
+                                top_unbarcode_all_runs[unknown_barcode] = value_unbarcode
+                            else:
+                                top_unbarcode_all_runs[unknown_barcode] += value_unbarcode
 
-                        if sequence in top_count_sequence :
-                            top_count_sequence [sequence] += count_float
-                        else:
-                            top_count_sequence [sequence]= count_float
-
-                    top_unbarcode_list.append(top_unbarcode_dict_lane)
-
-                l_count = 1
-                themes = ['', 'ocean','fint','carbon','zune']
+                themes = ['','ocean','fint','carbon','zune', '']
                 # prepare the column graphic for nunber of top Unknow Barcode
-                for lane_unbarcode in top_unbarcode_list:
-                    heading = 'Number of undetermined barcode sequence in lane ' + str(l_count)
-                    data_source = graphic_for_top_unbarcodes(heading , themes[0] , lane_unbarcode)
-                    #data_source = graphic_for_top_unbarcodes(heading , themes[l_count] , lane_unbarcode)
-                    chart_number = 'chart-' + str(l_count)
-                    render_number = 'ex'+ str(l_count)
-                    lane_chart = 'lane_chart'+ str(l_count)
+                #import pdb; pdb.set_trace()
+                unbar_lane_chart = []
+                for lane_number in range (1, number_of_lanes +1):
+                    heading = 'Number of undetermined barcode sequence in lane ' + str(lane_number)
+                    chart_number = 'chart-' + str(lane_number)
+                    render_number = 'ex'+ str(lane_number)
+                    lane_chart = 'lane_chart'+ str(lane_number)
+                    data_source = graphic_for_unbarcodes(heading , themes[lane_number] , count_unbarcode[lane_number])
                     lane_graphic = FusionCharts("column3d", render_number , "500", "400", chart_number, "json", data_source)
-                    #
-                    stat_per_time [lane_chart] = lane_graphic.render()
-                    l_count +=1
+                    unbar_lane_chart.append([chart_number, str(lane_number),lane_graphic.render()])
+                stat_per_time ['unbar_lane_chart'] = unbar_lane_chart
+                
 
                 # prepare the pie graphic for the number of top Unknow Barcode per sequence
-                data_source = pie_graphic ('Number of count for the Undetermined Sequences', 'fint',top_count_sequence)
+                data_source = pie_graphic ('Number of count for the Undetermined Sequences', 'fint',top_unbarcode_all_runs)
                 unknow_pie3d = FusionCharts("pie3d", "ex5" , "500", "400", "chart-5", "json", data_source)
                 stat_per_time ['unknow_pie3d'] = unknow_pie3d.render()
 
@@ -2604,7 +2599,6 @@ def nextSeqStats_per_library (request):
 
             # Create the graphic for number of time that library has been used
             
-            import pdb; pdb.set_trace()
             count_libraries = {}
             for library_used in all_libraries :
                 lib_name = library_used.get_library_name()
