@@ -2232,10 +2232,12 @@ def nextSeqStats_per_time (request):
                 top_count_sequence  = {}
 
                 #TBD
-                for lane_number in range (1,5):
+                for run in run_stats_list:
+                    run_id = run.id
+                    number_of_lanes=get_machine_lanes(run_id)
                     top_unbarcode_dict_lane  = {}
-                    for run in run_stats_list:
-                        run_id = run.id
+                    for lane_number in range (1, number_of_lanes +1):
+                #for lane_number in range (1,5):
                         top_unbarcode = RawTopUnknowBarcodes.objects.filter(runprocess_id__exact =run_id, lane_number__exact = lane_number, top_number__exact = 1)
                         count ,sequence  = top_unbarcode[0].get_unknow_barcodes().split(';')
                         count_float = float(count.replace(',',''))
@@ -2258,8 +2260,8 @@ def nextSeqStats_per_time (request):
                 # prepare the column graphic for nunber of top Unknow Barcode
                 for lane_unbarcode in top_unbarcode_list:
                     heading = 'Number of undetermined barcode sequence in lane ' + str(l_count)
-                    data_source = graphic_for_top_unbarcodes(heading , themes[l_count] , lane_unbarcode)
-
+                    data_source = graphic_for_top_unbarcodes(heading , themes[0] , lane_unbarcode)
+                    #data_source = graphic_for_top_unbarcodes(heading , themes[l_count] , lane_unbarcode)
                     chart_number = 'chart-' + str(l_count)
                     render_number = 'ex'+ str(l_count)
                     lane_chart = 'lane_chart'+ str(l_count)
