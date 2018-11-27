@@ -358,7 +358,7 @@ def get_machine_for_sequencer(logger,sequencer):
 
 
 
-def determine_target_miseqruns(logger):
+def determine_target_miseqruns(logger, conn):
     #Determination of potential new MISEQ runs in the repository, thus excluding :
     # a) runs already BCL-finished or cancelled;
     # b) runs which presented a faulty' samplesheet in a previous iteration
@@ -368,18 +368,20 @@ def determine_target_miseqruns(logger):
 
     temp_run_folders= {}
     target_run_folders={}
-    file_list={}
+    #file_list={}
 
     ##subset of runs of temp_run_folders with MiSeq runs retained (Same format)
     ## Reading wetlab_config.SAMBA_SHARED_FOLDER_NAME (NGS_Data in production):
+    '''
     try:
         conn=open_samba_connection()
         logger.info('Succesfully SAMBA connection for determine_target_miseqruns')
     except:
         logger.error('==>Exception when trying to set up SMB (samba) connection')
-        timestamp_print('==>Exception when trying to set up SMB (samba) connection')
-        conn.close()
-        raise
+        timestamp_print('==>Exception when trying to set up SMB (samba) connection,')
+        print('Exiting crontab for getSampleSheetFromSequencer')
+        
+    '''
     try:
         file_list=fetch_samba_dir_filelist(logger,conn)
     except:
@@ -434,7 +436,7 @@ def determine_target_miseqruns(logger):
                     samplesheet_check_error_dict={'run_name':run_dir,'error':'Run without samplesheet'}
                     logger.error('Run: '+samplesheet_check_error_dict['run_name']
                         + '   '+'Error: '+samplesheet_check_error_dict['error'])
-
+                    '''
                     try:
                         registered_faulty_runs=managed_open_file(
                             logger, wetlab_config.FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH,'r')
@@ -448,7 +450,7 @@ def determine_target_miseqruns(logger):
 
                     except:
                         raise
-
+                    '''
             else:##No MiSeq
                 continue
 
@@ -463,7 +465,7 @@ def determine_target_miseqruns(logger):
 
     else:  ## analysis of the MiSeq runs list built to select the final target ones
         logger.debug('temp_run_folders: '+str(temp_run_folders))
-        process_run_file_miseqelements=[]
+        #process_run_file_miseqelements=[]
         faulty_samplesheet_miseqruns=[]
         miseqruns_sequencing_in_progress=[]
 
@@ -567,10 +569,12 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
             os.remove(transfered_file)
             logger.info('Deleted from local storage: ',transfered_file)
         raise
-
+        
     finally: #always
-        conn.close()
+        if conn :
+            conn.close()
         logger.debug('SMB connection closed')
+        sys.exit(0)
 
     database_info={} ## Information to be returned
     for run_index, run_info_dict in run_dir_dict.items():
@@ -775,6 +779,14 @@ def getSampleSheetFromSequencer():
     logger=open_log('getSampleSheetFromSequencer.log')
     timestamp_print('Starting the process for getSampleSheetFromSequencer()')
     logger.info('Starting the process for getSampleSheetFromSequencer()')
+    try:
+        conn=open_samba_connection()
+        logger.info('Succesfully SAMBA connection for determine_target_miseqruns')
+    except:
+        logger.error('==>Exception when trying to set up SMB (samba) connection')
+        timestamp_print('==>Exception when trying to set up SMB (samba) connection,')
+        timestamp_print('Exiting crontab for getSampleSheetFromSequencer')
+        return
     try:
         ## Launch elaboration of the list of the MiSeq samplesheets to study:
         target_run_folders= determine_target_miseqruns(logger)
