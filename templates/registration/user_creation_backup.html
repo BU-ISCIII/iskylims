@@ -1,0 +1,106 @@
+{% extends 'iSkyLIMS_home/base.html' %}             
+{% load crispy_forms_tags %}                 
+                                              
+{% block content %}  
+<style>
+* {
+  .border-radius(0) !important;
+}
+
+#field {
+    margin-bottom:20px;
+}
+
+
+</style>                        
+<div class="container-fluid margin-t-40">	 
+	{% csrf_token %}
+	<form action="" method="POST" enctype="multipart/form-data">
+		{% crispy form1 %}
+		{% crispy form2 %}
+		
+		
+		<div class="row row-space-2 margin-b-4">
+			<div class="col-sm-12">
+				<div class="panel panel-default">
+                  <div class="panel-heading"><h2>Sharing list</h2></div>
+                  <div class="panel-body">
+					  <div class="col-sm-5">
+						  <h3>Select the user to share your projects</h3>
+						  <input type="hidden" name="count" value="1" />
+							<div id="field"><input class="input" id="shared1" name="shared1" type="text" placeholder="Type something" data-items="8"/><button id="b1" class="btn add-more" type="button">+</button></div>
+							<div id="selectuser">
+							<select>
+							    <option value="0">Select car:</option>
+							    <option value="1">Audi</option>
+							      </select>
+							</div>
+					 </div> <!--// end col-sm-5 --> 
+					 <div class="col-sm-5 col-sm-offset-2">
+					{% if sharing_list %}
+						<table class="table table-hover">
+							<thead>
+								<tr>
+									<th colspan=2 >Users that are allowed to see your projects</th>
+								</tr>
+							</thead>
+							<tbody>
+								
+								{% for user in sharing_list %}
+									<tr>
+										<td> {{ user }}</td> 
+										<td><input type="checkbox" id="deleteuser" name="deleteuser" value="{{user}}">Delete user</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					{% else %}
+						<h3>Your shared project list is empty. </h3>
+						<p>Use the left form to add user to your list.</p>
+								
+					{% endif %}
+					
+					</div> <!--// end panel body -->
+				</div> <!--// end panel -->
+			</div> <!--// end col-sm-7  Recorded  pending services  -->
+		</div> <!-- //  end row -->
+	<div>                                                                                                                                   
+		<button type="submit" class="btn btn-primary"> Submit </button>                                                                     
+	</div>                                                                                                                                  
+	</form>
+</div>
+<script>
+	$(document).ready(function(){
+    var next = 1;
+    $(".add-more").click(function(e){
+        e.preventDefault();
+        var addto = "#shared" + next;
+        var addRemove = "#shared" + (next);
+        next = next + 1;
+        //var newIn = '<input class="input form-control" id="field' + next + '" name="field' + next + '" type="text">';
+        var newIn = '<input class="input" id="shared' + next + '" name="shared' + next + '" type="text">';
+        var newInput = $(newIn);
+        var removeBtn = '<button id="remove' + (next - 1) + '" class="btn btn-danger remove-me" >-</button></div><div id="shared">';
+        var removeButton = $(removeBtn);
+        $(addto).after(newInput);
+        $(addRemove).after(removeButton);
+        $("#shared" + next).attr('data-source',$(addto).attr('data-source'));
+        $("#count").val(next);  
+        
+        
+        $('#restaurant_form').append('<input type="hidden" name="shared_users" value=" field'+ next +'" />')
+        
+            $('.remove-me').click(function(e){
+                e.preventDefault();
+                var fieldNum = this.id.charAt(this.id.length-1);
+                var fieldID = "#shared" + fieldNum;
+                $(this).remove();
+                $(fieldID).remove();
+            });
+    });
+    
+});
+</script>
+
+                                    
+{% endblock %}                               

@@ -6,7 +6,7 @@
 		<input id="id_username" type="text" class="form-control" name="username" value="" placeholder="{{user.get_username}}" readonly>                  
   	</div>                                                                                                                          
   	<button type="submit" class="btn btn-primary"> Logout </button>                                                                  
-	<a class="btn btn-primary" href="/django_utils/user_edit"> My account </a>                                                                   
+	<a class="btn btn-primary" href="/utils/user_edit"> My account </a>                                                                   
  </form>                                                                                                                            
  {% else %}                                                                                                                        
  <form id="signin" class="navbar-form navbar-right" role="form" method="post" action="{% url 'login' %}">                          
