@@ -9,6 +9,7 @@ from .models import *
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User , Group
 from django.contrib.auth import get_user_model
+from django.conf import settings
 
 class ProfileCreationForm(forms.ModelForm):
  	class Meta:
@@ -86,4 +87,3 @@ class UserCreationForm(UserCreationForm):
     					css_class = 'panel panel-default'
     					),
       	)
-
