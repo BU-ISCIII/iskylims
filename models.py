@@ -6,7 +6,9 @@ from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel
 from mptt.fields import TreeForeignKey, TreeManyToManyField
 from django.utils.timezone import now as timezone_now
-from iSkyLIMS_wetlab.models import RunProcess, Projects
+
+#from iSkyLIMS_wetlab.models import RunProcess, Projects
+
 from django_utils.models import Profile,Center
 from django.contrib.auth.models import User
 
@@ -42,6 +44,24 @@ class Platform(models.Model):
 	def __str__ (self):
  		return '%s' %(self.platformName)
 
+class Machines (models.Model) :
+	platformID = models.ForeignKey(Platform ,on_delete=models.CASCADE)
+	machineName = models.CharField(_("Machine Name"),max_length=255)
+	machineDescription = models.CharField(_("Description"),max_length=255,null=True,blank=True)
+	machineLocation = models.CharField(_("Location"),max_length=255,null=True,blank=True)
+	machineProvider = models.CharField(_("Machine owner brand"),max_length=255,null=True,blank=True)
+	machineSerialNumber = models.CharField(_("Serial Number"),max_length=255,null=True,blank=True)
+	machineState =  models.CharField(_("Machine State"),max_length=50,null=True,blank=True)
+	machineOperationStart = models.DateField(auto_now_add=False, null=True,blank=True)
+	machineOperationEnd = models.DateField(auto_now_add=False, null=True,blank=True)
+	machineNumberLanes = models.CharField("Number of Lanes", max_length= 5)
+
+	def __str__ (self) :
+		return '%s' %(self.machineName)
+
+	def get_number_of_lanes(self):
+		return '%s' %(self.machineNumberLanes)
+
 class AvailableService(MPTTModel):
 	availServiceDescription=models.CharField(_("Available services"),max_length=100)
 	parent=TreeForeignKey('self',models.SET_NULL,null=True,blank=True)
@@ -66,7 +86,7 @@ class Service(models.Model):
 	## Addition of member 'serviceProjectNames' to support
 	# implementation of drop down menu to choose a project name of a list of projects
 	# belonging to the logged-in user in the service request form
-	serviceProjectNames=models.ManyToManyField(Projects,verbose_name=_("User's projects"),blank=True)
+	serviceProjectNames=models.ManyToManyField('iSkyLIMS_wetlab.Projects',verbose_name=_("User's projects"),blank=True)
 	servicePlatform=models.ForeignKey(Platform ,on_delete=models.CASCADE , verbose_name=_("Sequencing platform"),blank=True,null=True)
 	serviceRunSpecs=models.CharField(_("Run specifications"),max_length=10,blank=True,null=True)
 	serviceFileExt=models.ForeignKey(FileExt ,on_delete=models.CASCADE ,verbose_name=_("File extension"),blank=True,null=True)
@@ -230,6 +250,7 @@ class Delivery(models.Model):
 		return '%s' %(self.deliveryResolutionID)
 	def get_delivery_information (self):
 		delivery_info = []
+		delivery_info.append(self.deliveryResolutionID.resolutionNumber)
 		delivery_info.append(self.deliveryDate.strftime("%d %B, %Y"))
 		delivery_info.append(self.deliveryNotes)
 		return delivery_info
