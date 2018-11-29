@@ -11,29 +11,10 @@ from .interop_statistics import *
 
 from smb.SMBConnection import SMBConnection
 from iSkyLIMS_wetlab import wetlab_config
-
+from iSkyLIMS_drylab.models import Machines, Platform
+from .wetlab_misc_utilities import open_samba_connection, timestamp_print
 from django.conf import settings
 
-
-def open_samba_connection():
-    ## open samba connection
-    # There will be some mechanism to capture userID, password, client_machine_name, server_name and server_ip
-    # client_machine_name can be an arbitary ASCII string
-    # server_name should match the remote machine name, or else the connection will be rejected
-    conn=SMBConnection(wetlab_config.SAMBA_USER_ID, wetlab_config.SAMBA_USER_PASSWORD, wetlab_config.SAMBA_SHARED_FOLDER_NAME,wetlab_config.SAMBA_REMOTE_SERVER_NAME, use_ntlm_v2=wetlab_config.SAMBA_NTLM_USED)
-    conn.connect(wetlab_config.SAMBA_IP_SERVER, int(wetlab_config.SAMBA_PORT_SERVER))
-    #conn=SMBConnection('bioinfocifs', 'fCdEg979I-W.gUx-teDr', 'NGS_Data', 'quibitka', use_ntlm_v2=True)
-    #conn.connect('172.21.7.11', 445)
-
-    #conn=SMBConnection('Luigi', 'Apple123', 'NGS_Data_test', 'LUIGI-PC', use_ntlm_v2=True)
-    #conn.connect('192.168.1.3', 139)
-    #conn=SMBConnection('bioinfocifs', 'bioinfocifs', 'NGS_Data_test', 'barbarroja', use_ntlm_v2=True)
-    #conn.connect('10.15.60.54', 139)
-    '''
-    conn = SMBConnection(userid, password, client_machine_name, remote_machine_name, use_ntlm_v2 = True)
-    conn.connect(server_ip, 139)
-    '''
-    return conn
 
 def get_size_dir (directory, conn, logger):
     count_file_size = 0
@@ -86,6 +67,123 @@ def get_run_disk_utilization (conn, run_Id_used, run_processing_id, logger):
         run_be_updated.save()
         logger.info('End  disk space utilization for runID  %s', run_Id_used)
 
+
+
+def save_miseq_run_info(run_info,run_parameter,run_id,logger):
+## Collecting information from MiSeq run to save it in our database
+    running_data={}
+    image_channel=[]
+    pir=1 #PlannedIndexNread:1 or 2
+    pr=1 #PlannedNRead: 1 or 2
+    #################################################
+    ## parsing RunInfo.xml file
+    #################################################
+    run_data=ET.parse(run_info)
+    run_root=run_data.getroot()
+    logger.info('Processing the MISEQ runInfo.xml file')
+    p_run=run_root[0]
+    running_data['Flowcell']=p_run.find('Flowcell').text
+    running_data['FlowcellLayout']=p_run.find('FlowcellLayout').attrib
+    running_data['ImageChannel']= None #Available in NextSeq but not in MiSeq
+    running_data['ImageDimensions']=None #Available in NextSeq but not in MiSeq
+
+    #################################################
+    ## parsing RunParameter.xml file
+    #################################################
+    logger.info('Processing the MISEQ runParameter.xml file')
+    parameter_data=ET.parse(run_parameter)
+    parameter_data_root=parameter_data.getroot()
+    running_data['RunID']=parameter_data_root.find('RunID').text
+    running_data['ExperimentName']=parameter_data_root.find('ExperimentName').text
+    running_data['RTAVersion']=parameter_data_root.find('RTAVersion').text
+    running_data['SystemSuiteVersion']=None #Available in NextSeq but not in MiSeq
+    running_data['LibraryID']=None #Available in NextSeq but not in MiSeq
+    running_data['Chemistry']=parameter_data_root.find('Chemistry').text
+    running_data['RunStartDate']=parameter_data_root.find('RunStartDate').text
+    running_data['AnalysisWorkflowType']=(parameter_data_root.find('Workflow')).find('Analysis').text
+    logger.debug('running_data information -intermediate!- only'+ str(running_data))
+
+    reads=parameter_data_root.find('Reads')
+    #initialization of expected structure
+    running_data['PlannedIndex1ReadCycles']=0
+    running_data['PlannedIndex2ReadCycles']=0
+    running_data['PlannedRead1Cycles']=0
+    running_data['PlannedRead2Cycles']=0
+
+    for run_info_read in reads.iter('RunInfoRead'):
+        if 'Y'== run_info_read.attrib['IsIndexedRead']:
+            if 1==pir:
+                running_data['PlannedIndex1ReadCycles']=run_info_read.attrib['NumCycles']
+                pir=2
+            else:
+                running_data['PlannedIndex2ReadCycles']=run_info_read.attrib['NumCycles']
+        else:
+            if 1==pr:
+                running_data['PlannedRead1Cycles']=run_info_read.attrib['NumCycles']
+                pr=2
+            else:
+                running_data['PlannedRead2Cycles']=run_info_read.attrib['NumCycles']
+
+
+    running_data['RunManagementType']=parameter_data_root.find('RunManagementType').text
+    running_data['ApplicationVersion']=parameter_data_root.find('Setup').find('ApplicationVersion').text
+    running_data['NumTilesPerSwath']=parameter_data_root.find('Setup').find('NumTilesPerSwath').text
+
+    logger.debug('running_data information for table RunParameters'+ str(running_data))
+    ###########################################
+    ## saving data into database
+    ###########################################
+    logger.info ('Saving to database  the (MiSeq) run id %s', run_id)
+    running_parameters= RunningParameters (runName_id=RunProcess.objects.get(pk=run_id),
+                         RunID=running_data['RunID'],
+                         ExperimentName=running_data['ExperimentName'],
+                         RTAVersion=running_data['RTAVersion'],
+                         SystemSuiteVersion= running_data['SystemSuiteVersion'],
+                         LibraryID= running_data['LibraryID'],
+                         Chemistry= running_data['Chemistry'],
+                         RunStartDate= running_data['RunStartDate'],
+                         AnalysisWorkflowType= running_data['AnalysisWorkflowType'],
+                         RunManagementType= running_data['RunManagementType'],
+                         PlannedRead1Cycles= running_data['PlannedRead1Cycles'],
+                         PlannedRead2Cycles= running_data['PlannedRead2Cycles'],
+                         PlannedIndex1ReadCycles= running_data['PlannedIndex1ReadCycles'],
+                         PlannedIndex2ReadCycles= running_data['PlannedIndex2ReadCycles'],
+                         ApplicationVersion= running_data['ApplicationVersion'],
+                         NumTilesPerSwath= running_data['NumTilesPerSwath'],
+                         ImageChannel= running_data['ImageChannel'],
+                         Flowcell= running_data['Flowcell'],
+                         ImageDimensions= running_data['ImageDimensions'],
+                         FlowcellLayout= running_data['FlowcellLayout'])
+
+    running_parameters.save()
+    ##############################################
+    ## updating the date fetched from the Date tag for run and project
+    ##############################################
+    date = p_run.find('Date').text
+    logger.debug('Found the date that was recorded the Run %s', date)
+    run_date = datetime.datetime.strptime(date, '%y%m%d')
+
+    run_to_be_updated = RunProcess.objects.get(pk=run_id)
+    run_to_be_updated.run_date = run_date
+    logger.debug('run_to_be_updated: '+run_to_be_updated.runName)
+    logger.debug('run_date: '+str(run_to_be_updated.run_date))
+    run_to_be_updated.save()
+    logger.info('Updated the run date for the runProcess table ')
+
+    projects_to_update = Projects.objects.filter(runprocess_id__exact = run_id)
+    for project in projects_to_update :
+        project.project_run_date = run_date
+        project.save()
+        logger.debug('project_to_be_updated: '+project.projectName)
+        logger.debug('project_run_date: '+str(project.project_run_date))
+        logger.info('Updated the project date for the Project table ')
+
+    return
+
+
+
+
+
 def save_run_info(run_info, run_parameter, run_id, logger):
     running_data={}
     image_channel=[]
@@ -125,12 +223,25 @@ def save_run_info(run_info, run_parameter, run_id, logger):
     running_data['PlannedIndex2ReadCycles']=parameter_data_root.find('PlannedIndex2ReadCycles').text
     running_data['ApplicationVersion']=p_parameter.find('ApplicationVersion').text
     running_data['NumTilesPerSwath']=p_parameter.find('NumTilesPerSwath').text
+    InstrumentID = parameter_data_root.find('InstrumentID').text
+    Chemistry = parameter_data_root.find('Chemistry').text
+    ## check if InstrumentID exists on database
+    if not Machines.objects.filter(machineName__exact = InstrumentID).exists() :
+        if not Platform.objects.filter(platformName__exact = Chemistry).exists():
+            new_platform = Platform (platformName = Chemistry)
+            new_platform.save()
+        platform = Platform.objects.get(platformName__exact = Chemistry)
+        new_machine = Machines(platformID= platform, machineName = InstrumentID )
+        new_machine.save()
+    ## Update the run information with the instrumentID
+    sequencer = Machines.objects.get(machineName__exact = InstrumentID)
 
     logger.debug('running_data information', running_data)
     ###########################################
     ## saving data into database
     ###########################################
     logger.info ('Saving to database  the run id %s', run_id)
+
     running_parameters= RunningParameters (runName_id=RunProcess.objects.get(pk=run_id),
                          RunID=running_data['RunID'], ExperimentName=running_data['ExperimentName'],
                          RTAVersion=running_data['RTAVersion'], SystemSuiteVersion= running_data['SystemSuiteVersion'],
@@ -153,8 +264,9 @@ def save_run_info(run_info, run_parameter, run_id, logger):
 
     run_to_be_updated = RunProcess.objects.get(pk=run_id)
     run_to_be_updated.run_date = run_date
+    run_to_be_updated.sequencerModel = sequencer
     run_to_be_updated.save()
-    logger.info('Updated the run date for the runProcess table ')
+    logger.info('Updated the run date and sequencer used for the runProcess table ')
 
     projects_to_update = Projects.objects.filter(runprocess_id__exact = run_id)
     for project in projects_to_update :
@@ -163,6 +275,15 @@ def save_run_info(run_info, run_parameter, run_id, logger):
         logger.info('Updated the project date for the Project table ')
 
 
+def fetch_run_start_date_from_run_info (local_run_parameter_file):
+
+    fh=open(local_run_parameter_file ,'r')
+    for line in fh:
+        runStartDate=re.search('^\s+<RunStartDate>(.*)</RunStartDate>',line)
+        if runStartDate:
+            fh.close()
+            return runStartDate.group(1)
+    return ''
 def fetch_exp_name_from_run_info (local_run_parameter_file):
 
     ## look for   <ExperimentName>NextSeq_CNM_041</ExperimentName> in RunParameters.xml file
@@ -190,6 +311,7 @@ def process_run_in_recorded_state(logger):
     except:
         return ('Error')
     processed_run_file, runlist = [] , []
+
     share_folder_name = wetlab_config.SAMBA_SHARED_FOLDER_NAME
     base_directory = wetlab_config.RUN_TEMP_DIRECTORY
     recorded_dir = wetlab_config.RUN_TEMP_DIRECTORY_RECORDED
@@ -197,7 +319,8 @@ def process_run_in_recorded_state(logger):
     local_run_parameter_file = os.path.join(base_directory, 'RunParameters.xml')
     local_run_info_file = os.path.join(base_directory, 'RunInfo.xml')
     local_run_completion_status_file = os.path.join(base_directory, 'RunCompletionStatus.xml')
-    process_run_file = os.path.join(base_directory, 'processed_run_file')
+
+    process_run_file = os.path.join(base_directory, wetlab_config.PROCESSED_RUN_FILE)
     processed_run=[]
     run_names_processed=[]
     ## get the list of the processed run
@@ -208,7 +331,8 @@ def process_run_in_recorded_state(logger):
             processed_run.append(line)
         fh.close()
         logger.info('processed_run file was read')
-
+    # Initialize the variable do not need to update the process run file.
+    process_run_file_update = False
     # Check if the directory from flavia has been processed
     file_list = conn.listPath( share_folder_name, '/')
     for sfh in file_list:
@@ -224,6 +348,8 @@ def process_run_in_recorded_state(logger):
 
                 logger.info ('Found a new run  %s ,that was not in the processed run file',run_dir)
                 logger.info ('checking if exists completion status file ')
+
+
                 # check if run have been successful completed
                 samba_completion_status_file = os.path.join(run_dir,'RunCompletionStatus.xml')
                 logger.debug('runCompletion file is in %s', samba_completion_status_file)
@@ -249,6 +375,8 @@ def process_run_in_recorded_state(logger):
 
                 logger.debug('Deleting RunCompletionStatus.xml file')
                 os.remove(local_run_completion_status_file)
+
+
                 #### Get Run_parameter_file
                 try:
                     #copy the runParameter.xml file to wetlab/tmp/tmp
@@ -307,6 +435,8 @@ def process_run_in_recorded_state(logger):
                         # retrieve the runInfo.xml file from remote directory
                     else:
                         logger.error('ERROR ---No sample Sheet will be copied to remote dir. Local Directory %s was not found ', sample_sheet_tmp_dir)
+
+
                     # get the runIfnfo.xml to collect the  information for this run
                     try:
                         with open(local_run_info_file ,'wb') as r_info_fp :
@@ -341,6 +471,8 @@ def process_run_in_recorded_state(logger):
                         # add the run_dir inside the processed_run file
                     processed_run.append(run_dir)
                     run_names_processed.append(exp_name)
+                        # mark to update the processed_run file with the new run folders
+                    process_run_file_update = True
                     logger.info('SampleSheet.csv file for %s has been sucessful sent to remote server', run_dir)
                 else:
                     # error in log file
@@ -348,12 +480,13 @@ def process_run_in_recorded_state(logger):
                     os.remove(local_run_parameter_file)
                     continue
     conn.close()
-    fh =open (process_run_file,'w')
-    # update the process_run_file with the new run
-    for process in processed_run:
-        fh.write(process)
-        fh.write('\n')
-    fh.close()
+    if process_run_file_update :
+        fh =open (process_run_file,'w')
+        # update the process_run_file with the new run
+        for process in processed_run:
+            fh.write(process)
+            fh.write('\n')
+        fh.close()
     # check if all run process file are handled
 
     list_dir=os.listdir(recorded_dir)
@@ -365,6 +498,9 @@ def process_run_in_recorded_state(logger):
     return(run_names_processed)
 
 
+def get_machine_lanes(run_id):
+    number_of_lanes = RunProcess.objects.get(pk=run_id).sequencerModel.get_number_of_lanes()
+    return int(number_of_lanes)
 
 
 def update_run_state(run_id, state, logger):
@@ -380,7 +516,7 @@ def update_project_state(run_id, state, logger):
         project.procState = state
         project.save()
 
-def parsing_statistics_xml(demux_file, conversion_file, logger):
+def parsing_statistics_xml(run_id, demux_file, conversion_file, logger):
     total_p_b_count=[0,0,0,0]
     stats_result={}
 
@@ -391,6 +527,7 @@ def parsing_statistics_xml(demux_file, conversion_file, logger):
     for child in root.iter('Project'):
         projects.append(child.attrib['name'])
     total_samples = 0
+    number_of_lanes = get_machine_lanes(run_id)
     for i in range(len(projects)):
         p_temp=root[0][i]
         samples=p_temp.findall('Sample')
@@ -410,7 +547,7 @@ def parsing_statistics_xml(demux_file, conversion_file, logger):
         # look for One mismatch barcode
 
         if p_temp[sample_all_index].find('OneMismatchBarcodeCount') ==None:
-             for  fill in range(4):
+             for  fill in range(number_of_lanes):
                 one_mismatch_count.append('NaN')
         else:
             for c in p_temp[sample_all_index].iter('OneMismatchBarcodeCount'):
@@ -448,7 +585,7 @@ def parsing_statistics_xml(demux_file, conversion_file, logger):
         list_pf_yield_q30=[]
         list_pf_qualityscore=[]
 
-        for l_index in range(4):
+        for l_index in range(number_of_lanes):
             raw_yield_value = 0
             raw_yield_q30_value = 0
             raw_quality_value = 0
@@ -559,13 +696,13 @@ def process_xml_stats(stats_projects, run_id, logger):
     logger.debug('starting the process_xml_stats method')
     total_cluster_lane=(stats_projects['all']['PerfectBarcodeCount'])
     logger.info('processing flowcell stats for %s ', run_id)
+    number_of_lanes=get_machine_lanes(run_id)
     for project in stats_projects:
         if project == 'TopUnknownBarcodes':
             continue
         flow_raw_cluster, flow_pf_cluster, flow_yield_mb = 0, 0, 0
-        for fl_item in range(4):
+        for fl_item in range(number_of_lanes):
              # make the calculation for Flowcell
-
             flow_raw_cluster +=int(stats_projects[project]['BarcodeCount'][fl_item])
             flow_pf_cluster +=int(stats_projects[project]['PerfectBarcodeCount'][fl_item])
             flow_yield_mb +=float(stats_projects[project]['PF_Yield'][fl_item])*M_BASE
@@ -602,7 +739,7 @@ def process_xml_stats(stats_projects, run_id, logger):
             continue
         logger.info('processing lane stats for %s', project)
 
-        for i in range (4):
+        for i in range (number_of_lanes):
             # get the lane information
             lane_number=str(i + 1)
             pf_cluster_int=(int(stats_projects[project]['PerfectBarcodeCount'][i]))
@@ -644,7 +781,7 @@ def process_xml_stats(stats_projects, run_id, logger):
     logger.info ('processing the TopUnknownBarcodes')
     for project in stats_projects:
         if project == 'TopUnknownBarcodes':
-            for un_lane in range(4) :
+            for un_lane in range(number_of_lanes) :
                 logger.info('Processing lane %s for TopUnknownBarcodes', un_lane)
                 count_top=0
                 lane_number=str(un_lane + 1)
@@ -660,13 +797,14 @@ def process_xml_stats(stats_projects, run_id, logger):
                     top_number +=1
 
 
-def parsing_sample_project_xml(demux_file, conversion_file, logger):
+def parsing_sample_project_xml(run_id,demux_file, conversion_file, logger):
     total_p_b_count=[0,0,0,0]
     sample_result_dict={}
     #demux_file='example.xml'
     demux_stat=ET.parse(demux_file)
     root=demux_stat.getroot()
     projects=[]
+    number_of_lanes=get_machine_lanes(run_id)
     logger.info('Starting parsing DemultiplexingStats.XML for getting Sample information')
     for child in root.iter('Project'):
         projects.append(child.attrib['name'])
@@ -722,7 +860,7 @@ def parsing_sample_project_xml(demux_file, conversion_file, logger):
             pf_yield_q30_value = 0
             pf_quality_value = 0
 
-            for l_index in range(4):
+            for l_index in range(number_of_lanes):
                 tiles_index = len(p_temp[s_index][0][l_index].findall ('Tile'))
                 for t_index in range(tiles_index):
                          # get the yield value for RAW and for read 1 and 2
@@ -830,7 +968,11 @@ def process_run_in_processrunning_state (process_list, logger):
         run_folder=os.path.join('/',run_Id_used,'Data/Intensities/BaseCalls')
         # check if runCompletion is avalilable
         logger.debug ('found the run ID  %s' , run_Id_used )
-        file_list = conn.listPath( share_folder_name, run_folder)
+        try:  #####
+            file_list = conn.listPath( share_folder_name, run_folder)
+        except: #####
+            logger.error('no folder found for run ID %s', run_Id_used)  #####
+            continue  #####
         #import pdb; pdb.set_trace()
         found_report_directory = 0
         for sh in file_list:
@@ -841,7 +983,7 @@ def process_run_in_processrunning_state (process_list, logger):
                 update_project_state(run_be_processed_id, 'B2FqExecuted', logger)
                 # Get the time when  the Bcl2Fastq process is ending
                 conversion_stats_file = os.path.join (run_Id_used,'Data/Intensities/BaseCalls/Stats/', 'ConversionStats.xml')
-                conversion_attributes = conn.getAttributes('NGS_Data' ,conversion_stats_file)
+                conversion_attributes = conn.getAttributes(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,conversion_stats_file)
                 run_date = RunProcess.objects.get(pk=run_be_processed_id)
                 run_date.bcl2fastq_finish_date = datetime.datetime.fromtimestamp(int(conversion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
                 run_date.save()
@@ -871,8 +1013,6 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
     demux_file=os.path.join(local_dir_samba,'DemultiplexingStats.xml')
     conversion_file=os.path.join(local_dir_samba,'ConversionStats.xml')
     run_info_file=os.path.join(local_dir_samba, 'RunInfo.xml')
-    ## Prepared for possible new machines.
-    machine = "NextSeq"
 
     logger.debug('Executing process_run_in_bcl2F_q_executed_state method')
 
@@ -930,12 +1070,25 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
             logger.debug('deleting RunInfo, ConversionStats and DemultiplexingStats file  for RunID %s' , run_Id_used)
             continue
         logger.info('Fetched the RunInfo.xml file')
+
         # copy all binary files in interop folder to local  documents/wetlab/tmp/processing/interop
         interop_local_dir_samba= os.path.join(local_dir_samba, 'InterOp')
         remote_interop_dir=os.path.join('/',run_Id_used,'InterOp')
         try:
             file_list = conn.listPath( share_folder_name, remote_interop_dir)
             logger.info('InterOp folder exists on the RunID %s', run_Id_used)
+            run_parameters_file=os.path.join(local_dir_samba,'runParameters.xml')
+            try:
+                with open(run_parameters_file ,'wb') as runparam_fp :
+                    samba_conversion_file=os.path.join('/', run_Id_used,'runParameters.xml')
+                    conn.retrieveFile(share_folder_name, samba_conversion_file, runparam_fp)
+                logger.info('Fetched the runParameters.xml file. Written as: '
+                    +str(run_parameters_file))
+            except:
+                logger.error('Unable to fetch the runParameters.xml file for RunID %s', run_Id_used)
+                os.remove(run_parameters_file)
+                logger.debug('Deleting runParameters file  for RunID %s' , run_Id_used)
+
         except:
             logger.error('ERROR:: InterOP folder does not exist on RunID %s', run_Id_used)
             os.remove(run_info_file)
@@ -980,7 +1133,7 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
         else:
             # parsing the files to get the xml Stats
             logger.info('processing the XML files')
-            xml_stats=parsing_statistics_xml(demux_file, conversion_file, logger)
+            xml_stats=parsing_statistics_xml(run_processing_id, demux_file, conversion_file, logger)
             result_of_raw_saving = store_raw_xml_stats(xml_stats,run_processing_id, logger)
             if result_of_raw_saving == 'ERROR':
                 update_run_state(run_processing_id, 'ERROR-on-Raw-SavingStats', logger)
@@ -990,17 +1143,17 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
                 process_xml_stats(xml_stats,run_processing_id, logger)
 
                 # parsing and processing the project samples
-                sample_project_stats = parsing_sample_project_xml (demux_file, conversion_file, logger)
+                sample_project_stats = parsing_sample_project_xml (run_processing_id,demux_file, conversion_file, logger)
                 store_samples_projects (sample_project_stats, run_processing_id, logger)
 
                 logger.info('processing interop files')
                 # processing information for the interop files
-                if(machine == "NextSeq"):
-                    number_of_lanes = 4
+                number_of_lanes = get_machine_lanes(run_processing_id)
 
-                process_binStats(local_dir_samba, run_processing_id, logger,number_of_lanes)
+                process_binStats(local_dir_samba, run_processing_id, logger, number_of_lanes)
                 # Create graphics
                 graphic_dir=os.path.join(settings.MEDIA_ROOT,wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING)
+
                 create_graphics(graphic_dir, run_processing_id, run_Id_used, logger)
 
                 processed_run.append(run_Id_used)
@@ -1023,7 +1176,7 @@ def process_run_in_bcl2F_q_executed_state (process_list, logger):
             logger.info('xml files and binary files from InterOp folder have been removed')
             ## connect to server to get the disk space utilization of the folders
             get_run_disk_utilization (conn, run_Id_used, run_processing_id, logger)
-            # Update the run with the date of the run completion 
+            # Update the run with the date of the run completion
             completion_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             run_date_to_update = RunProcess.objects.get(pk = run_processing_id)
             run_date_to_update.process_completed_date = completion_date
@@ -1074,6 +1227,7 @@ def find_not_completed_run (logger):
 
     processed_run={}
     for state in working_list:
+        logger.debug('find_not_completed_run / working_list= '+str(working_list)) #Debug
         logger.info ('Start processing the run found for state %s', state)
         if state == 'Sample Sent':
             logger.debug ('found sample sent in state ')
@@ -1087,9 +1241,6 @@ def find_not_completed_run (logger):
             processed_run[state]=process_run_in_bcl2F_q_executed_state(working_list['Bcl2Fastq Executed'], logger)
 
     return (processed_run)
-
-print( 'executing the parsing_run_info.py')
-
 
 
 '''

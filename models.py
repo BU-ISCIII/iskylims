@@ -6,24 +6,31 @@ from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
 from django_utils.models import Center
+from django.utils.translation import ugettext_lazy as _
+
+
+
+from .  import wetlab_config
+
 
 class RunProcess(models.Model):
     runName = models.CharField(max_length=45)
     sampleSheet = models.FileField(upload_to='wetlab/SampleSheets')
     generatedat = models.DateTimeField(auto_now_add=True)
     run_date = models.DateField(auto_now = False, null=True)
-    run_finish_date = models.DateTimeField(auto_now = False, null=True)
-    bcl2fastq_finish_date = models.DateTimeField(auto_now = False, null=True)
-    process_completed_date = models.DateTimeField(auto_now = False, null=True)
+    run_finish_date = models.DateTimeField(auto_now = False, null=True, blank=True)
+    bcl2fastq_finish_date = models.DateTimeField(auto_now = False, null=True, blank=True)
+    process_completed_date = models.DateTimeField(auto_now = False, null=True, blank=True)
     runState = models.CharField(max_length=25)
     #generatedBSFile = models.BooleanField(default=False)
     index_library = models.CharField(max_length=85)
-    samples= models.CharField(max_length=45)
-    useSpaceImgMb=models.CharField(max_length=10)
-    useSpaceFastaMb=models.CharField(max_length=10)
-    useSpaceOtherMb=models.CharField(max_length=10)
+    samples= models.CharField(max_length=45,blank=True)
+    useSpaceImgMb=models.CharField(max_length=10, blank=True)
+    useSpaceFastaMb=models.CharField(max_length=10, blank=True)
+    useSpaceOtherMb=models.CharField(max_length=10, blank=True)
     #requestedCenter= models.CharField(max_length=45)
     centerRequestedBy = models.ForeignKey (Center, on_delete=models.CASCADE)
+    sequencerModel = models.ForeignKey ('iSkyLIMS_drylab.Machines', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return '%s' %(self.runName)
@@ -85,6 +92,12 @@ class RunProcess(models.Model):
         total_size = image_size + data_size + other_size
         return '%s'%(total_size)
 
+    def get_run_sequencerModel (self):
+        return '%s' %(self.sequencerModel)
+
+    def get_runprocess_info_debug(self): ##useful for debugging
+        return str(self.__dict__)
+
 
 
 class LibraryKit (models.Model):
@@ -105,6 +118,39 @@ class LibraryKit (models.Model):
 #    expirationDate = models.DateField(auto_now_add=False)
 #    generatedat = models.DateTimeField(auto_now_add=True, null=True)
 
+class IndexLibraryKit (models.Model):
+    indexLibraryName = models.CharField(max_length=125)
+    version = models.CharField(max_length=80,null=True)
+    plateExtension = models.CharField(max_length=125, null=True)
+    adapter1 = models.CharField(max_length=125,null=True)
+    adapter2 = models.CharField(max_length=125, null=True)
+    indexLibraryFile =  models.FileField(upload_to=wetlab_config.LIBRARY_KITS_DIRECTORY )
+    generatedat = models.DateTimeField(auto_now_add=True, null=True)
+
+    def __srt__ (self):
+        return '%s'(self.indexLibraryName)
+
+    def get_index_library_information (self):
+        if self.adapter2 =='':
+            adapter2 = 'Not used on this library'
+        else:
+            adapter2 = self.adapter2
+        return '%s;%s;%s;%s;%s;%s' %(self.indexLibraryName, self.version, self.plateExtension ,
+                            self.adapter1  , adapter2, self.indexLibraryFile)
+
+
+
+class IndexLibraryValues (models.Model):
+    indexLibraryKit_id = models.ForeignKey(
+        IndexLibraryKit,
+        on_delete=models.CASCADE)
+    indexNumber = models.CharField(max_length=12)
+    indexName = models.CharField(max_length=12)
+    indexBase = models.CharField(max_length=25)
+
+
+    def get_index_information (self):
+        return '%s;%s' %(self.indexName, self.indexBase)
 
 
 class Projects(models.Model):
@@ -157,6 +203,15 @@ class Projects(models.Model):
     def get_library_name (self):
         return '%s' %(self.libraryKit)
 
+    def get_date (self):
+        if self.project_run_date is None:
+            projectdate = 'No Date'
+        else :
+            projectdate=self.project_run_date.strftime("%B %d, %Y")
+        return '%s' %(projectdate)
+
+    def get_project_info_debug(self): ##useful for debugging
+        return str(self.__dict__)
 
 class RunningParameters (models.Model):
     runName_id = models.OneToOneField(
@@ -167,8 +222,8 @@ class RunningParameters (models.Model):
     RunID= models.CharField(max_length=255)
     ExperimentName= models.CharField(max_length=255)
     RTAVersion= models.CharField(max_length=255)
-    SystemSuiteVersion= models.CharField(max_length=255)
-    LibraryID= models.CharField(max_length=255)
+    SystemSuiteVersion= models.CharField(max_length=255, null=True)
+    LibraryID= models.CharField(max_length=255, null=True)
     Chemistry= models.CharField(max_length=255)
     RunStartDate= models.CharField(max_length=255)
     AnalysisWorkflowType= models.CharField(max_length=255)
@@ -179,18 +234,22 @@ class RunningParameters (models.Model):
     PlannedIndex2ReadCycles= models.CharField(max_length=255)
     ApplicationVersion= models.CharField(max_length=255)
     NumTilesPerSwath= models.CharField(max_length=255)
-    ImageChannel= models.CharField(max_length=255)
+    ImageChannel= models.CharField(max_length=255,null=True)
     Flowcell= models.CharField(max_length=255)
-    ImageDimensions= models.CharField(max_length=255)
+    ImageDimensions= models.CharField(max_length=255,null=True)
     FlowcellLayout= models.CharField(max_length=255)
 
     def __str__(self):
         return '%s' %(self.RunID)
+        #return '%s' %(self.runName_id)
 
     def get_run_parameters_info (self):
         #str_run_start_date=self.RunStartDate.strftime("%I:%M%p on %B %d, %Y")
-        img_channel=self.ImageChannel.strip('[').strip(']').replace("'","")
-        #import pdb; pdb.set_trace()
+        if self.ImageChannel==None:
+            img_channel='None'
+        else:
+            img_channel=self.ImageChannel.strip('[').strip(']').replace("'","")
+
         return '%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s' %(self.RunID, self.ExperimentName, self.RTAVersion,
             self.SystemSuiteVersion, self.LibraryID, self.Chemistry, self.RunStartDate,
             self.AnalysisWorkflowType, self.RunManagementType, self.PlannedRead1Cycles, self.PlannedRead2Cycles,
@@ -356,7 +415,7 @@ class NextSeqStatsLaneSummary (models.Model):
 
     def get_stats_info (self):
 
-        return'%s;%s;%s' %(self.biggerQ30, self.meanQuality, self.yieldMb)
+        return'%s;%s;%s;%s' %(self.biggerQ30, self.meanQuality, self.yieldMb, self.pfCluster)
 
 class NextSeqGraphicsStats (models.Model):
     runprocess_id = models.ForeignKey(
@@ -415,6 +474,10 @@ class SamplesInProject (models.Model):
 
     def get_quality_sample (self):
         return '%s' %(self.qualityQ30)
+
+
+
+
 '''
 class MiSeqStatisticsBin (models.Model):
     document = models.OneToOneField(

@@ -129,54 +129,17 @@
 
     <!--  Start Undetermined Barcode information -->
     <div class="row row-space-2 margin-b-4">
+        {% for unbar_chart ,lane_number, unbar_graph in display_stats_per_time.unbar_lane_chart %}
       <div class="col-sm-6" >
         <div class="panel panel-default">
-          <div class="panel-heading"><h3>Undetermined Barcode Statistics for Lane 1</h3></div>
+          <div class="panel-heading"><h3>Undetermined Barcode Statistics for Lane {{lane_number}}</h3></div>
           <div class="panel-body">
-                <!-- Column 2 Chart will start here-->
-            <div id="chart-1"> </div>
-                <!-- dumping JavaScript code here -->
-                {{ display_stats_per_time.lane_chart1 |safe }}
-         </div>  <!--  end of panel body  -->
-        </div> <!--// end panel -->
+            <div id="{{ unbar_chart }}"> </div>
+                {{ unbar_graph |safe }}
+            </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
         </div> <!--// end col-sm-6  -->
-      <div class="col-sm-6" >
-        <div class="panel panel-default">
-          <div class="panel-heading"><h3>Undetermined Barcode Statistics for Lane 2</h3></div>
-          <div class="panel-body">
-                <!-- Column 2 Chart will start here-->
-            <div id="chart-2"> </div>
-                <!-- dumping JavaScript code here -->
-                {{ display_stats_per_time.lane_chart2 |safe }}
-         </div>  <!--  end of panel body  -->
-        </div> <!--// end panel -->
-        </div> <!--// end col-sm-6  -->
-    </div> <!--// end row -->
-
-    <div class="row row-space-2 margin-b-4">
-      <div class="col-sm-6" >
-        <div class="panel panel-default">
-          <div class="panel-heading"><h3>Undetermined Barcode Statistics for Lane 3</h3></div>
-          <div class="panel-body">
-                <!-- Column 2 Chart will start here-->
-            <div id="chart-3"> </div>
-                <!-- dumping JavaScript code here -->
-                {{ display_stats_per_time.lane_chart3 |safe }}
-         </div>  <!--  end of panel body  -->
-        </div> <!--// end panel -->
-        </div> <!--// end col-sm-6  -->
-      <div class="col-sm-6" >
-        <div class="panel panel-default">
-          <div class="panel-heading"><h3>Undetermined Barcode Statistics for Lane 4</h3></div>
-          <div class="panel-body">
-                <!-- Column 2 Chart will start here-->
-            <div id="chart-4"> </div>
-                <!-- dumping JavaScript code here -->
-                {{ display_stats_per_time.lane_chart4 |safe }}
-         </div>  <!--  end of panel body  -->
-        </div> <!--// end panel -->
-        </div> <!--// end col-sm-6  -->
-    </div> <!--// end row -->
+        {% endfor %}
 
     <div class="row row-space-2 margin-b-4">
       <div class="col-sm-6 col-sm-offset-2" >

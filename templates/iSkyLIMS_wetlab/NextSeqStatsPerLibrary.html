@@ -380,49 +380,63 @@
         </div> <!--// end col-sm-12  -->
     </div> <!--// end row -->
 
-
+    <div class="row row-space-2 margin-b-4">
+    <div class="col-sm-12" >
+        <div class="col-sm-6" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Percent of Library Kits used in projects </h3></div>
+                <div class="panel-body">
+                    <!-- Column 2 Chart will start here-->
+                        <div id="lib_kit_utilization_chart-1"> </div>
+                    <!-- dumping JavaScript code here -->
+                    {{ display_list_of_library_stats.libraries_kit_utilization |safe }}
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-6  -->
+        </div> <!--// end col-sm-12  -->
+    </div> <!--// end row -->
 
 
 {% else %}
     <!-- FORM for Lobrary Kit statistics -->
- <div style="background-image: url(/static/iSkyLIMS_wetlab/img/search_background_image_library.jpg); background-attachment: fixed;">
-    <div class="row row-space-2 margin-b-4">
-      <div class="col-sm-7  col-sm-offset-1">
-        <div class="panel panel-default">
-          <div class="panel-heading"><h2>Statistics per Library Kit</h2></div>
-          <div class="panel-body">
-            <form method="post" enctype="multipart/form-data" name="statslibraryKit" id="statslibraryKit" class="form-horizontal well">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="libraryKit"/>
-             <div class="form-group">
-                  <label class="col-sm-5  control-label" for="libraryKitName" >Fill the Library Kit name </label>
-                  <div class="col-sm-5"><input class="form-control" type="text" name="libraryKitName" id="libraryKitName" size="100" maxlength="100"></div>
-             </div>  <!-- end from-group   -->
+ 
+<div class="row row-space-2 margin-b-4">
+  <div class="col-sm-7  col-sm-offset-1">
+    <div class="panel panel-default">
+      <div class="panel-heading"><h2>Statistics per Library Kit</h2></div>
+      <div class="panel-body">
+        <form method="post" enctype="multipart/form-data" name="statslibraryKit" id="statslibraryKit" class="form-horizontal well">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="libraryKit"/>
+         <div class="form-group">
+              <label class="col-sm-5  control-label" for="libraryKitName" >Fill the Library Kit name </label>
+              <div class="col-sm-5"><input class="form-control" type="text" name="libraryKitName" id="libraryKitName" size="100" maxlength="100"></div>
+         </div>  <!-- end from-group   -->
 
-                <br>
+            <br>
 
-                <div class="form-group">
-                  <label class="col-sm-5 control-label" for="startdate" >From Start Date (DD-MM-YYYY)</label>
-                  <div class="col-sm-5"><input class="form-control" type="date" name="startdate" value="" id="startdate"></div>
-                <br>
-            </div>  <!-- end from-group   -->
-                <div class="form-group">
-                  <label class="col-sm-5 control-label" for="enddate" >End Date Search (DD-MM-YYYY)</label>
-                  <div class="col-sm-5"><input class="form-control" type="date" name="enddate" value="" id="enddate"></div>
-                <br>
+            <div class="form-group">
+              <label class="col-sm-5 control-label" for="startdate" >From Start Date (DD-MM-YYYY)</label>
+              <div class="col-sm-5"><input class="form-control" type="date" name="startdate" value="" id="startdate"></div>
+            <br>
+        </div>  <!-- end from-group   -->
+            <div class="form-group">
+              <label class="col-sm-5 control-label" for="enddate" >End Date Search (DD-MM-YYYY)</label>
+              <div class="col-sm-5"><input class="form-control" type="date" name="enddate" value="" id="enddate"></div>
+            <br>
 
-            </div>  <!-- end from-group   -->
-                <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
-                <input class="btn pull-right btn-primary" type="submit" value="Submit">
-            </form>
-         </div>  <!--  end of panel body  -->
-        </div> <!--// end panel -->
-        </div> <!--// end col-sm-7  -->
+        </div>  <!-- end from-group   -->
+            <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
+            <input class="btn pull-right btn-primary" type="submit" value="Submit">
+        </form>
+     </div>  <!--  end of panel body  -->
+    </div> <!--// end panel -->
+    </div> <!--// end col-sm-7  -->
 
 
 
-    </div> <!--// end row -->
-</div> <!-- Background  -->
+</div> <!--// end row -->
+
     <!-- End of FORM for searching RUN information -->
 {% endif %}
 {% endblock %}
