@@ -19,7 +19,8 @@ SAMBA_REMOTE_SERVER_NAME = 'quibitka'
 SAMBA_NTLM_USED = True
 SAMBA_IP_SERVER = '172.21.7.11'
 SAMBA_PORT_SERVER = '445'
-
+## SAMBA_DOMAIN MUST be empty for this samba connection
+SAMBA_DOMAIN=''
 
 ## Directory settings for processing the run execution process
 ## Relative path from settings.BASE_DIR
