@@ -370,18 +370,6 @@ def determine_target_miseqruns(logger, conn):
     target_run_folders={}
     #file_list={}
 
-    ##subset of runs of temp_run_folders with MiSeq runs retained (Same format)
-    ## Reading wetlab_config.SAMBA_SHARED_FOLDER_NAME (NGS_Data in production):
-    '''
-    try:
-        conn=open_samba_connection()
-        logger.info('Succesfully SAMBA connection for determine_target_miseqruns')
-    except:
-        logger.error('==>Exception when trying to set up SMB (samba) connection')
-        timestamp_print('==>Exception when trying to set up SMB (samba) connection,')
-        print('Exiting crontab for getSampleSheetFromSequencer')
-        
-    '''
     try:
         file_list=fetch_samba_dir_filelist(logger,conn)
     except:
@@ -569,12 +557,12 @@ def fetch_remote_samplesheets(run_dir_dict,logger):
             os.remove(transfered_file)
             logger.info('Deleted from local storage: ',transfered_file)
         raise
-        
+
     finally: #always
         if conn :
             conn.close()
         logger.debug('SMB connection closed')
-        sys.exit(0)
+        #sys.exit(0)
 
     database_info={} ## Information to be returned
     for run_index, run_info_dict in run_dir_dict.items():
@@ -780,6 +768,8 @@ def getSampleSheetFromSequencer():
     timestamp_print('Starting the process for getSampleSheetFromSequencer()')
     logger.info('Starting the process for getSampleSheetFromSequencer()')
     try:
+
+        logger.info('Succesfully SAMBA connection for determine_target_miseqruns')
         conn=open_samba_connection()
         logger.info('Succesfully SAMBA connection for determine_target_miseqruns')
     except:
@@ -789,7 +779,7 @@ def getSampleSheetFromSequencer():
         return
     try:
         ## Launch elaboration of the list of the MiSeq samplesheets to study:
-        target_run_folders= determine_target_miseqruns(logger)
+        target_run_folders= determine_target_miseqruns(logger,conn)
         logger.debug('target_run_folders: '+str(target_run_folders))
 
         if len(target_run_folders) < 1:
