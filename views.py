@@ -369,89 +369,153 @@ def add_library_kit (request):
 @login_required
 def add_index_library (request):
     #get the list of the already loaded index library to be displayed
+    '''
+    Description:
+        The function is called from web, having 2 main parts:
+            - User form with the information to add a new library
+            - Result information as response of user submit
+    
+    Input:
+        request     # contains the request dictionary sent by django
+    Variables:
+        index_libraries_information     # returned dictionary with the information
+                                        to include in the web page
+        index_library_objects    #  contains the object list of the IndexLibraryKit model
+        index_library_names     # It is a list containing the Index Library Kits names
+        index_to_store      # contains the index (I7/I5) values that are stored in database
+                            the same variable is used for the interaction for library_index
+        
+        library     # it is the new IndexLibraryKit object
+        library_settings # settings values returned by 
+        l_kit       # is the iteration variable for index_library_objects
+        lib_settings_to_store # is the new IndexLibraryKit object used to store
+                        the information into database
+        
+        index_library_file      # contains the file provider by user in the form
+        fs_index_lib    # file system index library object to store the input file
+        saved_file      # contain the full path name, where the user file have been
+                        stored in the server
+        
+    Constants:
+        LIBRARY_KITS_DIRECTORY
+        LIBRARY_MAXIMUM_SIZE
+        MEDIA_ROOT
+    Functions:
+        in utils.library_kits :
+            -- check_index_library_file_format(saved_file)     # for checking
+                            the number of index in the input file
+            -- getting_index_library_name(saved_file) # gets the library name
+            -- get_library_settings(saved_file) # gets the settings values
+                            from the input file
+            -- get_index_values(saved_file)     # gets the index value
+    
+    Return:
+         Return the different information depending on the execution:
+        -- Error page in case of:
+            -- Uploaded file is bigger than the LIBRARY_MAXIMUM_SIZE value
+            -- file uploaded does not have the right format
+            -- the library already exists.
+        -- library_kit_information with :
+            -- ['libraries'] 
+            ---['new_library_kit'] in case a new library kit was added
+    '''
     index_libraries_information ={}
-    index_library_list = IndexLibraryKit.objects.all()
-    index_library_dict = []
-    if len(index_library_list) >0 :
-        for library in index_library_list :
-            index_library_dict.append([library.id, library.indexLibraryName])
+    index_library_names = []
+    
+    index_library_objects = IndexLibraryKit.objects.all()
+    if len(index_library_objects) > 0 :
+        for l_index in index_library_objects :
+            index_library_names.append([l_index.id, l_index.indexLibraryName])
 
     if request.method == 'POST' and request.POST['action'] == 'addNewIndexLibraryFile':
-
+        ## fetch the file from user form and  build the file name  including
+        ## the date and time on now to store in database  
         index_library_file = request.FILES['newIndexLibraryFile']
-
         split_filename=re.search('(.*)(\.\w+$)',index_library_file.name)
         f_name = split_filename[1]
         f_extension = split_filename[2]
-
-        fs = FileSystemStorage()
+        fs_index_lib = FileSystemStorage()
         timestr = time.strftime("%Y%m%d-%H%M%S")
-        ## including the timestamp to the index library file
-        #
-        # do not need to include the absolute path because django use the MEDIA_ROOT variable defined on settings to upload the file
+        
+        ## do not need to include the absolute path because django use
+        ## the MEDIA_ROOT variable defined on settings to upload the file
         file_name=os.path.join(wetlab_config.LIBRARY_KITS_DIRECTORY ,  str(f_name + '_' +timestr + f_extension))
-        filename = fs.save(file_name,  index_library_file)
+        filename = fs_index_lib.save(file_name,  index_library_file)
         saved_file = os.path.join(settings.MEDIA_ROOT, file_name)
-        # check the file is not bigger that maximum allowed size file for index library
+        
+        ## check the file is not bigger that maximum allowed size file for index library
         file_stat = os.stat(saved_file)
         if file_stat.st_size > int(wetlab_config.LIBRARY_MAXIMUM_SIZE) :
             # removing the uploaded file
             os.remove(saved_file)
-            return render (request, 'iSkyLIMS_wetlab/error_page.html', {'content':['The Index Library Kit file ', split_filename[0], 'exceed from the maximum allowed size']})
-        uploaded_file_url = fs.url(filename)
+            return render (request, 'iSkyLIMS_wetlab/error_page.html',
+                           {'content':['The Index Library Kit file ', split_filename[0],
+                                       'exceed from the maximum allowed size']})
+        uploaded_file_url = fs_index_lib.url(filename)
 
-        ### add the document directory to read the csv file
-
-        #
-        ## check format file
-
+        ## check if user file has the  right format
         if not check_index_library_file_format(saved_file):
-            # removing the uploaded file
+            ## removing the uploaded file
             os.remove(saved_file)
-            return render (request, 'iSkyLIMS_wetlab/error_page.html', {'content':['The Index Library Kit file', split_filename[0], 'does not have the right format']})
+            return render (request, 'iSkyLIMS_wetlab/error_page.html',
+                           {'content':['The Index Library Kit file', split_filename[0],
+                                       'does not have the right format']})
+        
+        ## get the libary name to check if it is already defined
         library_name = getting_index_library_name(saved_file)
         if library_name == '' :
             # removing the uploaded file
             os.remove(saved_file)
-            return render (request, 'iSkyLIMS_wetlab/error_page.html', {'content':['The Index Library Kit file', split_filename[0], 'does not contain the library name']})
+            return render (request, 'iSkyLIMS_wetlab/error_page.html',
+                           {'content':['The Index Library Kit file', split_filename[0],
+                                       'does not contain the library name']})
         # check if library name is already defined on database
         if IndexLibraryKit.objects.filter (indexLibraryName__exact = library_name).exists():
             # removing the uploaded file
             os.remove(saved_file)
-            return render (request, 'iSkyLIMS_wetlab/error_page.html', {'content':['The Library Kit Name ', library_name, 'is already defined on iSkyLIMS']})
+            return render (request, 'iSkyLIMS_wetlab/error_page.html',
+                           {'content':['The Library Kit Name ', library_name,
+                                       'is already defined on iSkyLIMS']})
         # Get the library settings included in the file
         library_settings = get_library_settings(saved_file)
 
-        # get the index name and index bases for the library
-        library_index = get_index_values(saved_file)
+       
         # saving library settings into database
         if len(library_settings['adapters']) == 1:
             adapter_2 = ''
         else :
             adapter_2 = library_settings['adapters'][1]
-        lib_settings_to_store = IndexLibraryKit(indexLibraryName = library_settings['name'], version =  library_settings ['version'],
-                    plateExtension = library_settings['plate_extension'] , adapter1 = library_settings['adapters'][0], adapter2 = adapter_2,
-                    indexLibraryFile = file_name)
+        lib_settings_to_store = IndexLibraryKit(indexLibraryName = library_settings['name'],
+                                    version =  library_settings ['version'],
+                                    plateExtension = library_settings['plate_extension'] ,
+                                    adapter1 = library_settings['adapters'][0],
+                                    adapter2 = adapter_2, indexLibraryFile = file_name)
         lib_settings_to_store.save()
+        
+        ## get the index name and index bases for the library
+        library_index = get_index_values(saved_file)
         # saving index values into database
         for index_7 in library_index['I7'] :
             index_name, index_base = index_7
-            index_to_store = IndexLibraryValues(indexLibraryKit_id = lib_settings_to_store, indexNumber = 'I7',
-                        indexName = index_name, indexBase = index_base)
+            index_to_store = IndexLibraryValues(indexLibraryKit_id = lib_settings_to_store,
+                                    indexNumber = 'I7', indexName = index_name,
+                                    indexBase = index_base)
             index_to_store.save()
         for index_5 in library_index['I5'] :
             index_name, index_base = index_5
-            index_to_store = IndexLibraryValues(indexLibraryKit_id = lib_settings_to_store, indexNumber = 'I5',
-                        indexName = index_name, indexBase = index_base)
+            index_to_store = IndexLibraryValues(indexLibraryKit_id = lib_settings_to_store,
+                                    indexNumber = 'I5', indexName = index_name,
+                                    indexBase = index_base)
             index_to_store.save()
 
         index_libraries_information['new_index_library'] = library_settings['name']
-        index_libraries_information ['index_libraries'] = index_library_dict
-        #
+        index_libraries_information ['index_libraries'] = index_library_names
+        
         return render (request, 'iSkyLIMS_wetlab/AddIndexLibrary.html',{'index_library_info': index_libraries_information })
     else:
-        index_libraries_information ['index_libraries'] = index_library_dict
+        index_libraries_information ['index_libraries'] = index_library_names
         return render (request, 'iSkyLIMS_wetlab/AddIndexLibrary.html',{'list_of_index_libraries': index_libraries_information })
+
 
 def normalized_data (run_data, all_data) :
     normalized_run_data, normalized_all_data = [] , []

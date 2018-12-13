@@ -75,3 +75,6 @@ MAP_BASESPACE_SAMPLE_SHEET_ONE_INDEX = [('SampleID','Sample_ID'),('Name','Sample
 # mapping structure when sample sheet contains two index
 MAP_BASESPACE_SAMPLE_SHEET_TWO_INDEX = [('SampleID','Sample_ID'),('Name','Sample_Name'), ('Project','Sample_Project'),
                 ('Index1Name','I7_Index_ID'), ('Index1Sequence','index' ),('Index2Name','I5_Index_ID'),('Index2Sequence','index2') ]
+
+## Configuration for index library file 
+INDEX_LIBRARY_HEADING = ['[Version]','[Name]', '[PlateExtension]','[Settings]', '[I7]','[I5]']
