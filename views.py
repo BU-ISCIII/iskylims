@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 ## import django
+import statistics
+import re, os, shutil
+import datetime, time
+from .fusioncharts.fusioncharts import FusionCharts
+
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse
 from django.template import loader
@@ -8,6 +13,10 @@ from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
+
+from django_utils.models import Profile, Center
+from .models import *
+from iSkyLIMS_drylab.models import Machines
 
 from iSkyLIMS_wetlab import wetlab_config
 ## import methods defined on utils.py
@@ -18,18 +27,8 @@ from .utils.email_features import *
 from .utils.library_kits import *
 from .utils.samplesheet_checks import *
 from .utils.parsing_run_info import get_machine_lanes
+from .utils.wetlab_misc_utilities import normalized_data
 
-from django_utils.models import Profile, Center
-from .models import *
-from iSkyLIMS_drylab.models import Machines
-
-from .fusioncharts.fusioncharts import FusionCharts
-import statistics
-
-import re, os, shutil
-import datetime, time
-
-#
 
 def index(request):
     #
@@ -307,7 +306,6 @@ def get_sample_file (request):
         #
         return render (request, 'iSkyLIMS_wetlab/getSampleSheet.html', {'completed_form':results})
 
-
     return render(request, 'iSkyLIMS_wetlab/getSampleSheet.html')
 
 @login_required
@@ -317,12 +315,9 @@ def add_library_kit (request):
         The function is called from web, having 2 main parts:
             - User form with the information to add a new library
             - Result information as response of user submit
-        
         Save a new library kit name in database if it is not already defined.
-        
     Input:
         request     # contains the request dictionary sent by django
-        
     Variables:
         library_kit_information ={} # returned dictionary with the information
                                 to include in the web page
@@ -331,14 +326,12 @@ def add_library_kit (request):
         new_library_kit_name # contain the new library name enter by user form
         library     # it is the new LibraryKit object
         l_kit       # is the iter variable for library_kit_objects
-        
     Return:
         Return the different information depending on the execution:
         -- Error page in case the library already exists.
         -- library_kit_information with :
             -- ['libraries'] 
             ---['new_library_kit'] in case a new library kit was added.
-        
     '''
 
     libraries_information ={}
@@ -516,17 +509,6 @@ def add_index_library (request):
         index_libraries_information ['index_libraries'] = index_library_names
         return render (request, 'iSkyLIMS_wetlab/AddIndexLibrary.html',{'list_of_index_libraries': index_libraries_information })
 
-
-def normalized_data (run_data, all_data) :
-    normalized_run_data, normalized_all_data = [] , []
-    min_value = min(min(run_data),min(all_data))
-    max_value = max(max(run_data), max(all_data))
-    for value in run_data :
-        normalized_run_data.append(format((value - min_value)/max_value,'.2f'))
-    for value in all_data :
-        normalized_all_data.append(format((value - min_value)/max_value,'.2f'))
-
-    return normalized_run_data, normalized_all_data
 
 
 
