@@ -312,35 +312,59 @@ def get_sample_file (request):
 
 @login_required
 def add_library_kit (request):
-    #get the list of the already loaded library kits to be displayed
+    '''
+    Description:
+        The function is called from web, having 2 main parts:
+            - User form with the information to add a new library
+            - Result information as response of user submit
+        
+        Save a new library kit name in database if it is not already defined.
+        
+    Input:
+        request     # contains the request dictionary sent by django
+        
+    Variables:
+        library_kit_information ={} # returned dictionary with the information
+                                to include in the web page
+        library_kit_objects # contains the object list of the libraryKit model
+        library_kits = [] # It is a list containing the Library Kits names
+        new_library_kit_name # contain the new library name enter by user form
+        library     # it is the new LibraryKit object
+        l_kit       # is the iter variable for library_kit_objects
+        
+    Return:
+        Return the different information depending on the execution:
+        -- Error page in case the library already exists.
+        -- library_kit_information with :
+            -- ['libraries'] 
+            ---['new_library_kit'] in case a new library kit was added.
+        
+    '''
+
     libraries_information ={}
-    libraryKit_list = LibraryKit.objects.all()
-    libraryKit_dict = []
-    if len(libraryKit_list) >0 :
-        for library in libraryKit_list :
-            libraryKit_dict.append(library.libraryName)
+    library_kit_information ={}
+    library_kits = []
+    
+    library_kit_objects = LibraryKit.objects.all()
+    if len(library_kit_objects) >0 :
+        for l_kit in library_kit_objects :
+            library_kits.append(l_kit.libraryName)
 
     if request.method == 'POST' and request.POST['action'] == 'addNewLibraryKit':
         new_library_kit_name = request.POST['newLibraryKit']
-        #new_index_number = request.POST['indexLibraryKit']
-        #new_sample_number = request.POST['samplesLibraryKit']
+
         ## Check that library kit is not already defined in database
         if LibraryKit.objects.filter(libraryName__icontains = new_library_kit_name).exists():
             return render (request, 'iSkyLIMS_wetlab/error_page.html', {'content':['The Library Kit ', new_library_kit_name, 'is already defined on the system']})
-        library_kit_information ={}
+        
         library_kit_information['new_library_kit'] = new_library_kit_name
-        #library_kit_information['index_number'] = new_index_number
-        #library_kit_information['sample_number'] = new_sample_number
-        #
-        library_kit_information ['libraries']  = libraryKit_dict
+        library_kits.append(new_library_kit_name)
         #save the new library on database
         library = LibraryKit(libraryName= new_library_kit_name)
         library.save()
-        return render (request, 'iSkyLIMS_wetlab/AddLibraryKit.html',{'library_kit_info':library_kit_information})
-    else:
-
-        libraries_information ['libraries'] = libraryKit_dict
-        return render(request,'iSkyLIMS_wetlab/AddLibraryKit.html',{'list_of_libraries': libraries_information})
+        
+    library_kit_information ['libraries'] = library_kits
+    return render(request,'iSkyLIMS_wetlab/AddLibraryKit.html',{'list_of_libraries': library_kit_information})
 
 @login_required
 def add_index_library (request):
