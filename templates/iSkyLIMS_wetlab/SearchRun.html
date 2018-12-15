@@ -585,7 +585,7 @@
                 <div class="panel-heading">The following list matches with yor search: </div>
                 <div class="panel-body">
                 {% for key, values in display_run_list %}
-                    <div class="col-sm-6"><a href="/wetlab/search_run={{ values }}">{{ key }}</a></div><BR>
+                    <div class="col-sm-6"><a href="/wetlab/displayRun={{ values }}">{{ key }}</a></div><BR>
                  {% endfor %}
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
@@ -607,6 +607,18 @@
                   <label class="col-sm-5  control-label" for="runname" >Fill the RUN name </label>
                     <div class="col-sm-5"><input class="form-control" type="text" name="runname" id="runname" size="100" maxlength="100"></div>
              </div>  <!-- end from-group   -->
+             <BR>
+             <div class="form-group">
+               <label class="col-sm-5 control-label" for="platform" >Platform</label>
+               <div class="col-sm-4"><select class="form-control" name="platform" id="platform">
+                               				<option value="">Choose a value</option>
+                                            {% for value in platforms %}
+                                                <option value="{{value}}">{{value}}</option>
+                                            {% endfor %}
+
+                                      </select>
+               </div>  <!-- end select input -->
+            </div>  <!-- end from-group   -->
              <BR>
              <div class="form-group">
                <label class="col-sm-5 control-label" for="runstate" >Run state</label>

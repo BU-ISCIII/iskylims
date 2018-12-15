@@ -40,10 +40,6 @@ def register_wetlab(request):
     return render(request, 'iSkyLIMS_wetlab/index.html')
 
 
-
-
-
-
 @login_required
 def get_sample_file (request):
 ## Called by menu "Run preparation" >> "Upload the run"
@@ -511,9 +507,6 @@ def add_index_library (request):
 
 
 
-
-
-
 def get_information_run(run_name_found,run_id):
     info_dict={}
     ## collect the state to get the valid information of run that matches the run name
@@ -883,11 +876,48 @@ def get_information_run(run_name_found,run_id):
     return info_dict
 
 @login_required
-def search_nextSeq (request):
+def search_run (request):
+    '''
+ Description:
+        The function is called from web, having 2 main parts:
+            - User form with the information to add a new library
+            - Result information as response of user submit
+        
+    Input:
+        request     # contains the request dictionary sent by django
+        
+    Variables:
+    
+    
+        available_platforms # contains the list of platform defined in
+                            # iSkyLIMS.models.Platform
+        platforms           # contain the object from iSkyLIMS.models.Platform
+        platform_name       # has the platform get from user form
+        
+        runs_found          # runProcess object that contains the result query
+                            # it is updated with the user form conditions 
+        
+        library_kit_information ={} # returned dictionary with the information
+                                to include in the web page
+        library_kit_objects # contains the object list of the libraryKit model
+        library_kits = [] # It is a list containing the Library Kits names
+        new_library_kit_name # contain the new library name enter by user form
+        library     # it is the new LibraryKit object
+        l_kit       # is the iter variable for library_kit_objects
+        
+    Return:
+        Return the different information depending on the execution:
+        -- platform list to fill the user form
+        -- Error page in case the library already exists.
+        -- library_kit_information with :
+            -- ['libraries'] 
+            ---['new_library_kit'] in case a new library kit was added.
+    
+    '''
     # check user privileges
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(name='WetlabManager')
+            groups = Group.objects.get(name=WETLAB_MANAGER)
             if groups not in request.user.groups.all():
                 allowed_all_runs = False
                #return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
@@ -901,14 +931,15 @@ def search_nextSeq (request):
     #############################################################
     ## Search for runs that fullfil the input values
     #############################################################
-    if request.method=='POST' and (request.POST['action']=='runsearch'):
+    if request.method == 'POST' and (request.POST['action'] == 'runsearch'):
         #
-        run_name=request.POST['runname']
-        start_date=request.POST['startdate']
-        end_date=request.POST['enddate']
-        run_state=request.POST['runstate']
+        run_name = request.POST['runname']
+        start_date = request.POST['startdate']
+        end_date = request.POST['enddate']
+        run_state = request.POST['runstate']
+        platform_name = request.POST['platform']
         # check that some values are in the request if not return the form
-        if run_name == '' and start_date == '' and end_date == '' and run_state == '':
+        if run_name == '' and start_date == '' and end_date == '' and run_state == '' and platorm_name == '' :
             return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html')
 
         ### check the right format of start and end date
@@ -990,17 +1021,29 @@ def search_nextSeq (request):
         if (len(runs_found)== 1) :
             r_data_display= get_information_run(runs_found[0],runs_found[0].id)
             #
-            return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
+            return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_one_run': r_data_display })
         else:
             ## collect the list of run that matches the run date
             run_list=[]
             for i in range(len(runs_found)):
                 run_list.append([runs_found[i],runs_found[i].id])
                 #
-            return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html', {'display_run_list': run_list })
+            return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_run_list': run_list })
     else:
-
-        return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html')
+        available_platforms = []
+        available_machines = []
+        from iSkyLIMS_drylab.models import Platform, Machines
+        
+        
+        platforms = Platform.objects.all()
+        for platform in platforms :
+            available_platforms.append(platform.get_platform_name())
+        machines = Machines.objects.all()
+        for machine in machines :
+            available_machines.append(machine.get_machine_name())
+        
+        
+        return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'platforms': available_platforms})
 
 @login_required
 def search_nextProject (request):
@@ -1296,7 +1339,7 @@ def search_nextSample (request):
 '''
 
 @login_required
-def search_run (request, run_id):
+def display_run (request, run_id):
     # check user privileges
     if request.user.is_authenticated:
         try:
@@ -1329,7 +1372,7 @@ def search_run (request, run_id):
     if (RunProcess.objects.filter(pk=run_id).exists()):
         run_name_found = RunProcess.objects.filter(pk=run_id)
         r_data_display  = get_information_run(run_name_found[0],run_id)
-        return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
+        return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_one_run': r_data_display })
     else:
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the run  ']})
 

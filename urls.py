@@ -13,10 +13,11 @@ urlpatterns = [
     path('getSampleSheet/', views.get_sample_file, name='get_sample_file'),
     path('latest_run/',views.latest_run, name='latest_run'),
     path('incompletedRuns', views.incompleted_runs, name = 'incompleted_runs'),
-    path('searchNextSeq/', views.search_nextSeq, name='search_nextSeq'),
+    path('searchRun/', views.search_run, name='search_run'),
+    path('displayRun=<int:run_id>/', views.display_run, name='display_run'),
     path('searchNextProject/', views.search_nextProject, name ='search_nextProject'),
     path('searchNextSample/', views.search_nextSample, name = 'search_nextSample'),
-    path('search_run=<int:run_id>/', views.search_run, name='search_run'),
+    #path('search_run=<int:run_id>/', views.search_run1, name='search_run1'), ## to be removed by displayRun
     path('search_project=<int:project_id>/', views.search_project, name='search_project'),
     path('search_sample=<int:sample_id>/', views.search_sample, name= 'search_sample'),
     path('NextSeqStatsExperiment/', views.next_seq_stats_experiment, name ='next_seq_stats_experiment'),

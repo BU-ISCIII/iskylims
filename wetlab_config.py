@@ -1,5 +1,8 @@
 import os
 from django.conf import settings
+## Wetlab manager 
+WETLAB_MANAGER = 'WetlabManager'
+
 ## (PARAMETERS FOR TESTING) SAMBA settings for connecting quibitka server to fetch the run files
 
 # SAMBA_USER_ID = 'smbuser'
@@ -59,6 +62,9 @@ RECORDED_MISEQRUNS_FILEPATH=os.path.join(settings.MEDIA_ROOT,
 LIBRARY_KITS_DIRECTORY = 'wetlab/library_kits/'
 ## Maximum file size allowed for the index library kits (in bytes)
 LIBRARY_MAXIMUM_SIZE = '3145728'
+## Configuration for index library file 
+INDEX_LIBRARY_HEADING = ['[Version]','[Name]', '[PlateExtension]','[Settings]', '[I7]','[I5]']
+
 
 MIGRATION_DIRECTORY_FILES = 'wetlab/BaseSpaceMigrationFiles/'
 
@@ -76,5 +82,3 @@ MAP_BASESPACE_SAMPLE_SHEET_ONE_INDEX = [('SampleID','Sample_ID'),('Name','Sample
 MAP_BASESPACE_SAMPLE_SHEET_TWO_INDEX = [('SampleID','Sample_ID'),('Name','Sample_Name'), ('Project','Sample_Project'),
                 ('Index1Name','I7_Index_ID'), ('Index1Sequence','index' ),('Index2Name','I5_Index_ID'),('Index2Sequence','index2') ]
 
-## Configuration for index library file 
-INDEX_LIBRARY_HEADING = ['[Version]','[Name]', '[PlateExtension]','[Settings]', '[I7]','[I5]']
