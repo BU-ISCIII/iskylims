@@ -880,12 +880,16 @@ def search_run (request):
     '''
  Description:
         The function is called from web, having 2 main parts:
-            - User form with the information to add a new library
-            - Result information as response of user submit
+            - User form with the information to search runs
+            - Result information can be :
+                - list of the matched runs
+                - run information in case that only 1 match is found
         
     Input:
         request     # contains the request dictionary sent by django
-        
+    Imports:
+        Machines and Platform are imported from iSkyLIMS_drylab.models 
+            for filtering runs based on the platform
     Variables:
     
         User inputs from search options
@@ -899,27 +903,21 @@ def search_run (request):
     
         available_platforms # contains the list of platform defined in
                             # iSkyLIMS.models.Platform
+        machine_list        # list of machines to filter on the matches runs
         platforms           # contain the object from iSkyLIMS.models.Platform
         platform_name       # has the platform get from user form
         
         runs_found          # runProcess object that contains the result query
                             # it is updated with the user form conditions 
-        
-        library_kit_information ={} # returned dictionary with the information
-                                to include in the web page
-        library_kit_objects # contains the object list of the libraryKit model
-        library_kits = [] # It is a list containing the Library Kits names
-        new_library_kit_name # contain the new library name enter by user form
-        library     # it is the new LibraryKit object
-        l_kit       # is the iter variable for library_kit_objects
+        r_data_display      # contains the information to display about the run
+        run_list            # contains the list run that mathches te user conditions
         
     Return:
         Return the different information depending on the execution:
-        -- platform list to fill the user form
-        -- Error page in case the library already exists.
-        -- library_kit_information with :
-            -- ['libraries'] 
-            ---['new_library_kit'] in case a new library kit was added.
+        -- Error page in case no run is founded on the matching conditions.
+        -- SearchRun.html is returned with one of the following information :
+            -- r_data_display   # in case that only one run is matched 
+            ---run_list         # in case several run matches the user conditions.
     
     '''
     # check user privileges
