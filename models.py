@@ -43,6 +43,9 @@ class Platform(models.Model):
 
 	def __str__ (self):
  		return '%s' %(self.platformName)
+ 
+	def get_platform_name(self):
+		return '%s'  %(self.platformName)
 
 class Machines (models.Model) :
 	platformID = models.ForeignKey(Platform ,on_delete=models.CASCADE)
@@ -58,6 +61,10 @@ class Machines (models.Model) :
 
 	def __str__ (self) :
 		return '%s' %(self.machineName)
+
+
+	def get_machine_name(self):
+		return '%s'  %(self.machineName)
 
 	def get_number_of_lanes(self):
 		return '%s' %(self.machineNumberLanes)

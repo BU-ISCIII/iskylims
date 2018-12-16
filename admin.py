@@ -11,7 +11,7 @@ class PlatformAdmin(admin.ModelAdmin):
 	list_display=('platformName',)
 
 class MachinesAdmin (admin.ModelAdmin) :
-	list_display=('machineName','machineDescription', 'machineLocation','machineProvider','machineSerialNumber', 'machineState','machineOperationStart','machineOperationEnd','machineNumberLanes')
+	list_display=('machineName', 'platformID','machineDescription', 'machineLocation','machineProvider','machineSerialNumber', 'machineState','machineOperationStart','machineOperationEnd','machineNumberLanes')
 # 'serviceUsername' refactored to 'serviceUserid' which shows better its real nature
 class ServiceAdmin(admin.ModelAdmin):
 	list_display=('serviceRequestNumber','serviceUserId','serviceSeqCenter','servicePlatform','serviceRunSpecs','serviceFileExt','serviceFile','serviceStatus','serviceNotes','serviceCreatedOnDate','serviceOnApprovedDate','serviceOnRejectedDate','serviceOnDeliveredDate')
