@@ -16,7 +16,7 @@ from django.contrib.auth.models import Group
 
 from django_utils.models import Profile, Center
 from .models import *
-from iSkyLIMS_drylab.models import Machines
+#from iSkyLIMS_drylab.models import Machines, Platform
 
 from iSkyLIMS_wetlab import wetlab_config
 ## import methods defined on utils.py
@@ -888,6 +888,14 @@ def search_run (request):
         
     Variables:
     
+        User inputs from search options
+            run_name        # string characters to find in the run name
+            platform_name   # platform name filter
+            run_state       # state of the run
+            start_date      # filter of starting date of the runs
+            end_date        # filter for the end of the runs
+            
+            
     
         available_platforms # contains the list of platform defined in
                             # iSkyLIMS.models.Platform
@@ -939,8 +947,8 @@ def search_run (request):
         run_state = request.POST['runstate']
         platform_name = request.POST['platform']
         # check that some values are in the request if not return the form
-        if run_name == '' and start_date == '' and end_date == '' and run_state == '' and platorm_name == '' :
-            return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html')
+        if run_name == '' and start_date == '' and end_date == '' and run_state == '' and platform_name == '' :
+            return render(request, 'iSkyLIMS_wetlab/SearchRun.html')
 
         ### check the right format of start and end date
         if start_date != '':
@@ -980,13 +988,31 @@ def search_run (request):
                                                                     'ADVICE:', 'Select additional filter to find the run that you are looking for']})
                 r_data_display= get_information_run(run_name_found[0],run_name_found[0].id)
 
-                return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
+                return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_one_run': r_data_display })
             #
 
             if (runs_found.filter(runName__icontains =run_name).exists()):
                 runs_found=runs_found.filter(runName__icontains =run_name).order_by('runName')
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ]})
+                return render (request,'iSkyLIMS_wetlab/error_page.html', 
+                                    {'content':['No matches have been found for the run name ',
+                                     run_name ]})
+        if platform_name != '' :
+            #import pdb; pdb.set_trace()
+            from iSkyLIMS_drylab.models import Machines, Platform
+            if Machines.objects.filter(platformID__exact = Platform.objects.get(platformName__exact = platform_name)).exists() :
+                #import pdb; pdb.set_trace()
+                machine_list = Machines.objects.filter(platformID__exact = Platform.objects.get(platformName__exact = platform_name))
+                #import pdb; pdb.set_trace()
+                if runs_found.filter(sequencerModel__in = machine_list).exists() :
+                    runs_found = runs_found.filter(sequencerModel__in = machine_list)
+                else:
+                    return render (request,'iSkyLIMS_wetlab/error_page.html', 
+                                    {'content':['No matches have been found for the platform ',
+                                     platform_name ]})
+            else:
+                return render (request,'iSkyLIMS_wetlab/error_page.html', 
+                                {'content':['No matches have been found for the platform ', platform_name ]})
 
         ### Check if state is not empty
         if run_state != '':
@@ -1395,7 +1421,7 @@ def latest_run (request) :
     #
     run_id = latest_run.id
     r_data_display  = get_information_run(latest_run,run_id)
-    return render(request, 'iSkyLIMS_wetlab/SearchNextSeq.html', {'display_one_run': r_data_display })
+    return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_one_run': r_data_display })
 
 @login_required
 def incompleted_runs (request) :

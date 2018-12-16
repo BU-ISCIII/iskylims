@@ -91,7 +91,7 @@
          </div> <!--  end of col-sm-3 -->
 
     </div> <!--  end of row -->
-    
+    {% if display_one_run.boxplot %}
      <div class="row row-space-2 margin-b-4">
         <div class="col-sm-10 ">
             <div class="panel panel-default">
@@ -104,7 +104,7 @@
              </div> <!--  end of panel  -->
            </div> <!--  end of col-sm-10 -->
     </div> <!--  end of row -->
-
+    {% endif %}
      <div class="row row-space-2 margin-b-4">
     {%if display_one_run.parameters%}
      <!-- display run parameters in run is not in recorded state -->
@@ -219,7 +219,7 @@
       </div> <!--  end of row -->
       {% endif%}
       
-            
+       {% if display_one_run.run_project_comparation %}     
        <div class="row row-space-8 margin-b-1">
          <div class="col-sm-10 ">
             <div class="panel panel-default">
@@ -232,7 +232,7 @@
              </div> <!--  end of panel  -->
            </div> <!--  end of col-sm-10 -->
        </div> <!--  end of row -->
-      
+      {% endif %}
       {% if display_one_run.lane_summary %}
       <div class="row row-space-10 margin-b-1">
          <div class="col-sm-10 ">
