@@ -7,7 +7,7 @@ from django.conf import settings
 from django.contrib.auth.models import Group
 
 from iSkyLIMS_wetlab.models import *
-from iSkyLIMS_wetlab.wetlab_config import RUN_IMAGES_DIRECTORY
+from iSkyLIMS_wetlab.wetlab_config import RUN_IMAGES_DIRECTORY, WETLAB_MANAGER
 from .parsing_run_info import get_machine_lanes
 from .wetlab_misc_utilities import normalized_data
 from .stats_graphics import *
@@ -438,14 +438,47 @@ def get_information_run(run_name_found,run_id):
 
 
 def get_information_project (project_id, request):
+    '''
+    Description:
+        The function will get the information from a specific project requested
+        on the input parameter. 
+    Input:
+        project_id      # contains the project id 
+        request         # contains gjango request to be used to identify
+                        the user group the run id of the run_name_found
+    Functions:
+        get_machine_lanes   # imported from parsing_run_info
+        normalized_data     # imported from wetlab_misc_utilities
+    Constants:
+        WETLAB_MANAGER  # 
+    Variables:
+        groups          # get the group objects to check if requested user
+                        belongs to wetlab manager group
+        
+        fl_data_display # contains the list of the flowcell values
+        fl_values       # Tupla containing the flowcell summary heading 
+                        and their values
+        lane_values    # contains the list of the lanes values
+        lane_data_display   # Tupla containing the lanes summary heading 
+                        and their values
+        p_data          # Tupla containing the project names and their
+                        index in Database
+        p_state         # project state
+        project_info_dict   # dictionary where collect all the project
+                        information that will be returned
+        project_values  # contains the information retuned by get_project_info
+        run_name        # contain the run name for the requested project
+    Return:
+        project_info_dict with all information collected in the function
+    '''
     project_info_dict = {}
     p_data = []
     project_info_dict['project_id'] = project_id.id
     project_info_text = ['Project Name','Library Kit','File to upload to BaseSpace','Project Recorder date', 'Project date','Run name']
     project_values = project_id.get_project_info().split(';')
     run_name = project_id.runprocess_id.runName
-    groups = Group.objects.get(name='WetlabManager')
-    #
+    groups = Group.objects.get(name = WETLAB_MANAGER)
+
     if groups not in request.user.groups.all():
         project_info_dict['run_id'] = ''
     else:
@@ -454,7 +487,7 @@ def get_information_project (project_id, request):
     for item in range(len(project_info_text)):
         p_data.append([project_info_text[item], project_values[item]])
     project_info_dict['p_data'] = p_data
-    #
+
     project_info_dict ['user_name'] = project_id.get_user_name()
     p_state = project_id.get_state()
     project_info_dict['state'] = p_state
@@ -474,7 +507,7 @@ def get_information_project (project_id, request):
         project_info_dict['graphic_value']= 100
         project_info_dict['graphic_color']='green'
         fl_data_display=[]
-        #
+
         # prepare the data for Flowcell Summary
         fl_summary_id = NextSeqStatsFlSummary.objects.get(project_id__exact = project_id)
         fl_list = ['Cluster (Raw)', 'Cluster (PF)', 'Yield (MBases)', 'Number of Samples']
@@ -496,19 +529,14 @@ def get_information_project (project_id, request):
         project_info_dict['lane_summary'] = lane_data_display
 
         # prepare the data for sample information
-
         sample_found_list = SamplesInProject.objects.filter(project_id__exact = project_id)
         sample_heading_list = ['Sample','Barcode','PF Clusters','Percent of Project', 'Yield (Mbases)','% >= Q30 bases', 'Mean Quality Score']
         project_info_dict['sample_heading'] = sample_heading_list
         sample_list ={}
         for sample_item in sample_found_list :
-        #for sample_item in range(len(sample_found_list)) :
             sample_line = sample_item.get_sample_information().split(';')
-
-            #sample_line = sample_found_list[sample_item].get_sample_information().split(';')
-            #sample_list.append(sample_line)
             sample_list[sample_item.id] = [sample_line]
-        #
+
         project_info_dict['sample_table'] = sample_list
     return project_info_dict
 
