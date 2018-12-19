@@ -8,8 +8,7 @@ from django_utils.models import Profile
 from datetime import datetime
 from .utils.stats_calculation import *
 from .utils.parsing_run_info import *
-from .utils.sample_convertion import get_experiment_library_name
-from .utils.samplesheet_checks import *
+from .utils.sample_sheet_utils import *
 from .utils.wetlab_misc_utilities import timestamp_print,  fetch_samba_dir_filelist
 
 import os , sys, traceback,errno

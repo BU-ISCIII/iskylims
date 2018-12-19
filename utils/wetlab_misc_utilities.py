@@ -1,6 +1,4 @@
 ##General purpose utility functions used in different iSkyLIMS_wetlab modules
-## BE CAREFUL if modifying these resources as they are used by other functions in wetlab
-
 
 import datetime
 import logging

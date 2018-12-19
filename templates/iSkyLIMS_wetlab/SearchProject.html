@@ -183,7 +183,7 @@
                    <tbody>
                     {% for key, values in display_project_list.projects %}
                      <tr>
-                       <td><a href="/wetlab/search_project={{ values }}">{{ key }}</a> </td>
+                       <td><a href="/wetlab/displayProject={{ values }}">{{ key }}</a> </td>
                      </tr>
                     {%endfor%}
                    </tbody>
@@ -208,6 +208,17 @@
                   <div class="col-sm-5"><input class="form-control" type="text" name="projectname" id="projectname" size="100" maxlength="100"></div>
              </div>  <!-- end from-group   -->
             <BR>
+            <div class="form-group">
+                <label class="col-sm-5 control-label" for="platform" >Platform</label>
+                <div class="col-sm-4"><select class="form-control" name="platform" id="platform">
+                               				<option value="">Choose a value</option>
+                                            {% for value in platforms %}
+                                                <option value="{{value}}">{{value}}</option>
+                                            {% endfor %}
+
+                                      </select>
+               </div>  <!-- end select input -->
+            </div>  <!-- end from-group   -->
              <div class="form-group">
                <label class="col-sm-5 control-label" for="projectstate" >Project state</label>
                <div class="col-sm-4"><select class="form-control" name="projectstate" id="projectstate">

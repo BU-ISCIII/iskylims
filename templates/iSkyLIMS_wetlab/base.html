@@ -85,8 +85,8 @@
 					<li><a href="/wetlab/incompletedRuns">Get incompleted Runs</a></li>
 				    {% endif %}
 					<li><a href="/wetlab/searchRun">Search by RUN</a></li>
-					<li><a href="/wetlab/searchNextProject">Search by Project</a></li>
-					<li><a href="/wetlab/searchNextSample">Search by Sample</a></li>
+					<li><a href="/wetlab/searchProject">Search by Project</a></li>
+					<li><a href="/wetlab/searchSample">Search by Sample</a></li>
 					<li><a href="/wetlab/searchIndexLibrary">Search by Index Library</a></li>
 				  </ul>
 				</li>
@@ -96,12 +96,12 @@
 				{% if user.is_authenticated %}
                                 <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#"> Statistics<span class="caret"></span></a>
 				    <ul class="dropdown-menu">
-				    <li><a href="/wetlab/NextSeqStatsPerResearcher/">Projects per Investigator </a></li>
+				    <li><a href="/wetlab/StatsPerResearcher/">Projects per Investigator </a></li>
 				    {% if request.user|has_group:"WetlabManager" %}
-				    <li><a href="/wetlab/NextSeqStatsPerTime/">Period of time</a></li>
+				    <li><a href="/wetlab/StatsPerTime/">Period of time</a></li>
 				    {% endif %}
-				    <li><a href="/wetlab/NextSeqStatsExperiment">Experiment Type</a></li>
-				    <li><a href="/wetlab/NextSeqStatsLibrary">Library Kit Qualitty</a></li>
+				    <li><a href="/wetlab/StatsExperiment">Experiment Type</a></li>
+				    <li><a href="/wetlab/StatsLibrary">Library Kit Qualitty</a></li>
 				  </ul>
 				</li>
 				{% else %}
