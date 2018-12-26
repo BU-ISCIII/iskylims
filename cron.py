@@ -1105,7 +1105,38 @@ def miseq_check_recorded():
 
 
 
-def check_recorded_folder ():
+def update_run_in_recorded_state ():
+    '''
+    Description:
+        The function is called from crontab to check if NextSeq runs 
+        are in recorded state.
+        web, having 2 main parts:
+            - User form with the information to add a new library
+            - Result information as response of user submit
+        
+        Save a new library kit name in database if it is not already defined.
+        
+    Input:
+        request     # contains the request dictionary sent by django
+        
+    Variables:
+        library_kit_information ={} # returned dictionary with the information
+                                to include in the web page
+        library_kit_objects # contains the object list of the libraryKit model
+        library_kits = [] # It is a list containing the Library Kits names
+        new_library_kit_name # contain the new library name enter by user form
+        library     # it is the new LibraryKit object
+        l_kit       # is the iter variable for library_kit_objects
+        
+    Return:
+        Return the different information depending on the execution:
+        -- Error page in case the library already exists.
+        -- library_kit_information with :
+            -- ['libraries'] 
+            ---['new_library_kit'] in case a new library kit was added.
+    
+    '''
+    '''
     time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(time_start )
     working_path = settings.MEDIA_ROOT
@@ -1124,35 +1155,30 @@ def check_recorded_folder ():
             + time_stop+'.  Traceback info= '+var)
         logger.error ('==> Exception handling. Time stop= '
             + time_stop+'.  Traceback info= '+var)
+    '''
+    #finally: #always
+    logger=open_log('check_recorded_folder.log')
+    
+    os.chdir(working_path)
+    path=os.path.join(working_path,wetlab_config.RUN_TEMP_DIRECTORY_RECORDED )
+    logger.info('Looking for new runs in directory %s', path)
 
-    finally: #always
-        logger.info('...Continue execution of check_recorded_folder for NextSeq .')
-        os.chdir(working_path)
-        path=os.path.join(working_path,wetlab_config.RUN_TEMP_DIRECTORY_RECORDED )
-        logger.info('Looking for new runs in directory %s', path)
-
-        dir_wetlab=os.getcwd()
-        logger.debug('check_recorder_folder function is running on directory  %s', dir_wetlab)
-        # true if there are folders under the recorded directory
-        if os.listdir(path):
-            # There are sample sheet files that need to be processed
-            updated_run=process_run_in_recorded_state(logger)
-            if updated_run == 'Error':
-                logger.error('No connection is available to Flavia')
-                logger.error('Exiting the process for searching run in recorded state ')
-                time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                print(time_stop)
-                print('******* Exiting the check_recorder_folder module due to error when connecting to '+wetlab_config.SAMBA_SHARED_FOLDER_NAME)
-            else:
-                for run_changed in updated_run:
-                    logger.info('The run  %s is now on Sample Sent state', run_changed)
-                time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                print(time_stop)
-                logger.info('Exiting the check_recorded_folder')
+    dir_wetlab=os.getcwd()
+    logger.debug('check_recorder_folder function is running on directory  %s', dir_wetlab)
+    # check if there are runs in recorded state
+    if RunProcess.objects.filter(runState__exact = 'Recorded').exists():
+        logger.info('Processing the run in recorded state.')
+        updated_run=handle_nextseq_run_in_recorded_state(logger)
+        if updated_run == 'Error':
+            print('******* ERROR ********')
+            print('When processing run in recorded state. Check log for detail information')
         else:
-            time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            print(time_stop)
-            logger.info( 'Exiting the crontab for record_folder. No directories under recorded folder have been found')
+            for run_changed in updated_run:
+                logger.info('The run  %s is now on Sample Sent state', run_changed)
+            print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+            logger.info('Exiting the check_recorded_folder')
+    else:
+        logger.info( 'Exiting the crontab for record_folder. No runs in recorded state have been found')
 
 
 
@@ -1192,7 +1218,7 @@ def delete_unregister_run ():
 
     time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(time_start )
-    print('Starting the process for deleting runs in register state older than ', today_date)
+    print('Starting the process for deleting runs in register state older than ', datetime.today())
     date_for_removing = datetime.today() - timedelta(days=days_to_subtract)
     run_found_for_deleting = RunProcess.objects.filter(runState__exact ='Pre-Recorded', generatedat__lte = date_for_removing)
     for run_found in run_found_for_deleting:

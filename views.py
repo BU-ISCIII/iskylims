@@ -47,7 +47,7 @@ def get_sample_file (request):
     ## Check user == WetlabManager: if false,  redirect to 'login' page
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(name='WetlabManager')
+            groups = Group.objects.get(name = WETLAB_MANAGER)
             if groups not in request.user.groups.all():
                 return render (
                     request,'iSkyLIMS_wetlab/error_page.html',
@@ -1579,7 +1579,7 @@ def change_run_libKit (request, run_id):
 
 @login_required
 def stats_experiment (request):
-    return render (request, 'iSkyLIMS_wetlab/NextSeqStatistics.html', {})
+    return render (request, 'iSkyLIMS_wetlab/StatsPerExperiment.html', {})
 
 @login_required
 def stats_per_researcher (request):
@@ -2089,7 +2089,7 @@ def stats_per_library (request):
         end_date=request.POST['enddate']
         # check that some values are in the request if not return the form
         if library_kit_name == '' and start_date == '' and end_date == '' :
-            return render(request, 'iSkyLIMS_wetlab/NextSeqStatsPerLibrary.html')
+            return render(request, 'iSkyLIMS_wetlab/StatsPerLibrary.html')
 
         if library_kit_name !=''  and len(library_kit_name) <3 :
              return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The user name must contains at least 4 caracters ',
@@ -2630,10 +2630,8 @@ def monthly_report (request) :
         heading = '>Q30 for the runs done on  '+ str(month_selected + ' - ' + year_selected)
         data_source = column_graphic_for_year_report (heading, 'Q30  ' , 'Run names ', '>Q 30 (in %)', 'fint', q30_month)
         q30_month_graphic = FusionCharts("column3d", 'q30_year' , "600", "300", 'q30_chart-2', "json", data_source)
-        #
-        monthly_report_information ['q30_graphic'] = q30_month_graphic.render()
 
-        #
+        monthly_report_information ['q30_graphic'] = q30_month_graphic.render()
 
         return render (request, 'iSkyLIMS_wetlab/MonthlyReport.html',{'display_monthly_report': monthly_report_information})
     else:

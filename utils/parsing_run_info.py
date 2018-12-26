@@ -68,7 +68,7 @@ def get_run_disk_utilization (conn, run_Id_used, run_processing_id, logger):
         logger.info('End  disk space utilization for runID  %s', run_Id_used)
 
 
-
+'''
 def save_miseq_run_info(run_info,run_parameter,run_id,logger):
 ## Collecting information from MiSeq run to save it in our database
     running_data={}
@@ -179,12 +179,38 @@ def save_miseq_run_info(run_info,run_parameter,run_id,logger):
         logger.info('Updated the project date for the Project table ')
 
     return
-
+'''
 
 
 
 
 def save_run_info(run_info, run_parameter, run_id, logger):
+    '''
+    Description:
+        The function is called for parsing the RunInfo and RunParameter
+        files. 
+        After parsing the RunningParameters table will be updated with 
+        a new row containing the parsed data
+        Empty values will be set for MiSeq runs that are on NextSeq files
+        but not in MiSeq        
+    Input:
+        run_info    # contains the path for RunInfo.xml file
+        run_parameter # contains the path for RunParameter.xml file
+        run_id      # contains the id value of the run
+        logger     # contains the logger object to write information
+                    on the log file
+    Variables:
+        image_channel   # list containing the image channel values
+        p_parameter     # element tree object for run parameter
+        p_run           # element tree for run info
+        projects_to_update # list of projects that belong to the same run
+        running_data    # containg the parsed information to save into database
+        running_parameters # new RunningParameter object to store parsed data
+        sequencer       # sequencer index of the machine
+        
+     Return:
+        No return values. the function store all the information in database
+    '''
     running_data={}
     image_channel=[]
     #################################################
@@ -192,38 +218,69 @@ def save_run_info(run_info, run_parameter, run_id, logger):
     #################################################
     run_data=ET.parse(run_info)
     run_root=run_data.getroot()
-    logger.info('Processing the runInfo.xml file')
+    logger.info('parsing the runInfo.xml file for %s' , run_id)
     p_run=run_root[0]
-    for i in run_root.iter('Name'):
-        image_channel.append(i.text)
-
-    running_data['ImageChannel']=image_channel
+    ## getting the common values NextSeq and MiSeq
     running_data['Flowcell']=p_run.find('Flowcell').text
-    running_data['ImageDimensions']=p_run.find('ImageDimensions').attrib
     running_data['FlowcellLayout']=p_run.find('FlowcellLayout').attrib
+    
     #################################################
     ## parsing RunParameter.xml file
     #################################################
-    logger.info('Processing the runParameter.xml file')
+    logger.info('Parsing the runParameter.xml file for %s' , run_id)
     parameter_data=ET.parse(run_parameter)
     parameter_data_root=parameter_data.getroot()
     p_parameter=parameter_data_root[1]
+    ## getting the common values NextSeq and MiSeq
     running_data['RunID']=parameter_data_root.find('RunID').text
     running_data['ExperimentName']=parameter_data_root.find('ExperimentName').text
     running_data['RTAVersion']=parameter_data_root.find('RTAVersion').text
-    running_data['SystemSuiteVersion']=parameter_data_root.find('SystemSuiteVersion').text
-    running_data['LibraryID']=parameter_data_root.find('LibraryID').text
     running_data['Chemistry']=parameter_data_root.find('Chemistry').text
     running_data['RunStartDate']=parameter_data_root.find('RunStartDate').text
-    running_data['AnalysisWorkflowType']=parameter_data_root.find('AnalysisWorkflowType').text
     running_data['RunManagementType']=parameter_data_root.find('RunManagementType').text
-    running_data['PlannedRead1Cycles']=parameter_data_root.find('PlannedRead1Cycles').text
-    running_data['PlannedRead2Cycles']=parameter_data_root.find('PlannedRead2Cycles').text
-    running_data['PlannedIndex1ReadCycles']=parameter_data_root.find('PlannedIndex1ReadCycles').text
-    running_data['PlannedIndex2ReadCycles']=parameter_data_root.find('PlannedIndex2ReadCycles').text
     running_data['ApplicationVersion']=p_parameter.find('ApplicationVersion').text
     running_data['NumTilesPerSwath']=p_parameter.find('NumTilesPerSwath').text
-    InstrumentID = parameter_data_root.find('InstrumentID').text
+    ## fetch the application platform to get the machine used in the run
+    if 'NextSeq' in p_parameter.find('ApplicationName').text :
+        # getting the specific values for NextSeq
+        running_data['SystemSuiteVersion']=parameter_data_root.find('SystemSuiteVersion').text ##NextSeq
+        running_data['LibraryID']=parameter_data_root.find('LibraryID').text  ##NextSeq
+        running_data['AnalysisWorkflowType']=parameter_data_root.find('AnalysisWorkflowType').text  ##NextSeq
+        running_data['PlannedRead1Cycles']=parameter_data_root.find('PlannedRead1Cycles').text  ##NextSeq
+        running_data['PlannedRead2Cycles']=parameter_data_root.find('PlannedRead2Cycles').text  ##NextSeq
+        running_data['PlannedIndex1ReadCycles']=parameter_data_root.find('PlannedIndex1ReadCycles').text  ##NextSeq
+        running_data['PlannedIndex2ReadCycles']=parameter_data_root.find('PlannedIndex2ReadCycles').text  ##NextSeq
+        
+        ## get the values on RunInfo that are only for NextSeq
+        for i in run_root.iter('Name'):
+            image_channel.append(i.text)
+        running_data['ImageChannel']=image_channel  ##NextSeq
+        running_data['ImageDimensions']=p_run.find('ImageDimensions').attrib  ##NextSeq
+        
+        ## get the instrument for NextSeq run
+        instrument = parameter_data_root.find('InstrumentID').text  ##NextSeq
+        
+    else:
+        ## get the length index number for reads and indexes 
+        for run_info_read in parameter_data_root.iter('RunInfoRead'):
+            if run_info_read.attrib['Number'] == 1 :
+                running_data['PlannedRead1Cycles'] = run_info_read.attrib['NumCycles']
+            elif run_info_read.attrib['Number'] == 2 :
+                running_data['PlannedIndex1ReadCycles'] = run_info_read.attrib['NumCycles']
+            elif run_info_read.attrib['Number'] == 3 :
+                running_data['PlannedIndex2ReadCycles'] = run_info_read.attrib['NumCycles']
+            elif run_info_read.attrib['Number'] == 4 :
+                running_data['PlannedRead2Cycles'] = run_info_read.attrib['NumCycles']
+
+        ## setting empty values for MiSeq
+        running_data['SystemSuiteVersion'] = ''
+        running_data['LibraryID'] = ''
+        running_data['AnalysisWorkflowType'] = ''
+        running_data['ImageChannel'] = ''
+        running_data['ImageDimensions'] = ''
+        ## get the instrument for MiSeq run located on RunInfo.xml
+        instrument =p_run.find('Instrument').text
+    '''
     Chemistry = parameter_data_root.find('Chemistry').text
     ## check if InstrumentID exists on database
     if not Machines.objects.filter(machineName__exact = InstrumentID).exists() :
@@ -233,14 +290,14 @@ def save_run_info(run_info, run_parameter, run_id, logger):
         platform = Platform.objects.get(platformName__exact = Chemistry)
         new_machine = Machines(platformID= platform, machineName = InstrumentID )
         new_machine.save()
-    ## Update the run information with the instrumentID
-    sequencer = Machines.objects.get(machineName__exact = InstrumentID)
+    '''
+    
 
     logger.debug('running_data information', running_data)
     ###########################################
     ## saving data into database
     ###########################################
-    logger.info ('Saving to database  the run id %s', run_id)
+    logger.info ('Saving to database  the running_parameters for %s', run_id)
 
     running_parameters= RunningParameters (runName_id=RunProcess.objects.get(pk=run_id),
                          RunID=running_data['RunID'], ExperimentName=running_data['ExperimentName'],
@@ -264,7 +321,14 @@ def save_run_info(run_info, run_parameter, run_id, logger):
 
     run_to_be_updated = RunProcess.objects.get(pk=run_id)
     run_to_be_updated.run_date = run_date
-    run_to_be_updated.sequencerModel = sequencer
+    if  Machines.objects.filter(machineName__exact = instrument).exists() :
+        ## Update the run information with the instrument used
+        sequencer = Machines.objects.get(machineName__exact = instrument)
+        run_to_be_updated.sequencerModel = sequencer
+    else:
+        logger.error('-----------------    ERROR   ------------------')
+        logger.error('%s has been not defined on machines ', instrument)
+        logger.error('-----------------    ERROR   ------------------')
     run_to_be_updated.save()
     logger.info('Updated the run date and sequencer used for the runProcess table ')
 
@@ -273,189 +337,310 @@ def save_run_info(run_info, run_parameter, run_id, logger):
         project.project_run_date = run_date
         project.save()
         logger.info('Updated the project date for the Project table ')
+    
+    return ''
 
 
-def fetch_run_start_date_from_run_info (local_run_parameter_file):
+def fetch_run_start_date_from_run_info (l_run_parameter):
 
-    fh=open(local_run_parameter_file ,'r')
+    fh=open(l_run_parameter ,'r')
     for line in fh:
         runStartDate=re.search('^\s+<RunStartDate>(.*)</RunStartDate>',line)
         if runStartDate:
             fh.close()
             return runStartDate.group(1)
     return ''
-def fetch_exp_name_from_run_info (local_run_parameter_file):
 
-    ## look for   <ExperimentName>NextSeq_CNM_041</ExperimentName> in RunParameters.xml file
-    fh=open(local_run_parameter_file ,'r')
+
+
+def find_xml_tag_text (input_file, search_tag):
+    '''
+    Description:
+        The function will look for the xml element tag in the 
+        file and it will return the text value
+    Input:
+        input_file  # file to find the tag
+        search_tag  # xml tag to be found in the input_file
+    Variables:
+        found_tag   # line containing the tag 
+    '''
+    
+    fh = open (l_run_completion, 'r')
+    search_line = '<' + search_tag+ '>(.*)</' + search_tag+'>'
     for line in fh:
-        exp_name=re.search('^\s+<ExperimentName>(.*)</ExperimentName>',line)
-        if exp_name:
+        found_tag = re.search('^\s+ %s' % search_line, line)
+        if found_tag:
             fh.close()
-            return exp_name.group(1)
+            return found_tag.group(1)
+    fh.close()
     return ''
 
-def completion_status_run (local_run_completion_status_file):
-    fh = open (local_run_completion_status_file, 'r')
-    for line in fh:
-        completion_status = re.search('^\s+<CompletionStatus>(.*)</CompletionStatus>', line)
-        if completion_status:
-            fh.close()
-            return completion_status.group(1)
-    return ''
+def handle_nextseq_run_in_recorded_state(logger):
+    '''
+    Description:
+        The function is called from crontab to check if NextSeq runs 
+        are in recorded state.
+        web, having 2 main parts:
+            - User form with the information to add a new library
+            - Result information as response of user submit
+        
+        Save a new library kit name in database if it is not already defined.
+        
+    Input:
+        logger     # contains the logger object to write information
+                    on the log file     
+    Constants:
+        RUN_PARAMETER 
+        RUN_INFO
+        RUN_COMPLETION
+    Functions:
+        
+        find_xml_tag_text # located in parsing_run_info.py
+        save_run_info   # located in parsing_run_info.py
+        update_run_state # located in parsing_run_info.py
+        update_project_state # located in parsing_run_info.py
+    Variables:
+        base_directory
+        exp_name        # contains the text value for the experimentName
+                        tag on runParameter.xml file
 
-def process_run_in_recorded_state(logger):
+
+        file_list # contains all folder names in the shared folder fetched
+                    on the samba connection from remote server
+        
+        l_run_parameter # conatins the path for run parameter file
+        l_run_info      # contains the path for run info file
+        l_run_completion# contains the path for run completion status file
+        
+        run_found       # run object that contains the run to be updated
+        run_found_id    # Id number of the run object to be updated
+        project_name_list # list of project objects that are in the run_found
+        s_run_completion# contains the remote path for run completion status file 
+        s_run_parameter # contains the remote path for run parameter file 
+
+        s_sample        # contains the remote path for sample sheet 
+        run_completion_attributes # contains the remote file attribute for 
+                            completion_status
+        run_completion_date   # contains the remote file date for 
+                            completion_status
+        run_found       # contains the object RunProccess for the found run
+        run_found_id    # contains the id of the found run
+        run_platform    # contains the platform name get from the application
+                        name tag in the RunParameters.xml file
+        recorded_dir
+        status_run      # contains the text value for the competion status
+                        tag on runCompletion.xml file
+        sample_sheet_tmp_file # contains the path where is located the 
+                        samplesheet file inside the temporary folder
+
+
+
+
+        processed_runs   # Contains the list of the run already processed
+        process_run_file_updated # Bolean to decide if process_run_file
+                                needs to be update because a was foun a
+                                new run
+        run_names_processed # contains a list for the run names processed
+        
+        share_folder_name   # SAMBA_SHARED_FOLDER_NAME
+        
+        run_list        # 
+    
+    
+        library_kit_information ={} # returned dictionary with the information
+                                to include in the web page
+        library_kit_objects # contains the object list of the libraryKit model
+        library_kits = [] # It is a list containing the Library Kits names
+        new_library_kit_name # contain the new library name enter by user form
+        library     # it is the new LibraryKit object
+        l_kit       # is the iter variable for library_kit_objects
+        
+    Return:
+        return a list containing the experiment names that have been 
+        sucessfully processed 
+    
+    '''
+    processed_run_file = []
+    #run_list = [] 
     try:
         conn=open_samba_connection()
         logger.info('Sucessfully  SAMBA connection for the process_run_in_recorded_state')
     except:
-        return ('Error')
-    processed_run_file, runlist = [] , []
+        logger.error('Unable to open SAMBA connection for the process_run_in_recorded_state')
+        return 'Error'
+    
 
-    share_folder_name = wetlab_config.SAMBA_SHARED_FOLDER_NAME
-    base_directory = wetlab_config.RUN_TEMP_DIRECTORY
-    recorded_dir = wetlab_config.RUN_TEMP_DIRECTORY_RECORDED
-    logger.debug('working directory is %s', os.getcwd())
-    local_run_parameter_file = os.path.join(base_directory, 'RunParameters.xml')
-    local_run_info_file = os.path.join(base_directory, 'RunInfo.xml')
-    local_run_completion_status_file = os.path.join(base_directory, 'RunCompletionStatus.xml')
+    #share_folder_name = wetlab_config.SAMBA_SHARED_FOLDER_NAME
+    #base_directory = wetlab_config.RUN_TEMP_DIRECTORY
+    #recorded_dir = wetlab_config.RUN_TEMP_DIRECTORY_RECORDED
+    #logger.debug('working directory is %s', os.getcwd())
+    
+    l_run_parameter = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_PARAMETER_NEXTSEQ)
+    l_run_info = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_INFO)
+    l_run_completion = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_COMPLETION)
+    process_run_file = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.PROCESSED_RUN_FILE)
 
-    process_run_file = os.path.join(base_directory, wetlab_config.PROCESSED_RUN_FILE)
-    processed_run=[]
+    processed_runs=[]
     run_names_processed=[]
     ## get the list of the processed run
     if os.path.exists(process_run_file):
-        fh = open (process_run_file,'r')
-        for line in fh:
-            line=line.rstrip()
-            processed_run.append(line)
+        try:
+            fh = open (process_run_file,'r')
+            for line in fh:
+                line=line.rstrip()
+                processed_runs.append(line)
+        except Exception as e:
+            logger.error('-----------------    ERROR   ------------------')
+            logger.error('Unable to open the processed run file.  %s ', e )
+            logger.error('Showing traceback: ',  exc_info=True)
+            logger.error('-----------------    END ERROR   --------------')
+            return 'Error'
         fh.close()
-        logger.info('processed_run file was read')
+        logger.info('processed_runs file was read')
     # Initialize the variable do not need to update the process run file.
-    process_run_file_update = False
-    # Check if the directory from flavia has been processed
-    file_list = conn.listPath( share_folder_name, '/')
+    process_run_file_updated = False
+    # Check if the directory from remote server has been processed
+    file_list = conn.listPath( wetlab_config.SAMBA_SHARED_FOLDER_NAME, '/')
     for sfh in file_list:
         if sfh.isDirectory:
             run_dir=(sfh.filename)
             if (run_dir == '.' or run_dir == '..'):
                 continue
                 # if the run folder has been already process continue searching
-            if run_dir in processed_run:
+            if run_dir in processed_runs:
                 logger.debug('run id %s already processed', run_dir)
                 continue
             else:
-
-                logger.info ('Found a new run  %s ,that was not in the processed run file',run_dir)
-                logger.info ('checking if exists completion status file ')
-
-
+                logger.info ('Found a new run  %s ',run_dir)
                 # check if run have been successful completed
-                samba_completion_status_file = os.path.join(run_dir,'RunCompletionStatus.xml')
-                logger.debug('runCompletion file is in %s', samba_completion_status_file)
+                s_run_completion = os.path.join(run_dir, wetlab_config.RUN_COMPLETION)
+    
                 try:
-                    with open (local_run_completion_status_file, 'wb') as c_status_fp :
-                        conn.retrieveFile(share_folder_name, samba_completion_status_file, c_status_fp )
+                    with open (l_run_completion, 'wb') as c_status_fp :
+                        conn.retrieveFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME, s_run_completion, c_status_fp )
                         # Get the date and time when the RunCompletionStatus is created
-                        completion_attributes = conn.getAttributes(share_folder_name , samba_completion_status_file)
-                        run_completion_date = datetime.datetime.fromtimestamp(int(completion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
-
-                except:
-                    logger.error ('ERROR:: unable to fetch the RunCompletionStatus.xml file at %s', run_dir)
-                    logger.debug ('Deleting RunParameters.xml for run %s ', run_dir)
-                    os.remove(local_run_completion_status_file)
+                        run_completion_attributes = conn.getAttributes(wetlab_config.SAMBA_SHARED_FOLDER_NAME , s_run_completion)
+                        run_completion_date = datetime.datetime.fromtimestamp(int(run_completion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
+                except Exception as e:
+                    logger.error('-----------------    ERROR   ------------------')
+                    logger.error('Unable to fetch the completion status file on folder %s', run_dir )
+                    logger.error('Showing traceback: ',  exc_info=True)
+                    logger.error('-----------------    END ERROR   --------------')
+                    logger.info ('Deleting local copy of completion status run %s ')
+                    os.remove(l_run_completion)
                     continue
-                status_run = completion_status_run (local_run_completion_status_file)
-                if  status_run != 'CompletedAsPlanned':
-                    logger.error('ERROR::  run status was %s for the runID %s', status_run, run_dir)
-                    print('ERROR:: Status for run ', run_dir , ' is not completed ')
+                status_run = find_xml_tag_text (l_run_completion, wetlab_config.COMPLETION_TAG )
+                if  status_run != wetlab_config.COMPLETION_SUCCESS:
+                    logger.error('-----------------    ERROR   ------------------')
+                    logger.error('Run status was %s for the runID %s', status_run, run_dir)
+                    logger.error('-----------------    END ERROR   --------------')
                     #continue  # lets continue the process to check if the experiment name can fetch from RunParameter file
                 else:
                     logger.info ('Run completed for Run ID %s ', run_dir)
 
                 logger.debug('Deleting RunCompletionStatus.xml file')
-                os.remove(local_run_completion_status_file)
-
+                os.remove(l_run_completion)
 
                 #### Get Run_parameter_file
-                try:
-                    #copy the runParameter.xml file to wetlab/tmp/tmp
-                    with open(local_run_parameter_file ,'wb') as r_par_fp :
-                        samba_run_parameters_file=os.path.join(run_dir,'RunParameters.xml')
-                        conn.retrieveFile(share_folder_name, samba_run_parameters_file, r_par_fp)
-                        logger.debug('Retrieving the remote RunParameter.xml file for %s', run_dir)
-                        logger.debug('Local dir for getting RunParameters is %s', base_directory)
+                #copy the runParameter.xml file to wetlab/tmp/tmp
+                with open(l_run_parameter ,'wb') as r_par_fp :
+                    try:
+                        s_run_parameter = os.path.join(run_dir,wetlab_config.RUN_PARAMETER_NEXTSEQ)
+                        conn.retrieveFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME, s_run_parameter, r_par_fp)
+                        logger.info('Retrieving the remote RunParameter.xml file for %s', run_dir)
+                    except:
+                        try:
+                            s_run_parameter = os.path.join(run_dir,wetlab_config.RUN_PARAMETER_MISEQ)
+                            conn.retrieveFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME, s_run_parameter, r_par_fp)
+                            logger.info('Retrieving the remote runParameter.xml file for %s', run_dir)
 
-                except:
-                    logger.error('There is no run_parameter file in the directory')
-                    print ('ERROR:: RunParameters.xml not found for run ', run_dir)
-                    os.remove(local_run_parameter_file)
-                    continue
+                        except Exception as e:
+                            logger.error('-----------------    ERROR   ------------------')
+                            logger.error('Unable to fetch the RunParameter.xml file on folder %s' , run_dir )
+                            logger.error('Showing traceback: ',  exc_info=True)
+                            logger.error('-----------------    END ERROR   --------------')
+                            os.remove(l_run_parameter)
+                            continue
                 # look for the experience name  for the new run folder. Then find the run_id valued for it
-                exp_name=fetch_exp_name_from_run_info(local_run_parameter_file)
+                exp_name = find_xml_tag_text (l_run_parameter, wetlab_config.EXPERIMENT_NAME_TAG)
+                run_platform = find_xml_tag_text (l_run_parameter, wetlab_config.APPLICATION_NAME_TAG)
                 if exp_name == '':
-                    logger.error('NO experiment name  is defined for run %s', run_dir)
-                    print ('ERROR:: No experiment name was found inside RunParameters.xml for run ', run_dir)
+                    logger.error('-----------------    ERROR   ------------------')
+                    logger.error('NO experiment name  was defined for run %s', run_dir)
+                    logger.error('-----------------    END ERROR   --------------')
                     continue
                 logger.debug('found the experiment name  , %s', exp_name)
                 if  RunProcess.objects.filter(runName__icontains = exp_name, runState__exact = 'Recorded').exists():
-                    exp_name_id=str(RunProcess.objects.get(runName__exact = exp_name).id)
+                    run_found_id=str(RunProcess.objects.get(runName__exact = exp_name).id)
                     logger.debug('Matching the experimental name id %s with database ', exp_name_id)
-                    if status_run != 'CompletedAsPlanned':
+                    if status_run != wetlab_config.COMPLETION_SUCCESS:
                         # set the run in error state
-                        exp_name = RunProcess.objects.get(runName__exact = exp_name)
-                        exp_name.runState = 'CANCELLED'
-                        exp_name.run_finish_date = run_completion_date
-                        exp_name.save()
-                        project_name_list = Projects.objects.filter(runprocess_id__exact = exp_name_id)
+                        run_found = RunProcess.objects.get(runName__exact = exp_name)
+                        run_found.runState = 'CANCELLED'
+                        run_found.run_finish_date = run_completion_date
+                        run_found.save()
+                        logger.warning('-----------------    WARNING   ------------------')
+                        logger.warning('run was canceled for  %s', run_dir)
+                        logger.warning('-----------------    END WARNING   --------------')
+                        project_name_list = Projects.objects.filter(runprocess_id__exact = run_found_id)
                         for project in project_name_list:
                             project.procState= 'CANCELLED'
                             project.save()
                         # delelete the runParameter file
-                        os.remove(local_run_parameter_file)
+                        os.remove(l_run_parameter)
                         # Updated the processed file  and continue with the next item
-                        processed_run.append(run_dir)
+                        processed_runs.append(run_dir)
                         continue
 
-                    sample_sheet_tmp_file=os.path.join(recorded_dir,exp_name_id,'samplesheet.csv')
-                    if os.path.exists(sample_sheet_tmp_file):
-                        # copy Sample heet file to remote directory
-                        logger.info('Found run directory %s for the experiment name %s', run_dir, exp_name_id)
-                        #try:
-                        #    with open(sample_sheet_tmp_file ,'rb') as  sample_samba_fp:
-                        #        samba_sample_file= os.path.join(run_dir,'samplesheet.csv')
-                        #        logger.debug('Local dir for Shample Sheet %s', sample_sheet_tmp_file)
-                        #        logger.debug('Remote dir to copy Shample Sheet  is %s', run_dir)
-                        #        conn.storeFile(share_folder_name, samba_sample_file, sample_samba_fp)
-                        #        logger.info('Samplesheet.csv file has been copied on the remote node')
-                        #except:
-                        #    logger.error('Unable to copy Sample Sheet for run %s', run_dir)
-                        #    print ('ERROR:: Unable to copy Sample Sheet for run ', run_dir)
-                        #    continue
-                        # retrieve the runInfo.xml file from remote directory
-                    else:
-                        logger.error('ERROR ---No sample Sheet will be copied to remote dir. Local Directory %s was not found ', sample_sheet_tmp_dir)
+                    if 'NextSeq' in run_platform :
+                        sample_sheet_tmp_file=os.path.join(recorded_dir,exp_name_id, wetlab_config.SAMPLE_SHEET)
+                        if os.path.exists(sample_sheet_tmp_file):
+                            if wetlab_config.COPY_SAMPLE_SHEET_TO_REMOTE :
+                                # copy Sample heet file to remote directory
+                                logger.info('Found run directory %s for the experiment name %s', run_dir, exp_name_id)
+                                try:
+                                    with open(sample_sheet_tmp_file ,'rb') as  sample_samba_fp:
+                                        s_sample= os.path.join(run_dir, wetlab_config.SAMPLE_SHEET)
+                                        logger.debug('Local dir for Shample Sheet %s', sample_sheet_tmp_file)
+                                        logger.debug('Remote dir to copy Shample Sheet  is %s', run_dir)
+                                        conn.storeFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME, s_sample, sample_samba_fp)
+                                        logger.info('Samplesheet.csv file has been copied on the remote server')
+                                except Exception as e:
+                                    logger.error('-----------------    ERROR   ------------------')
+                                    logger.error('Unable to copy Sample Sheet for run %s', run_dir)
+                                    logger.error('Showing traceback: ',  exc_info=True)
+                                    logger.error('-----------------    END ERROR   --------------')
+                                    print ('ERROR:: Unable to copy Sample Sheet for ', run_dir)
+                                    print ('ERROR:: check log file for more information')
+                                    continue
+                        else:
+                            logger.error('-----------------    ERROR   ------------------')
+                            logger.error('sample sheet not found on local Directory %s ', sample_sheet_tmp_dir)
+                            logger.error('-----------------    ERROR   ------------------')
 
 
                     # get the runIfnfo.xml to collect the  information for this run
                     try:
-                        with open(local_run_info_file ,'wb') as r_info_fp :
-                            samba_run_info_file=os.path.join(run_dir,'RunInfo.xml')
-                            logger.debug('Local dir for RunInfo.xml %s', local_run_info_file)
+                        with open(l_run_info ,'wb') as r_info_fp :
+                            samba_run_info_file=os.path.join(run_dir,wetlab_config.RUN_INFO)
+                            logger.debug('Local dir for RunInfo.xml %s', l_run_info)
                             logger.debug('Remote file of RunInfo.xml is located in %s', samba_run_info_file)
-                            conn.retrieveFile(share_folder_name, samba_run_info_file, r_info_fp)
-                    except:
+                            conn.retrieveFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME, samba_run_info_file, r_info_fp)
+                    except Exception as e:
+                        logger.error('-----------------    ERROR   ------------------')
                         logger.error('Unable to get the RunInfo.xml file for run %s', run_dir)
-                        print ('ERROR:: Unable to get the RunInfo.xml filet for run ', run_dir)
+                        logger.error('Showing traceback: ',  exc_info=True)
+                        logger.error('-----------------    END ERROR   --------------')
                         logger.error('Deleting RunParameter.xml file ')
-                        os.remove(local_run_parameter_file)
-                        os.remove(local_run_info_file)
+                        os.remove(l_run_parameter)
+                        os.remove(l_run_info)
+                        print ('ERROR:: Unable to get the RunInfo.xml filet for run ', run_dir)
                         continue
                     logger.info('copied to local the RunInfo.xml and start the parsing for RunInfo and RunParameter files')
-                    save_run_info (local_run_info_file, local_run_parameter_file, exp_name_id, logger)
+                    save_run_info (l_run_info, l_run_parameter, exp_name_id, logger)
                         # delete the copy of the run files
-                    os.remove(local_run_info_file)
-                    os.remove(local_run_parameter_file)
+                    os.remove(l_run_info)
+                    os.remove(l_run_parameter)
                     logger.debug('Deleted runInfo and RunParameter files on local server')
                         # delete the file and folder for the sample sheet processed
                     shutil.rmtree(os.path.join(recorded_dir, exp_name_id))
@@ -468,22 +653,23 @@ def process_run_in_recorded_state(logger):
                     run_update_date = RunProcess.objects.get(pk=exp_name_id)
                     run_update_date.run_finish_date = run_completion_date
                     run_update_date.save()
-                        # add the run_dir inside the processed_run file
-                    processed_run.append(run_dir)
+                        # add the run_dir inside the processed_runs file
+                    processed_runs.append(run_dir)
                     run_names_processed.append(exp_name)
-                        # mark to update the processed_run file with the new run folders
-                    process_run_file_update = True
+                        # mark to update the processed_runs file with the new run folders
+                    process_run_file_updated = True
                     logger.info('SampleSheet.csv file for %s has been sucessful sent to remote server', run_dir)
                 else:
-                    # error in log file
+                    logger.warning('-----------------    WARNING   ------------------')
                     logger.warning ('The run ID %s does not match any run in the RunProcess object.', run_dir)
-                    os.remove(local_run_parameter_file)
+                    logger.warning('-----------------   END  WARNING   ------------------')
+                    os.remove(l_run_parameter)
                     continue
     conn.close()
     if process_run_file_update :
         fh =open (process_run_file,'w')
         # update the process_run_file with the new run
-        for process in processed_run:
+        for process in processed_runs:
             fh.write(process)
             fh.write('\n')
         fh.close()
@@ -491,10 +677,10 @@ def process_run_in_recorded_state(logger):
 
     list_dir=os.listdir(recorded_dir)
     if list_dir:
-        print ('Warning: There are runs in Recorded state that were not matching on the remote server \n')
-        print ('These runs are waiting that the folder exists on the remote server:  \n')
-        for item in list_dir:
-            print('directory for the run Id : ', item, '\n')
+        logger.warning('-----------------    WARNING   ------------------')
+        logger.warning('There are runs in Recorded state that were not matching on the remote server')
+        logger.debug('pending folder to be processed %s', list_dir)
+        logger.warning('-----------------   END  WARNING   ------------------')
     return(run_names_processed)
 
 

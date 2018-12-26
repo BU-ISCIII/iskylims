@@ -6,12 +6,6 @@ import os, errno
 from smb.SMBConnection import SMBConnection
 from iSkyLIMS_wetlab import wetlab_config
 
-def timestamp_print(message):
-    starting_time= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(starting_time+' '+message)
-
-
-
 
 def open_samba_connection():
 
@@ -24,7 +18,7 @@ def open_samba_connection():
     return conn
 
 
-
+'''
 def fetch_samba_dir_filelist(logger,conn, smb_root_path='/'):
 
     ## If no exceptions the function will leave a SMB connection opened so that the user can
@@ -45,6 +39,7 @@ def fetch_samba_dir_filelist(logger,conn, smb_root_path='/'):
     logger.info('Leaving the process to fetch the list of elements of directory via SAMBA')
 
     return file_list
+'''
 
 def normalized_data (set_data, all_data) :
     '''
