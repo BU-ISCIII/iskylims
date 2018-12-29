@@ -12,7 +12,9 @@ from .interop_statistics import *
 from smb.SMBConnection import SMBConnection
 from iSkyLIMS_wetlab import wetlab_config
 from iSkyLIMS_drylab.models import Machines, Platform
-from .wetlab_misc_utilities import open_samba_connection, timestamp_print
+from .wetlab_misc_utilities import open_samba_connection , logging_exception_errors
+from .wetlab_misc_utilities import get_experiment_library_name, get_projects_in_run
+
 from django.conf import settings
 
 
@@ -183,8 +185,7 @@ def save_miseq_run_info(run_info,run_parameter,run_id,logger):
 
 
 
-
-def save_run_info(run_info, run_parameter, run_id, logger):
+def parsing_and_save_run_info(run_info, run_parameter, run_id, logger):
     '''
     Description:
         The function is called for parsing the RunInfo and RunParameter
@@ -351,6 +352,188 @@ def fetch_run_start_date_from_run_info (l_run_parameter):
             return runStartDate.group(1)
     return ''
 
+def validate_sample_sheet (sample_sheet, logger):
+    '''
+    Description:
+        The function get the sample sheet file and will make some chekings
+        to validate the file
+        .
+    Input:
+        sample_sheet  # full path for smaple sheet file
+        logger          # log object 
+    Functions:
+        get_experiment_library_name # located in utils.sample_sheet_utils
+        get_projects_in_run # located in utils.sample_sheet_utils
+    Variable:
+        projects_users  # dictionary containing projects and user owner
+        experiment_name # contains the experiment name from the sample sheet
+        library_name  # contains the library name from the sample sheet
+    Return:
+        new runs that have been found
+    '''
+    logger,debug('Executing the function validate_sample_sheet' ) 
+    # get experiment name
+    experiment_name, library_name = get_experiment_library_name (sample_sheet)
+    # check if experiment name is already used in the system
+    if experiment_name != '' :
+        if RunProcess.objects.filter(runName__exact = experiment_name).exists() :
+            logger.warning('Experiment name %s , already been used', experiment_name)
+            logger.debug('Exiting the function validate sample_sheet')
+            return False
+    else:
+        logger.warning('Experiment name is empty')
+        logger.warning('Exiting the function validate sample_sheet')
+        return False
+            
+    # get the projects and user owner form sample sheet
+    projects_users = get_projects_in_run(sample_sheet)
+    for project in projects_users.keys() :
+        if Projects.objects.filter(projectName__exact = project).exists():
+            logger.warning('project name %s , already been used', project)
+            logger.debug('Exiting the function validate sample_sheet')
+            return False
+    for user in projects_users.values():
+        if User.objects.filter(projectName__exact = project).exists():
+            logger.warning('project name %s , already been used', project)
+            logger.debug('Exiting the function validate sample_sheet')
+            return False
+            
+        
+    logger,debug('Executing the function validate_sample_sheet' ) 
+    return False
+
+def get_new_runs_on_remote_server (processed_runs, conn, shared_folder, logger):
+    '''
+    Description:
+        The function fetch the folder names from the remote server and 
+        returns a list containing the folder names that have not been
+        porcessed yet.
+    Input:
+        processed_runs  # full path and name of the file
+        conn # samba connection object
+        shared_folder   # shared folder in the remote server
+        logger          # log object 
+    Variable:
+        new_runs        # list containing the new folder run names
+        run_folder_list  # list of the folder names on remote server
+    Return:
+        new runs that have been found
+    '''
+    logger.debug('Executing the function get_new_runs_on_remote_server' ) 
+    new_runs = []
+    run_folder_list = conn.listPath( shared_folder, '/')
+    for sfh in run_folder_list:
+        if sfh.isDirectory:
+            folder_run = sfh.filename
+            if (folder_run == '.' or folder_run == '..'):
+                continue
+            # if the run folder has been already process continue searching
+            if folder_run in processed_runs:
+                logger.debug('folder run  %s already processed', folder_run)
+                continue
+            else:
+                logger.info ('Found a new run  %s ',folder_run)
+                new_runs.append(folder_run)
+    logger.debug('Exiting the function get_new_runs_on_remote_server' )
+    return new_runs
+
+
+def read_processed_runs_file (processed_run_file, logger) :
+    '''
+    Description:
+        The function reads the file that contains all the processed runs
+        and return a list with the run folder names 
+    Input:
+        processed_run_file # full path and name of the file
+        logger # log object 
+    Variable:
+        processed_runs  # list of the folder names read from file
+    Return:
+        Error when file can not be readed
+        processed_runs variable for successful file read
+    '''
+    logger.debug('Executing the function read_processed_runs_file' )
+    w_dir = os.getcwd()
+    logger.debug('Folder for fetching the proccess run file is %s', w_dir)
+    logger.debug('processed_run_file is %s', processed_run_file)
+    processed_runs = []
+    if os.path.exists(processed_run_file):
+        try:
+            fh = open (processed_run_file,'r')
+            for line in fh:
+                line=line.rstrip()
+                processed_runs.append(line)
+        except Exception as e:
+            string_message = 'Unable to open the processed run file.  %s '
+            logging_exception_errors(logger, e, string_message)
+            return 'Error'
+        fh.close()
+        logger.info('run processed file have been read')
+        logger.debug('Exiting sucessfully the function read_processed_runs_file' )
+        return processed_runs
+    else:
+        logger.debug('No found processed run file. Exiting the function' )
+        return 'Error'
+    
+
+def search_new_miseq_runs (logger):
+    '''
+    Description:
+        The function will check if there are new run folder in the remote
+        server has a sample sheet file that was not processed. 
+        When found it will perform checks on the file to validate it and
+        store a new run in database
+    Input:
+        logger # log object for logging 
+    Functions:
+        open_samba_connection # located in utils.wetlab_misc_utilities.py 
+        
+    Constants:
+        
+    Variables:
+        l_sample_sheet  # full path for storing sample sheet file on 
+                        tempary local folder
+        s_sample_sheet  # full path for remote sample sheet file
+        processed_run_file # path
+    '''
+    processed_run_file = os.path.join( wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.PROCESSED_RUN_FILE)
+    processed_runs = read_processed_runs_file (processed_run_file, logger)
+    if processed_runs == 'Error' :
+        return 'Error'
+    try:
+        conn=open_samba_connection()
+        logger.info('Sucessfully  SAMBA connection for the process_run_in_recorded_state')
+    except Exception as e:
+        string_message = 'Unable to open SAMBA connection for the process_run_in_recorded_state %s'
+        logging_exception_errors(logger, e, string_message)
+        return 'Error'
+
+    new_runs = get_new_runs_on_remote_server (processed_runs, conn, wetlab_config.SAMBA_SHARED_FOLDER_NAME, logger)
+    
+    if len (new_runs) > 0 :
+        for new_run in new_runs :
+            l_sample_sheet = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.SAMPLE_SHEET)
+            s_sample_sheet = os.path.join(new_run, wetlab_config.SAMPLE_SHEET)
+            #import pdb; pdb.set_trace()
+            with open(l_sample_sheet ,'wb') as s_sheet_fp :
+                try:
+                    conn.retrieveFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME, s_sample_sheet, s_sheet_fp)
+                    logger.info('Retrieving the remote %s/SampleSheet.csv', new_run)
+                except Exception as e:
+                    string_message = 'Unable to fetch ' + new_run + '/SampleShhet.csv'
+                    logging_exception_errors(logger, e, string_message)
+                    continue
+            if validate_sample_sheet (l_sample_sheet, logger) :
+                logger.info('Successful sample sheet checking for folder %s ', new_run)
+            else:
+                continue
+        
+    else:
+        logger.info('No found new run folders on the remote server')
+        return ''
+    
+    return ''
+
 
 
 def find_xml_tag_text (input_file, search_tag):
@@ -365,7 +548,7 @@ def find_xml_tag_text (input_file, search_tag):
         found_tag   # line containing the tag 
     '''
     
-    fh = open (l_run_completion, 'r')
+    fh = open (input_file, 'r')
     search_line = '<' + search_tag+ '>(.*)</' + search_tag+'>'
     for line in fh:
         found_tag = re.search('^\s+ %s' % search_line, line)
@@ -375,7 +558,7 @@ def find_xml_tag_text (input_file, search_tag):
     fh.close()
     return ''
 
-def handle_nextseq_run_in_recorded_state(logger):
+def handle_runs_in_recorded_state(logger):
     '''
     Description:
         The function is called from crontab to check if NextSeq runs 
@@ -390,21 +573,24 @@ def handle_nextseq_run_in_recorded_state(logger):
         logger     # contains the logger object to write information
                     on the log file     
     Constants:
-        RUN_PARAMETER 
+         
         RUN_INFO
         RUN_COMPLETION
-    Functions:
+        RUN_PARAMETER
         
-        find_xml_tag_text # located in parsing_run_info.py
-        save_run_info   # located in parsing_run_info.py
-        update_run_state # located in parsing_run_info.py
-        update_project_state # located in parsing_run_info.py
+        RUN_PARAMETER_NEXTSEQ
+        RUN_PARAMETER_MISEQ
+        RUN_TEMP_DIRECTORY
+    Functions:
+        find_xml_tag_text # located in update_run_state.py
+        read_processed_runs_file 
+        parsing_and_save_run_info   # located in update_run_state.py
+        update_run_state # located in update_run_state.py
+        update_project_state # located in update_run_state.py
     Variables:
         base_directory
         exp_name        # contains the text value for the experimentName
                         tag on runParameter.xml file
-
-
         file_list # contains all folder names in the shared folder fetched
                     on the samba connection from remote server
         
@@ -432,33 +618,9 @@ def handle_nextseq_run_in_recorded_state(logger):
                         tag on runCompletion.xml file
         sample_sheet_tmp_file # contains the path where is located the 
                         samplesheet file inside the temporary folder
-
-
-
-
-        processed_runs   # Contains the list of the run already processed
-        process_run_file_updated # Bolean to decide if process_run_file
-                                needs to be update because a was foun a
-                                new run
-        run_names_processed # contains a list for the run names processed
-        
-        share_folder_name   # SAMBA_SHARED_FOLDER_NAME
-        
-        run_list        # 
-    
-    
-        library_kit_information ={} # returned dictionary with the information
-                                to include in the web page
-        library_kit_objects # contains the object list of the libraryKit model
-        library_kits = [] # It is a list containing the Library Kits names
-        new_library_kit_name # contain the new library name enter by user form
-        library     # it is the new LibraryKit object
-        l_kit       # is the iter variable for library_kit_objects
-        
     Return:
         return a list containing the experiment names that have been 
-        sucessfully processed 
-    
+        sucessfully proccessed
     '''
     processed_run_file = []
     #run_list = [] 
@@ -468,13 +630,7 @@ def handle_nextseq_run_in_recorded_state(logger):
     except:
         logger.error('Unable to open SAMBA connection for the process_run_in_recorded_state')
         return 'Error'
-    
 
-    #share_folder_name = wetlab_config.SAMBA_SHARED_FOLDER_NAME
-    #base_directory = wetlab_config.RUN_TEMP_DIRECTORY
-    #recorded_dir = wetlab_config.RUN_TEMP_DIRECTORY_RECORDED
-    #logger.debug('working directory is %s', os.getcwd())
-    
     l_run_parameter = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_PARAMETER_NEXTSEQ)
     l_run_info = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_INFO)
     l_run_completion = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_COMPLETION)
@@ -483,27 +639,18 @@ def handle_nextseq_run_in_recorded_state(logger):
     processed_runs=[]
     run_names_processed=[]
     ## get the list of the processed run
-    if os.path.exists(process_run_file):
-        try:
-            fh = open (process_run_file,'r')
-            for line in fh:
-                line=line.rstrip()
-                processed_runs.append(line)
-        except Exception as e:
-            logger.error('-----------------    ERROR   ------------------')
-            logger.error('Unable to open the processed run file.  %s ', e )
-            logger.error('Showing traceback: ',  exc_info=True)
-            logger.error('-----------------    END ERROR   --------------')
-            return 'Error'
-        fh.close()
-        logger.info('processed_runs file was read')
+    
+    processed_runs = read_processed_runs_file (processed_run_file, logger)
+    if processed_runs == 'Error' :
+        return 'Error'
+    logger.info('processed_runs file was read')
     # Initialize the variable do not need to update the process run file.
     process_run_file_updated = False
-    # Check if the directory from remote server has been processed
+    # get the run folder list form remote server
     file_list = conn.listPath( wetlab_config.SAMBA_SHARED_FOLDER_NAME, '/')
     for sfh in file_list:
         if sfh.isDirectory:
-            run_dir=(sfh.filename)
+            run_dir = sfh.filename
             if (run_dir == '.' or run_dir == '..'):
                 continue
                 # if the run folder has been already process continue searching
@@ -512,37 +659,7 @@ def handle_nextseq_run_in_recorded_state(logger):
                 continue
             else:
                 logger.info ('Found a new run  %s ',run_dir)
-                # check if run have been successful completed
-                s_run_completion = os.path.join(run_dir, wetlab_config.RUN_COMPLETION)
-    
-                try:
-                    with open (l_run_completion, 'wb') as c_status_fp :
-                        conn.retrieveFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME, s_run_completion, c_status_fp )
-                        # Get the date and time when the RunCompletionStatus is created
-                        run_completion_attributes = conn.getAttributes(wetlab_config.SAMBA_SHARED_FOLDER_NAME , s_run_completion)
-                        run_completion_date = datetime.datetime.fromtimestamp(int(run_completion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
-                except Exception as e:
-                    logger.error('-----------------    ERROR   ------------------')
-                    logger.error('Unable to fetch the completion status file on folder %s', run_dir )
-                    logger.error('Showing traceback: ',  exc_info=True)
-                    logger.error('-----------------    END ERROR   --------------')
-                    logger.info ('Deleting local copy of completion status run %s ')
-                    os.remove(l_run_completion)
-                    continue
-                status_run = find_xml_tag_text (l_run_completion, wetlab_config.COMPLETION_TAG )
-                if  status_run != wetlab_config.COMPLETION_SUCCESS:
-                    logger.error('-----------------    ERROR   ------------------')
-                    logger.error('Run status was %s for the runID %s', status_run, run_dir)
-                    logger.error('-----------------    END ERROR   --------------')
-                    #continue  # lets continue the process to check if the experiment name can fetch from RunParameter file
-                else:
-                    logger.info ('Run completed for Run ID %s ', run_dir)
-
-                logger.debug('Deleting RunCompletionStatus.xml file')
-                os.remove(l_run_completion)
-
                 #### Get Run_parameter_file
-                #copy the runParameter.xml file to wetlab/tmp/tmp
                 with open(l_run_parameter ,'wb') as r_par_fp :
                     try:
                         s_run_parameter = os.path.join(run_dir,wetlab_config.RUN_PARAMETER_NEXTSEQ)
@@ -563,13 +680,56 @@ def handle_nextseq_run_in_recorded_state(logger):
                             continue
                 # look for the experience name  for the new run folder. Then find the run_id valued for it
                 exp_name = find_xml_tag_text (l_run_parameter, wetlab_config.EXPERIMENT_NAME_TAG)
-                run_platform = find_xml_tag_text (l_run_parameter, wetlab_config.APPLICATION_NAME_TAG)
+                logger.debug('found the experiment name  , %s', exp_name)
                 if exp_name == '':
                     logger.error('-----------------    ERROR   ------------------')
                     logger.error('NO experiment name  was defined for run %s', run_dir)
                     logger.error('-----------------    END ERROR   --------------')
                     continue
-                logger.debug('found the experiment name  , %s', exp_name)
+                run_platform = find_xml_tag_text (l_run_parameter, wetlab_config.APPLICATION_NAME_TAG)
+                if 'MiSeq' in run_platform :
+                    status_run = check_miseq_completion_run (conn, log_folder, logger)
+                    if 'Error' == status_run :
+                        logger.error('-----------------    ERROR   ------------------')
+                        logger.error('miseq run was canceled for the runfolder %s',  run_dir)
+                        logger.error('-----------------    END ERROR   --------------')
+                        # lets continue to set the run and their projects to CANCELED state
+                    elif 'still_processing' == status_run :
+                        logger.info('miSeq run process is still running on sequencer for run folder', run_dir)
+                        logger.debug('Deleting local copy of the run parameter file')
+                        os.remove(l_run_parameter)
+                        continue
+                else:
+                    # check if NextSEq run have been successful completed
+                    s_run_completion = os.path.join(run_dir, wetlab_config.RUN_COMPLETION)
+                    try:
+                        with open (l_run_completion, 'wb') as c_status_fp :
+                            conn.retrieveFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME, s_run_completion, c_status_fp )
+                            # Get the date and time when the RunCompletionStatus is created
+                            run_completion_attributes = conn.getAttributes(wetlab_config.SAMBA_SHARED_FOLDER_NAME , s_run_completion)
+                            run_completion_date = datetime.datetime.fromtimestamp(int(run_completion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
+                    except Exception as e:
+                        logger.error('-----------------    ERROR   ------------------')
+                        logger.error('Unable to fetch the completion status file on folder %s', run_dir )
+                        logger.error('Showing traceback: ',  exc_info=True)
+                        logger.error('-----------------    END ERROR   --------------')
+                        logger.info ('Deleting local copy of completion status run %s ')
+                        os.remove(l_run_completion)
+                        continue
+                    status_run = find_xml_tag_text (l_run_completion, wetlab_config.COMPLETION_TAG )
+                    if  status_run != wetlab_config.COMPLETION_SUCCESS:
+                        logger.error('-----------------    ERROR   ------------------')
+                        logger.error('Run status was %s for the runID %s', status_run, run_dir)
+                        logger.error('-----------------    END ERROR   --------------')
+                        # lets continue to set the run to CANCELED state
+                    else:
+                        logger.info ('Run completed for Run ID %s ', run_dir)
+
+                    logger.debug('Deleting RunCompletionStatus.xml file')
+                    os.remove(l_run_completion)
+
+                
+                # get the RunProcess object
                 if  RunProcess.objects.filter(runName__icontains = exp_name, runState__exact = 'Recorded').exists():
                     run_found_id=str(RunProcess.objects.get(runName__exact = exp_name).id)
                     logger.debug('Matching the experimental name id %s with database ', exp_name_id)
@@ -588,12 +748,13 @@ def handle_nextseq_run_in_recorded_state(logger):
                             project.save()
                         # delelete the runParameter file
                         os.remove(l_run_parameter)
-                        # Updated the processed file  and continue with the next item
+                        # Updated the processed file  and continue with the next item in the list
                         processed_runs.append(run_dir)
                         continue
 
                     if 'NextSeq' in run_platform :
-                        sample_sheet_tmp_file=os.path.join(recorded_dir,exp_name_id, wetlab_config.SAMPLE_SHEET)
+                        sample_sheet_tmp_dir = os.path.join(recorded_dir,exp_name_id)
+                        sample_sheet_tmp_file=os.path.join(sample_sheet_tmp_dir, wetlab_config.SAMPLE_SHEET)
                         if os.path.exists(sample_sheet_tmp_file):
                             if wetlab_config.COPY_SAMPLE_SHEET_TO_REMOTE :
                                 # copy Sample heet file to remote directory
@@ -613,11 +774,18 @@ def handle_nextseq_run_in_recorded_state(logger):
                                     print ('ERROR:: Unable to copy Sample Sheet for ', run_dir)
                                     print ('ERROR:: check log file for more information')
                                     continue
+                            try:
+                                os.shutil(sample_sheet_tmp_dir)
+                                logger.debug('Deleted temporary folder containing the samplesheet')
+                            except Exception as e:
+                                    logger.error('-----------------    ERROR   ------------------')
+                                    logger.error('Unable to delete temporary folder with the sample sheet %s', sample_sheet_tmp_dir)
+                                    logger.error('Showing traceback: ',  exc_info=True)
+                                    logger.error('-----------------    END ERROR   --------------')
                         else:
                             logger.error('-----------------    ERROR   ------------------')
                             logger.error('sample sheet not found on local Directory %s ', sample_sheet_tmp_dir)
                             logger.error('-----------------    ERROR   ------------------')
-
 
                     # get the runIfnfo.xml to collect the  information for this run
                     try:
@@ -631,20 +799,23 @@ def handle_nextseq_run_in_recorded_state(logger):
                         logger.error('Unable to get the RunInfo.xml file for run %s', run_dir)
                         logger.error('Showing traceback: ',  exc_info=True)
                         logger.error('-----------------    END ERROR   --------------')
-                        logger.error('Deleting RunParameter.xml file ')
+                        logger.info('Deleting RunParameter.xml file ')
                         os.remove(l_run_parameter)
                         os.remove(l_run_info)
                         print ('ERROR:: Unable to get the RunInfo.xml filet for run ', run_dir)
+                        print ('Check log file for more information')
                         continue
                     logger.info('copied to local the RunInfo.xml and start the parsing for RunInfo and RunParameter files')
-                    save_run_info (l_run_info, l_run_parameter, exp_name_id, logger)
+                    parsing_and_save_run_info (l_run_info, l_run_parameter, exp_name_id, logger)
                         # delete the copy of the run files
                     os.remove(l_run_info)
                     os.remove(l_run_parameter)
                     logger.debug('Deleted runInfo and RunParameter files on local server')
                         # delete the file and folder for the sample sheet processed
-                    shutil.rmtree(os.path.join(recorded_dir, exp_name_id))
-                    logger.debug('Deleted the recorded folder ')
+                    if 'NextSeq' in run_platform :
+                        # for nextSeq run delete the temporary folder which contains the sample sheet file 
+                        shutil.rmtree(os.path.join(recorded_dir, exp_name_id))
+                        logger.debug('Deleted the recorded folder ')
                         # change the run  to SampleSent state
                     update_run_state(exp_name_id, 'Sample Sent', logger)
                     update_project_state(exp_name_id, 'Sample Sent', logger)
@@ -658,7 +829,7 @@ def handle_nextseq_run_in_recorded_state(logger):
                     run_names_processed.append(exp_name)
                         # mark to update the processed_runs file with the new run folders
                     process_run_file_updated = True
-                    logger.info('SampleSheet.csv file for %s has been sucessful sent to remote server', run_dir)
+                    logger.info('Finish the proccess for run folder %s', run_dir)
                 else:
                     logger.warning('-----------------    WARNING   ------------------')
                     logger.warning ('The run ID %s does not match any run in the RunProcess object.', run_dir)
@@ -684,9 +855,7 @@ def handle_nextseq_run_in_recorded_state(logger):
     return(run_names_processed)
 
 
-def get_machine_lanes(run_id):
-    number_of_lanes = RunProcess.objects.get(pk=run_id).sequencerModel.get_number_of_lanes()
-    return int(number_of_lanes)
+
 
 
 def update_run_state(run_id, state, logger):

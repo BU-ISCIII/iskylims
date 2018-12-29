@@ -7,13 +7,23 @@ WETLAB_MANAGER = 'WetlabManager'
 
 ################### SAMBA SETTINGS  ##########################
 ## SAMBA settings for connecting quibitka server to fetch the run files
-SAMBA_USER_ID = 'bioinfocifs'
-SAMBA_USER_PASSWORD = 'fCdEg979I-W.gUx-teDr'
+SAMBA_USER_ID = 'Luigi'
+SAMBA_USER_PASSWORD = 'Apple123'
 SAMBA_SHARED_FOLDER_NAME = 'NGS_Data'
-SAMBA_REMOTE_SERVER_NAME = 'quibitka'
+SAMBA_REMOTE_SERVER_NAME = 'LUIGI-PC'
 SAMBA_NTLM_USED = True
-SAMBA_IP_SERVER = '172.21.7.11'
-SAMBA_PORT_SERVER = '445'
+SAMBA_IP_SERVER = '192.168.1.3'
+SAMBA_PORT_SERVER = '139'
+
+################### SAMBA SETTINGS  ##########################
+## SAMBA settings for connecting quibitka server to fetch the run files
+#SAMBA_USER_ID = 'bioinfocifs'
+#SAMBA_USER_PASSWORD = 'fCdEg979I-W.gUx-teDr'
+#SAMBA_SHARED_FOLDER_NAME = 'NGS_Data'
+#SAMBA_REMOTE_SERVER_NAME = 'quibitka'
+#SAMBA_NTLM_USED = True
+#SAMBA_IP_SERVER = '172.21.7.11'
+#SAMBA_PORT_SERVER = '445'
 ## SAMBA_DOMAIN MUST be empty if domain value is not used for samba connection
 SAMBA_DOMAIN=''
 ##############################################################
@@ -31,12 +41,22 @@ RUN_SAMPLE_SHEET_DIRECTORY = 'wetlab/SampleSheets/'
 
 ##############################################################
 
+################# LOG NAMES #############################
+LOG_NAME_RUN_IN_RECORDED_STATE = 'run_in_recorded'
+LOG_NAME_MISEQ_FETCH_SAMPLE_SHEET = 'miseq_sample_sheet'
+
+################# CONFIG FILE LOG NAME ###############################
+LOGGING_CONFIG_FILE = 'logging_config.ini'
+
+
+##############################################################
+
 ############# ILLUMINA OUTPUT FILES ##########################
 RUN_PARAMETER_NEXTSEQ = 'RunParameters.xml'
 RUN_PARAMETER_MISEQ = 'runParameters.xml'
 RUN_INFO = 'RunInfo.xml'
 RUN_COMPLETION = 'RunCompletionStatus.xml'
-SAMPLE_SHEET = 'samplesheet.csv'
+SAMPLE_SHEET = 'SampleSheet.csv'
 ## sample sheet to be copied on the remote folder 
 COPY_SAMPLE_SHEET_TO_REMOTE = False # boolean constant True if NestSeq 
                                 # sample sheet needs to be copied to remote server
@@ -57,6 +77,8 @@ MISEQ_PROCESSED_RUN_FILEPATH=os.path.join(settings.MEDIA_ROOT,
 
 ##file containing processed or cancelled runs
 PROCESSED_RUN_FILE='processed_run_file'
+
+
 PROCESSED_RUN_FILEPATH=os.path.join(settings.MEDIA_ROOT,
     RUN_TEMP_DIRECTORY,PROCESSED_RUN_FILE)
 

@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -5,38 +6,19 @@ from .wetlab_config import *
 from .models import RunProcess,RunningParameters
 from django_utils.models import Profile
 
-from datetime import datetime
+
 from .utils.stats_calculation import *
-from .utils.parsing_run_info import *
+from .utils.update_run_state import *
 from .utils.sample_sheet_utils import *
-from .utils.wetlab_misc_utilities import timestamp_print,  fetch_samba_dir_filelist
+from .utils.wetlab_misc_utilities import  open_log
 
 import os , sys, traceback,errno
-import logging
-from logging.handlers import RotatingFileHandler
+
 from shutil import rmtree
 
 
 
-def open_log(log_name):
 
-    log_name=os.path.join(settings.BASE_DIR, wetlab_config.LOG_DIRECTORY, log_name)
-    #def create_log ():
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
-    #create the file handler
-    ##TBD ## maxBytes=40000, backupCount=5
-    handler = logging.handlers.RotatingFileHandler(log_name, maxBytes=400000, backupCount=2)
-    ##EndTBD
-    handler.setLevel(logging.DEBUG)
-
-    #create a Logging format
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-    #add the handlers to the logger
-    logger.addHandler(handler)
-
-    return logger
 
 
 def managed_open_file(logger, file_path,mode='r'):
@@ -1103,83 +1085,81 @@ def miseq_check_recorded():
     logger.info('Leaving the process to check state of MiSEQ recorded runs\n\n')
     return
 
+def look_for_miseq_runs ():
+    '''
+    Description:
+        The function is called from crontab to check if there are new  
+        miSeq runs. Function will check for a new folder on the remote
+        server and will fetch the sample sheet to get the run data to 
+        create a new run in recorded state.
+    Functions:
+        
+        handle_run_in_recorded_state # located in utils.parsing_run_info file
+        open_log    # located in utils.wetlab_misc_utilities file
+    Constants:
+        LOG_NAME_MISEQ_FETCH_SAMPLE_SHEET
+        MEDIA_ROOT
+    Variables:
+        logger          # contain the log object 
+        updated_runs    # will contains the run names for the runs that 
+                        were in Recorded state and they have been updated
+                        to Sample Sent state
+    Return:
+        None
+    '''
+    working_path = settings.MEDIA_ROOT
+    os.chdir(working_path)
+    logger=open_log(LOG_NAME_MISEQ_FETCH_SAMPLE_SHEET)
+    logger.info('Start checking for new miSeq runs')
+    new_miseq_runs = search_new_miseq_runs (logger)
+    if new_miseq_runs == "Error" :
+        print('******* ERROR ********')
+        print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        print('When searching for new miSeq runs. Check log for detail information')
+    elif len(new_miseq_runs) > 0:
+        for new_run in new_miseq_runs :
+            logger.info('%s has been stored in database', new_run)
+    else:
+        logger.info ('No new runs have been found ')
+    logger.info('Exiting the proccess for searching new miSeq runs')
 
 
 def update_run_in_recorded_state ():
     '''
     Description:
-        The function is called from crontab to check if NextSeq runs 
-        are in recorded state.
-        web, having 2 main parts:
-            - User form with the information to add a new library
-            - Result information as response of user submit
+        The function is called from crontab to check if there are runs 
+        in recorded state.
+    Functions:
         
-        Save a new library kit name in database if it is not already defined.
-        
-    Input:
-        request     # contains the request dictionary sent by django
-        
+        handle_run_in_recorded_state # located in utils.parsing_run_info file
+        open_log    # located in utils.wetlab_misc_utilities file
     Variables:
-        library_kit_information ={} # returned dictionary with the information
-                                to include in the web page
-        library_kit_objects # contains the object list of the libraryKit model
-        library_kits = [] # It is a list containing the Library Kits names
-        new_library_kit_name # contain the new library name enter by user form
-        library     # it is the new LibraryKit object
-        l_kit       # is the iter variable for library_kit_objects
-        
+        logger          # contain the log object 
+        updated_runs    # will contains the run names for the runs that 
+                        were in Recorded state and they have been updated
+                        to Sample Sent state
     Return:
-        Return the different information depending on the execution:
-        -- Error page in case the library already exists.
-        -- library_kit_information with :
-            -- ['libraries'] 
-            ---['new_library_kit'] in case a new library kit was added.
-    
+        None
     '''
-    '''
-    time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(time_start )
     working_path = settings.MEDIA_ROOT
-    print('Starting the process for recorded_folder ')
-    logger=open_log('check_recorded_folder.log')
-
-    logger.info('Checking first potential MiSeq runs...')
-    try:
-        miseq_check_recorded()
-    except:
-        logger.error('Exception when execution miseq check recorded')
-        ## generic exception handling (exception info).
-        var =traceback.format_exc()
-        time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        timestamp_print ('==>ERROR: exception handling. Time stop= '
-            + time_stop+'.  Traceback info= '+var)
-        logger.error ('==> Exception handling. Time stop= '
-            + time_stop+'.  Traceback info= '+var)
-    '''
-    #finally: #always
-    logger=open_log('check_recorded_folder.log')
-    
     os.chdir(working_path)
-    path=os.path.join(working_path,wetlab_config.RUN_TEMP_DIRECTORY_RECORDED )
-    logger.info('Looking for new runs in directory %s', path)
-
-    dir_wetlab=os.getcwd()
-    logger.debug('check_recorder_folder function is running on directory  %s', dir_wetlab)
+    logger=open_log(LOG_NAME_RUN_IN_RECORDED_STATE)
+    logger.info('Starting to check runs in recorded state')
     # check if there are runs in recorded state
     if RunProcess.objects.filter(runState__exact = 'Recorded').exists():
         logger.info('Processing the run in recorded state.')
-        updated_run=handle_nextseq_run_in_recorded_state(logger)
-        if updated_run == 'Error':
+        updated_runs = handle_runs_in_recorded_state(logger)
+        if updated_runs == 'Error':
             print('******* ERROR ********')
+            print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
             print('When processing run in recorded state. Check log for detail information')
         else:
-            for run_changed in updated_run:
+            for run_changed in updated_runs:
                 logger.info('The run  %s is now on Sample Sent state', run_changed)
             print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
             logger.info('Exiting the check_recorded_folder')
     else:
-        logger.info( 'Exiting the crontab for record_folder. No runs in recorded state have been found')
-
+        logger.info( 'Exiting the crontab for record_folder. There are no runs in recorded state')
 
 
 def check_not_finish_run():

@@ -43,8 +43,7 @@ def register_wetlab(request):
 
 @login_required
 def get_sample_file (request):
-## Called by menu "Run preparation" >> "Upload the run"
-    ## Check user == WetlabManager: if false,  redirect to 'login' page
+    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
         try:
             groups = Group.objects.get(name = WETLAB_MANAGER)
@@ -91,18 +90,15 @@ def get_sample_file (request):
         fs = FileSystemStorage()
         timestr = time.strftime("%Y%m%d-%H%M%S")
         ## including the timestamp to the sample sheet file
-        #
-        # do not need to include the absolute path because django use the MEDIA_ROOT variable defined on settings to upload the file
+        # do not need to include the absolute path because django uses 
+        # the MEDIA_ROOT variable defined on settings to upload the file
         file_name=str(wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY
-                     + split_filename.group(1)
-                     + timestr
-                     + ext_file)
+                     + split_filename.group(1)  + timestr + ext_file)
         filename = fs.save(file_name,  myfile)
         uploaded_file_url = fs.url(filename)
 
         ### add the document directory to read the csv file
         stored_file = os.path.join(settings.MEDIA_ROOT, file_name)
-        #
 
         ## Fetch the experiment name and the library name from the sample sheet file
         run_name, index_library_name = get_experiment_library_name(stored_file)
@@ -110,71 +106,90 @@ def get_sample_file (request):
             ## define an unique value for the run name until the real value is get from the FORM
             run_name = timestr
 
-        ## CHECK that runName is not already used in the database.
+        ## Check that runName is not already used in the database.
         ## Error page is showed if runName is already  defined
-        #
-        error_form_message =check_run_name_free_to_use(run_name)
-        if error_form_message != 'Free':
-            return render (
-                request,'iSkyLIMS_wetlab/error_page.html',
-                {'content':error_form_message})
+        if (RunProcess.objects.filter(runName = run_name)).exists():
+            if RunProcess.objects.filter(runName = run_name, runState__exact ='Pre-Recorded'):
+                ## Delete the Sample Sheet file and the row in database
+                delete_run = RunProcess.objects.filter(runName = run_name, runState__exact ='Pre-Recorded')
+                sample_sheet_file = str(delete_run[0].sampleSheet)
+                #import pdb; pdb.set_trace()
+                full_path_sample_sheet_file = os.path.join(settings.MEDIA_ROOT, sample_sheet_file)
+                os.remove(full_path_sample_sheet_file)
+                delete_run[0].delete()
+            else:
+                return render (request,'iSkyLIMS_wetlab/error_page.html', 
+                    {'content':['Run Name is already used. ',
+                        'Run Name must be unique in database.',' ',
+                        'ADVICE:','Change the value in the Sample Sheet  file ']})
 
-
-
-        ## Fetch from the Sample Sheet file the projects included in the run and the user.
-        ## CHECK if not project/description colunms are found
-        ## Error page is show if not project/description colunms are found
-        error_form_message= check_run_projects_in_samplesheet(stored_file)
-        if error_form_message != 'OK_projects_samplesheet':
-            ## delete sample sheet file
-            fs.delete(file_name)
-            return render (
-                request,'iSkyLIMS_wetlab/error_page.html',
-                {'content':error_form_message})
-
-
-        ## CHECK if the users are already defined on database.
-        ## Error page is showed if users are not defined on database
-        error_form_message=check_run_users_definition(stored_file)
-        if error_form_message != 'OK_users':
-            ## delete sample sheet file before showing the error page
-            fs.delete(file_name)
-
-            return render (
-                request,'iSkyLIMS_wetlab/error_page.html',
-                {'content':error_form_message})
-
-
-
-        ## CHECK if the projects are already defined on database.
-        ## Error page is shown if projects are already defined on database
-        #
+        ## Fetch from the Sample Sheet file the projects included in 
+        ## the run and the user. Error page is showed if not project/description 
+        ## colunms are found
         project_list=get_projects_in_run(stored_file)
 
-        error_form_message=check_run_projects_definition(project_list)
-        if error_form_message!= 'OK_projects_db':
+        if len (project_list) == 0 :
+            ## delete sample sheet file
+            fs.delete(file_name)
+            return render (request,'iSkyLIMS_wetlab/error_page.html', 
+                {'content':['Sample Sheet does not contain "Sample project" and/or "Description" fields',
+                    '','ADVICE:','Check that csv file generated by Illumina Experient Manager (IEM) includes these columns']})
+                    
+        ## Check if the users are already defined on database. 
+        ## Error page is showed if users are not defined on database
+        user_not_defined=[]
+        for key, val  in project_list.items():
+            if ( not User.objects.filter(username__icontains = val).exists()):
+                user_not_defined.append(val)
+        if (len(user_not_defined)>0):
+            if (len(user_not_defined)>1):
+                head_text='The following users are not defined in database:'
+            else:
+                head_text='The following user is not defined in database:'
+            ## convert the list into string to display the user names on error page
+            display_user= ' ,  '.join(user_not_defined)
             ## delete sample sheet file before showing the error page
             fs.delete(file_name)
-            return render (
-                request,'iSkyLIMS_wetlab/error_page.html',
-                {'content':error_form_message})
 
+            return render (request,'iSkyLIMS_wetlab/error_page.html', 
+                {'content':[ head_text,'', display_user,'',
+                    'Researcher names must be installed in database before uploading the Sample sheet']})
+        ## Check if the projects are already defined on database.
+        ## Error page is showed if projects are already defined on database
 
+        project_already_defined=[]
+        for key, val  in project_list.items():
+            # check if project was already saved in database in Not Started State.
+            # if found delete the projects, because the previous attempt to complete the run was unsuccessful
+            if ( Projects.objects.filter(projectName__icontains = key).exists()):
+                if ( Projects.objects.filter(projectName__icontains = key, procState__exact = 'Not Started').exists()):
+                    delete_project = Projects.objects.filter(projectName__icontains = key , procState__exact = 'Not Started')
+                    delete_project[0].delete()
+                else:
+                    project_already_defined.append(key)
+        if (len(project_already_defined)>0):
+            if (len(project_already_defined)>1):
+                head_text='The following projects are already defined in database:'
+            else:
+                head_text='The following project is already defined in database:'
+            ## convert the list into string to display the user names on error page
+            display_project= '  '.join(project_already_defined)
+            ## delete sample sheet file before showing the error page
+            fs.delete(file_name)
+            return render (request,'iSkyLIMS_wetlab/error_page.html', 
+                {'content':[ head_text,'', display_project,'',
+                    'Project names must be unique','', 'ADVICE:',
+                    'Edit the Sample Sheet file to correct this error']})
+        ##Once the information looks good. it will be stores in runProcess and projects table
 
-        ## Once the information looks good. it will be stores in runProcess and projects table
         ## store data in runProcess table, run is in pre-recorded state
-
-        #
         center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
         center_requested_by = Center.objects.get(pk = center_requested_id)
-        #
-        run_proc_data = RunProcess(
-            runName=run_name,sampleSheet= file_name, runState='Pre-Recorded',
-            centerRequestedBy = center_requested_by)
+        run_proc_data = RunProcess(runName=run_name,sampleSheet= file_name, runState='Pre-Recorded', centerRequestedBy = center_requested_by)
         run_proc_data.save()
         experiment_name = '' if run_name == timestr else run_name
 
-        ## create new project records based on the project involved in the run and
+        ## create new project tables based on the project involved in the run and
         ## include the project information in projects variable to build the new FORM
 
         run_info_values ={}
@@ -188,13 +203,13 @@ def get_sample_file (request):
         run_info_values['projects_user'] = projects
         run_info_values['runname']= run_name
         ## Get the list of the library kit used (libraryKit)
-        #
+        #import pdb; pdb.set_trace()
         used_libraries = []
         list_libraries = LibraryKit.objects.order_by().values_list('libraryName', flat=True)
         run_info_values['used_libraryKit'] =  list_libraries
 
         ## displays the list of projects and the user names found on Sample Sheet
-        return render(request, 'iSkyLIMS_wetlab/getSampleSheet.html', {'get_user_names': run_info_values })
+    return render(request, 'iSkyLIMS_wetlab/getSampleSheet.html', {'get_user_names': run_info_values })
 
 
     elif request.method=='POST' and (request.POST['action']=='displayResult'):

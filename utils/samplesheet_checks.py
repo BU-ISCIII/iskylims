@@ -5,35 +5,7 @@ import pdb
 
 from django.conf import settings
 from .sample_convertion import get_projects_in_run
-from .wetlab_misc_utilities import timestamp_print
 
-def check_run_name_free_to_use(run_name):
-    ## Function checks whether run_name is already used in the database.
-    ## Error page is shown if run_name is already  defined
-    ##
-
-    timestamp_print('(experiment) Run name: '+run_name+'\n'
-        +'Starting the process for check_run_name_free_to_use()')
-    run_name_free_result='KO in check_run_name_free_to_use()'
-    if (RunProcess.objects.filter(runName = run_name)).exists():
-        if RunProcess.objects.filter(runName = run_name, runState__exact ='Pre-Recorded'):
-            ## Delete the sample sheet file and the row in database
-            delete_run = RunProcess.objects.filter(runName = run_name, runState__exact ='Pre-Recorded')
-            sample_sheet_file = str(delete_run[0].sampleSheet)
-            full_path_sample_sheet_file = os.path.join(settings.MEDIA_ROOT, sample_sheet_file)
-            os.remove(full_path_sample_sheet_file)
-            delete_run[0].delete()
-            run_name_free_result='Free'
-        else:#runState != 'Pre-Recorded'
-            run_name_free_result=['Run Name is already used. ',
-                                  'Run Name must be unique in database.', ' ',
-                                  'ADVICE:',
-                                  'Change the value in the Sample Sheet  file ']
-    else: # run_name is new
-        run_name_free_result='Free'
-
-    timestamp_print('Leaving check_run_name_free_to_use(). Returned value= '+str(run_name_free_result))
-    return run_name_free_result
 
 
 
@@ -41,10 +13,6 @@ def check_run_projects_in_samplesheet(samplesheet):
     ## Check that there are projects with researchers  declared within the run
 
     project_list=get_projects_in_run(samplesheet)
-    timestamp_print('Project_list= '+str(project_list)+'\n'
-        +'Starting the process for check_run_projects_in_samplesheet()')
-    message_output='KO in check_run_projects_in_samplesheet'
-
     if len (project_list) == 0 :
         message_output=[
             'Sample Sheet does not contain "Sample project" and/or "Description" fields',

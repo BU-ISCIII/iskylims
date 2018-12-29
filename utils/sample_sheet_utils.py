@@ -13,7 +13,7 @@ from django.conf import settings
 from iSkyLIMS_wetlab import wetlab_config
 from iSkyLIMS_wetlab.models import *
 
-from .wetlab_misc_utilities import timestamp_print
+#from .wetlab_misc_utilities import timestamp_print
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
@@ -405,12 +405,11 @@ def check_run_projects_in_samplesheet(samplesheet):
 
 
 def check_run_users_definition(samplesheet):
+    
     ## CHECK if the users are already defined in database.
     message_output='KO in check_run_users_definition'
     user_not_defined=[]
     project_list=get_projects_in_run(samplesheet)
-    timestamp_print('Project_list= '+str(project_list)+'\n'
-        +'Starting the process for check_run_users_definition()')
 
     for key, val  in project_list.items():
         if ( not User.objects.filter(username__icontains = val).exists()):

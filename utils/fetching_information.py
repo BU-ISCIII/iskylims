@@ -8,8 +8,7 @@ from django.contrib.auth.models import Group
 
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import RUN_IMAGES_DIRECTORY, WETLAB_MANAGER
-from .parsing_run_info import get_machine_lanes
-from .wetlab_misc_utilities import normalized_data
+from .wetlab_misc_utilities import normalized_data, get_machine_lanes
 from .stats_graphics import *
 
 def get_information_run(run_name_found,run_id):
