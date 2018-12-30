@@ -12,8 +12,8 @@ from .interop_statistics import *
 from smb.SMBConnection import SMBConnection
 from iSkyLIMS_wetlab import wetlab_config
 from iSkyLIMS_drylab.models import Machines, Platform
-from .wetlab_misc_utilities import open_samba_connection , logging_exception_errors
-from .wetlab_misc_utilities import get_experiment_library_name, get_projects_in_run
+from .wetlab_misc_utilities import open_samba_connection , logging_exception_errors, logging_errors
+from .sample_sheet_utils import get_experiment_library_name, get_projects_in_run
 
 from django.conf import settings
 
@@ -352,27 +352,75 @@ def fetch_run_start_date_from_run_info (l_run_parameter):
             return runStartDate.group(1)
     return ''
 
+def save_new_miseq_run (sample_sheet, logger) :
+    '''
+    Description:
+        The function will get the sample sheet information and will 
+        save the information in database by creating a new miseq run and
+        new projects.
+        The function will move the sample sheet from the temporary folder
+        to the designed folder for all sample sheets.
+    Input:
+        sample_sheet  # full path for smaple sheet file
+        logger # log object for logging 
+    Functions:
+        get_experiment_library_name # located in utils.sample_sheet_utils
+        get_projects_in_run # located in utils.sample_sheet_utils
+        
+    Constants:
+        
+    Variables:
+        l_sample_sheet  # full path for storing sample sheet file on 
+                        tempary local folder
+        s_sample_sheet  # full path for remote sample sheet file
+        processed_run_file # path
+    '''
+    
+    
+    ## store data in runProcess table, run is in pre-recorded state
+        center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
+        center_requested_by = Center.objects.get(pk = center_requested_id)
+        run_proc_data = RunProcess(runName=run_name,sampleSheet= file_name, runState='Pre-Recorded', centerRequestedBy = center_requested_by)
+        run_proc_data.save()
+        experiment_name = '' if run_name == timestr else run_name
+
+        ## create new project tables based on the project involved in the run and
+        ## include the project information in projects variable to build the new FORM
+
+        run_info_values ={}
+        run_info_values['experiment_name'] = experiment_name
+        run_info_values['index_library_name'] = index_library_name
+        for key, val  in project_list.items():
+            userid=User.objects.get(username__exact = val)
+            p_data=Projects(runprocess_id=RunProcess.objects.get(runName =run_name), projectName=key, user_id=userid)
+            p_data.save()
+            projects.append([key, val])
+    
+    
+    return False
+
 def validate_sample_sheet (sample_sheet, logger):
     '''
     Description:
         The function get the sample sheet file and will make some chekings
-        to validate the file
-        .
+        to validate the file.
     Input:
         sample_sheet  # full path for smaple sheet file
         logger          # log object 
     Functions:
         get_experiment_library_name # located in utils.sample_sheet_utils
         get_projects_in_run # located in utils.sample_sheet_utils
+        logging_errors      # located in utils.wetlab_misc_utilities
     Variable:
         projects_users  # dictionary containing projects and user owner
         experiment_name # contains the experiment name from the sample sheet
         library_name  # contains the library name from the sample sheet
     Return:
-        new runs that have been found
+        True if all checking are successful False if a check fails
     '''
-    logger,debug('Executing the function validate_sample_sheet' ) 
+    logger.debug('Executing the function validate_sample_sheet' ) 
     # get experiment name
+    #import pdb; pdb.set_trace()
     experiment_name, library_name = get_experiment_library_name (sample_sheet)
     # check if experiment name is already used in the system
     if experiment_name != '' :
@@ -381,26 +429,32 @@ def validate_sample_sheet (sample_sheet, logger):
             logger.debug('Exiting the function validate sample_sheet')
             return False
     else:
-        logger.warning('Experiment name is empty')
-        logger.warning('Exiting the function validate sample_sheet')
+        string_message ='Experiment name is empty'
+        logging_errors(logger, string_message)
+        logger.debug('Exiting the function validate sample_sheet')
         return False
             
     # get the projects and user owner form sample sheet
     projects_users = get_projects_in_run(sample_sheet)
+    if len(projects_users) == 0 :
+        logging_errors(logger, 'No projects have been found ')
+        logger.debug('Exiting the function validate sample_sheet')
+        return False
     for project in projects_users.keys() :
         if Projects.objects.filter(projectName__exact = project).exists():
-            logger.warning('project name %s , already been used', project)
+            string_message = 'project name %s , already been used ' + project
+            logging_errors(logger, string_message)
             logger.debug('Exiting the function validate sample_sheet')
             return False
     for user in projects_users.values():
-        if User.objects.filter(projectName__exact = project).exists():
-            logger.warning('project name %s , already been used', project)
+        if ( not User.objects.filter(username__icontains = user).exists()):
+            string_message = 'user name ' +user  +' is not defined in the system'
+            logging_errors(logger, string_message)
             logger.debug('Exiting the function validate sample_sheet')
             return False
-            
         
-    logger,debug('Executing the function validate_sample_sheet' ) 
-    return False
+    logger.debug('Exiting the function validate_sample_sheet' ) 
+    return True
 
 def get_new_runs_on_remote_server (processed_runs, conn, shared_folder, logger):
     '''
@@ -487,6 +541,7 @@ def search_new_miseq_runs (logger):
         logger # log object for logging 
     Functions:
         open_samba_connection # located in utils.wetlab_misc_utilities.py 
+        get_new_runs_on_remote_server # located in this file
         
     Constants:
         
@@ -508,13 +563,12 @@ def search_new_miseq_runs (logger):
         logging_exception_errors(logger, e, string_message)
         return 'Error'
 
-    new_runs = get_new_runs_on_remote_server (processed_runs, conn, wetlab_config.SAMBA_SHARED_FOLDER_NAME, logger)
-    
+    new_runs = get_new_runs_on_remote_server (processed_runs, conn, 
+                        wetlab_config.SAMBA_SHARED_FOLDER_NAME, logger)
     if len (new_runs) > 0 :
         for new_run in new_runs :
             l_sample_sheet = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.SAMPLE_SHEET)
             s_sample_sheet = os.path.join(new_run, wetlab_config.SAMPLE_SHEET)
-            #import pdb; pdb.set_trace()
             with open(l_sample_sheet ,'wb') as s_sheet_fp :
                 try:
                     conn.retrieveFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME, s_sample_sheet, s_sheet_fp)
@@ -523,11 +577,13 @@ def search_new_miseq_runs (logger):
                     string_message = 'Unable to fetch ' + new_run + '/SampleShhet.csv'
                     logging_exception_errors(logger, e, string_message)
                     continue
+            
             if validate_sample_sheet (l_sample_sheet, logger) :
                 logger.info('Successful sample sheet checking for folder %s ', new_run)
+                
             else:
                 continue
-        
+            
     else:
         logger.info('No found new run folders on the remote server')
         return ''

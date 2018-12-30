@@ -98,6 +98,7 @@ def normalized_data (set_data, all_data) :
     return normalized_set_data, normalized_all_data
 
 def get_machine_lanes(run_id):
+    from iSkyLIMS_wetlab.models import RunProcess
     number_of_lanes = RunProcess.objects.get(pk=run_id).sequencerModel.get_number_of_lanes()
     return int(number_of_lanes)
 
@@ -108,4 +109,10 @@ def logging_exception_errors(logger, error, string_text):
     logger.error('-----------------    END ERROR   --------------')
     return ''
 
+def logging_errors(logger, string_text):
+    logger.error('-----------------    ERROR   ------------------')
+    logger.error(string_text )
+    #logger.error('Showing traceback: ',  exc_info=True)
+    logger.error('-----------------    END ERROR   --------------')
+    return ''
 

@@ -209,7 +209,7 @@ def get_sample_file (request):
         run_info_values['used_libraryKit'] =  list_libraries
 
         ## displays the list of projects and the user names found on Sample Sheet
-    return render(request, 'iSkyLIMS_wetlab/getSampleSheet.html', {'get_user_names': run_info_values })
+        return render(request, 'iSkyLIMS_wetlab/getSampleSheet.html', {'get_user_names': run_info_values })
 
 
     elif request.method=='POST' and (request.POST['action']=='displayResult'):
