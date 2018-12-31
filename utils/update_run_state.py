@@ -370,33 +370,51 @@ def save_new_miseq_run (sample_sheet, logger) :
     Constants:
         
     Variables:
-        l_sample_sheet  # full path for storing sample sheet file on 
+        experiment_name # 
+        center_requested_by # key for the center requested on Center object
+        library_name # 
+        projects_users # dictionary contains projects and users
+        new_sample_sheet_file # sample sheet path on the final destination
+        new_sample_sheet_name # sample sheet name including timestamp
+        sample_sheet  # full path for storing sample sheet file on 
                         tempary local folder
         s_sample_sheet  # full path for remote sample sheet file
-        processed_run_file # path
+        timestr     # present time for adding to sample sheet name
     '''
+    logger.debug('Executing the function save_new_miseq_run' )
+    experiment_name, library_name = get_experiment_library_name (sample_sheet)
     
-    
+    projects_users = get_projects_in_run(sample_sheet)
+    import pdb; pdb.set_trace()
+    now = datetime.datetime.now()
+    timestr = now.strftime("%Y%m%d-%H%M%S.%f")[:-3]
+    new_sample_sheet_name = 'SampleSheet' + timestr + '.csv'
+    new_sample_sheet_file = os.path.join (settings.MEDIA_ROOT, wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY, new_sample_sheet_name)
+    logging.debug('new shample sheet name %s', new_sample_sheet_file)
+    ## move sample sheet to final folder
+    os.rename(sample_sheet, new_sample_sheet_file)
     ## store data in runProcess table, run is in pre-recorded state
-        center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
-        center_requested_by = Center.objects.get(pk = center_requested_id)
-        run_proc_data = RunProcess(runName=run_name,sampleSheet= file_name, runState='Pre-Recorded', centerRequestedBy = center_requested_by)
-        run_proc_data.save()
-        experiment_name = '' if run_name == timestr else run_name
+    #center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
+    center_requested_id  = 2 # use by default the CNM
+    ## create a new entry on runProcess database
+    center_requested_by = Center.objects.get(pk = center_requested_id)
+    run_proc_data = RunProcess(runName=experiment_name,sampleSheet= new_sample_sheet_name, 
+                            runState='Recorded', centerRequestedBy = center_requested_by)
+    #run_proc_data.save()
+    logger.info('Updated runProccess table with the new experiment name found')
+    ## create new project tables based on the project involved
+    run_info_values ={}
 
-        ## create new project tables based on the project involved in the run and
-        ## include the project information in projects variable to build the new FORM
-
-        run_info_values ={}
-        run_info_values['experiment_name'] = experiment_name
-        run_info_values['index_library_name'] = index_library_name
-        for key, val  in project_list.items():
-            userid=User.objects.get(username__exact = val)
-            p_data=Projects(runprocess_id=RunProcess.objects.get(runName =run_name), projectName=key, user_id=userid)
-            p_data.save()
-            projects.append([key, val])
+    for project, user  in projects_users.items():
+        userid=User.objects.get(username__exact = user)
+        p_data=Projects(runprocess_id=RunProcess.objects.get(runName =experiment_name), 
+                        projectName=project, user_id=userid, procState ='Recorded',
+                        baseSpaceFile = new_sample_sheet_name, 
+                        LibraryKit_id = '1', libraryKit = library_name)
+        #p_data.save()
+    logger.info('Updated Projects table with the new projects found')
     
-    
+    logger.debug('Exiting the function save_new_miseq_run' )
     return False
 
 def validate_sample_sheet (sample_sheet, logger):
@@ -420,7 +438,6 @@ def validate_sample_sheet (sample_sheet, logger):
     '''
     logger.debug('Executing the function validate_sample_sheet' ) 
     # get experiment name
-    #import pdb; pdb.set_trace()
     experiment_name, library_name = get_experiment_library_name (sample_sheet)
     # check if experiment name is already used in the system
     if experiment_name != '' :
@@ -580,7 +597,7 @@ def search_new_miseq_runs (logger):
             
             if validate_sample_sheet (l_sample_sheet, logger) :
                 logger.info('Successful sample sheet checking for folder %s ', new_run)
-                
+                save_new_miseq_run(l_sample_sheet, logger)
             else:
                 continue
             
