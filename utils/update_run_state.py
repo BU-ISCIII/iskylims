@@ -379,6 +379,8 @@ def save_new_miseq_run (sample_sheet, logger) :
         DEFAULT_CENTER
         DEFAULT_LIBRARY_KIT
     Variables:
+        base_space_file # path formed with django settings.MEDIA_URL and
+                    sample_sheet_on_database
         experiment_name # 
         center_requested_by # Center object for run requested center
         library_name # 
@@ -426,12 +428,13 @@ def save_new_miseq_run (sample_sheet, logger) :
         logger_errors(logger, string_message)
         logger.info('Using the first library kit defined in database')
         library_kit = LibraryKit.objects.all().first()
+    base_space_file = os.path.join(settings.MEDIA_URL.replace('/',''), sample_sheet_on_database)
 
     for project, user  in projects_users.items():
         userid=User.objects.get(username__exact = user)
         p_data=Projects(runprocess_id=RunProcess.objects.get(runName =experiment_name), 
                         projectName=project, user_id=userid, procState ='Recorded',
-                        baseSpaceFile = new_sample_sheet_name, 
+                        baseSpaceFile = base_space_file, 
                         LibraryKit_id = library_kit, libraryKit = library_name)
         p_data.save()
     logger.info('Updated Projects table with the new projects found')
