@@ -23,7 +23,7 @@ from iSkyLIMS_wetlab import wetlab_config
 from .utils.sample_sheet_utils import *
 from .utils.stats_calculation import *
 from .utils.stats_graphics import *
-from .utils.email_features import *
+from .utils.wetlab_misc_utilities import *
 from .utils.library_kits import *
 from .utils.fetching_information import *
 #from .utils.samplesheet_checks import *
@@ -2789,17 +2789,7 @@ def quarter_report (request) :
     else:
         return render (request, 'iSkyLIMS_wetlab/QuarterReport.html')
 
-
-def email (request):
-    subject = 'iSkyLIMS te desea una Feliz Navidad'
-    body_message = 'Feliz Navidad Sara. Ya enviamos correo desde iSkyLIMS ;-)'
-    from_user = 'bioinformatica@isciii.es'
-    #to_user = ['luis.chapado@amgitt.es']
-    to_user = ['smonzon@isciii.es']
-    request_send_mail (subject, body_message, from_user, to_user)
-    #
-    return render (request,'iSkyLIMS_wetlab/info_page.html', {'content':['Your email was sent to ', to_user, ' with the following message ', body_message]})
-
+'''
 def open_samba_connection ():
 
     from smb.SMBConnection import SMBConnection
@@ -2808,7 +2798,7 @@ def open_samba_connection ():
     ##conn.connect('172.21.7.11', 445)
     conn.connect(wetlab_config.SAMBA_IP_SERVER, 445)
     return conn
-
+'''
 def get_size_dir (directory, conn, ):
     count_file_size = 0
     file_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME, directory)

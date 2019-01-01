@@ -8,7 +8,16 @@ import os, errno
 from smb.SMBConnection import SMBConnection
 from django.conf import settings
 from iSkyLIMS_wetlab import wetlab_config
+from django.core.mail import send_mail
 
+def send_error_email_to_user ( subject, body_message, from_user, to_user):
+    '''
+    Description:
+        Send an email to users  defined in the user list "to_user"
+    Input:
+    '''
+
+    send_mail (subject, body_message, from_user, to_user)
 
 def open_samba_connection():
     '''

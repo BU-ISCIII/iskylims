@@ -6,7 +6,8 @@ import time
 import shutil
 import locale
 import datetime, time
-from  ..models import *
+#from  ..models import *
+from iSkyLIMS_wetlab.models import *
 from .interop_statistics import *
 
 from smb.SMBConnection import SMBConnection
@@ -16,6 +17,7 @@ from .wetlab_misc_utilities import open_samba_connection , logging_exception_err
 from .sample_sheet_utils import get_experiment_library_name, get_projects_in_run
 
 from django.conf import settings
+from django_utils.models import Center
 
 
 def get_size_dir (directory, conn, logger):
@@ -366,52 +368,72 @@ def save_new_miseq_run (sample_sheet, logger) :
     Functions:
         get_experiment_library_name # located in utils.sample_sheet_utils
         get_projects_in_run # located in utils.sample_sheet_utils
-        
+        logger_errors   # logging information in log file
+    Imports:
+        Center # from django_utils.models
+        datetime # to fetch present time in miliseconds
+        os      # file utilities
     Constants:
-        
+        MEDIA_ROOT  
+        RUN_SAMPLE_SHEET_DIRECTORY
+        DEFAULT_CENTER
+        DEFAULT_LIBRARY_KIT
     Variables:
         experiment_name # 
-        center_requested_by # key for the center requested on Center object
+        center_requested_by # Center object for run requested center
         library_name # 
         projects_users # dictionary contains projects and users
         new_sample_sheet_file # sample sheet path on the final destination
         new_sample_sheet_name # sample sheet name including timestamp
         sample_sheet  # full path for storing sample sheet file on 
-                        tempary local folder
+                        tempary local folder new_sample_sheet_name
+        sample_sheet_on_database # contains the folder path where all
+                        are stored and the 
         s_sample_sheet  # full path for remote sample sheet file
         timestr     # present time for adding to sample sheet name
     '''
     logger.debug('Executing the function save_new_miseq_run' )
     experiment_name, library_name = get_experiment_library_name (sample_sheet)
-    
     projects_users = get_projects_in_run(sample_sheet)
-    import pdb; pdb.set_trace()
+    
     now = datetime.datetime.now()
     timestr = now.strftime("%Y%m%d-%H%M%S.%f")[:-3]
     new_sample_sheet_name = 'SampleSheet' + timestr + '.csv'
     new_sample_sheet_file = os.path.join (settings.MEDIA_ROOT, wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY, new_sample_sheet_name)
-    logging.debug('new shample sheet name %s', new_sample_sheet_file)
+    logger.debug('new sample sheet name %s', new_sample_sheet_file)
+    sample_sheet_on_database = os.path.join(wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY, new_sample_sheet_name)
     ## move sample sheet to final folder
     os.rename(sample_sheet, new_sample_sheet_file)
-    ## store data in runProcess table, run is in pre-recorded state
-    #center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
-    center_requested_id  = 2 # use by default the CNM
+    #import pdb; pdb.set_trace()
     ## create a new entry on runProcess database
-    center_requested_by = Center.objects.get(pk = center_requested_id)
-    run_proc_data = RunProcess(runName=experiment_name,sampleSheet= new_sample_sheet_name, 
+    if Center.objects.filter(centerAbbr__exact = wetlab_config.DEFAULT_CENTER).exists():
+        center_requested_by = Center.objects.get(centerAbbr__exact = wetlab_config.DEFAULT_CENTER)
+    else:
+        string_message = 'The requested center ' +  wetlab_config.DEFAULT_CENTER + ' defined in config wetlab file does not exist'
+        logger_errors(logger, string_message)
+        logger.info('Using the first center defined in database')
+        center_requested_by = Center.objects.all().first()
+        
+    run_proc_data = RunProcess(runName=experiment_name,sampleSheet= sample_sheet_on_database, 
                             runState='Recorded', centerRequestedBy = center_requested_by)
-    #run_proc_data.save()
+    run_proc_data.save()
     logger.info('Updated runProccess table with the new experiment name found')
-    ## create new project tables based on the project involved
-    run_info_values ={}
+
+    if LibraryKit.objects.filter(libraryName__exact = wetlab_config.DEFAULT_LIBRARY_KIT).exists():
+        library_kit = LibraryKit.objects.get(libraryName__exact = wetlab_config.DEFAULT_LIBRARY_KIT)
+    else:
+        string_message = 'The default library ' +  wetlab_config.DEFAULT_LIBRARY_KIT + ' defined in config wetlab file does not exist'
+        logger_errors(logger, string_message)
+        logger.info('Using the first library kit defined in database')
+        library_kit = LibraryKit.objects.all().first()
 
     for project, user  in projects_users.items():
         userid=User.objects.get(username__exact = user)
         p_data=Projects(runprocess_id=RunProcess.objects.get(runName =experiment_name), 
                         projectName=project, user_id=userid, procState ='Recorded',
                         baseSpaceFile = new_sample_sheet_name, 
-                        LibraryKit_id = '1', libraryKit = library_name)
-        #p_data.save()
+                        LibraryKit_id = library_kit, libraryKit = library_name)
+        p_data.save()
     logger.info('Updated Projects table with the new projects found')
     
     logger.debug('Exiting the function save_new_miseq_run' )
@@ -591,7 +613,7 @@ def search_new_miseq_runs (logger):
                     conn.retrieveFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME, s_sample_sheet, s_sheet_fp)
                     logger.info('Retrieving the remote %s/SampleSheet.csv', new_run)
                 except Exception as e:
-                    string_message = 'Unable to fetch ' + new_run + '/SampleShhet.csv'
+                    string_message = 'Unable to fetch ' + new_run + '/SampleSheet.csv'
                     logging_exception_errors(logger, e, string_message)
                     continue
             

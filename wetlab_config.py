@@ -28,6 +28,13 @@ SAMBA_PORT_SERVER = '139'
 SAMBA_DOMAIN=''
 ##############################################################
 
+################### EMAIL SETTINGS  ##########################
+SENT_EMAIL_ON_ERROR = False
+TO_EMAIL_ADDRESS = ['bioinfo@isciii.es']
+FROM_EMAIL_ADDRESS = 'iSkyLIMS@isciii.es'
+##############################################################
+
+
 ############## FOLDER SETTINGS ###############################
 ## Directory settings for processing the run data files ######
 ## Relative path from settings.BASE_DIR
@@ -51,6 +58,10 @@ LOGGING_CONFIG_FILE = 'logging_config.ini'
 
 ##############################################################
 
+## FILE NAME CONTAINING THE PROCESSED RUNS ###################
+PROCESSED_RUN_FILE='processed_run_file'
+##############################################################
+
 ############# ILLUMINA OUTPUT FILES ##########################
 RUN_PARAMETER_NEXTSEQ = 'RunParameters.xml'
 RUN_PARAMETER_MISEQ = 'runParameters.xml'
@@ -70,13 +81,20 @@ EXPERIMENT_NAME_TAG = 'ExperimentName'
 APPLICATION_NAME_TAG = 'ApplicationName'
 ##############################################################
 
+############ DEFAULT VALUES FOR MISEQ SAMPLE SHEET  ##########
+DEFAULT_LIBRARY_KIT = 'Unknown'
+DEFAULT_CENTER = 'CNM'
+
+##############################################################
 ## 
+
+
+'''
 MISEQ_PROCESSED_RUN_FILE='miseq_processed_run_file'
 MISEQ_PROCESSED_RUN_FILEPATH=os.path.join(settings.MEDIA_ROOT,
     RUN_TEMP_DIRECTORY,MISEQ_PROCESSED_RUN_FILE)
 
-##file containing processed or cancelled runs
-PROCESSED_RUN_FILE='processed_run_file'
+
 
 
 PROCESSED_RUN_FILEPATH=os.path.join(settings.MEDIA_ROOT,
@@ -93,7 +111,7 @@ RECORDED_MISEQRUNS_FILE='recorded_miseq_runs'
 RECORDED_MISEQRUNS_FILEPATH=os.path.join(settings.MEDIA_ROOT,
     RUN_TEMP_DIRECTORY,RECORDED_MISEQRUNS_FILE)
 
-
+'''
 
 ## Directory settings for processing the library kits
 ## Relative path from settings.BASE_DIR
