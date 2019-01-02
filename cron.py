@@ -1085,23 +1085,31 @@ def miseq_check_recorded():
     logger.info('Leaving the process to check state of MiSEQ recorded runs\n\n')
     return
 
+
+
+
+
+
 def look_for_miseq_runs ():
     '''
     Description:
-        The function is called from crontab to check if there are new  
-        miSeq runs. Function will check for a new folder on the remote
-        server and will fetch the sample sheet to get the run data to 
-        create a new run in recorded state.
+        The function is called from crontab to find new  miSeq runs.
+         
+        Function uses the search_new_miseq_runs function located on 
+        utils.update_run_state 
+        Under  search_new_miseq_runs functions, sample sheet file is 
+        looking in the folders on remote sever. 
+        If sample sheet file pass all checking the run and its projects
+        will be dumped to database and run is set to Recorded state
     Functions:
-        
-        handle_run_in_recorded_state # located in utils.parsing_run_info file
-        open_log    # located in utils.wetlab_misc_utilities file
+        search_new_miseq_runs # located at utils.update_run_state
+        open_log    # located in utils.wetlab_misc_utilities
     Constants:
         LOG_NAME_MISEQ_FETCH_SAMPLE_SHEET
         MEDIA_ROOT
     Variables:
         logger          # contain the log object 
-        updated_runs    # will contains the run names for the runs that 
+        new_miseq_runs  # will contains the run names for the runs that 
                         were in Recorded state and they have been updated
                         to Sample Sent state
     Return:
@@ -1130,9 +1138,8 @@ def update_run_in_recorded_state ():
         The function is called from crontab to check if there are runs 
         in recorded state.
     Functions:
-        
-        handle_run_in_recorded_state # located in utils.parsing_run_info file
-        open_log    # located in utils.wetlab_misc_utilities file
+        handle_run_in_recorded_state # located in utils.update_run_state
+        open_log    # located in utils.wetlab_misc_utilities
     Variables:
         logger          # contain the log object 
         updated_runs    # will contains the run names for the runs that 
@@ -1157,9 +1164,9 @@ def update_run_in_recorded_state ():
             for run_changed in updated_runs:
                 logger.info('The run  %s is now on Sample Sent state', run_changed)
             print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-            logger.info('Exiting the check_recorded_folder')
+            logger.info('Exiting update_run_in_recorded_state')
     else:
-        logger.info( 'Exiting the crontab for record_folder. There are no runs in recorded state')
+        logger.info( 'Exiting the crontab for record_folder. No runs in recorded state')
 
 
 def check_not_finish_run():

@@ -4,8 +4,9 @@ import datetime
 import logging
 from logging.config import fileConfig
 from logging.handlers import RotatingFileHandler
-import os, errno
+import os, errno, re
 from smb.SMBConnection import SMBConnection
+
 from django.conf import settings
 from iSkyLIMS_wetlab import wetlab_config
 from django.core.mail import send_mail
@@ -16,7 +17,6 @@ def send_error_email_to_user ( subject, body_message, from_user, to_user):
         Send an email to users  defined in the user list "to_user"
     Input:
     '''
-
     send_mail (subject, body_message, from_user, to_user)
 
 def open_samba_connection():
@@ -111,17 +111,98 @@ def get_machine_lanes(run_id):
     number_of_lanes = RunProcess.objects.get(pk=run_id).sequencerModel.get_number_of_lanes()
     return int(number_of_lanes)
 
-def logging_exception_errors(logger, error, string_text):
-    logger.error('-----------------    ERROR   ------------------')
-    logger.error(string_text , error )
-    logger.error('Showing traceback: ',  exc_info=True)
-    logger.error('-----------------    END ERROR   --------------')
-    return ''
 
-def logging_errors(logger, string_text):
+def logging_errors(logger, string_text, showing_traceback):
+    '''
+    Description:
+        The function will log the error information to file.
+        Optional can send an email to inform about the issue
+    Input:
+        logger # contains the logger object 
+        string_text # information text to include in the log
+    Functions:
+        send_error_email_to_user # located on utils.wetlab_misc_utilities
+    Constant:
+        SENT_EMAIL_ON_ERROR 
+    Variables:
+        subject # text to include in the subject email
+    '''
     logger.error('-----------------    ERROR   ------------------')
     logger.error(string_text )
-    #logger.error('Showing traceback: ',  exc_info=True)
+    if showing_traceback :
+        logger.error('Showing traceback: ',  exc_info=True)
     logger.error('-----------------    END ERROR   --------------')
+    if wetlab_config.SENT_EMAIL_ON_ERROR :
+        subject = 'Error found on wetlab'
+        send_error_email_to_user (subject, string_text, FROM_EMAIL_ADDRESS, 
+                                TO_EMAIL_ADDRESS)
     return ''
 
+
+
+def get_miseq_run_cycles (run_parameter_file):
+    '''
+    Description:
+        The function will find the number of cycles for a miseq run
+    Input:
+        logger_name    # contains the logger name that will be included 
+                        in the log file
+    Variables:
+        found_cycles # re object to get the cycle value
+        number_of_cycles # will add the partial number of cycles
+    Return:
+        number_of_cycles 
+    '''
+    number_of_cycles = 0
+    with open (run_parameter_file, 'r') as fh:
+        for line in lines :
+            if '<RunInfoRead' in line :
+                found_cycles = re.search('.*NumCycles="(\d+)".*',line)
+                number_of_cycles += int(found_cycles.group(1))
+    return number_of_cycles
+
+def get_latest_miseq_log(conn, log_folder) :
+    '''
+    Description:
+        The function will find the latest log file for the input folder
+    Input:
+        conn        # samba connection object
+        log_folder  # folder name
+    Constant:
+        RUN_TEMP_DIRECTORY
+    Variables:
+        file_content # text information in the latest log
+        file_remote # file name on the remote server
+        remote_file_list # samba object with the list of files 
+        max_cycle   # Counter with the maximum cycle found 
+        number_of_cycles # will add the partial number of cycles
+    Return:
+        number_of_cycles 
+        file_content
+    '''
+    remote_file_list = conn.listPath( wetlab_config.SAMBA_SHARED_FOLDER_NAME, log_folder)
+    #run_folder = log_folder.split('/')[0]
+    max_cycle = -1
+    for sfh in remote_file_list:
+        if sfh.isDirectory:
+            continue
+        file_remote = sfh.filename
+        # if the run folder has been already process continue searching
+        if file_remote.endswith('*.log') :
+            log_file = re.search('.*_Cycle(\d+)_.*',file_remote)
+            cycle_number = int(log_file.groups(1))
+            if cycle_number > max_cycle :
+                max_cycle = cycle_number
+                latest_log = file_remote
+    temporary_log = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY,'miseq_cycle.log')
+    with open(temporary_log ,'wb') as log_fp :
+        try: # get RunParameter.xml if NextSeq
+            s_latest_log = os.path.join(log_folder,latest_log)
+            conn.retrieveFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME, s_latest_log, log_fp)
+        except Exeption as e :  
+            return 'Error', 'Error' 
+    with open (temporary_log, 'r') as fh :
+        file_content = fh.read()
+    os.remove(temporary_log)
+    
+    return max_cycle, file_content
