@@ -1,20 +1,23 @@
 #!/usr/bin/env python3
 
 import sys, os, re
-import xml.etree.ElementTree as ET
-import time
-import shutil
-import locale
-import datetime, time
-#from  ..models import *
-from iSkyLIMS_wetlab.models import *
-from .interop_statistics import *
+#import xml.etree.ElementTree as ET
+#import shutil
+#import locale
+#import datetime, time
+from iSkyLIMS_wetlab.models import RunProcess
+#from .interop_statistics import *
+import logging
 
-from smb.SMBConnection import SMBConnection
+
 from iSkyLIMS_wetlab import wetlab_config
 from iSkyLIMS_drylab.models import Machines, Platform
-from .wetlab_misc_utilities import open_samba_connection , logging_errors, get_miseq_run_cycles
-from .sample_sheet_utils import get_experiment_library_name, get_projects_in_run
+
+from .run_common_functions import *
+from .miseq_run_functions import handle_miseq_run 
+from .nextseq_run_functions import handle_nextseq_run
+
+#from .sample_sheet_utils import get_experiment_library_name, get_projects_in_run
 
 from django.conf import settings
 from django_utils.models import Center
@@ -53,7 +56,7 @@ def get_size_dir (directory, conn, logger):
 
 
 def get_run_disk_utilization (conn, run_Id_used, run_processing_id, logger):
-        '''
+    '''
     Description:
         Recursive function to get the size of the run directory on the 
         remote server.
@@ -107,120 +110,6 @@ def get_run_disk_utilization (conn, run_Id_used, run_processing_id, logger):
         run_be_updated.save()
         logger.info('End  disk space utilization for runID  %s', run_Id_used)
     logger.debug('Exiting the function get_run_disk_utilization')
-
-
-'''
-def save_miseq_run_info(run_info,run_parameter,run_id,logger):
-## Collecting information from MiSeq run to save it in our database
-    running_data={}
-    image_channel=[]
-    pir=1 #PlannedIndexNread:1 or 2
-    pr=1 #PlannedNRead: 1 or 2
-    #################################################
-    ## parsing RunInfo.xml file
-    #################################################
-    run_data=ET.parse(run_info)
-    run_root=run_data.getroot()
-    logger.info('Processing the MISEQ runInfo.xml file')
-    p_run=run_root[0]
-    running_data['Flowcell']=p_run.find('Flowcell').text
-    running_data['FlowcellLayout']=p_run.find('FlowcellLayout').attrib
-    running_data['ImageChannel']= None #Available in NextSeq but not in MiSeq
-    running_data['ImageDimensions']=None #Available in NextSeq but not in MiSeq
-
-    #################################################
-    ## parsing RunParameter.xml file
-    #################################################
-    logger.info('Processing the MISEQ runParameter.xml file')
-    parameter_data=ET.parse(run_parameter)
-    parameter_data_root=parameter_data.getroot()
-    running_data['RunID']=parameter_data_root.find('RunID').text
-    running_data['ExperimentName']=parameter_data_root.find('ExperimentName').text
-    running_data['RTAVersion']=parameter_data_root.find('RTAVersion').text
-    running_data['SystemSuiteVersion']=None #Available in NextSeq but not in MiSeq
-    running_data['LibraryID']=None #Available in NextSeq but not in MiSeq
-    running_data['Chemistry']=parameter_data_root.find('Chemistry').text
-    running_data['RunStartDate']=parameter_data_root.find('RunStartDate').text
-    running_data['AnalysisWorkflowType']=(parameter_data_root.find('Workflow')).find('Analysis').text
-    logger.debug('running_data information -intermediate!- only'+ str(running_data))
-
-    reads=parameter_data_root.find('Reads')
-    #initialization of expected structure
-    running_data['PlannedIndex1ReadCycles']=0
-    running_data['PlannedIndex2ReadCycles']=0
-    running_data['PlannedRead1Cycles']=0
-    running_data['PlannedRead2Cycles']=0
-
-    for run_info_read in reads.iter('RunInfoRead'):
-        if 'Y'== run_info_read.attrib['IsIndexedRead']:
-            if 1==pir:
-                running_data['PlannedIndex1ReadCycles']=run_info_read.attrib['NumCycles']
-                pir=2
-            else:
-                running_data['PlannedIndex2ReadCycles']=run_info_read.attrib['NumCycles']
-        else:
-            if 1==pr:
-                running_data['PlannedRead1Cycles']=run_info_read.attrib['NumCycles']
-                pr=2
-            else:
-                running_data['PlannedRead2Cycles']=run_info_read.attrib['NumCycles']
-
-
-    running_data['RunManagementType']=parameter_data_root.find('RunManagementType').text
-    running_data['ApplicationVersion']=parameter_data_root.find('Setup').find('ApplicationVersion').text
-    running_data['NumTilesPerSwath']=parameter_data_root.find('Setup').find('NumTilesPerSwath').text
-
-    logger.debug('running_data information for table RunParameters'+ str(running_data))
-    ###########################################
-    ## saving data into database
-    ###########################################
-    logger.info ('Saving to database  the (MiSeq) run id %s', run_id)
-    running_parameters= RunningParameters (runName_id=RunProcess.objects.get(pk=run_id),
-                         RunID=running_data['RunID'],
-                         ExperimentName=running_data['ExperimentName'],
-                         RTAVersion=running_data['RTAVersion'],
-                         SystemSuiteVersion= running_data['SystemSuiteVersion'],
-                         LibraryID= running_data['LibraryID'],
-                         Chemistry= running_data['Chemistry'],
-                         RunStartDate= running_data['RunStartDate'],
-                         AnalysisWorkflowType= running_data['AnalysisWorkflowType'],
-                         RunManagementType= running_data['RunManagementType'],
-                         PlannedRead1Cycles= running_data['PlannedRead1Cycles'],
-                         PlannedRead2Cycles= running_data['PlannedRead2Cycles'],
-                         PlannedIndex1ReadCycles= running_data['PlannedIndex1ReadCycles'],
-                         PlannedIndex2ReadCycles= running_data['PlannedIndex2ReadCycles'],
-                         ApplicationVersion= running_data['ApplicationVersion'],
-                         NumTilesPerSwath= running_data['NumTilesPerSwath'],
-                         ImageChannel= running_data['ImageChannel'],
-                         Flowcell= running_data['Flowcell'],
-                         ImageDimensions= running_data['ImageDimensions'],
-                         FlowcellLayout= running_data['FlowcellLayout'])
-
-    running_parameters.save()
-    ##############################################
-    ## updating the date fetched from the Date tag for run and project
-    ##############################################
-    date = p_run.find('Date').text
-    logger.debug('Found the date that was recorded the Run %s', date)
-    run_date = datetime.datetime.strptime(date, '%y%m%d')
-
-    run_to_be_updated = RunProcess.objects.get(pk=run_id)
-    run_to_be_updated.run_date = run_date
-    logger.debug('run_to_be_updated: '+run_to_be_updated.runName)
-    logger.debug('run_date: '+str(run_to_be_updated.run_date))
-    run_to_be_updated.save()
-    logger.info('Updated the run date for the runProcess table ')
-
-    projects_to_update = Projects.objects.filter(runprocess_id__exact = run_id)
-    for project in projects_to_update :
-        project.project_run_date = run_date
-        project.save()
-        logger.debug('project_to_be_updated: '+project.projectName)
-        logger.debug('project_run_date: '+str(project.project_run_date))
-        logger.info('Updated the project date for the Project table ')
-
-    return
-'''
 
 
 
@@ -528,43 +417,9 @@ def validate_sample_sheet (sample_sheet, logger):
     logger.debug('Exiting the function validate_sample_sheet' ) 
     return True
 
-def get_new_runs_on_remote_server (processed_runs, conn, shared_folder, logger):
-    '''
-    Description:
-        The function fetch the folder names from the remote server and 
-        returns a list containing the folder names that have not been
-        porcessed yet.
-    Input:
-        processed_runs  # full path and name of the file
-        conn # samba connection object
-        shared_folder   # shared folder in the remote server
-        logger          # log object 
-    Variable:
-        new_runs        # list containing the new folder run names
-        run_folder_list  # list of the folder names on remote server
-    Return:
-        new runs that have been found
-    '''
-    logger.debug('Executing the function get_new_runs_on_remote_server' ) 
-    new_runs = []
-    run_folder_list = conn.listPath( shared_folder, '/')
-    for sfh in run_folder_list:
-        if sfh.isDirectory:
-            folder_run = sfh.filename
-            if (folder_run == '.' or folder_run == '..'):
-                continue
-            # if the run folder has been already process continue searching
-            if folder_run in processed_runs:
-                logger.debug('folder run  %s already processed', folder_run)
-                continue
-            else:
-                logger.info ('Found a new run  %s ',folder_run)
-                new_runs.append(folder_run)
-    logger.debug('Exiting the function get_new_runs_on_remote_server' )
-    return new_runs
 
 
-def read_processed_runs_file (processed_run_file, logger) :
+def read_processed_runs_file (processed_run_file) :
     '''
     Description:
         The function reads the file that contains all the processed runs
@@ -578,7 +433,8 @@ def read_processed_runs_file (processed_run_file, logger) :
         Error when file can not be readed
         processed_runs variable for successful file read
     '''
-    logger.debug('Executing the function read_processed_runs_file' )
+    logger = logging.getLogger(__name__)
+    logger.debug('Starting for reading processed run file' )
     w_dir = os.getcwd()
     logger.debug('Folder for fetching the proccess run file is %s', w_dir)
     logger.debug('processed_run_file is %s', processed_run_file)
@@ -590,9 +446,10 @@ def read_processed_runs_file (processed_run_file, logger) :
                 line=line.rstrip()
                 processed_runs.append(line)
         except Exception as e:
-            string_message = 'Unable to open the processed run file.  %s '
-            logging_errors(logger, string_message, True)
-            return 'Error'
+            string_message = 'Unable to open the processed run file. '
+            logging_errors(logger, string_message, True, True)
+            
+            raise
         fh.close()
         logger.info('run processed file have been read')
         logger.debug('Exiting sucessfully the function read_processed_runs_file' )
@@ -602,13 +459,14 @@ def read_processed_runs_file (processed_run_file, logger) :
         return 'Error'
     
 
-def search_new_miseq_runs (logger):
+def search_update_new_runs ():
     '''
     Description:
         The function will check if there are new run folder in the remote
-        server has a sample sheet file that was not processed. 
-        When found it will perform checks on the file to validate it and
-        store a new run in database
+        server.
+        Get the runParameter file to identify if run is NextSeq or miSeq
+        to execute its dedicate handler process.  
+        
     Input:
         logger # log object for logging 
     Functions:
@@ -629,19 +487,135 @@ def search_new_miseq_runs (logger):
         s_sample_sheet  # full path for remote sample sheet file
         processed_run_file # path
     '''
-    handle_new_miseq_run = []
+    logger = logging.getLogger(__name__)
+    logger.debug ('Starting function for searching new runs')
     processed_run_file = os.path.join( wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.PROCESSED_RUN_FILE)
-    processed_runs = read_processed_runs_file (processed_run_file, logger)
-    if processed_runs == 'Error' :
-        return 'Error'
+    processed_runs = read_processed_runs_file (processed_run_file)
+    process_run_file_update = False
     try:
         conn=open_samba_connection()
         logger.info('Sucessfully  SAMBA connection for the process_run_in_recorded_state')
     except Exception as e:
+        string_message = 'Unable to open SAMBA connection for the process search update runs'
+        # raising the exception to stop crontab
+        raise logging_errors(logger, string_message, True)
+    new_runs = get_new_runs_from_remote_server (processed_runs, conn,
+                            wetlab_config.SAMBA_SHARED_FOLDER_NAME)
+    
+    if len (new_runs) > 0 :
+        for new_run in new_runs :
+            l_run_parameter = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_PARAMETER_NEXTSEQ)
+            s_run_parameter = os.path.join(new_run,wetlab_config.RUN_PARAMETER_NEXTSEQ)
+            try:
+               l_run_parameter = fetch_remote_file (conn, new_run, s_run_parameter, l_run_parameter)
+               logger.info('Sucessfully fetch of RunParameter file')
+            except:
+                logger.info('Exception fetched to continue with the next run')
+                continue
+            
+            experiment_name = get_experiment_name_from_file (l_run_parameter)
+            logger.debug('found the experiment name  , %s', experiment_name)
+            if experiment_name == '' :
+                string_message = 'Experiment name for ' + new_run + ' is empty'
+                logging_errors(logger, string_message, False, True)
+                logger.info('Exceptional condition reported on log. Continue with the next run')
+                continue
+            #import pdb; pdb.set_trace()
+            if RunProcess.objects.filter(runName__exact = experiment_name).exclude(runState__exact ='Recorded').exists():
+                # This situation should not occurr. The run_processed file should
+                # have this value. To avoid new iterations with this run 
+                # we update the run process file with this run and continue
+                # with the next item
+                run_state = RunProcess.objects.get(runName__exact = experiment_name).get_state()
+                string_message = 'The run ' + experiment_name + 'is in state ' + run_state + '. Should be in Recorded'
+                logging_errors(logger, string_message, False, False)
+                process_run_file_update = True
+                processed_runs.append(new_run)
+                continue
+            # Run is new or it is in Recorded state. 
+            # Finding out the platform to continue the run processing
+            run_platform =  get_run_platform_from_file (l_run_parameter)
+            logger.debug('found the platform name  , %s', run_platform)
+            if 'MiSeq' in run_platform :
+                logger.debug('Executing miseq handler ')
+                try:
+                    update_miseq_process_run =  handle_miseq_run (conn, new_run, l_run_parameter, experiment_name)
+                    if update_miseq_process_run != '' :
+                        process_run_file_update = True
+                        processed_runs.append(new_run)
+                    continue
+                except ValueError as e :
+                    # Include the run in the run processed file 
+                    logger.warning('Error found when processing miSeq run %s ', e)
+                    logger.info('Including this run in the run processed file ')
+                    process_run_file_update = True
+                    processed_runs.append(new_run)
+                    continue
+                except :
+                    logger.warning('Waiting for sequencer to have all files')
+                    logger.info('Continue processing next item ')
+                    continue
+                logger.debug('Finished miSeq handling process')
+
+            elif 'NextSeq' in run_platform :
+
+                logger.debug('Executing NextSeq handler ')
+
+                try:
+                    update_nextseq_process_run =  handle_nextseq_run (conn, new_run, l_run_parameter, experiment_name)
+                    if update_nextseq_process_run != '' :
+                        process_run_file_update = True
+                        processed_runs.append(new_run)
+                    continue
+                except ValueError as e :
+                    # Include the run in the run processed file 
+                    logger.warning('Error found when processing miSeq run %s ', e)
+                    logger.info('Including this run in the run processed file ')
+                    process_run_file_update = True
+                    processed_runs.append(new_run)
+                    continue
+                except :
+                    logger.warning('Waiting for sequencer to have all files')
+                    logger.info('Continue processing next item ')
+                    continue
+                logger.debug('Finished miSeq handling process')
+            else:
+                string_message = 'Platform for this run is not supported'
+                logging_errors(logger, string_message)
+                # Set run to error state
+                os.remove(l_run_parameter)
+            
+
+    else:
+        logger.info('No found new run folders on the remote server')
+        return ''
+    logger.debug ('End function searching new runs. Returning handle runs ' )
+    return handle_new_miseq_run
+    
+
+def search_new_miseq_runs ():
+    '''
+    
+    '''
+    import pdb; pdb.set_trace()
+    logger = logging.getLogger(__name__)
+    logger.debug('Starting search_new_miseq_runs function')
+    handle_new_miseq_run = []
+    processed_run_file = os.path.join( wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.PROCESSED_RUN_FILE)
+    processed_runs = read_processed_runs_file (processed_run_file)
+    if processed_runs == 'Error' :
+        return 'Error'
+    
+    try:
+        conn=open_samba_connection()
+        logger.info('Sucessfully  SAMBA connection for the process_run_in_recorded_state')
+    except :
+        import pdb; pdb.set_trace()
         string_message = 'Unable to open SAMBA connection for the process_run_in_recorded_state %s'
         logging_errors(logger, string_message, True)
-        return 'Error'
+        raise
 
+    import pdb; pdb.set_trace()
     new_runs = get_new_runs_on_remote_server (processed_runs, conn, 
                         wetlab_config.SAMBA_SHARED_FOLDER_NAME, logger)
     if len (new_runs) > 0 :
@@ -672,26 +646,7 @@ def search_new_miseq_runs (logger):
 
 
 
-def find_xml_tag_text (input_file, search_tag):
-    '''
-    Description:
-        The function will look for the xml element tag in the 
-        file and it will return the text value
-    Input:
-        input_file  # file to find the tag
-        search_tag  # xml tag to be found in the input_file
-    Variables:
-        found_tag   # line containing the tag 
-    '''
-    fh = open (input_file, 'r')
-    search_line = '<' + search_tag+ '>(.*)</' + search_tag+'>'
-    for line in fh:
-        found_tag = re.search('^\s+ %s' % search_line, line)
-        if found_tag:
-            fh.close()
-            return found_tag.group(1)
-    fh.close()
-    return ''
+
 
 
 def check_miseq_completion_run (conn, log_folder, l_run_parameter, l_logger):
@@ -732,7 +687,7 @@ def check_miseq_completion_run (conn, log_folder, l_run_parameter, l_logger):
         last_line_in_file = latest_log.split('/n')[-2]
         last_log_time = last_line_in_file.split(' ')[0:2]
         last_log_time[0] = str('20'+ last_log_time[0])
-        run_completion_date = ''.join.(last_log_time)
+        run_completion_date = ''.join(last_log_time)
     logger.debug('Exiting the function check_miseq_completion_run')
     return status_run, run_completion_date
 
@@ -854,7 +809,7 @@ def handle_runs_in_recorded_state(logger):
             run_platform = find_xml_tag_text (l_run_parameter, wetlab_config.APPLICATION_NAME_TAG)
             if 'MiSeq' in run_platform :
                 logger.info('Found out that it is a miSeq run')
-                log_folder = 
+                #log_folder = 
                 status_run, run_completion_date = check_miseq_completion_run (conn, log_folder, l_run_parameter, logger)
                 if 'Error' == status_run :
                     string_message = 'miseq run was canceled for the run ' + new_run
@@ -1309,7 +1264,6 @@ def process_xml_stats(stats_projects, run_id, logger):
 def parsing_sample_project_xml(run_id,demux_file, conversion_file, logger):
     total_p_b_count=[0,0,0,0]
     sample_result_dict={}
-    #demux_file='example.xml'
     demux_stat=ET.parse(demux_file)
     root=demux_stat.getroot()
     projects=[]
@@ -1446,255 +1400,7 @@ def store_samples_projects(sample_project_stats, run_id, logger):
 
 
 
-def process_run_in_samplesent_state (process_list, logger):
-     # prepare a dictionary with key as run_name and value the RunID
-     processed_run=[]
-     for run_item in process_list:
-         logger.info ('Running the process sample sent state for %s', run_item)
-         run_be_processed_id=RunProcess.objects.get(runName__exact=run_item).id
-         logger.debug ('Run ID for the run process to be update is:  %s', run_be_processed_id)
-         #run_Id_for_searching=RunningParameters.objects.get(runName_id= run_be_processed_id)
-         update_run_state(run_be_processed_id, 'Process Running', logger)
-         processed_run.append(run_be_processed_id)
-     return processed_run
 
-def process_run_in_processrunning_state (process_list, logger):
-    processed_run=[]
-    logger.debug('starting the process_run_in_processrunning_state method')
-    try:
-        conn=open_samba_connection()
-        logger.info('check the Sucessful connection to NGS_Data before starting processing runing state method')
-
-    except:
-        return('Error')
-
-    share_folder_name = wetlab_config.SAMBA_SHARED_FOLDER_NAME
-    for run_item in process_list:
-        logger.debug ('processing the run %s in process running state' , run_item)
-        run_be_processed_id=RunProcess.objects.get(runName__exact=run_item).id
-        run_Id_used=str(RunningParameters.objects.get(runName_id= run_be_processed_id))
-        logger.debug ('found the run ID  %s' , run_Id_used )
-        run_folder=os.path.join('/',run_Id_used,'Data/Intensities/BaseCalls')
-        # check if runCompletion is avalilable
-        logger.debug ('found the run ID  %s' , run_Id_used )
-        try:  #####
-            file_list = conn.listPath( share_folder_name, run_folder)
-        except: #####
-            logger.error('no folder found for run ID %s', run_Id_used)  #####
-            continue  #####
-        #import pdb; pdb.set_trace()
-        found_report_directory = 0
-        for sh in file_list:
-            if sh.filename =='Reports' :
-                logger.info('bcl2fastq has been completed for run %s', run_Id_used)
-                processed_run.append(run_Id_used)
-                update_run_state(run_be_processed_id, 'Bcl2Fastq Executed', logger)
-                update_project_state(run_be_processed_id, 'B2FqExecuted', logger)
-                # Get the time when  the Bcl2Fastq process is ending
-                conversion_stats_file = os.path.join (run_Id_used,'Data/Intensities/BaseCalls/Stats/', 'ConversionStats.xml')
-                conversion_attributes = conn.getAttributes(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,conversion_stats_file)
-                run_date = RunProcess.objects.get(pk=run_be_processed_id)
-                run_date.bcl2fastq_finish_date = datetime.datetime.fromtimestamp(int(conversion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
-                run_date.save()
-                logger.info ('Updated the Bcl2Fastq time in the run %s', run_item)
-                break
-            else:
-                logger.debug('The directory %s has been found while looking for completion of the execution of bcl2fastq', sh.filename)
-        if found_report_directory:
-            logger.info('blc2fastq has been completed for the Run ID %s  it is now on Bcl2Fastq Executed state', run_Id_used)
-        else:
-            logger.info('blc2fastq was not finish for the Run ID %s  waiting for Bcl2Fastq to be completed', run_Id_used)
-
-
-    # close samba connection
-    conn.close()
-    logger.info('Closing the remote connection ')
-    return processed_run
-
-
-
-def process_run_in_bcl2F_q_executed_state (process_list, logger):
-    processed_run=[]
-    # get the directory of samba to fetch the files
-    share_folder_name = wetlab_config.SAMBA_SHARED_FOLDER_NAME
-    local_dir_samba= wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING
-    remote_stats_dir= 'Data/Intensities/BaseCalls/Stats/'
-    demux_file=os.path.join(local_dir_samba,'DemultiplexingStats.xml')
-    conversion_file=os.path.join(local_dir_samba,'ConversionStats.xml')
-    run_info_file=os.path.join(local_dir_samba, 'RunInfo.xml')
-
-    logger.debug('Executing process_run_in_bcl2F_q_executed_state method')
-
-    # check the connectivity to remote server
-    try:
-        conn=open_samba_connection()
-        logger.info('Successful connection for updating run on bcl2F_q' )
-    except:
-        logger.error('ERROR:: Unable to connect to remote server')
-        return 'Error'
-
-    for run_item in process_list:
-
-        logger.info ('Processing the process on bcl2F_q for the run %s', run_item)
-        run_processing_id=RunProcess.objects.get(runName__exact=run_item).id
-        run_Id_used=str(RunningParameters.objects.get(runName_id= run_processing_id))
-
-        update_run_state(run_processing_id, 'Running Stats', logger)
-        #copy the demultiplexingStats.xml file to wetlab/tmp/processing
-
-
-        samba_demux_file=os.path.join('/',run_Id_used,remote_stats_dir, 'DemultiplexingStats.xml')
-        logger.debug('path to fetch demultiplexingStats is %s',  samba_demux_file)
-        try:
-            with open(demux_file ,'wb') as demux_fp :
-                conn.retrieveFile(share_folder_name, samba_demux_file, demux_fp)
-        except:
-            logger.error('Unable to fetch the DemultiplexingStats.xml file for RunID %s', run_Id_used)
-            os.remove(demux_file)
-            logger.debug('deleting DemultiplexingStats file  for RunID %s' , run_Id_used)
-            continue
-        logger.info('Fetched the DemultiplexingStats.xml')
-        #copy the ConversionStats.xml file to wetlab/tmp/processing
-        samba_conversion_file=os.path.join('/', run_Id_used,remote_stats_dir,'ConversionStats.xml')
-        try:
-            with open(conversion_file ,'wb') as conv_fp :
-                conn.retrieveFile(share_folder_name, samba_conversion_file, conv_fp)
-        except:
-            logger.error('Unable to fetch the ConversionStats.xml file for RunID %s', run_Id_used)
-            os.remove(conversion_file)
-            os.remove(demux_file)
-            logger.debug('deleting ConversionStats and DemultiplexingStats file  for RunID %s' , run_Id_used)
-            continue
-        logger.info('Fetched the conversionStats.xml')
-        # copy RunInfo.xml  file to process the interop files
-        try:
-            with open(run_info_file ,'wb') as runinfo_fp :
-                samba_conversion_file=os.path.join('/', run_Id_used,'RunInfo.xml')
-                conn.retrieveFile(share_folder_name, samba_conversion_file, runinfo_fp)
-        except:
-            logger.error('Unable to fetch the RunInfo.xml file for RunID %s', run_Id_used)
-            os.remove(run_info_file)
-            os.remove(conversion_file)
-            os.remove(demux_file)
-            logger.debug('deleting RunInfo, ConversionStats and DemultiplexingStats file  for RunID %s' , run_Id_used)
-            continue
-        logger.info('Fetched the RunInfo.xml file')
-
-        # copy all binary files in interop folder to local  documents/wetlab/tmp/processing/interop
-        interop_local_dir_samba= os.path.join(local_dir_samba, 'InterOp')
-        remote_interop_dir=os.path.join('/',run_Id_used,'InterOp')
-        try:
-            file_list = conn.listPath( share_folder_name, remote_interop_dir)
-            logger.info('InterOp folder exists on the RunID %s', run_Id_used)
-            run_parameters_file=os.path.join(local_dir_samba,'runParameters.xml')
-            try:
-                with open(run_parameters_file ,'wb') as runparam_fp :
-                    samba_conversion_file=os.path.join('/', run_Id_used,'runParameters.xml')
-                    conn.retrieveFile(share_folder_name, samba_conversion_file, runparam_fp)
-                logger.info('Fetched the runParameters.xml file. Written as: '
-                    +str(run_parameters_file))
-            except:
-                logger.error('Unable to fetch the runParameters.xml file for RunID %s', run_Id_used)
-                os.remove(run_parameters_file)
-                logger.debug('Deleting runParameters file  for RunID %s' , run_Id_used)
-
-        except:
-            logger.error('ERROR:: InterOP folder does not exist on RunID %s', run_Id_used)
-            os.remove(run_info_file)
-            os.remove(conversion_file)
-            os.remove(demux_file)
-            logger.debug('deleting RunInfo, ConversionStats and DemultiplexingStats file  for RunID %s' , run_Id_used)
-            print('ERROR:: InterOP folder does not exist on RunID ', run_Id_used)
-            continue
-        error_in_interop = False
-        for sh in file_list:
-            if sh.isDirectory:
-                continue
-            else:
-                interop_file_name=sh.filename
-                remote_interop_file=os.path.join(remote_interop_dir, interop_file_name)
-                copy_file=os.path.join(interop_local_dir_samba, interop_file_name)
-                try:
-                    with open(copy_file ,'wb') as cp_fp :
-                        remote_file=os.path.join(remote_interop_dir,)
-                        logger.debug('File %s to be copied on the local directory', interop_file_name)
-                        conn.retrieveFile(share_folder_name, remote_interop_file, cp_fp)
-                        logger.info('Copied %s to local Interop folder', interop_file_name)
-                except:
-                    logger.error("Not be able to fetch the file %s", interop_file_name)
-                    os.remove(run_info_file)
-                    os.remove(conversion_file)
-                    os.remove(demux_file)
-                    logger.debug('deleting files RunInfo, ConversionStats and DemultiplexingStats ')
-                    logger.debug('because of error when fetching interop files for RunID  %s' , run_Id_used)
-                    # deleting local Interop files
-                    file_list_to_delete = os.list(interop_local_dir_samba)
-                    logger.debug ('Deleting the local interop files ')
-                    for file_name in file_list_to_delete:
-                        if file_name == '.' or '..' :
-                            continue
-                        else:
-                            os.remove(file_name)
-                    error_in_interop= True
-                    break
-        if error_in_interop :
-            continue
-        else:
-            # parsing the files to get the xml Stats
-            logger.info('processing the XML files')
-            xml_stats=parsing_statistics_xml(run_processing_id, demux_file, conversion_file, logger)
-            result_of_raw_saving = store_raw_xml_stats(xml_stats,run_processing_id, logger)
-            if result_of_raw_saving == 'ERROR':
-                update_run_state(run_processing_id, 'ERROR-on-Raw-SavingStats', logger)
-                update_project_state(run_processing_id, 'ERROR-on-Raw-SavingStats', logger)
-                logger.error('Stopping process for this run an starting deleting the files')
-            else:
-                process_xml_stats(xml_stats,run_processing_id, logger)
-
-                # parsing and processing the project samples
-                sample_project_stats = parsing_sample_project_xml (run_processing_id,demux_file, conversion_file, logger)
-                store_samples_projects (sample_project_stats, run_processing_id, logger)
-
-                logger.info('processing interop files')
-                # processing information for the interop files
-                number_of_lanes = get_machine_lanes(run_processing_id)
-
-                process_binStats(local_dir_samba, run_processing_id, logger, number_of_lanes)
-                # Create graphics
-                graphic_dir=os.path.join(settings.MEDIA_ROOT,wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING)
-
-                create_graphics(graphic_dir, run_processing_id, run_Id_used, logger)
-
-                processed_run.append(run_Id_used)
-                logger.info('run id %s is now on Completed state', run_Id_used)
-                update_run_state(run_processing_id, 'Completed', logger)
-                update_project_state(run_processing_id, 'Completed', logger)
-            # clean up the used files and directories
-            logger.info('starting the clean up for the copied files from remote server ')
-            os.remove(demux_file)
-            logger.debug('Demultiplexing file have been removed from %s', demux_file)
-            os.remove(conversion_file)
-            logger.debug('ConversionStats file have been removed from %s', conversion_file)
-            os.remove(run_info_file)
-            logger.debug('RunInfo file have been removed from %s', run_info_file)
-            for file_object in os.listdir(interop_local_dir_samba):
-                file_object_path = os.path.join(interop_local_dir_samba, file_object)
-                if os.path.isfile(file_object_path):
-                    logger.debug('Deleting file %s' , file_object_path)
-                    os.remove(file_object_path)
-            logger.info('xml files and binary files from InterOp folder have been removed')
-            ## connect to server to get the disk space utilization of the folders
-            get_run_disk_utilization (conn, run_Id_used, run_processing_id, logger)
-            # Update the run with the date of the run completion
-            completion_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            run_date_to_update = RunProcess.objects.get(pk = run_processing_id)
-            run_date_to_update.process_completed_date = completion_date
-            run_date_to_update.save()
-
-    # close samba connection
-    conn.close()
-    logger.info('Samba connection close. Sucessful copy of files form remote server')
-    return processed_run
 '''
 def find_state_and_save_data(run_name,run_folder):
     run_file='RunInfo.xml'
@@ -1723,7 +1429,12 @@ def find_state_and_save_data(run_name,run_folder):
         rn_found.runState='Completed'
 '''
 
-def find_not_completed_run (logger):
+def hanlding_not_completed_run ():
+    
+    
+    
+    
+    
     working_list={}
     state_list = ['Sample Sent','Process Running','Bcl2Fastq Executed']
     # get the run that are not completed
@@ -1740,7 +1451,7 @@ def find_not_completed_run (logger):
         logger.info ('Start processing the run found for state %s', state)
         if state == 'Sample Sent':
             logger.debug ('found sample sent in state ')
-            processed_run[state]=process_run_in_samplesent_state(working_list['Sample Sent'], logger)
+            processed_run[state]=manage_run_in_samplesent_state(working_list['Sample Sent'], logger)
         elif state == 'Process Running':
             logger.debug('Found runs for Process running %s', working_list['Process Running'])
             processed_run[state]=process_run_in_processrunning_state(working_list['Process Running'], logger)

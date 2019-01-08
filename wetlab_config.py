@@ -64,14 +64,14 @@ PROCESSED_RUN_FILE='processed_run_file'
 
 ############# ILLUMINA OUTPUT FILES ##########################
 RUN_PARAMETER_NEXTSEQ = 'RunParameters.xml'
-RUN_PARAMETER_MISEQ = 'runParameters.xml'
+#RUN_PARAMETER_MISEQ = 'runParameters.xml'
 RUN_INFO = 'RunInfo.xml'
 RUN_COMPLETION = 'RunCompletionStatus.xml'
 SAMPLE_SHEET = 'SampleSheet.csv'
 ## sample sheet to be copied on the remote folder 
 COPY_SAMPLE_SHEET_TO_REMOTE = False # boolean constant True if NestSeq 
                                 # sample sheet needs to be copied to remote server
-
+RUN_LOG_FOLDER = 'Logs'
 ##############################################################
 
 ############ VALUE TAG FOR XML FILES #########################
@@ -84,47 +84,23 @@ APPLICATION_NAME_TAG = 'ApplicationName'
 ############ DEFAULT VALUES FOR MISEQ SAMPLE SHEET  ##########
 DEFAULT_LIBRARY_KIT = 'Unknown'
 DEFAULT_CENTER = 'CNM'
-
+MAXIMUM_TIME_WAIT_SAMPLE_SHEET = '2' # in days
 ##############################################################
-## 
 
-
-'''
-MISEQ_PROCESSED_RUN_FILE='miseq_processed_run_file'
-MISEQ_PROCESSED_RUN_FILEPATH=os.path.join(settings.MEDIA_ROOT,
-    RUN_TEMP_DIRECTORY,MISEQ_PROCESSED_RUN_FILE)
-
-
-
-
-PROCESSED_RUN_FILEPATH=os.path.join(settings.MEDIA_ROOT,
-    RUN_TEMP_DIRECTORY,PROCESSED_RUN_FILE)
-
-## file with MiSeq runs whose samplesheets fail sanity checks
-FAULTY_SAMPLESHEET_MISEQRUNS_FILE='faulty_samplesheet_miseq_runs'
-FAULTY_SAMPLESHEET_MISEQRUNS_FILEPATH=os.path.join(settings.MEDIA_ROOT,
-    RUN_TEMP_DIRECTORY,FAULTY_SAMPLESHEET_MISEQRUNS_FILE)
-
-## file containing MiSeq runs in RECORDED state to check whether they have
-## already reached SAMPLE SENT
-RECORDED_MISEQRUNS_FILE='recorded_miseq_runs'
-RECORDED_MISEQRUNS_FILEPATH=os.path.join(settings.MEDIA_ROOT,
-    RUN_TEMP_DIRECTORY,RECORDED_MISEQRUNS_FILE)
-
-'''
-
-## Directory settings for processing the library kits
+#########  FOLDER SETTINGS FOR PROCESSING LIBRARY KITS #######
 ## Relative path from settings.BASE_DIR
 LIBRARY_KITS_DIRECTORY = 'wetlab/library_kits/'
 ## Maximum file size allowed for the index library kits (in bytes)
 LIBRARY_MAXIMUM_SIZE = '3145728'
 ## Configuration for index library file 
 INDEX_LIBRARY_HEADING = ['[Version]','[Name]', '[PlateExtension]','[Settings]', '[I7]','[I5]']
-
+##############################################################
 
 MIGRATION_DIRECTORY_FILES = 'wetlab/BaseSpaceMigrationFiles/'
 
-## Configuration for the sample sheet conversion file to BaseSpace format
+
+##### CONFIGURATION FOR SAMPLE SHEET CONVERSION ##############
+######### FILE TO BASESPACE FORMAT     #######################
 # column names when sample sheet has only one index
 BASESPACE_FILE_ONE_INDEX = ['SampleID','Name','Species','Project','NucleicAcid',
                'Well','Index1Name','Index1Sequence']
@@ -138,3 +114,4 @@ MAP_BASESPACE_SAMPLE_SHEET_ONE_INDEX = [('SampleID','Sample_ID'),('Name','Sample
 MAP_BASESPACE_SAMPLE_SHEET_TWO_INDEX = [('SampleID','Sample_ID'),('Name','Sample_Name'), ('Project','Sample_Project'),
                 ('Index1Name','I7_Index_ID'), ('Index1Sequence','index' ),('Index2Name','I5_Index_ID'),('Index2Sequence','index2') ]
 
+##############################################################

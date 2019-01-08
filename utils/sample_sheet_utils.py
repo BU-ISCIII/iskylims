@@ -336,34 +336,6 @@ def create_unique_sample_id_values (infile, index_file):
     os.rename(temp_sample_sheet, infile)
 
 
-def check_run_name_free_to_use(run_name):
-    ## Function checks whether run_name is already used in the database.
-    ## Error page is shown if run_name is already  defined
-    ##
-
-    timestamp_print('(experiment) Run name: '+run_name+'\n'
-        +'Starting the process for check_run_name_free_to_use()')
-    run_name_free_result='KO in check_run_name_free_to_use()'
-    if (RunProcess.objects.filter(runName = run_name)).exists():
-        if RunProcess.objects.filter(runName = run_name, runState__exact ='Pre-Recorded'):
-            ## Delete the sample sheet file and the row in database
-            delete_run = RunProcess.objects.filter(runName = run_name, runState__exact ='Pre-Recorded')
-            sample_sheet_file = str(delete_run[0].sampleSheet)
-            full_path_sample_sheet_file = os.path.join(settings.MEDIA_ROOT, sample_sheet_file)
-            os.remove(full_path_sample_sheet_file)
-            delete_run[0].delete()
-            run_name_free_result='Free'
-        else:#runState != 'Pre-Recorded'
-            run_name_free_result=['Run Name is already used. ',
-                                  'Run Name must be unique in database.', ' ',
-                                  'ADVICE:',
-                                  'Change the value in the Sample Sheet  file ']
-    else: # run_name is new
-        run_name_free_result='Free'
-
-    timestamp_print('Leaving check_run_name_free_to_use(). Returned value= '+str(run_name_free_result))
-    return run_name_free_result
-
 
 
 def check_run_projects_in_samplesheet(samplesheet):

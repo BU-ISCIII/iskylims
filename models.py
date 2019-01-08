@@ -22,13 +22,11 @@ class RunProcess(models.Model):
     bcl2fastq_finish_date = models.DateTimeField(auto_now = False, null=True, blank=True)
     process_completed_date = models.DateTimeField(auto_now = False, null=True, blank=True)
     runState = models.CharField(max_length=25)
-    #generatedBSFile = models.BooleanField(default=False)
     index_library = models.CharField(max_length=85)
     samples= models.CharField(max_length=45,blank=True)
     useSpaceImgMb=models.CharField(max_length=10, blank=True)
     useSpaceFastaMb=models.CharField(max_length=10, blank=True)
     useSpaceOtherMb=models.CharField(max_length=10, blank=True)
-    #requestedCenter= models.CharField(max_length=45)
     centerRequestedBy = models.ForeignKey (Center, on_delete=models.CASCADE)
     sequencerModel = models.ForeignKey ('iSkyLIMS_drylab.Machines', on_delete=models.CASCADE, null=True, blank=True)
 
@@ -37,6 +35,14 @@ class RunProcess(models.Model):
 
     def get_sample_file (self):
         return '%s' %(self.sampleSheet)
+
+    def get_run_date (self):
+        if self.run_date is None :
+            rundate = 'Run NOT started'
+        else :
+            rundate=self.run_date.strftime("%B %d, %Y")
+        return rundate
+        
 
     def get_state(self):
         return '%s' %(self.runState)
@@ -95,10 +101,19 @@ class RunProcess(models.Model):
     def get_run_sequencerModel (self):
         return '%s' %(self.sequencerModel)
 
-    def get_runprocess_info_debug(self): ##useful for debugging
-        return str(self.__dict__)
+    def get_machine_lanes(self):
+        number_of_lanes = self.sequencerModel.get_number_of_lanes()
+        return int(number_of_lanes)
 
+    def update_library (self, library_name):
+        self.index_library = library_name
+        self.save()
+        return ''
 
+    def set_run_state (self, new_state):
+        self.runState = new_state
+        self.save()
+        return self
 
 class LibraryKit (models.Model):
     libraryName = models.CharField(max_length=125)
@@ -213,6 +228,25 @@ class Projects(models.Model):
     def get_project_info_debug(self): ##useful for debugging
         return str(self.__dict__)
 
+
+class RunningParametersManager (models.Manager) :
+    
+    def create_running_parameters (self, running_data, run_id) :
+        
+        running_parameters = self.create (runName_id=RunProcess.objects.get(pk=run_id),
+                         RunID=running_data['RunID'], ExperimentName=running_data['ExperimentName'],
+                         RTAVersion=running_data['RTAVersion'], SystemSuiteVersion= running_data['SystemSuiteVersion'],
+                         LibraryID= running_data['LibraryID'], Chemistry= running_data['Chemistry'],
+                         RunStartDate= running_data['RunStartDate'], AnalysisWorkflowType= running_data['AnalysisWorkflowType'],
+                         RunManagementType= running_data['RunManagementType'], PlannedRead1Cycles= running_data['PlannedRead1Cycles'],
+                         PlannedRead2Cycles= running_data['PlannedRead2Cycles'], PlannedIndex1ReadCycles= running_data['PlannedIndex1ReadCycles'],
+                         PlannedIndex2ReadCycles= running_data['PlannedIndex2ReadCycles'], ApplicationVersion= running_data['ApplicationVersion'],
+                         NumTilesPerSwath= running_data['NumTilesPerSwath'], ImageChannel= running_data['ImageChannel'],
+                         Flowcell= running_data['Flowcell'], ImageDimensions= running_data['ImageDimensions'],
+                         FlowcellLayout= running_data['FlowcellLayout'])
+
+        return running_parameters
+
 class RunningParameters (models.Model):
     runName_id = models.OneToOneField(
             RunProcess,
@@ -267,6 +301,12 @@ class RunningParameters (models.Model):
         if self.PlannedIndex2ReadCycles != "0" :
             count +=1
         return count
+    
+    def get_number_of_cycles (self):
+        number_of_cycles = int(self.PlannedRead1Cycles) + int(self.PlannedRead2Cycles) + int(self.PlannedIndex1ReadCycles) + int(self.PlannedIndex2ReadCycles)
+        return number_of_cycles
+    
+    objects = RunningParametersManager ()
 
 
 
@@ -476,7 +516,9 @@ class SamplesInProject (models.Model):
         return '%s' %(self.qualityQ30)
 
 
-
+class RunErrors (models.Model):
+    errorCode = models.CharField(max_length=10)
+    errorText = models.CharField(max_length=255)
 
 '''
 class MiSeqStatisticsBin (models.Model):

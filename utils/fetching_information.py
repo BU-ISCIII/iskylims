@@ -8,7 +8,7 @@ from django.contrib.auth.models import Group
 
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import RUN_IMAGES_DIRECTORY, WETLAB_MANAGER
-from .wetlab_misc_utilities import normalized_data, get_machine_lanes
+from .wetlab_misc_utilities import normalized_data
 from .stats_graphics import *
 
 def get_information_run(run_name_found,run_id):
@@ -88,7 +88,7 @@ def get_information_run(run_name_found,run_id):
     if (run_state != 'Completed'):
         d_list=['Run name','State of the Run is','Run was requested by','Run was recorded on date', 'Run date', 'Run Finish Date','RunID']
     else:
-        number_of_lanes=get_machine_lanes(run_id)
+        number_of_lanes=run_name_found.get_machine_lanes()
         d_list=['Run name','State of the Run is','Run was requested by',
                 'Disk space used for Images(in MB)','Disk space used for Fasta Files(in MB)',
                 'Disk space used for other Files(in MB)','Run recorded date','Run date', 'Run Finish Date',
