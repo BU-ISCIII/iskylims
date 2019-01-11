@@ -100,6 +100,9 @@ class RunProcess(models.Model):
 
     def get_run_sequencerModel (self):
         return '%s' %(self.sequencerModel)
+    
+    def get_run_platform (self):
+        return '%s' %self.sequencerModel.platformID
 
     def get_machine_lanes(self):
         number_of_lanes = self.sequencerModel.get_number_of_lanes()
@@ -114,6 +117,11 @@ class RunProcess(models.Model):
         self.runState = new_state
         self.save()
         return self
+        
+    def set_run_completion_date (self, completion_date):
+        selft.run_finish_date = completion_date
+        self.save()
+        return completion_date
 
 class LibraryKit (models.Model):
     libraryName = models.CharField(max_length=125)
@@ -306,6 +314,9 @@ class RunningParameters (models.Model):
         number_of_cycles = int(self.PlannedRead1Cycles) + int(self.PlannedRead2Cycles) + int(self.PlannedIndex1ReadCycles) + int(self.PlannedIndex2ReadCycles)
         return number_of_cycles
     
+    def get_run_folder (self):
+        return '%s' %(self.RunID)
+        
     objects = RunningParametersManager ()
 
 

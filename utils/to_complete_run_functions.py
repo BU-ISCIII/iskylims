@@ -254,3 +254,531 @@ def process_run_in_bcl2Fq_executed_state (process_list, logger):
     logger.info('Samba connection close. Sucessful copy of files form remote server')
     return processed_run
 
+
+
+
+def store_raw_xml_stats(stats_projects, run_id,logger):
+    error_found = False
+    for project in stats_projects:
+        if project == 'TopUnknownBarcodes':
+            continue
+        logger.info('processing project %s with rund_id = %s', project, run_id)
+        if project == 'all' or project == 'default':
+            logger.info('Found project %s setting the project_id to NULL', project)
+            project_id= None
+            default_all = project
+        else:
+            if Projects.objects.filter (projectName__exact = project).exists():
+                p_name_id=Projects.objects.get(projectName__exact = project).id
+            else:
+                logger.error('ERROR:: Project name inside the report does not match with the one define in the sample sheet')
+                print ('ERROR::: Project name ', project ,' is not include in the Sample Sheet ')
+                error_found = True
+                continue
+            project_id= Projects.objects.get(pk=p_name_id)
+            default_all = None
+        # save the information when no error is found. This condition is set to avoid saving information on database
+        # because the information stored before getting the error must be deleted
+        if not error_found :
+            raw_stats_xml = RawStatisticsXml (runprocess_id=RunProcess.objects.get(pk=run_id),
+                                          project_id = project_id, defaultAll = default_all,
+                                          rawYield= stats_projects[project]['RAW_Yield'], rawYieldQ30= stats_projects[project]['RAW_YieldQ30'],
+                                          rawQuality= stats_projects[project]['RAW_QualityScore'], PF_Yield= stats_projects[project]['PF_Yield'],
+                                          PF_YieldQ30= stats_projects[project]['PF_YieldQ30'], PF_QualityScore =stats_projects[project]['PF_QualityScore'])
+
+            logger.info('saving raw stats for %s project', project)
+            raw_stats_xml.save()
+    if error_found :
+        # delete all information stored on database
+        if RawStatisticsXml.objects.filter (runprocess_id__exact = run_id).exists():
+            projects_to_delete = RawStatisticsXml.objects.filter (runprocess_id__exact = run_id)
+            logger.info('Deleting stored RawStatisticsXml information ')
+            for project in projects_to_delete :
+                project.delete()
+                logger.debug('Deleted the RawStatisticsXml for project %s', project)
+        return 'ERROR'
+
+    logger.info('Raw XML data have been stored for all projects ')
+    return ''
+
+
+def process_xml_stats(stats_projects, run_id, logger):
+    # get the total number of read per lane
+    M_BASE=1.004361/1000000
+    logger.debug('starting the process_xml_stats method')
+    total_cluster_lane=(stats_projects['all']['PerfectBarcodeCount'])
+    logger.info('processing flowcell stats for %s ', run_id)
+    number_of_lanes=get_machine_lanes(run_id)
+    for project in stats_projects:
+        if project == 'TopUnknownBarcodes':
+            continue
+        flow_raw_cluster, flow_pf_cluster, flow_yield_mb = 0, 0, 0
+        for fl_item in range(number_of_lanes):
+             # make the calculation for Flowcell
+            flow_raw_cluster +=int(stats_projects[project]['BarcodeCount'][fl_item])
+            flow_pf_cluster +=int(stats_projects[project]['PerfectBarcodeCount'][fl_item])
+            flow_yield_mb +=float(stats_projects[project]['PF_Yield'][fl_item])*M_BASE
+
+
+        flow_raw_cluster='{0:,}'.format(flow_raw_cluster)
+        flow_pf_cluster='{0:,}'.format(flow_pf_cluster)
+        flow_yield_mb= '{0:,}'.format(round(flow_yield_mb))
+        sample_number=stats_projects[project]['sampleNumber']
+
+        if project == 'all' or project == 'default' :
+            logger.info('Found project %s setting the project_id to NULL', project)
+            project_id= None
+            default_all = project
+        else:
+            p_name_id=Projects.objects.get(projectName__exact = project).id
+            project_id= Projects.objects.get(pk=p_name_id)
+            default_all = None
+
+        #store in database
+        logger.info('Processed information for flow Summary for project %s', project)
+        ns_fl_summary = NextSeqStatsFlSummary(runprocess_id=RunProcess.objects.get(pk=run_id),
+                                project_id=project_id, defaultAll=default_all, flowRawCluster=flow_raw_cluster,
+                                flowPfCluster=flow_pf_cluster, flowYieldMb= flow_yield_mb,
+                                sampleNumber= sample_number)
+
+
+        ns_fl_summary.save()
+        logger.info('saving processing flowcell xml data  for project %s', project)
+
+
+    for project in stats_projects:
+        if project == 'TopUnknownBarcodes':
+            continue
+        logger.info('processing lane stats for %s', project)
+
+        for i in range (number_of_lanes):
+            # get the lane information
+            lane_number=str(i + 1)
+            pf_cluster_int=(int(stats_projects[project]['PerfectBarcodeCount'][i]))
+            pf_cluster='{0:,}'.format(pf_cluster_int)
+            perfect_barcode=(format(int(stats_projects[project]['PerfectBarcodeCount'][i])*100/int(stats_projects[project]['BarcodeCount'][i]),'.3f'))
+            percent_lane=  format(float(int(pf_cluster_int)/int(total_cluster_lane[i]))*100, '.3f')
+            one_mismatch=stats_projects[project]['OneMismatchBarcodeCount'][i]
+            yield_mb= '{0:,}'.format(round(float(stats_projects[project]['PF_Yield'][i])*M_BASE))
+
+            bigger_q30=format(float(stats_projects[project]['PF_YieldQ30'][i])*100/float( stats_projects[project]['PF_Yield'][i]),'.3f')
+
+            mean_quality=format(float(stats_projects[project]['PF_QualityScore'][i])/float(stats_projects[project]['PF_Yield'][i]),'.3f')
+
+            # make the calculation for Flowcell
+            flow_raw_cluster = stats_projects[project]['BarcodeCount'][i]
+            flow_pf_cluster = stats_projects[project]['PerfectBarcodeCount'][i]
+            flow_yield_mb ='{0:,}'.format(round(float(stats_projects[project]['PF_Yield'][i])*M_BASE))
+
+            #store in database
+            if project == 'all' or project == 'default':
+                logger.info('Found project %s setting the project_id to NULL', project)
+                project_id= None
+                default_all =project
+            else:
+                p_name_id=Projects.objects.get(projectName__exact = project).id
+                project_id= Projects.objects.get(pk=p_name_id)
+                default_all = None
+
+            #store in database
+            logger.info('Processed information for Lane %s for project %s', lane_number, project)
+            ns_lane_summary = NextSeqStatsLaneSummary(runprocess_id=RunProcess.objects.get(pk=run_id),
+                                                 project_id=project_id, defaultAll = default_all, lane = lane_number,
+                                                 pfCluster=pf_cluster, percentLane=percent_lane, perfectBarcode=perfect_barcode,
+                                                 oneMismatch= one_mismatch, yieldMb=yield_mb,
+                                                 biggerQ30=bigger_q30, meanQuality=mean_quality )
+
+            ns_lane_summary.save()
+
+    logger.info ('processing the TopUnknownBarcodes')
+    for project in stats_projects:
+        if project == 'TopUnknownBarcodes':
+            for un_lane in range(number_of_lanes) :
+                logger.info('Processing lane %s for TopUnknownBarcodes', un_lane)
+                count_top=0
+                lane_number=str(un_lane + 1)
+                top_number =1
+                for barcode_line in stats_projects[project][un_lane]:
+                    barcode_count= '{0:,}'.format(int(barcode_line['count']))
+                    barcode_sequence= barcode_line['sequence']
+
+                    raw_unknow_barcode = RawTopUnknowBarcodes(runprocess_id=RunProcess.objects.get(pk=run_id),
+                                                             lane_number = lane_number, top_number=str(top_number),
+                                                             count=barcode_count, sequence=barcode_sequence)
+                    raw_unknow_barcode.save()
+                    top_number +=1
+
+
+def parsing_sample_project_xml(run_id,demux_file, conversion_file, logger):
+    total_p_b_count=[0,0,0,0]
+    sample_result_dict={}
+    demux_stat=ET.parse(demux_file)
+    root=demux_stat.getroot()
+    projects=[]
+    number_of_lanes=get_machine_lanes(run_id)
+    logger.info('Starting parsing DemultiplexingStats.XML for getting Sample information')
+    for child in root.iter('Project'):
+        projects.append(child.attrib['name'])
+
+    for i in range(len(projects)):
+        if projects [i] == 'default' or projects [i] == 'all':
+            continue
+        p_temp=root[0][i]
+        samples=p_temp.findall('Sample')
+        sample_dict ={}
+        for index in range (len(samples)):
+            sample_name = samples[index].attrib['name']
+            if sample_name == 'all':
+                continue
+            barcodeCount , perfectBarcodeCount = 0 , 0
+
+            sample_stats={}
+            sample_stats ['barcodeName'] = samples[index].find ('Barcode').attrib['name']
+
+            for bar_count in p_temp[index][0].iter('BarcodeCount'):
+                barcodeCount += int(bar_count.text)
+            for p_bar_count in p_temp[index][0].iter('PerfectBarcodeCount'):
+                perfectBarcodeCount += int(p_bar_count.text)
+            sample_stats['BarcodeCount']=barcodeCount
+            sample_stats['PerfectBarcodeCount']=perfectBarcodeCount
+            sample_dict[sample_name] = sample_stats
+
+            sample_result_dict[projects[i]]=sample_dict
+    logger.info('Complete parsing from demux file for sample and for project %s', projects[i])
+
+
+    conversion_stat=ET.parse(conversion_file)
+    root_conv=conversion_stat.getroot()
+    projects=[]
+    logger.info('Starting conversion for conversion file')
+    for child in root_conv.iter('Project'):
+        projects.append(child.attrib['name'])
+    for i in range(len(projects)):
+        if projects [i] == 'default' or projects [i] == 'all':
+            continue
+        p_temp=root_conv[0][i]
+        samples=p_temp.findall('Sample')
+
+        for s_index in range (len (samples)):
+            sample_name = samples[s_index].attrib['name']
+            if sample_name == 'all':
+                continue
+            quality_per_sample = {}
+            raw_yield_value = 0
+            raw_yield_q30_value = 0
+            raw_quality_value = 0
+            pf_yield_value = 0
+            pf_yield_q30_value = 0
+            pf_quality_value = 0
+
+            for l_index in range(number_of_lanes):
+                tiles_index = len(p_temp[s_index][0][l_index].findall ('Tile'))
+                for t_index in range(tiles_index):
+                         # get the yield value for RAW and for read 1 and 2
+                    for c in p_temp[s_index][0][l_index][t_index][0].iter('Yield'):
+                        raw_yield_value +=int(c.text)
+                        # get the yield Q30 value for RAW  and for read 1 and 2
+                    for c in p_temp[s_index][0][l_index][t_index][0].iter('YieldQ30'):
+                        raw_yield_q30_value +=int(c.text)
+                    for c in p_temp[s_index][0][l_index][t_index][0].iter('QualityScoreSum'):
+                        raw_quality_value +=int(c.text)
+                     # get the yield value for PF and for read 1 and 2
+                    for c in p_temp[s_index][0][l_index][t_index][1].iter('Yield'):
+                        pf_yield_value +=int(c.text)
+                    # get the yield Q30 value for PF and for read 1 and 2
+                    for c in p_temp[s_index][0][l_index][t_index][1].iter('YieldQ30'):
+                        pf_yield_q30_value +=int(c.text)
+                    for c in p_temp[s_index][0][l_index][t_index][1].iter('QualityScoreSum'):
+                        pf_quality_value +=int(c.text)
+
+            sample_result_dict[projects[i]][sample_name]['RAW_Yield']=raw_yield_value
+            sample_result_dict[projects[i]][sample_name]['RAW_YieldQ30']=raw_yield_q30_value
+            sample_result_dict[projects[i]][sample_name]['RAW_QualityScore']=raw_quality_value
+            sample_result_dict[projects[i]][sample_name]['PF_Yield']=pf_yield_value
+            sample_result_dict[projects[i]][sample_name]['PF_YieldQ30']=pf_yield_q30_value
+            sample_result_dict[projects[i]][sample_name]['PF_QualityScore']=pf_quality_value
+        logger.info('completed parsing for xml stats for project %s', projects[i])
+
+
+    logger.info('Complete XML parsing  for getting Samples')
+
+    return sample_result_dict
+
+
+
+def store_samples_projects(sample_project_stats, run_id, logger):
+    # get the total number of read per lane
+    M_BASE=1.004361/1000000
+    logger.debug('starting store_sample_projects method')
+
+    logger.info('processing flowcell stats for %s ', run_id)
+
+    for project in sample_project_stats:
+        # find the total number of PerfectBarcodeCount in the procjec to make percent calculations
+        total_perfect_barcode_count = 0
+        for sample in sample_project_stats[project]:
+            total_perfect_barcode_count += sample_project_stats[project][sample] ['PerfectBarcodeCount']
+        for sample in sample_project_stats[project]:
+            sample_name = sample
+            barcode_name = sample_project_stats[project][sample]['barcodeName']
+            perfect_barcode = int(sample_project_stats[project][sample] ['PerfectBarcodeCount'])
+            percent_in_project = format (float(perfect_barcode) *100 /total_perfect_barcode_count,'.2f')
+            perfect_barcode = '{0:,}'.format(perfect_barcode)
+            yield_mb = '{0:,}'.format(round(float(sample_project_stats[project][sample] ['PF_Yield'])*M_BASE))
+            if sample_project_stats[project][sample] ['PF_Yield'] > 0:
+                bigger_q30=format(float(sample_project_stats[project][sample]['PF_YieldQ30'])*100/float( sample_project_stats[project][sample]['PF_Yield']),'.3f')
+                mean_quality=format(float(sample_project_stats[project][sample]['PF_QualityScore'])/float(sample_project_stats[project][sample]['PF_Yield']),'.3f')
+            else:
+                bigger_q30 = 0
+                mean_quality =0
+            p_name_id=Projects.objects.get(projectName__exact = project).id
+            project_id= Projects.objects.get(pk=p_name_id)
+
+            sample_to_store = SamplesInProject (project_id = project_id, sampleName = sample_name,
+                            barcodeName = barcode_name, pfClusters = perfect_barcode,
+                            percentInProject = percent_in_project , yieldMb = yield_mb,
+                            qualityQ30 = bigger_q30, meanQuality = mean_quality)
+
+            sample_to_store.save()
+            logger.debug('Stored sample %s', sample_name)
+        logger.info('Stored sample for the project %s', project)
+
+        #store in database
+        logger.info('Processed information sample %s', project)
+
+
+
+def update_run_state(run_id, state, logger):
+    run=RunProcess.objects.get(pk=run_id)
+    logger.info('updating the run state for %s to %s ', run_id, state)
+    run.runState= state
+    run.save()
+
+def update_project_state(run_id, state, logger):
+    projects_to_update = Projects.objects.filter(runprocess_id__exact = run_id)
+    for project in projects_to_update :
+        logger.info('updating the project state for %s to %s ', project, state)
+        project.procState = state
+        project.save()
+
+def parsing_statistics_xml(run_id, demux_file, conversion_file, logger):
+    total_p_b_count=[0,0,0,0]
+    stats_result={}
+
+    demux_stat=ET.parse(demux_file)
+    root=demux_stat.getroot()
+    projects=[]
+    logger.info('Starting conversion for demux file')
+    for child in root.iter('Project'):
+        projects.append(child.attrib['name'])
+    total_samples = 0
+    number_of_lanes = get_machine_lanes(run_id)
+    for i in range(len(projects)):
+        p_temp=root[0][i]
+        samples=p_temp.findall('Sample')
+
+        sample_all_index=len(samples)-1
+        barcodeCount ,perfectBarcodeCount, b_count =[], [] ,[]
+        p_b_count, one_mismatch_count =[], []
+
+        dict_stats={}
+        for c in p_temp[sample_all_index].iter('BarcodeCount'):
+        #for c in p_temp[sample].iter('BarcodeCount'):
+            #b_count.append(c.text)
+            barcodeCount.append(c.text)
+        for c in p_temp[sample_all_index].iter('PerfectBarcodeCount'):
+            p_b_count.append(c.text)
+
+        # look for One mismatch barcode
+
+        if p_temp[sample_all_index].find('OneMismatchBarcodeCount') ==None:
+             for  fill in range(number_of_lanes):
+                one_mismatch_count.append('NaN')
+        else:
+            for c in p_temp[sample_all_index].iter('OneMismatchBarcodeCount'):
+                one_mismatch_count.append(c.text)
+
+        #one_mismatch_count.append(one_m_count)
+
+        dict_stats['BarcodeCount']=barcodeCount
+        dict_stats['PerfectBarcodeCount']=p_b_count
+        dict_stats['sampleNumber']=len(samples) -1
+        dict_stats['OneMismatchBarcodeCount']=one_mismatch_count
+        stats_result[projects[i]]=dict_stats
+        if projects[i] != 'default' and projects[i] != 'all':
+            total_samples += len(samples) -1
+        logger.info('Complete parsing from demux file for project %s', projects[i])
+    # overwrite the value for total samples
+    stats_result['all']['sampleNumber']=total_samples
+
+    conversion_stat=ET.parse(conversion_file)
+    root_conv=conversion_stat.getroot()
+    projects=[]
+    logger.info('Starting conversion for conversion file')
+    for child in root_conv.iter('Project'):
+        projects.append(child.attrib['name'])
+    for i in range(len(projects)):
+        p_temp=root_conv[0][i]
+        samples=p_temp.findall('Sample')
+        sample_all_index=len(samples)-1
+        tiles=p_temp[sample_all_index][0][0].findall('Tile')
+        tiles_index=len(tiles)-1
+        list_raw_yield=[]
+        list_raw_yield_q30=[]
+        list_raw_qualityscore=[]
+        list_pf_yield=[]
+        list_pf_yield_q30=[]
+        list_pf_qualityscore=[]
+
+        for l_index in range(number_of_lanes):
+            raw_yield_value = 0
+            raw_yield_q30_value = 0
+            raw_quality_value = 0
+            pf_yield_value = 0
+            pf_yield_q30_value = 0
+            pf_quality_value = 0
+            for t_index in range(tiles_index):
+
+                     # get the yield value for RAW and for read 1 and 2
+                for c in p_temp[sample_all_index][0][l_index][t_index][0].iter('Yield'):
+                    raw_yield_value +=int(c.text)
+                    # get the yield Q30 value for RAW  and for read 1 and 2
+                for c in p_temp[sample_all_index][0][l_index][t_index][0].iter('YieldQ30'):
+                    raw_yield_q30_value +=int(c.text)
+                for c in p_temp[sample_all_index][0][l_index][t_index][0].iter('QualityScoreSum'):
+                    raw_quality_value +=int(c.text)
+                 # get the yield value for PF and for read 1 and 2
+                for c in p_temp[sample_all_index][0][l_index][t_index][1].iter('Yield'):
+                    pf_yield_value +=int(c.text)
+                # get the yield Q30 value for PF and for read 1 and 2
+                for c in p_temp[sample_all_index][0][l_index][t_index][1].iter('YieldQ30'):
+                    pf_yield_q30_value +=int(c.text)
+                for c in p_temp[sample_all_index][0][l_index][t_index][1].iter('QualityScoreSum'):
+                    pf_quality_value +=int(c.text)
+            list_raw_yield.append(str(raw_yield_value))
+            list_raw_yield_q30.append(str(raw_yield_q30_value))
+            list_raw_qualityscore.append(str(raw_quality_value))
+            list_pf_yield.append(str(pf_yield_value))
+            list_pf_yield_q30.append(str(pf_yield_q30_value))
+            list_pf_qualityscore.append(str(pf_quality_value))
+
+        stats_result[projects[i]]['RAW_Yield']=list_raw_yield
+        stats_result[projects[i]]['RAW_YieldQ30']=list_raw_yield_q30
+        stats_result[projects[i]]['RAW_QualityScore']=list_raw_qualityscore
+        stats_result[projects[i]]['PF_Yield']=list_pf_yield
+        stats_result[projects[i]]['PF_YieldQ30']=list_pf_yield_q30
+        stats_result[projects[i]]['PF_QualityScore']=list_pf_qualityscore
+        logger.info('completed parsing for xml stats for project %s', projects[i])
+
+    unknow_lanes  = []
+    unknow_barcode_start_index= len(projects)
+    counter=0
+    logger.info('Collecting the Top Unknow Barcodes')
+    for un_child in root_conv.iter('TopUnknownBarcodes'):
+        un_index= unknow_barcode_start_index + counter
+        p_temp=root_conv[0][un_index][0]
+        unknow_barcode_lines=p_temp.findall('Barcode')
+        unknow_bc_count=[]
+        for lanes in unknow_barcode_lines:
+            unknow_bc_count.append(lanes.attrib)
+
+        unknow_lanes.append(unknow_bc_count)
+        counter +=1
+    stats_result['TopUnknownBarcodes']= unknow_lanes
+    logger.info('Complete XML parsing ')
+
+    return stats_result
+
+
+
+
+def get_size_dir (directory, conn, logger):
+    '''
+    Description:
+        Recursive function to get the size of the run directory on the 
+        remote server.
+        Optional can send an email to inform about the issue
+    Input:
+        logger # contains the logger object 
+        conn # Connectio samba object
+        directory   # root folder to start the checking file size
+    Variables:
+        file_list # contains the list of file and subfolders
+        count_file_size # partial size for the subfolder
+    Return:
+        count_file_size # in the last iteraction will return the total
+                    size of the folder
+    '''
+    count_file_size = 0
+    file_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME, directory)
+    for sh_file in file_list:
+        if sh_file.isDirectory:
+            if (sh_file.filename == '.' or sh_file.filename == '..'):
+                continue
+            logger.debug('Checking space for directory %s', sh_file.filename)
+            sub_directory = os.path.join (directory,sh_file.filename)
+            count_file_size += get_size_dir (sub_directory, conn, logger)
+        else:
+            count_file_size += sh_file.file_size
+
+    return count_file_size
+
+
+def get_run_disk_utilization (conn, run_Id_used, run_processing_id, logger):
+    '''
+    Description:
+        Recursive function to get the size of the run directory on the 
+        remote server.
+        Optional can send an email to inform about the issue
+    Input:
+        logger # contains the logger object 
+        conn # Connectio samba object
+        run_Id_used   # root folder to start the checking file size
+        run_processing_id #
+    Functions:
+        get_size_dir    # Located on this file
+    Variables:
+        file_list # contains the list of file and subfolders
+        count_file_size # partial size for the subfolder
+    Return:
+        count_file_size # in the last iteraction will return the total
+                    size of the folder
+    '''
+    logger.debug('Executing the function get_run_disk_utilization')
+    if RunProcess.objects.filter(pk = run_processing_id).exists():
+        run_be_updated = RunProcess.objects.get(pk = run_processing_id)
+        get_full_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,run_Id_used)
+        rest_of_dir_size = 0
+        data_dir_size = 0
+        images_dir_size = 0
+        in_mega_bytes = 1024*1024
+        logger.info('Starting getting disk space utilization for runID  %s', run_Id_used)
+        for item_list in get_full_list:
+            if item_list.filename == '.' or item_list.filename == '..':
+                continue
+            if item_list.filename == 'Data':
+                dir_data = os.path.join(run_Id_used,'Data')
+                data_dir_size = get_size_dir(dir_data , conn,logger)
+                continue
+            elif item_list.filename == 'Images':
+                dir_images = os.path.join(run_Id_used, 'Images')
+                images_dir_size = get_size_dir(dir_images , conn,logger)
+                continue
+            if item_list.isDirectory:
+                item_dir = os.path.join(run_Id_used, item_list.filename)
+                rest_of_dir_size += get_size_dir(item_dir, conn,logger)
+            else:
+                rest_of_dir_size += item_list.file_size
+        # format file space and save it into database
+        data_dir_size_formated = '{0:,}'.format(round(data_dir_size/in_mega_bytes))
+        images_dir_size_formated = '{0:,}'.format(round(images_dir_size/in_mega_bytes))
+        rest_of_dir_size_formated = '{0:,}'.format(round(rest_of_dir_size/in_mega_bytes))
+        run_be_updated.useSpaceImgMb= images_dir_size_formated
+        run_be_updated.useSpaceFastaMb= data_dir_size_formated
+        run_be_updated.useSpaceOtherMb= rest_of_dir_size_formated
+        run_be_updated.save()
+        logger.info('End  disk space utilization for runID  %s', run_Id_used)
+    logger.debug('Exiting the function get_run_disk_utilization')
+
+
+

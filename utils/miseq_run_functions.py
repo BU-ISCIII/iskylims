@@ -482,6 +482,53 @@ def validate_sample_sheet (sample_sheet):
     return True
 
 
+def manage_miseq_in_samplesent(run_name) :
+    '''
+    Description:
+        The function will look the run log files to check if run is 
+        completed.
+        
+    Input:
+        run_in_sample_sent  #  object name of the run
+        experiment_name     # name of the run
+        run_folder          # run folder name on the remote server
+    Variable:
+        run         # RunProcess object
+        updated_library # return value after updating the library
+    Return
+        updated_library
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('Starting function manage_miseq_in_samplesent')
+    experiment_name = run_name.get_run_name()
+    run_folder = RunningParameters.objects.get(runName_id = run_name).get_run_folder()
+    try: # waiting for sequencer run completion
+        log_folder = os.path.join(run_folder, wetlab_config.RUN_LOG_FOLDER)
+
+        status_run, run_completion_date = check_miseq_completion_run (conn, experiment_name, log_folder)
+        if status_run == 'Cancel' :
+            run_updated = handling_errors_in_run (experiment_name)
+            run_updated = run_name.set_run_state('CANCELLED')
+            run_updated.save()
+            raise ValueError ('Run was canceled')
+        elif status_run == 'still_running':
+            raise # returning to handle next run folder
+        else:
+            run_updated = RunProcess.objects.get(runName__exact = experiment_name).set_run_state('Processing run')
+            run_updated.run_finish_date = run_completion_date
+            run_updated.save()
+            logger.debug ('End function manage_miseq_in_samplesent')
+            return new_run
+    except ValueError :
+        raise
+    except:
+        string_message = 'Error when fetching the log file for the run ' + new_run
+        logging_errors (logger, string_message, False, False)
+        logger.debug ('End function manage_miseq_in_samplesent with error')
+        raise 
+    
+    return
+
 def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
     '''
     Description:
@@ -583,30 +630,15 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
             updated_libary_name = update_library_name_in_run (experiment_name, library_name)
 
             save_miseq_projects_found (projects_users, experiment_name, library_name)
-
+            run_updated = RunProcess.objects.get(runName__exact = experiment_name).set_run_state('Sample Sent')
+            return new_run
         else:
             # set run state to ERROR 
             run_updated = handling_errors_in_run (experiment_name)
             raise ValueError ('Invalid sample sheet')
+    else:
+        run_state = RunProcess.objects.get(runName__exact = experiment_name).get_run_state()
+        string_message = 'Wrong state: ' + run_state +' when calling to handle_miseq_run function '
+        raise ValueError ('Wrong run state ')
 
-    try: # waiting for sequencer run completion
-        log_folder = os.path.join(new_run, wetlab_config.RUN_LOG_FOLDER)
-
-        status_run, run_completion_date = check_miseq_completion_run (conn, experiment_name, log_folder)
-        if status_run == 'Cancel' :
-            run_updated = handling_errors_in_run (experiment_name)
-            raise ValueError ('Run was canceled')
-        elif status_run == 'still_running':
-            raise # returning to handle next run folder
-        else:
-            run_update = RunProcess.objects.get(runName__exact = experiment_name).set_run_state('Sample Sent')
-            run_update.run_finish_date = run_completion_date
-            run_update.save()
-            return new_run
-    except ValueError :
-        raise
-    except:
-        string_message = 'Error when fetching the log file for the run ' + new_run
-        logging_errors (logger, string_message, False, False)
-        raise 
 

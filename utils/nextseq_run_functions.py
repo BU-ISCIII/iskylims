@@ -123,12 +123,130 @@ def nextseq_parsing_run_information(l_run_info, l_run_parameter) :
     return running_data, run_date, instrument
 
 
-
-
-def handle_nextseq_run (conn, new_run, l_run_parameter, experiment_name):
+def manage_nextseq_in_samplesent(run_object_name) :
     '''
     Description:
-        The function will find the latest log file for the input folder
+        The function will look for the run completion file to check if run is 
+        completed.
+        If file is not found, the sequencer is  still processing the run
+    Input:
+        run_in_sample_sent  #  object name of the run
+        experiment_name     # name of the run
+        run_folder          # run folder name on the remote server
+    Variable:
+        l_run_completion    # completion file name in the local temporary folder
+        run_object_name     # RunProcess object
+        s_run_completion    # completion file name at the remote server
+        updated_library # return value after updating the library
+    Return
+        Exception if file does not exist to process next run.
+        Experiment name if run was completed
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('Starting function manage_nextseq_in_samplesent')
+    experiment_name = run_name.get_run_name()
+    logger.info('Manage %s in Sample Sent state ', experiment_name)
+    run_folder = RunningParameters.objects.get(runName_id = run_name).get_run_folder()
+    l_run_completion = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_COMPLETION)
+    s_run_completion = os.path.join(run_folder, wetlab_config.RUN_COMPLETION)
+    try:
+        l_run_completion = fetch_remote_file (conn, run_folder, s_run_completion, l_run_completion)
+        logger.info('Sucessfully fetch of RunInfo file')
+        # Get the date and time when the RunCompletionStatus is created
+        run_completion_attributes = get_attributes_remote_file (conn, new_run, s_run_completion)
+        run_completion_date = datetime.datetime.fromtimestamp(int(run_completion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
+        run_completion_date = run_object_name.set_run_completion_date()
+        
+    except Exception as e:
+        logger.info ('Completion status file is not present on the run folder')
+        logger.info ('Moving run to Processing run state')
+        run_updated = run_object_name.set_run_state('Processing Run')
+        logger.debug ('End function for handling NextSeq run with exception')
+        raise
+    finally :
+        logger.info ('Deleting local copy of completion status')
+        # cleaning up the completion  in local temporary file
+        os.remove(l_run_completion)
+
+    if not check_completion_success (l_run_completion) :
+        string_message = 'Run status was ' + status_run  
+        logging_errors (logger, string_message, False, False)
+        # Set tun to error state
+        run_updated = handling_errors_in_run (experiment_name)
+        # cleaning up the RunParameters and completion in local temporary file
+        logger.debug ('End function for handling NextSeq run with exception')
+        raise ValueError ('Run was CANCELLED')
+    else:
+        logger.debug('Deleting RunCompletionStatus.xml file')
+        os.remove(l_run_completion)
+    
+    
+def manage_nextseq_in_processing_run(run_object_name) :
+    '''
+    Description:
+        The function will look for the run completion file to check if run is 
+        completed.
+        If file is not found, the run will keep in processing the run.
+        If after the waiting time defined on MAXIMUM_TIME_WAIT_FOR_RUN_COMPLETION
+        the runn will move to error state 
+    Input:
+        run_in_sample_sent  #  object name of the run
+        experiment_name     # name of the run
+        run_folder          # run folder name on the remote server
+    Variable:
+        l_run_completion    # completion file name in the local temporary folder
+        run_object_name     # RunProcess object
+        s_run_completion    # completion file name at the remote server
+        updated_library # return value after updating the library
+    Return
+        Exception if file does not exist to process next run.
+        Experiment name if run was completed
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('Starting function manage_nextseq_in_processing_run')
+    experiment_name = run_name.get_run_name()
+    logger.info('Manage %s in Sample Sent state ', experiment_name)
+    run_folder = RunningParameters.objects.get(runName_id = run_name).get_run_folder()
+    l_run_completion = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_COMPLETION)
+    s_run_completion = os.path.join(run_folder, wetlab_config.RUN_COMPLETION)
+    try:
+        l_run_completion = fetch_remote_file (conn, run_folder, s_run_completion, l_run_completion)
+        logger.info('Sucessfully fetch of RunInfo file')
+        # Get the date and time when the RunCompletionStatus is created
+        run_completion_attributes = get_attributes_remote_file (conn, new_run, s_run_completion)
+        run_completion_date = datetime.datetime.fromtimestamp(int(run_completion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
+        run_completion_date = run_object_name.set_run_completion_date()
+        
+    except Exception as e:
+        logger.info ('Completion status file is not present on the run folder')
+        logger.info ('Moving run to Processing run state')
+        run_updated = run_object_name.set_run_state('Processing Run')
+        logger.debug ('End function for handling NextSeq run with exception')
+        raise
+    finally :
+        logger.info ('Deleting local copy of completion status')
+        # cleaning up the completion  in local temporary file
+        os.remove(l_run_completion)
+
+    if not check_completion_success (l_run_completion) :
+        string_message = 'Run status was ' + status_run  
+        logging_errors (logger, string_message, False, False)
+        # Set tun to error state
+        run_updated = handling_errors_in_run (experiment_name)
+        # cleaning up the RunParameters and completion in local temporary file
+        logger.info('Deleting runParameter and runCompletion local files')
+        os.remove(l_run_parameter)
+        os.remove(l_run_completion)
+        logger.debug ('End function for manage_nextseq_in_processing_run with exception')
+        raise ValueError ('Run was CANCELLED')
+    else:
+        logger.debug('Deleting RunCompletionStatus.xml file')
+        os.remove(l_run_completion)
+
+def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name):
+    '''
+    Description:
+        The function will copy the sample sheet to the remote run folder
     Input:
         conn        # samba connection object
         new_run     # folder remote directory for miseq run
@@ -136,14 +254,9 @@ def handle_nextseq_run (conn, new_run, l_run_parameter, experiment_name):
         experiment_name  # name used on miseq run
     Functions:
         get_projects_in_run # located at utils.sample_sheet_utils
-        get_experiment_library_name # located at utils.sample_sheet_utils
-        fetch_remote_file   # located at utils.run_common_functions
-        
-        miseq_parsing_run_information # located as this file
-        run_waiting_for_sample_sheet  # located as this file
-        save_new_miseq_run      # located as this file
-        store_sample_sheet_in_run # located as this file
-        validate_sample_sheet   # located as this file
+        copy_to_remote_file   # located at utils.run_common_functions
+        handling_errors_in_run # located at utils.run_common_functions
+        nextseq_parsing_run_information # located as this file
     Import:
         os
         shutil
@@ -170,74 +283,9 @@ def handle_nextseq_run (conn, new_run, l_run_parameter, experiment_name):
         file_content
     '''
     logger = logging.getLogger(__name__)
-    logger.debug ('Starting function for handling NextSeq run')
+    logger.debug ('Starting function handle_nextseq_recorded_run')
     if RunProcess.objects.filter(runName__exact = experiment_name , runState__exact ='Recorded').exists():
         run_process = RunProcess.objects.filter(runName__exact = experiment_name )
-        l_run_completion = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_COMPLETION)
-        s_run_completion = os.path.join(new_run, wetlab_config.RUN_COMPLETION)
-        try:
-            l_run_completion = fetch_remote_file (conn, new_run, s_run_completion, l_run_completion)
-            logger.info('Sucessfully fetch of RunInfo file')
-            # Get the date and time when the RunCompletionStatus is created
-            run_completion_attributes = get_attributes_remote_file (conn, new_run, s_run_completion)
-            run_completion_date = datetime.datetime.fromtimestamp(int(run_completion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
-        except Exception as e:
-            string_message = 'Unable to fetch the completion status file on folder ' + new_run
-            logging_errors (logger, string_message, True, False)
-            logger.info ('Deleting local copy of completion status')
-            # cleaning up the completion  in local temporary file
-            os.remove(l_run_completion)
-            logger.debug ('End function for handling NextSeq run with exception')
-            raise   # returning to handle next run folder
-        
-        if not check_completion_success (l_run_completion) :
-            string_message = 'Run status was ' + status_run  
-            logging_errors (logger, string_message, False)
-            # Set tun to error state
-            run_updated = handling_errors_in_run (experiment_name)
-            run_updated.run_finish_date = run_completion_date
-            run_updated.save()
-            # cleaning up the RunParameters and completion in local temporary file
-            logger.debug('Deleting runParameter and runCompletion local files')
-            os.remove(l_run_parameter)
-            os.remove(l_run_completion)
-            logger.debug ('End function for handling NextSeq run with exception')
-            raise ValueError ('Run was CANCELLED')
-        else:
-            logger.debug('Deleting RunCompletionStatus.xml file')
-            os.remove(l_run_completion)
-        # Handling Sample Sheet file
-        exp_name_id = RunProcess.objects.get(runName__exact = experiment_name).id
-        sample_sheet_tmp_dir = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY_RECORDED,exp_name_id)
-        l_sample = os.path.join(sample_sheet_tmp_dir, wetlab_config.SAMPLE_SHEET)
-        if os.path.exists(l_sample):
-            if wetlab_config.COPY_SAMPLE_SHEET_TO_REMOTE :
-                # copy Sample heet file to remote directory
-                logger.info('Copy sample sheet to remote folder %s', new_run)
-                s_sample= os.path.join(new_run, wetlab_config.SAMPLE_SHEET)
-                try:
-                    sample_sheet_copied = copy_to_remote_file  (conn, new_run, s_sample, l_sample)
-                    logger.info('Sucessfully copy Sample sheet to remote folder')
-                except Exception as e:
-                    string_message = 'Unable to copy the Sample Sheet to remote folder ' + new_run
-                    logging_errors (logger, string_message, True, False)
-                    logger.info ('Deleting local copy of completion status ')
-                    logger.debug ('End function for handling NextSeq run with exception')
-                    raise ValueError ('Unable to delete local Sample Sheet')
-            try:
-                os.shutil(sample_sheet_tmp_dir)
-                logger.debug('Deleted temporary folder containing the samplesheet')
-            except Exception as e:
-                string_message = 'Unable to delete temporary folder with the sample sheet ' + sample_sheet_tmp_dir
-                logging_errors (logger, string_message, True, True)
-                logger.debug ('End function for handling NextSeq run with exception')
-                raise ValueError ('Unable to delete local Sample Sheet')
-        else:
-            string_message = 'sample sheet not found on local Directory ' + sample_sheet_tmp_dir
-            logging_errors (logger, string_message, True, True)
-            run_updated = handling_errors_in_run (experiment_name)
-            logger.debug ('End function for handling NextSeq run with exception')
-            raise ValueError ('Sample Sheet not found')
         
         # Fetch run info
         l_run_info = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_INFO)
@@ -263,23 +311,58 @@ def handle_nextseq_run (conn, new_run, l_run_parameter, experiment_name):
         # deleting RunParameter and RunInfo
         os.remove(l_run_parameter)
         os.remove(l_run_info)
-        
-        run_process = RunProcess.objects.get(runName__exact = experiment_name).set_run_state('Sample Sent')
-        run_process.run_finish_date = run_completion_date
-        run_process.save()
+
+        # Handling Sample Sheet file
+        exp_name_id = RunProcess.objects.get(runName__exact = experiment_name).id
+        sample_sheet_tmp_dir = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY_RECORDED,exp_name_id)
+        l_sample = os.path.join(sample_sheet_tmp_dir, wetlab_config.SAMPLE_SHEET)
+        if os.path.exists(l_sample):
+            if wetlab_config.COPY_SAMPLE_SHEET_TO_REMOTE :
+                # copy Sample heet file to remote directory
+                logger.info('Copy sample sheet to remote folder %s', new_run)
+                s_sample= os.path.join(new_run, wetlab_config.SAMPLE_SHEET)
+                try:
+                    sample_sheet_copied = copy_to_remote_file  (conn, new_run, s_sample, l_sample)
+                    logger.info('Sucessfully copy Sample sheet to remote folder')
+                except Exception as e:
+                    string_message = 'Unable to copy the Sample Sheet to remote folder ' + new_run
+                    logging_errors (logger, string_message, True, False)
+                    logger.info ('Deleting local copy of completion status ')
+                    logger.debug ('End function for handling NextSeq run with exception')
+                    raise ValueError ('Unable to delete local Sample Sheet')
+            # Update run to Sample Sent
+            run_process = RunProcess.objects.get(runName__exact = experiment_name).set_run_state('Sample Sent')
+            
+            # Cleaning up the temporary folder with the sample sheet
+            try:
+                os.shutil(sample_sheet_tmp_dir)
+                logger.debug('Deleted temporary folder containing the samplesheet')
+            except Exception as e:
+                string_message = 'Unable to delete temporary folder with the sample sheet ' + sample_sheet_tmp_dir
+                logging_errors (logger, string_message, True, True)
+                logger.debug ('End function for handling NextSeq run with exception')
+                raise ValueError ('Unable to delete local Sample Sheet')
+
+        else:
+            string_message = 'sample sheet not found on local Directory ' + sample_sheet_tmp_dir
+            logging_errors (logger, string_message, True, True)
+            run_updated = handling_errors_in_run (experiment_name)
+            logger.debug ('End function for handling NextSeq run with exception')
+            raise ValueError ('Sample Sheet not found in local folder')
+
         logger.debug ('End function for handling NextSeq run ')
         return run_process
     else:
         if not RunProcess.objects.filter(runName__exact = experiment_name).exists():
             string_message = 'Run ' + experiment_name +' is not yet defined on database'
             logging_errors (logger, string_message, False, False)
-            logger.debug ('End function for handling NextSeq run with exception')
+            logger.debug ('End function handle_nextseq_recorded_run with exception')
             raise
         else:
             run_state = RunProcess.objects.filter(runName__exact = experiment_name).get_state()
             string_message = 'Run ' + experiment_name +' is in state ' + run_state + '.  Should be in Recorded'
             logging_errors (logger, string_message, False, False)
-            logger.debug ('End function for handling NextSeq run with exception')
+            logger.debug ('End function fhandle_nextseq_recorded_run with exception')
             raise ValueError ('Run on wrong state')
     return
 
