@@ -67,11 +67,14 @@ RUN_PARAMETER_NEXTSEQ = 'RunParameters.xml'
 #RUN_PARAMETER_MISEQ = 'runParameters.xml'
 RUN_INFO = 'RunInfo.xml'
 RUN_COMPLETION = 'RunCompletionStatus.xml'
-SAMPLE_SHEET = 'SampleSheet.csv'
+SAMPLE_SHEET = 'samplesheet.csv'
 ## sample sheet to be copied on the remote folder 
 COPY_SAMPLE_SHEET_TO_REMOTE = False # boolean constant True if NestSeq 
                                 # sample sheet needs to be copied to remote server
 RUN_LOG_FOLDER = 'Logs'
+
+CONVERSION_STATS_FOLDER = 'Data/Intensities/BaseCalls'
+CONVERSION_STATS_FILE = 'ConversionStats.xml'
 ##############################################################
 
 ############ VALUE TAG FOR XML FILES #########################
@@ -84,7 +87,11 @@ APPLICATION_NAME_TAG = 'ApplicationName'
 ############ DEFAULT VALUES FOR MISEQ SAMPLE SHEET  ##########
 DEFAULT_LIBRARY_KIT = 'Unknown'
 DEFAULT_CENTER = 'CNM'
+##############################################################
+
+############ MAXIMUM TIME TO WAIT BEFORE MOVING TO ERROR #####
 MAXIMUM_TIME_WAIT_SAMPLE_SHEET = '2' # in days
+MAXIMUM_TIME_WAIT_RUN_COMPLETION = '2' # in days
 ##############################################################
 
 #########  FOLDER SETTINGS FOR PROCESSING LIBRARY KITS #######

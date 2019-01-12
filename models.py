@@ -118,10 +118,21 @@ class RunProcess(models.Model):
         self.save()
         return self
         
+    def set_run_date (self, run_date):
+        self.run_date = run_date
+        self.save()
+        return run_date
+        
+    
     def set_run_completion_date (self, completion_date):
-        selft.run_finish_date = completion_date
+        self.run_finish_date = completion_date
         self.save()
         return completion_date
+
+    def set_sequencer (self, sequencer):
+        self.sequencerModel = sequencer
+        self.save()
+        return sequencer
 
 class LibraryKit (models.Model):
     libraryName = models.CharField(max_length=125)
@@ -235,6 +246,11 @@ class Projects(models.Model):
 
     def get_project_info_debug(self): ##useful for debugging
         return str(self.__dict__)
+        
+    def set_project_state (self, state):
+        self.procState = state
+        self.save()
+        return state
 
 
 class RunningParametersManager (models.Manager) :

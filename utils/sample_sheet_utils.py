@@ -60,9 +60,9 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
                  date_line[1] = '/'.join(temp_date)
 
             try:
-                date_object = datetime.strptime(date_line[1],'%m/%d/%Y')
+                date_object = datetime.datetime.strptime(date_line[1],'%m/%d/%Y')
             except:
-                date_object = datetime.strptime(date_line[1],'%d/%m/%Y')
+                date_object = datetime.datetime.strptime(date_line[1],'%d/%m/%Y')
             date_sample = date_object.strftime('%Y%m%d')
             date_found = False
 

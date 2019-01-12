@@ -41,6 +41,8 @@ def check_miseq_completion_run (conn, experiment_name, log_folder):
     try:
         log_cycles, log_file_content = get_latest_miseq_log(conn, log_folder)
     except :
+        string_message = 'Unable to fetch the log files for run ' + experiment_name
+        logging_errors( logger, string_message, False, False)
         raise IOError ('Unable to fetch log file')
     if 'Cancel' in log_file_content :
         status_run = 'Canceled'
@@ -209,38 +211,6 @@ def miseq_parsing_run_information(run_info, run_parameter):
     return running_data, run_date, instrument
 
 
-def need_to_wait_sample_sheet (experiment_name):
-    '''
-    Description:
-        The function get the time run was recorded to compare
-        with the present time. If the value is less that the allowed time
-        to wait (MAXIMUM_TIME_WAIT_SAMPLE_SHEET) will return True. 
-        False is returned if the time is bigger
-    Input:
-        experiment_name  # experiment name to be checked
-    Import:
-        RunProccess     # from iSkyLIMS_wetlab.models
-        datetime
-    Constant:
-        MAXIMUM_TIME_WAIT_SAMPLE_SHEET 
-    Variable:
-        run_date  # date when the run was create on the sequencer
-        number_of_days # difference of days between run_date and present
-        today  # present day
-    Return:
-        True if the number of days is less that the maximum number of days
-        to wait
-    '''
-    logger = logging.getLogger(__name__)
-    logger.debug ('Starting function need_to_wait_sample_sheet')
-    run_date = RunProcess.objects.get(runName__exact = experiment_name).get_run_date()
-    run_date =  datetime.strptime(run_date,"%B %d, %Y").date()
-    today = datetime.datetime.now().date()
-    number_of_days = abs((today - run_date).days)
-    if number_of_days > int (wetlab_config.MAXIMUM_TIME_WAIT_SAMPLE_SHEET):
-        return False
-    else:
-        return True
 
 def run_waiting_for_sample_sheet (experiment_name):
     '''
@@ -481,22 +451,82 @@ def validate_sample_sheet (sample_sheet):
     logger.debug('End the function validate_sample_sheet' ) 
     return True
 
-
-def manage_miseq_in_samplesent(run_name) :
+def manage_miseq_in_processing_run (conn, run_name):
     '''
     Description:
         The function will look the run log files to check if run is 
-        completed.
-        
+        completed. Run will remain in processing run if the latest
+        cycle log did not reach the cycle number in the run  
     Input:
-        run_in_sample_sent  #  object name of the run
-        experiment_name     # name of the run
-        run_folder          # run folder name on the remote server
+        conn            #  Samba connection object
+        run_name        # run object
+    Constant:
+        MAXIMUM_TIME_WAIT_RUN_COMPLETION
+    Functions:
+        need_to_wait_more   # located in utils.run_common_functions
+        check_miseq_completion_run # located in this file
     Variable:
-        run         # RunProcess object
-        updated_library # return value after updating the library
+        run_completion_date # completion date of the run 
+        run_folder      # folder on the remote server
+        run_updated     # Updated run object
+        status_run         # RunProcess status (Cancelled, still_running,
+                            Completed as planned)
     Return
-        updated_library
+        experiment_name
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('Starting function manage_miseq_in_processing_run')
+    experiment_name = run_name.get_run_name()
+    run_folder = RunningParameters.objects.get(runName_id = run_name).get_run_folder()
+    try: # waiting for sequencer run completion
+        log_folder = os.path.join(run_folder, wetlab_config.RUN_LOG_FOLDER)
+
+        status_run, run_completion_date = check_miseq_completion_run (conn, experiment_name, log_folder)
+        if status_run == 'Cancel' :
+            run_updated = handling_errors_in_run (experiment_name)
+            run_updated = run_name.set_run_state('CANCELLED')
+            run_updated.save()
+            raise ValueError ('Run was canceled')
+        elif status_run == 'still_running':
+            if need_to_wait_more (experiment_name, wetlab_config. MAXIMUM_TIME_WAIT_RUN_COMPLETION):
+                logger.info('Run $s still waiting for sequencer to finish', experiment_name)
+            raise # returning to handle next run folder
+        else:
+            run_updated = RunProcess.objects.get(runName__exact = experiment_name).set_run_state('Processed run')
+            run_updated.run_finish_date = run_completion_date
+            run_updated.save()
+            logger.debug ('End function manage_miseq_in_processing_run %s' , experiment_name)
+            return experiment_name
+    except ValueError :
+        raise
+    except:
+        string_message = 'Error when fetching the log file for the run ' + new_run
+        logging_errors (logger, string_message, False, False)
+        logger.debug ('End function manage_miseq_in_processing_run with error')
+        raise 
+    
+
+
+
+def manage_miseq_in_samplesent(conn, run_name) :
+    '''
+    Description:
+        The function will look the run log files to check if run is 
+        completed. Run will remain in processing run if the latest
+        cycle log did not reach the cycle number in the run  
+    Input:
+        conn            #  Samba connection object
+        run_name        # run object
+    Functions:
+        check_miseq_completion_run # located in this file
+    Variable:
+        run_completion_date # completion date of the run 
+        run_folder      # folder on the remote server
+        run_updated     # Updated run object
+        status_run         # RunProcess status (Cancelled, still_running,
+                            Completed as planned)
+    Return
+        experiment_name
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function manage_miseq_in_samplesent')
@@ -511,14 +541,10 @@ def manage_miseq_in_samplesent(run_name) :
             run_updated = run_name.set_run_state('CANCELLED')
             run_updated.save()
             raise ValueError ('Run was canceled')
-        elif status_run == 'still_running':
-            raise # returning to handle next run folder
-        else:
+        else :
             run_updated = RunProcess.objects.get(runName__exact = experiment_name).set_run_state('Processing run')
-            run_updated.run_finish_date = run_completion_date
-            run_updated.save()
-            logger.debug ('End function manage_miseq_in_samplesent')
-            return new_run
+            logger.debug ('End function manage_miseq_in_samplesent for run $s' , experiment_name)
+            return experiment_name
     except ValueError :
         raise
     except:
@@ -526,8 +552,7 @@ def manage_miseq_in_samplesent(run_name) :
         logging_errors (logger, string_message, False, False)
         logger.debug ('End function manage_miseq_in_samplesent with error')
         raise 
-    
-    return
+
 
 def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
     '''
@@ -556,6 +581,7 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
         RUN_TEMP_DIRECTORY
         RUN_INFO
         SAMPLE_SHEET
+        MAXIMUM_TIME_WAIT_SAMPLE_SHEET
     Variables:      
         instrument  # name of the sequencer used in the run
         l_run_info  # local temporary copy of RunInfo
@@ -611,7 +637,7 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
             logger.info('Error when getting  Sample sheet $s', e)
             logger.info('Exception fetched to extend the time for fetching Sample Sheet')
             os.remove(l_sample_sheet)
-            if need_to_wait_sample_sheet (experiment_name) :
+            if need_to_wait_more (experiment_name, wetlab_config.MAXIMUM_TIME_WAIT_SAMPLE_SHEET) :
                 raise # returning to handle next run folder
             else:
                 os.remove(l_sample_sheet)

@@ -25,8 +25,8 @@ def looking_for_new_runs ():
         files to store in database.
         
         The second one "search_not_completed_run" will check different files
-        (depending on the state of the run ) on the run remote folder 
-        to fetch the information and moving the run into steps from 
+        (depending on the state of the run ) on the run remote folder, 
+        to fetch the required information and moving the run into steps from 
         Sample Sent towards Completed
     Functions:
         search_update_new_runs # located at utils.update_run_state
@@ -70,7 +70,7 @@ def looking_for_new_runs ():
     
     updated_runs = search_not_completed_run()
     logger.info('Exiting the proccess for  uncompleted runs')
-
+    '''
     for state in updated_runs:
         if (updated_runs[state] == "" ):
             logger.debug('found runs on %s but not found the conditions to upgrade the state', state)
@@ -80,9 +80,9 @@ def looking_for_new_runs ():
             for run_changed in updated_run[state]:
                 logger.info('the run  %s was changed from %s', run_changed, state)
                 count +=1
+    '''
 
-
-    time_stop= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    time_stop= datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(time_stop)
     print ('****** Exiting the process for searching not completed runs')
     logger.info('###########-----End Crontab--######################')
