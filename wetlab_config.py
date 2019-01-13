@@ -74,6 +74,7 @@ COPY_SAMPLE_SHEET_TO_REMOTE = False # boolean constant True if NestSeq
 RUN_LOG_FOLDER = 'Logs'
 
 CONVERSION_STATS_FOLDER = 'Data/Intensities/BaseCalls'
+REPORT_FOLDER = 'Report'
 CONVERSION_STATS_FILE = 'ConversionStats.xml'
 ##############################################################
 

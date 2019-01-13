@@ -1,7 +1,7 @@
-
-
-
-
+import os
+from iSkyLIMS_wetlab import wetlab_config
+from iSkyLIMS_wetlab.models import *
+from .run_common_functions import *
 
 def process_run_in_samplesent_state (process_list, logger):
      # prepare a dictionary with key as run_name and value the RunID
@@ -554,12 +554,6 @@ def update_run_state(run_id, state, logger):
     run.runState= state
     run.save()
 
-def update_project_state(run_id, state, logger):
-    projects_to_update = Projects.objects.filter(runprocess_id__exact = run_id)
-    for project in projects_to_update :
-        logger.info('updating the project state for %s to %s ', project, state)
-        project.procState = state
-        project.save()
 
 def parsing_statistics_xml(run_id, demux_file, conversion_file, logger):
     total_p_b_count=[0,0,0,0]
@@ -781,4 +775,102 @@ def get_run_disk_utilization (conn, run_Id_used, run_processing_id, logger):
     logger.debug('Exiting the function get_run_disk_utilization')
 
 
+def manage_run_in_processed_run (conn, run_object_name):
+    '''
+    Description:
+        The function will check if exists the folder that are created
+        during the bcl2fastq conversion 
+        If exists the run state will move to Processing Bcl2fastq  
+    Input:
+        conn # Connectio samba object
+        run_object_name   # runProcess object
+    Variables:
+        experiment_name # Name of the run
+        count_file_size # partial size for the subfolder
+        run_folder      # run folder on the remote server
+        statistics_folder # statistics folder on the remote server 
+    Return:
+        experiment_name if the run is updated. Empty if not
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('Starting function manage_run_in_processed_run')
+    experiment_name = run_object_name.get_run_name()
+    run_folder = RunningParameters.objects.get(runName_id = run_object_name).get_run_folder()
+    statistics_folder = os.path.join(run_folder, wetlab_config.CONVERSION_STATS_FOLDER)
+    if 'Processed Run' == run_object_name.get_run_state() :
+        # connect to statistics folder to check if bcl2fastq process is running
+        try:  
+            file_list = conn.listPath( wetlab_config.SAMBA_SHARED_FOLDER_NAME, statistics_folder)
+        except: 
+            logger.info('No statistics folder were found for %s', experiment_name) 
+            logger.debug ('End function manage_run_in_processed_run')
+            return ''
+        run_state = run_object_name.set_run_state('Processing Bcl2fastq')
+    
+    else:
+        string_message = 'Invalid state when calling to ' + experiment_name 
+        logging_errors(logger, string_message , False , False)
+        logger.debug ('End function manage_run_in_processed_run with error')
+        return
+    logger.debug ('End function manage_run_in_processed_run')
+    return experiment_name
 
+
+def manage_run_in_processing_bcl2fast2 (conn, run_object_name):
+    '''
+    Description:
+        The function will check if exists the folder that are created
+        during the bcl2fastq conversion 
+        If exists the run state will move to Processing Bcl2fastq  
+    Input:
+        conn # Connectio samba object
+        run_object_name   # runProcess object
+    Constant:
+        REPORT_FOLDER
+    Functions:
+        set_state_in_all_projects # located at utils.run_common_functions
+    Variables:
+        experiment_name # Name of the run
+        count_file_size # partial size for the subfolder
+        run_folder      # run folder on the remote server
+        s_conversion_stats # path for the conversionStats file
+        statistics_folder # statistics folder on the remote server 
+    Return:
+        experiment_name if the run is updated. Empty if not
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('Starting function manage_run_in_processing_bcl2fast2_run')
+    experiment_name = run_object_name.get_run_name()
+    run_folder = RunningParameters.objects.get(runName_id = run_object_name).get_run_folder()
+    statistics_folder = os.path.join(run_folder, wetlab_config.CONVERSION_STATS_FOLDER)
+    if 'Processing Bcl2fastq' == run_object_name.get_run_state() :
+        # connect to statistics report folder to check if bcl2fastq process is ended
+        try:  
+            file_list = conn.listPath( wetlab_config.SAMBA_SHARED_FOLDER_NAME, statistics_folder)
+        except: 
+            string_message = 'Folder statistics have been deleted for ' + experiment_name
+            logging_errors(logger, string_message, False, False)
+            logger.debug ('End function manage_run_in_processing_bcl2fast2 with error')
+            return ''
+        for sh in file_list:
+            if sh.filename == wetlab_config.REPORT_FOLDER :
+                logger.info('bcl2fastq has been completed for  %s', experiment_name)
+                # Get the time when  the Bcl2Fastq process is ending
+                s_conversion_stats = os.path.join (statistics_folder, wetlab_config.CONVERSION_STATS_FILE)
+                conversion_attributes = conn.getAttributes(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,s_conversion_stats)
+                bcl2fastq_finish_date = datetime.datetime.fromtimestamp(int(conversion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
+                bcl2fastq_finish_date = run_object_name.set_run_bcl2fastq_finished_date(bcl2fastq_finish_date)
+                
+                set_run_state('Processed Bcl2fastq')
+                set_state_in_all_projects(experiment_name, 'Processed Bcl2fastq')
+
+                logger.info ('Updated the Bcl2Fastq time in the run %s', run_item)
+                break
+         
+    else:
+        string_message = 'Invalid state when calling to ' + experiment_name 
+        logging_errors(logger, string_message , False , False)
+        logger.debug ('End function manage_run_in_processing_bcl2fast2 with error')
+        return ''
+    logger.debug ('End function manage_run_in_processing_bcl2fast2 with error')
+    return experiment_name

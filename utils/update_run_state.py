@@ -99,7 +99,7 @@ def search_update_new_runs ():
         to execute its dedicate handler process.
     Functions:
         open_samba_connection # located in utils.wetlab_misc_utilities.py 
-        get_new_runs_on_remote_server # located at this file
+        get_new_runs_on_remote_server # located at utils.run_common_functions file
         validate_sample_sheet   # located at this file
         save_new_miseq_run # located at this file
     Constants:
@@ -253,8 +253,7 @@ def search_not_completed_run ():
         logger # log object for logging 
     Functions:
         open_samba_connection # located in utils.wetlab_misc_utilities.py 
-        get_new_runs_on_remote_server # located at this file
-        validate_sample_sheet   # located at this file
+        
         save_new_miseq_run # located at this file
     Constants:
         PROCESSED_RUN_FILE
@@ -347,16 +346,8 @@ def search_not_completed_run ():
             updated_run['Processed run'] = []
             logger.debug('Start handling the runs in  Processed Run state') 
             for run_in_processed_run in runs_to_handle[state]:
-                run_platform = run_in_processed_run.get_run_platform()
                 try:
-                    if 'Next-Seq' in run_platform :
-                        updated_run['Processed run'].append(manage_nextseq_in_processing_run(conn, run_in_processed_run))
-                    elif 'Mi-Seq' in run_platform :
-                        updated_run['Processed run'].append(manage_miseq_in_processing_run(conn, run_in_processed_run))
-                    else:
-                        string_message = 'Platform ' + run_platform +' is not supported '
-                        logging_errors (logger, string_message , False, False)
-                        continue
+                    updated_run['Processed run'].append(manage_run_in_processed_run(conn, run_in_processed_run))
                 except :
                     logger.info('Handling the exception to continue with the next item')
                     continue
@@ -365,11 +356,11 @@ def search_not_completed_run ():
         elif state == 'Processing Bcl2fastq':
             for run_in_processing_bcl2fastq_run in runs_to_handle[state] :
                 pass
-                #updated_run[state].append( manage_run_in_processing_bcl2fast2_run(conn, run_in_processing_bcl2fastq_run))
+                #updated_run[state].append( manage_run_in_processing_bcl2fast2 (conn, run_in_processing_bcl2fastq_run))
         elif state == 'Processed Bcl2fastq':
             for run_in_processed_bcl2fastq_run in runs_to_handle[state] :
                 pass
-                #updated_run[state].append( manage_run_in_processed_bcl2fastq_run(conn, run_in_bcl2fastq_processed_run))
+                #updated_run[state].append( manage_run_in_processed_bcl2fastq (conn, run_in_bcl2fastq_processed_run))
         else:
             string_message = 'Run in unexpected state. ' + state
             logging_errors (logger, string_message , False, False)

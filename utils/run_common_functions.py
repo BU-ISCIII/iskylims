@@ -340,7 +340,34 @@ def open_samba_connection():
     return conn
 
 
+def set_state_in_all_projects(experiment_name, state):
+    '''
+    Description:
+        The function will update the state for all project defined in the run
+    Input:
+        conn # Connectio samba object
+        experiment_name   # name of the run 
+        state       # state value to set to the project
 
+    Variables:
+        experiment_name # Name of the run
+        count_file_size # partial size for the subfolder
+        run_folder      # run folder on the remote server
+        s_conversion_stats # path for the conversionStats file
+        statistics_folder # statistics folder on the remote server 
+    Return:
+        experiment_name if the run is updated. Empty if not
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('Starting function set_state_in_all_projects')
+    run_process_id = RunProcess.objects.get(runName__exact = experiment_name).id
+    projects_to_update = Projects.objects.filter(runprocess_id = run_object_name)
+    for project in projects_to_update :
+        logger.info('updating the project state for %s to %s ', project, state)
+        state= project.set_project_state(state)
+
+    logger.debug ('End function set_state_in_all_projects')
+    return True
 
 
 

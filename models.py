@@ -123,6 +123,11 @@ class RunProcess(models.Model):
         self.save()
         return run_date
         
+    def set_run_bcl2fastq_finished_date (self, bcl2fastq_finish_date):
+        self.bcl2fastq_finish_date = bcl2fastq_finish_date
+        self.save()
+        return bcl2fastq_finish_date
+    
     
     def set_run_completion_date (self, completion_date):
         self.run_finish_date = completion_date
