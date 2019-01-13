@@ -1,7 +1,7 @@
 import xml.etree.ElementTree as ET
 from datetime import datetime
 
-from .run_common_functions import *
+from .generic_functions import *
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_drylab.models import Machines, Platform
 
@@ -251,7 +251,7 @@ def save_new_miseq_run ( experiment_name, run_date, instrument) :
         run_date        # date of run creation 
         instrument      # sequencer name
     Functions:
-        logging_errors   # locate at utils.run_common_functions
+        logging_errors   # locate at utils.generic_functions
     Imports:
         Center      # from django_utils.models
         Machines    # from iSkyLIMS_drylab.models
@@ -463,7 +463,7 @@ def manage_miseq_in_processing_run (conn, run_name):
     Constant:
         MAXIMUM_TIME_WAIT_RUN_COMPLETION
     Functions:
-        need_to_wait_more   # located in utils.run_common_functions
+        need_to_wait_more   # located in utils.generic_functions
         check_miseq_completion_run # located in this file
     Variable:
         run_completion_date # completion date of the run 
@@ -566,7 +566,7 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
     Functions:
         get_projects_in_run # located at utils.sample_sheet_utils
         get_experiment_library_name # located at utils.sample_sheet_utils
-        fetch_remote_file   # located at utils.run_common_functions
+        fetch_remote_file   # located at utils.generic_functions
         
         miseq_parsing_run_information # located as this file
         run_waiting_for_sample_sheet  # located as this file

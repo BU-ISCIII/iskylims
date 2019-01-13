@@ -2,7 +2,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 import os
 import shutil
-from .run_common_functions import *
+from .generic_functions import *
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_drylab.models import Machines, Platform
 
@@ -16,7 +16,7 @@ def check_completion_success (l_run_completion):
     Input:
         l_run_completion  # local path for the run completion file
     Functions:
-        find_xml_tag_text # located at utils.run_common_functions
+        find_xml_tag_text # located at utils.generic_functions
     Constant:
         COMPLETION_SUCCESS
     Variables
@@ -257,8 +257,8 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
         experiment_name  # name used on miseq run
     Functions:
         get_projects_in_run # located at utils.sample_sheet_utils
-        copy_to_remote_file   # located at utils.run_common_functions
-        handling_errors_in_run # located at utils.run_common_functions
+        copy_to_remote_file   # located at utils.generic_functions
+        handling_errors_in_run # located at utils.generic_functions
         nextseq_parsing_run_information # located as this file
     Import:
         os

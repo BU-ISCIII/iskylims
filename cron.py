@@ -6,7 +6,7 @@ from .wetlab_config import *
 from .utils.update_run_state import search_update_new_runs, search_not_completed_run
 
 
-from .utils.run_common_functions import  open_log
+from .utils.generic_functions import  open_log
 
 import os , sys, traceback,errno
 

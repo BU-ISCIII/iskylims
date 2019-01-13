@@ -1,7 +1,7 @@
 import os
 from iSkyLIMS_wetlab import wetlab_config
 from iSkyLIMS_wetlab.models import *
-from .run_common_functions import *
+from .generic_functions import *
 
 def process_run_in_samplesent_state (process_list, logger):
      # prepare a dictionary with key as run_name and value the RunID
@@ -829,7 +829,7 @@ def manage_run_in_processing_bcl2fast2 (conn, run_object_name):
     Constant:
         REPORT_FOLDER
     Functions:
-        set_state_in_all_projects # located at utils.run_common_functions
+        set_state_in_all_projects # located at utils.generic_functions
     Variables:
         experiment_name # Name of the run
         count_file_size # partial size for the subfolder
