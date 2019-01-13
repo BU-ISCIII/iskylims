@@ -797,7 +797,7 @@ def manage_run_in_processed_run (conn, run_object_name):
     experiment_name = run_object_name.get_run_name()
     run_folder = RunningParameters.objects.get(runName_id = run_object_name).get_run_folder()
     statistics_folder = os.path.join(run_folder, wetlab_config.CONVERSION_STATS_FOLDER)
-    if 'Processed Run' == run_object_name.get_run_state() :
+    if 'Processed Run' == run_object_name.get_state() :
         # connect to statistics folder to check if bcl2fastq process is running
         try:  
             file_list = conn.listPath( wetlab_config.SAMBA_SHARED_FOLDER_NAME, statistics_folder)
@@ -806,6 +806,7 @@ def manage_run_in_processed_run (conn, run_object_name):
             logger.debug ('End function manage_run_in_processed_run')
             return ''
         run_state = run_object_name.set_run_state('Processing Bcl2fastq')
+        set_state_in_all_projects(experiment_name, 'Processing Bcl2fastq')
     
     else:
         string_message = 'Invalid state when calling to ' + experiment_name 
@@ -843,7 +844,8 @@ def manage_run_in_processing_bcl2fast2 (conn, run_object_name):
     experiment_name = run_object_name.get_run_name()
     run_folder = RunningParameters.objects.get(runName_id = run_object_name).get_run_folder()
     statistics_folder = os.path.join(run_folder, wetlab_config.CONVERSION_STATS_FOLDER)
-    if 'Processing Bcl2fastq' == run_object_name.get_run_state() :
+
+    if 'Processing Bcl2fastq' == run_object_name.get_state() :
         # connect to statistics report folder to check if bcl2fastq process is ended
         try:  
             file_list = conn.listPath( wetlab_config.SAMBA_SHARED_FOLDER_NAME, statistics_folder)

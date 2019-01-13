@@ -492,7 +492,7 @@ def manage_miseq_in_processing_run (conn, run_name):
                 logger.info('Run $s still waiting for sequencer to finish', experiment_name)
             raise # returning to handle next run folder
         else:
-            run_updated = RunProcess.objects.get(runName__exact = experiment_name).set_run_state('Processed run')
+            run_updated = run_name.set_run_state('Processed Run')
             run_updated.run_finish_date = run_completion_date
             run_updated.save()
             logger.debug ('End function manage_miseq_in_processing_run %s' , experiment_name)

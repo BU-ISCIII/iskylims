@@ -14,9 +14,9 @@ from iSkyLIMS_wetlab import wetlab_config
 from iSkyLIMS_drylab.models import Machines, Platform
 
 from .run_common_functions import *
-from .miseq_run_functions import handle_miseq_run , manage_miseq_in_samplesent,  manage_miseq_in_processing_run
+from .miseq_run_functions import  handle_miseq_run , manage_miseq_in_samplesent,  manage_miseq_in_processing_run
 from .nextseq_run_functions import handle_nextseq_recorded_run, manage_nextseq_in_samplesent, manage_nextseq_in_processing_run
-
+from .to_complete_run_functions import manage_run_in_processed_run 
 #from .sample_sheet_utils import get_experiment_library_name, get_projects_in_run
 
 from django.conf import settings
@@ -347,6 +347,7 @@ def search_not_completed_run ():
             logger.debug('Start handling the runs in  Processed Run state') 
             for run_in_processed_run in runs_to_handle[state]:
                 try:
+                    
                     updated_run['Processed run'].append(manage_run_in_processed_run(conn, run_in_processed_run))
                 except :
                     logger.info('Handling the exception to continue with the next item')
