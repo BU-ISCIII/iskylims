@@ -10,6 +10,27 @@ from iSkyLIMS_wetlab import wetlab_config
 from iSkyLIMS_wetlab.models import RunProcess, Projects
 
 
+def check_all_projects_exists (project_list):
+    '''
+    Description:
+        Function will check if all projects given in the project list
+        are defined on database 
+        Return True if all are in , False if not 
+    Input:
+        project_list    #list of the project to check
+    variables:
+        logger # logging object to write in the log file
+    Return:
+        True /False 
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('Starting function for copy file to remote')
+    for project in project_list :
+        if not Projects.objects.filter(projectName__exact = project).exists():
+            return False
+    return True
+
+
 def copy_to_remote_file (conn, run_dir, remote_file, local_file) :
     '''
     Description:
@@ -166,7 +187,6 @@ def get_new_runs_from_remote_server (processed_runs, conn, shared_folder):
     return new_runs
 
 
-
 def get_experiment_name_from_file (l_run_parameter) :
     '''
     Description:
@@ -182,6 +202,7 @@ def get_experiment_name_from_file (l_run_parameter) :
     experiment_name = find_xml_tag_text (l_run_parameter, wetlab_config.EXPERIMENT_NAME_TAG)
     
     return experiment_name
+
 
 def get_run_platform_from_file (l_run_parameter) :
     '''
@@ -199,13 +220,16 @@ def get_run_platform_from_file (l_run_parameter) :
     
     return platform
 
-def handling_errors_in_run (experiment_name):
+
+def handling_errors_in_run (experiment_name, error_code):
     '''
     Description:
         Function will manage the error situation where the run must be
         set to run state ERROR
     Input:
         experiment_name # name of the run to be updated
+        error_code      # Error code 
+        state_when_error # Run state when error was found
     Constants:
         SAMBA_SHARED_FOLDER_NAME
     Import:
@@ -214,23 +238,24 @@ def handling_errors_in_run (experiment_name):
         RunProcess
     variables:
         logger  # logging object to write in the log file
-        run     # RunProcess object to be updated
+        run_process     # RunProcess object to be updated
+        project_name_list # list of all project related to the run
     Return:
-        run
+        True
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function handling_errors_in_run')
     logger.info('Set run to ERROR state')
-    import pdb; pdb.set_trace()
-    run_process = RunProcess.objects.get(runName__exact = experiment_name).set_run_state('ERROR')
+    run_process = RunProcess.objects.get(runName__exact = experiment_name)
     
+    run_process.set_run_error_code(error_code)
     project_name_list = Projects.objects.filter(runprocess_id__exact = run_process)
     logger.info('Set projects to ERROR state')
     for project in project_name_list:
         project.procState= 'ERROR'
         project.save()
     logger.debug ('End function handling_errors_in_run')
-    return run
+    return True
 
 
 def logging_errors(logger, string_text, showing_traceback , print_on_screen ):
@@ -369,6 +394,94 @@ def set_state_in_all_projects(experiment_name, state):
     logger.debug ('End function set_state_in_all_projects')
     return True
 
+
+
+def get_run_disk_utilization (conn, run_Id_used, run_processing_id):
+    '''
+    Description:
+        Recursive function to get the size of the run directory on the 
+        remote server.
+        Optional can send an email to inform about the issue
+    Input:
+        conn # Connectio samba object
+        run_Id_used   # root folder to start the checking file size
+        run_processing_id #
+    Functions:
+        get_size_dir    # Located on this file
+    Variables:
+        file_list # contains the list of file and subfolders
+        count_file_size # partial size for the subfolder
+    Return:
+        count_file_size # in the last iteraction will return the total
+                    size of the folder
+    '''
+    logger.debug('Executing the function get_run_disk_utilization')
+    if RunProcess.objects.filter(pk = run_processing_id).exists():
+        run_be_updated = RunProcess.objects.get(pk = run_processing_id)
+        get_full_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,run_Id_used)
+        rest_of_dir_size = 0
+        data_dir_size = 0
+        images_dir_size = 0
+        in_mega_bytes = 1024*1024
+        logger.info('Starting getting disk space utilization for runID  %s', run_Id_used)
+        for item_list in get_full_list:
+            if item_list.filename == '.' or item_list.filename == '..':
+                continue
+            if item_list.filename == 'Data':
+                dir_data = os.path.join(run_Id_used,'Data')
+                data_dir_size = get_size_dir(dir_data , conn,logger)
+                continue
+            elif item_list.filename == 'Images':
+                dir_images = os.path.join(run_Id_used, 'Images')
+                images_dir_size = get_size_dir(dir_images , conn,logger)
+                continue
+            if item_list.isDirectory:
+                item_dir = os.path.join(run_Id_used, item_list.filename)
+                rest_of_dir_size += get_size_dir(item_dir, conn,logger)
+            else:
+                rest_of_dir_size += item_list.file_size
+        # format file space and save it into database
+        data_dir_size_formated = '{0:,}'.format(round(data_dir_size/in_mega_bytes))
+        images_dir_size_formated = '{0:,}'.format(round(images_dir_size/in_mega_bytes))
+        rest_of_dir_size_formated = '{0:,}'.format(round(rest_of_dir_size/in_mega_bytes))
+        run_be_updated.useSpaceImgMb= images_dir_size_formated
+        run_be_updated.useSpaceFastaMb= data_dir_size_formated
+        run_be_updated.useSpaceOtherMb= rest_of_dir_size_formated
+        run_be_updated.save()
+        logger.info('End  disk space utilization for runID  %s', run_Id_used)
+    logger.debug('Exiting the function get_run_disk_utilization')
+
+
+def get_size_dir (directory, conn, logger):
+    '''
+    Description:
+        Recursive function to get the size of the run directory on the 
+        remote server.
+        Optional can send an email to inform about the issue
+    Input:
+        logger # contains the logger object 
+        conn # Connectio samba object
+        directory   # root folder to start the checking file size
+    Variables:
+        file_list # contains the list of file and subfolders
+        count_file_size # partial size for the subfolder
+    Return:
+        count_file_size # in the last iteraction will return the total
+                    size of the folder
+    '''
+    count_file_size = 0
+    file_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME, directory)
+    for sh_file in file_list:
+        if sh_file.isDirectory:
+            if (sh_file.filename == '.' or sh_file.filename == '..'):
+                continue
+            logger.debug('Checking space for directory %s', sh_file.filename)
+            sub_directory = os.path.join (directory,sh_file.filename)
+            count_file_size += get_size_dir (sub_directory, conn, logger)
+        else:
+            count_file_size += sh_file.file_size
+
+    return count_file_size
 
 
 

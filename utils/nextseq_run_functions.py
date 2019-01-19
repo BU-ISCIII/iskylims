@@ -242,9 +242,6 @@ def manage_nextseq_in_processing_run(conn, run_object_name) :
         return experiment_name
 
 
-def manage_nextseq_in_processed_run(conn, run_object_name) :
-    
-    return ''
     
 def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name):
     '''

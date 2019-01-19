@@ -175,6 +175,7 @@ def search_update_new_runs ():
                         process_run_file_update = True
                         processed_runs.append(new_run)
                         new_processed_runs.append(new_run)
+                        logger.debug('Finished miSeq handling process')
                     continue
                 except ValueError as e :
                     # Include the run in the run processed file 
@@ -188,7 +189,6 @@ def search_update_new_runs ():
                     logger.warning('miSeq run is waiting for sequencer run to have all files')
                     logger.info('Continue processing next item ')
                     continue
-                logger.debug('Finished miSeq handling process')
 
             elif 'NextSeq' in run_platform :
 
@@ -356,12 +356,18 @@ def search_not_completed_run ():
 
         elif state == 'Processing Bcl2fastq':
             for run_in_processing_bcl2fastq_run in runs_to_handle[state] :
-                pass
-                #updated_run[state].append( manage_run_in_processing_bcl2fast2 (conn, run_in_processing_bcl2fastq_run))
+                try:
+                    updated_run[state].append( manage_run_in_processing_bcl2fast2 (conn, run_in_processing_bcl2fastq_run))
+                except :
+                    logger.info('Handling the exception on Processing Bcl2fastq.  Continue with the next item')
+                    continue
         elif state == 'Processed Bcl2fastq':
             for run_in_processed_bcl2fastq_run in runs_to_handle[state] :
-                pass
-                #updated_run[state].append( manage_run_in_processed_bcl2fastq (conn, run_in_bcl2fastq_processed_run))
+                try:
+                    updated_run[state].append( manage_run_in_processed_bcl2fastq (conn, run_in_bcl2fastq_processed_run))
+                except :
+                    logger.info('Handling the exception on Processed Bcl2fastq.  Continue with the next item')
+                    continue
         else:
             string_message = 'Run in unexpected state. ' + state
             logging_errors (logger, string_message , False, False)

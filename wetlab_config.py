@@ -50,7 +50,6 @@ RUN_SAMPLE_SHEET_DIRECTORY = 'wetlab/SampleSheets/'
 
 ################# LOG NAMES #############################
 LOG_NAME_RUN_IN_RECORDED_STATE = 'run_in_recorded'
-LOG_NAME_MISEQ_FETCH_SAMPLE_SHEET = 'miseq_sample_sheet'
 
 ################# CONFIG FILE LOG NAME ###############################
 LOGGING_CONFIG_FILE = 'logging_config.ini'
@@ -73,9 +72,12 @@ COPY_SAMPLE_SHEET_TO_REMOTE = False # boolean constant True if NestSeq
                                 # sample sheet needs to be copied to remote server
 RUN_LOG_FOLDER = 'Logs'
 
-CONVERSION_STATS_FOLDER = 'Data/Intensities/BaseCalls'
+CONVERSION_BCL2FASTQ_FOLDER = 'Data/Intensities/BaseCalls'
 REPORT_FOLDER = 'Report'
+STATISTICS_FOLDER = 'Stats'
+
 CONVERSION_STATS_FILE = 'ConversionStats.xml'
+DEMULTIPLEXION_STATS_FILE = 'DemultiplexingStats.xml'
 ##############################################################
 
 ############ VALUE TAG FOR XML FILES #########################
@@ -93,6 +95,12 @@ DEFAULT_CENTER = 'CNM'
 ############ MAXIMUM TIME TO WAIT BEFORE MOVING TO ERROR #####
 MAXIMUM_TIME_WAIT_SAMPLE_SHEET = '2' # in days
 MAXIMUM_TIME_WAIT_RUN_COMPLETION = '2' # in days
+##############################################################
+
+############ RUN METRIC FOLDERS AND FILES ####################
+INTEROP_PATH = '/opt/interop/bin/'
+RUN_METRIC_FOLDER = 'Interop'
+
 ##############################################################
 
 #########  FOLDER SETTINGS FOR PROCESSING LIBRARY KITS #######

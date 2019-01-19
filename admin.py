@@ -30,10 +30,17 @@ class ProjectsAdmin (admin.ModelAdmin):
 class LibraryKitAdmin(admin.ModelAdmin):
     list_display = ('libraryName','generatedat')
 
+class RunErrorsAdmin (admin.ModelAdmin):
+    list_display = ('errorCode', 'errorText')
 
 
-#admin.site.register(Document , AppAdmin)
+class RunStatesAdmin (admin.ModelAdmin):
+    list_display = ('runStateName',)
+
+
 admin.site.register(RunningParameters , RunningParametersAdmin)
 admin.site.register(RunProcess , RunProcessAdmin)
 admin.site.register(LibraryKit,LibraryKitAdmin)
 admin.site.register(Projects, ProjectsAdmin)
+admin.site.register(RunErrors, RunErrorsAdmin)
+admin.site.register(RunStates, RunStatesAdmin)
