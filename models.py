@@ -34,7 +34,7 @@ class RunProcess(models.Model):
     useSpaceOtherMb=models.CharField(max_length=10, blank=True)
     centerRequestedBy = models.ForeignKey (Center, on_delete=models.CASCADE)
     sequencerModel = models.ForeignKey ('iSkyLIMS_drylab.Machines', on_delete=models.CASCADE, null=True, blank=True)
-    runError = models.OneToOneField( RunErrors, on_delete=models.CASCADE)
+    runError = models.ForeignKey( RunErrors, on_delete=models.CASCADE, null = True, blank = True)
     stateBeforeError = models.ForeignKey ( RunStates, on_delete = models.CASCADE, null = True, blank = True)
 
     def __str__(self):
@@ -140,7 +140,7 @@ class RunProcess(models.Model):
     
     def set_run_error_code (self, error_code):
         self.runError = RunErrors.objects.get(errorCode__exact = error_code)
-        self.stateBeforeError = self.runState
+        #self.stateBeforeError = self.runState
         self.runState = 'ERROR'
         self.save()
         return True
@@ -359,14 +359,15 @@ class RunningParameters (models.Model):
 
 class StatsRunSummaryManager (models.Manager):
     
-    def create_stats_run_summary (self, stats_run_summary , run_id) :
-        
-        s_run_summary = self.create(runprocess_id=RunProcess.objects.get(pk=run_id),
+    def create_stats_run_summary (self, stats_run_summary , experiment_name) :
+        run_process = RunProcess.objects.get(runName__exact = experiment_name)
+        import pdb; pdb.set_trace()
+        s_run_summary = self.create(runprocess_id = run_process,
                                 level=stats_run_summary['level'], yieldTotal = stats_run_summary['yieldTotal'],
                                 projectedTotalYield= stats_run_summary['projectedTotalYield'],
                                 aligned= stats_run_summary['aligned'], errorRate= stats_run_summary['errorRate'],
                                 intensityCycle= stats_run_summary['intensityCycle'], biggerQ30= stats_run_summary['biggerQ30'],
-                                stats_summary_run_date = RunProcess.objects.get(pk=run_id).get_run_date())
+                                stats_summary_run_date = run_process.run_date)
         return s_run_summary
 
 class StatsRunSummary (models.Model):
@@ -395,9 +396,9 @@ class StatsRunSummary (models.Model):
 
 class StatsRunReadManager (models.Manager):
     
-    def create_stats_run_read (self, stats_run_read, run_id):
-        
-        s_run_read = self.create (runprocess_id=RunProcess.objects.get(pk=run_id),
+    def create_stats_run_read (self, stats_run_read, experiment_name):
+        run_process = RunProcess.objects.get(runName__exact = experiment_name)
+        s_run_read = self.create (runprocess_id = run_process,
                                     read= stats_run_read['read'], lane = stats_run_read['lane'] ,
                                     tiles= stats_run_read['tiles'], density= stats_run_read['density'] ,
                                     cluster_PF= stats_run_read['cluster_PF'], phas_prephas= stats_run_read['phas_prephas'],
@@ -407,7 +408,7 @@ class StatsRunReadManager (models.Manager):
                                     errorRate= stats_run_read['errorRate'], errorRate35= stats_run_read['errorRate35'],
                                     errorRate50= stats_run_read['errorRate50'] , errorRate75= stats_run_read['errorRate75'] ,
                                     errorRate100= stats_run_read['errorRate100'] , intensityCycle= stats_run_read['intensityCycle'] ,
-                                    stats_read_run_date = RunProcess.objects.get(pk=run_id).get_run_date())
+                                    stats_read_run_date = run_process.run_date)
         
         return s_run_read
 
@@ -552,6 +553,9 @@ class StatsLaneSummary (models.Model):
 
         return'%s;%s;%s;%s' %(self.biggerQ30, self.meanQuality, self.yieldMb, self.pfCluster)
 
+
+    
+
 class GraphicsStats (models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
@@ -577,6 +581,7 @@ class GraphicsStats (models.Model):
 
     def get_folder_graphic(self):
         return '%s' %(self.folderRunGraphic)
+
 
 class SamplesInProject (models.Model):
     project_id = models.ForeignKey(

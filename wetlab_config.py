@@ -49,7 +49,7 @@ RUN_SAMPLE_SHEET_DIRECTORY = 'wetlab/SampleSheets/'
 ##############################################################
 
 ################# LOG NAMES #############################
-LOG_NAME_RUN_IN_RECORDED_STATE = 'run_in_recorded'
+LOG_NAME_FIND_UPDATE_RUNS = 'update_run'
 
 ################# CONFIG FILE LOG NAME ###############################
 LOGGING_CONFIG_FILE = 'logging_config.ini'
@@ -72,9 +72,10 @@ COPY_SAMPLE_SHEET_TO_REMOTE = False # boolean constant True if NestSeq
                                 # sample sheet needs to be copied to remote server
 RUN_LOG_FOLDER = 'Logs'
 
-CONVERSION_BCL2FASTQ_FOLDER = 'Data/Intensities/BaseCalls'
-REPORT_FOLDER = 'Report'
-STATISTICS_FOLDER = 'Stats'
+DEMULTIPLEXION_BCL2FASTQ_FOLDER = 'Data/Intensities/BaseCalls'
+REPORT_FOLDER = 'Reports'
+STATS_FOLDER = 'Stats'
+
 
 CONVERSION_STATS_FILE = 'ConversionStats.xml'
 DEMULTIPLEXION_STATS_FILE = 'DemultiplexingStats.xml'
@@ -99,7 +100,8 @@ MAXIMUM_TIME_WAIT_RUN_COMPLETION = '2' # in days
 
 ############ RUN METRIC FOLDERS AND FILES ####################
 INTEROP_PATH = '/opt/interop/bin/'
-RUN_METRIC_FOLDER = 'Interop'
+RUN_METRIC_FOLDER = 'InterOp'
+PLOT_EXTENSION = '.png'
 
 ##############################################################
 

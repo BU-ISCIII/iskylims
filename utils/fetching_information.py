@@ -104,19 +104,22 @@ def get_information_run(run_name_found,run_id):
         info_dict['graphic_value']=10
         info_dict['graphic_color']= 'red'
     if (run_state == 'Recorded'):
-        info_dict['graphic_value']=25
+        info_dict['graphic_value']=15
         info_dict['graphic_color']= 'violet'
     if (run_state == 'Sample Sent'):
-        info_dict['graphic_value']=40
+        info_dict['graphic_value']=30
         info_dict['graphic_color']= 'pink'
-    if (run_state == 'Process Running'):
-        info_dict['graphic_value']=50
+    if (run_state == 'Processing Run'):
+        info_dict['graphic_value']=45
         info_dict['graphic_color']= 'brown'
-    if (run_state == 'Bcl2Fastq Executed'):
+    if (run_state == 'Processed Run'):
         info_dict['graphic_value']=60
         info_dict['graphic_color']= 'orange'
-    if (run_state == 'Running Stats'):
+    if (run_state == 'Processing Bcl2fastq'):
         info_dict['graphic_value']=75
+        info_dict['graphic_color']= 'yellow'
+    if (run_state == 'Processed Bcl2fastq'):
+        info_dict['graphic_value']=90
         info_dict['graphic_color']= 'yellow'
     if (run_state == 'Completed'):
         info_dict['graphic_value']=100
@@ -157,7 +160,7 @@ def get_information_run(run_name_found,run_id):
         
         # prepare the data for q-means
         # fetch Q>30 , mean_q and yield mb for all projects per lane to create the boxplot
-        run_lane_summary = NextSeqStatsLaneSummary.objects.filter(runprocess_id__exact =run_id ).exclude(defaultAll__isnull = False)
+        run_lane_summary = StatsLaneSummary.objects.filter(runprocess_id__exact =run_id ).exclude(defaultAll__isnull = False)
         q_30_value_list, mean_value_list = [] , []
         q_30_run_value , mean_run_value = [] , []
         q_30_run_value_float , mean_run_value_float , yield_mb_run_value_float, cluster_pf_run_value_float = [] , [], [] , []
@@ -185,7 +188,7 @@ def get_information_run(run_name_found,run_id):
             same_runs_in_year_list.append(run.id)
 
 
-        all_lane_summary = NextSeqStatsLaneSummary.objects.filter(runprocess_id__in = same_runs_in_year_list).exclude(defaultAll__isnull = False).exclude(runprocess_id__exact =run_id)
+        all_lane_summary = StatsLaneSummary.objects.filter(runprocess_id__in = same_runs_in_year_list).exclude(defaultAll__isnull = False).exclude(runprocess_id__exact =run_id)
         for item in all_lane_summary:
             q_30_value, mean_value , yield_mb_value , cluster_pf_value = item.get_stats_info().split(';')
 
@@ -227,7 +230,7 @@ def get_information_run(run_name_found,run_id):
         # get the demultiplexion information for projects included in the run
         percent_lane = []
         for project_demultiplexion in p_list :
-            lanes_for_percent_graphic = NextSeqStatsLaneSummary.objects.filter(runprocess_id__exact = run_id, project_id = project_demultiplexion.id )
+            lanes_for_percent_graphic = StatsLaneSummary.objects.filter(runprocess_id__exact = run_id, project_id = project_demultiplexion.id )
             for lane in lanes_for_percent_graphic :
                 percent_lane.append(float(lane.percentLane))
             percent_projects[project_demultiplexion.projectName] =format(statistics.mean(percent_lane),'2f')
@@ -237,7 +240,7 @@ def get_information_run(run_name_found,run_id):
 
         percent_default_lane = []
 
-        default_lanes_for_percent_graphic = NextSeqStatsLaneSummary.objects.filter(runprocess_id__exact = run_id, defaultAll__exact = 'default')
+        default_lanes_for_percent_graphic = StatsLaneSummary.objects.filter(runprocess_id__exact = run_id, defaultAll__exact = 'default')
         for default_lane in default_lanes_for_percent_graphic :
             percent_default_lane.append(float(default_lane.percentLane))
 
@@ -258,7 +261,7 @@ def get_information_run(run_name_found,run_id):
 
         fl_data_display=[]
 
-        fl_summary_id = NextSeqStatsFlSummary.objects.filter(runprocess_id__exact =run_id , project_id__isnull=True, defaultAll='all')
+        fl_summary_id = StatsFlSummary.objects.filter(runprocess_id__exact =run_id , project_id__isnull=True, defaultAll='all')
         fl_list = ['Cluster (Raw)', 'Cluster (PF)', 'Yield (MBases)', 'Number of Samples']
         fl_data_display.append(fl_list)
         fl_values = fl_summary_id[0].get_fl_summary().split(';')
@@ -267,7 +270,7 @@ def get_information_run(run_name_found,run_id):
 
         # prepare the data for Lane Summary
         lane_data_display = []
-        lane_summary_id = NextSeqStatsLaneSummary.objects.filter(runprocess_id__exact =run_id , project_id__isnull=True, defaultAll='all')
+        lane_summary_id = StatsLaneSummary.objects.filter(runprocess_id__exact =run_id , project_id__isnull=True, defaultAll='all')
         lane_list = ['Lane', 'PF Clusters', '% of the lane','% Perfect barcode',
                     '% One mismatch barcode','Yield (Mbases)','% >= Q30 bases',
                     'Mean Quality Score']
@@ -280,7 +283,7 @@ def get_information_run(run_name_found,run_id):
         # prepare the data for default Flowcell summary
         default_fl_data_display=[]
 
-        default_fl_summary_id = NextSeqStatsFlSummary.objects.filter(runprocess_id__exact =run_id , project_id__isnull=True, defaultAll='default')
+        default_fl_summary_id = StatsFlSummary.objects.filter(runprocess_id__exact =run_id , project_id__isnull=True, defaultAll='default')
         default_fl_data_display.append(fl_list)
         default_fl_values = default_fl_summary_id[0].get_fl_summary().split(';')
         default_fl_data_display.append(default_fl_values)
@@ -288,7 +291,7 @@ def get_information_run(run_name_found,run_id):
 
         # prepare the data for default Lane Summary
         default_lane_data_display = []
-        default_lane_summary_id = NextSeqStatsLaneSummary.objects.filter(runprocess_id__exact =run_id , project_id__isnull=True, defaultAll='default')
+        default_lane_summary_id = StatsLaneSummary.objects.filter(runprocess_id__exact =run_id , project_id__isnull=True, defaultAll='default')
         default_lane_data_display.append(lane_list)
         for default_lane_sum in default_lane_summary_id:
             default_lane_values = default_lane_sum.get_lane_summary().split(';')
@@ -392,7 +395,7 @@ def get_information_run(run_name_found,run_id):
         line_run_summary = []
         for index in range (len(index_run_summary)):
             #
-            run_summary_id = NextSeqStatsBinRunSummary.objects.filter(runprocess_id__exact =run_id , level__exact = index_run_summary[index])
+            run_summary_id = StatsRunSummary.objects.filter(runprocess_id__exact =run_id , level__exact = index_run_summary[index])
             run_summary_values = run_summary_id[0].get_bin_run_summary().split(';')
             run_summary_values.insert(0, line_description[index])
             if index_run_summary[index] == 'Total':
@@ -412,7 +415,7 @@ def get_information_run(run_name_found,run_id):
         for read_number in range (1, num_of_reads +1) :
             read_summary_values=[]
             for lane_number in range(1, number_of_lanes+1):
-                read_lane_id= NextSeqStatsBinRunRead.objects.filter(runprocess_id__exact =run_id, read__exact = read_number, lane__exact = lane_number)
+                read_lane_id= StatsRunRead.objects.filter(runprocess_id__exact =run_id, read__exact = read_number, lane__exact = lane_number)
                 lane_values=read_lane_id[0].get_bin_run_read().split(';')
                 read_summary_values.append(lane_values)
             #read_number_index = str('laneSummary'+str(read_number))
@@ -424,7 +427,7 @@ def get_information_run(run_name_found,run_id):
         # prepare the graphics for the run
         folder_for_plot='/documents/wetlab/images_plot/'
 
-        run_graphics_id = NextSeqGraphicsStats.objects.filter(runprocess_id__exact =run_id)
+        run_graphics_id = GraphicsStats.objects.filter(runprocess_id__exact =run_id)
         folder_graphic = os.path.join( settings.MEDIA_URL, RUN_IMAGES_DIRECTORY, run_graphics_id[0].get_folder_graphic() )
         graphics = run_graphics_id[0].get_graphics().split(';')
         graphic_text= ['Data By Lane','Flow Cell Chart','Data By Cycle','QScore Heatmap','QScore Distribution','Indexing QC']
@@ -508,7 +511,7 @@ def get_information_project (project_id, request):
         fl_data_display=[]
 
         # prepare the data for Flowcell Summary
-        fl_summary_id = NextSeqStatsFlSummary.objects.get(project_id__exact = project_id)
+        fl_summary_id = StatsFlSummary.objects.get(project_id__exact = project_id)
         fl_list = ['Cluster (Raw)', 'Cluster (PF)', 'Yield (MBases)', 'Number of Samples']
         fl_data_display.append(fl_list)
         fl_values = fl_summary_id.get_fl_summary().split(';')
@@ -517,7 +520,7 @@ def get_information_project (project_id, request):
 
         # prepare the data for Lane Summary
         lane_data_display = []
-        lane_summary_id = NextSeqStatsLaneSummary.objects.filter(project_id__exact = project_id)
+        lane_summary_id = StatsLaneSummary.objects.filter(project_id__exact = project_id)
         lane_list = ['Lane', 'PF Clusters', '% of the lane','% Perfect barcode',
                     '% One mismatch barcode','Yield (Mbases)','% >= Q30 bases',
                     'Mean Quality Score']

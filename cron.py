@@ -49,7 +49,7 @@ def looking_for_new_runs ():
     '''
     working_path = settings.MEDIA_ROOT
     os.chdir(working_path)
-    logger=open_log(LOG_NAME_MISEQ_FETCH_SAMPLE_SHEET)
+    logger=open_log()
     logger.info('###########---Start Crontab-----############')
     logger.info('Start searching for new/updating runs')
     

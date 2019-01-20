@@ -286,7 +286,7 @@ def logging_errors(logger, string_text, showing_traceback , print_on_screen ):
         from datetime import datetime
         print('******* ERROR ********')
         print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        print('When processing run in recorded state. Check log for detail information')
+        print('When processing run . Check log for detail information')
     return ''
 
 
@@ -321,7 +321,7 @@ def need_to_wait_more (experiment_name, waiting_time):
     else:
         return True
 
-def open_log(logger_name):
+def open_log():
     '''
     Description:
         The function will create the log object to write all logging information
@@ -335,7 +335,7 @@ def open_log(logger_name):
     '''
     config_file = os.path.join(settings.BASE_DIR,'iSkyLIMS_wetlab',  wetlab_config.LOGGING_CONFIG_FILE )
     fileConfig(config_file)
-    logger = logging.getLogger(logger_name)
+    logger = logging.getLogger(__name__)
     return logger
 
 
@@ -386,7 +386,7 @@ def set_state_in_all_projects(experiment_name, state):
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function set_state_in_all_projects')
     run_process_id = RunProcess.objects.get(runName__exact = experiment_name).id
-    projects_to_update = Projects.objects.filter(runprocess_id = run_object_name)
+    projects_to_update = Projects.objects.filter(runprocess_id = run_process_id)
     for project in projects_to_update :
         logger.info('updating the project state for %s to %s ', project, state)
         state= project.set_project_state(state)

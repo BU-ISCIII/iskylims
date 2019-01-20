@@ -16,7 +16,7 @@ from iSkyLIMS_drylab.models import Machines, Platform
 from .generic_functions import *
 from .miseq_run_functions import  handle_miseq_run , manage_miseq_in_samplesent,  manage_miseq_in_processing_run
 from .nextseq_run_functions import handle_nextseq_recorded_run, manage_nextseq_in_samplesent, manage_nextseq_in_processing_run
-from .common_run_functions import manage_run_in_processed_run 
+from .common_run_functions import manage_run_in_processed_run, manage_run_in_processing_bcl2fastq, manage_run_in_processed_bcl2fastq 
 #from .sample_sheet_utils import get_experiment_library_name, get_projects_in_run
 
 from django.conf import settings
@@ -290,8 +290,8 @@ def search_not_completed_run ():
         raise logging_errors(logger, string_message, True, False)
         
     runs_to_handle = {}
-    state_list_be_processed = ['Sample Sent','Processing Run','Processed Run', 'Processing Bcl2Fastq',
-                                'Processed Bcl2Fastq']
+    state_list_be_processed = ['Sample Sent','Processing Run','Processed Run', 'Processing Bcl2fastq',
+                                'Processed Bcl2fastq']
     # get the list for all runs that are not completed
     for state in state_list_be_processed:
         if RunProcess.objects.filter(runState__exact = state).exists():
@@ -347,7 +347,6 @@ def search_not_completed_run ():
             logger.debug('Start handling the runs in  Processed Run state') 
             for run_in_processed_run in runs_to_handle[state]:
                 try:
-                    
                     updated_run['Processed run'].append(manage_run_in_processed_run(conn, run_in_processed_run))
                 except :
                     logger.info('Handling the exception to continue with the next item')
@@ -355,13 +354,16 @@ def search_not_completed_run ():
             logger.debug('End runs in Processed Run state')
 
         elif state == 'Processing Bcl2fastq':
+            updated_run[state] = []
             for run_in_processing_bcl2fastq_run in runs_to_handle[state] :
-                try:
-                    updated_run[state].append( manage_run_in_processing_bcl2fast2 (conn, run_in_processing_bcl2fastq_run))
-                except :
-                    logger.info('Handling the exception on Processing Bcl2fastq.  Continue with the next item')
-                    continue
+                #import pdb; pdb.set_trace()
+                #try:
+                updated_run[state].append( manage_run_in_processing_bcl2fastq (conn, run_in_processing_bcl2fastq_run))
+                #except :
+                #    logger.info('Handling the exception on Processing Bcl2fastq.  Continue with the next item')
+                #    continue
         elif state == 'Processed Bcl2fastq':
+            updated_run[state] = []
             for run_in_processed_bcl2fastq_run in runs_to_handle[state] :
                 try:
                     updated_run[state].append( manage_run_in_processed_bcl2fastq (conn, run_in_bcl2fastq_processed_run))
@@ -371,7 +373,7 @@ def search_not_completed_run ():
         else:
             string_message = 'Run in unexpected state. ' + state
             logging_errors (logger, string_message , False, False)
-            logger.debug ('Run name is : $s ', run_to_handle[state])
+            #logger.debug ('Run name is : $s ', run_to_handle[state])
             continue
 
     return (processed_run)
