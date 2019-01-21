@@ -228,7 +228,10 @@ def service_request(request, serviceRequestType):
 								'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
 								'Keep this number safe for refering your request', download_file ,
 								'You will be contacted shortly.']})
-
+			else:
+				return render(request, 'django_utils/error_page.html',{'content':['Your service request cannot be recorded.',
+												'Check that all information is provided correctly.',
+												'If problem persist, contact your administrator']})
 		else: 
 			form = ServiceRequestFormInternalSequencing()
 			# getting projects from user sharing list 

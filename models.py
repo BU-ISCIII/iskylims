@@ -100,7 +100,7 @@ class Service(models.Model):
 	serviceAvailableService=TreeManyToManyField(AvailableService,verbose_name=_("AvailableServices"))
 	serviceFile=models.FileField(_("Service description file"),upload_to=service_files_upload, null=True,blank=True)
 	serviceStatus=models.CharField(_("Service status"),max_length=15,choices=STATUS_CHOICES)
-	serviceNotes=models.TextField(_("Service Notes"),max_length=1000,null=True)
+	serviceNotes=models.TextField(_("Service Notes"),max_length=2048,null=True)
 	serviceCreatedOnDate= models.DateField(auto_now_add=True,null=True)
 	#serviceCreatedOnDate= models.DateField(auto_now_add=False)
 	serviceOnApprovedDate = models.DateField(auto_now_add=False, null=True,blank=True)
