@@ -261,90 +261,6 @@ def process_run_in_bcl2Fq_executed_state (process_list, logger):
 
 
 
-def store_raw_xml_stats(stats_projects, run_object_name):
-    '''
-    Description:
-        The function will check if exists the data stored on StatsRunSummary
-        for this run 
-        If all data are sucessfuly copied to database it returns True.
-        An exeception is raised in case data cannot be saved to database
-    Input:
-        stats_projects     # dictionnary with parsed data 
-        run_object_name   # runProcess object
-    Variables:
-        p_object    # project object to save in database
-    
-    
-        run_metric_processed # True or False if there are some rows in 
-                            StatsRunSummary for this run 
-    Return:
-        experiment_name if the run is updated. Empty if not
-    '''
-    logger = logging.getLogger(__name__)
-    logger.debug ('Starting function store_raw_xml_stats')
-    error_found = False
-    project_list = []
-    # check first if all project found in the parsing were already set when
-    # the sample sheet was processed. 
-    for project in stats_projects:
-        if project == 'TopUnknownBarcodes'  or project == 'all' or project == 'default':
-            continue
-        else:
-            project_list.append(project)
-    # if there some projects not defined set the run to error state
-    if not check_all_projects_exists (project_list) :
-        string_message = "Found some projects not defined in database"
-        logging_errors(logger, string_message, False, True)
-        experiment_name = run_object_name.get_run_name()
-        handling_errors_in_run(experiment_name, '10')
-        raise
-    for project in stats_projects:
-        # ignore the unknowbarcode parsed information
-        if project == 'TopUnknownBarcodes':
-            continue
-        logger.info('processing project %s with rund_id = %s', project, run_id)
-        if project == 'all' or project == 'default':
-            logger.info('Found project %s setting the project_id to NULL', project)
-            project_id= None
-            default_all = project
-        else:
-            if Projects.objects.filter (projectName__exact = project).exists():
-                p_object = Projects.objects.get(projectName__exact = project)
-            else:
-                string_message = 'Project  ' + project + ' inside the report does not match with the one define in the sample sheet'
-                logging_errors (logger, string_message, False, True)
-                
-                
-                error_found = True
-                continue
-            project_id= Projects.objects.get(pk=p_name_id)
-            default_all = None
-        # save the information when no error is found. This condition is set to avoid saving information on database
-        # because the information stored before getting the error must be deleted
-        if not error_found :
-            '''
-            raw_stats_xml = RawStatisticsXml (runprocess_id=RunProcess.objects.get(pk=run_id),
-                                          project_id = project_id, defaultAll = default_all,
-                                          rawYield= stats_projects[project]['RAW_Yield'], rawYieldQ30= stats_projects[project]['RAW_YieldQ30'],
-                                          rawQuality= stats_projects[project]['RAW_QualityScore'], PF_Yield= stats_projects[project]['PF_Yield'],
-                                          PF_YieldQ30= stats_projects[project]['PF_YieldQ30'], PF_QualityScore =stats_projects[project]['PF_QualityScore'])
-            '''
-            logger.info('saving raw stats for %s project', project)
-            raw_stats_xml.save()
-    if error_found :
-        # delete all information stored on database
-        if RawStatisticsXml.objects.filter (runprocess_id__exact = run_id).exists():
-            projects_to_delete = RawStatisticsXml.objects.filter (runprocess_id__exact = run_id)
-            logger.info('Deleting stored RawStatisticsXml information ')
-            for project in projects_to_delete :
-                project.delete()
-                logger.debug('Deleted the RawStatisticsXml for project %s', project)
-        return 'ERROR'
-
-    logger.info('Raw XML data have been stored for all projects ')
-    return True
-
-
 def process_xml_stats(stats_projects, run_id, logger):
     # get the total number of read per lane
     M_BASE=1.004361/1000000
@@ -452,102 +368,6 @@ def process_xml_stats(stats_projects, run_id, logger):
                     top_number +=1
 
 
-def parsing_sample_project_xml(run_id,demux_file, conversion_file, logger):
-    total_p_b_count=[0,0,0,0]
-    sample_result_dict={}
-    demux_stat=ET.parse(demux_file)
-    root=demux_stat.getroot()
-    projects=[]
-    number_of_lanes=get_machine_lanes(run_id)
-    logger.info('Starting parsing DemultiplexingStats.XML for getting Sample information')
-    for child in root.iter('Project'):
-        projects.append(child.attrib['name'])
-
-    for i in range(len(projects)):
-        if projects [i] == 'default' or projects [i] == 'all':
-            continue
-        p_temp=root[0][i]
-        samples=p_temp.findall('Sample')
-        sample_dict ={}
-        for index in range (len(samples)):
-            sample_name = samples[index].attrib['name']
-            if sample_name == 'all':
-                continue
-            barcodeCount , perfectBarcodeCount = 0 , 0
-
-            sample_stats={}
-            sample_stats ['barcodeName'] = samples[index].find ('Barcode').attrib['name']
-
-            for bar_count in p_temp[index][0].iter('BarcodeCount'):
-                barcodeCount += int(bar_count.text)
-            for p_bar_count in p_temp[index][0].iter('PerfectBarcodeCount'):
-                perfectBarcodeCount += int(p_bar_count.text)
-            sample_stats['BarcodeCount']=barcodeCount
-            sample_stats['PerfectBarcodeCount']=perfectBarcodeCount
-            sample_dict[sample_name] = sample_stats
-
-            sample_result_dict[projects[i]]=sample_dict
-    logger.info('Complete parsing from demux file for sample and for project %s', projects[i])
-
-
-    conversion_stat=ET.parse(conversion_file)
-    root_conv=conversion_stat.getroot()
-    projects=[]
-    logger.info('Starting conversion for conversion file')
-    for child in root_conv.iter('Project'):
-        projects.append(child.attrib['name'])
-    for i in range(len(projects)):
-        if projects [i] == 'default' or projects [i] == 'all':
-            continue
-        p_temp=root_conv[0][i]
-        samples=p_temp.findall('Sample')
-
-        for s_index in range (len (samples)):
-            sample_name = samples[s_index].attrib['name']
-            if sample_name == 'all':
-                continue
-            quality_per_sample = {}
-            raw_yield_value = 0
-            raw_yield_q30_value = 0
-            raw_quality_value = 0
-            pf_yield_value = 0
-            pf_yield_q30_value = 0
-            pf_quality_value = 0
-
-            for l_index in range(number_of_lanes):
-                tiles_index = len(p_temp[s_index][0][l_index].findall ('Tile'))
-                for t_index in range(tiles_index):
-                         # get the yield value for RAW and for read 1 and 2
-                    for c in p_temp[s_index][0][l_index][t_index][0].iter('Yield'):
-                        raw_yield_value +=int(c.text)
-                        # get the yield Q30 value for RAW  and for read 1 and 2
-                    for c in p_temp[s_index][0][l_index][t_index][0].iter('YieldQ30'):
-                        raw_yield_q30_value +=int(c.text)
-                    for c in p_temp[s_index][0][l_index][t_index][0].iter('QualityScoreSum'):
-                        raw_quality_value +=int(c.text)
-                     # get the yield value for PF and for read 1 and 2
-                    for c in p_temp[s_index][0][l_index][t_index][1].iter('Yield'):
-                        pf_yield_value +=int(c.text)
-                    # get the yield Q30 value for PF and for read 1 and 2
-                    for c in p_temp[s_index][0][l_index][t_index][1].iter('YieldQ30'):
-                        pf_yield_q30_value +=int(c.text)
-                    for c in p_temp[s_index][0][l_index][t_index][1].iter('QualityScoreSum'):
-                        pf_quality_value +=int(c.text)
-
-            sample_result_dict[projects[i]][sample_name]['RAW_Yield']=raw_yield_value
-            sample_result_dict[projects[i]][sample_name]['RAW_YieldQ30']=raw_yield_q30_value
-            sample_result_dict[projects[i]][sample_name]['RAW_QualityScore']=raw_quality_value
-            sample_result_dict[projects[i]][sample_name]['PF_Yield']=pf_yield_value
-            sample_result_dict[projects[i]][sample_name]['PF_YieldQ30']=pf_yield_q30_value
-            sample_result_dict[projects[i]][sample_name]['PF_QualityScore']=pf_quality_value
-        logger.info('completed parsing for xml stats for project %s', projects[i])
-
-
-    logger.info('Complete XML parsing  for getting Samples')
-
-    return sample_result_dict
-
-
 def check_run_metrics_processed (run_object_name) :
     '''
     Description:
@@ -568,6 +388,69 @@ def check_run_metrics_processed (run_object_name) :
     logger.info('Run metrics processed is %s', run_metric_processed)
     logger.debug('End function check_run_metrics_processed')
     return run_metric_processed
+
+
+
+def get_bcl2fastq_output_files (conn, run_folder):
+    '''
+    Description:
+        The function will collect files created by bcl2fastq process.
+    Input:
+        conn # Connection samba object
+        run_folder   # folder run to fetch the remote files
+    Constant:
+        CONVERSION_STATS_FILE
+        DEMULTIPLEXION_STATS_FILE
+        REPORT_FOLDER
+        RUN_TEMP_DIRECTORY
+        STATISTICS_FOLDER
+    Variables:
+        l_conversion # local copy of ConversionStats file
+        l_demux      # local copy of DemultiplexingStats file   
+        l_metric_folder # local folder to copy the run metrics files
+        l_run_info  # local copy of runInfo file
+        l_run_parameter # local copy of runParamenter file
+        
+        run_folder      # run folder on the remote server
+        s_conversion_stats # path for the conversionStats file
+        s_conversion # path of the ConversionStats file
+        s_demux      # path of the DemultiplexingStats file   
+        stats_bcl2fastq_folder # statistics folder on the remote server 
+                            for the bcl2fastq
+    Return:
+        copied_files
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('Starting function get_bcl2fastq_output_files')
+    import pdb; pdb.set_trace()
+    # Fetch Demuxtiplexing and conversion files 
+    stats_bcl2fastq_folder = os.path.join(wetlab_config.DEMULTIPLEXION_BCL2FASTQ_FOLDER, wetlab_config.STATS_FOLDER)
+    # conversion stats file
+    l_conversion = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.CONVERSION_STATS_FILE)
+    s_conversion = os.path.join(run_folder, stats_bcl2fastq_folder, wetlab_config.CONVERSION_STATS_FILE)
+    # demultiplexion stats file
+    l_demux = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.DEMULTIPLEXION_STATS_FILE)
+    s_demux = os.path.join(run_folder, stats_bcl2fastq_folder, wetlab_config.DEMULTIPLEXION_STATS_FILE)
+    
+
+    try:
+        l_conversion = fetch_remote_file (conn, run_folder, s_conversion, l_conversion)
+        logger.info('Sucessfully fetch of ConversionStats file')
+        
+        l_demux = fetch_remote_file (conn, run_folder, s_demux, l_demux)
+        logger.info('Sucessfully fetch of Demustiplexing file')
+
+    except:
+        string_message = "cannot copy files for getting run metrics"  
+        logging_errors(logger,string_message, True , True)
+        logger.info('Deleting temporary files')
+        os.remove(l_conversion)
+        logger.debug ('End function manage_run_in_processed_bcl2fast2_run with error')
+        raise
+    
+    logger.debug ('End function get_bcl2fastq_output_files')
+    return  l_demux, l_conversion
+
 
 def store_samples_projects(sample_project_stats, run_id, logger):
     # get the total number of read per lane
@@ -613,7 +496,7 @@ def store_samples_projects(sample_project_stats, run_id, logger):
 
 
 
-def parsing_demux_and_conversion_files( demux_file, conversion_file):
+def parsing_demux_and_conversion_files( demux_file, conversion_file, number_of_lanes):
     '''
     Description:
         The function will parse demultiplexing and the conversion files
@@ -622,7 +505,7 @@ def parsing_demux_and_conversion_files( demux_file, conversion_file):
         demux_file   # local copy of the demultiplexting file
         conversion_file # local copy of the conversion file
     Functions:
-        
+        get_machine_lanes
     Variables:
         barcodeCount # value of the barcodeCount fetched in the parsing 
         one_mismatch_count # count of number of one mismatch
@@ -648,7 +531,7 @@ def parsing_demux_and_conversion_files( demux_file, conversion_file):
     logger.debug ('Starting function parsing_demux_and_conversion_files')
     
     total_p_b_count = [0,0,0,0]
-    stats_result={}
+    parsed_result={}
     projects=[]
     demux_parse = ET.parse(demux_file)
     root=demux_parse.getroot()
@@ -657,7 +540,7 @@ def parsing_demux_and_conversion_files( demux_file, conversion_file):
     for child in root.iter('Project'):
         projects.append(child.attrib['name'])
     total_samples = 0
-    number_of_lanes = get_machine_lanes(run_id)
+    #number_of_lanes = get_machine_lanes(run_id)
     for i in range(len(projects)):
         p_temp=root[0][i]
         barcodeCount ,perfectBarcodeCount, b_count =[], [] ,[]
@@ -689,14 +572,14 @@ def parsing_demux_and_conversion_files( demux_file, conversion_file):
         parsed_result[projects[i]] = project_parsed_information
         if projects[i] != 'default' and projects[i] != 'all':
             total_samples += len(samples) -1
-        logger.info('Complete parsing from demux file for project %s', projects[i])
+        logger.info('Completed parsing from demux file for project %s', projects[i])
     # overwrite the value for total samples
     parsed_result['all']['sampleNumber']=total_samples
 
     conversion_stat=ET.parse(conversion_file)
     root_conv=conversion_stat.getroot()
     projects=[]
-    logger.info('Starting conversion for conversion file')
+    logger.info('Starting parsing for conversion file')
     for child in root_conv.iter('Project'):
         projects.append(child.attrib['name'])
     for i in range(len(projects)):
@@ -747,7 +630,7 @@ def parsing_demux_and_conversion_files( demux_file, conversion_file):
         parsed_result[projects[i]]['PF_Yield']=list_pf_yield
         parsed_result[projects[i]]['PF_YieldQ30']=list_pf_yield_q30
         parsed_result[projects[i]]['PF_QualityScore']=list_pf_qualityscore
-        logger.info('completed parsing for xml stats for project %s', projects[i])
+        logger.info('Completed parsing for conversion stats for project %s', projects[i])
 
     unknow_lanes  = []
     unknow_barcode_start_index= len(projects)
@@ -769,69 +652,220 @@ def parsing_demux_and_conversion_files( demux_file, conversion_file):
     return parsed_result
 
 
-def get_bcl2fastq_output_files (conn, run_folder):
+def parsing_demux_sample_project(demux_file, conversion_file, number_of_lanes):
     '''
     Description:
-        The function will collect files created by bcl2fastq process.
+        The function will parse demultiplexing and the conversion files
+        to get the samples inside the project
     Input:
-        conn # Connection samba object
-        run_folder   # folder run to fetch the remote files
-    Constant:
-        CONVERSION_STATS_FILE
-        DEMULTIPLEXION_STATS_FILE
-        REPORT_FOLDER
-        RUN_TEMP_DIRECTORY
-        STATISTICS_FOLDER
+        demux_file   # local copy of the demultiplexting file
+        conversion_file # local copy of the conversion file
+        number_of_lanes # numer of lane to be fetched, based on the sequencer type
+    Functions:
+        
     Variables:
-        l_conversion # local copy of ConversionStats file
-        l_demux      # local copy of DemultiplexingStats file   
-        l_metric_folder # local folder to copy the run metrics files
-        l_run_info  # local copy of runInfo file
-        l_run_parameter # local copy of runParamenter file
-        copied_files # dictionary of the temporary files that are copied 
-        run_folder      # run folder on the remote server
-        s_conversion_stats # path for the conversionStats file
-        s_conversion # path of the ConversionStats file
-        s_demux      # path of the DemultiplexingStats file   
-        statistics_folder # statistics folder on the remote server 
+        barcodeCount # value of the barcodeCount fetched in the parsing 
+        one_mismatch_count # count of number of one mismatch
+        p_temp      # pointer in the parse object to position it in each
+                    project xml structure
+        parsed result  # dictionnary where the parsing information is collected
+        perfectBarcodeCount  # value of the perfectBarcodeCount fetched 
+                            in the parsing 
+        projects
+        project_parsed_information # dictionnary to fetch the parsed information
+                                    for each project included in the file
+        total_p_b_count
+        samples         # number of the samples in the run 
+        sample_all_index # 
+        
+        
+        run_metric_processed # True or False if there are some rows in 
+                            StatsRunSummary for this run 
     Return:
-        copied_files
+        parsed_result
     '''
     logger = logging.getLogger(__name__)
-    logger.debug ('Starting function get_bcl2fastq_output_files')
+    logger.debug ('Starting function parsing_demux_and_conversion_files')
     
-    
-    # connect to remote server  to fetch files
-    statistics_folder = os.path.join(wetlab_config.CONVERSION_BCL2FASTQ_FOLDER, wetlab_config.STATISTICS_FOLDER)
-    # conversion stats file
-    l_conversion = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.CONVERSION_STATS_FILE)
-    s_conversion = os.path.join(run_folder, statistics_folder, wetlab_config.CONVERSION_STATS_FILE)
-    # demultiplexion stats file
-    l_demux = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.DEMULTIPLEXION_STATS_FILE)
-    s_demux = os.path.join(run_folder, statistics_folder, wetlab_config.DEMULTIPLEXION_STATS_FILE)
-    
-    copied_files = {}
-    try:
-        l_conversion = fetch_remote_file (conn, run_folder, s_conversion, l_conversion)
-        logger.info('Sucessfully fetch of ConversionStats file')
-        copied_files[wetlab_config.CONVERSION_STATS_FILE] = l_conversion
-        
-        l_demux = fetch_remote_file (conn, run_folder, s_demux, l_demux)
-        logger.info('Sucessfully fetch of Demustiplexing file')
-        copied_files[wetlab_config.DEMULTIPLEXION_STATS_FILE] = l_demux
-        
-    except:
-        string_message = "cannot copy files for getting run metrics"  
-        logging_errors(logger,string_message, True , True)
-        logger.info('Deleting temporary files')
-        for key in copied_files.keys():
-            os.remove(copied_files[key])
+    total_p_b_count=[0,0,0,0]
+    parsed_result = {}
+    demux_stat=ET.parse(demux_file)
+    root=demux_stat.getroot()
+    projects=[]
+    #number_of_lanes=get_machine_lanes(run_id)
+    logger.info('Starting parsing DemultiplexingStats.XML for getting Sample information')
+    for child in root.iter('Project'):
+        projects.append(child.attrib['name'])
 
-        logger.debug ('End function manage_run_in_processed_bcl2fast2_run with error')
+    for i in range(len(projects)):
+        if projects [i] == 'default' or projects [i] == 'all':
+            continue
+        p_temp=root[0][i]
+        samples=p_temp.findall('Sample')
+        sample_dict ={}
+        for index in range (len(samples)):
+            sample_name = samples[index].attrib['name']
+            if sample_name == 'all':
+                continue
+            barcodeCount , perfectBarcodeCount = 0 , 0
+
+            sample_stats={}
+            sample_stats ['barcodeName'] = samples[index].find ('Barcode').attrib['name']
+
+            for bar_count in p_temp[index][0].iter('BarcodeCount'):
+                barcodeCount += int(bar_count.text)
+            for p_bar_count in p_temp[index][0].iter('PerfectBarcodeCount'):
+                perfectBarcodeCount += int(p_bar_count.text)
+            sample_stats['BarcodeCount']=barcodeCount
+            sample_stats['PerfectBarcodeCount']=perfectBarcodeCount
+            sample_dict[sample_name] = sample_stats
+
+            parsed_result[projects[i]]=sample_dict
+    logger.info('Complete parsing from demux file for sample and for project %s', projects[i])
+
+
+    conversion_stat=ET.parse(conversion_file)
+    root_conv=conversion_stat.getroot()
+    projects=[]
+    logger.info('Starting conversion for conversion file')
+    for child in root_conv.iter('Project'):
+        projects.append(child.attrib['name'])
+    for i in range(len(projects)):
+        if projects [i] == 'default' or projects [i] == 'all':
+            continue
+        p_temp=root_conv[0][i]
+        samples=p_temp.findall('Sample')
+
+        for s_index in range (len (samples)):
+            sample_name = samples[s_index].attrib['name']
+            if sample_name == 'all':
+                continue
+            quality_per_sample = {}
+            raw_yield_value = 0
+            raw_yield_q30_value = 0
+            raw_quality_value = 0
+            pf_yield_value = 0
+            pf_yield_q30_value = 0
+            pf_quality_value = 0
+
+            for l_index in range(number_of_lanes):
+                tiles_index = len(p_temp[s_index][0][l_index].findall ('Tile'))
+                for t_index in range(tiles_index):
+                         # get the yield value for RAW and for read 1 and 2
+                    for c in p_temp[s_index][0][l_index][t_index][0].iter('Yield'):
+                        raw_yield_value +=int(c.text)
+                        # get the yield Q30 value for RAW  and for read 1 and 2
+                    for c in p_temp[s_index][0][l_index][t_index][0].iter('YieldQ30'):
+                        raw_yield_q30_value +=int(c.text)
+                    for c in p_temp[s_index][0][l_index][t_index][0].iter('QualityScoreSum'):
+                        raw_quality_value +=int(c.text)
+                     # get the yield value for PF and for read 1 and 2
+                    for c in p_temp[s_index][0][l_index][t_index][1].iter('Yield'):
+                        pf_yield_value +=int(c.text)
+                    # get the yield Q30 value for PF and for read 1 and 2
+                    for c in p_temp[s_index][0][l_index][t_index][1].iter('YieldQ30'):
+                        pf_yield_q30_value +=int(c.text)
+                    for c in p_temp[s_index][0][l_index][t_index][1].iter('QualityScoreSum'):
+                        pf_quality_value +=int(c.text)
+
+            parsed_result[projects[i]][sample_name]['RAW_Yield']=raw_yield_value
+            parsed_result[projects[i]][sample_name]['RAW_YieldQ30']=raw_yield_q30_value
+            parsed_result[projects[i]][sample_name]['RAW_QualityScore']=raw_quality_value
+            parsed_result[projects[i]][sample_name]['PF_Yield']=pf_yield_value
+            parsed_result[projects[i]][sample_name]['PF_YieldQ30']=pf_yield_q30_value
+            parsed_result[projects[i]][sample_name]['PF_QualityScore']=pf_quality_value
+        logger.info('completed parsing for xml stats for project %s', projects[i])
+
+
+    logger.info('Complete XML parsing  for getting Samples')
+
+    return parsed_result
+
+
+def process_raw_demux_stats(stats_projects, run_object_name):
+    '''
+    Description:
+        The function will process the parsed data, fetched previously and
+        it will prepare them to save later in database.
+        All the information is saved in a list "processed_raw_data" that
+        contains a dictionnary with the values to stored on RawDemuxStats
+
+        If all data are sucessfuly processed it returns processed_raw_data.
+        An exeception is raised in case of error while processing
+    Input:
+        stats_projects     # dictionnary with parsed data to be processed
+        run_object_name   # runProcess object
+    Variables:
+        processed_raw_data # dictionary list that contains all processed
+                            information.
+        project_list    # list of project for checking if all of them are
+                        defined on database
+        project_raw_data    # dictionnary to collect the processed data.
+                            After collecting it will be appended to 
+                            processed_raw_data.
+
+        
+    Return:
+        processed_raw_data if information is correctly processed.
+        An exception is raise if any project is not defiend on database
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('Starting function store_raw_xml_stats')
+    processed_raw_data = []
+    #error_found = False
+    project_list = []
+    # check first if all project found in the parsing are already defined
+    # when sample sheet was processed. 
+    for project in stats_projects:
+        if project == 'TopUnknownBarcodes'  or project == 'all' or project == 'default':
+            continue
+        else:
+            project_list.append(project)
+
+    if not check_all_projects_exists (project_list) :
+        # if there some projects not defined set the run to error state
+        string_message = "Found some projects not defined in database"
+        logging_errors(logger, string_message, False, True)
+        experiment_name = run_object_name.get_run_name()
+        handling_errors_in_run(experiment_name, '10')
         raise
-    
-    logger.debug ('End function get_bcl2fastq_output_files')
-    return copied_files
+    for project in stats_projects:
+        import pdb; pdb.set_trace()
+        project_raw_data = {}
+        # ignore on this step the unknowbarcode parsed information
+        if project == 'TopUnknownBarcodes':
+            continue
+        logger.info('processing project %s ', project)
+        if project == 'all' or project == 'default':
+            logger.info('Found project %s setting the project_id to NULL', project)
+            project_raw_data['project_id']= None
+            project_raw_data['default_all'] = project
+        else:
+            project_raw_data['project_id']= Projects.objects.get(projectName__exact = project).get_project_id()
+            project_raw_data['default_all'] = None
+        
+        project_raw_data['rawYield'] = stats_projects[project]['RAW_Yield']
+        project_raw_data['rawYieldQ30'] =  stats_projects[project]['RAW_YieldQ30']
+        project_raw_data['rawQuality'] = stats_projects[project]['RAW_QualityScore']
+        project_raw_data['PF_Yield'] = stats_projects[project]['PF_Yield']
+        project_raw_data['PF_YieldQ30'] = stats_projects[project]['PF_YieldQ30']
+        project_raw_data['PF_QualityScore'] = stats_projects[project]['PF_QualityScore']
+        # append project_raw_data to list
+        processed_raw_data.append(project_raw_data)
+        '''
+        # delete all information stored on database
+        if RawStatisticsXml.objects.filter (runprocess_id__exact = run_id).exists():
+            projects_to_delete = RawStatisticsXml.objects.filter (runprocess_id__exact = run_id)
+            logger.info('Deleting stored RawStatisticsXml information ')
+            for project in projects_to_delete :
+                project.delete()
+                logger.debug('Deleted the RawStatisticsXml for project %s', project)
+        return 'ERROR'
+        '''
+    logger.info('End function store_raw_xml_stats')
+    return processed_raw_data
+
+
 
 
 def manage_run_in_processed_run (conn, run_object_name):
@@ -868,8 +902,7 @@ def manage_run_in_processed_run (conn, run_object_name):
                 run_metric_files = get_run_metric_files (conn, run_folder)
                 
                 parsed_run_stats_summary, parsed_run_stats_read = parsing_run_metrics(wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING, run_object_name)
-                
-                '''
+
                 try:
                     for run_stat_summary in parsed_run_stats_summary :
                         saved_run_stat_summary = StatsRunSummary.objects.create_stats_run_summary(run_stat_summary, experiment_name)
@@ -878,21 +911,20 @@ def manage_run_in_processed_run (conn, run_object_name):
                         saved_run_stat_read = StatsRunRead.objects.create_stats_run_read(run_stat_read, experiment_name)
                     logger.info('run metrics read data saved to database')
                 except:
+                    ############# borrar las tablas creadas en caso de error #########
                     string_message = 'Run metrics data cannot be saved'
                     logging_errors(logger, string_message, True, True)
                     handling_errors_in_run(experiment_name)
                     logger.debug ('End function manage_run_in_processed_run with error')
                     raise
                 # create run graphics
-                '''
-                pepe = create_graphics (wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING, run_object_name)
+                run_graphics = create_graphics (wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING, run_object_name)
                 # return the state to Processed Run
                 run_state = run_object_name.set_run_state('Processed Run')
             except:
                 logger.debug ('End function manage_run_in_processed_run with error')
                 raise
             run_state = run_object_name.set_run_state('Processed Run')
-        import pdb; pdb.set_trace()
         # Check if Bcl2fastq has started
         try:  
             file_list = conn.listPath( wetlab_config.SAMBA_SHARED_FOLDER_NAME, statistics_folder)
@@ -993,6 +1025,10 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
     Constant:
         REPORT_FOLDER
     Functions:
+        get_bcl2fastq_output_files # located at this file
+        parsing_demux_and_conversion_files
+        parsing_demux_sample_project
+        process_raw_demux_stats
         set_state_in_all_projects # located at utils.generic_functions
     Variables:
         experiment_name # Name of the run
@@ -1018,38 +1054,49 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
     logger.debug ('Starting function manage_run_in_processed_bcl2fast2_run')
     experiment_name = run_object_name.get_run_name()
     run_folder = RunningParameters.objects.get(runName_id = run_object_name).get_run_folder()
-    statistics_folder = os.path.join(run_folder, wetlab_config.CONVERSION_STATS_FOLDER)
+    number_of_lanes = run_object_name.get_machine_lanes()
+    #statistics_folder = os.path.join(run_folder, wetlab_config.CONVERSION_STATS_FOLDER)
 
     if 'Processed Bcl2fastq' == run_object_name.get_state() :
-        run_state = run_object_name.set_run_state('Processing Bcl2fastq')
+        #run_state = run_object_name.set_run_state('Processing Demultiplexing')
         try:
-            copied_files = get_bcl2fastq_output_files (conn, run_folder)
+            l_demux , l_conversion= get_bcl2fastq_output_files (conn, run_folder)
         except:
             string_message = 'Unable to fetch stats files for ' + experiment_name
             logging_errors(logger, string_message, False, False)
+            handling_errors_in_run(experiment_name, '11')
             logger.debug ('End function manage_run_in_processed_bcl2fast2 with error')
             raise
         # parsing the files to get the xml Stats
-        logger.info('Start parsing  %s and %s ', wetlab_config.DEMULTIPLEXION_STATS_FILE, wetlab_config.CONVERSION_STATS_FILE )
-        parsed_result = parsing_demux_and_conversion_files(copied_files[wetlab_config.DEMULTIPLEXION_STATS_FILE],
-                                                    wetlab_config.CONVERSION_STATS_FILE )
+        logger.info('Start parsing  demultiplexing files')
+        #import pdb; pdb.set_trace()
+        parsed_result = parsing_demux_and_conversion_files(l_demux, l_conversion, number_of_lanes)
         
+        # parsing and processing the project samples
+        #import pdb; pdb.set_trace()
+        logger.info('Start parsing  samples demultiplexing ')
+        sample_project_stats = parsing_demux_sample_project (l_demux, l_conversion, number_of_lanes)
+        import pdb; pdb.set_trace()
         # clean up the fetched files in the local temporary folder
-        for file_to_delete in copied_files.keys() :
-            os.remove(copied_files[file_to_delete])
+        #os.remove(l_conversion)
+        #os.remove(l_demux)
         logger.info ('Deleted temporary demultiplexing and conversion files')
+        processed_raw_stats = process_raw_demux_stats(parsed_result, run_object_name)
         try:
-            result_of_raw_saving = store_raw_xml_stats(parsed_result, run_object_name)
-            
+            for raw_stats in processed_raw_stats :
+                new_raw_stats = RawDemuxStats.objects.create(raw_stats, experiment_name)
         except:
-            
-            
-            raise 
-            if result_of_raw_saving == 'ERROR':
-                update_run_state(run_processing_id, 'ERROR-on-Raw-SavingStats', logger)
-                update_project_state(run_processing_id, 'ERROR-on-Raw-SavingStats', logger)
-                logger.error('Stopping process for this run an starting deleting the files')
-            else:
+            string_message = 'Unable to save raw saving for ' + experiment_name
+            logging_errors(logger, string_message, False, False)
+            handling_errors_in_run (experiment_name, '11' )
+            if RawDemuxStats.objects.filter(runprocess_id__exact = run_object_name).exists():
+                raw_stats_to_delete = RawDemuxStats.objects.filter(runprocess_id__exact = run_object_name)
+                for raw_stats in raw_stats_to_delete :
+                    raw_stats.delete()
+            logger.debug('End function manage_run_in_processed_bcl2fast2_run with error')
+            raise
+        '''   
+
                 process_xml_stats(xml_stats,run_processing_id, logger)
 
                 # parsing and processing the project samples
@@ -1076,21 +1123,21 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
             logger.debug('Demultiplexing file have been removed from %s', demux_file)
             os.remove(conversion_file)
             logger.debug('ConversionStats file have been removed from %s', conversion_file)
-            os.remove(run_info_file)
-            logger.debug('RunInfo file have been removed from %s', run_info_file)
+            
             for file_object in os.listdir(interop_local_dir_samba):
                 file_object_path = os.path.join(interop_local_dir_samba, file_object)
                 if os.path.isfile(file_object_path):
                     logger.debug('Deleting file %s' , file_object_path)
                     os.remove(file_object_path)
             logger.info('xml files and binary files from InterOp folder have been removed')
+            '''
             ## connect to server to get the disk space utilization of the folders
-            get_run_disk_utilization (conn, run_Id_used, run_processing_id, logger)
+            #get_run_disk_utilization (conn, run_Id_used, run_processing_id, logger)
             # Update the run with the date of the run completion
-            completion_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            run_date_to_update = RunProcess.objects.get(pk = run_processing_id)
-            run_date_to_update.process_completed_date = completion_date
-            run_date_to_update.save()
+            #completion_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            #run_date_to_update = RunProcess.objects.get(pk = run_processing_id)
+            #run_date_to_update.process_completed_date = completion_date
+            #run_date_to_update.save()
     else: 
         string_message = 'Invalid state when calling to ' + experiment_name 
         logging_errors(logger, string_message , False , False)

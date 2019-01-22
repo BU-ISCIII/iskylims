@@ -357,16 +357,17 @@ def search_not_completed_run ():
             updated_run[state] = []
             for run_in_processing_bcl2fastq_run in runs_to_handle[state] :
                 #import pdb; pdb.set_trace()
-                #try:
-                updated_run[state].append( manage_run_in_processing_bcl2fastq (conn, run_in_processing_bcl2fastq_run))
-                #except :
-                #    logger.info('Handling the exception on Processing Bcl2fastq.  Continue with the next item')
-                #    continue
+                try:
+                    updated_run[state].append( manage_run_in_processing_bcl2fastq (conn, run_in_processing_bcl2fastq_run))
+                except :
+                    logger.info('Handling the exception on Processing Bcl2fastq.  Continue with the next item')
+                    continue
         elif state == 'Processed Bcl2fastq':
             updated_run[state] = []
             for run_in_processed_bcl2fastq_run in runs_to_handle[state] :
                 try:
-                    updated_run[state].append( manage_run_in_processed_bcl2fastq (conn, run_in_bcl2fastq_processed_run))
+                    #import pdb; pdb.set_trace()
+                    updated_run[state].append( manage_run_in_processed_bcl2fastq (conn, run_in_processed_bcl2fastq_run))
                 except :
                     logger.info('Handling the exception on Processed Bcl2fastq.  Continue with the next item')
                     continue

@@ -24,10 +24,12 @@ def check_all_projects_exists (project_list):
         True /False 
     '''
     logger = logging.getLogger(__name__)
-    logger.debug ('Starting function for copy file to remote')
+    logger.debug ('Starting function for check_all_projects_exists')
     for project in project_list :
         if not Projects.objects.filter(projectName__exact = project).exists():
+            logger.debug ('End function for check_all_projects_exists: Found some projects not defined')
             return False
+    logger.debug ('End function for check_all_projects_exists')
     return True
 
 

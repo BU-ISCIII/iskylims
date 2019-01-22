@@ -14,9 +14,14 @@ class RunErrors (models.Model):
     errorCode = models.CharField(max_length=10)
     errorText = models.CharField(max_length=255)
 
+    def __str__ (self):
+        return '%s' %(self.errorText)
+
 class RunStates (models.Model):
     runStateName = models.CharField(max_length=50)
 
+    def __str__ (self):
+        return '%s' %(self.runStateName)
 
 class RunProcess(models.Model):
     runName = models.CharField(max_length=45)
@@ -27,6 +32,7 @@ class RunProcess(models.Model):
     bcl2fastq_finish_date = models.DateTimeField(auto_now = False, null=True, blank=True)
     process_completed_date = models.DateTimeField(auto_now = False, null=True, blank=True)
     runState = models.CharField(max_length=25)
+    #newRunState = models.ForeignKey ( RunStates, on_delete = models.CASCADE, null = True, blank = True)
     index_library = models.CharField(max_length=85)
     samples= models.CharField(max_length=45,blank=True)
     useSpaceImgMb=models.CharField(max_length=10, blank=True)
@@ -140,7 +146,9 @@ class RunProcess(models.Model):
     
     def set_run_error_code (self, error_code):
         self.runError = RunErrors.objects.get(errorCode__exact = error_code)
-        #self.stateBeforeError = self.runState
+        present_run_state = self.runState
+        present_run_state2 = RunStates.objects.get(runStateName_exact = present_run_state)
+        self.stateBeforeError = present_run_state2
         self.runState = 'ERROR'
         self.save()
         return True
@@ -271,7 +279,7 @@ class Projects(models.Model):
     def set_project_state (self, state):
         self.procState = state
         self.save()
-        return state
+        return True
 
 
 class RunningParametersManager (models.Manager) :
@@ -450,9 +458,10 @@ class StatsRunRead (models.Model):
     objects = StatsRunReadManager ()
 
 
-class RawStatisticsXmlManager(models.Manager) :
-    def create_stats_run_read (self, stats_run_read, run_id):
-        raw_stats = self.create(runprocess_id=RunProcess.objects.get(pk=run_id),
+class RawDemuxStatsManager(models.Manager) :
+    def create_stats_run_read (self, raw_stats_run_read, experiment_name):
+        run_process = RunProcess.objects.get(runName__exact = experiment_name)
+        raw_stats = self.create(runprocess_id = raw_stats,
                                 project_id = project_id, defaultAll = default_all,
                                 rawYield= stats_projects[project]['RAW_Yield'], rawYieldQ30= stats_projects[project]['RAW_YieldQ30'],
                                 rawQuality= stats_projects[project]['RAW_QualityScore'], PF_Yield= stats_projects[project]['PF_Yield'],
@@ -463,7 +472,7 @@ class RawStatisticsXmlManager(models.Manager) :
         
         return raw_stats
 
-class RawStatisticsXml (models.Model):
+class RawDemuxStats (models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
             on_delete=models.CASCADE,)
@@ -486,7 +495,8 @@ class RawStatisticsXml (models.Model):
                 self.rawYieldQ30, self.PF_YieldQ30, self.rawQuality,
                 self.PF_Quality, self.sampleNumber)
 
-    objects = RawStatisticsXmlManager ()
+    
+    objects = RawDemuxStatsManager ()
 
 class RawTopUnknowBarcodes (models.Model):
     runprocess_id = models.ForeignKey(
