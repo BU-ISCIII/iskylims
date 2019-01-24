@@ -148,11 +148,12 @@ class RunProcess(models.Model):
         return True
     
     def set_run_error_code (self, error_code):
-        self.runError = RunErrors.objects.get(errorCode__exact = error_code)
-        present_run_state = self.runState
-        present_run_state2 = RunStates.objects.get(runStateName_exact = present_run_state)
-        self.stateBeforeError = present_run_state2
-        self.runState = 'ERROR'
+        if RunErrors.objects.filter(errorCode__exact = error_code).exists():
+            self.runError = RunErrors.objects.get(errorCode__exact = error_code)
+        else:
+            self.runError = RunErrors.objects.get(errorText__exact = 'Undefined')
+        self.stateBeforeError = self.state
+        self.state = RunStates.objects.get(runStateName_exact = 'Error')
         self.save()
         return True
 

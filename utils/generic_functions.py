@@ -249,13 +249,11 @@ def handling_errors_in_run (experiment_name, error_code):
     logger.debug ('Starting function handling_errors_in_run')
     logger.info('Set run to ERROR state')
     run_process = RunProcess.objects.get(runName__exact = experiment_name)
-    
     run_process.set_run_error_code(error_code)
     project_name_list = Projects.objects.filter(runprocess_id__exact = run_process)
     logger.info('Set projects to ERROR state')
     for project in project_name_list:
-        project.procState= 'ERROR'
-        project.save()
+        project.set_project_state('Error')
     logger.debug ('End function handling_errors_in_run')
     return True
 
