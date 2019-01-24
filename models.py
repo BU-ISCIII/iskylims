@@ -369,7 +369,6 @@ class StatsRunSummaryManager (models.Manager):
     
     def create_stats_run_summary (self, stats_run_summary , experiment_name) :
         run_process = RunProcess.objects.get(runName__exact = experiment_name)
-        import pdb; pdb.set_trace()
         s_run_summary = self.create(runprocess_id = run_process,
                                 level=stats_run_summary['level'], yieldTotal = stats_run_summary['yieldTotal'],
                                 projectedTotalYield= stats_run_summary['projectedTotalYield'],
@@ -459,17 +458,14 @@ class StatsRunRead (models.Model):
 
 
 class RawDemuxStatsManager(models.Manager) :
-    def create_stats_run_read (self, raw_stats_run_read, experiment_name):
-        run_process = RunProcess.objects.get(runName__exact = experiment_name)
-        raw_stats = self.create(runprocess_id = raw_stats,
-                                project_id = project_id, defaultAll = default_all,
-                                rawYield= stats_projects[project]['RAW_Yield'], rawYieldQ30= stats_projects[project]['RAW_YieldQ30'],
-                                rawQuality= stats_projects[project]['RAW_QualityScore'], PF_Yield= stats_projects[project]['PF_Yield'],
-                                PF_YieldQ30= stats_projects[project]['PF_YieldQ30'], PF_QualityScore =stats_projects[project]['PF_QualityScore'])
-        
-        
-        
-        
+    def create_stats_run_read (self, raw_demux_stats, run_object_name):
+
+        raw_stats = self.create(runprocess_id = run_object_name,
+                                project_id = raw_demux_stats ['project_id'], defaultAll = raw_demux_stats ['defaultAll'],
+                                rawYield= raw_demux_stats ['rawYield'], rawYieldQ30= raw_demux_stats ['rawYieldQ30'],
+                                rawQuality= raw_demux_stats ['rawQuality'], PF_Yield= raw_demux_stats ['PF_Yield'],
+                                PF_YieldQ30= raw_demux_stats ['PF_YieldQ30'], PF_QualityScore =raw_demux_stats ['PF_QualityScore'] )
+
         return raw_stats
 
 class RawDemuxStats (models.Model):
@@ -498,6 +494,15 @@ class RawDemuxStats (models.Model):
     
     objects = RawDemuxStatsManager ()
 
+class RawTopUnknowBarcodesManager(models.Manager) :
+    def create_unknow_barcode (self, unknow_barcode):
+        unknow_barcode = self.create (runprocess_id = unknow_barcode['runprocess_id'] , lane_number = unknow_barcode['lane_number'] ,
+                                top_number =  unknow_barcode['top_number'], count = unknow_barcode['count'],
+                                sequence = unknow_barcode['sequence']   )
+
+        return unknow_barcode 
+    
+
 class RawTopUnknowBarcodes (models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
@@ -514,6 +519,16 @@ class RawTopUnknowBarcodes (models.Model):
     def get_unknow_barcodes (self):
         return '%s;%s' %(self.count, self.sequence)
 
+    objects = RawTopUnknowBarcodesManager ()
+
+class StatsFlSummaryManager (models.Manager) :
+    def create_fl_summary (self, stats_fl_summary):
+        fl_summary = self.create (runprocess_id = stats_fl_summary ['runprocess_id'], project_id = stats_fl_summary ['project_id'],
+                            defaultAll = stats_fl_summary ['defaultAll'], flowRawCluster = stats_fl_summary ['flowRawCluster'],
+                            flowPfCluster = stats_fl_summary ['flowPfCluster'], flowYieldMb = stats_fl_summary ['flowYieldMb'],
+                            sampleNumber = stats_fl_summary ['sampleNumber'] )
+
+        return fl_summary
 
 class StatsFlSummary(models.Model):
     runprocess_id = models.ForeignKey(
@@ -530,6 +545,19 @@ class StatsFlSummary(models.Model):
     def get_fl_summary(self):
         return '%s;%s;%s;%s' %(self.flowRawCluster, self.flowPfCluster,
             self.flowYieldMb, self.sampleNumber)
+    
+    objects = StatsFlSummaryManager ()
+
+class StatsLaneSummaryManager (models.Manager) :
+    def create_lane_summary (self, l_summary) :
+        lane_summary = self.create (runprocess_id = l_summary['runprocess_id'], project_id = l_summary['project_id'],
+                            defaultAll = l_summary['defaultAll'], lane = l_summary['lane'],
+                            pfCluster = l_summary['pfCluster'], percentLane = l_summary['percentLane'],
+                            perfectBarcode = l_summary['perfectBarcode'], oneMismatch = l_summary['oneMismatch'],
+                            yieldMb = l_summary['yieldMb'], biggerQ30 = l_summary['biggerQ30'],
+                            meanQuality = l_summary['meanQuality'] )
+        
+        return lane_summary
 
 class StatsLaneSummary (models.Model):
     runprocess_id = models.ForeignKey(
@@ -563,7 +591,7 @@ class StatsLaneSummary (models.Model):
 
         return'%s;%s;%s;%s' %(self.biggerQ30, self.meanQuality, self.yieldMb, self.pfCluster)
 
-
+    objects = StatsLaneSummaryManager ()
     
 
 class GraphicsStats (models.Model):
@@ -592,6 +620,12 @@ class GraphicsStats (models.Model):
     def get_folder_graphic(self):
         return '%s' %(self.folderRunGraphic)
 
+class SamplesInProjectManager (models.Manager):
+    def create_sample_project (self, s_project):
+        sample_project = self.create( project_id = s_project['project_id'] , sampleName =  s_project['sampleName'],
+                            barcodeName =  s_project['barcodeName'], pfClusters =  s_project['pfClusters'], 
+                            percentInProject =  s_project['percentInProject'], yieldMb =  s_project['yieldMb'],
+                            qualityQ30 =  s_project['qualityQ30'], meanQuality =  s_project['meanQuality'] )
 
 class SamplesInProject (models.Model):
     project_id = models.ForeignKey(
@@ -617,13 +651,16 @@ class SamplesInProject (models.Model):
         return '%s' %(self.sampleName)
 
     def get_project_name (self) :
-       p_id = self.project_id
-       project_name =Projects.objects.get(projectName=p_id).get_project_name()
-       #Projects.objects.prefetch_related('user_id').filter(user_id = user_id)
-       return '%s' %(project_name)
+        #p_id = self.project_id
+        #project_name =Projects.objects.get(projectName=p_id).get_project_name()
+        project_name = self.project_id.get_project_name()
+        #Projects.objects.prefetch_related('user_id').filter(user_id = user_id)
+        return '%s' %(project_name)
 
     def get_quality_sample (self):
         return '%s' %(self.qualityQ30)
+    
+    objects = SamplesInProjectManager()
 
 
 
