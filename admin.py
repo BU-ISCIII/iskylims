@@ -6,10 +6,8 @@ from iSkyLIMS_wetlab.models import *
 
 class AppAdmin(admin.ModelAdmin):
     list_display = ('run_name','description','csv_file','name')
-    #import pdb; pdb.set_trace()
     def file_link(self, obj):
         if obj.file:
-            #import pdb; pdb.set_trace()
             return "<a href='%s' download>Download</a>" % (obj.file.url,)
         else:
             return "No attachment"
@@ -21,7 +19,7 @@ class RunningParametersAdmin(admin.ModelAdmin):
     #import pdb; pdb.set_trace()
 
 class RunProcessAdmin (admin.ModelAdmin):
-    list_display = ('runName','sequencerModel','sampleSheet','generatedat','run_date','runState','index_library','samples','centerRequestedBy','useSpaceImgMb','useSpaceFastaMb','useSpaceOtherMb')
+    list_display = ('runName','sequencerModel','sampleSheet','generatedat','run_date','runState', 'state','index_library','samples','centerRequestedBy','useSpaceImgMb','useSpaceFastaMb','useSpaceOtherMb')
 
 class ProjectsAdmin (admin.ModelAdmin):
     list_display= ('runprocess_id','user_id','LibraryKit_id','projectName','procState','libraryKit','baseSpaceFile','generatedat','project_run_date')

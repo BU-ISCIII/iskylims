@@ -32,7 +32,7 @@ class RunProcess(models.Model):
     bcl2fastq_finish_date = models.DateTimeField(auto_now = False, null=True, blank=True)
     process_completed_date = models.DateTimeField(auto_now = False, null=True, blank=True)
     runState = models.CharField(max_length=25)
-    #newRunState = models.ForeignKey ( RunStates, on_delete = models.CASCADE, null = True, blank = True)
+    state = models.ForeignKey ( RunStates, on_delete = models.CASCADE, related_name = 'state_of_run', null = True, blank = True)
     index_library = models.CharField(max_length=85)
     samples= models.CharField(max_length=45,blank=True)
     useSpaceImgMb=models.CharField(max_length=10, blank=True)
@@ -130,8 +130,11 @@ class RunProcess(models.Model):
         return True
 
     def set_run_state (self, new_state):
-        self.runState = new_state
-        self.save()
+        if RunStates.objects.filter(runStateName__exact = new_state).exists():
+            self.state = RunStates.objects.get(runStateName__exact = new_state)
+            self.save()
+        else:
+            return False
         return True
         
     def set_run_date (self, run_date):
