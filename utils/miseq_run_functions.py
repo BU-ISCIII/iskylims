@@ -35,15 +35,17 @@ def check_miseq_completion_run (conn, experiment_name, log_folder):
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function check_miseq_completion_run')
     run_completion_date =''
-    run_id = RunProcess.objects.get(runName__exact = experiment_name).id
-    number_of_cycles = RunningParameters.objects.get(runName_id__exact = run_id).get_number_of_cycles()
+    run_object = RunProcess.objects.get(runName__exact = experiment_name)
+    number_of_cycles =  RunningParameters.objects.get(runName_id__exact = run_object).get_number_of_cycles()
 
     try:
         log_cycles, log_file_content = get_latest_miseq_log(conn, log_folder)
     except :
         string_message = 'Unable to fetch the log files for run ' + experiment_name
         logging_errors( logger, string_message, False, False)
-        raise IOError ('Unable to fetch log file')
+        logger.debug('End function check_miseq_completion_run with IOError exception')
+        raise
+        #raise IOError ('Unable to fetch log file')
     if 'Cancel' in log_file_content :
         status_run = 'Canceled'
     elif log_cycles != number_of_cycles :
@@ -478,14 +480,14 @@ def manage_miseq_in_processing_run (conn, run_name):
     logger.debug ('Starting function manage_miseq_in_processing_run')
     experiment_name = run_name.get_run_name()
     run_folder = RunningParameters.objects.get(runName_id = run_name).get_run_folder()
+    log_folder = os.path.join(run_folder, wetlab_config.RUN_LOG_FOLDER)
     try: # waiting for sequencer run completion
-        log_folder = os.path.join(run_folder, wetlab_config.RUN_LOG_FOLDER)
-
         status_run, run_completion_date = check_miseq_completion_run (conn, experiment_name, log_folder)
         if status_run == 'Cancel' :
             run_updated = handling_errors_in_run (experiment_name)
             run_updated = run_name.set_run_state('CANCELLED')
             run_updated.save()
+            logger.debug ('End function manage_miseq_in_processing_run was cancelled')
             raise ValueError ('Run was canceled')
         elif status_run == 'still_running':
             if need_to_wait_more (experiment_name, wetlab_config. MAXIMUM_TIME_WAIT_RUN_COMPLETION):
@@ -498,6 +500,7 @@ def manage_miseq_in_processing_run (conn, run_name):
             logger.debug ('End function manage_miseq_in_processing_run %s' , experiment_name)
             return experiment_name
     except ValueError :
+        logger.debug ('End function manage_miseq_in_processing_run with error')
         raise
     except:
         string_message = 'Error when fetching the log file for the run ' + new_run
@@ -540,6 +543,7 @@ def manage_miseq_in_samplesent(conn, run_name) :
             run_updated = handling_errors_in_run (experiment_name)
             run_updated = run_name.set_run_state('CANCELLED')
             run_updated.save()
+            logger.debug ('End function manage_miseq_in_samplesent with error')
             raise ValueError ('Run was canceled')
         else :
             run_updated = RunProcess.objects.get(runName__exact = experiment_name).set_run_state('Processing run')

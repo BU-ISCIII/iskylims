@@ -387,7 +387,6 @@ def get_bcl2fastq_output_files (conn, run_folder):
         l_demux      # local copy of DemultiplexingStats file   
         l_metric_folder # local folder to copy the run metrics files
         l_run_info  # local copy of runInfo file
-        l_run_parameter # local copy of runParamenter file
         
         run_folder      # run folder on the remote server
         s_conversion_stats # path for the conversionStats file
@@ -466,13 +465,34 @@ def cleanup_tables_if_error (run_object_name):
         True .
     '''
     logger = logging.getLogger(__name__)
-    logger.debug ('Starting function process_fl_summary_stats')
+    logger.debug ('Starting function cleanup_tables_if_error')
     
     if RawDemuxStats.objects.filter(runprocess_id__exact = run_object_name).exists():
-                raw_stats_to_delete = RawDemuxStats.objects.filter(runprocess_id__exact = run_object_name)
-                for raw_stats in raw_stats_to_delete :
-                    raw_stats.delete()
+        raw_stats_to_delete = RawDemuxStats.objects.filter(runprocess_id__exact = run_object_name)
+        logger.info('Deleting RawDemuxStats rows')
+        for raw_stats in raw_stats_to_delete :
+            raw_stats.delete()
+    projects = Projects.objects.filter(runprocess_id = run_object_name)
+    for project in projects:
+        if SamplesInProject.objects.filter(project_id = project).exists():
+            samples_to_delete = SamplesInProject.objects.filter(project_id = project)
+            logger.info('Deleting SampleProjects rows')
+            for sample in samples_to_delete:
+                sample.delete()
+
+    if StatsFlSummary.objects.filter(runprocess_id = run_object_name).exists():
+        fl_summary_to_delete = StatsFlSummary.objects.filter(runprocess_id = run_object_name)
+        logger.info('Deleting StatsFlSummary rows')
+        for fl_summary in fl_summary_to_delete:
+            fl_summary.delete()
+        
+    if StatsLaneSummary.objects.filter(runprocess_id = run_object_name).exists():
+        lane_summary_to_delete = StatsLaneSummary.objects.filter(runprocess_id = run_object_name)
+        logger.info('Deleting StatsFlSummary rows')
+        for lane_summary in lane_summary_to_delete:
+            lane_summary.delete()
     
+    logger.debug ('End function cleanup_tables_if_error')
     return True
 
 def parsing_demux_and_conversion_files( demux_file, conversion_file, number_of_lanes):
@@ -784,13 +804,14 @@ def process_fl_summary_stats (stats_projects, run_object_name):
     logger.debug ('Starting function process_fl_summary_stats')
     M_BASE=1.004361/1000000
     total_cluster_lane=(stats_projects['all']['PerfectBarcodeCount'])
-    
+    processed_fl_summary_data = []
     number_of_lanes = run_object_name.get_machine_lanes()
     for project in stats_projects:
-        logger.info('Start processing flow Summary for project %s', project)
         project_flowcell = {}
         if project == 'TopUnknownBarcodes':
             continue
+
+        logger.info('Start processing flow Summary for project %s', project)
         flow_raw_cluster, flow_pf_cluster, flow_yield_mb = 0, 0, 0
         for fl_item in range(number_of_lanes):
              # make the calculation for Flowcell
@@ -807,11 +828,11 @@ def process_fl_summary_stats (stats_projects, run_object_name):
             project_flowcell['project_id'] = None
             project_flowcell['defaultAll'] = project
         else:
-            project_flowcell['project_id'] = Projects.objects.get(projectName__exact = project).get_project_id()
+            project_flowcell['project_id'] = Projects.objects.get(projectName__exact = project)
             project_flowcell['defaultAll'] = None
         project_flowcell['runprocess_id'] = run_object_name
         #store in database
-        logger.info('Processed information for flow Summary for project %s', project)
+        logger.info('End processing flow Summary for project %s', project)
         '''
         ns_fl_summary = StatsFlSummary(runprocess_id=RunProcess.objects.get(pk=run_id),
                                 project_id=project_id, defaultAll=default_all, flowRawCluster=flow_raw_cluster,
@@ -821,9 +842,9 @@ def process_fl_summary_stats (stats_projects, run_object_name):
 
         ns_fl_summary.save()
         '''
-        logger.info('processed flowcell summary data  for project %s', project)
         processed_fl_summary_data.append(project_flowcell)
     
+    logger.debug ('End function process_fl_summary_stats')
     return processed_fl_summary_data
 
 def process_lane_summary_stats (stats_projects, run_object_name):
@@ -847,26 +868,27 @@ def process_lane_summary_stats (stats_projects, run_object_name):
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function process_lane_summary_stats')
+    M_BASE=1.004361/1000000
     processed_lane_summary_data = []
-    number_of_lanes = run_object_name.get_machine_lanes() 
+    number_of_lanes = run_object_name.get_machine_lanes()
+    total_cluster_lane=(stats_projects['all']['PerfectBarcodeCount'])
     for project in stats_projects:
         if project == 'TopUnknownBarcodes':
             continue
         logger.info('processing lane stats for %s', project)
-
         for i in range (number_of_lanes):
             # get the lane information
-            project_lane ={}
-            project_lane['lane'] = lane_number=str(i + 1)
+            project_lane = {}
+            project_lane['lane'] = str(i + 1)
             pf_cluster_int=(int(stats_projects[project]['PerfectBarcodeCount'][i]))
-            project_lane['pfCluster'] = pf_cluster='{0:,}'.format(pf_cluster_int)
-            project_lane['perfectBarcode'] = perfect_barcode=(format(int(stats_projects[project]['PerfectBarcodeCount'][i])*100/int(stats_projects[project]['BarcodeCount'][i]),'.3f'))
-            project_lane['percentLane'] = percent_lane=  format(float(int(pf_cluster_int)/int(total_cluster_lane[i]))*100, '.3f')
-            project_lane['oneMismatch'] = one_mismatch=stats_projects[project]['OneMismatchBarcodeCount'][i]
-            project_lane['yieldMb'] = yield_mb= '{0:,}'.format(round(float(stats_projects[project]['PF_Yield'][i])*M_BASE))
-            project_lane['biggerQ30'] = bigger_q30=format(float(stats_projects[project]['PF_YieldQ30'][i])*100/float( stats_projects[project]['PF_Yield'][i]),'.3f')
-            project_lane['meanQuality'] = mean_quality=format(float(stats_projects[project]['PF_QualityScore'][i])/float(stats_projects[project]['PF_Yield'][i]),'.3f')
-
+            project_lane['pfCluster'] = '{0:,}'.format(pf_cluster_int)
+            project_lane['perfectBarcode'] = (format(int(stats_projects[project]['PerfectBarcodeCount'][i])*100/int(stats_projects[project]['BarcodeCount'][i]),'.3f'))
+            project_lane['percentLane'] = format(float(int(pf_cluster_int)/int(total_cluster_lane[i]))*100, '.3f')
+            project_lane['oneMismatch'] = stats_projects[project]['OneMismatchBarcodeCount'][i]
+            project_lane['yieldMb'] = '{0:,}'.format(round(float(stats_projects[project]['PF_Yield'][i])* M_BASE))
+            project_lane['biggerQ30'] = format(float(stats_projects[project]['PF_YieldQ30'][i])*100/float( stats_projects[project]['PF_Yield'][i]),'.3f')
+            project_lane['meanQuality'] = format(float(stats_projects[project]['PF_QualityScore'][i])/float(stats_projects[project]['PF_Yield'][i]),'.3f')
+            
             if project == 'all' or project == 'default':
                 project_lane['project_id'] = None
                 project_lane['defaultAll'] = project
@@ -885,7 +907,7 @@ def process_lane_summary_stats (stats_projects, run_object_name):
             ns_lane_summary.save()
 
             '''
-            processed_lane_summary_data.append()
+            processed_lane_summary_data.append(project_lane)
         logger.info('Processed information for project %s', project)
     logger.debug ('End function process_lane_summary_stats')
     return processed_lane_summary_data
@@ -997,6 +1019,7 @@ def process_samples_projects(stats_projects, run_object_name ):
     # get the total number of read per lane
     M_BASE=1.004361/1000000
     processed_sample_data =[]
+    
     for project in stats_projects:
         # find the total number of PerfectBarcodeCount in the procjec to make percent calculations
         total_perfect_barcode_count = 0
@@ -1006,18 +1029,19 @@ def process_samples_projects(stats_projects, run_object_name ):
         for sample in stats_projects[project]:
             project_sample_data = {}
             project_sample_data['sampleName'] = sample
-            project_sample_data['barcodeName'] = barcode_name = stats_projects[project][sample]['barcodeName']
+            project_sample_data['barcodeName'] = stats_projects[project][sample]['barcodeName']
             perfect_barcode = int(stats_projects[project][sample] ['PerfectBarcodeCount'])
-            project_sample_data['pfClusters'] = perfect_barcode = '{0:,}'.format(perfect_barcode)
-            project_sample_data['percentInProject'] = percent_in_project = format (float(perfect_barcode) *100 /total_perfect_barcode_count,'.2f')
-            
-            project_sample_data['yieldMb'] = yield_mb = '{0:,}'.format(round(float(stats_projects[project][sample] ['PF_Yield'])*M_BASE))
-            if sample_project_stats[project][sample] ['PF_Yield'] > 0:
+            project_sample_data['pfClusters'] =  '{0:,}'.format(perfect_barcode)
+            project_sample_data['percentInProject'] = format (float(perfect_barcode) *100 /total_perfect_barcode_count,'.2f')
+
+            project_sample_data['yieldMb'] = '{0:,}'.format(round(float(stats_projects[project][sample] ['PF_Yield'])*M_BASE))
+            if stats_projects[project][sample] ['PF_Yield'] > 0:
                 bigger_q30=format(float(stats_projects[project][sample]['PF_YieldQ30'])*100/float( stats_projects[project][sample]['PF_Yield']),'.3f')
                 mean_quality=format(float(stats_projects[project][sample]['PF_QualityScore'])/float(stats_projects[project][sample]['PF_Yield']),'.3f')
             else:
                 bigger_q30 = 0
                 mean_quality =0
+
             project_sample_data['qualityQ30'] = bigger_q30
             project_sample_data['meanQuality'] = mean_quality
             project_sample_data['project_id'] = Projects.objects.get(projectName__exact = project)
@@ -1058,7 +1082,9 @@ def process_unknow_barcode_stats (stats_projects, run_object_name):
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function process_unknow_barcode_stats')
+    number_of_lanes = run_object_name.get_machine_lanes()
     processed_barcode_data = []
+    import pdb; pdb.set_trace()
     for project in stats_projects:
         if project == 'TopUnknownBarcodes':
             for un_lane in range(number_of_lanes) :
@@ -1220,7 +1246,7 @@ def manage_run_in_processing_bcl2fastq (conn, run_object_name):
         logger.debug ('End function manage_run_in_processing_bcl2fast2 with error')
         return ''
     
-    logger.debug ('End function manage_run_in_processing_bcl2fast2 with error')
+    logger.debug ('End function manage_run_in_processing_bcl2fast2')
     return experiment_name
 
 
@@ -1282,7 +1308,8 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
     #statistics_folder = os.path.join(run_folder, wetlab_config.CONVERSION_STATS_FOLDER)
 
     if 'Processed Bcl2fastq' == run_object_name.get_state() :
-        #run_state = run_object_name.set_run_state('Processing Demultiplexing')
+        run_state = run_object_name.set_run_state('Processing Demultiplexing')
+        
         try:
             l_demux , l_conversion= get_bcl2fastq_output_files (conn, run_folder)
         except:
@@ -1297,17 +1324,17 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
         
         # parsing and processing the project samples
         logger.info('Start parsing  samples demultiplexing')
-        sample_project_stats = parsing_demux_sample_project (l_demux, l_conversion, number_of_lanes)
-        import pdb; pdb.set_trace()
+        sample_parsed_result = parsing_demux_sample_project (l_demux, l_conversion, number_of_lanes)
         # clean up the fetched files in the local temporary folder
         os.remove(l_conversion)
         os.remove(l_demux)
         logger.info ('Deleted temporary demultiplexing and conversion files')
+        
         processed_raw_stats = process_raw_demux_stats(parsed_result, run_object_name)
         try:
             for raw_stats in processed_raw_stats :
-                import pdb; pdb.set_trace()
                 new_raw_stats = RawDemuxStats.objects.create_stats_run_read(raw_stats, run_object_name)
+            logger.info('Saved information to RawDemuxStats')
         except:
             string_message = 'Unable to save raw stats for ' + experiment_name
             logging_errors(logger, string_message, False, False)
@@ -1316,10 +1343,11 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
             logger.debug('End function manage_run_in_processed_bcl2fast2_run with error')
             raise
         
-        processed_samples_stats = process_samples_projects(parsed_result, run_object_name)
+        processed_samples_stats = process_samples_projects(sample_parsed_result, run_object_name)
         try:
             for sample_stats in processed_samples_stats :
                 new_sample_stats = SamplesInProject.objects.create_sample_project(sample_stats)
+            logger.info('Saved information to SamplesInProject')
         except:
             string_message = 'Unable to save sample stats saving for ' + experiment_name
             logging_errors(logger, string_message, False, False)
@@ -1329,8 +1357,9 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
             raise
         processed_fl_summary = process_fl_summary_stats(parsed_result, run_object_name)
         try:
-            for raw_stats in processed_raw_stats :
-                new_raw_stats = StatsFlSummary.objects.create_fl_summary(raw_stats)
+            for fl_summary in processed_fl_summary :
+                new_fl_summary = StatsFlSummary.objects.create_fl_summary(fl_summary)
+            logger.info('Saved information to StatsFlSummary')
         except:
             string_message = 'Unable to save FL Summary  stats for ' + experiment_name
             logging_errors(logger, string_message, False, False)
@@ -1339,12 +1368,13 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
             logger.debug('End function manage_run_in_processed_bcl2fast2_run with error')
             raise
         
-        processed_lane_summary = process_lane_summary_stats(parsed_result)
+        processed_lane_summary = process_lane_summary_stats(parsed_result, run_object_name)
         try:
-            for raw_stats in processed_raw_stats :
-                new_raw_stats = StatsLaneSummary.objects.create_lane_summary(raw_stats, experiment_name)
+            for lane_summary in processed_lane_summary :
+                new_lane_summary = StatsLaneSummary.objects.create_lane_summary(lane_summary)
+            logger.info('Saved information to StatsLaneSummary')
         except:
-            string_message = 'Unable to Lane Summary stats for ' + experiment_name
+            string_message = 'Unable to save Lane Summary stats for ' + experiment_name
             logging_errors(logger, string_message, False, False)
             handling_errors_in_run (experiment_name, '15' )
             cleanup_tables_if_error(run_object_name)
@@ -1353,8 +1383,9 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
         
         processed_unknow_barcode = process_unknow_barcode_stats(parsed_result, run_object_name)
         try:
-            for raw_stats in processed_raw_stats :
-                new_raw_stats = RawTopUnknowBarcodes.objects.create_unknow_barcode(raw_stats, experiment_name)
+            for unknow_barcode in processed_unknow_barcode :
+                new_unknow_barcode = RawTopUnknowBarcodes.objects.create_unknow_barcode(unknow_barcode)
+            logger.info('Saved information to RawTopUnknowBarcodes')
         except:
             string_message = 'Unable to Unknow Barcode stats for ' + experiment_name
             logging_errors(logger, string_message, False, False)
@@ -1362,50 +1393,28 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
             cleanup_tables_if_error(run_object_name)
             logger.debug('End function manage_run_in_processed_bcl2fast2_run with error')
             raise
-        return experiment_name
-        '''   
+        
+        ## Get the disk space utilization for this run
+        import pdb; pdb.set_trace()
+        try:
+            disk_utilization = get_run_disk_utilization (conn, run_folder)
+        except:
+            string_message = 'Error when fetching the log file for the run ' + new_run
+            logging_errors (logger, string_message, False, False)
+            handling_errors_in_run (experiment_name, '17' )
+            cleanup_tables_if_error(run_object_name)
+            logger.debug('End function manage_run_in_processed_bcl2fast2_run with error')
+            raise 
+        import pdb; pdb.set_trace()
+        
+        result_store_usage = run_object_name.set_used_space (disk_utilization)
+        
+        completion_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        result_set_completion_date = run_object_name.set_run_completion_date(completion_date)
+        # Update the run state to completed
+        run_state = run_object_name.set_run_state('Completed')
+        projects_state = set_state_in_all_projects(experiment_name, 'Completed')
 
-                process_xml_stats(xml_stats,run_processing_id, logger)
-
-                # parsing and processing the project samples
-                sample_project_stats = parsing_sample_project_xml (run_processing_id,demux_file, conversion_file, logger)
-                store_samples_projects (sample_project_stats, run_processing_id, logger)
-
-                logger.info('processing interop files')
-                # processing information for the interop files
-                number_of_lanes = get_machine_lanes(run_processing_id)
-
-                process_binStats(local_dir_samba, run_processing_id, logger, number_of_lanes)
-                # Create graphics
-                graphic_dir=os.path.join(settings.MEDIA_ROOT,wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING)
-
-                create_graphics(graphic_dir, run_processing_id, run_Id_used, logger)
-
-                processed_run.append(run_Id_used)
-                logger.info('run id %s is now on Completed state', run_Id_used)
-                update_run_state(run_processing_id, 'Completed', logger)
-                update_project_state(run_processing_id, 'Completed', logger)
-            # clean up the used files and directories
-            logger.info('starting the clean up for the copied files from remote server ')
-            os.remove(demux_file)
-            logger.debug('Demultiplexing file have been removed from %s', demux_file)
-            os.remove(conversion_file)
-            logger.debug('ConversionStats file have been removed from %s', conversion_file)
-            
-            for file_object in os.listdir(interop_local_dir_samba):
-                file_object_path = os.path.join(interop_local_dir_samba, file_object)
-                if os.path.isfile(file_object_path):
-                    logger.debug('Deleting file %s' , file_object_path)
-                    os.remove(file_object_path)
-            logger.info('xml files and binary files from InterOp folder have been removed')
-            '''
-            ## connect to server to get the disk space utilization of the folders
-            #get_run_disk_utilization (conn, run_Id_used, run_processing_id, logger)
-            # Update the run with the date of the run completion
-            #completion_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            #run_date_to_update = RunProcess.objects.get(pk = run_processing_id)
-            #run_date_to_update.process_completed_date = completion_date
-            #run_date_to_update.save()
     else: 
         string_message = 'Invalid state when calling to ' + experiment_name 
         logging_errors(logger, string_message , False , False)

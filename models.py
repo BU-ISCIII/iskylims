@@ -129,6 +129,13 @@ class RunProcess(models.Model):
         self.save()
         return True
 
+    def set_used_space (self, disk_utilization):
+        self.useSpaceFastaMb  = disk_utilization ['useSpaceFastaMb'] 
+        self.useSpaceImgMb  = disk_utilization ['useSpaceImgMb'] 
+        self.useSpaceOtherMb  = disk_utilization ['useSpaceOtherMb']
+        self.save()
+        return True
+
     def set_run_state (self, new_state):
         if RunStates.objects.filter(runStateName__exact = new_state).exists():
             self.state = RunStates.objects.get(runStateName__exact = new_state)
@@ -153,7 +160,7 @@ class RunProcess(models.Model):
         else:
             self.runError = RunErrors.objects.get(errorText__exact = 'Undefined')
         self.stateBeforeError = self.state
-        self.state = RunStates.objects.get(runStateName_exact = 'Error')
+        self.state = RunStates.objects.get(runStateName__exact = 'Error')
         self.save()
         return True
 

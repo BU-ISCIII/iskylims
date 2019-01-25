@@ -64,28 +64,26 @@ def looking_for_new_runs ():
     # looking in database for the runs that are not completed
     logger.info('----------------------------------')
     logger.info('Start looking for uncompleted runs')
-    print ('directorio es ', os.getcwd())
     working_path = settings.MEDIA_ROOT
     os.chdir(working_path)
     
-    updated_runs = search_not_completed_run()
-    logger.info('Exiting the proccess for  uncompleted runs')
-    '''
+    updated_runs, run_with_error = search_not_completed_run()
+    logger.info('Printing the summary result for the manage runs ')
+    
     for state in updated_runs:
-        if (updated_runs[state] == "" ):
-            logger.debug('found runs on %s but not found the conditions to upgrade the state', state)
-        elif (updated_run[state]== 'Error'):
-            logger.error('Not connection was available for state %s', state)
-        else:
-            for run_changed in updated_run[state]:
-                logger.info('the run  %s was changed from %s', run_changed, state)
-                count +=1
-    '''
-
+        for run_changed in updated_runs[state]:
+            logger.info('Run  %s was  processed on  %s  state', run_changed, state)
+    
+    import pdb; pdb.set_trace()
+    for state in run_with_error:
+        for run_error in run_with_error[state]:
+            logger.info('Run  %s was set to Error when processing run on %s state', run_error, state)
+    
     time_stop= datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(time_stop)
     print ('****** Exiting the process for searching not completed runs')
     logger.info('###########-----End Crontab--######################')
+    return
     
 
 

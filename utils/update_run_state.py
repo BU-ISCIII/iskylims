@@ -263,8 +263,6 @@ def search_not_completed_run ():
         
     Variables:
     
-    
-    
         runs_to_handle # dictionary contains the run state as key and
                         run objects in a value list
         run_platform  # platform used on the run in sample sent state
@@ -275,6 +273,8 @@ def search_not_completed_run ():
         handle_new_miseq_run # list with all new miseq runs
         l_sample_sheet  # full path for storing sample sheet file on 
                         tempary local folder
+        runs_with_error # dictionary contains the run state as key and
+                        run names that failed during the process
         s_sample_sheet  # full path for remote sample sheet file
         processed_run # dictionary having state as key and the runs 
                         processed as value list
@@ -290,6 +290,8 @@ def search_not_completed_run ():
         raise logging_errors(logger, string_message, True, False)
         
     runs_to_handle = {}
+    updated_run={}
+    runs_with_error = {}
     state_list_be_processed = ['Sample Sent','Processing Run','Processed Run', 'Processing Bcl2fastq',
                                 'Processed Bcl2fastq']
     # get the list for all runs that are not completed
@@ -297,12 +299,12 @@ def search_not_completed_run ():
         if RunProcess.objects.filter(runState__exact = state).exists():
             runs_to_handle[state]=RunProcess.objects.filter(runState__exact = state)
     
-    updated_run={}
     for state in runs_to_handle:
         logger.info ('Start processing the run found for state %s', state)
-        
+
         if state == 'Sample Sent':
             updated_run['Sample Sent'] = []
+            runs_with_error['Sample Sent'] = []
             logger.debug('Start handling the runs in Sample Sent state')
             for run_in_sample_sent in runs_to_handle[state] :
                 # get platform
@@ -319,12 +321,14 @@ def search_not_completed_run ():
                         logging_errors (logger, string_message , False, False)
                         continue
                 except :
+                    runs_with_error[state].append(run_in_sample_sent.get_run_name()) 
                     logger.info('Handling the exception to continue with the next item')
                     continue
             logger.debug('End runs in Sample Sent state')
 
         elif state == 'Processing Run':
             updated_run['Processing run'] = []
+            runs_with_error['Processing run'] = []
             logger.debug('Start handling the runs in  Processing Run state')
             for run_in_processing_run in runs_to_handle[state] :
                 run_platform = run_in_processing_run.get_run_platform()
@@ -338,60 +342,48 @@ def search_not_completed_run ():
                         logging_errors (logger, string_message , False, False)
                         continue
                 except :
+                    runs_with_error[state].append(run_in_processing_run.get_run_name()) 
                     logger.info('Handling the exception to continue with the next item')
                     continue
             logger.debug('End runs in Processing Run state')
 
         elif state == 'Processed Run':
             updated_run['Processed run'] = []
+            runs_with_error['Processed run'] = []
             logger.debug('Start handling the runs in  Processed Run state') 
             for run_in_processed_run in runs_to_handle[state]:
                 try:
                     updated_run['Processed run'].append(manage_run_in_processed_run(conn, run_in_processed_run))
                 except :
+                    runs_with_error[state].append(run_in_processed_run.get_run_name()) 
                     logger.info('Handling the exception to continue with the next item')
                     continue
             logger.debug('End runs in Processed Run state')
 
         elif state == 'Processing Bcl2fastq':
             updated_run[state] = []
+            runs_with_error[state] = []
             for run_in_processing_bcl2fastq_run in runs_to_handle[state] :
-                #import pdb; pdb.set_trace()
                 try:
                     updated_run[state].append( manage_run_in_processing_bcl2fastq (conn, run_in_processing_bcl2fastq_run))
                 except :
+                    runs_with_error[state].append(run_in_processing_bcl2fastq_run.get_run_name()) 
                     logger.info('Handling the exception on Processing Bcl2fastq.  Continue with the next item')
                     continue
         elif state == 'Processed Bcl2fastq':
             updated_run[state] = []
+            runs_with_error[state] = []
             for run_in_processed_bcl2fastq_run in runs_to_handle[state] :
                 try:
-                    #import pdb; pdb.set_trace()
                     updated_run[state].append( manage_run_in_processed_bcl2fastq (conn, run_in_processed_bcl2fastq_run))
                 except :
+                    runs_with_error[state].append(run_in_processed_bcl2fastq_run.get_run_name()) 
                     logger.info('Handling the exception on Processed Bcl2fastq.  Continue with the next item')
                     continue
         else:
             string_message = 'Run in unexpected state. ' + state
             logging_errors (logger, string_message , False, False)
-            #logger.debug ('Run name is : $s ', run_to_handle[state])
             continue
+    logger.debug ('End function for search_not_completed_run')
+    return updated_run, runs_with_error
 
-    return (processed_run)
-
-'''
-
-def perform_xml_stats (xml_statistics, run_name_value):
-    for project in xml_statistics:
-        print (project)
-        ### Flowcell Summary
-        fl_pf_yield_sum=0
-        fl_raw_yield_sum=0
-        fl_mbases=0
-        for values in xml_statistics[project]['PF_Yield']:
-            fl_pf_yield_sum+= int(values)
-        for values in xml_statistics[project]['RAW_Yield']:
-            fl_raw_yield_sum+= int(values)
-        for values in xml_statistics[project]['']:
-            print()
-'''
