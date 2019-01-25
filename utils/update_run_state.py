@@ -5,7 +5,7 @@ import sys, os, re
 #import shutil
 #import locale
 #import datetime, time
-from iSkyLIMS_wetlab.models import RunProcess
+from iSkyLIMS_wetlab.models import RunProcess, RunStates
 #from .interop_statistics import *
 import logging
 
@@ -296,8 +296,10 @@ def search_not_completed_run ():
                                 'Processed Bcl2fastq']
     # get the list for all runs that are not completed
     for state in state_list_be_processed:
-        if RunProcess.objects.filter(runState__exact = state).exists():
-            runs_to_handle[state]=RunProcess.objects.filter(runState__exact = state)
+        run_state = RunStates.objects.get(runStateName__exact = state)
+        import pdb; pdb.set_trace()
+        if RunProcess.objects.filter(state__exact = run_state).exists():
+            runs_to_handle[state]=RunProcess.objects.filter(state__exact = run_state)
     
     for state in runs_to_handle:
         logger.info ('Start processing the run found for state %s', state)

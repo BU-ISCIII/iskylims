@@ -482,14 +482,12 @@ def get_size_dir (directory, conn):
         count_file_size # in the last iteraction will return the total
                     size of the folder
     '''
-    logger = logging.getLogger(__name__)
     count_file_size = 0
     file_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME, directory)
     for sh_file in file_list:
         if sh_file.isDirectory:
             if (sh_file.filename == '.' or sh_file.filename == '..'):
                 continue
-            logger.debug('Checking space for directory %s', sh_file.filename)
             sub_directory = os.path.join (directory,sh_file.filename)
             count_file_size += get_size_dir (sub_directory, conn)
         else:

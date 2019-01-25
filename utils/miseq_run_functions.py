@@ -43,6 +43,7 @@ def check_miseq_completion_run (conn, experiment_name, log_folder):
     except :
         string_message = 'Unable to fetch the log files for run ' + experiment_name
         logging_errors( logger, string_message, False, False)
+        handling_errors_in_run (experiment_name, '18' )
         logger.debug('End function check_miseq_completion_run with IOError exception')
         raise
         #raise IOError ('Unable to fetch log file')
@@ -101,17 +102,7 @@ def get_latest_miseq_log(conn, log_folder) :
     temporary_log = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY,'miseq_cycle.log')
     s_latest_log = os.path.join(log_folder,latest_log)
     with open(temporary_log ,'wb') as log_fp :
-        
         temporary_log = fetch_remote_file (conn, log_folder, s_latest_log, temporary_log)
-        '''
-        try: # get the latest recorded log file 
-            s_latest_log = os.path.join(log_folder,latest_log)
-            conn.retrieveFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME, s_latest_log, log_fp)
-        except Exception as e :
-            string_message = 'Unable to fetch the log file ' + s_latest_log
-            logging_errors(logger, string_message)  
-            raise IOError ('Unable to fetch log file')
-        '''
         
     with open (temporary_log, 'r') as fh :
         log_file_content = fh.read()

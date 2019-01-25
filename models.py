@@ -22,6 +22,7 @@ class RunStates (models.Model):
 
     def __str__ (self):
         return '%s' %(self.runStateName)
+    
 
 class RunProcess(models.Model):
     runName = models.CharField(max_length=45)
@@ -58,7 +59,7 @@ class RunProcess(models.Model):
         
 
     def get_state(self):
-        return '%s' %(self.runState)
+        return '%s' %(self.state)
 
     def get_info_process (self):
         generated_date=self.generatedat.strftime("%I:%M%p on %B %d, %Y")
