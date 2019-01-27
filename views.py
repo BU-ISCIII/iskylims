@@ -23,7 +23,7 @@ from iSkyLIMS_wetlab import wetlab_config
 from .utils.sample_sheet_utils import *
 from .utils.stats_calculation import *
 from .utils.stats_graphics import *
-from .utils.wetlab_misc_utilities import *
+from .utils.generic_functions import *
 from .utils.library_kits import *
 from .utils.fetching_information import *
 #from .utils.samplesheet_checks import *
@@ -582,7 +582,6 @@ def search_run (request):
     ## Search for runs that fullfil the input values
     #############################################################
     if request.method == 'POST' and (request.POST['action'] == 'runsearch'):
-        #
         run_name = request.POST['runname']
         start_date = request.POST['startdate']
         end_date = request.POST['enddate']
@@ -655,8 +654,9 @@ def search_run (request):
 
         ### Check if state is not empty
         if run_state != '':
-            if runs_found.filter(runState__exact = run_state).exists():
-                runs_found = runs_found.filter(runState__exact = run_state).order_by('runName')
+            s_state = RunStates.objects.get(runStateName__exact = run_state) 
+            if runs_found.filter(state__exact = s_state).exists():
+                runs_found = runs_found.filter(state__exact = s_state).order_by('runName')
             else :
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ,
                                                                     'and the state', run_state ]})
@@ -671,28 +671,26 @@ def search_run (request):
         if start_date !='' and end_date == '':
             if runs_found.filter(run_date__gte = start_date).exists():
                  runs_found = runs_found.filter(run_date__gte = start_date)
-                 #
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Projects containing ', run_name,
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Runs containing ', run_name,
                                         ' starting from', start_date]})
         if start_date =='' and end_date != '':
             if runs_found.filter(run_date__lte = end_date).exists():
                  runs_found = runs_found.filter(run_date__lte = end_date)
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Projects containing ', run_name,
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Runs containing ', run_name,
                                         ' finish before ', end_date]})
         #If only 1 run mathes the user conditions, then get the project information
 
         if (len(runs_found)== 1) :
-            r_data_display= get_information_run(runs_found[0],runs_found[0].id)
-            #
+            r_data_display= get_information_run(runs_found[0])
+            #r_data_display= get_information_run(runs_found[0],runs_found[0].id)
             return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_one_run': r_data_display })
         else:
             ## collect the list of run that matches the run date
             run_list=[]
             for i in range(len(runs_found)):
                 run_list.append([runs_found[i],runs_found[i].id])
-                #
             return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_run_list': run_list })
     else:
         available_platforms = []
@@ -1088,8 +1086,9 @@ def display_run (request, run_id):
         #redirect to login webpage
         return redirect ('/accounts/login')
     if (RunProcess.objects.filter(pk=run_id).exists()):
-        run_name_found = RunProcess.objects.filter(pk=run_id)
-        r_data_display  = get_information_run(run_name_found[0],run_id)
+        run_name_found = RunProcess.objects.get(pk=run_id)
+        r_data_display  = get_information_run(run_name_found)
+        #r_data_display  = get_information_run(run_name_found[0],run_id)
         return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_one_run': r_data_display })
     else:
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the run  ']})

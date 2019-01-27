@@ -5,7 +5,7 @@ import sys, os, re
 #import shutil
 #import locale
 #import datetime, time
-from iSkyLIMS_wetlab.models import RunProcess, RunStates
+from iSkyLIMS_wetlab.models import RunProcess, RunStates, RunningParameters
 #from .interop_statistics import *
 import logging
 
@@ -61,7 +61,37 @@ def read_processed_runs_file (processed_run_file) :
     else:
         logger.debug('No found processed run file. Exiting the function' )
         return 'Error'
+
+
+def get_list_processed_runs () :
+    '''
+    Description:
+        The function get the run folder id from the Running Parameter 
+        table. This list will be used to compare agains the folder on 
+        remote server.
+    Variable:
+        processed_runs  # list of the folder names get from database
+    Return:
+        raise exception when not access to database
+        processed_runs 
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug('Starting function get_list_processed_runs' )
+    processed_runs = []
+    try:
+        r_parameters_objects = RunningParameters.objects.all()
+    except Exception as e :
+        string_message = 'Unable to open the processed run file. '
+        logging_errors(logger, string_message, True, True)
+        raise
+
+    for r_parameter in r_parameters_objects :
+        processed_runs.append(r_parameter.get_run_folder())
     
+    logger.info('run processed list is filled')
+    logger.debug('End function get_list_processed_runs' )
+    return processed_runs
+
 
 def update_processed_run_file (processed_run_file, processed_runs) :
     '''
@@ -99,6 +129,7 @@ def search_update_new_runs ():
         to execute its dedicate handler process.
     Functions:
         open_samba_connection # located in utils.wetlab_misc_utilities.py 
+        get_list_processed_runs # located at this file
         get_new_runs_on_remote_server # located at utils.run_common_functions file
         validate_sample_sheet   # located at this file
         save_new_miseq_run # located at this file
@@ -118,13 +149,14 @@ def search_update_new_runs ():
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function for searching new runs')
-    processed_run_file = os.path.join( wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.PROCESSED_RUN_FILE)
-    processed_runs = read_processed_runs_file (processed_run_file)
+    #processed_run_file = os.path.join( wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.PROCESSED_RUN_FILE)
+    #processed_runs = read_processed_runs_file (processed_run_file)
+    processed_runs = get_list_processed_runs()
     process_run_file_update = False
     new_processed_runs = []
     try:
         conn=open_samba_connection()
-        logger.info('Sucessfully  SAMBA connection for the process_run_in_recorded_state')
+        logger.info('Sucessfully  SAMBA connection for search_update_new_runs')
     except Exception as e:
         string_message = 'Unable to open SAMBA connection for the process search update runs'
         # raising the exception to stop crontab

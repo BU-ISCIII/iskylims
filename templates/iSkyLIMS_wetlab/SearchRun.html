@@ -3,53 +3,44 @@
 {% block content %}
 {% csrf_token %}
 {% if display_one_run %}
- <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>
- <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>
- <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.powercharts.js" %}"></script>
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.charts.js" %}"></script>
- <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script>
- <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
-<script>
-  $( function() {
-    $( document ).tooltip();
-  } );
-</script>
-  <style>
-  label {
-    display: inline-block;
-    width: 5em;
-  }
-  </style>
-<div class="row row-space-2 margin-b-4">
+     <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>
+     <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>
+     <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.powercharts.js" %}"></script>
+     <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.charts.js" %}"></script>
+     <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script>
+     <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
+     <script>
+        $( function() {
+            $( document ).tooltip();
+            } );
+     </script>
+        <style>
+            label {
+            display: inline-block;
+            width: 5em;
+            }
+        </style>
+    <div class="row row-space-2 margin-b-4">
         <div class="col-sm-7">
             <div class="panel panel-default">
-            {% for key, values in display_one_run.data %}
-               {%if key == "Run name" %}
-                <div class="panel-heading">Information for the run : <strong>{{ values }}</strong>  </div>
-               {%endif%}
-            {% endfor %}
-                <div class="panel-body">
-                    {% if display_one_run.change_run_name %}
-                        {% for key, value in display_one_run.change_run_name %}
-                            <div class="col-sm-6">Run Name </div>
-                            <div class="col-sm-6"><a href="/wetlab/ChangeRunName={{ value }}"> {{ key }} <span class="glyphicon glyphicon-pencil"></span></a></div>
-                        {% endfor %}
-                    {% endif %}
-             {% for key, values in display_one_run.data %}
-               {% if "Sample" in key %}
-                <div class="col-sm-6">{{ key }}</div>
-                <div class="col-sm-6"><a href="/documents/{{ values }}" download>{{ values|cut:"wetlab/SampleSheets/" }} <span class="glyphicon glyphicon-download-alt"></span></a></div><BR> <BR>
-               {% elif key == 'Run name'%}
+                <div class="panel-heading">Information for the run : <strong>{{ display_one_run.run_name }}</strong>  </div>
+            <div class="panel-body">
+                {% if display_one_run.change_run_name %}
+                    {% for key, value in display_one_run.change_run_name %}
+                        <div class="col-sm-6">Run Name </div>
+                        <div class="col-sm-6"><a href="/wetlab/ChangeRunName={{ value }}"> {{ key }} <span class="glyphicon glyphicon-pencil"></span></a></div><BR><BR>
+                    {% endfor %}
+                {% endif %}
+                {% for key, values in display_one_run.data %}
+               {% if key == 'Run name'%}
                {% else %}
                 <div class="col-sm-6">{{ key }}</div>
                 <div class="col-sm-6">   {{ values }}</div><BR> <BR>
                {% endif %}
             {% endfor %}
             {%if display_one_run.Sample_Sheet %}
-                {% for key, value in display_one_run.Sample_Sheet %}
-                    <div class="col-sm-6">{{ key }}</div>
-                    <div class="col-sm-6"><a href="/documents/{{ value }}" download>Sample Sheet File  <span class="glyphicon glyphicon-download-alt"></span></a></div>
-                {% endfor%}
+                    <div class="col-sm-6">{{ display_one_run.Sample_Sheet.0.0 }}</div>
+                    <div class="col-sm-6"><a href="/documents/{{ display_one_run.Sample_Sheet.0.1 }}" download>Sample Sheet File  <span class="glyphicon glyphicon-download-alt"></span></a></div>
             {% endif %}
            </div> <!--  end of panel body -->
           </div> <!--  end of panel  -->
@@ -106,25 +97,32 @@
     </div> <!--  end of row -->
     {% endif %}
      <div class="row row-space-2 margin-b-4">
-    {%if display_one_run.parameters%}
+    {%if display_one_run.running_parameters%}
      <!-- display run parameters in run is not in recorded state -->
-        <div class="col-sm-5 ">
+        <div class="col-sm-6 ">
              <button class="accordion">Parameters used for in the Run.</button>
                 <div class="panelaccordion">
                     <table class="table table-condensed">
                        <tbody>
-                       {% for key, values in display_one_run.parameters %}
+                       {% for key, values in display_one_run.running_parameters %}
                          <tr>
                            <td><b>{{ key }}</b></td>
-                           <td>{{ values }}</td>
+                           <td> {% if key == 'Image Dimensions' or key == 'Flowcell Layout' %}
+                                    {% for value in values %}
+                                        {{ value }} <BR>
+                                    {% endfor %}
+                                {% else %}
+                                    {{ values }}
+                                {% endif %}
+                            </td>
                          </tr>
                        {% endfor %}
                        </tbody>
                     </table>
                 </div> <!-- end of panelaccordion -->
-        </div> <!--  end of col-sm-5 -->
+        </div> <!--  end of col-sm-6 -->
     {% endif %}
-    {%if display_one_run.parameters%}
+    {%if display_one_run.running_parameters%}
         <div class="col-sm-4 col-sm-offset-1">
     {% else %}
         <div class="col-sm-4 col-sm-offset-7">

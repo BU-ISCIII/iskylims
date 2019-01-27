@@ -63,7 +63,7 @@ class RunProcess(models.Model):
 
     def get_info_process (self):
         generated_date=self.generatedat.strftime("%I:%M%p on %B %d, %Y")
-
+        
         requested_center = str(self.centerRequestedBy)
         if self.run_date is None :
             rundate = 'Run NOT started'
@@ -85,19 +85,12 @@ class RunProcess(models.Model):
         else:
             completed_date = self.process_completed_date.strftime("%I:%M%p on %B %d, %Y")
 
-        if (self.runState == 'Completed'):
 
-            return '%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.runState,
-                            requested_center, self.useSpaceImgMb,
-                            self.useSpaceFastaMb, self.useSpaceOtherMb,
-                            generated_date, rundate,finish_date,  bcl2fastq_date, completed_date)
-        else:
-            if RunningParameters.objects.filter(runName_id__exact = self).exists():
-                run_folder = RunningParameters.objects.get(runName_id__exact = self).RunID
-            else :
-                run_folder = 'Run folder is not created yet'
-            return '%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.runState, self.centerRequestedBy,
-                                        generated_date, rundate, finish_date, run_folder)
+        return '%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.state,
+                requested_center, generated_date, rundate,finish_date, bcl2fastq_date, 
+                completed_date, self.useSpaceImgMb, self.useSpaceFastaMb, 
+                self.useSpaceOtherMb )
+
 
     def get_run_name (self):
         return '%s' %(self.runName)
@@ -344,16 +337,32 @@ class RunningParameters (models.Model):
 
     def get_run_parameters_info (self):
         #str_run_start_date=self.RunStartDate.strftime("%I:%M%p on %B %d, %Y")
-        if self.ImageChannel==None:
-            img_channel='None'
+        run_parameters_data = []
+        if self.ImageChannel == None:
+            img_channel = 'None'
         else:
             img_channel=self.ImageChannel.strip('[').strip(']').replace("'","")
+        
+        if self.ImageDimensions == None:
+            image_dimensions = ['None']
+        else:
+            image_dimensions = self.ImageDimensions.strip('{').strip('}').replace("'","").split(',')
+        
+        flowcell_layout = self.FlowcellLayout.strip('{').strip('}').replace("'","").split(',')
+        
+        run_parameters_data.append(self.RunID); run_parameters_data.append(self.ExperimentName)
+        run_parameters_data.append(self.RTAVersion); run_parameters_data.append(self.SystemSuiteVersion)
+        run_parameters_data.append(self.LibraryID); run_parameters_data.append(self.Chemistry)
+        run_parameters_data.append(self.RunStartDate); run_parameters_data.append(self.AnalysisWorkflowType)
+        run_parameters_data.append(self.RunManagementType); run_parameters_data.append(self.PlannedRead1Cycles)
+        run_parameters_data.append(self.PlannedRead2Cycles); run_parameters_data.append(self.PlannedIndex1ReadCycles)
+        run_parameters_data.append(self.PlannedIndex2ReadCycles); run_parameters_data.append(self.ApplicationVersion)
+        run_parameters_data.append(self.NumTilesPerSwath); run_parameters_data.append(img_channel)
+        run_parameters_data.append(self.Flowcell); run_parameters_data.append(image_dimensions)
+        run_parameters_data.append(flowcell_layout)
+        
+        return run_parameters_data
 
-        return '%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s' %(self.RunID, self.ExperimentName, self.RTAVersion,
-            self.SystemSuiteVersion, self.LibraryID, self.Chemistry, self.RunStartDate,
-            self.AnalysisWorkflowType, self.RunManagementType, self.PlannedRead1Cycles, self.PlannedRead2Cycles,
-            self.PlannedIndex1ReadCycles, self.PlannedIndex2ReadCycles, self.ApplicationVersion, self.NumTilesPerSwath,
-             img_channel, self.Flowcell, self.ImageDimensions, self.FlowcellLayout)
 
     def get_number_of_reads (self):
         count = 0

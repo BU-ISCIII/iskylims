@@ -11,16 +11,156 @@ from iSkyLIMS_wetlab.wetlab_config import RUN_IMAGES_DIRECTORY, WETLAB_MANAGER
 from .wetlab_misc_utilities import normalized_data
 from .stats_graphics import *
 
-def get_information_run(run_name_found,run_id):
+def graphics_state (state):
+    '''
+    Description:
+        The function will match the state to return the color and the percentage
+        value to display. 
+    Input:
+        state      # contains the state value of the run 
+    Variables:
+        g_color     # contains the color list
+        g_value     # contains the percentage value
+        state_list     # list with the possible states to display the run
+                    information
+    return:
+        the index value of g_value and g_color [index]
+    '''
+    state_list = ['ERROR',  'Recorded',  'Sample Sent', 'Processing Run', 
+                'Processed Run', 'Processing Bcl2fastq', 'Processed Bcl2fastq',
+                'Completed', 'Cancelled' ]
+    g_value = [ 10, 15, 30, 45, 60, 75, 90, 100, 10]
+    g_color = [ 'red', 'violet',  'pink', 'brown', 'orange', 'yellow',
+                'yellow', 'green',  'red']
+    index = state_list.index(state)
+    
+    return g_value[index], g_color [index]
+
+
+def get_run_read_data(run_object, num_of_reads, number_of_lanes) :
+    '''
+    Description:
+        The function will get the run metrics per read information.
+    Input:
+        run_object      # contains the run object 
+        num_of_reads    # number of read used in the run
+        number_of_lanes # number of lanes used in the run
+    Variables:
+        read_summary_values # contains the information per read
+        
+        index_run_summary   # contains the number of index used in the run
+        rp_list     # list with the items to display in the running parameter
+                    information
+        rp_data     # get the list of the running parameter data
+        run_parameters # running parameter object to fetch the number of reads
+        
+    return:
+        info_reads_dict 
+    '''
+
+    info_reads = {}
+    info_reads_dict ={}
+    for read_number in range (1, num_of_reads +1) :
+        read_summary_values=[]
+        for lane_number in range(1, number_of_lanes+1):
+            read_lane_id= StatsRunRead.objects.filter(runprocess_id__exact =run_object, read__exact = read_number, lane__exact = lane_number)
+            lane_values=read_lane_id[0].get_bin_run_read().split(';')
+            read_summary_values.append(lane_values)
+        
+        read_number_index2 = str('Read '+str(read_number))
+        info_reads_dict[read_number_index2] = read_summary_values
+        
+    #info_dict['reads']= info_reads_dict
+    return info_reads_dict
+
+
+
+def get_run_summary_data(run_object, num_of_reads) :
+    '''
+    Description:
+        The function will get the summary run metrics information.
+    Input:
+        run_object      # contains the run object 
+        num_of_reads    # number of read used in the run
+    Variables:
+        index_run_summary   # contains the number of index used in the run
+        rp_list     # list with the items to display in the running parameter
+                    information
+        rp_data     # get the list of the running parameter data
+        run_parameters # running parameter object to fetch the number of reads
+        
+    return:
+        run_summary_values and per_read_run_summary     # contain a tupla list with text and its value
+    '''
+    
+    run_parameters = RunningParameters.objects.get(runName_id__exact = run_object)
+    num_of_reads = run_parameters.get_number_of_reads ()
+    index_run_summary = [i +1 for i in range(num_of_reads)]
+    index_run_summary.append('Non Index')
+    index_run_summary.append('Total')
+    line_description = ['Read ' +str( i+1) for i in range (num_of_reads)]
+    line_description.append('Non Index')
+    line_description.append('Totals')
+
+    per_read_run_summary = []
+
+    for index in range (len(index_run_summary)):
+        run_summary_id = StatsRunSummary.objects.filter(runprocess_id__exact =run_object , level__exact = index_run_summary[index])
+        run_summary_values = run_summary_id[0].get_bin_run_summary().split(';')
+        run_summary_values.insert(0, line_description[index])
+        if index_run_summary[index] == 'Total':
+            total_run_summary = run_summary_values
+        else:
+            per_read_run_summary.append(run_summary_values)
+    
+    return total_run_summary, per_read_run_summary
+    
+def get_running_parameters (run_object) :
     '''
     Description:
         The function will get the information from a specific run requested
         on the input parameter. 
     Input:
-        run_name_found      # contains the run object 
-        run_id              # contains the run id of the run_name_found
+        run_object      # contains the run object 
+    Variables:
+        rp_list     # list with the items to display in the running parameter
+                    information
+        rp_data     # get the list of the running parameter data
+        running_parameter_object # running parameter object to fetch the
+                                information 
+    return:
+        rp_info     # contain a tupla list with text and its value
+    '''
+    rp_info = []
+    # finding the running parameters index for the run
+    running_parameter_object = RunningParameters.objects.get(runName_id = run_object)
+
+    # Adding the Run Parameters information
+    rp_list=['Run ID','Experiment Name ','RTA version ','System Suite Version','Library ID ',
+            'Chemistry','Run Start Date', 'Analysis Work Flow Type','Run Management Type',
+            'Planned Read1 Cycles', 'Planned Read2 Cycles','Planned Index1 Read Cycles',
+            'Planned Index2 Read Cycles','Application Version','Num Tiles per Swatch',
+            'Image Channel', 'Flowcel','Image Dimensions', 'Flowcell Layout']
+    #rp_data=running_parameter_object.get_run_parameters_info().split(';')
+    rp_data = running_parameter_object.get_run_parameters_info()
+    for i in range (len(rp_list)):
+        rp_info.append([rp_list[i], rp_data[i]])
+
+    return rp_info
+
+
+
+def get_information_run(run_object):
+    '''
+    Description:
+        The function will get the information from a specific run requested
+        on the input parameter. 
+    Input:
+        run_object      # contains the run object 
+        run_id              # contains the run id of the run_object
     Functions:
         get_machine_lanes   # imported from parsing_run_info
+        get_running_parameters # located at this file
         normalized_data     # imported from wetlab_misc_utilities
     Constants:
         RUN_IMAGES_DIRECTORY 
@@ -39,7 +179,7 @@ def get_information_run(run_name_found,run_id):
         p_info      # Tupla containing the project names and their index in Database
 
         rp_data     # run parameters information 
-        rp_info     # Tupla containing the list of run parameters and their value
+       
         rp_list     # list of run parameters to be fetched from database.
 
         run_info  # Tupla list contating the string from d_list and
@@ -76,56 +216,32 @@ def get_information_run(run_name_found,run_id):
         info_dict with all information collected in the function
     '''
     info_dict={}
-    rp_info=[]
+    run_info=[]
     p_info=[]
     p_library_kits = []
     ## collect the state to get the valid information of run that matches the run name
-    run_state=run_name_found.get_state()
+    run_state=run_object.get_state()
 
     # allow to change the run name in case that run state was recorded or Sample Sent
     if run_state == 'Recorded' or run_state == 'Sample Sent':
-        info_dict['change_run_name'] = [[run_name_found.runName, run_id]]
-    if (run_state != 'Completed'):
-        d_list=['Run name','State of the Run is','Run was requested by','Run was recorded on date', 'Run date', 'Run Finish Date','RunID']
-    else:
-        number_of_lanes=run_name_found.get_machine_lanes()
-        d_list=['Run name','State of the Run is','Run was requested by',
-                'Disk space used for Images(in MB)','Disk space used for Fasta Files(in MB)',
-                'Disk space used for other Files(in MB)','Run recorded date','Run date', 'Run Finish Date',
-                'Bcl2Fastq finish Date','Run Completion Date']
-    run_data=run_name_found.get_info_process().split(';')
-    info_dict['Sample_Sheet'] = [['Sample Sheet File', run_name_found.get_sample_file()]]
-    run_info=[]
+        info_dict['change_run_name'] = [[run_object.get_run_name(), run_object.get_run_id()]]
+
+    d_list=['Run name','State of the Run is','Run was requested by','Run was recorded on date', 'Run date', 'Run Finish Date']
+    if run_state == 'Completed':
+        d_list += ['Bcl2Fastq finish Date', 'Run Completion Date', 'Disk space used for Images(in MB)',
+                'Disk space used for Fasta Files(in MB)', 'Disk space used for other Files(in MB)',]
+    run_data=run_object.get_info_process().split(';')
+
     for i in range (len (d_list)):
         run_info.append([d_list[i],run_data[i]])
+    number_of_lanes=run_object.get_machine_lanes()
+    info_dict['run_name'] = run_object.get_run_name()
     info_dict['data']=run_info
     info_dict['run_state'] = run_state
-    if (run_state.startswith('ERROR')):
-        info_dict['graphic_value']=10
-        info_dict['graphic_color']= 'red'
-    if (run_state == 'Recorded'):
-        info_dict['graphic_value']=15
-        info_dict['graphic_color']= 'violet'
-    if (run_state == 'Sample Sent'):
-        info_dict['graphic_value']=30
-        info_dict['graphic_color']= 'pink'
-    if (run_state == 'Processing Run'):
-        info_dict['graphic_value']=45
-        info_dict['graphic_color']= 'brown'
-    if (run_state == 'Processed Run'):
-        info_dict['graphic_value']=60
-        info_dict['graphic_color']= 'orange'
-    if (run_state == 'Processing Bcl2fastq'):
-        info_dict['graphic_value']=75
-        info_dict['graphic_color']= 'yellow'
-    if (run_state == 'Processed Bcl2fastq'):
-        info_dict['graphic_value']=90
-        info_dict['graphic_color']= 'yellow'
-    if (run_state == 'Completed'):
-        info_dict['graphic_value']=100
-        info_dict['graphic_color']= 'green'
-
-    p_list= Projects.objects.filter(runprocess_id=run_id)
+    info_dict['Sample_Sheet'] = [['Sample Sheet File', run_object.get_sample_file()]]
+    info_dict['graphic_value'], info_dict['graphic_color'] = graphics_state(run_state)
+    
+    p_list= Projects.objects.filter(runprocess_id=run_object)
     if p_list !='':
         #p_info = []
         #p_library_kit_list = []
@@ -137,19 +253,24 @@ def get_information_run(run_name_found,run_id):
                 p_library_kits.append(lib_kit)
         info_dict['projects']=p_info
         info_dict['library_kit'] = p_library_kits
-        info_dict['run_id'] = run_id
-
+        info_dict['run_id'] = run_object.get_run_id()
+    ## get information up on state level
+    if run_state != 'Recorded' or run_state != 'Pre-Recorded' :
+        # Adding the Run Parameters information
+        info_dict['running_parameters'] = get_running_parameters(run_object)
+        
     ## get the stats information if run is completed
     if run_state == 'Completed':
         # finding the running parameters index for the run
-        run_parameter_object = RunningParameters.objects.get(pk=run_id)
+        #run_parameter_object = RunningParameters.objects.get(pk=run_id)
 
-        # Adding the Run Parameters information
+        
+        
+        ''''
         rp_list=['Run ID','Experiment Name ','RTA version ','System Suite Version','Library ID ','Chemistry','Run Start Date', 'Analysis Work Flow Type','Run Management Type','Planned Read1 Cycles',
                 'Planned Read2 Cycles','Planned Index1 Read Cycles','Planned Index2 Read Cycles','Application Version','Num Tiles per Swatch','Image Channel',
                 'Flowcel','Image Dimensions', 'Flowcell Layout']
         rp_data=run_parameter_object.get_run_parameters_info().split(';')
-        
         for i in range (len(rp_list)):
             if i == 'Image Channel':
                 img_data_list=rp_data[i].split(',')
@@ -157,9 +278,10 @@ def get_information_run(run_name_found,run_id):
             else:
                 rp_info.append([rp_list[i], rp_data[i]])
         info_dict['parameters']=rp_info
-        
+        '''
         # prepare the data for q-means
         # fetch Q>30 , mean_q and yield mb for all projects per lane to create the boxplot
+        run_id = run_object.get_run_id()
         run_lane_summary = StatsLaneSummary.objects.filter(runprocess_id__exact =run_id ).exclude(defaultAll__isnull = False)
         q_30_value_list, mean_value_list = [] , []
         q_30_run_value , mean_run_value = [] , []
@@ -177,7 +299,7 @@ def get_information_run(run_name_found,run_id):
         # get the chemistry type for the run, that will be used to compare runs with the same chemistry value
         chem_high_mid = RunningParameters.objects.get(runName_id__exact = run_id).Chemistry
         run_different_chemistry = RunningParameters.objects.all(). exclude(Chemistry__exact = chem_high_mid)
-        run_year = run_name_found.run_date.timetuple().tm_year
+        run_year = run_object.run_date.timetuple().tm_year
 
         start_date = str(run_year) + '-1-1'
         end_date = str(run_year) +'-12-31'
@@ -213,12 +335,12 @@ def get_information_run(run_name_found,run_id):
 
 
 
-        heading =  run_name_found.runName +' versus runs executed on '
+        heading =  run_object.runName +' versus runs executed on '
         sub_caption = str( 'year ' + str(run_year))
         theme = 'fint'
         x_axis_name = 'Quatilty measures (normalized data)'
         y_axis_name = 'Normalized values '
-        series = [[run_name_found.runName,'#0075c2', '#1aaf5d'],['All runs','#f45b00','#f2c500']]
+        series = [[run_object.runName,'#0075c2', '#1aaf5d'],['All runs','#f45b00','#f2c500']]
         data = [[q30_run_str,mean_run_str, yield_mb_run_str, cluster_pf_run_str],[q_30_all_str, mean_all_str, yield_mb_all_str, cluster_pf_all_str]]
 
 
@@ -378,32 +500,16 @@ def get_information_run(run_name_found,run_id):
 
         info_dict['match_unknows']= index_match_list
 
-        # prepare data for Run Binary summary stats
-
-        run_parameters = RunningParameters.objects.get(runName_id__exact = run_id)
+        
+        run_parameters = RunningParameters.objects.get(runName_id__exact = run_object)
         num_of_reads = run_parameters.get_number_of_reads ()
-        index_run_summary = [i +1 for i in range(num_of_reads)]
-        index_run_summary.append('Non Index')
-        index_run_summary.append('Total')
-        #index_run_summary = ['1','2','3','4', 'Non Index', 'Total']
-        info_dict ['runSummaryHeading']= ['Level','Yield','Projected Yield','Aligned (%)','Error Rate (%)','Intensity Cycle 1','Quality >=30 (%)']
-        line_description = ['Read ' +str( i+1) for i in range (num_of_reads)]
-        line_description.append('Non Index')
-        line_description.append('Totals')
-
-        #line_description=['Read 1','Read 2','Read 3','Read 4','Non Index','Totals']
-        line_run_summary = []
-        for index in range (len(index_run_summary)):
-            #
-            run_summary_id = StatsRunSummary.objects.filter(runprocess_id__exact =run_id , level__exact = index_run_summary[index])
-            run_summary_values = run_summary_id[0].get_bin_run_summary().split(';')
-            run_summary_values.insert(0, line_description[index])
-            if index_run_summary[index] == 'Total':
-                info_dict ['runSummaryTotal'] = run_summary_values
-            else:
-                line_run_summary.append(run_summary_values)
-        #
-        info_dict ['runSummary'] = line_run_summary
+        
+        # prepare data for Run Binary summary stats
+        info_dict ['runSummaryHeading'] = ['Level','Yield','Projected Yield','Aligned (%)','Error Rate (%)','Intensity Cycle 1','Quality >=30 (%)']
+        info_dict ['runSummaryTotal'] , info_dict ['runSummary'] = get_run_summary_data(run_object, num_of_reads)  
+        
+        
+        
 
         # prepare the data for Reads Binary summary stats
         info_dict ['laneSummaryHeading']= ['Lane','Tiles','Density (K/mm2)','Cluster PF (%)','Phas/Prephas (%)',
@@ -411,7 +517,11 @@ def get_information_run(run_name_found,run_id):
                     'Aligned (%)','Error Rate (%)','Error Rate 35 cycle (%)',
                     'Error Rate 50 cycle (%)','Error Rate 75 cycle (%)',
                     'Error Rate 100 cycle (%)','Intensity Cycle 1']
-        info_reads_dict ={}
+        info_dict ['reads'] = get_run_read_data(run_object, num_of_reads, number_of_lanes) 
+        
+        
+        
+        '''
         for read_number in range (1, num_of_reads +1) :
             read_summary_values=[]
             for lane_number in range(1, number_of_lanes+1):
@@ -423,9 +533,9 @@ def get_information_run(run_name_found,run_id):
             info_reads_dict[read_number_index2] = read_summary_values
             #info_dict[read_number_index] = read_summary_values
         info_dict['reads']= info_reads_dict
-
+        '''
         # prepare the graphics for the run
-        folder_for_plot='/documents/wetlab/images_plot/'
+        folder_for_plot= wetlab_config.RUN_IMAGES_DIRECTORY 
 
         run_graphics_id = GraphicsStats.objects.filter(runprocess_id__exact =run_id)
         folder_graphic = os.path.join( settings.MEDIA_URL, RUN_IMAGES_DIRECTORY, run_graphics_id[0].get_folder_graphic() )
