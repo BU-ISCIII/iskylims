@@ -370,7 +370,7 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
             string_message = 'Run ' + experiment_name +' is not yet defined on database'
             logging_errors (logger, string_message, False, False)
             logger.debug ('End function handle_nextseq_recorded_run with exception')
-            raise
+            raise ValueError ('Run not defined yet')
         else:
             run_state = RunProcess.objects.filter(runName__exact = experiment_name).get_state()
             string_message = 'Run ' + experiment_name +' is in state ' + run_state + '.  Should be in Recorded'

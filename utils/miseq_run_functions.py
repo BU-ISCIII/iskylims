@@ -274,9 +274,10 @@ def save_new_miseq_run ( experiment_name, run_date, instrument) :
         string_message = instrument + ' has been not defined on machines '
         logging_errors(logger, string_message, False, False)
 
+    run_state = RunStates.objects.get(runStateName__exact = 'Recorded')
     run_process = RunProcess(runName=experiment_name,sampleSheet= '', 
                             run_date = run_date, index_library = '',
-                            runState='Recorded', centerRequestedBy = center_requested_by,
+                            state = run_state, centerRequestedBy = center_requested_by,
                             sequencerModel = sequencer)
     run_process.save()
     logger.info('Create the new runProcess into database')
@@ -326,7 +327,7 @@ def save_miseq_projects_found (projects_users , experiment_name, library_name):
     for project, user  in projects_users.items():
         userid=User.objects.get(username__exact = user)
         p_data=Projects(runprocess_id = run_process, projectName = project,
-                        user_id = userid, procState = 'Recorded',
+                        user_id = userid, procState = 'Sample Sent',
                         baseSpaceFile = base_space_file, 
                         LibraryKit_id = library_kit, libraryKit = library_name)
         p_data.save()
@@ -471,7 +472,7 @@ def manage_miseq_in_processing_run (conn, run_name):
     logger.debug ('Starting function manage_miseq_in_processing_run')
     experiment_name = run_name.get_run_name()
     run_folder = RunningParameters.objects.get(runName_id = run_name).get_run_folder()
-    log_folder = os.path.join(run_folder, wetlab_config.RUN_LOG_FOLDER)
+    log_folder = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, run_folder, wetlab_config.RUN_LOG_FOLDER)
     try: # waiting for sequencer run completion
         status_run, run_completion_date = check_miseq_completion_run (conn, experiment_name, log_folder)
         if status_run == 'Cancel' :
@@ -486,8 +487,8 @@ def manage_miseq_in_processing_run (conn, run_name):
             raise # returning to handle next run folder
         else:
             run_updated = run_name.set_run_state('Processed Run')
-            run_updated.run_finish_date = run_completion_date
-            run_updated.save()
+            run_name.run_finish_date = run_completion_date
+            run_name.save()
             logger.debug ('End function manage_miseq_in_processing_run %s' , experiment_name)
             return experiment_name
     except ValueError :
@@ -527,7 +528,7 @@ def manage_miseq_in_samplesent(conn, run_name) :
     experiment_name = run_name.get_run_name()
     run_folder = RunningParameters.objects.get(runName_id = run_name).get_run_folder()
     try: # waiting for sequencer run completion
-        log_folder = os.path.join(run_folder, wetlab_config.RUN_LOG_FOLDER)
+        log_folder = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, run_folder, wetlab_config.RUN_LOG_FOLDER)
 
         status_run, run_completion_date = check_miseq_completion_run (conn, experiment_name, log_folder)
         if status_run == 'Cancel' :
@@ -538,7 +539,7 @@ def manage_miseq_in_samplesent(conn, run_name) :
             raise ValueError ('Run was canceled')
         else :
             run_updated = RunProcess.objects.get(runName__exact = experiment_name).set_run_state('Processing run')
-            logger.debug ('End function manage_miseq_in_samplesent for run $s' , experiment_name)
+            logger.debug ('End function manage_miseq_in_samplesent for run %s' , experiment_name)
             return experiment_name
     except ValueError :
         raise
@@ -595,50 +596,59 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function for handling miSeq run')
+    # Fetch run info from remote server
+    l_run_info = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_INFO)
+    s_run_info = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, new_run,wetlab_config.RUN_INFO)
+    try:
+        l_run_info = fetch_remote_file (conn, new_run, s_run_info, l_run_info)
+        logger.info('Sucessfully fetch of RunInfo file')
+    except Exception as e:
+        string_message = 'Unable to fetch the RunInfo file on folder : ' + new_run
+        logging_errors(logger, string_message, True, False)
+        logger.info('Skiping the run %s , due to the error', new_run)
+        # cleaning up the RunParameter in local temporaty file
+        os.remove(l_run_parameter)
+        raise   # returning to handle next run folder
+    
+    # Parsing RunParameter and RunInfo
+    running_parameters, run_date, instrument = miseq_parsing_run_information(l_run_info, l_run_parameter)
     if not RunProcess.objects.filter(runName__exact = experiment_name).exists():
-        # Fetch run info
-        l_run_info = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_INFO)
-        s_run_info = os.path.join(new_run,wetlab_config.RUN_INFO)
-        try:
-            l_run_info = fetch_remote_file (conn, new_run, s_run_info, l_run_info)
-            logger.info('Sucessfully fetch of RunInfo file')
-        except Exception as e:
-            logger.info('Exception fetched $s ' , e)
-            logger.info('Skiping the run $s , due to the error', new_run)
-            # cleaning up the RunParameter in local temporaty file
-            os.remove(l_run_parameter)
-            raise   # returning to handle next run folder
-        # Parsing RunParameter and RunInfo
-        running_parameters, run_date, instrument = miseq_parsing_run_information(l_run_info, l_run_parameter)
-        
         # Save run data and set run to "Recorded" state
         new_run_process = save_new_miseq_run (experiment_name, run_date, instrument)
-        logger.info ('New RunProcess was stored on database')
+        logger.info ('New RunProcess %s was stored on database', experiment_name)
+    else :
+        new_run_process = RunProcess.objects.get(runName__exact = experiment_name)
+    # Update the running parameter table with the information
+    #new_run_process_id = new_run_process.id
+    new_run_parameters = RunningParameters.objects.create_running_parameters(running_parameters, new_run_process)
+    logger.info('Running parameters have been stored on database for %s', experiment_name )
 
-        new_run_process_id = new_run_process.id
-        new_run_parameters = RunningParameters.objects.create_running_parameters(running_parameters, new_run_process_id)
-        logger.info('Running parameters have been stored on database')
-        # deleting RunParameter and RunInfo
-        os.remove(l_run_parameter)
-        os.remove(l_run_info)
+    # deleting temporary copy of RunParameter and RunInfo files
+    os.remove(l_run_parameter)
+    os.remove(l_run_info)
+    
     if run_waiting_for_sample_sheet (experiment_name) :
         # Fetch sample sheet from remote server
         l_sample_sheet = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.SAMPLE_SHEET)
-        s_sample_sheet = os.path.join(new_run, wetlab_config.SAMPLE_SHEET)
+        s_sample_sheet = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, new_run, wetlab_config.SAMPLE_SHEET)
         try:
             l_sample_sheet = fetch_remote_file (conn, new_run, s_sample_sheet, l_sample_sheet)
             logger.info('Sucessfully fetch of Sample Sheet file')
-        except Exception as e:
-            logger.info('Error when getting  Sample sheet $s', e)
-            logger.info('Exception fetched to extend the time for fetching Sample Sheet')
+        except :
+            logger.info('Unable to get Sample sheet on folder  %s', new_run)
             os.remove(l_sample_sheet)
             if need_to_wait_more (experiment_name, wetlab_config.MAXIMUM_TIME_WAIT_SAMPLE_SHEET) :
+                logger.info('Exception fetched to extend the time for fetching Sample Sheet')
+                new_run_parameters.delete()
+                # Delete running paramters object for allowing  to look for, 
+                # in the romote folder, again next time the process is executed 
+                logger.info("Deleted running parameters from database ")
                 raise # returning to handle next run folder
             else:
-                os.remove(l_sample_sheet)
-                # set run state to ERROR 
-                run = RunProcess.objects.get(runName__exact = experiment_name).set_run_state('Error')
+                # set run state to Error state
+                handling_errors_in_run(experiment_name, '19')
                 raise ValueError ('Time expiration for getting sample sheet')
+
 
         if validate_sample_sheet (l_sample_sheet) :
             projects_users = get_projects_in_run (l_sample_sheet)
@@ -655,11 +665,12 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
             return new_run
         else:
             # set run state to ERROR 
-            run_updated = handling_errors_in_run (experiment_name)
+            run_updated = handling_errors_in_run (experiment_name,'1')
             raise ValueError ('Invalid sample sheet')
     else:
         run_state = RunProcess.objects.get(runName__exact = experiment_name).get_run_state()
         string_message = 'Wrong state: ' + run_state +' when calling to handle_miseq_run function '
+        logging_errors(logger, string_message, False, True)
         raise ValueError ('Wrong run state ')
 
 

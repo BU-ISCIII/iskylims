@@ -130,7 +130,7 @@ def search_update_new_runs ():
     Functions:
         open_samba_connection # located in utils.wetlab_misc_utilities.py 
         get_list_processed_runs # located at this file
-        get_new_runs_on_remote_server # located at utils.run_common_functions file
+        get_new_runs_on_remote_server # located at utils.generic_functions.py
         validate_sample_sheet   # located at this file
         save_new_miseq_run # located at this file
     Constants:
@@ -146,6 +146,8 @@ def search_update_new_runs ():
         s_sample_sheet  # full path for remote sample sheet file
         processed_run_file # path
         processed_runs  # list of run that are moved to Sample Sent state
+    Return:
+        new_processed_runs # List with all run successfully processed
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function for searching new runs')
@@ -154,6 +156,7 @@ def search_update_new_runs ():
     processed_runs = get_list_processed_runs()
     process_run_file_update = False
     new_processed_runs = []
+    run_with_error = []
     try:
         conn=open_samba_connection()
         logger.info('Sucessfully  SAMBA connection for search_update_new_runs')
@@ -167,12 +170,13 @@ def search_update_new_runs ():
     if len (new_runs) > 0 :
         for new_run in new_runs :
             l_run_parameter = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_PARAMETER_NEXTSEQ)
-            s_run_parameter = os.path.join(new_run,wetlab_config.RUN_PARAMETER_NEXTSEQ)
+            s_run_parameter = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, new_run,wetlab_config.RUN_PARAMETER_NEXTSEQ)
             try:
                l_run_parameter = fetch_remote_file (conn, new_run, s_run_parameter, l_run_parameter)
                logger.info('Sucessfully fetch of RunParameter file')
             except:
-                logger.info('Exception fetched to continue with the next run')
+                string_message = 'Experiment name for ' + new_run + ' is empty'
+                logging_errors(logger, string_message, False, True)
                 continue
 
             experiment_name = get_experiment_name_from_file (l_run_parameter)
@@ -180,6 +184,8 @@ def search_update_new_runs ():
             if experiment_name == '' :
                 string_message = 'Experiment name for ' + new_run + ' is empty'
                 logging_errors(logger, string_message, False, True)
+                os.remove(l_run_parameter)
+                logger.info('Deleted temporary run parameter file')
                 logger.info('Exceptional condition reported on log. Continue with the next run')
                 continue
 
@@ -191,34 +197,38 @@ def search_update_new_runs ():
                 run_state = RunProcess.objects.get(runName__exact = experiment_name).get_state()
                 string_message = 'The run ' + experiment_name + 'is in state ' + run_state + '. Should be in Recorded'
                 logging_errors(logger, string_message, False, False)
-                process_run_file_update = True
-                processed_runs.append(new_run)
-                new_processed_runs.append(new_run)
+                logger.info('Deleting temporary runParameter file')
+                os.remove(l_run_parameter)
+                #process_run_file_update = True
+                #processed_runs.append(new_run)
+                #new_processed_runs.append(new_run)
                 continue
             # Run is new or it is in Recorded state. 
             # Finding out the platform to continue the run processing
             run_platform =  get_run_platform_from_file (l_run_parameter)
             logger.debug('found the platform name  , %s', run_platform)
             if 'MiSeq' in run_platform :
-                logger.debug('Executing miseq handler ')
+                logger.debug('MiSeq run found. Executing miseq handler ')
                 try:
                     update_miseq_process_run =  handle_miseq_run (conn, new_run, l_run_parameter, experiment_name)
                     if update_miseq_process_run != '' :
-                        process_run_file_update = True
-                        processed_runs.append(new_run)
-                        new_processed_runs.append(new_run)
+                        #process_run_file_update = True
+                        #processed_runs.append(new_run)
+                        #new_processed_runs.append(update_miseq_process_run)
+                        new_processed_runs.append(experiment_name)
+                        logger.info('Run %s was successfully processed ', experiment_name)
                         logger.debug('Finished miSeq handling process')
                     continue
                 except ValueError as e :
                     # Include the run in the run processed file 
                     logger.warning('Error found when processing miSeq run %s ', e)
                     logger.info('Including this run in the run processed file ')
-                    process_run_file_update = True
-                    processed_runs.append(new_run)
-                    new_processed_runs.append(new_run)
+                    #process_run_file_update = True
+                    #processed_runs.append(new_run)
+                    run_with_error.append(experiment_name)
                     continue
                 except :
-                    logger.warning('miSeq run is waiting for sequencer run to have all files')
+                    logger.warning('miSeq run  %s does not have all required files. Giving more time for the sequencer to write them.', experiment_name )
                     logger.info('Continue processing next item ')
                     continue
 
@@ -235,11 +245,11 @@ def search_update_new_runs ():
                     continue
                 except ValueError as e :
                     # Include the run in the run processed file 
-                    logger.warning('Error found when processing miSeq run %s ', e)
-                    logger.info('Including this run in the run processed file ')
-                    process_run_file_update = True
-                    processed_runs.append(new_run)
-                    new_processed_runs.append(new_run)
+                    logger.warning('Error found when processing NextSeq run %s ', e)
+                    #logger.info('Including this run in the run processed file ')
+                    #process_run_file_update = True
+                    #processed_runs.append(new_run)
+                    #new_processed_runs.append(new_run)
                     continue
                 except :
                     logger.warning('NextSeq run is waiting for sequencer to have all files')
@@ -248,26 +258,27 @@ def search_update_new_runs ():
                 logger.debug('Finished miSeq handling process')
             else:
                 string_message = 'Platform for this run is not supported'
-                logging_errors(logger, string_message)
+                logging_errors(logger, string_message, False , True)
                 # Set run to error state
                 os.remove(l_run_parameter)
 
     else:
         logger.info('No found new run folders on the remote server')
-        return ''
 
+    '''
     if process_run_file_update :
-        logger.info('Updating the process_run_file wit the new runs')
+        logger.info('Updating the process_run_file with the new runs')
         try:
             update_processed_run_file (processed_run_file, processed_runs)
             logger.info('File for processed runs was updted ')
         except:
             string_message = 'Unable to write the processed runs file'
             logging_errors(logger, string_message, True, True)
+    '''
     logger.info ('Clossing SAMBA connection')
     conn.close()
     logger.debug ('End function searching new runs. Returning handle runs ' )
-    return new_processed_runs
+    return new_processed_runs , run_with_error
     
 
 
@@ -329,7 +340,7 @@ def search_not_completed_run ():
     # get the list for all runs that are not completed
     for state in state_list_be_processed:
         run_state = RunStates.objects.get(runStateName__exact = state)
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         if RunProcess.objects.filter(state__exact = run_state).exists():
             runs_to_handle[state]=RunProcess.objects.filter(state__exact = run_state)
     

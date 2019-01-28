@@ -53,12 +53,13 @@ def looking_for_new_runs ():
     logger.info('###########---Start Crontab-----############')
     logger.info('Start searching for new/updating runs')
     
-    new_runs_updated = search_update_new_runs ()
-    if len(new_runs_updated) > 0:
-        for new_run in new_runs_updated :
-            logger.info('%s has been updated in database', new_run)
-    else:
-        logger.info ('No new runs have been found ')
+    new_runs_updated, run_with_error = search_update_new_runs ()
+    for new_run in new_runs_updated :
+        logger.info('%s has been updated in database', new_run)
+
+    for error_run in run_with_error :
+        logger.info('%s has been set to error state', new_run)
+    
     logger.info('Exiting the proccess for  new/updating runs')
     
     # looking in database for the runs that are not completed
@@ -73,8 +74,7 @@ def looking_for_new_runs ():
     for state in updated_runs:
         for run_changed in updated_runs[state]:
             logger.info('Run  %s was  processed on  %s  state', run_changed, state)
-    
-    import pdb; pdb.set_trace()
+
     for state in run_with_error:
         for run_error in run_with_error[state]:
             logger.info('Run  %s was set to Error when processing run on %s state', run_error, state)

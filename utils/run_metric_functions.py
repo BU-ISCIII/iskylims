@@ -42,12 +42,12 @@ def get_run_metric_files (conn, run_folder):
     logger.debug ('Starting function get_run_metric_files')
     # runInfo needed for run metrics stats
     l_run_info = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING, wetlab_config.RUN_INFO)
-    s_run_info = os.path.join(run_folder,wetlab_config.RUN_INFO)
+    s_run_info = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, run_folder,wetlab_config.RUN_INFO)
     # runParameters needed for run metrics stats
     l_run_parameter = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING, wetlab_config.RUN_PARAMETER_NEXTSEQ)
-    s_run_parameter = os.path.join(run_folder,wetlab_config.RUN_PARAMETER_NEXTSEQ)
+    s_run_parameter = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, run_folder,wetlab_config.RUN_PARAMETER_NEXTSEQ)
     l_metric_folder = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING, wetlab_config.RUN_METRIC_FOLDER)
-    s_metric_folder = os.path.join(run_folder, wetlab_config.RUN_METRIC_FOLDER)
+    s_metric_folder = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, run_folder, wetlab_config.RUN_METRIC_FOLDER)
     copied_files = {}
     if not os.path.exists(l_metric_folder) :
         try:

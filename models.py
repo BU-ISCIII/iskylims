@@ -289,9 +289,9 @@ class Projects(models.Model):
 
 class RunningParametersManager (models.Manager) :
     
-    def create_running_parameters (self, running_data, run_id) :
+    def create_running_parameters (self, running_data, run_object) :
         
-        running_parameters = self.create (runName_id=RunProcess.objects.get(pk=run_id),
+        running_parameters = self.create (runName_id = run_object,
                          RunID=running_data['RunID'], ExperimentName=running_data['ExperimentName'],
                          RTAVersion=running_data['RTAVersion'], SystemSuiteVersion= running_data['SystemSuiteVersion'],
                          LibraryID= running_data['LibraryID'], Chemistry= running_data['Chemistry'],

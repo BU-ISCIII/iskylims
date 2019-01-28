@@ -10,6 +10,9 @@ WETLAB_MANAGER = 'WetlabManager'
 SAMBA_USER_ID = 'Luigi'
 SAMBA_USER_PASSWORD = 'Apple123'
 SAMBA_SHARED_FOLDER_NAME = 'NGS_Data'
+#    Write the subfolder name in case that run folder are not under the 
+#    shared folder directory. Leave empty in other case 
+SAMBA_APPLICATION_FOLDER_NAME = 'application'
 SAMBA_REMOTE_SERVER_NAME = 'LUIGI-PC'
 SAMBA_NTLM_USED = True
 SAMBA_IP_SERVER = '192.168.1.3'
@@ -20,6 +23,9 @@ SAMBA_PORT_SERVER = '139'
 #SAMBA_USER_ID = 'bioinfocifs'
 #SAMBA_USER_PASSWORD = 'fCdEg979I-W.gUx-teDr'
 #SAMBA_SHARED_FOLDER_NAME = 'NGS_Data'
+#    Write the subfolder name in case that run folder are not under the 
+#    shared folder directory. Leave empty in other case 
+#SAMBA_APPLICATION_FOLDER_NAME = ''
 #SAMBA_REMOTE_SERVER_NAME = 'quibitka'
 #SAMBA_NTLM_USED = True
 #SAMBA_IP_SERVER = '172.21.7.11'

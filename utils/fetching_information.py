@@ -8,7 +8,7 @@ from django.contrib.auth.models import Group
 
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import RUN_IMAGES_DIRECTORY, WETLAB_MANAGER
-from .wetlab_misc_utilities import normalized_data
+from .generic_functions import normalized_data
 from .stats_graphics import *
 
 def graphics_state (state):
@@ -36,6 +36,35 @@ def graphics_state (state):
     
     return g_value[index], g_color [index]
 
+def get_run_graphics (run_object) :
+    '''
+    Description:
+        The function will get the run graphics.
+    Input:
+        run_object      # contains the run object 
+    Constants:
+        RUN_IMAGES_DIRECTORY
+        MEDIA_URL
+    Variables:
+        folder_graphic  # contains the folder where are the run graphics
+        run_graphics_object  # contains GraphicsStats object 
+        run_graphics     # contain the tupla list with the graphic name
+                            and the grafic path
+    return:
+        run_graphics 
+    '''
+    # prepare the graphics for the run
+    run_graphics_object = GraphicsStats.objects.get(runprocess_id__exact = run_object)
+    folder_graphic = os.path.join( settings.MEDIA_URL, wetlab_config.RUN_IMAGES_DIRECTORY, 
+                            run_graphics_object.get_folder_graphic() )
+    graphics = run_graphics_object.get_graphics().split(';')
+    
+    graphic_text= ['Data By Lane','Flow Cell Chart','Data By Cycle','QScore Heatmap','QScore Distribution','Indexing QC']
+    run_graphics = []
+    
+    for index_graph in range (len(graphics)):
+        run_graphics.append([graphic_text[index_graph], os.path.join(folder_graphic, graphics[index_graph])])
+    return  run_graphics
 
 def get_run_read_data(run_object, num_of_reads, number_of_lanes) :
     '''
@@ -258,7 +287,29 @@ def get_information_run(run_object):
     if run_state != 'Recorded' or run_state != 'Pre-Recorded' :
         # Adding the Run Parameters information
         info_dict['running_parameters'] = get_running_parameters(run_object)
+    
+    state_to_display_run_metric = ['Processing Bcl2fastq', 'Processed Bcl2fastq', 'Completed']
+    if run_state in state_to_display_run_metric :
+        run_parameters = RunningParameters.objects.get(runName_id__exact = run_object)
+        num_of_reads = run_parameters.get_number_of_reads ()
         
+        # prepare data for Run Binary summary stats
+        info_dict ['runSummaryHeading'] = ['Level','Yield','Projected Yield','Aligned (%)','Error Rate (%)','Intensity Cycle 1','Quality >=30 (%)']
+        info_dict ['runSummaryTotal'] , info_dict ['runSummary'] = get_run_summary_data(run_object, num_of_reads)  
+
+        # prepare the data for Reads Binary summary stats
+        info_dict ['laneSummaryHeading']= ['Lane','Tiles','Density (K/mm2)','Cluster PF (%)','Phas/Prephas (%)',
+                    'Reads (M)','Reads PF (M)','%>= Q30','Tield (G)','Cycles Err Rate',
+                    'Aligned (%)','Error Rate (%)','Error Rate 35 cycle (%)',
+                    'Error Rate 50 cycle (%)','Error Rate 75 cycle (%)',
+                    'Error Rate 100 cycle (%)','Intensity Cycle 1']
+        info_dict ['reads'] = get_run_read_data(run_object, num_of_reads, number_of_lanes) 
+
+        
+
+        info_dict['runGraphic'] = get_run_graphics (run_object)
+    
+    
     ## get the stats information if run is completed
     if run_state == 'Completed':
         # finding the running parameters index for the run
@@ -501,23 +552,7 @@ def get_information_run(run_object):
         info_dict['match_unknows']= index_match_list
 
         
-        run_parameters = RunningParameters.objects.get(runName_id__exact = run_object)
-        num_of_reads = run_parameters.get_number_of_reads ()
         
-        # prepare data for Run Binary summary stats
-        info_dict ['runSummaryHeading'] = ['Level','Yield','Projected Yield','Aligned (%)','Error Rate (%)','Intensity Cycle 1','Quality >=30 (%)']
-        info_dict ['runSummaryTotal'] , info_dict ['runSummary'] = get_run_summary_data(run_object, num_of_reads)  
-        
-        
-        
-
-        # prepare the data for Reads Binary summary stats
-        info_dict ['laneSummaryHeading']= ['Lane','Tiles','Density (K/mm2)','Cluster PF (%)','Phas/Prephas (%)',
-                    'Reads (M)','Reads PF (M)','%>= Q30','Tield (G)','Cycles Err Rate',
-                    'Aligned (%)','Error Rate (%)','Error Rate 35 cycle (%)',
-                    'Error Rate 50 cycle (%)','Error Rate 75 cycle (%)',
-                    'Error Rate 100 cycle (%)','Intensity Cycle 1']
-        info_dict ['reads'] = get_run_read_data(run_object, num_of_reads, number_of_lanes) 
         
         
         
@@ -534,18 +569,7 @@ def get_information_run(run_object):
             #info_dict[read_number_index] = read_summary_values
         info_dict['reads']= info_reads_dict
         '''
-        # prepare the graphics for the run
-        folder_for_plot= wetlab_config.RUN_IMAGES_DIRECTORY 
-
-        run_graphics_id = GraphicsStats.objects.filter(runprocess_id__exact =run_id)
-        folder_graphic = os.path.join( settings.MEDIA_URL, RUN_IMAGES_DIRECTORY, run_graphics_id[0].get_folder_graphic() )
-        graphics = run_graphics_id[0].get_graphics().split(';')
-        graphic_text= ['Data By Lane','Flow Cell Chart','Data By Cycle','QScore Heatmap','QScore Distribution','Indexing QC']
-        for index_graph in range (len(graphics)):
-            tmp_value = graphics[index_graph]
-            graphics[index_graph] = [graphic_text[index_graph], os.path.join(folder_graphic, tmp_value)]
-
-        info_dict['runGraphic'] = graphics
+        
     return info_dict
 
 

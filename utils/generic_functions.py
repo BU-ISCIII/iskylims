@@ -166,6 +166,7 @@ def get_new_runs_from_remote_server (processed_runs, conn, shared_folder):
         logger          # log object 
     Variable:
         new_runs        # list containing the new folder run names
+        run_data_root_folder # main folder where all directory runs are 
         run_folder_list  # list of the folder names on remote server
     Return:
         new runs 
@@ -173,7 +174,9 @@ def get_new_runs_from_remote_server (processed_runs, conn, shared_folder):
     logger = logging.getLogger(__name__)
     logger.debug('Starting function get_new_runs_on_remote_server' ) 
     new_runs = []
-    run_folder_list = conn.listPath( shared_folder, '/')
+    #run_data_root_folder = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, '/') 
+    run_data_root_folder = os.path.join('/', wetlab_config.SAMBA_APPLICATION_FOLDER_NAME ) 
+    run_folder_list = conn.listPath( shared_folder, run_data_root_folder)
     for sfh in run_folder_list:
         if sfh.isDirectory:
             folder_run = sfh.filename
