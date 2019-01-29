@@ -95,11 +95,34 @@ def get_run_metric_files (conn, run_folder):
                     os.remove(copied_files[key])
             logger.debug ('End function manage_run_in_processed_bcl2fast2_run with error')
             raise 
-    
+
     logger.debug ('End function get_run_metric_files')
     return copied_files   
     
-
+def delete_run_metric_files (run_metric_files):
+    '''
+    Description:
+        The function delete the files used for collecting the run metrics
+    Input:
+        run_metric_files   # contains the file list to be deleted 
+    Return:
+        True
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('Starting function delete_run_metric_files')
+    
+    logger.info('Start deleting temporary files')
+    for key in run_metric_files.keys():
+        if key == wetlab_config.RUN_METRIC_FOLDER :
+            for metric_file in run_metric_files[key]:
+                os.remove(metric_file)
+        else:
+            os.remove(run_metric_files[key])
+    logger.info('Deleted temporary files')
+    logger.debug ('End function delete_run_metric_files')
+    return True
+    
+    
 
 def parsing_run_metrics(run_metric_folder, run_object_name):
     '''

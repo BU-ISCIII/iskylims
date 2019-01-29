@@ -1112,7 +1112,6 @@ def process_unknow_barcode_stats (stats_projects, run_object_name):
     logger.debug ('Starting function process_unknow_barcode_stats')
     number_of_lanes = run_object_name.get_machine_lanes()
     processed_barcode_data = []
-    import pdb; pdb.set_trace()
     for project in stats_projects:
         if project == 'TopUnknownBarcodes':
             for un_lane in range(number_of_lanes) :
@@ -1162,9 +1161,8 @@ def manage_run_in_processed_run (conn, run_object_name):
     run_folder = RunningParameters.objects.get(runName_id = run_object_name).get_run_folder()
     statistics_folder = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, run_folder, wetlab_config.DEMULTIPLEXION_BCL2FASTQ_FOLDER)
     if 'Processed Run' == run_object_name.get_state() :
-        
         if not check_run_metrics_processed (run_object_name) :
-            #run_state = run_object_name.set_run_state('Processing Metrics')
+            run_state = run_object_name.set_run_state('Processing Metrics')
             run_id = run_object_name.get_run_id()
             try:
                 # connect to statistics folder to fetch the run metrics files
@@ -1175,14 +1173,6 @@ def manage_run_in_processed_run (conn, run_object_name):
                 logger.debug ('End function manage_run_in_processed_run with error')
                 raise
 
-            logger.info('Start deleting temporary files')
-            for key in run_metric_files.keys():
-                if key == wetlab_config.RUN_METRIC_FOLDER :
-                    for metric_file in run_metric_files[key]:
-                        os.remove(metric_file)
-                else:
-                    os.remove(copied_files[key])
-            logger.info('Deleted temporary files')
                   
             try:
                 for run_stat_summary in parsed_run_stats_summary :
@@ -1196,12 +1186,17 @@ def manage_run_in_processed_run (conn, run_object_name):
                 logging_errors(logger, string_message, True, True)
                 # delete run metrics tables
                 cleanup_run_metrics_tables_if_error (run_object_name)
+                delete_run_metric_files (run_metric_files)
                 logger.info('Deleted run metrics tables')
                 handling_errors_in_run(experiment_name)
                 logger.debug ('End function manage_run_in_processed_run with error')
                 raise
+            
             # create run graphics
             run_graphics = create_graphics (wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING, run_object_name)
+            logger.info('run metrics graphics processed and copied to plot image folder')
+            # deleting temporary run metrics files
+            delete_run_metric_files (run_metric_files)
             # return the state to Processed Run
             run_state = run_object_name.set_run_state('Processed Run')
             
@@ -1446,7 +1441,6 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
             cleanup_demux_tables_if_error(run_object_name)
             logger.debug('End function manage_run_in_processed_bcl2fast2_run with error')
             raise 
-        import pdb; pdb.set_trace()
         
         result_store_usage = run_object_name.set_used_space (disk_utilization)
         

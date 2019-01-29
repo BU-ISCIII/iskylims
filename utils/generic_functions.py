@@ -359,7 +359,6 @@ def open_samba_connection():
     try:
         conn.connect(wetlab_config.SAMBA_IP_SERVER, int(wetlab_config.SAMBA_PORT_SERVER))
     except:
-        #import pdb; pdb.set_trace()
         string_message = 'Unable to connect to remote server'
         logging_errors (logger, string_message, True, True)
         raise IOError ('Samba connection error')
@@ -424,8 +423,9 @@ def get_run_disk_utilization (conn, run_folder):
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function get_run_disk_utilization')
+    full_path_run = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, run_folder)
     try:
-        get_full_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,run_folder)
+        get_full_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,full_path_run)
     except:
         string_message = 'Unable to get the folder ' + run_folder
         logging_errors (logger, string_message, True, False)
@@ -436,22 +436,22 @@ def get_run_disk_utilization (conn, run_folder):
     images_dir_size = 0
     MEGA_BYTES = 1024*1024
     disk_utilization = {}
-    
+    logger.info('Start folder iteration ')
     for item_list in get_full_list:
         if item_list.filename == '.' or item_list.filename == '..':
             continue
         if item_list.filename == 'Data':
             logger.info('Starting getting disk space utilization for Data Folder')
-            dir_data = os.path.join(run_folder,'Data')
+            dir_data = os.path.join(full_path_run,'Data')
             data_dir_size = get_size_dir(dir_data , conn)
 
         elif item_list.filename == 'Images':
             logger.info('Starting getting disk space utilization for Images Folder')
-            dir_images = os.path.join(run_folder, 'Images')
+            dir_images = os.path.join(full_path_run, 'Images')
             images_dir_size = get_size_dir(dir_images , conn)
 
         if item_list.isDirectory:
-            item_dir = os.path.join(run_folder, item_list.filename)
+            item_dir = os.path.join(full_path_run, item_list.filename)
             rest_of_dir_size += get_size_dir(item_dir, conn)
         else:
             rest_of_dir_size += item_list.file_size
