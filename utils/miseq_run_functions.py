@@ -622,7 +622,7 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
         logger.info('Skiping the run %s , due to the error on fetching RunInfo.xml', new_run)
         # cleaning up the RunParameter in local temporaty file
         os.remove(l_run_parameter)
-        raise   # returning to handle next run folder
+        raise  ValueError ('RunInfo.xml file not found on run folder') # returning to handle next run folder
 
     # Parsing RunParameter and RunInfo
     running_parameters, run_date, instrument = miseq_parsing_run_information(l_run_info, l_run_parameter)
@@ -647,7 +647,7 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
         try:
             l_sample_sheet = fetch_remote_file (conn, new_run, s_sample_sheet, l_sample_sheet)
             logger.info('Sucessfully fetch of Sample Sheet file')
-        except :
+        except Exception as e:
             logger.info('Unable to get Sample sheet on folder  %s', new_run)
             os.remove(l_sample_sheet)
 
@@ -658,12 +658,14 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
                 # in the romote folder, again next time the process is executed
                 new_run_parameters.delete()
                 logger.info("Deleted running parameters from database ")
-                raise ValueError ('Sample sheet not found in run folder')# returning to handle next run folder
+                logger.debug ('End function for handling miSeq run with error')
+                raise ValueError ('Sample sheet not found in run folder')
             else:
                 # set run state to Error state
                 string_message = 'Time expiration for getting sample Sheet for ' + experiment_name
                 logging_errors( logger, string_message, False, True)
                 handling_errors_in_run(experiment_name, '19')
+                logger.debug ('End function for handling miSeq run with error')
                 raise ValueError ('Time expiration for getting sample sheet')
 
         if validate_sample_sheet (l_sample_sheet) :
@@ -678,17 +680,23 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
 
             save_miseq_projects_found (projects_users, experiment_name, library_name)
             run_updated = RunProcess.objects.get(runName__exact = experiment_name).set_run_state('Sample Sent')
+            # Deleting sample sheet
+            os.remove(l_sample_sheet)
+            logger.info('Deleted sample sheet')
+            logger.debug ('End function for handling miSeq ')
             return new_run
         else:
             # set run state to ERROR
             string_message = "Invalid Sample Sheet for " + experiment_name + 'on folder ' + new_run
             logging_errors (logger, string_message, False, True)
             run_updated = handling_errors_in_run (experiment_name,'1')
+            logger.debug ('End function for handling miSeq run with error')
             raise ValueError ('Invalid sample sheet')
     else:
         run_state = RunProcess.objects.get(runName__exact = experiment_name).get_run_state()
         string_message = 'Wrong state: ' + run_state +' when calling to handle_miseq_run function '
         logging_errors(logger, string_message, False, True)
+        logger.debug ('End function for handling miSeq run with error')
         raise ValueError ('Wrong run state ')
 
 

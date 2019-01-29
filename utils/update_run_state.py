@@ -199,9 +199,6 @@ def search_update_new_runs ():
                 logging_errors(logger, string_message, False, False)
                 logger.info('Deleting temporary runParameter file')
                 os.remove(l_run_parameter)
-                #process_run_file_update = True
-                #processed_runs.append(new_run)
-                #new_processed_runs.append(new_run)
                 continue
             # Run is new or it is in Recorded state.
             # Finding out the platform to continue the run processing
@@ -212,26 +209,22 @@ def search_update_new_runs ():
                 try:
                     update_miseq_process_run =  handle_miseq_run (conn, new_run, l_run_parameter, experiment_name)
                     if update_miseq_process_run != '' :
-                        #process_run_file_update = True
-                        #processed_runs.append(new_run)
-                        #new_processed_runs.append(update_miseq_process_run)
                         new_processed_runs.append(experiment_name)
                         logger.info('Run %s was successfully processed ', experiment_name)
                         logger.debug('Finished miSeq handling process')
                     continue
                 except ValueError as e :
-                    # Include the run in the run processed file
                     logger.warning('Error found when processing miSeq run %s ', e)
-                    logger.info('Including this run in the run processed file ')
-                    #process_run_file_update = True
-                    #processed_runs.append(new_run)
                     run_with_error.append(experiment_name)
+                    logger.debug('Finished miSeq handling process with error')
                     continue
+                '''
                 except :
                     logger.warning('miSeq run  %s does not have all required files. Giving more time for the sequencer to write them.', experiment_name )
                     logger.info('Continue processing next item ')
+                    logger.debug('Finished miSeq handling process with error')
                     continue
-
+                '''
             elif 'NextSeq' in run_platform :
 
                 logger.debug('Executing NextSeq handler ')
