@@ -127,7 +127,6 @@ def miseq_parsing_run_information(run_info, run_parameter):
     Import:
         xml.etree.ElementTree
     Variables:
-        image_channel   # list containing the image channel values
         logger          # contains the logger object to write information
                         on log file
         p_parameter     # element tree object for run parameter
@@ -143,7 +142,15 @@ def miseq_parsing_run_information(run_info, run_parameter):
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function for parsing xml file for miSeq run')
     running_data={}
-    image_channel=[]
+    running_data_fields = ['Flowcell','FlowcellLayout','RunID','ExperimentName','RTAVersion',
+            'Chemistry','RunStartDate','RunManagementType','ApplicationVersion','NumTilesPerSwath',
+            'PlannedRead1Cycles','PlannedIndex1ReadCycles','PlannedIndex2ReadCycles','PlannedRead2Cycles',
+            'SystemSuiteVersion','LibraryID','AnalysisWorkflowType','ImageChannel','ImageDimensions']
+    # Initialize all fields to default -> empty
+    for fields in running_data_fields:
+        running_data[fields] = ""
+
+
     #################################################
     ## parsing RunInfo.xml file
     #################################################
@@ -184,11 +191,6 @@ def miseq_parsing_run_information(run_info, run_parameter):
             running_data['PlannedRead2Cycles'] = run_info_read.attrib['NumCycles']
 
     ## setting empty values for MiSeq
-    running_data['SystemSuiteVersion'] = ''
-    running_data['LibraryID'] = ''
-    running_data['AnalysisWorkflowType'] = ''
-    running_data['ImageChannel'] = ''
-    running_data['ImageDimensions'] = ''
     ## get the instrument for MiSeq run located on RunInfo.xml
     instrument =p_run.find('Instrument').text
 

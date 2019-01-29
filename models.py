@@ -291,6 +291,15 @@ class RunningParametersManager (models.Manager) :
 
     def create_running_parameters (self, running_data, run_object) :
 
+        if running_data['PlannedRead1Cycles'] == "":
+            running_data['PlannedRead1Cycles'] = 0
+        if running_data['PlannedRead2Cycles'] == "":
+            running_data['PlannedRead2Cycles'] = 0
+        if running_data['PlannedIndex1ReadCycles'] == "":
+            running_data['PlannedIndex1ReadCycles'] = 0
+        if running_data['PlannedIndex2ReadCycles'] == "":
+            running_data['PlannedIndex2ReadCycles'] = 0
+
         running_parameters = self.create (runName_id = run_object,
                          RunID=running_data['RunID'], ExperimentName=running_data['ExperimentName'],
                          RTAVersion=running_data['RTAVersion'], SystemSuiteVersion= running_data['SystemSuiteVersion'],
@@ -377,6 +386,7 @@ class RunningParameters (models.Model):
         return count
 
     def get_number_of_cycles (self):
+
         number_of_cycles = int(self.PlannedRead1Cycles) + int(self.PlannedRead2Cycles) + int(self.PlannedIndex1ReadCycles) + int(self.PlannedIndex2ReadCycles)
         return number_of_cycles
 
