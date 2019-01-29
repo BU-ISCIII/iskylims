@@ -224,6 +224,7 @@ def run_waiting_for_sample_sheet (experiment_name):
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function run_waiting_for_sample_sheet')
+    import pdb; pdb.set_trace()
     sample_sheet_value = RunProcess.objects.get(runName__exact = experiment_name).get_sample_file()
     if sample_sheet_value == '':
         logger.debug ('End function. Run is waiting for sample sheet')
@@ -428,16 +429,24 @@ def validate_sample_sheet (sample_sheet):
     # get the projects and user owner form sample sheet
     projects_users = get_projects_in_run(sample_sheet)
     if len(projects_users) == 0 :
-        logging_errors(logger, 'No projects have been found ')
+        logging_errors(logger, 'No sample lines have been found ')
         logger.debug('End the function validate sample_sheet with error')
         return False
     for project in projects_users.keys() :
+        if project == "":
+            logging_errors(logger, 'Empty projects have been found ')
+            logger.debug('End the function validate sample_sheet with error')
+            return False
         if Projects.objects.filter(projectName__exact = project).exists():
             string_message = 'project name %s , already been used ' + project
             logging_errors(logger, string_message, False, False)
             logger.debug('Exiting the function validate sample_sheet with error')
             return False
     for user in projects_users.values():
+        if user == "":
+            logging_errors(logger, 'Empty users have been found ')
+            logger.debug('End the function validate sample_sheet with error')
+            return False
         if ( not User.objects.filter(username__icontains = user).exists()):
             string_message = 'user name ' +user  +' is not defined in the system'
             logging_errors(logger, string_message, False, False)
@@ -639,11 +648,12 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
         except :
             logger.info('Unable to get Sample sheet on folder  %s', new_run)
             os.remove(l_sample_sheet)
+
             if need_to_wait_more (experiment_name, wetlab_config.MAXIMUM_TIME_WAIT_SAMPLE_SHEET) :
                 logger.info('Exception fetched to extend the time for fetching Sample Sheet')
-                new_run_parameters.delete()
                 # Delete running paramters object for allowing  to look for,
                 # in the romote folder, again next time the process is executed
+                new_run_parameters.delete()
                 logger.info("Deleted running parameters from database ")
                 raise # returning to handle next run folder
             else:
