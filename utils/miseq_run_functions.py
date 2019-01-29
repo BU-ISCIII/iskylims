@@ -429,12 +429,14 @@ def validate_sample_sheet (sample_sheet):
     # get the projects and user owner form sample sheet
     projects_users = get_projects_in_run(sample_sheet)
     if len(projects_users) == 0 :
-        logging_errors(logger, 'No sample lines have been found ')
+        string_message = 'No sample lines have been found '
+        logging_errors(logger, string_message, False, False)
         logger.debug('End the function validate sample_sheet with error')
         return False
     for project in projects_users.keys() :
         if project == "":
-            logging_errors(logger, 'Empty projects have been found ')
+            string_message = 'Empty projects have been found '
+            logging_errors(logger, string_message, False, False)
             logger.debug('End the function validate sample_sheet with error')
             return False
         if Projects.objects.filter(projectName__exact = project).exists():
@@ -444,7 +446,8 @@ def validate_sample_sheet (sample_sheet):
             return False
     for user in projects_users.values():
         if user == "":
-            logging_errors(logger, 'Empty users have been found ')
+            string_message =  'Empty users have been found '
+            logging_errors(logger, string_message, False, False)
             logger.debug('End the function validate sample_sheet with error')
             return False
         if ( not User.objects.filter(username__icontains = user).exists()):
@@ -616,7 +619,7 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
     except Exception as e:
         string_message = 'Unable to fetch the RunInfo file on folder : ' + new_run
         logging_errors(logger, string_message, True, False)
-        logger.info('Skiping the run %s , due to the error', new_run)
+        logger.info('Skiping the run %s , due to the error on fetching RunInfo.xml', new_run)
         # cleaning up the RunParameter in local temporaty file
         os.remove(l_run_parameter)
         raise   # returning to handle next run folder
@@ -630,14 +633,13 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
     else :
         new_run_process = RunProcess.objects.get(runName__exact = experiment_name)
     # Update the running parameter table with the information
-    #new_run_process_id = new_run_process.id
     new_run_parameters = RunningParameters.objects.create_running_parameters(running_parameters, new_run_process)
     logger.info('Running parameters have been stored on database for %s', experiment_name )
 
     # deleting temporary copy of RunParameter and RunInfo files
     os.remove(l_run_parameter)
     os.remove(l_run_info)
-
+    logger.info('Deleted RunParameter and RunInfo files')
     if run_waiting_for_sample_sheet (experiment_name) :
         # Fetch sample sheet from remote server
         l_sample_sheet = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.SAMPLE_SHEET)
@@ -650,17 +652,19 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
             os.remove(l_sample_sheet)
 
             if need_to_wait_more (experiment_name, wetlab_config.MAXIMUM_TIME_WAIT_SAMPLE_SHEET) :
-                logger.info('Exception fetched to extend the time for fetching Sample Sheet')
+                string_message = 'Sample Sheet for' + new_run '. Extended more time to fetch it'
+                logging_warnings(logger, string_message, True)
                 # Delete running paramters object for allowing  to look for,
                 # in the romote folder, again next time the process is executed
                 new_run_parameters.delete()
                 logger.info("Deleted running parameters from database ")
-                raise # returning to handle next run folder
+                raise ValueError ('Sample sheet not found in run folder')# returning to handle next run folder
             else:
                 # set run state to Error state
+                string_message = 'Time expiration for getting sample Sheet for ' + experiment_name
+                logging_errors( logger, string_message, False, True)
                 handling_errors_in_run(experiment_name, '19')
                 raise ValueError ('Time expiration for getting sample sheet')
-
 
         if validate_sample_sheet (l_sample_sheet) :
             projects_users = get_projects_in_run (l_sample_sheet)
@@ -677,6 +681,8 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
             return new_run
         else:
             # set run state to ERROR
+            string_message = "Invalid Sample Sheet for " + experiment_name + 'on folder ' + new_run
+            logging_errors (logger, string_message, False, True)
             run_updated = handling_errors_in_run (experiment_name,'1')
             raise ValueError ('Invalid sample sheet')
     else:

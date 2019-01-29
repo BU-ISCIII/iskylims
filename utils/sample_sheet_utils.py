@@ -336,7 +336,7 @@ def create_unique_sample_id_values (infile, index_file):
     os.rename(temp_sample_sheet, infile)
 
 
-
+'''
 
 def check_run_projects_in_samplesheet(samplesheet):
     ## Check that there are projects with researchers  declared within the run
@@ -433,3 +433,4 @@ def check_run_projects_definition(project_list):
 
     timestamp_print('Leaving check_run_projects_definition(). Returned value= '+str(message_output))
     return message_output
+'''

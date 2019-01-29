@@ -288,11 +288,33 @@ def logging_errors(logger, string_text, showing_traceback , print_on_screen ):
                                 TO_EMAIL_ADDRESS)
     if print_on_screen :
         from datetime import datetime
-        print('******* ERROR ********')
+        print('********* ERROR **********')
+        print(string_text)
         print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         print('When processing run . Check log for detail information')
+        print('******* END ERROR ********')
     return ''
 
+def logging_warnings(logger, string_text, print_on_screen ):
+    '''
+    Description:
+        The function will log the error information to file.
+        Optional can send an email to inform about the issue
+    Input:
+        logger # contains the logger object 
+        string_text # information text to include in the log
+    '''
+    logger.warning('-----------------    WARNING   ------------------')
+    logger.warning(string_text )
+    logger.warning('-----------------    END WARNING   --------------')
+    if print_on_screen :
+        from datetime import datetime
+        print('******* WARNING ********')
+        print(string_text)
+        print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        print('When processing run . Check log for detail information')
+        print('**** END WARNING *******')
+    return ''
 
 def need_to_wait_more (experiment_name, waiting_time):
     '''
