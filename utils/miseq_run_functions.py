@@ -17,18 +17,18 @@ def check_miseq_completion_run (conn, experiment_name, log_folder):
     Input:
         conn    # contains the samba connection object
         log_folder  # remote path where are located the logs for miseq
-        experiment_name # name for this run 
+        experiment_name # name for this run
     Functions:
         get_miseq_run_cycles # located at utils.wetlab_misc_utilities
         get_latest_miseq_log #  located at utils.wetlab_misc_utilities
     Constants:
         COMPLETION_SUCCESS
     Variables:
-        latest_log # string containing the latest log information 
+        latest_log # string containing the latest log information
         run_cycles # number of cycles to be completed in the run
         log_cycles # number of maximum cycles logged on the Log folder
         status_run # status of the run
-        run_completion_date # date and time of the completion 
+        run_completion_date # date and time of the completion
     Return:
         status_run and run_completion_date
     '''
@@ -76,11 +76,11 @@ def get_latest_miseq_log(conn, log_folder) :
     Variables:
         file_content # text information in the latest log
         file_remote # file name on the remote server
-        remote_file_list # samba object with the list of files 
-        max_cycle   # Counter with the maximum cycle found 
+        remote_file_list # samba object with the list of files
+        max_cycle   # Counter with the maximum cycle found
         number_of_cycles # will add the partial number of cycles
     Return:
-        number_of_cycles 
+        number_of_cycles
         file_content
     '''
     logger = logging.getLogger(__name__)
@@ -93,7 +93,7 @@ def get_latest_miseq_log(conn, log_folder) :
         file_remote = sfh.filename
         if file_remote.endswith('.log') :
             log_file = re.search('.*_Cycle(\d+)_.*',file_remote)
-            
+
             cycle_number = int(log_file.group(1))
             if cycle_number > max_cycle :
                 max_cycle = cycle_number
@@ -103,29 +103,29 @@ def get_latest_miseq_log(conn, log_folder) :
     s_latest_log = os.path.join(log_folder,latest_log)
     with open(temporary_log ,'wb') as log_fp :
         temporary_log = fetch_remote_file (conn, log_folder, s_latest_log, temporary_log)
-        
+
     with open (temporary_log, 'r') as fh :
         log_file_content = fh.read()
     os.remove(temporary_log)
-    return max_cycle, log_file_content 
+    return max_cycle, log_file_content
 
 
 def miseq_parsing_run_information(run_info, run_parameter):
     '''
     Description:
         The function is called for parsing the RunInfo and RunParameter
-        files. 
-        After parsing the RunningParameters database table will be 
+        files.
+        After parsing the RunningParameters database table will be
         updated with a new row having the parsed data
-        Empty values will be set for MiSeq runs that exist on NextSeq 
+        Empty values will be set for MiSeq runs that exist on NextSeq
         but not in MiSeq runs
     Input:
         run_info    # contains the path for RunInfo.xml file
         run_parameter # contains the path for RunParameter.xml file
         run_id      # contains the id value of the run
-        
+
     Import:
-        xml.etree.ElementTree 
+        xml.etree.ElementTree
     Variables:
         image_channel   # list containing the image channel values
         logger          # contains the logger object to write information
@@ -136,9 +136,9 @@ def miseq_parsing_run_information(run_info, run_parameter):
         running_data    # dictionary with  the  information parsed
         running_parameters # new RunningParameter object to store parsed data
         sequencer       # sequencer index of the machine
-        
+
      Return:
-        running_data    
+        running_data
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function for parsing xml file for miSeq run')
@@ -154,7 +154,7 @@ def miseq_parsing_run_information(run_info, run_parameter):
     ## getting the common values NextSeq and MiSeq
     running_data['Flowcell']=p_run.find('Flowcell').text
     running_data['FlowcellLayout']=p_run.find('FlowcellLayout').attrib
-    
+
     #################################################
     ## parsing RunParameter.xml file
     #################################################
@@ -171,8 +171,8 @@ def miseq_parsing_run_information(run_info, run_parameter):
     running_data['RunManagementType']=parameter_data_root.find('RunManagementType').text
     running_data['ApplicationVersion']=parameter_data_root.find('Setup').find('ApplicationVersion').text
     running_data['NumTilesPerSwath']=parameter_data_root.find('Setup').find('NumTilesPerSwath').text
-    
-    ## get the length index number for reads and indexes 
+
+    ## get the length index number for reads and indexes
     for run_info_read in parameter_data_root.iter('RunInfoRead'):
         if run_info_read.attrib['Number'] == '1' :
             running_data['PlannedRead1Cycles'] = run_info_read.attrib['NumCycles']
@@ -199,7 +199,7 @@ def miseq_parsing_run_information(run_info, run_parameter):
     date = p_run.find('Date').text
     logger.debug('Found the de date that was recorded the Run %s', date)
     run_date = datetime.datetime.strptime(date, '%y%m%d')
-    
+
     logger.debug ('End function for parsing xml file for miSeq run')
     return running_data, run_date, instrument
 
@@ -215,7 +215,7 @@ def run_waiting_for_sample_sheet (experiment_name):
     Import:
         RunProccess     # from iSkyLIMS_wetlab.models
     Variable:
-        sample_sheet_value  # contains the value of the sample sheet 
+        sample_sheet_value  # contains the value of the sample sheet
                             stored in database
     Return:
         True if run is waiting to fetch the sample sheet
@@ -234,14 +234,14 @@ def run_waiting_for_sample_sheet (experiment_name):
 def save_new_miseq_run ( experiment_name, run_date, instrument) :
     '''
     Description:
-        The function will create a new instance for RunProcess 
+        The function will create a new instance for RunProcess
         The information stored is :  experiment_name, run_date, sequencerModel
         run_state, centerRequestedBy, index_library . Sample Sheet will
-        be empty . This field will be updated when 
+        be empty . This field will be updated when
         fetching the sample sheet from remote server
     Input:
         experiment_name # name of the experiment
-        run_date        # date of run creation 
+        run_date        # date of run creation
         instrument      # sequencer name
     Functions:
         logging_errors   # locate at utils.generic_functions
@@ -266,7 +266,7 @@ def save_new_miseq_run ( experiment_name, run_date, instrument) :
         logger.info('Using the first center defined in database')
         center_requested_by = Center.objects.all().first()
 
-    # Get the machines reference to add to sequencer field in the run 
+    # Get the machines reference to add to sequencer field in the run
     if  Machines.objects.filter(machineName__exact = instrument).exists() :
         sequencer = Machines.objects.get(machineName__exact = instrument)
         logger.info('Updated the run date and sequencer used for the runProcess table ')
@@ -275,7 +275,7 @@ def save_new_miseq_run ( experiment_name, run_date, instrument) :
         logging_errors(logger, string_message, False, False)
 
     run_state = RunStates.objects.get(runStateName__exact = 'Recorded')
-    run_process = RunProcess(runName=experiment_name,sampleSheet= '', 
+    run_process = RunProcess(runName=experiment_name,sampleSheet= '',
                             run_date = run_date, index_library = '',
                             state = run_state, centerRequestedBy = center_requested_by,
                             sequencerModel = sequencer)
@@ -303,15 +303,15 @@ def save_miseq_projects_found (projects_users , experiment_name, library_name):
         library_kit # library kit object used in the project
         p_data      # New Project object to save into database
         run         # RunProcess object for miseq run
-        sample_sheet_on_database  # sample sheet value stored in RunProcess 
+        sample_sheet_on_database  # sample sheet value stored in RunProcess
         string_message # message to be showed in the log file
-        
+
     Return:
         Returns an empty value
     '''
     logger = logging.getLogger(__name__)
     logger.debug('Executing the function save_miseq_projects_found' )
-    
+
     if LibraryKit.objects.filter(libraryName__exact = wetlab_config.DEFAULT_LIBRARY_KIT).exists():
         library_kit = LibraryKit.objects.get(libraryName__exact = wetlab_config.DEFAULT_LIBRARY_KIT)
     else:
@@ -319,7 +319,7 @@ def save_miseq_projects_found (projects_users , experiment_name, library_name):
         logger_errors(logger, string_message)
         logger.info('Using the first library kit defined in database')
         library_kit = LibraryKit.objects.all().first()
-    
+
     run_process = RunProcess.objects.get(runName = experiment_name)
     sample_sheet_on_database = run_process.get_sample_file()
     base_space_file = os.path.join(settings.MEDIA_URL.replace('/',''), sample_sheet_on_database)
@@ -328,7 +328,7 @@ def save_miseq_projects_found (projects_users , experiment_name, library_name):
         userid=User.objects.get(username__exact = user)
         p_data=Projects(runprocess_id = run_process, projectName = project,
                         user_id = userid, procState = 'Sample Sent',
-                        baseSpaceFile = base_space_file, 
+                        baseSpaceFile = base_space_file,
                         LibraryKit_id = library_kit, libraryKit = library_name)
         p_data.save()
     logger.info('Updated Projects table with the new projects found')
@@ -353,7 +353,7 @@ def store_sample_sheet_in_run (l_sample_sheet, experiment_name ) :
                                 a unique file name
         now     # Present time of the server
         run_updated # RunProcess object for miseq run
-        sample_sheet_on_database # sample sheet path used in database 
+        sample_sheet_on_database # sample sheet path used in database
         timestr     # Present time including 3 digits for miliseconds
     Return:
         sample_sheet_on_database
@@ -364,7 +364,7 @@ def store_sample_sheet_in_run (l_sample_sheet, experiment_name ) :
     now = datetime.datetime.now()
     timestr = now.strftime("%Y%m%d-%H%M%S.%f")[:-3]
     new_sample_sheet_name = 'SampleSheet' + timestr + '.csv'
-    
+
     new_sample_sheet_file = os.path.join (settings.MEDIA_ROOT, wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY, new_sample_sheet_name)
     logger.debug('new sample sheet name %s', new_sample_sheet_file)
     # Path to be included in database
@@ -375,7 +375,7 @@ def store_sample_sheet_in_run (l_sample_sheet, experiment_name ) :
     run_updated = RunProcess.objects.get(runName__exact = experiment_name)
     run_updated.sampleSheet = sample_sheet_on_database
     run_updated.save()
-    
+
     logger.info('Updated runProccess table with the sample sheet')
     logger.debug('End function store_sample_sheet_in_run')
     return sample_sheet_on_database
@@ -397,7 +397,7 @@ def update_library_name_in_run (experiment_name, library_name) :
     logger.debug('Starting the function update_library_name_in_run')
     run = RunProcess.objects.get(runName = experiment_name)
     updated_library = run.update_library(library_name)
-    
+
     logger.debug('Endfunction update_library_name_in_run')
     return updated_library
 
@@ -422,7 +422,7 @@ def validate_sample_sheet (sample_sheet):
         True if all checking are successful False if any of the check fails
     '''
     logger = logging.getLogger(__name__)
-    logger.debug('Starting the function validate_sample_sheet' ) 
+    logger.debug('Starting the function validate_sample_sheet' )
     # get the projects and user owner form sample sheet
     projects_users = get_projects_in_run(sample_sheet)
     if len(projects_users) == 0 :
@@ -442,15 +442,15 @@ def validate_sample_sheet (sample_sheet):
             logger.debug('Exiting the function validate sample_sheet with error')
             return False
 
-    logger.debug('End the function validate_sample_sheet' ) 
+    logger.debug('End the function validate_sample_sheet' )
     return True
 
 def manage_miseq_in_processing_run (conn, run_name):
     '''
     Description:
-        The function will look the run log files to check if run is 
+        The function will look the run log files to check if run is
         completed. Run will remain in processing run if the latest
-        cycle log did not reach the cycle number in the run  
+        cycle log did not reach the cycle number in the run
     Input:
         conn            #  Samba connection object
         run_name        # run object
@@ -460,7 +460,7 @@ def manage_miseq_in_processing_run (conn, run_name):
         need_to_wait_more   # located in utils.generic_functions
         check_miseq_completion_run # located in this file
     Variable:
-        run_completion_date # completion date of the run 
+        run_completion_date # completion date of the run
         run_folder      # folder on the remote server
         run_updated     # Updated run object
         status_run         # RunProcess status (Cancelled, still_running,
@@ -498,24 +498,24 @@ def manage_miseq_in_processing_run (conn, run_name):
         string_message = 'Error when fetching the log file for the run ' + new_run
         logging_errors (logger, string_message, False, False)
         logger.debug ('End function manage_miseq_in_processing_run with error')
-        raise 
-    
+        raise
+
 
 
 
 def manage_miseq_in_samplesent(conn, run_name) :
     '''
     Description:
-        The function will look the run log files to check if run is 
+        The function will look the run log files to check if run is
         completed. Run will remain in processing run if the latest
-        cycle log did not reach the cycle number in the run  
+        cycle log did not reach the cycle number in the run
     Input:
         conn            #  Samba connection object
         run_name        # run object
     Functions:
         check_miseq_completion_run # located in this file
     Variable:
-        run_completion_date # completion date of the run 
+        run_completion_date # completion date of the run
         run_folder      # folder on the remote server
         run_updated     # Updated run object
         status_run         # RunProcess status (Cancelled, still_running,
@@ -547,7 +547,7 @@ def manage_miseq_in_samplesent(conn, run_name) :
         string_message = 'Error when fetching the log file for the run ' + new_run
         logging_errors (logger, string_message, False, False)
         logger.debug ('End function manage_miseq_in_samplesent with error')
-        raise 
+        raise
 
 
 def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
@@ -563,7 +563,7 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
         get_projects_in_run # located at utils.sample_sheet_utils
         get_experiment_library_name # located at utils.sample_sheet_utils
         fetch_remote_file   # located at utils.generic_functions
-        
+
         miseq_parsing_run_information # located as this file
         run_waiting_for_sample_sheet  # located as this file
         save_new_miseq_run      # located as this file
@@ -578,20 +578,20 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
         RUN_INFO
         SAMPLE_SHEET
         MAXIMUM_TIME_WAIT_SAMPLE_SHEET
-    Variables:      
+    Variables:
         instrument  # name of the sequencer used in the run
         l_run_info  # local temporary copy of RunInfo
         l_sample_sheet  # local temporary copy of sample sheet
         new_run_parameters # new RunningParameters object created for this run
         new_run_process  # new RunProcess object created for this run
-        
-        run_date        # date of starting run 
-        running_parameters  # dictionary with parsing information from 
+
+        run_date        # date of starting run
+        running_parameters  # dictionary with parsing information from
                             RunParameter and RunInfo
         s_run_info  # path of RunInfo on the remote server
         s_sample_sheet  # path of SampleSheet on the remote server
     Return:
-        number_of_cycles 
+        number_of_cycles
         file_content
     '''
     logger = logging.getLogger(__name__)
@@ -609,7 +609,7 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
         # cleaning up the RunParameter in local temporaty file
         os.remove(l_run_parameter)
         raise   # returning to handle next run folder
-    
+
     # Parsing RunParameter and RunInfo
     running_parameters, run_date, instrument = miseq_parsing_run_information(l_run_info, l_run_parameter)
     if not RunProcess.objects.filter(runName__exact = experiment_name).exists():
@@ -626,7 +626,7 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
     # deleting temporary copy of RunParameter and RunInfo files
     os.remove(l_run_parameter)
     os.remove(l_run_info)
-    
+
     if run_waiting_for_sample_sheet (experiment_name) :
         # Fetch sample sheet from remote server
         l_sample_sheet = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.SAMPLE_SHEET)
@@ -640,8 +640,8 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
             if need_to_wait_more (experiment_name, wetlab_config.MAXIMUM_TIME_WAIT_SAMPLE_SHEET) :
                 logger.info('Exception fetched to extend the time for fetching Sample Sheet')
                 new_run_parameters.delete()
-                # Delete running paramters object for allowing  to look for, 
-                # in the romote folder, again next time the process is executed 
+                # Delete running paramters object for allowing  to look for,
+                # in the romote folder, again next time the process is executed
                 logger.info("Deleted running parameters from database ")
                 raise # returning to handle next run folder
             else:
@@ -664,7 +664,7 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
             run_updated = RunProcess.objects.get(runName__exact = experiment_name).set_run_state('Sample Sent')
             return new_run
         else:
-            # set run state to ERROR 
+            # set run state to ERROR
             run_updated = handling_errors_in_run (experiment_name,'1')
             raise ValueError ('Invalid sample sheet')
     else:

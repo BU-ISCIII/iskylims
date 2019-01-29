@@ -16,17 +16,17 @@ def looking_for_new_runs ():
     '''
     Description:
         The function is called from crontab to find and update new runs
-        It is split in 2 main functions. 
+        It is split in 2 main functions.
 
         The first one  "search_update_new_runs" will look for new miSeq
         runs and move to Recorded state. For NextSeq runs will copy the
         sample sheet to remote folder.
         For both types of run information is collected from the run folder
         files to store in database.
-        
+
         The second one "search_not_completed_run" will check different files
-        (depending on the state of the run ) on the run remote folder, 
-        to fetch the required information and moving the run into steps from 
+        (depending on the state of the run ) on the run remote folder,
+        to fetch the required information and moving the run into steps from
         Sample Sent towards Completed
     Functions:
         search_update_new_runs # located at utils.update_run_state
@@ -36,12 +36,12 @@ def looking_for_new_runs ():
         LOG_NAME_MISEQ_FETCH_SAMPLE_SHEET
         MEDIA_ROOT
     Variables:
-        logger          # contain the log object 
-        new_runs_updated  # will have the run names for the runs that 
+        logger          # contain the log object
+        new_runs_updated  # will have the run names for the runs that
                         were in Recorded state and they have been updated
                         to Sample Sent state
         updated_runs  # will have the run names for the runs that were
-                        processed. It will use to have a summary of the 
+                        processed. It will use to have a summary of the
                         updated runs.
         working_path    # contains the path folder defined on MEDIA_ROOT
     Return:
@@ -52,25 +52,25 @@ def looking_for_new_runs ():
     logger=open_log()
     logger.info('###########---Start Crontab-----############')
     logger.info('Start searching for new/updating runs')
-    
+
     new_runs_updated, run_with_error = search_update_new_runs ()
     for new_run in new_runs_updated :
         logger.info('%s has been updated in database', new_run)
 
     for error_run in run_with_error :
         logger.info('%s has been set to error state', new_run)
-    
+
     logger.info('Exiting the proccess for  new/updating runs')
-    
+
     # looking in database for the runs that are not completed
     logger.info('----------------------------------')
     logger.info('Start looking for uncompleted runs')
     working_path = settings.MEDIA_ROOT
     os.chdir(working_path)
-    
+
     updated_runs, run_with_error = search_not_completed_run()
     logger.info('Printing the summary result for the manage runs ')
-    
+
     for state in updated_runs:
         for run_changed in updated_runs[state]:
             logger.info('Run  %s was  processed on  %s  state', run_changed, state)
@@ -78,13 +78,13 @@ def looking_for_new_runs ():
     for state in run_with_error:
         for run_error in run_with_error[state]:
             logger.info('Run  %s was set to Error when processing run on %s state', run_error, state)
-    
+
     time_stop= datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(time_stop)
     print ('****** Exiting the process for searching not completed runs')
     logger.info('###########-----End Crontab--######################')
     return
-    
+
 
 
 def delete_unregister_run ():

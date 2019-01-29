@@ -16,7 +16,7 @@ from iSkyLIMS_drylab.models import Machines, Platform
 from .generic_functions import *
 from .miseq_run_functions import  handle_miseq_run , manage_miseq_in_samplesent,  manage_miseq_in_processing_run
 from .nextseq_run_functions import handle_nextseq_recorded_run, manage_nextseq_in_samplesent, manage_nextseq_in_processing_run
-from .common_run_functions import manage_run_in_processed_run, manage_run_in_processing_bcl2fastq, manage_run_in_processed_bcl2fastq 
+from .common_run_functions import manage_run_in_processed_run, manage_run_in_processing_bcl2fastq, manage_run_in_processed_bcl2fastq
 #from .sample_sheet_utils import get_experiment_library_name, get_projects_in_run
 
 from django.conf import settings
@@ -28,7 +28,7 @@ def read_processed_runs_file (processed_run_file) :
     '''
     Description:
         The function reads the file that contains all the processed runs
-        and return a list with the run folder names 
+        and return a list with the run folder names
     Input:
         processed_run_file # full path and name of the file
     Variable:
@@ -52,7 +52,7 @@ def read_processed_runs_file (processed_run_file) :
         except Exception as e:
             string_message = 'Unable to open the processed run file. '
             logging_errors(logger, string_message, True, True)
-            
+
             raise
         fh.close()
         logger.info('run processed file have been read')
@@ -66,14 +66,14 @@ def read_processed_runs_file (processed_run_file) :
 def get_list_processed_runs () :
     '''
     Description:
-        The function get the run folder id from the Running Parameter 
-        table. This list will be used to compare agains the folder on 
+        The function get the run folder id from the Running Parameter
+        table. This list will be used to compare agains the folder on
         remote server.
     Variable:
         processed_runs  # list of the folder names get from database
     Return:
         raise exception when not access to database
-        processed_runs 
+        processed_runs
     '''
     logger = logging.getLogger(__name__)
     logger.debug('Starting function get_list_processed_runs' )
@@ -87,7 +87,7 @@ def get_list_processed_runs () :
 
     for r_parameter in r_parameters_objects :
         processed_runs.append(r_parameter.get_run_folder())
-    
+
     logger.info('run processed list is filled')
     logger.debug('End function get_list_processed_runs' )
     return processed_runs
@@ -97,14 +97,14 @@ def update_processed_run_file (processed_run_file, processed_runs) :
     '''
     Description:
         The function write the file that contains all the processed runs
-        return True if the file was sucessfully write 
+        return True if the file was sucessfully write
     Input:
         processed_run_file # full path and name of the file
     Variable:
         processed_runs  # list of the folder names to write in the file
     Return:
         Error when file can not be create
-        True if sucessfully 
+        True if sucessfully
     '''
     logger = logging.getLogger(__name__)
     logger.debug('Starting update_processed_run_file' )
@@ -115,8 +115,8 @@ def update_processed_run_file (processed_run_file, processed_runs) :
         fh.write(processed)
         fh.write('\n')
     fh.close()
-    
-    
+
+
     logger.debug('Exit update_processed_run_file' )
     return True
 
@@ -128,7 +128,7 @@ def search_update_new_runs ():
         Get the runParameter file to identify if run is NextSeq or miSeq
         to execute its dedicate handler process.
     Functions:
-        open_samba_connection # located in utils.wetlab_misc_utilities.py 
+        open_samba_connection # located in utils.wetlab_misc_utilities.py
         get_list_processed_runs # located at this file
         get_new_runs_on_remote_server # located at utils.generic_functions.py
         validate_sample_sheet   # located at this file
@@ -140,7 +140,7 @@ def search_update_new_runs ():
         SAMPLE_SHEET
     Variables:
         handle_new_miseq_run # list with all new miseq runs
-        l_sample_sheet  # full path for storing sample sheet file on 
+        l_sample_sheet  # full path for storing sample sheet file on
                         tempary local folder
         new_processed_runs # list with the new folder run processed
         s_sample_sheet  # full path for remote sample sheet file
@@ -166,7 +166,7 @@ def search_update_new_runs ():
         raise logging_errors(logger, string_message, True, False)
     new_runs = get_new_runs_from_remote_server (processed_runs, conn,
                             wetlab_config.SAMBA_SHARED_FOLDER_NAME)
-    
+
     if len (new_runs) > 0 :
         for new_run in new_runs :
             l_run_parameter = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_PARAMETER_NEXTSEQ)
@@ -189,9 +189,9 @@ def search_update_new_runs ():
                 logger.info('Exceptional condition reported on log. Continue with the next run')
                 continue
 
-            if RunProcess.objects.filter(runName__exact = experiment_name).exclude(runState__exact ='Recorded').exists():
+            if RunProcess.objects.filter(runName__exact = experiment_name).exclude(state__runStateName ='Recorded').exists():
                 # This situation should not occurr. The run_processed file should
-                # have this value. To avoid new iterations with this run 
+                # have this value. To avoid new iterations with this run
                 # we update the run process file with this run and continue
                 # with the next item
                 run_state = RunProcess.objects.get(runName__exact = experiment_name).get_state()
@@ -203,7 +203,7 @@ def search_update_new_runs ():
                 #processed_runs.append(new_run)
                 #new_processed_runs.append(new_run)
                 continue
-            # Run is new or it is in Recorded state. 
+            # Run is new or it is in Recorded state.
             # Finding out the platform to continue the run processing
             run_platform =  get_run_platform_from_file (l_run_parameter)
             logger.debug('found the platform name  , %s', run_platform)
@@ -220,7 +220,7 @@ def search_update_new_runs ():
                         logger.debug('Finished miSeq handling process')
                     continue
                 except ValueError as e :
-                    # Include the run in the run processed file 
+                    # Include the run in the run processed file
                     logger.warning('Error found when processing miSeq run %s ', e)
                     logger.info('Including this run in the run processed file ')
                     #process_run_file_update = True
@@ -244,7 +244,7 @@ def search_update_new_runs ():
                         new_processed_runs.append(new_run)
                     continue
                 except ValueError as e :
-                    # Include the run in the run processed file 
+                    # Include the run in the run processed file
                     logger.warning('Error found when processing NextSeq run %s ', e)
                     #logger.info('Including this run in the run processed file ')
                     #process_run_file_update = True
@@ -279,7 +279,7 @@ def search_update_new_runs ():
     conn.close()
     logger.debug ('End function searching new runs. Returning handle runs ' )
     return new_processed_runs , run_with_error
-    
+
 
 
 def search_not_completed_run ():
@@ -290,36 +290,36 @@ def search_not_completed_run ():
         Then it with the  check if there are new run folder in the remote
         server.
         Get the runParameter file to identify if run is NextSeq or miSeq
-        to execute its dedicate handler process.  
-        
+        to execute its dedicate handler process.
+
     Input:
-        logger # log object for logging 
+        logger # log object for logging
     Functions:
-        open_samba_connection # located in utils.wetlab_misc_utilities.py 
-        
+        open_samba_connection # located in utils.wetlab_misc_utilities.py
+
         save_new_miseq_run # located at this file
     Constants:
         PROCESSED_RUN_FILE
         RUN_TEMP_DIRECTORY
         SAMBA_SHARED_FOLDER_NAME
         SAMPLE_SHEET
-        
+
     Variables:
-    
+
         runs_to_handle # dictionary contains the run state as key and
                         run objects in a value list
         run_platform  # platform used on the run in sample sent state
-                        
+
         state_list_be_processed # list contains the string state that have
                                 to be handle to move to complete state
-        
+
         handle_new_miseq_run # list with all new miseq runs
-        l_sample_sheet  # full path for storing sample sheet file on 
+        l_sample_sheet  # full path for storing sample sheet file on
                         tempary local folder
         runs_with_error # dictionary contains the run state as key and
                         run names that failed during the process
         s_sample_sheet  # full path for remote sample sheet file
-        processed_run # dictionary having state as key and the runs 
+        processed_run # dictionary having state as key and the runs
                         processed as value list
     '''
     logger = logging.getLogger(__name__)
@@ -331,7 +331,7 @@ def search_not_completed_run ():
         string_message = 'Unable to open SAMBA connection for the process search update runs'
         # raising the exception to stop crontab
         raise logging_errors(logger, string_message, True, False)
-        
+
     runs_to_handle = {}
     updated_run={}
     runs_with_error = {}
@@ -343,7 +343,7 @@ def search_not_completed_run ():
         #import pdb; pdb.set_trace()
         if RunProcess.objects.filter(state__exact = run_state).exists():
             runs_to_handle[state]=RunProcess.objects.filter(state__exact = run_state)
-    
+
     for state in runs_to_handle:
         logger.info ('Start processing the run found for state %s', state)
 
@@ -366,7 +366,7 @@ def search_not_completed_run ():
                         logging_errors (logger, string_message , False, False)
                         continue
                 except :
-                    runs_with_error[state].append(run_in_sample_sent.get_run_name()) 
+                    runs_with_error[state].append(run_in_sample_sent.get_run_name())
                     logger.info('Handling the exception to continue with the next item')
                     continue
             logger.debug('End runs in Sample Sent state')
@@ -387,7 +387,7 @@ def search_not_completed_run ():
                         logging_errors (logger, string_message , False, False)
                         continue
                 except :
-                    runs_with_error[state].append(run_in_processing_run.get_run_name()) 
+                    runs_with_error[state].append(run_in_processing_run.get_run_name())
                     logger.info('Handling the exception to continue with the next item')
                     continue
             logger.debug('End runs in Processing Run state')
@@ -395,12 +395,12 @@ def search_not_completed_run ():
         elif state == 'Processed Run':
             updated_run['Processed run'] = []
             runs_with_error['Processed run'] = []
-            logger.debug('Start handling the runs in  Processed Run state') 
+            logger.debug('Start handling the runs in  Processed Run state')
             for run_in_processed_run in runs_to_handle[state]:
                 try:
                     updated_run['Processed run'].append(manage_run_in_processed_run(conn, run_in_processed_run))
                 except :
-                    runs_with_error[state].append(run_in_processed_run.get_run_name()) 
+                    runs_with_error[state].append(run_in_processed_run.get_run_name())
                     logger.info('Handling the exception to continue with the next item')
                     continue
             logger.debug('End runs in Processed Run state')
@@ -412,7 +412,7 @@ def search_not_completed_run ():
                 try:
                     updated_run[state].append( manage_run_in_processing_bcl2fastq (conn, run_in_processing_bcl2fastq_run))
                 except :
-                    runs_with_error[state].append(run_in_processing_bcl2fastq_run.get_run_name()) 
+                    runs_with_error[state].append(run_in_processing_bcl2fastq_run.get_run_name())
                     logger.info('Handling the exception on Processing Bcl2fastq.  Continue with the next item')
                     continue
         elif state == 'Processed Bcl2fastq':
@@ -422,7 +422,7 @@ def search_not_completed_run ():
                 try:
                     updated_run[state].append( manage_run_in_processed_bcl2fastq (conn, run_in_processed_bcl2fastq_run))
                 except :
-                    runs_with_error[state].append(run_in_processed_bcl2fastq_run.get_run_name()) 
+                    runs_with_error[state].append(run_in_processed_bcl2fastq_run.get_run_name())
                     logger.info('Handling the exception on Processed Bcl2fastq.  Continue with the next item')
                     continue
         else:

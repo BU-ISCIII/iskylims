@@ -22,7 +22,7 @@ class RunStates (models.Model):
 
     def __str__ (self):
         return '%s' %(self.runStateName)
-    
+
 
 class RunProcess(models.Model):
     runName = models.CharField(max_length=45)
@@ -56,14 +56,14 @@ class RunProcess(models.Model):
         else :
             rundate=self.run_date.strftime("%B %d, %Y")
         return rundate
-        
+
 
     def get_state(self):
         return '%s' %(self.state)
 
     def get_info_process (self):
         generated_date=self.generatedat.strftime("%I:%M%p on %B %d, %Y")
-        
+
         requested_center = str(self.centerRequestedBy)
         if self.run_date is None :
             rundate = 'Run NOT started'
@@ -87,8 +87,8 @@ class RunProcess(models.Model):
 
 
         return '%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.state,
-                requested_center, generated_date, rundate,finish_date, bcl2fastq_date, 
-                completed_date, self.useSpaceImgMb, self.useSpaceFastaMb, 
+                requested_center, generated_date, rundate,finish_date, bcl2fastq_date,
+                completed_date, self.useSpaceImgMb, self.useSpaceFastaMb,
                 self.useSpaceOtherMb )
 
 
@@ -107,14 +107,14 @@ class RunProcess(models.Model):
 
     def get_run_sequencerModel (self):
         return '%s' %(self.sequencerModel)
-    
+
     def get_run_platform (self):
         return '%s' %self.sequencerModel.platformID
 
     def get_machine_lanes(self):
         number_of_lanes = self.sequencerModel.get_number_of_lanes()
         return int(number_of_lanes)
-        
+
     def get_sample_file (self):
         return '%s' %(self.sampleSheet)
 
@@ -124,8 +124,8 @@ class RunProcess(models.Model):
         return True
 
     def set_used_space (self, disk_utilization):
-        self.useSpaceFastaMb  = disk_utilization ['useSpaceFastaMb'] 
-        self.useSpaceImgMb  = disk_utilization ['useSpaceImgMb'] 
+        self.useSpaceFastaMb  = disk_utilization ['useSpaceFastaMb']
+        self.useSpaceImgMb  = disk_utilization ['useSpaceImgMb']
         self.useSpaceOtherMb  = disk_utilization ['useSpaceOtherMb']
         self.save()
         return True
@@ -137,17 +137,17 @@ class RunProcess(models.Model):
         else:
             return False
         return True
-        
+
     def set_run_date (self, run_date):
         self.run_date = run_date
         self.save()
         return True
-        
+
     def set_run_bcl2fastq_finished_date (self, bcl2fastq_finish_date):
         self.bcl2fastq_finish_date = bcl2fastq_finish_date
         self.save()
         return True
-    
+
     def set_run_error_code (self, error_code):
         if RunErrors.objects.filter(errorCode__exact = error_code).exists():
             self.runError = RunErrors.objects.get(errorCode__exact = error_code)
@@ -280,7 +280,7 @@ class Projects(models.Model):
 
     def get_project_id(self):
         return '%s' %(self.id)
-        
+
     def set_project_state (self, state):
         self.procState = state
         self.save()
@@ -288,9 +288,9 @@ class Projects(models.Model):
 
 
 class RunningParametersManager (models.Manager) :
-    
+
     def create_running_parameters (self, running_data, run_object) :
-        
+
         running_parameters = self.create (runName_id = run_object,
                          RunID=running_data['RunID'], ExperimentName=running_data['ExperimentName'],
                          RTAVersion=running_data['RTAVersion'], SystemSuiteVersion= running_data['SystemSuiteVersion'],
@@ -342,14 +342,14 @@ class RunningParameters (models.Model):
             img_channel = 'None'
         else:
             img_channel=self.ImageChannel.strip('[').strip(']').replace("'","")
-        
+
         if self.ImageDimensions == None:
             image_dimensions = ['None']
         else:
             image_dimensions = self.ImageDimensions.strip('{').strip('}').replace("'","").split(',')
-        
+
         flowcell_layout = self.FlowcellLayout.strip('{').strip('}').replace("'","").split(',')
-        
+
         run_parameters_data.append(self.RunID); run_parameters_data.append(self.ExperimentName)
         run_parameters_data.append(self.RTAVersion); run_parameters_data.append(self.SystemSuiteVersion)
         run_parameters_data.append(self.LibraryID); run_parameters_data.append(self.Chemistry)
@@ -360,7 +360,7 @@ class RunningParameters (models.Model):
         run_parameters_data.append(self.NumTilesPerSwath); run_parameters_data.append(img_channel)
         run_parameters_data.append(self.Flowcell); run_parameters_data.append(image_dimensions)
         run_parameters_data.append(flowcell_layout)
-        
+
         return run_parameters_data
 
 
@@ -375,19 +375,19 @@ class RunningParameters (models.Model):
         if self.PlannedIndex2ReadCycles != "0" :
             count +=1
         return count
-    
+
     def get_number_of_cycles (self):
         number_of_cycles = int(self.PlannedRead1Cycles) + int(self.PlannedRead2Cycles) + int(self.PlannedIndex1ReadCycles) + int(self.PlannedIndex2ReadCycles)
         return number_of_cycles
-    
+
     def get_run_folder (self):
         return '%s' %(self.RunID)
-        
+
     objects = RunningParametersManager ()
 
 
 class StatsRunSummaryManager (models.Manager):
-    
+
     def create_stats_run_summary (self, stats_run_summary , experiment_name) :
         run_process = RunProcess.objects.get(runName__exact = experiment_name)
         s_run_summary = self.create(runprocess_id = run_process,
@@ -419,11 +419,11 @@ class StatsRunSummary (models.Model):
         return '%s;%s;%s;%s;%s;%s' %( self.yieldTotal,
                 self.projectedTotalYield, self.aligned, self.errorRate,
                 self.intensityCycle, self.biggerQ30)
-    
+
     objects = StatsRunSummaryManager ()
 
 class StatsRunReadManager (models.Manager):
-    
+
     def create_stats_run_read (self, stats_run_read, experiment_name):
         run_process = RunProcess.objects.get(runName__exact = experiment_name)
         s_run_read = self.create (runprocess_id = run_process,
@@ -437,7 +437,7 @@ class StatsRunReadManager (models.Manager):
                                     errorRate50= stats_run_read['errorRate50'] , errorRate75= stats_run_read['errorRate75'] ,
                                     errorRate100= stats_run_read['errorRate100'] , intensityCycle= stats_run_read['intensityCycle'] ,
                                     stats_read_run_date = run_process.run_date)
-        
+
         return s_run_read
 
 class StatsRunRead (models.Model):
@@ -512,7 +512,7 @@ class RawDemuxStats (models.Model):
                 self.rawYieldQ30, self.PF_YieldQ30, self.rawQuality,
                 self.PF_Quality, self.sampleNumber)
 
-    
+
     objects = RawDemuxStatsManager ()
 
 class RawTopUnknowBarcodesManager(models.Manager) :
@@ -521,8 +521,8 @@ class RawTopUnknowBarcodesManager(models.Manager) :
                                 top_number =  unknow_barcode['top_number'], count = unknow_barcode['count'],
                                 sequence = unknow_barcode['sequence']   )
 
-        return unknow_barcode 
-    
+        return unknow_barcode
+
 
 class RawTopUnknowBarcodes (models.Model):
     runprocess_id = models.ForeignKey(
@@ -566,7 +566,7 @@ class StatsFlSummary(models.Model):
     def get_fl_summary(self):
         return '%s;%s;%s;%s' %(self.flowRawCluster, self.flowPfCluster,
             self.flowYieldMb, self.sampleNumber)
-    
+
     objects = StatsFlSummaryManager ()
 
 class StatsLaneSummaryManager (models.Manager) :
@@ -577,7 +577,7 @@ class StatsLaneSummaryManager (models.Manager) :
                             perfectBarcode = l_summary['perfectBarcode'], oneMismatch = l_summary['oneMismatch'],
                             yieldMb = l_summary['yieldMb'], biggerQ30 = l_summary['biggerQ30'],
                             meanQuality = l_summary['meanQuality'] )
-        
+
         return lane_summary
 
 class StatsLaneSummary (models.Model):
@@ -613,7 +613,7 @@ class StatsLaneSummary (models.Model):
         return'%s;%s;%s;%s' %(self.biggerQ30, self.meanQuality, self.yieldMb, self.pfCluster)
 
     objects = StatsLaneSummaryManager ()
-    
+
 
 class GraphicsStats (models.Model):
     runprocess_id = models.ForeignKey(
@@ -644,7 +644,7 @@ class GraphicsStats (models.Model):
 class SamplesInProjectManager (models.Manager):
     def create_sample_project (self, s_project):
         sample_project = self.create( project_id = s_project['project_id'] , sampleName =  s_project['sampleName'],
-                            barcodeName =  s_project['barcodeName'], pfClusters =  s_project['pfClusters'], 
+                            barcodeName =  s_project['barcodeName'], pfClusters =  s_project['pfClusters'],
                             percentInProject =  s_project['percentInProject'], yieldMb =  s_project['yieldMb'],
                             qualityQ30 =  s_project['qualityQ30'], meanQuality =  s_project['meanQuality'] )
 
@@ -680,7 +680,7 @@ class SamplesInProject (models.Model):
 
     def get_quality_sample (self):
         return '%s' %(self.qualityQ30)
-    
+
     objects = SamplesInProjectManager()
 
 
