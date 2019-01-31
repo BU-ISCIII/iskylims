@@ -1126,10 +1126,9 @@ def incompleted_runs (request) :
     else:
         #redirect to login webpage
         return redirect ('/accounts/login')
-
-    if RunProcess.objects.all().exclude(runState = 'Completed').exists() :
+    if RunProcess.objects.all().exclude(state__runStateName = 'Completed').exists() :
         display_incomplete_run_list = {}
-        unfinished_runs = RunProcess.objects.all().exclude(runState = 'Completed').order_by('runName')
+        unfinished_runs = RunProcess.objects.all().exclude(state__runStateName = 'Completed').order_by('runName')
         for run in unfinished_runs:
             display_incomplete_run_list[run.id] = [[run.runName, run.get_state()]]
     else:

@@ -284,7 +284,9 @@ def get_information_run(run_object):
         info_dict['library_kit'] = p_library_kits
         info_dict['run_id'] = run_object.get_run_id()
     ## get information up on state level
-    if run_state != 'Recorded' or run_state != 'Pre-Recorded' :
+    #import pdb; pdb.set_trace()
+    #if run_state != 'Recorded' or run_state != 'Pre-Recorded' :
+    if RunningParameters.objects.filter(runName_id = run_object).exists():
         # Adding the Run Parameters information
         info_dict['running_parameters'] = get_running_parameters(run_object)
     

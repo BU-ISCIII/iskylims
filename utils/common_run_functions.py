@@ -414,7 +414,7 @@ def get_bcl2fastq_output_files (conn, run_folder):
 
     except:
         string_message = "cannot copy files for getting run metrics"
-        logging_errors(logger,string_message, True , True)
+        logging_errors(tring_message, True , True)
         logger.info('Deleting temporary files')
         os.remove(l_conversion)
         logger.debug ('End function manage_run_in_processed_bcl2fast2_run with error')
@@ -982,7 +982,7 @@ def process_raw_demux_stats(stats_projects, run_object_name):
     if not check_all_projects_exists (project_list) :
         # if there some projects not defined set the run to error state
         string_message = "Found some projects not defined in database"
-        logging_errors(logger, string_message, False, True)
+        logging_errors(string_message, False, True)
         experiment_name = run_object_name.get_run_name()
         handling_errors_in_run(experiment_name, '10')
         raise
@@ -1183,7 +1183,7 @@ def manage_run_in_processed_run (conn, run_object_name):
                 logger.info('run metrics read data saved to database')
             except:
                 string_message = 'Run metrics data cannot be saved'
-                logging_errors(logger, string_message, True, True)
+                logging_errors(string_message, True, True)
                 # delete run metrics tables
                 cleanup_run_metrics_tables_if_error (run_object_name)
                 delete_run_metric_files (run_metric_files)
@@ -1214,7 +1214,7 @@ def manage_run_in_processed_run (conn, run_object_name):
 
     else:
         string_message = 'Invalid state when calling to ' + experiment_name
-        logging_errors(logger, string_message , False , False)
+        logging_errors(string_message , False , False)
         logger.debug ('End function manage_run_in_processed_run with error')
         return
     logger.debug ('End function manage_run_in_processed_run')
@@ -1257,7 +1257,7 @@ def manage_run_in_processing_bcl2fastq (conn, run_object_name):
             file_list = conn.listPath( wetlab_config.SAMBA_SHARED_FOLDER_NAME, statistics_folder)
         except:
             string_message = 'Folder statistics have been deleted for ' + experiment_name
-            logging_errors(logger, string_message, False, False)
+            logging_errors(string_message, False, False)
             logger.debug ('End function manage_run_in_processing_bcl2fast2 with error')
             return ''
         for sh in file_list:
@@ -1278,7 +1278,7 @@ def manage_run_in_processing_bcl2fastq (conn, run_object_name):
 
     else:
         string_message = 'Invalid state when calling to ' + experiment_name
-        logging_errors(logger, string_message , False , False)
+        logging_errors(string_message , False , False)
         logger.debug ('End function manage_run_in_processing_bcl2fast2 with error')
         return ''
 
@@ -1350,7 +1350,7 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
             l_demux , l_conversion= get_bcl2fastq_output_files (conn, run_folder)
         except:
             string_message = 'Unable to fetch stats files for ' + experiment_name
-            logging_errors(logger, string_message, False, False)
+            logging_errors(string_message, False, False)
             handling_errors_in_run(experiment_name, '11')
             logger.debug ('End function manage_run_in_processed_bcl2fast2 with error')
             raise
@@ -1373,7 +1373,7 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
             logger.info('Saved information to RawDemuxStats')
         except:
             string_message = 'Unable to save raw stats for ' + experiment_name
-            logging_errors(logger, string_message, False, False)
+            logging_errors(string_message, False, False)
             handling_errors_in_run (experiment_name, '11' )
             cleanup_demux_tables_if_error(run_object_name)
             logger.debug('End function manage_run_in_processed_bcl2fast2_run with error')
@@ -1386,7 +1386,7 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
             logger.info('Saved information to SamplesInProject')
         except:
             string_message = 'Unable to save sample stats saving for ' + experiment_name
-            logging_errors(logger, string_message, False, False)
+            logging_errors(string_message, False, False)
             handling_errors_in_run (experiment_name, '13' )
             cleanup_demux_tables_if_error(run_object_name)
             logger.debug('End function manage_run_in_processed_bcl2fast2_run with error')
@@ -1398,7 +1398,7 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
             logger.info('Saved information to StatsFlSummary')
         except:
             string_message = 'Unable to save FL Summary  stats for ' + experiment_name
-            logging_errors(logger, string_message, False, False)
+            logging_errors(string_message, False, False)
             handling_errors_in_run (experiment_name, '14' )
             cleanup_demux_tables_if_error(run_object_name)
             logger.debug('End function manage_run_in_processed_bcl2fast2_run with error')
@@ -1411,7 +1411,7 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
             logger.info('Saved information to StatsLaneSummary')
         except:
             string_message = 'Unable to save Lane Summary stats for ' + experiment_name
-            logging_errors(logger, string_message, False, False)
+            logging_errors(string_message, False, False)
             handling_errors_in_run (experiment_name, '15' )
             cleanup_demux_tables_if_error(run_object_name)
             logger.debug('End function manage_run_in_processed_bcl2fast2_run with error')
@@ -1424,7 +1424,7 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
             logger.info('Saved information to RawTopUnknowBarcodes')
         except:
             string_message = 'Unable to Unknow Barcode stats for ' + experiment_name
-            logging_errors(logger, string_message, False, False)
+            logging_errors(string_message, False, False)
             handling_errors_in_run (experiment_name, '16' )
             cleanup_demux_tables_if_error(run_object_name)
             logger.debug('End function manage_run_in_processed_bcl2fast2_run with error')
@@ -1435,7 +1435,7 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
             disk_utilization = get_run_disk_utilization (conn, run_folder)
         except:
             string_message = 'Error when fetching the log file for the run ' + new_run
-            logging_errors (logger, string_message, False, False)
+            logging_errors (string_message, False, False)
             handling_errors_in_run (experiment_name, '17' )
             cleanup_demux_tables_if_error(run_object_name)
             logger.debug('End function manage_run_in_processed_bcl2fast2_run with error')
@@ -1451,7 +1451,7 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
 
     else:
         string_message = 'Invalid state when calling to ' + experiment_name
-        logging_errors(logger, string_message , False , False)
+        logging_errors(string_message , False , False)
         logger.debug ('End function manage_run_in_processed_bcl2fast2 with error')
         return ''
     logger.debug ('End function manage_run_in_processed_bcl2fast2 ')

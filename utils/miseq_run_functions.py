@@ -42,7 +42,7 @@ def check_miseq_completion_run (conn, experiment_name, log_folder):
         log_cycles, log_file_content = get_latest_miseq_log(conn, log_folder)
     except :
         string_message = 'Unable to fetch the log files for run ' + experiment_name
-        logging_errors( logger, string_message, False, False)
+        logging_errors( string_message, False, False)
         handling_errors_in_run (experiment_name, '18' )
         logger.debug('End function check_miseq_completion_run with IOError exception')
         raise
@@ -135,7 +135,6 @@ def miseq_parsing_run_information(run_info, run_parameter):
         running_data    # dictionary with  the  information parsed
         running_parameters # new RunningParameter object to store parsed data
         sequencer       # sequencer index of the machine
-
      Return:
         running_data
     '''
@@ -149,7 +148,6 @@ def miseq_parsing_run_information(run_info, run_parameter):
     # Initialize all fields to default -> empty
     for fields in running_data_fields:
         running_data[fields] = ""
-
 
     #################################################
     ## parsing RunInfo.xml file
@@ -206,7 +204,6 @@ def miseq_parsing_run_information(run_info, run_parameter):
     return running_data, run_date, instrument
 
 
-
 def run_waiting_for_sample_sheet (experiment_name):
     '''
     Description:
@@ -224,7 +221,6 @@ def run_waiting_for_sample_sheet (experiment_name):
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function run_waiting_for_sample_sheet')
-    import pdb; pdb.set_trace()
     sample_sheet_value = RunProcess.objects.get(runName__exact = experiment_name).get_sample_file()
     if sample_sheet_value == '':
         logger.debug ('End function. Run is waiting for sample sheet')
@@ -265,7 +261,7 @@ def save_new_miseq_run ( experiment_name, run_date, instrument) :
         center_requested_by = Center.objects.get(centerAbbr__exact = wetlab_config.DEFAULT_CENTER)
     else:
         string_message = 'The requested center ' +  wetlab_config.DEFAULT_CENTER + ' defined in config wetlab file does not exist'
-        logging_errors(logger, string_message, False, False)
+        logging_errors(string_message, False, False)
         logger.info('Using the first center defined in database')
         center_requested_by = Center.objects.all().first()
 
@@ -275,7 +271,7 @@ def save_new_miseq_run ( experiment_name, run_date, instrument) :
         logger.info('Updated the run date and sequencer used for the runProcess table ')
     else:
         string_message = instrument + ' has been not defined on machines '
-        logging_errors(logger, string_message, False, False)
+        logging_errors(string_message, False, False)
 
     run_state = RunStates.objects.get(runStateName__exact = 'Recorded')
     run_process = RunProcess(runName=experiment_name,sampleSheet= '',
@@ -286,6 +282,7 @@ def save_new_miseq_run ( experiment_name, run_date, instrument) :
     logger.info('Create the new runProcess into database')
     logger.debug('Exiting the function save_new_miseq_run' )
     return run_process
+
 
 def save_miseq_projects_found (projects_users , experiment_name, library_name):
     '''
@@ -335,8 +332,9 @@ def save_miseq_projects_found (projects_users , experiment_name, library_name):
                         LibraryKit_id = library_kit, libraryKit = library_name)
         p_data.save()
     logger.info('Updated Projects table with the new projects found')
-    logger.debug('Executing the function save_miseq_projects_found' )
+    logger.debug('End the function save_miseq_projects_found' )
     return ''
+
 
 def store_sample_sheet_in_run (l_sample_sheet, experiment_name ) :
     '''
@@ -383,6 +381,7 @@ def store_sample_sheet_in_run (l_sample_sheet, experiment_name ) :
     logger.debug('End function store_sample_sheet_in_run')
     return sample_sheet_on_database
 
+
 def update_library_name_in_run (experiment_name, library_name) :
     '''
     Description:
@@ -403,6 +402,7 @@ def update_library_name_in_run (experiment_name, library_name) :
 
     logger.debug('Endfunction update_library_name_in_run')
     return updated_library
+
 
 def validate_sample_sheet (sample_sheet):
     '''
@@ -430,29 +430,30 @@ def validate_sample_sheet (sample_sheet):
     projects_users = get_projects_in_run(sample_sheet)
     if len(projects_users) == 0 :
         string_message = 'No sample lines have been found '
-        logging_errors(logger, string_message, False, False)
+        logging_errors(string_message, False, False)
         logger.debug('End the function validate sample_sheet with error')
         return False
     for project in projects_users.keys() :
         if project == "":
             string_message = 'Empty projects have been found '
-            logging_errors(logger, string_message, False, False)
+            logging_errors(string_message, False, False)
             logger.debug('End the function validate sample_sheet with error')
             return False
         if Projects.objects.filter(projectName__exact = project).exists():
             string_message = 'project name %s , already been used ' + project
-            logging_errors(logger, string_message, False, False)
+            logging_errors(string_message, False, False)
             logger.debug('Exiting the function validate sample_sheet with error')
             return False
+    import pdb; pdb.set_trace()
     for user in projects_users.values():
         if user == "":
             string_message =  'Empty users have been found '
-            logging_errors(logger, string_message, False, False)
+            logging_errors(string_message, False, False)
             logger.debug('End the function validate sample_sheet with error')
             return False
         if ( not User.objects.filter(username__icontains = user).exists()):
             string_message = 'user name ' +user  +' is not defined in the system'
-            logging_errors(logger, string_message, False, False)
+            logging_errors(string_message, False, False)
             logger.debug('Exiting the function validate sample_sheet with error')
             return False
 
@@ -510,7 +511,7 @@ def manage_miseq_in_processing_run (conn, run_name):
         raise
     except:
         string_message = 'Error when fetching the log file for the run ' + new_run
-        logging_errors (logger, string_message, False, False)
+        logging_errors (string_message, False, False)
         logger.debug ('End function manage_miseq_in_processing_run with error')
         raise
 
@@ -559,7 +560,7 @@ def manage_miseq_in_samplesent(conn, run_name) :
         raise
     except:
         string_message = 'Error when fetching the log file for the run ' + new_run
-        logging_errors (logger, string_message, False, False)
+        logging_errors (string_message, False, False)
         logger.debug ('End function manage_miseq_in_samplesent with error')
         raise
 
@@ -579,6 +580,7 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
         fetch_remote_file   # located at utils.generic_functions
 
         miseq_parsing_run_information # located as this file
+        need_to_wait_more       # locate at utils.generic_functions
         run_waiting_for_sample_sheet  # located as this file
         save_new_miseq_run      # located as this file
         store_sample_sheet_in_run # located as this file
@@ -618,7 +620,7 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
         logger.info('Sucessfully fetch of RunInfo file')
     except Exception as e:
         string_message = 'Unable to fetch the RunInfo file on folder : ' + new_run
-        logging_errors(logger, string_message, True, False)
+        logging_errors(string_message, True, False)
         logger.info('Skiping the run %s , due to the error on fetching RunInfo.xml', new_run)
         # cleaning up the RunParameter in local temporaty file
         os.remove(l_run_parameter)
@@ -648,12 +650,11 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
             l_sample_sheet = fetch_remote_file (conn, new_run, s_sample_sheet, l_sample_sheet)
             logger.info('Sucessfully fetch of Sample Sheet file')
         except Exception as e:
+            logger.info('Error %s' , e)
             logger.info('Unable to get Sample sheet on folder  %s', new_run)
-            os.remove(l_sample_sheet)
-
             if need_to_wait_more (experiment_name, wetlab_config.MAXIMUM_TIME_WAIT_SAMPLE_SHEET) :
-                string_message = 'Sample Sheet for' + new_run '. Extended more time to fetch it'
-                logging_warnings(logger, string_message, True)
+                string_message = 'Sample Sheet for' + new_run + '. Extended more time to fetch it'
+                logging_warnings(string_message, True)
                 # Delete running paramters object for allowing  to look for,
                 # in the romote folder, again next time the process is executed
                 new_run_parameters.delete()
@@ -663,12 +664,13 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
             else:
                 # set run state to Error state
                 string_message = 'Time expiration for getting sample Sheet for ' + experiment_name
-                logging_errors( logger, string_message, False, True)
+                logging_errors( string_message, False, True)
                 handling_errors_in_run(experiment_name, '19')
                 logger.debug ('End function for handling miSeq run with error')
                 raise ValueError ('Time expiration for getting sample sheet')
 
         if validate_sample_sheet (l_sample_sheet) :
+            
             projects_users = get_projects_in_run (l_sample_sheet)
             logger.debug('Fetched projects from sample sheet')
 
@@ -680,22 +682,21 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
 
             save_miseq_projects_found (projects_users, experiment_name, library_name)
             run_updated = RunProcess.objects.get(runName__exact = experiment_name).set_run_state('Sample Sent')
-            # Deleting sample sheet
-            os.remove(l_sample_sheet)
-            logger.info('Deleted sample sheet')
+            
+            logger.info('Run %s is now on sample sheet state', %experiment_name)
             logger.debug ('End function for handling miSeq ')
             return new_run
         else:
             # set run state to ERROR
             string_message = "Invalid Sample Sheet for " + experiment_name + 'on folder ' + new_run
-            logging_errors (logger, string_message, False, True)
+            logging_errors (string_message, False, True)
             run_updated = handling_errors_in_run (experiment_name,'1')
             logger.debug ('End function for handling miSeq run with error')
             raise ValueError ('Invalid sample sheet')
     else:
         run_state = RunProcess.objects.get(runName__exact = experiment_name).get_run_state()
         string_message = 'Wrong state: ' + run_state +' when calling to handle_miseq_run function '
-        logging_errors(logger, string_message, False, True)
+        logging_errors(string_message, False, True)
         logger.debug ('End function for handling miSeq run with error')
         raise ValueError ('Wrong run state ')
 

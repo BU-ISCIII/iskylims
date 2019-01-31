@@ -1,8 +1,10 @@
 import logging
+import os, re
+from datetime import datetime
 from logging.config import fileConfig
 from logging.handlers import RotatingFileHandler
 from smb.SMBConnection import SMBConnection
-import os, re
+
 from django.core.mail import send_mail
 
 from .sample_sheet_utils import get_projects_in_run
@@ -60,7 +62,7 @@ def copy_to_remote_file (conn, run_dir, remote_file, local_file) :
             logger.info('Saving the file %s to remote server', local_file)
         except Exception as e:
             string_message = 'Unable to copy the ' + local_file + 'file on folder ' + run_dir
-            logging_errors (logger, string_message, True, True)
+            logging_errors (string_message, True, True)
             raise Exception('File not copied')
     logger.debug ('End function for copy file to remote')
     return True
@@ -94,8 +96,8 @@ def fetch_remote_file (conn, run_dir, remote_file, local_file) :
             logger.info('Retrieving the remote %s file for %s', local_file, run_dir)
         except Exception as e:
             string_message = 'Unable to fetch the ' + local_file + 'file on folder ' + run_dir
-            logging_errors (logger, string_message, True, True)
-            os.remove(l_run_parameter)
+            logging_errors (string_message, False, True)
+            os.remove(local_file)
             raise Exception('File not found')
     logger.debug ('End function for fetching remote file')
     return local_file
@@ -147,7 +149,7 @@ def get_attributes_remote_file (conn, run_dir, remote_file) :
         logger.info('Got attributes from %s', remote_file)
     except Exception as e:
         string_message = 'Unable to get attributes for ' + remote_file 
-        logging_errors (logger, string_message, True, False)
+        logging_errors (string_message, True, False)
         raise Exception('Not get attributes')
     logger.debug ('End function for  getting remote attributes')
     return file_attributes
@@ -262,7 +264,7 @@ def handling_errors_in_run (experiment_name, error_code):
     return True
 
 
-def logging_errors(logger, string_text, showing_traceback , print_on_screen ):
+def logging_errors(string_text, showing_traceback , print_on_screen ):
     '''
     Description:
         The function will log the error information to file.
@@ -277,6 +279,7 @@ def logging_errors(logger, string_text, showing_traceback , print_on_screen ):
     Variables:
         subject # text to include in the subject email
     '''
+    logger = logging.getLogger(__name__)
     logger.error('-----------------    ERROR   ------------------')
     logger.error(string_text )
     if showing_traceback :
@@ -295,7 +298,7 @@ def logging_errors(logger, string_text, showing_traceback , print_on_screen ):
         print('******* END ERROR ********')
     return ''
 
-def logging_warnings(logger, string_text, print_on_screen ):
+def logging_warnings(string_text, print_on_screen ):
     '''
     Description:
         The function will log the error information to file.
@@ -304,6 +307,7 @@ def logging_warnings(logger, string_text, print_on_screen ):
         logger # contains the logger object 
         string_text # information text to include in the log
     '''
+    logger = logging.getLogger(__name__)
     logger.warning('-----------------    WARNING   ------------------')
     logger.warning(string_text )
     logger.warning('-----------------    END WARNING   --------------')
@@ -340,11 +344,15 @@ def need_to_wait_more (experiment_name, waiting_time):
     logger.debug ('Starting function need_to_wait_sample_sheet')
     run_date = RunProcess.objects.get(runName__exact = experiment_name).get_run_date()
     run_date =  datetime.strptime(run_date,"%B %d, %Y").date()
-    today = datetime.datetime.now().date()
+    today = datetime.now().date()
     number_of_days = abs((today - run_date).days)
     if number_of_days > int (waiting_time):
+        logger.info('Waiting time already exceeded')
+        logger.debug ('End function need_to_wait_sample_sheet')
         return False
     else:
+        logger.info('It is allowed to waiting more time')
+        logger.debug ('End function need_to_wait_sample_sheet')
         return True
 
 def open_log():
@@ -382,7 +390,7 @@ def open_samba_connection():
         conn.connect(wetlab_config.SAMBA_IP_SERVER, int(wetlab_config.SAMBA_PORT_SERVER))
     except:
         string_message = 'Unable to connect to remote server'
-        logging_errors (logger, string_message, True, True)
+        logging_errors (string_message, True, True)
         raise IOError ('Samba connection error')
 
     
@@ -450,7 +458,7 @@ def get_run_disk_utilization (conn, run_folder):
         get_full_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,full_path_run)
     except:
         string_message = 'Unable to get the folder ' + run_folder
-        logging_errors (logger, string_message, True, False)
+        logging_errors (string_message, True, False)
         logger.debug ('End function get_run_disk_utilization with error')
         raise 
     rest_of_dir_size = 0

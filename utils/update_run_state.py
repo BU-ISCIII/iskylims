@@ -51,7 +51,7 @@ def read_processed_runs_file (processed_run_file) :
                 processed_runs.append(line)
         except Exception as e:
             string_message = 'Unable to open the processed run file. '
-            logging_errors(logger, string_message, True, True)
+            logging_errors(string_message, True, True)
 
             raise
         fh.close()
@@ -82,7 +82,7 @@ def get_list_processed_runs () :
         r_parameters_objects = RunningParameters.objects.all()
     except Exception as e :
         string_message = 'Unable to open the processed run file. '
-        logging_errors(logger, string_message, True, True)
+        logging_errors(string_message, True, True)
         raise
 
     for r_parameter in r_parameters_objects :
@@ -163,7 +163,7 @@ def search_update_new_runs ():
     except Exception as e:
         string_message = 'Unable to open SAMBA connection for the process search update runs'
         # raising the exception to stop crontab
-        raise logging_errors(logger, string_message, True, False)
+        raise logging_errors(string_message, True, False)
     new_runs = get_new_runs_from_remote_server (processed_runs, conn,
                             wetlab_config.SAMBA_SHARED_FOLDER_NAME)
 
@@ -176,14 +176,14 @@ def search_update_new_runs ():
                logger.info('Sucessfully fetch of RunParameter file')
             except:
                 string_message = 'Experiment name for ' + new_run + ' is empty'
-                logging_errors(logger, string_message, False, True)
+                logging_errors(string_message, False, True)
                 continue
 
             experiment_name = get_experiment_name_from_file (l_run_parameter)
             logger.debug('found the experiment name  , %s', experiment_name)
             if experiment_name == '' :
                 string_message = 'Experiment name for ' + new_run + ' is empty'
-                logging_errors(logger, string_message, False, True)
+                logging_errors(string_message, False, True)
                 os.remove(l_run_parameter)
                 logger.info('Deleted temporary run parameter file')
                 logger.info('Exceptional condition reported on log. Continue with the next run')
@@ -196,7 +196,7 @@ def search_update_new_runs ():
                 # with the next item
                 run_state = RunProcess.objects.get(runName__exact = experiment_name).get_state()
                 string_message = 'The run ' + experiment_name + 'is in state ' + run_state + '. Should be in Recorded'
-                logging_errors(logger, string_message, False, False)
+                logging_errors( string_message, False, False)
                 logger.info('Deleting temporary runParameter file')
                 os.remove(l_run_parameter)
                 continue
@@ -218,6 +218,10 @@ def search_update_new_runs ():
                     run_with_error.append(experiment_name)
                     logger.debug('Finished miSeq handling process with error')
                     continue
+                except Exception as e:
+                    string_message = "Unexpected Error " + str (e) 
+                    logging_errors(string_message, True, True)
+                    continue
                 '''
                 except :
                     logger.warning('miSeq run  %s does not have all required files. Giving more time for the sequencer to write them.', experiment_name )
@@ -232,26 +236,27 @@ def search_update_new_runs ():
                 try:
                     update_nextseq_process_run =  handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name)
                     if update_nextseq_process_run != '' :
-                        process_run_file_update = True
-                        processed_runs.append(new_run)
-                        new_processed_runs.append(new_run)
+                        #process_run_file_update = True
+                        #processed_runs.append(new_run)
+                        #new_processed_runs.append(new_run)
+                        new_processed_runs.append(experiment_name)
+                        logger.info('Run %s was successfully processed ', experiment_name)
+                        logger.debug('Finished miSeq handling process')
                     continue
                 except ValueError as e :
-                    # Include the run in the run processed file
-                    logger.warning('Error found when processing NextSeq run %s ', e)
-                    #logger.info('Including this run in the run processed file ')
-                    #process_run_file_update = True
-                    #processed_runs.append(new_run)
-                    #new_processed_runs.append(new_run)
+                    string_message = 'Error found when processing NextSeq run ' + str(e)
+                    logging_warnings(string_message, False)
+                    run_with_error.append(experiment_name)
                     continue
                 except :
                     logger.warning('NextSeq run is waiting for sequencer to have all files')
                     logger.info('Continue processing next item ')
+                    
                     continue
                 logger.debug('Finished miSeq handling process')
             else:
                 string_message = 'Platform for this run is not supported'
-                logging_errors(logger, string_message, False , True)
+                logging_errors(string_message, False , True)
                 # Set run to error state
                 os.remove(l_run_parameter)
 
@@ -266,7 +271,7 @@ def search_update_new_runs ():
             logger.info('File for processed runs was updted ')
         except:
             string_message = 'Unable to write the processed runs file'
-            logging_errors(logger, string_message, True, True)
+            logging_errors(string_message, True, True)
     '''
     logger.info ('Clossing SAMBA connection')
     conn.close()
@@ -323,7 +328,7 @@ def search_not_completed_run ():
     except Exception as e:
         string_message = 'Unable to open SAMBA connection for the process search update runs'
         # raising the exception to stop crontab
-        raise logging_errors(logger, string_message, True, False)
+        raise logging_errors(string_message, True, False)
 
     runs_to_handle = {}
     updated_run={}
@@ -356,7 +361,7 @@ def search_not_completed_run ():
                         updated_run['Sample Sent'].append(manage_miseq_in_samplesent(conn, run_in_sample_sent))
                     else:
                         string_message = 'Platform ' + run_platform +' is not supported '
-                        logging_errors (logger, string_message , False, False)
+                        logging_errors (string_message , False, False)
                         continue
                 except :
                     runs_with_error[state].append(run_in_sample_sent.get_run_name())
@@ -377,7 +382,7 @@ def search_not_completed_run ():
                         updated_run['Processing run'].append(manage_miseq_in_processing_run(conn, run_in_processing_run))
                     else:
                         string_message = 'Platform ' + run_platform +' is not supported '
-                        logging_errors (logger, string_message , False, False)
+                        logging_errors (string_message , False, False)
                         continue
                 except :
                     runs_with_error[state].append(run_in_processing_run.get_run_name())
@@ -420,7 +425,7 @@ def search_not_completed_run ():
                     continue
         else:
             string_message = 'Run in unexpected state. ' + state
-            logging_errors (logger, string_message , False, False)
+            logging_errors (string_message , False, False)
             continue
     logger.debug ('End function for search_not_completed_run')
     return updated_run, runs_with_error

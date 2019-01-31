@@ -30,7 +30,7 @@ def check_completion_success (l_run_completion):
     status_run = find_xml_tag_text (l_run_completion, wetlab_config.COMPLETION_TAG )
     if  status_run != wetlab_config.COMPLETION_SUCCESS:
         string_message = 'Run status was ' + status_run  
-        logging_errors (logger, string_message, False, False)
+        logging_errors (string_message, False, False)
         return False
     else:
         logger.info ('Run successfuly completed ')
@@ -169,7 +169,7 @@ def manage_nextseq_in_samplesent(conn, run_object_name) :
     
     if not completion_status :
         string_message = 'Run status was ' + status_run  
-        logging_errors (logger, string_message, False, False)
+        logging_errors (string_message, False, False)
         # Set tun to error state
         run_updated = handling_errors_in_run (experiment_name)
         logger.debug ('End function for handling NextSeq run with exception')
@@ -231,7 +231,7 @@ def manage_nextseq_in_processing_run(conn, run_object_name) :
 
     if not completion_status :
         string_message = 'Run status was ' + status_run  
-        logging_errors (logger, string_message, False, False)
+        logging_errors (string_message, False, False)
         # Set tun to error state
         run_updated = handling_errors_in_run (experiment_name)
         logger.debug ('End function for manage_nextseq_in_processing_run with exception')
@@ -314,7 +314,7 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
             logger.info('Sequencer  stored on database')
         else:
             string_message = instrument + ' has been not defined on machines '
-            logging_errors(logger, string_message, False, True)
+            logging_errors(string_message, False, True)
         #update the project state 
         projects = Projects.objects.filter(runprocess_id = run_process)
         for project in projects:
@@ -339,7 +339,7 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
                     logger.info('Sucessfully copy Sample sheet to remote folder')
                 except Exception as e:
                     string_message = 'Unable to copy the Sample Sheet to remote folder ' + new_run
-                    logging_errors (logger, string_message, True, False)
+                    logging_errors (string_message, True, False)
                     logger.info ('Deleting local copy of completion status ')
                     logger.debug ('End function for handling NextSeq run with exception')
                     raise 
@@ -352,13 +352,13 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
                 logger.debug('Deleted temporary folder containing the samplesheet')
             except Exception as e:
                 string_message = 'Unable to delete temporary folder with the sample sheet ' + sample_sheet_tmp_dir
-                logging_errors (logger, string_message, True, True)
+                logging_errors (string_message, True, True)
                 logger.debug ('End function for handling NextSeq run with exception')
                 raise ValueError ('Unable to delete local Sample Sheet')
 
         else:
             string_message = 'sample sheet not found on local Directory ' + sample_sheet_tmp_dir
-            logging_errors (logger, string_message, False, True)
+            logging_errors (string_message, False, True)
             run_updated = handling_errors_in_run (experiment_name)
             logger.debug ('End function for handling NextSeq run with exception')
             raise ValueError ('Sample Sheet not found in local folder')
@@ -368,13 +368,13 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
     else:
         if not RunProcess.objects.filter(runName__exact = experiment_name).exists():
             string_message = 'Run ' + experiment_name +' is not yet defined on database'
-            logging_errors (logger, string_message, False, False)
+            logging_errors (string_message, False, False)
             logger.debug ('End function handle_nextseq_recorded_run with exception')
             raise ValueError ('Run not defined yet')
         else:
             run_state = RunProcess.objects.filter(runName__exact = experiment_name).get_state()
             string_message = 'Run ' + experiment_name +' is in state ' + run_state + '.  Should be in Recorded'
-            logging_errors (logger, string_message, False, False)
+            logging_errors (string_message, False, False)
             logger.debug ('End function fhandle_nextseq_recorded_run with exception')
             raise ValueError ('Run on wrong state')
     return

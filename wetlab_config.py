@@ -7,16 +7,16 @@ WETLAB_MANAGER = 'WetlabManager'
 
 ################### SAMBA SETTINGS  ##########################
 ## SAMBA settings for connecting quibitka server to fetch the run files
-# SAMBA_USER_ID = 'Luigi'
-# SAMBA_USER_PASSWORD = 'Apple123'
-# SAMBA_SHARED_FOLDER_NAME = 'NGS_Data'
+SAMBA_USER_ID = 'Luigi'
+SAMBA_USER_PASSWORD = 'Apple123'
+SAMBA_SHARED_FOLDER_NAME = 'NGS_Data'
 # #    Write the subfolder name in case that run folder are not under the
 # #    shared folder directory. Leave empty in other case
-# SAMBA_APPLICATION_FOLDER_NAME = 'application'
-# SAMBA_REMOTE_SERVER_NAME = 'LUIGI-PC'
-# SAMBA_NTLM_USED = True
-# SAMBA_IP_SERVER = '192.168.1.3'
-# SAMBA_PORT_SERVER = '139'
+SAMBA_APPLICATION_FOLDER_NAME = 'application'
+SAMBA_REMOTE_SERVER_NAME = 'LUIGI-PC'
+SAMBA_NTLM_USED = True
+SAMBA_IP_SERVER = '192.168.1.3'
+SAMBA_PORT_SERVER = '139'
 
 ################### SAMBA SETTINGS  ##########################
 ## SAMBA settings for connecting quibitka server to fetch the run files
@@ -31,23 +31,23 @@ WETLAB_MANAGER = 'WetlabManager'
 #SAMBA_IP_SERVER = '172.21.7.11'
 #SAMBA_PORT_SERVER = '445'
 ## SAMBA_DOMAIN MUST be empty if domain value is not used for samba connection
-#SAMBA_DOMAIN=''
+SAMBA_DOMAIN=''
 ##############################################################
 
 ################### SAMBA SETTINGS  ##########################
 ## SAMBA settings for connecting quibitka server to fetch the run files
-SAMBA_USER_ID = 'smbuser'
-SAMBA_USER_PASSWORD = 'ywSghrSftHEVYaHBTbqH'
-SAMBA_SHARED_FOLDER_NAME = 'NGS_Data_test'
+#SAMBA_USER_ID = 'smbuser'
+#SAMBA_USER_PASSWORD = 'ywSghrSftHEVYaHBTbqH'
+#SAMBA_SHARED_FOLDER_NAME = 'NGS_Data_test'
 #    Write the subfolder name in case that run folder are not under the
 #    shared folder directory. Leave empty in other case
-SAMBA_APPLICATION_FOLDER_NAME = ''
-SAMBA_REMOTE_SERVER_NAME = 'panoramix'
-SAMBA_NTLM_USED = True
-SAMBA_IP_SERVER = '172.23.2.11'
-SAMBA_PORT_SERVER = '445'
+#SAMBA_APPLICATION_FOLDER_NAME = ''
+#SAMBA_REMOTE_SERVER_NAME = 'panoramix'
+#SAMBA_NTLM_USED = True
+#SAMBA_IP_SERVER = '172.23.2.11'
+#SAMBA_PORT_SERVER = '445'
 ## SAMBA_DOMAIN MUST be empty if domain value is not used for samba connection
-SAMBA_DOMAIN='panoramix'
+#SAMBA_DOMAIN='panoramix'
 
 ################### EMAIL SETTINGS  ##########################
 SENT_EMAIL_ON_ERROR = False
