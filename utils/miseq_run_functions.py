@@ -444,7 +444,6 @@ def validate_sample_sheet (sample_sheet):
             logging_errors(string_message, False, False)
             logger.debug('Exiting the function validate sample_sheet with error')
             return False
-    import pdb; pdb.set_trace()
     for user in projects_users.values():
         if user == "":
             string_message =  'Empty users have been found '
@@ -683,7 +682,7 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
             save_miseq_projects_found (projects_users, experiment_name, library_name)
             run_updated = RunProcess.objects.get(runName__exact = experiment_name).set_run_state('Sample Sent')
             
-            logger.info('Run %s is now on sample sheet state', %experiment_name)
+            logger.info('Run %s is now on sample sheet state', experiment_name)
             logger.debug ('End function for handling miSeq ')
             return new_run
         else:

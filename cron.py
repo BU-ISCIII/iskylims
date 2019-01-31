@@ -80,7 +80,7 @@ def looking_for_new_runs ():
                 for run_changed in updated_runs[state]:
                     logger.info('Run  %s was  processed on  %s  state', run_changed, state)
             else:
-                logger.info('There is no updated run for $s ', state)
+                logger.info('There is no updated run for %s ', state)
     else:
         logger.info('There are no updated runs ')
 

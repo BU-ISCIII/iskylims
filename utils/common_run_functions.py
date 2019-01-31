@@ -1255,7 +1255,7 @@ def manage_run_in_processing_bcl2fastq (conn, run_object_name):
         # connect to statistics report folder to check if bcl2fastq process is ended
         try:
             file_list = conn.listPath( wetlab_config.SAMBA_SHARED_FOLDER_NAME, statistics_folder)
-        except:
+        except Exception as e:
             string_message = 'Folder statistics have been deleted for ' + experiment_name
             logging_errors(string_message, False, False)
             logger.debug ('End function manage_run_in_processing_bcl2fast2 with error')
@@ -1265,10 +1265,9 @@ def manage_run_in_processing_bcl2fastq (conn, run_object_name):
 
                 logger.info('bcl2fastq has been completed for  %s', experiment_name)
                 # Get the time when  the Bcl2Fastq process is ending
-
                 s_conversion_stats = os.path.join (statistics_folder, wetlab_config.STATS_FOLDER, wetlab_config.CONVERSION_STATS_FILE)
                 conversion_attributes = conn.getAttributes(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,s_conversion_stats)
-                bcl2fastq_finish_date = datetime.datetime.fromtimestamp(int(conversion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
+                bcl2fastq_finish_date = datetime.fromtimestamp(int(conversion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
                 bcl2fastq_finish_date = run_object_name.set_run_bcl2fastq_finished_date(bcl2fastq_finish_date)
                 run_object_name.set_run_state('Processed Bcl2fastq')
                 set_state_in_all_projects(experiment_name, 'Processed Bcl2fastq')
@@ -1442,8 +1441,8 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
             raise
 
         result_store_usage = run_object_name.set_used_space (disk_utilization)
-
-        completion_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        import pdb; pdb.set_trace()
+        completion_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         result_set_completion_date = run_object_name.set_run_completion_date(completion_date)
         # Update the run state to completed
         run_state = run_object_name.set_run_state('Completed')

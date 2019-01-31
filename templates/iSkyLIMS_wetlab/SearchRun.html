@@ -3,6 +3,24 @@
 {% block content %}
 {% csrf_token %}
 {% if display_one_run %}
+    {% if display_one_run.no_stable_data %}
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-7">
+                <div class="panel panel-default">
+                    {% for run, state in display_one_run.no_stable_data %}
+                        <div class="panel-heading">Information for the run : <strong>{{ run }}</strong>  </div>
+                        <div class="panel-body">
+                        <h3>The Run {{ run }} is in {{state }} state. </h3>
+                        <BR>
+                        <p>The system is now processing output files and stored the result in database.</p>
+                        <BR>
+                        Please check again later.  
+                         </div> <!--  end of panel body -->
+                    {% endfor %}
+                </div> <!--  end of panel  -->
+            </div> <!--  end of col-sm-7 -->
+        </div> <!--  end of row space -->
+    {% else %}
      <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>
      <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>
      <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.powercharts.js" %}"></script>
@@ -574,6 +592,7 @@
 
       </div> <!--  end of col-sm-12 -->
     </div> <!--  end of row -->
+    {% endif%}
 {% endif%}
 
 {% elif display_run_list %}

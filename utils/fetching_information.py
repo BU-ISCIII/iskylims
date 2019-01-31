@@ -250,7 +250,14 @@ def get_information_run(run_object):
     p_library_kits = []
     ## collect the state to get the valid information of run that matches the run name
     run_state=run_object.get_state()
-
+    
+    # if run is processing data to insert in table show a message that
+    # going back again after some minutes .
+    no_stable_information = ['Processing Demultiplexing', 'Processing test']
+    if run_state in no_stable_information :
+        info_dict['no_stable_data'] = [[run_object.get_run_name(), run_state]]
+        return info_dict
+    
     # allow to change the run name in case that run state was recorded or Sample Sent
     if run_state == 'Recorded' or run_state == 'Sample Sent':
         info_dict['change_run_name'] = [[run_object.get_run_name(), run_object.get_run_id()]]
@@ -290,8 +297,8 @@ def get_information_run(run_object):
         # Adding the Run Parameters information
         info_dict['running_parameters'] = get_running_parameters(run_object)
     
-    state_to_display_run_metric = ['Processing Bcl2fastq', 'Processed Bcl2fastq', 'Completed']
-    if run_state in state_to_display_run_metric :
+    # get the run metric  statistics if they are already processed
+    if StatsRunSummary.objects.filter(runprocess_id__exact =run_object).exists():
         run_parameters = RunningParameters.objects.get(runName_id__exact = run_object)
         num_of_reads = run_parameters.get_number_of_reads ()
         
@@ -306,8 +313,6 @@ def get_information_run(run_object):
                     'Error Rate 50 cycle (%)','Error Rate 75 cycle (%)',
                     'Error Rate 100 cycle (%)','Intensity Cycle 1']
         info_dict ['reads'] = get_run_read_data(run_object, num_of_reads, number_of_lanes) 
-
-        
 
         info_dict['runGraphic'] = get_run_graphics (run_object)
     
