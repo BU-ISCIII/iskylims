@@ -148,7 +148,7 @@ def manage_nextseq_in_samplesent(conn, run_object_name) :
     logger.info('Manage %s in Sample Sent state ', experiment_name)
     run_folder = RunningParameters.objects.get(runName_id = run_object_name).get_run_folder()
     l_run_completion = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_COMPLETION)
-    s_run_completion = os.path.join(run_folder, wetlab_config.RUN_COMPLETION)
+    s_run_completion = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME , run_folder, wetlab_config.RUN_COMPLETION)
     
     try:
         l_run_completion = fetch_remote_file (conn, run_folder, s_run_completion, l_run_completion)
@@ -170,12 +170,14 @@ def manage_nextseq_in_samplesent(conn, run_object_name) :
     if not completion_status :
         string_message = 'Run status was ' + status_run  
         logging_errors (string_message, False, False)
-        # Set tun to error state
-        run_updated = handling_errors_in_run (experiment_name)
-        logger.debug ('End function for handling NextSeq run with exception')
+        # Set run to cancelled  state
+        run_object_name.set_run_state('Cancelled')
+        set_state_in_all_projects(experiment_name, 'Cancelled')
+        logger.debug ('End function for handling NextSeq run Cancelled')
         raise ValueError ('Run was CANCELLED')
     else:
         run_updated = run_object_name.set_run_state('Processing Run')
+        set_state_in_all_projects(experiment_name, 'Processing Run')
         logger.info('Run %s is now on Processing Run state', experiment_name)
         return experiment_name
     
@@ -207,7 +209,7 @@ def manage_nextseq_in_processing_run(conn, run_object_name) :
     logger.info('Manage %s in Processing Run state ', experiment_name)
     run_folder = RunningParameters.objects.get(runName_id = run_object_name).get_run_folder()
     l_run_completion = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_COMPLETION)
-    s_run_completion = os.path.join(run_folder, wetlab_config.RUN_COMPLETION)
+    s_run_completion = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME , run_folder, wetlab_config.RUN_COMPLETION)
     
     try:
         l_run_completion = fetch_remote_file (conn, run_folder, s_run_completion, l_run_completion)
@@ -220,21 +222,20 @@ def manage_nextseq_in_processing_run(conn, run_object_name) :
         run_completion_date = run_object_name.set_run_completion_date(run_completion_date)
         
     except Exception as e:
-        logger.info ('Completion status file is not present on the run folder')
-        logger.info ('Moving run to Processing run state')
-        logger.debug ('End function for handling manage_nextseq_in_processing_run with exception')
-        raise
+        logger.info ('Completion status file still is not present on the run folder')
+        logger.debug ('End function for handling manage_nextseq_in_processing_run waiting Completion file')
+        raise ValueError ( 'Completion file not present')
     finally :
         logger.info ('Deleting local copy of completion status')
         # cleaning up the completion  in local temporary file
         os.remove(l_run_completion)
 
     if not completion_status :
-        string_message = 'Run status was ' + status_run  
+        string_message = 'Run status was ' + completion_status  
         logging_errors (string_message, False, False)
-        # Set tun to error state
-        run_updated = handling_errors_in_run (experiment_name)
-        logger.debug ('End function for manage_nextseq_in_processing_run with exception')
+        # Set tun to Cancelled state
+        logger.info('Set run to cancelled state')
+        logger.debug ('End function for manage_nextseq_in_processing_run cancelled')
         raise ValueError ('Run was CANCELLED')
     else:
         run_updated = run_object_name.set_run_state('Processed Run')

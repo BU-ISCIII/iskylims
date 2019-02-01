@@ -1110,7 +1110,7 @@ def latest_run (request) :
 
     latest_run = RunProcess.objects.order_by('id').last()
     run_id = latest_run.id
-    r_data_display  = get_information_run(latest_run,run_id)
+    r_data_display  = get_information_run(latest_run)
     return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_one_run': r_data_display })
 
 @login_required
