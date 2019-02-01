@@ -274,6 +274,7 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
         run_process  # RunProcess object related to this run
         
         run_date        # date of starting run 
+        run_folder      # run foloder on remote server
         running_parameters  # dictionary with parsing information from 
                             RunParameter and RunInfo
         s_run_info  # path of RunInfo on the remote server
@@ -285,21 +286,24 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function handle_nextseq_recorded_run')
     if RunProcess.objects.filter(runName__exact = experiment_name , runState__exact ='Recorded').exists():
+        logger.info('Processing %S on Recorded state', experiment_name)
         run_process = RunProcess.objects.get(runName__exact = experiment_name )
-        
+        run_folder = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME , new_run)
         # Fetch run info
         l_run_info = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_INFO)
-        s_run_info = os.path.join(new_run,wetlab_config.RUN_INFO)
+        s_run_info = os.path.join(run_folder,wetlab_config.RUN_INFO)
         try:
             l_run_info = fetch_remote_file (conn, new_run, s_run_info, l_run_info)
             logger.info('Sucessfully fetch of RunInfo file')
         except Exception as e:
-            logger.info('Exception fetched $s ' , e)
-            logger.info('Skiping the run $s , due to the error', new_run)
+            string_message = 'Unable to fetch the RunInfo file'
+            logging_errors(string_message, True, True)
+            handling_errors_in_run(experiment_name, '20')
+            
             # cleaning up the RunParameter in local temporaty file
             os.remove(l_run_parameter)
             logger.debug ('End function for handling NextSeq run with exception')
-            raise   # returning to handle next run folder
+            raise ValueError ('Unable to fetch RunInfo')  # returning to handle next run folder
         
         # Parsing RunParameter and Run Info
 
@@ -320,6 +324,7 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
         for project in projects:
                 p_state = project.set_project_state ( 'Sample Sent')
         # deleting RunParameter and RunInfo
+        logger.info('Deleting RunParameter and RunInfo')
         os.remove(l_run_parameter)
         os.remove(l_run_info)
 
@@ -329,20 +334,19 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
         l_sample = os.path.join(sample_sheet_tmp_dir, wetlab_config.SAMPLE_SHEET)
         
         if os.path.exists(l_sample):
-            
             if wetlab_config.COPY_SAMPLE_SHEET_TO_REMOTE :
                 # copy Sample heet file to remote directory
                 logger.info('Copy sample sheet to remote folder %s', new_run)
                 s_sample= os.path.join(new_run, wetlab_config.SAMPLE_SHEET)
                 try:
-                    sample_sheet_copied = copy_to_remote_file  (conn, new_run, s_sample, l_sample)
+                    sample_sheet_copied = copy_to_remote_file  (conn, run_folder, s_sample, l_sample)
                     logger.info('Sucessfully copy Sample sheet to remote folder')
                 except Exception as e:
                     string_message = 'Unable to copy the Sample Sheet to remote folder ' + new_run
                     logging_errors (string_message, True, False)
-                    logger.info ('Deleting local copy of completion status ')
+                    handling_errors_in_run (experiment_name, '23')
                     logger.debug ('End function for handling NextSeq run with exception')
-                    raise 
+                    raise ValueError ('Unable to copy Sample Sheet on remote server')
             # Update run to Sample Sent
             
             run_process.set_run_state('Sample Sent')
@@ -359,7 +363,7 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
         else:
             string_message = 'sample sheet not found on local Directory ' + sample_sheet_tmp_dir
             logging_errors (string_message, False, True)
-            run_updated = handling_errors_in_run (experiment_name)
+            handling_errors_in_run (experiment_name, '22')
             logger.debug ('End function for handling NextSeq run with exception')
             raise ValueError ('Sample Sheet not found in local folder')
 
