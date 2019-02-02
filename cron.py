@@ -99,24 +99,46 @@ def looking_for_new_runs ():
 
 
 
-def delete_unregister_run ():
+def delete_invalid_run ():
     from datetime import datetime, timedelta
-
-    time_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    import os
+    from django.conf import settings
+    from iSkyLIMS_wetlab import wetlab_config
+    from iSkyLIMS_wetlab.models import RunProcess, Projects
+    time_start = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(time_start )
     print('Starting the process for deleting runs in register state older than ', datetime.today())
-    date_for_removing = datetime.today() - timedelta(days=days_to_subtract)
-    run_found_for_deleting = RunProcess.objects.filter(runState__exact ='Pre-Recorded', generatedat__lte = date_for_removing)
+    date_for_removing = datetime.today() - timedelta(days=int(wetlab_config.RETENTION_TIME))
+    run_found_for_deleting = RunProcess.objects.filter(state__runStateName  ='Pre-Recorded', generatedat__lte = date_for_removing)
+
     for run_found in run_found_for_deleting:
-        run_id = run_found.id
-        if Projects.objects.filter(runprocess_id__exact = run_id).exists():
-            projects_to_be_deleted = Projects.objects.filter(runprocess_id__exact = run_id)
+        if Projects.objects.filter(runprocess_id = run_found).exists():
+            projects_to_be_deleted = Projects.objects.filter(runprocess_id = run_found)
             for projects in projects_to_be_deleted:
                 projects.delete()
-        sample_sheet_file = os.paht.join(settings.MEDIA_ROOT, run_found.sampleSheet)
-        os.remove(sample_sheet_file)
-        print('deleting run ' , run_found.runName,'\n')
+                print ('deleted project' , projects)
+        sample_sheet_file = os.path.join(settings.MEDIA_ROOT, run_found.get_sample_file())
+        if os.path.isfile(sample_sheet_file):
+            os.remove(sample_sheet_file)
+            print('deleted sample sheet file ')
         run_found.delete()
-    end_start= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print(end_time)
+        print ('deleted run' , run_found)
+    all_runs = RunProcess.objects.all()
+    sample_sheet_valid_files = []
+    
+    for run in all_runs:
+        sample_sheet_valid_files.append(os.path.basename(run.get_sample_file()))
+    sample_sheet_folder = os.path.join(settings.MEDIA_ROOT, os.path.dirname(run.get_sample_file()))
+
+    file_list_ss_folder = os.listdir(sample_sheet_folder)
+    print ('Deleting invalid sample sheets')
+
+    for file_ss in file_list_ss_folder :
+        if file_ss not in sample_sheet_valid_files :
+            file_to_delete = os.path.join(sample_sheet_folder,file_ss)
+            os.remove(file_to_delete)
+
+    print ('Completed deletion of invalid sample sheets')
+    time_end= datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(time_end)
     print('End of deleting process ')

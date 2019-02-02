@@ -154,3 +154,10 @@ MAP_BASESPACE_SAMPLE_SHEET_TWO_INDEX = [('SampleID','Sample_ID'),('Name','Sample
                 ('Index1Name','I7_Index_ID'), ('Index1Sequence','index' ),('Index2Name','I5_Index_ID'),('Index2Sequence','index2') ]
 
 ##############################################################
+
+##### SETTINGS FOR CLEANUP RUNS AND NOT VALID FILES ##########
+
+RETENTION_TIME = '7' # in days
+
+##############################################################
+

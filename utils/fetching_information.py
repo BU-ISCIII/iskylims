@@ -257,7 +257,9 @@ def get_information_run(run_object):
     if run_state in no_stable_information :
         info_dict['no_stable_data'] = [[run_object.get_run_name(), run_state]]
         return info_dict
-    
+    if run_state == 'Pre-Recorded' :
+        info_dict['no_stable_data'] = [[run_object.get_run_name(), run_state]]
+        return info_dict
     # allow to change the run name in case that run state was recorded or Sample Sent
     if run_state == 'Recorded' or run_state == 'Sample Sent':
         info_dict['change_run_name'] = [[run_object.get_run_name(), run_object.get_run_id()]]
