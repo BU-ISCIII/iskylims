@@ -109,15 +109,16 @@ def get_sample_file (request):
         ## Check that runName is not already used in the database.
         ## Error page is showed if runName is already  defined
         if (RunProcess.objects.filter(runName = run_name)).exists():
-            if RunProcess.objects.filter(runName = run_name, runState__exact ='Pre-Recorded'):
+            if RunProcess.objects.filter(runName = run_name, state__runStateName__exact ='Pre-Recorded'):
                 ## Delete the Sample Sheet file and the row in database
-                delete_run = RunProcess.objects.filter(runName = run_name, runState__exact ='Pre-Recorded')
-                sample_sheet_file = str(delete_run[0].sampleSheet)
-                #import pdb; pdb.set_trace()
+                delete_run = RunProcess.objects.get(runName = run_name, state__runStateName__exact ='Pre-Recorded')
+                sample_sheet_file = delete_run.get_sample_file()
                 full_path_sample_sheet_file = os.path.join(settings.MEDIA_ROOT, sample_sheet_file)
                 os.remove(full_path_sample_sheet_file)
-                delete_run[0].delete()
+                delete_run.delete()
             else:
+                # delete sample sheet file 
+                os.remove(stored_file)
                 return render (request,'iSkyLIMS_wetlab/error_page.html', 
                     {'content':['Run Name is already used. ',
                         'Run Name must be unique in database.',' ',
@@ -162,9 +163,9 @@ def get_sample_file (request):
             # check if project was already saved in database in Not Started State.
             # if found delete the projects, because the previous attempt to complete the run was unsuccessful
             if ( Projects.objects.filter(projectName__icontains = key).exists()):
-                if ( Projects.objects.filter(projectName__icontains = key, procState__exact = 'Not Started').exists()):
-                    delete_project = Projects.objects.filter(projectName__icontains = key , procState__exact = 'Not Started')
-                    delete_project[0].delete()
+                if ( Projects.objects.filter(projectName__icontains = key, projectState__projectStateName = 'Not Started').exists()):
+                    delete_project = Projects.objects.get(projectName__icontains = key , projectState__projectStateName = 'Not Started')
+                    delete_project.delete()
                 else:
                     project_already_defined.append(key)
         if (len(project_already_defined)>0):
@@ -185,7 +186,9 @@ def get_sample_file (request):
         ## store data in runProcess table, run is in pre-recorded state
         center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
         center_requested_by = Center.objects.get(pk = center_requested_id)
-        run_proc_data = RunProcess(runName=run_name,sampleSheet= file_name, runState='Pre-Recorded', centerRequestedBy = center_requested_by)
+        run_proc_data = RunProcess(runName=run_name,sampleSheet= file_name, 
+                                state = RunStates.objects.get(runStateName__exact = 'Pre-Recorded'), 
+                                centerRequestedBy = center_requested_by)
         run_proc_data.save()
         experiment_name = '' if run_name == timestr else run_name
 
@@ -197,7 +200,9 @@ def get_sample_file (request):
         run_info_values['index_library_name'] = index_library_name
         for key, val  in project_list.items():
             userid=User.objects.get(username__exact = val)
-            p_data=Projects(runprocess_id=RunProcess.objects.get(runName =run_name), projectName=key, user_id=userid)
+            p_data=Projects(runprocess_id=RunProcess.objects.get(runName =run_name), 
+                            projectName=key, user_id=userid,
+                            projectState= ProjectStates.objects.get(projectStateName__exact = 'Pre-Recorded'))
             p_data.save()
             projects.append([key, val])
         run_info_values['projects_user'] = projects
@@ -241,8 +246,7 @@ def get_sample_file (request):
         # Set unique Sample_ID in the sample sheet
         index_file = os.path.join(settings.MEDIA_ROOT,'wetlab', 'index_file')
         create_unique_sample_id_values (in_file, index_file)
-        #in_file=str('documents/' + s_file)
-        #
+
         ## build the project list for each project_library kit
         for x in range(len(project_index_kit)):
             if project_index_kit[x] in library :
@@ -250,7 +254,7 @@ def get_sample_file (request):
             else:
                 library[project_index_kit[x]]= [projects[x]]
         ## convert the sample sheet to base space format and have different files according the library kit
-        #
+
         for key, value in library.items():
             lib_kit_file =key.replace(' ', '_')
             library_file = sample_sheet_map_basespace(in_file, key, lib_kit_file, value,'Plate96')
@@ -286,8 +290,8 @@ def get_sample_file (request):
             update_info_proj.libraryKit=project_index_kit[p]
             update_info_proj.baseSpaceFile=bs_file[project_index_kit[p]]
             update_info_proj.LibraryKit_id = library_kit_id
-            update_info_proj.proState='Recorded'
             update_info_proj.save()
+            update_info_proj.set_project_state ('Recorded')
         results.append(['runname', experiment_name])
         ## save the sample sheet file under tmp/recorded to be processed when run folder was created
         subfolder_name=str(run_p.id)
@@ -307,13 +311,13 @@ def get_sample_file (request):
         ## update the Experiment name and the state of the run to 'Recorded'
         run_p.runName = experiment_name
         run_p.index_library = run_index_library_name
-        run_p.runState='Recorded'
         run_p.save()
+        run_p.set_run_state ('Recorded')
         ## update the project state to Recorded
-        project_to_be_updated = Projects.objects.filter(runprocess_id__exact = run_p.id)
-        for project in project_to_be_updated :
-            project.procState='Recorded'
-            project.save()
+        #project_to_be_updated = Projects.objects.filter(runprocess_id__exact = run_p.id)
+        #for project in project_to_be_updated :
+        #    project.procState='Recorded'
+        #    project.save()
 
         #
         return render (request, 'iSkyLIMS_wetlab/getSampleSheet.html', {'completed_form':results})

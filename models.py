@@ -23,6 +23,11 @@ class RunStates (models.Model):
     def __str__ (self):
         return '%s' %(self.runStateName)
 
+class ProjectStates (models.Model):
+    projectStateName = models.CharField(max_length=50)
+
+    def __str__ (self):
+        return '%s' %(self.projectStateName)
 
 class RunProcess(models.Model):
     runName = models.CharField(max_length=45)
@@ -230,6 +235,7 @@ class Projects(models.Model):
             LibraryKit,
             on_delete=models.CASCADE , null=True)
     projectName= models.CharField(max_length=45)
+    projectState = models.ForeignKey ( ProjectStates, on_delete = models.CASCADE, related_name = 'state_of_project', null = True, blank = True)
     procState=models.CharField(max_length=25, default='Not Started')
     libraryKit=models.CharField(max_length=125)
     baseSpaceFile = models.CharField(max_length=255)
@@ -240,7 +246,7 @@ class Projects(models.Model):
         return '%s' %(self.projectName)
 
     def get_state(self):
-        return '%s' %(self.procState)
+        return '%s' %(self.projectState)
 
     def get_project_info (self):
         generated_date=self.generatedat.strftime("%I:%M%p on %B %d, %Y")
@@ -282,7 +288,7 @@ class Projects(models.Model):
         return '%s' %(self.id)
 
     def set_project_state (self, state):
-        self.procState = state
+        self.projectState = ProjectStates.objects.get(projectStateName__exact = state)
         self.save()
         return True
 

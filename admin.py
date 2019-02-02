@@ -35,6 +35,8 @@ class RunErrorsAdmin (admin.ModelAdmin):
 class RunStatesAdmin (admin.ModelAdmin):
     list_display = ('runStateName',)
 
+class ProjectStatesAdmin (admin.ModelAdmin):
+    list_display = ('projectStateName',)
 
 admin.site.register(RunningParameters , RunningParametersAdmin)
 admin.site.register(RunProcess , RunProcessAdmin)
@@ -42,3 +44,4 @@ admin.site.register(LibraryKit,LibraryKitAdmin)
 admin.site.register(Projects, ProjectsAdmin)
 admin.site.register(RunErrors, RunErrorsAdmin)
 admin.site.register(RunStates, RunStatesAdmin)
+admin.site.register(ProjectStates, ProjectStatesAdmin)
