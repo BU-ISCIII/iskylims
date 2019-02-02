@@ -635,6 +635,8 @@ def get_information_project (project_id, request):
     project_info_dict ['user_name'] = project_id.get_user_name()
     p_state = project_id.get_state()
     project_info_dict['state'] = p_state
+    project_info_dict['graphic_value'], project_info_dict['graphic_color'] = graphics_state(p_state)
+    '''
     if p_state.startswith('ERROR'):
         project_info_dict['graphic_value']=10
         project_info_dict['graphic_color']='red'
@@ -650,6 +652,10 @@ def get_information_project (project_id, request):
     if p_state == 'Completed':
         project_info_dict['graphic_value']= 100
         project_info_dict['graphic_color']='green'
+    '''
+    
+    if p_state == 'Completed':
+        
         fl_data_display=[]
 
         # prepare the data for Flowcell Summary

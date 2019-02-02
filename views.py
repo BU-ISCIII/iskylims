@@ -1083,7 +1083,6 @@ def display_run (request, run_id):
                 else:
                     return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the run  ']})
 
-                #return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
         except:
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
     else:
@@ -1092,7 +1091,6 @@ def display_run (request, run_id):
     if (RunProcess.objects.filter(pk=run_id).exists()):
         run_name_found = RunProcess.objects.get(pk=run_id)
         r_data_display  = get_information_run(run_name_found)
-        #r_data_display  = get_information_run(run_name_found[0],run_id)
         return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_one_run': r_data_display })
     else:
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the run  ']})

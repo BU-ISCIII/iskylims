@@ -1210,7 +1210,7 @@ def manage_run_in_processed_run (conn, run_object_name):
             return experiment_name
 
         run_state = run_object_name.set_run_state('Processing Bcl2fastq')
-        set_state_in_all_projects(experiment_name, 'Processing Bcl2fastq')
+        # Do not update the projects state. They will keep in Processed Run
 
     else:
         string_message = 'Invalid state when calling to ' + experiment_name
@@ -1270,7 +1270,7 @@ def manage_run_in_processing_bcl2fastq (conn, run_object_name):
                 bcl2fastq_finish_date = datetime.fromtimestamp(int(conversion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
                 bcl2fastq_finish_date = run_object_name.set_run_bcl2fastq_finished_date(bcl2fastq_finish_date)
                 run_object_name.set_run_state('Processed Bcl2fastq')
-                set_state_in_all_projects(experiment_name, 'Processed Bcl2fastq')
+                # Do not update the projects state. They will keep in Processed Run
 
                 logger.info ('Updated the Bcl2Fastq time in the run %s', experiment_name)
                 break
@@ -1340,10 +1340,10 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
     experiment_name = run_object_name.get_run_name()
     run_folder = RunningParameters.objects.get(runName_id = run_object_name).get_run_folder()
     number_of_lanes = run_object_name.get_machine_lanes()
-    #statistics_folder = os.path.join(run_folder, wetlab_config.CONVERSION_STATS_FOLDER)
 
     if 'Processed Bcl2fastq' == run_object_name.get_state() :
         run_state = run_object_name.set_run_state('Processing Demultiplexing')
+        projects_state = set_state_in_all_projects(experiment_name, 'Processing Demultiplexing')
 
         try:
             l_demux , l_conversion= get_bcl2fastq_output_files (conn, run_folder)
@@ -1441,7 +1441,6 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
             raise
 
         result_store_usage = run_object_name.set_used_space (disk_utilization)
-        import pdb; pdb.set_trace()
         completion_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         result_set_completion_date = run_object_name.set_run_completion_date(completion_date)
         # Update the run state to completed
