@@ -270,7 +270,7 @@ def get_information_run(run_object):
 
     for i in range (len (d_list)):
         run_info.append([d_list[i],run_data[i]])
-    number_of_lanes=run_object.get_machine_lanes()
+    
     info_dict['run_name'] = run_object.get_run_name()
     info_dict['data']=run_info
     info_dict['run_state'] = run_state
@@ -301,6 +301,7 @@ def get_information_run(run_object):
     if StatsRunSummary.objects.filter(runprocess_id__exact =run_object).exists():
         run_parameters = RunningParameters.objects.get(runName_id__exact = run_object)
         num_of_reads = run_parameters.get_number_of_reads ()
+        number_of_lanes=run_object.get_machine_lanes()
         
         # prepare data for Run Binary summary stats
         info_dict ['runSummaryHeading'] = ['Level','Yield','Projected Yield','Aligned (%)','Error Rate (%)','Intensity Cycle 1','Quality >=30 (%)']

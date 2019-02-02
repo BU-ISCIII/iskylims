@@ -116,7 +116,7 @@ def nextseq_parsing_run_information(l_run_info, l_run_parameter) :
     ## updating the date fetched from the Date tag for run and project
     ##############################################
     date = p_run.find('Date').text
-    logger.debug('Found the de date that was recorded the Run %s', date)
+    logger.debug('Found date that was recorded the Run %s', date)
     run_date = datetime.datetime.strptime(date, '%y%m%d')
     
     logger.debug('End function nextseq_parsing_run_information')
@@ -286,13 +286,13 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function handle_nextseq_recorded_run')
-    if RunProcess.objects.filter(runName__exact = experiment_name , runState__exact ='Recorded').exists():
-        logger.info('Processing %S on Recorded state', experiment_name)
+    if RunProcess.objects.filter(runName__exact = experiment_name , state__runStateName ='Recorded').exists():
+        logger.info('Processing %s on Recorded state', experiment_name)
         run_process = RunProcess.objects.get(runName__exact = experiment_name )
         run_folder = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME , new_run)
         # Fetch run info
         l_run_info = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_INFO)
-        s_run_info = os.path.join(run_folder,wetlab_config.RUN_INFO)
+        s_run_info = os.path.join(run_folder, wetlab_config.RUN_INFO)
         try:
             l_run_info = fetch_remote_file (conn, new_run, s_run_info, l_run_info)
             logger.info('Sucessfully fetch of RunInfo file')
@@ -311,8 +311,7 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
         running_parameters, run_date, instrument = nextseq_parsing_run_information(l_run_info, l_run_parameter)
         
         run_date = run_process.set_run_date(run_date)
-        run_process_id = run_process.id
-        run_parameters = RunningParameters.objects.create_running_parameters(running_parameters, run_process_id)
+        run_parameters = RunningParameters.objects.create_running_parameters(running_parameters, run_process)
         if  Machines.objects.filter(machineName__exact = instrument).exists() :
             sequencer = Machines.objects.get(machineName__exact = instrument)
             instrument = run_process.set_sequencer(sequencer)
@@ -331,7 +330,7 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
 
         # Handling Sample Sheet file
         #exp_name_id = RunProcess.objects.get(runName__exact = experiment_name).id
-        sample_sheet_tmp_dir = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY_RECORDED,str(run_process_id))
+        sample_sheet_tmp_dir = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY_RECORDED,run_process.get_run_id())
         l_sample = os.path.join(sample_sheet_tmp_dir, wetlab_config.SAMPLE_SHEET)
         
         if os.path.exists(l_sample):
