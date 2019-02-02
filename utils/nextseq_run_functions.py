@@ -7,7 +7,7 @@ from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_drylab.models import Machines, Platform
 
 from django_utils.models import Center
-from .sample_sheet_utils import get_experiment_library_name, get_projects_in_run
+from .sample_sheet_utils import get_experiment_library_name
 
 def check_completion_success (l_run_completion):
     '''
@@ -133,6 +133,11 @@ def manage_nextseq_in_samplesent(conn, run_object_name) :
         run_in_sample_sent  #  object name of the run
         experiment_name     # name of the run
         run_folder          # run folder name on the remote server
+    Functions:
+        check_completion_success # located as this file
+        copy_to_remote_file   # located at utils.generic_functions
+        handling_errors_in_run # located at utils.generic_functions
+        nextseq_parsing_run_information # located as this file
     Variable:
         l_run_completion    # completion file name in the local temporary folder
         run_object_name     # RunProcess object
@@ -194,6 +199,10 @@ def manage_nextseq_in_processing_run(conn, run_object_name) :
         run_in_sample_sent  #  object name of the run
         experiment_name     # name of the run
         run_folder          # run folder name on the remote server
+    Functions:
+        check_completion_success    # located in this file
+        get_attributes_remote_file  # Located at utils.generic_functions
+        set_state_in_all_projects   # Located at utils.generic_functions
     Variable:
         l_run_completion    # completion file name in the local temporary folder
         run_object_name     # RunProcess object
@@ -255,7 +264,6 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
         l_run_parameter  # local path for the run parameter file
         experiment_name  # name used on miseq run
     Functions:
-        get_projects_in_run # located at utils.sample_sheet_utils
         copy_to_remote_file   # located at utils.generic_functions
         handling_errors_in_run # located at utils.generic_functions
         nextseq_parsing_run_information # located as this file

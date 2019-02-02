@@ -102,6 +102,7 @@ def fetch_remote_file (conn, run_dir, remote_file, local_file) :
     logger.debug ('End function for fetching remote file')
     return local_file
 
+
 def find_xml_tag_text (input_file, search_tag):
     '''
     Description:
@@ -320,6 +321,7 @@ def logging_warnings(string_text, print_on_screen ):
         print('**** END WARNING *******')
     return ''
 
+
 def need_to_wait_more (experiment_name, waiting_time):
     '''
     Description:
@@ -523,6 +525,7 @@ def get_size_dir (directory, conn):
 
     return count_file_size
 
+
 def normalized_data (set_data, all_data) :
     '''
     Description:
@@ -546,6 +549,7 @@ def normalized_data (set_data, all_data) :
         normalized_all_data.append(format((value - min_value)/max_value,'.2f'))
 
     return normalized_set_data, normalized_all_data
+
 
 def send_error_email_to_user ( subject, body_message, from_user, to_user):
     '''

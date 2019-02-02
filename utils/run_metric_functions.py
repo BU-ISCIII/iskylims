@@ -21,6 +21,8 @@ def get_run_metric_files (conn, run_folder):
         RUN_TEMP_DIRECTORY
         RUN_PARAMETER_NEXTSEQ
         STATISTICS_FOLDER
+    Functions:
+        fetch_remote_file   # Located at utils.generic_functions
     Variables:
         l_metric_folder # local folder to copy the run metrics files
         l_run_info  # local copy of runInfo file
@@ -150,7 +152,6 @@ def parsing_run_metrics(run_metric_folder, run_object_name):
     # get number of reads for the run
     num_of_reads = RunningParameters.objects.get(runName_id = run_object_name).get_number_of_reads()
     logger.info('Fetched run information  needed for running metrics')
-    
     
     run_metrics = py_interop_run_metrics.run_metrics()
     valid_to_load = py_interop_run.uchar_vector(py_interop_run.MetricCount, 0)
