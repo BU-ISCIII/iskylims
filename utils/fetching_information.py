@@ -177,6 +177,66 @@ def get_running_parameters (run_object) :
 
     return rp_info
 
+def match_unkownbarcodes_with_index (unknow_dict) :
+    '''
+    Description:
+        The function will match the unknow barcodes found in the run aginst
+        the one already stored in the library kits. Unmatch or 
+    Input:
+        unknow_dict      # dictionary with the unknow barcodes  
+    Variables:
+        libraries_using_base   # contains the indexLibrary objects for 
+                            index that matches
+        g_value     # contains the percentage value
+        state_list     # list with the possible states to display the run
+                    information
+    return:
+        index_match_list
+    '''
+    # prepare the data to match unknow barcodes against the index base sequence
+    index_match_list = []
+    for key , value in unknow_dict.items():
+        found_unknow_index = []
+        found_unknow_index.append(key)
+        index_temp = ''
+        library_info = []
+        #
+        if '+' in key:
+            split_base = key.split('+')
+
+            if IndexLibraryValues.objects.filter(indexBase__exact = split_base[0]).exists():
+                libraries_using_base = IndexLibraryValues.objects.filter(indexBase__exact = split_base[0])
+                index_temp = split_base[0]
+                for library in libraries_using_base :
+                    library_info.append([library.indexName,library.indexLibraryKit_id.indexLibraryName])
+
+
+            if IndexLibraryValues.objects.filter(indexBase__exact = split_base[1]).exists():
+                if len(index_temp) == 1:
+                    index_temp += (str (' + ' + split_base[1]))
+                else:
+                    index_temp = split_base[1]
+                libraries_using_base = IndexLibraryValues.objects.filter(indexBase__exact = split_base[1])
+                for library in libraries_using_base :
+                    library_info.append([library.indexName,library.indexLibraryKit_id.indexLibraryName])
+
+        else:
+            if IndexLibraryValues.objects.filter(indexBase__exact = key).exists():
+                found_unknow_index.append(key)
+                libraries_using_base = IndexLibraryValues.objects.filter(indexBase__exact = key)
+                for library in libraries_using_base :
+                    library_info.append([library.indexName,library.indexLibraryKit_id.indexLibraryName])
+
+        if len (index_temp) == 0 :
+            index_temp= 'Index not match '
+        if len (library_info) == 0 :
+            library_info = ['Index bases not found in library']
+
+        found_unknow_index.append(index_temp)
+        found_unknow_index.append(library_info)
+        index_match_list.append(found_unknow_index)
+
+    return index_match_list
 
 
 def get_information_run(run_object):
@@ -188,6 +248,7 @@ def get_information_run(run_object):
         run_object      # contains the run object 
         run_id              # contains the run id of the run_object
     Functions:
+        graphics_state      # located at this file
         get_machine_lanes   # imported from parsing_run_info
         get_running_parameters # located at this file
         normalized_data     # imported from wetlab_misc_utilities
@@ -253,7 +314,7 @@ def get_information_run(run_object):
     
     # if run is processing data to insert in table show a message that
     # going back again after some minutes .
-    no_stable_information = ['Processing Demultiplexing', 'Processing test']
+    no_stable_information = ['Processing Demultiplexing', 'Processing test', None]
     if run_state in no_stable_information :
         info_dict['no_stable_data'] = [[run_object.get_run_name(), run_state]]
         return info_dict
@@ -427,8 +488,6 @@ def get_information_run(run_object):
         for default_lane in default_lanes_for_percent_graphic :
             percent_default_lane.append(float(default_lane.percentLane))
 
-        #series.append('Unable to identify the project')
-        #data.append(statistics.mean(percent_default_lane))
         percent_projects['Unable to identify the project'] = format(statistics.mean(percent_default_lane),'2f')
         heading = 'Percentage of each project in the Run'
         sub_caption = ''
@@ -512,54 +571,9 @@ def get_information_run(run_object):
 
         info_dict ['unknow_pie3d'] = unknow_pie3d.render()
 
-        # prepare the data to match unknow barcodes against the index base sequence
-        index_match_list = []
-        for key , value in unknow_dict.items():
-            found_unknow_index = []
-            found_unknow_index.append(key)
-            index_temp = ''
-            library_info = []
-            #
-            if '+' in key:
-                split_base = key.split('+')
+        
 
-                if IndexLibraryValues.objects.filter(indexBase__exact = split_base[0]).exists():
-                    libraries_using_base = IndexLibraryValues.objects.filter(indexBase__exact = split_base[0])
-                    index_temp = split_base[0]
-                    for library in libraries_using_base :
-                        library_info.append([library.indexName,library.indexLibraryKit_id.indexLibraryName])
-
-
-                if IndexLibraryValues.objects.filter(indexBase__exact = split_base[1]).exists():
-                    if len(index_temp) == 1:
-                        index_temp += (str (' + ' + split_base[1]))
-                    else:
-                        index_temp = split_base[1]
-                    libraries_using_base = IndexLibraryValues.objects.filter(indexBase__exact = split_base[1])
-                    for library in libraries_using_base :
-                        library_info.append([library.indexName,library.indexLibraryKit_id.indexLibraryName])
-
-            else:
-                if IndexLibraryValues.objects.filter(indexBase__exact = key).exists():
-                    found_unknow_index.append(key)
-                    libraries_using_base = IndexLibraryValues.objects.filter(indexBase__exact = key)
-                    for library in libraries_using_base :
-                        library_info.append([library.indexName,library.indexLibraryKit_id.indexLibraryName])
-
-            if len (index_temp) == 0 :
-                index_temp= 'Index not match '
-            if len (library_info) == 0 :
-                library_info = ['Index bases not found in library']
-                #libraries_using_base = IndexLibraryValues.objects.filter(indexBase__exact = split_base[1])
-                #for library in libraries_using_base :
-                #    found_unknow_index.append(library.indexBase)
-            #index_item = 5
-            found_unknow_index.append(index_temp)
-            found_unknow_index.append(library_info)
-            index_match_list.append(found_unknow_index)
-        #
-
-        info_dict['match_unknows']= index_match_list
+        info_dict['match_unknows']= match_unkownbarcodes_with_index(unknow_dict)
 
         
         
