@@ -11,6 +11,121 @@ from iSkyLIMS_wetlab.wetlab_config import RUN_IMAGES_DIRECTORY, WETLAB_MANAGER
 from .generic_functions import normalized_data
 from .stats_graphics import *
 
+
+def get_boxplot_comparation_runs (run_object):
+    '''
+    Description:
+        The function collect information run to compare with the run 
+        executed on the same year and with the same chemistry 
+    Input:
+        run_object      # contains the runProcess object 
+    functions:
+        normalized_data # located at utils.generic_functions
+        bloxplot_graphic # located at utils.
+    Variables:
+        categories          # category list of the data to display
+        chem_high_mid       # chemistry value of the run to compare
+                            runs with the same value
+        data_source         # data in json format
+        run_year            # contains the year of the selected run
+        same_run_in_year    # contains all the runs in the year of the 
+                            selected run excluding those which do not
+                            have the same chemistry value
+        same_runs_in_year_list # contains the id list for all runs that match
+        series              # tupla list to assign comparation color in the graphic
+        start_date          # it is the first of january of the run_year
+        end_date            # it is the 31st of december of the run_year
+        ################################################################
+        q_30_run_value        # q30 values of the run
+        q_30_run_value_float  # q30 _value in float format
+        q_30_all_value_float  # q30 values for all runs in the comparations
+        q_30_run_normalized   # q30 normalized value for run
+        q_30_all_normalized   # q30 normalized value for all runs
+        q30_run_str     # q_30 normalized value in string format
+        q_30_all_str    # q_30_all_normalized in string format
+        ################################################################
+        #### same structure for mean_value, yield_mb and cluster_pf
+        ################################################################
+        cluster_pf_run_value_float
+        cluster_pf_all_value_float
+
+        mean_value_list
+        mean_run_value
+        mean_run_value_float
+        mean_all_value_float
+
+        yield_mb_run_value_float
+        yield_mb_all_value_float
+        ################################################################
+    return:
+        FusionCharts object with the graphic data
+    '''
+    # fetch Q>30 , mean_q and yield mb for all projects per lane to create the boxplot
+    run_lane_summary = StatsLaneSummary.objects.filter(runprocess_id__exact =run_object ).exclude(defaultAll__isnull = False)
+    q_30_run_value , mean_run_value = [] , []
+    q_30_run_value_float , mean_run_value_float , yield_mb_run_value_float, cluster_pf_run_value_float = [] , [], [] , []
+    q_30_all_value_float , mean_all_value_float , yield_mb_all_value_float , cluster_pf_all_value_float = [] , [] , [], []
+
+    for item in run_lane_summary:
+        q_30_value, mean_value , yield_mb_value , cluster_pf_value, = item.get_stats_info().split(';')
+
+        q_30_run_value_float.append(float(q_30_value))
+        mean_run_value_float.append(float(mean_value))
+        yield_mb_run_value_float.append(float(yield_mb_value.replace(',','')))
+        cluster_pf_run_value_float.append(float(cluster_pf_value.replace(',','')))
+
+    # get the chemistry type for the run, that will be used to compare runs with the same chemistry value
+    chem_high_mid = RunningParameters.objects.get(runName_id__exact = run_object).Chemistry
+    run_different_chemistry = RunningParameters.objects.all(). exclude(Chemistry__exact = chem_high_mid)
+    run_year = run_object.run_date.timetuple().tm_year
+
+    start_date = str(run_year) + '-1-1'
+    end_date = str(run_year) +'-12-31'
+    same_run_in_year = RunProcess.objects.filter(run_date__range=(start_date, end_date)).exclude(runName__in = run_different_chemistry)
+
+    same_runs_in_year_list = []
+    for run in same_run_in_year :
+        same_runs_in_year_list.append(run.get_run_id())
+
+    all_lane_summary = StatsLaneSummary.objects.filter(runprocess_id__in = same_runs_in_year_list).exclude(defaultAll__isnull = False).exclude(runprocess_id__exact =run_object)
+    for item in all_lane_summary:
+        q_30_value, mean_value , yield_mb_value , cluster_pf_value = item.get_stats_info().split(';')
+
+        q_30_all_value_float.append(float(q_30_value))
+        mean_all_value_float.append(float(mean_value))
+        yield_mb_all_value_float.append(float(yield_mb_value.replace(',','')))
+        cluster_pf_all_value_float.append(float(cluster_pf_value.replace(',','')))
+
+    # normalized data to display in the graphic
+    q_30_run_normalized , q_30_all_normalized = normalized_data (q_30_run_value_float, q_30_all_value_float)
+    mean_run_normalized , mean_all_normalized = normalized_data (mean_run_value_float, mean_all_value_float)
+    yield_mb_run_normalized , yield_mb_all_normalized = normalized_data (yield_mb_run_value_float, yield_mb_all_value_float)
+    cluster_pf_run_normalized , cluster_pf_all_normalized = normalized_data (cluster_pf_run_value_float, cluster_pf_all_value_float)
+    q30_run_str = ','.join(q_30_run_normalized)
+    mean_run_str = ','.join(mean_run_normalized)
+    yield_mb_run_str = ','.join(yield_mb_run_normalized)
+    cluster_pf_run_str = ','.join(cluster_pf_run_normalized)
+
+    q_30_all_str = ','.join(q_30_all_normalized)
+    mean_all_str = ','.join(mean_all_normalized)
+    yield_mb_all_str = ','.join(yield_mb_all_normalized)
+    cluster_pf_all_str = ','.join(cluster_pf_all_normalized)
+
+    # prepare the graphic 
+    heading =  run_object.get_run_name() +' versus runs executed on '
+    sub_caption = str( 'year ' + str(run_year))
+    theme = 'fint'
+    x_axis_name = 'Quatilty measures (normalized data)'
+    y_axis_name = 'Normalized values '
+    series = [[run_object.runName,'#0075c2', '#1aaf5d'],['All runs','#f45b00','#f2c500']]
+    data = [[q30_run_str,mean_run_str, yield_mb_run_str, cluster_pf_run_str],[q_30_all_str, mean_all_str, yield_mb_all_str, cluster_pf_all_str]]
+
+    categories = ['Q > 30', 'Mean Quality Score', 'Yield MB', 'Cluster PF']
+    data_source = bloxplot_graphic(heading, sub_caption, x_axis_name, y_axis_name, theme, categories, series, data)
+
+    return FusionCharts("boxandwhisker2d", "box1" , "800", "400", "box_chart1", "json", data_source).render()
+
+
 def graphics_state (state):
     '''
     Description:
@@ -26,7 +141,7 @@ def graphics_state (state):
     return:
         the index value of g_value and g_color [index]
     '''
-    state_list = ['ERROR',  'Recorded',  'Sample Sent', 'Processing Run', 
+    state_list = ['Error',  'Recorded',  'Sample Sent', 'Processing Run', 
                 'Processed Run', 'Processing Bcl2fastq', 'Processed Bcl2fastq',
                 'Completed', 'Cancelled' ]
     g_value = [ 10, 15, 30, 45, 60, 75, 90, 100, 10]
@@ -35,6 +150,7 @@ def graphics_state (state):
     index = state_list.index(state)
     
     return g_value[index], g_color [index]
+
 
 def get_run_graphics (run_object) :
     '''
@@ -65,6 +181,7 @@ def get_run_graphics (run_object) :
     for index_graph in range (len(graphics)):
         run_graphics.append([graphic_text[index_graph], os.path.join(folder_graphic, graphics[index_graph])])
     return  run_graphics
+
 
 def get_run_read_data(run_object, num_of_reads, number_of_lanes) :
     '''
@@ -101,7 +218,6 @@ def get_run_read_data(run_object, num_of_reads, number_of_lanes) :
         
     #info_dict['reads']= info_reads_dict
     return info_reads_dict
-
 
 
 def get_run_summary_data(run_object, num_of_reads) :
@@ -143,7 +259,8 @@ def get_run_summary_data(run_object, num_of_reads) :
             per_read_run_summary.append(run_summary_values)
     
     return total_run_summary, per_read_run_summary
-    
+
+
 def get_running_parameters (run_object) :
     '''
     Description:
@@ -176,6 +293,7 @@ def get_running_parameters (run_object) :
         rp_info.append([rp_list[i], rp_data[i]])
 
     return rp_info
+
 
 def match_unkownbarcodes_with_index (unknow_dict) :
     '''
@@ -280,28 +398,6 @@ def get_information_run(run_object):
                                 that the selected run
         run_lane_summary # Lane summary object for the run
         run_state   # state of the run
-        run_year    # contains the year of the selected run
-        same_run_in_year    # contains all the runs in the year of the 
-                            selected run excluding those which do not
-                            have the same chemistry value
-        same_runs_in_year_list  # contains the id list of the same_runs_in_year
-        start_date  # it is the first of january of the run_year
-        end_date    # it is the 31st of december of the run_year
-        
-        q_30_value      # string value containing the q_30 value from lane
-        q_30_run_value_float  # q30 _value in float format
-        q_30_run_normalized # q_30 normalized value for run
-        q_30_all_normalized # q_30 normalized value for all runs
-        q30_run_str     # q_30 normalized value in string format
-        q_30_all_str    # q_30_all_normalized in string format
-        ################################################################
-        #### same structure for mean_value, yield_mb and cluster_pf
-        ################################################################
-        q_30_value_list # list containing the q30 values in float format
-        q_30_run_value
-        q_30_run_value_float
-        q_30_all_value_float
-        
     Return:
         info_dict with all information collected in the function
     '''
@@ -311,16 +407,14 @@ def get_information_run(run_object):
     p_library_kits = []
     ## collect the state to get the valid information of run that matches the run name
     run_state=run_object.get_state()
-    
+    info_dict['run_state'] = run_state
     # if run is processing data to insert in table show a message that
     # going back again after some minutes .
-    no_stable_information = ['Processing Demultiplexing', 'Processing test', None]
-    if run_state in no_stable_information :
+    no_valid_information = ['Processing Demultiplexing', 'Processing test', 'None', 'Pre-Recorded']
+    if run_state in no_valid_information :
         info_dict['no_stable_data'] = [[run_object.get_run_name(), run_state]]
         return info_dict
-    if run_state == 'Pre-Recorded' :
-        info_dict['no_stable_data'] = [[run_object.get_run_name(), run_state]]
-        return info_dict
+        
     # allow to change the run name in case that run state was recorded or Sample Sent
     if run_state == 'Recorded' or run_state == 'Sample Sent':
         info_dict['change_run_name'] = [[run_object.get_run_name(), run_object.get_run_id()]]
@@ -336,9 +430,14 @@ def get_information_run(run_object):
     
     info_dict['run_name'] = run_object.get_run_name()
     info_dict['data']=run_info
-    info_dict['run_state'] = run_state
+    
     info_dict['Sample_Sheet'] = [['Sample Sheet File', run_object.get_sample_file()]]
     info_dict['graphic_value'], info_dict['graphic_color'] = graphics_state(run_state)
+    
+    if run_state == 'Error' :
+        # get the state before the error to present run information
+        run_state = run_object.get_state_before_error()
+        info_dict['error_run'] = [[run_object.get_run_name(), run_state, run_object.get_error_text()]]
     
     p_list= Projects.objects.filter(runprocess_id=run_object)
     if p_list !='':
@@ -379,102 +478,18 @@ def get_information_run(run_object):
         info_dict ['reads'] = get_run_read_data(run_object, num_of_reads, number_of_lanes) 
 
         info_dict['runGraphic'] = get_run_graphics (run_object)
-    
-    
+
     ## get the stats information if run is completed
     if run_state == 'Completed':
-        # finding the running parameters index for the run
-        #run_parameter_object = RunningParameters.objects.get(pk=run_id)
-
-        
-        
-        ''''
-        rp_list=['Run ID','Experiment Name ','RTA version ','System Suite Version','Library ID ','Chemistry','Run Start Date', 'Analysis Work Flow Type','Run Management Type','Planned Read1 Cycles',
-                'Planned Read2 Cycles','Planned Index1 Read Cycles','Planned Index2 Read Cycles','Application Version','Num Tiles per Swatch','Image Channel',
-                'Flowcel','Image Dimensions', 'Flowcell Layout']
-        rp_data=run_parameter_object.get_run_parameters_info().split(';')
-        for i in range (len(rp_list)):
-            if i == 'Image Channel':
-                img_data_list=rp_data[i].split(',')
-                rp_info.append([rp_list[i],[img_data_list]])
-            else:
-                rp_info.append([rp_list[i], rp_data[i]])
-        info_dict['parameters']=rp_info
-        '''
-        # prepare the data for q-means
-        # fetch Q>30 , mean_q and yield mb for all projects per lane to create the boxplot
-        run_id = run_object.get_run_id()
-        run_lane_summary = StatsLaneSummary.objects.filter(runprocess_id__exact =run_id ).exclude(defaultAll__isnull = False)
-        q_30_value_list, mean_value_list = [] , []
-        q_30_run_value , mean_run_value = [] , []
-        q_30_run_value_float , mean_run_value_float , yield_mb_run_value_float, cluster_pf_run_value_float = [] , [], [] , []
-        q_30_all_value_float , mean_all_value_float , yield_mb_all_value_float , cluster_pf_all_value_float = [] , [] , [], []
-
-        for item in run_lane_summary:
-            q_30_value, mean_value , yield_mb_value , cluster_pf_value, = item.get_stats_info().split(';')
-
-            q_30_run_value_float.append(float(q_30_value))
-            mean_run_value_float.append(float(mean_value))
-            yield_mb_run_value_float.append(float(yield_mb_value.replace(',','')))
-            cluster_pf_run_value_float.append(float(cluster_pf_value.replace(',','')))
-
-        # get the chemistry type for the run, that will be used to compare runs with the same chemistry value
-        chem_high_mid = RunningParameters.objects.get(runName_id__exact = run_id).Chemistry
-        run_different_chemistry = RunningParameters.objects.all(). exclude(Chemistry__exact = chem_high_mid)
-        run_year = run_object.run_date.timetuple().tm_year
-
-        start_date = str(run_year) + '-1-1'
-        end_date = str(run_year) +'-12-31'
-        same_run_in_year = RunProcess.objects.filter(run_date__range=(start_date, end_date)).exclude(runName__in = run_different_chemistry)
-
-        same_runs_in_year_list = []
-        for run in same_run_in_year :
-            same_runs_in_year_list.append(run.id)
-
-
-        all_lane_summary = StatsLaneSummary.objects.filter(runprocess_id__in = same_runs_in_year_list).exclude(defaultAll__isnull = False).exclude(runprocess_id__exact =run_id)
-        for item in all_lane_summary:
-            q_30_value, mean_value , yield_mb_value , cluster_pf_value = item.get_stats_info().split(';')
-
-            q_30_all_value_float.append(float(q_30_value))
-            mean_all_value_float.append(float(mean_value))
-            yield_mb_all_value_float.append(float(yield_mb_value.replace(',','')))
-            cluster_pf_all_value_float.append(float(cluster_pf_value.replace(',','')))
-
-        q_30_run_normalized , q_30_all_normalized = normalized_data (q_30_run_value_float, q_30_all_value_float)
-        mean_run_normalized , mean_all_normalized = normalized_data (mean_run_value_float, mean_all_value_float)
-        yield_mb_run_normalized , yield_mb_all_normalized = normalized_data (yield_mb_run_value_float, yield_mb_all_value_float)
-        cluster_pf_run_normalized , cluster_pf_all_normalized = normalized_data (cluster_pf_run_value_float, cluster_pf_all_value_float)
-        q30_run_str = ','.join(q_30_run_normalized)
-        mean_run_str = ','.join(mean_run_normalized)
-        yield_mb_run_str = ','.join(yield_mb_run_normalized)
-        cluster_pf_run_str = ','.join(cluster_pf_run_normalized)
-
-        q_30_all_str = ','.join(q_30_all_normalized)
-        mean_all_str = ','.join(mean_all_normalized)
-        yield_mb_all_str = ','.join(yield_mb_all_normalized)
-        cluster_pf_all_str = ','.join(cluster_pf_all_normalized)
-
-
-
-        heading =  run_object.runName +' versus runs executed on '
-        sub_caption = str( 'year ' + str(run_year))
-        theme = 'fint'
-        x_axis_name = 'Quatilty measures (normalized data)'
-        y_axis_name = 'Normalized values '
-        series = [[run_object.runName,'#0075c2', '#1aaf5d'],['All runs','#f45b00','#f2c500']]
-        data = [[q30_run_str,mean_run_str, yield_mb_run_str, cluster_pf_run_str],[q_30_all_str, mean_all_str, yield_mb_all_str, cluster_pf_all_str]]
-
-
-        categories = ['Q > 30', 'Mean Quality Score', 'Yield MB', 'Cluster PF']
-        data_source = bloxplot_graphic(heading, sub_caption, x_axis_name, y_axis_name, theme, categories, series, data)
-        info_dict ['boxplot'] = FusionCharts("boxandwhisker2d", "box1" , "800", "400", "box_chart1", "json", data_source).render()
+        # prepare the data for run comparations
+        info_dict ['boxplot'] = get_boxplot_comparation_runs (run_object)
 
         percent_projects = {}
+        
         # get the demultiplexion information for projects included in the run
         percent_lane = []
         for project_demultiplexion in p_list :
-            lanes_for_percent_graphic = StatsLaneSummary.objects.filter(runprocess_id__exact = run_id, project_id = project_demultiplexion.id )
+            lanes_for_percent_graphic = StatsLaneSummary.objects.filter(runprocess_id__exact = run_object, project_id = project_demultiplexion.id )
             for lane in lanes_for_percent_graphic :
                 percent_lane.append(float(lane.percentLane))
             percent_projects[project_demultiplexion.projectName] =format(statistics.mean(percent_lane),'2f')
@@ -484,7 +499,7 @@ def get_information_run(run_object):
 
         percent_default_lane = []
 
-        default_lanes_for_percent_graphic = StatsLaneSummary.objects.filter(runprocess_id__exact = run_id, defaultAll__exact = 'default')
+        default_lanes_for_percent_graphic = StatsLaneSummary.objects.filter(runprocess_id__exact = run_object, defaultAll__exact = 'default')
         for default_lane in default_lanes_for_percent_graphic :
             percent_default_lane.append(float(default_lane.percentLane))
 
@@ -503,7 +518,7 @@ def get_information_run(run_object):
 
         fl_data_display=[]
 
-        fl_summary_id = StatsFlSummary.objects.filter(runprocess_id__exact =run_id , project_id__isnull=True, defaultAll='all')
+        fl_summary_id = StatsFlSummary.objects.filter(runprocess_id__exact =run_object , project_id__isnull=True, defaultAll='all')
         fl_list = ['Cluster (Raw)', 'Cluster (PF)', 'Yield (MBases)', 'Number of Samples']
         fl_data_display.append(fl_list)
         fl_values = fl_summary_id[0].get_fl_summary().split(';')
@@ -512,7 +527,7 @@ def get_information_run(run_object):
 
         # prepare the data for Lane Summary
         lane_data_display = []
-        lane_summary_id = StatsLaneSummary.objects.filter(runprocess_id__exact =run_id , project_id__isnull=True, defaultAll='all')
+        lane_summary_id = StatsLaneSummary.objects.filter(runprocess_id__exact =run_object , project_id__isnull=True, defaultAll='all')
         lane_list = ['Lane', 'PF Clusters', '% of the lane','% Perfect barcode',
                     '% One mismatch barcode','Yield (Mbases)','% >= Q30 bases',
                     'Mean Quality Score']
@@ -525,7 +540,7 @@ def get_information_run(run_object):
         # prepare the data for default Flowcell summary
         default_fl_data_display=[]
 
-        default_fl_summary_id = StatsFlSummary.objects.filter(runprocess_id__exact =run_id , project_id__isnull=True, defaultAll='default')
+        default_fl_summary_id = StatsFlSummary.objects.filter(runprocess_id__exact =run_object , project_id__isnull=True, defaultAll='default')
         default_fl_data_display.append(fl_list)
         default_fl_values = default_fl_summary_id[0].get_fl_summary().split(';')
         default_fl_data_display.append(default_fl_values)
@@ -533,7 +548,7 @@ def get_information_run(run_object):
 
         # prepare the data for default Lane Summary
         default_lane_data_display = []
-        default_lane_summary_id = StatsLaneSummary.objects.filter(runprocess_id__exact =run_id , project_id__isnull=True, defaultAll='default')
+        default_lane_summary_id = StatsLaneSummary.objects.filter(runprocess_id__exact =run_object , project_id__isnull=True, defaultAll='default')
         default_lane_data_display.append(lane_list)
         for default_lane_sum in default_lane_summary_id:
             default_lane_values = default_lane_sum.get_lane_summary().split(';')
@@ -546,7 +561,7 @@ def get_information_run(run_object):
             lane_unknow_barcode = []
             lane_number=str(lane_un +1)
 
-            unknow_bar_id = RawTopUnknowBarcodes.objects.filter(runprocess_id__exact =run_id , lane_number__exact = lane_number)
+            unknow_bar_id = RawTopUnknowBarcodes.objects.filter(runprocess_id__exact =run_object , lane_number__exact = lane_number)
             #
             for item_id in unknow_bar_id:
                 #
@@ -571,29 +586,9 @@ def get_information_run(run_object):
 
         info_dict ['unknow_pie3d'] = unknow_pie3d.render()
 
-        
-
         info_dict['match_unknows']= match_unkownbarcodes_with_index(unknow_dict)
 
-        
-        
-        
-        
-        
-        '''
-        for read_number in range (1, num_of_reads +1) :
-            read_summary_values=[]
-            for lane_number in range(1, number_of_lanes+1):
-                read_lane_id= StatsRunRead.objects.filter(runprocess_id__exact =run_id, read__exact = read_number, lane__exact = lane_number)
-                lane_values=read_lane_id[0].get_bin_run_read().split(';')
-                read_summary_values.append(lane_values)
-            #read_number_index = str('laneSummary'+str(read_number))
-            read_number_index2 = str('Read '+str(read_number))
-            info_reads_dict[read_number_index2] = read_summary_values
-            #info_dict[read_number_index] = read_summary_values
-        info_dict['reads']= info_reads_dict
-        '''
-        
+
     return info_dict
 
 

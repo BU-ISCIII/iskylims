@@ -38,6 +38,25 @@
             width: 5em;
             }
         </style>
+        
+        {% if display_one_run.error_run %}
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-7">
+                <div class="panel panel-default">
+                    {% for run, state, error_text in display_one_run.error_run %}
+                        <div class="panel-heading">Information for the run : <strong>{{ run }}</strong>  </div>
+                        <div class="panel-body">
+                        <h3>The Run {{ run }} is in {{state }} state. </h3>
+                        <BR>
+                        <p>The system is now processing output files and stored the result in database.</p>
+                        <BR>
+                        Please check again later.  
+                         </div> <!--  end of panel body -->
+                    {% endfor %}
+                </div> <!--  end of panel  -->
+            </div> <!--  end of col-sm-7 -->
+        </div> <!--  end of row space -->
+        {% endif %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-7">
             <div class="panel panel-default">

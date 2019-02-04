@@ -62,9 +62,14 @@ class RunProcess(models.Model):
             rundate=self.run_date.strftime("%B %d, %Y")
         return rundate
 
+    def get_error_text (self):
+        return '%s' %(self.runError)
 
     def get_state(self):
         return '%s' %(self.state)
+
+    def get_state_before_error(self):
+        return '%s' %(self.stateBeforeError)
 
     def get_info_process (self):
         generated_date=self.generatedat.strftime("%I:%M%p on %B %d, %Y")
