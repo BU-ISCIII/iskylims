@@ -293,9 +293,12 @@ class Projects(models.Model):
         return '%s' %(self.id)
 
     def set_project_state (self, state):
-        self.projectState = ProjectStates.objects.get(projectStateName__exact = state)
-        self.save()
-        return True
+        if ProjectStates.objects.filter(projectStateName__exact = state).exists():
+            self.projectState = ProjectStates.objects.get(projectStateName__exact = state)
+            self.save()
+            return True
+        else:
+            return False
 
 
 class RunningParametersManager (models.Manager) :

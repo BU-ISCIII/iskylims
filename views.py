@@ -46,7 +46,7 @@ def get_sample_file (request):
     ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(name = WETLAB_MANAGER)
+            groups = Group.objects.get(name = wetlab_config.WETLAB_MANAGER)
             if groups not in request.user.groups.all():
                 return render (
                     request,'iSkyLIMS_wetlab/error_page.html',
@@ -571,7 +571,7 @@ def search_run (request):
     # check user privileges
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(name=WETLAB_MANAGER)
+            groups = Group.objects.get(name=wetlab_config.WETLAB_MANAGER)
             if groups not in request.user.groups.all():
                 allowed_all_runs = False
                #return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
@@ -659,8 +659,8 @@ def search_run (request):
         ### Check if state is not empty
         if run_state != '':
             s_state = RunStates.objects.get(runStateName__exact = run_state) 
-            if runs_found.filter(state__exact = s_state).exists():
-                runs_found = runs_found.filter(state__exact = s_state).order_by('runName')
+            if runs_found.filter(state__runStateName__exact = s_state).exists():
+                runs_found = runs_found.filter(state__runStateName__exact = s_state).order_by('runName')
             else :
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ,
                                                                     'and the state', run_state ]})
@@ -845,8 +845,8 @@ def search_project (request):
 
                     # check if the date in the form match in project database
         if (project_state !='' ):
-            if projects_found.filter(procState__exact = project_state):
-                projects_found = projects_found.filter(procState__exact = project_state)
+            if projects_found.filter(projectState__exact = project_state):
+                projects_found = projects_found.filter(projectState__exact = project_state)
             else :
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There ane not Projects containing ', project_name,
                                                'in state', project_state ]})
@@ -1144,7 +1144,7 @@ def incompleted_runs (request) :
 
 def check_user_access (request, project_found_id ) :
 
-    groups = Group.objects.get(name='wetlabManager')
+    groups = Group.objects.get(name = wetlab_config.WETLAB_MANAGER)
     # check if user belongs to WetlabManager . If true allow to see the page
     if groups not in request.user.groups.all():
         #check if project belongs to the same user as the one requesting the page
@@ -1623,13 +1623,13 @@ def stats_per_researcher (request):
             r_name = User.objects.get(username__icontains = r_name).username
             r_name_id = User.objects.get(username__icontains = r_name).id
             if Projects.objects.filter(user_id__exact =r_name_id).exists():
-                if Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed").exists():
-                    r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed").order_by('project_run_date')
+                if Projects.objects.filter(user_id__exact =r_name_id, projectState__projectStateName__exact = "Completed").exists():
+                    r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, projectState__projectStateName__exact = "Completed").order_by('project_run_date')
 
                 # check if start and end date are present in the form
                     if start_date != '' and end_date !='':
-                        if Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed", project_run_date__range=(start_date, end_date)).exists():
-                            r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed", project_run_date__range=(start_date, end_date))
+                        if Projects.objects.filter(user_id__exact =r_name_id, projectState__projectStateName__exact = "Completed", project_run_date__range=(start_date, end_date)).exists():
+                            r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, projectState__projectStateName__exact = "Completed", project_run_date__range=(start_date, end_date))
                             #r_project_by_researcher = r_project_by_researcher.filter(generatedat__range=(start_date, end_date))
                         else:
                             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Researcher does not have projects associated for the period ',
@@ -1637,15 +1637,15 @@ def stats_per_researcher (request):
                                                                 'ADVICE:', 'Contact with your administrator']})
                     if start_date != '' and end_date =='':
                         end_date = str(datetime.datetime.now().date())
-                        if Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed", project_run_date__range=(start_date, end_date)).exists():
-                            r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed", project_run_date__range=(start_date, end_date))
+                        if Projects.objects.filter(user_id__exact =r_name_id, projectState__projectStateName__exact = "Completed", project_run_date__range=(start_date, end_date)).exists():
+                            r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, projectState__projectStateName__exact = "Completed", project_run_date__range=(start_date, end_date))
                         else:
                             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Researcher does not have projects associated for the period ',
                                                     'starting date  = ', start_date,
                                                                 'ADVICE:', 'Contact with your administrator']})
                     if start_date == '' and end_date !='':
-                        if Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed", project_run_date__lte= end_date).exists():
-                            r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, procState__exact = "Completed", project_run_date__lte = end_date)
+                        if Projects.objects.filter(user_id__exact =r_name_id, projectState__projectStateName__exact = "Completed", project_run_date__lte= end_date).exists():
+                            r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, projectState__projectStateName__exact = "Completed", project_run_date__lte = end_date)
                         else:
                             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Researcher does not have projects associated for the period ',
                                                     'ending date  = ', end_date,
@@ -1684,12 +1684,12 @@ def stats_per_researcher (request):
                         projects_name_dict[sequencer_in_project].append(p_name)
                         r_project_id = project_researcher.id
                         projects_id_list[sequencer_in_project].append(r_project_id)
-                        p_researcher_num_sample[sequencer_in_project][p_name] = NextSeqStatsFlSummary.objects.get(project_id__exact = r_project_id).sampleNumber
+                        p_researcher_num_sample[sequencer_in_project][p_name] = StatsFlSummary.objects.get(project_id__exact = r_project_id).sampleNumber
                         p_researcher_date [sequencer_in_project][p_name] = project_researcher.get_date()
                         p_researcher_lib_kit[sequencer_in_project][p_name]= project_researcher.get_library_name()
                         #
                         p_researcher_sequencer[sequencer_in_project][p_name] = str(project_researcher.runprocess_id.sequencerModel)
-                        lanes_in_project = NextSeqStatsLaneSummary.objects.filter( project_id__exact = r_project_id)
+                        lanes_in_project = StatsLaneSummary.objects.filter( project_id__exact = r_project_id)
                         for lane in lanes_in_project :
                             q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane.get_stats_info().split(';')
                             q_30_list.append(float(q_30_value))
@@ -1796,13 +1796,14 @@ def stats_per_researcher (request):
                     total_lanes_summary = {}
                     
                     for sequencer in projects_name_dict.keys() :
-                        runs_sequencer = RunProcess.objects.filter(sequencerModel__exact = Machines.objects.get(machineName = sequencer).id)
+                        #import pdb; pdb.set_trace()
+                        runs_sequencer = RunProcess.objects.filter(sequencerModel__machineName__exact = sequencer)
                         run_sequencer_id_list = []
                         for run in runs_sequencer :
                             run_sequencer_id_list.append(run.pk)
                         
-                        if NextSeqStatsLaneSummary.objects.filter(runprocess_id__in  = run_sequencer_id_list).exclude(defaultAll__isnull = False).exclude(project_id__in = projects_id_list[sequencer]).exists():
-                            total_lanes_summary[sequencer] = NextSeqStatsLaneSummary.objects.filter(runprocess_id__in  = run_sequencer_id_list).exclude(defaultAll__isnull = False).exclude(project_id__in = projects_id_list[sequencer])
+                        if StatsLaneSummary.objects.filter(runprocess_id__in  = run_sequencer_id_list).exclude(defaultAll__isnull = False).exclude(project_id__in = projects_id_list[sequencer]).exists():
+                            total_lanes_summary[sequencer] = StatsLaneSummary.objects.filter(runprocess_id__in  = run_sequencer_id_list).exclude(defaultAll__isnull = False).exclude(project_id__in = projects_id_list[sequencer])
                         else:
                             total_lanes_summary[sequencer] = ''
                     
@@ -1919,8 +1920,8 @@ def stats_per_time (request):
         #############################################################
         if (start_date != '' and end_date != ''):
             stat_per_time ={}
-            if (RunProcess.objects.filter( runState='Completed', run_date__range=(start_date, end_date)).exists()):
-                run_stats_list=RunProcess.objects.filter(runState='Completed', run_date__range=(start_date, end_date)).order_by('run_date')
+            if (RunProcess.objects.filter( state__runStateName='Completed', run_date__range=(start_date, end_date)).exists()):
+                run_stats_list=RunProcess.objects.filter(state__runStateName='Completed', run_date__range=(start_date, end_date)).order_by('run_date')
                 #
 
                 run_list={}
@@ -1960,7 +1961,7 @@ def stats_per_time (request):
                 #############################################################
                 ### collect statistics for Projects
                 if (Projects.objects.filter( procState='Completed', project_run_date__range=(start_date, end_date)).exists()):
-                    project_found_list = Projects.objects.filter( procState='Completed', project_run_date__range=(start_date, end_date))
+                    project_found_list = Projects.objects.filter( projectState__projectStateName='Completed', project_run_date__range=(start_date, end_date))
 
                     project_list={}
                     project_date_name ={}
@@ -2001,10 +2002,10 @@ def stats_per_time (request):
 
                 for run in run_stats_list:
                     run_id = run.id
-                    number_of_lanes=get_machine_lanes(run_id)
+                    number_of_lanes=run.get_machine_lanes()
                     top_unbarcode_all_runs  = {}
                     for lane_number in range (1, number_of_lanes +1):
-                        lane_unbarcodes = RawTopUnknowBarcodes.objects.filter(runprocess_id__exact =run_id, lane_number__exact = lane_number)
+                        lane_unbarcodes = RawTopUnknowBarcodes.objects.filter(runprocess_id =run, lane_number__exact = lane_number)
                         for lane_unbarcode in lane_unbarcodes :
                             if not lane_number in count_unbarcode :
                                 count_unbarcode[lane_number] = {}
@@ -2075,9 +2076,9 @@ def get_list_of_libraries_values (library_found, q30_comparations, mean_comparat
         project_to_compare_id = project_to_compare.id
         q30_compare_lib, mean_compare_lib, yield_mb_compare_lib = [], [] , []
         # get the number of lanes by quering the SequencerModel in the RunProcess 
-        number_of_lanes = get_machine_lanes(project_to_compare.runprocess_id.id)
+        number_of_lanes = project_to_compare.runprocess_id.get_machine_lanes()
         for lane_number in range (1,number_of_lanes + 1):
-            lane_in_project = NextSeqStatsLaneSummary.objects.get(project_id__exact = project_to_compare_id, lane__exact = lane_number)
+            lane_in_project = StatsLaneSummary.objects.get(project_id__exact = project_to_compare_id, lane__exact = lane_number)
             q_30_value, mean_q_value, yield_mb , cluster_pf = lane_in_project.get_stats_info().split(';')
             q30_compare_lib.append(float(q_30_value))
             mean_compare_lib.append(float(mean_q_value))
@@ -2128,7 +2129,7 @@ def stats_per_library (request):
             else:
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Library containing ', library_kit_name]})
         else:
-            library_found = Projects.objects.filter(procState__exact = 'Completed')
+            library_found = Projects.objects.filter(projectState__projectStateName__exact = 'Completed')
         if (start_date != '' and end_date != ''):
             if library_found.filter(project_run_date__range=(start_date, end_date)).exists():
                  library_found = library_found.filter(project_run_date__range=(start_date, end_date))
@@ -2174,7 +2175,7 @@ def stats_per_library (request):
                     project_id = project.id
                     # Get quality information for each Lane summary of the project id
                     #
-                    lane_in_project = NextSeqStatsLaneSummary.objects.get(project_id__exact = project_id, lane__exact = lane_number)
+                    lane_in_project = StatsLaneSummary.objects.get(project_id__exact = project_id, lane__exact = lane_number)
                     q_30_value, mean_q_value, yield_mb , cluster_pf = lane_in_project.get_stats_info().split(';')
                     project_name = project.get_project_name()
                     q_30_lane[project_name] = q_30_value
@@ -2259,7 +2260,7 @@ def stats_per_library (request):
                     #q_30_lane , mean_q_lane , yield_mb_lane = {} , {} ,{}
                     q30_compare_lib, mean_compare_lib, yield_mb_compare_lib = [], [] , []
                     for lane_number in range (1,5):
-                        lane_in_project = NextSeqStatsLaneSummary.objects.get(project_id__exact = project_to_compare_id, lane__exact = lane_number)
+                        lane_in_project = StatsLaneSummary.objects.get(project_id__exact = project_to_compare_id, lane__exact = lane_number)
                         q_30_value, mean_q_value, yield_mb , cluster_pf = lane_in_project.get_stats_info().split(';')
                         q30_compare_lib.append(float(q_30_value))
                         mean_compare_lib.append(float(mean_q_value))
@@ -2405,9 +2406,9 @@ def annual_report (request) :
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Annual Report cannot be done on the future  ',
                             'the input year in the Form  ',year_selected , 'is not allowed']})
 
-        completed_run_in_year = RunProcess.objects.filter(run_date__year = year_selected, runState__exact = 'Completed')
+        completed_run_in_year = RunProcess.objects.filter(run_date__year = year_selected, state__runStateName__exact = 'Completed')
         #
-        uncompleted_run_in_year = RunProcess.objects.filter(run_date__year = year_selected).exclude(runState__exact = 'Completed')
+        uncompleted_run_in_year = RunProcess.objects.filter(run_date__year = year_selected).exclude(state__runStateName__exact = 'Completed')
         if len (completed_run_in_year)  == 0 and len (uncompleted_run_in_year) == 0:
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Annual Report cannot be generated because there is no runs performed the year ', year_selected ]})
 
@@ -2434,8 +2435,8 @@ def annual_report (request) :
         annual_report_information ['graphic_completed_run'] = graphic_completed_run.render()
 
         #
-        ### Collecting information from NextSeqStatsBinRunSummary
-        run_found_bin_summary_year = NextSeqStatsBinRunSummary.objects.filter(stats_summary_run_date__year = year_selected, level__exact = 'Total')
+        ### Collecting information from StatsRunSummary
+        run_found_bin_summary_year = StatsRunSummary.objects.filter(stats_summary_run_date__year = year_selected, level__exact = 'Total')
         q30_year, aligned_year, error_rate_year  = {} , {} , {}
         for run_bin_summary in run_found_bin_summary_year :
             bin_summary_data = run_bin_summary.get_bin_run_summary().split(';')
@@ -2446,7 +2447,7 @@ def annual_report (request) :
         annual_report_information ['aligned_data'] = aligned_year
         annual_report_information ['error_rate_data'] = error_rate_year
         annual_report_information ['q30_data'] = q30_year
-        # graphics for NextSeqStatsBinRunSummary
+        # graphics for StatsRunSummary
         heading = 'Aligned % for the runs done on year '+ str(year_selected )
         data_source = column_graphic_for_year_report (heading, 'Aligned  ' , 'Run names ', 'Aligned (in %)', 'ocean', aligned_year)
         aligned_year_graphic = FusionCharts("column3d", 'aligned_year' , "600", "300", 'aligned_chart-3', "json", data_source)
@@ -2551,9 +2552,9 @@ def monthly_report (request) :
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Monthly Report cannot be done on the future  ',
                             'the input month in the Form  ', month_selected , 'is not allowed']})
 
-        completed_run_in_year_month = RunProcess.objects.filter(run_date__year = year_selected,  run_date__month = month_selected ,runState__exact = 'Completed')
+        completed_run_in_year_month = RunProcess.objects.filter(run_date__year = year_selected,  run_date__month = month_selected ,state__runStateName__exact = 'Completed')
         #
-        uncompleted_run_in_year_month = RunProcess.objects.filter(run_date__year = year_selected, run_date__month = month_selected).exclude(runState__exact = 'Completed')
+        uncompleted_run_in_year_month = RunProcess.objects.filter(run_date__year = year_selected, run_date__month = month_selected).exclude(state__runStateName__exact = 'Completed')
         if len (completed_run_in_year_month)  == 0 and len (uncompleted_run_in_year_month) == 0:
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Montly Report cannot be generated because there is no runs performed the year ', year_selected ]})
 
@@ -2619,8 +2620,8 @@ def monthly_report (request) :
         pie_p_user_monthly_graphic = FusionCharts("pie3d", "pie_project_user_month" , "400", "300", "p_user_chart-2", "json", data_source)
         monthly_report_information ['pie_p_user_monthly_graphic'] = pie_p_user_monthly_graphic.render()
 
-        ### Collecting information from NextSeqStatsBinRunSummary
-        run_found_bin_summary_month = NextSeqStatsBinRunSummary.objects.filter(stats_summary_run_date__year = year_selected, stats_summary_run_date__month = month_selected, level__exact = 'Total')
+        ### Collecting information from StatsRunSummary
+        run_found_bin_summary_month = StatsRunSummary.objects.filter(stats_summary_run_date__year = year_selected, stats_summary_run_date__month = month_selected, level__exact = 'Total')
         q30_month, aligned_month, error_rate_month  = {} , {} , {}
         for run_bin_summary in run_found_bin_summary_month :
             bin_summary_data = run_bin_summary.get_bin_run_summary().split(';')
@@ -2631,7 +2632,7 @@ def monthly_report (request) :
         monthly_report_information ['aligned_data'] = aligned_month
         monthly_report_information ['error_rate_data'] = error_rate_month
         monthly_report_information ['q30_data'] = q30_month
-        # graphics for NextSeqStatsBinRunSummary
+        # graphics for StatsRunSummary
         heading = 'Aligned % for the runs done on '+ str(month_selected + ' - ' + year_selected)
         data_source = column_graphic_for_year_report (heading, 'Aligned  ' , 'Run names ', 'Aligned (in %)', 'ocean', aligned_month)
         aligned_month_graphic = FusionCharts("column3d", 'aligned_year' , "600", "300", 'aligned_chart-3', "json", data_source)
@@ -2688,9 +2689,9 @@ def quarter_report (request) :
                             'the selected Quarter ', quarter_string [quarter_selected] + str(year_selected) , 'is not allowed']})
 
         #
-        completed_run_in_quarter = RunProcess.objects.filter( run_date__range =(start_date, end_date) , runState__exact = 'Completed')
+        completed_run_in_quarter = RunProcess.objects.filter( run_date__range =(start_date, end_date) , state__runStateName = 'Completed')
         #
-        uncompleted_run_in_quarter = RunProcess.objects.filter(run_date__range =(start_date, end_date)).exclude(runState__exact = 'Completed')
+        uncompleted_run_in_quarter = RunProcess.objects.filter(run_date__range =(start_date, end_date)).exclude(state__runStateName = 'Completed')
         if len (completed_run_in_quarter)  == 0 and len (uncompleted_run_in_quarter) == 0:
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Quater Report cannot be generated because there is no runs performed the Quarter ',
                             quarter_string [quarter_selected] + str(year_selected) ]})
@@ -2718,8 +2719,8 @@ def quarter_report (request) :
         quarter_report_information ['graphic_completed_run'] = graphic_completed_run.render()
 
         #
-        ### Collecting information from NextSeqStatsBinRunSummary
-        run_found_bin_summary_quarter = NextSeqStatsBinRunSummary.objects.filter(stats_summary_run_date__range = (start_date, end_date), level__exact = 'Total')
+        ### Collecting information from StatsRunSummary
+        run_found_bin_summary_quarter = StatsRunSummary.objects.filter(stats_summary_run_date__range = (start_date, end_date), level__exact = 'Total')
         q30_quarter, aligned_quarter, error_rate_quarter  = {} , {} , {}
         for run_bin_summary in run_found_bin_summary_quarter :
             bin_summary_data = run_bin_summary.get_bin_run_summary().split(';')
@@ -2730,7 +2731,7 @@ def quarter_report (request) :
         quarter_report_information ['aligned_data'] = aligned_quarter
         quarter_report_information ['error_rate_data'] = error_rate_quarter
         quarter_report_information ['q30_data'] = q30_quarter
-        # graphics for NextSeqStatsBinRunSummary
+        # graphics for StatsRunSummary
         heading = 'Aligned % for the runs done on  ' + quarter_string [quarter_selected] + str(year_selected)
         data_source = column_graphic_for_year_report (heading, 'Aligned  ' , 'Run names ', 'Aligned (in %)', 'ocean', aligned_quarter)
         aligned_quarter_graphic = FusionCharts("column3d", 'aligned_year' , "600", "300", 'aligned_chart-3', "json", data_source)
@@ -2818,7 +2819,7 @@ def get_size_dir (directory, conn, ):
 
 
 def update_tables (request):
-    #### Update the run date for the projects. NextSeqStatsBinRunRead and  NextSeqStatsBinRunSummary
+    #### Update the run date for the projects. StatsBinRunRead and  StatsRunSummary
     #### tables when they were not updated. It takes the run date from the run date
     '''
     run_founds = RunProcess.objects.all()
@@ -2829,11 +2830,11 @@ def update_tables (request):
         for project in projects_to_update :
             project.project_run_date = run_date
             project.save()
-        stats_run_to_update = NextSeqStatsBinRunSummary.objects.filter(runprocess_id__exact = run_id)
+        stats_run_to_update = StatsRunSummary.objects.filter(runprocess_id__exact = run_id)
         for stats_run in stats_run_to_update :
             stats_run.stats_summary_run_date = run_date
             stats_run.save()
-        stats_read_to_update = NextSeqStatsBinRunRead.objects.filter(runprocess_id__exact = run_id)
+        stats_read_to_update = StatsBinRunRead.objects.filter(runprocess_id__exact = run_id)
         for  stats_read in stats_read_to_update :
             stats_read.stats_read_run_date = run_date
             stats_read.save()
@@ -2844,9 +2845,9 @@ def update_tables (request):
 
 
     #conn=open_samba_connection()
-    if RunProcess.objects.filter(runState__exact ='Completed', useSpaceImgMb = 0).exists():
+    if RunProcess.objects.filter(state__runStateName ='Completed', useSpaceImgMb = 0).exists():
         conn = open_samba_connection()
-        run_list_be_updated = RunProcess.objects.filter(runState__exact = 'Completed' , useSpaceImgMb =0 )
+        run_list_be_updated = RunProcess.objects.filter(state__runStateName = 'Completed' , useSpaceImgMb =0 )
         for run_be_updated in run_list_be_updated:
             run_id = run_be_updated.id
             run_parameter_id=RunningParameters.objects.get(pk=run_id)
@@ -2903,10 +2904,10 @@ def update_tables (request):
         return render(request, 'iSkyLIMS_wetlab/error_page.html', {'content':['There is no tables which requiered to update with Disk space usage information']})
 
 def update_tables_date (request):
-    if RunProcess.objects.filter(runState__exact ='Completed', run_finish_date = None).exists():
+    if RunProcess.objects.filter(state__runStateName ='Completed', run_finish_date = None).exists():
         #
         conn = open_samba_connection()
-        run_list_be_updated = RunProcess.objects.filter(runState__exact = 'Completed' , run_finish_date = None )
+        run_list_be_updated = RunProcess.objects.filter(state__runStateName = 'Completed' , run_finish_date = None )
         for run_be_updated in run_list_be_updated:
             run_id = run_be_updated.id
             run_parameter_id=RunningParameters.objects.get(pk=run_id)
@@ -2925,7 +2926,7 @@ def update_tables_date (request):
             	run_be_updated.bcl2fastq_finish_date = datetime.datetime.fromtimestamp(int(conversion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
             except:
             	pass
-            finish_process_date = NextSeqStatsBinRunSummary.objects.filter(runprocess_id__exact = run_id)
+            finish_process_date = StatsRunSummary.objects.filter(runprocess_id__exact = run_id)
             run_be_updated.process_completed_date = finish_process_date[0].generatedat
 
             run_be_updated.save()
