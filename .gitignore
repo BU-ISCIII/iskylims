@@ -5,6 +5,7 @@ migrations/
 tmp/
 logs/
 wetlab_config.py
+
 ## Default for python projects
 # Byte-compiled / optimized / DLL files
 __pycache__/
