@@ -914,7 +914,8 @@ def manage_run_in_processed_run (conn, run_object_name):
                 run_metric_files = get_run_metric_files (conn, run_folder)
 
                 parsed_run_stats_summary, parsed_run_stats_read = parsing_run_metrics(wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING, run_object_name)
-            except:
+            except Exception as e:
+                print(e)
                 logger.debug ('End function manage_run_in_processed_run with error')
                 raise
 

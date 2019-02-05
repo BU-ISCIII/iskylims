@@ -79,7 +79,7 @@ def get_list_processed_runs () :
     logger.debug('Starting function get_list_processed_runs' )
     processed_runs = []
     try:
-        r_parameters_objects = RunningParameters.objects.all()
+        r_parameters_objects = RunningParameters.objects.all().exclude(runName_id__state__runStateName = "Recorded")
     except Exception as e :
         string_message = 'Unable to open the processed run file. '
         logging_errors(string_message, True, True)
@@ -219,7 +219,7 @@ def search_update_new_runs ():
                     logger.debug('Finished miSeq handling process with error')
                     continue
                 except Exception as e:
-                    string_message = "Unexpected Error " + str (e) 
+                    string_message = "Unexpected Error " + str (e)
                     logging_errors(string_message, True, True)
                     continue
                 '''
@@ -251,7 +251,7 @@ def search_update_new_runs ():
                 except :
                     logger.warning('NextSeq run is waiting for sequencer to have all files')
                     logger.info('Continue processing next item ')
-                    
+
                     continue
                 logger.debug('Finished miSeq handling process')
             else:

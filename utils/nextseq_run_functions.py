@@ -7,12 +7,11 @@ from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_drylab.models import Machines, Platform
 
 from django_utils.models import Center
-from .sample_sheet_utils import get_experiment_library_name
 
 def check_completion_success (l_run_completion):
     '''
     Description:
-        The function will check if the run was success 
+        The function will check if the run was success
     Input:
         l_run_completion  # local path for the run completion file
     Functions:
@@ -29,7 +28,7 @@ def check_completion_success (l_run_completion):
     # check if NextSEq run have been successful completed
     status_run = find_xml_tag_text (l_run_completion, wetlab_config.COMPLETION_TAG )
     if  status_run != wetlab_config.COMPLETION_SUCCESS:
-        string_message = 'Run status was ' + status_run  
+        string_message = 'Run status was ' + status_run
         logging_errors (string_message, False, False)
         return False
     else:
@@ -41,17 +40,17 @@ def nextseq_parsing_run_information(l_run_info, l_run_parameter) :
     '''
     Description:
         The function is called for parsing the RunInfo and RunParameter
-        files. 
-        After parsing the RunningParameters database table will be 
+        files.
+        After parsing the RunningParameters database table will be
         updated with a new row having the parsed data
-        Empty values will be set for MiSeq runs that exist on NextSeq 
+        Empty values will be set for MiSeq runs that exist on NextSeq
         but not in MiSeq runs
     Input:
         run_info    # contains the path for RunInfo.xml file
         run_parameter # contains the path for RunParameter.xml file
         run_id      # contains the id value of the run
     Import:
-        xml.etree.ElementTree 
+        xml.etree.ElementTree
     Variables:
         image_channel   # list containing the image channel values
         logger          # contains the logger object to write information
@@ -63,13 +62,13 @@ def nextseq_parsing_run_information(l_run_info, l_run_parameter) :
         running_parameters # new RunningParameter object to store parsed data
         sequencer       # sequencer index of the machine
      Return:
-        running_data    
+        running_data
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function nextseq_parsing_run_information')
     running_data={}
     image_channel=[]
-    
+
     #################################################
     ## parsing RunInfo.xml file
     #################################################
@@ -96,21 +95,21 @@ def nextseq_parsing_run_information(l_run_info, l_run_parameter) :
     running_data['RunManagementType']=parameter_data_root.find('RunManagementType').text
     running_data['ApplicationVersion']=p_parameter.find('ApplicationVersion').text
     running_data['NumTilesPerSwath']=p_parameter.find('NumTilesPerSwath').text
-    running_data['SystemSuiteVersion']=parameter_data_root.find('SystemSuiteVersion').text 
-    running_data['LibraryID']=parameter_data_root.find('LibraryID').text 
-    running_data['AnalysisWorkflowType']=parameter_data_root.find('AnalysisWorkflowType').text  
-    running_data['PlannedRead1Cycles']=parameter_data_root.find('PlannedRead1Cycles').text  
-    running_data['PlannedRead2Cycles']=parameter_data_root.find('PlannedRead2Cycles').text  
-    running_data['PlannedIndex1ReadCycles']=parameter_data_root.find('PlannedIndex1ReadCycles').text  
-    running_data['PlannedIndex2ReadCycles']=parameter_data_root.find('PlannedIndex2ReadCycles').text    
+    running_data['SystemSuiteVersion']=parameter_data_root.find('SystemSuiteVersion').text
+    running_data['LibraryID']=parameter_data_root.find('LibraryID').text
+    running_data['AnalysisWorkflowType']=parameter_data_root.find('AnalysisWorkflowType').text
+    running_data['PlannedRead1Cycles']=parameter_data_root.find('PlannedRead1Cycles').text
+    running_data['PlannedRead2Cycles']=parameter_data_root.find('PlannedRead2Cycles').text
+    running_data['PlannedIndex1ReadCycles']=parameter_data_root.find('PlannedIndex1ReadCycles').text
+    running_data['PlannedIndex2ReadCycles']=parameter_data_root.find('PlannedIndex2ReadCycles').text
 
     for i in run_root.iter('Name'):
         image_channel.append(i.text)
-    running_data['ImageChannel']=image_channel  
-    running_data['ImageDimensions']=p_run.find('ImageDimensions').attrib 
-        
+    running_data['ImageChannel']=image_channel
+    running_data['ImageDimensions']=p_run.find('ImageDimensions').attrib
+
     ## get the instrument for NextSeq run
-    instrument = parameter_data_root.find('InstrumentID').text 
+    instrument = parameter_data_root.find('InstrumentID').text
 
     ##############################################
     ## updating the date fetched from the Date tag for run and project
@@ -118,7 +117,7 @@ def nextseq_parsing_run_information(l_run_info, l_run_parameter) :
     date = p_run.find('Date').text
     logger.debug('Found date that was recorded the Run %s', date)
     run_date = datetime.datetime.strptime(date, '%y%m%d')
-    
+
     logger.debug('End function nextseq_parsing_run_information')
     return running_data, run_date, instrument
 
@@ -126,7 +125,7 @@ def nextseq_parsing_run_information(l_run_info, l_run_parameter) :
 def manage_nextseq_in_samplesent(conn, run_object_name) :
     '''
     Description:
-        The function will look for the run completion file to check if run is 
+        The function will look for the run completion file to check if run is
         completed.
         If file is not found, the sequencer is  still processing the run
     Input:
@@ -154,13 +153,13 @@ def manage_nextseq_in_samplesent(conn, run_object_name) :
     run_folder = RunningParameters.objects.get(runName_id = run_object_name).get_run_folder()
     l_run_completion = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_COMPLETION)
     s_run_completion = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME , run_folder, wetlab_config.RUN_COMPLETION)
-    
+
     try:
         l_run_completion = fetch_remote_file (conn, run_folder, s_run_completion, l_run_completion)
         logger.info('Sucessfully fetch of Completion status file')
         # Get status value for run completion
         completion_status = check_completion_success (l_run_completion)
-        
+
     except Exception as e:
         logger.info ('Completion status file is not present on the run folder')
         logger.info ('Moving run to Processing run state')
@@ -171,9 +170,9 @@ def manage_nextseq_in_samplesent(conn, run_object_name) :
         logger.info ('Deleting local copy of completion status')
         # cleaning up the completion  in local temporary file
         os.remove(l_run_completion)
-    
+
     if not completion_status :
-        string_message = 'Run status was ' + status_run  
+        string_message = 'Run status was ' + status_run
         logging_errors (string_message, False, False)
         # Set run to cancelled  state
         run_object_name.set_run_state('Cancelled')
@@ -185,16 +184,16 @@ def manage_nextseq_in_samplesent(conn, run_object_name) :
         set_state_in_all_projects(experiment_name, 'Processing Run')
         logger.info('Run %s is now on Processing Run state', experiment_name)
         return experiment_name
-    
-    
+
+
 def manage_nextseq_in_processing_run(conn, run_object_name) :
     '''
     Description:
-        The function will look for the run completion file to check if run is 
+        The function will look for the run completion file to check if run is
         completed.
         If file is not found, the run will keep in processing the run.
         If after the waiting time defined on MAXIMUM_TIME_WAIT_FOR_RUN_COMPLETION
-        the runn will move to error state 
+        the runn will move to error state
     Input:
         run_in_sample_sent  #  object name of the run
         experiment_name     # name of the run
@@ -219,7 +218,7 @@ def manage_nextseq_in_processing_run(conn, run_object_name) :
     run_folder = RunningParameters.objects.get(runName_id = run_object_name).get_run_folder()
     l_run_completion = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_COMPLETION)
     s_run_completion = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME , run_folder, wetlab_config.RUN_COMPLETION)
-    
+
     try:
         l_run_completion = fetch_remote_file (conn, run_folder, s_run_completion, l_run_completion)
         logger.info('Sucessfully fetch of Completion status file')
@@ -229,7 +228,7 @@ def manage_nextseq_in_processing_run(conn, run_object_name) :
         run_completion_attributes = get_attributes_remote_file (conn, run_folder, s_run_completion)
         run_completion_date = datetime.datetime.fromtimestamp(int(run_completion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
         run_completion_date = run_object_name.set_run_completion_date(run_completion_date)
-        
+
     except Exception as e:
         logger.info ('Completion status file still is not present on the run folder')
         logger.debug ('End function for handling manage_nextseq_in_processing_run waiting Completion file')
@@ -240,7 +239,7 @@ def manage_nextseq_in_processing_run(conn, run_object_name) :
         os.remove(l_run_completion)
 
     if not completion_status :
-        string_message = 'Run status was ' + completion_status  
+        string_message = 'Run status was ' + completion_status
         logging_errors (string_message, False, False)
         # Set tun to Cancelled state
         logger.info('Set run to cancelled state')
@@ -253,7 +252,7 @@ def manage_nextseq_in_processing_run(conn, run_object_name) :
         return experiment_name
 
 
-    
+
 def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name):
     '''
     Description:
@@ -276,21 +275,21 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
         RUN_TEMP_DIRECTORY
         RUN_INFO
         SAMPLE_SHEET
-    Variables:      
+    Variables:
         instrument  # name of the sequencer used in the run
         l_run_info  # local temporary copy of RunInfo
         l_sample_sheet  # local temporary copy of sample sheet
         new_run_parameters # new RunningParameters object created for this run
         run_process  # RunProcess object related to this run
-        
-        run_date        # date of starting run 
+
+        run_date        # date of starting run
         run_folder      # run foloder on remote server
-        running_parameters  # dictionary with parsing information from 
+        running_parameters  # dictionary with parsing information from
                             RunParameter and RunInfo
         s_run_info  # path of RunInfo on the remote server
         s_sample_sheet  # path of SampleSheet on the remote server
     Return:
-        number_of_cycles 
+        number_of_cycles
         file_content
     '''
     logger = logging.getLogger(__name__)
@@ -309,16 +308,16 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
             string_message = 'Unable to fetch the RunInfo file'
             logging_errors(string_message, True, True)
             handling_errors_in_run(experiment_name, '20')
-            
+
             # cleaning up the RunParameter in local temporaty file
             os.remove(l_run_parameter)
             logger.debug ('End function for handling NextSeq run with exception')
             raise ValueError ('Unable to fetch RunInfo')  # returning to handle next run folder
-        
+
         # Parsing RunParameter and Run Info
 
         running_parameters, run_date, instrument = nextseq_parsing_run_information(l_run_info, l_run_parameter)
-        
+
         run_date = run_process.set_run_date(run_date)
         run_parameters = RunningParameters.objects.create_running_parameters(running_parameters, run_process)
         if  Machines.objects.filter(machineName__exact = instrument).exists() :
@@ -328,7 +327,7 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
         else:
             string_message = instrument + ' has been not defined on machines '
             logging_errors(string_message, False, True)
-        #update the project state 
+        #update the project state
         projects = Projects.objects.filter(runprocess_id = run_process)
         for project in projects:
                 p_state = project.set_project_state ( 'Sample Sent')
@@ -341,7 +340,7 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
         #exp_name_id = RunProcess.objects.get(runName__exact = experiment_name).id
         sample_sheet_tmp_dir = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY_RECORDED,run_process.get_run_id())
         l_sample = os.path.join(sample_sheet_tmp_dir, wetlab_config.SAMPLE_SHEET)
-        
+
         if os.path.exists(l_sample):
             if wetlab_config.COPY_SAMPLE_SHEET_TO_REMOTE :
                 # copy Sample heet file to remote directory
@@ -357,7 +356,7 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
                     logger.debug ('End function for handling NextSeq run with exception')
                     raise ValueError ('Unable to copy Sample Sheet on remote server')
             # Update run to Sample Sent
-            
+
             run_process.set_run_state('Sample Sent')
             # Cleaning up the temporary folder with the sample sheet
             try:

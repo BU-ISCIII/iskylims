@@ -6,7 +6,7 @@ from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_drylab.models import Machines, Platform
 
 from django_utils.models import Center
-from .sample_sheet_utils import get_experiment_library_name, get_projects_in_run
+from .sample_sheet_utils import get_library_name, get_projects_in_run
 
 def check_miseq_completion_run (conn, experiment_name, log_folder):
     '''
@@ -48,7 +48,7 @@ def check_miseq_completion_run (conn, experiment_name, log_folder):
         raise
         #raise IOError ('Unable to fetch log file')
     if 'Cancel' in log_file_content :
-        status_run = 'Canceled'
+        status_run = 'Cancelled'
     elif log_cycles != number_of_cycles :
         status_run = 'still_running'
     else:
@@ -489,12 +489,10 @@ def manage_miseq_in_processing_run (conn, run_name):
     log_folder = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, run_folder, wetlab_config.RUN_LOG_FOLDER)
     try: # waiting for sequencer run completion
         status_run, run_completion_date = check_miseq_completion_run (conn, experiment_name, log_folder)
-        if status_run == 'Cancel' :
-            run_updated = handling_errors_in_run (experiment_name)
-            run_updated = run_name.set_run_state('CANCELLED')
-            run_updated.save()
+        if status_run == 'Cancelled' :
+            run_updated = run_name.set_run_state('Cancelled')
             logger.debug ('End function manage_miseq_in_processing_run was cancelled')
-            raise ValueError ('Run was canceled')
+            raise ValueError ('Run was cancelled')
         elif status_run == 'still_running':
             if need_to_wait_more (experiment_name, wetlab_config. MAXIMUM_TIME_WAIT_RUN_COMPLETION):
                 logger.info('Run $s still waiting for sequencer to finish', experiment_name)
@@ -575,7 +573,7 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
         experiment_name  # name used on miseq run
     Functions:
         get_projects_in_run # located at utils.sample_sheet_utils
-        get_experiment_library_name # located at utils.sample_sheet_utils
+        get_library_name # located at utils.sample_sheet_utils
         fetch_remote_file   # located at utils.generic_functions
 
         miseq_parsing_run_information # located as this file
@@ -634,13 +632,16 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
     else :
         new_run_process = RunProcess.objects.get(runName__exact = experiment_name)
     # Update the running parameter table with the information
-    new_run_parameters = RunningParameters.objects.create_running_parameters(running_parameters, new_run_process)
-    logger.info('Running parameters have been stored on database for %s', experiment_name )
+
+    if not RunningParameters.objects.filter(runName_id = new_run_process).exists():
+        new_run_parameters = RunningParameters.objects.create_running_parameters(running_parameters, new_run_process)
+        logger.info('Running parameters have been stored on database for %s', experiment_name )
 
     # deleting temporary copy of RunParameter and RunInfo files
     os.remove(l_run_parameter)
     os.remove(l_run_info)
     logger.info('Deleted RunParameter and RunInfo files')
+
     if run_waiting_for_sample_sheet (experiment_name) :
         # Fetch sample sheet from remote server
         l_sample_sheet = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.SAMPLE_SHEET)
@@ -669,11 +670,12 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
                 raise ValueError ('Time expiration for getting sample sheet')
 
         if validate_sample_sheet (l_sample_sheet) :
-            
+
             projects_users = get_projects_in_run (l_sample_sheet)
             logger.debug('Fetched projects from sample sheet')
 
-            experiment_name, library_name = get_experiment_library_name(l_sample_sheet)
+            #experiment_name, library_name = get_experiment_library_name(l_sample_sheet)
+            library_name = get_library_name(l_sample_sheet)
             logger.debug('Fetched experiment name and library name from sample sheet')
 
             sample_sheet_on_database = store_sample_sheet_in_run (l_sample_sheet, experiment_name )
@@ -681,7 +683,7 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
 
             save_miseq_projects_found (projects_users, experiment_name, library_name)
             run_updated = RunProcess.objects.get(runName__exact = experiment_name).set_run_state('Sample Sent')
-            
+
             logger.info('Run %s is now on sample sheet state', experiment_name)
             logger.debug ('End function for handling miSeq ')
             return new_run
