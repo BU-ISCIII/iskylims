@@ -10,3 +10,36 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
 ## Installation and usage
 For installation and usage instructions please refer to the [wiki](https://github.com/BU-ISCIII/iSkyLIMS/wiki).
 For any problems or bug reporting please post us an [issue](https://github.com/BU-ISCIII/iSkyLIMS/issues)
+
+## iSkyLIMS Demo
+iSkyLIMS demo is available for your convenience, in a virtual machine image, running on VirtualBox.  
+Download the VM image using with your favorite ftp client with the following information:
+
+```
+Server: sftpbioinfo.isciii.es
+Port : 50122
+user: iskylims
+Password: 3skyL3MS_2018
+```
+### Run VM image on VirtualBox 
+After successful loging transfer the file demo_iSkyLIMS.ova which it is inside the iSkyLIMS folder.
+
+On the VirtualBox Manager, import the image selecting on the menu 
+
+File --> Import.
+
+Once **import** task is completed, click on the Start icon to run the VM.
+
+For loging to the VM use the following credential:
+```
+user: django 
+Password : djangoPass
+```
+
+Open Mozilla navigator and it will automatically shows iSkyLIMS homepage located on http://localhost
+
+Log into iSkyLIMS with different roles using the following credentials:
+- As investigator role use the user **Eva_user** and password **iSkyLIMS**
+- As wetlab manager role the user is **John_manager** and password **iSkyLIMS**
+- If you need to login as django administrator type the url http://localhost/admin using user : **admin** and password : **iSkyLIMS**
+
