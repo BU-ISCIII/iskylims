@@ -19,7 +19,7 @@
                           {% for key, values in display_incomplete_run_list.items %}
                              <tr>
                                 {% for runName, state in values %}
-                                   <td><a href="/wetlab/search_run={{ key }}">{{ runName }}</a> </td>
+                                   <td><a href="/wetlab/displayRun={{ key }}">{{ runName }}</a> </td>
                                    <td> {{ state }} </td>
                                 {%endfor%}
                               </tr>

@@ -28,7 +28,7 @@
                         {% if display_one_project.run_id == '' %}
                         <div class="col-sm-6">{{ values }}</a></div>
                         {% else %}
-                        <div class="col-sm-6"><a href="/wetlab/search_run={{ display_one_project.run_id }}">{{ values }}</a></div>
+                        <div class="col-sm-6"><a href="/wetlab/displayRun={{ display_one_project.run_id }}">{{ values }}</a></div>
                         {% endif %}
                {% else %}
                 <div class="col-sm-6">{{ key }}</div>
@@ -148,7 +148,7 @@
                           {% for key, values_sample in display_one_project.sample_table.items %}
                             <tr>
                                 {% for sample, barcode, pf_cluster, percent, yield, q30 ,mean in values_sample %}
-                                <td><a href="/wetlab/search_sample={{ key }}">{{ sample }}</a> </td>
+                                <td><a href="/wetlab/displaySample={{ key }}">{{ sample }}</a> </td>
                                 <td>{{ barcode }} </td>
                                 <td>{{ pf_cluster }} </td>
                                 <td>{{ percent }} </td>
@@ -183,7 +183,7 @@
                    <tbody>
                     {% for key, values in display_project_list.projects %}
                      <tr>
-                       <td><a href="/wetlab/search_project={{ values }}">{{ key }}</a> </td>
+                       <td><a href="/wetlab/displayProject={{ values }}">{{ key }}</a> </td>
                      </tr>
                     {%endfor%}
                    </tbody>
@@ -208,6 +208,17 @@
                   <div class="col-sm-5"><input class="form-control" type="text" name="projectname" id="projectname" size="100" maxlength="100"></div>
              </div>  <!-- end from-group   -->
             <BR>
+            <div class="form-group">
+                <label class="col-sm-5 control-label" for="platform" >Platform</label>
+                <div class="col-sm-4"><select class="form-control" name="platform" id="platform">
+                               				<option value="">Choose a value</option>
+                                            {% for value in platforms %}
+                                                <option value="{{value}}">{{value}}</option>
+                                            {% endfor %}
+
+                                      </select>
+               </div>  <!-- end select input -->
+            </div>  <!-- end from-group   -->
              <div class="form-group">
                <label class="col-sm-5 control-label" for="projectstate" >Project state</label>
                <div class="col-sm-4"><select class="form-control" name="projectstate" id="projectstate">

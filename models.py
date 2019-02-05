@@ -8,10 +8,26 @@ from django.contrib.auth.models import User
 from django_utils.models import Center
 from django.utils.translation import ugettext_lazy as _
 
-
-
 from .  import wetlab_config
 
+class RunErrors (models.Model):
+    errorCode = models.CharField(max_length=10)
+    errorText = models.CharField(max_length=255)
+
+    def __str__ (self):
+        return '%s' %(self.errorText)
+
+class RunStates (models.Model):
+    runStateName = models.CharField(max_length=50)
+
+    def __str__ (self):
+        return '%s' %(self.runStateName)
+
+class ProjectStates (models.Model):
+    projectStateName = models.CharField(max_length=50)
+
+    def __str__ (self):
+        return '%s' %(self.projectStateName)
 
 class RunProcess(models.Model):
     runName = models.CharField(max_length=45)
@@ -22,24 +38,38 @@ class RunProcess(models.Model):
     bcl2fastq_finish_date = models.DateTimeField(auto_now = False, null=True, blank=True)
     process_completed_date = models.DateTimeField(auto_now = False, null=True, blank=True)
     runState = models.CharField(max_length=25)
-    #generatedBSFile = models.BooleanField(default=False)
+    state = models.ForeignKey ( RunStates, on_delete = models.CASCADE, related_name = 'state_of_run', null = True, blank = True)
     index_library = models.CharField(max_length=85)
     samples= models.CharField(max_length=45,blank=True)
     useSpaceImgMb=models.CharField(max_length=10, blank=True)
     useSpaceFastaMb=models.CharField(max_length=10, blank=True)
     useSpaceOtherMb=models.CharField(max_length=10, blank=True)
-    #requestedCenter= models.CharField(max_length=45)
     centerRequestedBy = models.ForeignKey (Center, on_delete=models.CASCADE)
     sequencerModel = models.ForeignKey ('iSkyLIMS_drylab.Machines', on_delete=models.CASCADE, null=True, blank=True)
+    runError = models.ForeignKey( RunErrors, on_delete=models.CASCADE, null = True, blank = True)
+    stateBeforeError = models.ForeignKey ( RunStates, on_delete = models.CASCADE, null = True, blank = True)
 
     def __str__(self):
         return '%s' %(self.runName)
 
-    def get_sample_file (self):
-        return '%s' %(self.sampleSheet)
+    def get_run_id (self):
+        return '%s' %(self.id)
+
+    def get_run_date (self):
+        if self.run_date is None :
+            rundate = 'Run NOT started'
+        else :
+            rundate=self.run_date.strftime("%B %d, %Y")
+        return rundate
+
+    def get_error_text (self):
+        return '%s' %(self.runError)
 
     def get_state(self):
-        return '%s' %(self.runState)
+        return '%s' %(self.state)
+
+    def get_state_before_error(self):
+        return '%s' %(self.stateBeforeError)
 
     def get_info_process (self):
         generated_date=self.generatedat.strftime("%I:%M%p on %B %d, %Y")
@@ -65,19 +95,12 @@ class RunProcess(models.Model):
         else:
             completed_date = self.process_completed_date.strftime("%I:%M%p on %B %d, %Y")
 
-        if (self.runState == 'Completed'):
 
-            return '%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.runState,
-                            requested_center, self.useSpaceImgMb,
-                            self.useSpaceFastaMb, self.useSpaceOtherMb,
-                            generated_date, rundate,finish_date,  bcl2fastq_date, completed_date)
-        else:
-            if RunningParameters.objects.filter(runName_id__exact = self).exists():
-                run_folder = RunningParameters.objects.get(runName_id__exact = self).RunID
-            else :
-                run_folder = 'Run folder is not created yet'
-            return '%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.runState, self.centerRequestedBy,
-                                        generated_date, rundate, finish_date, run_folder)
+        return '%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.state,
+                requested_center, generated_date, rundate,finish_date, bcl2fastq_date,
+                completed_date, self.useSpaceImgMb, self.useSpaceFastaMb,
+                self.useSpaceOtherMb )
+
 
     def get_run_name (self):
         return '%s' %(self.runName)
@@ -95,10 +118,65 @@ class RunProcess(models.Model):
     def get_run_sequencerModel (self):
         return '%s' %(self.sequencerModel)
 
-    def get_runprocess_info_debug(self): ##useful for debugging
-        return str(self.__dict__)
+    def get_run_platform (self):
+        return '%s' %self.sequencerModel.platformID
 
+    def get_machine_lanes(self):
+        number_of_lanes = self.sequencerModel.get_number_of_lanes()
+        return int(number_of_lanes)
 
+    def get_sample_file (self):
+        return '%s' %(self.sampleSheet)
+
+    def update_library (self, library_name):
+        self.index_library = library_name
+        self.save()
+        return True
+
+    def set_used_space (self, disk_utilization):
+        self.useSpaceFastaMb  = disk_utilization ['useSpaceFastaMb']
+        self.useSpaceImgMb  = disk_utilization ['useSpaceImgMb']
+        self.useSpaceOtherMb  = disk_utilization ['useSpaceOtherMb']
+        self.save()
+        return True
+
+    def set_run_state (self, new_state):
+        if RunStates.objects.filter(runStateName__exact = new_state).exists():
+            self.state = RunStates.objects.get(runStateName__exact = new_state)
+            self.save()
+        else:
+            return False
+        return True
+
+    def set_run_date (self, run_date):
+        self.run_date = run_date
+        self.save()
+        return True
+
+    def set_run_bcl2fastq_finished_date (self, bcl2fastq_finish_date):
+        self.bcl2fastq_finish_date = bcl2fastq_finish_date
+        self.save()
+        return True
+
+    def set_run_error_code (self, error_code):
+        if RunErrors.objects.filter(errorCode__exact = error_code).exists():
+            self.runError = RunErrors.objects.get(errorCode__exact = error_code)
+        else:
+            self.runError = RunErrors.objects.get(errorText__exact = 'Undefined')
+        self.stateBeforeError = self.state
+        self.state = RunStates.objects.get(runStateName__exact = 'Error')
+        self.save()
+        return True
+
+    def set_run_completion_date (self, completion_date):
+        self.run_finish_date = completion_date
+        self.save()
+        return True
+
+    def set_sequencer (self, sequencer):
+        self.sequencerModel = sequencer
+        self.save()
+        return True
 
 class LibraryKit (models.Model):
     libraryName = models.CharField(max_length=125)
@@ -162,6 +240,7 @@ class Projects(models.Model):
             LibraryKit,
             on_delete=models.CASCADE , null=True)
     projectName= models.CharField(max_length=45)
+    projectState = models.ForeignKey ( ProjectStates, on_delete = models.CASCADE, related_name = 'state_of_project', null = True, blank = True)
     procState=models.CharField(max_length=25, default='Not Started')
     libraryKit=models.CharField(max_length=125)
     baseSpaceFile = models.CharField(max_length=255)
@@ -172,7 +251,7 @@ class Projects(models.Model):
         return '%s' %(self.projectName)
 
     def get_state(self):
-        return '%s' %(self.procState)
+        return '%s' %(self.projectState)
 
     def get_project_info (self):
         generated_date=self.generatedat.strftime("%I:%M%p on %B %d, %Y")
@@ -210,8 +289,44 @@ class Projects(models.Model):
             projectdate=self.project_run_date.strftime("%B %d, %Y")
         return '%s' %(projectdate)
 
-    def get_project_info_debug(self): ##useful for debugging
-        return str(self.__dict__)
+    def get_project_id(self):
+        return '%s' %(self.id)
+
+    def set_project_state (self, state):
+        if ProjectStates.objects.filter(projectStateName__exact = state).exists():
+            self.projectState = ProjectStates.objects.get(projectStateName__exact = state)
+            self.save()
+            return True
+        else:
+            return False
+
+
+class RunningParametersManager (models.Manager) :
+
+    def create_running_parameters (self, running_data, run_object) :
+
+        if running_data['PlannedRead1Cycles'] == "":
+            running_data['PlannedRead1Cycles'] = 0
+        if running_data['PlannedRead2Cycles'] == "":
+            running_data['PlannedRead2Cycles'] = 0
+        if running_data['PlannedIndex1ReadCycles'] == "":
+            running_data['PlannedIndex1ReadCycles'] = 0
+        if running_data['PlannedIndex2ReadCycles'] == "":
+            running_data['PlannedIndex2ReadCycles'] = 0
+
+        running_parameters = self.create (runName_id = run_object,
+                         RunID=running_data['RunID'], ExperimentName=running_data['ExperimentName'],
+                         RTAVersion=running_data['RTAVersion'], SystemSuiteVersion= running_data['SystemSuiteVersion'],
+                         LibraryID= running_data['LibraryID'], Chemistry= running_data['Chemistry'],
+                         RunStartDate= running_data['RunStartDate'], AnalysisWorkflowType= running_data['AnalysisWorkflowType'],
+                         RunManagementType= running_data['RunManagementType'], PlannedRead1Cycles= running_data['PlannedRead1Cycles'],
+                         PlannedRead2Cycles= running_data['PlannedRead2Cycles'], PlannedIndex1ReadCycles= running_data['PlannedIndex1ReadCycles'],
+                         PlannedIndex2ReadCycles= running_data['PlannedIndex2ReadCycles'], ApplicationVersion= running_data['ApplicationVersion'],
+                         NumTilesPerSwath= running_data['NumTilesPerSwath'], ImageChannel= running_data['ImageChannel'],
+                         Flowcell= running_data['Flowcell'], ImageDimensions= running_data['ImageDimensions'],
+                         FlowcellLayout= running_data['FlowcellLayout'])
+
+        return running_parameters
 
 class RunningParameters (models.Model):
     runName_id = models.OneToOneField(
@@ -245,16 +360,32 @@ class RunningParameters (models.Model):
 
     def get_run_parameters_info (self):
         #str_run_start_date=self.RunStartDate.strftime("%I:%M%p on %B %d, %Y")
-        if self.ImageChannel==None:
-            img_channel='None'
+        run_parameters_data = []
+        if self.ImageChannel == None:
+            img_channel = 'None'
         else:
             img_channel=self.ImageChannel.strip('[').strip(']').replace("'","")
 
-        return '%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s' %(self.RunID, self.ExperimentName, self.RTAVersion,
-            self.SystemSuiteVersion, self.LibraryID, self.Chemistry, self.RunStartDate,
-            self.AnalysisWorkflowType, self.RunManagementType, self.PlannedRead1Cycles, self.PlannedRead2Cycles,
-            self.PlannedIndex1ReadCycles, self.PlannedIndex2ReadCycles, self.ApplicationVersion, self.NumTilesPerSwath,
-             img_channel, self.Flowcell, self.ImageDimensions, self.FlowcellLayout)
+        if self.ImageDimensions == None:
+            image_dimensions = ['None']
+        else:
+            image_dimensions = self.ImageDimensions.strip('{').strip('}').replace("'","").split(',')
+
+        flowcell_layout = self.FlowcellLayout.strip('{').strip('}').replace("'","").split(',')
+
+        run_parameters_data.append(self.RunID); run_parameters_data.append(self.ExperimentName)
+        run_parameters_data.append(self.RTAVersion); run_parameters_data.append(self.SystemSuiteVersion)
+        run_parameters_data.append(self.LibraryID); run_parameters_data.append(self.Chemistry)
+        run_parameters_data.append(self.RunStartDate); run_parameters_data.append(self.AnalysisWorkflowType)
+        run_parameters_data.append(self.RunManagementType); run_parameters_data.append(self.PlannedRead1Cycles)
+        run_parameters_data.append(self.PlannedRead2Cycles); run_parameters_data.append(self.PlannedIndex1ReadCycles)
+        run_parameters_data.append(self.PlannedIndex2ReadCycles); run_parameters_data.append(self.ApplicationVersion)
+        run_parameters_data.append(self.NumTilesPerSwath); run_parameters_data.append(img_channel)
+        run_parameters_data.append(self.Flowcell); run_parameters_data.append(image_dimensions)
+        run_parameters_data.append(flowcell_layout)
+
+        return run_parameters_data
+
 
     def get_number_of_reads (self):
         count = 0
@@ -268,10 +399,30 @@ class RunningParameters (models.Model):
             count +=1
         return count
 
+    def get_number_of_cycles (self):
+
+        number_of_cycles = int(self.PlannedRead1Cycles) + int(self.PlannedRead2Cycles) + int(self.PlannedIndex1ReadCycles) + int(self.PlannedIndex2ReadCycles)
+        return number_of_cycles
+
+    def get_run_folder (self):
+        return '%s' %(self.RunID)
+
+    objects = RunningParametersManager ()
 
 
+class StatsRunSummaryManager (models.Manager):
 
-class NextSeqStatsBinRunSummary (models.Model):
+    def create_stats_run_summary (self, stats_run_summary , experiment_name) :
+        run_process = RunProcess.objects.get(runName__exact = experiment_name)
+        s_run_summary = self.create(runprocess_id = run_process,
+                                level=stats_run_summary['level'], yieldTotal = stats_run_summary['yieldTotal'],
+                                projectedTotalYield= stats_run_summary['projectedTotalYield'],
+                                aligned= stats_run_summary['aligned'], errorRate= stats_run_summary['errorRate'],
+                                intensityCycle= stats_run_summary['intensityCycle'], biggerQ30= stats_run_summary['biggerQ30'],
+                                stats_summary_run_date = run_process.run_date)
+        return s_run_summary
+
+class StatsRunSummary (models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
             on_delete=models.CASCADE)
@@ -293,7 +444,27 @@ class NextSeqStatsBinRunSummary (models.Model):
                 self.projectedTotalYield, self.aligned, self.errorRate,
                 self.intensityCycle, self.biggerQ30)
 
-class NextSeqStatsBinRunRead (models.Model):
+    objects = StatsRunSummaryManager ()
+
+class StatsRunReadManager (models.Manager):
+
+    def create_stats_run_read (self, stats_run_read, experiment_name):
+        run_process = RunProcess.objects.get(runName__exact = experiment_name)
+        s_run_read = self.create (runprocess_id = run_process,
+                                    read= stats_run_read['read'], lane = stats_run_read['lane'] ,
+                                    tiles= stats_run_read['tiles'], density= stats_run_read['density'] ,
+                                    cluster_PF= stats_run_read['cluster_PF'], phas_prephas= stats_run_read['phas_prephas'],
+                                    reads= stats_run_read['reads'], reads_PF= stats_run_read['reads_PF'],
+                                    q30= stats_run_read['q30'], yields= stats_run_read['yields'],
+                                    cyclesErrRated= stats_run_read['cyclesErrRated'], aligned= stats_run_read['aligned'],
+                                    errorRate= stats_run_read['errorRate'], errorRate35= stats_run_read['errorRate35'],
+                                    errorRate50= stats_run_read['errorRate50'] , errorRate75= stats_run_read['errorRate75'] ,
+                                    errorRate100= stats_run_read['errorRate100'] , intensityCycle= stats_run_read['intensityCycle'] ,
+                                    stats_read_run_date = run_process.run_date)
+
+        return s_run_read
+
+class StatsRunRead (models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
             on_delete=models.CASCADE)
@@ -328,8 +499,21 @@ class NextSeqStatsBinRunRead (models.Model):
                 self.errorRate, self.errorRate35, self.errorRate50, self.errorRate75,
                 self.errorRate100, self.intensityCycle)
 
+    objects = StatsRunReadManager ()
 
-class RawStatisticsXml (models.Model):
+
+class RawDemuxStatsManager(models.Manager) :
+    def create_stats_run_read (self, raw_demux_stats, run_object_name):
+
+        raw_stats = self.create(runprocess_id = run_object_name,
+                                project_id = raw_demux_stats ['project_id'], defaultAll = raw_demux_stats ['defaultAll'],
+                                rawYield= raw_demux_stats ['rawYield'], rawYieldQ30= raw_demux_stats ['rawYieldQ30'],
+                                rawQuality= raw_demux_stats ['rawQuality'], PF_Yield= raw_demux_stats ['PF_Yield'],
+                                PF_YieldQ30= raw_demux_stats ['PF_YieldQ30'], PF_QualityScore =raw_demux_stats ['PF_QualityScore'] )
+
+        return raw_stats
+
+class RawDemuxStats (models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
             on_delete=models.CASCADE,)
@@ -352,6 +536,18 @@ class RawStatisticsXml (models.Model):
                 self.rawYieldQ30, self.PF_YieldQ30, self.rawQuality,
                 self.PF_Quality, self.sampleNumber)
 
+
+    objects = RawDemuxStatsManager ()
+
+class RawTopUnknowBarcodesManager(models.Manager) :
+    def create_unknow_barcode (self, unknow_barcode):
+        unknow_barcode = self.create (runprocess_id = unknow_barcode['runprocess_id'] , lane_number = unknow_barcode['lane_number'] ,
+                                top_number =  unknow_barcode['top_number'], count = unknow_barcode['count'],
+                                sequence = unknow_barcode['sequence']   )
+
+        return unknow_barcode
+
+
 class RawTopUnknowBarcodes (models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
@@ -368,8 +564,18 @@ class RawTopUnknowBarcodes (models.Model):
     def get_unknow_barcodes (self):
         return '%s;%s' %(self.count, self.sequence)
 
+    objects = RawTopUnknowBarcodesManager ()
 
-class NextSeqStatsFlSummary(models.Model):
+class StatsFlSummaryManager (models.Manager) :
+    def create_fl_summary (self, stats_fl_summary):
+        fl_summary = self.create (runprocess_id = stats_fl_summary ['runprocess_id'], project_id = stats_fl_summary ['project_id'],
+                            defaultAll = stats_fl_summary ['defaultAll'], flowRawCluster = stats_fl_summary ['flowRawCluster'],
+                            flowPfCluster = stats_fl_summary ['flowPfCluster'], flowYieldMb = stats_fl_summary ['flowYieldMb'],
+                            sampleNumber = stats_fl_summary ['sampleNumber'] )
+
+        return fl_summary
+
+class StatsFlSummary(models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
             on_delete=models.CASCADE)
@@ -385,7 +591,20 @@ class NextSeqStatsFlSummary(models.Model):
         return '%s;%s;%s;%s' %(self.flowRawCluster, self.flowPfCluster,
             self.flowYieldMb, self.sampleNumber)
 
-class NextSeqStatsLaneSummary (models.Model):
+    objects = StatsFlSummaryManager ()
+
+class StatsLaneSummaryManager (models.Manager) :
+    def create_lane_summary (self, l_summary) :
+        lane_summary = self.create (runprocess_id = l_summary['runprocess_id'], project_id = l_summary['project_id'],
+                            defaultAll = l_summary['defaultAll'], lane = l_summary['lane'],
+                            pfCluster = l_summary['pfCluster'], percentLane = l_summary['percentLane'],
+                            perfectBarcode = l_summary['perfectBarcode'], oneMismatch = l_summary['oneMismatch'],
+                            yieldMb = l_summary['yieldMb'], biggerQ30 = l_summary['biggerQ30'],
+                            meanQuality = l_summary['meanQuality'] )
+
+        return lane_summary
+
+class StatsLaneSummary (models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
             on_delete=models.CASCADE)
@@ -417,7 +636,10 @@ class NextSeqStatsLaneSummary (models.Model):
 
         return'%s;%s;%s;%s' %(self.biggerQ30, self.meanQuality, self.yieldMb, self.pfCluster)
 
-class NextSeqGraphicsStats (models.Model):
+    objects = StatsLaneSummaryManager ()
+
+
+class GraphicsStats (models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
             on_delete=models.CASCADE)
@@ -443,6 +665,13 @@ class NextSeqGraphicsStats (models.Model):
     def get_folder_graphic(self):
         return '%s' %(self.folderRunGraphic)
 
+class SamplesInProjectManager (models.Manager):
+    def create_sample_project (self, s_project):
+        sample_project = self.create( project_id = s_project['project_id'] , sampleName =  s_project['sampleName'],
+                            barcodeName =  s_project['barcodeName'], pfClusters =  s_project['pfClusters'],
+                            percentInProject =  s_project['percentInProject'], yieldMb =  s_project['yieldMb'],
+                            qualityQ30 =  s_project['qualityQ30'], meanQuality =  s_project['meanQuality'] )
+
 class SamplesInProject (models.Model):
     project_id = models.ForeignKey(
                 Projects,
@@ -467,162 +696,17 @@ class SamplesInProject (models.Model):
         return '%s' %(self.sampleName)
 
     def get_project_name (self) :
-       p_id = self.project_id
-       project_name =Projects.objects.get(projectName=p_id).get_project_name()
-       #Projects.objects.prefetch_related('user_id').filter(user_id = user_id)
-       return '%s' %(project_name)
+        #p_id = self.project_id
+        #project_name =Projects.objects.get(projectName=p_id).get_project_name()
+        project_name = self.project_id.get_project_name()
+        #Projects.objects.prefetch_related('user_id').filter(user_id = user_id)
+        return '%s' %(project_name)
 
     def get_quality_sample (self):
         return '%s' %(self.qualityQ30)
 
+    objects = SamplesInProjectManager()
 
-
-
-'''
-class MiSeqStatisticsBin (models.Model):
-    document = models.OneToOneField(
-            Document,
-            on_delete=models.CASCADE,
-            primary_key=True,
-            )
-    lane = models.CharField(max_length=10)
-    singleRead = models.CharField(max_length=10)
-    tiles = models.CharField(max_length=10)
-    density = models.CharField(max_length=10)
-    cluster_PF = models.CharField(max_length=10)
-    phas_prephas = models.CharField(max_length=10)
-    reads = models.CharField(max_length=10)
-    reads_PF = models.CharField(max_length=10)
-    q30 = models.CharField(max_length=10)
-    yields = models.CharField(max_length=10)
-    cyclesErrRated = models.CharField(max_length=10)
-    aligned = models.CharField(max_length=10)
-    errorRate = models.CharField(max_length=10)
-    errorRate35 = models.CharField(max_length=10)
-    errorRate75 = models.CharField(max_length=10)
-    errorRate100 = models.CharField(max_length=10)
-    intensityCycle = models.CharField(max_length=10)
-    comments = models.CharField(max_length=10)
-    status = models.CharField(max_length=10)
-
-    def __str__(self):
-        return '%s' %(self.document)
-
-'''
-'''
-class MiSeqStatisticsXml (models.Model):
-    document = models.ForeignKey(
-            Document,
-            on_delete=models.CASCADE)
-    rawYield = models.CharField(max_length=20)
-    rawYieldQ30= models.CharField(max_length=20)
-    rawQuality= models.CharField(max_length=20)
-    PF_Yield= models.CharField(max_length=20)
-    PF_YieldQ30= models.CharField(max_length=20)
-    PF_Quality= models.CharField(max_length=20)
-    barcodeCount= models.CharField(max_length=20)
-    perfectBarcodeCount= models.CharField(max_length=20)
-    project=models.CharField(max_length=30,default=False)
-    generated_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return '%s' %(self.document)
-'''
-'''
-class MiSeqGraphicsStats (models.Model):
-    document = models.ForeignKey(
-            Document,
-            on_delete=models.CASCADE)
-    folderGraphic= models.CharField(max_length=255)
-    cluserCountGraph= models.CharField(max_length=255)
-    flowCellGraph= models.CharField(max_length=255)
-    intensityByCycleGraph= models.CharField(max_length=255)
-    heatMapGraph= models.CharField(max_length=255)
-    histogramGraph= models.CharField(max_length=255)
-    sampleQcGraph= models.CharField(max_length=255)
-
-
-    def __str__(self):
-        return '%s' %(self.document)
-'''
-
-'''
-class Question(models.Model):
-    question_text = models.CharField(max_length=200)
-    pub_date = models.DateTimeField('date published')
-    def __str__(self):
-        return self.question_text
-
-    def was_published_recently(self):
-        return self.pub_date >= timezone.now() - datetime.timedelta(days=1)
-
-
-class Choice(models.Model):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    choice_text = models.CharField(max_length=200)
-    votes = models.IntegerField(default=0)
-    def __str__(self):
-        return self.choice_text
-
-
-'''
-'''
-class Document(models.Model):
-    run_name = models.CharField(max_length=255, blank=True)
-    project_name = models.CharField(max_length=255, blank=True)
-    description = models.CharField(max_length=255, blank=True)
-    csv_file = models.FileField(upload_to='documents/')
-    uploaded_at = models.DateTimeField(auto_now_add=True)
-    name = models.CharField(max_length=255, blank=True)
-    user_id = models.CharField(max_length=50,blank=True)
-    email = models.EmailField(max_length=255,blank=True)
-    convert = models.BooleanField(default=False)
-
-
-    def __str__(self):
-        return '%s' %(self.run_name)
-
-    def get_run_info (self):
-        return '%s;%s;%s;%s;%s;%s;%s' %(self.run_name, self.project_name,
-                    self.user_id, self.description,  self.name,
-                    self.csv_file, self.uploaded_at)
-'''
-'''
-class BaseSpaceFile (models.Model):
-    document = models.OneToOneField(
-            Document,
-            on_delete=models.CASCADE,
-            primary_key=True,
-            )
-    baseSpace_file = models.CharField(max_length=255)
-    generated_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return '%s' %(self.baseSpace_file)
-'''
-'''
-class UserInfo(models.Model):
-    userid=models.CharField(max_length=25)
-    userFirstName=models.CharField(max_length=45)
-    userLastName=models.CharField(max_length=45)
-    userArea=models.CharField(max_length=25)
-    userEmail=models.EmailField(max_length=45)
-
-    def __str__ (self):
-        return '%s' %(self.userid)
-'''
-'''
-class BioInfo(models.Model):
-    info1=models.CharField(max_length=45)
-    info2=models.CharField(max_length=45, default='')
-    serviceRegistration= models.CharField(max_length=45, default='not required')
-    researcher =models.CharField(max_length=45, default='')
-    department= models.CharField(max_length=45, default='not assigned')
-
-
-    def __str__(self):
-        return '%s' %(self.info1)
-'''
 
 
 

@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 # coding: utf-8
-
-
 import os
 import re
 from datetime import datetime
@@ -13,6 +11,9 @@ from Bio.Seq import Seq
 from django.conf import settings
 
 from iSkyLIMS_wetlab import wetlab_config
+from iSkyLIMS_wetlab.models import *
+
+#from .wetlab_misc_utilities import timestamp_print
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
@@ -59,9 +60,9 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
                  date_line[1] = '/'.join(temp_date)
 
             try:
-                date_object = datetime.strptime(date_line[1],'%m/%d/%Y')
+                date_object = datetime.datetime.strptime(date_line[1],'%m/%d/%Y')
             except:
-                date_object = datetime.strptime(date_line[1],'%d/%m/%Y')
+                date_object = datetime.datetime.strptime(date_line[1],'%d/%m/%Y')
             date_sample = date_object.strftime('%Y%m%d')
             date_found = False
 
@@ -199,9 +200,11 @@ def get_projects_in_run(in_file):
     return projects
 
 
-def get_experiment_library_name (in_file):
-    experiment_name = ''
+#def get_experiment_library_name (in_file):
+def get_library_name (in_file):
+    #experiment_name = ''
     library_name = ''
+    ## For accepting characters like spanish characters.
     import codecs
     fh = codecs.open(in_file, 'r', 'utf-8')
     #fh = open(in_file, 'r')
@@ -209,13 +212,13 @@ def get_experiment_library_name (in_file):
         line = line.rstrip()
         if line == '':
             continue
-        found_experiment = re.search('^Experiment Name',line)
+        #found_experiment = re.search('^Experiment Name',line)
         found_library = re.search('^Assay',line)
-        if found_experiment :
-            experiment_value = line.split(',')
-            if experiment_value[1]:
-                experiment_name = experiment_value[1]
-                found_experiment = 0
+#         if found_experiment :
+#             experiment_value = line.split(',')
+#             if experiment_value[1]:
+#                 experiment_name = experiment_value[1]
+#                 found_experiment = 0
         if found_library :
             library_value = line.split(',')
             if library_value[1]:
@@ -223,7 +226,7 @@ def get_experiment_library_name (in_file):
                 found_library = 0
     fh.close()
 
-    return experiment_name, library_name
+    return library_name
 
 def update_library_kit_field (library_file_name, library_kit_name, library_name):
     #result_directory='documents/wetlab/BaseSpaceMigrationFiles/'

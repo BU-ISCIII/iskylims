@@ -563,7 +563,28 @@ def column_graphic_one_column_highligthed (heading, sub_caption, x_axis_name, y_
     return data_source
 
 def bloxplot_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme, categories, series, data):
-#def bloxplot_graphic () :
+    '''
+    Description:
+        The function will prepare the input data into the json format 
+        to be used in the graphic.  
+    Input:
+        heading      # contains the title name to be present in the graphic
+        sub_caption  # contains the sub title name to be present in the graphic
+        x_axis_name  # contains the title to display in X axis
+        y_axis_name  # contains the title to display in Y axis
+        theme        # contains the theme used in the graphic
+        categories   # contains the categories name values
+        series       # contains the series name
+        data         # contains the data for the series
+        
+    Variables:
+        category        # dictionary to contain the category list
+        category_list   # list of the categories to display
+        dataset         # list with all the values for each category
+        label_category  # title name for each category
+    return:
+        data_source 
+    '''
     data_source = {}
     data_source['chart'] = {
         "theme": theme,
@@ -582,18 +603,9 @@ def bloxplot_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme, cat
         "toolTipBgAlpha": "80",
         "toolTipBorderRadius": "2",
         "toolTipPadding": "5",
-        #"numdivline":"4",
         "yAxisMaxValue": "0.4",
-        #"yAxisMinValue": "5",
-        #"setAdaptiveYMin":"0",
-        #"adjustDiv":"0",
-        #"medianColor": "ff0000",
-        #"medianThickness": "1",
-        #"medianAplha": "70",
         "showMean": "1",
-        # "showMD": "0"
         "exportEnabled": "1"
-        
     },
     
     category = {}
@@ -607,19 +619,6 @@ def bloxplot_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme, cat
     
     data_source ['categories'] = [category]
     
-    '''
-    data_source["categories"] = [
-        {"category": [
-                {
-                    "label": "Grade 1"
-                },
-                {
-                    "label": "Grade 2"
-                }
-            ]
-        }
-    ],
-    '''
     dataset = []
     
     for serie in range(len(series)) :
@@ -635,34 +634,12 @@ def bloxplot_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme, cat
         dataset_dict['data'] = serie_data  
         dataset.append(dataset_dict)
     data_source['dataset'] = dataset
-    '''
-    #"value": "24,20,25,28,35,40, 37, 35, 38, 50,55,35, 41,42, 44, 45, 48, 47, 30, 34"
-    data_source["dataset"] = [
-        {
-            "seriesname": "Male",
-            "lowerBoxColor": "#0075c2",
-            "upperBoxColor": "#1aaf5d",
-            "data": [
-                {"value": "24,23,25,24,25,24, 27, 25, 23, 25,25,26, 26,27, 26, 24, 24, 25, 25, 23"
-                },
-                {"value": "25, 23, 25,25,26, 26,27, 26, 24" #"value": "75,90,82,83,97,95,80, 80, 90, 95"
-                },
-            ]
-        },
-        {
-            "seriesname": "Female",
-            "lowerBoxColor": "#f45b00",
-            "upperBoxColor": "#f2c500",
-            "data": [
-                {"value": "19,21,23,23,24,25,23,25,30, 26, 25, 21"
-                },
-                {"value": "23,25,24,25,24, 27, 25, 23, 25,25,26" #"value": "70,80,83,87,95,80,85, 87, 71"
-                }
-            ]
-        }
-    ]
-    '''
+
     return data_source
+
+
+
+
 
 def column_graphic_with_categories(heading, sub_caption, x_axis_name, y_axis_name, theme, categories, series, data):
     data_source = {}
