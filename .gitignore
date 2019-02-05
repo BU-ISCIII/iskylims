@@ -4,7 +4,7 @@
 *.gz
 migrations/
 tmp/
-log/
+logs/
 static/
 #--- updates introduced for iSkyLIMS in submodules packaging ---
 virtualenv/
