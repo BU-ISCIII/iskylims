@@ -4,6 +4,7 @@ from datetime import datetime
 from logging.config import fileConfig
 from logging.handlers import RotatingFileHandler
 from smb.SMBConnection import SMBConnection
+import socket
 
 from django.core.mail import send_mail
 
@@ -17,14 +18,14 @@ def check_all_projects_exists (project_list):
     '''
     Description:
         Function will check if all projects given in the project list
-        are defined on database 
-        Return True if all are in , False if not 
+        are defined on database
+        Return True if all are in , False if not
     Input:
         project_list    #list of the project to check
     variables:
         logger # logging object to write in the log file
     Return:
-        True /False 
+        True /False
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function for check_all_projects_exists')
@@ -39,7 +40,7 @@ def check_all_projects_exists (project_list):
 def copy_to_remote_file (conn, run_dir, remote_file, local_file) :
     '''
     Description:
-        Function will fetch the file from remote server and copy on local 
+        Function will fetch the file from remote server and copy on local
         directory
     Input:
         conn    # Samba connection object
@@ -71,7 +72,7 @@ def copy_to_remote_file (conn, run_dir, remote_file, local_file) :
 def fetch_remote_file (conn, run_dir, remote_file, local_file) :
     '''
     Description:
-        Function will fetch the file from remote server and copy on local 
+        Function will fetch the file from remote server and copy on local
         directory
     Input:
         conn    # Samba connection object
@@ -91,7 +92,7 @@ def fetch_remote_file (conn, run_dir, remote_file, local_file) :
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function for fetching remote file')
     with open(local_file ,'wb') as r_par_fp :
-        try: 
+        try:
             conn.retrieveFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME, remote_file, r_par_fp)
             logger.info('Retrieving the remote %s file for %s', local_file, run_dir)
         except Exception as e:
@@ -106,13 +107,13 @@ def fetch_remote_file (conn, run_dir, remote_file, local_file) :
 def find_xml_tag_text (input_file, search_tag):
     '''
     Description:
-        The function will look for the xml element tag in the 
+        The function will look for the xml element tag in the
         file and it will return the text value
     Input:
         input_file  # file to find the tag
         search_tag  # xml tag to be found in the input_file
     Variables:
-        found_tag   # line containing the tag 
+        found_tag   # line containing the tag
     '''
     fh = open (input_file, 'r')
     search_line = '<' + search_tag+ '>(.*)</' + search_tag+'>'
@@ -128,7 +129,7 @@ def find_xml_tag_text (input_file, search_tag):
 def get_attributes_remote_file (conn, run_dir, remote_file) :
     '''
     Description:
-        Function will fetch the file from remote server and copy on local 
+        Function will fetch the file from remote server and copy on local
         directory
     Input:
         conn    # Samba connection object
@@ -145,11 +146,11 @@ def get_attributes_remote_file (conn, run_dir, remote_file) :
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function for getting remote attributes')
-    try: 
+    try:
         file_attributes = conn.getAttributes(wetlab_config.SAMBA_SHARED_FOLDER_NAME , remote_file)
         logger.info('Got attributes from %s', remote_file)
     except Exception as e:
-        string_message = 'Unable to get attributes for ' + remote_file 
+        string_message = 'Unable to get attributes for ' + remote_file
         logging_errors (string_message, True, False)
         raise Exception('Not get attributes')
     logger.debug ('End function for  getting remote attributes')
@@ -159,26 +160,26 @@ def get_attributes_remote_file (conn, run_dir, remote_file) :
 def get_new_runs_from_remote_server (processed_runs, conn, shared_folder):
     '''
     Description:
-        The function fetch the folder names from the remote server and 
+        The function fetch the folder names from the remote server and
         returns a list containing the folder names that have not been
         processed yet.
     Input:
         processed_runs  # full path and name of the file
         conn # samba connection object
         shared_folder   # shared folder in the remote server
-        logger          # log object 
+        logger          # log object
     Variable:
         new_runs        # list containing the new folder run names
-        run_data_root_folder # main folder where all directory runs are 
+        run_data_root_folder # main folder where all directory runs are
         run_folder_list  # list of the folder names on remote server
     Return:
-        new runs 
+        new runs
     '''
     logger = logging.getLogger(__name__)
-    logger.debug('Starting function get_new_runs_on_remote_server' ) 
+    logger.debug('Starting function get_new_runs_on_remote_server' )
     new_runs = []
-    #run_data_root_folder = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, '/') 
-    run_data_root_folder = os.path.join('/', wetlab_config.SAMBA_APPLICATION_FOLDER_NAME ) 
+    #run_data_root_folder = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, '/')
+    run_data_root_folder = os.path.join('/', wetlab_config.SAMBA_APPLICATION_FOLDER_NAME )
     run_folder_list = conn.listPath( shared_folder, run_data_root_folder)
     for sfh in run_folder_list:
         if sfh.isDirectory:
@@ -199,7 +200,7 @@ def get_new_runs_from_remote_server (processed_runs, conn, shared_folder):
 def get_experiment_name_from_file (l_run_parameter) :
     '''
     Description:
-        The function will get the experiment name  for the xml element tag in the 
+        The function will get the experiment name  for the xml element tag in the
         file and it will return the experiment name value
     Input:
         l_run_parameter  # file to find the tag
@@ -209,14 +210,14 @@ def get_experiment_name_from_file (l_run_parameter) :
         experiment_name
     '''
     experiment_name = find_xml_tag_text (l_run_parameter, wetlab_config.EXPERIMENT_NAME_TAG)
-    
+
     return experiment_name
 
 
 def get_run_platform_from_file (l_run_parameter) :
     '''
     Description:
-        The function will get the run platform for the xml element tag in the 
+        The function will get the run platform for the xml element tag in the
         file and it will return the platform used
     Input:
         l_run_parameter  # file to find the tag
@@ -226,7 +227,7 @@ def get_run_platform_from_file (l_run_parameter) :
         platform
     '''
     platform = find_xml_tag_text (l_run_parameter, wetlab_config.APPLICATION_NAME_TAG)
-    
+
     return platform
 
 
@@ -237,7 +238,7 @@ def handling_errors_in_run (experiment_name, error_code):
         set to run state ERROR
     Input:
         experiment_name # name of the run to be updated
-        error_code      # Error code 
+        error_code      # Error code
         state_when_error # Run state when error was found
     Constants:
         SAMBA_SHARED_FOLDER_NAME
@@ -271,12 +272,12 @@ def logging_errors(string_text, showing_traceback , print_on_screen ):
         The function will log the error information to file.
         Optional can send an email to inform about the issue
     Input:
-        logger # contains the logger object 
+        logger # contains the logger object
         string_text # information text to include in the log
     Functions:
         send_error_email_to_user # located on utils.wetlab_misc_utilities
     Constant:
-        SENT_EMAIL_ON_ERROR 
+        SENT_EMAIL_ON_ERROR
     Variables:
         subject # text to include in the subject email
     '''
@@ -288,7 +289,7 @@ def logging_errors(string_text, showing_traceback , print_on_screen ):
     logger.error('-----------------    END ERROR   --------------')
     if wetlab_config.SENT_EMAIL_ON_ERROR :
         subject = 'Error found on wetlab'
-        send_error_email_to_user (subject, string_text, FROM_EMAIL_ADDRESS, 
+        send_error_email_to_user (subject, string_text, FROM_EMAIL_ADDRESS,
                                 TO_EMAIL_ADDRESS)
     if print_on_screen :
         from datetime import datetime
@@ -305,7 +306,7 @@ def logging_warnings(string_text, print_on_screen ):
         The function will log the error information to file.
         Optional can send an email to inform about the issue
     Input:
-        logger # contains the logger object 
+        logger # contains the logger object
         string_text # information text to include in the log
     '''
     logger = logging.getLogger(__name__)
@@ -327,7 +328,7 @@ def need_to_wait_more (experiment_name, waiting_time):
     Description:
         The function get the time run was recorded to compare
         with the present time. If the value is less that the allowed time
-        to wait  will return True. 
+        to wait  will return True.
         False is returned if the time is bigger
     Input:
         experiment_name  # experiment name to be checked
@@ -362,12 +363,12 @@ def open_log():
     Description:
         The function will create the log object to write all logging information
     Input:
-        logger_name    # contains the logger name that will be included 
+        logger_name    # contains the logger name that will be included
                         in the log file
     Constant:
-        LOGGING_CONFIG_FILE 
+        LOGGING_CONFIG_FILE
     Return:
-        logger object 
+        logger object
     '''
     config_file = os.path.join(settings.BASE_DIR,'iSkyLIMS_wetlab',  wetlab_config.LOGGING_CONFIG_FILE )
     fileConfig(config_file)
@@ -387,15 +388,17 @@ def open_samba_connection():
     logger.debug ('Starting function open_samba_connection')
     conn=SMBConnection(wetlab_config.SAMBA_USER_ID, wetlab_config.SAMBA_USER_PASSWORD,
         wetlab_config.SAMBA_SHARED_FOLDER_NAME,wetlab_config.SAMBA_REMOTE_SERVER_NAME,
-        use_ntlm_v2=wetlab_config.SAMBA_NTLM_USED,domain=wetlab_config.SAMBA_DOMAIN)
+        use_ntlm_v2=wetlab_config.SAMBA_NTLM_USED,domain=wetlab_config.SAMBA_DOMAIN,
+        is_direct_tcp=wetlab_config.IS_DIRECT_TCP )
     try:
-        conn.connect(wetlab_config.SAMBA_IP_SERVER, int(wetlab_config.SAMBA_PORT_SERVER))
+        conn.connect(socket.gethostbyname(wetlab_config.SAMBA_HOST_NAME, wetlab_config.SAMBA_PORT_SERVER))
+        #conn.connect(wetlab_config.SAMBA_IP_SERVER, int(wetlab_config.SAMBA_PORT_SERVER))
     except:
         string_message = 'Unable to connect to remote server'
         logging_errors (string_message, True, True)
         raise IOError ('Samba connection error')
 
-    
+
     logger.debug ('End function open_samba_connection')
     return conn
 
@@ -405,10 +408,10 @@ def set_state_in_all_projects(experiment_name, state):
     Description:
         The function will update the state for all project defined in the run
     Input:
-        experiment_name   # name of the run 
+        experiment_name   # name of the run
         state       # state value to set to the project
     Variables:
-        projects_to_update  # projects objects included in the run 
+        projects_to_update  # projects objects included in the run
     Return:
         True
     '''
@@ -428,9 +431,9 @@ def set_state_in_all_projects(experiment_name, state):
 def get_run_disk_utilization (conn, run_folder):
     '''
     Description:
-        Function to get the size of the run directory on the 
+        Function to get the size of the run directory on the
         remote server.
-        It will use the function get_size_dir to get the size utilization 
+        It will use the function get_size_dir to get the size utilization
         for each subfolder
     Input:
         conn # Connection samba object
@@ -441,7 +444,7 @@ def get_run_disk_utilization (conn, run_folder):
     Variables:
         file_list # contains the list of file and subfolders
         count_file_size # partial size for the subfolder
-        disk_utilization # dictionnary used to keep the disk space used 
+        disk_utilization # dictionnary used to keep the disk space used
                         in the run
     Return:
         disk_utilization # in the last iteraction will return the total
@@ -456,7 +459,7 @@ def get_run_disk_utilization (conn, run_folder):
         string_message = 'Unable to get the folder ' + run_folder
         logging_errors (string_message, True, False)
         logger.debug ('End function get_run_disk_utilization with error')
-        raise 
+        raise
     rest_of_dir_size = 0
     data_dir_size = 0
     images_dir_size = 0
@@ -499,7 +502,7 @@ def get_run_disk_utilization (conn, run_folder):
 def get_size_dir (directory, conn):
     '''
     Description:
-        Recursive function to get the size of the run directory on the 
+        Recursive function to get the size of the run directory on the
         remote server.
         Optional can send an email to inform about the issue
     Input:
