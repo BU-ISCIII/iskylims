@@ -391,7 +391,7 @@ def open_samba_connection():
         use_ntlm_v2=wetlab_config.SAMBA_NTLM_USED,domain=wetlab_config.SAMBA_DOMAIN,
         is_direct_tcp=wetlab_config.IS_DIRECT_TCP )
     try:
-        conn.connect(socket.gethostbyname(wetlab_config.SAMBA_HOST_NAME, wetlab_config.SAMBA_PORT_SERVER))
+        conn.connect(socket.gethostbyname(wetlab_config.SAMBA_HOST_NAME), int(wetlab_config.SAMBA_PORT_SERVER))
         #conn.connect(wetlab_config.SAMBA_IP_SERVER, int(wetlab_config.SAMBA_PORT_SERVER))
     except:
         string_message = 'Unable to connect to remote server'
