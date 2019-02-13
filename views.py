@@ -635,7 +635,7 @@ def search_run (request):
                 if (len(run_name_found)>1):
                     return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Too many matches found when searching for the run name ', run_name ,
                                                                     'ADVICE:', 'Select additional filter to find the run that you are looking for']})
-                r_data_display= get_information_run(run_name_found[0],run_name_found[0].id)
+                r_data_display= get_information_run(run_name_found[0])
                 return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_one_run': r_data_display })
             if (runs_found.filter(runName__icontains =run_name).exists()):
                 runs_found=runs_found.filter(runName__icontains =run_name).order_by('runName')
