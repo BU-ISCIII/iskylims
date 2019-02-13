@@ -165,8 +165,8 @@ def get_sample_file (request):
             # check if project was already saved in database in Not Started State.
             # if found delete the projects, because the previous attempt to complete the run was unsuccessful
             if ( Projects.objects.filter(projectName__icontains = key).exists()):
-                if ( Projects.objects.filter(projectName__icontains = key, projectState__projectStateName = 'Not Started').exists()):
-                    delete_project = Projects.objects.get(projectName__icontains = key , projectState__projectStateName = 'Not Started')
+                if ( Projects.objects.filter(projectName__icontains = key, runprocess_id__state__runStateName = 'Not Started').exists()):
+                    delete_project = Projects.objects.get(projectName__icontains = key , runprocess_id__state__runStateName = 'Not Started')
                     delete_project.delete()
                 else:
                     project_already_defined.append(key)
@@ -204,7 +204,7 @@ def get_sample_file (request):
             userid=User.objects.get(username__exact = val)
             p_data=Projects(runprocess_id=RunProcess.objects.get(runName =run_name),
                             projectName=key, user_id=userid,
-                            projectState= ProjectStates.objects.get(projectStateName__exact = 'Pre-Recorded'))
+                            )
             p_data.save()
             projects.append([key, val])
         run_info_values['projects_user'] = projects
@@ -734,7 +734,6 @@ def search_project (request):
         User inputs from search options
             project_name    # string characters to find in the project name
             platform_name   # platform name filter
-            project_state   # state of the porject
             start_date      # filter of starting date of the project
             end_date        # filter for the end of the project
 
@@ -765,12 +764,11 @@ def search_project (request):
         project_name=request.POST['projectname']
         start_date=request.POST['startdate']
         end_date=request.POST['enddate']
-        project_state=request.POST['projectstate']
         user_name = request.POST['username']
         platform_name = request.POST['platform']
         run_process_ids = []
         # check that some values are in the request if not return the form
-        if project_name == '' and start_date == '' and end_date == '' and user_name =='' and project_state == '' and platform_name == '':
+        if project_name == '' and start_date == '' and end_date == '' and user_name =='' and platform_name == '':
             return render(request, 'iSkyLIMS_wetlab/SearchProject.html')
         if user_name !=''  and len(user_name) <5 :
              return render (request,'iSkyLIMS_wetlab/error_page.html',
@@ -811,9 +809,9 @@ def search_project (request):
         if platform_name != '':
             #import pdb; pdb.set_trace()
             from iSkyLIMS_drylab.models import Machines, Platform
-            if Machines.objects.filter(platformID__exact = Platform.objects.get(platformName__exact = platform_name)).exists() :
+            if Machines.objects.filter(platformID__platformName__exact = platform_name).exists() :
                 #import pdb; pdb.set_trace()
-                machine_list = Machines.objects.filter(platformID__exact = Platform.objects.get(platformName__exact = platform_name))
+                machine_list = Machines.objects.filter(platformID__platformName__exact = platform_name)
                 #import pdb; pdb.set_trace()
 
                 if RunProcess.objects.filter(sequencerModel__in = machine_list).exists() :
@@ -844,11 +842,9 @@ def search_project (request):
                      return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The Project found does not belong to the user, ', user_name ]})
             else:
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The Project found does not belong to the user, ', user_name ]})
-
-                    # check if the date in the form match in project database
         if (project_state !='' ):
-            if projects_found.filter(projectState__exact = project_state):
-                projects_found = projects_found.filter(projectState__exact = project_state)
+            if projects_found.filter(runprocess_id__state__runStateName__exact = project_state):
+                projects_found = projects_found.filter(runprocess_id__state__runStateName__exact = project_state)
             else :
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There ane not Projects containing ', project_name,
                                                'in state', project_state ]})
@@ -893,6 +889,12 @@ def search_project (request):
     else:
         available_platforms = []
         available_machines = []
+        available_states = []
+
+        run_states = RunStates.objects.all()
+        for state in run_states :
+            available_states.append(state.runStateName)
+
         from iSkyLIMS_drylab.models import Platform, Machines
 
         platforms = Platform.objects.all()
@@ -901,7 +903,7 @@ def search_project (request):
         machines = Machines.objects.all()
         for machine in machines :
             available_machines.append(machine.get_machine_name())
-        return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'platforms': available_platforms})
+        return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'platforms': available_platforms,'machines':available_machines,'run_states':available_states})
 
 
 
@@ -1625,13 +1627,13 @@ def stats_per_researcher (request):
             r_name = User.objects.get(username__icontains = r_name).username
             r_name_id = User.objects.get(username__icontains = r_name).id
             if Projects.objects.filter(user_id__exact =r_name_id).exists():
-                if Projects.objects.filter(user_id__exact =r_name_id, projectState__projectStateName__exact = "Completed").exists():
-                    r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, projectState__projectStateName__exact = "Completed").order_by('project_run_date')
+                if Projects.objects.filter(user_id__exact =r_name_id, runprocess_id__state__runStateName = "Completed").exists():
+                    r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, runprocess_id__state__runStateName = "Completed").order_by('project_run_date')
 
                 # check if start and end date are present in the form
                     if start_date != '' and end_date !='':
-                        if Projects.objects.filter(user_id__exact =r_name_id, projectState__projectStateName__exact = "Completed", project_run_date__range=(start_date, end_date)).exists():
-                            r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, projectState__projectStateName__exact = "Completed", project_run_date__range=(start_date, end_date))
+                        if Projects.objects.filter(user_id__exact =r_name_id, runprocess_id__state__runStateName = "Completed", project_run_date__range=(start_date, end_date)).exists():
+                            r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, runprocess_id__state__runStateName = "Completed", project_run_date__range=(start_date, end_date))
                             #r_project_by_researcher = r_project_by_researcher.filter(generatedat__range=(start_date, end_date))
                         else:
                             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Researcher does not have projects associated for the period ',
@@ -1639,15 +1641,15 @@ def stats_per_researcher (request):
                                                                 'ADVICE:', 'Contact with your administrator']})
                     if start_date != '' and end_date =='':
                         end_date = str(datetime.datetime.now().date())
-                        if Projects.objects.filter(user_id__exact =r_name_id, projectState__projectStateName__exact = "Completed", project_run_date__range=(start_date, end_date)).exists():
-                            r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, projectState__projectStateName__exact = "Completed", project_run_date__range=(start_date, end_date))
+                        if Projects.objects.filter(user_id__exact =r_name_id, runprocess_id__state__runStateName = "Completed",project_run_date__range=(start_date, end_date)).exists():
+                            r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id,runprocess_id__state__runStateName = "Completed", project_run_date__range=(start_date, end_date))
                         else:
                             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Researcher does not have projects associated for the period ',
                                                     'starting date  = ', start_date,
                                                                 'ADVICE:', 'Contact with your administrator']})
                     if start_date == '' and end_date !='':
-                        if Projects.objects.filter(user_id__exact =r_name_id, projectState__projectStateName__exact = "Completed", project_run_date__lte= end_date).exists():
-                            r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, projectState__projectStateName__exact = "Completed", project_run_date__lte = end_date)
+                        if Projects.objects.filter(user_id__exact =r_name_id, runprocess_id__state__runStateName = "Completed", project_run_date__lte= end_date).exists():
+                            r_project_by_researcher = Projects.objects.filter(user_id__exact =r_name_id, runprocess_id__state__runStateName = "Completed", project_run_date__lte = end_date)
                         else:
                             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Researcher does not have projects associated for the period ',
                                                     'ending date  = ', end_date,
@@ -1963,7 +1965,7 @@ def stats_per_time (request):
                 #############################################################
                 ### collect statistics for Projects
                 if (Projects.objects.filter( procState='Completed', project_run_date__range=(start_date, end_date)).exists()):
-                    project_found_list = Projects.objects.filter( projectState__projectStateName='Completed', project_run_date__range=(start_date, end_date))
+                    project_found_list = Projects.objects.filter( runprocess_id__state__runStateName='Completed', project_run_date__range=(start_date, end_date))
 
                     project_list={}
                     project_date_name ={}
@@ -2131,7 +2133,7 @@ def stats_per_library (request):
             else:
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Library containing ', library_kit_name]})
         else:
-            library_found = Projects.objects.filter(projectState__projectStateName__exact = 'Completed')
+            library_found = Projects.objects.filter(runprocess_id__state__runStateName__exact = 'Completed')
         if (start_date != '' and end_date != ''):
             if library_found.filter(project_run_date__range=(start_date, end_date)).exists():
                  library_found = library_found.filter(project_run_date__range=(start_date, end_date))

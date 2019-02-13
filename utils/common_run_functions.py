@@ -945,7 +945,7 @@ def manage_run_in_processed_run (conn, run_object_name):
             # return the state to Processed Run
             run_state = run_object_name.set_run_state('Processed Run')
 
-            set_state_in_all_projects(experiment_name, 'Processed Run')
+            #set_state_in_all_projects(experiment_name, 'Processed Run')
         # Check if Bcl2fastq has started
         try:
             file_list = conn.listPath( wetlab_config.SAMBA_SHARED_FOLDER_NAME, statistics_folder)
@@ -1086,7 +1086,7 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
 
     if 'Processed Bcl2fastq' == run_object_name.get_state() :
         run_state = run_object_name.set_run_state('Processing Demultiplexing')
-        projects_state = set_state_in_all_projects(experiment_name, 'Processing Demultiplexing')
+        #projects_state = set_state_in_all_projects(experiment_name, 'Processing Demultiplexing')
 
         try:
             l_demux , l_conversion= get_bcl2fastq_output_files (conn, run_folder)
@@ -1188,7 +1188,7 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
         result_set_finish_date = run_object_name.set_run_finish_date(finish_date)
         # Update the run state to completed
         run_state = run_object_name.set_run_state('Completed')
-        projects_state = set_state_in_all_projects(experiment_name, 'Completed')
+        #projects_state = set_state_in_all_projects(experiment_name, 'Completed')
 
     else:
         string_message = 'Invalid state when calling to ' + experiment_name

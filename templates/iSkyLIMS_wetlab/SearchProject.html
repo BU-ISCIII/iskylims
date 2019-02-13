@@ -220,13 +220,12 @@
                </div>  <!-- end select input -->
             </div>  <!-- end from-group   -->
              <div class="form-group">
-               <label class="col-sm-5 control-label" for="projectstate" >Project state</label>
-               <div class="col-sm-4"><select class="form-control" name="projectstate" id="projectstate">
-                               				<option value="">Choose a value  </option>
-                                            <option value="Recorded">Recorded</option>
-                                            <option value="Sample Sent">Sample Sent</option>
-                                            <option value="B2FqExecuted">B2FqExecuted</option>
-                                            <option value="Completed">Completed</option>
+               <label class="col-sm-5 control-label" for="projectstate" >Run state</label>
+               <div class="col-sm-4"><select class="form-control" name="runstate" id="runstate">
+                               				<option value="">Choose a value</option>
+                                            {% for value in run_states %}
+                                                <option value="{{value}}">{{value}}</option>
+                                            {% endfor %}
                                       </select>
                </div>  <!-- end select input -->
                 <br>

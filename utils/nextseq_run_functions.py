@@ -332,10 +332,7 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
         else:
             string_message = instrument + ' has been not defined on machines '
             logging_errors(string_message, False, True)
-        #update the project state
-        projects = Projects.objects.filter(runprocess_id = run_process)
-        for project in projects:
-                p_state = project.set_project_state ( 'Sample Sent')
+
         # deleting RunParameter and RunInfo
         logger.info('Deleting RunParameter and RunInfo')
         os.remove(l_run_parameter)

@@ -327,7 +327,7 @@ def save_miseq_projects_found (projects_users , experiment_name, library_name):
     for project, user  in projects_users.items():
         userid=User.objects.get(username__exact = user)
         p_data=Projects(runprocess_id = run_process, projectName = project,
-                        user_id = userid, procState = 'Sample Sent',
+                        user_id = userid,
                         baseSpaceFile = base_space_file,
                         LibraryKit_id = library_kit, libraryKit = library_name)
         p_data.save()
