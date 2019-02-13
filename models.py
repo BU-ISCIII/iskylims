@@ -36,7 +36,7 @@ class RunProcess(models.Model):
     run_date = models.DateField(auto_now = False, null=True)
     run_finish_date = models.DateTimeField(auto_now = False, null=True, blank=True)
     bcl2fastq_finish_date = models.DateTimeField(auto_now = False, null=True, blank=True)
-    process_completed_date = models.DateTimeField(auto_now = False, null=True, blank=True)
+    run_completed_date = models.DateTimeField(auto_now = False, null=True, blank=True)
     runState = models.CharField(max_length=25)
     state = models.ForeignKey ( RunStates, on_delete = models.CASCADE, related_name = 'state_of_run', null = True, blank = True)
     index_library = models.CharField(max_length=85)
@@ -90,15 +90,15 @@ class RunProcess(models.Model):
         else:
             bcl2fastq_date = self.bcl2fastq_finish_date.strftime("%I:%M%p on %B %d, %Y")
 
-        if self.process_completed_date is None:
+        if self.run_completed_date is None:
             completed_date = 'Run process is not completed'
         else:
-            completed_date = self.process_completed_date.strftime("%I:%M%p on %B %d, %Y")
+            completed_date = self.run_completed_date.strftime("%I:%M%p on %B %d, %Y")
 
 
         return '%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s'  %(self.runName, self.state,
-                requested_center, generated_date, rundate,finish_date, bcl2fastq_date,
-                completed_date, self.useSpaceImgMb, self.useSpaceFastaMb,
+                requested_center, generated_date, rundate,completed_date, bcl2fastq_date,
+                finish_date, self.useSpaceImgMb, self.useSpaceFastaMb,
                 self.useSpaceOtherMb )
 
 
@@ -169,7 +169,12 @@ class RunProcess(models.Model):
         return True
 
     def set_run_completion_date (self, completion_date):
-        self.run_finish_date = completion_date
+        self.run_completed_date = completion_date
+        self.save()
+        return True
+
+    def set_run_finish_date (self, finish_date):
+        self.run_finish_date = finish_date
         self.save()
         return True
 

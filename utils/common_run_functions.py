@@ -1184,8 +1184,8 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
             raise
 
         result_store_usage = run_object_name.set_used_space (disk_utilization)
-        completion_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        result_set_completion_date = run_object_name.set_run_completion_date(completion_date)
+        finish_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        result_set_finish_date = run_object_name.set_run_finish_date(finish_date)
         # Update the run state to completed
         run_state = run_object_name.set_run_state('Completed')
         projects_state = set_state_in_all_projects(experiment_name, 'Completed')
