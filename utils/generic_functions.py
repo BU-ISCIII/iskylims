@@ -7,11 +7,12 @@ from smb.SMBConnection import SMBConnection
 import socket
 
 from django.core.mail import send_mail
+from django.contrib.auth.models import Group
 
 from .sample_sheet_utils import get_projects_in_run
 from django.conf import settings
 from iSkyLIMS_wetlab import wetlab_config
-from iSkyLIMS_wetlab.models import RunProcess, Projects
+from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects
 
 
 def check_all_projects_exists (project_list):
@@ -156,6 +157,43 @@ def get_attributes_remote_file (conn, run_dir, remote_file) :
     logger.debug ('End function for  getting remote attributes')
     return file_attributes
 
+def get_available_platform ():
+    '''
+    Description:
+        The function fetch the available run states by quering
+        the run_state table
+    Import:
+        platform object from iSkyLIMS_drylab
+    Variable:
+        available_states   # list containing the run state names
+        platforms   # all platform objects
+    Return:
+        available_states
+    '''
+    from iSkyLIMS_drylab.models import Platform
+    available_platforms =[]
+
+    platforms = Platform.objects.all()
+    for platform in platforms :
+        available_platforms.append(platform.get_platform_name())
+    return available_platforms
+
+def get_available_run_state ():
+    '''
+    Description:
+        The function fetch the available run states by quering
+        the run_state table
+    Variable:
+        available_states   # list containing the run state names
+    Return:
+        available_states
+    '''
+    available_states = []
+    run_states = RunStates.objects.all()
+    for state in run_states :
+        available_states.append(state.runStateName)
+    return available_states
+
 
 def get_new_runs_from_remote_server (processed_runs, conn, shared_folder):
     '''
@@ -265,6 +303,26 @@ def handling_errors_in_run (experiment_name, error_code):
     logger.debug ('End function handling_errors_in_run')
     return True
 
+def is_wetlab_manager (request):
+    '''
+    Description:
+        The function will check if the logged user belongs to wetlab 
+        manager group
+    Input:
+        request # contains the session information
+    Variables:
+        groups # wetlab manager object group
+    Return:
+        Return True if the user belongs to Wetlab Manager, False if not 
+    '''
+    try:
+        groups = Group.objects.get(name = wetlab_config.WETLAB_MANAGER)
+        if groups not in request.user.groups.all():
+            return False
+    except:
+        return False
+    
+    return True
 
 def logging_errors(string_text, showing_traceback , print_on_screen ):
     '''

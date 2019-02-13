@@ -12,7 +12,7 @@ from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import Group
+#from django.contrib.auth.models import Group
 
 from django_utils.models import Profile, Center
 from django_utils.views import check_user_group
@@ -41,18 +41,12 @@ def register_wetlab(request):
     return render(request, 'iSkyLIMS_wetlab/index.html')
 
 
+
 @login_required
-def get_sample_file (request):
+def create_nextseq_run (request):
     ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
-        try:
-            groups = Group.objects.get(name = wetlab_config.WETLAB_MANAGER)
-            if groups not in request.user.groups.all():
-                return render (
-                    request,'iSkyLIMS_wetlab/error_page.html',
-                    {'content':['You do not have enough privileges to see this page ',
-                                'Contact with your administrator .']})
-        except:
+        if not is_wetlab_manager(request):
             return render (
                 request,'iSkyLIMS_wetlab/error_page.html',
                 {'content':['You do not have enough privileges to see this page ',
@@ -774,7 +768,10 @@ def search_project (request):
         run_process_ids = []
         # check that some values are in the request if not return the form
         if project_name == '' and start_date == '' and end_date == '' and user_name =='' and platform_name == '':
-            return render(request, 'iSkyLIMS_wetlab/SearchProject.html')
+            available_platforms = get_available_platform()
+            available_states = get_available_run_state()
+            return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'platforms': available_platforms,'run_states':available_states})
+
         if user_name !=''  and len(user_name) <5 :
              return render (request,'iSkyLIMS_wetlab/error_page.html',
                         {'content':['The user name must contains at least 5 caracters ',
@@ -892,23 +889,9 @@ def search_project (request):
             return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'display_project_list': project_list_dict })
 
     else:
-        available_platforms = []
-        available_machines = []
-        available_states = []
-
-        run_states = RunStates.objects.all()
-        for state in run_states :
-            available_states.append(state.runStateName)
-
-        from iSkyLIMS_drylab.models import Platform, Machines
-
-        platforms = Platform.objects.all()
-        for platform in platforms :
-            available_platforms.append(platform.get_platform_name())
-        machines = Machines.objects.all()
-        for machine in machines :
-            available_machines.append(machine.get_machine_name())
-        return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'platforms': available_platforms,'machines':available_machines,'run_states':available_states})
+        available_platforms = get_available_platform()
+        available_states = get_available_run_state()
+        return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'platforms': available_platforms,'run_states':available_states})
 
 
 

@@ -67,7 +67,7 @@
 				<li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Run Preparation<span class="caret"></span></a>
 				  <ul class="dropdown-menu">
 					{% if request.user|has_group:"WetlabManager" %}
-					    <li><a href="/wetlab/getSampleSheet">Upload the Run </a></li>
+					    <li><a href="/wetlab/createNextSeqRun">Create new NextSeq Run</a></li>
 					{% endif %}
 					<li><a href="/wetlab/AddLibraryKit">Add Library Kit</a></li>
 					<li><a href="/wetlab/AddIndexLibrary">Add Index Library</a></li>

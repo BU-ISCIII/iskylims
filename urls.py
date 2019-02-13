@@ -10,7 +10,7 @@ from django.views.generic import ListView, DetailView
 
 urlpatterns = [
     path('',views.index, name = 'index'),
-    path('getSampleSheet/', views.get_sample_file, name='get_sample_file'),
+    path('createNextSeqRun/', views.create_nextseq_run, name='create_nextseq_run'),
     path('latest_run/',views.latest_run, name='latest_run'),
     path('incompletedRuns', views.incompleted_runs, name = 'incompleted_runs'),
     path('searchRun/', views.search_run, name='search_run'),
