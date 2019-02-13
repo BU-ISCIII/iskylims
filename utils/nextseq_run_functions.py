@@ -319,7 +319,12 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
         running_parameters, run_date, instrument = nextseq_parsing_run_information(l_run_info, l_run_parameter)
 
         run_date = run_process.set_run_date(run_date)
-        run_parameters = RunningParameters.objects.create_running_parameters(running_parameters, run_process)
+
+        if not RunningParameters.objects.filter(runName_id = run_process).exists():
+            run_parameters = RunningParameters.objects.create_running_parameters(running_parameters, run_process)
+        else:
+            string_message = "RunParameters already in database for " + run_process.get_run_name()
+            logging_warnings(string_message,False)
         if  Machines.objects.filter(machineName__exact = instrument).exists() :
             sequencer = Machines.objects.get(machineName__exact = instrument)
             instrument = run_process.set_sequencer(sequencer)
@@ -335,7 +340,6 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
         logger.info('Deleting RunParameter and RunInfo')
         os.remove(l_run_parameter)
         os.remove(l_run_info)
-
         # Handling Sample Sheet file
         #exp_name_id = RunProcess.objects.get(runName__exact = experiment_name).id
         sample_sheet_tmp_dir = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY_RECORDED,run_process.get_run_id())
