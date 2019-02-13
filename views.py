@@ -703,6 +703,11 @@ def search_run (request):
         available_machines = []
         from iSkyLIMS_drylab.models import Platform, Machines
 
+        available_states = []
+
+        run_states = RunStates.objects.all()
+        for state in run_states :
+            available_states.append(state.runStateName)
 
         platforms = Platform.objects.all()
         for platform in platforms :
@@ -712,7 +717,7 @@ def search_run (request):
             available_machines.append(machine.get_machine_name())
 
 
-        return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'platforms': available_platforms})
+        return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'platforms': available_platforms,'machines':available_machines,'run_states':available_states})
 
 @login_required
 def search_project (request):
