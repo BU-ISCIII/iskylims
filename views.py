@@ -40,7 +40,12 @@ def register_wetlab(request):
     #
     return render(request, 'iSkyLIMS_wetlab/index.html')
 
-
+def test (request):
+    #from django.utils import simplejson
+    
+    values = ['ana', 'pepe']
+    #values = "ana"
+    return render(request,'iSkyLIMS_wetlab/test.html', {'values':values})
 
 @login_required
 def create_nextseq_run (request):
@@ -99,7 +104,8 @@ def create_nextseq_run (request):
         run_name = get_experiment_name(stored_file)
 
         if run_name == '':
-            ## define an unique value for the run name until the real value is get from the FORM
+            ## define an temporary unique value for the run name 
+            #until the real value is get from user FORM
             run_name = timestr
 
         ## Check that runName is not already used in the database.
@@ -134,6 +140,7 @@ def create_nextseq_run (request):
 
         ## Check if the users are already defined on database.
         ## Error page is showed if users are not defined on database
+        '''
         user_not_defined=[]
         for key, val  in project_list.items():
             if ( not User.objects.filter(username__icontains = val).exists()):
@@ -151,6 +158,7 @@ def create_nextseq_run (request):
             return render (request,'iSkyLIMS_wetlab/error_page.html',
                 {'content':[ head_text,'', display_user,'',
                     'Researcher names must be installed in database before uploading the Sample sheet']})
+        '''
         ## Check if the projects are already defined on database.
         ## Error page is showed if projects are already defined on database
 
@@ -159,8 +167,8 @@ def create_nextseq_run (request):
             # check if project was already saved in database in Not Started State.
             # if found delete the projects, because the previous attempt to complete the run was unsuccessful
             if ( Projects.objects.filter(projectName__icontains = key).exists()):
-                if ( Projects.objects.filter(projectName__icontains = key, runprocess_id__state__runStateName = 'Not Started').exists()):
-                    delete_project = Projects.objects.get(projectName__icontains = key , runprocess_id__state__runStateName = 'Not Started')
+                if ( Projects.objects.filter(projectName__icontains = key, runprocess_id__state__runStateName = 'Pre-Recorded').exists()):
+                    delete_project = Projects.objects.get(projectName__icontains = key , runprocess_id__state__runStateName = 'Pre-Recorded')
                     delete_project.delete()
                 else:
                     project_already_defined.append(key)
@@ -212,7 +220,7 @@ def create_nextseq_run (request):
         ## displays the list of projects and the user names found on Sample Sheet
         return render(request, 'iSkyLIMS_wetlab/getSampleSheet.html', {'get_user_names': run_info_values })
 
-
+    ## SECOND STEP in collecting data from the NextSeq run. Confirmation /modification of data included in Sample Sheet
     elif request.method=='POST' and (request.POST['action']=='displayResult'):
         experiment_name = request.POST['experimentname']
         run_index_library_name = request.POST['runindexlibraryname']
@@ -287,7 +295,6 @@ def create_nextseq_run (request):
             update_info_proj.baseSpaceFile=bs_file[project_index_kit[p]]
             update_info_proj.LibraryKit_id = library_kit_id
             update_info_proj.save()
-            update_info_proj.set_project_state ('Recorded')
         results.append(['runname', experiment_name])
         ## save the sample sheet file under tmp/recorded to be processed when run folder was created
         subfolder_name=str(run_p.id)
