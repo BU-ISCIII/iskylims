@@ -36,7 +36,7 @@ urlpatterns = [
     path('AddIndexLibrary', views.add_index_library, name = 'add_index_library'),
     path('DisplayIndexLibrary=<int:index_library_id>/', views.display_index_library, name= 'display_index_library'),
     path('searchIndexLibrary', views.search_index_library, name='search_index_library'),
-    path('test/',views.test, name='test'),
+
 
 
 ]

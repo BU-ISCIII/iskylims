@@ -58,8 +58,9 @@
                              <label class="col-sm-10" for="project">Project name : {{ key }}</label><br><br>
                                <input type="hidden" name="project" value="{{key}}"/>
                              <label class="col-sm-4 control-label" for="username" >User name : </label>
-                            <div class="col-sm-6"><input class="form-control" required = "required" type="text" name="username" size="60" maxlength="50" value="{{ values }}"></div>
+                            <div class="col-sm-6"><input id ="users" class="form-control" required = "required" type="text" name="username" size="60" maxlength="50" value="{{ values }}"> </div>
                              <br><br>
+                             <p id= "u1"></p>
                             <label class="col-sm-4 control-label for="libkit" >UsedLibrary Kit : </label>
                              <div class="col-sm-6">
                                  <select class="form-control" id="dropdown" name="libraryKit">
@@ -78,27 +79,52 @@
                      <input type="hidden" name="runname" value="{{get_user_names.runname}}"/>
                     <br>
                     <br>
-                    <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                    <input id = "btnSubmit"  class="btn pull-right btn-primary" type="submit" value="Submit">
                 </div>
           </form>
+        <!--script to validate the user name. submit button is disabled until valid input -->
+       <script>
+        var arr = {{ get_user_names.aval_users |safe }}
+    
+        function checkInputs() {
+          var isValid = true;
 
-          <p> Fields marked with <FONT COLOR= "Red">*</FONT> are mandatory</p>
+          var arr = {{ get_user_names.aval_users |safe }};
+          $('input').filter('[id=users]').each(function() {
+            var value = $(this).val();
+            if ( jQuery.inArray(value , arr) <0 ){
+              $('#btnSubmit').prop('disabled', true);
+              isValid = false;
+              return false;
+            }
+          });
+          if(isValid) {
+              $('#btnSubmit').prop('disabled', false) }
+          return isValid;
+        }
 
+        //Enable or disable button based on if user names are valid or not
+        $('input').filter('[id=users]').on('keyup',function() {
+        valid = checkInputs();
+        })
 
-<!--script to disable the submit button -->
-
-<script>
-    $(document).ready(function () {
-        $("#getSample").submit(function (e) {
-            //stop submitting the form to see the disabled button effect
-            // e.preventDefault();
-            //disable the submit button
-            $("#btnSubmit").attr("disabled", true);
-            return true;
-        });
-    });
-</script>
- <!--script ends here-->
+        checkInputs()
+       </script>
+         <!--script ends here-->
+         
+        <!--script to disable the submit button -->
+        <script>
+            $(document).ready(function () {
+                $("#getSample").submit(function (e) {
+                    //stop submitting the form to see the disabled button effect
+                    // e.preventDefault();
+                    //disable the submit button
+                    $("#btnSubmit").attr("disabled", true);
+                    return true;
+                });
+            });
+        </script>
+         <!--script ends here-->
 
     {% elif completed_form %}
         {% csrf_token %}

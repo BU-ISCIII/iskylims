@@ -234,7 +234,7 @@ class Projects(models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
             on_delete=models.CASCADE)
-    user_id= models.ForeignKey(User,on_delete=models.CASCADE,)
+    user_id= models.ForeignKey(User,on_delete=models.CASCADE, null = True)
     LibraryKit_id = models.ForeignKey(
             LibraryKit,
             on_delete=models.CASCADE , null=True)
