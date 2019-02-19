@@ -187,7 +187,6 @@ def create_nextseq_run (request):
         run_info_values['projects_user'] = projects
         run_info_values['runname']= run_name
         ## Get the list of the library kit used (libraryKit)
-        #import pdb; pdb.set_trace()
         used_libraries = []
         list_libraries = LibraryKit.objects.order_by().values_list('libraryName', flat=True)
         run_info_values['used_libraryKit'] =  list_libraries
@@ -625,7 +624,6 @@ def search_run (request):
                                     {'content':['No matches have been found for the run name ',
                                      run_name ]})
         if platform_name != '' :
-            #import pdb; pdb.set_trace()
             from iSkyLIMS_drylab.models import Machines, Platform
             if Machines.objects.filter(platformID__exact = Platform.objects.get(platformName__exact = platform_name)).exists() :
                 machine_list = Machines.objects.filter(platformID__exact = Platform.objects.get(platformName__exact = platform_name))
@@ -797,12 +795,9 @@ def search_project (request):
         if project_name == '':
             projects_found = Projects.objects.all()
         if platform_name != '':
-            #import pdb; pdb.set_trace()
             from iSkyLIMS_drylab.models import Machines, Platform
             if Machines.objects.filter(platformID__platformName__exact = platform_name).exists() :
-                #import pdb; pdb.set_trace()
                 machine_list = Machines.objects.filter(platformID__platformName__exact = platform_name)
-                #import pdb; pdb.set_trace()
 
                 if RunProcess.objects.filter(sequencerModel__in = machine_list).exists() :
                     runs_found = RunProcess.objects.filter(sequencerModel__in = machine_list)
@@ -1776,7 +1771,6 @@ def stats_per_researcher (request):
                     total_lanes_summary = {}
 
                     for sequencer in projects_name_dict.keys() :
-                        #import pdb; pdb.set_trace()
                         runs_sequencer = RunProcess.objects.filter(sequencerModel__machineName__exact = sequencer)
                         run_sequencer_id_list = []
                         for run in runs_sequencer :
