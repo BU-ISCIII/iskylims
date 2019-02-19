@@ -3,53 +3,81 @@
 {% block content %}
 {% csrf_token %}
 {% if display_one_run %}
- <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>
- <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>
- <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.powercharts.js" %}"></script>
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.charts.js" %}"></script>
- <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script>
- <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
-<script>
-  $( function() {
-    $( document ).tooltip();
-  } );
-</script>
-  <style>
-  label {
-    display: inline-block;
-    width: 5em;
-  }
-  </style>
-<div class="row row-space-2 margin-b-4">
+    {% if display_one_run.no_stable_data %}
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-7">
+                <div class="panel panel-default">
+                    {% for run, state in display_one_run.no_stable_data %}
+                        <div class="panel-heading">Information for the run : <strong>{{ run }}</strong>  </div>
+                        <div class="panel-body">
+                        <h3>The Run {{ run }} is in {{state }} state. </h3>
+                        <BR>
+                        <p>The system is now processing output files and stored the result in database.</p>
+                        <BR>
+                        Please check again later.
+                         </div> <!--  end of panel body -->
+                    {% endfor %}
+                </div> <!--  end of panel  -->
+            </div> <!--  end of col-sm-7 -->
+        </div> <!--  end of row space -->
+    {% else %}
+     <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>
+     <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>
+     <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.powercharts.js" %}"></script>
+     <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.charts.js" %}"></script>
+     <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script>
+     <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
+     <script>
+        $( function() {
+            $( document ).tooltip();
+            } );
+     </script>
+        <style>
+            label {
+            display: inline-block;
+            width: 5em;
+            }
+        </style>
+
+        {% if display_one_run.error_run %}
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-7">
+                <div class="panel panel-default">
+                    {% for run, state, error_text in display_one_run.error_run %}
+                        <div class="panel-heading">Information for the run : <strong>{{ run }}</strong>  </div>
+                        <div class="panel-body">
+                        <h3>The Run {{ run }} is in {{state }} state. </h3>
+                        <BR>
+                        <p>The system is now processing output files and stored the result in database.</p>
+                        <BR>
+                        Please check again later.
+                         </div> <!--  end of panel body -->
+                    {% endfor %}
+                </div> <!--  end of panel  -->
+            </div> <!--  end of col-sm-7 -->
+        </div> <!--  end of row space -->
+        {% endif %}
+    <div class="row row-space-2 margin-b-4">
         <div class="col-sm-7">
             <div class="panel panel-default">
-            {% for key, values in display_one_run.data %}
-               {%if key == "Run name" %}
-                <div class="panel-heading">Information for the run : <strong>{{ values }}</strong>  </div>
-               {%endif%}
-            {% endfor %}
-                <div class="panel-body">
-                    {% if display_one_run.change_run_name %}
-                        {% for key, value in display_one_run.change_run_name %}
-                            <div class="col-sm-6">Run Name </div>
-                            <div class="col-sm-6"><a href="/wetlab/ChangeRunName={{ value }}"> {{ key }} <span class="glyphicon glyphicon-pencil"></span></a></div>
-                        {% endfor %}
-                    {% endif %}
-             {% for key, values in display_one_run.data %}
-               {% if "Sample" in key %}
-                <div class="col-sm-6">{{ key }}</div>
-                <div class="col-sm-6"><a href="/documents/{{ values }}" download>{{ values|cut:"wetlab/SampleSheets/" }} <span class="glyphicon glyphicon-download-alt"></span></a></div><BR> <BR>
-               {% elif key == 'Run name'%}
+                <div class="panel-heading">Information for the run : <strong>{{ display_one_run.run_name }}</strong>  </div>
+            <div class="panel-body">
+                {% if display_one_run.change_run_name %}
+                    {% for key, value in display_one_run.change_run_name %}
+                        <div class="col-sm-6">Run Name </div>
+                        <div class="col-sm-6"><a href="/wetlab/ChangeRunName={{ value }}"> {{ key }} <span class="glyphicon glyphicon-pencil"></span></a></div><BR><BR>
+                    {% endfor %}
+                {% endif %}
+                {% for key, values in display_one_run.data %}
+               {% if key == 'Run name'%}
                {% else %}
                 <div class="col-sm-6">{{ key }}</div>
                 <div class="col-sm-6">   {{ values }}</div><BR> <BR>
                {% endif %}
             {% endfor %}
             {%if display_one_run.Sample_Sheet %}
-                {% for key, value in display_one_run.Sample_Sheet %}
-                    <div class="col-sm-6">{{ key }}</div>
-                    <div class="col-sm-6"><a href="/documents/{{ value }}" download>Sample Sheet File  <span class="glyphicon glyphicon-download-alt"></span></a></div>
-                {% endfor%}
+                    <div class="col-sm-6">{{ display_one_run.Sample_Sheet.0.0 }}</div>
+                    <div class="col-sm-6"><a href="/documents/{{ display_one_run.Sample_Sheet.0.1 }}" download>Sample Sheet File  <span class="glyphicon glyphicon-download-alt"></span></a></div>
             {% endif %}
            </div> <!--  end of panel body -->
           </div> <!--  end of panel  -->
@@ -86,12 +114,12 @@
                 </div> <!--  end of panel body -->
               </div> <!--  end of panel  -->
               </div> <!--  end of col-sm-6 -->
-              
+
 
          </div> <!--  end of col-sm-3 -->
 
     </div> <!--  end of row -->
-    
+    {% if display_one_run.boxplot %}
      <div class="row row-space-2 margin-b-4">
         <div class="col-sm-10 ">
             <div class="panel panel-default">
@@ -104,27 +132,34 @@
              </div> <!--  end of panel  -->
            </div> <!--  end of col-sm-10 -->
     </div> <!--  end of row -->
-
+    {% endif %}
      <div class="row row-space-2 margin-b-4">
-    {%if display_one_run.parameters%}
+    {%if display_one_run.running_parameters%}
      <!-- display run parameters in run is not in recorded state -->
-        <div class="col-sm-5 ">
+        <div class="col-sm-6 ">
              <button class="accordion">Parameters used for in the Run.</button>
                 <div class="panelaccordion">
                     <table class="table table-condensed">
                        <tbody>
-                       {% for key, values in display_one_run.parameters %}
+                       {% for key, values in display_one_run.running_parameters %}
                          <tr>
                            <td><b>{{ key }}</b></td>
-                           <td>{{ values }}</td>
+                           <td> {% if key == 'Image Dimensions' or key == 'Flowcell Layout' %}
+                                    {% for value in values %}
+                                        {{ value }} <BR>
+                                    {% endfor %}
+                                {% else %}
+                                    {{ values }}
+                                {% endif %}
+                            </td>
                          </tr>
                        {% endfor %}
                        </tbody>
                     </table>
                 </div> <!-- end of panelaccordion -->
-        </div> <!--  end of col-sm-5 -->
+        </div> <!--  end of col-sm-6 -->
     {% endif %}
-    {%if display_one_run.parameters%}
+    {%if display_one_run.running_parameters%}
         <div class="col-sm-4 col-sm-offset-1">
     {% else %}
         <div class="col-sm-4 col-sm-offset-7">
@@ -143,7 +178,7 @@
                    <tbody>
                      {% for key, values in display_one_run.projects %}
                      <tr>
-                       <td><a href="/wetlab/search_project={{ values }}">{{ key }}</a> </td>
+                       <td><a href="/wetlab/displayProject={{ values }}">{{ key }}</a> </td>
                      </tr>
                 {%endfor%}
                     </tbody>
@@ -218,8 +253,8 @@
            </div> <!--  end of col-sm-10 -->
       </div> <!--  end of row -->
       {% endif%}
-      
-            
+
+       {% if display_one_run.run_project_comparation %}
        <div class="row row-space-8 margin-b-1">
          <div class="col-sm-10 ">
             <div class="panel panel-default">
@@ -232,7 +267,7 @@
              </div> <!--  end of panel  -->
            </div> <!--  end of col-sm-10 -->
        </div> <!--  end of row -->
-      
+      {% endif %}
       {% if display_one_run.lane_summary %}
       <div class="row row-space-10 margin-b-1">
          <div class="col-sm-10 ">
@@ -489,7 +524,7 @@
       </div> <!--  end of row -->
 
      {% endif %}
-     
+
      {% if display_one_run.runSummary %}
 
      <div class="row row-space-4 margin-b-1">
@@ -576,6 +611,7 @@
 
       </div> <!--  end of col-sm-12 -->
     </div> <!--  end of row -->
+    {% endif%}
 {% endif%}
 
 {% elif display_run_list %}
@@ -585,7 +621,7 @@
                 <div class="panel-heading">The following list matches with yor search: </div>
                 <div class="panel-body">
                 {% for key, values in display_run_list %}
-                    <div class="col-sm-6"><a href="/wetlab/search_run={{ values }}">{{ key }}</a></div><BR>
+                    <div class="col-sm-6"><a href="/wetlab/displayRun={{ values }}">{{ key }}</a></div><BR>
                  {% endfor %}
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
@@ -609,14 +645,24 @@
              </div>  <!-- end from-group   -->
              <BR>
              <div class="form-group">
+               <label class="col-sm-5 control-label" for="platform" >Platform</label>
+               <div class="col-sm-4"><select class="form-control" name="platform" id="platform">
+                               				<option value="">Choose a value</option>
+                                            {% for value in platforms %}
+                                                <option value="{{value}}">{{value}}</option>
+                                            {% endfor %}
+
+                                      </select>
+               </div>  <!-- end select input -->
+            </div>  <!-- end from-group   -->
+             <BR>
+             <div class="form-group">
                <label class="col-sm-5 control-label" for="runstate" >Run state</label>
                <div class="col-sm-4"><select class="form-control" name="runstate" id="runstate">
                                				<option value="">Choose a value</option>
-                                            <option value="Recorded">Recorded</option>
-                                            <option value="Sample Sent">Sample Sent</option>
-                                            <option value="Process Running">Process Running</option>
-                                            <option value="Bcl2Fastq Executed">Bcl2Fastq Executed</option>
-                                            <option value="Completed">Completed</option>
+                                            {% for value in run_states %}
+                                                <option value="{{value}}">{{value}}</option>
+                                            {% endfor %}
                                       </select>
                </div>  <!-- end select input -->
 

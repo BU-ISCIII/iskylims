@@ -10,19 +10,19 @@ from django.views.generic import ListView, DetailView
 
 urlpatterns = [
     path('',views.index, name = 'index'),
-    path('getSampleSheet/', views.get_sample_file, name='get_sample_file'),
+    path('createNextSeqRun/', views.create_nextseq_run, name='create_nextseq_run'),
     path('latest_run/',views.latest_run, name='latest_run'),
     path('incompletedRuns', views.incompleted_runs, name = 'incompleted_runs'),
-    path('searchNextSeq/', views.search_nextSeq, name='search_nextSeq'),
-    path('searchNextProject/', views.search_nextProject, name ='search_nextProject'),
-    path('searchNextSample/', views.search_nextSample, name = 'search_nextSample'),
-    path('search_run=<int:run_id>/', views.search_run, name='search_run'),
-    path('search_project=<int:project_id>/', views.search_project, name='search_project'),
-    path('search_sample=<int:sample_id>/', views.search_sample, name= 'search_sample'),
-    path('NextSeqStatsExperiment/', views.next_seq_stats_experiment, name ='next_seq_stats_experiment'),
-    path('NextSeqStatsPerResearcher/',views.nextSeqStats_per_researcher, name='nextSeqStats_per_researcher'),
-    path('NextSeqStatsPerTime/', views.nextSeqStats_per_time, name ='nextSeqStats_per_time'),
-    path('NextSeqStatsLibrary/', views.nextSeqStats_per_library , name ='nextSeqStats_per_library'),
+    path('searchRun/', views.search_run, name='search_run'),
+    path('displayRun=<int:run_id>/', views.display_run, name='display_run'),
+    path('searchProject/', views.search_project, name ='search_project'),
+    path('searchSample/', views.search_sample, name = 'search_sample'),
+    path('displayProject=<int:project_id>/', views.display_project, name='display_project'),
+    path('displaySample=<int:sample_id>/', views.display_sample, name= 'display_sample'),
+    path('StatsExperiment/', views.stats_experiment, name ='stats_experiment'),
+    path('StatsPerResearcher/',views.stats_per_researcher, name='stats_per_researcher'),
+    path('StatsPerTime/', views.stats_per_time, name ='stats_per_time'),
+    path('StatsLibrary/', views.stats_per_library , name ='stats_per_library'),
     path('AnnualReport/',views.annual_report, name='annual_report'),
     path('MonthlyReport/', views.monthly_report, name='montly_report'),
     path('QuarterReport/', views.quarter_report, name='quarter_report'),
@@ -37,9 +37,7 @@ urlpatterns = [
     path('DisplayIndexLibrary=<int:index_library_id>/', views.display_index_library, name= 'display_index_library'),
     path('searchIndexLibrary', views.search_index_library, name='search_index_library'),
 
-    #url(r'^documents/images_plot$', 'django.views.static.serve',{'document_root': settings.MEDIA_ROOT}),
-    #url(r'^documents/(?P<path>.*)$', 'django.views.static.serve',{'document_root': settings.MEDIA_ROOT,}),
-    path('mail/',views.email, name='email'),
+
 
 ]
 #+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

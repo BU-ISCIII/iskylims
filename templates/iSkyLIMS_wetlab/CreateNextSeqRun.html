@@ -58,7 +58,7 @@
                              <label class="col-sm-10" for="project">Project name : {{ key }}</label><br><br>
                                <input type="hidden" name="project" value="{{key}}"/>
                              <label class="col-sm-4 control-label" for="username" >User name : </label>
-                            <div class="col-sm-6"><input class="form-control" required = "required" type="text" name="username" size="60" maxlength="50" value="{{ values }}"></div>
+                            <div class="col-sm-6"><input id ="users" class="form-control" required = "required" type="text" name="username" size="60" maxlength="50" value="{{ values }}"> </div>
                              <br><br>
                             <label class="col-sm-4 control-label for="libkit" >UsedLibrary Kit : </label>
                              <div class="col-sm-6">
@@ -71,34 +71,72 @@
 
                             <br><br>
                             <label class="col-sm-4" for="projectindexlibraryname">Index Library Name : </label>
-                        <div class="col-sm-6"><input class="form-control"  required = "required" type="text" name="projectindexlibraryname" size="60" maxlength="50" value="{{ get_user_names.index_library_name }}"></div>
-                        <br><br>
+                            <div class="col-sm-6"><input class="form-control"  required = "required" type="text" name="projectindexlibraryname" size="60" maxlength="50" value="{{ get_user_names.index_library_name }}"></div>
+                            <br><br>
                          </div>
                     {% endfor %}
                      <input type="hidden" name="runname" value="{{get_user_names.runname}}"/>
                     <br>
                     <br>
-                    <input class="btn pull-right btn-primary" type="submit" value="Submit">
-                </div>
+                    <input id = "btnSubmit"  class="btn pull-right btn-primary" type="submit" value="Submit">
+                </div> <!--// end panel  -->
           </form>
+         </div> <!--// end col-sm-8  --> 
+         </div> <!--// end row -->
+          <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-8" >
+                <div class="panel panel-default">
+                    <div class="panel-heading">Notes for user validation</div>
+                    <div class="panel-body">
+                        <p> <strong>Submit button is disabled</strong> if any of the user names is not previoulsy defined in database or if it is set by using the autocompleted function <BR>
+                        </p>
+                    </div> <!--// end panel-body  -->
+                </div> <!--// end panel  -->
+            </div> <!--// end col-sm-8  --> 
+          </div> <!--// end row -->
+        <!--script to validate the user name. submit button is disabled until valid input -->
+       <script>
+        var arr = {{ get_user_names.aval_users |safe }}
+    
+        function checkInputs() {
+          var isValid = true;
 
-          <p> Fields marked with <FONT COLOR= "Red">*</FONT> are mandatory</p>
+          var arr = {{ get_user_names.aval_users |safe }};
+          $('input').filter('[id=users]').each(function() {
+            var value = $(this).val();
+            if ( jQuery.inArray(value , arr) <0 ){
+              $('#btnSubmit').prop('disabled', true);
+              isValid = false;
+              return false;
+            }
+          });
+          if(isValid) {
+              $('#btnSubmit').prop('disabled', false) }
+          return isValid;
+        }
 
+        //Enable or disable button based on if user names are valid or not
+        $('input').filter('[id=users]').on('keyup',function() {
+        valid = checkInputs();
+        })
 
-<!--script to disable the submit button -->
-
-<script>
-    $(document).ready(function () {
-        $("#getSample").submit(function (e) {
-            //stop submitting the form to see the disabled button effect
-            // e.preventDefault();
-            //disable the submit button
-            $("#btnSubmit").attr("disabled", true);
-            return true;
-        });
-    });
-</script>
- <!--script ends here-->
+        checkInputs()
+       </script>
+         <!--script ends here-->
+         
+        <!--script to disable the submit button -->
+        <script>
+            $(document).ready(function () {
+                $("#getSample").submit(function (e) {
+                    //stop submitting the form to see the disabled button effect
+                    // e.preventDefault();
+                    //disable the submit button
+                    $("#btnSubmit").attr("disabled", true);
+                    return true;
+                });
+            });
+        </script>
+         <!--script ends here-->
 
     {% elif completed_form %}
         {% csrf_token %}

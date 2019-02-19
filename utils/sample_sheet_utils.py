@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 # coding: utf-8
-
-
 import os
 import re
 from datetime import datetime
@@ -13,6 +11,9 @@ from Bio.Seq import Seq
 from django.conf import settings
 
 from iSkyLIMS_wetlab import wetlab_config
+from iSkyLIMS_wetlab.models import *
+
+#from .wetlab_misc_utilities import timestamp_print
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
@@ -59,9 +60,9 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
                  date_line[1] = '/'.join(temp_date)
 
             try:
-                date_object = datetime.strptime(date_line[1],'%m/%d/%Y')
+                date_object = datetime.datetime.strptime(date_line[1],'%m/%d/%Y')
             except:
-                date_object = datetime.strptime(date_line[1],'%d/%m/%Y')
+                date_object = datetime.datetime.strptime(date_line[1],'%d/%m/%Y')
             date_sample = date_object.strftime('%Y%m%d')
             date_found = False
 
@@ -199,9 +200,30 @@ def get_projects_in_run(in_file):
     return projects
 
 
-def get_experiment_library_name (in_file):
+def get_experiment_name (in_file):
     experiment_name = ''
+
+    import codecs
+    fh = codecs.open(in_file, 'r', 'utf-8')
+
+    for line in fh:
+        line = line.rstrip()
+        if line == '':
+            continue
+        found_experiment = re.search('^Experiment Name',line)
+
+        if found_experiment :
+            experiment_value = line.split(',')
+            if experiment_value[1]:
+                experiment_name = experiment_value[1]
+                found_experiment = 0
+    fh.close()
+
+    return experiment_name
+
+def get_library_name (in_file):
     library_name = ''
+    ## For accepting characters like spanish characters.
     import codecs
     fh = codecs.open(in_file, 'r', 'utf-8')
     #fh = open(in_file, 'r')
@@ -209,13 +231,7 @@ def get_experiment_library_name (in_file):
         line = line.rstrip()
         if line == '':
             continue
-        found_experiment = re.search('^Experiment Name',line)
         found_library = re.search('^Assay',line)
-        if found_experiment :
-            experiment_value = line.split(',')
-            if experiment_value[1]:
-                experiment_name = experiment_value[1]
-                found_experiment = 0
         if found_library :
             library_value = line.split(',')
             if library_value[1]:
@@ -223,7 +239,7 @@ def get_experiment_library_name (in_file):
                 found_library = 0
     fh.close()
 
-    return experiment_name, library_name
+    return library_name
 
 def update_library_kit_field (library_file_name, library_kit_name, library_name):
     #result_directory='documents/wetlab/BaseSpaceMigrationFiles/'
@@ -334,3 +350,57 @@ def create_unique_sample_id_values (infile, index_file):
     fh_out_file.close()
     os.rename(temp_sample_sheet, infile)
 
+
+
+def set_user_names_in_sample_sheet (in_file, user_names):
+    '''
+    Description:
+        The function modifies/set the user names in the description 
+        column 
+    Input:
+        in_file # sample sheet file to be updated
+        user_names # dictionary having projects as key and user names 
+                    as their value
+    Variable:
+        data_line  # split line into list to set user name
+        description_index # column number where is located the description
+                            inside sample Sheet
+        found_sample_line # flag to identify if sample heading was found
+        project_index # column number where is located the project inside 
+                        sample Sheet
+                        
+        temp_sample_sheet # temporary sample sheet to store the information
+                            it will replace the in_file
+    Return:
+        True
+    '''
+    found_sample_line = False
+    temp_sample_sheet = os.path.join(settings.MEDIA_ROOT, 'wetlab','tmp_file')
+    fh = open(in_file,'r')
+    fh_out_file = open (temp_sample_sheet, 'w')
+    for line in fh:
+        if 'Sample_ID' in line:
+            found_sample_line =True
+            line = line.rstrip ()
+            project_index= line.split(',').index('Sample_Project')
+            description_index=line.split(',').index('Description')
+            fh_out_file.write(str(line + '\n'))
+            continue
+        if found_sample_line :
+            # discard the empty lines or the lines that contains empty lines separated by comma
+            if line == '\n' or re.search('^\W',line):
+                continue
+
+            data_line = line.split(',')
+            project_name = data_line[project_index]
+            data_line[description_index] = user_names[project_name]
+
+            new_line = ','.join(data_line)
+            fh_out_file.write(str(new_line + '\n'))
+        
+        else:
+            fh_out_file. write(line)
+    fh.close()
+    fh_out_file.close()
+    os.rename(temp_sample_sheet, in_file)
+    return True
