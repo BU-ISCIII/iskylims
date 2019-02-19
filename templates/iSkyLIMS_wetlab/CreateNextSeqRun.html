@@ -60,7 +60,6 @@
                              <label class="col-sm-4 control-label" for="username" >User name : </label>
                             <div class="col-sm-6"><input id ="users" class="form-control" required = "required" type="text" name="username" size="60" maxlength="50" value="{{ values }}"> </div>
                              <br><br>
-                             <p id= "u1"></p>
                             <label class="col-sm-4 control-label for="libkit" >UsedLibrary Kit : </label>
                              <div class="col-sm-6">
                                  <select class="form-control" id="dropdown" name="libraryKit">
@@ -72,16 +71,29 @@
 
                             <br><br>
                             <label class="col-sm-4" for="projectindexlibraryname">Index Library Name : </label>
-                        <div class="col-sm-6"><input class="form-control"  required = "required" type="text" name="projectindexlibraryname" size="60" maxlength="50" value="{{ get_user_names.index_library_name }}"></div>
-                        <br><br>
+                            <div class="col-sm-6"><input class="form-control"  required = "required" type="text" name="projectindexlibraryname" size="60" maxlength="50" value="{{ get_user_names.index_library_name }}"></div>
+                            <br><br>
                          </div>
                     {% endfor %}
                      <input type="hidden" name="runname" value="{{get_user_names.runname}}"/>
                     <br>
                     <br>
                     <input id = "btnSubmit"  class="btn pull-right btn-primary" type="submit" value="Submit">
-                </div>
+                </div> <!--// end panel  -->
           </form>
+         </div> <!--// end col-sm-8  --> 
+         </div> <!--// end row -->
+          <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-8" >
+                <div class="panel panel-default">
+                    <div class="panel-heading">Notes for user validation</div>
+                    <div class="panel-body">
+                        <p> <strong>Submit button is disabled</strong> if any of the user names is not previoulsy defined in database or if it is set by using the autocompleted function <BR>
+                        </p>
+                    </div> <!--// end panel-body  -->
+                </div> <!--// end panel  -->
+            </div> <!--// end col-sm-8  --> 
+          </div> <!--// end row -->
         <!--script to validate the user name. submit button is disabled until valid input -->
        <script>
         var arr = {{ get_user_names.aval_users |safe }}
