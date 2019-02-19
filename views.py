@@ -98,7 +98,7 @@ def create_nextseq_run (request):
         run_name = get_experiment_name(stored_file)
 
         if run_name == '':
-            ## define an temporary unique value for the run name 
+            ## define an temporary unique value for the run name
             #until the real value is get from user FORM
             run_name = timestr
 
@@ -752,6 +752,7 @@ def search_project (request):
         end_date=request.POST['enddate']
         user_name = request.POST['username']
         platform_name = request.POST['platform']
+        run_state = request.POST['runstate']
         run_process_ids = []
         # check that some values are in the request if not return the form
         if project_name == '' and start_date == '' and end_date == '' and user_name =='' and platform_name == '':
@@ -831,9 +832,9 @@ def search_project (request):
                      return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The Project found does not belong to the user, ', user_name ]})
             else:
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The Project found does not belong to the user, ', user_name ]})
-        if (project_state !='' ):
-            if projects_found.filter(runprocess_id__state__runStateName__exact = project_state):
-                projects_found = projects_found.filter(runprocess_id__state__runStateName__exact = project_state)
+        if (run_state !='' ):
+            if projects_found.filter(runprocess_id__state__runStateName__exact = run_state):
+                projects_found = projects_found.filter(runprocess_id__state__runStateName__exact = run_state)
             else :
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There ane not Projects containing ', project_name,
                                                'in state', project_state ]})
@@ -1939,8 +1940,8 @@ def stats_per_time (request):
 
                 #############################################################
                 ### collect statistics for Projects
-                if (Projects.objects.filter( procState='Completed', project_run_date__range=(start_date, end_date)).exists()):
-                    project_found_list = Projects.objects.filter( runprocess_id__state__runStateName='Completed', project_run_date__range=(start_date, end_date))
+                if (Projects.objects.filter(runprocess_id__state__runStateName__exact = 'Completed', project_run_date__range=(start_date, end_date)).exists()):
+                    project_found_list = Projects.objects.filter( runprocess_id__state__runStateName = 'Completed', project_run_date__range=(start_date, end_date))
 
                     project_list={}
                     project_date_name ={}
@@ -2103,8 +2104,8 @@ def stats_per_library (request):
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
                                                                     'ADVICE:', 'Use the format  (YYYY-MM-DD)']})
         if library_kit_name != '':
-            if Projects.objects.filter(libraryKit__icontains = library_kit_name, procState = 'Completed').exists():
-                library_found = Projects.objects.filter(libraryKit__icontains = library_kit_name, procState = 'Completed')
+            if Projects.objects.filter(libraryKit__icontains = library_kit_name, runprocess_id__state__runStateName__exact = 'Completed').exists():
+                library_found = Projects.objects.filter(libraryKit__icontains = library_kit_name, runprocess_id__state__runStateName__exact = 'Completed')
             else:
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Library containing ', library_kit_name]})
         else:
@@ -2209,26 +2210,26 @@ def stats_per_library (request):
             error_in_library_to_compare = ''
             # get the data for the libraries to compare with
             if start_date == '' and end_date == '':
-                if Projects.objects.filter(procState = 'Completed').exclude(libraryKit__exact = library_name).exists():
-                    libraries_to_compare = Projects.objects.filter(procState = 'Completed').exclude(libraryKit__exact = library_name)
+                if Projects.objects.filter(runprocess_id__state__runStateName__exact = 'Completed').exclude(libraryKit__exact = library_name).exists():
+                    libraries_to_compare = Projects.objects.filter(runprocess_id__state__runStateName__exact = 'Completed').exclude(libraryKit__exact = library_name)
                 else :
                     error_in_library_to_compare ='No other library have been found for doing the comparison. '
 
             if start_date != '' and end_date == '':
-                if Projects.objects.filter(procState = 'Completed', generatedat__gte = start_date).exclude(libraryKit__exact = library_name).exists():
-                    libraries_to_compare = Projects.objects.filter(procState = 'Completed', generatedat__gte = start_date).exclude(libraryKit__exact = library_name)
+                if Projects.objects.filter(runprocess_id__state__runStateName__exact = 'Completed', generatedat__gte = start_date).exclude(libraryKit__exact = library_name).exists():
+                    libraries_to_compare = Projects.objects.filter(runprocess_id__state__runStateName__exact = 'Completed', generatedat__gte = start_date).exclude(libraryKit__exact = library_name)
                 else :
                     error_in_library_to_compare ='No other library have been found for doing the comparison, with the starting date  ' + start_date
 
             if start_date == '' and end_date != '':
-                if Projects.objects.filter(procState = 'Completed', generatedat__lte = end_date).exclude(libraryKit__exact = library_name).exists():
-                    libraries_to_compare = Projects.objects.filter(procState = 'Completed', generatedat__lte = end_date).exclude(libraryKit__exact = library_name)
+                if Projects.objects.filter(runprocess_id__state__runStateName__exact = 'Completed', generatedat__lte = end_date).exclude(libraryKit__exact = library_name).exists():
+                    libraries_to_compare = Projects.objects.filter(runprocess_id__state__runStateName__exact = 'Completed', generatedat__lte = end_date).exclude(libraryKit__exact = library_name)
                 else :
                     error_in_library_to_compare ='No other library have been found for doing the comparison ending with  ' + end_date
 
             if start_date != '' and end_date != '':
-                if Projects.objects.filter(procState = 'Completed', generatedat__range =(start_date, end_date)).exclude(libraryKit__exact = library_name).exists():
-                    libraries_to_compare = Projects.objects.filter(procState = 'Completed', generatedat__range =(start_date, end_date)).exclude(libraryKit__exact = library_name)
+                if Projects.objects.filter(runprocess_id__state__runStateName__exact = 'Completed', generatedat__range =(start_date, end_date)).exclude(libraryKit__exact = library_name).exists():
+                    libraries_to_compare = Projects.objects.filter(runprocess_id__state__runStateName__exact = 'Completed', generatedat__range =(start_date, end_date)).exclude(libraryKit__exact = library_name)
                 else :
                     error_in_library_to_compare ='No other library have been found for doing the comparison for the start date  ' + start_date + '  and with the ending date  ' + end_date
 
@@ -2312,7 +2313,7 @@ def stats_per_library (request):
             ###
             # get the data for displaying the libraries found in the form request
             ###
-            all_libraries = Projects.objects.filter(procState = 'Completed')
+            all_libraries = Projects.objects.filter(runprocess_id__state__runStateName__exact = 'Completed')
             if (start_date != '' and end_date != ''):
                 if all_libraries.filter(generatedat__range=(start_date, end_date)).exists():
                      library_found = library_found.filter(generatedat__range=(start_date, end_date))
