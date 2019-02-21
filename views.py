@@ -125,3 +125,19 @@ def user_creation(request):
         form2 = ProfileCreationForm()
 
     return render(request,'registration/user_creation.html',{'form1' : form1 ,'form2':form2})
+
+def check_user_group (request, group_name):
+    '''
+    Description:
+        The function is used to check if the loging user belongs to a group
+    Input:
+        request     # contains the request dictionary sent by django
+        group_name  # contains the group name
+    Return:
+        True    # if logged user belongs to the group
+        False   # if user does not belong to the group
+    '''
+    group = Group.objects.get(name=group_name)
+    if group not in request.user.groups.all():
+        return False
+    return True
