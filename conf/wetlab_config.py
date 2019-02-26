@@ -16,6 +16,8 @@ SAMBA_REMOTE_SERVER_NAME = ''
 SAMBA_NTLM_USED = True
 SAMBA_IP_SERVER = ''
 SAMBA_PORT_SERVER = '445'
+SAMBA_HOST_NAME = ''
+IS_DIRECT_TCP = False
 ## SAMBA_DOMAIN MUST be empty if domain value is not used for samba connection
 SAMBA_DOMAIN=''
 ##############################################################
