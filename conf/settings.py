@@ -24,6 +24,7 @@ SECRET_KEY = ''
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+#DEBUG = False
 
 ALLOWED_HOSTS = ['localhost','127.0.0.1']
 
@@ -50,7 +51,6 @@ INSTALLED_APPS = [
     'tagging',
     'zinnia',
     'zinnia_wymeditor',
-
 ]
 
 MIDDLEWARE = [
@@ -68,7 +68,7 @@ ROOT_URLCONF = 'iSkyLIMS.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['./templates/',],
+        'DIRS': [BASE_DIR + '/documents/drylab/services_templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -91,10 +91,10 @@ WSGI_APPLICATION = 'iSkyLIMS.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'user',
-        'PASSWORD':'password',
+        'USER': '',
+        'PASSWORD':'',
         'PORT':'3306',
-        'NAME': 'iSkyLIMS',
+        'NAME': '',
         'TEST': {
             'NAME': 'iSkyLIMS',
         },
@@ -155,16 +155,22 @@ LOGIN_REDIRECT_URL = '/'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 # EMAIL settings
-EMAIL_HOST = 'email_host'
+EMAIL_HOST = ''
 EMAIL_PORT = '25'
+#EMAIL_HOST_USER = 'ISCIII\smonzon'
+#EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = "email"
+DEFAULT_FROM_EMAIL = ""
+ALLOWED_EMAIL_DOMAINS = ['isciii.es', 'externos.isciii.es']
+
+LOG_CRONTAB_FILE = os.path.join(BASE_DIR, 'logs', 'crontab.log')
+LOG_CLEAN_FILE = os.path.join(BASE_DIR, 'logs', 'crontab_cleanup.log')
 
 # Crontab settings
 CRONJOBS = [
-        ('2-59/5 * * * *', 'iSkyLIMS_wetlab.cron.check_recorded_folder', '>> PATH2LOG'), # run every 5 min wit an offset of 2 minutes
-        ('*/5 * * * *', 'iSkyLIMS_wetlab.cron.check_not_finish_run', '>> PATH2LOG') # run every 5 min
-		]
+    ('*/30 * * * *', 'iSkyLIMS_wetlab.cron.looking_for_new_runs', '>>' + LOG_CRONTAB_FILE),
+    ('0 0 * * FRI', 'iSkyLIMS_wetlab.cron.delete_invalid_run', '>>' + LOG_CLEAN_FILE)
+ ]
 
 CRONTAB_COMMAND_SUFFIX = '2>&1'
 
@@ -174,3 +180,4 @@ CRONTAB_COMMAND_SUFFIX = '2>&1'
 # Nevertheless, added here following zinnia doc
 # (http://docs.django-blog-zinnia.com/en/latest/getting-started/install.html)
 SITE_ID =1
+
