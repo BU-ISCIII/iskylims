@@ -60,12 +60,12 @@ def increment_service_number ( user_name):
 	# get latest service used for user's center
 	if Service.objects.filter(serviceUserId__profile__profileCenter__centerAbbr=user_center).exists():
 		number_request = Service.objects.filter(serviceUserId__profile__profileCenter__centerAbbr=user_center).last().serviceRequestInt
-		new_service_number = str(number_request + 1).zfill(3)
+		service_number = str(int(number_request) + 1).zfill(3)
 	else:
 		service_number = '001'
 	return service_number
 
-def create_service_id (service_number,user):
+def create_service_id (service_number,user_name):
 	user_center = Profile.objects.get(profileUserID = user_name).profileCenter.centerAbbr
 	service_id = 'SRV' + user_center + service_number
 	return service_id
@@ -300,8 +300,8 @@ def service_request_external_sequencing(request):
 			new_service = form.save(commit=False)
 			new_service.serviceStatus = "recorded"
 			new_service.serviceUserId = User.objects.get(id=request.user.id)
-            new_service.serviceRequestInt = increment_service_number(request.user)
-            new_service.serviceRequestNumber = create_service_id(new_service.serviceRequestInt,request.user)
+			new_service.serviceRequestInt = increment_service_number(request.user)
+			new_service.serviceRequestNumber = create_service_id(new_service.serviceRequestInt,request.user)
 			new_service.save()
 			form.save_m2m()
 			# PDF preparation file for confirmation of service request
@@ -338,8 +338,8 @@ def counseling_request(request):
 			new_service = form.save(commit=False)
 			new_service.serviceStatus = "recorded"
 			new_service.serviceUserId = User.objects.get(id=request.user.id)
-            new_service.serviceRequestInt = increment_service_number(request.user)
-            new_service.serviceRequestNumber = create_service_id(new_service.serviceRequestInt,request.user)
+			new_service.serviceRequestInt = increment_service_number(request.user)
+			new_service.serviceRequestNumber = create_service_id(new_service.serviceRequestInt,request.user)
 			new_service.save()
 			form.save_m2m()
 			## Send email
@@ -385,8 +385,8 @@ def infrastructure_request(request):
 			new_service = form.save(commit=False)
 			new_service.serviceStatus = "recorded"
 			new_service.serviceUserId = User.objects.get(id=request.user.id)
-            new_service.serviceRequestInt = increment_service_number(request.user)
-            new_service.serviceRequestNumber = create_service_id(new_service.serviceRequestInt,request.user)
+			new_service.serviceRequestInt = increment_service_number(request.user)
+			new_service.serviceRequestNumber = create_service_id(new_service.serviceRequestInt,request.user)
 			#import pdb; pdb.set_trace()
 			new_service.save()
 			form.save_m2m()
