@@ -17,7 +17,7 @@ from django.core.files.storage import FileSystemStorage
 import datetime
 import statistics
 from django.conf import settings
-from iSkyLIMS_drylab import drylab_config  
+from iSkyLIMS_drylab import drylab_config
 from smb.SMBConnection import SMBConnection
 from iSkyLIMS_wetlab.models import RunProcess, Projects
 ####### Import libraries for static files
@@ -58,17 +58,17 @@ def increment_service_number ( user_name):
 	#import pdb; pdb.set_trace()
 	user_center = Profile.objects.get(profileUserID = user_name).profileCenter.centerAbbr
 	# get latest service used for user's center
-	if Service.objects.filter(serviceRequestNumber__icontains = user_center).exists():
-		number_request = Service.objects.filter(serviceRequestNumber__icontains = user_center).last().serviceRequestNumber
-		service_center= re.match('(^SRV[A-Z]+)(\d+)',number_request)
-		last_sequence_number = int(service_center.group(2))
-		new_service_number = str(last_sequence_number +1).zfill(3)
-		service_number = service_center.group(1)  + new_service_number
+	if Service.objects.filter(serviceUserId__profile__profileCenter__centerAbbr=user_center).exists():
+		number_request = Service.objects.filter(serviceUserId__profile__profileCenter__centerAbbr=user_center).last().serviceRequestInt
+		new_service_number = str(number_request + 1).zfill(3)
 	else:
-		service_number = 'SRV'+ user_center + '001'
+		service_number = '001'
 	return service_number
 
-
+def create_service_id (service_number,user):
+	user_center = Profile.objects.get(profileUserID = user_name).profileCenter.centerAbbr
+	service_id = 'SRV' + user_center + service_number
+	return service_id
 
 def pdf(request):
 	from weasyprint import HTML, CSS
@@ -193,7 +193,8 @@ def service_request(request, serviceRequestType):
 				new_service.serviceSeqCenter = "GENOMIC_SEQ_UNIT"
 				# Previous 'serviceUsername'refactored to 'serviceUserId' which describes better its real nature
 				new_service.serviceUserId = User.objects.get(id=request.user.id)
-				new_service.serviceRequestNumber = increment_service_number(request.user)
+				new_service.serviceRequestInt = increment_service_number(request.user)
+				new_service.serviceRequestNumber = create_service_id(new_service.serviceRequestInt,request.user)
 				#import pdb; pdb.set_trace()
 				# Save the new instance
 				new_service.save()
@@ -232,9 +233,9 @@ def service_request(request, serviceRequestType):
 				return render(request, 'django_utils/error_page.html',{'content':['Your service request cannot be recorded.',
 												'Check that all information is provided correctly.',
 												'If problem persist, contact your administrator']})
-		else: 
+		else:
 			form = ServiceRequestFormInternalSequencing()
-			# getting projects from user sharing list 
+			# getting projects from user sharing list
 			user_groups = request.user.groups.values_list('name',flat=True)
 			if len (user_groups) > 0 :
 				sharing_list = []
@@ -244,7 +245,7 @@ def service_request(request, serviceRequestType):
 						sharing_list.append(User.objects.get(username__exact = user).id)
 				sharing_list.append(request.user.id)
 				form.fields['serviceProjectNames'].queryset = Projects.objects.filter(user_id__in = sharing_list)
-			else: 
+			else:
 				form.fields['serviceProjectNames'].queryset = Projects.objects.filter(user_id__exact = request.user.id)
 			form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
 			return render(request, 'iSkyLIMS_drylab/RequestForm.html' , { 'form' : form , 'request_internal': 'request_internal'})
@@ -257,7 +258,8 @@ def service_request(request, serviceRequestType):
 				new_service = form.save(commit=False)
 				new_service.serviceStatus = "recorded"
 				new_service.serviceUserId = User.objects.get(id=request.user.id)
-				new_service.serviceRequestNumber = increment_service_number(request.user)
+				new_service.serviceRequestInt = increment_service_number(request.user)
+				new_service.serviceRequestNumber = create_service_id(new_service.serviceRequestInt,request.user)
 				new_service.save()
 				form.save_m2m()
 				## Send email
@@ -298,7 +300,8 @@ def service_request_external_sequencing(request):
 			new_service = form.save(commit=False)
 			new_service.serviceStatus = "recorded"
 			new_service.serviceUserId = User.objects.get(id=request.user.id)
-			new_service.serviceRequestNumber = increment_service_number(request.user)
+            new_service.serviceRequestInt = increment_service_number(request.user)
+            new_service.serviceRequestNumber = create_service_id(new_service.serviceRequestInt,request.user)
 			new_service.save()
 			form.save_m2m()
 			# PDF preparation file for confirmation of service request
@@ -335,7 +338,8 @@ def counseling_request(request):
 			new_service = form.save(commit=False)
 			new_service.serviceStatus = "recorded"
 			new_service.serviceUserId = User.objects.get(id=request.user.id)
-			new_service.serviceRequestNumber = increment_service_number(request.user)
+            new_service.serviceRequestInt = increment_service_number(request.user)
+            new_service.serviceRequestNumber = create_service_id(new_service.serviceRequestInt,request.user)
 			new_service.save()
 			form.save_m2m()
 			## Send email
@@ -381,7 +385,8 @@ def infrastructure_request(request):
 			new_service = form.save(commit=False)
 			new_service.serviceStatus = "recorded"
 			new_service.serviceUserId = User.objects.get(id=request.user.id)
-			new_service.serviceRequestNumber = increment_service_number(request.user)
+            new_service.serviceRequestInt = increment_service_number(request.user)
+            new_service.serviceRequestNumber = create_service_id(new_service.serviceRequestInt,request.user)
 			#import pdb; pdb.set_trace()
 			new_service.save()
 			form.save_m2m()
@@ -587,7 +592,7 @@ def search_service (request):
 				services_found = services_found.filter(serviceRequestNumber__icontains  = center)
 			else:
 				return render (request,'django_utils/error_page.html', {'content':['There are no services related to the requested center', center]})
-		
+
 		if  user_name != '':
 			if User.objects.filter (username__icontains = user_name).exists():
 				user_id = User.objects.get (username__icontains = user_name).id
@@ -725,7 +730,7 @@ def add_resolution (request, service_id):
 			information = get_data_for_resolution(str(service_reference.serviceRequestNumber), resolution_number )
 			pdf_name = resolution_number + ".pdf"
 			resolution_file = create_pdf(request,information, drylab_config.RESOLUTION_TEMPLATE, pdf_name)
-			
+
 			if len(Resolution.objects.filter(resolutionServiceID = service_reference)) == 1:
 				## create service folder structure on the samba server. It is the first time to create a resolution
 				# move the resolution and the service request to the right folders
@@ -734,7 +739,7 @@ def add_resolution (request, service_id):
 					service_file_uploaded = os.path.join (settings.MEDIA_ROOT, str(service_reference.serviceFile))
 				else :
 					service_file_uploaded = ''
-				
+
 				conn = open_samba_connection()
 				if conn is False:
 					return render (request, 'django_utils/error_page.html', {'content': ['Creation of the structure can not be done because there is not communication to : ',  drylab_config.SAMBA_REMOTE_SERVER_NAME]})
@@ -903,7 +908,7 @@ def add_new_resolution_file (conn, full_service_path,resolution_file,year):
 			conn.storeFile(drylab_config.SAMBA_SHARED_FOLDER_NAME, resolution_remote_file, res_samba_fp)
 	except:
 		return ( 'Unable to copy the resolution file ',resolution_remote_file,resolution_name_file)
-	
+
 	return True
 
 
@@ -915,7 +920,7 @@ def create_service_structure (conn, service_request_file, service_file_uploaded,
 	## the file name to the remote path. To get only the file name we split the variable (containing
 	## path and file name ) to fetch only the file name
 
-	
+
 	# get the information for creating the subfolders
 	time_now = datetime.datetime.now()
 	year = str(time_now.year)
@@ -1095,7 +1100,7 @@ def stats_by_date_user (request):
 					user_name = matched_names[0].username
 			else:
 				return render (request,'django_utils/error_page.html', {'content':[user_name,'is not defined on database']})
-			
+
 			if start_date != '':
 				try:
 					datetime.datetime.strptime(start_date, '%Y-%m-%d')
@@ -1376,16 +1381,16 @@ def stats_by_services_request (request):
 					for d_period in time_values:
 						if not d_period in user_area_services_period[area]:
 							user_area_services_period[area][d_period] = 0
-				
+
 				data_source = column_graphic_per_time ('Services requested by Area ',period_of_time_selected,  'date', 'number of services', time_values , user_area_services_period)
 				graphic_area_services_per_time = FusionCharts("mscolumn3d", "ex6" , "525", "350", "chart-6", "json", data_source)
 				services_stats_info ['graphic_area_services_per_time'] = graphic_area_services_per_time.render()
 
 				services_stats_info['period_time']= period_of_time_selected
 				#import pdb ; pdb.set_trace()
-				
-				# statistics on Requested Level 2 Services 
-				
+
+				# statistics on Requested Level 2 Services
+
 				service_dict ={}
 				for service in services_found :
 					service_request_list = service.serviceAvailableService.filter(level=2)
@@ -1400,9 +1405,9 @@ def stats_by_services_request (request):
 				data_source = column_graphic_dict('Requested Services:', 'level 2 ', '', '','fint',service_dict)
 				graphic_req_l2_services = FusionCharts("column3d", "ex7" , "800", "375", "chart-7", "json", data_source)
 				services_stats_info ['graphic_req_l2_services'] = graphic_req_l2_services.render()
-				
-				# statistics on Requested Level 3 Services 
-				
+
+				# statistics on Requested Level 3 Services
+
 				service_dict ={}
 				for service in services_found :
 					service_request_list = service.serviceAvailableService.filter(level=3)
@@ -1417,10 +1422,10 @@ def stats_by_services_request (request):
 				data_source = column_graphic_dict('Requested Services:', 'level 3 ', '', '','fint',service_dict)
 				graphic_req_l3_services = FusionCharts("column3d", "ex8" , "800", "375", "chart-8", "json", data_source)
 				services_stats_info ['graphic_req_l3_services'] = graphic_req_l3_services.render()
-				
-			
-			
-			
+
+
+
+
 				#import pdb ; pdb.set_trace()
 				return render (request, 'iSkyLIMS_drylab/statsByServicesRequest.html', {'services_stats_info':services_stats_info})
 
