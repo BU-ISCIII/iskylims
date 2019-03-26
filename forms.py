@@ -162,6 +162,7 @@ class ServiceRequestForm_extended(ServiceRequestFormExternalSequencing):
 				'serviceProjectNames',
 				'serviceUserId',
 				'serviceRequestNumber',
+				'serviceRequestInt',
 				'servicePlatform',
 				'serviceRunSpecs',
 				'serviceFileExt',

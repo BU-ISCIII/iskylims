@@ -43,7 +43,7 @@ class Platform(models.Model):
 
 	def __str__ (self):
  		return '%s' %(self.platformName)
- 
+
 	def get_platform_name(self):
 		return '%s'  %(self.platformName)
 
@@ -88,6 +88,7 @@ class Service(models.Model):
 	serviceUserId=models.ForeignKey(User ,on_delete=models.CASCADE, null=True)
 	serviceSeqCenter=models.CharField(_("Sequencing center"),max_length=50,blank=False,null=True)
 	serviceRequestNumber=models.CharField(max_length=80, null=True)
+	serviceRequestInt=models.CharField(max_length=80, null=True)
 	## 'serviceRunID' is not used in forms.py/serviceRequestForm() or rest of code
 
 	## Addition of member 'serviceProjectNames' to support
