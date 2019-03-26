@@ -11,6 +11,7 @@ virtualenv/
 iSkyLIMS/
 documents/
 manage.py
+logs/
 
 
 # Byte-compiled / optimized / DLL files
