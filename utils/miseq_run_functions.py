@@ -695,7 +695,7 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
             logger.debug ('End function for handling miSeq run with error')
             raise ValueError ('Invalid sample sheet')
     else:
-        run_state = RunProcess.objects.get(runName__exact = experiment_name).get_run_state()
+        run_state = RunProcess.objects.get(runName__exact = experiment_name).get_state()
         string_message = 'Wrong state: ' + run_state +' when calling to handle_miseq_run function '
         logging_errors(string_message, False, True)
         logger.debug ('End function for handling miSeq run with error')
