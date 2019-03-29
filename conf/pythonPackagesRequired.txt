@@ -14,8 +14,11 @@ django-js-asset
 django-mptt
 django-mptt-admin
 interop
+libcairo
+libcairo-dev
 mysqlclient
 paramiko
 pysmb
+weasyPrint
 zinnia-wysiwyg-wymeditor
 
