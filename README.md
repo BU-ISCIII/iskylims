@@ -12,8 +12,8 @@ For installation and usage instructions please refer to the [wiki](https://githu
 For any problems or bug reporting please post us an [issue](https://github.com/BU-ISCIII/iSkyLIMS/issues)
 
 ## iSkyLIMS Demo
-iSkyLIMS demo is available for your convenience, in a virtual machine image, running on VirtualBox.  
-Download the VM image using with your favorite ftp client with the following information:
+iSkyLIMS demo is available for your convenience, in a virtual machine image, running on VirtualBox and as a Singularity container.  
+Download the VM image and/or the container using with your favorite ftp client with the following information:
 
 ```
 Server: sftpbioinfo.isciii.es
@@ -43,3 +43,7 @@ Log into iSkyLIMS with different roles using the following credentials:
 - As wetlab manager role the user is **John_manager** and password **iSkyLIMS**
 - If you need to login as django administrator type the url http://localhost/admin using user : **admin** and password : **iSkyLIMS**
 
+### Run singularity container.
+
+1. First you need to have installed singularity. Please follow [vendor instructions](https://www.sylabs.io/guides/3.0/user-guide/installation.html#install-the-centos-rhel-package-using-yum). We recommend using epel package installation as 2.6 version of singularity is enough for our purposes.
+2. Shell 
