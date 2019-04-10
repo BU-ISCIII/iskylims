@@ -50,7 +50,7 @@ Log into iSkyLIMS with different roles using the following credentials:
 2. Shell into the container (you need to use sudo).
 
 ```Bash
-singularity shell iskylims.simg
+sudo singularity shell iskylims.simg
 ```
 3. Start needed services
 
