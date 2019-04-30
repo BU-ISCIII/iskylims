@@ -12,7 +12,7 @@ OUTPUT_DIR_TEMPLATE ='documents/drylab/' # Directory to store the pdf templates 
 ## SAMBA settings for connect to bioinfodoc server to create the folder request services
 SAMBA_USER_ID = ''
 SAMBA_USER_PASSWORD = ''
-SAMBA_SHARED_FOLDER_NAME = ''
+SAMBA_SHARED_FOLDER_NAME = 'bioinfo_doc'
 SAMBA_REMOTE_SERVER_NAME = ''
 SAMBA_NTLM_USED = True
 SAMBA_DOMAIN = ''
