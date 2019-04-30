@@ -1,3 +1,7 @@
+# Custom
+drylab_config.py
+
+
 # Django migrations
 __migrations__/
 migrations/
