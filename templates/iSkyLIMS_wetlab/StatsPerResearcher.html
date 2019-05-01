@@ -7,7 +7,8 @@
 <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
 <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>  
 <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script>   
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>     
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/wetlab.js" %}"></script>    
 
 {% if researcher_statistics %}
     <div class="row row-space-2 margin-b-4">
@@ -18,8 +19,10 @@
                 {% for sequencer in researcher_statistics.projects_data  %}
                     {% for sequencer_name, values_in_dict in sequencer.items %}
                         <h3> Projects using the sequencer {{sequencer_name }} : </h3>
+                        <button onclick="exportTableToExcel('sequencer{{sequencer_name}}')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
+                        <BR>
                         <div class="table-wrapper-scroll-y ">
-                            <table class="table  table-hover">
+                            <table id="sequencer{{sequencer_name}}" class="table  table-hover">
                                 <thead>
                                     <tr>
                                         {% for values  in researcher_statistics.projects_heading %}

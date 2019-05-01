@@ -9,6 +9,21 @@
 <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
 <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>
 <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script> 
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/wetlab.js" %}"></script> 
+<style>
+.table-wrapper {
+    max-height: 450px;
+    overflow: auto;
+    display:inline-block;
+    width: 550px;
+}
+.table-wrapper-sm-4 {
+    max-height: 450px;
+    overflow: auto;
+    display:inline-block;
+    width: 370px;
+}
+</style>
 <!--  Start Run created during the year   -->
 <div class="container">
     <div class="row row-space-2 margin-b-4">
@@ -16,42 +31,44 @@
             <div class="panel panel-default">
                 <div class="panel-heading"><h3>Runs performed on the year {{ display_annual_report.year }}.</h3></div>
                 <div class="panel-body"> 
-                    <div class="col-sm-6">
-                        <table class="table table-fixed" >
-                            <thead>
-                                <tr><th>Runs on Completed state </th></tr>
-                            </thead>
-                            <tbody>
-                            {% if display_annual_report.completed_run %}
-                                {% for runs in display_annual_report.completed_run %}
-                                    <tr>
-                                        <td>{{ runs }} </td> 
-                                    </tr>
-                                {%endfor%}
-                            </tbody>
-                            {% endif %}
-                        </table>
-                    </div> <!--  end of col-sm-5 -->
-                    <div class="col-sm-5 col-sm-offset-1">
-                        <table class="table table-fixed">
-                            <thead>
-                                <tr><th>Not Completed Runs </th></tr>
-                            </thead>
-                            <tbody>
-                            {% if display_annual_report.uncompleted_run %}
-                                {% for runs in display_annual_report.uncompleted_run %}
-                                    <tr>
-                                        <td>{{ runs }} </td> 
-                                    </tr>
-                                {%endfor%}
-                            {% endif %}
-                            </tbody>
-                        </table>
-                    </div> <!--  end of col-sm-5 -->
-
-                </div> <!--  end of panel body -->
-            </div> <!--  end of panel  -->
-        </div> <!--  end of col-sm-6 -->
+                    <div class="table-wrapper">
+                        <div class="col-sm-6">
+                            <table id="runsPerformed" class="table table-fixed" >
+                                <thead>
+                                    <tr><th>Runs on Completed state </th></tr>
+                                </thead>
+                                <tbody>
+                                {% if display_annual_report.completed_run %}
+                                    {% for runs in display_annual_report.completed_run %}
+                                        <tr>
+                                            <td>{{ runs }} </td> 
+                                        </tr>
+                                    {%endfor%}
+                                </tbody>
+                                {% endif %}
+                            </table>
+                        </div> <!--  end of col-sm-5 -->
+                        <div class="col-sm-5 col-sm-offset-1">
+                            <table class="table table-fixed">
+                                <thead>
+                                    <tr><th>Not Completed Runs </th></tr>
+                                </thead>
+                                <tbody>
+                                {% if display_annual_report.uncompleted_run %}
+                                    {% for runs in display_annual_report.uncompleted_run %}
+                                        <tr>
+                                            <td>{{ runs }} </td> 
+                                        </tr>
+                                    {%endfor%}
+                                {% endif %}
+                                </tbody>
+                            </table>
+                            
+                        </div> <!--  end of col-sm-5 -->
+                      </div> <!--  end of table wrapper  -->
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+            </div> <!--  end of col-sm-6 -->
         {% if display_annual_report.graphic_completed_run %}
         <div class="col-sm-5">
             <div class="panel panel-default">
@@ -76,7 +93,6 @@
             <div class="panel-body">
                 <div class="col-sm-12">
                     <div class="col-sm-4">
-                    
                         <table class="table table-hover" >
                             <thead>
                                 <tr><th colspan="2">Investigators with projects < 5</th></tr>
@@ -159,10 +175,13 @@
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-4">
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>Percentage of quality >30 for the year {{ display_annual_report.year }}.</h3></div>
+                <div class="panel-heading"><h3>Percentage of quality >30 for the year {{ display_annual_report.year }}.</h3>
+                <button onclick="exportTableToExcel('reportQ30')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
+                <BR></div>
                 <div class="panel-body"> 
                 {% if display_annual_report.q30_data %}
-                        <table class="table table-fixed">
+                    <div class="table-wrapper-sm-4">
+                        <table id="reportQ30" class="table table-fixed">
                             <thead>
                                 <tr>
                                     <th class="col-xs-8"> Run name </th>
@@ -178,7 +197,9 @@
                             {%endfor%}
                             </tbody>
                         </table>
+                    </div> <!--  end of table wrapper  -->
                 {% endif %}
+                   
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-6 -->
@@ -202,10 +223,13 @@
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-4">
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>Percentage of aligned for the year {{ display_annual_report.year }}.</h3></div>
-                <div class="panel-body"> 
+                <div class="panel-heading"><h3>Percentage of aligned for the year {{ display_annual_report.year }}.</h3>
+                <button onclick="exportTableToExcel('reportAligment')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
+                <BR></div>
+                <div  class="panel-body"> 
                 {% if display_annual_report.aligned_data %}
-                        <table class="table table-fixed">
+                    <div class="table-wrapper-sm-4">
+                        <table id="reportAligment" class="table table-fixed">
                             <thead>
                                 <tr>
                                     <th class="col-xs-8"> Run name </th>
@@ -221,6 +245,7 @@
                             {%endfor%}
                             </tbody>
                         </table>
+                    </div> <!--  end of table wrapper  -->
                 {% endif %}
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
@@ -245,10 +270,13 @@
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-4">
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>Error rate for the year {{ display_annual_report.year }}.</h3></div>
+                <div class="panel-heading"><h3>Error rate for the year {{ display_annual_report.year }}.</h3>
+                <button onclick="exportTableToExcel('reportError')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
+                <BR></div>
                 <div class="panel-body"> 
                 {% if display_annual_report.error_rate_data %}
-                        <table class="table table-fixed">
+                    <div class="table-wrapper-sm-4">
+                        <table id="reportError" class="table table-fixed">
                             <thead>
                                 <tr>
                                     <th class="col-xs-8"> Run name </th>
@@ -264,6 +292,7 @@
                             {%endfor%}
                             </tbody>
                         </table>
+                    </div> <!--  end of table wrapper  -->
                 {% endif %}
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->

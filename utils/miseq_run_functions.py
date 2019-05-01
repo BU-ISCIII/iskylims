@@ -19,8 +19,7 @@ def check_miseq_completion_run (conn, experiment_name, log_folder):
         log_folder  # remote path where are located the logs for miseq
         experiment_name # name for this run
     Functions:
-        get_miseq_run_cycles # located at utils.wetlab_misc_utilities
-        get_latest_miseq_log #  located at utils.wetlab_misc_utilities
+        get_latest_miseq_log #  located at this file
     Constants:
         COMPLETION_SUCCESS
     Variables:
@@ -46,11 +45,13 @@ def check_miseq_completion_run (conn, experiment_name, log_folder):
         handling_errors_in_run (experiment_name, '18' )
         logger.debug('End function check_miseq_completion_run with IOError exception')
         raise
-        #raise IOError ('Unable to fetch log file')
     if 'Cancel' in log_file_content :
         status_run = 'Cancelled'
+        string_message = 'Run ' + experiment_name + 'was canceled'
+        logging_warnings(string_message, True)
     elif log_cycles != number_of_cycles :
         status_run = 'still_running'
+        logger.info('Run %s is still running', experiment_name)
     else:
         status_run = wetlab_config.COMPLETION_SUCCESS
         last_line_in_file = log_file_content.split('\n')[-2]
