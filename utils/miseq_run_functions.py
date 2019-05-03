@@ -40,11 +40,13 @@ def check_miseq_completion_run (conn, experiment_name, log_folder):
     try:
         log_cycles, log_file_content = get_latest_miseq_log(conn, log_folder)
     except :
-        string_message = 'Unable to fetch the log files for run ' + experiment_name
-        logging_errors( string_message, False, False)
-        handling_errors_in_run (experiment_name, '18' )
+        string_message = 'Unable to fetch the log files for run ' + experiment_name + 'allowing  more time'
+        logging_errors( string_message, False, True)
+        #handling_errors_in_run (experiment_name, '18' )
         logger.debug('End function check_miseq_completion_run with IOError exception')
-        raise
+        #raise
+        status_run = 'still_running'
+        return status_run, run_completion_date
     if 'Cancel' in log_file_content :
         status_run = 'Cancelled'
         string_message = 'Run ' + experiment_name + 'was canceled'
@@ -102,8 +104,8 @@ def get_latest_miseq_log(conn, log_folder) :
 
     temporary_log = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY,'miseq_cycle.log')
     s_latest_log = os.path.join(log_folder,latest_log)
-    with open(temporary_log ,'wb') as log_fp :
-        temporary_log = fetch_remote_file (conn, log_folder, s_latest_log, temporary_log)
+    #with open(temporary_log ,'wb') as log_fp :
+    temporary_log = fetch_remote_file (conn, log_folder, s_latest_log, temporary_log)
 
     with open (temporary_log, 'r') as fh :
         log_file_content = fh.read()
