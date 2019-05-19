@@ -178,9 +178,7 @@ def manage_nextseq_in_samplesent(conn, run_object_name) :
         logger.debug ('End function for handling NextSeq run Cancelled')
         raise ValueError ('Run was CANCELLED')
     else:
-        import pdb; pdb.set_trace()
         run_updated = run_object_name.set_run_state('Processing Run')
-        import pdb; pdb.set_trace()
         logger.info('Run %s is now on Processing Run state', experiment_name)
         return experiment_name
 

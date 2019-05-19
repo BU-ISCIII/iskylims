@@ -172,8 +172,9 @@ def create_run_test_nextseq_in_recorded (run_folder, experiment_name ) :
     new_sample_sheet_name = store_sample_sheet_in_run (l_sample, experiment_name )
     recorded_results.append(('Successful update of Sample Sheet in database', 'OK'))
 
-    new_sample_sheet_file = os.path.join (settings.MEDIA_ROOT, wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY, new_sample_sheet_name)
-    bs_file = run_process.get_sample_file()
+    #new_sample_sheet_file = os.path.join (settings.MEDIA_ROOT, wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY, new_sample_sheet_name)
+    #import pdb; pdb.set_trace()
+    bs_file = new_sample_sheet_name
     # create projects in DDBB
     for project in projects :
         create_project(project, experiment_name, bs_file)
