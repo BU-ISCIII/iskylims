@@ -969,7 +969,7 @@ def manage_run_in_processed_run (conn, run_object_name):
 def manage_run_in_processing_bcl2fastq (conn, run_object_name):
     '''
     Description:
-        The function will check if report floder exists. Then the bcl2fastq
+        The function will check if report folder exists. Then the bcl2fastq
         conversion is completed
         If exists the run state will move to Processed Bcl2fastq
     Input:
