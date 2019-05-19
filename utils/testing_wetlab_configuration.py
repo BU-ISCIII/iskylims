@@ -9,6 +9,7 @@ from iSkyLIMS_wetlab.wetlab_config import *
 from iSkyLIMS_wetlab.utils.generic_functions import *
 from iSkyLIMS_wetlab.utils.update_run_state import handle_miseq_run
 from iSkyLIMS_wetlab.utils.miseq_run_functions import *
+from iSkyLIMS_wetlab.utils.nextseq_run_functions import *
 from iSkyLIMS_wetlab.utils.common_run_functions import manage_run_in_processed_run, manage_run_in_processing_bcl2fastq, manage_run_in_processed_bcl2fastq
 from iSkyLIMS_wetlab.utils.sample_sheet_utils import *
 
@@ -182,8 +183,13 @@ def create_run_test_nextseq_in_recorded (run_folder, experiment_name ) :
     
 
 def  run_nextseq_test_rec_to_sample_sent (run_folder, experiment_name) :
+    recorded_results = []
+    logger = logging.getLogger(__name__)
+    logger.debug ('Starting function run_nextseq_test_rec_to_sample_sent')
     
+    conn = open_samba_connection()
     # check if test folder exists
+    
     run_data_root_folder = os.path.join('/', wetlab_config.SAMBA_APPLICATION_FOLDER_NAME , run_folder)
     try:   
         run_folder_list = conn.listPath( wetlab_config.SAMBA_SHARED_FOLDER_NAME, run_data_root_folder)
@@ -193,7 +199,7 @@ def  run_nextseq_test_rec_to_sample_sent (run_folder, experiment_name) :
         string_message = 'Test run folder does not exists '
         logging_errors(string_message, False, True)
         recorded_results.append((str(ex) , 'NOK'))
-        logger.debug ('End function create_run_test_nextseq_in_recorded with error')
+        logger.debug ('End function run_nextseq_test_rec_to_sample_sent with error')
         return recorded_results, 'NOK'
     
     # Fetch RunParameter.xml file from remote server 
@@ -223,7 +229,7 @@ def  run_nextseq_test_rec_to_sample_sent (run_folder, experiment_name) :
         logger.debug ('End function create_run_test_nextseq_in_recorded with error')
         return recorded_results, 'NOK'
 
-    if update_nextseq_in_recorded_state == run_folder :
+    if   experiment_name == update_nextseq_in_recorded_state.get_run_name():
         if 'Sample Sent' == RunProcess.objects.get(runName__exact = experiment_name).get_state():
             recorded_results.append(('NextSeq Run is in Sample Sent state', 'OK'))
             logger.debug ('End function create_run_test_nextseq_in_recorded')
@@ -255,7 +261,8 @@ def  run_nextseq_test_sample_sent_to_Processing_Run (experiment_name) :
         sample_sent_results.append(('MiSeq Run is in Processing Run state', 'NOK'))
         logger.debug ('End function run_nextseq_test_sample_sent_to_Processing_Run with error')
         return sample_sent_results, 'NOK'
-
+    
+    import pdb; pdb.set_trace()
     if update_in_sample_sent == experiment_name:
         if 'Processing Run' == RunProcess.objects.get(runName__exact = experiment_name).get_state():
             sample_sent_results.append(('Check log files from the sequencer', 'OK'))
@@ -286,7 +293,7 @@ def run_nextseq_test_Processing_Run_to_Processed_Run (experiment_name):
         processing_run_results.append(('NextSeq Run is in Processing Run state', 'NOK'))
         logger.debug ('End function run_nextseq_test_Processing_Run_to_Processed_Run with error')
         return processing_run_results, 'NOK'
-
+    import pdb; pdb.set_trace()
     if update_in_procesing_run == experiment_name:
         if 'Processed Run' == RunProcess.objects.get(runName__exact = experiment_name).get_state():
             processing_run_results.append(('Successful completion on Sequencer for MiSeq Run', 'OK'))

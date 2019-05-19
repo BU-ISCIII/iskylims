@@ -157,7 +157,7 @@ p {
     </div> <!--// end row  -->
     
     
-    {% if test_results.basic_checks_ok  or runNextSeq_results.basic_checks_ok  or runMiSeq_results.basic_checks_ok %}
+    {% if test_results.basic_checks_ok  %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
             <div class="panel panel-default">
@@ -214,7 +214,7 @@ p {
                 <div class="panel-body">
                     <div class="col-sm-6">
                     <div class="panel panel-default">
-                        <div class="panel-heading"><H3>2. - Test Executed to create NextSeq Run
+                        <div class="panel-heading"><H3>1. - Test Executed to create NextSeq Run
                          {% if runNextSeq_results.create_run_ok %}
                             <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
                         {% else %}
@@ -236,7 +236,7 @@ p {
                         
                     {%if runNextSeq_results.Recorded %}
                     <div class="panel panel-default">
-                        <div class="panel-heading"><H3>1. - Test Executed on Recorded state
+                        <div class="panel-heading"><H3>2. - Test Executed on Recorded state
                          {% if runNextSeq_results.recorded_ok %}
                             <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
                         {% else %}
@@ -261,7 +261,7 @@ p {
                     <div class="col-sm-6">
                     {%if runNextSeq_results.Sample_Sent %}
                     <div class="panel panel-default">
-                        <div class="panel-heading"><H3>2. - Test Executed on Sample Sent state
+                        <div class="panel-heading"><H3>3. - Test Executed on Sample Sent state
                          {% if runNextSeq_results.sample_sent_ok %}
                             <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
                         {% else %}
@@ -281,9 +281,9 @@ p {
                         </div> <!--// end panel body -->
                     </div> <!--// end panel -->
                     {%endif %}
-                    {% if unNextSeq_results.Processing_Run %}
+                    {% if runNextSeq_results.Processing_Run %}
                     <div class="panel panel-default">
-                        <div class="panel-heading"><H3>3. - Test Executed on Processing Run 
+                        <div class="panel-heading"><H3>4. - Test Executed on Processing Run 
                          {% if runNextSeq_results.processing_run_ok %}
                             <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
                         {% else %}
@@ -312,11 +312,13 @@ p {
     
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
+            <div class="panel panel-default">
             <div class="panel-heading"><H3>Common Test Cases for Runs</H3></div>
                 <div class="panel-body">
                     <div class="col-sm-6">
+                    {% if runNextSeq_results.Processed_Run %}
                     <div class="panel panel-default">
-                        <div class="panel-heading"><H3>4. - Test Executed on Processed Run state
+                        <div class="panel-heading"><H3>5. - Test Executed on Processed Run state
                          {% if runNextSeq_results.processed_run_ok %}
                             <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
                         {% else %}
@@ -335,9 +337,10 @@ p {
                             {% endfor %}
                         </div> <!--// end panel body -->
                     </div> <!--// end panel -->
-                    
+                    {% endif %}
+                    {% if runNextSeq_results.Processing_Bcl2Fastq %}
                     <div class="panel panel-default">
-                        <div class="panel-heading"><H3>5. - Test Executed on Processing Bcl2fastq state
+                        <div class="panel-heading"><H3>6. - Test Executed on Processing Bcl2fastq state
                          {% if runNextSeq_results.processing_bcl2fastq_ok %}
                             <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
                         {% else %}
@@ -357,10 +360,11 @@ p {
                         </div> <!--// end panel body -->
                     </div> <!--// end panel -->
                     </div>  <!--// end col-sm-6  -->
-                    
+                    {% endif %}
                     <div class="col-sm-6">
+                    {% if runNextSeq_results.Processed_Bcl2fastq %}
                     <div class="panel panel-default">
-                        <div class="panel-heading"><H3>6. - Test Executed on Processed Bcl2fastq 
+                        <div class="panel-heading"><H3>7. - Test Executed on Processed Bcl2fastq 
                          {% if runNextSeq_results.processed_bcl2fast2_ok %}
                             <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
                         {% else %}
@@ -379,6 +383,7 @@ p {
                             {% endfor %}
                         </div> <!--// end panel body -->
                     </div> <!--// end panel -->
+                    {% endif %}
                     </div>  <!--// end col-sm-6  -->
                 </div> <!--// end panel body -->
             </div> <!--// end panel -->

@@ -2968,7 +2968,8 @@ def configuration_test (request):
 
             return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results, 
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
-
+        else:
+            runNextSeq_results['create_run_ok'] =  'OK'
         # Start testing on recorded state
         runNextSeq_results['Recorded'] , result_ok = run_nextseq_test_rec_to_sample_sent(test_run_remote_folder, experiment_name)
         
@@ -2978,10 +2979,10 @@ def configuration_test (request):
                     line = line.replace('\n', '')
                     log_trace.append(line)
             #import pdb; pdb.set_trace()
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runNextSeq_results, 
+            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results, 
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
         else:
-            runMiSeq_results['recorded_ok'] =  'OK'
+            runNextSeq_results['recorded_ok'] =  'OK'
         
         # Processing Run  
         runNextSeq_results['Sample_Sent'] , result_ok = run_nextseq_test_sample_sent_to_Processing_Run (experiment_name)
@@ -2991,7 +2992,7 @@ def configuration_test (request):
                     line = line.replace('\n', '')
                     log_trace.append(line)
                 
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runNextSeq_results, 
+            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results, 
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
         else:
             runNextSeq_results['sample_sent_ok'] =  'OK'
@@ -3004,7 +3005,7 @@ def configuration_test (request):
                     line = line.replace('\n', '')
                     log_trace.append(line)
                 
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runNextSeq_results, 
+            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results, 
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
         else:
             runNextSeq_results['processing_run_ok'] =  'OK'
@@ -3017,7 +3018,7 @@ def configuration_test (request):
                     line = line.replace('\n', '')
                     log_trace.append(line)
                 
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runNextSeq_results, 
+            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results, 
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
         else:
             runNextSeq_results['processed_run_ok'] =  'OK'
@@ -3030,7 +3031,7 @@ def configuration_test (request):
                     line = line.replace('\n', '')
                     log_trace.append(line)
                 
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runNextSeq_results, 
+            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results, 
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
         else:
             runNextSeq_results['processing_bcl2fastq_ok'] =  'OK'
@@ -3043,13 +3044,13 @@ def configuration_test (request):
                     line = line.replace('\n', '')
                     log_trace.append(line)
                 
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runNextSeq_results, 
+            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results, 
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
         else:
             runNextSeq_results['processed_bcl2fast2_ok'] =  'OK'
             runNextSeq_results['completed_ok'] = 'ok'
         
-        return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runNextSeq_results, 
+        return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results, 
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
 
 
