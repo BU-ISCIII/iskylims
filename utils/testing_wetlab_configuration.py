@@ -43,6 +43,30 @@ def get_files_attribute (directory):
         return
     return attr_files
 
+def get_iSkyLIMS_settings():
+    s_file = []
+    settings_file = os.path.join(settings.BASE_DIR, 'iSkyLIMS' , 'settings.py')
+    try:
+        with open (settings_file ,'r') as fh:
+            for line in fh:
+                if 'PASSWORD' in line or 'SECRET_KEY' in line   :
+                    if  not 'AUTH_PASSWORD_VALIDATORS' in line :
+                        if '=' in line :
+                            split_separator = '='
+                        else :
+                            split_separator = ':'
+                        hide_passwd = line.split(split_separator)
+                        hide_passwd[1] = 'XXXXXXXXXXXXXXXXX'
+                        line = ' = '.join(hide_passwd)
+                    
+                line = line.replace('\n', '')
+                s_file.append(line)
+    except:
+        return
+    
+    return s_file
+
+
 def check_access_database ():
     try:
         runs = RunProcess.objects.all()
