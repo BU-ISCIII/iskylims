@@ -30,15 +30,7 @@ def get_config_file (config_file):
 
 def get_files_attribute (directory):
     attr_files = []
-    '''
-    #try:
-    for entry in os.scandir(directory):
-        attr_files.append([oct(os.stat(entry).st_mode)[-3:], 
-                    pwd.getpwuid(entry.stat().st_uid).pw_name, 
-                    grp.getgrgid(entry.stat().st_gid).gr_name, 
-                    entry.name])
-    import pdb; pdb.set_trace()
-    '''
+
     try:
         for (dirpath, dirnames, filenames) in os.walk(directory, topdown=True):
             for d in dirnames:
@@ -77,7 +69,6 @@ def run_exists_in_db (run_name):
 def delete_graphic_folder_if_exists(run_name):
     run_object = RunProcess.objects.get(runName__exact = run_name)
     if RunningParameters.objects.filter(runName_id = RunProcess.objects.get(runName__exact = run_name)).exists() :
-        #import pdb; pdb.set_trace()
         folder_graphic = RunningParameters.objects.get(runName_id = RunProcess.objects.get(runName__exact = run_name)).get_run_folder()
         if os.path.isdir(os.path.join(settings.MEDIA_ROOT,'wetlab', 'images_plot', folder_graphic)) :
             shutil.rmtree(os.path.join(settings.MEDIA_ROOT,'wetlab', 'images_plot', folder_graphic))
@@ -110,7 +101,6 @@ def folder_run_exists (conn, folder_run_name):
     return conn
 
 def create_project (p_name, run_name, bs_file):
-    #import pdb; pdb.set_trace()
     n_project = Projects( runprocess_id = RunProcess.objects.get(runName__exact = run_name),
                     LibraryKit_id = LibraryKit.objects.get(libraryName__exact = 'Nextera XT Index Kit v2 Set B'),
                     projectName = p_name , libraryKit='Nextera XT V2 ', baseSpaceFile = bs_file,
@@ -173,7 +163,6 @@ def create_run_test_nextseq_in_recorded (run_folder, experiment_name ) :
     recorded_results.append(('Successful update of Sample Sheet in database', 'OK'))
 
     #new_sample_sheet_file = os.path.join (settings.MEDIA_ROOT, wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY, new_sample_sheet_name)
-    #import pdb; pdb.set_trace()
     bs_file = new_sample_sheet_name
     # create projects in DDBB
     for project in projects :
@@ -263,7 +252,6 @@ def  run_nextseq_test_sample_sent_to_Processing_Run (experiment_name) :
         logger.debug ('End function run_nextseq_test_sample_sent_to_Processing_Run with error')
         return sample_sent_results, 'NOK'
     
-    import pdb; pdb.set_trace()
     if update_in_sample_sent == experiment_name:
         if 'Processing Run' == RunProcess.objects.get(runName__exact = experiment_name).get_state():
             sample_sent_results.append(('Check log files from the sequencer', 'OK'))
@@ -294,7 +282,6 @@ def run_nextseq_test_Processing_Run_to_Processed_Run (experiment_name):
         processing_run_results.append(('NextSeq Run is in Processing Run state', 'NOK'))
         logger.debug ('End function run_nextseq_test_Processing_Run_to_Processed_Run with error')
         return processing_run_results, 'NOK'
-    import pdb; pdb.set_trace()
     if update_in_procesing_run == experiment_name:
         if 'Processed Run' == RunProcess.objects.get(runName__exact = experiment_name).get_state():
             processing_run_results.append(('Successful completion on Sequencer for MiSeq Run', 'OK'))
@@ -335,7 +322,7 @@ def run_miseq_test_rec_to_sample_sent (new_run, experiment_name) :
     logger.debug ('Starting function run_miseq_test_rec_to_sample_sent')
     working_path = settings.MEDIA_ROOT
     os.chdir(working_path)
-    #import pdb; pdb.set_trace()
+
     
     try:        
         conn = open_samba_connection()
