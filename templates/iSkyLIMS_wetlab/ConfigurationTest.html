@@ -108,7 +108,7 @@ p {
         <div class="col-sm-7 col-sm-offset-3" >
             <div class="panel panel-default">
                 <div class="panel-heading"><H3>Database access
-                {% if test_results.database_access %}
+                {% if test_results.database_access == 'OK' %}
                     <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
                 {% else %}
                     <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
@@ -134,7 +134,7 @@ p {
         <div class="col-sm-7 col-sm-offset-3" >
             <div class="panel panel-default">
                 <div class="panel-heading"><H3>Samba connection
-                {% if test_results.samba_connection %}
+                {% if test_results.samba_connection == 'OK' %}
                     <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
                 {% else %}
                     <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
@@ -157,7 +157,7 @@ p {
     </div> <!--// end row  -->
     
     
-    {% if test_results.basic_checks_ok  %}
+    {% if test_results.basic_checks_ok == 'OK' %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
             <div class="panel panel-default">
@@ -187,6 +187,23 @@ p {
             </div> <!--// end panel -->
         </div> <!--// end col-sm-12  -->
     </div> <!--// end row  -->
+    
+    {% else %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><H3>Basic test not passed</H3> </div>
+                <div class="panel-body">
+                    <p><strong>Some of the test cases were not passed. Check the configuration files to find out the error and re-run the test again.</strong></p>
+                    <p></p><p><strong>You can not go further in the testing while the Basic test are not passed OK.</strong></p>
+                    <form method="post" enctype="multipart/form-data" name="configurationtest" id="configurationtest" class="form-horizontal well">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="basicTest"/>
+                        <br>
+                        <input class="btn pull-right btn-primary" type="submit" value="Re-Run Basic Test">
+                    </form>
+                </div> <!--// end panel body -->
+                
     {% endif %}
     
 {% elif runNextSeq_results %}

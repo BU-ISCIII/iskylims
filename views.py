@@ -2929,10 +2929,13 @@ def configuration_test (request):
         test_results['database_access'] = check_access_database()
         test_results['samba_connection'] = check_samba_connection()
         
+        test_results['basic_checks_ok'] = 'OK'
         #if test_results['config_file']  and test_results['attr_files']  and test_results['database_access'] and test_results['samba_connection']:
-        if test_results['config_file']  and test_results['attr_files']  and test_results['database_access']:
-            test_results['basic_checks_ok'] = 'OK'
-        #import pdb; pdb.set_trace()
+        for result in test_results :
+            if test_results[result] == 'NOK':
+                test_results['basic_checks_ok'] = 'NOK'
+                break
+
         return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'test_results': test_results})
         ##############################
         ###### NextSeq Test ##########
