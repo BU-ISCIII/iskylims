@@ -47,7 +47,8 @@ def looking_for_new_runs ():
     '''
     working_path = settings.MEDIA_ROOT
     os.chdir(working_path)
-    logger=open_log()
+    config_file = os.path.join(settings.BASE_DIR,'iSkyLIMS_wetlab',  wetlab_config.LOGGING_CONFIG_FILE )
+    logger=open_log(config_file)
     logger.info('###########---Start Crontab-----############')
     logger.info('Start searching for new/updating runs')
     

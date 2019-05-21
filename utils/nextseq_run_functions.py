@@ -170,18 +170,15 @@ def manage_nextseq_in_samplesent(conn, run_object_name) :
         logger.info ('Deleting local copy of completion status')
         # cleaning up the completion  in local temporary file
         os.remove(l_run_completion)
-
     if not completion_status :
         string_message = 'Run status was ' + status_run
         logging_errors (string_message, False, False)
         # Set run to cancelled  state
         run_object_name.set_run_state('Cancelled')
-        set_state_in_all_projects(experiment_name, 'Cancelled')
         logger.debug ('End function for handling NextSeq run Cancelled')
         raise ValueError ('Run was CANCELLED')
     else:
         run_updated = run_object_name.set_run_state('Processing Run')
-        set_state_in_all_projects(experiment_name, 'Processing Run')
         logger.info('Run %s is now on Processing Run state', experiment_name)
         return experiment_name
 
@@ -201,7 +198,6 @@ def manage_nextseq_in_processing_run(conn, run_object_name) :
     Functions:
         check_completion_success    # located in this file
         get_attributes_remote_file  # Located at utils.generic_functions
-        set_state_in_all_projects   # Located at utils.generic_functions
     Variable:
         l_run_completion    # completion file name in the local temporary folder
         run_object_name     # RunProcess object
@@ -247,7 +243,6 @@ def manage_nextseq_in_processing_run(conn, run_object_name) :
         raise ValueError ('Run was CANCELLED')
     else:
         run_updated = run_object_name.set_run_state('Processed Run')
-        set_state_in_all_projects(experiment_name, 'Processed Run')
         logger.info('Run %s is now on Processed Run state', experiment_name)
         return experiment_name
 

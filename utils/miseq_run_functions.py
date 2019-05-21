@@ -87,7 +87,7 @@ def get_latest_miseq_log(conn, log_folder) :
         file_content
     '''
     logger = logging.getLogger(__name__)
-    logger.debug ('Starting function for fetching remote file')
+    logger.debug ('Starting function get_latest_miseq_log')
     remote_file_list = conn.listPath( wetlab_config.SAMBA_SHARED_FOLDER_NAME, log_folder)
     max_cycle = -1
     for sfh in remote_file_list:
@@ -104,12 +104,14 @@ def get_latest_miseq_log(conn, log_folder) :
 
     temporary_log = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY,'miseq_cycle.log')
     s_latest_log = os.path.join(log_folder,latest_log)
+    
     #with open(temporary_log ,'wb') as log_fp :
     temporary_log = fetch_remote_file (conn, log_folder, s_latest_log, temporary_log)
 
     with open (temporary_log, 'r') as fh :
         log_file_content = fh.read()
     os.remove(temporary_log)
+    logger.debug ('End function get_latest_miseq_log')
     return max_cycle, log_file_content
 
 
@@ -443,7 +445,7 @@ def validate_sample_sheet (sample_sheet):
             logger.debug('End the function validate sample_sheet with error')
             return False
         if Projects.objects.filter(projectName__exact = project).exists():
-            string_message = 'project name %s , already been used ' + project
+            string_message = 'project name "' + project + '" already been used ' 
             logging_errors(string_message, False, False)
             logger.debug('Exiting the function validate sample_sheet with error')
             return False
@@ -572,7 +574,7 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
     Input:
         conn        # samba connection object
         new_run     # folder remote directory for miseq run
-        l_run-parameter  # local path for the run parameter file
+        l_run_parameter  # local path for the run parameter file
         experiment_name  # name used on miseq run
     Functions:
         get_projects_in_run # located at utils.sample_sheet_utils
