@@ -153,6 +153,13 @@ def create_run_test_nextseq_in_recorded (run_folder, experiment_name ) :
     recorded_results = []
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function create_run_test_nextseq')
+    
+    # Check user is defined in database
+    if not User.objects.filter(username__exact = 'test_user1').exists():
+        user = User.objects.create_user(username='test_user1',
+                                 email='test_user1@iSkyLIMS.com',
+                                 password='test_user1')
+
     # if run exist, then delete if before created it again
     if RunProcess.objects.filter(runName__exact = experiment_name).exists() :
         run_name = RunProcess.objects.get(runName__exact = experiment_name)
