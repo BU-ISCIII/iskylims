@@ -1552,4 +1552,18 @@ def user_login (request):
 	login_data['user_data'] = user_data
 
 	return render(request, 'iSkyLIMS_drylab/userLogin.html', {'login_data': login_data})
+	
+@login_required
+
+def configuration_test (request):
+    # check user privileges
+    if request.user.is_authenticated:
+        #import pdb; pdb.set_trace()
+        if not request.user.is_staff or not request.user.is_superuser:
+            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+
+    return render(request,'iSkyLIMS_wetlab/ConfigurationTest.html')
 

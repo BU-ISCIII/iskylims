@@ -14,6 +14,7 @@ urlpatterns = [
      path('', views.index, name='index'),
      path('service_request_<str:serviceRequestType>',views.service_request, name='service_request'),
      path('counseling_request',views.counseling_request, name='counseling_service'),
+     path('configurationTest'.views.configuration_test, name='configuration_test'),
      path('infrastructure_request',views.infrastructure_request, name='infrastructure_service'),
      path('searchService', views.search_service, name='search_service'),
      path('pendingServices', views.pending_services, name ='peding_services'),
