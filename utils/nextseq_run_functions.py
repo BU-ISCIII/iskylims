@@ -228,7 +228,8 @@ def manage_nextseq_in_processing_run(conn, run_object_name) :
     except Exception as e:
         logger.info ('Completion status file still is not present on the run folder')
         logger.debug ('End function for handling manage_nextseq_in_processing_run waiting Completion file')
-        raise ValueError ( 'Completion file not present')
+        #raise Exception ( 'Completion file not present')
+        return
     finally :
         logger.info ('Deleting local copy of completion status')
         # cleaning up the completion  in local temporary file

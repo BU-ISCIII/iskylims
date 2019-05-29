@@ -2,7 +2,7 @@ from datetime import datetime
 from django.conf import settings
 #from django.contrib.auth.models import User
 
-from .wetlab_config import *
+from iSkyLIMS_wetlab import wetlab_config
 from .utils.update_run_state import search_update_new_runs, search_not_completed_run
 
 from .utils.generic_functions import  open_log
@@ -51,7 +51,7 @@ def looking_for_new_runs ():
     logger=open_log(config_file)
     logger.info('###########---Start Crontab-----############')
     logger.info('Start searching for new/updating runs')
-    
+
     new_runs_updated, run_with_error = search_update_new_runs ()
     logger.info('------- Printing summary for search_update_new_runs -----')
     if len (new_runs_updated) > 0:
@@ -126,7 +126,7 @@ def delete_invalid_run ():
         print ('deleted run' , run_found)
     all_runs = RunProcess.objects.all()
     sample_sheet_valid_files = []
-    
+
     for run in all_runs:
         sample_sheet_valid_files.append(os.path.basename(run.get_sample_file()))
     sample_sheet_folder = os.path.join(settings.MEDIA_ROOT, os.path.dirname(run.get_sample_file()))
