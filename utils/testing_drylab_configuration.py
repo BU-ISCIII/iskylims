@@ -98,18 +98,26 @@ def create_resolution_test (resolution_number, service_requested):
     from django.core.files.storage import FileSystemStorage
     from weasyprint.fonts import FontConfiguration
 
-
-
-    information, user, resolution_data = {}, {}, {}
+    resolution_test = []
     # get service object
     service = Service.objects.get(serviceRequestNumber = service_requested)
-    service_number ,run_specs, center, platform = service.get_service_information().split(';')
-    # get resolution object
-    resolution = Resolution.objects.get(resolutionNumber = resolution_number)
-    resolution_info = resolution.get_resolution_information()
+    #service_number ,run_specs, center, platform = service.get_service_information().split(';')
+    # Create resolution object
+    try:
+        test_resolution = Resolution(resolutionServiceID = service, resolutionNumber = resolution_number, resolutionFullNumber = str('Test_'+ resolution_number))
+        resolution_test.append(('Resolution creation', 'OK'))
+    except:
+        resolution_test.append(('Resolution creation', 'NOK'))
+    #test_resolution.save()
+    #resolution = Resolution.objects.get(resolutionNumber = resolution_number)
+    resolution_info = test_resolution.get_resolution_information()
+    
     # get profile object
-    user_id = service.serviceUserId.id
+    #user_id = service.serviceUserId.id
+    
+    resolution_test.append(('Folder structure creation', 'OK'))
 
+    '''
     information['resolution_number'] = resolution_number
     information['requested_date'] = service.get_service_creation_time()
     information['resolution_date'] = resolution_info[4]
@@ -146,8 +154,8 @@ def create_resolution_test (resolution_number, service_requested):
 
 
         response['Content-Disposition'] = 'inline;filename=res_pdf.pdf'
-
-    return response
+    '''
+    return resolution_test
 
 def delete_test_service(service_name):
     try:

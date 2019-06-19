@@ -1597,7 +1597,7 @@ def configuration_test (request):
             test_results['services'] = ('Available services', 'OK')
         test_results['iSkyLIMS_settings'] = get_iSkyLIMS_settings()
         test_results['config_file'] = get_config_file(drylab_config_file)
-        '''
+        
         conn = open_samba_connection()
         if conn :
             test_results['samba_connection'] = 'OK'
@@ -1605,18 +1605,18 @@ def configuration_test (request):
             test_results['samba_connection'] = 'NOK'
         test_results['basic_checks_ok'] = 'OK'
         #if test_results['config_file']  and test_results['attr_files']  and test_results['database_access'] and test_results['samba_connection']:
-        '''
+        
         for result in test_results :
             if test_results[result] == 'NOK':
                 test_results['basic_checks_ok'] = 'NOK'
                 break
         
-        #import pdb; pdb.set_trace()
         return render (request,'iSkyLIMS_drylab/ConfigurationTest.html', {'test_results': test_results})
     elif request.method=='POST' and request.POST['action'] == 'resolutionTest':
         if 'Delete' in request.POST :
-            delete_test_service ('NextSeq_Test_0001')
-            return render(request,'iSkyLIMS_wetlab/ConfigurationTest.html')
+            delete_test_service ('SRVTEST-IIER001')
+            return render(request,'iSkyLIMS_drylab/ConfigurationTest.html')
+
         resolution_results = {}
         service_requested = 'SRVTEST-IIER001'
         resolution_results['CreateService'], result = create_service_test(service_requested)
@@ -1628,7 +1628,20 @@ def configuration_test (request):
         else:
             resolution_results['create_service_ok'] = 'OK'
             resolution_number = 'SRVTEST-IIER001.1'
-            #resolution_test = create_resolution_test (resolution_number, service_requested)
+            resolution_results ['resolution_test'] = create_resolution_test (resolution_number, service_requested)
+            resolution_results['create_resolution_ok'] = 'OK'
+            
+            resolution_results['completed_ok']= 'OK' 
+            for result in resolution_results ['resolution_test']:
+                if result[1] == 'NOK':
+                    resolution_results['completed_ok']= 'NOK'
+                break
+            
+            #service_request_file = os.path.join (settings.BASE_DIR, drylab_config.OUTPUT_DIR_TEMPLATE,str('test_resolution.pdf'))
+            #service_file_uploaded = ''
+            
+            #create_service_structure (conn, service_request_file, service_file_uploaded, full_service_path, resolution_file)
+            #import pdb; pdb.set_trace()
             return render (request,'iSkyLIMS_drylab/ConfigurationTest.html', {'resolution_results': resolution_results})
     else:
         return render(request,'iSkyLIMS_drylab/ConfigurationTest.html')
