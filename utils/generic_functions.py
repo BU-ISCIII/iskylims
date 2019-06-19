@@ -252,6 +252,26 @@ def get_experiment_name_from_file (l_run_parameter) :
     return experiment_name
 
 
+def get_log_file_name(config_log_file) :
+    '''
+    Description:
+        The function will get the log file name from the configuration 
+        file and it will return the fullpath log file name 
+    Input:
+        config_log_file  # configuration log file
+    Variables:
+        log_file_name # name of found log file name
+    Return:
+        log_file_name
+    '''
+    log_file_name = ''
+    with open(config_log_file) as fh :
+        for line in fh :
+            if '.log' in line :
+                 log_file_name = line.split('\'')[1]
+    return log_file_name
+
+
 def get_run_platform_from_file (l_run_parameter) :
     '''
     Description:
@@ -416,7 +436,7 @@ def need_to_wait_more (experiment_name, waiting_time):
         logger.debug ('End function need_to_wait_sample_sheet')
         return True
 
-def open_log():
+def open_log(config_file):
     '''
     Description:
         The function will create the log object to write all logging information
@@ -428,7 +448,6 @@ def open_log():
     Return:
         logger object
     '''
-    config_file = os.path.join(settings.BASE_DIR,'iSkyLIMS_wetlab',  wetlab_config.LOGGING_CONFIG_FILE )
     fileConfig(config_file)
     logger = logging.getLogger(__name__)
     return logger
@@ -449,8 +468,10 @@ def open_samba_connection():
         use_ntlm_v2=wetlab_config.SAMBA_NTLM_USED,domain=wetlab_config.SAMBA_DOMAIN,
         is_direct_tcp=wetlab_config.IS_DIRECT_TCP )
     try:
-        conn.connect(socket.gethostbyname(wetlab_config.SAMBA_HOST_NAME), int(wetlab_config.SAMBA_PORT_SERVER))
-        #conn.connect(wetlab_config.SAMBA_IP_SERVER, int(wetlab_config.SAMBA_PORT_SERVER))
+        if wetlab_config.SAMBA_HOST_NAME :
+            conn.connect(socket.gethostbyname(wetlab_config.SAMBA_HOST_NAME), int(wetlab_config.SAMBA_PORT_SERVER))
+        else:
+            conn.connect(wetlab_config.SAMBA_IP_SERVER, int(wetlab_config.SAMBA_PORT_SERVER))
     except:
         string_message = 'Unable to connect to remote server'
         logging_errors (string_message, True, True)

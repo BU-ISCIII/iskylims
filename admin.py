@@ -35,6 +35,9 @@ class RunErrorsAdmin (admin.ModelAdmin):
 class RunStatesAdmin (admin.ModelAdmin):
     list_display = ('runStateName',)
 
+class SamplesInProjectAdmin (admin.ModelAdmin):
+    list_display = ('project_id','sampleName','barcodeName','pfClusters','percentInProject','yieldMb','qualityQ30')
+
 
 admin.site.register(RunningParameters , RunningParametersAdmin)
 admin.site.register(RunProcess , RunProcessAdmin)
@@ -42,3 +45,4 @@ admin.site.register(LibraryKit,LibraryKitAdmin)
 admin.site.register(Projects, ProjectsAdmin)
 admin.site.register(RunErrors, RunErrorsAdmin)
 admin.site.register(RunStates, RunStatesAdmin)
+admin.site.register(SamplesInProject, SamplesInProjectAdmin)

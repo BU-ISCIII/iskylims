@@ -370,16 +370,16 @@ def search_not_completed_run ():
             logger.debug('End runs in Sample Sent state')
 
         elif state == 'Processing Run':
-            updated_run['Processing run'] = []
-            runs_with_error['Processing run'] = []
+            updated_run[state] = []
+            runs_with_error[state] = []
             logger.debug('Start handling the runs in  Processing Run state')
             for run_in_processing_run in runs_to_handle[state] :
                 run_platform = run_in_processing_run.get_run_platform()
                 try:
                     if 'Next-Seq' in run_platform :
-                        updated_run['Processing run'].append(manage_nextseq_in_processing_run(conn, run_in_processing_run))
+                        updated_run[state].append(manage_nextseq_in_processing_run(conn, run_in_processing_run))
                     elif 'Mi-Seq' in run_platform :
-                        updated_run['Processing run'].append(manage_miseq_in_processing_run(conn, run_in_processing_run))
+                        updated_run[state].append(manage_miseq_in_processing_run(conn, run_in_processing_run))
                     else:
                         string_message = 'Platform ' + run_platform +' is not supported '
                         logging_errors (string_message , False, False)
@@ -391,12 +391,12 @@ def search_not_completed_run ():
             logger.debug('End runs in Processing Run state')
 
         elif state == 'Processed Run':
-            updated_run['Processed run'] = []
-            runs_with_error['Processed run'] = []
+            updated_run[state] = []
+            runs_with_error[state] = []
             logger.debug('Start handling the runs in  Processed Run state')
             for run_in_processed_run in runs_to_handle[state]:
                 try:
-                    updated_run['Processed run'].append(manage_run_in_processed_run(conn, run_in_processed_run))
+                    updated_run[state].append(manage_run_in_processed_run(conn, run_in_processed_run))
                 except :
                     runs_with_error[state].append(run_in_processed_run.get_run_name())
                     logger.info('Handling the exception to continue with the next item')

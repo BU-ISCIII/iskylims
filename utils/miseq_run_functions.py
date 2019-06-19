@@ -87,7 +87,7 @@ def get_latest_miseq_log(conn, log_folder) :
         file_content
     '''
     logger = logging.getLogger(__name__)
-    logger.debug ('Starting function for fetching remote file')
+    logger.debug ('Starting function get_latest_miseq_log')
     remote_file_list = conn.listPath( wetlab_config.SAMBA_SHARED_FOLDER_NAME, log_folder)
     max_cycle = -1
     for sfh in remote_file_list:
@@ -104,12 +104,14 @@ def get_latest_miseq_log(conn, log_folder) :
 
     temporary_log = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY,'miseq_cycle.log')
     s_latest_log = os.path.join(log_folder,latest_log)
+    
     #with open(temporary_log ,'wb') as log_fp :
     temporary_log = fetch_remote_file (conn, log_folder, s_latest_log, temporary_log)
 
     with open (temporary_log, 'r') as fh :
         log_file_content = fh.read()
     os.remove(temporary_log)
+    logger.debug ('End function get_latest_miseq_log')
     return max_cycle, log_file_content
 
 
@@ -259,6 +261,7 @@ def save_new_miseq_run ( experiment_name, run_date, instrument) :
     '''
     logger = logging.getLogger(__name__)
     logger.debug('Executing the function save_new_miseq_run' )
+    logger.info('Saving new Run %s into database', experiment_name)
     ## create a new entry on runProcess database
     if Center.objects.filter(centerAbbr__exact = wetlab_config.DEFAULT_CENTER).exists():
         center_requested_by = Center.objects.get(centerAbbr__exact = wetlab_config.DEFAULT_CENTER)
@@ -274,7 +277,9 @@ def save_new_miseq_run ( experiment_name, run_date, instrument) :
         logger.info('Updated the run date and sequencer used for the runProcess table ')
     else:
         string_message = instrument + ' has been not defined on machines '
-        logging_errors(string_message, False, False)
+        logging_errors(string_message, False, True)
+        logger.debug('Exiting the function save_new_miseq_run with error' )
+        raise ValueError ('Unable to find machine ')
 
     run_state = RunStates.objects.get(runStateName__exact = 'Recorded')
     run_process = RunProcess(runName=experiment_name,sampleSheet= '',
@@ -443,7 +448,7 @@ def validate_sample_sheet (sample_sheet):
             logger.debug('End the function validate sample_sheet with error')
             return False
         if Projects.objects.filter(projectName__exact = project).exists():
-            string_message = 'project name %s , already been used ' + project
+            string_message = 'project name "' + project + '" already been used ' 
             logging_errors(string_message, False, False)
             logger.debug('Exiting the function validate sample_sheet with error')
             return False
@@ -488,6 +493,7 @@ def manage_miseq_in_processing_run (conn, run_name):
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function manage_miseq_in_processing_run')
     experiment_name = run_name.get_run_name()
+    logger.info('Run  %s  in processing run', experiment_name)
     run_folder = RunningParameters.objects.get(runName_id = run_name).get_run_folder()
     log_folder = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, run_folder, wetlab_config.RUN_LOG_FOLDER)
     try: # waiting for sequencer run completion
@@ -504,6 +510,7 @@ def manage_miseq_in_processing_run (conn, run_name):
             run_updated = run_name.set_run_state('Processed Run')
             run_name.run_finish_date = run_completion_date
             run_name.save()
+            logger.info('Run  %s updated to processed run', experiment_name)
             logger.debug ('End function manage_miseq_in_processing_run %s' , experiment_name)
             return experiment_name
     except ValueError :
@@ -572,7 +579,7 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
     Input:
         conn        # samba connection object
         new_run     # folder remote directory for miseq run
-        l_run-parameter  # local path for the run parameter file
+        l_run_parameter  # local path for the run parameter file
         experiment_name  # name used on miseq run
     Functions:
         get_projects_in_run # located at utils.sample_sheet_utils
@@ -612,6 +619,7 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function for handling miSeq run')
+    logger.info('Fetching info from Folder name %s', new_run)
     # Fetch run info from remote server
     l_run_info = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_INFO)
     s_run_info = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, new_run,wetlab_config.RUN_INFO)
@@ -630,8 +638,17 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
     running_parameters, run_date, instrument = miseq_parsing_run_information(l_run_info, l_run_parameter)
     if not RunProcess.objects.filter(runName__exact = experiment_name).exists():
         # Save run data and set run to "Recorded" state
-        new_run_process = save_new_miseq_run (experiment_name, run_date, instrument)
-        logger.info ('New RunProcess %s was stored on database', experiment_name)
+        try:
+            new_run_process = save_new_miseq_run (experiment_name, run_date, instrument)
+            logger.info ('New RunProcess %s was stored on database', experiment_name)
+        except Exception as e :
+            logging_errors(string_message, True, False)
+            logger.info('Skiping the run %s , due to the error on saving new run ', new_run)
+            # deleting temporary copy of RunParameter and RunInfo files
+            os.remove(l_run_parameter)
+            os.remove(l_run_info)
+            logger.info('Deleted RunParameter and RunInfo files')
+            raise  ValueError ('Error when saving new Run in DDBB') # returning to handle next run folder
     else :
         new_run_process = RunProcess.objects.get(runName__exact = experiment_name)
     # Update the running parameter table with the information
