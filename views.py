@@ -2923,9 +2923,9 @@ def configuration_test (request):
         return redirect ('/accounts/login')
     if request.method=='POST' and request.POST['action'] == 'basicTest':
         test_results = {}
-        wetlab_config = os.path.join(settings.BASE_DIR, 'iSkyLIMS_wetlab', 'wetlab_config.py')
+        wetlab_config_file = os.path.join(settings.BASE_DIR, 'iSkyLIMS_wetlab', 'wetlab_config.py')
         test_results['iSkyLIMS_settings'] = get_iSkyLIMS_settings()
-        test_results['config_file'] = get_config_file(wetlab_config)
+        test_results['config_file'] = get_config_file(wetlab_config_file)
         test_results['attr_files'] = get_files_attribute(os.path.join(settings.MEDIA_ROOT, 'wetlab'))
         test_results['database_access'] = check_access_database()
         test_results['samba_connection'] = check_samba_connection()
