@@ -17,5 +17,6 @@ interop
 mysqlclient
 paramiko
 pysmb
+weasyPrint
 zinnia-wysiwyg-wymeditor
 
