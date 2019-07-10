@@ -429,8 +429,7 @@ def add_index_library (request):
         fs_index_lib = FileSystemStorage()
         timestr = time.strftime("%Y%m%d-%H%M%S")
 
-        ## do not need to include the absolute path because django use
-        ## the MEDIA_ROOT variable defined on settings to upload the file
+        ## using the MEDIA_ROOT variable defined on settings to upload the file
         file_name=os.path.join(wetlab_config.LIBRARY_KITS_DIRECTORY ,  str(f_name + '_' +timestr + f_extension))
         filename = fs_index_lib.save(file_name,  index_library_file)
         saved_file = os.path.join(settings.MEDIA_ROOT, file_name)
@@ -487,18 +486,12 @@ def add_index_library (request):
         ## get the index name and index bases for the library
         library_index = get_index_values(saved_file)
         # saving index values into database
-        for index_7 in library_index['I7'] :
-            index_name, index_base = index_7
+        for row in library_index :
             index_to_store = IndexLibraryValues(indexLibraryKit_id = lib_settings_to_store,
-                                    indexNumber = 'I7', indexName = index_name,
-                                    indexBase = index_base)
-            index_to_store.save()
-        for index_5 in library_index['I5'] :
-            index_name, index_base = index_5
-            index_to_store = IndexLibraryValues(indexLibraryKit_id = lib_settings_to_store,
-                                    indexNumber = 'I5', indexName = index_name,
-                                    indexBase = index_base)
-            index_to_store.save()
+                                    defaultWell = index_to_store[0], index_7 = index_to_store[1],
+                                    i_7_seq = index_to_store[2], index_5 = index_to_store[3],
+                                    i_5_seq = index_to_store[4])
+    
 
         index_libraries_information['new_index_library'] = library_settings['name']
         index_libraries_information ['index_libraries'] = index_library_names

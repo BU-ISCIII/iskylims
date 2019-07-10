@@ -8,20 +8,20 @@ def check_index_library_file_format (input_file):
     '''
     Description:
         The function will check if the input file contains the heading
-        described on the declared constant INDEX_LIBRARY_HEADING 
-        defined in wetlab_config 
+        described on the declared constant INDEX_LIBRARY_HEADING
+        defined in wetlab_config
     Input:
-        input_file     # contains the file name 
+        input_file     # contains the file name
     Variables:
         read_data # has the content of the file
         item_to_check   # interaction variable of the  INDEX_LIBRARY_HEADING
     Constants:
-        INDEX_LIBRARY_HEADING # List containing the heading colunms to 
+        INDEX_LIBRARY_HEADING # List containing the heading colunms to
                                 be checked
     Return:
         False if heading was not found
         True if heading was found.
-    
+
     '''
     with open (input_file , encoding="utf-8" ) as fh:
        read_data = fh.read()
@@ -35,10 +35,10 @@ def check_index_library_file_format (input_file):
 def getting_index_library_name (input_file):
     '''
     Description:
-        The function will read the input file and it will return 
-        the index library name 
+        The function will read the input file and it will return
+        the index library name
     Input:
-        input_file     # contains the file name 
+        input_file     # contains the file name
     Variables:
         found_library_name # has the content of the file
         found_name   # interaction variable of the  INDEX_LIBRARY_HEADING
@@ -63,15 +63,15 @@ def getting_index_library_name (input_file):
 def get_library_settings (input_file):
     '''
     Description:
-        The function will read the input file and it will return 
-        library_settings with the information content file 
+        The function will read the input file and it will return
+        library_settings with the information content file
     Input:
-        input_file     # contains the file name 
+        input_file     # contains the file name
     Variables:
         library_settings    # dictionary to store the setting information
         found_version, found_name, found_extension and found_settings # are
                 temporary created to read the next following line that
-                contains the information that we are looking for 
+                contains the information that we are looking for
     Return:
         library_settings with the settings of the library or empty '' if not found
     '''
@@ -106,7 +106,7 @@ def get_library_settings (input_file):
             if found_settings :
                 line=line.rstrip()
                 line_split= line.split('\t')
-                # No more adapters  have been found. copy the adapters in library_settings 
+                # No more adapters  have been found. copy the adapters in library_settings
                 # dictionary and exit the loop
                 if len (line_split) == 1:
                     library_settings['adapters'] = adapter_list
@@ -118,24 +118,25 @@ def get_library_settings (input_file):
 def get_index_values (input_file):
     '''
     Description:
-        The function will read the index value in the input file and it will return 
-        library_settings with the information content file 
+        The function will read the index value in the input file and it will return
+        library_settings with the information content file
     Input:
-        input_file     # contains the file name 
+        input_file     # contains the file name
     Variables:
-        index_values # dictionary to store index_I7 and and index_I5 
+        index_values # dictionary to store index_I7 and and index_I5
         index_7     # will store the index 7 values
         index_5     # will store the index 5 values
         found_I7 and found_I5 # are set to True to read the index
-                once the I7/I5 heading is found 
+                once the I7/I5 heading is found
     Return:
         index_values with the I7 and I5 index found in the file
             Empty if not found
     '''
-    index_7 , index_5 = [] , []
+    index_7 , index_5 = {} , {}
     found_I7 = False
     found_I5 = False
-    index_values = {}
+    layout_found = False
+    index_values = []
     with open (input_file , encoding="utf-8") as fh :
         for line in fh:
             if '[I7]' in line :
@@ -144,7 +145,8 @@ def get_index_values (input_file):
             if found_I7 :
                 line=line.rstrip()
                 if len (line.split('\t'))> 1:
-                    index_7.append(line.split('\t'))
+                    index_line = line.split('\t')
+                    index_7[index_line[0]]= index_line[1]
                     continue
                 # No more index have been found for I7. Start collecting index for I5
                 else:
@@ -155,17 +157,29 @@ def get_index_values (input_file):
             if found_I5 :
                 line=line.rstrip()
                 if len (line.split('\t')) > 1:
-                    index_5.append(line.split('\t'))
+                    index_line = line.split('\t')
+                    index_5[index_line[0]]= index_line[1]
                     continue
                 # No more index have been found for I5. Exit the loop
                 else:
                     break
-        index_values['I7'] = index_7
-        index_values['I5'] = index_5
+            if 'Layout' in line :
+                if "SingleIndex" in line and len(I5) > 0 :
+                    continue
+                else:
+                    layout_found = True
+                    continue
+            if layout_found :
+                if '[' in line: # reached the end of layout. Exiting the function
+                    break
+                line_split = line.split('\t')
+                if len(line_split) == 3 : # There are 2 index (I7 and I5)
+                    index_values.append([line_split[0], line_split[1], index_7[line_split[1]], line_split[2], index_5[line_split[2]]])
+                else:
+                    index_values.append([line_split[0], line_split[1], index_7[line_split[1]], '', ''])
 
     return index_values
 
 def remove_boom_bytes (input_file):
     s = open(input_file, mode='r', encoding='utf-8-sig').read()
     open(input_file, mode='w', encoding='utf-8').write(s)
-    
