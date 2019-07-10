@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-import re
+import re, os, sys, codecs
 from ..wetlab_config import *
+
+
 
 def check_index_library_file_format (input_file):
     '''
@@ -162,3 +164,8 @@ def get_index_values (input_file):
         index_values['I5'] = index_5
 
     return index_values
+
+def remove_boom_bytes (input_file):
+    s = open(input_file, mode='r', encoding='utf-8-sig').read()
+    open(input_file, mode='w', encoding='utf-8').write(s)
+    

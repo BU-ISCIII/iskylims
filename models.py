@@ -177,7 +177,7 @@ class RunProcess(models.Model):
         self.save()
         return True
 
-class LibraryKit (models.Model):
+class BaseSpaceLibraryName (models.Model):
     libraryName = models.CharField(max_length=125)
     #sampleNumber = models.CharField(max_length = 25)
     #indexNumber = models.CharField(max_length = 25)
@@ -236,7 +236,7 @@ class Projects(models.Model):
             on_delete=models.CASCADE)
     user_id= models.ForeignKey(User,on_delete=models.CASCADE, null = True)
     LibraryKit_id = models.ForeignKey(
-            LibraryKit,
+            BaseSpaceLibraryName,
             on_delete=models.CASCADE , null=True)
     projectName= models.CharField(max_length=45)
     libraryKit=models.CharField(max_length=125)
