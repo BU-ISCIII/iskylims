@@ -94,8 +94,9 @@ def fetch_remote_file (conn, run_dir, remote_file, local_file) :
     logger.debug ('Starting function for fetching remote file')
     with open(local_file ,'wb') as r_par_fp :
         try:
+            #import pdb; pdb.set_trace()
             conn.retrieveFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME, remote_file, r_par_fp)
-            logger.info('Retrieving the remote %s file for %s', local_file, run_dir)
+            logger.info('Retrieving the remote %s file for %s/%s', local_file, run_dir,remote_file)
         except Exception as e:
             string_message = 'Unable to fetch the ' + local_file + 'file on folder ' + run_dir
             logging_errors (string_message, False, True)
@@ -255,8 +256,8 @@ def get_experiment_name_from_file (l_run_parameter) :
 def get_log_file_name(config_log_file) :
     '''
     Description:
-        The function will get the log file name from the configuration 
-        file and it will return the fullpath log file name 
+        The function will get the log file name from the configuration
+        file and it will return the fullpath log file name
     Input:
         config_log_file  # configuration log file
     Variables:
@@ -326,14 +327,14 @@ def handling_errors_in_run (experiment_name, error_code):
 def is_wetlab_manager (request):
     '''
     Description:
-        The function will check if the logged user belongs to wetlab 
+        The function will check if the logged user belongs to wetlab
         manager group
     Input:
         request # contains the session information
     Variables:
         groups # wetlab manager object group
     Return:
-        Return True if the user belongs to Wetlab Manager, False if not 
+        Return True if the user belongs to Wetlab Manager, False if not
     '''
     try:
         groups = Group.objects.get(name = wetlab_config.WETLAB_MANAGER)
@@ -341,7 +342,7 @@ def is_wetlab_manager (request):
             return False
     except:
         return False
-    
+
     return True
 
 def logging_errors(string_text, showing_traceback , print_on_screen ):
