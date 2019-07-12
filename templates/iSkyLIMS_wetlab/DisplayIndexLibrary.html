@@ -1,14 +1,40 @@
 {% extends 'iSkyLIMS_wetlab/base.html' %}
 {% load static %}
 {% block content %}
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/wetlab.js" %}"></script> 
+<style>
+.table-wrapper {
+    max-height: 450px;
+    overflow: auto;
+    display:inline-block;
+    width: 550px;
+}
+.table-wrapper-sm-4 {
+    max-height: 450px;
+    overflow: auto;
+    display:inline-block;
+    width: 370px;
+}
+.table-wrapper-sm-5 {
+        max-height: 450px;
+        overflow: auto;
+        display:inline-block;
+        width: 460px;
+}
+.table-wrapper-sm-10 {
+        max-height: 450px;
+        overflow: auto;
+        display:inline-block;
+        width: 920px;
+}
+</style>
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/wetlab.js" %}"></script>
 {% if display_one_index_library %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-7">
             <p>The following information belongs to :</p>
             <div class="panel panel-default">
                 {% for lib_name, version, plate, adapter1, adapter2, index_file in  display_one_index_library.general_information %}
-                
+
                 <div class="panel-heading"><h3> {{ lib_name }}</h3></div>
                 <div class="panel-body">
                   <table class="table table-hover">
@@ -51,6 +77,7 @@
               </div>
                 <div id="IndexI7" class="panel-body">
                     {% if display_one_index_library.I7_indexes %}
+                      <div class="table-wrapper-sm-5">
                       <table class="table table-hover">
                        <thead>
                           <tr>
@@ -66,16 +93,17 @@
                             {% endfor %}
                        </tbody>
                      </table>
+                    </div> <!--  end table wrapper -->
                     {% else %}
                         There is no index sequence for I7 on this library
-                    
-                    {% endif %} 
+
+                    {% endif %}
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-5 -->
-      
+
         <div class="col-sm-5 col-sm-offset-1">
-        
+
             <div class="panel panel-default">
               <div class="panel-heading"><h3> Index defined for I5 </h3>
               <button onclick="exportTableToExcel('IndexI5')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
@@ -100,16 +128,55 @@
                          </table>
                     {% else %}
                         There is no index sequence for I5 on this library
-                    
+
                     {% endif %}
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
-                    
-                    
-                     
+
+
+
         </div> <!--  end of col-sm-5 -->
       </div> <!--  end of row -->
-      
+
+      <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-10">
+            <div class="panel panel-default">
+              <div class="panel-heading"><h3> Default Layout for {{ lib_name }} </h3>
+              <button onclick="exportTableToExcel('Layout')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
+                <BR>
+              </div>
+                <div id="Layout" class="panel-body">
+                    {% if display_one_index_library.default_layout %}
+                      <div class="table-wrapper-sm-10">
+                      <table class="table table-hover">
+                       <thead>
+                          <tr>
+                            <th>Well</th>
+                            <th>Index 7</th>
+                            <th>Index 7 Sequence</th>
+                            <th>Index 5</th>
+                            <th>Index 5 Sequence</th>
+                          </tr>
+                       </thead>
+                       <tbody>
+                            {% for well_row in  display_one_index_library.default_layout %}
+                                <tr>
+                                  {% for value in well_row %}
+                                      <td>{{value}} </td>
+                                  {% endfor %}
+                                </tr>
+                            {% endfor %}
+                       </tbody>
+                     </table>
+                     </div> <!--  end of table wrapper -->
+                    {% else %}
+                        There is no default layout for this  library
+
+                    {% endif %}
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-10 -->
+        </div> <!--  end of row -->
 {% else %}
 
 

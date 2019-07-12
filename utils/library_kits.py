@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import re, os, sys, codecs
-from ..wetlab_config import *
+import itertools
+from iSkyLIMS_wetlab.models import IndexLibraryKit, IndexLibraryValues
 
 
 
@@ -30,7 +31,35 @@ def check_index_library_file_format (input_file):
             return False
     return True
 
+def index_library_information (index_library_id) :
 
+    index_library_dict ={}
+    index_library_found = IndexLibraryKit.objects.get(pk=index_library_id)
+    general_information = [index_library_found.get_index_library_information().split(';')]
+    index_library_dict['general_information'] = general_information
+
+    if IndexLibraryValues.objects.filter(indexLibraryKit_id__exact = index_library_id).exists():
+        index_list = IndexLibraryValues.objects.filter(indexLibraryKit_id__exact = index_library_id)
+
+        I7_indexes, I5_indexes = [], []
+        index_row_info = []
+        for index in index_list :
+            i_values = index.get_index_value_information().split(';')
+            index_row_info.append(i_values)
+            # get all I7 index defined on the library
+            I7_indexes.append([i_values[1],i_values[2]])
+            if i_values[3] != '':
+                #get all I5 index defined on the library
+                I5_indexes.append([i_values[3],i_values[4]])
+        I7_indexes.sort()
+        index_library_dict['I7_indexes'] = list(I7_indexes for I7_indexes,_ in itertools.groupby(I7_indexes))
+        if len(I5_indexes) > 0 :
+            I5_indexes.sort()
+            index_library_dict['I5_indexes'] = list(I5_indexes for I5_indexes,_ in itertools.groupby(I5_indexes))
+        index_library_dict['default_layout'] = index_row_info
+        return index_library_dict
+    else:
+        return False
 
 def getting_index_library_name (input_file):
     '''
@@ -164,7 +193,7 @@ def get_index_values (input_file):
                 else:
                     break
             if 'Layout' in line :
-                if "SingleIndex" in line and len(I5) > 0 :
+                if "SingleIndex" in line and len(index_5) > 0 :
                     continue
                 else:
                     layout_found = True
@@ -172,8 +201,9 @@ def get_index_values (input_file):
             if layout_found :
                 if '[' in line: # reached the end of layout. Exiting the function
                     break
+                line = line.rstrip('\n')
                 line_split = line.split('\t')
-                if len(line_split) == 3 : # There are 2 index (I7 and I5)
+                if len(index_5) : # There are 2 index (I7 and I5)
                     index_values.append([line_split[0], line_split[1], index_7[line_split[1]], line_split[2], index_5[line_split[2]]])
                 else:
                     index_values.append([line_split[0], line_split[1], index_7[line_split[1]], '', ''])

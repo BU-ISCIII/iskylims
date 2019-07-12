@@ -488,10 +488,10 @@ def add_index_library (request):
         # saving index values into database
         for row in library_index :
             index_to_store = IndexLibraryValues(indexLibraryKit_id = lib_settings_to_store,
-                                    defaultWell = index_to_store[0], index_7 = index_to_store[1],
-                                    i_7_seq = index_to_store[2], index_5 = index_to_store[3],
-                                    i_5_seq = index_to_store[4])
-    
+                                    defaultWell = row[0], index_7 = row[1],
+                                    i_7_seq = row[2], index_5 = row[3],
+                                    i_5_seq = row[4])
+            index_to_store.save()
 
         index_libraries_information['new_index_library'] = library_settings['name']
         index_libraries_information ['index_libraries'] = index_library_names
@@ -1171,31 +1171,7 @@ def display_sample (request, sample_id):
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the sample  ' ]})
 
 
-def index_library_information (index_library_id) :
 
-    index_library_dict ={}
-    index_library_found = IndexLibraryKit.objects.get(pk=index_library_id)
-    general_information = [index_library_found.get_index_library_information().split(';')]
-    index_library_dict['general_information'] = general_information
-
-    if IndexLibraryValues.objects.filter(indexLibraryKit_id__exact = index_library_id).exists():
-        index_list = IndexLibraryValues.objects.filter(indexLibraryKit_id__exact = index_library_id)
-
-        I7_indexes, I5_indexes = [], []
-        for index in index_list :
-            # get all I7 index defined on the library
-            if index.indexNumber == 'I7':
-                I7_indexes.append(index.get_index_information().split(';'))
-            elif index.indexNumber == 'I5':
-                #get all I5 index defined on the library
-                I5_indexes.append(index.get_index_information().split(';'))
-            else:
-                pass
-        index_library_dict['I7_indexes'] = I7_indexes
-        index_library_dict['I5_indexes'] = I5_indexes
-        return index_library_dict
-    else:
-        return False
 
 
 

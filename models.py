@@ -231,8 +231,9 @@ class IndexLibraryValues (models.Model):
     i_5_seq = models.CharField(max_length=25,null=True)
 
 
-    def get_index_information (self):
-        return '%s;%s' %(self.indexName, self.indexBase)
+    def get_index_value_information (self):
+        return '%s;%s;%s;%s;%s' %(self.defaultWell, self.index_7, self.i_7_seq,
+                        self.index_5, self.i_5_seq)
 
 
 class Projects(models.Model):
