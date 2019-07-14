@@ -10,7 +10,7 @@ from django.views.generic import ListView, DetailView
 
 urlpatterns = [
     path('',views.index, name = 'index'),
-    path('AddLibraryKit/',views.add_library_kit, name='add_library_kit'),
+    path('AddBasespaceLibrary/',views.add_basespace_library, name='add_basespace_library'),
     path('AddIndexLibrary', views.add_index_library, name = 'add_index_library'),
     path('AnnualReport/',views.annual_report, name='annual_report'),
     path('change_project_libKit=<int:project_id>',views.change_project_libKit, name ='change_project_libKit'),
@@ -37,10 +37,9 @@ urlpatterns = [
     path('StatsPerTime/', views.stats_per_time, name ='stats_per_time'),
     path('updateTables/',views.update_tables, name='update_tables'),
     path('updateTablesDate/',views.update_tables_date, name='update_tables_date'),
-    
+
 ]
 #+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-

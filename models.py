@@ -177,7 +177,7 @@ class RunProcess(models.Model):
         self.save()
         return True
 
-class LibraryKit (models.Model):
+class BaseSpaceLibraryName (models.Model):
     libraryName = models.CharField(max_length=125)
     #sampleNumber = models.CharField(max_length = 25)
     #indexNumber = models.CharField(max_length = 25)
@@ -221,13 +221,16 @@ class IndexLibraryValues (models.Model):
     indexLibraryKit_id = models.ForeignKey(
         IndexLibraryKit,
         on_delete=models.CASCADE)
-    indexNumber = models.CharField(max_length=12)
-    indexName = models.CharField(max_length=12)
-    indexBase = models.CharField(max_length=25)
+    defaultWell = models.CharField(max_length=10,null=True)
+    index_7 = models.CharField(max_length=25,null=True)
+    i_7_seq = models.CharField(max_length=25,null=True)
+    index_5 = models.CharField(max_length=25,null=True)
+    i_5_seq = models.CharField(max_length=25,null=True)
 
 
-    def get_index_information (self):
-        return '%s;%s' %(self.indexName, self.indexBase)
+    def get_index_value_information (self):
+        return '%s;%s;%s;%s;%s' %(self.defaultWell, self.index_7, self.i_7_seq,
+                        self.index_5, self.i_5_seq)
 
 
 class Projects(models.Model):
@@ -236,7 +239,7 @@ class Projects(models.Model):
             on_delete=models.CASCADE)
     user_id= models.ForeignKey(User,on_delete=models.CASCADE, null = True)
     LibraryKit_id = models.ForeignKey(
-            LibraryKit,
+            BaseSpaceLibraryName,
             on_delete=models.CASCADE , null=True)
     projectName= models.CharField(max_length=45)
     libraryKit=models.CharField(max_length=125)
@@ -695,9 +698,3 @@ class SamplesInProject (models.Model):
         return '%s' %(self.qualityQ30)
 
     objects = SamplesInProjectManager()
-
-
-
-
-
-
