@@ -2,6 +2,7 @@
 import re, os, sys, codecs
 import itertools
 from iSkyLIMS_wetlab.models import IndexLibraryKit, IndexLibraryValues
+from iSkyLIMS_wetlab.wetlab_config import *
 
 
 
@@ -191,7 +192,7 @@ def get_index_values (input_file):
                     continue
                 # No more index have been found for I5. Exit the loop
                 else:
-                    break
+                    found_I5 = False
             if 'Layout' in line :
                 if "SingleIndex" in line and len(index_5) > 0 :
                     continue
@@ -207,7 +208,6 @@ def get_index_values (input_file):
                     index_values.append([line_split[0], line_split[1], index_7[line_split[1]], line_split[2], index_5[line_split[2]]])
                 else:
                     index_values.append([line_split[0], line_split[1], index_7[line_split[1]], '', ''])
-
     return index_values
 
 def remove_boom_bytes (input_file):

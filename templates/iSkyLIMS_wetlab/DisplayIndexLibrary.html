@@ -106,11 +106,14 @@
 
             <div class="panel panel-default">
               <div class="panel-heading"><h3> Index defined for I5 </h3>
-              <button onclick="exportTableToExcel('IndexI5')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
-                <BR>
+                {% if display_one_index_library.I5_indexes %}
+                    <button onclick="exportTableToExcel('IndexI5')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
+                    <BR>
+                {% endif %}  
               </div>
                 <div class="panel-body">
                     {% if display_one_index_library.I5_indexes %}
+                      <div class="table-wrapper-sm-5">
                         <table id="IndexI5" class="table table-hover">
                            <thead>
                               <tr>
@@ -126,6 +129,7 @@
                                 {% endfor %}
                            </tbody>
                          </table>
+                         </div> <!--  end table wrapper -->
                     {% else %}
                         There is no index sequence for I5 on this library
 

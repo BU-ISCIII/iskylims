@@ -221,9 +221,6 @@ class IndexLibraryValues (models.Model):
     indexLibraryKit_id = models.ForeignKey(
         IndexLibraryKit,
         on_delete=models.CASCADE)
-    indexNumber = models.CharField(max_length=12, null=True)
-    indexName = models.CharField(max_length=12, null=True)
-    indexBase = models.CharField(max_length=25, null=True)
     defaultWell = models.CharField(max_length=10,null=True)
     index_7 = models.CharField(max_length=25,null=True)
     i_7_seq = models.CharField(max_length=25,null=True)
