@@ -1039,7 +1039,7 @@ def display_run (request, run_id):
     # check user privileges
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(name='WetlabManager')
+            groups = Group.objects.get(name = wetlab_config.WETLAB_MANAGER)
             if groups not in request.user.groups.all():
                 # check if user is owner of the run
                 if Projects.objects.filter(runprocess_id__exact = run_id).exists():

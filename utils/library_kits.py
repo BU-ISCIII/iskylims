@@ -195,7 +195,10 @@ def get_index_values (input_file):
                     found_I5 = False
             if 'Layout' in line :
                 if "SingleIndex" in line and len(index_5) > 0 :
-                    continue
+                    if len(index_values) == 0 :
+                        continue
+                    else:
+                        break
                 else:
                     layout_found = True
                     continue
