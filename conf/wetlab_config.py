@@ -105,7 +105,7 @@ LIBRARY_KITS_DIRECTORY = 'wetlab/library_kits/'
 ## Maximum file size allowed for the index library kits (in bytes)
 LIBRARY_MAXIMUM_SIZE = '3145728'
 ## Configuration for index library file
-INDEX_LIBRARY_HEADING = ['[Version]','[Name]', '[PlateExtension]','[Settings]', '[I7]','[I5]']
+INDEX_LIBRARY_HEADING = ['[Version]','[Name]', '[PlateExtension]','[Settings]', '[I7]']
 ##############################################################
 
 MIGRATION_DIRECTORY_FILES = 'wetlab/BaseSpaceMigrationFiles/'
