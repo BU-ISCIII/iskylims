@@ -4,6 +4,7 @@
 migrations/
 tmp/
 logs/
+tests/
 wetlab_config.py
 
 ## Default for python projects
