@@ -24,8 +24,10 @@ urlpatterns = [
     path('displaySample=<int:sample_id>/', views.display_sample, name= 'display_sample'),
     path('latest_run/',views.latest_run, name='latest_run'),
     path('incompletedRuns', views.incompleted_runs, name = 'incompleted_runs'),
+    path('libPreparation', views.lib_preparation, name='lib_preparation'),
     path('MonthlyReport/', views.monthly_report, name='montly_report'),
     path('QuarterReport/', views.quarter_report, name='quarter_report'),
+    path('recordSample', views.record_sample, name='record_sample'),
     path('register_wetlab/',views.register_wetlab, name='register_wetlab'),
     path('searchIndexLibrary', views.search_index_library, name='search_index_library'),
     path('searchProject/', views.search_project, name ='search_project'),
@@ -37,6 +39,7 @@ urlpatterns = [
     path('StatsPerTime/', views.stats_per_time, name ='stats_per_time'),
     path('updateTables/',views.update_tables, name='update_tables'),
     path('updateTablesDate/',views.update_tables_date, name='update_tables_date'),
+
 
 ]
 #+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -41,6 +41,15 @@ class RunStatesAdmin (admin.ModelAdmin):
 class SamplesInProjectAdmin (admin.ModelAdmin):
     list_display = ('project_id','sampleName','barcodeName','pfClusters','percentInProject','yieldMb','qualityQ30')
 
+class ProtocolInLabAdmin (admin.ModelAdmin):
+    list_display = ('protocolName',)
+
+class ProtocolParametersAdmin (admin.ModelAdmin):
+    list_display = ('parameterName', 'parameterDescription', 'parameterOrder','parameterUsed','parameterMaxValue', 'parameterMinValue')
+
+class SampleProtocolParameterDataAdmin(admin.ModelAdmin):
+    list_display = ('parameter_id', 'sample_id', 'parameterValue')
+
 
 admin.site.register(RunningParameters , RunningParametersAdmin)
 admin.site.register(RunProcess , RunProcessAdmin)
@@ -50,3 +59,6 @@ admin.site.register(Projects, ProjectsAdmin)
 admin.site.register(RunErrors, RunErrorsAdmin)
 admin.site.register(RunStates, RunStatesAdmin)
 admin.site.register(SamplesInProject, SamplesInProjectAdmin)
+admin.site.register(ProtocolInLab, ProtocolInLabAdmin)
+admin.site.register(ProtocolParameters, ProtocolParametersAdmin)
+admin.site.register(SampleProtocolParameterData, SampleProtocolParameterDataAdmin)

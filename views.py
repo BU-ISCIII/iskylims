@@ -27,6 +27,7 @@ from .utils.generic_functions import *
 from .utils.library_kits import *
 from .utils.fetching_information import *
 from .utils.testing_wetlab_configuration import *
+from .utils.sample_functions import *
 #from .utils.samplesheet_checks import *
 #from .utils.parsing_run_info import get_machine_lanes
 #from .utils.wetlab_misc_utilities import normalized_data
@@ -747,7 +748,7 @@ def search_project (request):
         run_state = request.POST['runstate']
         run_process_ids = []
         # check that some values are in the request if not return the form
-        if project_name == '' and start_date == '' and end_date == '' and user_name =='' and platform_name == '':
+        if project_name == '' and start_date == '' and end_date == '' and user_name =='' and platform_name == '' and run_state == '':
             available_platforms = get_available_platform()
             available_states = get_available_run_state()
             return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'platforms': available_platforms,'run_states':available_states})
@@ -3138,3 +3139,48 @@ def configuration_test (request):
 
     else:
         return render(request,'iSkyLIMS_wetlab/ConfigurationTest.html')
+
+@login_required
+def record_sample(request):
+    #import pdb; pdb.set_trace()
+    if request.method == 'POST' and request.POST['action'] == 'recordsample':
+        #import pdb; pdb.set_trace()
+        sample_recorded = {}
+        excel_data = request.POST['table_data']
+        user_name = request.user.username
+        rows_sample_data= get_data_from_excel_form(excel_data, 3)
+        for row in rows_sample_data :
+            sample_data = {}
+            if not sample_already_defined (row[0]):
+                sample_data['sample_name'] = row[0]
+                sample_data['protocol'] = row[1]
+                sample_data['type'] = row[2]
+                sample_data['user'] = user_name
+
+                new_sample = SamplesInProject.objects.create_sample_from_investigator(sample_data)
+
+
+        import pdb; pdb.set_trace()
+        return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
+    else:
+
+        sample_information = {}
+        # check if clinic application is installed
+        if 'iSkyLIMS_clinicXXX' in settings.INSTALLED_APPS:
+            # get the samples from
+            pass
+        else:
+            # get the already defined protols
+            sample_information['protocols'] = get_protocols_name()
+
+
+        return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
+
+
+@login_required
+def lib_preparation (request):
+    import pdb; pdb.set_trace()
+    lib_preparation_data = {}
+
+    #import pdb; pdb.set_trace()
+    return render(request, 'iSkyLIMS_wetlab/libPreparation.html',{'lib_preparation_data':lib_preparation_data})

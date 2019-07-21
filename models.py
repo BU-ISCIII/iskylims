@@ -25,7 +25,7 @@ class RunStates (models.Model):
 
 class RunProcess(models.Model):
     runName = models.CharField(max_length=45)
-    sampleSheet = models.FileField(upload_to='wetlab/SampleSheets')
+    sampleSheet = models.FileField(upload_to = wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY)
     generatedat = models.DateTimeField(auto_now_add=True)
     run_date = models.DateField(auto_now = False, null=True)
     run_finish_date = models.DateTimeField(auto_now = False, null=True, blank=True)
@@ -183,17 +183,7 @@ class BaseSpaceLibraryName (models.Model):
     #indexNumber = models.CharField(max_length = 25)
     generatedat = models.DateTimeField(auto_now_add=True)
 
-## To be include in version 2.0
-#class LibKitInformation (models.Model):
-#    librarykitId = models.ForeignKey(
-#                LibraryKit,
-#                on_delete= models.CASCADE)
-#    batch_id = models.CharField(max_length= 255)
-#    provider = models.CharField(max_length =150)
-#    sampleNumber = models.CharField(max_length = 25)
-#    indexNumber = models.CharField(max_length = 25)
-#    expirationDate = models.DateField(auto_now_add=False)
-#    generatedat = models.DateTimeField(auto_now_add=True, null=True)
+
 
 class IndexLibraryKit (models.Model):
     indexLibraryName = models.CharField(max_length=125)
@@ -236,7 +226,7 @@ class IndexLibraryValues (models.Model):
 class Projects(models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
-            on_delete=models.CASCADE)
+            on_delete=models.CASCADE, null = True) # added null for new lab process functionality
     user_id= models.ForeignKey(User,on_delete=models.CASCADE, null = True)
     LibraryKit_id = models.ForeignKey(
             BaseSpaceLibraryName,
@@ -246,6 +236,9 @@ class Projects(models.Model):
     baseSpaceFile = models.CharField(max_length=255)
     generatedat = models.DateTimeField(auto_now_add=True)
     project_run_date = models.DateField(auto_now = False, null=True)
+    #sampleSheet = models.FileField(upload_to = wetlab_config.SAMPLE_SHEET_CREATED_ON_LAB, null = True) # added null for new lab process functionality
+    #pairedEnd  = models.BooleanField(null = True, blank = True)
+    #read_length = models.CharField(max_length = 10)
 
     def __str__(self):
         return '%s' %(self.projectName)
@@ -657,17 +650,111 @@ class GraphicsStats (models.Model):
     def get_folder_graphic(self):
         return '%s' %(self.folderRunGraphic)
 
+
+
+# New objets for handling process requests form lab user
+
+REAGENT_USED_CHOICE = (
+    ('Not used', _("NOT USED")),
+    ('Partial used', _("PARTIAL USED")),
+    ('Completed used', _("COMPLETED USED"))
+    )
+
+class ReagentsLibraryKit (models.Model):
+#    batch_id = models.CharField(max_length= 255)
+    provider = models.CharField(max_length =60)
+    reagentLibraryName = models.CharField(max_length = 100)
+    cuantityUsed = models.CharField(choices = REAGENT_USED_CHOICE, max_length = 50, default = 'Not used')
+    usedDate = models.DateTimeField(null = True)
+    chipLot = models.CharField(max_length = 100)
+#    sampleNumber = models.CharField(max_length = 25)
+#    indexNumber = models.CharField(max_length = 25)
+    expirationDate = models.DateField(auto_now_add=False)
+    generatedat = models.DateTimeField(auto_now_add=True, null=True)
+
+
+class ProtocolInLab (models.Model):
+    protocolName = models.CharField(max_length=255)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__ (self):
+        return '%s' %(self.protocolName)
+
+    def get_name (self):
+        return '%s' %(self.protocolName)
+
+# Q-Fluor ng/ul	Tamaño	nM Quantifluor
+
+class ProtocolParameters (models.Model) :
+    protocol_id = models.ForeignKey(
+                    ProtocolInLab,
+                    on_delete= models.CASCADE)
+    parameterName = models.CharField(max_length=255)
+    parameterDescription = models.CharField(max_length= 400, null=True, blank=True)
+    parameterOrder = models.IntegerField()
+    parameterUsed = models.BooleanField()
+    parameterMaxValue = models.CharField(max_length = 50, null = True, blank = True)
+    parameterMinValue = models.CharField(max_length = 50, null = True, blank = True)
+
+
+    def __str__ (self):
+        return '%s' %(self.parameterName)
+
+
+
+
+class ReferenceGenome (models.Model):
+    refGenomeName = models.CharField(max_length=255)
+    refGenomeSize = models.CharField(max_length=100)
+    refGenomeID = models.CharField(max_length=255)
+
+
+    def __str__ (self):
+        return '%s' %(self.refGenomeName)
+
+
+class StatesForSample (models.Model):
+    sampleStateName = models.CharField(max_length=50)
+
+    def __str__ (self):
+        return '%s' %(self.sampleStateName)
+
 class SamplesInProjectManager (models.Manager):
     def create_sample_project (self, s_project):
-        sample_project = self.create( project_id = s_project['project_id'] , sampleName =  s_project['sampleName'],
+        sample_project = self.create( project_id = s_project['project_id'] , sampleState__StatesForSample = 'Completed',
+                            sampleProtocol = '', sampleType = '', registerUser = '', sampleName =  s_project['sampleName'],
+                            barcodeName =  s_project['barcodeName'], pfClusters =  s_project['pfClusters'],
+                            percentInProject =  s_project['percentInProject'], yieldMb =  s_project['yieldMb'],
+                            qualityQ30 =  s_project['qualityQ30'], meanQuality =  s_project['meanQuality'] )
+    def update_sample_project (self, s_project):
+        sample_project = self.update( project_id = s_project['project_id'] , sampleState__StatesForSample = 'Completed',
                             barcodeName =  s_project['barcodeName'], pfClusters =  s_project['pfClusters'],
                             percentInProject =  s_project['percentInProject'], yieldMb =  s_project['yieldMb'],
                             qualityQ30 =  s_project['qualityQ30'], meanQuality =  s_project['meanQuality'] )
 
+    def create_sample_from_investigator (self, sample_data):
+        sample_from_investigator = self.create( project_id = '', sampleState__StatesForSample = 'Defined',
+                            sampleProtocol__ProtocolInLab = sample_data['protocol'],
+                            sampleType = sample_data['type'] , registerUser__username__exact = sample_data['user'],
+                            sampleName =  sample_data['sample_name'],
+                            barcodeName =  '', pfClusters = '', percentInProject = '',
+                            yieldMb = '', qualityQ30 = '', meanQuality = '')
+
+
 class SamplesInProject (models.Model):
     project_id = models.ForeignKey(
                 Projects,
-                on_delete= models.CASCADE)
+                on_delete= models.CASCADE, null = True)
+    sampleState = models.ForeignKey(
+                StatesForSample,
+                on_delete = models.CASCADE, null = True)
+    sampleProtocol = models.ForeignKey(
+                ProtocolInLab,
+                on_delete = models.CASCADE, null = True)
+    sampleType = models.CharField(max_length=50, null = True)
+    registerUser = models.ForeignKey(
+                User,
+                on_delete=models.CASCADE, null = True)
     sampleName = models.CharField(max_length=255)
     barcodeName = models.CharField(max_length=255)
     pfClusters = models.CharField(max_length=55)
@@ -687,6 +774,9 @@ class SamplesInProject (models.Model):
     def get_sample_name(self):
         return '%s' %(self.sampleName)
 
+    def get_register_user(self):
+        return '%s' %(self.registerUser)
+
     def get_project_name (self) :
         #p_id = self.project_id
         #project_name =Projects.objects.get(projectName=p_id).get_project_name()
@@ -698,3 +788,16 @@ class SamplesInProject (models.Model):
         return '%s' %(self.qualityQ30)
 
     objects = SamplesInProjectManager()
+
+class SampleProtocolParameterData (models.Model):
+    parameter_id = models.ForeignKey(
+                    ProtocolParameters,
+                    on_delete= models.CASCADE)
+    sample_id = models.ForeignKey(
+                SamplesInProject,
+                on_delete= models.CASCADE)
+    parameterValue = models.CharField(max_length=255)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__ (self):
+        return '%s' %(self.parameterValue)
