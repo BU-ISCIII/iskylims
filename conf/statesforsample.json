@@ -1,0 +1,44 @@
+[
+{
+  "model": "iSkyLIMS_wetlab.statesforsample",
+  "pk": 1,
+  "fields": {
+    "sampleStateName": "Defined"
+  }
+},
+{
+  "model": "iSkyLIMS_wetlab.statesforsample",
+  "pk": 2,
+  "fields": {
+    "sampleStateName": "Prepared Library"
+  }
+},
+{
+  "model": "iSkyLIMS_wetlab.statesforsample",
+  "pk": 3,
+  "fields": {
+    "sampleStateName": "Selected Inside Run"
+  }
+},
+{
+  "model": "iSkyLIMS_wetlab.statesforsample",
+  "pk": 4,
+  "fields": {
+    "sampleStateName": "Processing On Sequencer"
+  }
+},
+{
+  "model": "iSkyLIMS_wetlab.statesforsample",
+  "pk": 5,
+  "fields": {
+    "sampleStateName": "Processing Bcl2Fastq"
+  }
+},
+{
+  "model": "iSkyLIMS_wetlab.statesforsample",
+  "pk": 6,
+  "fields": {
+    "sampleStateName": "Completed"
+  }
+}
+]
