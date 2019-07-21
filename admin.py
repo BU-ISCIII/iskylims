@@ -14,6 +14,17 @@ class AppAdmin(admin.ModelAdmin):
     file_link.allow_tags = True
     file_link.short_description = 'File Download'
 
+
+class RunErrorsAdmin (admin.ModelAdmin):
+    list_display = ('errorCode', 'errorText')
+
+
+class RunStatesAdmin (admin.ModelAdmin):
+    list_display = ('runStateName',)
+
+class StatesForSampleAdmin (admin.ModelAdmin):
+    list_display = ('sampleStateName',)
+
 class RunningParametersAdmin(admin.ModelAdmin):
     list_display = ('runName_id','RunID','ExperimentName','RunStartDate')
     #import pdb; pdb.set_trace()
@@ -31,12 +42,7 @@ class BaseSpaceLibraryNameAdmin(admin.ModelAdmin):
 class IndexLibraryKitAdmin(admin.ModelAdmin):
     list_display = ('indexLibraryName', 'version', 'plateExtension', 'adapter1', 'adapter2', 'indexLibraryFile','generatedat')
 
-class RunErrorsAdmin (admin.ModelAdmin):
-    list_display = ('errorCode', 'errorText')
 
-
-class RunStatesAdmin (admin.ModelAdmin):
-    list_display = ('runStateName',)
 
 class SamplesInProjectAdmin (admin.ModelAdmin):
     list_display = ('project_id','sampleName','barcodeName','pfClusters','percentInProject','yieldMb','qualityQ30')
@@ -62,3 +68,4 @@ admin.site.register(SamplesInProject, SamplesInProjectAdmin)
 admin.site.register(ProtocolInLab, ProtocolInLabAdmin)
 admin.site.register(ProtocolParameters, ProtocolParametersAdmin)
 admin.site.register(SampleProtocolParameterData, SampleProtocolParameterDataAdmin)
+admin.site.register(StatesForSample, StatesForSampleAdmin)

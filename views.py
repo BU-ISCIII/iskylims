@@ -3145,9 +3145,12 @@ def record_sample(request):
     #import pdb; pdb.set_trace()
     if request.method == 'POST' and request.POST['action'] == 'recordsample':
         #import pdb; pdb.set_trace()
-        sample_recorded = {}
+
         excel_data = request.POST['table_data']
         user_name = request.user.username
+        sample_recorded = {}
+        not_valid_samples = []
+        valid_samples =[]
         rows_sample_data= get_data_from_excel_form(excel_data, 3)
         for row in rows_sample_data :
             sample_data = {}
@@ -3156,11 +3159,16 @@ def record_sample(request):
                 sample_data['protocol'] = row[1]
                 sample_data['type'] = row[2]
                 sample_data['user'] = user_name
-
                 new_sample = SamplesInProject.objects.create_sample_from_investigator(sample_data)
+                valid_samples.append(new_sample.get_sample_definition_information().split(';'))
+            else: # get the invalid sample to displays information to user
+                invalid_sample = SamplesInProject.objects.get(sampleName__exact = row[0], sampleState__sampleStateName = 'Defined')
+                not_valid_samples.append(invalid_sample.get_sample_definition_information().split(';'))
 
-
-        import pdb; pdb.set_trace()
+        sample_recorded['valid_samples'] = valid_samples
+        sample_recorded['not_valid_samples'] = not_valid_samples
+        sample_recorded['heading'] = ['Sample name', 'Protocol', 'Type', 'Registerd by', 'Registered Date']
+        #import pdb; pdb.set_trace()
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
     else:
 

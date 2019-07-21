@@ -58,76 +58,88 @@
                         </div>
                         <!-- End Logo -->
 
-                    <!-- Collect the nav links, forms, and other content for toggling -->
-                    <div class="collapse navbar-collapse nav-collapse">
-                        <div class="menu-container">
-                            <ul class="nav navbar-nav navbar-nav-right">
-                                <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/wetlab/">Home</a></li>
-				{% if user.is_authenticated %}
-				<li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Run Preparation<span class="caret"></span></a>
-				  <ul class="dropdown-menu">
-					{% if request.user|has_group:"WetlabManager" %}
-					    <li><a href="/wetlab/createNextSeqRun">Create new NextSeq Run</a></li>
-					{% endif %}
-					<li><a href="/wetlab/AddBasespaceLibrary">Add BasseSpace Library</a></li>
-					<li><a href="/wetlab/AddIndexLibrary">Add Index Library</a></li>
+                        <!-- Collect the nav links, forms, and other content for toggling -->
+                        <div class="collapse navbar-collapse nav-collapse">
+                            <div class="menu-container">
+                                <ul class="nav navbar-nav navbar-nav-right">
+                                    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/wetlab/">Home</a></li>
+                                    {% if user.is_authenticated %}
+                        				<li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Library Preparation<span class="caret"></span></a>
+                        				    <ul class="dropdown-menu">
+                                                <li><a href="/wetlab/AddBasespaceLibrary">Add Commercial Library</a></li>
 
-				  </ul>
-				</li>
-				{% else %}
-				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">Run Preparation</a></li>
-				{% endif%}
-				{% if user.is_authenticated %}
-                                <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Search<span class="caret"></span></a>
-				    <ul class="dropdown-menu">
-				    {% if request.user|has_group:"WetlabManager" %}
-					<li><a href="/wetlab/latest_run">Get Latest Run</a></li>
-					<li><a href="/wetlab/incompletedRuns">Get incompleted Runs</a></li>
-				    {% endif %}
-					<li><a href="/wetlab/searchRun">Search by RUN</a></li>
-					<li><a href="/wetlab/searchProject">Search by Project</a></li>
-					<li><a href="/wetlab/searchSample">Search by Sample</a></li>
-					<li><a href="/wetlab/searchIndexLibrary">Search by Index Library</a></li>
-				  </ul>
-				</li>
-				{% else %}
-				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">Search</a></li>
-				{% endif%}
-				{% if user.is_authenticated %}
-                                <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#"> Statistics<span class="caret"></span></a>
-				    <ul class="dropdown-menu">
-				    <li><a href="/wetlab/StatsPerResearcher/">Projects per Investigator </a></li>
-				    {% if request.user|has_group:"WetlabManager" %}
-				    <li><a href="/wetlab/StatsPerTime/">Period of time</a></li>
-				    {% endif %}
-				    <li><a href="/wetlab/StatsExperiment">Experiment Type</a></li>
-				    <li><a href="/wetlab/StatsLibrary">Library Kit Qualitty</a></li>
-				  </ul>
-				</li>
-				{% else %}
-				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab"> Statistics</a></li>
-				{% endif%}
-				{% if user.is_authenticated %}
-				    {% if request.user|has_group:"WetlabManager" %}
-				<li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Reports<span class="caret"></span></a>
-				    <ul class="dropdown-menu">
-				    <li><a href="/wetlab/AnnualReport">Annual Reports</a></li>
-				    <li><a href="/wetlab/QuarterReport">Quarter Reports</a></li>
-				    <li><a href="/wetlab/MonthlyReport">Monthly Reports</a></li>
-				    </ul>
-				    {% endif %}
-				</li>
-				{% else %}
-				    <!--<li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">Reports</a></li>-->
-				{% endif%}
-                                <!--<li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#contact">Contact</a></li>-->
-                            </ul>
+                              					<li><a href="/wetlab/AddIndexLibrary">Add Index Library</a></li>
+                                                <li><a href="/wetlab/recordSample">Record Samples</a></li>
+                                                <li><a href="/wetlab/AddBasespaceLibrary">Set QC values to Sample</a></li>
+                                            </ul>
+                          				</li>
+      				                {% else %}
+      				                    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">Library Preparation</a></li>
+      				                {% endif%}
+                    				{% if user.is_authenticated %}
+                        				<li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Run Preparation<span class="caret"></span></a>
+                        				    <ul class="dropdown-menu">
+                            					{% if request.user|has_group:"WetlabManager" %}
+                                                    <li><a href="/wetlab/AddBasespaceLibrary">Add BasseSpace Library</a></li>
+                                                    <li><a href="/wetlab/createNextSeqRun">Select Samples for Run</a></li>
+                            					    <li><a href="/wetlab/createNextSeqRun">Create new NextSeq Run</a></li>
+                        					    {% endif %}
+                				            </ul>
+                    				    </li>
+                    				{% else %}
+                    				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">Run Preparation</a></li>
+                    				{% endif%}
+                    				{% if user.is_authenticated %}
+                                        <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Search<span class="caret"></span></a>
+                        				    <ul class="dropdown-menu">
+                            				    {% if request.user|has_group:"WetlabManager" %}
+                                					<li><a href="/wetlab/latest_run">Get Latest Run</a></li>
+                                					<li><a href="/wetlab/incompletedRuns">Get incompleted Runs</a></li>
+                            				    {% endif %}
+                            					<li><a href="/wetlab/searchRun">Search by RUN</a></li>
+                            					<li><a href="/wetlab/searchProject">Search by Project</a></li>
+                            					<li><a href="/wetlab/searchSample">Search by Sample</a></li>
+                            					<li><a href="/wetlab/searchIndexLibrary">Search by Index Library</a></li>
+                        				    </ul>
+                    				</li>
+                    				{% else %}
+                    				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">Search</a></li>
+                    				{% endif%}
+                    				{% if user.is_authenticated %}
+                                        <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#"> Statistics<span class="caret"></span></a>
+                    				        <ul class="dropdown-menu">
+                            				    <li><a href="/wetlab/StatsPerResearcher/">Projects per Investigator </a></li>
+                            				        {% if request.user|has_group:"WetlabManager" %}
+                                				        <li><a href="/wetlab/StatsPerTime/">Period of time</a></li>
+                                				    {% endif %}
+                            				    <li><a href="/wetlab/StatsExperiment">Experiment Type</a></li>
+                            				    <li><a href="/wetlab/StatsLibrary">Library Kit Qualitty</a></li>
+                        				  </ul>
+                    				</li>
+                    				{% else %}
+                    				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab"> Statistics</a></li>
+                    				{% endif%}
+                    				{% if user.is_authenticated %}
+                    				    {% if request.user|has_group:"WetlabManager" %}
+                            				<li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Reports<span class="caret"></span></a>
+                            				    <ul class="dropdown-menu">
+                            				    <li><a href="/wetlab/AnnualReport">Annual Reports</a></li>
+                            				    <li><a href="/wetlab/QuarterReport">Quarter Reports</a></li>
+                            				    <li><a href="/wetlab/MonthlyReport">Monthly Reports</a></li>
+                            				    </ul>
+                            				    {% endif %}
+                            				</li>
+                    				    {% else %}
+                    				    <!--<li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">Reports</a></li>-->
+                    				{% endif%}
+                                    <!--<li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#contact">Contact</a></li>-->
+                                </ul>
 
-                        </div> <!-- menu- container -->
-                    </div> <!--  class Collapse navbar -->
+                            </div> <!-- menu- container -->
+                        </div> <!--  class Collapse navbar -->
                     <!-- End Navbar Collapse -->
-                </div> <!-- class menu-container -->
-              </div> <!-- class container -->
+                    </div> <!-- class menu-container -->
+                </div> <!-- class container -->
             </nav>
             <!-- Navbar -->
         </header>

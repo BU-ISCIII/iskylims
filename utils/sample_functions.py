@@ -41,7 +41,7 @@ def get_protocols_name ():
 
 
 def sample_already_defined(sample_name):
-    if SamplesInProject.objects.filter(sampleName__exact = sample_name, sampleState__StatesForSample = 'Defined').exists():
+    if SamplesInProject.objects.filter(sampleName__exact = sample_name, sampleState__sampleStateName = 'Defined').exists():
         return True
     else:
         return False

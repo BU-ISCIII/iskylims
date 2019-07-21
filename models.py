@@ -721,24 +721,27 @@ class StatesForSample (models.Model):
 
 class SamplesInProjectManager (models.Manager):
     def create_sample_project (self, s_project):
-        sample_project = self.create( project_id = s_project['project_id'] , sampleState__StatesForSample = 'Completed',
-                            sampleProtocol = '', sampleType = '', registerUser = '', sampleName =  s_project['sampleName'],
+        sample_project = self.create( project_id = s_project['project_id'] ,
+                            sampleState = StatesForSample.objects.get(sampleStateName__exact = 'Completed'),
+                            sampleProtocol = None, sampleType = '', registerUser = None, sampleName =  s_project['sampleName'],
                             barcodeName =  s_project['barcodeName'], pfClusters =  s_project['pfClusters'],
                             percentInProject =  s_project['percentInProject'], yieldMb =  s_project['yieldMb'],
                             qualityQ30 =  s_project['qualityQ30'], meanQuality =  s_project['meanQuality'] )
     def update_sample_project (self, s_project):
-        sample_project = self.update( project_id = s_project['project_id'] , sampleState__StatesForSample = 'Completed',
+        sample_project = self.update( project_id = s_project['project_id'] ,
+                            sampleState = StatesForSample.objects.get(sampleStateName__exact = 'Completed'),
                             barcodeName =  s_project['barcodeName'], pfClusters =  s_project['pfClusters'],
                             percentInProject =  s_project['percentInProject'], yieldMb =  s_project['yieldMb'],
                             qualityQ30 =  s_project['qualityQ30'], meanQuality =  s_project['meanQuality'] )
 
     def create_sample_from_investigator (self, sample_data):
-        sample_from_investigator = self.create( project_id = '', sampleState__StatesForSample = 'Defined',
-                            sampleProtocol__ProtocolInLab = sample_data['protocol'],
-                            sampleType = sample_data['type'] , registerUser__username__exact = sample_data['user'],
+        new_sample_from_investigator = self.create( project_id = None, sampleState = StatesForSample.objects.get(sampleStateName__exact = 'Defined'),
+                            sampleProtocol = ProtocolInLab.objects.get( protocolName__exact = sample_data['protocol']),
+                            sampleType = sample_data['type'] , registerUser = User.objects.get(username__exact = sample_data['user']),
                             sampleName =  sample_data['sample_name'],
                             barcodeName =  '', pfClusters = '', percentInProject = '',
                             yieldMb = '', qualityQ30 = '', meanQuality = '')
+        return new_sample_from_investigator
 
 
 class SamplesInProject (models.Model):
@@ -771,11 +774,21 @@ class SamplesInProject (models.Model):
         return '%s;%s;%s;%s;%s;%s;%s' %(self.sampleName , self.barcodeName,
                 self.pfClusters ,self.percentInProject, self.yieldMb ,
                 self.qualityQ30 , self.meanQuality )
+
+    def get_sample_definition_information (self):
+        recordeddate=self.generated_at.strftime("%B %d, %Y")
+        return '%s;%s;%s;%s;%s' %(self.sampleName, self.sampleProtocol, self.sampleType,
+                self.registerUser, recordeddate)
+
+
     def get_sample_name(self):
         return '%s' %(self.sampleName)
 
     def get_register_user(self):
-        return '%s' %(self.registerUser)
+        if self.registerUser is None:
+            return 'Not avilable'
+        else:
+            return '%s' %(self.registerUser)
 
     def get_project_name (self) :
         #p_id = self.project_id
