@@ -3141,48 +3141,145 @@ def configuration_test (request):
         return render(request,'iSkyLIMS_wetlab/ConfigurationTest.html')
 
 @login_required
+def create_protocol (request):
+    # get the list of defined protocols
+    defined_protocols = []
+    if  ProtocolInLab.objects.all().exists():
+        protocol_list = ProtocolInLab.objects.all()
+        for protocol in protocol_list :
+            defined_protocols.append(protocol.get_name())
+
+    if request.method == 'POST' and request.POST['action'] == 'addNewProtocol':
+        import pdb; pdb.set_trace()
+        new_protocol = request.POST['newProtocolName']
+        if ProtocolInLab.objects.filter(protocolName__exact = new_protocol).exists():
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',{'content':['Protocol Name ', new_protocol,
+                            'Already exists.']})
+        else:
+            new_protocol_object = ProtocolInLab(protocolName = new_protocol)
+            new_protocol_object.save()
+            return render(request, 'iSkyLIMS_wetlab/createProtocol.html',{'defined_protocols': defined_protocols, 'new_defined_protocol': new_protocol})
+    return render(request, 'iSkyLIMS_wetlab/createProtocol.html',{'defined_protocols': defined_protocols})
+
+
+def define_protocol_parameters (request):
+
+    return
+
+
+@login_required
 def record_sample(request):
+    '''
+    Description:
+        An Excel table is showed with the cells to fill in.
+        Sample information is checked and returned back to user in case samples
+        duplication for confirmation of sample repetition.
+        Info is saved to database and
+    Functions:
+        get_data_from_excel_form # located at utils.sample_functions
+        get_protocols_name  # located at utils.sample_functions
+        get_species         # located at utils.sample_functions
+        get_laboratory      # located at utils.sample_functions
+        get_sample_type     # located at utils.sample_functions
+
+
+    Variables:
+        laboratories # list containing all laboratory names
+    Return:
+        laboratories.
+    '''
+
+
+
     #import pdb; pdb.set_trace()
     if request.method == 'POST' and request.POST['action'] == 'recordsample':
-        #import pdb; pdb.set_trace()
 
         excel_data = request.POST['table_data']
-        user_name = request.user.username
+
+        heading_in_excel = ['patientCodeName', 'laboratory', 'labSampleName', 'extractionDate',
+                        'sampleName', 'sampleType', 'species', 'nucleicAccid', 'sampleProtocol']
+
         sample_recorded = {}
-        not_valid_samples = []
+        not_valid_samples_same_user = []
+        not_valid_samples_other_user = []
         valid_samples =[]
-        rows_sample_data= get_data_from_excel_form(excel_data, 3)
+        rows_sample_data= get_data_from_excel_form(excel_data, 9)
+        sample_recorded['allow_continue_DNA'] = True
+        samples_continue_DNA = []
         for row in rows_sample_data :
             sample_data = {}
-            if not sample_already_defined (row[0]):
-                sample_data['sample_name'] = row[0]
-                sample_data['protocol'] = row[1]
-                sample_data['type'] = row[2]
-                sample_data['user'] = user_name
+            sample_name = row[heading_in_excel.index('sampleName')]
+            if sample_name == '' :
+                continue
+            if not sample_already_defined (row[heading_in_excel.index('sampleName')]):
+                for i in range(len(heading_in_excel)) :
+                    sample_data[heading_in_excel[i]] = row[i]
+
+                sample_data['user'] = request.user.username
+                #import pdb; pdb.set_trace()
+                lab_code = Laboratory.objects.get(labName__exact = row[heading_in_excel.index('laboratory')] ).get_lab_code()
+                sample_data['sample_id'] = str(lab_code + '_' + sample_name)
+                if not SamplesInProject.objects.exclude(uniqueSampleID__isnull = True).exists():
+                    sample_data['new_unique_value'] = 'AAA-0001'
+                else:
+                    last_unique_value = SamplesInProject.objects.exclude(uniqueSampleID__isnull = True).last().uniqueSampleID
+                    sample_data['new_unique_value'] = increase_unique_value(last_unique_value)
                 new_sample = SamplesInProject.objects.create_sample_from_investigator(sample_data)
                 valid_samples.append(new_sample.get_sample_definition_information().split(';'))
+                samples_continue_DNA.append(new_sample.get_sample_id())
+
             else: # get the invalid sample to displays information to user
-                invalid_sample = SamplesInProject.objects.get(sampleName__exact = row[0], sampleState__sampleStateName = 'Defined')
-                not_valid_samples.append(invalid_sample.get_sample_definition_information().split(';'))
+                sample_recorded['allow_continue_DNA'] = False
+                invalid_sample = SamplesInProject.objects.get(sampleName__exact = sample_name)
+                if request.user.username == invalid_sample.get_register_user() :
+                    not_valid_samples_same_user.append(invalid_sample.get_sample_definition_information().split(';'))
+                else:
+                    not_valid_samples_other_user.append([invalid_sample.get_sample_name(), invalid_sample.get_registered_sample() ])
 
         sample_recorded['valid_samples'] = valid_samples
-        sample_recorded['not_valid_samples'] = not_valid_samples
-        sample_recorded['heading'] = ['Sample name', 'Protocol', 'Type', 'Registerd by', 'Registered Date']
+        sample_recorded['not_valid_samples_same_user'] = not_valid_samples_same_user
+        sample_recorded['not_valid_samples_other_user'] = not_valid_samples_other_user
+        sample_recorded['heading'] = ['Sample Recorded Date', 'Sample Code ID','Sample Type', 'Nucleic Acid','Protocol']
+        sample_recorded['heading_same_user'] = ['Sample Recorded Date', 'Sample Code ID', 'Sample Type', 'Nucleic Acid',
+                        'Protocol', 'New DNA', 'New Library', 'Repetition']
+        sample_recorded['heading_other_user'] = [ 'Sample Name', 'Registered Sample Date']
         #import pdb; pdb.set_trace()
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
     else:
-
         sample_information = {}
+        sample_information['heading'] = ['Patient Code Name', 'Laboratory', 'Laboratory Sample', 'Extraction date',
+                        'Sample Name', 'Type of Sample', 'Species', 'Nucleo Acid', 'Library Protocol']
         # check if clinic application is installed
         if 'iSkyLIMS_clinicXXX' in settings.INSTALLED_APPS:
             # get the samples from
-            pass
+            sample_information['data'] =''
         else:
             # get the already defined protols
             sample_information['protocols'] = get_protocols_name()
-
-
+            sample_information['species'] = get_species()
+            sample_information['laboratory'] = get_laboratory()
+            sample_information['sampleType'] = get_sample_type()
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
+
+@login_required
+def add_qc_to_sample(request):
+    # get the list of samples that require to include  libarary Information
+    if not SamplesInProject.objects.filter(sampleState__sampleStateName__exact = 'Defined'). exists():
+        return render(request, 'iSkyLIMS_wetlab/add_qc_to_sample.html',{'NoSamples':'There is no samples available'})
+    else:
+        s_list = []
+        display_list = {}
+
+        list_of_samples = SamplesInProject.objects.filter(sampleState__sampleStateName__exact = 'Defined')
+        for sample in list_of_samples :
+            s_info = sample.get_sample_definition_information().split(';')
+            s_info.append(sample.get_sample_id())
+            s_list.append(s_info)
+        display_list['list_of_samples'] = s_list
+        display_list['heading'] = ['Sample name', 'Protocol', 'Type', 'Registerd by', 'Registered Date']
+        #import pdb; pdb.set_trace()
+        return render(request, 'iSkyLIMS_wetlab/add_qc_to_sample.html',{'DisplayList': display_list})
+    return render(request, 'iSkyLIMS_wetlab/add_qc_to_sample.html',{})
 
 
 @login_required

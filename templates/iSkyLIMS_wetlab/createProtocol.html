@@ -1,0 +1,67 @@
+{% extends 'iSkyLIMS_wetlab/base.html' %}
+{% load static %}_
+{% block content %}
+{% csrf_token %}
+<BR>
+<div class="row row-space-2 margin-b-4">
+    {% if new_defined_protocol %}
+
+        <div class="col-sm-6" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>New protocol has been added</h3> </div>
+                <div class="panel-body">
+                    <p>New protocol <strong>{{ new_defined_protocol }}</strong> has been added</p>
+
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-6  -->
+
+    {% else %}
+        <div class="col-sm-6" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Form to add a new Protocol</h3> </div>
+                <div class="panel-body">
+                    <form method="post" enctype="multipart/form-data" name="addNewProtocol" id="addNewProtocol" class="form-horizontal">
+                        {% csrf_token %}
+                        <div class="form-group required">
+                            <input type="hidden" name="action" value="addNewProtocol"/>
+                            <label class="col-sm-4 control-label">Define new Protocol name</label>
+                            <div class="col-sm-8"><input class="form-control" required = "required" type="text"  name="newProtocolName"size="80"></div>
+                            <BR> <BR> <BR>
+                        </div>
+                        <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
+                    </form>
+                </div>  <!--  end of panel body  -->
+                <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  -->
+
+    {% endif %}
+
+        <div class="col-sm-5 col-sm-offset-1" >
+            <BR> <BR> <BR>
+        <div class="panel panel-default">
+          <div class="panel-heading"><h3>Protocols already defined</h3></div>
+          <div class="panel-body">
+          {% if defined_protocols %}
+                <table class="table table-hover">
+                   <thead>
+                      <tr>
+                        <th>Protocol Name</th>
+                      </tr>
+                   </thead>
+                   <tbody>
+                    {% for  value in defined_protocols %}
+                        <tr>
+                       <td>{{ value }}</td>
+                    {% endfor %}
+                    </tbody>
+                </table>
+          {% else %}
+                No Protocols  have been defined so far
+          {% endif %}
+          </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        </div> <!--// end col-sm-4  -->
+    </div> <!--// end row -->
+{% endblock %}

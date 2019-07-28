@@ -255,8 +255,8 @@ def get_experiment_name_from_file (l_run_parameter) :
 def get_log_file_name(config_log_file) :
     '''
     Description:
-        The function will get the log file name from the configuration 
-        file and it will return the fullpath log file name 
+        The function will get the log file name from the configuration
+        file and it will return the fullpath log file name
     Input:
         config_log_file  # configuration log file
     Variables:
@@ -323,17 +323,18 @@ def handling_errors_in_run (experiment_name, error_code):
     logger.debug ('End function handling_errors_in_run')
     return True
 
+
 def is_wetlab_manager (request):
     '''
     Description:
-        The function will check if the logged user belongs to wetlab 
+        The function will check if the logged user belongs to wetlab
         manager group
     Input:
         request # contains the session information
     Variables:
         groups # wetlab manager object group
     Return:
-        Return True if the user belongs to Wetlab Manager, False if not 
+        Return True if the user belongs to Wetlab Manager, False if not
     '''
     try:
         groups = Group.objects.get(name = wetlab_config.WETLAB_MANAGER)
@@ -341,7 +342,7 @@ def is_wetlab_manager (request):
             return False
     except:
         return False
-    
+
     return True
 
 def logging_errors(string_text, showing_traceback , print_on_screen ):
@@ -615,6 +616,3 @@ def send_error_email_to_user ( subject, body_message, from_user, to_user):
     Input:
     '''
     send_mail (subject, body_message, from_user, to_user)
-
-
-

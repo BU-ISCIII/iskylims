@@ -43,18 +43,26 @@ class IndexLibraryKitAdmin(admin.ModelAdmin):
     list_display = ('indexLibraryName', 'version', 'plateExtension', 'adapter1', 'adapter2', 'indexLibraryFile','generatedat')
 
 
-
 class SamplesInProjectAdmin (admin.ModelAdmin):
     list_display = ('project_id','sampleName','barcodeName','pfClusters','percentInProject','yieldMb','qualityQ30')
 
 class ProtocolInLabAdmin (admin.ModelAdmin):
     list_display = ('protocolName',)
 
-class ProtocolParametersAdmin (admin.ModelAdmin):
+class LaboratoryAdmin (admin.ModelAdmin):
+    list_display = ['labName' , 'labCoding' , 'labLocation' ]
+
+class LibraryProtocolParametersAdmin (admin.ModelAdmin):
     list_display = ('parameterName', 'parameterDescription', 'parameterOrder','parameterUsed','parameterMaxValue', 'parameterMinValue')
 
-class SampleProtocolParameterDataAdmin(admin.ModelAdmin):
-    list_display = ('parameter_id', 'sample_id', 'parameterValue')
+class NAProtParamDataAdmin(admin.ModelAdmin):
+    list_display = ('NA_Parameter_id', 'sample_id', 'parameterValue')
+
+class SampleTypeAdmin(admin.ModelAdmin):
+    list_display = ('sampleType',)
+
+class SpeciesAdmin (admin.ModelAdmin):
+    list_display= ['spicesName', 'refGenomeName', 'refGenomeSize' , 'refGenomeID' ]
 
 
 admin.site.register(RunningParameters , RunningParametersAdmin)
@@ -66,6 +74,10 @@ admin.site.register(RunErrors, RunErrorsAdmin)
 admin.site.register(RunStates, RunStatesAdmin)
 admin.site.register(SamplesInProject, SamplesInProjectAdmin)
 admin.site.register(ProtocolInLab, ProtocolInLabAdmin)
-admin.site.register(ProtocolParameters, ProtocolParametersAdmin)
-admin.site.register(SampleProtocolParameterData, SampleProtocolParameterDataAdmin)
+
+admin.site.register(Laboratory, LaboratoryAdmin)
+admin.site.register(LibraryProtocolParameters, LibraryProtocolParametersAdmin)
+admin.site.register(NAProtParamData, NAProtParamDataAdmin)
+admin.site.register(SampleType, SampleTypeAdmin)
+admin.site.register(Species, SpeciesAdmin)
 admin.site.register(StatesForSample, StatesForSampleAdmin)

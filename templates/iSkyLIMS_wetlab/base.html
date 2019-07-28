@@ -66,11 +66,11 @@
                                     {% if user.is_authenticated %}
                         				<li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Library Preparation<span class="caret"></span></a>
                         				    <ul class="dropdown-menu">
-                                                <li><a href="/wetlab/AddBasespaceLibrary">Add Commercial Library</a></li>
+                                                <li><a href="/wetlab/AddCommercialKit">Add Commercial Kit</a></li>
 
                               					<li><a href="/wetlab/AddIndexLibrary">Add Index Library</a></li>
                                                 <li><a href="/wetlab/recordSample">Record Samples</a></li>
-                                                <li><a href="/wetlab/AddBasespaceLibrary">Set QC values to Sample</a></li>
+                                                <li><a href="/wetlab/AddQCtoSample">Add QC values to Sample</a></li>
                                             </ul>
                           				</li>
       				                {% else %}
@@ -80,6 +80,8 @@
                         				<li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Run Preparation<span class="caret"></span></a>
                         				    <ul class="dropdown-menu">
                             					{% if request.user|has_group:"WetlabManager" %}
+                                                    <li><a href="/wetlab/createProtocol">Create New Protocol</a></li>
+                                                    <li><a href="/wetlab/defineProtocolParameters">Define Protocol Parameters</a></li>
                                                     <li><a href="/wetlab/AddBasespaceLibrary">Add BasseSpace Library</a></li>
                                                     <li><a href="/wetlab/createNextSeqRun">Select Samples for Run</a></li>
                             					    <li><a href="/wetlab/createNextSeqRun">Create new NextSeq Run</a></li>
@@ -165,7 +167,7 @@
         </div> <!--// end container -->
         </div> <!--// end bg-color -->
 
-{% include "iSkyLIMS_home/footer.html" %}
+{% include "iSkyLIMS_core/footer.html" %}
 
         <!-- Back To Top -->
         <a href="javascript:void(0);" class="js-back-to-top back-to-top">Top</a>

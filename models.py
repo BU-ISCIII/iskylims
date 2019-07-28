@@ -660,8 +660,12 @@ REAGENT_USED_CHOICE = (
     ('Completed used', _("COMPLETED USED"))
     )
 
-class ReagentsLibraryKit (models.Model):
+
+
+
+class ReagentsCommercialKits (models.Model):
 #    batch_id = models.CharField(max_length= 255)
+    name = models.CharField(max_length =60)
     provider = models.CharField(max_length =60)
     reagentLibraryName = models.CharField(max_length = 100)
     cuantityUsed = models.CharField(choices = REAGENT_USED_CHOICE, max_length = 50, default = 'Not used')
@@ -671,6 +675,21 @@ class ReagentsLibraryKit (models.Model):
 #    indexNumber = models.CharField(max_length = 25)
     expirationDate = models.DateField(auto_now_add=False)
     generatedat = models.DateTimeField(auto_now_add=True, null=True)
+
+    def __str__ (self):
+        return '%s' %(self.name)
+
+class NucleotidesComercialKits (models.Model):
+    name = models.CharField(max_length =60)
+    provider = models.CharField(max_length =60)
+    naType = models.CharField(max_length = 10)
+    chipLot = models.CharField(max_length = 100)
+    usedDate = models.DateTimeField(null = True)
+    expirationDate = models.DateField(auto_now_add=False)
+    generatedat = models.DateTimeField(auto_now_add=True, null=True)
+
+    def __str__ (self):
+        return '%s' %(self.name)
 
 
 class ProtocolInLab (models.Model):
@@ -685,7 +704,23 @@ class ProtocolInLab (models.Model):
 
 # Q-Fluor ng/ul	Tamaño	nM Quantifluor
 
-class ProtocolParameters (models.Model) :
+class NAProtocolParameters (models.Model) :
+    protocol_id = models.ForeignKey(
+                    ProtocolInLab,
+                    on_delete= models.CASCADE)
+    parameterName = models.CharField(max_length=255)
+    parameterDescription = models.CharField(max_length= 400, null=True, blank=True)
+    parameterOrder = models.IntegerField()
+    parameterUsed = models.BooleanField()
+    parameterSearchable = models.BooleanField()
+    parameterMaxValue = models.CharField(max_length = 50, null = True, blank = True)
+    parameterMinValue = models.CharField(max_length = 50, null = True, blank = True)
+
+
+    def __str__ (self):
+        return '%s' %(self.parameterName)
+
+class LibraryProtocolParameters (models.Model) :
     protocol_id = models.ForeignKey(
                     ProtocolInLab,
                     on_delete= models.CASCADE)
@@ -703,14 +738,37 @@ class ProtocolParameters (models.Model) :
 
 
 
-class ReferenceGenome (models.Model):
+class Laboratory (models.Model):
+    labName = models.CharField(max_length=50)
+    labCoding = models.CharField(max_length=10)
+    labLocation = models.CharField(max_length=255)
+
+    def __str__ (self):
+        return '%s' %(self.labName)
+
+    def get_name(self):
+        return '%s' %(self.labName)
+
+    def get_lab_code (self):
+        return '%s' %(self.labCoding)
+
+class Species (models.Model):
+    spicesName = models.CharField(max_length=50)
     refGenomeName = models.CharField(max_length=255)
     refGenomeSize = models.CharField(max_length=100)
     refGenomeID = models.CharField(max_length=255)
 
-
     def __str__ (self):
-        return '%s' %(self.refGenomeName)
+        return '%s' %(self.spicesName)
+
+    def get_name(self):
+        return '%s' %(self.spicesName)
+
+class SampleType (models.Model):
+    sampleType = models.CharField(max_length=50)
+
+    def get_name(self):
+        return '%s' %(self.sampleType)
 
 
 class StatesForSample (models.Model):
@@ -734,15 +792,21 @@ class SamplesInProjectManager (models.Manager):
                             percentInProject =  s_project['percentInProject'], yieldMb =  s_project['yieldMb'],
                             qualityQ30 =  s_project['qualityQ30'], meanQuality =  s_project['meanQuality'] )
 
+
+
     def create_sample_from_investigator (self, sample_data):
         new_sample_from_investigator = self.create( project_id = None, sampleState = StatesForSample.objects.get(sampleStateName__exact = 'Defined'),
-                            sampleProtocol = ProtocolInLab.objects.get( protocolName__exact = sample_data['protocol']),
-                            sampleType = sample_data['type'] , registerUser = User.objects.get(username__exact = sample_data['user']),
-                            sampleName =  sample_data['sample_name'],
+                            sampleProtocol = ProtocolInLab.objects.get( protocolName__exact = sample_data['sampleProtocol']),
+                            patientCodeName = sample_data['patientCodeName'], 
+                            sampleType = SampleType.objects.get(sampleType__exact = sample_data['sampleType']) ,
+                            registerUser = User.objects.get(username__exact = sample_data['user']),
+                            sampleCodeID = sample_data['sample_id'] , sampleName =  sample_data['sampleName'],
+                            uniqueSampleID = sample_data['new_unique_value'], nucleicAccid = sample_data['nucleicAccid'],
+                            species = Species.objects.get(spicesName__exact = sample_data['species']),
+                            sampleExtractionDate = datetime.datetime.strptime(sample_data['extractionDate'],'%Y-%m-%d %H:%M:%S'),
                             barcodeName =  '', pfClusters = '', percentInProject = '',
                             yieldMb = '', qualityQ30 = '', meanQuality = '')
         return new_sample_from_investigator
-
 
 class SamplesInProject (models.Model):
     project_id = models.ForeignKey(
@@ -754,11 +818,25 @@ class SamplesInProject (models.Model):
     sampleProtocol = models.ForeignKey(
                 ProtocolInLab,
                 on_delete = models.CASCADE, null = True)
-    sampleType = models.CharField(max_length=50, null = True)
+    laboratory = models.ForeignKey(
+                Laboratory,
+                on_delete = models.CASCADE, null = True)
+    sampleType = models.ForeignKey(
+                SampleType,
+                on_delete = models.CASCADE, null = True)
     registerUser = models.ForeignKey(
                 User,
                 on_delete=models.CASCADE, null = True)
-    sampleName = models.CharField(max_length=255)
+    species = models.ForeignKey(
+                Species,
+                on_delete=models.CASCADE, null = True)
+    sampleExtractionDate = models.DateTimeField(auto_now_add = False, null =True)
+    uniqueSampleID = models.CharField(max_length=8, null = True)
+    patientCodeName = models.CharField(max_length=255, null = True)
+    sampleCodeID = models.CharField(max_length=60, null = True)
+    sampleName = models.CharField(max_length=50)
+    nucleicAccid =models.CharField(max_length = 10, null = True)
+    # Information collected from demultiplexing data
     barcodeName = models.CharField(max_length=255)
     pfClusters = models.CharField(max_length=55)
     percentInProject = models.CharField(max_length=25)
@@ -776,10 +854,17 @@ class SamplesInProject (models.Model):
                 self.qualityQ30 , self.meanQuality )
 
     def get_sample_definition_information (self):
-        recordeddate=self.generated_at.strftime("%B %d, %Y")
-        return '%s;%s;%s;%s;%s' %(self.sampleName, self.sampleProtocol, self.sampleType,
-                self.registerUser, recordeddate)
+        recordeddate=self.sampleExtractionDate.strftime("%B %d, %Y")
+        return '%s;%s;%s;%s;%s' %(recordeddate, self.sampleCodeID, self.sampleType.sampleType,
+                self.nucleicAccid, self.sampleProtocol.protocolName,)
 
+    def get_full_definition_info (self):
+        recordeddate=self.sampleExtractionDate.strftime("%B %d, %Y")
+
+        return '%s;%s;%s;%s;%s' %(self.registerUser)
+
+    def get_sample_id(self):
+        return '%s' %(self.id)
 
     def get_sample_name(self):
         return '%s' %(self.sampleName)
@@ -789,6 +874,10 @@ class SamplesInProject (models.Model):
             return 'Not avilable'
         else:
             return '%s' %(self.registerUser)
+
+    def get_registered_sample (self):
+        recordeddate=self.generated_at.strftime("%B %d, %Y")
+        return '%s' %(recordeddate)
 
     def get_project_name (self) :
         #p_id = self.project_id
@@ -802,9 +891,23 @@ class SamplesInProject (models.Model):
 
     objects = SamplesInProjectManager()
 
-class SampleProtocolParameterData (models.Model):
-    parameter_id = models.ForeignKey(
-                    ProtocolParameters,
+class LibProtParamData (models.Model):
+    libParameter_id = models.ForeignKey(
+                    LibraryProtocolParameters,
+                    on_delete= models.CASCADE)
+    sample_id = models.ForeignKey(
+                SamplesInProject,
+                on_delete= models.CASCADE)
+    parameterValue = models.CharField(max_length=255)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__ (self):
+        return '%s' %(self.parameterValue)
+
+
+class NAProtParamData (models.Model):
+    NA_Parameter_id = models.ForeignKey(
+                    NAProtocolParameters,
                     on_delete= models.CASCADE)
     sample_id = models.ForeignKey(
                 SamplesInProject,
