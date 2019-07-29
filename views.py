@@ -3142,6 +3142,16 @@ def configuration_test (request):
 
 @login_required
 def create_protocol (request):
+    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+    if request.user.is_authenticated:
+        if not is_wetlab_manager(request):
+            return render (
+                request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':['You do not have enough privileges to see this page ',
+                            'Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
     # get the list of defined protocols
     defined_protocols = []
     if  ProtocolInLab.objects.all().exists():
@@ -3150,7 +3160,6 @@ def create_protocol (request):
             defined_protocols.append(protocol.get_name())
 
     if request.method == 'POST' and request.POST['action'] == 'addNewProtocol':
-        import pdb; pdb.set_trace()
         new_protocol = request.POST['newProtocolName']
         if ProtocolInLab.objects.filter(protocolName__exact = new_protocol).exists():
             return render ( request,'iSkyLIMS_wetlab/error_page.html',{'content':['Protocol Name ', new_protocol,
@@ -3158,13 +3167,44 @@ def create_protocol (request):
         else:
             new_protocol_object = ProtocolInLab(protocolName = new_protocol)
             new_protocol_object.save()
-            return render(request, 'iSkyLIMS_wetlab/createProtocol.html',{'defined_protocols': defined_protocols, 'new_defined_protocol': new_protocol})
+            protocolID = new_protocol_object.pk
+            return render(request, 'iSkyLIMS_wetlab/createProtocol.html',{'defined_protocols': defined_protocols, 'new_defined_protocol': new_protocol,
+                                    'protocolID':protocolID})
     return render(request, 'iSkyLIMS_wetlab/createProtocol.html',{'defined_protocols': defined_protocols})
 
 
-def define_protocol_parameters (request):
+@login_required
+def define_protocol_parameters (request, protocol_id):
+    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+    if request.user.is_authenticated:
+        if not is_wetlab_manager(request):
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':['You do not have enough privileges to see this page ',
+                            'Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+    if request.method == 'POST' and request.POST['action'] == 'define_protocol_parameters':
+        recorded_prot_parameters = {}
+        import pdb; pdb.set_trace()
+        nucleic_acid_data = get_data_from_excel_form(request.POST['table_data1'],7)
+        library_prep_data = get_data_from_excel_form(request.POST['table_data2'],7)
 
-    return
+        return render(request, 'iSkyLIMS_wetlab/defineProtocolParameters.html', {'recorded_prot_parameters':recorded_prot_parameters})
+
+    if not ProtocolInLab.objects.filter(pk__exact = protocol_id).exists():
+        return render ( request,'iSkyLIMS_wetlab/error_page.html',
+                    {'content':['The requested Protocol does not exist',
+                        'Create the protocol name before assigning custom parameters.']})
+
+    prot_parameters = {}
+    prot_parameters['heading'] = ['Parameter name', 'Order', 'Used', 'Searcheable','Min Value', 'Max Value', 'Description']
+    protocol_obj = ProtocolInLab.objects.get(pk__exact = protocol_id)
+
+    prot_parameters['protocol_name'] = protocol_obj.get_name()
+
+
+    return render(request, 'iSkyLIMS_wetlab/defineProtocolParameters.html', {'prot_parameters':prot_parameters})
 
 
 @login_required
@@ -3261,8 +3301,19 @@ def record_sample(request):
             sample_information['sampleType'] = get_sample_type()
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
 
+
+
+
 @login_required
-def add_qc_to_sample(request):
+def set_DNA_values(request):
+    if request.method == 'POST' and request.POST['action'] == 'continueWithDNA':
+        import pdb; pdb.set_trace()
+        selected_samples = request.POST['samples']
+        for select_sample in selected_samples :
+            if SamplesInProject.objects.filter(pk__exact = select_sample).exists():
+                protocol_obj = SamplesInProject.objects.get(pk__exact = select_sample).get_protocols_name()
+
+
     # get the list of samples that require to include  libarary Information
     if not SamplesInProject.objects.filter(sampleState__sampleStateName__exact = 'Defined'). exists():
         return render(request, 'iSkyLIMS_wetlab/add_qc_to_sample.html',{'NoSamples':'There is no samples available'})

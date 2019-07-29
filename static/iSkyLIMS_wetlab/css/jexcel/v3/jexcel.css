@@ -1,10 +1,10 @@
 /**
- * (c) jExcel v3.3.1
- *
+ * (c) jExcel v3.3.3
+ * 
  * Author: Paul Hodel <paul.hodel@gmail.com>
  * Website: https://bossanova.uk/jexcel/
  * Description: Create amazing web based spreadsheets.
- *
+ * 
  * This software is distribute under MIT License
  */
 :root {
@@ -574,7 +574,7 @@
     display:none;
 }
 
-.jexcel_toolbar i.jexcel_toolbar_item
+.jexcel_toolbar i.jexcel_toolbar_item 
 {
     width:24px;
     height:24px;
@@ -583,12 +583,12 @@
     display:inline-block;
 }
 
-.jexcel_toolbar i.jexcel_toolbar_item:hover
+.jexcel_toolbar i.jexcel_toolbar_item:hover 
 {
     background-color:#ddd;
 }
 
-.jexcel_toolbar select.jexcel_toolbar_item
+.jexcel_toolbar select.jexcel_toolbar_item 
 {
     margin-left:2px;
     margin-right:2px;
@@ -633,3 +633,45 @@
 {
     background-color:#ddd;
 }
+
+/*.copying
+{
+    border-top:1px solid #ccc !important;
+    border-left:1px solid #ccc !important;
+    border-right:1px solid #fff !important;
+    border-bottom:1px solid #fff !important;
+}
+
+.copying-top
+{
+    border-top:1px solid transparent !important;
+}
+
+.copying-bottom
+{
+    border-bottom:1px solid transparent !important;
+}
+
+.copying-left
+{
+    border-left:1px solid transparent !important;
+}
+
+.copying-right
+{
+    border-right:1px solid transparent !important;
+}
+
+.copying
+{
+    background: linear-gradient(white, white) padding-box, repeating-linear-gradient(-45deg, black 0, black 25%, transparent 0, transparent 50%) 0 / .6em .6em !important;
+    animation: ants 12s linear infinite;
+}
+
+@keyframes ants
+{
+    to
+    {
+        background-position: 50% 50%
+    }
+}*/

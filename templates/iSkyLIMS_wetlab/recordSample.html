@@ -32,7 +32,7 @@
                          {% if sample_recorded.allow_continue_DNA %}
                             <br><br>
 
-                            <form method="post" action="setDNAParameters"  enctype="multipart/form-data" name="continueWithDNA"  id="continueWithDNA" class="form-horizontal well">
+                            <form method="post" action="setDNAValues"  enctype="multipart/form-data" name="continueWithDNA"  id="continueWithDNA" class="form-horizontal well">
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="continueWithDNA"/>
                                 <input type="hidden" name="samples" value="{{ sample_recorded.samples_continue_DNA }}"/>
@@ -132,10 +132,10 @@
 {% else %}
 
 <script src="{% static "iSkyLIMS_wetlab/js/jquery/v3.4.1/jquery-3.4.1.min.js" %}" type="text/javascript"></script>
-<script src="{% static "iSkyLIMS_wetlab/js/jexcel/jexcel.js" %}" type="text/javascript"></script>
+<script src="{% static "iSkyLIMS_wetlab/js/jexcel/v3/jexcel.js" %}" type="text/javascript"></script>
 <script src="{% static "iSkyLIMS_wetlab/js/jsuites/v2/jsuites.js" %}" type="text/javascript"></script>
 
- <link href="{% static "iSkyLIMS_wetlab/css/jexcel/jexcel.css" %}" rel="stylesheet">
+ <link href="{% static "iSkyLIMS_wetlab/css/jexcel/v3/jexcel.css" %}" rel="stylesheet">
  <link href="{% static "iSkyLIMS_wetlab/css/jsuites/v2/jsuites.css" %}" rel="stylesheet">
 
 <div class="row row-space-4 margin-b-4">
