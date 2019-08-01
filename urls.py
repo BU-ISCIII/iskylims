@@ -22,6 +22,7 @@ urlpatterns = [
     path('defineProtocolParameters=<int:protocol_id>', views.define_protocol_parameters, name = 'define_protocol_parameters'),
     path('DisplayIndexLibrary=<int:index_library_id>/', views.display_index_library, name= 'display_index_library'),
     path('displayProject=<int:project_id>/', views.display_project, name='display_project'),
+    path('displayProtocol=<int:protocol_id>', views.display_protocol, name = 'display_protocol'),
     path('displayRun=<int:run_id>/', views.display_run, name='display_run'),
     path('displaySample=<int:sample_id>/', views.display_sample, name= 'display_sample'),
     path('latest_run/',views.latest_run, name='latest_run'),

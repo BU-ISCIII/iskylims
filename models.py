@@ -704,6 +704,14 @@ class ProtocolInLab (models.Model):
 
 # Q-Fluor ng/ul	Tamaño	nM Quantifluor
 
+class NAProtocolParametersManager (models.Manager):
+    def create_NAProt_parameter (self, na_prot_parameters):
+        na_protocol_parameters = self.create( protocol_id = na_prot_parameters['protocol_id'] ,
+                parameterName = na_prot_parameters['parameterName'],   parameterDescription = na_prot_parameters['parameterDescription'],
+                parameterOrder = na_prot_parameters['parameterOrder'],  parameterUsed= na_prot_parameters['parameterUsed'],
+                parameterMaxValue = na_prot_parameters['parameterMaxValue'], parameterMinValue = na_prot_parameters['parameterMinValue'])
+        return na_protocol_parameters
+
 class NAProtocolParameters (models.Model) :
     protocol_id = models.ForeignKey(
                     ProtocolInLab,
@@ -712,13 +720,28 @@ class NAProtocolParameters (models.Model) :
     parameterDescription = models.CharField(max_length= 400, null=True, blank=True)
     parameterOrder = models.IntegerField()
     parameterUsed = models.BooleanField()
-    parameterSearchable = models.BooleanField()
     parameterMaxValue = models.CharField(max_length = 50, null = True, blank = True)
     parameterMinValue = models.CharField(max_length = 50, null = True, blank = True)
 
+    objects = NAProtocolParametersManager()
 
     def __str__ (self):
         return '%s' %(self.parameterName)
+
+    def get_name(self):
+        return '%s' %(self.parameterName)
+
+    def get_na_params (self):
+        return '%s;%s;%s;%s;%s;%s' %(self.parameterName, self.parameterOrder, self.parameterUsed,
+                self.parameterMinValue, self.parameterMaxValue, self.parameterDescription)
+
+class LibProtocolParametersManager (models.Manager):
+    def create_LibProt_parameter (self, lib_prep_parameters):
+        lib_protocol_parameters = self.create( protocol_id = lib_prep_parameters['protocol_id'] ,
+                parameterName = lib_prep_parameters['parameterName'],   parameterDescription = lib_prep_parameters['parameterDescription'],
+                parameterOrder = lib_prep_parameters['parameterOrder'],  parameterUsed= lib_prep_parameters['parameterUsed'],
+                parameterMaxValue = lib_prep_parameters['parameterMaxValue'], parameterMinValue = lib_prep_parameters['parameterMinValue'])
+        return lib_protocol_parameters
 
 class LibraryProtocolParameters (models.Model) :
     protocol_id = models.ForeignKey(
@@ -731,9 +754,17 @@ class LibraryProtocolParameters (models.Model) :
     parameterMaxValue = models.CharField(max_length = 50, null = True, blank = True)
     parameterMinValue = models.CharField(max_length = 50, null = True, blank = True)
 
+    objects = LibProtocolParametersManager()
 
     def __str__ (self):
         return '%s' %(self.parameterName)
+
+    def get_name(self):
+        return '%s' %(self.parameterName)
+
+    def get_lib_params (self):
+        return '%s;%s;%s;%s;%s;%s' %(self.parameterName, self.parameterOrder, self.parameterUsed,
+                self.parameterMinValue, self.parameterMaxValue, self.parameterDescription)
 
 
 
@@ -797,7 +828,7 @@ class SamplesInProjectManager (models.Manager):
     def create_sample_from_investigator (self, sample_data):
         new_sample_from_investigator = self.create( project_id = None, sampleState = StatesForSample.objects.get(sampleStateName__exact = 'Defined'),
                             sampleProtocol = ProtocolInLab.objects.get( protocolName__exact = sample_data['sampleProtocol']),
-                            patientCodeName = sample_data['patientCodeName'], 
+                            patientCodeName = sample_data['patientCodeName'],
                             sampleType = SampleType.objects.get(sampleType__exact = sample_data['sampleType']) ,
                             registerUser = User.objects.get(username__exact = sample_data['user']),
                             sampleCodeID = sample_data['sample_id'] , sampleName =  sample_data['sampleName'],

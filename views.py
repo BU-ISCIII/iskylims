@@ -3157,7 +3157,11 @@ def create_protocol (request):
     if  ProtocolInLab.objects.all().exists():
         protocol_list = ProtocolInLab.objects.all()
         for protocol in protocol_list :
-            defined_protocols.append(protocol.get_name())
+            if NAProtocolParameters.objects.filter(protocol_id = protocol).exists():
+                add_param = False
+            else:
+                add_param = True
+            defined_protocols.append([[protocol.pk ,protocol.get_name(), add_param] ])
 
     if request.method == 'POST' and request.POST['action'] == 'addNewProtocol':
         new_protocol = request.POST['newProtocolName']
@@ -3170,11 +3174,44 @@ def create_protocol (request):
             protocolID = new_protocol_object.pk
             return render(request, 'iSkyLIMS_wetlab/createProtocol.html',{'defined_protocols': defined_protocols, 'new_defined_protocol': new_protocol,
                                     'protocolID':protocolID})
+    #import pdb; pdb.set_trace()
     return render(request, 'iSkyLIMS_wetlab/createProtocol.html',{'defined_protocols': defined_protocols})
+
+@login_required
+def display_protocol (request, protocol_id):
+    if not is_wetlab_manager(request):
+        return render (request,'iSkyLIMS_wetlab/error_page.html',
+            {'content':['You do not have enough privileges to see this page ',
+                        'Contact with your administrator .']})
+    #import pdb; pdb.set_trace()
+    if not ProtocolInLab.objects.filter(pk = protocol_id).exists():
+        return render (request,'iSkyLIMS_wetlab/error_page.html',
+            {'content':['The protocol that you are trying to get ',
+                        'DOES NOT exists .']})
+    protocol_data = {}
+    na_params = []
+    lib_params = []
+    protocol_obj = ProtocolInLab.objects.get(pk= protocol_id)
+    if NAProtocolParameters.objects.filter(protocol_id = protocol_obj).exists():
+
+        nucleic_params = NAProtocolParameters.objects.filter(protocol_id = protocol_obj).order_by('parameterOrder')
+        for nucleic_param in nucleic_params:
+            na_params.append(nucleic_param.get_na_params().split(';'))
+    if LibraryProtocolParameters.objects.filter(protocol_id = protocol_obj).exists():
+
+        library_params = LibraryProtocolParameters.objects.filter(protocol_id = protocol_obj)
+        for library_param in library_params:
+            lib_params.append(library_param.get_lib_params().split(';'))
+    protocol_data['na_params'] = na_params
+    protocol_data['lib_params'] = lib_params
+    protocol_data['heading'] = ['Parameter Name', 'Order', 'Used', 'Min Value', 'Max Value', 'Description']
+    #import pdb; pdb.set_trace()
+    return render(request, 'iSkyLIMS_wetlab/displayProtocol.html', {'protocol_data': protocol_data})
 
 
 @login_required
 def define_protocol_parameters (request, protocol_id):
+    import json
     ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
         if not is_wetlab_manager(request):
@@ -3184,12 +3221,40 @@ def define_protocol_parameters (request, protocol_id):
     else:
         #redirect to login webpage
         return redirect ('/accounts/login')
-    if request.method == 'POST' and request.POST['action'] == 'define_protocol_parameters':
-        recorded_prot_parameters = {}
-        import pdb; pdb.set_trace()
-        nucleic_acid_data = get_data_from_excel_form(request.POST['table_data1'],7)
-        library_prep_data = get_data_from_excel_form(request.POST['table_data2'],7)
 
+    if request.method == 'POST' and request.POST['action'] == 'define_protocol_parameters':
+        protocol_id = request.POST['protocol_id']
+        na_json_data = json.loads(request.POST['table_data1'])
+        lib_prep_json_data = json.loads(request.POST['table_data2'])
+        recorded_prot_parameters = {}
+        parameters = ['parameterName', 'parameterOrder', 'parameterUsed',
+                    'parameterMinValue', 'parameterMaxValue', 'parameterDescription']
+        protocol_id_obj = ProtocolInLab.objects.get(pk__exact = protocol_id)
+        #import pdb; pdb.set_trace()
+
+        new_na_prot_parameters =[]
+        for nucleic_param in na_json_data:
+            if nucleic_param[0] == '':
+                continue
+            na_prot_parameters = {}
+            for i in range(len(parameters)):
+                na_prot_parameters[parameters[i]] = nucleic_param[i]
+            na_prot_parameters['protocol_id'] = protocol_id_obj
+            new_na_prot_parameters.append(NAProtocolParameters.objects.create_NAProt_parameter(na_prot_parameters).get_name())
+
+        new_lib_prep_parameters = []
+        for lib_prep in lib_prep_json_data :
+            if lib_prep[0] == '':
+                continue
+            lib_prep_parameters = {}
+            for i in range(len(parameters)):
+                lib_prep_parameters[parameters[i]] = lib_prep[i]
+            lib_prep_parameters['protocol_id'] = protocol_id_obj
+            new_lib_prep_parameters.append(LibraryProtocolParameters.objects.create_LibProt_parameter(lib_prep_parameters).get_name())
+        recorded_prot_parameters['new_library_parameters'] = new_lib_prep_parameters
+        recorded_prot_parameters['new_nucleic_parameters'] = new_na_prot_parameters
+        recorded_prot_parameters['protocol_name'] = protocol_id_obj.get_name()
+        import pdb; pdb.set_trace()
         return render(request, 'iSkyLIMS_wetlab/defineProtocolParameters.html', {'recorded_prot_parameters':recorded_prot_parameters})
 
     if not ProtocolInLab.objects.filter(pk__exact = protocol_id).exists():
@@ -3198,11 +3263,11 @@ def define_protocol_parameters (request, protocol_id):
                         'Create the protocol name before assigning custom parameters.']})
 
     prot_parameters = {}
-    prot_parameters['heading'] = ['Parameter name', 'Order', 'Used', 'Searcheable','Min Value', 'Max Value', 'Description']
+    prot_parameters['heading'] = ['Parameter name', 'Order', 'Used', 'Min Value', 'Max Value', 'Description']
     protocol_obj = ProtocolInLab.objects.get(pk__exact = protocol_id)
 
     prot_parameters['protocol_name'] = protocol_obj.get_name()
-
+    prot_parameters['protocol_id'] = protocol_id
 
     return render(request, 'iSkyLIMS_wetlab/defineProtocolParameters.html', {'prot_parameters':prot_parameters})
 
@@ -3243,7 +3308,7 @@ def record_sample(request):
         not_valid_samples_same_user = []
         not_valid_samples_other_user = []
         valid_samples =[]
-        rows_sample_data= get_data_from_excel_form(excel_data, 9)
+        rows_sample_data= get_data_from_excel_form(excel_data, len(heading_in_excel))
         sample_recorded['allow_continue_DNA'] = True
         samples_continue_DNA = []
         for row in rows_sample_data :
