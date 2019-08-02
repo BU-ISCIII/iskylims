@@ -55,6 +55,10 @@ class LaboratoryAdmin (admin.ModelAdmin):
 class LibraryProtocolParametersAdmin (admin.ModelAdmin):
     list_display = ('parameterName', 'parameterDescription', 'parameterOrder','parameterUsed','parameterMaxValue', 'parameterMinValue')
 
+class NucleotidesComercialKitsAdmin (admin.ModelAdmin):
+    list_display = ('name', 'provider', 'naType','chipLot','usedDate', 'expirationDate')
+
+
 class NAProtParamDataAdmin(admin.ModelAdmin):
     list_display = ('NA_Parameter_id', 'sample_id', 'parameterValue')
 
@@ -77,6 +81,7 @@ admin.site.register(ProtocolInLab, ProtocolInLabAdmin)
 
 admin.site.register(Laboratory, LaboratoryAdmin)
 admin.site.register(LibraryProtocolParameters, LibraryProtocolParametersAdmin)
+admin.site.register(NucleotidesComercialKits,NucleotidesComercialKitsAdmin)
 admin.site.register(NAProtParamData, NAProtParamDataAdmin)
 admin.site.register(SampleType, SampleTypeAdmin)
 admin.site.register(Species, SpeciesAdmin)

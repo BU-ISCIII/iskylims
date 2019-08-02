@@ -144,17 +144,19 @@
         <div class="panel panel-default">
             <div class="panel-heading"><h3>Recording new Samples</h3></div>
             <div class="panel-body">
+
                  <form method="post" enctype="multipart/form-data" name="sampledefinition"  id="sampledefinition" class="form-horizontal well">
                      {% csrf_token %}
                      <input type="hidden" name="action" value="recordsample"/>
-
                     <div id="spreadsheet"></div>
+
                     <script>
-                        {% if sample_information.sample_names %}
-                          var data = [{% for sample in sample_information.sample_names %}[{{ sample }}],{% endfor %}
+                        {% if sample_information.data %}
+                          var data = [{% for values in sample_information.data %}
+                            [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
                           ];
                         {% else %}
-                          var data = [[]];
+                            var data = [[]]; [[{% for values in sample_information.data %}'{{values}}',{% endfor %}],
                         {% endif %}
                         mySpreadsheet = $('#spreadsheet').jexcel({
                             data:data,

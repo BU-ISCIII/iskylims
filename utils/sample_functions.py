@@ -44,6 +44,25 @@ def get_laboratory ():
             laboratories.append(laboratory.get_name())
     return laboratories
 
+
+def get_nucleic_accid_kits(na_type, register_user) :
+    '''
+    Description:
+        The function will return the Nucleic Accid Kits defined in database.
+    Input:
+        na_type     # type of nucleic accid (DNA/RNA)
+    Variables:
+        laboratories # list containing all laboratory names
+    Return:
+    '''
+    nucleic_kits = []
+    if NucleotidesComercialKits.objects.filter(naType__exact = na_type, registerUser__username__exact = register_user).exists():
+        kits = NucleotidesComercialKits.objects.filter(naType__exact = na_type, registerUser__username__exact = register_user)
+        for kit in kits :
+            nucleic_kits.append(kit.get_name()+ '_'+ kit.get_chipLot())
+
+    return nucleic_kits
+
 def get_protocols_name ():
     '''
     Description:
@@ -128,3 +147,26 @@ def increase_unique_value (old_unique_number):
     number_str = str(number)
     number_str = number_str.zfill(4)
     return str(letter + '-' + number_str)
+
+
+def select_samples_4_dna(valid_samples) :
+    '''
+    Description:
+        The function will get the first sample and it fetch the value of protocol
+        and the Nucleic Accid value. It returns the sample_id of the all valid samples
+        that match with the same values.
+    Input:
+        valid_samples   # list of the valid samples
+    Variables:
+        protocol # protocol of the first sample
+        nucleic  # nucleic accid of the first sample
+    Return:
+        filter_samples.
+    '''
+    filter_samples = []
+    protocol = valid_samples[0][4]
+    nucleic = valid_samples[0][3]
+    for sample in valid_samples :
+        if sample[3] == nucleic and sample[4] == protocol :
+            filter_samples.append(str(SamplesInProject.objects.get(sampleCodeID__exact = sample[1]).pk))
+    return ','.join(filter_samples)

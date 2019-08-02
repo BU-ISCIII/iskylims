@@ -680,15 +680,26 @@ class ReagentsCommercialKits (models.Model):
         return '%s' %(self.name)
 
 class NucleotidesComercialKits (models.Model):
+    registerUser = models.ForeignKey(
+            User,
+            on_delete=models.CASCADE, null = True)
     name = models.CharField(max_length =60)
-    provider = models.CharField(max_length =60)
+    provider = models.CharField(max_length =30)
     naType = models.CharField(max_length = 10)
-    chipLot = models.CharField(max_length = 100)
-    usedDate = models.DateTimeField(null = True)
+    chipLot = models.CharField(max_length = 50)
+    cat_number = models.CharField(max_length = 40, null = True)
+    usedDate = models.DateTimeField(null = True, blank = True)
     expirationDate = models.DateField(auto_now_add=False)
     generatedat = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__ (self):
+        return '%s' %(self.name)
+
+
+    def get_chipLot (self):
+        return '%s' %(self.chipLot)
+
+    def get_name (self):
         return '%s' %(self.name)
 
 
@@ -894,11 +905,17 @@ class SamplesInProject (models.Model):
 
         return '%s;%s;%s;%s;%s' %(self.registerUser)
 
+    def get_sample_code (self):
+        return '%s' %(self.sampleCodeID)
+
     def get_sample_id(self):
         return '%s' %(self.id)
 
     def get_sample_name(self):
         return '%s' %(self.sampleName)
+
+    def get_sample_nucleic_accid (self):
+        return '%s' %(self.nucleicAccid)
 
     def get_register_user(self):
         if self.registerUser is None:

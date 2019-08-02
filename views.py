@@ -3274,28 +3274,6 @@ def define_protocol_parameters (request, protocol_id):
 
 @login_required
 def record_sample(request):
-    '''
-    Description:
-        An Excel table is showed with the cells to fill in.
-        Sample information is checked and returned back to user in case samples
-        duplication for confirmation of sample repetition.
-        Info is saved to database and
-    Functions:
-        get_data_from_excel_form # located at utils.sample_functions
-        get_protocols_name  # located at utils.sample_functions
-        get_species         # located at utils.sample_functions
-        get_laboratory      # located at utils.sample_functions
-        get_sample_type     # located at utils.sample_functions
-
-
-    Variables:
-        laboratories # list containing all laboratory names
-    Return:
-        laboratories.
-    '''
-
-
-
     #import pdb; pdb.set_trace()
     if request.method == 'POST' and request.POST['action'] == 'recordsample':
 
@@ -3308,6 +3286,7 @@ def record_sample(request):
         not_valid_samples_same_user = []
         not_valid_samples_other_user = []
         valid_samples =[]
+
         rows_sample_data= get_data_from_excel_form(excel_data, len(heading_in_excel))
         sample_recorded['allow_continue_DNA'] = True
         samples_continue_DNA = []
@@ -3340,6 +3319,17 @@ def record_sample(request):
                     not_valid_samples_same_user.append(invalid_sample.get_sample_definition_information().split(';'))
                 else:
                     not_valid_samples_other_user.append([invalid_sample.get_sample_name(), invalid_sample.get_registered_sample() ])
+        # if no samples are in any of the options, displays the inital page
+        if len(valid_samples) == 0 and len(not_valid_samples_same_user) == 0 and len(not_valid_samples_other_user) == 0:
+            # get the choices to be included in the form
+            sample_information = {}
+            sample_information['heading'] = ['Patient Code Name', 'Laboratory', 'Laboratory Sample', 'Extraction date',
+                            'Sample Name', 'Type of Sample', 'Species', 'Nucleo Acid', 'Library Protocol']
+            sample_information['protocols'] = get_protocols_name()
+            sample_information['species'] = get_species()
+            sample_information['laboratory'] = get_laboratory()
+            sample_information['sampleType'] = get_sample_type()
+            return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
 
         sample_recorded['valid_samples'] = valid_samples
         sample_recorded['not_valid_samples_same_user'] = not_valid_samples_same_user
@@ -3348,7 +3338,8 @@ def record_sample(request):
         sample_recorded['heading_same_user'] = ['Sample Recorded Date', 'Sample Code ID', 'Sample Type', 'Nucleic Acid',
                         'Protocol', 'New DNA', 'New Library', 'Repetition']
         sample_recorded['heading_other_user'] = [ 'Sample Name', 'Registered Sample Date']
-        #import pdb; pdb.set_trace()
+        if sample_recorded['allow_continue_DNA']:
+            sample_recorded['samples_continue_DNA'] = select_samples_4_dna(valid_samples)
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
     else:
         sample_information = {}
@@ -3358,25 +3349,75 @@ def record_sample(request):
         if 'iSkyLIMS_clinicXXX' in settings.INSTALLED_APPS:
             # get the samples from
             sample_information['data'] =''
-        else:
-            # get the already defined protols
-            sample_information['protocols'] = get_protocols_name()
-            sample_information['species'] = get_species()
-            sample_information['laboratory'] = get_laboratory()
-            sample_information['sampleType'] = get_sample_type()
+        row_data = ['']*7
+        row_data[0]= 'pat-2'
+        row_data[2] = 'sample-lab'
+        data = []
+        data.append(row_data)
+        # get the choices to be included in the form
+        sample_information['protocols'] = get_protocols_name()
+        sample_information['species'] = get_species()
+        sample_information['laboratory'] = get_laboratory()
+        sample_information['sampleType'] = get_sample_type()
+        sample_information['data'] = data
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
 
 
+@login_required
+def update_samples(request):
 
+
+    return
 
 @login_required
 def set_DNA_values(request):
+
     if request.method == 'POST' and request.POST['action'] == 'continueWithDNA':
-        import pdb; pdb.set_trace()
-        selected_samples = request.POST['samples']
-        for select_sample in selected_samples :
-            if SamplesInProject.objects.filter(pk__exact = select_sample).exists():
-                protocol_obj = SamplesInProject.objects.get(pk__exact = select_sample).get_protocols_name()
+
+        if request.POST['samples'] == '':
+            return render (request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':['There was no sample selected ']})
+        samples = request.POST['samples'].split(',')
+        na_data = {}
+        na_parameters_list = []
+        samples_id = []
+        select_samples = []
+        for sample in samples :
+            try:
+                select_samples.append(int(sample))
+            except:
+                continue
+        if not SamplesInProject.objects.filter(pk__exact = select_samples[0]).exists():
+            return render (request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':['The sample/samples that you are trying to get ', 'DOES NOT exists .']})
+        protocol_obj =  SamplesInProject.objects.get(pk__exact = select_samples[0]).sampleProtocol
+        na_data['protocol'] = protocol_obj.get_name()
+        na_params = NAProtocolParameters.objects.filter(protocol_id = protocol_obj)
+        for na_param in na_params:
+            na_parameters_list.append(na_param.get_name())
+        na_data['na_parameters'] =  na_parameters_list
+        for select_sample in select_samples :
+            if not SamplesInProject.objects.filter(pk__exact = select_sample).exists():
+                return render (request,'iSkyLIMS_wetlab/error_page.html',
+                    {'content':['The sample/samples that you are trying to get ', 'DOES NOT exists .']})
+            sample_obj = SamplesInProject.objects.get(pk__exact = select_sample)
+            na_data['nucleicAccid'] = sample_obj.get_sample_nucleic_accid()
+            samples_id.append(sample_obj.get_sample_code())
+        register_user = request.user.username
+        number_of_samples = len(select_samples)
+        na_data['kits'] = get_nucleic_accid_kits(na_data['nucleicAccid'],register_user)
+        na_data['fix_headings'] = ['Sample ID', 'Nucleic Accid type', 'Type of Extraction', 'Extraction Kit']
+        na_data['params'] = na_parameters_list
+        na_data['table_length'] = len(na_data['fix_headings']) + len(na_parameters_list)
+        na_data['sample_ID'] = samples_id
+        na_data['number_of_samples'] = number_of_samples
+        data = []
+        for n in range(number_of_samples):
+            data.append(['']*na_data['table_length'])
+            data[n][0] = samples_id[n]
+            data[n][1] = na_data['nucleicAccid']
+        na_data['data'] = data
+        return render(request, 'iSkyLIMS_wetlab/setDNAValues.html',{'na_data':na_data})
 
 
     # get the list of samples that require to include  libarary Information

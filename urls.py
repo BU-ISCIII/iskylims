@@ -36,11 +36,12 @@ urlpatterns = [
     path('searchProject/', views.search_project, name ='search_project'),
     path('searchRun/', views.search_run, name='search_run'),
     path('searchSample/', views.search_sample, name = 'search_sample'),
-    path('SetDNAValues', views.set_DNA_values, name = 'set_DNA_values'),
+    path('setDNAValues', views.set_DNA_values, name = 'set_DNA_values'),
     path('StatsExperiment/', views.stats_experiment, name ='stats_experiment'),
     path('StatsLibrary/', views.stats_per_library , name ='stats_per_library'),
     path('StatsPerResearcher/',views.stats_per_researcher, name='stats_per_researcher'),
     path('StatsPerTime/', views.stats_per_time, name ='stats_per_time'),
+    path('updateSamples', views.update_samples, name = 'update_samples'),
     path('updateTables/',views.update_tables, name='update_tables'),
     path('updateTablesDate/',views.update_tables_date, name='update_tables_date'),
 
