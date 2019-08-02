@@ -872,12 +872,22 @@ class SamplesInProject (models.Model):
     species = models.ForeignKey(
                 Species,
                 on_delete=models.CASCADE, null = True)
+
+    naComercialKit = models.ForeignKey(
+                NucleotidesComercialKits,
+                on_delete= models.CASCADE, null = True, blank = True)
+    reagComercialKit = models.ForeignKey(
+                ReagentsCommercialKits,
+                on_delete=models.CASCADE, null =True, blank = True)
     sampleExtractionDate = models.DateTimeField(auto_now_add = False, null =True)
     uniqueSampleID = models.CharField(max_length=8, null = True)
     patientCodeName = models.CharField(max_length=255, null = True)
     sampleCodeID = models.CharField(max_length=60, null = True)
     sampleName = models.CharField(max_length=50)
     nucleicAccid =models.CharField(max_length = 10, null = True)
+    extractionMethod = models.CharField(max_length = 30, null = True, blank = True)
+    sampleExtractionCodeID = models.CharField(max_length = 60, null = True, blank = True)
+    sampleLibCodeID = models.CharField(max_length = 60, null = True, blank = True)
     # Information collected from demultiplexing data
     barcodeName = models.CharField(max_length=255)
     pfClusters = models.CharField(max_length=55)
