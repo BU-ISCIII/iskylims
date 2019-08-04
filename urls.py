@@ -11,6 +11,7 @@ from django.views.generic import ListView, DetailView
 urlpatterns = [
     path('',views.index, name = 'index'),
     path('AddBasespaceLibrary/',views.add_basespace_library, name='add_basespace_library'),
+    path('AddCommercialKit', views.add_commercial_kit, name='add_commercial_kit'),
     path('AddIndexLibrary', views.add_index_library, name = 'add_index_library'),
     path('AnnualReport/',views.annual_report, name='annual_report'),
     path('change_project_libKit=<int:project_id>',views.change_project_libKit, name ='change_project_libKit'),
@@ -27,7 +28,6 @@ urlpatterns = [
     path('displaySample=<int:sample_id>/', views.display_sample, name= 'display_sample'),
     path('latest_run/',views.latest_run, name='latest_run'),
     path('incompletedRuns', views.incompleted_runs, name = 'incompleted_runs'),
-    path('libPreparation', views.lib_preparation, name='lib_preparation'),
     path('MonthlyReport/', views.monthly_report, name='montly_report'),
     path('QuarterReport/', views.quarter_report, name='quarter_report'),
     path('recordSample', views.record_sample, name='record_sample'),
@@ -37,6 +37,7 @@ urlpatterns = [
     path('searchRun/', views.search_run, name='search_run'),
     path('searchSample/', views.search_sample, name = 'search_sample'),
     path('setDNAValues', views.set_DNA_values, name = 'set_DNA_values'),
+    path('setLibraryValues', views.set_library_values, name = 'set_library_values'),
     path('StatsExperiment/', views.stats_experiment, name ='stats_experiment'),
     path('StatsLibrary/', views.stats_per_library , name ='stats_per_library'),
     path('StatsPerResearcher/',views.stats_per_researcher, name='stats_per_researcher'),

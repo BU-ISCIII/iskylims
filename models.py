@@ -661,10 +661,25 @@ REAGENT_USED_CHOICE = (
     )
 
 
+class ProtocolInLab (models.Model):
+    protocolName = models.CharField(max_length=255)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__ (self):
+        return '%s' %(self.protocolName)
+
+    def get_name (self):
+        return '%s' %(self.protocolName)
 
 
 class ReagentsCommercialKits (models.Model):
 #    batch_id = models.CharField(max_length= 255)
+    registerUser = models.ForeignKey(
+            User,
+            on_delete=models.CASCADE, null = True)
+    protocol_id = models.ForeignKey(
+                ProtocolInLab,
+                on_delete= models.CASCADE, null = True)
     name = models.CharField(max_length =60)
     provider = models.CharField(max_length =60)
     reagentLibraryName = models.CharField(max_length = 100)
@@ -679,10 +694,19 @@ class ReagentsCommercialKits (models.Model):
     def __str__ (self):
         return '%s' %(self.name)
 
+    def get_name (self):
+        return '%s' %(self.name)
+
+    def get_chip_lot (self):
+        return '%s' %(self.chipLot)
+
 class NucleotidesComercialKits (models.Model):
     registerUser = models.ForeignKey(
             User,
             on_delete=models.CASCADE, null = True)
+    protocol_id = models.ForeignKey(
+                    ProtocolInLab,
+                    on_delete= models.CASCADE, null = True)
     name = models.CharField(max_length =60)
     provider = models.CharField(max_length =30)
     naType = models.CharField(max_length = 10)
@@ -703,15 +727,6 @@ class NucleotidesComercialKits (models.Model):
         return '%s' %(self.name)
 
 
-class ProtocolInLab (models.Model):
-    protocolName = models.CharField(max_length=255)
-    generated_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__ (self):
-        return '%s' %(self.protocolName)
-
-    def get_name (self):
-        return '%s' %(self.protocolName)
 
 # Q-Fluor ng/ul	Tamaño	nM Quantifluor
 
@@ -910,6 +925,10 @@ class SamplesInProject (models.Model):
         return '%s;%s;%s;%s;%s' %(recordeddate, self.sampleCodeID, self.sampleType.sampleType,
                 self.nucleicAccid, self.sampleProtocol.protocolName,)
 
+    def get_sample_nucleic_information (self) :
+        return [self.sampleCodeID, self.nucleicAccid, self. extractionMethod,
+                    self.sampleExtractionCodeID]
+
     def get_full_definition_info (self):
         recordeddate=self.sampleExtractionDate.strftime("%B %d, %Y")
 
@@ -926,6 +945,9 @@ class SamplesInProject (models.Model):
 
     def get_sample_nucleic_accid (self):
         return '%s' %(self.nucleicAccid)
+
+    def get_sample_protocol (self):
+        return '%s' %(self.sampleProtocol)
 
     def get_register_user(self):
         if self.registerUser is None:
@@ -962,6 +984,11 @@ class LibProtParamData (models.Model):
     def __str__ (self):
         return '%s' %(self.parameterValue)
 
+class NAProtParamDataManager (models.Manager):
+    def create_na_prot_param_data (self, na_prot_param_data):
+        new_na_param_data = self.create(NA_Parameter_id = na_prot_param_data['NA_Parameter_id'],
+                sample_id = na_prot_param_data['sample_id'],
+                parameterValue = na_prot_param_data['parameterValue'])
 
 class NAProtParamData (models.Model):
     NA_Parameter_id = models.ForeignKey(
@@ -975,3 +1002,10 @@ class NAProtParamData (models.Model):
 
     def __str__ (self):
         return '%s' %(self.parameterValue)
+
+    def get_parameter_information (self):
+        data = []
+
+        return ''
+
+    objects = NAProtParamDataManager()

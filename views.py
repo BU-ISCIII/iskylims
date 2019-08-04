@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ## import django
 import statistics
-import re, os, shutil
+import re, os, shutil, json
 import datetime, time
 from .fusioncharts.fusioncharts import FusionCharts
 
@@ -3211,7 +3211,7 @@ def display_protocol (request, protocol_id):
 
 @login_required
 def define_protocol_parameters (request, protocol_id):
-    import json
+
     ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
         if not is_wetlab_manager(request):
@@ -3271,6 +3271,10 @@ def define_protocol_parameters (request, protocol_id):
 
     return render(request, 'iSkyLIMS_wetlab/defineProtocolParameters.html', {'prot_parameters':prot_parameters})
 
+@login_required
+def add_commercial_kit (request):
+
+    return render(request, 'iSkyLIMS_wetlab/AddCommercialKit.html')
 
 @login_required
 def record_sample(request):
@@ -3278,7 +3282,6 @@ def record_sample(request):
     if request.method == 'POST' and request.POST['action'] == 'recordsample':
 
         excel_data = request.POST['table_data']
-
         heading_in_excel = ['patientCodeName', 'laboratory', 'labSampleName', 'extractionDate',
                         'sampleName', 'sampleType', 'species', 'nucleicAccid', 'sampleProtocol']
 
@@ -3322,13 +3325,9 @@ def record_sample(request):
         # if no samples are in any of the options, displays the inital page
         if len(valid_samples) == 0 and len(not_valid_samples_same_user) == 0 and len(not_valid_samples_other_user) == 0:
             # get the choices to be included in the form
-            sample_information = {}
+            sample_information = build_record_sample_form ()
             sample_information['heading'] = ['Patient Code Name', 'Laboratory', 'Laboratory Sample', 'Extraction date',
                             'Sample Name', 'Type of Sample', 'Species', 'Nucleo Acid', 'Library Protocol']
-            sample_information['protocols'] = get_protocols_name()
-            sample_information['species'] = get_species()
-            sample_information['laboratory'] = get_laboratory()
-            sample_information['sampleType'] = get_sample_type()
             return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
 
         sample_recorded['valid_samples'] = valid_samples
@@ -3342,7 +3341,7 @@ def record_sample(request):
             sample_recorded['samples_continue_DNA'] = select_samples_4_dna(valid_samples)
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
     else:
-        sample_information = {}
+        sample_information = build_record_sample_form()
         sample_information['heading'] = ['Patient Code Name', 'Laboratory', 'Laboratory Sample', 'Extraction date',
                         'Sample Name', 'Type of Sample', 'Species', 'Nucleo Acid', 'Library Protocol']
         # check if clinic application is installed
@@ -3355,11 +3354,10 @@ def record_sample(request):
         data = []
         data.append(row_data)
         # get the choices to be included in the form
-        sample_information['protocols'] = get_protocols_name()
-        sample_information['species'] = get_species()
-        sample_information['laboratory'] = get_laboratory()
-        sample_information['sampleType'] = get_sample_type()
+
+
         sample_information['data'] = data
+
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
 
 
@@ -3371,30 +3369,36 @@ def update_samples(request):
 
 @login_required
 def set_DNA_values(request):
-
+    fix_headings = ['Sample ID', 'Nucleic Accid type', 'Type of Extraction', 'Extraction Kit']
     if request.method == 'POST' and request.POST['action'] == 'continueWithDNA':
 
         if request.POST['samples'] == '':
             return render (request,'iSkyLIMS_wetlab/error_page.html',
                 {'content':['There was no sample selected ']})
-        samples = request.POST['samples'].split(',')
+        if  request.POST['samples_in_list'] :
+            samples = request.POST.getlist('samples')
+        else:
+            samples = request.POST['samples'].split(',')
         na_data = {}
         na_parameters_list = []
         samples_id = []
         select_samples = []
+        import pdb; pdb.set_trace()
         for sample in samples :
             try:
                 select_samples.append(int(sample))
             except:
                 continue
+        import pdb; pdb.set_trace()
         if not SamplesInProject.objects.filter(pk__exact = select_samples[0]).exists():
             return render (request,'iSkyLIMS_wetlab/error_page.html',
                 {'content':['The sample/samples that you are trying to get ', 'DOES NOT exists .']})
         protocol_obj =  SamplesInProject.objects.get(pk__exact = select_samples[0]).sampleProtocol
         na_data['protocol'] = protocol_obj.get_name()
-        na_params = NAProtocolParameters.objects.filter(protocol_id = protocol_obj)
+        na_params = NAProtocolParameters.objects.filter(protocol_id = protocol_obj, parameterUsed = True).order_by('parameterOrder')
         for na_param in na_params:
             na_parameters_list.append(na_param.get_name())
+
         na_data['na_parameters'] =  na_parameters_list
         for select_sample in select_samples :
             if not SamplesInProject.objects.filter(pk__exact = select_sample).exists():
@@ -3406,9 +3410,9 @@ def set_DNA_values(request):
         register_user = request.user.username
         number_of_samples = len(select_samples)
         na_data['kits'] = get_nucleic_accid_kits(na_data['nucleicAccid'],register_user)
-        na_data['fix_headings'] = ['Sample ID', 'Nucleic Accid type', 'Type of Extraction', 'Extraction Kit']
+        na_data['fix_headings'] = fix_headings
         na_data['params'] = na_parameters_list
-        na_data['table_length'] = len(na_data['fix_headings']) + len(na_parameters_list)
+        na_data['table_length'] = len(fix_headings) + len(na_parameters_list)
         na_data['sample_ID'] = samples_id
         na_data['number_of_samples'] = number_of_samples
         data = []
@@ -3417,32 +3421,101 @@ def set_DNA_values(request):
             data[n][0] = samples_id[n]
             data[n][1] = na_data['nucleicAccid']
         na_data['data'] = data
+        na_data['samples'] = request.POST['samples']
         return render(request, 'iSkyLIMS_wetlab/setDNAValues.html',{'na_data':na_data})
 
+    if request.method == 'POST' and request.POST['action'] == 'updateNA':
 
-    # get the list of samples that require to include  libarary Information
-    if not SamplesInProject.objects.filter(sampleState__sampleStateName__exact = 'Defined'). exists():
-        return render(request, 'iSkyLIMS_wetlab/add_qc_to_sample.html',{'NoSamples':'There is no samples available'})
+        na_json_data = json.loads(request.POST['nucleic_data'])
+        samples = request.POST['samples'].split(',')
+        na_parameters = request.POST['na_parameters'].replace('[','').replace(']','').replace('\'','').split(', ')
+        import pdb; pdb.set_trace()
+        length_fix_heading = len(fix_headings)
+        updated_samples = []
+        display_update = {}
+        for i in range(len(samples)):
+            sample_obj = SamplesInProject.objects.get(pk = int(samples[i]))
+            #########################
+            ####### missing to identify if a new dna extraction was done to increase E1 to E2
+            ####################################
+            extraction = 'E1'
+
+            sample_obj.extractionMethod = na_json_data[i][2]
+            sample_obj.sampleExtractionCodeID = str(sample_obj.get_sample_code() + '_' + extraction)
+            sample_obj.naComercialKit = NucleotidesComercialKits.objects.get(chipLot__exact = na_json_data[i][3].split('_')[1])
+            sample_obj.sampleState = StatesForSample.objects.get(sampleStateName__exact = 'Added DNA info')
+            sample_obj.save()
+
+            for j in range(len(na_parameters)):
+
+                na_parameter_obj = NAProtocolParameters.objects.get(protocol_id = sample_obj.sampleProtocol, parameterName__exact = na_parameters[j])
+                import pdb; pdb.set_trace()
+                na_prot_param_data = {}
+                na_prot_param_data['sample_id'] = sample_obj
+                na_prot_param_data['NA_Parameter_id'] = na_parameter_obj
+                na_prot_param_data['parameterValue'] = na_json_data[i][length_fix_heading + j]
+                new_na_parameter_data = NAProtParamData.objects.create_na_prot_param_data(na_prot_param_data)
+            updated_sample = sample_obj.get_sample_nucleic_information()
+            #####################
+            #### missing to set if is a repeat DNA extraction
+            ####################
+            updated_samples.append(updated_sample)
+        display_update['heading'] = ['Sample Code ID', 'DNA/RNA', 'Extraction Kit', 'Sample DNA CODE ID', 'Repeated']
+        display_update['updated_samples'] = updated_samples
+        display_update['samples'] = ','.join(samples)
+        import pdb; pdb.set_trace()
+        return render(request, 'iSkyLIMS_wetlab/setDNAValues.html',{'display_update':display_update})
+
+
     else:
+        register_user = request.user.username
+        grouped_samples_obj = get_samples_for_na_definition (register_user)
         s_list = []
+        all_sample_list = []
         display_list = {}
 
-        list_of_samples = SamplesInProject.objects.filter(sampleState__sampleStateName__exact = 'Defined')
-        for sample in list_of_samples :
-            s_info = sample.get_sample_definition_information().split(';')
-            s_info.append(sample.get_sample_id())
-            s_list.append(s_info)
-        display_list['list_of_samples'] = s_list
-        display_list['heading'] = ['Sample name', 'Protocol', 'Type', 'Registerd by', 'Registered Date']
+        for key in grouped_samples_obj.keys():
+            s_list = []
+            for sample in grouped_samples_obj[key]:
+                s_info = sample.get_sample_definition_information().split(';')
+                s_info.append(str(sample.pk))
+                s_list.append(s_info)
+            all_sample_list.append(s_list)
+
+
+        display_list['list_of_samples'] = all_sample_list
+        display_list['heading'] = ['Registered date ','Sample Code ID', 'Type', 'DNA/RNA', 'Protocol', 'To be included']
         #import pdb; pdb.set_trace()
-        return render(request, 'iSkyLIMS_wetlab/add_qc_to_sample.html',{'DisplayList': display_list})
-    return render(request, 'iSkyLIMS_wetlab/add_qc_to_sample.html',{})
+        return render(request, 'iSkyLIMS_wetlab/setDNAValues.html',{'display_list': display_list})
+    return render(request, 'iSkyLIMS_wetlab/setDNAValues.html',{})
 
 
 @login_required
-def lib_preparation (request):
+def set_library_values (request):
+    fix_headings = ['DNA Code ID', 'Protocol', 'Extraction Kit']
     import pdb; pdb.set_trace()
-    lib_preparation_data = {}
+    if request.method == 'POST' and request.POST['action'] == 'continueWithDNA':
+        lib_preparation_data = {}
+    else:
+        register_user = request.user.username
+        grouped_samples_obj = get_samples_for_library_definition (register_user)
+        s_list = []
+        all_sample_list = []
+        display_list = {}
 
+        for key in grouped_samples_obj.keys():
+            s_list = []
+            for sample in grouped_samples_obj[key]:
+                s_info = sample.get_sample_definition_information().split(';')
+                s_info.append(str(sample.pk))
+                s_list.append(s_info)
+            all_sample_list.append(s_list)
+
+        display_list['lib_kits'] = get_available_lib_kit(register_user)
+
+        display_list['list_of_samples'] = all_sample_list
+        display_list['heading'] = ['Registered date ','Sample Code ID', 'Type', 'DNA/RNA', 'Protocol', 'PK']
+        #import pdb; pdb.set_trace()
+        return render(request, 'iSkyLIMS_wetlab/setLibraryValues.html',{'display_list': display_list})
     #import pdb; pdb.set_trace()
-    return render(request, 'iSkyLIMS_wetlab/libPreparation.html',{'lib_preparation_data':lib_preparation_data})
+    

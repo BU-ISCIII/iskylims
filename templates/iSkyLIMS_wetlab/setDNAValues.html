@@ -18,6 +18,8 @@
                     <form method="post" enctype="multipart/form-data" name="updateNAParameters"  id="updateNAParameters" class="form-horizontal well">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="updateNA"/>
+                        <input type="hidden" name="na_parameters" value="{{ na_data.na_parameters }}"/>
+                        <input type="hidden" name= "samples" value="{{na_data.samples}}"
                         <div class="table-responsive">
                         <div id="spreadsheet"></div>
                         <br><br><br><br>
@@ -31,8 +33,8 @@
                                 columns: [
                                     { type: 'text', title:'{{na_data.fix_headings.0}}', width:150 , readOnly:true },
                                     { type: 'text', title:'{{na_data.fix_headings.1}}', width:80,  readOnly:true  },
-                                    { type: 'dropdown', title:'{{na_data.fix_headings.2}}', width:80 , source :['Manual', 'Automated']},
-                                    { type: 'dropdown', title: '{{na_data.fix_headings.3}}', width:120 , source:[{% for values in na_data.kits %}'{{values}}',{% endfor %} ] },
+                                    { type: 'dropdown', title:'{{na_data.fix_headings.2}}', width:100 , source :['Manual', 'Automated']},
+                                    { type: 'dropdown', title: '{{na_data.fix_headings.3}}', width:180 , source:[{% for values in na_data.kits %}'{{values}}',{% endfor %} ] },
                                     {% for value in na_data.params %}
                                         { type: 'text', title:'{{value}}', width:80 , wordWrap:true},
                                     {% endfor %}
@@ -53,7 +55,7 @@
                     </form>
                     <script>
                         $(document).ready(function () {
-                            $("#sampledefinition").submit(function (e) {
+                            $("#updateNAParameters").submit(function (e) {
                                 //stop submitting the form to see the disabled button effect
                                 // e.preventDefault();
                                 //disable the submit button
@@ -73,7 +75,91 @@
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-6 -->
     </div> <!--  end of row -->
+{% elif display_update %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>The following samples are updated with Nucleic quality Parameters.</h3></div>
+                <div class="panel-body">
+                    <table class="table table-hover">
+                     <thead>
+                        <tr>
+                            {% for values in display_update.heading %}
+                                <th>{{values}}</th>
+                            {% endfor %}
+                        </tr>
+                     </thead>
+                     <tbody>
+                        {% for values in display_update.updated_samples %}
+                           <tr>
+                                {% for value in values %}
+                                    <td>{{ value }}</td>
+                                {% endfor %}
+                           </tr>
+                        {% endfor %}
+                    </tbody>
+                   </table>
+                   <form method="post" enctype="multipart/form-data" action="setLibraryParameters" name="continueWithLibrary"  id="continueWithLibrary" class="form-horizontal well">
+                       {% csrf_token %}
+                       <p></p>
+                       <input type="hidden" name="action" value="continueWithLibrary"/>
+                       <input type="hidden" name="na_parameters" value="{{ display_update.samples }}"/>
+                       <input type="button" value="Return Home" onclick="location.href="/" />
+                       <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                    </form>
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-12 -->
+    </div> <!--  end of row -->
 
+{% else %}
+
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-7 col-sm-offset-1" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>The following Samples can be updated with the Nuclic Accid information</h3></div>
+                {% for protocol_s_list in display_list.list_of_samples %}
+                    <div class="panel-body">
+
+                        <form method="post" enctype="multipart/form-data" name="continueWithDNA"  id="continueWithDNA" class="form-horizontal well">
+                        {% csrf_token %}
+                            <input type="hidden" name="action" value="continueWithDNA"/>
+                            <input type="hidden" name="samples_in_list" value="True"/>
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        {% for value in display_list.heading %}
+                                            <th> {{ value }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+                                    {% for date, code, type, dna, protocol ,  s_id in protocol_s_list  %}
+                                        <tr>
+
+                                                <td>{{ date }}</td>
+                                                <td>{{ code }}</td>
+                                                <td>{{type}}</td>
+                                                <td>{{dna}}</td>
+                                                <td>{{protocol}}</td>
+                                                <td><input type="checkbox" name="samples" value="{{s_id}}"></td>
+
+                                        </tr>
+                                    {% endfor %}
+
+                                </tbody>
+                            </table>
+                            <br><br>
+                            <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                            <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                         </form>
+
+                    </div>  <!--  end of panel body  -->
+                {% endfor %}
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  -->
+    </div> <!--// end row -->
 {% endif %}
 
 {% endblock %}

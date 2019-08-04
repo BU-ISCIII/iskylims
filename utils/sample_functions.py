@@ -1,15 +1,32 @@
 from iSkyLIMS_wetlab.models import *
 
+def build_record_sample_form () :
+    sample_information = {}
+    sample_information['protocols'] = get_full_defined_protocols_name()
+    sample_information['species'] = get_species()
+    sample_information['laboratory'] = get_laboratory()
+    sample_information['sampleType'] = get_sample_type()
+    return sample_information
+
+
 def sample_already_defined(sample_name):
     if SamplesInProject.objects.filter(sampleName__exact = sample_name, sampleState__sampleStateName = 'Defined').exists():
         return True
     else:
         return False
 
+def get_available_lib_kit (register_user):
+    lib_kits = []
+    if ReagentsCommercialKits.objects.filter(registerUser__username__exact = register_user).exists():
+        kits = ReagentsCommercialKits.objects.filter(registerUser__username__exact = register_user)
+        for kit in kits:
+            lib_kits.append(kit.get_name())
+
+    return lib_kits
+
 def get_data_from_excel_form (spreadsheet, n_columns):
     '''
-    Description:
-        The function split the spreadsheet data. Every row in the spreadsheet is stored
+    Description:        The function split the spreadsheet data. Every row in the spreadsheet is stored
         in a list. Return a array with evey item list.
     Input:
         spreadsheet     # contains all data
@@ -63,7 +80,7 @@ def get_nucleic_accid_kits(na_type, register_user) :
 
     return nucleic_kits
 
-def get_protocols_name ():
+def get_full_defined_protocols_name ():
     '''
     Description:
         The function will return the name of the protols defined in database.
@@ -79,8 +96,38 @@ def get_protocols_name ():
         protocols = ProtocolInLab.objects.all()
 
         for protocol in protocols:
-            prot_names.append(protocol.get_name())
+            if ( NAProtocolParameters.objects.filter(protocol_id = protocol).exists()
+                and LibraryProtocolParameters.objects.filter(protocol_id = protocol).exists()):
+                prot_names.append(protocol.get_name())
     return prot_names
+
+def get_samples_for_library_definition (register_user):
+    samples_obj = {}
+    if SamplesInProject.objects.filter(sampleState__sampleStateName__exact = 'Added DNA Info',
+                    registerUser__username__exact = register_user).exists():
+        sample_list = SamplesInProject.objects.filter(sampleState__sampleStateName__exact = 'Added DNA Info',
+                        registerUser__username__exact = register_user).order_by('sampleProtocol')
+        for sample in sample_list :
+            protocol = str (sample.get_sample_protocol())
+            if not protocol in samples_obj:
+                samples_obj[protocol] = []
+            samples_obj[protocol].append(sample)
+
+    return samples_obj
+
+def get_samples_for_na_definition (register_user):
+    samples_obj = {}
+    if SamplesInProject.objects.filter(sampleState__sampleStateName__exact = 'Defined',
+                    registerUser__username__exact = register_user).exists():
+        sample_list = SamplesInProject.objects.filter(sampleState__sampleStateName__exact = 'Defined',
+                        registerUser__username__exact = register_user).order_by('sampleProtocol')
+        for sample in sample_list :
+            protocol_dna = str (sample.get_sample_protocol() + '_' + sample.get_sample_nucleic_accid())
+            if not protocol_dna in samples_obj:
+                samples_obj[protocol_dna] = []
+            samples_obj[protocol_dna].append(sample)
+
+    return samples_obj
 
 def get_sample_type ():
     '''
