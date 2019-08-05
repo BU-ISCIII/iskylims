@@ -32,6 +32,7 @@ urlpatterns = [
     path('QuarterReport/', views.quarter_report, name='quarter_report'),
     path('recordSample', views.record_sample, name='record_sample'),
     path('register_wetlab/',views.register_wetlab, name='register_wetlab'),
+    path('selectSamplesForRun', views.select_samples_for_run, name = 'select_samples_for_run'),
     path('searchIndexLibrary', views.search_index_library, name='search_index_library'),
     path('searchProject/', views.search_project, name ='search_project'),
     path('searchRun/', views.search_run, name='search_run'),

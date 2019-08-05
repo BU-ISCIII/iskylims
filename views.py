@@ -3514,8 +3514,36 @@ def set_library_values (request):
         display_list['lib_kits'] = get_available_lib_kit(register_user)
 
         display_list['list_of_samples'] = all_sample_list
-        display_list['heading'] = ['Registered date ','Sample Code ID', 'Type', 'DNA/RNA', 'Protocol', 'PK']
+        display_list['heading'] = ['Registered date ','Sample Code ID', 'Type', 'DNA/RNA', 'Protocol', 'Library Kit']
         #import pdb; pdb.set_trace()
         return render(request, 'iSkyLIMS_wetlab/setLibraryValues.html',{'display_list': display_list})
     #import pdb; pdb.set_trace()
-    
+
+
+
+@login_required
+def select_samples_for_run (request):
+    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+    if request.user.is_authenticated:
+        if not is_wetlab_manager(request):
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':['You do not have enough privileges to see this page ',
+                            'Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+    display_list = {}
+    s_list = []
+    all_sample_list = []
+
+
+    if SamplesInProject.objects.filter(sampleState__sampleStateName = 'Added Library Info').exists():
+        samples_obj = SamplesInProject.objects.filter(sampleState__sampleStateName = 'Added Library Info').order_by('sampleExtractionDate')
+        for sample_obj in samples_obj :
+            s_info = sample.get_sample_definition_information().split(';')
+            s_info.append(str(sample.pk))
+            s_list.append(s_info)
+            all_sample_list.append(s_list)
+    display_list['heading'] = ['Register Date', 'Sample Code ID', 'Sample Type', 'Index I7', 'Index I5']
+
+    return  render(request, 'iSkyLIMS_wetlab/selectSamplesForRun.html',{'display_list': display_list})
