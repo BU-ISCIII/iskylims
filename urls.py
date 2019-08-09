@@ -1,7 +1,3 @@
-# Adaptation of code to django 2.0:
-# "from django.conf.urls import include , url" replaced by "import" for "path"
-# "url(r'^" replaced by "path('"
-
 from django.urls import path
 from django.conf import settings
 from django.contrib.auth.views import LoginView
