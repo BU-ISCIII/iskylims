@@ -6,14 +6,46 @@ from django.shortcuts import render, redirect
 from .forms import ContactForm
 from django.core.mail import send_mail
 
-from django.conf import settings
+from .utils.generic_functions import *
+#from django.conf import settings
 
 # Create your views here.
 
 def index(request):
-     return render(request, 'iSkyLIMS_home/index.html')
+    
+    apps_in_iskylims = get_installed_apps ()
+    
+    #import pdb; pdb.set_trace()
+    return render(request, 'iSkyLIMS_core/index.html',{'apps_in_iskylims': apps_in_iskylims})
 
+def add_new_contacts (request):
+    '''
+    Description:
+        The function will use to add new user detail contacts that are showed
+        in the contact information.
+        This function is only available for admin
+    Input:
+        request     # contains the request dictionary sent by django
+    Variables:
+        
+    Return:
+        
+    '''
 
+    '''
+    library_kit_objects = BaseSpaceLibraryName.objects.all()
+    if len(library_kit_objects) >0 :
+        for l_kit in library_kit_objects :
+            library_kits.append(l_kit.libraryName)
+    '''
+    apps_installed = {}
+    apps_installed['apps_names'] = get_installed_apps ()
+    
+    if request.method == 'POST' and request.POST['action'] == 'addNewContacts':
+        import pdb; pdb.set_trace()
+        pass
+        
+    return render(request, "iSkyLIMS_core/addNewContacts.html",{'apps_installed':apps_installed})
 
 def contact(request):
     if request.method == 'GET':
@@ -32,8 +64,8 @@ def contact(request):
             except BadHeaderError:
                 return HttpResponse('Invalid header found.')
             return redirect('thanks')
-    return render(request, "iSkyLIMS_home/contact_email.html", {'form': form})
+    return render(request, "iSkyLIMS_core/contact_email.html", {'form': form})
 
 def thanks(request):
-    return render(request, 'iSkyLIMS_home/thanks.html')
+    return render(request, 'iSkyLIMS_core/thanks.html')
     #return HttpResponse('Thank you for your message.')
