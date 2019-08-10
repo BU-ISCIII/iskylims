@@ -2,7 +2,6 @@ from iSkyLIMS_wetlab.models import *
 
 def build_record_sample_form () :
     sample_information = {}
-    sample_information['protocols'] = get_full_defined_protocols_name()
     sample_information['species'] = get_species()
     sample_information['laboratory'] = get_laboratory()
     sample_information['sampleType'] = get_sample_type()
@@ -211,8 +210,7 @@ def select_samples_4_dna(valid_samples) :
         filter_samples.
     '''
     filter_samples = []
-    protocol = valid_samples[0][4]
-    nucleic = valid_samples[0][3]
+
     for sample in valid_samples :
         if sample[3] == nucleic and sample[4] == protocol :
             filter_samples.append(str(SamplesInProject.objects.get(sampleCodeID__exact = sample[1]).pk))

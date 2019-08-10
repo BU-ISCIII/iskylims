@@ -135,14 +135,12 @@
                                 </thead>
                                 <tbody>
 
-                                    {% for date, code, type, dna, protocol ,  s_id in protocol_s_list  %}
+                                    {% for date, code, type,  s_id in protocol_s_list  %}
                                         <tr>
 
                                                 <td>{{ date }}</td>
                                                 <td>{{ code }}</td>
                                                 <td>{{type}}</td>
-                                                <td>{{dna}}</td>
-                                                <td>{{protocol}}</td>
                                                 <td><input type="checkbox" name="samples" value="{{s_id}}"></td>
 
                                         </tr>

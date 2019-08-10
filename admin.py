@@ -52,8 +52,8 @@ class ProtocolInLabAdmin (admin.ModelAdmin):
 class LaboratoryAdmin (admin.ModelAdmin):
     list_display = ['labName' , 'labCoding' , 'labLocation' ]
 
-class LibraryProtocolParametersAdmin (admin.ModelAdmin):
-    list_display = ('parameterName', 'parameterDescription', 'parameterOrder','parameterUsed','parameterMaxValue', 'parameterMinValue')
+#class LibraryProtocolParametersAdmin (admin.ModelAdmin):
+#    list_display = ('parameterName', 'parameterDescription', 'parameterOrder','parameterUsed','parameterMaxValue', 'parameterMinValue')
 
 class NucleotidesComercialKitsAdmin (admin.ModelAdmin):
     list_display = ('name', 'protocol_id', 'provider', 'naType','chipLot','usedDate', 'expirationDate')
@@ -74,6 +74,21 @@ class SpeciesAdmin (admin.ModelAdmin):
     list_display= ['spicesName', 'refGenomeName', 'refGenomeSize' , 'refGenomeID' ]
 
 
+#################### New
+class MoleculeTypeAdmin( admin.ModelAdmin):
+    list_display = ('moleculeType',)
+
+class ProtocolsAdmin(admin.ModelAdmin):
+    list_display = ('type', 'name', 'description')
+
+class ProtocolTypeAdmin( admin.ModelAdmin):
+    list_display = ('molecule','protocol_type')
+
+
+class ProtocolParametersAdmin (admin.ModelAdmin):
+    list_display = ('protocol_id', 'parameterName', 'parameterOrder', 'parameterUsed', 'parameterMinValue', 'parameterMaxValue', 'parameterDescription')
+
+
 admin.site.register(RunningParameters , RunningParametersAdmin)
 admin.site.register(RunProcess , RunProcessAdmin)
 admin.site.register(BaseSpaceLibraryName,BaseSpaceLibraryNameAdmin)
@@ -85,11 +100,22 @@ admin.site.register(SamplesInProject, SamplesInProjectAdmin)
 admin.site.register(ProtocolInLab, ProtocolInLabAdmin)
 
 admin.site.register(Laboratory, LaboratoryAdmin)
-admin.site.register(LibraryProtocolParameters, LibraryProtocolParametersAdmin)
+#admin.site.register(LibraryProtocolParameters, LibraryProtocolParametersAdmin)
 admin.site.register(NucleotidesComercialKits,NucleotidesComercialKitsAdmin)
 admin.site.register(ReagentsCommercialKits,ReagentsCommercialKitsAdmin)
+
+
 admin.site.register(NAProtocolParameters,NAProtocolParametersAdmin)
+
 admin.site.register(NAProtParamData, NAProtParamDataAdmin)
 admin.site.register(SampleType, SampleTypeAdmin)
 admin.site.register(Species, SpeciesAdmin)
 admin.site.register(StatesForSample, StatesForSampleAdmin)
+
+
+
+### new
+admin.site.register(MoleculeType,MoleculeTypeAdmin)
+admin.site.register(ProtocolType,ProtocolTypeAdmin)
+admin.site.register(Protocols,ProtocolsAdmin)
+admin.site.register(ProtocolParameters,ProtocolParametersAdmin)

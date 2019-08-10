@@ -3282,18 +3282,19 @@ def record_sample(request):
     if request.method == 'POST' and request.POST['action'] == 'recordsample':
 
         excel_data = request.POST['table_data']
+        na_json_data = json.loads(request.POST['table_data'])
         heading_in_excel = ['patientCodeName', 'laboratory', 'labSampleName', 'extractionDate',
-                        'sampleName', 'sampleType', 'species', 'nucleicAccid', 'sampleProtocol']
+                        'sampleName', 'sampleType', 'species']
 
         sample_recorded = {}
         not_valid_samples_same_user = []
         not_valid_samples_other_user = []
         valid_samples =[]
 
-        rows_sample_data= get_data_from_excel_form(excel_data, len(heading_in_excel))
+
         sample_recorded['allow_continue_DNA'] = True
         samples_continue_DNA = []
-        for row in rows_sample_data :
+        for row in na_json_data :
             sample_data = {}
             sample_name = row[heading_in_excel.index('sampleName')]
             if sample_name == '' :
@@ -3303,20 +3304,20 @@ def record_sample(request):
                     sample_data[heading_in_excel[i]] = row[i]
 
                 sample_data['user'] = request.user.username
-                #import pdb; pdb.set_trace()
                 lab_code = Laboratory.objects.get(labName__exact = row[heading_in_excel.index('laboratory')] ).get_lab_code()
                 sample_data['sample_id'] = str(lab_code + '_' + sample_name)
-                if not SamplesInProject.objects.exclude(uniqueSampleID__isnull = True).exists():
+                if not Samples.objects.exclude(uniqueSampleID__isnull = True).exists():
                     sample_data['new_unique_value'] = 'AAA-0001'
                 else:
                     last_unique_value = SamplesInProject.objects.exclude(uniqueSampleID__isnull = True).last().uniqueSampleID
                     sample_data['new_unique_value'] = increase_unique_value(last_unique_value)
-                new_sample = SamplesInProject.objects.create_sample_from_investigator(sample_data)
+                new_sample = Samples.objects.create_sample(sample_data)
                 valid_samples.append(new_sample.get_sample_definition_information().split(';'))
                 samples_continue_DNA.append(new_sample.get_sample_id())
 
             else: # get the invalid sample to displays information to user
                 sample_recorded['allow_continue_DNA'] = False
+                import pdb; pdb.set_trace()
                 invalid_sample = SamplesInProject.objects.get(sampleName__exact = sample_name)
                 if request.user.username == invalid_sample.get_register_user() :
                     not_valid_samples_same_user.append(invalid_sample.get_sample_definition_information().split(';'))
@@ -3327,28 +3328,26 @@ def record_sample(request):
             # get the choices to be included in the form
             sample_information = build_record_sample_form ()
             sample_information['heading'] = ['Patient Code Name', 'Laboratory', 'Laboratory Sample', 'Extraction date',
-                            'Sample Name', 'Type of Sample', 'Species', 'Nucleo Acid', 'Library Protocol']
+                            'Sample Name', 'Type of Sample', 'Species']
             return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
 
         sample_recorded['valid_samples'] = valid_samples
         sample_recorded['not_valid_samples_same_user'] = not_valid_samples_same_user
         sample_recorded['not_valid_samples_other_user'] = not_valid_samples_other_user
-        sample_recorded['heading'] = ['Sample Recorded Date', 'Sample Code ID','Sample Type', 'Nucleic Acid','Protocol']
-        sample_recorded['heading_same_user'] = ['Sample Recorded Date', 'Sample Code ID', 'Sample Type', 'Nucleic Acid',
-                        'Protocol', 'New DNA', 'New Library', 'Repetition']
+        sample_recorded['heading'] = ['Sample Recorded Date', 'Sample Code ID','Sample Type']
+        sample_recorded['heading_same_user'] = ['Sample Recorded Date', 'Sample Code ID', 'Sample Type',
+                        'New DNA', 'New Library', 'Repetition']
         sample_recorded['heading_other_user'] = [ 'Sample Name', 'Registered Sample Date']
         if sample_recorded['allow_continue_DNA']:
-            sample_recorded['samples_continue_DNA'] = select_samples_4_dna(valid_samples)
+            sample_recorded['samples_continue_DNA'] = valid_samples
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
     else:
         sample_information = build_record_sample_form()
-        sample_information['heading'] = ['Patient Code Name', 'Laboratory', 'Laboratory Sample', 'Extraction date',
-                        'Sample Name', 'Type of Sample', 'Species', 'Nucleo Acid', 'Library Protocol']
+        sample_information['heading'] = ['Patient Code Name', 'Laboratory Name', 'Laboratory Sample Name', 'Sample Extraction date',
+                        'Sample Name', 'Type of Sample', 'Species']
         # check if clinic application is installed
-        if 'iSkyLIMS_clinicXXX' in settings.INSTALLED_APPS:
-            # get the samples from
-            sample_information['data'] =''
-        row_data = ['']*7
+
+        row_data = ['']*len(sample_information['heading'])
         row_data[0]= 'pat-2'
         row_data[2] = 'sample-lab'
         data = []
@@ -3375,7 +3374,7 @@ def set_DNA_values(request):
         if request.POST['samples'] == '':
             return render (request,'iSkyLIMS_wetlab/error_page.html',
                 {'content':['There was no sample selected ']})
-        if  request.POST['samples_in_list'] :
+        if  'samples_in_list' in request.POST:
             samples = request.POST.getlist('samples')
         else:
             samples = request.POST['samples'].split(',')
