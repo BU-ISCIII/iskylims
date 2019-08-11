@@ -921,7 +921,7 @@ class NAProtParamData (models.Model):
 ##################### New #########################
 ############## To be included in core #############
 ###################################################
-
+'''
 class MoleculeType (models.Model):
     moleculeType = models.CharField(max_length = 30)
 
@@ -1037,3 +1037,4 @@ class Samples (models.Model):
         return '%s' %(recordeddate)
 
     objects = SamplesManager()
+'''

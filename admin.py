@@ -21,10 +21,10 @@ class RunErrorsAdmin (admin.ModelAdmin):
 
 class RunStatesAdmin (admin.ModelAdmin):
     list_display = ('runStateName',)
-
+'''
 class StatesForSampleAdmin (admin.ModelAdmin):
     list_display = ('sampleStateName',)
-
+'''
 class RunningParametersAdmin(admin.ModelAdmin):
     list_display = ('runName_id','RunID','ExperimentName','RunStartDate')
     #import pdb; pdb.set_trace()
@@ -45,16 +45,16 @@ class IndexLibraryKitAdmin(admin.ModelAdmin):
 
 class SamplesInProjectAdmin (admin.ModelAdmin):
     list_display = ('project_id','sampleName','barcodeName','pfClusters','percentInProject','yieldMb','qualityQ30')
-
+'''
 class ProtocolInLabAdmin (admin.ModelAdmin):
     list_display = ('protocolName',)
 
 class LaboratoryAdmin (admin.ModelAdmin):
     list_display = ['labName' , 'labCoding' , 'labLocation' ]
-
+'''
 #class LibraryProtocolParametersAdmin (admin.ModelAdmin):
 #    list_display = ('parameterName', 'parameterDescription', 'parameterOrder','parameterUsed','parameterMaxValue', 'parameterMinValue')
-
+'''
 class NucleotidesComercialKitsAdmin (admin.ModelAdmin):
     list_display = ('name', 'protocol_id', 'provider', 'naType','chipLot','usedDate', 'expirationDate')
 
@@ -88,7 +88,7 @@ class ProtocolTypeAdmin( admin.ModelAdmin):
 class ProtocolParametersAdmin (admin.ModelAdmin):
     list_display = ('protocol_id', 'parameterName', 'parameterOrder', 'parameterUsed', 'parameterMinValue', 'parameterMaxValue', 'parameterDescription')
 
-
+'''
 admin.site.register(RunningParameters , RunningParametersAdmin)
 admin.site.register(RunProcess , RunProcessAdmin)
 admin.site.register(BaseSpaceLibraryName,BaseSpaceLibraryNameAdmin)
@@ -97,6 +97,7 @@ admin.site.register(Projects, ProjectsAdmin)
 admin.site.register(RunErrors, RunErrorsAdmin)
 admin.site.register(RunStates, RunStatesAdmin)
 admin.site.register(SamplesInProject, SamplesInProjectAdmin)
+'''
 admin.site.register(ProtocolInLab, ProtocolInLabAdmin)
 
 admin.site.register(Laboratory, LaboratoryAdmin)
@@ -119,3 +120,4 @@ admin.site.register(MoleculeType,MoleculeTypeAdmin)
 admin.site.register(ProtocolType,ProtocolTypeAdmin)
 admin.site.register(Protocols,ProtocolsAdmin)
 admin.site.register(ProtocolParameters,ProtocolParametersAdmin)
+'''
