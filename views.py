@@ -69,3 +69,6 @@ def contact(request):
 def thanks(request):
     return render(request, 'iSkyLIMS_core/thanks.html')
     #return HttpResponse('Thank you for your message.')
+
+def record_samples (request):
+    return render(request, 'iSkyLIMS_core/thanks.html')
