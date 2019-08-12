@@ -1,11 +1,6 @@
 from iSkyLIMS_wetlab.models import *
 
-def build_record_sample_form () :
-    sample_information = {}
-    sample_information['species'] = get_species()
-    sample_information['laboratory'] = get_laboratory()
-    sample_information['sampleType'] = get_sample_type()
-    return sample_information
+
 
 
 def sample_already_defined(sample_name):
@@ -41,24 +36,7 @@ def get_data_from_excel_form (spreadsheet, n_columns):
         d_list.append(split_data[i:i+n_columns])
     return d_list
 
-def get_laboratory ():
-    '''
-    Description:
-        The function will return the laboratories defined in database.
-    Input:
-        none
-    Variables:
-        laboratories # list containing all laboratory names
-    Return:
-        laboratories.
-    '''
-    laboratories = []
-    if Laboratory.objects.filter().exists():
-        laboratory_names = Laboratory.objects.all()
 
-        for laboratory in laboratory_names:
-            laboratories.append(laboratory.get_name())
-    return laboratories
 
 
 def get_nucleic_accid_kits(na_type, register_user) :
@@ -128,43 +106,8 @@ def get_samples_for_na_definition (register_user):
 
     return samples_obj
 
-def get_sample_type ():
-    '''
-    Description:
-        The function will return the type of samples defined in database.
-    Input:
-        none
-    Variables:
-        sample_type_names # list containing all sample types names
-    Return:
-        sample_type_names.
-    '''
-    sample_type_names = []
-    if SampleType.objects.filter().exists():
-        sample_types = SampleType.objects.all()
 
-        for sample in sample_types:
-            sample_type_names.append(sample.get_name())
-    return sample_type_names
 
-def get_species ():
-    '''
-    Description:
-        The function will return the name of the species defined in database.
-    Input:
-        none
-    Variables:
-        species_names # list containing all species names
-    Return:
-        species_names.
-    '''
-    species_names = []
-    if Species.objects.filter().exists():
-        all_species = Species.objects.all()
-
-        for species in all_species:
-            species_names.append(species.get_name())
-    return species_names
 
 def increase_unique_value (old_unique_number):
 
