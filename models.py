@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-#from django.utils.translation import ugettext_lazy as _
+import datetime
+
 
 
 
@@ -18,10 +19,6 @@ class Laboratory (models.Model):
 
     def get_lab_code (self):
         return '%s' %(self.labCoding)
-
-
-
-
 
 
 class MoleculeType (models.Model):
@@ -64,19 +61,7 @@ class ProtocolParameters (models.Model):
 
 
 
-class SamplesManager (models.Manager):
 
-    def create_sample (self, sample_data):
-        new_sample = self.create(sampleState = StatesForSample.objects.get(sampleStateName__exact = 'Defined'),
-                            laboratory = Laboratory.objects.get(labName__exact = sample_data['laboratory']),
-                            patientCodeName = sample_data['patientCodeName'],
-                            sampleType = SampleType.objects.get(sampleType__exact = sample_data['sampleType']) ,
-                            registerUser = User.objects.get(username__exact = sample_data['user']),
-                            sampleCodeID = sample_data['sample_id'] , sampleName =  sample_data['sampleName'],
-                            uniqueSampleID = sample_data['new_unique_value'],
-                            species = Species.objects.get(spicesName__exact = sample_data['species']),
-                            sampleExtractionDate = datetime.datetime.strptime(sample_data['extractionDate'],'%Y-%m-%d %H:%M:%S'))
-        return new_sample
 
 class StatesForSample (models.Model):
     sampleStateName = models.CharField(max_length=50)
@@ -92,8 +77,6 @@ class SampleType (models.Model):
         return '%s' %(self.sampleType)
 
 
-
-
 class Species (models.Model):
     spicesName = models.CharField(max_length=50)
     refGenomeName = models.CharField(max_length=255)
@@ -105,6 +88,20 @@ class Species (models.Model):
 
     def get_name(self):
         return '%s' %(self.spicesName)
+
+class SamplesManager (models.Manager):
+
+    def create_sample (self, sample_data):
+        new_sample = self.create(sampleState = StatesForSample.objects.get(sampleStateName__exact = 'Defined'),
+                            laboratory = Laboratory.objects.get(labName__exact = sample_data['laboratory']),
+                            patientCodeName = sample_data['patientCodeName'],
+                            sampleType = SampleType.objects.get(sampleType__exact = sample_data['sampleType']) ,
+                            sampleUser = User.objects.get(username__exact = sample_data['user']),
+                            sampleCodeID = sample_data['sample_id'] , sampleName =  sample_data['sampleName'],
+                            uniqueSampleID = sample_data['new_unique_value'],
+                            species = Species.objects.get(spicesName__exact = sample_data['species']),
+                            sampleExtractionDate = datetime.datetime.strptime(sample_data['extractionDate'],'%Y-%m-%d %H:%M:%S'))
+        return new_sample
 
 class Samples (models.Model):
     sampleState = models.ForeignKey(
@@ -125,11 +122,12 @@ class Samples (models.Model):
     species = models.ForeignKey(
                 Species,
                 on_delete=models.CASCADE, null = True)
-
+    sampleName = models.CharField(max_length=255, null = True)
     sampleExtractionDate = models.DateTimeField(auto_now_add = False, null =True)
     uniqueSampleID = models.CharField(max_length=8, null = True)
     patientCodeName = models.CharField(max_length=255, null = True)
     sampleCodeID = models.CharField(max_length=60, null = True)
+    generated_at = models.DateTimeField(auto_now_add=True)
 
 
 
@@ -159,10 +157,10 @@ class Samples (models.Model):
         return '%s' %(self.sampleProtocol)
 
     def get_register_user(self):
-        if self.registerUser is None:
+        if self.sampleUser is None:
             return 'Not avilable'
         else:
-            return '%s' %(self.registerUser)
+            return '%s' %(self.sampleUser)
 
     def get_registered_sample (self):
         recordeddate=self.generated_at.strftime("%B %d, %Y")
