@@ -3286,7 +3286,7 @@ def record_samples(request):
                 len(sample_recorded['not_valid_samples_other_user']) == 0):
             sample_information = prepare_sample_input_table()
             return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
-        else:
+        else :
             return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
     else:
         sample_information = prepare_sample_input_table()
