@@ -127,6 +127,7 @@ class Samples (models.Model):
     uniqueSampleID = models.CharField(max_length=8, null = True)
     patientCodeName = models.CharField(max_length=255, null = True)
     sampleCodeID = models.CharField(max_length=60, null = True)
+    reused = models.BooleanField(null = True, blank = True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
 
