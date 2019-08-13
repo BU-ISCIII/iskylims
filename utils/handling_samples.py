@@ -22,7 +22,7 @@ def analize_input_samples (request):
     not_valid_samples_same_user = []
     not_valid_samples_other_user = []
     valid_samples =[]
-    sample_recorded['allow_continue'] = True
+    sample_recorded['all_samples_valid'] = True
     samples_continue = []
     for row in na_json_data :
         sample_data = {}
@@ -45,7 +45,7 @@ def analize_input_samples (request):
             valid_samples.append(new_sample.get_sample_definition_information().split(';'))
             samples_continue.append(new_sample.get_sample_id())
         else: # get the invalid sample to displays information to user
-            sample_recorded['allow_continue'] = False
+            sample_recorded['all_samples_valid'] = False
             invalid_sample = Samples.objects.get(sampleName__exact = sample_name)
             if request.user.username == invalid_sample.get_register_user() :
                 not_valid_samples_same_user.append(invalid_sample.get_sample_definition_information().split(';'))
@@ -59,8 +59,8 @@ def analize_input_samples (request):
         sample_recorded['heading_same_user'] = ['Sample Recorded Date', 'Sample Code ID', 'Sample Type',
                         'New DNA', 'New Library', 'Repetition']
         sample_recorded['heading_other_user'] = [ 'Sample Name', 'Registered Sample Date']
-        if sample_recorded['allow_continue']:
-            sample_recorded['samples_continue'] = samples_continue
+        if sample_recorded['all_samples_valid']:
+            sample_recorded['samples_to_continue'] = samples_continue
 
     return sample_recorded
 
