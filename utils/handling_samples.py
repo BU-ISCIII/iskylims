@@ -172,6 +172,7 @@ def get_molecule_protocols ():
         protocols.
     '''
     protocol_types = []
+    protocol_list = []
     protocols = {}
     p_types = ProtocolType.objects.filter(molecule__isnull = False)
     for p_type in p_types :
@@ -181,9 +182,11 @@ def get_molecule_protocols ():
             protocols[protocol_type] = []
         protocols_in_type = Protocols.objects.filter(type__protocol_type__exact = protocol_type)
         for p_in_type in protocols_in_type:
-            protocols[protocol_type].append(p_in_type.get_name())
+            protocol_name = p_in_type.get_name()
+            protocols[protocol_type].append(protocol_name)
+            protocol_list.append(protocol_name)
 
-    return protocols
+    return protocols, protocol_list
 
 def increase_unique_value (old_unique_number):
     '''
@@ -237,17 +240,17 @@ def prepare_sample_input_table ():
     s_information ['table_size']= len(HEADING_FOR_RECORD_SAMPLES)
     return s_information
 
-def prepare_molecule_input_table (samples, username):
+def prepare_molecule_input_table (samples):
     '''
     Description:    The function .
     Input:
         samples     # list of the samples to be include in tne table
     Variables:
-        s_information # dictionary which collects all info
+        molecule_information # dictionary which collects all info
     Return:
         molecule_information #
     '''
-    headings = ['Sample ID', 'Molecule type', 'Type of Extraction', 'Extraction date', 'Protocol Extraction']
+    headings = ['Sample ID', 'Molecule type', 'Type of Extraction', 'Extraction date', 'Protocol type', 'Protocol to be used']
     molecule_information = {}
     molecule_information['headings'] = headings
     molecule_information['data'] = []
@@ -269,10 +272,8 @@ def prepare_molecule_input_table (samples, username):
         data.append(['']*len(headings))
         data[0][0] = Samples.objects.get(pk__exact = sample).get_sample_code()
         molecule_information['data'] = data
-        import pdb; pdb.set_trace()
-    #molecule_information['sample_code_id'] = sample_code_id
     molecule_information['type_of_molecules'] = get_molules_type ()
-    molecule_information['protocols'] = get_molecule_protocols()
+    molecule_information['protocols_dict'],molecule_information['protocol_list']  = get_molecule_protocols()
     molecule_information['number_of_samples'] = len(valid_samples)
     molecule_information['table_length']  = len(headings)
     return molecule_information
