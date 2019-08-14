@@ -2,13 +2,13 @@ from iSkyLIMS_wetlab.models import *
 
 
 
-
+'''
 def sample_already_defined(sample_name):
     if SamplesInProject.objects.filter(sampleName__exact = sample_name, sampleState__sampleStateName = 'Defined').exists():
         return True
     else:
         return False
-
+'''
 def get_available_lib_kit (register_user):
     lib_kits = []
     if ReagentsCommercialKits.objects.filter(registerUser__username__exact = register_user).exists():
@@ -108,7 +108,7 @@ def get_samples_for_na_definition (register_user):
 
 
 
-
+'''
 def increase_unique_value (old_unique_number):
 
     split_value = old_unique_number.split('-')
@@ -137,7 +137,7 @@ def increase_unique_value (old_unique_number):
     number_str = number_str.zfill(4)
     return str(letter + '-' + number_str)
 
-
+'''
 def select_samples_4_dna(valid_samples) :
     '''
     Description:

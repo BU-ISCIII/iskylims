@@ -3376,17 +3376,11 @@ def record_sample(request):
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
 
 '''
-@login_required
-def update_samples(request):
-
-
-    return
 
 @login_required
 def set_DNA_values(request):
     fix_headings = ['Sample ID', 'Nucleic Accid type', 'Type of Extraction', 'Extraction Kit']
     if request.method == 'POST' and request.POST['action'] == 'continueWithDNA':
-
         if request.POST['samples'] == '':
             return render (request,'iSkyLIMS_wetlab/error_page.html',
                 {'content':['There was no sample selected ']})
@@ -3394,6 +3388,25 @@ def set_DNA_values(request):
             samples = request.POST.getlist('samples')
         else:
             samples = request.POST['samples'].split(',')
+
+        na_data = prepare_molecule_input_table (samples, request.user.username)
+        import pdb; pdb.set_trace()
+        return render(request, 'iSkyLIMS_wetlab/setDNAValues.html',{'na_data':na_data})
+
+'''
+@login_required
+def set_DNA_values(request):
+    fix_headings = ['Sample ID', 'Nucleic Accid type', 'Type of Extraction', 'Extraction Kit']
+    if request.method == 'POST' and request.POST['action'] == 'continueWithDNA':
+        if request.POST['samples'] == '':
+            return render (request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':['There was no sample selected ']})
+        if  'samples_in_list' in request.POST:
+            samples = request.POST.getlist('samples')
+        else:
+            samples = request.POST['samples'].split(',')
+
+        prepare_molecule_input_table (samples, request.user.username)
         na_data = {}
         na_parameters_list = []
         samples_id = []
@@ -3405,7 +3418,7 @@ def set_DNA_values(request):
             except:
                 continue
         import pdb; pdb.set_trace()
-        if not SamplesInProject.objects.filter(pk__exact = select_samples[0]).exists():
+        if not Samples.objects.filter(pk__exact = select_samples[0]).exists():
             return render (request,'iSkyLIMS_wetlab/error_page.html',
                 {'content':['The sample/samples that you are trying to get ', 'DOES NOT exists .']})
         protocol_obj =  SamplesInProject.objects.get(pk__exact = select_samples[0]).sampleProtocol
@@ -3503,7 +3516,7 @@ def set_DNA_values(request):
         #import pdb; pdb.set_trace()
         return render(request, 'iSkyLIMS_wetlab/setDNAValues.html',{'display_list': display_list})
     return render(request, 'iSkyLIMS_wetlab/setDNAValues.html',{})
-
+'''
 
 @login_required
 def set_library_values (request):

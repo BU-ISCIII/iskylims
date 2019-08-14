@@ -28,23 +28,25 @@
                               var data = [{% for values in na_data.data %}
                                 [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
                               ];
+
+
+
+
                             mySpreadsheet = $('#spreadsheet').jexcel({
                                 data:data,
                                 columns: [
-                                    { type: 'text', title:'{{na_data.fix_headings.0}}', width:150 , readOnly:true },
-                                    { type: 'text', title:'{{na_data.fix_headings.1}}', width:80,  readOnly:true  },
-                                    { type: 'dropdown', title:'{{na_data.fix_headings.2}}', width:100 , source :['Manual', 'Automated']},
-                                    { type: 'dropdown', title: '{{na_data.fix_headings.3}}', width:180 , source:[{% for values in na_data.kits %}'{{values}}',{% endfor %} ] },
-                                    {% for value in na_data.params %}
-                                        { type: 'text', title:'{{value}}', width:80 , wordWrap:true},
-                                    {% endfor %}
+                                    { type: 'text', title:'{{na_data.headings.0}}', width:180 , readOnly:true },
+                                    { type: 'dropdown', title:'{{na_data.headings.1}}', width:150 , source :[ {%for value in na_data.type_of_molecules%}'{{value}}',{% endfor %}]},
+                                    { type: 'dropdown', title:'{{na_data.headings.2}}', width:150 , source :['Manual', 'Automated']},
+                                    { type: 'calendar' , title: '{{na_data.headings.3}}', width:150 },
+                                    { type: 'dropdown', title: '{{na_data.headings.4}}', width:180 , source:[{% for values in na_data.protocols %}'{{values}}',{% endfor %} ] },
                                 ],
                                 allowInsertColumn:false,
                                 allowDeleteColumn:false,
                                 allowRenameColumn:false,
                                 allowInsertRow:false,
                                 allowDeleteRow:false,
-                                csvFileName:'Nucleic_Accid_data',
+                                csvFileName:'Molecule_data',
                                 minDimensions:[{{na_data.table_length}},{{na_data.number_of_samples}}],
                             });
                         </script>
