@@ -27,6 +27,9 @@ class MoleculeType (models.Model):
     def __str__ (self):
         return '%s' %(self.moleculeType)
 
+    def get_name (self):
+        return '%s' %(self.moleculeType)
+
 
 class ProtocolType (models.Model):
     molecule = models.ForeignKey(
@@ -35,6 +38,9 @@ class ProtocolType (models.Model):
     protocol_type = models.CharField(max_length = 40)
 
     def __str__ (self) :
+        return '%s' %(self.protocol_type)
+
+    def get_name (self):
         return '%s' %(self.protocol_type)
 
 class Protocols (models.Model):
@@ -47,6 +53,8 @@ class Protocols (models.Model):
     def __str__ (self) :
         return '%s' %(self.name)
 
+    def get_name (self):
+        return '%s' %(self.name)
 
 class ProtocolParameters (models.Model):
     protocol_id = models.ForeignKey(

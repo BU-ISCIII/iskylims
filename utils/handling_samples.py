@@ -60,10 +60,9 @@ def analize_input_samples (request):
                         'New DNA', 'New Library', 'Repetition']
         sample_recorded['heading_other_user'] = [ 'Sample Name', 'Registered Sample Date']
         if sample_recorded['all_samples_valid']:
-            sample_recorded['samples_to_continue'] = samples_continue
-
+            sample_recorded['samples_to_continue'] = ','.join(samples_continue)
+    import pdb; pdb.set_trace()
     return sample_recorded
-
 
 def build_record_sample_form () :
     sample_information = {}
@@ -71,6 +70,21 @@ def build_record_sample_form () :
     sample_information['laboratory'] = get_laboratory()
     sample_information['sampleType'] = get_sample_type()
     return sample_information
+
+def get_extraction_kits(username) :
+    '''
+    Description:
+        The function will return the kits that are associated to the user.
+    Input:
+        username
+    Variables:
+        laboratories # list containing all laboratory names
+    Return:
+        laboratories.
+    '''
+    kits = 1
+    return
+
 
 def get_laboratory ():
     '''
@@ -129,6 +143,47 @@ def get_species ():
             species_names.append(species.get_name())
     return species_names
 
+def get_molules_type ():
+    '''
+    Description:
+        The function will return the list of type of molecules defined.
+    Input:
+        none
+    Variables:
+        molecule_type # list containing all type of molecules
+    Return:
+        molecule_type.
+    '''
+    molecule_type = []
+    types = MoleculeType.objects.all()
+    for type in types:
+        molecule_type.append(type.get_name())
+    return molecule_type
+
+def get_molecule_protocols ():
+    '''
+    Description:
+        The function will return the protocols defined.
+    Input:
+        none
+    Variables:
+        protocols # dictionary containing all protocols using "key" as protocol type
+    Return:
+        protocols.
+    '''
+    protocol_types = []
+    protocols = {}
+    p_types = ProtocolType.objects.filter(molecule__isnull = False)
+    for p_type in p_types :
+        protocol_types.append(p_type.get_name())
+    for protocol_type in protocol_types:
+        if protocol_type not in protocols :
+            protocols[protocol_type] = []
+        protocols_in_type = Protocols.objects.filter(type__protocol_type__exact = protocol_type)
+        for p_in_type in protocols_in_type:
+            protocols[protocol_type].append(p_in_type.get_name())
+
+    return protocols
 
 def increase_unique_value (old_unique_number):
     '''
@@ -182,6 +237,45 @@ def prepare_sample_input_table ():
     s_information ['table_size']= len(HEADING_FOR_RECORD_SAMPLES)
     return s_information
 
+def prepare_molecule_input_table (samples, username):
+    '''
+    Description:    The function .
+    Input:
+        samples     # list of the samples to be include in tne table
+    Variables:
+        s_information # dictionary which collects all info
+    Return:
+        molecule_information #
+    '''
+    headings = ['Sample ID', 'Molecule type', 'Type of Extraction', 'Extraction date', 'Protocol Extraction']
+    molecule_information = {}
+    molecule_information['headings'] = headings
+    molecule_information['data'] = []
+    valid_samples = []
+    for sample in samples :
+        try:
+            if  Samples.objects.filter(pk__exact = int(sample)).exists():
+                valid_samples.append(int(sample))
+        except:
+            continue
+        if len(valid_samples) == 0:
+            molecule_information['error'] = True
+            return molecule_information
+    sample_code_id = []
+    for sample in valid_samples:
+
+        #sample_code_id.append(Samples.objects.get(pk__exact = sample).get_sample_code())
+        data = []
+        data.append(['']*len(headings))
+        data[0][0] = Samples.objects.get(pk__exact = sample).get_sample_code()
+        molecule_information['data'] = data
+        import pdb; pdb.set_trace()
+    #molecule_information['sample_code_id'] = sample_code_id
+    molecule_information['type_of_molecules'] = get_molules_type ()
+    molecule_information['protocols'] = get_molecule_protocols()
+    molecule_information['number_of_samples'] = len(valid_samples)
+    molecule_information['table_length']  = len(headings)
+    return molecule_information
 
 def sample_already_defined(sample_name):
     if Samples.objects.filter(sampleName__exact = sample_name, sampleState__sampleStateName = 'Defined').exists():
