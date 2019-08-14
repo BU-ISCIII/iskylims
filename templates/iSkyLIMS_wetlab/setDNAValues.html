@@ -19,27 +19,40 @@
                         {% csrf_token %}
                         <input type="hidden" name="action" value="updateNA"/>
                         <input type="hidden" name="na_parameters" value="{{ na_data.na_parameters }}"/>
-                        <input type="hidden" name= "samples" value="{{na_data.samples}}"
-                        <div class="table-responsive">
+                        <input type="hidden" name= "samples" value="{{na_data.samples}}"/>
+
                         <div id="spreadsheet"></div>
                         <br><br><br><br>
                         </div> <!--  end of col-table-responsive -->
                         <script>
-                              var data = [{% for values in na_data.data %}
+                            var data = [{% for values in na_data.data %}
                                 [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
-                              ];
+                            ];
 
+                            dropdownFilter = function(instance, cell, c, r, source) {
+                                var value = instance.jexcel.getValueFromCoords(c - 1, r);
+                                {% for item, values in na_data.protocol_filter_selection %}
+                                    if (value == '{{item}}') {
+                                    return [{% for val in values %}'{{val}}',{% endfor %}];
+                                }
+                                {% endfor %}
 
-
+                                else {
+                                    return source;
+                                }
+                            }
 
                             mySpreadsheet = $('#spreadsheet').jexcel({
                                 data:data,
                                 columns: [
                                     { type: 'text', title:'{{na_data.headings.0}}', width:180 , readOnly:true },
-                                    { type: 'dropdown', title:'{{na_data.headings.1}}', width:150 , source :[ {%for value in na_data.type_of_molecules%}'{{value}}',{% endfor %}]},
+                                    { type: 'dropdown', title:'{{na_data.headings.1}}', width:150 , source :[ {% for value in na_data.type_of_molecules %} '{{value}}', {% endfor %}]},
                                     { type: 'dropdown', title:'{{na_data.headings.2}}', width:150 , source :['Manual', 'Automated']},
                                     { type: 'calendar' , title: '{{na_data.headings.3}}', width:150 },
-                                    { type: 'dropdown', title: '{{na_data.headings.4}}', width:180 , source:[{% for values in na_data.protocols %}'{{values}}',{% endfor %} ] },
+                                    { type: 'dropdown', title:'{{na_data.headings.4}}', width:150 , source :[ {% for value in na_data.protocol_type %}{'id':'{{value}}','name':'{{value}}'}, {% endfor %}]},
+                                    { type: 'dropdown', title: '{{na_data.headings.5}}', width:180 , source:[{% for value in na_data.protocol_list %}'{{value}}',{% endfor %} ],
+                                            filter:dropdownFilter },
+
                                 ],
                                 allowInsertColumn:false,
                                 allowDeleteColumn:false,
@@ -48,6 +61,12 @@
                                 allowDeleteRow:false,
                                 csvFileName:'Molecule_data',
                                 minDimensions:[{{na_data.table_length}},{{na_data.number_of_samples}}],
+                                onchange:function(instance, cell, c, r, value) {
+                                    if (c == 4) {
+                                        var columnName = jexcel.getColumnNameFromId([5, r]);
+                                        instance.jexcel.setValue(columnName, '');
+                                    }
+                                }
                             });
                         </script>
 

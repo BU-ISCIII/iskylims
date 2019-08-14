@@ -3389,8 +3389,13 @@ def set_DNA_values(request):
         else:
             samples = request.POST['samples'].split(',')
 
-        na_data = prepare_molecule_input_table (samples, request.user.username)
-        import pdb; pdb.set_trace()
+        na_data = prepare_molecule_input_table (samples)
+
+        na_data['protocol_type'] = list(na_data['protocols_dict'].keys())
+        na_data['protocol_filter_selection'] = []
+        for key, value in na_data['protocols_dict'].items():
+            na_data['protocol_filter_selection'].append([key, value])
+
         return render(request, 'iSkyLIMS_wetlab/setDNAValues.html',{'na_data':na_data})
 
 '''
