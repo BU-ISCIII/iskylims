@@ -131,6 +131,7 @@ class Samples (models.Model):
                 Species,
                 on_delete=models.CASCADE, null = True)
     sampleName = models.CharField(max_length=255, null = True)
+    labSampleName = models.CharField(max_length=255, null = True, blank = True)
     sampleExtractionDate = models.DateTimeField(auto_now_add = False, null =True)
     uniqueSampleID = models.CharField(max_length=8, null = True)
     patientCodeName = models.CharField(max_length=255, null = True)
@@ -140,13 +141,17 @@ class Samples (models.Model):
 
 
 
-    def get_sample_definition_information (self):
-        recordeddate=self.sampleExtractionDate.strftime("%B %d, %Y")
-        return '%s;%s;%s' %(recordeddate, self.sampleCodeID, self.sampleType.sampleType)
-
-    def get_sample_nucleic_information (self) :
-        return [self.sampleCodeID, self.nucleicAccid, self. extractionMethod,
-                    self.sampleExtractionCodeID]
+    def get_info_in_defined_state(self):
+        sample_info = []
+        sample_info.append(self.sampleExtractionDate.strftime("%d , %B , %Y"))
+        sample_info.append(self.sampleCodeID)
+        sample_info.append(self.patientCodeName)
+        sample_info.append(self.laboratory.get_name())
+        sample_info.append(self.labSampleName)
+        sample_info.append(self.sampleType.get_name())
+        sample_info.append(self.species.get_name())
+        sample_info.append(str(self.pk))
+        return sample_info
 
     def get_full_definition_info (self):
         recordeddate=self.sampleExtractionDate.strftime("%B %d, %Y")

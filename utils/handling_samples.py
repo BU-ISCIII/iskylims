@@ -1,6 +1,7 @@
 import json
 from iSkyLIMS_core.core_config import *
 from iSkyLIMS_core.models import *
+from django.contrib.auth.models import User
 
 def analize_input_samples (request):
     '''
@@ -123,6 +124,30 @@ def get_sample_type ():
         for sample in sample_types:
             sample_type_names.append(sample.get_name())
     return sample_type_names
+
+def get_defined_samples (register_user):
+    '''
+    Description:
+        The function will return the samples created by the user which are in Defined state.
+    Input:
+        register_user
+    Variables:
+        laboratories # list containing all laboratory names
+    Return:
+        samples_list.
+    '''
+    defined_samples = {}
+    #sample_ids = []
+    defined_samples['heading'] = HEADING_FOR_DEFINED_SAMPLES
+    sample_information = []
+    if Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined',
+                    sampleUser__username__exact = register_user).exists():
+        sample_list = Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined',
+                        sampleUser__username__exact = register_user).order_by('generated_at')
+        for sample in sample_list :
+            sample_information.append(sample.get_info_in_defined_state())
+        defined_samples['sample_information'] = sample_information
+    return defined_samples
 
 def get_species ():
     '''
@@ -265,13 +290,13 @@ def prepare_molecule_input_table (samples):
             molecule_information['error'] = True
             return molecule_information
     sample_code_id = []
+    molecule_information['data'] =[]
     for sample in valid_samples:
 
         #sample_code_id.append(Samples.objects.get(pk__exact = sample).get_sample_code())
-        data = []
-        data.append(['']*len(headings))
-        data[0][0] = Samples.objects.get(pk__exact = sample).get_sample_code()
-        molecule_information['data'] = data
+        data = ['']*len(headings)
+        data[0] = Samples.objects.get(pk__exact = sample).get_sample_code()
+        molecule_information['data'].append(data) 
     molecule_information['type_of_molecules'] = get_molules_type ()
     molecule_information['protocols_dict'],molecule_information['protocol_list']  = get_molecule_protocols()
     molecule_information['number_of_samples'] = len(valid_samples)
