@@ -107,6 +107,7 @@ class SamplesManager (models.Manager):
                             sampleUser = User.objects.get(username__exact = sample_data['user']),
                             sampleCodeID = sample_data['sample_id'] , sampleName =  sample_data['sampleName'],
                             uniqueSampleID = sample_data['new_unique_value'],
+                            labSampleName = sample_data['labSampleName'],
                             species = Species.objects.get(spicesName__exact = sample_data['species']),
                             sampleExtractionDate = datetime.datetime.strptime(sample_data['extractionDate'],'%Y-%m-%d %H:%M:%S'))
         return new_sample

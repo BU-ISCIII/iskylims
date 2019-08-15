@@ -275,7 +275,7 @@ def prepare_molecule_input_table (samples):
     Return:
         molecule_information #
     '''
-    headings = ['Sample ID', 'Molecule type', 'Type of Extraction', 'Extraction date', 'Protocol type', 'Protocol to be used']
+    #headings = ['Sample ID', 'Molecule type', 'Type of Extraction', 'Extraction date', 'Protocol type', 'Protocol to be used']
     molecule_information = {}
     molecule_information['headings'] = headings
     molecule_information['data'] = []
@@ -296,7 +296,7 @@ def prepare_molecule_input_table (samples):
         #sample_code_id.append(Samples.objects.get(pk__exact = sample).get_sample_code())
         data = ['']*len(headings)
         data[0] = Samples.objects.get(pk__exact = sample).get_sample_code()
-        molecule_information['data'].append(data) 
+        molecule_information['data'].append(data)
     molecule_information['type_of_molecules'] = get_molules_type ()
     molecule_information['protocols_dict'],molecule_information['protocol_list']  = get_molecule_protocols()
     molecule_information['number_of_samples'] = len(valid_samples)
