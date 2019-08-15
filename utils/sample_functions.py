@@ -91,7 +91,7 @@ def get_samples_for_library_definition (register_user):
             samples_obj[protocol].append(sample)
 
     return samples_obj
-
+'''
 def get_samples_for_na_definition (register_user):
     samples_obj = {}
     if SamplesInProject.objects.filter(sampleState__sampleStateName__exact = 'Defined',
@@ -105,7 +105,7 @@ def get_samples_for_na_definition (register_user):
             samples_obj[protocol_dna].append(sample)
 
     return samples_obj
-
+'''
 
 
 '''

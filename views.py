@@ -3378,9 +3378,9 @@ def record_sample(request):
 '''
 
 @login_required
-def set_DNA_values(request):
-    fix_headings = ['Sample ID', 'Nucleic Accid type', 'Type of Extraction', 'Extraction Kit']
+def set_Molecule_values(request):
     if request.method == 'POST' and request.POST['action'] == 'continueWithDNA':
+        import pdb; pdb.set_trace()
         if request.POST['samples'] == '':
             return render (request,'iSkyLIMS_wetlab/error_page.html',
                 {'content':['There was no sample selected ']})
@@ -3396,8 +3396,31 @@ def set_DNA_values(request):
         for key, value in na_data['protocols_dict'].items():
             na_data['protocol_filter_selection'].append([key, value])
 
-        return render(request, 'iSkyLIMS_wetlab/setDNAValues.html',{'na_data':na_data})
+        return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'na_data':na_data})
 
+
+    else:
+        register_user = request.user.username
+        display_list = get_defined_samples (register_user)
+        '''
+        s_list = []
+        all_sample_list = []
+        display_list = {}
+
+        for key in grouped_samples_obj.keys():
+            s_list = []
+            for sample in grouped_samples_obj[key]:
+                s_info = sample.get_sample_definition_information().split(';')
+                s_info.append(str(sample.pk))
+                s_list.append(s_info)
+            all_sample_list.append(s_list)
+
+        '''
+        #display_list['list_of_samples'] = all_sample_list
+        #display_list['heading'] = ['Registered date ','Sample Code ID', 'Type', 'DNA/RNA', 'Protocol', 'To be included']
+        #import pdb; pdb.set_trace()
+        return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'display_list': display_list})
+    return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{})
 '''
 @login_required
 def set_DNA_values(request):
