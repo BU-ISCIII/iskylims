@@ -140,7 +140,9 @@ class Samples (models.Model):
     reused = models.BooleanField(null = True, blank = True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
-
+    def get_sample_definition_information (self):
+        recordeddate=self.sampleExtractionDate.strftime("%d , %B , %Y")
+        return '%s;%s;%s' %(recordeddate, self.sampleCodeID, self.sampleType.sampleType)
 
     def get_info_in_defined_state(self):
         sample_info = []

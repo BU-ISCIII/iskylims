@@ -277,7 +277,7 @@ def prepare_molecule_input_table (samples):
     '''
     #headings = ['Sample ID', 'Molecule type', 'Type of Extraction', 'Extraction date', 'Protocol type', 'Protocol to be used']
     molecule_information = {}
-    molecule_information['headings'] = headings
+    molecule_information['headings'] = HEADING_FOR_MOLECULE_INITIAL_SETTINGS
     molecule_information['data'] = []
     valid_samples = []
     for sample in samples :
@@ -294,13 +294,13 @@ def prepare_molecule_input_table (samples):
     for sample in valid_samples:
 
         #sample_code_id.append(Samples.objects.get(pk__exact = sample).get_sample_code())
-        data = ['']*len(headings)
+        data = ['']*len(HEADING_FOR_MOLECULE_INITIAL_SETTINGS)
         data[0] = Samples.objects.get(pk__exact = sample).get_sample_code()
         molecule_information['data'].append(data)
     molecule_information['type_of_molecules'] = get_molules_type ()
     molecule_information['protocols_dict'],molecule_information['protocol_list']  = get_molecule_protocols()
     molecule_information['number_of_samples'] = len(valid_samples)
-    molecule_information['table_length']  = len(headings)
+    molecule_information['table_length']  = len(HEADING_FOR_MOLECULE_INITIAL_SETTINGS)
     return molecule_information
 
 def sample_already_defined(sample_name):
