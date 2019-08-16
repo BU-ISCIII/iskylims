@@ -32,7 +32,7 @@
                          {% if sample_recorded.all_samples_valid %}
                             <br><br>
 
-                            <form method="post" action="setDNAValues"  enctype="multipart/form-data" name="continueWithDNA"  id="continueWithDNA" class="form-horizontal well">
+                            <form method="post" action="setMoleculeValues"  enctype="multipart/form-data" name="continueWithDNA"  id="continueWithDNA" class="form-horizontal well">
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="continueWithDNA"/>
                                 <input type="hidden" name="samples" value="{{ sample_recorded.samples_to_continue }}"/>

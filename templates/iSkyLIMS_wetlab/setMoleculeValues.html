@@ -18,12 +18,11 @@
                     <form method="post" enctype="multipart/form-data" name="updateNAParameters"  id="updateNAParameters" class="form-horizontal well">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="updateNA"/>
-                        <input type="hidden" name="na_parameters" value="{{ na_data.na_parameters }}"/>
                         <input type="hidden" name= "samples" value="{{na_data.samples}}"/>
 
                         <div id="spreadsheet"></div>
                         <br><br><br><br>
-                        </div> <!--  end of col-table-responsive -->
+
                         <script>
                             var data = [{% for values in na_data.data %}
                                 [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}

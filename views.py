@@ -3395,7 +3395,7 @@ def set_Molecule_values(request):
         na_data['protocol_filter_selection'] = []
         for key, value in na_data['protocols_dict'].items():
             na_data['protocol_filter_selection'].append([key, value])
-
+        na_data['samples'] = ','.join(samples)
         return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'na_data':na_data})
 
 
