@@ -138,6 +138,7 @@ class Samples (models.Model):
     patientCodeName = models.CharField(max_length=255, null = True)
     sampleCodeID = models.CharField(max_length=60, null = True)
     reused = models.BooleanField(null = True, blank = True)
+    #numberOfReused = models.IntegerField(default=0)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     def get_sample_definition_information (self):
@@ -184,3 +185,19 @@ class Samples (models.Model):
         return '%s' %(recordeddate)
 
     objects = SamplesManager()
+
+
+class MoleculePreparation (models.Model):
+    protocolUsed =  models.ForeignKey(
+                Protocols,
+                on_delete = models.CASCADE)
+    sample = models.ForeignKey(
+                Samples,
+                on_delete = models.CASCADE)
+    moleculeUsed = models.ForeignKey(
+                MoleculeType,
+                on_delete = models.CASCADE)
+    moleculeCodeId = models.CharField(max_length=255)
+    extractionType = models.CharField(max_length=50)
+    numberOfReused = models.IntegerField(default=0)
+    generated_at = models.DateTimeField(auto_now_add=True)
