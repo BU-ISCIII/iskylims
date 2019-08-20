@@ -67,15 +67,24 @@ class ProtocolParameters (models.Model):
     parameterMaxValue = models.CharField(max_length = 50, null = True, blank = True)
     parameterMinValue = models.CharField(max_length = 50, null = True, blank = True)
 
+    def __str__ (self):
+        return "%s" %(self.parameterName)
 
-
-
+    def get_parameter_name (self):
+        return "%s"  %(self.parameterName)
 
 class StatesForSample (models.Model):
     sampleStateName = models.CharField(max_length=50)
 
     def __str__ (self):
         return '%s' %(self.sampleStateName)
+
+
+class StatesForMolecule (models.Model):
+    moleculeStateName = models.CharField(max_length=50)
+
+    def __str__ (self):
+        return '%s' %(self.moleculeStateName)
 
 
 class SampleType (models.Model):
@@ -137,7 +146,7 @@ class Samples (models.Model):
     uniqueSampleID = models.CharField(max_length=8, null = True)
     patientCodeName = models.CharField(max_length=255, null = True)
     sampleCodeID = models.CharField(max_length=60, null = True)
-    reused = models.BooleanField(null = True, blank = True)
+    #reused = models.BooleanField(null = True, blank = True)
     #numberOfReused = models.IntegerField(default=0)
     generated_at = models.DateTimeField(auto_now_add=True)
 
@@ -171,8 +180,6 @@ class Samples (models.Model):
     def get_sample_nucleic_accid (self):
         return '%s' %(self.nucleicAccid)
 
-    def get_sample_protocol (self):
-        return '%s' %(self.sampleProtocol)
 
     def get_register_user(self):
         if self.sampleUser is None:
@@ -186,6 +193,21 @@ class Samples (models.Model):
 
     objects = SamplesManager()
 
+class MoleculePreparationManager (models.Manager):
+
+    def  create_molecule (self, molecule_data) :
+        protocol_used = molecule_data['protocolUsed']
+        molecule_used = MoleculeType.objects.get(moleculeType__exact = molecule_data['moleculeUsed'])
+        new_molecule = self.create( protocolUsed = protocol_used,
+        sample =  molecule_data['sample'],
+        moleculeUsed =  molecule_used,
+        state = StatesForMolecule.objects.get(state__exact = 'Defined'),
+        moleculeCodeId =  molecule_data['moleculeCodeId'],
+        moleculeExtractionDate = molecule_data['moleculeExtractionDate'],
+        extractionType =  moleculedata['extractionType'],
+        numberOfReused = molecule_data['numberOfReused'])
+
+        return new_molecule
 
 class MoleculePreparation (models.Model):
     protocolUsed =  models.ForeignKey(
@@ -197,7 +219,22 @@ class MoleculePreparation (models.Model):
     moleculeUsed = models.ForeignKey(
                 MoleculeType,
                 on_delete = models.CASCADE)
+    state =  models.ForeignKey(
+                StatesForMolecule,
+                on_delete = models.CASCADE, null = True)
     moleculeCodeId = models.CharField(max_length=255)
     extractionType = models.CharField(max_length=50)
+    moleculeExtractionDate = models.DateTimeField(auto_now_add = False, null =True)
     numberOfReused = models.IntegerField(default=0)
     generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__ (self):
+        return "%s" %(self.moleculeCodeId)
+
+    def get_id (self):
+        return "%s" %(self.pk)
+
+    def get_molecule_code_id (self):
+        return '%s' %(self.moleculeCodeId)
+
+    objects = MoleculePreparationManager()

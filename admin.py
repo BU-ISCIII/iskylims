@@ -26,6 +26,9 @@ class SampleTypeAdmin(admin.ModelAdmin):
 class SpeciesAdmin (admin.ModelAdmin):
     list_display= ('spicesName', 'refGenomeName', 'refGenomeSize' , 'refGenomeID' )
 
+class StatesForMoleculeAdmin (admin.ModelAdmin):
+    list_display = ('moleculeStateName',)
+
 class StatesForSampleAdmin (admin.ModelAdmin):
     list_display = ('sampleStateName',)
 
@@ -37,4 +40,5 @@ admin.site.register(Protocols,ProtocolsAdmin)
 admin.site.register(ProtocolParameters,ProtocolParametersAdmin)
 admin.site.register(SampleType, SampleTypeAdmin)
 admin.site.register(Species, SpeciesAdmin)
+admin.site.register(StatesForMolecule, StatesForMoleculeAdmin)
 admin.site.register(StatesForSample, StatesForSampleAdmin)

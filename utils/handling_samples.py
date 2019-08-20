@@ -1,4 +1,4 @@
-import json
+import json, re
 from iSkyLIMS_core.core_config import *
 from iSkyLIMS_core.models import *
 from django.contrib.auth.models import User
@@ -62,8 +62,83 @@ def analize_input_samples (request):
         sample_recorded['heading_other_user'] = [ 'Sample Name', 'Registered Sample Date']
         if sample_recorded['all_samples_valid']:
             sample_recorded['samples_to_continue'] = ','.join(samples_continue)
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
     return sample_recorded
+
+def analize_input_molecules (request):
+    '''
+    Description:
+        The function will return the molecules defined in database.
+    Input:
+        request
+    Variables:
+        laboratories # list containing all laboratory names
+    Return:
+        laboratories.
+    '''
+    #excel_data = request.POST['table_data']
+    molecule_json_data = json.loads(request.POST['nucleic_data'])
+    samples = request.POST['samples'].split(',')
+    heading_in_excel = ['sampleID', 'molecule_type', 'type_extraction', 'extractionDate',
+                    'protocol_type', 'protocol_used']
+
+    molecule_recorded = {}
+    showed_molecule =[]
+    pending_molecule =[]
+    prot_used_in_display = ''
+    molecule_recorded['molecule_id'] = []
+    molecule_recorded['data'] = []
+    for row_index in range(len(molecule_json_data)) :
+        molecule_data = {}
+
+        sample_obj = Samples.objects.get(pk = int(samples[row_index]))
+        #import pdb; pdb.set_trace()
+        if MoleculePreparation.objects.filter(sample = sample_obj).exists():
+            last_molecule_code = MoleculePreparation.objects.filter(sample = sample_obj).last().get_molecule_code_id()
+            code_split = re.search(r'(.*_E)(\d+)$', last_molecule_code)
+            number_code = int(code_split.group(2))
+            number_code +=1
+            molecule_code_id = code_split.group(1) + str(number_code)
+        else:
+            number_code = 1
+            molecule_code_id = sample_obj.get_sample_code() + '_E1'
+        protocol_used = molecule_json_data[row_index][heading_in_excel.index('protocol_used')]
+        protocol_used_obj = Protocols.objects.get(name__exact = protocol_used)
+        molecule_used_obj = MoleculeType.objects.get(moleculeType__exact = molecule_json_data[row_index][heading_in_excel.index('molecule_type')])
+
+        molecule_data['protocolUsed'] =  protocol_used_obj
+        molecule_data['sample'] = sample_obj
+        molecule_data['moleculeUsed'] =  molecule_used_obj
+        molecule_data['moleculeCodeId'] = molecule_code_id
+        molecule_data['extractionType'] =  molecule_json_data[row_index][heading_in_excel.index('type_extraction')]
+        molecule_data['moleculeExtractionDate'] = molecule_json_data[row_index][heading_in_excel.index('extractionDate')]
+        molecule_data['numberOfReused'] = str(number_code - 1)
+
+        #new_molecule = MoleculePreparation.object.create_molecule(molecule_data)
+
+        if prot_used_in_display == '':
+            if ProtocolParameters.objects.filter(protocol_id__exact = protocol_used_obj).exists():
+                prot_used_in_display = protocol_used
+                protocol_parameters = ProtocolParameters.objects.filter(protocol_id__exact = protocol_used_obj, parameterUsed = True).order_by('parameterOrder')
+                parameter_list = []
+                for parameter in protocol_parameters :
+                    parameter_list.append(parameter.get_parameter_name())
+                length_heading = len(HEADING_FOR_MOLECULE_ADDING_PARAMETERS + parameter_list)
+                molecule_recorded['fix_heading'] = HEADING_FOR_MOLECULE_ADDING_PARAMETERS
+                molecule_recorded['param_heading'] = parameter_list
+
+        if protocol_used == prot_used_in_display :
+            #showed_molecule.append(new_molecule.get_id())
+            data = ['']*length_heading
+            data[0] = molecule_code_id
+            data[1] = protocol_used
+            molecule_recorded['data'].append(data)
+        else:
+            pending_molecule.append(new_molecule.get_id())
+        #import pdb; pdb.set_trace()
+    molecule_recorded['molecule_id'] = ','.join(showed_molecule)
+    molecule_recorded['pending_id'] = ','.join(pending_molecule)
+    return molecule_recorded
 
 def build_record_sample_form () :
     sample_information = {}
@@ -269,13 +344,12 @@ def prepare_molecule_input_table (samples):
     '''
     Description:    The function .
     Input:
-        samples     # list of the samples to be include in tne table
+        samples     # list of the samples to be include in the table
     Variables:
         molecule_information # dictionary which collects all info
     Return:
         molecule_information #
     '''
-    #headings = ['Sample ID', 'Molecule type', 'Type of Extraction', 'Extraction date', 'Protocol type', 'Protocol to be used']
     molecule_information = {}
     molecule_information['headings'] = HEADING_FOR_MOLECULE_INITIAL_SETTINGS
     molecule_information['data'] = []
@@ -287,7 +361,7 @@ def prepare_molecule_input_table (samples):
         except:
             continue
         if len(valid_samples) == 0:
-            molecule_information['error'] = True
+            molecule_information['ERROR'] = True
             return molecule_information
     sample_code_id = []
     molecule_information['data'] =[]
