@@ -3380,7 +3380,6 @@ def record_sample(request):
 @login_required
 def set_Molecule_values(request):
     if request.method == 'POST' and request.POST['action'] == 'continueWithDNA':
-        import pdb; pdb.set_trace()
         if request.POST['samples'] == '':
             return render (request,'iSkyLIMS_wetlab/error_page.html',
                 {'content':['There was no sample selected ']})
@@ -3390,14 +3389,21 @@ def set_Molecule_values(request):
             samples = request.POST['samples'].split(',')
 
         na_data = prepare_molecule_input_table (samples)
-
+        if 'ERROR' in na_data :
+            return render (request, 'iSkyLIMS_wetlab/error_page.html',
+                {'content':['There was no valid sample selected ']})
         na_data['protocol_type'] = list(na_data['protocols_dict'].keys())
         na_data['protocol_filter_selection'] = []
         for key, value in na_data['protocols_dict'].items():
             na_data['protocol_filter_selection'].append([key, value])
         na_data['samples'] = ','.join(samples)
         return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'na_data':na_data})
+    elif request.method == 'POST' and request.POST['action'] == 'updateMolecule':
 
+
+        molecule_recorded = analize_input_molecules (request)
+        #import pdb; pdb.set_trace()
+        return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'molecule_recorded':molecule_recorded})
 
     else:
         register_user = request.user.username
