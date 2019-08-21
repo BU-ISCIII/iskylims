@@ -147,7 +147,7 @@ class Samples (models.Model):
     patientCodeName = models.CharField(max_length=255, null = True)
     sampleCodeID = models.CharField(max_length=60, null = True)
     #reused = models.BooleanField(null = True, blank = True)
-    #numberOfReused = models.IntegerField(default=0)
+    numberOfReused = models.IntegerField(default=0)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     def get_sample_definition_information (self):
