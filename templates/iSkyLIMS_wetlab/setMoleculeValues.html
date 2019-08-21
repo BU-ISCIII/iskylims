@@ -108,7 +108,6 @@
      <style>
          .scrolling-wrapper {
       overflow-x: scroll;
-      overflow-y: hidden;
       white-space: nowrap;
     }
      </style>
@@ -123,13 +122,14 @@
 
                 <div class="panel-body">
 
-                   <form method="post" enctype="multipart/form-data" name="updateMoleculeParameters"  id="updateMoleculeParameters" class="form-horizontal well">
+                   <form method="post" enctype="multipart/form-data" name="addMoleculeParameters"  id="addMoleculeParameters" class="form-horizontal well">
                        {% csrf_token %}
                        <div class="scrolling-wrapper">
-                       <input type="hidden" name="action" value="updateMoleculeParameters"/>
-                       <input type="hidden" name= "samples" value="{{molecule_recorded.molecule_id}}"/>
+                       <input type="hidden" name="action" value="addMoleculeParameters"/>
+                       <input type="hidden" name= "molecules" value="{{molecule_recorded.molecule_id}}"/>
+                       <input type="hidden" name= "heading_in_excel" value="{{molecule_recorded.heading_in_excel}}"/>
                        {% if molecule_recorded.pending_id %}
-                             <input type="hidden" name= "samples" value="{{molecule_recorded.pending_id}}"/>
+                             <input type="hidden" name= "pending" value="{{molecule_recorded.pending_id}}"/>
                         {% endif %}
                        <p></p>
 
@@ -164,16 +164,60 @@
                            });
                        </script>
 
-                       <input type="button" value="Return Home" onclick="location.href="/" />
+                       <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
                        <input class="btn pull-right btn-primary" type="submit" value="Submit">
                     </div> <!--  end of scrolling  -->
                     </form>
+                    <script>
+                        $(document).ready(function () {
+                            $("#addMoleculeParameters").submit(function (e) {
+                                //stop submitting the form to see the disabled button effect
+                                // e.preventDefault();
+                                //disable the submit button
+                                var table_data = $('#spreadsheet').jexcel('getData')
+                                var data_json = JSON.stringify(table_data)
+                                $("<input />").attr("type", "hidden")
+                                  .attr("name", "nucleic_data")
+                                  .attr("value", data_json)
+                                  .appendTo("#addMoleculeParameters");
+                                $("#btnSubmit").attr("disabled", true);
+                                return true;
+                            });
+                        });
+                    </script>
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
 
         </div> <!--  end of col-sm-12 -->
     </div> <!--  end of row -->
 
+{% elif added_molecule_parameters %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>The following molecules have been updated with quality Parameters.</h3></div>
+                <div class="panel-body">
+                   <table class="table table-hover">
+                       <thead>
+                          <tr>
+                            <th>Molecule Code ID</th>
+                          </tr>
+                       </thead>
+                       <tbody>
+                         {% for values in added_molecule_parameters %}
+                         <tr>
+                           <td>{{ values }} </td>
+                         </tr>
+                    {%endfor%}
+                        </tbody>
+                   </table>
+
+
+               </div> <!--  end of panel body -->
+           </div> <!--  end of panel  -->
+
+       </div> <!--  end of col-sm-12 -->
+   </div> <!--  end of row -->
 {% else %}
 
     <div class="row row-space-4 margin-b-4">

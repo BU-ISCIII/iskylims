@@ -3405,6 +3405,11 @@ def set_Molecule_values(request):
         #import pdb; pdb.set_trace()
         return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'molecule_recorded':molecule_recorded})
 
+    elif request.method == 'POST' and request.POST['action'] == 'addMoleculeParameters':
+        added_molecule_parameters = add_molecule_parameters(request)
+        import pdb; pdb.set_trace()
+        return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'added_molecule_parameters':added_molecule_parameters})
+
     else:
         register_user = request.user.username
         display_list = get_defined_samples (register_user)
