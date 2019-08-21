@@ -3,6 +3,42 @@ from iSkyLIMS_core.core_config import *
 from iSkyLIMS_core.models import *
 from django.contrib.auth.models import User
 
+def add_molecule_parameters(request):
+    '''
+    Description:
+        The function will store in database the molecule parameters.
+        Return the list of the molecules updated
+    Input:
+        request
+    Variables:
+        laboratories # list containing all laboratory names
+    Return:
+        laboratories.
+    '''
+    molecule_parameter_value = {}
+    molecule_updated_list = []
+    molecule_json_data = json.loads(request.POST['nucleic_data'])
+    molecules = request.POST['molecules'].split(',')
+    parameter_heading = request.POST['heading_in_excel'].split(',')
+    parameters_length = len(molecule_json_data[0])
+    fixed_heading_length = len(HEADING_FOR_MOLECULE_ADDING_PARAMETERS)
+    protocol_used_obj = Protocols.objects.get(name__exact = molecule_json_data[0][1])
+    for row_index in range(len(molecule_json_data)) :
+        molecule_obj = MoleculePreparation.objects.get(pk = int(molecules[row_index]))
+        molecule_obj.set_state('Completed')
+        molecule_updated_list.append(molecule_obj.get_molecule_code_id())
+
+        for p_index in range(fixed_heading_length, parameters_length):
+            molecule_parameter_value['moleculeParameter_id'] = ProtocolParameters.objects.get(protocol_id = protocol_used_obj,
+                                parameterName__exact = parameter_heading[p_index - fixed_heading_length])
+            molecule_parameter_value['molecule_id'] = molecule_obj
+            molecule_parameter_value['parameterValue'] = molecule_json_data[row_index] [p_index]
+            new_parameters_data = MoleculeParameterValue.objects.create_molecule_parameter_value (molecule_parameter_value)
+
+
+    return molecule_updated_list
+
+
 def analize_input_samples (request):
     '''
     Description:
@@ -114,7 +150,7 @@ def analize_input_molecules (request):
         molecule_data['moleculeExtractionDate'] = molecule_json_data[row_index][heading_in_excel.index('extractionDate')]
         molecule_data['numberOfReused'] = str(number_code - 1)
 
-        #new_molecule = MoleculePreparation.object.create_molecule(molecule_data)
+        new_molecule = MoleculePreparation.objects.create_molecule(molecule_data)
 
         if prot_used_in_display == '':
             if ProtocolParameters.objects.filter(protocol_id__exact = protocol_used_obj).exists():
@@ -128,7 +164,7 @@ def analize_input_molecules (request):
                 molecule_recorded['param_heading'] = parameter_list
 
         if protocol_used == prot_used_in_display :
-            #showed_molecule.append(new_molecule.get_id())
+            showed_molecule.append(new_molecule.get_id())
             data = ['']*length_heading
             data[0] = molecule_code_id
             data[1] = protocol_used
@@ -138,6 +174,7 @@ def analize_input_molecules (request):
         #import pdb; pdb.set_trace()
     molecule_recorded['molecule_id'] = ','.join(showed_molecule)
     molecule_recorded['pending_id'] = ','.join(pending_molecule)
+    molecule_recorded['heading_in_excel'] = ','.join(parameter_list)
     return molecule_recorded
 
 def build_record_sample_form () :
@@ -146,6 +183,30 @@ def build_record_sample_form () :
     sample_information['laboratory'] = get_laboratory()
     sample_information['sampleType'] = get_sample_type()
     return sample_information
+
+def get_defined_samples (register_user):
+    '''
+    Description:
+        The function will return the samples created by the user which are in Defined state.
+    Input:
+        register_user
+    Variables:
+        laboratories # list containing all laboratory names
+    Return:
+        samples_list.
+    '''
+    defined_samples = {}
+    #sample_ids = []
+    defined_samples['heading'] = HEADING_FOR_DEFINED_SAMPLES
+    sample_information = []
+    if Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined',
+                    sampleUser__username__exact = register_user).exists():
+        sample_list = Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined',
+                        sampleUser__username__exact = register_user).order_by('generated_at')
+        for sample in sample_list :
+            sample_information.append(sample.get_info_in_defined_state())
+        defined_samples['sample_information'] = sample_information
+    return defined_samples
 
 def get_extraction_kits(username) :
     '''
@@ -200,29 +261,7 @@ def get_sample_type ():
             sample_type_names.append(sample.get_name())
     return sample_type_names
 
-def get_defined_samples (register_user):
-    '''
-    Description:
-        The function will return the samples created by the user which are in Defined state.
-    Input:
-        register_user
-    Variables:
-        laboratories # list containing all laboratory names
-    Return:
-        samples_list.
-    '''
-    defined_samples = {}
-    #sample_ids = []
-    defined_samples['heading'] = HEADING_FOR_DEFINED_SAMPLES
-    sample_information = []
-    if Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined',
-                    sampleUser__username__exact = register_user).exists():
-        sample_list = Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined',
-                        sampleUser__username__exact = register_user).order_by('generated_at')
-        for sample in sample_list :
-            sample_information.append(sample.get_info_in_defined_state())
-        defined_samples['sample_information'] = sample_information
-    return defined_samples
+
 
 def get_species ():
     '''

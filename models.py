@@ -201,10 +201,10 @@ class MoleculePreparationManager (models.Manager):
         new_molecule = self.create( protocolUsed = protocol_used,
         sample =  molecule_data['sample'],
         moleculeUsed =  molecule_used,
-        state = StatesForMolecule.objects.get(state__exact = 'Defined'),
+        state = StatesForMolecule.objects.get(moleculeStateName__exact = 'Defined'),
         moleculeCodeId =  molecule_data['moleculeCodeId'],
         moleculeExtractionDate = molecule_data['moleculeExtractionDate'],
-        extractionType =  moleculedata['extractionType'],
+        extractionType =  molecule_data['extractionType'],
         numberOfReused = molecule_data['numberOfReused'])
 
         return new_molecule
@@ -237,4 +237,33 @@ class MoleculePreparation (models.Model):
     def get_molecule_code_id (self):
         return '%s' %(self.moleculeCodeId)
 
+    def set_state (self, state_value):
+        self.state = StatesForMolecule.objects.get(moleculeStateName__exact = state_value)
+        self.save()
     objects = MoleculePreparationManager()
+
+
+class MoleculeParameterValueManager (models.Manager):
+    def create_molecule_parameter_value (self, molecule_parameter_value):
+        new_molecule_parameter_data = self.create(moleculeParameter_id = molecule_parameter_value['moleculeParameter_id'],
+                molecule_id = molecule_parameter_value['molecule_id'],
+                parameterValue = molecule_parameter_value['parameterValue'])
+        return new_molecule_parameter_data
+
+class MoleculeParameterValue (models.Model):
+    moleculeParameter_id = models.ForeignKey(
+                    ProtocolParameters,
+                    on_delete= models.CASCADE)
+    molecule_id = models.ForeignKey(
+                MoleculePreparation,
+                on_delete= models.CASCADE)
+    parameterValue = models.CharField(max_length=255)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__ (self):
+        return '%s' %(self.parameterValue)
+
+    def get_parameter_information (self):
+        return '%s' %(self.parameterValue)
+
+    objects = MoleculeParameterValueManager()
