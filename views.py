@@ -3306,91 +3306,8 @@ def record_samples(request):
     else:
         sample_information = prepare_sample_input_table()
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
-'''
-@login_required
-def record_sample(request):
-    #import pdb; pdb.set_trace()
-    if request.method == 'POST' and request.POST['action'] == 'recordsample':
-
-        excel_data = request.POST['table_data']
-        na_json_data = json.loads(request.POST['table_data'])
-        heading_in_excel = ['patientCodeName', 'laboratory', 'labSampleName', 'extractionDate',
-                        'sampleName', 'sampleType', 'species']
-
-        sample_recorded = {}
-        not_valid_samples_same_user = []
-        not_valid_samples_other_user = []
-        valid_samples =[]
 
 
-        sample_recorded['allow_continue_DNA'] = True
-        samples_continue_DNA = []
-        for row in na_json_data :
-            sample_data = {}
-            sample_name = row[heading_in_excel.index('sampleName')]
-            if sample_name == '' :
-                continue
-            if not sample_already_defined (row[heading_in_excel.index('sampleName')]):
-                for i in range(len(heading_in_excel)) :
-                    sample_data[heading_in_excel[i]] = row[i]
-
-                sample_data['user'] = request.user.username
-                lab_code = Laboratory.objects.get(labName__exact = row[heading_in_excel.index('laboratory')] ).get_lab_code()
-                sample_data['sample_id'] = str(lab_code + '_' + sample_name)
-                if not Samples.objects.exclude(uniqueSampleID__isnull = True).exists():
-                    sample_data['new_unique_value'] = 'AAA-0001'
-                else:
-                    last_unique_value = SamplesInProject.objects.exclude(uniqueSampleID__isnull = True).last().uniqueSampleID
-                    sample_data['new_unique_value'] = increase_unique_value(last_unique_value)
-                new_sample = Samples.objects.create_sample(sample_data)
-                valid_samples.append(new_sample.get_sample_definition_information().split(';'))
-                samples_continue_DNA.append(new_sample.get_sample_id())
-
-            else: # get the invalid sample to displays information to user
-                sample_recorded['allow_continue_DNA'] = False
-                import pdb; pdb.set_trace()
-                invalid_sample = SamplesInProject.objects.get(sampleName__exact = sample_name)
-                if request.user.username == invalid_sample.get_register_user() :
-                    not_valid_samples_same_user.append(invalid_sample.get_sample_definition_information().split(';'))
-                else:
-                    not_valid_samples_other_user.append([invalid_sample.get_sample_name(), invalid_sample.get_registered_sample() ])
-        # if no samples are in any of the options, displays the inital page
-        if len(valid_samples) == 0 and len(not_valid_samples_same_user) == 0 and len(not_valid_samples_other_user) == 0:
-            # get the choices to be included in the form
-            sample_information = build_record_sample_form ()
-            sample_information['heading'] = ['Patient Code Name', 'Laboratory', 'Laboratory Sample', 'Extraction date',
-                            'Sample Name', 'Type of Sample', 'Species']
-            return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
-
-        sample_recorded['valid_samples'] = valid_samples
-        sample_recorded['not_valid_samples_same_user'] = not_valid_samples_same_user
-        sample_recorded['not_valid_samples_other_user'] = not_valid_samples_other_user
-        sample_recorded['heading'] = ['Sample Recorded Date', 'Sample Code ID','Sample Type']
-        sample_recorded['heading_same_user'] = ['Sample Recorded Date', 'Sample Code ID', 'Sample Type',
-                        'New DNA', 'New Library', 'Repetition']
-        sample_recorded['heading_other_user'] = [ 'Sample Name', 'Registered Sample Date']
-        if sample_recorded['allow_continue_DNA']:
-            sample_recorded['samples_continue_DNA'] = valid_samples
-        return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
-    else:
-        sample_information = build_record_sample_form()
-        sample_information['heading'] = ['Patient Code Name', 'Laboratory Name', 'Laboratory Sample Name', 'Sample Extraction date',
-                        'Sample Name', 'Type of Sample', 'Species']
-        # check if clinic application is installed
-
-        row_data = ['']*len(sample_information['heading'])
-        row_data[0]= 'pat-2'
-        row_data[2] = 'sample-lab'
-        data = []
-        data.append(row_data)
-        # get the choices to be included in the form
-
-
-        sample_information['data'] = data
-
-        return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
-
-'''
 
 @login_required
 def set_Molecule_values(request):
@@ -3420,7 +3337,7 @@ def set_Molecule_values(request):
 
         return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'molecule_recorded':molecule_recorded})
 
-    elif request.method == 'POST' and request.POST['action'] == 'addMoleculeParameters':
+    elif request.method == 'POST' and request.POST['action'] == 'displayMoleculeParameters':
         if  'samples_in_list' in request.POST:
             molecules = request.POST.getlist('molecules')
         else:
@@ -3428,6 +3345,9 @@ def set_Molecule_values(request):
         show_molecule_parameters = display_molecule_protocol_parameters(molecules)
         return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'show_molecule_parameters':show_molecule_parameters})
 
+    elif request.method == 'POST' and request.POST['action'] == 'addMoleculeParameters':
+        added_molecule_protocol_parameters = add_molecule_protocol_parameters(request)
+        return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'added_molecule_protocol_parameters':added_molecule_protocol_parameters})
     else:
         register_user = request.user.username
         display_list = get_defined_samples (register_user)
