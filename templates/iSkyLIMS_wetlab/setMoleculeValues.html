@@ -1,7 +1,7 @@
 {% extends 'iSkyLIMS_wetlab/base.html' %}
 {% load static %}
 {% block content %}
-{% if na_data %}
+{% if molecule_protocol %}
     <script src="{% static "iSkyLIMS_wetlab/js/jquery/v3.4.1/jquery-3.4.1.min.js" %}" type="text/javascript"></script>
     <script src="{% static "iSkyLIMS_wetlab/js/jexcel/v3/jexcel.js" %}" type="text/javascript"></script>
     <script src="{% static "iSkyLIMS_wetlab/js/jsuites/v2/jsuites.js" %}" type="text/javascript"></script>
@@ -13,25 +13,25 @@
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>Set the Nucleic Accid data for the following samples.</h3></div>
+                <div class="panel-heading"><h3>Assign the Molecule Protocol to following samples.</h3></div>
                 <div class="panel-body">
                     <br>
-                    <form method="post" enctype="multipart/form-data" name="updateNAParameters"  id="updateNAParameters" class="form-horizontal well">
+                    <form method="post" enctype="multipart/form-data" name="updateMoleculeProtocol"  id="updateMoleculeProtocol" class="form-horizontal well">
                         {% csrf_token %}
-                        <input type="hidden" name="action" value="updateMolecule"/>
-                        <input type="hidden" name= "samples" value="{{na_data.samples}}"/>
+                        <input type="hidden" name="action" value="updateMoleculeProtocol"/>
+                        <input type="hidden" name= "samples" value="{{molecule_protocol.samples}}"/>
 
                         <div id="spreadsheet"></div>
                         <br><br><br><br>
 
                         <script>
-                            var data = [{% for values in na_data.data %}
+                            var data = [{% for values in molecule_protocol.data %}
                                 [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
                             ];
 
                             dropdownFilter = function(instance, cell, c, r, source) {
                                 var value = instance.jexcel.getValueFromCoords(c - 1, r);
-                                {% for item, values in na_data.protocol_filter_selection %}
+                                {% for item, values in molecule_protocol.protocol_filter_selection %}
                                     if (value == '{{item}}') {
                                     return [{% for val in values %}'{{val}}',{% endfor %}];
                                 }
@@ -45,12 +45,12 @@
                             mySpreadsheet = $('#spreadsheet').jexcel({
                                 data:data,
                                 columns: [
-                                    { type: 'text', title:'{{na_data.headings.0}}', width:180 , readOnly:true },
-                                    { type: 'dropdown', title:'{{na_data.headings.1}}', width:150 , source :[ {% for value in na_data.type_of_molecules %} '{{value}}', {% endfor %}]},
-                                    { type: 'dropdown', title:'{{na_data.headings.2}}', width:150 , source :['Manual', 'Automated']},
-                                    { type: 'calendar' , title: '{{na_data.headings.3}}', width:150 },
-                                    { type: 'dropdown', title:'{{na_data.headings.4}}', width:150 , source :[ {% for value in na_data.protocol_type %}{'id':'{{value}}','name':'{{value}}'}, {% endfor %}]},
-                                    { type: 'dropdown', title: '{{na_data.headings.5}}', width:180 , source:[{% for value in na_data.protocol_list %}'{{value}}',{% endfor %} ],
+                                    { type: 'text', title:'{{molecule_protocol.headings.0}}', width:180 , readOnly:true },
+                                    { type: 'dropdown', title:'{{molecule_protocol.headings.1}}', width:150 , source :[ {% for value in molecule_protocol.type_of_molecules %} '{{value}}', {% endfor %}]},
+                                    { type: 'dropdown', title:'{{molecule_protocol.headings.2}}', width:150 , source :['Manual', 'Automated']},
+                                    { type: 'calendar' , title: '{{molecule_protocol.headings.3}}', width:150 },
+                                    { type: 'dropdown', title:'{{molecule_protocol.headings.4}}', width:150 , source :[ {% for value in molecule_protocol.protocol_type %}{'id':'{{value}}','name':'{{value}}'}, {% endfor %}]},
+                                    { type: 'dropdown', title: '{{molecule_protocol.headings.5}}', width:180 , source:[{% for value in molecule_protocol.protocol_list %}'{{value}}',{% endfor %} ],
                                             filter:dropdownFilter },
 
                                 ],
@@ -62,7 +62,7 @@
                                 tableOverflow:true,
                                 tableHeight:'200px',
                                 csvFileName:'Molecule_data',
-                                minDimensions:[{{na_data.table_length}},{{na_data.number_of_samples}}],
+                                minDimensions:[{{molecule_protocol.table_length}},{{molecule_protocol.number_of_samples}}],
                                 onchange:function(instance, cell, c, r, value) {
                                     if (c == 4) {
                                         var columnName = jexcel.getColumnNameFromId([5, r]);
@@ -78,16 +78,16 @@
                     </form>
                     <script>
                         $(document).ready(function () {
-                            $("#updateNAParameters").submit(function (e) {
+                            $("#updateMoleculeProtocol").submit(function (e) {
                                 //stop submitting the form to see the disabled button effect
                                 // e.preventDefault();
                                 //disable the submit button
                                 var table_data = $('#spreadsheet').jexcel('getData')
                                 var data_json = JSON.stringify(table_data)
                                 $("<input />").attr("type", "hidden")
-                                  .attr("name", "nucleic_data")
+                                  .attr("name", "molecule_data")
                                   .attr("value", data_json)
-                                  .appendTo("#updateNAParameters");
+                                  .appendTo("#updateMoleculeProtocol");
                                 $("#btnSubmit").attr("disabled", true);
                                 return true;
                             });
@@ -99,6 +99,37 @@
         </div> <!--  end of col-sm-6 -->
     </div> <!--  end of row -->
 {% elif molecule_recorded %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>The following molecules are now assigned to Protocol.</h3></div>
+                <div class="panel-body">
+                    <table class="table table-hover">
+                        <thead>
+                           <tr>
+                               {% for value in molecule_recorded.heading %}
+                                <th>{{value}}</th>
+                                {% endfor %}
+                           </tr>
+                        </thead>
+                        <tbody>
+                          {% for molecule, protocol in molecule_recorded.molecule_list %}
+                              <tr>
+                                <td>{{ molecule }} </td>
+                                <td>{{ protocol }}</td>
+                              </tr>
+                          {%endfor%}
+                        </tbody>
+                    </table>
+                    <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                    <input type="button" value="Return Pendig Samples" onclick="location.href ='/wetlab/pendingToUpdate' ;"/>
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+
+        </div> <!--  end of col-sm-12 -->
+    </div> <!--  end of row -->
+
+{% elif set_parameters %}
     <script src="{% static "iSkyLIMS_wetlab/js/jquery/v3.4.1/jquery-3.4.1.min.js" %}" type="text/javascript"></script>
     <script src="{% static "iSkyLIMS_wetlab/js/jexcel/v3/jexcel.js" %}" type="text/javascript"></script>
     <script src="{% static "iSkyLIMS_wetlab/js/jsuites/v2/jsuites.js" %}" type="text/javascript"></script>

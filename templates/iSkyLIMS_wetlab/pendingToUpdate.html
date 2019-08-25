@@ -1,0 +1,109 @@
+{% extends 'iSkyLIMS_wetlab/base.html' %}
+{% load static %}
+{% block content %}
+{% if pp %}
+
+
+
+{% else %}
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="col-sm-7" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>The following Samples can be updated with the Molecule information</h3></div>
+                        <div class="panel-body">
+                            {% if pending.defined %}
+                            <form method="post" action="/wetlab/setMoleculeValues" enctype="multipart/form-data" name="continueWithDNA"  id="continueWithDNA" class="form-horizontal well">
+                            {% csrf_token %}
+                                <input type="hidden" name="action" value="continueWithMolecule"/>
+                                <input type="hidden" name="samples_in_list" value="True"/>
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            {% for value in pending.defined.sample_heading %}
+                                                <th> {{ value }}</th>
+                                            {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for date, code,  sampletype,  s_id in pending.defined.sample_information  %}
+                                            <tr>
+                                                    <td>{{date}}</td>
+                                                    <td>{{code}}</td>
+                                                    <td>{{sampletype}}</td>
+                                                    <td><input type="checkbox" name="samples" value="{{s_id}}"></td>
+                                            </tr>
+                                        {% endfor %}
+
+                                    </tbody>
+                                </table>
+                                <br><br>
+                                <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                                <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                             </form>
+                            {% else %}
+                                <p>There is not new samples </p>
+                            {% endif %}
+                        </div>  <!--  end of panel body  -->
+
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-7  -->
+        <div class="col-sm-5" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Sample state graphic</h3></div>
+                <div class="panel-body">
+
+                </div>  <!--  end of panel body  -->
+
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-5  -->
+    </div> <!--// end row -->
+
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>The following Samples can be updated with the Molecule quality parameter</h3></div>
+                    <div class="panel-body">
+                        {% if pending.extracted_molecule.molecule_heading %}
+                        <form method="post" action="/wetlab/setMoleculeValues" enctype="multipart/form-data" name="continueWithDNA"  id="continueWithDNA" class="form-horizontal well">
+                        {% csrf_token %}
+                            <input type="hidden" name="action" value="addMoleculeParameters"/>
+                            <input type="hidden" name="samples_in_list" value="True"/>
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        {% for value in pending.extracted_molecule.molecule_heading %}
+                                            <th> {{ value }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for date, s_type, molecule_id, extr_date, protocol, m_id in pending.extracted_molecule.molecule_information  %}
+                                        <tr>
+                                                <td>{{date}}</td>
+                                                <td>{{s_type}}</td>
+                                                <td>{{molecule_id}}</td>
+                                                <td>{{extr_date}}</td>
+                                                <td>{{protocol}}</td>
+                                                <td><input type="checkbox" name="molecules" value="{{m_id}}"></td>
+
+                                        </tr>
+                                    {% endfor %}
+
+                                </tbody>
+                            </table>
+                            <br><br>
+                            <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                            <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                         </form>
+                        {% else %}
+                            <p>There is not new samples </p>
+                        {% endif %}
+                    </div>  <!--  end of panel body  -->
+
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  -->
+    </div> <!--// end row -->
+
+{% endif %}
+{% endblock %}

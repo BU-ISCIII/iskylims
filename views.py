@@ -3277,9 +3277,24 @@ def add_commercial_kit (request):
     return render(request, 'iSkyLIMS_wetlab/AddCommercialKit.html')
 
 @login_required
+def pending_to_update(request):
+    pending = {}
+    # get the samples in defined state
+    pending['defined'] = get_samples_in_defined_state()
+    pending['extracted_molecule'] = get_samples_in_extracted_molecule_state()
+
+    # get the molecules  in  defined state
+    #pending['molecules'] = get_molecules_in_state('Defined')
+    # get the library preparation in defined state
+
+    import pdb; pdb.set_trace()
+    return render(request, 'iSkyLIMS_wetlab/pendingToUpdate.html', {'pending':pending})
+
+
+@login_required
 def record_samples(request):
     if request.method == 'POST' and request.POST['action'] == 'recordsample':
-        sample_recorded = analize_input_samples (request)
+        sample_recorded = analyze_input_samples (request)
         # if no samples are in any of the options, displays the inital page
         if (len(sample_recorded['valid_samples']) == 0 and
                 len(sample_recorded['not_valid_samples_same_user']) == 0 and
@@ -3379,7 +3394,7 @@ def record_sample(request):
 
 @login_required
 def set_Molecule_values(request):
-    if request.method == 'POST' and request.POST['action'] == 'continueWithDNA':
+    if request.method == 'POST' and request.POST['action'] == 'continueWithMolecule':
         if request.POST['samples'] == '':
             return render (request,'iSkyLIMS_wetlab/error_page.html',
                 {'content':['There was no sample selected ']})
@@ -3388,27 +3403,30 @@ def set_Molecule_values(request):
         else:
             samples = request.POST['samples'].split(',')
 
-        na_data = prepare_molecule_input_table (samples)
-        if 'ERROR' in na_data :
+        molecule_protocol = get_table_record_molecule (samples)
+        if 'ERROR' in molecule_protocol :
             return render (request, 'iSkyLIMS_wetlab/error_page.html',
                 {'content':['There was no valid sample selected ']})
-        na_data['protocol_type'] = list(na_data['protocols_dict'].keys())
-        na_data['protocol_filter_selection'] = []
-        for key, value in na_data['protocols_dict'].items():
-            na_data['protocol_filter_selection'].append([key, value])
-        na_data['samples'] = ','.join(samples)
-        return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'na_data':na_data})
-    elif request.method == 'POST' and request.POST['action'] == 'updateMolecule':
+        molecule_protocol['protocol_type'] = list(molecule_protocol['protocols_dict'].keys())
+        molecule_protocol['protocol_filter_selection'] = []
+        for key, value in molecule_protocol['protocols_dict'].items():
+            molecule_protocol['protocol_filter_selection'].append([key, value])
+        molecule_protocol['samples'] = ','.join(samples)
 
+        return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'molecule_protocol':molecule_protocol})
 
-        molecule_recorded = analize_input_molecules (request)
-        #import pdb; pdb.set_trace()
+    elif request.method == 'POST' and request.POST['action'] == 'updateMoleculeProtocol':
+        molecule_recorded = record_molecules (request)
+
         return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'molecule_recorded':molecule_recorded})
 
     elif request.method == 'POST' and request.POST['action'] == 'addMoleculeParameters':
-        added_molecule_parameters = add_molecule_parameters(request)
-        import pdb; pdb.set_trace()
-        return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'added_molecule_parameters':added_molecule_parameters})
+        if  'samples_in_list' in request.POST:
+            molecules = request.POST.getlist('molecules')
+        else:
+            molecules = request.POST['molecules'].split(',')
+        show_molecule_parameters = display_molecule_protocol_parameters(molecules)
+        return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'show_molecule_parameters':show_molecule_parameters})
 
     else:
         register_user = request.user.username

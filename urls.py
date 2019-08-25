@@ -29,6 +29,7 @@ urlpatterns = [
     path('latest_run/',views.latest_run, name='latest_run'),
     path('incompletedRuns', views.incompleted_runs, name = 'incompleted_runs'),
     path('MonthlyReport/', views.monthly_report, name='montly_report'),
+    path('pendingToUpdate/', views.pending_to_update, name='pending_to_update'),
     path('QuarterReport/', views.quarter_report, name='quarter_report'),
     path('recordSamples', views.record_samples, name='record_samples'),
     path('register_wetlab/',views.register_wetlab, name='register_wetlab'),
