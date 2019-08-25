@@ -56,7 +56,7 @@ def display_molecule_protocol_parameters (molecules):
     import pdb; pdb.set_trace()
     return molecule_recorded
 
-def add_molecule_parameters(request):
+def add_molecule_protocol_parameters(request):
     '''
     Description:
         The function will store in database the molecule parameters.
@@ -71,7 +71,7 @@ def add_molecule_parameters(request):
 
     molecule_parameter_value = {}
     molecule_updated_list = []
-    molecule_json_data = json.loads(request.POST['nucleic_data'])
+    molecule_json_data = json.loads(request.POST['parameters_data'])
     molecules = request.POST['molecules'].split(',')
     parameter_heading = request.POST['heading_in_excel'].split(',')
     parameters_length = len(molecule_json_data[0])
@@ -81,6 +81,9 @@ def add_molecule_parameters(request):
         molecule_obj = MoleculePreparation.objects.get(pk = int(molecules[row_index]))
         molecule_obj.set_state('Completed')
         molecule_updated_list.append(molecule_obj.get_molecule_code_id())
+
+        # Update sample state
+        molecule_obj.get_sample_obj().set_state('Add Library preparation')
 
         for p_index in range(fixed_heading_length, parameters_length):
             molecule_parameter_value['moleculeParameter_id'] = ProtocolParameters.objects.get(protocol_id = protocol_used_obj,

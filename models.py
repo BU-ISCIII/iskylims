@@ -253,6 +253,9 @@ class MoleculePreparation (models.Model):
         data.append(str(self.pk))
         return data
 
+    def get_sample_obj(self):
+        return self.sample
+
     def get_protocol (self):
         return '%s' %(self.protocolUsed.get_name())
 
