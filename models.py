@@ -90,6 +90,10 @@ class StatesForMolecule (models.Model):
 class SampleType (models.Model):
     sampleType = models.CharField(max_length=50)
 
+
+    def __str__ (self):
+        return '%s' %(self.sampleType)
+
     def get_name(self):
         return '%s' %(self.sampleType)
 
@@ -150,6 +154,9 @@ class Samples (models.Model):
     numberOfReused = models.IntegerField(default=0)
     generated_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__ (self):
+        return '%s' %(self.sampleName)
+
     def get_sample_definition_information (self):
         recordeddate=self.sampleExtractionDate.strftime("%d , %B , %Y")
         return '%s;%s;%s' %(recordeddate, self.sampleCodeID, self.sampleType.sampleType)
@@ -158,18 +165,13 @@ class Samples (models.Model):
         sample_info = []
         sample_info.append(self.sampleExtractionDate.strftime("%d , %B , %Y"))
         sample_info.append(self.sampleCodeID)
-        sample_info.append(self.patientCodeName)
-        sample_info.append(self.laboratory.get_name())
-        sample_info.append(self.labSampleName)
         sample_info.append(self.sampleType.get_name())
-        sample_info.append(self.species.get_name())
         sample_info.append(str(self.pk))
         return sample_info
 
-    def get_full_definition_info (self):
+    def get_extraction_date (self):
         recordeddate=self.sampleExtractionDate.strftime("%B %d, %Y")
-
-        return '%s;%s;%s;%s;%s' %(self.registerUser)
+        return '%s' %(recordeddate)
 
     def get_sample_code (self):
         return '%s' %(self.sampleCodeID)
@@ -177,8 +179,8 @@ class Samples (models.Model):
     def get_sample_id(self):
         return '%s' %(self.id)
 
-    def get_sample_nucleic_accid (self):
-        return '%s' %(self.nucleicAccid)
+    def get_sample_type (self):
+        return '%s' %(self.sampleType.get_name())
 
 
     def get_register_user(self):
@@ -190,6 +192,10 @@ class Samples (models.Model):
     def get_registered_sample (self):
         recordeddate=self.generated_at.strftime("%B %d, %Y")
         return '%s' %(recordeddate)
+
+    def set_state (self, state_value):
+        self.sampleState = StatesForSample.objects.get(sampleStateName__exact = state_value)
+        self.save()
 
     objects = SamplesManager()
 
@@ -234,8 +240,21 @@ class MoleculePreparation (models.Model):
     def get_id (self):
         return "%s" %(self.pk)
 
+
+
     def get_molecule_code_id (self):
         return '%s' %(self.moleculeCodeId)
+
+    def get_molecule_information(self):
+        data =[]
+        data.append(self.moleculeCodeId)
+        data.append(self.moleculeExtractionDate.strftime("%B %d, %Y"))
+        data.append(self.protocolUsed.get_name())
+        data.append(str(self.pk))
+        return data
+
+    def get_protocol (self):
+        return '%s' %(self.protocolUsed.get_name())
 
     def set_state (self, state_value):
         self.state = StatesForMolecule.objects.get(moleculeStateName__exact = state_value)
