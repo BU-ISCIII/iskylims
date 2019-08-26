@@ -110,6 +110,45 @@ class Species (models.Model):
     def get_name(self):
         return '%s' %(self.spicesName)
 
+class MoleculeComercialKits (models.Model):
+    protocol_id = models.ForeignKey(
+                    ProtocolType,
+                    on_delete= models.CASCADE, null = True)
+    moleclue_id = models.ForeignKey(
+                    MoleculeType,
+                    on_delete= models.CASCADE, null = True)
+    name = models.CharField(max_length =60)
+    provider = models.CharField(max_length =30)
+    maximumUses = models.IntegerField(null = True, default = 0)
+
+    cat_number = models.CharField(max_length = 40, null = True)
+    generatedat = models.DateTimeField(auto_now_add=True, null=True)
+
+    def __str__ (self):
+        return '%s' %(self.name)
+
+    def get_name (self):
+        return '%s' %(self.name)
+
+
+    def get_chipLot (self):
+        return '%s' %(self.chipLot)
+
+    def get_name (self):
+        return '%s' %(self.name)
+
+class MoleculeUserComercialKits (models.Model):
+    molecule_id = models.ForeignKey(
+                    MoleculeComercialKits,
+                    on_delete= models.CASCADE, null = True)
+    nickName =  models.CharField(max_length = 50, null = True, blank = True)
+    numberOfuses = models.IntegerField(null = True, default = 0)
+    chipLot = models.CharField(max_length = 50)
+    latestUsedDate = models.DateTimeField(null = True, blank = True)
+    expirationDate = models.DateField(auto_now_add=False)
+    generatedat = models.DateTimeField(auto_now_add=True, null=True)
+
+
 class SamplesManager (models.Manager):
 
     def create_sample (self, sample_data):
@@ -227,6 +266,9 @@ class MoleculePreparation (models.Model):
                 on_delete = models.CASCADE)
     state =  models.ForeignKey(
                 StatesForMolecule,
+                on_delete = models.CASCADE, null = True)
+    usedKit =  models.ForeignKey(
+                MoleculeUserComercialKits,
                 on_delete = models.CASCADE, null = True)
     moleculeCodeId = models.CharField(max_length=255)
     extractionType = models.CharField(max_length=50)
