@@ -653,4 +653,91 @@ class GraphicsStats (models.Model):
 
 
 
-# New objets for handling process requests form lab user
+# New objets for handling library preparation
+class ProtocolLibrary (models.Model):
+    protocolName = models.CharField(max_length=50)
+    description = models.CharField(max_length = 160, null = True, blank = True)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__ (self):
+        return '%s' %(self.protocolName)
+
+    def get_name (self):
+        return '%s' %(self.protocolName)
+
+class ProtocolLibraryParameters (models.Model):
+    protocol_id = models.ForeignKey(
+                    ProtocolLibrary,
+                    on_delete= models.CASCADE)
+    parameterName = models.CharField(max_length=255)
+    parameterDescription = models.CharField(max_length= 400, null=True, blank=True)
+    parameterOrder = models.IntegerField()
+    parameterUsed = models.BooleanField()
+    parameterMaxValue = models.CharField(max_length = 50, null = True, blank = True)
+    parameterMinValue = models.CharField(max_length = 50, null = True, blank = True)
+
+class ReagentsCommercialKits (models.Model):
+    registerUser = models.ForeignKey(
+            User,
+            on_delete=models.CASCADE, null = True)
+    protocol_id = models.ForeignKey(
+                ProtocolLibrary,
+                on_delete= models.CASCADE, null = True)
+    name = models.CharField(max_length =60)
+    provider = models.CharField(max_length =60)
+    reagentLibraryName = models.CharField(max_length = 100)
+    maximunUses = models.IntegerField(null = True , default = 0)
+
+    generatedat = models.DateTimeField(auto_now_add=True, null=True)
+
+    def __str__ (self):
+        return '%s' %(self.name)
+
+    def get_name (self):
+        return '%s' %(self.name)
+
+
+
+class ReagentsUserCommercialKits (models.Model):
+    registerUser = models.ForeignKey(
+            User,
+            on_delete=models.CASCADE, null = True)
+    reagentUserKit_id = models.ForeignKey(
+                ReagentsCommercialKits,
+                on_delete= models.CASCADE, null = True)
+    nickName = models.CharField(max_length =60)
+    numberOfUses = models.IntegerField(null = True , default = 0)
+    latestUsedDate = models.DateTimeField(null = True)
+    chipLot = models.CharField(max_length = 100)
+    expirationDate = models.DateField(auto_now_add=False)
+    generatedat = models.DateTimeField(auto_now_add=True, null=True)
+
+    def __str__ (self):
+        return '%s' %(self.nickName)
+
+    def get_nick_name (self):
+        return '%s' %(self.nickName)
+
+    def get_chip_lot (self):
+        return '%s' %(self.chipLot)
+
+class libraryPreparation (models.Model):
+    registerUser = models.ForeignKey(
+            User,
+            on_delete=models.CASCADE)
+    molecule_id = models.ForeignKey(
+                MoleculePreparation,
+                on_delete= models.CASCADE)
+    protocol_id = models.ForeignKey(
+                ProtocolLibrary,
+                on_delete= models.CASCADE, null = True)
+    reagent_id = models.ForeignKey(
+                ReagentsUserCommercialKits,
+                on_delete= models.CASCADE, null = True)
+    indexValues_id = models.ForeignKey(
+                IndexLibraryValues,
+                on_delete= models.CASCADE, null = True)
+
+    singlePairedEnd  = models.CharField(max_length =20)
+    lengthRead = models.CharField(max_length =5)
