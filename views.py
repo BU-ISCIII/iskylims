@@ -3508,6 +3508,7 @@ def set_library_preparation(request):
             samples = request.POST['molecules'].split(',')
         import pdb; pdb.set_trace()
         display_lib_prep = {}
+        display_lib_prep ['protocol_lib'] = get_protocol_lib()
         display_lib_prep ['heading'] = HEADING_FOR_CREATION_LIBRARY_PREPARATION
     return
 

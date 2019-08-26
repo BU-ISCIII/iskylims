@@ -96,7 +96,7 @@ admin.site.register(IndexLibraryKit,IndexLibraryKitAdmin)
 admin.site.register(Projects, ProjectsAdmin)
 admin.site.register(RunErrors, RunErrorsAdmin)
 admin.site.register(RunStates, RunStatesAdmin)
-admin.site.register(SamplesInProject, SamplesInProjectAdmin)
+
 '''
 admin.site.register(ProtocolInLab, ProtocolInLabAdmin)
 
