@@ -333,17 +333,17 @@ def get_samples_in_extracted_molecule_state ():
     Description:
         The function will return a list with samples which are in extracted_molecule state.
     Input:
-        state  # string of the state to be matched
+
     Variables:
-        sample_type_names # list containing all sample types names
+        molecule_state # Dictionnary with the heading and the molecule information
     Return:
-        sample_type_names.
+        molecule_state.
     '''
 
     molecule_state = {}
     molecule_information = []
-    if Samples.objects.filter(sampleState__sampleStateName__exact = 'Extracted molecule').exists():
-        samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact =  'Extracted molecule')
+    if Samples.objects.filter(sampleState__sampleStateName__exact = 'Extract molecule').exists():
+        samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact =  'Extract molecule')
         for sample_obj in samples_obj:
             molecules = MoleculePreparation.objects.filter(sample = sample_obj)
 
@@ -360,6 +360,8 @@ def get_samples_in_extracted_molecule_state ():
 
     else:
         return ''
+
+
 
 ##### End of getting samples by state
 

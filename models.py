@@ -240,6 +240,8 @@ class MoleculePreparation (models.Model):
     def get_id (self):
         return "%s" %(self.pk)
 
+    def get_extraction_date (self):
+        return "%s" %(self.moleculeExtractionDate.strftime("%B %d, %Y"))
 
 
     def get_molecule_code_id (self):
@@ -258,6 +260,9 @@ class MoleculePreparation (models.Model):
 
     def get_protocol (self):
         return '%s' %(self.protocolUsed.get_name())
+
+    def get_state (self):
+        return '%s' %(self.state)
 
     def set_state (self, state_value):
         self.state = StatesForMolecule.objects.get(moleculeStateName__exact = state_value)
