@@ -39,6 +39,7 @@ urlpatterns = [
     path('searchRun/', views.search_run, name='search_run'),
     path('searchSample/', views.search_sample, name = 'search_sample'),
     path('setMoleculeValues', views.set_Molecule_values, name = 'set_Molecule_values'),
+    path('setLibraryPreparation', views.set_library_preparation, name = 'set_library_preparation'),
     path('setLibraryValues', views.set_library_values, name = 'set_library_values'),
     path('StatsExperiment/', views.stats_experiment, name ='stats_experiment'),
     path('StatsLibrary/', views.stats_per_library , name ='stats_per_library'),

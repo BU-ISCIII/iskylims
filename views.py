@@ -28,6 +28,7 @@ from .utils.library_kits import *
 from .utils.fetching_information import *
 from .utils.testing_wetlab_configuration import *
 from .utils.sample_functions import *
+from .utils.library_preparation import *
 #from .utils.samplesheet_checks import *
 #from .utils.parsing_run_info import get_machine_lanes
 #from .utils.wetlab_misc_utilities import normalized_data
@@ -3281,8 +3282,8 @@ def pending_to_update(request):
     pending = {}
     # get the samples in defined state
     pending['defined'] = get_samples_in_defined_state()
-    pending['extracted_molecule'] = get_samples_in_extracted_molecule_state()
-
+    pending['extract_molecule'] = get_samples_in_extracted_molecule_state()
+    pending['add_library_preparation'] = get_samples_in_add_library_preparation()
     # get the molecules  in  defined state
     #pending['molecules'] = get_molecules_in_state('Defined')
     # get the library preparation in defined state
@@ -3494,6 +3495,21 @@ def set_DNA_values(request):
         return render(request, 'iSkyLIMS_wetlab/setDNAValues.html',{'display_list': display_list})
     return render(request, 'iSkyLIMS_wetlab/setDNAValues.html',{})
 '''
+@login_required
+def set_library_preparation(request):
+    if request.method == 'POST' and request.POST['action'] == 'displayLibraryPreparation':
+
+        if 'molecules' in request.POST :
+            return render (request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':['There was no molecule selected ']})
+        if  'molecules_in_list' in request.POST:
+            samples = request.POST.getlist('molecules')
+        else:
+            samples = request.POST['molecules'].split(',')
+        import pdb; pdb.set_trace()
+        display_lib_prep = {}
+        display_lib_prep ['heading'] = HEADING_FOR_CREATION_LIBRARY_PREPARATION
+    return
 
 @login_required
 def set_library_values (request):
