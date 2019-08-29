@@ -3288,7 +3288,7 @@ def pending_to_update(request):
     #pending['molecules'] = get_molecules_in_state('Defined')
     # get the library preparation in defined state
 
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
     return render(request, 'iSkyLIMS_wetlab/pendingToUpdate.html', {'pending':pending})
 
 
@@ -3498,19 +3498,75 @@ def set_DNA_values(request):
 @login_required
 def set_library_preparation(request):
     if request.method == 'POST' and request.POST['action'] == 'displayLibraryPreparation':
-
-        if 'molecules' in request.POST :
+        if not 'molecules' in request.POST :
             return render (request,'iSkyLIMS_wetlab/error_page.html',
                 {'content':['There was no molecule selected ']})
         if  'molecules_in_list' in request.POST:
-            samples = request.POST.getlist('molecules')
+            molecules = request.POST.getlist('molecules')
         else:
-            samples = request.POST['molecules'].split(',')
-        import pdb; pdb.set_trace()
+            molecules = request.POST['molecules'].split(',')
         display_lib_prep = {}
-        display_lib_prep ['protocol_lib'] = get_protocol_lib()
+        display_lib_prep['data'] = []
+        defined_protocols_lib = get_protocol_lib()
+
+        if len(defined_protocols_lib) == 0 :
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',
+                        {'content':['Protocols for library preparation is a pre-requisite to defined the settings for library preparations',
+                            'Define them and then return to continue with this step.']})
+        display_lib_prep ['protocol_lib'] = defined_protocols_lib
         display_lib_prep ['heading'] = HEADING_FOR_CREATION_LIBRARY_PREPARATION
-    return
+        display_lib_prep ['heading_in_excel'] = ''.join(HEADING_FOR_CREATION_LIBRARY_PREPARATION)
+        length_heading = len(HEADING_FOR_CREATION_LIBRARY_PREPARATION)
+
+        for molecule in molecules :
+            data = ['']*length_heading
+            molecule_obj = MoleculePreparation.objects.get(pk = int(molecule))
+            data[0] = molecule_obj.get_molecule_code_id()
+            display_lib_prep['data'].append(data)
+        display_lib_prep['molecules'] = molecules
+        return render (request, 'iSkyLIMS_wetlab/setLibraryPreparation.html', {'display_lib_prep':display_lib_prep})
+
+    elif request.method == 'POST' and request.POST['action'] == 'importplate':
+        import_file = request.FILES['importPlatefile']
+        import pdb; pdb.set_trace()
+        split_filename=re.search('(.*)(\.\w+$)',myfile.name)
+        if None == split_filename:
+            ext_file = '.plt'
+        else:
+            ext_file=split_filename.group(2)
+        fs = FileSystemStorage()
+        timestr = time.strftime("%Y%m%d-%H%M%S")
+        ## including the timestamp to the sample sheet file
+        file_name=str(wetlab_config.IEM_PLATE_DIRECTORY
+                     + split_filename.group(1)  + timestr + ext_file)
+        filename = fs.save(file_name,  import_file)
+        uploaded_file_url = fs.url(filename)
+
+        ### add the document directory to read the csv file
+        stored_file = os.path.join(settings.MEDIA_ROOT, file_name)
+
+    elif request.method == 'POST' and request.POST['action'] == 'addLibraryProtocol':
+        if  'molecules_in_list' in request.POST:
+            molecules = request.POST.getlist('molecules')
+        else:
+            molecules = request.POST['molecules'].split(',')
+        prot_lib_json_data = json.loads(request.POST['protocol_data'])
+        heading_in_excel = request.POST['heading_in_excel'].split(',')
+
+
+        for i in range(len(molecules)) :
+            valid_molecules = []
+            protocol_name = prot_lib_json_data[i][heading_in_excel.index('Protocol used')]
+            if protocol_name == '':
+                continue
+            if not ProtocolLibrary.objects.filter(protocolName__exact = protocol_name).exists():
+                continue
+            protocol_obj = ProtocolLibrary.objects.get(protocolName__exact = protocol_name)
+            if not ProtocolLibraryParameters.objects.filter(protocol_id = protocol_obj).exists():
+                continue
+            valid_molecules.append(molecules[i])
+            prot_lib_parameters = ProtocolLibraryParameters.objects.filter(protocol_id = protocol_obj)
+
 
 @login_required
 def set_library_values (request):

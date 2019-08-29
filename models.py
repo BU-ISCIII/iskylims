@@ -9,7 +9,7 @@ from django_utils.models import Center
 from django.utils.translation import ugettext_lazy as _
 
 from .  import wetlab_config
-from iSkyLIMS_core.models import MoleculePreparation
+from iSkyLIMS_core.models import MoleculePreparation , Samples
 
 class RunErrors (models.Model):
     errorCode = models.CharField(max_length=10)
@@ -722,6 +722,19 @@ class ReagentsUserCommercialKits (models.Model):
     def get_chip_lot (self):
         return '%s' %(self.chipLot)
 
+'''
+class libPreparationSampleSheet (models.Model):
+    registerUser = models.ForeignKey(
+            User,
+            on_delete=models.CASCADE)
+
+    indexLibraryKit_id = models.ForeignKey(
+                IndexLibraryKit,
+                on_delete= models.CASCADE, null = True)
+
+    sampleSheet = models.FileField(upload_to = wetlab_config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY)
+    generatedat = models.DateTimeField(auto_now_add=True, null=True)
+'''
 class libraryPreparation (models.Model):
     registerUser = models.ForeignKey(
             User,
@@ -729,15 +742,24 @@ class libraryPreparation (models.Model):
     molecule_id = models.ForeignKey(
                 MoleculePreparation,
                 on_delete= models.CASCADE)
+    sample_id = models.ForeignKey(
+                Samples,
+                on_delete= models.CASCADE, null = True)
     protocol_id = models.ForeignKey(
                 ProtocolLibrary,
                 on_delete= models.CASCADE, null = True)
     reagent_id = models.ForeignKey(
                 ReagentsUserCommercialKits,
                 on_delete= models.CASCADE, null = True)
-    indexValues_id = models.ForeignKey(
-                IndexLibraryValues,
-                on_delete= models.CASCADE, null = True)
+
 
     singlePairedEnd  = models.CharField(max_length =20)
     lengthRead = models.CharField(max_length =5)
+    '''
+    uniqueID = models.CharField(max_length =10)
+    reagentsKits_id  = models.ForeignKey(
+                ReagentsUserCommercialKits,
+                on_delete= models.CASCADE)
+    sampleSheet = models.FileField(upload_to = wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY)
+
+    '''

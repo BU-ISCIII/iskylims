@@ -45,6 +45,14 @@ class IndexLibraryKitAdmin(admin.ModelAdmin):
 
 class SamplesInProjectAdmin (admin.ModelAdmin):
     list_display = ('project_id','sampleName','barcodeName','pfClusters','percentInProject','yieldMb','qualityQ30')
+
+
+
+
+
+### New for library preparation
+class ProtocolLibraryAdmin(admin.ModelAdmin):
+    list_display = ( 'protocolName', 'description')
 '''
 class ProtocolInLabAdmin (admin.ModelAdmin):
     list_display = ('protocolName',)
@@ -78,8 +86,6 @@ class SpeciesAdmin (admin.ModelAdmin):
 class MoleculeTypeAdmin( admin.ModelAdmin):
     list_display = ('moleculeType',)
 
-class ProtocolsAdmin(admin.ModelAdmin):
-    list_display = ('type', 'name', 'description')
 
 class ProtocolTypeAdmin( admin.ModelAdmin):
     list_display = ('molecule','protocol_type')
@@ -97,9 +103,11 @@ admin.site.register(Projects, ProjectsAdmin)
 admin.site.register(RunErrors, RunErrorsAdmin)
 admin.site.register(RunStates, RunStatesAdmin)
 
-'''
-admin.site.register(ProtocolInLab, ProtocolInLabAdmin)
 
+admin.site.register(ProtocolLibrary, ProtocolLibraryAdmin)
+
+
+'''
 admin.site.register(Laboratory, LaboratoryAdmin)
 #admin.site.register(LibraryProtocolParameters, LibraryProtocolParametersAdmin)
 admin.site.register(NucleotidesComercialKits,NucleotidesComercialKitsAdmin)

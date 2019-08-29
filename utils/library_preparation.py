@@ -1,5 +1,14 @@
 from iSkyLIMS_core.models import *
+from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
+
+def get_protocol_lib ():
+    protocol_list = []
+    if ProtocolLibrary.objects.all().exists():
+        protocols = ProtocolLibrary.objects.all()
+        for protocol in protocols:
+            protocol_list.append(protocol.get_name())
+    return protocol_list
 
 def get_samples_in_add_library_preparation ():
     '''
@@ -32,3 +41,9 @@ def get_samples_in_add_library_preparation ():
         library_prep_information['molecule_heading'] = HEADING_FOR_ADD_LIBRARY_PREPARATION
 
     return library_prep_information
+
+def parsing_iem_platefile (platefile):
+
+    with open (platefile, 'r') as fh :
+        pass
+    return
