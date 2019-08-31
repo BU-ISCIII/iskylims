@@ -10,6 +10,8 @@ import random
 from Bio.Seq import Seq
 from django.conf import settings
 
+from django.core.files.storage import FileSystemStorage
+
 from iSkyLIMS_wetlab import wetlab_config
 from iSkyLIMS_wetlab.models import *
 
@@ -31,6 +33,55 @@ def include_csv_header (library_kit, out_file, plate, container):
         out_file.write(header_line)
     #### adding additional line
     out_file.write('\n')
+
+def get_indexes_adapters (in_file):
+    index_adapters = ''
+    ## For accepting characters like spanish characters.
+    import codecs
+    fh = codecs.open(in_file, 'r', 'utf-8')
+    #fh = open(in_file, 'r')
+    for line in fh:
+        line = line.rstrip()
+        if line == '':
+            continue
+        found_library = re.search('^Index Adapters',line)
+        if found_library :
+            index_line = line.split(',')
+            if index_line[1]:
+                index_adapters = index_line[1]
+                break
+    fh.close()
+
+    return index_adapters
+
+
+def get_samples_in_sample_sheet(in_file):
+    import codecs
+    samples_dict = {}
+    samples = []
+    header_found = False
+    fh = codecs.open(in_file, 'r', 'utf-8')
+
+    for line in fh:
+        line = line.rstrip()
+        if line == '':
+            continue
+        found_header=re.search('^Sample_ID,Sample_Name',line)
+        if found_header:
+            header_found = True
+            samples_dict['header'] = line.split(',')
+            ## found the index for projects
+        if header_found :
+            ### ignore the empty lines separated by commas
+            valid_line = re.search('^\w+',line)
+            if not valid_line :
+                continue
+            samples.append(line.split(','))
+    samples_dict['samples'] = samples
+    fh.close()
+    return samples_dict
+
+
 
 def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects, plate):
     data_raw=[]
@@ -103,7 +154,7 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
                 #### adding empty values of species and NucleicAccid
                 dict_value_data['Species']=''
                 dict_value_data['NucleicAcid']='DNA'
-                
+
                 ### adding well information New
                 #well_column = number_well
                 dict_value_data['Well']=str(letter_well + number_well)
@@ -112,7 +163,7 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
                     # reset the number well to 1 and increase the letter
                     number_well = '01'
                     letter_well=chr(ord(letter_well)+1)
-                '''  Removed 
+                '''  Removed
                 ### adding well information
                 if not dict_value_data['Index1Name'] in well_column:
                     well_column[dict_value_data['Index1Name']]=number_well
@@ -365,20 +416,20 @@ def create_unique_sample_id_values (infile, index_file):
 def set_user_names_in_sample_sheet (in_file, user_names):
     '''
     Description:
-        The function modifies/set the user names in the description 
-        column 
+        The function modifies/set the user names in the description
+        column
     Input:
         in_file # sample sheet file to be updated
-        user_names # dictionary having projects as key and user names 
+        user_names # dictionary having projects as key and user names
                     as their value
     Variable:
         data_line  # split line into list to set user name
         description_index # column number where is located the description
                             inside sample Sheet
         found_sample_line # flag to identify if sample heading was found
-        project_index # column number where is located the project inside 
+        project_index # column number where is located the project inside
                         sample Sheet
-                        
+
         temp_sample_sheet # temporary sample sheet to store the information
                             it will replace the in_file
     Return:
@@ -407,10 +458,28 @@ def set_user_names_in_sample_sheet (in_file, user_names):
 
             new_line = ','.join(data_line)
             fh_out_file.write(str(new_line + '\n'))
-        
+
         else:
             fh_out_file. write(line)
     fh.close()
     fh_out_file.close()
     os.rename(temp_sample_sheet, in_file)
     return True
+
+
+def store_user_input_file (user_input_file, default_extension):
+    split_filename=re.search('(.*)(\.\w+$)',user_input_file.name)
+    if None == split_filename:
+        ext_file = default_extension
+    else:
+        ext_file=split_filename.group(2)
+    fs = FileSystemStorage()
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+    ## including the timestamp to the sample sheet file
+    file_name=str(wetlab_config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY
+                 + split_filename.group(1)  + '_' + timestr + ext_file)
+    filename = fs.save(file_name,  user_input_file)
+
+    ### add the document directory to the input file
+    stored_file = os.path.join(settings.MEDIA_ROOT, file_name)
+    return stored_file, file_name

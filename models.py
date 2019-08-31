@@ -722,8 +722,16 @@ class ReagentsUserCommercialKits (models.Model):
     def get_chip_lot (self):
         return '%s' %(self.chipLot)
 
-'''
-class libPreparationSampleSheet (models.Model):
+
+class libPreparationUserSampleSheetManager (models.Manager):
+
+    def create_lib_prep_user_sample_sheet (self, user_sample_sheet_data):
+        new_lib_prep_user_sample_sheet = self.create(registerUser = user_sample_sheet_data['registerUser'],
+                    indexLibraryKit_id  = user_sample_sheet_data['indexLibraryKit_id'],
+                    sampleSheet = user_sample_sheet_data['sampleSheet'])
+        return new_lib_prep_user_sample_sheet
+
+class libPreparationUserSampleSheet (models.Model):
     registerUser = models.ForeignKey(
             User,
             on_delete=models.CASCADE)
@@ -734,7 +742,12 @@ class libPreparationSampleSheet (models.Model):
 
     sampleSheet = models.FileField(upload_to = wetlab_config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY)
     generatedat = models.DateTimeField(auto_now_add=True, null=True)
-'''
+
+    def __str__ (self):
+        return '%s' %(self.sampleSheet)
+
+    objects = libPreparationUserSampleSheetManager()
+
 class libraryPreparation (models.Model):
     registerUser = models.ForeignKey(
             User,
@@ -751,7 +764,18 @@ class libraryPreparation (models.Model):
     reagent_id = models.ForeignKey(
                 ReagentsUserCommercialKits,
                 on_delete= models.CASCADE, null = True)
+    user_sample_sheet = models.ForeignKey(
+                libPreparationUserSampleSheet,
+                on_delete= models.CASCADE, null = True)
 
+    userSampleID = models.CharField(max_length =20)
+    projectInSampleSheet = models.CharField(max_length =50)
+    samplePlate = models.CharField(max_length =20)
+    sampleWell = models.CharField(max_length =20)
+    i7IndexID = models.CharField(max_length =16)
+    i7Index = models.CharField(max_length =16)
+    i5IndexID = models.CharField(max_length =16)
+    i5Index = models.CharField(max_length =16)
 
     singlePairedEnd  = models.CharField(max_length =20)
     lengthRead = models.CharField(max_length =5)
