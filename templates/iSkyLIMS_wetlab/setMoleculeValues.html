@@ -121,8 +121,13 @@
                           {%endfor%}
                         </tbody>
                     </table>
-                    <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                    <input type="button" value="Return Pendig Samples" onclick="location.href ='/wetlab/pendingToUpdate' ;"/>
+                    <form method="post" enctype="multipart/form-data" name="displayMoleculeParameters"  id="displayMoleculeParameters" class="form-horizontal well">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="displayMoleculeParameters"/>
+                        <input type="hidden" name= "molecules" value="{{molecule_recorded.molecules}}"/>
+                        <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                        <input type="button" value="Return Pendig Samples" onclick="location.href ='/wetlab/pendingToUpdate' ;"/>
+                        <input class="btn pull-right btn-primary" type="submit" value="Continue Adding Quality Parameters">
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
 

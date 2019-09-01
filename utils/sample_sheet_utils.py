@@ -69,7 +69,8 @@ def get_samples_in_sample_sheet(in_file):
         found_header=re.search('^Sample_ID,Sample_Name',line)
         if found_header:
             header_found = True
-            samples_dict['header'] = line.split(',')
+            samples_dict['headings'] = line.split(',')
+            continue
             ## found the index for projects
         if header_found :
             ### ignore the empty lines separated by commas

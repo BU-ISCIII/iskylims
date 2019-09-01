@@ -32,11 +32,11 @@
                          {% if sample_recorded.all_samples_valid %}
                             <br><br>
 
-                            <form method="post" action="setMoleculeValues"  enctype="multipart/form-data" name="continueWithDNA"  id="continueWithDNA" class="form-horizontal well">
+                            <form method="post" action="setMoleculeValues"  enctype="multipart/form-data" name="continueWithMolecule"  id="continueWithMolecule" class="form-horizontal well">
                                 {% csrf_token %}
-                                <input type="hidden" name="action" value="continueWithDNA"/>
+                                <input type="hidden" name="action" value="continueWithMolecule"/>
                                 <input type="hidden" name="samples" value="{{ sample_recorded.samples_to_continue }}"/>
-                                <input class="btn pull-right btn-primary" type="submit" value="Contine with DNA settings">
+                                <input class="btn pull-right btn-primary" type="submit" value="Contine with Molecule settings">
                             </form>
                         {% endif %}
                     </div>  <!--  end of panel body  -->

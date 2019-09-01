@@ -3334,6 +3334,7 @@ def set_Molecule_values(request):
         return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'molecule_protocol':molecule_protocol})
 
     elif request.method == 'POST' and request.POST['action'] == 'updateMoleculeProtocol':
+        
         molecule_recorded = record_molecules (request)
 
         return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'molecule_recorded':molecule_recorded})
@@ -3404,8 +3405,11 @@ def set_library_preparation(request):
         return render (request, 'iSkyLIMS_wetlab/setLibraryPreparation.html', {'display_lib_prep':display_lib_prep})
 
     elif request.method == 'POST' and request.POST['action'] == 'importsamplesheet':
+        protocol = request.POST['lib_protocols']
+        single_paired = request.POST['singlePairedEnd']
+        read_length = request.POST['readlength']
         extension_file = '.csv'
-        stored_file , file_name= store_user_input_file(request.FILES['importsamplesheet'], extension_file)
+        stored_file , file_name = store_user_input_file(request.FILES['importsamplesheet'], extension_file)
 
         library_prep_workflow = get_library_name(stored_file)
         index_adapters = get_indexes_adapters (stored_file)
@@ -3416,12 +3420,21 @@ def set_library_preparation(request):
             indexLibraryKit_id = IndexLibraryKit.objects.get(indexLibraryName__exact = index_adapters)
         else:
             indexLibraryKit_id = None
-        user_sample_sheet_data['registerUser'] = User.objects.get(username__exact = request.user.username)
+        register_user_obj = User.objects.get(username__exact = request.user.username)
+        user_sample_sheet_data['registerUser'] = register_user_obj
         user_sample_sheet_data['indexLibraryKit_id'] = indexLibraryKit_id
-        import pdb; pdb.set_trace()
-        user_sample_sheet_data['sampleSheet'] = file_name
-        #new_user_s_sheet_obj = libPreparationUserSampleSheet.objects.create_lib_prep_user_sample_sheet(user_sample_sheet_data)
 
+        user_sample_sheet_data['sampleSheet'] = file_name
+        new_user_s_sheet_obj = libPreparationUserSampleSheet.objects.create_lib_prep_user_sample_sheet(user_sample_sheet_data)
+
+        import pdb; pdb.set_trace()
+        extracted_data_list = extract_sample_data (samples_dict)
+        for extracted_data in extracted_data_list :
+            sample_obj = Samples.objects.get(sampleName__exact = extracted_data['sample_id'])
+            extracted_data['sample_id'] = sample_obj
+            molecule_obj = MoleculePreparation.objects.filter(sample = sample_obj).last()
+            new_library_preparation = libraryPreparation.objects.create_lib_preparation(extracted_data, new_user_s_sheet_obj, register_user_obj,
+                                    molecule_obj, protocol, single_paired , read_length)
         import pdb; pdb.set_trace()
 
 

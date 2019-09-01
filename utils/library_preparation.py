@@ -2,26 +2,26 @@ from iSkyLIMS_core.models import Samples, MoleculePreparation
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
 
-def extract_sample_data (s_data,user_sample_sheet_obj):
+def extract_sample_data (s_data):
     headings = s_data['headings']
-    columns = ['Sample_ID','Sample_Name','Sample_Plate','Sample_Well','Index_Plate_Well','I7_Index_ID','index','I5_Index_ID','index2','Sample_Project']
+    sample_list = []
+    #columns = ['Sample_ID','Sample_Name','Sample_Plate','Sample_Well','Index_Plate_Well','I7_Index_ID','index','I5_Index_ID','index2','Sample_Project']
     for sample_row in s_data['samples']:
         '''
         if Samples.objects.filter(sampleName__exact = sample_row.index('Sample_Name'), sampleState__sampleStateName = 'Add Library Preparation' ).exists():
             sample_obj = Samples.objects.filter(sampleName__exact = sample_row.index('Sample_Name'), sampleState__sampleStateName = 'Add Library Preparation')
         '''
         lib_prep_data = {}
-        for column in wetlab_config.MAP_USER_SAMPLE_SHEET_TO_DATABASE[0] :
-            import pdb; pdb.set_trace()
-            if column in headings:
-                lib_prep_data[column[1]] = sample_row.index(column)
+        for column in wetlab_config.MAP_USER_SAMPLE_SHEET_TO_DATABASE :
+            if column[0] in headings:
+                lib_prep_data[column[1]] = sample_row[headings.index(column[0])]
             else:
-                lib_prep_data[column] = ''
+                lib_prep_data[column[1]] = ''
+        sample_list.append(lib_prep_data)
+    import pdb; pdb.set_trace()
 
 
-
-
-    return
+    return sample_list
 
 
 def get_protocol_lib ():
