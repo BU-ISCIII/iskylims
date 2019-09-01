@@ -107,7 +107,7 @@ def analyze_input_samples (request):
     Return:
         laboratories.
     '''
-    excel_data = request.POST['table_data']
+
     na_json_data = json.loads(request.POST['table_data'])
     heading_in_excel = ['patientCodeName', 'laboratory', 'labSampleName', 'extractionDate',
                     'sampleName', 'sampleType', 'species']
@@ -120,7 +120,7 @@ def analyze_input_samples (request):
     samples_continue = []
     for row in na_json_data :
         sample_data = {}
-        sample_name = row[heading_in_excel.index('sampleName')]
+        sample_name = str(row[heading_in_excel.index('sampleName')])
         if sample_name == '' :
             continue
         if not sample_already_defined (row[heading_in_excel.index('sampleName')]):
@@ -259,7 +259,7 @@ def get_defined_samples (register_user):
     '''
     defined_samples = {}
     #sample_ids = []
-    defined_samples['heading'] = HEADING_FOR_DEFINED_SAMPLES
+    defined_samples['heading'] = HEADING_FOR_DEFINED_SAMPLES_STATE
     sample_information = []
     if Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined',
                     sampleUser__username__exact = register_user).exists():
@@ -517,6 +517,7 @@ def record_molecules (request):
     molecule_json_data = json.loads(request.POST['molecule_data'])
     samples = request.POST['samples'].split(',')
     molecules_recorded = {}
+    molecules_ids = []
     molecule_list = []
     heading_in_excel = ['sampleID', 'molecule_type', 'type_extraction', 'extractionDate',
                     'protocol_type', 'protocol_used']
@@ -551,10 +552,13 @@ def record_molecules (request):
         new_molecule = MoleculePreparation.objects.create_molecule(molecule_data)
         molecule_list.append([molecule_code_id, protocol_used])
         # Update Sample state to "Extracted molecule"
-        sample_obj.set_state('Extracted Molecule')
+        sample_obj.set_state('Extract molecule')
+        # Include index key to allow adding quality parameter data
+        molecules_ids.append(str(new_molecule.pk))
 
     molecules_recorded['heading'] = HEADING_CONFIRM_MOLECULE_RECORDED
     molecules_recorded['molecule_list'] = molecule_list
+    molecules_recorded['molecules'] = ','.join(molecules_ids)
     return molecules_recorded
 
 def get_table_record_molecule (samples):
