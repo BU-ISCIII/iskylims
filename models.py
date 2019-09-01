@@ -749,13 +749,14 @@ class libPreparationUserSampleSheet (models.Model):
     objects = libPreparationUserSampleSheetManager()
 
 class libraryPreparationManager(models.Manager):
-    def create_lib_preparation (self, lib_prep_data, user_sample_obj, reg_user ,molecule_obj, protocol, single_paired , read_length):
+    def create_lib_preparation (self, lib_prep_data, user_sample_obj, reg_user ,molecule_obj, protocol, single_paired , read_length, lib_prep_code_id):
         new_lib_prep = self.create(registerUser = reg_user, molecule_id = molecule_obj, sample_id = lib_prep_data['sample_id'],
             protocol_id =   protocol, user_sample_sheet = user_sample_obj, userSampleID = lib_prep_data['userSampleID'],
             projectInSampleSheet = lib_prep_data['projectInSampleSheet'], samplePlate = lib_prep_data['samplePlate'],
             sampleWell = lib_prep_data['sampleWell'], i7IndexID = lib_prep_data['i7IndexID'],
             i7Index = lib_prep_data['i7Index'], i5IndexID = lib_prep_data['i5IndexID'],
-            i5Index = lib_prep_data['i5Index'], singlePairedEnd = single_paired, lengthRead = read_length)
+            i5Index = lib_prep_data['i5Index'], singlePairedEnd = single_paired, lengthRead = read_length,
+            libPrepCodeID = lib_prep_code_id, state = 'Recorded')
 
         return new_lib_prep
 
@@ -779,9 +780,10 @@ class libraryPreparation (models.Model):
                 libPreparationUserSampleSheet,
                 on_delete= models.CASCADE, null = True)
 
+    libPrepCodeID = models.CharField(max_length=255)
     userSampleID = models.CharField(max_length =20)
     projectInSampleSheet = models.CharField(max_length =50)
-    samplePlate = models.CharField(max_length =20)
+    samplePlate = models.CharField(max_length =50)
     sampleWell = models.CharField(max_length =20)
     i7IndexID = models.CharField(max_length =16)
     i7Index = models.CharField(max_length =16)
@@ -790,6 +792,9 @@ class libraryPreparation (models.Model):
 
     singlePairedEnd  = models.CharField(max_length =20)
     lengthRead = models.CharField(max_length =5)
+    numberOfReused = models.IntegerField(default=0)
+    state = models.CharField(max_length =16)
+
     '''
     uniqueID = models.CharField(max_length =10)
     reagentsKits_id  = models.ForeignKey(
@@ -802,5 +807,17 @@ class libraryPreparation (models.Model):
 
     def __str__ (self):
         return '%s' %(self.sample_id)
+
+    def get_id (self):
+        return '%s' %(self.pk)
+
+    def get_lib_prep_code (self):
+        return '%s' %(self.libPrepCodeID)
+
+    def get_protocol_used (self):
+        return '%s'  %(self.protocol_id.get_name())
+
+    def get_reagents_kit_used(self):
+        return '%s' %(self.reagent_id.get_nick_name())
 
     objects = libraryPreparationManager()

@@ -3284,6 +3284,7 @@ def pending_to_update(request):
     pending['defined'] = get_samples_in_defined_state()
     pending['extract_molecule'] = get_samples_in_extracted_molecule_state()
     pending['add_library_preparation'] = get_samples_in_add_library_preparation_state()
+    pending['add_lib_prep_parameters'] = get_samples_add_lib_prep_parameters()
     # get the molecules  in  defined state
     #pending['molecules'] = get_molecules_in_state('Defined')
     # get the library preparation in defined state
@@ -3334,7 +3335,7 @@ def set_Molecule_values(request):
         return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'molecule_protocol':molecule_protocol})
 
     elif request.method == 'POST' and request.POST['action'] == 'updateMoleculeProtocol':
-        
+
         molecule_recorded = record_molecules (request)
 
         return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'molecule_recorded':molecule_recorded})
@@ -3393,7 +3394,7 @@ def set_library_preparation(request):
                             'Define them and then return to continue with this step.']})
         display_lib_prep ['protocol_lib'] = defined_protocols_lib
         display_lib_prep ['heading'] = HEADING_FOR_CREATION_LIBRARY_PREPARATION
-        display_lib_prep ['heading_in_excel'] = ''.join(HEADING_FOR_CREATION_LIBRARY_PREPARATION)
+        display_lib_prep ['heading_in_excel'] = ','.join(HEADING_FOR_CREATION_LIBRARY_PREPARATION)
         length_heading = len(HEADING_FOR_CREATION_LIBRARY_PREPARATION)
 
         for molecule in molecules :
@@ -3416,6 +3417,8 @@ def set_library_preparation(request):
         samples_dict = get_samples_in_sample_sheet(stored_file)
         # store user sample sheet in database
         user_sample_sheet_data = {}
+        stored_lib_prep = {}
+        stored_lib_prep['data'] = []
         if IndexLibraryKit.objects.filter(indexLibraryName__exact = index_adapters).exists():
             indexLibraryKit_id = IndexLibraryKit.objects.get(indexLibraryName__exact = index_adapters)
         else:
@@ -3427,16 +3430,53 @@ def set_library_preparation(request):
         user_sample_sheet_data['sampleSheet'] = file_name
         new_user_s_sheet_obj = libPreparationUserSampleSheet.objects.create_lib_prep_user_sample_sheet(user_sample_sheet_data)
 
-        import pdb; pdb.set_trace()
         extracted_data_list = extract_sample_data (samples_dict)
+        length_heading = len(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS)
+        stored_lib_prep['heading'] = HEADING_FIX_FOR_ADDING_LIB_PARAMETERS
+        stored_lib_prep['heading_in_excel'] = ','.join(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS)
+
+        stored_lib_prep['reagents_kits'] = get_user_reagents_kits(register_user_obj)
         for extracted_data in extracted_data_list :
             sample_obj = Samples.objects.get(sampleName__exact = extracted_data['sample_id'])
             extracted_data['sample_id'] = sample_obj
+            protocol_obj = ProtocolLibrary.objects.get(protocolName__exact = protocol)
             molecule_obj = MoleculePreparation.objects.filter(sample = sample_obj).last()
-            new_library_preparation = libraryPreparation.objects.create_lib_preparation(extracted_data, new_user_s_sheet_obj, register_user_obj,
-                                    molecule_obj, protocol, single_paired , read_length)
-        import pdb; pdb.set_trace()
+            lib_prep_code_id = molecule_obj.get_molecule_code_id() + '_LIB_01'
 
+            # Create the new library preparation object
+            new_library_preparation = libraryPreparation.objects.create_lib_preparation(extracted_data, new_user_s_sheet_obj, register_user_obj,
+                                    molecule_obj, protocol_obj, single_paired , read_length, lib_prep_code_id)
+
+            data = ['']*length_heading
+            data[0] = lib_prep_code_id
+            stored_lib_prep['data'].append(data)
+
+        import pdb; pdb.set_trace()
+        return render (request, 'iSkyLIMS_wetlab/setLibraryPreparation.html', {'stored_lib_prep':stored_lib_prep})
+
+    elif request.method == 'POST' and request.POST['action'] == 'addProtocolParamters':
+        if  'samples_in_list' in request.POST:
+            samples = request.POST.getlist('samples')
+            if len(samples) == 0:
+                samples = list(request.POST['samples'])
+        else:
+            samples = request.POST['samples'].split(',')
+
+        stored_lib_prep = {}
+        stored_lib_prep['data'] = []
+        length_heading = len(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS)
+        stored_lib_prep['heading'] = HEADING_FIX_FOR_ADDING_LIB_PARAMETERS
+        stored_lib_prep['heading_in_excel'] = ','.join(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS)
+
+        for sample in samples:
+            if not libraryPreparation.objects.filter(pk__exact = int(sample)).exists():
+                continue
+            lib_prep_obj = libraryPreparation.objects.get(pk__exact = int(sample))
+            data = ['']*length_heading
+            data[0] = lib_prep_obj.get_lib_prep_code()
+            stored_lib_prep['data'].append(data)
+
+        return render (request, 'iSkyLIMS_wetlab/setLibraryPreparation.html', {'stored_lib_prep':stored_lib_prep})
 
     elif request.method == 'POST' and request.POST['action'] == 'addLibraryProtocol':
         if  'molecules_in_list' in request.POST:

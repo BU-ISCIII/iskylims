@@ -32,8 +32,35 @@ def get_protocol_lib ():
             protocol_list.append(protocol.get_name())
     return protocol_list
 
+
+def get_samples_add_lib_prep_parameters():
+    '''
+    Description:
+        The function will return a list with samples which are needs to add library preparation parameters
+    Input:
+
+    Variables:
+        library_prep_information # Dictionary with the heading and the molecule information
+    Return:
+        lib_prep_parameters.
+    '''
+    lib_prep_parameters = {}
+    if libraryPreparation.objects.filter(state__exact = 'Recorded').exists():
+        samples = libraryPreparation.objects.filter(state__exact = 'Recorded')
+        sample_info = []
+        for sample in samples:
+            lib_prep_info = []
+            lib_prep_info.append(sample.get_lib_prep_code())
+            lib_prep_info.append(sample.get_protocol_used())
+            lib_prep_info.append(sample.get_id())
+            sample_info.append(lib_prep_info)
+        lib_prep_parameters['sample_info'] = sample_info
+        lib_prep_parameters['heading'] = HEADING_FOR_ADD_LIBRARY_PREPARATION_PARAMETERS
+    return lib_prep_parameters
+
+
 def get_samples_in_add_library_preparation_state ():
-    '''sampleName__exact =
+    '''
     Description:
         The function will return a list with samples which are in add_library_preparation state.
     Input:
@@ -64,3 +91,11 @@ def get_samples_in_add_library_preparation_state ():
         library_prep_information['molecule_heading'] = HEADING_FOR_ADD_LIBRARY_PREPARATION
 
     return library_prep_information
+
+def get_user_reagents_kits(user_obj):
+    user_reagents_kits = []
+    if ReagentsUserCommercialKits.objects.filter(registerUser = user_obj).exists():
+        available_kits =  ReagentsUserCommercialKits.objects.filter(registerUser = user_obj)
+        for kit in available_kits:
+            user_reagents_kits.append(kit.get_nick_name())
+    return user_reagents_kits
