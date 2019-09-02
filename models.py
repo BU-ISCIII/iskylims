@@ -40,6 +40,9 @@ class ProtocolType (models.Model):
     def __str__ (self) :
         return '%s' %(self.protocol_type)
 
+    def get_molecule_type (self):
+        return '%s' %(self.molecule.get_name())
+        
     def get_name (self):
         return '%s' %(self.protocol_type)
 
@@ -55,6 +58,9 @@ class Protocols (models.Model):
 
     def get_name (self):
         return '%s' %(self.name)
+
+    def get_type (self):
+        return '%s' %(self.type.get_name())
 
 class ProtocolParameters (models.Model):
     protocol_id = models.ForeignKey(
