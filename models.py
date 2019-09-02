@@ -9,7 +9,7 @@ from django_utils.models import Center
 from django.utils.translation import ugettext_lazy as _
 
 from .  import wetlab_config
-from iSkyLIMS_core.models import MoleculePreparation , Samples
+from iSkyLIMS_core.models import MoleculePreparation , Samples , ProtocolType
 
 class RunErrors (models.Model):
     errorCode = models.CharField(max_length=10)
@@ -655,6 +655,9 @@ class GraphicsStats (models.Model):
 
 # New objets for handling library preparation
 class ProtocolLibrary (models.Model):
+    protocol_id = models.ForeignKey(
+                    ProtocolType,
+                    on_delete= models.CASCADE)
     protocolName = models.CharField(max_length=50)
     description = models.CharField(max_length = 160, null = True, blank = True)
     generated_at = models.DateTimeField(auto_now_add=True)

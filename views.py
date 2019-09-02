@@ -33,6 +33,7 @@ from .utils.library_preparation import *
 #from .utils.parsing_run_info import get_machine_lanes
 #from .utils.wetlab_misc_utilities import normalized_data
 from iSkyLIMS_core.utils.handling_samples import *
+from iSkyLIMS_core.utils.handling_protocols import *
 
 def index(request):
     #
@@ -3154,29 +3155,27 @@ def create_protocol (request):
         #redirect to login webpage
         return redirect ('/accounts/login')
     # get the list of defined protocols
-    defined_protocols = []
-    if  ProtocolInLab.objects.all().exists():
-        protocol_list = ProtocolInLab.objects.all()
-        for protocol in protocol_list :
-            if NAProtocolParameters.objects.filter(protocol_id = protocol).exists():
-                add_param = False
-            else:
-                add_param = True
-            defined_protocols.append([[protocol.pk ,protocol.get_name(), add_param] ])
+    defined_protocols = display_availble_protocols ()
+    defined_protocol_types = display_protocol_types ()
+
 
     if request.method == 'POST' and request.POST['action'] == 'addNewProtocol':
+        import pdb; pdb.set_trace()
         new_protocol = request.POST['newProtocolName']
-        if ProtocolInLab.objects.filter(protocolName__exact = new_protocol).exists():
+        protocol_type = request.POST['protocolType']
+        description = request.POST['description']
+
+        if check_if_protocol_exists (new_protocol):
             return render ( request,'iSkyLIMS_wetlab/error_page.html',{'content':['Protocol Name ', new_protocol,
                             'Already exists.']})
-        else:
-            new_protocol_object = ProtocolInLab(protocolName = new_protocol)
-            new_protocol_object.save()
-            protocolID = new_protocol_object.pk
-            return render(request, 'iSkyLIMS_wetlab/createProtocol.html',{'defined_protocols': defined_protocols, 'new_defined_protocol': new_protocol,
-                                    'protocolID':protocolID})
-    #import pdb; pdb.set_trace()
-    return render(request, 'iSkyLIMS_wetlab/createProtocol.html',{'defined_protocols': defined_protocols})
+        new_protocol_id = create_new_protocol(new_protocol, protocol_type, description)
+
+        return render(request, 'iSkyLIMS_wetlab/createProtocol.html',{'defined_protocols': defined_protocols,
+                            'defined_protocol_types':defined_protocol_types, 'new_defined_protocol': new_protocol,
+                            'new_protocol_id':new_protocol_id})
+
+    return render(request, 'iSkyLIMS_wetlab/createProtocol.html',{'defined_protocols': defined_protocols,
+                        'defined_protocol_types':defined_protocol_types})
 
 @login_required
 def display_protocol (request, protocol_id):
@@ -3224,6 +3223,9 @@ def define_protocol_parameters (request, protocol_id):
         return redirect ('/accounts/login')
 
     if request.method == 'POST' and request.POST['action'] == 'define_protocol_parameters':
+
+
+
         protocol_id = request.POST['protocol_id']
         na_json_data = json.loads(request.POST['table_data1'])
         lib_prep_json_data = json.loads(request.POST['table_data2'])
