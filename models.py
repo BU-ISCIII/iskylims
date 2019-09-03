@@ -42,7 +42,7 @@ class ProtocolType (models.Model):
 
     def get_molecule_type (self):
         return '%s' %(self.molecule.get_name())
-        
+
     def get_name (self):
         return '%s' %(self.protocol_type)
 
@@ -62,6 +62,15 @@ class Protocols (models.Model):
     def get_type (self):
         return '%s' %(self.type.get_name())
 
+
+class ProtocolParametersManager(models.Manager) :
+    def create_protocol_parameter (self, prot_param_data):
+        new_prot_parameter = self.create(protocol_id =prot_param_data['protocol_id'],parameterName = prot_param_data['Parameter name'],
+                    parameterDescription = prot_param_data['Description'], parameterOrder = prot_param_data['Order'],
+                    parameterUsed = prot_param_data['Used'], parameterMaxValue = prot_param_data['Max Value'],
+                    parameterMinValue = prot_param_data['Min Value'] )
+        return new_prot_parameter
+
 class ProtocolParameters (models.Model):
     protocol_id = models.ForeignKey(
                     Protocols,
@@ -78,6 +87,8 @@ class ProtocolParameters (models.Model):
 
     def get_parameter_name (self):
         return "%s"  %(self.parameterName)
+
+    objects = ProtocolParametersManager()
 
 class StatesForSample (models.Model):
     sampleStateName = models.CharField(max_length=50)

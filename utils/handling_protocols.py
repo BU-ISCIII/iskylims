@@ -22,21 +22,45 @@ def create_new_protocol (new_protocol, protocol_type, description):
     return new_protocol_object.pk
 
 
-def check_if_protocol_exists (protocol_name):
+def check_if_protocol_exists (protocol):
     '''
     Description:
         The function return True if protocol exists. False if not
     Input:
-        protocol_name # protocol name to be checked
+        protocol # "protocol name" or "protocol id" to be checked
     Return:
         True/False.
     '''
-    if Protocols.objects.filter(name__exact = protocol_name).exists():
-        return True
+    if type(protocol) is int:
+        if Protocols.objects.filter(pk__exact = protocol).exists():
+            return True
+        else:
+            return False
     else:
-        return False
+        if Protocols.objects.filter(name__exact = protocol).exists():
+            return True
+        else:
+            return False
 
-def display_availble_protocols ():
+def define_table_for_prot_parameters(protocol_id):
+    '''
+    Description:
+        The function return a dictionary with the information to create the table
+        for defining the parameters used in the protocol
+    Input:
+        protocol_id # protocol id  to get protocol information
+    Return:
+        prot_parameters
+    '''
+    prot_parameters = {}
+    protocol_obj = Protocols.objects.get(pk__exact = protocol_id)
+
+    prot_parameters['protocol_name'] = protocol_obj.get_name()
+    prot_parameters['protocol_id'] = protocol_id
+    prot_parameters['heading'] = HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS
+    return prot_parameters
+
+def display_available_protocols ():
     '''
     Description:
         The function return a list with all defined protocols that contains
@@ -46,7 +70,7 @@ def display_availble_protocols ():
         protocol_list.
     '''
 
-    protocol_list = []
+    molecule_protocol_list = []
     if ProtocolType.objects.all().exclude(molecule = None).exists():
         protocol_types = ProtocolType.objects.all().exclude(molecule = None).order_by('molecule')
         for protocol_type in protocol_types :
@@ -64,9 +88,28 @@ def display_availble_protocols ():
                         data_prot.append(True)
                     else:
                         data_prot.append(False)
-                    protocol_list.append(data_prot)
+                    molecule_protocol_list.append(data_prot)
+    other_protocol_list = []
+    if ProtocolType.objects.filter(molecule = None).exists():
+        protocol_types = ProtocolType.objects.filter(molecule = None)
+        for protocol_type in protocol_types:
+            prot_type_str =  protocol_type.get_name()
+            if Protocols.objects.filter(type = protocol_type).exists():
+                protocols = Protocols.objects.filter(type = protocol_type).order_by('type')
+                for protocol in protocols:
+                    data_prot = []
+                    data_prot.append(prot_type_str)
+                    data_prot.append(protocol.get_name())
+                    data_prot.append(protocol.pk)
+                    if ProtocolParameters.objects.filter(protocol_id = protocol).exists():
+                        data_prot.append(True)
+                    else:
+                        data_prot.append(False)
+                    other_protocol_list.append(data_prot)
 
-    return protocol_list
+    return molecule_protocol_list , other_protocol_list
+
+
 
 
 def display_protocol_types ():
@@ -82,3 +125,42 @@ def display_protocol_types ():
         for protocol_type in protocol_types:
             protocol_types_list.append(protocol_type.get_name())
     return protocol_types_list
+
+
+def get_protocol_parameters(protocol_obj):
+    '''
+    Description:
+        The function return a list of the used parameters .
+    Return:
+        protocol_parameter_list.
+    '''
+    protocol_parameter_list = []
+    if ProtocolParameters.objects.filter(protocol_id = protocol_obj).exists():
+        protocol_parameters = ProtocolParameters.objects.filter(protocol_id = protocol_obj, parameterUsed = True). order_by('parameterOrder')
+        for protocol_parameter in protocol_parameters :
+            protocol_parameter_list.append(protocol_parameter.get_parameter_name())
+    return protocol_parameter_list
+
+def set_protocol_parameters(request):
+    protocol_id = request.POST['protocol_id']
+    json_data = json.loads(request.POST['table_data1'])
+    parameters = HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS
+    protocol_id_obj = Protocols.objects.get(pk__exact = protocol_id)
+
+    saved_parameters = []
+    stored_parameters = {}
+    for row_data in json_data:
+
+        if row_data[0] == '':
+            continue
+        prot_parameters = {}
+
+        prot_parameters['protocol_id'] = protocol_id_obj
+        for i in range(len(parameters)):
+            prot_parameters[parameters[i]] = row_data[i]
+
+        saved_parameters.append(ProtocolParameters.objects.create_protocol_parameter(prot_parameters).get_parameter_name())
+    stored_parameters['parameters'] = saved_parameters
+    stored_parameters['protocol_name'] = protocol_id_obj.get_name()
+
+    return stored_parameters
