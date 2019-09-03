@@ -651,9 +651,54 @@ class GraphicsStats (models.Model):
     def get_folder_graphic(self):
         return '%s' %(self.folderRunGraphic)
 
+class SamplesInProjectManager (models.Manager):
+    def create_sample_project (self, s_project):
+        sample_project = self.create( project_id = s_project['project_id'] , sampleName =  s_project['sampleName'],
+                            barcodeName =  s_project['barcodeName'], pfClusters =  s_project['pfClusters'],
+                            percentInProject =  s_project['percentInProject'], yieldMb =  s_project['yieldMb'],
+                            qualityQ30 =  s_project['qualityQ30'], meanQuality =  s_project['meanQuality'] )
 
+class SamplesInProject (models.Model):
+    project_id = models.ForeignKey(
+                Projects,
+                on_delete= models.CASCADE)
+    sampleName = models.CharField(max_length=255)
+    barcodeName = models.CharField(max_length=255)
+    pfClusters = models.CharField(max_length=55)
+    percentInProject = models.CharField(max_length=25)
+    yieldMb = models.CharField(max_length=55)
+    qualityQ30 = models.CharField(max_length=55)
+    meanQuality = models.CharField(max_length=55)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__ (self):
+        return '%s' %(self.sampleName)
+
+    def get_sample_information(self):
+        return '%s;%s;%s;%s;%s;%s;%s' %(self.sampleName , self.barcodeName,
+                self.pfClusters ,self.percentInProject, self.yieldMb ,
+                self.qualityQ30 , self.meanQuality )
+    def get_sample_name(self):
+        return '%s' %(self.sampleName)
+
+    def get_project_name (self) :
+        #p_id = self.project_id
+        #project_name =Projects.objects.get(projectName=p_id).get_project_name()
+        project_name = self.project_id.get_project_name()
+        #Projects.objects.prefetch_related('user_id').filter(user_id = user_id)
+        return '%s' %(project_name)
+
+    def get_quality_sample (self):
+        return '%s' %(self.qualityQ30)
+
+    objects = SamplesInProjectManager()
+
+
+################################################
+################################################
 
 # New objets for handling library preparation
+################################################
 class ProtocolLibrary (models.Model):
     protocol_id = models.ForeignKey(
                     ProtocolType,
@@ -666,8 +711,16 @@ class ProtocolLibrary (models.Model):
     def __str__ (self):
         return '%s' %(self.protocolName)
 
+    def get_id (self):
+        return '%s' %(self.pk)
+
     def get_name (self):
         return '%s' %(self.protocolName)
+
+    def get_protocol_type(self):
+        return '%s' %(self.protocol_id.get_name())
+
+
 
 class ProtocolLibraryParameters (models.Model):
     protocol_id = models.ForeignKey(

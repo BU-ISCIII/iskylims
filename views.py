@@ -3260,19 +3260,15 @@ def define_protocol_parameters (request, protocol_id):
         import pdb; pdb.set_trace()
         return render(request, 'iSkyLIMS_wetlab/defineProtocolParameters.html', {'recorded_prot_parameters':recorded_prot_parameters})
 
-    if not ProtocolInLab.objects.filter(pk__exact = protocol_id).exists():
-        return render ( request,'iSkyLIMS_wetlab/error_page.html',
-                    {'content':['The requested Protocol does not exist',
-                        'Create the protocol name before assigning custom parameters.']})
+    else:
+        if not check_if_protocol_exists(protocol_id):
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',
+                        {'content':['The requested Protocol does not exist',
+                            'Create the protocol name before assigning custom protocol parameters.']})
 
-    prot_parameters = {}
-    prot_parameters['heading'] = ['Parameter name', 'Order', 'Used', 'Min Value', 'Max Value', 'Description']
-    protocol_obj = ProtocolInLab.objects.get(pk__exact = protocol_id)
-
-    prot_parameters['protocol_name'] = protocol_obj.get_name()
-    prot_parameters['protocol_id'] = protocol_id
-
-    return render(request, 'iSkyLIMS_wetlab/defineProtocolParameters.html', {'prot_parameters':prot_parameters})
+        
+        prot_parameters = define_table_for_prot_parameters(protocol_id)
+        return render(request, 'iSkyLIMS_wetlab/defineProtocolParameters.html', {'prot_parameters':prot_parameters})
 
 @login_required
 def add_commercial_kit (request):
