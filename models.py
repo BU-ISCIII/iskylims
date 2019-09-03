@@ -147,13 +147,13 @@ class ComercialKits (models.Model):
     def get_name (self):
         return '%s' %(self.name)
 
-'''
+
 class UserComercialKits (models.Model):
     user = models.ForeignKey(
                 User,
                 on_delete=models.CASCADE, null = True)
-    molecule_id = models.ForeignKey(
-                    MoleculeComercialKits,
+    basedComercial = models.ForeignKey(
+                    ComercialKits,
                     on_delete= models.CASCADE, null = True)
     nickName =  models.CharField(max_length = 50, null = True, blank = True)
     numberOfuses = models.IntegerField(null = True, default = 0)
@@ -161,7 +161,7 @@ class UserComercialKits (models.Model):
     latestUsedDate = models.DateTimeField(null = True, blank = True)
     expirationDate = models.DateField(auto_now_add=False)
     generatedat = models.DateTimeField(auto_now_add=True, null=True)
-'''
+
 
 class SamplesManager (models.Manager):
 

@@ -90,7 +90,7 @@ def add_molecule_protocol_parameters(request):
                                 parameterName__exact = parameter_heading[p_index - fixed_heading_length])
             molecule_parameter_value['molecule_id'] = molecule_obj
             molecule_parameter_value['parameterValue'] = molecule_json_data[row_index] [p_index]
-            new_parameters_data = MoleculeParameterValue.objects.create_molecule_parameter_value (molecule_parameter_value)
+            new_parameters_data = ParameterValue.objects.create_molecule_parameter_value (molecule_parameter_value)
 
 
     return molecule_updated_list
