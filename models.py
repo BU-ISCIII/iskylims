@@ -127,7 +127,7 @@ class Species (models.Model):
     def get_name(self):
         return '%s' %(self.spicesName)
 
-class MoleculeComercialKits (models.Model):
+class ComercialKits (models.Model):
     protocol_id = models.ForeignKey(
                     ProtocolType,
                     on_delete= models.CASCADE, null = True)
@@ -147,14 +147,11 @@ class MoleculeComercialKits (models.Model):
     def get_name (self):
         return '%s' %(self.name)
 
-
-    def get_chipLot (self):
-        return '%s' %(self.chipLot)
-
-    def get_name (self):
-        return '%s' %(self.name)
-
-class MoleculeUserComercialKits (models.Model):
+'''
+class UserComercialKits (models.Model):
+    user = models.ForeignKey(
+                User,
+                on_delete=models.CASCADE, null = True)
     molecule_id = models.ForeignKey(
                     MoleculeComercialKits,
                     on_delete= models.CASCADE, null = True)
@@ -164,7 +161,7 @@ class MoleculeUserComercialKits (models.Model):
     latestUsedDate = models.DateTimeField(null = True, blank = True)
     expirationDate = models.DateField(auto_now_add=False)
     generatedat = models.DateTimeField(auto_now_add=True, null=True)
-
+'''
 
 class SamplesManager (models.Manager):
 
@@ -284,9 +281,11 @@ class MoleculePreparation (models.Model):
     state =  models.ForeignKey(
                 StatesForMolecule,
                 on_delete = models.CASCADE, null = True)
+    '''
     usedKit =  models.ForeignKey(
                 MoleculeUserComercialKits,
                 on_delete = models.CASCADE, null = True)
+    '''
     moleculeCodeId = models.CharField(max_length=255)
     extractionType = models.CharField(max_length=50)
     moleculeExtractionDate = models.DateTimeField(auto_now_add = False, null =True)
@@ -329,14 +328,14 @@ class MoleculePreparation (models.Model):
     objects = MoleculePreparationManager()
 
 
-class MoleculeParameterValueManager (models.Manager):
+class ParameterValueManager (models.Manager):
     def create_molecule_parameter_value (self, molecule_parameter_value):
         new_molecule_parameter_data = self.create(moleculeParameter_id = molecule_parameter_value['moleculeParameter_id'],
                 molecule_id = molecule_parameter_value['molecule_id'],
                 parameterValue = molecule_parameter_value['parameterValue'])
         return new_molecule_parameter_data
 
-class MoleculeParameterValue (models.Model):
+class ParameterValue (models.Model):
     moleculeParameter_id = models.ForeignKey(
                     ProtocolParameters,
                     on_delete= models.CASCADE)
@@ -352,4 +351,4 @@ class MoleculeParameterValue (models.Model):
     def get_parameter_information (self):
         return '%s' %(self.parameterValue)
 
-    objects = MoleculeParameterValueManager()
+    objects = ParameterValueManager()
