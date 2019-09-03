@@ -3155,7 +3155,7 @@ def create_protocol (request):
         #redirect to login webpage
         return redirect ('/accounts/login')
     # get the list of defined protocols
-    defined_protocols = display_availble_protocols ()
+    defined_protocols, other_protocol_list = display_availble_protocols ()
     defined_protocol_types = display_protocol_types ()
 
 
@@ -3173,9 +3173,9 @@ def create_protocol (request):
         return render(request, 'iSkyLIMS_wetlab/createProtocol.html',{'defined_protocols': defined_protocols,
                             'defined_protocol_types':defined_protocol_types, 'new_defined_protocol': new_protocol,
                             'new_protocol_id':new_protocol_id})
-
+    import pdb; pdb.set_trace()
     return render(request, 'iSkyLIMS_wetlab/createProtocol.html',{'defined_protocols': defined_protocols,
-                        'defined_protocol_types':defined_protocol_types})
+                        'defined_protocol_types':defined_protocol_types, 'other_protocol_list' :other_protocol_list})
 
 @login_required
 def display_protocol (request, protocol_id):
@@ -3224,40 +3224,8 @@ def define_protocol_parameters (request, protocol_id):
 
     if request.method == 'POST' and request.POST['action'] == 'define_protocol_parameters':
 
+        recorded_prot_parameters = set_protocol_parameters(request)
 
-
-        protocol_id = request.POST['protocol_id']
-        na_json_data = json.loads(request.POST['table_data1'])
-        lib_prep_json_data = json.loads(request.POST['table_data2'])
-        recorded_prot_parameters = {}
-        parameters = ['parameterName', 'parameterOrder', 'parameterUsed',
-                    'parameterMinValue', 'parameterMaxValue', 'parameterDescription']
-        protocol_id_obj = ProtocolInLab.objects.get(pk__exact = protocol_id)
-        #import pdb; pdb.set_trace()
-
-        new_na_prot_parameters =[]
-        for nucleic_param in na_json_data:
-            if nucleic_param[0] == '':
-                continue
-            na_prot_parameters = {}
-            for i in range(len(parameters)):
-                na_prot_parameters[parameters[i]] = nucleic_param[i]
-            na_prot_parameters['protocol_id'] = protocol_id_obj
-            new_na_prot_parameters.append(NAProtocolParameters.objects.create_NAProt_parameter(na_prot_parameters).get_name())
-
-        new_lib_prep_parameters = []
-        for lib_prep in lib_prep_json_data :
-            if lib_prep[0] == '':
-                continue
-            lib_prep_parameters = {}
-            for i in range(len(parameters)):
-                lib_prep_parameters[parameters[i]] = lib_prep[i]
-            lib_prep_parameters['protocol_id'] = protocol_id_obj
-            new_lib_prep_parameters.append(LibraryProtocolParameters.objects.create_LibProt_parameter(lib_prep_parameters).get_name())
-        recorded_prot_parameters['new_library_parameters'] = new_lib_prep_parameters
-        recorded_prot_parameters['new_nucleic_parameters'] = new_na_prot_parameters
-        recorded_prot_parameters['protocol_name'] = protocol_id_obj.get_name()
-        import pdb; pdb.set_trace()
         return render(request, 'iSkyLIMS_wetlab/defineProtocolParameters.html', {'recorded_prot_parameters':recorded_prot_parameters})
 
     else:
@@ -3266,7 +3234,7 @@ def define_protocol_parameters (request, protocol_id):
                         {'content':['The requested Protocol does not exist',
                             'Create the protocol name before assigning custom protocol parameters.']})
 
-        
+
         prot_parameters = define_table_for_prot_parameters(protocol_id)
         return render(request, 'iSkyLIMS_wetlab/defineProtocolParameters.html', {'prot_parameters':prot_parameters})
 
@@ -3423,32 +3391,38 @@ def set_library_preparation(request):
             indexLibraryKit_id = None
         register_user_obj = User.objects.get(username__exact = request.user.username)
         user_sample_sheet_data['registerUser'] = register_user_obj
+        protocol_obj = Protocols.objects.get(name__exact = protocol)
         user_sample_sheet_data['indexLibraryKit_id'] = indexLibraryKit_id
 
         user_sample_sheet_data['sampleSheet'] = file_name
         new_user_s_sheet_obj = libPreparationUserSampleSheet.objects.create_lib_prep_user_sample_sheet(user_sample_sheet_data)
 
         extracted_data_list = extract_sample_data (samples_dict)
-        length_heading = len(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS)
+        parameter_heading = get_protocol_parameters(protocol_obj)
+        length_heading = len(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS) + len (parameter_heading)
         stored_lib_prep['heading'] = HEADING_FIX_FOR_ADDING_LIB_PARAMETERS
-        stored_lib_prep['heading_in_excel'] = ','.join(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS)
-
+        stored_lib_prep['par_heading'] = parameter_heading
+        stored_lib_prep['heading_in_excel'] = ','.join(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS + parameter_heading)
+        samples_id = []
         stored_lib_prep['reagents_kits'] = get_user_reagents_kits(register_user_obj)
         for extracted_data in extracted_data_list :
             sample_obj = Samples.objects.get(sampleName__exact = extracted_data['sample_id'])
             extracted_data['sample_id'] = sample_obj
-            protocol_obj = ProtocolLibrary.objects.get(protocolName__exact = protocol)
+            samples_id.append(sample_obj.get_sample_id())
+
+            extracted_data['protocol_obj'] = protocol_obj
             molecule_obj = MoleculePreparation.objects.filter(sample = sample_obj).last()
             lib_prep_code_id = molecule_obj.get_molecule_code_id() + '_LIB_01'
-
+            extracted_data['lib_code_id'] = lib_prep_code_id
             # Create the new library preparation object
             new_library_preparation = libraryPreparation.objects.create_lib_preparation(extracted_data, new_user_s_sheet_obj, register_user_obj,
-                                    molecule_obj, protocol_obj, single_paired , read_length, lib_prep_code_id)
+                                    molecule_obj,  single_paired , read_length)
 
             data = ['']*length_heading
             data[0] = lib_prep_code_id
             stored_lib_prep['data'].append(data)
 
+        stored_lib_prep['samples'] = ','.join(samples_id)
         import pdb; pdb.set_trace()
         return render (request, 'iSkyLIMS_wetlab/setLibraryPreparation.html', {'stored_lib_prep':stored_lib_prep})
 
@@ -3490,9 +3464,9 @@ def set_library_preparation(request):
             protocol_name = prot_lib_json_data[i][heading_in_excel.index('Protocol used')]
             if protocol_name == '':
                 continue
-            if not ProtocolLibrary.objects.filter(protocolName__exact = protocol_name).exists():
+            if not Protocols.objects.filter(name__exact = protocol_name).exists():
                 continue
-            protocol_obj = ProtocolLibrary.objects.get(protocolName__exact = protocol_name)
+            protocol_obj = Protocols.objects.get(name__exact = protocol_name)
             if not ProtocolLibraryParameters.objects.filter(protocol_id = protocol_obj).exists():
                 continue
             valid_molecules.append(molecules[i])

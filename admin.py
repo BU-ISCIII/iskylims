@@ -51,8 +51,6 @@ class SamplesInProjectAdmin (admin.ModelAdmin):
 
 
 ### New for library preparation
-class ProtocolLibraryAdmin(admin.ModelAdmin):
-    list_display = ( 'protocolName', 'description')
 '''
 class ProtocolInLabAdmin (admin.ModelAdmin):
     list_display = ('protocolName',)
@@ -104,7 +102,7 @@ admin.site.register(RunErrors, RunErrorsAdmin)
 admin.site.register(RunStates, RunStatesAdmin)
 
 
-admin.site.register(ProtocolLibrary, ProtocolLibraryAdmin)
+
 
 
 '''

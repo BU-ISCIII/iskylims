@@ -132,6 +132,9 @@
                                    columns: [
                                         { type: 'text', title:'{{stored_lib_prep.heading.0}}', width:180 , readOnly:true },
                                         { type: 'dropdown', title:'{{stored_lib_prep.heading.1}}', width:200 , source :[ {% for value in stored_lib_prep.reagents_kits %} '{{value}}', {% endfor %}]},
+                                        {% for value in stored_lib_prep.par_heading %}
+                                            { type: 'text', title:'{{value}}', width:180 },
+                                        {% endfor %}
                                    ],
                                    allowInsertColumn:false,
                                    allowDeleteColumn:false,

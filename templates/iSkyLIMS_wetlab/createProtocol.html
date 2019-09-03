@@ -78,11 +78,11 @@
                                 <td>{{ prot_type }}</td>
 
                                 {% if add_par %}
-                                    <td>{{ name }}</td>
-                                    <td><button onclick="window.location.href = '/wetlab/defineProtocolParameters={{id}}';">Define Protocol Parameters</button></td>
-                                {% else %}
                                     <td><a href="/wetlab/displayProtocol={{id}}">{{ name }}</a></td>
-                                    <td></td>
+                                    <td>Parameters already defined</td>
+                                {% else %}
+                                    <td>{{ name }}</td>
+                                    <td><button onclick="window.location.href = '/wetlab/defineProtocolParameters={{id}}';">Define Library Preparation Parameters</button></td>
                                 {% endif %}
                             </tr>
                         {% endfor %}
@@ -106,7 +106,7 @@
         <div class="panel panel-default">
           <div class="panel-heading"><h3>Protocols already defined for Library Preparations</h3></div>
           <div class="panel-body">
-                {% if defined_protocols %}
+                {% if other_protocol_list %}
                     <table class="table table-hover">
                        <thead>
                           <tr>
@@ -116,17 +116,16 @@
                           </tr>
                        </thead>
                        <tbody>
-                        {% for  molecule, prot_type, name, id, add_par in defined_protocols %}
+                        {% for   prot_type, name, id, add_par in other_protocol_list %}
                             <tr>
-                                <td>{{ molecule }}</td>
                                 <td>{{ prot_type }}</td>
 
                                 {% if add_par %}
-                                    <td>{{ name }}</td>
-                                    <td><button onclick="window.location.href = '/wetlab/defineProtocolParameters={{id}}';">Define Protocol Parameters</button></td>
-                                {% else %}
                                     <td><a href="/wetlab/displayProtocol={{id}}">{{ name }}</a></td>
-                                    <td></td>
+                                    <td>Parameters already defined</td>
+                                {% else %}
+                                    <td>{{ name }}</td>
+                                    <td><button onclick="window.location.href = '/wetlab/defineProtocolParameters={{id}}';">Define Library Preparation Parameters</button></td>
                                 {% endif %}
                             </tr>
                         {% endfor %}

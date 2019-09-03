@@ -9,7 +9,7 @@ from django_utils.models import Center
 from django.utils.translation import ugettext_lazy as _
 
 from .  import wetlab_config
-from iSkyLIMS_core.models import MoleculePreparation , Samples , ProtocolType
+from iSkyLIMS_core.models import MoleculePreparation , Samples , ProtocolType, Protocols
 
 class RunErrors (models.Model):
     errorCode = models.CharField(max_length=10)
@@ -699,6 +699,7 @@ class SamplesInProject (models.Model):
 
 # New objets for handling library preparation
 ################################################
+'''
 class ProtocolLibrary (models.Model):
     protocol_id = models.ForeignKey(
                     ProtocolType,
@@ -719,9 +720,9 @@ class ProtocolLibrary (models.Model):
 
     def get_protocol_type(self):
         return '%s' %(self.protocol_id.get_name())
+'''
 
-
-
+'''
 class ProtocolLibraryParameters (models.Model):
     protocol_id = models.ForeignKey(
                     ProtocolLibrary,
@@ -732,11 +733,13 @@ class ProtocolLibraryParameters (models.Model):
     parameterUsed = models.BooleanField()
     parameterMaxValue = models.CharField(max_length = 50, null = True, blank = True)
     parameterMinValue = models.CharField(max_length = 50, null = True, blank = True)
-
+'''
+'''
 class ReagentsCommercialKits (models.Model):
     registerUser = models.ForeignKey(
             User,
             on_delete=models.CASCADE, null = True)
+
     protocol_id = models.ForeignKey(
                 ProtocolLibrary,
                 on_delete= models.CASCADE, null = True)
@@ -752,9 +755,9 @@ class ReagentsCommercialKits (models.Model):
 
     def get_name (self):
         return '%s' %(self.name)
+'''
 
-
-
+'''
 class ReagentsUserCommercialKits (models.Model):
     registerUser = models.ForeignKey(
             User,
@@ -778,7 +781,7 @@ class ReagentsUserCommercialKits (models.Model):
     def get_chip_lot (self):
         return '%s' %(self.chipLot)
 
-
+'''
 class libPreparationUserSampleSheetManager (models.Manager):
 
     def create_lib_prep_user_sample_sheet (self, user_sample_sheet_data):
@@ -805,14 +808,15 @@ class libPreparationUserSampleSheet (models.Model):
     objects = libPreparationUserSampleSheetManager()
 
 class libraryPreparationManager(models.Manager):
-    def create_lib_preparation (self, lib_prep_data, user_sample_obj, reg_user ,molecule_obj, protocol, single_paired , read_length, lib_prep_code_id):
+    def create_lib_preparation (self, lib_prep_data, user_sample_obj, reg_user ,molecule_obj,  single_paired , read_length):
+        import pdb; pdb.set_trace()
         new_lib_prep = self.create(registerUser = reg_user, molecule_id = molecule_obj, sample_id = lib_prep_data['sample_id'],
-            protocol_id =   protocol, user_sample_sheet = user_sample_obj, userSampleID = lib_prep_data['userSampleID'],
+            protocol_id =   lib_prep_data['protocol_obj'], user_sample_sheet = user_sample_obj, userSampleID = lib_prep_data['userSampleID'],
             projectInSampleSheet = lib_prep_data['projectInSampleSheet'], samplePlate = lib_prep_data['samplePlate'],
             sampleWell = lib_prep_data['sampleWell'], i7IndexID = lib_prep_data['i7IndexID'],
             i7Index = lib_prep_data['i7Index'], i5IndexID = lib_prep_data['i5IndexID'],
             i5Index = lib_prep_data['i5Index'], singlePairedEnd = single_paired, lengthRead = read_length,
-            libPrepCodeID = lib_prep_code_id, state = 'Recorded')
+            libPrepCodeID = lib_prep_data['lib_code_id'], state = 'Recorded')
 
         return new_lib_prep
 
@@ -827,11 +831,13 @@ class libraryPreparation (models.Model):
                 Samples,
                 on_delete= models.CASCADE, null = True)
     protocol_id = models.ForeignKey(
-                ProtocolLibrary,
+                Protocols,
                 on_delete= models.CASCADE, null = True)
+    '''
     reagent_id = models.ForeignKey(
                 ReagentsUserCommercialKits,
                 on_delete= models.CASCADE, null = True)
+    '''
     user_sample_sheet = models.ForeignKey(
                 libPreparationUserSampleSheet,
                 on_delete= models.CASCADE, null = True)

@@ -1,4 +1,4 @@
-from iSkyLIMS_core.models import Samples, MoleculePreparation
+from iSkyLIMS_core.models import Samples, MoleculePreparation, Protocols
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
 
@@ -26,8 +26,8 @@ def extract_sample_data (s_data):
 
 def get_protocol_lib ():
     protocol_list = []
-    if ProtocolLibrary.objects.all().exists():
-        protocols = ProtocolLibrary.objects.all()
+    if Protocols.objects.filter(type__protocol_type__exact ='Library Preparation').exists():
+        protocols = Protocols.objects.filter(type__protocol_type__exact = 'Library Preparation')
         for protocol in protocols:
             protocol_list.append(protocol.get_name())
     return protocol_list
