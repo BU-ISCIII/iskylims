@@ -21,6 +21,9 @@ class ProtocolTypeAdmin( admin.ModelAdmin):
 class ProtocolParametersAdmin (admin.ModelAdmin):
     list_display = ('protocol_id', 'parameterName', 'parameterOrder', 'parameterUsed', 'parameterMinValue', 'parameterMaxValue', 'parameterDescription')
 
+class ParameterValueAdmin (admin.ModelAdmin):
+    list_display = ('moleculeParameter_id', 'molecule_id','parameterValue')
+
 class SamplesAdmin(admin.ModelAdmin):
     list_display = ('sampleCodeID', 'sampleState', 'laboratory', 'sampleType', 'sampleUser', 'species', 'sampleName', 'labSampleName',
                     'sampleExtractionDate', 'uniqueSampleID', 'patientCodeName', 'numberOfReused' )
@@ -47,6 +50,7 @@ admin.site.register(MoleculePreparation,MoleculePreparationAdmin)
 admin.site.register(ProtocolType,ProtocolTypeAdmin)
 admin.site.register(Protocols,ProtocolsAdmin)
 admin.site.register(ProtocolParameters,ProtocolParametersAdmin)
+admin.site.register(ParameterValue, ParameterValueAdmin)
 admin.site.register(SampleType, SampleTypeAdmin)
 admin.site.register(Samples, SamplesAdmin)
 admin.site.register(Species, SpeciesAdmin)

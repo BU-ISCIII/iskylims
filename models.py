@@ -147,6 +147,9 @@ class ComercialKits (models.Model):
     def get_name (self):
         return '%s' %(self.name)
 
+    def get_protocol (self):
+        return '%s' %(self.protocol_id.get_name())
+
 
 class UserComercialKits (models.Model):
     user = models.ForeignKey(
@@ -161,6 +164,16 @@ class UserComercialKits (models.Model):
     latestUsedDate = models.DateTimeField(null = True, blank = True)
     expirationDate = models.DateField(auto_now_add=False)
     generatedat = models.DateTimeField(auto_now_add=True, null=True)
+
+    def __str__ (self):
+        return '%s' %(self.nickName)
+
+    def get_nick_name (self):
+        return '%s' %(self.nickName)
+
+    def get_protocol_for_kit (self):
+        return '%s' %(self.basedComercial.get_protocol())
+
 
 
 class SamplesManager (models.Manager):
@@ -235,10 +248,12 @@ class Samples (models.Model):
     def get_sample_type (self):
         return '%s' %(self.sampleType.get_name())
 
+    def get_sample_name (self):
+        return '%s' %(self.sampleName)
 
     def get_register_user(self):
         if self.sampleUser is None:
-            return 'Not avilable'
+            return 'Not available'
         else:
             return '%s' %(self.sampleUser)
 
@@ -329,11 +344,11 @@ class MoleculePreparation (models.Model):
 
 
 class ParameterValueManager (models.Manager):
-    def create_molecule_parameter_value (self, molecule_parameter_value):
-        new_molecule_parameter_data = self.create(moleculeParameter_id = molecule_parameter_value['moleculeParameter_id'],
-                molecule_id = molecule_parameter_value['molecule_id'],
-                parameterValue = molecule_parameter_value['parameterValue'])
-        return new_molecule_parameter_data
+    def create_parameter_value (self, parameter_value):
+        new_molecule_parameter_data = self.create(moleculeParameter_id = parameter_value['moleculeParameter_id'],
+                molecule_id = parameter_value['molecule_id'],
+                parameterValue = parameter_value['parameterValue'])
+        return new_parameter_data
 
 class ParameterValue (models.Model):
     moleculeParameter_id = models.ForeignKey(

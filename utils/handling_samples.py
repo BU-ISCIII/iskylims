@@ -56,6 +56,10 @@ def display_molecule_protocol_parameters (molecules):
     import pdb; pdb.set_trace()
     return molecule_recorded
 
+
+
+
+
 def add_molecule_protocol_parameters(request):
     '''
     Description:
