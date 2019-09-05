@@ -9,7 +9,7 @@ from django_utils.models import Center
 from django.utils.translation import ugettext_lazy as _
 
 from .  import wetlab_config
-from iSkyLIMS_core.models import MoleculePreparation , Samples , ProtocolType, Protocols
+from iSkyLIMS_core.models import MoleculePreparation , Samples , ProtocolType, Protocols, ProtocolParameters
 
 class RunErrors (models.Model):
     errorCode = models.CharField(max_length=10)
@@ -807,6 +807,13 @@ class libPreparationUserSampleSheet (models.Model):
 
     objects = libPreparationUserSampleSheetManager()
 
+class StatesForLibraryPreparation (models.Model):
+    libPrepState = models.CharField(max_length=50)
+
+    def __str__ (self):
+        return '%s' %(self.libPrepState)
+
+
 class libraryPreparationManager(models.Manager):
     def create_lib_preparation (self, lib_prep_data, user_sample_obj, reg_user ,molecule_obj,  single_paired , read_length):
         import pdb; pdb.set_trace()
@@ -832,6 +839,9 @@ class libraryPreparation (models.Model):
                 on_delete= models.CASCADE, null = True)
     protocol_id = models.ForeignKey(
                 Protocols,
+                on_delete= models.CASCADE, null = True)
+    libPrepState = models.ForeignKey(
+                StatesForLibraryPreparation,
                 on_delete= models.CASCADE, null = True)
     '''
     reagent_id = models.ForeignKey(
@@ -882,4 +892,40 @@ class libraryPreparation (models.Model):
     def get_reagents_kit_used(self):
         return '%s' %(self.reagent_id.get_nick_name())
 
+    def get_sample_name(self):
+        return '%s' %(self.sample_id.get_sample_name())
+
+    def get_state(self):
+        return '%s' %(self.state)
+
+    def set_state(self , state_value):
+        self.libPrepState = StatesForLibraryPreparation.objects.get(libPrepState__exact = state_value)
+        self.save()
+
     objects = libraryPreparationManager()
+
+
+class LibParameterValueManager (models.Manager):
+    def create_library_parameter_value (self, parameter_value):
+        new_parameter_data = self.create(parameter_id = parameter_value['parameter_id'],
+                library_id = parameter_value['library_id'],
+                parameterValue = parameter_value['parameterValue'])
+        return new_parameter_data
+
+class LibParameterValue (models.Model):
+    parameter_id = models.ForeignKey(
+                    ProtocolParameters,
+                    on_delete= models.CASCADE)
+    library_id = models.ForeignKey(
+                libraryPreparation,
+                on_delete= models.CASCADE)
+    parameterValue = models.CharField(max_length=255)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__ (self):
+        return '%s' %(self.parameterValue)
+
+    def get_parameter_information (self):
+        return '%s' %(self.parameterValue)
+
+    objects = LibParameterValueManager()

@@ -34,6 +34,7 @@ from .utils.library_preparation import *
 #from .utils.wetlab_misc_utilities import normalized_data
 from iSkyLIMS_core.utils.handling_samples import *
 from iSkyLIMS_core.utils.handling_protocols import *
+from iSkyLIMS_core.utils.handling_comercial_kits import *
 
 def index(request):
     #
@@ -3404,7 +3405,7 @@ def set_library_preparation(request):
         stored_lib_prep['par_heading'] = parameter_heading
         stored_lib_prep['heading_in_excel'] = ','.join(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS + parameter_heading)
         samples_id = []
-        stored_lib_prep['reagents_kits'] = get_user_reagents_kits(register_user_obj)
+        stored_lib_prep['reagents_kits'] = get_user_comercial_kits(register_user_obj, protocol_obj)
         for extracted_data in extracted_data_list :
             sample_obj = Samples.objects.get(sampleName__exact = extracted_data['sample_id'])
             extracted_data['sample_id'] = sample_obj
@@ -3427,13 +3428,16 @@ def set_library_preparation(request):
         return render (request, 'iSkyLIMS_wetlab/setLibraryPreparation.html', {'stored_lib_prep':stored_lib_prep})
 
     elif request.method == 'POST' and request.POST['action'] == 'addProtocolParamters':
+
+
+        stored_params = analyze_input_param_values (request)
+        '''
         if  'samples_in_list' in request.POST:
             samples = request.POST.getlist('samples')
             if len(samples) == 0:
                 samples = list(request.POST['samples'])
         else:
             samples = request.POST['samples'].split(',')
-
         stored_lib_prep = {}
         stored_lib_prep['data'] = []
         length_heading = len(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS)
@@ -3447,8 +3451,8 @@ def set_library_preparation(request):
             data = ['']*length_heading
             data[0] = lib_prep_obj.get_lib_prep_code()
             stored_lib_prep['data'].append(data)
-
-        return render (request, 'iSkyLIMS_wetlab/setLibraryPreparation.html', {'stored_lib_prep':stored_lib_prep})
+        '''
+        return render (request, 'iSkyLIMS_wetlab/setLibraryPreparation.html', {'stored_params':stored_params})
 
     elif request.method == 'POST' and request.POST['action'] == 'addLibraryProtocol':
         if  'molecules_in_list' in request.POST:

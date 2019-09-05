@@ -47,7 +47,8 @@ class SamplesInProjectAdmin (admin.ModelAdmin):
     list_display = ('project_id','sampleName','barcodeName','pfClusters','percentInProject','yieldMb','qualityQ30')
 
 
-
+class StatesForLibraryPreparationAdmin (admin.ModelAdmin):
+    list_display = ('libPrepState',)
 
 
 ### New for library preparation
@@ -61,32 +62,16 @@ class LaboratoryAdmin (admin.ModelAdmin):
 #class LibraryProtocolParametersAdmin (admin.ModelAdmin):
 #    list_display = ('parameterName', 'parameterDescription', 'parameterOrder','parameterUsed','parameterMaxValue', 'parameterMinValue')
 '''
-class NucleotidesComercialKitsAdmin (admin.ModelAdmin):
-    list_display = ('name', 'protocol_id', 'provider', 'naType','chipLot','usedDate', 'expirationDate')
+
 
 class ReagentsCommercialKitsAdmin (admin.ModelAdmin):
     list_display = ('name', 'protocol_id', 'provider', 'reagentLibraryName','chipLot','usedDate', 'expirationDate')
 
-class NAProtocolParametersAdmin (admin.ModelAdmin):
-    list_display = ('protocol_id', 'parameterName', 'parameterOrder', 'parameterUsed', 'parameterMinValue', 'parameterMaxValue', 'parameterDescription')
-
-class NAProtParamDataAdmin(admin.ModelAdmin):
-    list_display = ('NA_Parameter_id', 'sample_id', 'parameterValue')
-
-class SampleTypeAdmin(admin.ModelAdmin):
-    list_display = ('sampleType',)
-
-class SpeciesAdmin (admin.ModelAdmin):
-    list_display= ['spicesName', 'refGenomeName', 'refGenomeSize' , 'refGenomeID' ]
 
 
-#################### New
-class MoleculeTypeAdmin( admin.ModelAdmin):
-    list_display = ('moleculeType',)
 
 
-class ProtocolTypeAdmin( admin.ModelAdmin):
-    list_display = ('molecule','protocol_type')
+
 
 
 class ProtocolParametersAdmin (admin.ModelAdmin):
@@ -100,6 +85,7 @@ admin.site.register(IndexLibraryKit,IndexLibraryKitAdmin)
 admin.site.register(Projects, ProjectsAdmin)
 admin.site.register(RunErrors, RunErrorsAdmin)
 admin.site.register(RunStates, RunStatesAdmin)
+admin.site.register(StatesForLibraryPreparation, StatesForLibraryPreparationAdmin)
 
 
 

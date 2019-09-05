@@ -1,6 +1,39 @@
+import json
 from iSkyLIMS_core.models import Samples, MoleculePreparation, Protocols
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
+
+def analyze_input_param_values(request):
+    if  'samples_in_list' in request.POST:
+        samples = request.POST.getlist('samples')
+        if len(samples) == 0:
+            samples = list(request.POST['samples'])
+    else:
+        samples = request.POST['samples'].split(',')
+    headings = request.POST['heading_in_excel'].split(',')
+    json_data = json.loads(request.POST['protocol_data'])
+    fixed_heading_length = len(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS)
+    parameters_length = len(headings)
+    stored_params = []
+    for i in range(len(samples)):
+
+        library_prep_obj = libraryPreparation.objects.get(pk = samples[i])
+
+
+        for p_index in range(fixed_heading_length, parameters_length):
+            lib_parameter_value ={}
+
+            lib_parameter_value['parameter_id'] = ProtocolParameters.objects.get(protocol_id = library_prep_obj.protocol_id,
+                                parameterName__exact = headings[p_index])
+            lib_parameter_value['library_id'] = library_prep_obj
+            lib_parameter_value['parameterValue'] = json_data[i] [p_index]
+
+            new_parameters_data = LibParameterValue.objects.create_library_parameter_value (lib_parameter_value)
+        stored_params.append([library_prep_obj.get_lib_prep_code(), library_prep_obj.get_sample_name()])
+        library_prep_obj.set_state('Updated parameters')
+        import pdb; pdb.set_trace()
+    return stored_params
+
 
 def extract_sample_data (s_data):
     headings = s_data['headings']
@@ -91,11 +124,3 @@ def get_samples_in_add_library_preparation_state ():
         library_prep_information['molecule_heading'] = HEADING_FOR_ADD_LIBRARY_PREPARATION
 
     return library_prep_information
-
-def get_user_reagents_kits(user_obj):
-    user_reagents_kits = []
-    if ReagentsUserCommercialKits.objects.filter(registerUser = user_obj).exists():
-        available_kits =  ReagentsUserCommercialKits.objects.filter(registerUser = user_obj)
-        for kit in available_kits:
-            user_reagents_kits.append(kit.get_nick_name())
-    return user_reagents_kits
