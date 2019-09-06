@@ -1,0 +1,125 @@
+{% extends 'iSkyLIMS_wetlab/base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="row row-space-2 margin-b-4">
+    <div class="col-sm-11">
+        <div class="panel panel-default">
+            <h3>Information for Sample {{ sample_information.sample_definition.0 }} </h3>
+            <div class="panel-heading"><h4>Basic Information</h4></div>
+            <div class="panel-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                        {% for values in sample_information.sample_definition_heading %}
+                          <th>{{ values }} </th>
+                        {%endfor%}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            {% for values in sample_information.sample_definition %}
+                                <td>{{ values }} </td>
+                            {%endfor%}
+                        </tr>
+                    </tbody>
+                </table>
+            </div> <!--  end of panel body -->
+        </div> <!--  end of panel  -->
+    </div> <!--  end of col-sm-11 -->
+</div> <!--  end of row -->
+
+{% if sample_information.molecule_definition %}
+  <div class="row row-space-2 margin-b-4">
+      <div class="col-sm-11">
+          <div class="panel panel-default">
+              <h3>Information for Molecule using the sample {{ sample_information.sample_definition.0 }} </h3>
+              <div class="panel-heading"><h4>Molecule Information</h4></div>
+              <div class="panel-body">
+                <table class="table table-hover">
+                    <thead>
+                      <tr>
+                      {% for values in sample_information.molecule_definition_heading %}
+                        <th>{{ values }} </th>
+                      {%endfor%}
+                      </tr>
+                    </thead>
+                    <tbody>
+                        {% for values in sample_information.molecule_definition %}
+                            <tr>
+                                {% for value in values %}
+                                    <td>{{ value }} </td>
+                                {%endfor%}
+                            </tr>
+                        {%endfor%}
+                    </tbody>
+                </table>
+              </div> <!--  end of panel body -->
+           </div> <!--  end of panel  -->
+         </div> <!--  end of col-sm-11 -->
+    </div> <!--  end of row -->
+{% endif %}
+
+{% if sample_information.molecule_parameter_heading %}
+  <div class="row row-space-2 margin-b-4">
+      <div class="col-sm-11">
+          <div class="panel panel-default">
+              <h3>Parameter Information for Molecules using for the sample {{ sample_information.sample_definition.0 }} </h3>
+              <div class="panel-heading"><h4>Quality Parameter Molecule Information</h4></div>
+              <div class="panel-body">
+                <table class="table table-hover">
+                    <thead>
+                      <tr>
+                      {% for values in sample_information.molecule_parameter_heading %}
+                        <th>{{ values }} </th>
+                      {%endfor%}
+                      </tr>
+                    </thead>
+                    <tbody>
+                        {% for values in sample_information.molecule_parameter_values %}
+                            <tr>
+                                {% for value in values %}
+                                    <td>{{ value }} </td>
+                                {%endfor%}
+                            </tr>
+                        {%endfor%}
+                    </tbody>
+                </table>
+              </div> <!--  end of panel body -->
+           </div> <!--  end of panel  -->
+         </div> <!--  end of col-sm-11 -->
+    </div> <!--  end of row -->
+{% endif %}
+
+
+{% if sample_information.library_definition_heading %}
+  <div class="row row-space-2 margin-b-4">
+      <div class="col-sm-11">
+          <div class="panel panel-default">
+              <h3>Library Preparation Information for sample  {{ sample_information.sample_definition.0 }} </h3>
+              <div class="panel-heading"><h4>Quality Parameter Molecule Information</h4></div>
+              <div class="panel-body">
+                <table class="table table-hover">
+                    <thead>
+                      <tr>
+                      {% for values in sample_information.library_definition_heading %}
+                        <th>{{ values }} </th>
+                      {%endfor%}
+                      </tr>
+                    </thead>
+                    <tbody>
+                        {% for values in sample_information.library_definition %}
+                            <tr>
+                                {% for value in values %}
+                                    <td>{{ value }} </td>
+                                {%endfor%}
+                            </tr>
+                        {%endfor%}
+                    </tbody>
+                </table>
+              </div> <!--  end of panel body -->
+           </div> <!--  end of panel  -->
+         </div> <!--  end of col-sm-11 -->
+    </div> <!--  end of row -->
+{% endif %}
+{% endblock %}

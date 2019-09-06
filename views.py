@@ -666,9 +666,8 @@ def search_run (request):
         #If only 1 run mathes the user conditions, then get the project information
 
         if (len(runs_found)== 1) :
-            r_data_display= get_information_run(runs_found[0])
-            #r_data_display= get_information_run(runs_found[0],runs_found[0].id)
-            return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_one_run': r_data_display })
+            return redirect ('display_run', run_id=runs_found[0].pk)
+
         else:
             ## collect the list of run that matches the run date
             run_list=[]
@@ -923,7 +922,7 @@ def search_sample (request):
 
         # check that some values are in the request if not return the form
         if user_name == '' and start_date == '' and end_date == '' and sample_name =='':
-            return render(request, 'iSkyLIMS_wetlab/SearchNextSample.html')
+            return render(request, 'iSkyLIMS_wetlab/SearchSample.html')
 
         if user_name !=''  and len(user_name) <5 :
              return render (request,'iSkyLIMS_wetlab/error_page.html',
@@ -3156,7 +3155,7 @@ def create_protocol (request):
         #redirect to login webpage
         return redirect ('/accounts/login')
     # get the list of defined protocols
-    defined_protocols, other_protocol_list = display_availble_protocols ()
+    defined_protocols, other_protocol_list = display_available_protocols ()
     defined_protocol_types = display_protocol_types ()
 
 
@@ -3185,15 +3184,16 @@ def display_protocol (request, protocol_id):
             {'content':['You do not have enough privileges to see this page ',
                         'Contact with your administrator .']})
     #import pdb; pdb.set_trace()
-    if not ProtocolInLab.objects.filter(pk = protocol_id).exists():
+    if not check_if_protocol_exists(protocol_id):
         return render (request,'iSkyLIMS_wetlab/error_page.html',
             {'content':['The protocol that you are trying to get ',
                         'DOES NOT exists .']})
-    protocol_data = {}
+    protocol_data = get_all_protocol_info (protocol_id)
+    '''
     na_params = []
     lib_params = []
     protocol_obj = ProtocolInLab.objects.get(pk= protocol_id)
-    if NAProtocolParameters.objects.filter(protocol_id = protocol_obj).exists():
+    if ProtocolParameters.objects.filter(protocol_id = protocol_obj).exists():
 
         nucleic_params = NAProtocolParameters.objects.filter(protocol_id = protocol_obj).order_by('parameterOrder')
         for nucleic_param in nucleic_params:
@@ -3206,7 +3206,8 @@ def display_protocol (request, protocol_id):
     protocol_data['na_params'] = na_params
     protocol_data['lib_params'] = lib_params
     protocol_data['heading'] = ['Parameter Name', 'Order', 'Used', 'Min Value', 'Max Value', 'Description']
-    #import pdb; pdb.set_trace()
+    '''
+    import pdb; pdb.set_trace()
     return render(request, 'iSkyLIMS_wetlab/displayProtocol.html', {'protocol_data': protocol_data})
 
 
@@ -3276,7 +3277,56 @@ def record_samples(request):
         sample_information = prepare_sample_input_table()
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
 
+@login_required
+def display_libSample (request, sample_id):
+    sample_information = get_all_sample_information(sample_id)
+    if 'Error' in sample_information:
+        return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No Sample was found']})
+    sample_information.update(get_all_library_information(sample_id))
+    import pdb; pdb.set_trace()
+    return render(request, 'iSkyLIMS_wetlab/displayLibSample.html',{'sample_information':sample_information})
 
+
+@login_required
+def search_lib_samples (request):
+    if  request.method == 'POST' and request.POST['action'] == 'searchsample':
+        sample_name=request.POST['samplename']
+        start_date=request.POST['startdate']
+        end_date=request.POST['enddate']
+        user_name = request.POST['username']
+        sample_state =request.POST['sampleState']
+
+        # check that some values are in the request if not return the form
+        if user_name == '' and start_date == '' and end_date == '' and sample_name =='' and sample_state == '':
+            search_data = {}
+            search_data['s_state'] = get_sample_states()
+            return render(request, 'iSkyLIMS_wetlab/searchLibSample.html',{'search_data':search_data})
+
+        if user_name !=''  and len(user_name) <5 :
+            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The user name must contains at least 5 caracters ',
+                    'ADVICE:', 'write the full user name to get a better match']})
+        ### check the right format of start and end date
+        if start_date != '' and not check_valid_date_format(start_date):
+            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The format for the "Start Date Search" Field is incorrect ',
+                    'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
+        if end_date != '' and not check_valid_date_format(end_date):
+            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
+                     'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
+        ### Get projects when sample name is not empty
+
+        sample_list = search_samples(sample_name, user_name, sample_state, start_date, end_date )
+        if len(sample_list) == 0:
+            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No sample found with your match conditions ']})
+        elif len(sample_list) == 1:
+            import pdb; pdb.set_trace()
+            return redirect ('display_libSample' , sample_id = sample_list[0])
+        else:
+            return render(request, 'iSkyLIMS_wetlab/searchLibSample.html',{'sample_list':sample_list})
+
+    else:
+        search_data = {}
+        search_data['s_state'] = get_sample_states()
+        return render(request, 'iSkyLIMS_wetlab/searchLibSample.html',{'search_data':search_data})
 
 @login_required
 def set_Molecule_values(request):

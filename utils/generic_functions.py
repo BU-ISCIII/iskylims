@@ -37,6 +37,13 @@ def check_all_projects_exists (project_list):
     logger.debug ('End function for check_all_projects_exists')
     return True
 
+def check_valid_date_format (date):
+    try:
+        datetime.datetime.strptime(date, '%Y-%m-%d')
+        return True
+    except:
+        return False
+
 
 def copy_to_remote_file (conn, run_dir, remote_file, local_file) :
     '''

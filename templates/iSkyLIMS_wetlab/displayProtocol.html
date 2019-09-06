@@ -13,13 +13,13 @@
                         <table class="table table-hover">
                            <thead>
                               <tr>
-                                    {% for value in protocol_data.heading %}
+                                    {% for value in protocol_data.parameter_heading %}
                                         <th>{{value}}</th>
                                     {% endfor %}
                               </tr>
                            </thead>
                            <tbody>
-                            {% for  values in protocol_data.na_params %}
+                            {% for  values in protocol_data.parameters %}
                                 <tr>
                                     {% for value  in values %}
                                         <td>{{ value }}</td>
@@ -36,37 +36,6 @@
 
     </div> <!--// end row -->
 
-    <div class="row row-space-4 margin-b-4">
-        <div class="col-sm-12" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h4>These are the parameters defined for Library Preparation Parameters</h4></div>
-                <div class="panel-body">
-                    <div class="col-sm-11" >
-                        <table class="table table-hover">
-                           <thead>
-                              <tr>
-                                    {% for value in protocol_data.heading %}
-                                        <th>{{value}}</th>
-                                    {% endfor %}
-                              </tr>
-                           </thead>
-                           <tbody>
-                            {% for  values in protocol_data.lib_params %}
-                                <tr>
-                                    {% for value in values %}
-                                        <td>{{ value }}</td>
-                                    {% endfor %}
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                    </div> <!--// end col-sm-11  -->
-                </div>  <!--  end of panel body  -->
-            </div> <!--// end panel -->
-
-        </div> <!--// end col-sm-12  -->
-
-    </div> <!--// end row -->
 {% endif %}
 
 

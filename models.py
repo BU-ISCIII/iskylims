@@ -813,6 +813,9 @@ class StatesForLibraryPreparation (models.Model):
     def __str__ (self):
         return '%s' %(self.libPrepState)
 
+    def get_lib_state(self):
+        return '%s' %(self.libPrepState)
+
 
 class libraryPreparationManager(models.Manager):
     def create_lib_preparation (self, lib_prep_data, user_sample_obj, reg_user ,molecule_obj,  single_paired , read_length):
@@ -882,6 +885,20 @@ class libraryPreparation (models.Model):
 
     def get_id (self):
         return '%s' %(self.pk)
+
+    def get_info_for_display(self):
+        lib_info = []
+        lib_info.append(self.libPrepCodeID)
+        lib_info.append(self.molecule_id.get_molecule_code_id())
+        lib_info.append(self.state)
+        lib_info.append(self.protocol_id.get_name())
+        lib_info.append(self.projectInSampleSheet)
+        lib_info.append(self.i7IndexID)
+        lib_info.append(self.i5IndexID)
+        lib_info.append(self.singlePairedEnd)
+        lib_info.append(self.lengthRead)
+        lib_info.append(self.numberOfReused)
+        return lib_info
 
     def get_lib_prep_code (self):
         return '%s' %(self.libPrepCodeID)

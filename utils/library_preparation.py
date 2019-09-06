@@ -66,6 +66,17 @@ def get_protocol_lib ():
     return protocol_list
 
 
+def get_all_library_information(sample_id):
+    library_information = {}
+    if libraryPreparation.objects.filter(sample_id__pk__exact = sample_id).exists():
+        library_information['library_definition_heading'] = HEADING_FOR_LIBRARY_PREPARATION_DEFINITION
+        library_information['library_definition'] = []
+        library_preparation_items = libraryPreparation.objects.filter(sample_id__pk__exact = sample_id)
+        for library_item in library_preparation_items:
+            library_information['library_definition'].append(library_item.get_info_for_display())
+
+    return library_information
+
 def get_samples_add_lib_prep_parameters():
     '''
     Description:
