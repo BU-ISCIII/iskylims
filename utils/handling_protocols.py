@@ -126,6 +126,25 @@ def display_protocol_types ():
             protocol_types_list.append(protocol_type.get_name())
     return protocol_types_list
 
+def get_all_protocol_info(protocol_id):
+    '''
+    Description:
+        The function return a dictionary with all definition parameters fro the given protocol.
+    Return:
+        protocol_types_list.
+    '''
+    protocol_data = {}
+    protocol_data['parameters'] = []
+    protocol_obj = Protocols.objects.get(pk__exact = protocol_id)
+    import pdb; pdb.set_trace()
+    if ProtocolParameters.objects.filter(protocol_id = protocol_obj).exists():
+        protocol_data['parameter_heading'] = HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS
+        protocol_parameters = ProtocolParameters.objects.filter(protocol_id = protocol_obj).order_by('parameterOrder')
+        for parameter in protocol_parameters:
+            protocol_data['parameters'].append(parameter.get_all_parameter_info())
+
+    return protocol_data
+
 
 def get_protocol_parameters(protocol_obj):
     '''

@@ -17,6 +17,14 @@ HEADING_FOR_DEFINED_SAMPLES_STATE = ['Sample extraction date', 'Sample Code ID',
 HEADING_FOR_EXTRACTED_MOLECULES_STATE = ['Sample extraction date', 'Type of Sample', 'Molecule Code ID', 'Extraction Date',
                                     'Used Protocol', 'To be included']
 
+
+### Heading for display information on sample definition
+HEADING_FOR_SAMPLE_DEFINITION = ['Sample Name', 'Sample CodeID','Sample State', 'Recorded Date', 'Sample Type', 'Species', 'Number of reused', 'User']
+### Heading for display information on molecule definition
+HEADING_FOR_MOLECULE_DEFINITION = ['Molecule CodeID', 'Molecule State','Extraction Date', 'Extraction Type', 'Molecule Type', 'Used Protocol', 'Number of reused']
+
+
+
 ################# PROTOCOL PARAMETER SETTINGS ##############################
 ### Headings used when defining the custom protocol parameters
 HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS = ['Parameter name', 'Order', 'Used', 'Min Value', 'Max Value', 'Description']

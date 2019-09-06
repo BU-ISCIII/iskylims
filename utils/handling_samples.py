@@ -94,7 +94,7 @@ def add_molecule_protocol_parameters(request):
                                 parameterName__exact = parameter_heading[p_index - fixed_heading_length])
             molecule_parameter_value['molecule_id'] = molecule_obj
             molecule_parameter_value['parameterValue'] = molecule_json_data[row_index] [p_index]
-            new_parameters_data = ParameterValue.objects.create_molecule_parameter_value (molecule_parameter_value)
+            new_parameters_data = MoleculeParameterValue.objects.create_molecule_parameter_value (molecule_parameter_value)
 
 
     return molecule_updated_list
@@ -250,6 +250,35 @@ def build_record_sample_form () :
     sample_information['sampleType'] = get_sample_type()
     return sample_information
 
+def get_all_sample_information (sample_id ):
+    sample_information = {}
+    if not Samples.objects.filter(pk__exact = sample_id).exists():
+        return 'Error'
+    sample_obj = Samples.objects.get(pk__exact = sample_id)
+    sample_information['sample_definition'] = sample_obj.get_info_for_display()
+    sample_information['sample_definition_heading'] = HEADING_FOR_SAMPLE_DEFINITION
+    # check if molecule information exists for the sample
+    if MoleculePreparation.objects.filter(sample = sample_obj).exists():
+        sample_information['molecule_definition_heading'] = HEADING_FOR_MOLECULE_DEFINITION
+        molecules = MoleculePreparation.objects.filter(sample = sample_obj)
+        sample_information['molecule_definition'] = []
+        sample_information['molecule_parameter_values'] = []
+        for molecule in molecules:
+            sample_information['molecule_definition'].append(molecule.get_info_for_display())
+            protocol_used_obj = molecule.get_protocol_obj()
+            if ProtocolParameters.objects.filter(protocol_id = protocol_used_obj).exists():
+                parameter_names = ProtocolParameters.objects.filter(protocol_id = protocol_used_obj).order_by('parameterOrder')
+                molecule_param_heading = ['Molecule CodeID']
+                mol_param_value = [molecule.get_molecule_code_id()]
+                for p_name in parameter_names:
+                    molecule_param_heading.append(p_name.get_parameter_name())
+                    if MoleculeParameterValue.objects.filter(molecule_id = molecule).exists():
+                        mol_param_value.append(MoleculeParameterValue.objects.get(molecule_id = molecule, moleculeParameter_id = p_name).get_param_value())
+                sample_information['molecule_parameter_values'].append(mol_param_value)
+                sample_information['molecule_parameter_heading'] = molecule_param_heading
+
+    return sample_information
+
 def get_defined_samples (register_user):
     '''
     Description:
@@ -388,7 +417,19 @@ def get_sample_type ():
             sample_type_names.append(sample.get_name())
     return sample_type_names
 
-
+def get_sample_states ():
+    '''
+    Description:
+        The function will return the sample states defined in database.
+    Return:
+        sample_states.
+    '''
+    sample_states = []
+    if StatesForSample.objects.all().exists():
+        states = StatesForSample.objects.all()
+        for state in states:
+            sample_states.append(state.get_state_name())
+    return sample_states
 
 def get_species ():
     '''
@@ -607,3 +648,34 @@ def sample_already_defined(sample_name):
         return True
     else:
         return False
+
+def search_samples(sample_name, user_name, sample_state, start_date, end_date ):
+    sample_list = []
+
+    if Samples.objects.all().exists():
+        sample_founds = Samples.objects.all()
+    else:
+        return sample_list
+    if user_name != '':
+        user_name_obj = User.objects.get(username__exact = user_name)
+        if not sample_founds.objects.filter(sampleUser = user_name_obj).exists():
+            return sample_list
+        else :
+            sample_founds = sample_founds.objects.filter(sampleUser = user_name_obj)
+    if sample_name != '' :
+        import pdb; pdb.set_trace()
+        if sample_founds.filter(sampleName__exact = sample_name).exists():
+            sample_founds = sample_founds.filter(sampleName__exact = sample_name)
+            if len(sample_founds) == 1:
+                return sample_list.append(sample_founds[0].pk)
+
+        elif sample_founds.filter(sampleName__icontains = sample_name).exists():
+            sample_founds = sample_founds.filter(sampleName__icontains = sample_name)
+        else:
+            return sample_list
+
+
+    for sample in sample_founds :
+
+        sample_list.append(sample.get_info_for_searching())
+    return sample_list

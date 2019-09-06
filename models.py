@@ -88,12 +88,25 @@ class ProtocolParameters (models.Model):
     def get_parameter_name (self):
         return "%s"  %(self.parameterName)
 
+    def get_all_parameter_info(self):
+        param_info = []
+        param_info.append(self.parameterName)
+        param_info.append(self.parameterOrder)
+        param_info.append(self.parameterUsed)
+        param_info.append(self.parameterMinValue)
+        param_info.append(self.parameterMaxValue)
+        param_info.append(self.parameterDescription)
+        return param_info
+
     objects = ProtocolParametersManager()
 
 class StatesForSample (models.Model):
     sampleStateName = models.CharField(max_length=50)
 
     def __str__ (self):
+        return '%s' %(self.sampleStateName)
+
+    def get_sample_state (self):
         return '%s' %(self.sampleStateName)
 
 
@@ -103,6 +116,8 @@ class StatesForMolecule (models.Model):
     def __str__ (self):
         return '%s' %(self.moleculeStateName)
 
+    def get_molecule_state (self):
+        return '%s' %(self.moleculeStateName)
 
 class SampleType (models.Model):
     sampleType = models.CharField(max_length=50)
@@ -235,6 +250,29 @@ class Samples (models.Model):
         sample_info.append(str(self.pk))
         return sample_info
 
+    def get_info_for_searching (self):
+        sample_info = []
+        sample_info.append(str(self.pk))
+        sample_info.append(self.sampleName)
+        sample_info.append(self.sampleState.get_sample_state())
+        sample_info.append(self.sampleExtractionDate.strftime("%d , %B , %Y"))
+        sample_info.append(self.sampleCodeID)
+        sample_info.append(self.sampleType.get_name())
+        sample_info.append(self.species.get_name())
+        return sample_info
+
+    def get_info_for_display (self):
+        sample_info = []
+        sample_info.append(self.sampleName)
+        sample_info.append(self.sampleCodeID)
+        sample_info.append(self.sampleState.get_sample_state())
+        sample_info.append(self.generated_at.strftime("%d , %B , %Y"))
+        sample_info.append(self.sampleType.get_name())
+        sample_info.append(self.species.get_name())
+        sample_info.append(self.numberOfReused)
+        sample_info.append(self.sampleUser.username)
+        return sample_info
+
     def get_extraction_date (self):
         recordeddate=self.sampleExtractionDate.strftime("%B %d, %Y")
         return '%s' %(recordeddate)
@@ -313,6 +351,18 @@ class MoleculePreparation (models.Model):
     def get_id (self):
         return "%s" %(self.pk)
 
+    def get_info_for_display(self):
+        molecule_info =[]
+        molecule_info.append(self.moleculeCodeId)
+        molecule_info.append(self.state.get_molecule_state())
+        molecule_info.append(self.moleculeExtractionDate)
+        molecule_info.append(self.extractionType)
+        molecule_info.append(self.moleculeUsed.get_name())
+        molecule_info.append(self.protocolUsed.get_name())
+        molecule_info.append(self.numberOfReused)
+        return molecule_info
+
+
     def get_extraction_date (self):
         return "%s" %(self.moleculeExtractionDate.strftime("%B %d, %Y"))
 
@@ -334,6 +384,9 @@ class MoleculePreparation (models.Model):
     def get_protocol (self):
         return '%s' %(self.protocolUsed.get_name())
 
+    def get_protocol_obj(self):
+        return self.protocolUsed
+
     def get_state (self):
         return '%s' %(self.state)
 
@@ -343,14 +396,14 @@ class MoleculePreparation (models.Model):
     objects = MoleculePreparationManager()
 
 
-class ParameterValueManager (models.Manager):
+class MoleculeParameterValueManager (models.Manager):
     def create_parameter_value (self, parameter_value):
         new_molecule_parameter_data = self.create(moleculeParameter_id = parameter_value['moleculeParameter_id'],
                 molecule_id = parameter_value['molecule_id'],
                 parameterValue = parameter_value['parameterValue'])
         return new_parameter_data
 
-class ParameterValue (models.Model):
+class MoleculeParameterValue (models.Model):
     moleculeParameter_id = models.ForeignKey(
                     ProtocolParameters,
                     on_delete= models.CASCADE)
@@ -363,7 +416,7 @@ class ParameterValue (models.Model):
     def __str__ (self):
         return '%s' %(self.parameterValue)
 
-    def get_parameter_information (self):
+    def get_param_value(self):
         return '%s' %(self.parameterValue)
 
-    objects = ParameterValueManager()
+    objects = MoleculeParameterValueManager()
