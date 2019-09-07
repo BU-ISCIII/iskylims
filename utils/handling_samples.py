@@ -103,60 +103,61 @@ def add_molecule_protocol_parameters(request):
 def analyze_input_samples (request):
     '''
     Description:
-        The function will return the laboratories defined in database.
+        The function will get the user information in the form.
+        For new samples, are recorded on database and included in valid_samples Variable
+        For alredy defined, no action is done on them and included in not_valid_samples.
     Input:
         request
     Variables:
-        laboratories # list containing all laboratory names
+         # list containing all laboratory names
     Return:
-        laboratories.
+        valid_samples, not_valid_samples.
     '''
 
     na_json_data = json.loads(request.POST['table_data'])
-    heading_in_excel = ['patientCodeName', 'laboratory', 'labSampleName', 'extractionDate',
-                    'sampleName', 'sampleType', 'species']
+    heading_in_form = HEADING_FOR_RECORD_SAMPLES
 
     sample_recorded = {}
-    not_valid_samples_same_user = []
-    not_valid_samples_other_user = []
+
     valid_samples =[]
+    invalid_samples = []
+    invalid_samples_id =[]
     sample_recorded['all_samples_valid'] = True
     samples_continue = []
+
+    reg_user = request.user.username
     for row in na_json_data :
         sample_data = {}
-        sample_name = str(row[heading_in_excel.index('sampleName')])
+        sample_name = str(row[heading_in_form.index('Sample Name')])
         if sample_name == '' :
             continue
-        if not sample_already_defined (row[heading_in_excel.index('sampleName')]):
-            for i in range(len(heading_in_excel)) :
-                sample_data[heading_in_excel[i]] = row[i]
+        if not check_if_sample_already_defined (row[heading_in_form.index('Sample Name')], reg_user):
+            for i in range(len(heading_in_form)) :
+                sample_data[heading_in_form[i]] = row[i]
 
-            sample_data['user'] = request.user.username
-            lab_code = Laboratory.objects.get(labName__exact = row[heading_in_excel.index('laboratory')] ).get_lab_code()
-            sample_data['sample_id'] = str(lab_code + '_' + sample_name)
+            sample_data['user'] = reg_user
+
+            sample_data['sample_id'] = str(reg_user + '_' + sample_name)
             if not Samples.objects.exclude(uniqueSampleID__isnull = True).exists():
                 sample_data['new_unique_value'] = 'AAA-0001'
             else:
                 last_unique_value = Samples.objects.exclude(uniqueSampleID__isnull = True).last().uniqueSampleID
                 sample_data['new_unique_value'] = increase_unique_value(last_unique_value)
             new_sample = Samples.objects.create_sample(sample_data)
-            valid_samples.append(new_sample.get_sample_definition_information().split(';'))
+            valid_samples.append(new_sample.get_sample_definition_information())
             samples_continue.append(new_sample.get_sample_id())
+            import pdb; pdb.set_trace()
         else: # get the invalid sample to displays information to user
             sample_recorded['all_samples_valid'] = False
-            invalid_sample = Samples.objects.get(sampleName__exact = sample_name)
-            if request.user.username == invalid_sample.get_register_user() :
-                not_valid_samples_same_user.append(invalid_sample.get_sample_definition_information().split(';'))
-            else:
-                not_valid_samples_other_user.append([invalid_sample.get_sample_name(), invalid_sample.get_registered_sample() ])
-
+            invalid_samples.append(Samples.objects.get(sampleName__exact = sample_name).get_sample_definition_information())
+            sample_id = Samples.objects.get(sampleName__exact = sample_name).get_sample_id()
+            invalid_samples[len(invalid_samples)-1].append(sample_id)
+            invalid_samples_id.append(sample_id)
         sample_recorded['valid_samples'] = valid_samples
-        sample_recorded['not_valid_samples_same_user'] = not_valid_samples_same_user
-        sample_recorded['not_valid_samples_other_user'] = not_valid_samples_other_user
-        sample_recorded['heading'] = ['Sample Recorded Date', 'Sample Code ID','Sample Type']
-        sample_recorded['heading_same_user'] = ['Sample Recorded Date', 'Sample Code ID', 'Sample Type',
-                        'New DNA', 'New Library', 'Repetition']
-        sample_recorded['heading_other_user'] = [ 'Sample Name', 'Registered Sample Date']
+        sample_recorded['invalid_samples'] = invalid_samples
+        sample_recorded['invalid_samples_id'] = ','.join(invalid_samples_id)
+        sample_recorded['heading'] = HEADING_FOR_DISPLAY_RECORDED_SAMPLES
+
         if sample_recorded['all_samples_valid']:
             sample_recorded['samples_to_continue'] = ','.join(samples_continue)
     #import pdb; pdb.set_trace()
@@ -249,6 +250,12 @@ def build_record_sample_form () :
     sample_information['laboratory'] = get_laboratory()
     sample_information['sampleType'] = get_sample_type()
     return sample_information
+
+def check_if_sample_already_defined (sample_name,reg_user):
+    if Samples.objects.filter(sampleName__exact = sample_name, sampleUser__username__exact = reg_user).exists():
+        return True
+    else:
+        return False
 
 def get_all_sample_information (sample_id ):
     sample_information = {}
@@ -428,7 +435,7 @@ def get_sample_states ():
     if StatesForSample.objects.all().exists():
         states = StatesForSample.objects.all()
         for state in states:
-            sample_states.append(state.get_state_name())
+            sample_states.append(state.get_sample_state())
     return sample_states
 
 def get_species ():
@@ -643,11 +650,7 @@ def get_table_record_molecule (samples):
     molecule_information['table_length']  = len(HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION)
     return molecule_information
 
-def sample_already_defined(sample_name):
-    if Samples.objects.filter(sampleName__exact = sample_name, sampleState__sampleStateName = 'Defined').exists():
-        return True
-    else:
-        return False
+
 
 def search_samples(sample_name, user_name, sample_state, start_date, end_date ):
     sample_list = []
@@ -663,11 +666,12 @@ def search_samples(sample_name, user_name, sample_state, start_date, end_date ):
         else :
             sample_founds = sample_founds.objects.filter(sampleUser = user_name_obj)
     if sample_name != '' :
-        import pdb; pdb.set_trace()
+
         if sample_founds.filter(sampleName__exact = sample_name).exists():
             sample_founds = sample_founds.filter(sampleName__exact = sample_name)
             if len(sample_founds) == 1:
-                return sample_list.append(sample_founds[0].pk)
+                sample_list.append(sample_founds[0].pk)
+                return sample_list
 
         elif sample_founds.filter(sampleName__icontains = sample_name).exists():
             sample_founds = sample_founds.filter(sampleName__icontains = sample_name)

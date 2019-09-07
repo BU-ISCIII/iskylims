@@ -131,7 +131,7 @@ def get_all_protocol_info(protocol_id):
     Description:
         The function return a dictionary with all definition parameters fro the given protocol.
     Return:
-        protocol_types_list.
+        protocol_data.
     '''
     protocol_data = {}
     protocol_data['parameters'] = []

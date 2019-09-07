@@ -146,14 +146,14 @@ class ComercialKits (models.Model):
     protocol_id = models.ForeignKey(
                     ProtocolType,
                     on_delete= models.CASCADE, null = True)
-    moleclue_id = models.ForeignKey(
+    molecule_id = models.ForeignKey(
                     MoleculeType,
-                    on_delete= models.CASCADE, null = True)
+                    on_delete= models.CASCADE, null = True, blank = True)
     name = models.CharField(max_length =60)
     provider = models.CharField(max_length =30)
     maximumUses = models.IntegerField(null = True, default = 0)
 
-    cat_number = models.CharField(max_length = 40, null = True)
+    cat_number = models.CharField(max_length = 40, null = True, blank = True)
     generatedat = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__ (self):
@@ -194,16 +194,20 @@ class UserComercialKits (models.Model):
 class SamplesManager (models.Manager):
 
     def create_sample (self, sample_data):
+        ## Set to null in case that there is not Laboratory defined
+        if sample_data['Laboratory'] != '':
+            sample_data['Laboratory'] = Laboratory.objects.get(labName__exact = sample_data['Laboratory'])
+        else:
+            sample_data['Laboratory'] = None
         new_sample = self.create(sampleState = StatesForSample.objects.get(sampleStateName__exact = 'Defined'),
-                            laboratory = Laboratory.objects.get(labName__exact = sample_data['laboratory']),
-                            patientCodeName = sample_data['patientCodeName'],
-                            sampleType = SampleType.objects.get(sampleType__exact = sample_data['sampleType']) ,
+                            laboratory = sample_data['Laboratory'],
+                            sampleType = SampleType.objects.get(sampleType__exact = sample_data['Type of Sample']) ,
                             sampleUser = User.objects.get(username__exact = sample_data['user']),
-                            sampleCodeID = sample_data['sample_id'] , sampleName =  sample_data['sampleName'],
+                            sampleCodeID = sample_data['sample_id'] , sampleName =  sample_data['Sample Name'],
                             uniqueSampleID = sample_data['new_unique_value'],
-                            labSampleName = sample_data['labSampleName'],
-                            species = Species.objects.get(spicesName__exact = sample_data['species']),
-                            sampleExtractionDate = datetime.datetime.strptime(sample_data['extractionDate'],'%Y-%m-%d %H:%M:%S'))
+                            species = Species.objects.get(spicesName__exact = sample_data['Species']),
+                            sampleExtractionDate = datetime.datetime.strptime(sample_data['Sample Extraction date'],'%Y-%m-%d %H:%M:%S'))
+
         return new_sample
 
 class Samples (models.Model):
@@ -212,7 +216,7 @@ class Samples (models.Model):
                 on_delete = models.CASCADE, null = True)
     laboratory = models.ForeignKey(
                 Laboratory,
-                on_delete = models.CASCADE, null = True)
+                on_delete = models.CASCADE, null = True, blank = True)
     sampleType = models.ForeignKey(
                 SampleType,
                 on_delete = models.CASCADE, null = True)
@@ -226,10 +230,10 @@ class Samples (models.Model):
                 Species,
                 on_delete=models.CASCADE, null = True)
     sampleName = models.CharField(max_length=255, null = True)
-    labSampleName = models.CharField(max_length=255, null = True, blank = True)
+    #labSampleName = models.CharField(max_length=255, null = True, blank = True)
     sampleExtractionDate = models.DateTimeField(auto_now_add = False, null =True)
     uniqueSampleID = models.CharField(max_length=8, null = True)
-    patientCodeName = models.CharField(max_length=255, null = True)
+    #patientCodeName = models.CharField(max_length=255, null = True)
     sampleCodeID = models.CharField(max_length=60, null = True)
     #reused = models.BooleanField(null = True, blank = True)
     numberOfReused = models.IntegerField(default=0)
@@ -239,8 +243,14 @@ class Samples (models.Model):
         return '%s' %(self.sampleName)
 
     def get_sample_definition_information (self):
+        sample_info = []
         recordeddate=self.sampleExtractionDate.strftime("%d , %B , %Y")
-        return '%s;%s;%s' %(recordeddate, self.sampleCodeID, self.sampleType.sampleType)
+        sample_info.append(self.uniqueSampleID)
+        sample_info.append(self.sampleCodeID)
+        sample_info.append(self.sampleName)
+        sample_info.append(recordeddate)
+        sample_info.append(self.sampleType)
+        return sample_info
 
     def get_info_in_defined_state(self):
         sample_info = []
@@ -397,11 +407,11 @@ class MoleculePreparation (models.Model):
 
 
 class MoleculeParameterValueManager (models.Manager):
-    def create_parameter_value (self, parameter_value):
+    def create_molecule_parameter_value (self, parameter_value):
         new_molecule_parameter_data = self.create(moleculeParameter_id = parameter_value['moleculeParameter_id'],
                 molecule_id = parameter_value['molecule_id'],
                 parameterValue = parameter_value['parameterValue'])
-        return new_parameter_data
+        return new_molecule_parameter_data
 
 class MoleculeParameterValue (models.Model):
     moleculeParameter_id = models.ForeignKey(
