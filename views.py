@@ -3266,13 +3266,13 @@ def record_samples(request):
     if request.method == 'POST' and request.POST['action'] == 'recordsample':
         sample_recorded = analyze_input_samples (request)
         # if no samples are in any of the options, displays the inital page
-        if (len(sample_recorded['valid_samples']) == 0 and
-                len(sample_recorded['not_valid_samples_same_user']) == 0 and
-                len(sample_recorded['not_valid_samples_other_user']) == 0):
+        if (not 'valid_samples' in sample_recorded and not 'invalid_samples' in sample_recorded) :
             sample_information = prepare_sample_input_table()
             return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
         else :
             return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
+    elif request.method == 'POST' and request.POST['action'] == 'reprocessSamples':
+        import pdb; pdb.set_trace()
     else:
         sample_information = prepare_sample_input_table()
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
@@ -3315,6 +3315,7 @@ def search_lib_samples (request):
         ### Get projects when sample name is not empty
 
         sample_list = search_samples(sample_name, user_name, sample_state, start_date, end_date )
+        import pdb; pdb.set_trace()
         if len(sample_list) == 0:
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No sample found with your match conditions ']})
         elif len(sample_list) == 1:
@@ -3454,26 +3455,42 @@ def set_library_preparation(request):
         stored_lib_prep['heading'] = HEADING_FIX_FOR_ADDING_LIB_PARAMETERS
         stored_lib_prep['par_heading'] = parameter_heading
         stored_lib_prep['heading_in_excel'] = ','.join(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS + parameter_heading)
-        samples_id = []
+        lib_prep_id = []
+        samples_not_available = []
         stored_lib_prep['reagents_kits'] = get_user_comercial_kits(register_user_obj, protocol_obj)
         for extracted_data in extracted_data_list :
-            sample_obj = Samples.objects.get(sampleName__exact = extracted_data['sample_id'])
-            extracted_data['sample_id'] = sample_obj
-            samples_id.append(sample_obj.get_sample_id())
+            import pdb; pdb.set_trace()
+            if Samples.objects.filter(sampleName__exact = extracted_data['sample_id'], sampleUser = register_user_obj,
+                            sampleState__sampleStateName = 'Add Library preparation').exists():
 
-            extracted_data['protocol_obj'] = protocol_obj
-            molecule_obj = MoleculePreparation.objects.filter(sample = sample_obj).last()
-            lib_prep_code_id = molecule_obj.get_molecule_code_id() + '_LIB_01'
-            extracted_data['lib_code_id'] = lib_prep_code_id
-            # Create the new library preparation object
-            new_library_preparation = libraryPreparation.objects.create_lib_preparation(extracted_data, new_user_s_sheet_obj, register_user_obj,
-                                    molecule_obj,  single_paired , read_length)
+                sample_obj = Samples.objects.get(sampleName__exact = extracted_data['sample_id'])
+                extracted_data['sample_id'] = sample_obj
+                #samples_id.append(sample_obj.get_sample_id())
 
-            data = ['']*length_heading
-            data[0] = lib_prep_code_id
-            stored_lib_prep['data'].append(data)
+                extracted_data['protocol_obj'] = protocol_obj
+                molecule_obj = MoleculePreparation.objects.filter(sample = sample_obj).last()
+                if libraryPreparation.objects.filter(sample_id = sample_obj).exists():
+                    last_lib_prep_code_id = libraryPreparation.objects.filter(sample_id = sample_obj).last().get_lib_prep_code()
+                    split_code = re.search('(.*_)(\d+)$',last_lib_prep_code_id)
+                    index_val = int(split_code.group(2))
+                    new_index = str(index_val +1).zfill(2)
+                    lib_prep_code_id = split_code.group(1) + new_index
+                else:
+                    lib_prep_code_id = molecule_obj.get_molecule_code_id() + '_LIB_01'
+                extracted_data['lib_code_id'] = lib_prep_code_id
+                # Create the new library preparation object
+                new_library_preparation = libraryPreparation.objects.create_lib_preparation(extracted_data, new_user_s_sheet_obj, register_user_obj,
+                                        molecule_obj,  single_paired , read_length)
+                lib_prep_id.append(new_library_preparation.get_id())
+                data = ['']*length_heading
+                data[0] = extracted_data['sample_id']
+                data[1] = lib_prep_code_id
+                stored_lib_prep['data'].append(data)
 
-        stored_lib_prep['samples'] = ','.join(samples_id)
+            else:
+                samples_not_available.append(extracted_data['sample_id'])
+
+        stored_lib_prep['lib_prep_id'] = ','.join(lib_prep_id)
         import pdb; pdb.set_trace()
         return render (request, 'iSkyLIMS_wetlab/setLibraryPreparation.html', {'stored_lib_prep':stored_lib_prep})
 

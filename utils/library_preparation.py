@@ -4,20 +4,20 @@ from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
 
 def analyze_input_param_values(request):
-    if  'samples_in_list' in request.POST:
-        samples = request.POST.getlist('samples')
+    if  'lib_prep_in_list' in request.POST:
+        lib_prep_ids = request.POST.getlist('lib_prep_id')
         if len(samples) == 0:
-            samples = list(request.POST['samples'])
+            lib_prep_ids = list(request.POST['lib_prep_id'])
     else:
-        samples = request.POST['samples'].split(',')
+        lib_prep_ids = request.POST['lib_prep_id'].split(',')
     headings = request.POST['heading_in_excel'].split(',')
     json_data = json.loads(request.POST['protocol_data'])
     fixed_heading_length = len(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS)
     parameters_length = len(headings)
     stored_params = []
-    for i in range(len(samples)):
+    for i in range(len(lib_prep_ids)):
 
-        library_prep_obj = libraryPreparation.objects.get(pk = samples[i])
+        library_prep_obj = libraryPreparation.objects.get(pk = lib_prep_ids[i])
 
 
         for p_index in range(fixed_heading_length, parameters_length):
@@ -29,9 +29,12 @@ def analyze_input_param_values(request):
             lib_parameter_value['parameterValue'] = json_data[i] [p_index]
 
             new_parameters_data = LibParameterValue.objects.create_library_parameter_value (lib_parameter_value)
-        stored_params.append([library_prep_obj.get_lib_prep_code(), library_prep_obj.get_sample_name()])
+        stored_params.append([library_prep_obj.get_sample_name(), library_prep_obj.get_lib_prep_code()])
         library_prep_obj.set_state('Updated parameters')
-        import pdb; pdb.set_trace()
+        sample_obj = library_prep_obj.get_sample_obj ()
+        # Update the sample state to "In queued for sequencing"
+        sample_obj.set_state('In queued for sequencing')
+    import pdb; pdb.set_trace()
     return stored_params
 
 
@@ -51,8 +54,6 @@ def extract_sample_data (s_data):
             else:
                 lib_prep_data[column[1]] = ''
         sample_list.append(lib_prep_data)
-    import pdb; pdb.set_trace()
-
 
     return sample_list
 

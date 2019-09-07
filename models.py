@@ -819,7 +819,7 @@ class StatesForLibraryPreparation (models.Model):
 
 class libraryPreparationManager(models.Manager):
     def create_lib_preparation (self, lib_prep_data, user_sample_obj, reg_user ,molecule_obj,  single_paired , read_length):
-        import pdb; pdb.set_trace()
+
         new_lib_prep = self.create(registerUser = reg_user, molecule_id = molecule_obj, sample_id = lib_prep_data['sample_id'],
             protocol_id =   lib_prep_data['protocol_obj'], user_sample_sheet = user_sample_obj, userSampleID = lib_prep_data['userSampleID'],
             projectInSampleSheet = lib_prep_data['projectInSampleSheet'], samplePlate = lib_prep_data['samplePlate'],
@@ -911,6 +911,9 @@ class libraryPreparation (models.Model):
 
     def get_sample_name(self):
         return '%s' %(self.sample_id.get_sample_name())
+
+    def get_sample_obj(self):
+        return self.sample_id
 
     def get_state(self):
         return '%s' %(self.state)
