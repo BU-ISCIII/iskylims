@@ -6,7 +6,7 @@ from iSkyLIMS_wetlab.wetlab_config import *
 def analyze_input_param_values(request):
     if  'lib_prep_in_list' in request.POST:
         lib_prep_ids = request.POST.getlist('lib_prep_id')
-        if len(samples) == 0:
+        if len('lib_prep_in_list') == 0:
             lib_prep_ids = list(request.POST['lib_prep_id'])
     else:
         lib_prep_ids = request.POST['lib_prep_id'].split(',')

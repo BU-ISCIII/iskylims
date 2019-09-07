@@ -3491,10 +3491,39 @@ def set_library_preparation(request):
                 samples_not_available.append(extracted_data['sample_id'])
 
         stored_lib_prep['lib_prep_id'] = ','.join(lib_prep_id)
+        stored_lib_prep['samples_not_available'] = samples_not_available
         import pdb; pdb.set_trace()
         return render (request, 'iSkyLIMS_wetlab/setLibraryPreparation.html', {'stored_lib_prep':stored_lib_prep})
 
     elif request.method == 'POST' and request.POST['action'] == 'addProtocolParamters':
+
+        if  'lib_prep_in_list' in request.POST:
+            lib_prep_ids = request.POST.getlist('lib_prep_id')
+            if len('lib_prep_in_list') == 1:
+                lib_prep_ids = list(request.POST['lib_prep_id'])
+        else:
+            lib_prep_ids = request.POST['lib_prep_id'].split(',')
+        stored_lib_prep ={}
+        stored_lib_prep['data'] =[]
+        protocol_obj = libraryPreparation.objects.get(pk = lib_prep_ids[0]).get_protocol_obj()
+        parameter_heading = get_protocol_parameters(protocol_obj)
+        length_heading = len(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS) + len (parameter_heading)
+        for lib_id in lib_prep_ids:
+            library_preparation_obj = libraryPreparation.objects.get(pk = lib_id)
+            data = ['']*length_heading
+            data[0] = library_preparation_obj.get_sample_name()
+            data[1] = library_preparation_obj.get_lib_prep_code()
+            stored_lib_prep['data'].append(data)
+        stored_lib_prep['lib_prep_id'] = ','.join(lib_prep_ids)
+        stored_lib_prep['heading'] = HEADING_FIX_FOR_ADDING_LIB_PARAMETERS
+        stored_lib_prep['par_heading'] = parameter_heading
+        stored_lib_prep['heading_in_excel'] = ','.join(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS + parameter_heading)
+        register_user_obj = User.objects.get(username__exact = request.user.username)
+        stored_lib_prep['reagents_kits'] = get_user_comercial_kits(register_user_obj, protocol_obj)
+
+        return render (request, 'iSkyLIMS_wetlab/setLibraryPreparation.html', {'stored_lib_prep':stored_lib_prep})
+
+    elif request.method == 'POST' and request.POST['action'] == 'recordProtocolParamters':
 
 
         stored_params = analyze_input_param_values (request)

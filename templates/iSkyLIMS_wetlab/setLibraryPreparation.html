@@ -104,17 +104,46 @@
     }
      </style>
 
+    {%if stored_lib_prep.samples_not_available %}
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-3">
+                <div class="panel panel-warning ">
+                    <div class="panel-heading"><h3>Invalid samples in Samples Names.</h3></div>
+                    <div class="panel-body">
+                        <p>The are some samples in the imported Sample Sheet that are not valid.</p>
 
+                        <br>
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Sample Name  </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for value in stored_lib_prep.samples_not_available  %}
+                                    <tr>
+                                        <td>{{value}}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <p>Correct this error before continuing</p>
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+
+            </div> <!--  end of col-sm-12 -->
+        </div> <!--  end of row -->
+    {% endif %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12">
             <div class="panel panel-default">
                 <div class="panel-heading"><h3>Update the following samples with protocol parameters and selec the Reagents Kit used for each sample.</h3></div>
                 <div class="panel-body">
 
-                   <form method="post" enctype="multipart/form-data" name="addProtocolParamters"  id="addProtocolParamters" class="form-horizontal well">
+                   <form method="post" enctype="multipart/form-data" name="recordProtocolParamters"  id="recordProtocolParamters" class="form-horizontal well">
                        {% csrf_token %}
                        <div class="scrolling-wrapper">
-                           <input type="hidden" name="action" value="addProtocolParamters"/>
+                           <input type="hidden" name="action" value="recordProtocolParamters"/>
                            <input type="hidden" name= "lib_prep_id" value="{{stored_lib_prep.lib_prep_id}}"/>
                            <input type="hidden" name= "heading_in_excel" value="{{stored_lib_prep.heading_in_excel}}"/>
 
@@ -154,7 +183,7 @@
                         </form>
                         <script>
                             $(document).ready(function () {
-                                $("#addProtocolParamters").submit(function (e) {
+                                $("#recordProtocolParamters").submit(function (e) {
                                     //stop submitting the form to see the disabled button effect
                                     // e.preventDefault();
                                     //disable the submit button
@@ -163,7 +192,7 @@
                                     $("<input />").attr("type", "hidden")
                                       .attr("name", "protocol_data")
                                       .attr("value", data_json)
-                                      .appendTo("#addProtocolParamters");
+                                      .appendTo("#recordProtocolParamters");
                                     $("#btnSubmit").attr("disabled", true);
                                     return true;
                                 });

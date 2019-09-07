@@ -137,7 +137,7 @@
                                     <select class="form-control" name="singlePairedEnd" id="singlePairedEnd">
                                         <option value="">Choose a value</option>
                                         <option value="Single">Single Read</option>
-                                        <option value="Pairedend">Paired End</option>
+                                        <option value="Paired End">Paired End</option>
                                    </select>
                                    <br><br>
                                 </div>  <!-- end select input -->
@@ -193,7 +193,7 @@
                          <form method="post" action="/wetlab/setLibraryPreparation" enctype="multipart/form-data" name="addProtocolParamters"  id="addProtocolParamters" class="form-horizontal well">
                          {% csrf_token %}
                              <input type="hidden" name="action" value="addProtocolParamters"/>
-                             <input type="hidden" name="samples_in_list" value="True"/>
+                             <input type="hidden" name="lib_prep_in_list" value="True"/>
                              <table class="table table-hover">
                                  <thead>
                                      <tr>
@@ -207,7 +207,7 @@
                                          <tr>
                                              <td>{{molecule_id}}</td>
                                              <td>{{protocol}}</td>
-                                             <td><input type="checkbox" name="samples" value="{{s_id}}"></td>
+                                             <td><input type="checkbox" name="lib_prep_id" value="{{s_id}}"></td>
 
                                          </tr>
                                      {% endfor %}

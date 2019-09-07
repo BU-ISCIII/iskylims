@@ -912,6 +912,9 @@ class libraryPreparation (models.Model):
     def get_sample_name(self):
         return '%s' %(self.sample_id.get_sample_name())
 
+    def get_protocol_obj(self):
+        return self.protocol_id
+
     def get_sample_obj(self):
         return self.sample_id
 
