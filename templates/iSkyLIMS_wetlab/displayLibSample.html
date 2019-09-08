@@ -97,7 +97,7 @@
       <div class="col-sm-11">
           <div class="panel panel-default">
               <h3>Library Preparation Information for sample  {{ sample_information.sample_definition.0 }} </h3>
-              <div class="panel-heading"><h4>Quality Parameter Molecule Information</h4></div>
+              <div class="panel-heading"><h4>Index used for sample {{ sample_information.sample_definition.0 }}</h4></div>
               <div class="panel-body">
                 <table class="table table-hover">
                     <thead>
@@ -109,6 +109,37 @@
                     </thead>
                     <tbody>
                         {% for values in sample_information.library_definition %}
+                            <tr>
+                                {% for value in values %}
+                                    <td>{{ value }} </td>
+                                {%endfor%}
+                            </tr>
+                        {%endfor%}
+                    </tbody>
+                </table>
+              </div> <!--  end of panel body -->
+           </div> <!--  end of panel  -->
+         </div> <!--  end of col-sm-11 -->
+    </div> <!--  end of row -->
+{% endif %}
+
+{% if sample_information.library_parameter_heading %}
+  <div class="row row-space-2 margin-b-4">
+      <div class="col-sm-11">
+          <div class="panel panel-default">
+              <h3>Parameter Information for Library Preparation using for the sample {{ sample_information.sample_definition.0 }} </h3>
+              <div class="panel-heading"><h4>Quality Parameter Library Preparation Information</h4></div>
+              <div class="panel-body">
+                <table class="table table-hover">
+                    <thead>
+                      <tr>
+                      {% for values in sample_information.library_parameter_heading %}
+                        <th>{{ values }} </th>
+                      {%endfor%}
+                      </tr>
+                    </thead>
+                    <tbody>
+                        {% for values in sample_information.library_parameter_values %}
                             <tr>
                                 {% for value in values %}
                                     <td>{{ value }} </td>

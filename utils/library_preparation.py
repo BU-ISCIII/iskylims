@@ -90,8 +90,8 @@ def get_samples_add_lib_prep_parameters():
         lib_prep_parameters.
     '''
     lib_prep_parameters = {}
-    if libraryPreparation.objects.filter(state__exact = 'Recorded').exists():
-        samples = libraryPreparation.objects.filter(state__exact = 'Recorded')
+    if libraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Recorded').exists():
+        samples = libraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Recorded')
         sample_info = []
         for sample in samples:
             lib_prep_info = []

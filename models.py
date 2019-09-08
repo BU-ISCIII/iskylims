@@ -9,7 +9,7 @@ from django_utils.models import Center
 from django.utils.translation import ugettext_lazy as _
 
 from .  import wetlab_config
-from iSkyLIMS_core.models import MoleculePreparation , Samples , ProtocolType, Protocols, ProtocolParameters
+from iSkyLIMS_core.models import MoleculePreparation , Samples , ProtocolType, Protocols, ProtocolParameters, UserComercialKits
 
 class RunErrors (models.Model):
     errorCode = models.CharField(max_length=10)
@@ -699,89 +699,7 @@ class SamplesInProject (models.Model):
 
 # New objets for handling library preparation
 ################################################
-'''
-class ProtocolLibrary (models.Model):
-    protocol_id = models.ForeignKey(
-                    ProtocolType,
-                    on_delete= models.CASCADE)
-    protocolName = models.CharField(max_length=50)
-    description = models.CharField(max_length = 160, null = True, blank = True)
-    generated_at = models.DateTimeField(auto_now_add=True)
 
-
-    def __str__ (self):
-        return '%s' %(self.protocolName)
-
-    def get_id (self):
-        return '%s' %(self.pk)
-
-    def get_name (self):
-        return '%s' %(self.protocolName)
-
-    def get_protocol_type(self):
-        return '%s' %(self.protocol_id.get_name())
-'''
-
-'''
-class ProtocolLibraryParameters (models.Model):
-    protocol_id = models.ForeignKey(
-                    ProtocolLibrary,
-                    on_delete= models.CASCADE)
-    parameterName = models.CharField(max_length=255)
-    parameterDescription = models.CharField(max_length= 400, null=True, blank=True)
-    parameterOrder = models.IntegerField()
-    parameterUsed = models.BooleanField()
-    parameterMaxValue = models.CharField(max_length = 50, null = True, blank = True)
-    parameterMinValue = models.CharField(max_length = 50, null = True, blank = True)
-'''
-'''
-class ReagentsCommercialKits (models.Model):
-    registerUser = models.ForeignKey(
-            User,
-            on_delete=models.CASCADE, null = True)
-
-    protocol_id = models.ForeignKey(
-                ProtocolLibrary,
-                on_delete= models.CASCADE, null = True)
-    name = models.CharField(max_length =60)
-    provider = models.CharField(max_length =60)
-    reagentLibraryName = models.CharField(max_length = 100)
-    maximunUses = models.IntegerField(null = True , default = 0)
-
-    generatedat = models.DateTimeField(auto_now_add=True, null=True)
-
-    def __str__ (self):
-        return '%s' %(self.name)
-
-    def get_name (self):
-        return '%s' %(self.name)
-'''
-
-'''
-class ReagentsUserCommercialKits (models.Model):
-    registerUser = models.ForeignKey(
-            User,
-            on_delete=models.CASCADE, null = True)
-    reagentUserKit_id = models.ForeignKey(
-                ReagentsCommercialKits,
-                on_delete= models.CASCADE, null = True)
-    nickName = models.CharField(max_length =60)
-    numberOfUses = models.IntegerField(null = True , default = 0)
-    latestUsedDate = models.DateTimeField(null = True)
-    chipLot = models.CharField(max_length = 100)
-    expirationDate = models.DateField(auto_now_add=False)
-    generatedat = models.DateTimeField(auto_now_add=True, null=True)
-
-    def __str__ (self):
-        return '%s' %(self.nickName)
-
-    def get_nick_name (self):
-        return '%s' %(self.nickName)
-
-    def get_chip_lot (self):
-        return '%s' %(self.chipLot)
-
-'''
 class libPreparationUserSampleSheetManager (models.Manager):
 
     def create_lib_prep_user_sample_sheet (self, user_sample_sheet_data):
@@ -807,6 +725,16 @@ class libPreparationUserSampleSheet (models.Model):
 
     objects = libPreparationUserSampleSheetManager()
 
+class LibraryPoolRun (models.Model):
+    registerUser = models.ForeignKey(
+            User,
+            on_delete=models.CASCADE)
+    poolName = models.CharField(max_length=50)
+    sampleSheet = models.FileField(upload_to = wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY)
+    experiment_name = models.CharField(max_length=50)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+
 class StatesForLibraryPreparation (models.Model):
     libPrepState = models.CharField(max_length=50)
 
@@ -819,14 +747,14 @@ class StatesForLibraryPreparation (models.Model):
 
 class libraryPreparationManager(models.Manager):
     def create_lib_preparation (self, lib_prep_data, user_sample_obj, reg_user ,molecule_obj,  single_paired , read_length):
-
+        lib_state = StatesForLibraryPreparation.objects.get(libPrepState =  'Recorded')
         new_lib_prep = self.create(registerUser = reg_user, molecule_id = molecule_obj, sample_id = lib_prep_data['sample_id'],
             protocol_id =   lib_prep_data['protocol_obj'], user_sample_sheet = user_sample_obj, userSampleID = lib_prep_data['userSampleID'],
             projectInSampleSheet = lib_prep_data['projectInSampleSheet'], samplePlate = lib_prep_data['samplePlate'],
             sampleWell = lib_prep_data['sampleWell'], i7IndexID = lib_prep_data['i7IndexID'],
             i7Index = lib_prep_data['i7Index'], i5IndexID = lib_prep_data['i5IndexID'],
             i5Index = lib_prep_data['i5Index'], singlePairedEnd = single_paired, lengthRead = read_length,
-            libPrepCodeID = lib_prep_data['lib_code_id'], state = 'Recorded')
+            libPrepCodeID = lib_prep_data['lib_code_id'], libPrepState = lib_state)
 
         return new_lib_prep
 
@@ -846,11 +774,9 @@ class libraryPreparation (models.Model):
     libPrepState = models.ForeignKey(
                 StatesForLibraryPreparation,
                 on_delete= models.CASCADE, null = True)
-    '''
-    reagent_id = models.ForeignKey(
-                ReagentsUserCommercialKits,
-                on_delete= models.CASCADE, null = True)
-    '''
+    user_reagent_id = models.ForeignKey(
+                UserComercialKits,
+                on_delete= models.CASCADE, null = True, blank = True)
     user_sample_sheet = models.ForeignKey(
                 libPreparationUserSampleSheet,
                 on_delete= models.CASCADE, null = True)
@@ -868,16 +794,9 @@ class libraryPreparation (models.Model):
     singlePairedEnd  = models.CharField(max_length =20)
     lengthRead = models.CharField(max_length =5)
     numberOfReused = models.IntegerField(default=0)
-    state = models.CharField(max_length =16)
+    uniqueID = models.CharField(max_length =10, null = True, blank = True)
 
-    '''
-    uniqueID = models.CharField(max_length =10)
-    reagentsKits_id  = models.ForeignKey(
-                ReagentsUserCommercialKits,
-                on_delete= models.CASCADE, null = True)
-    sampleSheet = models.FileField(upload_to = wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY)
 
-    '''
 
 
     def __str__ (self):
@@ -890,7 +809,7 @@ class libraryPreparation (models.Model):
         lib_info = []
         lib_info.append(self.libPrepCodeID)
         lib_info.append(self.molecule_id.get_molecule_code_id())
-        lib_info.append(self.state)
+        lib_info.append(self.libPrepState.libPrepState)
         lib_info.append(self.protocol_id.get_name())
         lib_info.append(self.projectInSampleSheet)
         lib_info.append(self.i7IndexID)
@@ -899,6 +818,31 @@ class libraryPreparation (models.Model):
         lib_info.append(self.lengthRead)
         lib_info.append(self.numberOfReused)
         return lib_info
+
+    def get_info_for_run(self):
+        lib_info = []
+        lib_info.append(self.libPrepCodeID)
+        lib_info.append(self.sample_id.get_sample_name())
+        lib_info.append(self.user_reagent_id.get_comercial_kit())
+        lib_info.append(self.i7IndexID)
+        lib_info.append(self.i5IndexID)
+        lib_info.append(self.pk)
+        return lib_info
+
+    def get_info_for_pool (self):
+        lib_info = []
+        lib_info.append(self.uniqueID)
+        lib_info.append(self.libPrepCodeID)
+        lib_info.append(self.get_sample_name())
+        lib_info.append(self.sampleWell)
+        return lib_info
+
+    def get_indexes (self):
+        if self.i5IndexID == None:
+            i5IndexID = ''
+        else:
+            i5IndexID = self.i5IndexID
+        return '%s_%s' %(self.i7IndexID, i5IndexID )
 
     def get_lib_prep_code (self):
         return '%s' %(self.libPrepCodeID)
@@ -919,7 +863,7 @@ class libraryPreparation (models.Model):
         return self.sample_id
 
     def get_state(self):
-        return '%s' %(self.state)
+        return '%s' %(self.libPrepState.libPrepState)
 
     def set_state(self , state_value):
         self.libPrepState = StatesForLibraryPreparation.objects.get(libPrepState__exact = state_value)

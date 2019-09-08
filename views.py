@@ -29,6 +29,7 @@ from .utils.fetching_information import *
 from .utils.testing_wetlab_configuration import *
 from .utils.sample_functions import *
 from .utils.library_preparation import *
+from .utils.pool_preparation import *
 #from .utils.samplesheet_checks import *
 #from .utils.parsing_run_info import get_machine_lanes
 #from .utils.wetlab_misc_utilities import normalized_data
@@ -3173,7 +3174,7 @@ def create_protocol (request):
         return render(request, 'iSkyLIMS_wetlab/createProtocol.html',{'defined_protocols': defined_protocols,
                             'defined_protocol_types':defined_protocol_types, 'new_defined_protocol': new_protocol,
                             'new_protocol_id':new_protocol_id})
-    import pdb; pdb.set_trace()
+
     return render(request, 'iSkyLIMS_wetlab/createProtocol.html',{'defined_protocols': defined_protocols,
                         'defined_protocol_types':defined_protocol_types, 'other_protocol_list' :other_protocol_list})
 
@@ -3207,7 +3208,7 @@ def display_protocol (request, protocol_id):
     protocol_data['lib_params'] = lib_params
     protocol_data['heading'] = ['Parameter Name', 'Order', 'Used', 'Min Value', 'Max Value', 'Description']
     '''
-    import pdb; pdb.set_trace()
+
     return render(request, 'iSkyLIMS_wetlab/displayProtocol.html', {'protocol_data': protocol_data})
 
 
@@ -3283,7 +3284,7 @@ def display_libSample (request, sample_id):
     if 'Error' in sample_information:
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No Sample was found']})
     sample_information.update(get_all_library_information(sample_id))
-    import pdb; pdb.set_trace()
+
     return render(request, 'iSkyLIMS_wetlab/displayLibSample.html',{'sample_information':sample_information})
 
 
@@ -3615,18 +3616,36 @@ def select_samples_for_run (request):
     else:
         #redirect to login webpage
         return redirect ('/accounts/login')
-    display_list = {}
-    s_list = []
-    all_sample_list = []
+    if request.method == 'POST' and request.POST['action'] == 'continueWithRun':
 
+        if  'lib_prep_in_list' in request.POST:
+            lib_prep_ids = request.POST.getlist('lib_prep_id')
+            if len('lib_prep_in_list') == 0:
+                lib_prep_ids = list(request.POST['lib_prep_id'])
+        else:
+            lib_prep_ids = request.POST['lib_prep_id'].split(',')
+        selected_for_run ={}
+        
+        compatible_in_run = check_index_compatible(lib_prep_ids)
+        if  compatible_in_run == True:
 
-    if SamplesInProject.objects.filter(sampleState__sampleStateName = 'Added Library Info').exists():
-        samples_obj = SamplesInProject.objects.filter(sampleState__sampleStateName = 'Added Library Info').order_by('sampleExtractionDate')
-        for sample_obj in samples_obj :
-            s_info = sample.get_sample_definition_information().split(';')
-            s_info.append(str(sample.pk))
-            s_list.append(s_info)
-            all_sample_list.append(s_list)
-    display_list['heading'] = ['Register Date', 'Sample Code ID', 'Sample Type', 'Index I7', 'Index I5']
+            information_for_selected_run = get_info_for_create_pool(lib_prep_ids)
+            return  render(request, 'iSkyLIMS_wetlab/selectSamplesForRun.html',{'information_for_selected_run': information_for_selected_run})
+        else:
 
-    return  render(request, 'iSkyLIMS_wetlab/selectSamplesForRun.html',{'display_list': display_list})
+            return  render(request, 'iSkyLIMS_wetlab/selectSamplesForRun.html',{'incompatible_index': compatible_in_run})
+
+        return  render(request, 'iSkyLIMS_wetlab/selectSamplesForRun.html',{'selected_for_run': selected_for_run})
+    else:
+        display_list = {}
+        display_list['data'] = []
+
+        if libraryPreparation.objects.filter(libPrepState__libPrepState = 'Updated parameters').exists():
+
+            lib_preparations =  libraryPreparation.objects.filter(libPrepState__libPrepState = 'Updated parameters').order_by('libPrepCodeID')
+            for lib_prep in lib_preparations :
+                display_list['data'].append( lib_prep.get_info_for_run())
+
+            display_list['heading'] = HEADING_FOR_SELECTED_ON_RUN
+        import pdb; pdb.set_trace()
+        return  render(request, 'iSkyLIMS_wetlab/selectSamplesForRun.html',{'display_list': display_list})
