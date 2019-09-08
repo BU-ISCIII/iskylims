@@ -183,6 +183,9 @@ class UserComercialKits (models.Model):
     def __str__ (self):
         return '%s' %(self.nickName)
 
+    def get_comercial_kit(self):
+        return '%s' %(self.basedComercial.get_name())
+
     def get_nick_name (self):
         return '%s' %(self.nickName)
 

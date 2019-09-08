@@ -136,7 +136,7 @@ def get_all_protocol_info(protocol_id):
     protocol_data = {}
     protocol_data['parameters'] = []
     protocol_obj = Protocols.objects.get(pk__exact = protocol_id)
-    import pdb; pdb.set_trace()
+    
     if ProtocolParameters.objects.filter(protocol_id = protocol_obj).exists():
         protocol_data['parameter_heading'] = HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS
         protocol_parameters = ProtocolParameters.objects.filter(protocol_id = protocol_obj).order_by('parameterOrder')
