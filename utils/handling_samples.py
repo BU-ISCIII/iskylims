@@ -40,7 +40,7 @@ def display_molecule_protocol_parameters (molecules):
                 length_heading = len(HEADING_FOR_MOLECULE_ADDING_PARAMETERS + parameter_list)
                 molecule_recorded['fix_heading'] = HEADING_FOR_MOLECULE_ADDING_PARAMETERS
                 molecule_recorded['param_heading'] = parameter_list
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         if protocol_used == prot_used_in_display :
             showed_molecule.append(molecule)
             data = ['']*length_heading
@@ -53,7 +53,7 @@ def display_molecule_protocol_parameters (molecules):
     molecule_recorded['molecule_id'] = ','.join(showed_molecule)
     molecule_recorded['pending_id'] = ','.join(pending_molecule)
     molecule_recorded['heading_in_excel'] = ','.join(parameter_list)
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
     return molecule_recorded
 
 
@@ -146,7 +146,7 @@ def analyze_input_samples (request):
             new_sample = Samples.objects.create_sample(sample_data)
             valid_samples.append(new_sample.get_sample_definition_information())
             samples_continue.append(new_sample.get_sample_id())
-            import pdb; pdb.set_trace()
+            #import pdb; pdb.set_trace()
         else: # get the invalid sample to displays information to user
             sample_recorded['all_samples_valid'] = False
             invalid_samples.append(Samples.objects.get(sampleName__exact = sample_name).get_sample_definition_information())
@@ -612,6 +612,35 @@ def record_molecules (request):
     molecules_recorded['molecule_list'] = molecule_list
     molecules_recorded['molecules'] = ','.join(molecules_ids)
     return molecules_recorded
+
+def reprocess_samples(samples):
+    result = []
+    require_to_update = {}
+    for key,value in samples.items():
+        if not Samples.objects.filter(pk__exact = key).exists():
+            continue
+        sample_obj = Samples.objects.get(pk__exact = key)
+        sample_obj.set_increase_reuse()
+        if value == 'newMoleculeExtraction':
+            sample_obj.set_state('Defined')
+            result.append([key, sample_obj.get_sample_name(),'Ready for adding new Molecule parameters'])
+        elif value == 'newLibPreparation':
+            molecule_obj = MoleculePreparation.objects.get (sample = sample_obj)
+            molecule_obj.set_increase_reuse()
+            result.append([key, sample_obj.get_sample_name(),'Ready for adding new Library Preparation parameters'])
+            sample_obj.set_state('Extract molecule')
+            require_to_update[key] = value
+        elif value == 'newPool' :
+            sample_obj.set_state('Create Pool')
+            result.append([key, sample_obj.get_sample_name(),'Ready for creating new Pool'])
+            require_to_update[key] = value
+        elif value == 'sequecingRepetion' :
+            sample_obj.set_state('Sequencing')
+            result.append([key, sample_obj.get_sample_name(),'Ready for creating new Run'])
+            require_to_update[key] = value
+        else:
+            continue
+    return result, require_to_update
 
 def get_table_record_molecule (samples):
     '''

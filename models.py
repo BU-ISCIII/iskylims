@@ -316,6 +316,10 @@ class Samples (models.Model):
         self.sampleState = StatesForSample.objects.get(sampleStateName__exact = state_value)
         self.save()
 
+    def set_increase_reuse(self):
+        self.numberOfReused += 1
+        self.save()
+
     objects = SamplesManager()
 
 class MoleculePreparationManager (models.Manager):
@@ -406,6 +410,11 @@ class MoleculePreparation (models.Model):
     def set_state (self, state_value):
         self.state = StatesForMolecule.objects.get(moleculeStateName__exact = state_value)
         self.save()
+
+    def set_increase_reuse(self):
+        self.numberOfReused += 1
+        self.save()
+    
     objects = MoleculePreparationManager()
 
 
