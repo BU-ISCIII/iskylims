@@ -55,6 +55,7 @@
                     <ul>
                         <li>New DNA extraction</li>
                         <li>New Library preparation</li>
+                        <li>New Pool</li>
                         <li>Repeat again the secuencing</li>
                     </ul>
                     <p>By selecting it on the check box  </p>
@@ -70,47 +71,78 @@
                                     {% endfor %}
                                     <th>New Molecule Extraction</th>
                                     <th>New Library Preparation</th>
+                                    <th>New Pool</th>
                                     <th>Repeat Secuencing</th>
                                 </tr>
                             </thead>
                             <tbody>
+                                {% for unic_id, s_codeID, s_name, e_date, s_type, s_id in  sample_recorded.invalid_samples %}
+                                    <tr>
+                                        <td>{{ unic_id }}</td>
+                                        <td>{{ s_codeID }}</td>
+                                        <td>{{ s_name }}</td>
+                                        <td>{{ e_date }}</td>
+                                        <td>{{ s_type }}</td>
+                                        <td>
+                                            <div class="form-check">
+                                                <input type="radio" class="form-check-input" name="{{s_id}}" value= "newMoleculeExtraction">
+                                              </div>
+                                        </td>
+                                        <td>
+                                            <div class="form-check">
+                                                <input type="radio" class="form-check-input" name="{{s_id}}" value= "newLibPreparation">
+                                              </div>
+                                        </td>
+                                        <td>
+                                            <div class="form-check">
+                                                <input type="radio" class="form-check-input" name="{{s_id}}" value= "newPool">
+                                              </div>
+                                        </td>
+                                        <td>
+                                            <div class="form-check">
+                                                <input type="radio" class="form-check-input" name="{{s_id}}" value= "sequecingRepetion">
+                                              </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <br><br>
+                        <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                    </form>
 
-
-                                    {% for unic_id, s_codeID, s_name, e_date, s_type, s_id in  sample_recorded.invalid_samples %}
-                                        <tr>
-                                            <td>{{ unic_id }}</td>
-                                            <td>{{ s_codeID }}</td>
-                                            <td>{{ s_name }}</td>
-                                            <td>{{ e_date }}</td>
-                                            <td>{{ s_type }}</td>
-                                            <td>
-                                                <div class="form-check">
-                                                    <input type="radio" class="form-check-input" name="{{s_id}}" value= "newMoleculeExtraction">
-                                                  </div>
-                                            </td>
-                                            <td>
-                                                <div class="form-check">
-                                                    <input type="radio" class="form-check-input" name="{{s_id}}" value= "newLibPreparation">
-                                                  </div>
-                                            </td>
-                                            <td>
-                                                <div class="form-check">
-                                                    <input type="radio" class="form-check-input" name="{{s_id}}" value= "sequecingRepetion">
-                                                  </div>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                                    <br><br>
-                                    <input class="btn pull-right btn-primary" type="submit" value="Submit">
-                                </form>
-
-                    </div>  <!--  end of panel body  -->
-                </div> <!--// end panel -->
-            </div> <!--// end col-sm-7  -->
-        </div> <!--// end row -->
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  -->
+    </div> <!--// end row -->
     {% endif %}
+
+{% elif reprocess_result %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-6 col-sm-offset-1">
+            <div class="panel panel-default ">
+                <div class="panel-heading"><h3>Request to reprocess Samples.</h3></div>
+                <div class="panel-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Sample Name</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s_id, s_name, s_description in  reprocess_result %}
+                                <tr>
+                                    <td><a href="/wetlab/displayLibSample={{s_id}}">{{ s_name }}</a></td>
+                                    <td>{{ s_description }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  -->
+    </div> <!--// end row -->
 
 {% else %}
 

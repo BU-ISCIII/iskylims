@@ -3273,7 +3273,25 @@ def record_samples(request):
         else :
             return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
     elif request.method == 'POST' and request.POST['action'] == 'reprocessSamples':
-        import pdb; pdb.set_trace()
+        samples = {}
+        reprocess_s_ids = request.POST['invalidSamplesID'].split(',')
+        for s_id in reprocess_s_ids:
+            samples[s_id] = request.POST[s_id]
+        reprocess_result, require_to_update = reprocess_samples(samples)
+        if len(require_to_update) > 0 :
+            for key, value in require_to_update.items():
+                if value == 'newLibPreparation':
+                    if not libraryPreparation.objects.filter(sample_id__pk__exact = key):
+                        continue
+                    lib_prep_obj = libraryPreparation.objects.get(sample_id__pk__exact = key)
+                    lib_prep_obj.set_state('Registered')
+                    lib_prep_obj.set_increase_reuse()
+                elif value == 'newPool':
+                    pass
+                else:
+                    continue
+
+        return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'reprocess_result':reprocess_result})
     else:
         sample_information = prepare_sample_input_table()
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
@@ -3316,11 +3334,11 @@ def search_lib_samples (request):
         ### Get projects when sample name is not empty
 
         sample_list = search_samples(sample_name, user_name, sample_state, start_date, end_date )
-        import pdb; pdb.set_trace()
+
         if len(sample_list) == 0:
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No sample found with your match conditions ']})
         elif len(sample_list) == 1:
-            import pdb; pdb.set_trace()
+
             return redirect ('display_libSample' , sample_id = sample_list[0])
         else:
             return render(request, 'iSkyLIMS_wetlab/searchLibSample.html',{'sample_list':sample_list})
@@ -3460,7 +3478,7 @@ def set_library_preparation(request):
         samples_not_available = []
         stored_lib_prep['reagents_kits'] = get_user_comercial_kits(register_user_obj, protocol_obj)
         for extracted_data in extracted_data_list :
-            import pdb; pdb.set_trace()
+            #import pdb; pdb.set_trace()
             if Samples.objects.filter(sampleName__exact = extracted_data['sample_id'], sampleUser = register_user_obj,
                             sampleState__sampleStateName = 'Add Library preparation').exists():
 
@@ -3493,7 +3511,7 @@ def set_library_preparation(request):
 
         stored_lib_prep['lib_prep_id'] = ','.join(lib_prep_id)
         stored_lib_prep['samples_not_available'] = samples_not_available
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         return render (request, 'iSkyLIMS_wetlab/setLibraryPreparation.html', {'stored_lib_prep':stored_lib_prep})
 
     elif request.method == 'POST' and request.POST['action'] == 'addProtocolParamters':
@@ -3624,18 +3642,27 @@ def select_samples_for_run (request):
                 lib_prep_ids = list(request.POST['lib_prep_id'])
         else:
             lib_prep_ids = request.POST['lib_prep_id'].split(',')
-        selected_for_run ={}
-        
-        compatible_in_run = check_index_compatible(lib_prep_ids)
-        if  compatible_in_run == True:
 
-            information_for_selected_run = get_info_for_create_pool(lib_prep_ids)
+        compatible_in_run = check_index_compatible(lib_prep_ids)
+
+        if  compatible_in_run == True:
+            information_for_selected_run = get_info_to_create_pool(lib_prep_ids)
             return  render(request, 'iSkyLIMS_wetlab/selectSamplesForRun.html',{'information_for_selected_run': information_for_selected_run})
         else:
+            return  render(request, 'iSkyLIMS_wetlab/selectSamplesForRun.html',{'incompatible_samples': compatible_in_run})
 
-            return  render(request, 'iSkyLIMS_wetlab/selectSamplesForRun.html',{'incompatible_index': compatible_in_run})
+    elif request.method == 'POST' and request.POST['action'] == 'createRun':
+        if  'lib_prep_in_list' in request.POST:
+            lib_prep_ids = request.POST.getlist('lib_prep_id')
+            if len('lib_prep_in_list') == 0:
+                lib_prep_ids = list(request.POST['lib_prep_id'])
+        else:
+            lib_prep_ids = request.POST['lib_prep_id'].split(',')
+        exp_name = request.POST['experimentName']
+        exp_name = request.POST['experimentName']
+        analyze_input_pool(request.POST, request.user)
 
-        return  render(request, 'iSkyLIMS_wetlab/selectSamplesForRun.html',{'selected_for_run': selected_for_run})
+        return  render(request, 'iSkyLIMS_wetlab/selectSamplesForRun.html',{'incompatible_index': compatible_in_run})
     else:
         display_list = {}
         display_list['data'] = []
@@ -3647,5 +3674,5 @@ def select_samples_for_run (request):
                 display_list['data'].append( lib_prep.get_info_for_run())
 
             display_list['heading'] = HEADING_FOR_SELECTED_ON_RUN
-        import pdb; pdb.set_trace()
+
         return  render(request, 'iSkyLIMS_wetlab/selectSamplesForRun.html',{'display_list': display_list})

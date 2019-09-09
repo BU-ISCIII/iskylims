@@ -184,6 +184,8 @@ class BaseSpaceLibraryName (models.Model):
     #indexNumber = models.CharField(max_length = 25)
     generatedat = models.DateTimeField(auto_now_add=True)
 
+    def get_bs_lib_name(self):
+        return '%s' %(self.libraryName)
 
 
 class IndexLibraryKit (models.Model):
@@ -725,6 +727,13 @@ class libPreparationUserSampleSheet (models.Model):
 
     objects = libPreparationUserSampleSheetManager()
 
+class LibraryPoolRunManager (models.Manager):
+    def create_lib_pool_run (self, pool_run_data):
+        new_library_pool = self.create(registerUser = pool_run_data['registerUser']  , poolName = pool_run_data['poolName'],
+                    sampleSheet = pool_run_data['sampleSheet'] , experiment_name = pool_run_data['experiment_name'] ,
+                    plateName =  pool_run_data['plateName'] ,  containerID = pool_run_data['containerID'],
+                    libUsedInBaseSpace = pool_run_data['libUsedInBaseSpace'])
+
 class LibraryPoolRun (models.Model):
     registerUser = models.ForeignKey(
             User,
@@ -732,7 +741,14 @@ class LibraryPoolRun (models.Model):
     poolName = models.CharField(max_length=50)
     sampleSheet = models.FileField(upload_to = wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY)
     experiment_name = models.CharField(max_length=50)
+    plateName = models.CharField(max_length=50)
+    containerID = models.CharField(max_length=50, null =True, blank = True)
+    libUsedInBaseSpace = models.CharField(max_length=50)
+    poolCodeId = models.CharField(max_length=50, blank = True)
     generated_at = models.DateTimeField(auto_now_add=True)
+
+
+    objects = LibraryPoolRunManager()
 
 
 class StatesForLibraryPreparation (models.Model):
@@ -747,7 +763,8 @@ class StatesForLibraryPreparation (models.Model):
 
 class libraryPreparationManager(models.Manager):
     def create_lib_preparation (self, lib_prep_data, user_sample_obj, reg_user ,molecule_obj,  single_paired , read_length):
-        lib_state = StatesForLibraryPreparation.objects.get(libPrepState =  'Recorded')
+        #import pdb; pdb.set_trace()
+        lib_state = StatesForLibraryPreparation.objects.get(libPrepState =  'Registered')
         new_lib_prep = self.create(registerUser = reg_user, molecule_id = molecule_obj, sample_id = lib_prep_data['sample_id'],
             protocol_id =   lib_prep_data['protocol_obj'], user_sample_sheet = user_sample_obj, userSampleID = lib_prep_data['userSampleID'],
             projectInSampleSheet = lib_prep_data['projectInSampleSheet'], samplePlate = lib_prep_data['samplePlate'],
@@ -774,7 +791,7 @@ class libraryPreparation (models.Model):
     libPrepState = models.ForeignKey(
                 StatesForLibraryPreparation,
                 on_delete= models.CASCADE, null = True)
-    user_reagent_id = models.ForeignKey(
+    user_reagentKit_id = models.ForeignKey(
                 UserComercialKits,
                 on_delete= models.CASCADE, null = True, blank = True)
     user_sample_sheet = models.ForeignKey(
@@ -820,21 +837,31 @@ class libraryPreparation (models.Model):
         return lib_info
 
     def get_info_for_run(self):
+        if self.user_reagentKit_id == None :
+            reagent_kit = ''
+        else:
+            reagent_kit = self.user_reagentKit_id.get_comercial_kit()
         lib_info = []
         lib_info.append(self.libPrepCodeID)
         lib_info.append(self.sample_id.get_sample_name())
-        lib_info.append(self.user_reagent_id.get_comercial_kit())
+        lib_info.append(reagent_kit)
         lib_info.append(self.i7IndexID)
         lib_info.append(self.i5IndexID)
         lib_info.append(self.pk)
         return lib_info
 
     def get_info_for_pool (self):
+        if self.registerUser.username == None:
+            user_name = ''
+        else :
+            user_name = self.registerUser.username
         lib_info = []
         lib_info.append(self.uniqueID)
         lib_info.append(self.libPrepCodeID)
         lib_info.append(self.get_sample_name())
         lib_info.append(self.sampleWell)
+        lib_info.append(self.projectInSampleSheet)
+        lib_info.append(user_name)
         return lib_info
 
     def get_indexes (self):
@@ -862,11 +889,22 @@ class libraryPreparation (models.Model):
     def get_sample_obj(self):
         return self.sample_id
 
+    def get_single_paired (self):
+        return '%s' %(self.singlePairedEnd)
+
     def get_state(self):
         return '%s' %(self.libPrepState.libPrepState)
 
+    def set_increase_reuse(self):
+        self.numberOfReused += 1
+        self.save()
+
     def set_state(self , state_value):
         self.libPrepState = StatesForLibraryPreparation.objects.get(libPrepState__exact = state_value)
+        self.save()
+
+    def set_reagent_user_kit(self, kit_value):
+        self.user_reagentKit_id = UserComercialKits.objects.get(nickName__exact = kit_value)
         self.save()
 
     objects = libraryPreparationManager()

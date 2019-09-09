@@ -29,12 +29,14 @@ def analyze_input_param_values(request):
             lib_parameter_value['parameterValue'] = json_data[i] [p_index]
 
             new_parameters_data = LibParameterValue.objects.create_library_parameter_value (lib_parameter_value)
+        kit_index = HEADING_FIX_FOR_ADDING_LIB_PARAMETERS.index('Regents Kit used')
+        library_prep_obj.set_reagent_user_kit(json_data[i] [kit_index])
         stored_params.append([library_prep_obj.get_sample_name(), library_prep_obj.get_lib_prep_code()])
         library_prep_obj.set_state('Updated parameters')
         sample_obj = library_prep_obj.get_sample_obj ()
-        # Update the sample state to "In queued for sequencing"
-        sample_obj.set_state('In queued for sequencing')
-    import pdb; pdb.set_trace()
+        # Update the sample state to "Create Pool"
+        sample_obj.set_state('Create Pool')
+    #import pdb; pdb.set_trace()
     return stored_params
 
 
@@ -90,8 +92,8 @@ def get_samples_add_lib_prep_parameters():
         lib_prep_parameters.
     '''
     lib_prep_parameters = {}
-    if libraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Recorded').exists():
-        samples = libraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Recorded')
+    if libraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Registered').exists():
+        samples = libraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Registered')
         sample_info = []
         for sample in samples:
             lib_prep_info = []
