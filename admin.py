@@ -25,8 +25,11 @@ class ProjectsAdmin (admin.ModelAdmin):
     list_display= ('runprocess_id','user_id','LibraryKit_id','projectName','libraryKit','baseSpaceFile','generatedat','project_run_date')
     #list_display= ('runprocess_id','projectName','procState','libraryKit','baseSpaceFile')
 
-class LibraryKitAdmin(admin.ModelAdmin):
+class BaseSpaceLibraryNameAdmin(admin.ModelAdmin):
     list_display = ('libraryName','generatedat')
+
+class IndexLibraryKitAdmin(admin.ModelAdmin):
+    list_display = ('indexLibraryName', 'version', 'plateExtension', 'adapter1', 'adapter2', 'indexLibraryFile','generatedat')
 
 class RunErrorsAdmin (admin.ModelAdmin):
     list_display = ('errorCode', 'errorText')
@@ -41,7 +44,8 @@ class SamplesInProjectAdmin (admin.ModelAdmin):
 
 admin.site.register(RunningParameters , RunningParametersAdmin)
 admin.site.register(RunProcess , RunProcessAdmin)
-admin.site.register(LibraryKit,LibraryKitAdmin)
+admin.site.register(BaseSpaceLibraryName,BaseSpaceLibraryNameAdmin)
+admin.site.register(IndexLibraryKit,IndexLibraryKitAdmin)
 admin.site.register(Projects, ProjectsAdmin)
 admin.site.register(RunErrors, RunErrorsAdmin)
 admin.site.register(RunStates, RunStatesAdmin)

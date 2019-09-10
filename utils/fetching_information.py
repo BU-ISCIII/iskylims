@@ -322,28 +322,28 @@ def match_unkownbarcodes_with_index (unknow_dict) :
         if '+' in key:
             split_base = key.split('+')
 
-            if IndexLibraryValues.objects.filter(indexBase__exact = split_base[0]).exists():
-                libraries_using_base = IndexLibraryValues.objects.filter(indexBase__exact = split_base[0])
+            if IndexLibraryValues.objects.filter(i_7_seq__exact = split_base[0]).exists():
+                libraries_using_base = IndexLibraryValues.objects.filter(i_7_seq__exact = split_base[0])
                 index_temp = split_base[0]
                 for library in libraries_using_base :
-                    library_info.append([library.indexName,library.indexLibraryKit_id.indexLibraryName])
+                    library_info.append([library.index_7,library.indexLibraryKit_id.indexLibraryName])
 
 
-            if IndexLibraryValues.objects.filter(indexBase__exact = split_base[1]).exists():
+            if IndexLibraryValues.objects.filter(i_5_seq__exact = split_base[1]).exists():
                 if len(index_temp) == 1:
                     index_temp += (str (' + ' + split_base[1]))
                 else:
                     index_temp = split_base[1]
-                libraries_using_base = IndexLibraryValues.objects.filter(indexBase__exact = split_base[1])
+                libraries_using_base = IndexLibraryValues.objects.filter(i_5_seq__exact = split_base[1])
                 for library in libraries_using_base :
-                    library_info.append([library.indexName,library.indexLibraryKit_id.indexLibraryName])
+                    library_info.append([library.index_5,library.indexLibraryKit_id.indexLibraryName])
 
         else:
-            if IndexLibraryValues.objects.filter(indexBase__exact = key).exists():
+            if IndexLibraryValues.objects.filter(i_7_seq__exact = key).exists():
                 found_unknow_index.append(key)
-                libraries_using_base = IndexLibraryValues.objects.filter(indexBase__exact = key)
+                libraries_using_base = IndexLibraryValues.objects.filter(i_7_seq__exact = key)
                 for library in libraries_using_base :
-                    library_info.append([library.indexName,library.indexLibraryKit_id.indexLibraryName])
+                    library_info.append([library.index_7,library.indexLibraryKit_id.indexLibraryName])
 
         if len (index_temp) == 0 :
             index_temp= 'Index not match '
@@ -453,8 +453,6 @@ def get_information_run(run_object):
         info_dict['library_kit'] = p_library_kits
         info_dict['run_id'] = run_object.get_run_id()
     ## get information up on state level
-    #import pdb; pdb.set_trace()
-    #if run_state != 'Recorded' or run_state != 'Pre-Recorded' :
     if RunningParameters.objects.filter(runName_id = run_object).exists():
         # Adding the Run Parameters information
         info_dict['running_parameters'] = get_running_parameters(run_object)

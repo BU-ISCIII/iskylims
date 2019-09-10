@@ -103,6 +103,16 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
                 #### adding empty values of species and NucleicAccid
                 dict_value_data['Species']=''
                 dict_value_data['NucleicAcid']='DNA'
+                
+                ### adding well information New
+                #well_column = number_well
+                dict_value_data['Well']=str(letter_well + number_well)
+                number_well =str(int(number_well)+1).zfill(2)
+                if number_well == '13':
+                    # reset the number well to 1 and increase the letter
+                    number_well = '01'
+                    letter_well=chr(ord(letter_well)+1)
+                '''  Removed 
                 ### adding well information
                 if not dict_value_data['Index1Name'] in well_column:
                     well_column[dict_value_data['Index1Name']]=number_well
@@ -117,7 +127,7 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
                 else:
                     letter_well = 'A'
                     dict_value_data['Well']=str(letter_well + well_column[dict_value_data['Index1Name']])
-
+                '''
 
                 data_raw.append(dict_value_data)
 

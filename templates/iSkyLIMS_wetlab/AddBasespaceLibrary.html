@@ -2,22 +2,22 @@
 {% load static %}_
 {% block content %}
 {% csrf_token %}
-{% if list_of_libraries.new_library_kit %}
+{% if list_of_libraries.new_basespace_library %}
     <BR>
         <div class="row row-space-2 margin-b-4">
             <div class="col-sm-6" >
             <div class="panel panel-default">
-              <div class="panel-heading">New Library Kit has been added </div>
+              <div class="panel-heading">New BaseSpace Library name has been added </div>
               <div class="panel-body">
                   <table class="table ">
                    <thead>
                       <tr>
-                        <th>Library Kit Name</th>
+                        <th>Library BaseSpace Name</th>
                       </tr>
                    </thead>
                    <tbody>
                         <tr>
-                       <td>{{ list_of_libraries.new_library_kit }}</td>
+                       <td>{{ list_of_libraries.new_basespace_library }}</td>
                      </tr>
                     </tbody>
                 </table>
@@ -29,13 +29,13 @@
         <div class="col-sm-5 col-sm-offset-1" >
             <BR> <BR> <BR>
         <div class="panel panel-default">
-          <div class="panel-heading">Library Kit already defined</div>
+          <div class="panel-heading">Library name for BaseSpace is already defined</div>
           <div class="panel-body">
           {% if list_of_libraries.libraries %}
                 <table class="table table-hover">
                    <thead>
                       <tr>
-                        <th>Library Kit Name</th>
+                        <th>Library BaseSpace Name</th>
                       </tr>
                    </thead>
                    <tbody>
@@ -47,7 +47,7 @@
                     </tbody>
                 </table>
           {% else %}
-                No library Kit have been defined so far
+                No Basespace library has been defined so far
           {% endif %}
           </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
@@ -59,14 +59,14 @@
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-6" >
         <div class="panel panel-default">
-          <div class="panel-heading">Form to add a new Library Kit</div>
+          <div class="panel-heading">Form to add a new Library name for BaseSpace</div>
           <div class="panel-body">
-            <form method="post" enctype="multipart/form-data" name="addLibrarykit" id="addLibrarykit" class="form-horizontal">
+            <form method="post" enctype="multipart/form-data" name="addBasespaceLibrary" id="addBasespaceLibrary" class="form-horizontal">
             {% csrf_token %}
                 <div class="form-group required">
-                  <input type="hidden" name="action" value="addNewLibraryKit"/>
-                  <label class="col-sm-4 control-label">New Library Kit </label>
-                  <div class="col-sm-8"><input class="form-control" required = "required" type="text"  name="newLibraryKit"size="80"></div>
+                  <input type="hidden" name="action" value="addNewBasespaceLibrary"/>
+                  <label class="col-sm-4 control-label">New Basespace Library</label>
+                  <div class="col-sm-8"><input class="form-control" required = "required" type="text"  name="newBasespaceLibrary"size="80"></div>
                   <BR> <BR> <BR>
                 </div>
                 <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
@@ -80,13 +80,13 @@
         <div class="col-sm-5 col-sm-offset-1" >
             <BR> <BR> <BR>
         <div class="panel panel-default">
-          <div class="panel-heading">Library Kit already defined</div>
+          <div class="panel-heading">Basespace Libraries already defined</div>
           <div class="panel-body">
           {% if list_of_libraries.libraries %}
                 <table class="table table-hover">
                    <thead>
                       <tr>
-                        <th>Libarary Kit Name</th>
+                        <th>Basespace Library Name</th>
                       </tr>
                    </thead>
                    <tbody>

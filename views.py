@@ -189,7 +189,7 @@ def create_nextseq_run (request):
         run_info_values['runname']= run_name
         ## Get the list of the library kit used (libraryKit)
         used_libraries = []
-        list_libraries = LibraryKit.objects.order_by().values_list('libraryName', flat=True)
+        list_libraries = BaseSpaceLibraryName.objects.order_by().values_list('libraryName', flat=True)
         run_info_values['used_libraryKit'] =  list_libraries
 
         user_names = []
@@ -274,7 +274,7 @@ def create_nextseq_run (request):
             my_project = projects [p]
             my_name = user_name[p]
             my_libkit = library_kit[p]
-            library_kit_id = LibraryKit.objects.get(libraryName__exact = library_kit[p])
+            library_kit_id = BaseSpaceLibraryName.objects.get(libraryName__exact = library_kit[p])
             update_info_proj=Projects.objects.get(projectName = my_project)
             update_info_proj.libraryKit=project_index_kit[p]
             update_info_proj.baseSpaceFile=bs_file[project_index_kit[p]]
@@ -308,55 +308,55 @@ def create_nextseq_run (request):
     return render(request, 'iSkyLIMS_wetlab/CreateNextSeqRun.html')
 
 @login_required
-def add_library_kit (request):
+def add_basespace_library (request):
     '''
     Description:
         The function is called from web, having 2 main parts:
-            - User form with the information to add a new library
+            - User form with the information to add a new Basespace library
             - Result information as response of user submit
-        Save a new library kit name in database if it is not already defined.
+        Save a new basespace library name in database if it is not already defined.
     Input:
         request     # contains the request dictionary sent by django
     Variables:
-        library_kit_information ={} # returned dictionary with the information
+        basespace_library_information ={} # returned dictionary with the information
                                 to include in the web page
-        library_kit_objects # contains the object list of the libraryKit model
-        library_kits = [] # It is a list containing the Library Kits names
-        new_library_kit_name # contain the new library name enter by user form
+        basespace_library_objects # contains the object list of the basespace model
+        basespace_library = [] # It is a list containing the Basespces Library names
+        new_basespace_library_name # contain the new library name enter by user form
         library     # it is the new LibraryKit object
-        l_kit       # is the iter variable for library_kit_objects
+        l_kit       # is the iter variable for basespace_library_objects
     Return:
         Return the different information depending on the execution:
         -- Error page in case the library already exists.
         -- library_kit_information with :
             -- ['libraries']
-            ---['new_library_kit'] in case a new library kit was added.
+            ---['new_basespace_library'] in case a new basespace library was added.
     '''
 
     libraries_information ={}
-    library_kit_information ={}
-    library_kits = []
+    basespace_library_information ={}
+    basespace_library = []
 
-    library_kit_objects = LibraryKit.objects.all()
-    if len(library_kit_objects) >0 :
-        for l_kit in library_kit_objects :
-            library_kits.append(l_kit.libraryName)
+    basespace_library_objects = BaseSpaceLibraryName.objects.all()
+    if len(basespace_library_objects) >0 :
+        for l_kit in basespace_library_objects :
+            basespace_library.append(l_kit.libraryName)
 
-    if request.method == 'POST' and request.POST['action'] == 'addNewLibraryKit':
-        new_library_kit_name = request.POST['newLibraryKit']
+    if request.method == 'POST' and request.POST['action'] == 'addNewBasespaceLibrary':
+        new_basespace_library_name = request.POST['newBasespaceLibrary']
 
         ## Check that library kit is not already defined in database
-        if LibraryKit.objects.filter(libraryName__icontains = new_library_kit_name).exists():
-            return render (request, 'iSkyLIMS_wetlab/error_page.html', {'content':['The Library Kit ', new_library_kit_name, 'is already defined on the system']})
+        if BaseSpaceLibraryName.objects.filter(libraryName__icontains = new_basespace_library_name).exists():
+            return render (request, 'iSkyLIMS_wetlab/error_page.html', {'content':['The Library Kit ', new_basespace_library_name, 'is already defined on the system']})
 
-        library_kit_information['new_library_kit'] = new_library_kit_name
-        library_kits.append(new_library_kit_name)
+        basespace_library_information['new_basespace_library'] = new_basespace_library_name
+        basespace_library.append(new_basespace_library_name)
         #save the new library on database
-        library = LibraryKit(libraryName= new_library_kit_name)
-        library.save()
+        b_library = BaseSpaceLibraryName(libraryName= new_basespace_library_name)
+        b_library.save()
 
-    library_kit_information ['libraries'] = library_kits
-    return render(request,'iSkyLIMS_wetlab/AddLibraryKit.html',{'list_of_libraries': library_kit_information})
+    basespace_library_information ['libraries'] = basespace_library
+    return render(request,'iSkyLIMS_wetlab/AddBasespaceLibrary.html',{'list_of_libraries': basespace_library_information})
 
 @login_required
 def add_index_library (request):
@@ -429,8 +429,7 @@ def add_index_library (request):
         fs_index_lib = FileSystemStorage()
         timestr = time.strftime("%Y%m%d-%H%M%S")
 
-        ## do not need to include the absolute path because django use
-        ## the MEDIA_ROOT variable defined on settings to upload the file
+        ## using the MEDIA_ROOT variable defined on settings to upload the file
         file_name=os.path.join(wetlab_config.LIBRARY_KITS_DIRECTORY ,  str(f_name + '_' +timestr + f_extension))
         filename = fs_index_lib.save(file_name,  index_library_file)
         saved_file = os.path.join(settings.MEDIA_ROOT, file_name)
@@ -487,17 +486,11 @@ def add_index_library (request):
         ## get the index name and index bases for the library
         library_index = get_index_values(saved_file)
         # saving index values into database
-        for index_7 in library_index['I7'] :
-            index_name, index_base = index_7
+        for row in library_index :
             index_to_store = IndexLibraryValues(indexLibraryKit_id = lib_settings_to_store,
-                                    indexNumber = 'I7', indexName = index_name,
-                                    indexBase = index_base)
-            index_to_store.save()
-        for index_5 in library_index['I5'] :
-            index_name, index_base = index_5
-            index_to_store = IndexLibraryValues(indexLibraryKit_id = lib_settings_to_store,
-                                    indexNumber = 'I5', indexName = index_name,
-                                    indexBase = index_base)
+                                    defaultWell = row[0], index_7 = row[1],
+                                    i_7_seq = row[2], index_5 = row[3],
+                                    i_5_seq = row[4])
             index_to_store.save()
 
         index_libraries_information['new_index_library'] = library_settings['name']
@@ -1046,7 +1039,7 @@ def display_run (request, run_id):
     # check user privileges
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(name='WetlabManager')
+            groups = Group.objects.get(name = wetlab_config.WETLAB_MANAGER)
             if groups not in request.user.groups.all():
                 # check if user is owner of the run
                 if Projects.objects.filter(runprocess_id__exact = run_id).exists():
@@ -1178,31 +1171,7 @@ def display_sample (request, sample_id):
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the sample  ' ]})
 
 
-def index_library_information (index_library_id) :
 
-    index_library_dict ={}
-    index_library_found = IndexLibraryKit.objects.get(pk=index_library_id)
-    general_information = [index_library_found.get_index_library_information().split(';')]
-    index_library_dict['general_information'] = general_information
-
-    if IndexLibraryValues.objects.filter(indexLibraryKit_id__exact = index_library_id).exists():
-        index_list = IndexLibraryValues.objects.filter(indexLibraryKit_id__exact = index_library_id)
-
-        I7_indexes, I5_indexes = [], []
-        for index in index_list :
-            # get all I7 index defined on the library
-            if index.indexNumber == 'I7':
-                I7_indexes.append(index.get_index_information().split(';'))
-            elif index.indexNumber == 'I5':
-                #get all I5 index defined on the library
-                I5_indexes.append(index.get_index_information().split(';'))
-            else:
-                pass
-        index_library_dict['I7_indexes'] = I7_indexes
-        index_library_dict['I5_indexes'] = I5_indexes
-        return index_library_dict
-    else:
-        return False
 
 
 
@@ -2889,18 +2858,18 @@ def update_tables_date (request):
             runID_value = run_parameter_id.RunID
             completion_file = os.path.join(runID_value, 'RunCompletionStatus.xml')
             try:
-            	completion_attributes = conn.getAttributes(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,completion_file)
-            	# fetching the time creation on the RunCompletionStatus.xml for Run finish datetime
-            	run_be_updated.run_finish_date = datetime.datetime.fromtimestamp(int(completion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
+                completion_attributes = conn.getAttributes(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,completion_file)
+                # fetching the time creation on the RunCompletionStatus.xml for Run finish datetime
+                run_be_updated.run_finish_date = datetime.datetime.fromtimestamp(int(completion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
             except:
-            	pass
+                pass
             conversion_stats_file = os.path.join (runID_value,'Data/Intensities/BaseCalls/Stats/', 'ConversionStats.xml')
             try:
-            	conversion_attributes = conn.getAttributes(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,conversion_stats_file)
-            	#
-            	run_be_updated.bcl2fastq_finish_date = datetime.datetime.fromtimestamp(int(conversion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
+                conversion_attributes = conn.getAttributes(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,conversion_stats_file)
+                #
+                run_be_updated.bcl2fastq_finish_date = datetime.datetime.fromtimestamp(int(conversion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
             except:
-            	pass
+                pass
             finish_process_date = StatsRunSummary.objects.filter(runprocess_id__exact = run_id)
             run_be_updated.process_completed_date = finish_process_date[0].generatedat
 
@@ -2923,13 +2892,13 @@ def configuration_test (request):
         return redirect ('/accounts/login')
     if request.method=='POST' and request.POST['action'] == 'basicTest':
         test_results = {}
-        wetlab_config = os.path.join(settings.BASE_DIR, 'iSkyLIMS_wetlab', 'wetlab_config.py')
+        wetlab_config_file = os.path.join(settings.BASE_DIR, 'iSkyLIMS_wetlab', 'wetlab_config.py')
         test_results['iSkyLIMS_settings'] = get_iSkyLIMS_settings()
-        test_results['config_file'] = get_config_file(wetlab_config)
+        test_results['config_file'] = get_config_file(wetlab_config_file)
         test_results['attr_files'] = get_files_attribute(os.path.join(settings.MEDIA_ROOT, 'wetlab'))
         test_results['database_access'] = check_access_database()
         test_results['samba_connection'] = check_samba_connection()
-        
+
         test_results['basic_checks_ok'] = 'OK'
         #if test_results['config_file']  and test_results['attr_files']  and test_results['database_access'] and test_results['samba_connection']:
         for result in test_results :
@@ -2945,9 +2914,9 @@ def configuration_test (request):
         if 'Delete' in request.POST :
             delete_test_run ('NextSeq_Test_0001')
             return render(request,'iSkyLIMS_wetlab/ConfigurationTest.html')
-        
-        
-        
+
+
+
         runNextSeq_results = {}
         log_trace = []
         working_path = settings.MEDIA_ROOT
@@ -2957,104 +2926,104 @@ def configuration_test (request):
         if os.path.isfile (log_file):
             os.remove(log_file)
         logger=open_log(config_file)
-        
+
         logger.info('###########---Start Testing NextSeq Run  -----############')
         # create run in Recorded state for testing
         test_run_remote_folder = 'NextSeq_Test'
         experiment_name = 'NextSeq_Test_0001'
         runNextSeq_results['CreateRun'] , result_ok = create_run_test_nextseq_in_recorded(test_run_remote_folder, experiment_name )
-        
+
         if result_ok == 'NOK' :
             with open (log_file, 'r') as fh :
                 for line in fh :
                     line = line.replace('\n', '')
                     log_trace.append(line)
 
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results, 
+            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results,
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
         else:
             runNextSeq_results['create_run_ok'] =  'OK'
         # Start testing on recorded state
         runNextSeq_results['Recorded'] , result_ok = run_nextseq_test_rec_to_sample_sent(test_run_remote_folder, experiment_name)
-        
+
         if result_ok == 'NOK' :
             with open (log_file, 'r') as fh :
                 for line in fh :
                     line = line.replace('\n', '')
                     log_trace.append(line)
             #import pdb; pdb.set_trace()
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results, 
+            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results,
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
         else:
             runNextSeq_results['recorded_ok'] =  'OK'
-        
-        # Processing Run  
+
+        # Processing Run
         runNextSeq_results['Sample_Sent'] , result_ok = run_nextseq_test_sample_sent_to_Processing_Run (experiment_name)
         if result_ok == 'NOK' :
             with open (log_file, 'r') as fh :
                 for line in fh :
                     line = line.replace('\n', '')
                     log_trace.append(line)
-                
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results, 
+
+            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results,
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
         else:
             runNextSeq_results['sample_sent_ok'] =  'OK'
-        
-        # Processing Run  
+
+        # Processing Run
         runNextSeq_results['Processing_Run'] , result_ok = run_nextseq_test_Processing_Run_to_Processed_Run (experiment_name)
         if result_ok == 'NOK' :
             with open (log_file, 'r') as fh :
                 for line in fh :
                     line = line.replace('\n', '')
                     log_trace.append(line)
-                
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results, 
+
+            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results,
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
         else:
             runNextSeq_results['processing_run_ok'] =  'OK'
 
-        # Processed Run 
+        # Processed Run
         runNextSeq_results['Processed_Run'] , result_ok = run_test_Processed_Run_to_Processing_Bcl2fastq (experiment_name)
         if result_ok == 'NOK' :
             with open (log_file, 'r') as fh :
                 for line in fh :
                     line = line.replace('\n', '')
                     log_trace.append(line)
-                
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results, 
+
+            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results,
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
         else:
             runNextSeq_results['processed_run_ok'] =  'OK'
-        
-        # Processing Bcl2fastq 
+
+        # Processing Bcl2fastq
         runNextSeq_results['Processing_Bcl2fastq'] , result_ok = run_test_Processing_Bcl2fastq_to_Processed_Bcl2fastq (experiment_name)
         if result_ok == 'NOK' :
             with open (log_file, 'r') as fh :
                 for line in fh :
                     line = line.replace('\n', '')
                     log_trace.append(line)
-                
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results, 
+
+            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results,
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
         else:
             runNextSeq_results['processing_bcl2fastq_ok'] =  'OK'
-        
-        # Processed Bcl2fastq 
+
+        # Processed Bcl2fastq
         runNextSeq_results['Processed_Bcl2fastq'] , result_ok = run_test_Processed_Bcl2fastq_to_Completed (experiment_name)
         if result_ok == 'NOK' :
             with open (log_file, 'r') as fh :
                 for line in fh :
                     line = line.replace('\n', '')
                     log_trace.append(line)
-                
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results, 
+
+            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results,
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
         else:
             runNextSeq_results['processed_bcl2fast2_ok'] =  'OK'
             runNextSeq_results['completed_ok'] = 'ok'
-        
-        return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results, 
+
+        return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results,
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
 
 
@@ -3066,7 +3035,7 @@ def configuration_test (request):
         if 'Delete' in request.POST :
             delete_test_run ('MiSeq_Test_0001')
             return render(request,'iSkyLIMS_wetlab/ConfigurationTest.html')
-        
+
         runMiSeq_results = {}
         log_trace = []
         config_file = os.path.join(settings.BASE_DIR,'iSkyLIMS_wetlab', 'tests', 'logging_test_config.ini' )
@@ -3074,7 +3043,7 @@ def configuration_test (request):
         if os.path.isfile (log_file):
             os.remove(log_file)
         logger=open_log(config_file)
-        
+
         logger.info('###########---Start Testing MiSeq Run  -----############')
         if run_exists_in_db('MiSeq_Test_0001'):
             delete_graphic_folder_if_exists ('MiSeq_Test_0001')
@@ -3085,85 +3054,85 @@ def configuration_test (request):
         experiment_name = 'MiSeq_Test_0001'
         # Start testing on recorded state
         runMiSeq_results['Recorded'] , result_ok = run_miseq_test_rec_to_sample_sent(test_run_remote_folder, experiment_name)
-        
+
         if result_ok == 'NOK' :
             with open (log_file, 'r') as fh :
                 for line in fh :
                     line = line.replace('\n', '')
                     log_trace.append(line)
             #import pdb; pdb.set_trace()
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runMiSeq_results, 
+            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runMiSeq_results,
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
         else:
             runMiSeq_results['recorded_ok'] =  'OK'
-        
-        # Processing Run  
+
+        # Processing Run
         runMiSeq_results['Sample_Sent'] , result_ok = run_miseq_test_sample_sent_to_Processing_Run (experiment_name)
         if result_ok == 'NOK' :
             with open (log_file, 'r') as fh :
                 for line in fh :
                     line = line.replace('\n', '')
                     log_trace.append(line)
-                
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runMiSeq_results, 
+
+            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runMiSeq_results,
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
         else:
             runMiSeq_results['sample_sent_ok'] =  'OK'
-        
-        # Processing Run  
+
+        # Processing Run
         runMiSeq_results['Processing_Run'] , result_ok = run_miseq_test_Processing_Run_to_Processed_Run (experiment_name)
         if result_ok == 'NOK' :
             with open (log_file, 'r') as fh :
                 for line in fh :
                     line = line.replace('\n', '')
                     log_trace.append(line)
-                
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runMiSeq_results, 
+
+            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runMiSeq_results,
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
         else:
             runMiSeq_results['processing_run_ok'] =  'OK'
 
-        # Processed Run 
+        # Processed Run
         runMiSeq_results['Processed_Run'] , result_ok = run_test_Processed_Run_to_Processing_Bcl2fastq (experiment_name)
         if result_ok == 'NOK' :
             with open (log_file, 'r') as fh :
                 for line in fh :
                     line = line.replace('\n', '')
                     log_trace.append(line)
-                
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runMiSeq_results, 
+
+            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runMiSeq_results,
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
         else:
             runMiSeq_results['processed_run_ok'] =  'OK'
-        
-        # Processing Bcl2fastq 
+
+        # Processing Bcl2fastq
         runMiSeq_results['Processing_Bcl2fastq'] , result_ok = run_test_Processing_Bcl2fastq_to_Processed_Bcl2fastq (experiment_name)
         if result_ok == 'NOK' :
             with open (log_file, 'r') as fh :
                 for line in fh :
                     line = line.replace('\n', '')
                     log_trace.append(line)
-                
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runMiSeq_results, 
+
+            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runMiSeq_results,
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
         else:
             runMiSeq_results['processing_bcl2fastq_ok'] =  'OK'
-        
-        # Processed Bcl2fastq 
+
+        # Processed Bcl2fastq
         runMiSeq_results['Processed_Bcl2fastq'] , result_ok = run_test_Processed_Bcl2fastq_to_Completed (experiment_name)
         if result_ok == 'NOK' :
             with open (log_file, 'r') as fh :
                 for line in fh :
                     line = line.replace('\n', '')
                     log_trace.append(line)
-                
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runMiSeq_results, 
+
+            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runMiSeq_results,
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
         else:
             runMiSeq_results['processed_bcl2fast2_ok'] =  'OK'
             runMiSeq_results['completed_ok'] = 'ok'
-        
-        return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runMiSeq_results, 
+
+        return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runMiSeq_results,
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
 
 
