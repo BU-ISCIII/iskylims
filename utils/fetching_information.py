@@ -88,6 +88,9 @@ def get_boxplot_comparation_runs (run_object):
         same_runs_in_year_list.append(run.get_run_id())
 
     all_lane_summary = StatsLaneSummary.objects.filter(runprocess_id__in = same_runs_in_year_list).exclude(defaultAll__isnull = False).exclude(runprocess_id__exact =run_object)
+    if len(all_lane_summary) == 0 :
+        # It is the first run in the year. Then include it until more than one run was stored
+        all_lane_summary = StatsLaneSummary.objects.filter(runprocess_id__in = same_runs_in_year_list).exclude(defaultAll__isnull = False)
     for item in all_lane_summary:
         q_30_value, mean_value , yield_mb_value , cluster_pf_value = item.get_stats_info().split(';')
 
@@ -485,14 +488,15 @@ def get_information_run(run_object):
         percent_projects = {}
 
         # get the demultiplexion information for projects included in the run
-        percent_lane = []
+
         for project_demultiplexion in p_list :
             lanes_for_percent_graphic = StatsLaneSummary.objects.filter(runprocess_id__exact = run_object, project_id = project_demultiplexion.id )
+            percent_lane = []
             for lane in lanes_for_percent_graphic :
                 percent_lane.append(float(lane.percentLane))
             percent_projects[project_demultiplexion.projectName] =format(statistics.mean(percent_lane),'2f')
             #series.append(project_demultiplexion.projectName)
-
+        
         # get the demultiplexion information for the default
 
         percent_default_lane = []

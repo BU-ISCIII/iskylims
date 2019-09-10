@@ -323,11 +323,12 @@ def parsing_demux_and_conversion_files( demux_file, conversion_file, number_of_l
 
         for c in p_temp[sample_all_index].iter('BarcodeCount'):
             barcodeCount.append(c.text)
-        if not p_temp[sample_all_index].find('PerfectBarcodeCount') :
-            p_b_count = ['0']*len(barcodeCount)
 
         for c in p_temp[sample_all_index].iter('PerfectBarcodeCount'):
             p_b_count.append(c.text)
+
+        if len(p_b_count) == 0 :
+            p_b_count = ['0']*len(barcodeCount)
 
         # look for One mismatch barcode
         if p_temp[sample_all_index].find('OneMismatchBarcodeCount') == None:
@@ -589,7 +590,7 @@ def process_fl_summary_stats (stats_projects, run_object_name):
         flow_raw_cluster, flow_pf_cluster, flow_yield_mb = 0, 0, 0
         for fl_item in range(number_of_lanes):
              # make the calculation for Flowcell
-            
+
             flow_raw_cluster +=int(stats_projects[project]['BarcodeCount'][fl_item])
             flow_pf_cluster +=int(stats_projects[project]['PerfectBarcodeCount'][fl_item])
             flow_yield_mb +=float(stats_projects[project]['PF_Yield'][fl_item])*M_BASE
@@ -656,6 +657,7 @@ def process_lane_summary_stats (stats_projects, run_object_name):
             project_lane = {}
             project_lane['lane'] = str(i + 1)
             pf_cluster_int=(int(stats_projects[project]['PerfectBarcodeCount'][i]))
+            
             project_lane['pfCluster'] = '{0:,}'.format(pf_cluster_int)
             try:
                 project_lane['perfectBarcode'] = (format(int(stats_projects[project]['PerfectBarcodeCount'][i])*100/int(stats_projects[project]['BarcodeCount'][i]),'.3f'))
@@ -674,7 +676,7 @@ def process_lane_summary_stats (stats_projects, run_object_name):
             try:
                 project_lane['meanQuality'] = format(float(stats_projects[project]['PF_QualityScore'][i])/float(stats_projects[project]['PF_Yield'][i]),'.3f')
             except:
-                project_lane['meanQuality'] = '0' 
+                project_lane['meanQuality'] = '0'
 
             if project == 'all' or project == 'default':
                 project_lane['project_id'] = None
@@ -696,6 +698,7 @@ def process_lane_summary_stats (stats_projects, run_object_name):
             '''
             processed_lane_summary_data.append(project_lane)
         logger.info('Processed information for project %s', project)
+
     logger.debug ('End function process_lane_summary_stats')
     return processed_lane_summary_data
 
@@ -1214,6 +1217,3 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
         return ''
     logger.debug ('End function manage_run_in_processed_bcl2fast2 ')
     return experiment_name
-
-
-
