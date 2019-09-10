@@ -323,6 +323,8 @@ def parsing_demux_and_conversion_files( demux_file, conversion_file, number_of_l
 
         for c in p_temp[sample_all_index].iter('BarcodeCount'):
             barcodeCount.append(c.text)
+        if not p_temp[sample_all_index].find('PerfectBarcodeCount') :
+            p_b_count = ['0']*len(barcodeCount)
 
         for c in p_temp[sample_all_index].iter('PerfectBarcodeCount'):
             p_b_count.append(c.text)
@@ -587,10 +589,11 @@ def process_fl_summary_stats (stats_projects, run_object_name):
         flow_raw_cluster, flow_pf_cluster, flow_yield_mb = 0, 0, 0
         for fl_item in range(number_of_lanes):
              # make the calculation for Flowcell
+            
             flow_raw_cluster +=int(stats_projects[project]['BarcodeCount'][fl_item])
             flow_pf_cluster +=int(stats_projects[project]['PerfectBarcodeCount'][fl_item])
             flow_yield_mb +=float(stats_projects[project]['PF_Yield'][fl_item])*M_BASE
-
+        logger.debug('flow_pf_cluster value is %s', flow_pf_cluster)
         project_flowcell['flowRawCluster'] = '{0:,}'.format(flow_raw_cluster)
         project_flowcell['flowPfCluster'] ='{0:,}'.format(flow_pf_cluster)
         project_flowcell['flowYieldMb'] = '{0:,}'.format(round(flow_yield_mb))
@@ -654,12 +657,24 @@ def process_lane_summary_stats (stats_projects, run_object_name):
             project_lane['lane'] = str(i + 1)
             pf_cluster_int=(int(stats_projects[project]['PerfectBarcodeCount'][i]))
             project_lane['pfCluster'] = '{0:,}'.format(pf_cluster_int)
-            project_lane['perfectBarcode'] = (format(int(stats_projects[project]['PerfectBarcodeCount'][i])*100/int(stats_projects[project]['BarcodeCount'][i]),'.3f'))
-            project_lane['percentLane'] = format(float(int(pf_cluster_int)/int(total_cluster_lane[i]))*100, '.3f')
+            try:
+                project_lane['perfectBarcode'] = (format(int(stats_projects[project]['PerfectBarcodeCount'][i])*100/int(stats_projects[project]['BarcodeCount'][i]),'.3f'))
+            except:
+                project_lane['perfectBarcode'] = '0'
+            try:
+                project_lane['percentLane'] = format(float(int(pf_cluster_int)/int(total_cluster_lane[i]))*100, '.3f')
+            except:
+                project_lane['percentLane'] = '0'
             project_lane['oneMismatch'] = stats_projects[project]['OneMismatchBarcodeCount'][i]
             project_lane['yieldMb'] = '{0:,}'.format(round(float(stats_projects[project]['PF_Yield'][i])* M_BASE))
-            project_lane['biggerQ30'] = format(float(stats_projects[project]['PF_YieldQ30'][i])*100/float( stats_projects[project]['PF_Yield'][i]),'.3f')
-            project_lane['meanQuality'] = format(float(stats_projects[project]['PF_QualityScore'][i])/float(stats_projects[project]['PF_Yield'][i]),'.3f')
+            try:
+                project_lane['biggerQ30'] = format(float(stats_projects[project]['PF_YieldQ30'][i])*100/float( stats_projects[project]['PF_Yield'][i]),'.3f')
+            except:
+                project_lane['biggerQ30'] = '0'
+            try:
+                project_lane['meanQuality'] = format(float(stats_projects[project]['PF_QualityScore'][i])/float(stats_projects[project]['PF_Yield'][i]),'.3f')
+            except:
+                project_lane['meanQuality'] = '0' 
 
             if project == 'all' or project == 'default':
                 project_lane['project_id'] = None
@@ -804,8 +819,10 @@ def process_samples_projects(stats_projects, run_object_name ):
             project_sample_data['barcodeName'] = stats_projects[project][sample]['barcodeName']
             perfect_barcode = int(stats_projects[project][sample] ['PerfectBarcodeCount'])
             project_sample_data['pfClusters'] =  '{0:,}'.format(perfect_barcode)
-            project_sample_data['percentInProject'] = format (float(perfect_barcode) *100 /total_perfect_barcode_count,'.2f')
-
+            try:
+            	project_sample_data['percentInProject'] = format (float(perfect_barcode) *100 /total_perfect_barcode_count,'.2f')
+            except:
+                project_sample_data['percentInProject'] = '0'
             project_sample_data['yieldMb'] = '{0:,}'.format(round(float(stats_projects[project][sample] ['PF_Yield'])*M_BASE))
             if stats_projects[project][sample] ['PF_Yield'] > 0:
                 bigger_q30=format(float(stats_projects[project][sample]['PF_YieldQ30'])*100/float( stats_projects[project][sample]['PF_Yield']),'.3f')
