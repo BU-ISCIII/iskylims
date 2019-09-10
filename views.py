@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ## import django
 import statistics
-import re, os, shutil
+import re, os, shutil, json
 import datetime, time
 from .fusioncharts.fusioncharts import FusionCharts
 
@@ -27,10 +27,15 @@ from .utils.generic_functions import *
 from .utils.library_kits import *
 from .utils.fetching_information import *
 from .utils.testing_wetlab_configuration import *
+from .utils.sample_functions import *
+from .utils.library_preparation import *
+from .utils.pool_preparation import *
 #from .utils.samplesheet_checks import *
 #from .utils.parsing_run_info import get_machine_lanes
 #from .utils.wetlab_misc_utilities import normalized_data
-
+from iSkyLIMS_core.utils.handling_samples import *
+from iSkyLIMS_core.utils.handling_protocols import *
+from iSkyLIMS_core.utils.handling_comercial_kits import *
 
 def index(request):
     #
@@ -662,9 +667,8 @@ def search_run (request):
         #If only 1 run mathes the user conditions, then get the project information
 
         if (len(runs_found)== 1) :
-            r_data_display= get_information_run(runs_found[0])
-            #r_data_display= get_information_run(runs_found[0],runs_found[0].id)
-            return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_one_run': r_data_display })
+            return redirect ('display_run', run_id=runs_found[0].pk)
+
         else:
             ## collect the list of run that matches the run date
             run_list=[]
@@ -747,7 +751,7 @@ def search_project (request):
         run_state = request.POST['runstate']
         run_process_ids = []
         # check that some values are in the request if not return the form
-        if project_name == '' and start_date == '' and end_date == '' and user_name =='' and platform_name == '':
+        if project_name == '' and start_date == '' and end_date == '' and user_name =='' and platform_name == '' and run_state == '':
             available_platforms = get_available_platform()
             available_states = get_available_run_state()
             return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'platforms': available_platforms,'run_states':available_states})
@@ -919,7 +923,7 @@ def search_sample (request):
 
         # check that some values are in the request if not return the form
         if user_name == '' and start_date == '' and end_date == '' and sample_name =='':
-            return render(request, 'iSkyLIMS_wetlab/SearchNextSample.html')
+            return render(request, 'iSkyLIMS_wetlab/SearchSample.html')
 
         if user_name !=''  and len(user_name) <5 :
              return render (request,'iSkyLIMS_wetlab/error_page.html',
@@ -3138,3 +3142,537 @@ def configuration_test (request):
 
     else:
         return render(request,'iSkyLIMS_wetlab/ConfigurationTest.html')
+
+@login_required
+def create_protocol (request):
+    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+    if request.user.is_authenticated:
+        if not is_wetlab_manager(request):
+            return render (
+                request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':['You do not have enough privileges to see this page ',
+                            'Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+    # get the list of defined protocols
+    defined_protocols, other_protocol_list = display_available_protocols ()
+    defined_protocol_types = display_protocol_types ()
+
+
+    if request.method == 'POST' and request.POST['action'] == 'addNewProtocol':
+        import pdb; pdb.set_trace()
+        new_protocol = request.POST['newProtocolName']
+        protocol_type = request.POST['protocolType']
+        description = request.POST['description']
+
+        if check_if_protocol_exists (new_protocol):
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',{'content':['Protocol Name ', new_protocol,
+                            'Already exists.']})
+        new_protocol_id = create_new_protocol(new_protocol, protocol_type, description)
+
+        return render(request, 'iSkyLIMS_wetlab/createProtocol.html',{'defined_protocols': defined_protocols,
+                            'defined_protocol_types':defined_protocol_types, 'new_defined_protocol': new_protocol,
+                            'new_protocol_id':new_protocol_id})
+
+    return render(request, 'iSkyLIMS_wetlab/createProtocol.html',{'defined_protocols': defined_protocols,
+                        'defined_protocol_types':defined_protocol_types, 'other_protocol_list' :other_protocol_list})
+
+@login_required
+def display_protocol (request, protocol_id):
+    if not is_wetlab_manager(request):
+        return render (request,'iSkyLIMS_wetlab/error_page.html',
+            {'content':['You do not have enough privileges to see this page ',
+                        'Contact with your administrator .']})
+    #import pdb; pdb.set_trace()
+    if not check_if_protocol_exists(protocol_id):
+        return render (request,'iSkyLIMS_wetlab/error_page.html',
+            {'content':['The protocol that you are trying to get ',
+                        'DOES NOT exists .']})
+    protocol_data = get_all_protocol_info (protocol_id)
+    '''
+    na_params = []
+    lib_params = []
+    protocol_obj = ProtocolInLab.objects.get(pk= protocol_id)
+    if ProtocolParameters.objects.filter(protocol_id = protocol_obj).exists():
+
+        nucleic_params = NAProtocolParameters.objects.filter(protocol_id = protocol_obj).order_by('parameterOrder')
+        for nucleic_param in nucleic_params:
+            na_params.append(nucleic_param.get_na_params().split(';'))
+    if LibraryProtocolParameters.objects.filter(protocol_id = protocol_obj).exists():
+
+        library_params = LibraryProtocolParameters.objects.filter(protocol_id = protocol_obj)
+        for library_param in library_params:
+            lib_params.append(library_param.get_lib_params().split(';'))
+    protocol_data['na_params'] = na_params
+    protocol_data['lib_params'] = lib_params
+    protocol_data['heading'] = ['Parameter Name', 'Order', 'Used', 'Min Value', 'Max Value', 'Description']
+    '''
+
+    return render(request, 'iSkyLIMS_wetlab/displayProtocol.html', {'protocol_data': protocol_data})
+
+
+@login_required
+def define_protocol_parameters (request, protocol_id):
+
+    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+    if request.user.is_authenticated:
+        if not is_wetlab_manager(request):
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':['You do not have enough privileges to see this page ',
+                            'Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+
+    if request.method == 'POST' and request.POST['action'] == 'define_protocol_parameters':
+
+        recorded_prot_parameters = set_protocol_parameters(request)
+
+        return render(request, 'iSkyLIMS_wetlab/defineProtocolParameters.html', {'recorded_prot_parameters':recorded_prot_parameters})
+
+    else:
+        if not check_if_protocol_exists(protocol_id):
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',
+                        {'content':['The requested Protocol does not exist',
+                            'Create the protocol name before assigning custom protocol parameters.']})
+
+
+        prot_parameters = define_table_for_prot_parameters(protocol_id)
+        return render(request, 'iSkyLIMS_wetlab/defineProtocolParameters.html', {'prot_parameters':prot_parameters})
+
+@login_required
+def add_commercial_kit (request):
+
+    return render(request, 'iSkyLIMS_wetlab/AddCommercialKit.html')
+
+@login_required
+def pending_to_update(request):
+    pending = {}
+    # get the samples in defined state
+    pending['defined'] = get_samples_in_defined_state()
+    pending['extract_molecule'] = get_samples_in_extracted_molecule_state()
+    pending['add_library_preparation'] = get_samples_in_add_library_preparation_state()
+    pending['add_lib_prep_parameters'] = get_samples_add_lib_prep_parameters()
+    # get the molecules  in  defined state
+    #pending['molecules'] = get_molecules_in_state('Defined')
+    # get the library preparation in defined state
+
+    #import pdb; pdb.set_trace()
+    return render(request, 'iSkyLIMS_wetlab/pendingToUpdate.html', {'pending':pending})
+
+
+@login_required
+def record_samples(request):
+    if request.method == 'POST' and request.POST['action'] == 'recordsample':
+        sample_recorded = analyze_input_samples (request)
+        # if no samples are in any of the options, displays the inital page
+        if (not 'valid_samples' in sample_recorded and not 'invalid_samples' in sample_recorded) :
+            sample_information = prepare_sample_input_table()
+            return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
+        else :
+            return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
+    elif request.method == 'POST' and request.POST['action'] == 'reprocessSamples':
+        samples = {}
+        reprocess_s_ids = request.POST['invalidSamplesID'].split(',')
+        for s_id in reprocess_s_ids:
+            samples[s_id] = request.POST[s_id]
+        reprocess_result, require_to_update = reprocess_samples(samples)
+        if len(require_to_update) > 0 :
+            for key, value in require_to_update.items():
+                if value == 'newLibPreparation':
+                    if not libraryPreparation.objects.filter(sample_id__pk__exact = key):
+                        continue
+                    lib_prep_obj = libraryPreparation.objects.get(sample_id__pk__exact = key)
+                    lib_prep_obj.set_state('Registered')
+                    lib_prep_obj.set_increase_reuse()
+                elif value == 'newPool':
+                    pass
+                else:
+                    continue
+
+        return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'reprocess_result':reprocess_result})
+    else:
+        sample_information = prepare_sample_input_table()
+        return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
+
+@login_required
+def display_libSample (request, sample_id):
+    sample_information = get_all_sample_information(sample_id)
+    if 'Error' in sample_information:
+        return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No Sample was found']})
+    sample_information.update(get_all_library_information(sample_id))
+
+    return render(request, 'iSkyLIMS_wetlab/displayLibSample.html',{'sample_information':sample_information})
+
+
+@login_required
+def search_lib_samples (request):
+    if  request.method == 'POST' and request.POST['action'] == 'searchsample':
+        sample_name=request.POST['samplename']
+        start_date=request.POST['startdate']
+        end_date=request.POST['enddate']
+        user_name = request.POST['username']
+        sample_state =request.POST['sampleState']
+
+        # check that some values are in the request if not return the form
+        if user_name == '' and start_date == '' and end_date == '' and sample_name =='' and sample_state == '':
+            search_data = {}
+            search_data['s_state'] = get_sample_states()
+            return render(request, 'iSkyLIMS_wetlab/searchLibSample.html',{'search_data':search_data})
+
+        if user_name !=''  and len(user_name) <5 :
+            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The user name must contains at least 5 caracters ',
+                    'ADVICE:', 'write the full user name to get a better match']})
+        ### check the right format of start and end date
+        if start_date != '' and not check_valid_date_format(start_date):
+            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The format for the "Start Date Search" Field is incorrect ',
+                    'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
+        if end_date != '' and not check_valid_date_format(end_date):
+            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
+                     'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
+        ### Get projects when sample name is not empty
+
+        sample_list = search_samples(sample_name, user_name, sample_state, start_date, end_date )
+
+        if len(sample_list) == 0:
+            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No sample found with your match conditions ']})
+        elif len(sample_list) == 1:
+
+            return redirect ('display_libSample' , sample_id = sample_list[0])
+        else:
+            return render(request, 'iSkyLIMS_wetlab/searchLibSample.html',{'sample_list':sample_list})
+
+    else:
+        search_data = {}
+        search_data['s_state'] = get_sample_states()
+        return render(request, 'iSkyLIMS_wetlab/searchLibSample.html',{'search_data':search_data})
+
+@login_required
+def set_Molecule_values(request):
+    if request.method == 'POST' and request.POST['action'] == 'continueWithMolecule':
+        if request.POST['samples'] == '':
+            return render (request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':['There was no sample selected ']})
+        if  'samples_in_list' in request.POST:
+            samples = request.POST.getlist('samples')
+        else:
+            samples = request.POST['samples'].split(',')
+
+        molecule_protocol = get_table_record_molecule (samples)
+        if 'ERROR' in molecule_protocol :
+            return render (request, 'iSkyLIMS_wetlab/error_page.html',
+                {'content':['There was no valid sample selected ']})
+        molecule_protocol['protocol_type'] = list(molecule_protocol['protocols_dict'].keys())
+        molecule_protocol['protocol_filter_selection'] = []
+        for key, value in molecule_protocol['protocols_dict'].items():
+            molecule_protocol['protocol_filter_selection'].append([key, value])
+        molecule_protocol['samples'] = ','.join(samples)
+
+        return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'molecule_protocol':molecule_protocol})
+
+    elif request.method == 'POST' and request.POST['action'] == 'updateMoleculeProtocol':
+
+        molecule_recorded = record_molecules (request)
+
+        return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'molecule_recorded':molecule_recorded})
+
+    elif request.method == 'POST' and request.POST['action'] == 'displayMoleculeParameters':
+        if  'samples_in_list' in request.POST:
+            molecules = request.POST.getlist('molecules')
+        else:
+            molecules = request.POST['molecules'].split(',')
+        show_molecule_parameters = display_molecule_protocol_parameters(molecules)
+        return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'show_molecule_parameters':show_molecule_parameters})
+
+    elif request.method == 'POST' and request.POST['action'] == 'addMoleculeParameters':
+        added_molecule_protocol_parameters = add_molecule_protocol_parameters(request)
+        return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'added_molecule_protocol_parameters':added_molecule_protocol_parameters})
+    else:
+        register_user = request.user.username
+        display_list = get_defined_samples (register_user)
+        '''
+        s_list = []
+        all_sample_list = []
+        display_list = {}
+
+        for key in grouped_samples_obj.keys():
+            s_list = []
+            for sample in grouped_samples_obj[key]:
+                s_info = sample.get_sample_definition_information().split(';')
+                s_info.append(str(sample.pk))
+                s_list.append(s_info)
+            all_sample_list.append(s_list)
+
+        '''
+        #display_list['list_of_samples'] = all_sample_list
+        #display_list['heading'] = ['Registered date ','Sample Code ID', 'Type', 'DNA/RNA', 'Protocol', 'To be included']
+        #import pdb; pdb.set_trace()
+        return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'display_list': display_list})
+    return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{})
+
+@login_required
+def set_library_preparation(request):
+    if request.method == 'POST' and request.POST['action'] == 'displayLibraryPreparation':
+        if not 'molecules' in request.POST :
+            return render (request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':['There was no molecule selected ']})
+        if  'molecules_in_list' in request.POST:
+            molecules = request.POST.getlist('molecules')
+        else:
+            molecules = request.POST['molecules'].split(',')
+        display_lib_prep = {}
+        display_lib_prep['data'] = []
+        defined_protocols_lib = get_protocol_lib()
+
+        if len(defined_protocols_lib) == 0 :
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',
+                        {'content':['Protocols for library preparation is a pre-requisite to defined the settings for library preparations',
+                            'Define them and then return to continue with this step.']})
+        display_lib_prep ['protocol_lib'] = defined_protocols_lib
+        display_lib_prep ['heading'] = HEADING_FOR_CREATION_LIBRARY_PREPARATION
+        display_lib_prep ['heading_in_excel'] = ','.join(HEADING_FOR_CREATION_LIBRARY_PREPARATION)
+        length_heading = len(HEADING_FOR_CREATION_LIBRARY_PREPARATION)
+
+        for molecule in molecules :
+            data = ['']*length_heading
+            molecule_obj = MoleculePreparation.objects.get(pk = int(molecule))
+            data[0] = molecule_obj.get_molecule_code_id()
+            display_lib_prep['data'].append(data)
+        display_lib_prep['molecules'] = molecules
+        return render (request, 'iSkyLIMS_wetlab/setLibraryPreparation.html', {'display_lib_prep':display_lib_prep})
+
+    elif request.method == 'POST' and request.POST['action'] == 'importsamplesheet':
+        protocol = request.POST['lib_protocols']
+        single_paired = request.POST['singlePairedEnd']
+        read_length = request.POST['readlength']
+        extension_file = '.csv'
+        stored_file , file_name = store_user_input_file(request.FILES['importsamplesheet'], extension_file)
+
+        library_prep_workflow = get_library_name(stored_file)
+        index_adapters = get_indexes_adapters (stored_file)
+        samples_dict = get_samples_in_sample_sheet(stored_file)
+        # store user sample sheet in database
+        user_sample_sheet_data = {}
+        stored_lib_prep = {}
+        stored_lib_prep['data'] = []
+        if IndexLibraryKit.objects.filter(indexLibraryName__exact = index_adapters).exists():
+            indexLibraryKit_id = IndexLibraryKit.objects.get(indexLibraryName__exact = index_adapters)
+        else:
+            indexLibraryKit_id = None
+        register_user_obj = User.objects.get(username__exact = request.user.username)
+        user_sample_sheet_data['registerUser'] = register_user_obj
+        protocol_obj = Protocols.objects.get(name__exact = protocol)
+        user_sample_sheet_data['indexLibraryKit_id'] = indexLibraryKit_id
+
+        user_sample_sheet_data['sampleSheet'] = file_name
+        new_user_s_sheet_obj = libPreparationUserSampleSheet.objects.create_lib_prep_user_sample_sheet(user_sample_sheet_data)
+
+        extracted_data_list = extract_sample_data (samples_dict)
+        parameter_heading = get_protocol_parameters(protocol_obj)
+        length_heading = len(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS) + len (parameter_heading)
+        stored_lib_prep['heading'] = HEADING_FIX_FOR_ADDING_LIB_PARAMETERS
+        stored_lib_prep['par_heading'] = parameter_heading
+        stored_lib_prep['heading_in_excel'] = ','.join(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS + parameter_heading)
+        lib_prep_id = []
+        samples_not_available = []
+        stored_lib_prep['reagents_kits'] = get_user_comercial_kits(register_user_obj, protocol_obj)
+        for extracted_data in extracted_data_list :
+            #import pdb; pdb.set_trace()
+            if Samples.objects.filter(sampleName__exact = extracted_data['sample_id'], sampleUser = register_user_obj,
+                            sampleState__sampleStateName = 'Add Library preparation').exists():
+
+                sample_obj = Samples.objects.get(sampleName__exact = extracted_data['sample_id'])
+                extracted_data['sample_id'] = sample_obj
+                #samples_id.append(sample_obj.get_sample_id())
+
+                extracted_data['protocol_obj'] = protocol_obj
+                molecule_obj = MoleculePreparation.objects.filter(sample = sample_obj).last()
+                if libraryPreparation.objects.filter(sample_id = sample_obj).exists():
+                    last_lib_prep_code_id = libraryPreparation.objects.filter(sample_id = sample_obj).last().get_lib_prep_code()
+                    split_code = re.search('(.*_)(\d+)$',last_lib_prep_code_id)
+                    index_val = int(split_code.group(2))
+                    new_index = str(index_val +1).zfill(2)
+                    lib_prep_code_id = split_code.group(1) + new_index
+                else:
+                    lib_prep_code_id = molecule_obj.get_molecule_code_id() + '_LIB_01'
+                extracted_data['lib_code_id'] = lib_prep_code_id
+                # Create the new library preparation object
+                new_library_preparation = libraryPreparation.objects.create_lib_preparation(extracted_data, new_user_s_sheet_obj, register_user_obj,
+                                        molecule_obj,  single_paired , read_length)
+                lib_prep_id.append(new_library_preparation.get_id())
+                data = ['']*length_heading
+                data[0] = extracted_data['sample_id']
+                data[1] = lib_prep_code_id
+                stored_lib_prep['data'].append(data)
+
+            else:
+                samples_not_available.append(extracted_data['sample_id'])
+
+        stored_lib_prep['lib_prep_id'] = ','.join(lib_prep_id)
+        stored_lib_prep['samples_not_available'] = samples_not_available
+        #import pdb; pdb.set_trace()
+        return render (request, 'iSkyLIMS_wetlab/setLibraryPreparation.html', {'stored_lib_prep':stored_lib_prep})
+
+    elif request.method == 'POST' and request.POST['action'] == 'addProtocolParamters':
+
+        if  'lib_prep_in_list' in request.POST:
+            lib_prep_ids = request.POST.getlist('lib_prep_id')
+            if len('lib_prep_in_list') == 1:
+                lib_prep_ids = list(request.POST['lib_prep_id'])
+        else:
+            lib_prep_ids = request.POST['lib_prep_id'].split(',')
+        stored_lib_prep ={}
+        stored_lib_prep['data'] =[]
+        protocol_obj = libraryPreparation.objects.get(pk = lib_prep_ids[0]).get_protocol_obj()
+        parameter_heading = get_protocol_parameters(protocol_obj)
+        length_heading = len(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS) + len (parameter_heading)
+        for lib_id in lib_prep_ids:
+            library_preparation_obj = libraryPreparation.objects.get(pk = lib_id)
+            data = ['']*length_heading
+            data[0] = library_preparation_obj.get_sample_name()
+            data[1] = library_preparation_obj.get_lib_prep_code()
+            stored_lib_prep['data'].append(data)
+        stored_lib_prep['lib_prep_id'] = ','.join(lib_prep_ids)
+        stored_lib_prep['heading'] = HEADING_FIX_FOR_ADDING_LIB_PARAMETERS
+        stored_lib_prep['par_heading'] = parameter_heading
+        stored_lib_prep['heading_in_excel'] = ','.join(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS + parameter_heading)
+        register_user_obj = User.objects.get(username__exact = request.user.username)
+        stored_lib_prep['reagents_kits'] = get_user_comercial_kits(register_user_obj, protocol_obj)
+
+        return render (request, 'iSkyLIMS_wetlab/setLibraryPreparation.html', {'stored_lib_prep':stored_lib_prep})
+
+    elif request.method == 'POST' and request.POST['action'] == 'recordProtocolParamters':
+
+
+        stored_params = analyze_input_param_values (request)
+        '''
+        if  'samples_in_list' in request.POST:
+            samples = request.POST.getlist('samples')
+            if len(samples) == 0:
+                samples = list(request.POST['samples'])
+        else:
+            samples = request.POST['samples'].split(',')
+        stored_lib_prep = {}
+        stored_lib_prep['data'] = []
+        length_heading = len(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS)
+        stored_lib_prep['heading'] = HEADING_FIX_FOR_ADDING_LIB_PARAMETERS
+        stored_lib_prep['heading_in_excel'] = ','.join(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS)
+
+        for sample in samples:
+            if not libraryPreparation.objects.filter(pk__exact = int(sample)).exists():
+                continue
+            lib_prep_obj = libraryPreparation.objects.get(pk__exact = int(sample))
+            data = ['']*length_heading
+            data[0] = lib_prep_obj.get_lib_prep_code()
+            stored_lib_prep['data'].append(data)
+        '''
+        return render (request, 'iSkyLIMS_wetlab/setLibraryPreparation.html', {'stored_params':stored_params})
+
+    elif request.method == 'POST' and request.POST['action'] == 'addLibraryProtocol':
+        if  'molecules_in_list' in request.POST:
+            molecules = request.POST.getlist('molecules')
+        else:
+            molecules = request.POST['molecules'].split(',')
+        prot_lib_json_data = json.loads(request.POST['protocol_data'])
+        heading_in_excel = request.POST['heading_in_excel'].split(',')
+
+
+        for i in range(len(molecules)) :
+            valid_molecules = []
+            protocol_name = prot_lib_json_data[i][heading_in_excel.index('Protocol used')]
+            if protocol_name == '':
+                continue
+            if not Protocols.objects.filter(name__exact = protocol_name).exists():
+                continue
+            protocol_obj = Protocols.objects.get(name__exact = protocol_name)
+            if not ProtocolLibraryParameters.objects.filter(protocol_id = protocol_obj).exists():
+                continue
+            valid_molecules.append(molecules[i])
+            prot_lib_parameters = ProtocolLibraryParameters.objects.filter(protocol_id = protocol_obj)
+
+
+@login_required
+def set_library_values (request):
+    fix_headings = ['DNA Code ID', 'Protocol', 'Extraction Kit']
+    import pdb; pdb.set_trace()
+    if request.method == 'POST' and request.POST['action'] == 'continueWithDNA':
+        lib_preparation_data = {}
+    else:
+        register_user = request.user.username
+        grouped_samples_obj = get_samples_for_library_definition (register_user)
+        s_list = []
+        all_sample_list = []
+        display_list = {}
+
+        for key in grouped_samples_obj.keys():
+            s_list = []
+            for sample in grouped_samples_obj[key]:
+                s_info = sample.get_sample_definition_information().split(';')
+                s_info.append(str(sample.pk))
+                s_list.append(s_info)
+            all_sample_list.append(s_list)
+
+        display_list['lib_kits'] = get_available_lib_kit(register_user)
+
+        display_list['list_of_samples'] = all_sample_list
+        display_list['heading'] = ['Registered date ','Sample Code ID', 'Type', 'DNA/RNA', 'Protocol', 'Library Kit']
+        #import pdb; pdb.set_trace()
+        return render(request, 'iSkyLIMS_wetlab/setLibraryValues.html',{'display_list': display_list})
+    #import pdb; pdb.set_trace()
+
+
+
+@login_required
+def select_samples_for_run (request):
+    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+    if request.user.is_authenticated:
+        if not is_wetlab_manager(request):
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':['You do not have enough privileges to see this page ',
+                            'Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+    if request.method == 'POST' and request.POST['action'] == 'continueWithRun':
+
+        if  'lib_prep_in_list' in request.POST:
+            lib_prep_ids = request.POST.getlist('lib_prep_id')
+            if len('lib_prep_in_list') == 0:
+                lib_prep_ids = list(request.POST['lib_prep_id'])
+        else:
+            lib_prep_ids = request.POST['lib_prep_id'].split(',')
+
+        compatible_in_run = check_index_compatible(lib_prep_ids)
+
+        if  compatible_in_run == True:
+            information_for_selected_run = get_info_to_create_pool(lib_prep_ids)
+            return  render(request, 'iSkyLIMS_wetlab/selectSamplesForRun.html',{'information_for_selected_run': information_for_selected_run})
+        else:
+            return  render(request, 'iSkyLIMS_wetlab/selectSamplesForRun.html',{'incompatible_samples': compatible_in_run})
+
+    elif request.method == 'POST' and request.POST['action'] == 'createRun':
+        if  'lib_prep_in_list' in request.POST:
+            lib_prep_ids = request.POST.getlist('lib_prep_id')
+            if len('lib_prep_in_list') == 0:
+                lib_prep_ids = list(request.POST['lib_prep_id'])
+        else:
+            lib_prep_ids = request.POST['lib_prep_id'].split(',')
+        exp_name = request.POST['experimentName']
+        exp_name = request.POST['experimentName']
+        analyze_input_pool(request.POST, request.user)
+
+        return  render(request, 'iSkyLIMS_wetlab/selectSamplesForRun.html',{'incompatible_index': compatible_in_run})
+    else:
+        display_list = {}
+        display_list['data'] = []
+
+        if libraryPreparation.objects.filter(libPrepState__libPrepState = 'Updated parameters').exists():
+
+            lib_preparations =  libraryPreparation.objects.filter(libPrepState__libPrepState = 'Updated parameters').order_by('libPrepCodeID')
+            for lib_prep in lib_preparations :
+                display_list['data'].append( lib_prep.get_info_for_run())
+
+            display_list['heading'] = HEADING_FOR_SELECTED_ON_RUN
+
+        return  render(request, 'iSkyLIMS_wetlab/selectSamplesForRun.html',{'display_list': display_list})

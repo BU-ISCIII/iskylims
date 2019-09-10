@@ -9,6 +9,7 @@ from django_utils.models import Center
 from django.utils.translation import ugettext_lazy as _
 
 from .  import wetlab_config
+from iSkyLIMS_core.models import MoleculePreparation , Samples , ProtocolType, Protocols, ProtocolParameters, UserComercialKits
 
 class RunErrors (models.Model):
     errorCode = models.CharField(max_length=10)
@@ -25,7 +26,7 @@ class RunStates (models.Model):
 
 class RunProcess(models.Model):
     runName = models.CharField(max_length=45)
-    sampleSheet = models.FileField(upload_to='wetlab/SampleSheets')
+    sampleSheet = models.FileField(upload_to = wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY)
     generatedat = models.DateTimeField(auto_now_add=True)
     run_date = models.DateField(auto_now = False, null=True)
     run_finish_date = models.DateTimeField(auto_now = False, null=True, blank=True)
@@ -183,17 +184,9 @@ class BaseSpaceLibraryName (models.Model):
     #indexNumber = models.CharField(max_length = 25)
     generatedat = models.DateTimeField(auto_now_add=True)
 
-## To be include in version 2.0
-#class LibKitInformation (models.Model):
-#    librarykitId = models.ForeignKey(
-#                LibraryKit,
-#                on_delete= models.CASCADE)
-#    batch_id = models.CharField(max_length= 255)
-#    provider = models.CharField(max_length =150)
-#    sampleNumber = models.CharField(max_length = 25)
-#    indexNumber = models.CharField(max_length = 25)
-#    expirationDate = models.DateField(auto_now_add=False)
-#    generatedat = models.DateTimeField(auto_now_add=True, null=True)
+    def get_bs_lib_name(self):
+        return '%s' %(self.libraryName)
+
 
 class IndexLibraryKit (models.Model):
     indexLibraryName = models.CharField(max_length=125)
@@ -236,7 +229,7 @@ class IndexLibraryValues (models.Model):
 class Projects(models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
-            on_delete=models.CASCADE)
+            on_delete=models.CASCADE, null = True) # added null for new lab process functionality
     user_id= models.ForeignKey(User,on_delete=models.CASCADE, null = True)
     LibraryKit_id = models.ForeignKey(
             BaseSpaceLibraryName,
@@ -246,6 +239,9 @@ class Projects(models.Model):
     baseSpaceFile = models.CharField(max_length=255)
     generatedat = models.DateTimeField(auto_now_add=True)
     project_run_date = models.DateField(auto_now = False, null=True)
+    #sampleSheet = models.FileField(upload_to = wetlab_config.SAMPLE_SHEET_CREATED_ON_LAB, null = True) # added null for new lab process functionality
+    #pairedEnd  = models.BooleanField(null = True, blank = True)
+    #read_length = models.CharField(max_length = 10)
 
     def __str__(self):
         return '%s' %(self.projectName)
@@ -698,3 +694,243 @@ class SamplesInProject (models.Model):
         return '%s' %(self.qualityQ30)
 
     objects = SamplesInProjectManager()
+
+
+################################################
+################################################
+
+# New objets for handling library preparation
+################################################
+
+class libPreparationUserSampleSheetManager (models.Manager):
+
+    def create_lib_prep_user_sample_sheet (self, user_sample_sheet_data):
+        new_lib_prep_user_sample_sheet = self.create(registerUser = user_sample_sheet_data['registerUser'],
+                    indexLibraryKit_id  = user_sample_sheet_data['indexLibraryKit_id'],
+                    sampleSheet = user_sample_sheet_data['sampleSheet'])
+        return new_lib_prep_user_sample_sheet
+
+class libPreparationUserSampleSheet (models.Model):
+    registerUser = models.ForeignKey(
+            User,
+            on_delete=models.CASCADE)
+
+    indexLibraryKit_id = models.ForeignKey(
+                IndexLibraryKit,
+                on_delete= models.CASCADE, null = True)
+
+    sampleSheet = models.FileField(upload_to = wetlab_config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY)
+    generatedat = models.DateTimeField(auto_now_add=True, null=True)
+
+    def __str__ (self):
+        return '%s' %(self.sampleSheet)
+
+    objects = libPreparationUserSampleSheetManager()
+
+class LibraryPoolRunManager (models.Manager):
+    def create_lib_pool_run (self, pool_run_data):
+        new_library_pool = self.create(registerUser = pool_run_data['registerUser']  , poolName = pool_run_data['poolName'],
+                    sampleSheet = pool_run_data['sampleSheet'] , experiment_name = pool_run_data['experiment_name'] ,
+                    plateName =  pool_run_data['plateName'] ,  containerID = pool_run_data['containerID'],
+                    libUsedInBaseSpace = pool_run_data['libUsedInBaseSpace'])
+
+class LibraryPoolRun (models.Model):
+    registerUser = models.ForeignKey(
+            User,
+            on_delete=models.CASCADE)
+    poolName = models.CharField(max_length=50)
+    sampleSheet = models.FileField(upload_to = wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY)
+    experiment_name = models.CharField(max_length=50)
+    plateName = models.CharField(max_length=50)
+    containerID = models.CharField(max_length=50, null =True, blank = True)
+    libUsedInBaseSpace = models.CharField(max_length=50)
+    poolCodeId = models.CharField(max_length=50, blank = True)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+
+    objects = LibraryPoolRunManager()
+
+
+class StatesForLibraryPreparation (models.Model):
+    libPrepState = models.CharField(max_length=50)
+
+    def __str__ (self):
+        return '%s' %(self.libPrepState)
+
+    def get_lib_state(self):
+        return '%s' %(self.libPrepState)
+
+
+class libraryPreparationManager(models.Manager):
+    def create_lib_preparation (self, lib_prep_data, user_sample_obj, reg_user ,molecule_obj,  single_paired , read_length):
+        #import pdb; pdb.set_trace()
+        lib_state = StatesForLibraryPreparation.objects.get(libPrepState =  'Registered')
+        new_lib_prep = self.create(registerUser = reg_user, molecule_id = molecule_obj, sample_id = lib_prep_data['sample_id'],
+            protocol_id =   lib_prep_data['protocol_obj'], user_sample_sheet = user_sample_obj, userSampleID = lib_prep_data['userSampleID'],
+            projectInSampleSheet = lib_prep_data['projectInSampleSheet'], samplePlate = lib_prep_data['samplePlate'],
+            sampleWell = lib_prep_data['sampleWell'], i7IndexID = lib_prep_data['i7IndexID'],
+            i7Index = lib_prep_data['i7Index'], i5IndexID = lib_prep_data['i5IndexID'],
+            i5Index = lib_prep_data['i5Index'], singlePairedEnd = single_paired, lengthRead = read_length,
+            libPrepCodeID = lib_prep_data['lib_code_id'], libPrepState = lib_state)
+
+        return new_lib_prep
+
+class libraryPreparation (models.Model):
+    registerUser = models.ForeignKey(
+            User,
+            on_delete=models.CASCADE)
+    molecule_id = models.ForeignKey(
+                MoleculePreparation,
+                on_delete= models.CASCADE)
+    sample_id = models.ForeignKey(
+                Samples,
+                on_delete= models.CASCADE, null = True)
+    protocol_id = models.ForeignKey(
+                Protocols,
+                on_delete= models.CASCADE, null = True)
+    libPrepState = models.ForeignKey(
+                StatesForLibraryPreparation,
+                on_delete= models.CASCADE, null = True)
+    user_reagentKit_id = models.ForeignKey(
+                UserComercialKits,
+                on_delete= models.CASCADE, null = True, blank = True)
+    user_sample_sheet = models.ForeignKey(
+                libPreparationUserSampleSheet,
+                on_delete= models.CASCADE, null = True)
+
+    libPrepCodeID = models.CharField(max_length=255)
+    userSampleID = models.CharField(max_length =20)
+    projectInSampleSheet = models.CharField(max_length =50)
+    samplePlate = models.CharField(max_length =50)
+    sampleWell = models.CharField(max_length =20)
+    i7IndexID = models.CharField(max_length =16)
+    i7Index = models.CharField(max_length =16)
+    i5IndexID = models.CharField(max_length =16)
+    i5Index = models.CharField(max_length =16)
+
+    singlePairedEnd  = models.CharField(max_length =20)
+    lengthRead = models.CharField(max_length =5)
+    numberOfReused = models.IntegerField(default=0)
+    uniqueID = models.CharField(max_length =10, null = True, blank = True)
+
+
+
+
+    def __str__ (self):
+        return '%s' %(self.sample_id)
+
+    def get_id (self):
+        return '%s' %(self.pk)
+
+    def get_info_for_display(self):
+        lib_info = []
+        lib_info.append(self.libPrepCodeID)
+        lib_info.append(self.molecule_id.get_molecule_code_id())
+        lib_info.append(self.libPrepState.libPrepState)
+        lib_info.append(self.protocol_id.get_name())
+        lib_info.append(self.projectInSampleSheet)
+        lib_info.append(self.i7IndexID)
+        lib_info.append(self.i5IndexID)
+        lib_info.append(self.singlePairedEnd)
+        lib_info.append(self.lengthRead)
+        lib_info.append(self.numberOfReused)
+        return lib_info
+
+    def get_info_for_run(self):
+        if self.user_reagentKit_id == None :
+            reagent_kit = ''
+        else:
+            reagent_kit = self.user_reagentKit_id.get_comercial_kit()
+        lib_info = []
+        lib_info.append(self.libPrepCodeID)
+        lib_info.append(self.sample_id.get_sample_name())
+        lib_info.append(reagent_kit)
+        lib_info.append(self.i7IndexID)
+        lib_info.append(self.i5IndexID)
+        lib_info.append(self.pk)
+        return lib_info
+
+    def get_info_for_pool (self):
+        if self.registerUser.username == None:
+            user_name = ''
+        else :
+            user_name = self.registerUser.username
+        lib_info = []
+        lib_info.append(self.uniqueID)
+        lib_info.append(self.libPrepCodeID)
+        lib_info.append(self.get_sample_name())
+        lib_info.append(self.sampleWell)
+        lib_info.append(self.projectInSampleSheet)
+        lib_info.append(user_name)
+        return lib_info
+
+    def get_indexes (self):
+        if self.i5IndexID == None:
+            i5IndexID = ''
+        else:
+            i5IndexID = self.i5IndexID
+        return '%s_%s' %(self.i7IndexID, i5IndexID )
+
+    def get_lib_prep_code (self):
+        return '%s' %(self.libPrepCodeID)
+
+    def get_protocol_used (self):
+        return '%s'  %(self.protocol_id.get_name())
+
+    def get_reagents_kit_used(self):
+        return '%s' %(self.reagent_id.get_nick_name())
+
+    def get_sample_name(self):
+        return '%s' %(self.sample_id.get_sample_name())
+
+    def get_protocol_obj(self):
+        return self.protocol_id
+
+    def get_sample_obj(self):
+        return self.sample_id
+
+    def get_single_paired (self):
+        return '%s' %(self.singlePairedEnd)
+
+    def get_state(self):
+        return '%s' %(self.libPrepState.libPrepState)
+
+    def set_increase_reuse(self):
+        self.numberOfReused += 1
+        self.save()
+
+    def set_state(self , state_value):
+        self.libPrepState = StatesForLibraryPreparation.objects.get(libPrepState__exact = state_value)
+        self.save()
+
+    def set_reagent_user_kit(self, kit_value):
+        self.user_reagentKit_id = UserComercialKits.objects.get(nickName__exact = kit_value)
+        self.save()
+
+    objects = libraryPreparationManager()
+
+
+class LibParameterValueManager (models.Manager):
+    def create_library_parameter_value (self, parameter_value):
+        new_parameter_data = self.create(parameter_id = parameter_value['parameter_id'],
+                library_id = parameter_value['library_id'],
+                parameterValue = parameter_value['parameterValue'])
+        return new_parameter_data
+
+class LibParameterValue (models.Model):
+    parameter_id = models.ForeignKey(
+                    ProtocolParameters,
+                    on_delete= models.CASCADE)
+    library_id = models.ForeignKey(
+                libraryPreparation,
+                on_delete= models.CASCADE)
+    parameterValue = models.CharField(max_length=255)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__ (self):
+        return '%s' %(self.parameterValue)
+
+    def get_parameter_information (self):
+        return '%s' %(self.parameterValue)
+
+    objects = LibParameterValueManager()

@@ -14,6 +14,26 @@ class AppAdmin(admin.ModelAdmin):
     file_link.allow_tags = True
     file_link.short_description = 'File Download'
 
+class libraryPreparationAdmin (admin.ModelAdmin):
+    list_display = ('registerUser', 'molecule_id', 'sample_id', 'protocol_id', 'libPrepState',
+            'user_sample_sheet', 'libPrepCodeID', 'userSampleID', 'projectInSampleSheet','samplePlate',
+            'sampleWell', 'i7IndexID', 'i7Index', 'i5IndexID', 'i5Index', 'singlePairedEnd', 'lengthRead',
+            'numberOfReused')
+
+class LibParameterValueAdmin (admin.ModelAdmin):
+    list_display = ('parameter_id', 'library_id', 'parameterValue')
+
+
+class RunErrorsAdmin (admin.ModelAdmin):
+    list_display = ('errorCode', 'errorText')
+
+
+class RunStatesAdmin (admin.ModelAdmin):
+    list_display = ('runStateName',)
+'''
+class StatesForSampleAdmin (admin.ModelAdmin):
+    list_display = ('sampleStateName',)
+'''
 class RunningParametersAdmin(admin.ModelAdmin):
     list_display = ('runName_id','RunID','ExperimentName','RunStartDate')
     #import pdb; pdb.set_trace()
@@ -31,17 +51,45 @@ class BaseSpaceLibraryNameAdmin(admin.ModelAdmin):
 class IndexLibraryKitAdmin(admin.ModelAdmin):
     list_display = ('indexLibraryName', 'version', 'plateExtension', 'adapter1', 'adapter2', 'indexLibraryFile','generatedat')
 
-class RunErrorsAdmin (admin.ModelAdmin):
-    list_display = ('errorCode', 'errorText')
-
-
-class RunStatesAdmin (admin.ModelAdmin):
-    list_display = ('runStateName',)
 
 class SamplesInProjectAdmin (admin.ModelAdmin):
     list_display = ('project_id','sampleName','barcodeName','pfClusters','percentInProject','yieldMb','qualityQ30')
 
 
+class StatesForLibraryPreparationAdmin (admin.ModelAdmin):
+    list_display = ('libPrepState',)
+
+
+### New for library preparation
+'''
+class ProtocolInLabAdmin (admin.ModelAdmin):
+    list_display = ('protocolName',)
+
+class LaboratoryAdmin (admin.ModelAdmin):
+    list_display = ['labName' , 'labCoding' , 'labLocation' ]
+'''
+#class LibraryProtocolParametersAdmin (admin.ModelAdmin):
+#    list_display = ('parameterName', 'parameterDescription', 'parameterOrder','parameterUsed','parameterMaxValue', 'parameterMinValue')
+'''
+
+
+class ReagentsCommercialKitsAdmin (admin.ModelAdmin):
+    list_display = ('name', 'protocol_id', 'provider', 'reagentLibraryName','chipLot','usedDate', 'expirationDate')
+
+
+
+
+
+
+
+
+class ProtocolParametersAdmin (admin.ModelAdmin):
+    list_display = ('protocol_id', 'parameterName', 'parameterOrder', 'parameterUsed', 'parameterMinValue', 'parameterMaxValue', 'parameterDescription')
+
+'''
+
+admin.site.register(libraryPreparation, libraryPreparationAdmin)
+admin.site.register(LibParameterValue, LibParameterValueAdmin)
 admin.site.register(RunningParameters , RunningParametersAdmin)
 admin.site.register(RunProcess , RunProcessAdmin)
 admin.site.register(BaseSpaceLibraryName,BaseSpaceLibraryNameAdmin)
@@ -49,4 +97,31 @@ admin.site.register(IndexLibraryKit,IndexLibraryKitAdmin)
 admin.site.register(Projects, ProjectsAdmin)
 admin.site.register(RunErrors, RunErrorsAdmin)
 admin.site.register(RunStates, RunStatesAdmin)
-admin.site.register(SamplesInProject, SamplesInProjectAdmin)
+admin.site.register(StatesForLibraryPreparation, StatesForLibraryPreparationAdmin)
+
+
+
+
+
+'''
+admin.site.register(Laboratory, LaboratoryAdmin)
+#admin.site.register(LibraryProtocolParameters, LibraryProtocolParametersAdmin)
+admin.site.register(NucleotidesComercialKits,NucleotidesComercialKitsAdmin)
+admin.site.register(ReagentsCommercialKits,ReagentsCommercialKitsAdmin)
+
+
+admin.site.register(NAProtocolParameters,NAProtocolParametersAdmin)
+
+admin.site.register(NAProtParamData, NAProtParamDataAdmin)
+admin.site.register(SampleType, SampleTypeAdmin)
+admin.site.register(Species, SpeciesAdmin)
+admin.site.register(StatesForSample, StatesForSampleAdmin)
+
+
+
+### new
+admin.site.register(MoleculeType,MoleculeTypeAdmin)
+admin.site.register(ProtocolType,ProtocolTypeAdmin)
+admin.site.register(Protocols,ProtocolsAdmin)
+admin.site.register(ProtocolParameters,ProtocolParametersAdmin)
+'''

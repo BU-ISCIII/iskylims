@@ -1,0 +1,240 @@
+{% extends 'iSkyLIMS_wetlab/base.html' %}
+{% load static %}
+{% block content %}
+
+{% if display_lib_prep %}
+    <script src="{% static "iSkyLIMS_wetlab/js/jquery/v3.4.1/jquery-3.4.1.min.js" %}" type="text/javascript"></script>
+    <script src="{% static "iSkyLIMS_wetlab/js/jexcel/v3/jexcel.js" %}" type="text/javascript"></script>
+    <script src="{% static "iSkyLIMS_wetlab/js/jsuites/v2/jsuites.js" %}" type="text/javascript"></script>
+
+     <link href="{% static "iSkyLIMS_wetlab/css/jexcel/v3/jexcel.css" %}" rel="stylesheet">
+     <link href="{% static "iSkyLIMS_wetlab/css/jsuites/v2/jsuites.css" %}" rel="stylesheet">
+     <style>
+         .scrolling-wrapper {
+      overflow-x: scroll;
+      white-space: nowrap;
+    }
+     </style>
+
+
+    <div class="row row-space-2 margin-b-4">
+
+        <div class="col-sm-12">
+
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Update the following molecules ID with used protocol to prepare the library.</h3></div>
+
+                <div class="panel-body">
+
+                   <form method="post" enctype="multipart/form-data" name="addLibraryProtocol"  id="addLibraryProtocol" class="form-horizontal well">
+                       {% csrf_token %}
+                       <div class="scrolling-wrapper">
+                       <input type="hidden" name="action" value="addLibraryProtocol"/>
+                       <input type="hidden" name= "molecules" value="{{show_molecule_parameters.molecules}}"/>
+                       <input type="hidden" name= "heading_in_excel" value="{{display_lib_prep.heading_in_excel}}"/>
+
+                       <p></p>
+
+                       <div id="spreadsheet"></div>
+                       <br><br><br><br>
+
+                       <script>
+                           var data = [{% for values in display_lib_prep.data %}
+                               [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                           ];
+
+                           mySpreadsheet = $('#spreadsheet').jexcel({
+                               data:data,
+                               columns: [
+                                    { type: 'text', title:'{{display_lib_prep.heading.0}}', width:180 , readOnly:true },
+                                    { type: 'dropdown', title:'{{display_lib_prep.heading.1}}', width:200 , source :[ {% for value in display_lib_prep.protocol_lib %} '{{value}}', {% endfor %}]},
+                                    { type: 'dropdown', title:'{{display_lib_prep.heading.2}}', width:150 , source :['Single', 'Paired']},
+                                    { type: 'numeric', title:'{{display_lib_prep.heading.3}}', width:100, mask:' #.##' },
+                               ],
+                               allowInsertColumn:false,
+                               allowDeleteColumn:false,
+                               allowRenameColumn:false,
+                               allowInsertRow:false,
+                               allowDeleteRow:false,
+                               tableOverflow:true,
+                               tableHeight:'200px',
+                               csvFileName:'library_preparation_protocol',
+
+                           });
+                       </script>
+
+                       <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                       <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
+                    </div> <!--  end of scrolling  -->
+                    </form>
+                    <script>
+                        $(document).ready(function () {
+                            $("#addLibraryProtocol").submit(function (e) {
+                                //stop submitting the form to see the disabled button effect
+                                // e.preventDefault();
+                                //disable the submit button
+                                var table_data = $('#spreadsheet').jexcel('getData')
+                                var data_json = JSON.stringify(table_data)
+                                $("<input />").attr("type", "hidden")
+                                  .attr("name", "protocol_data")
+                                  .attr("value", data_json)
+                                  .appendTo("#addLibraryProtocol");
+                                $("#btnSubmit").attr("disabled", true);
+                                return true;
+                            });
+                        });
+                    </script>
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+
+        </div> <!--  end of col-sm-12 -->
+    </div> <!--  end of row -->
+
+{% elif stored_lib_prep %}
+    <script src="{% static "iSkyLIMS_wetlab/js/jquery/v3.4.1/jquery-3.4.1.min.js" %}" type="text/javascript"></script>
+    <script src="{% static "iSkyLIMS_wetlab/js/jexcel/v3/jexcel.js" %}" type="text/javascript"></script>
+    <script src="{% static "iSkyLIMS_wetlab/js/jsuites/v2/jsuites.js" %}" type="text/javascript"></script>
+
+     <link href="{% static "iSkyLIMS_wetlab/css/jexcel/v3/jexcel.css" %}" rel="stylesheet">
+     <link href="{% static "iSkyLIMS_wetlab/css/jsuites/v2/jsuites.css" %}" rel="stylesheet">
+     <style>
+         .scrolling-wrapper {
+      overflow-x: scroll;
+      white-space: nowrap;
+    }
+     </style>
+
+    {%if stored_lib_prep.samples_not_available %}
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-3">
+                <div class="panel panel-warning ">
+                    <div class="panel-heading"><h3>Invalid samples in Samples Names.</h3></div>
+                    <div class="panel-body">
+                        <p>The are some samples in the imported Sample Sheet that are not valid.</p>
+
+                        <br>
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Sample Name  </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for value in stored_lib_prep.samples_not_available  %}
+                                    <tr>
+                                        <td>{{value}}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <p>Correct this error before continuing</p>
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+
+            </div> <!--  end of col-sm-12 -->
+        </div> <!--  end of row -->
+    {% endif %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Update the following samples with protocol parameters and selec the Reagents Kit used for each sample.</h3></div>
+                <div class="panel-body">
+
+                   <form method="post" enctype="multipart/form-data" name="recordProtocolParamters"  id="recordProtocolParamters" class="form-horizontal well">
+                       {% csrf_token %}
+                       <div class="scrolling-wrapper">
+                           <input type="hidden" name="action" value="recordProtocolParamters"/>
+                           <input type="hidden" name= "lib_prep_id" value="{{stored_lib_prep.lib_prep_id}}"/>
+                           <input type="hidden" name= "heading_in_excel" value="{{stored_lib_prep.heading_in_excel}}"/>
+
+                           <p></p>
+
+                           <div id="spreadsheet"></div>
+                           <br><br><br><br>
+
+                           <script>
+                               var data = [{% for values in stored_lib_prep.data %}
+                                   [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                               ];
+                               mySpreadsheet = $('#spreadsheet').jexcel({
+                                   data:data,
+                                   columns: [
+                                        { type: 'text', title:'{{stored_lib_prep.heading.0}}', width:180 , readOnly:true },
+                                        { type: 'text', title:'{{stored_lib_prep.heading.1}}', width:180 , readOnly:true },
+                                        { type: 'dropdown', title:'{{stored_lib_prep.heading.2}}', width:200 , source :[ {% for value in stored_lib_prep.reagents_kits %} '{{value}}', {% endfor %}]},
+                                        {% for value in stored_lib_prep.par_heading %}
+                                            { type: 'text', title:'{{value}}', width:180 },
+                                        {% endfor %}
+                                   ],
+                                   allowInsertColumn:false,
+                                   allowDeleteColumn:false,
+                                   allowRenameColumn:false,
+                                   allowInsertRow:false,
+                                   allowDeleteRow:false,
+                                   tableOverflow:true,
+                                   tableHeight:'200px',
+                                   csvFileName:'library_preparation_parameters',
+
+                               });
+                           </script>
+                           <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                           <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
+                        </div> <!--  end of scrolling  -->
+                        </form>
+                        <script>
+                            $(document).ready(function () {
+                                $("#recordProtocolParamters").submit(function (e) {
+                                    //stop submitting the form to see the disabled button effect
+                                    // e.preventDefault();
+                                    //disable the submit button
+                                    var table_data = $('#spreadsheet').jexcel('getData')
+                                    var data_json = JSON.stringify(table_data)
+                                    $("<input />").attr("type", "hidden")
+                                      .attr("name", "protocol_data")
+                                      .attr("value", data_json)
+                                      .appendTo("#recordProtocolParamters");
+                                    $("#btnSubmit").attr("disabled", true);
+                                    return true;
+                                });
+                            });
+                        </script>
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+
+            </div> <!--  end of col-sm-12 -->
+        </div> <!--  end of row -->
+
+
+{% elif stored_params %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-6">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>The following samples have been updated with protocol parameters.</h3></div>
+                <div class="panel-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Sample Name  </th>
+                                <th>Library preparation Code ID</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s_name, lib_code in stored_params  %}
+                                <tr>
+                                    <td>{{s_name}}</td>
+                                    <td>{{lib_code}}</td>
+                                </tr>
+                            {% endfor %}
+
+                        </tbody>
+                    </table>
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+
+        </div> <!--  end of col-sm-6 -->
+    </div> <!--  end of row -->
+
+{% else %}
+{% endif %}
+
+{% endblock %}
