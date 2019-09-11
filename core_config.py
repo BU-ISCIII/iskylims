@@ -1,4 +1,7 @@
 
+
+
+
 ################# SAMPLE SETTINGS ##############################
 ### Headings used when recording information
 HEADING_FOR_RECORD_SAMPLES = [ 'Sample Name', 'Laboratory', 'Type of Sample', 'Species', 'Sample Extraction date']
@@ -29,3 +32,9 @@ HEADING_FOR_MOLECULE_DEFINITION = ['Molecule CodeID', 'Molecule State','Extracti
 ################# PROTOCOL PARAMETER SETTINGS ##############################
 ### Headings used when defining the custom protocol parameters
 HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS = ['Parameter name', 'Order', 'Used', 'Min Value', 'Max Value', 'Description']
+
+
+
+#########  FOLDER SETTINGS TO STORE COLLECTION KITS #######
+## Relative path from settings.MEDIA_ROOT
+COLLECTION_INDEX_KITS_DIRECTORY = 'core/collection_index_kits/'

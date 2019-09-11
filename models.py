@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 import datetime
-
+from iSkyLIMS_core.core_config import COLLECTION_INDEX_KITS_DIRECTORY
 
 
 
@@ -200,7 +200,7 @@ class CollectionIndexKit (models.Model):
     plateExtension = models.CharField(max_length=125, null=True)
     adapter1 = models.CharField(max_length=125,null=True)
     adapter2 = models.CharField(max_length=125, null=True)
-    collectionLibraryFile =  models.FileField(upload_to=wetlab_config.LIBRARY_KITS_DIRECTORY )
+    collectionLibraryFile =  models.FileField(upload_to = COLLECTION_INDEX_KITS_DIRECTORY )
     generatedat = models.DateTimeField(auto_now_add=True, null=True)
 
     def __srt__ (self):
