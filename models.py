@@ -764,7 +764,7 @@ class StatesForLibraryPreparation (models.Model):
 class libraryPreparationManager(models.Manager):
     def create_lib_preparation (self, lib_prep_data, user_sample_obj, reg_user ,molecule_obj,  single_paired , read_length):
         #import pdb; pdb.set_trace()
-        lib_state = StatesForLibraryPreparation.objects.get(libPrepState =  'Registered')
+        lib_state = StatesForLibraryPreparation.objects.get(libPrepState =  'Defined')
         new_lib_prep = self.create(registerUser = reg_user, molecule_id = molecule_obj, sample_id = lib_prep_data['sample_id'],
             protocol_id =   lib_prep_data['protocol_obj'], user_sample_sheet = user_sample_obj, userSampleID = lib_prep_data['userSampleID'],
             projectInSampleSheet = lib_prep_data['projectInSampleSheet'], samplePlate = lib_prep_data['samplePlate'],
@@ -855,11 +855,19 @@ class libraryPreparation (models.Model):
             user_name = ''
         else :
             user_name = self.registerUser.username
+        pool_name = ''
+        basespace_library = ''
         lib_info = []
-        lib_info.append(self.uniqueID)
         lib_info.append(self.libPrepCodeID)
         lib_info.append(self.get_sample_name())
         lib_info.append(self.sampleWell)
+
+        lib_info.append(self.i7IndexID)
+        lib_info.append(self.i7Index)
+        lib_info.append(self.i5IndexID)
+        lib_info.append(self.i5Index)
+        lib_info.append(pool_name)
+        lib_info.append(basespace_library)
         lib_info.append(self.projectInSampleSheet)
         lib_info.append(user_name)
         return lib_info

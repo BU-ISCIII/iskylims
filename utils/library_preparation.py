@@ -16,13 +16,10 @@ def analyze_input_param_values(request):
     parameters_length = len(headings)
     stored_params = []
     for i in range(len(lib_prep_ids)):
-
         library_prep_obj = libraryPreparation.objects.get(pk = lib_prep_ids[i])
-
 
         for p_index in range(fixed_heading_length, parameters_length):
             lib_parameter_value ={}
-
             lib_parameter_value['parameter_id'] = ProtocolParameters.objects.get(protocol_id = library_prep_obj.protocol_id,
                                 parameterName__exact = headings[p_index])
             lib_parameter_value['library_id'] = library_prep_obj
@@ -32,10 +29,10 @@ def analyze_input_param_values(request):
         kit_index = HEADING_FIX_FOR_ADDING_LIB_PARAMETERS.index('Regents Kit used')
         library_prep_obj.set_reagent_user_kit(json_data[i] [kit_index])
         stored_params.append([library_prep_obj.get_sample_name(), library_prep_obj.get_lib_prep_code()])
-        library_prep_obj.set_state('Updated parameters')
+        library_prep_obj.set_state('Completed')
         sample_obj = library_prep_obj.get_sample_obj ()
         # Update the sample state to "Create Pool"
-        sample_obj.set_state('Create Pool')
+        sample_obj.set_state('Pool Preparation')
     #import pdb; pdb.set_trace()
     return stored_params
 
@@ -75,12 +72,23 @@ def get_all_library_information(sample_id):
         library_information['library_definition_heading'] = HEADING_FOR_LIBRARY_PREPARATION_DEFINITION
         library_information['library_definition'] = []
         library_preparation_items = libraryPreparation.objects.filter(sample_id__pk__exact = sample_id)
+        library_information['lib_prep_param_value'] = []
         for library_item in library_preparation_items:
             library_information['library_definition'].append(library_item.get_info_for_display())
-
+            protocol_used_obj = library_item.get_protocol_obj()
+            if ProtocolParameters.objects.filter(protocol_id = protocol_used_obj).exists():
+                parameter_names = ProtocolParameters.objects.filter(protocol_id = protocol_used_obj).order_by('parameterOrder')
+                lib_prep_param_heading = ['Lib Preparation CodeID']
+                lib_prep_param_value = [library_item.get_lib_prep_code()]
+                for p_name in parameter_names:
+                    lib_prep_param_heading.append(p_name.get_parameter_name())
+                    if LibParameterValue.objects.filter(library_id = library_item).exists():
+                        lib_prep_param_value.append(LibParameterValue.objects.get(library_id = library_item, parameter_id = p_name).get_parameter_information())
+                library_information['lib_prep_param_value'].append(lib_prep_param_value)
+                library_information['lib_prep_param_heading'] = lib_prep_param_heading
     return library_information
 
-def get_samples_add_lib_prep_parameters():
+def get_lib_prep_to_add_parameters():
     '''
     Description:
         The function will return a list with samples which are needs to add library preparation parameters
@@ -92,49 +100,41 @@ def get_samples_add_lib_prep_parameters():
         lib_prep_parameters.
     '''
     lib_prep_parameters = {}
-    if libraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Registered').exists():
-        samples = libraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Registered')
+    if libraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined').exists():
+        samples = libraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined')
         sample_info = []
         for sample in samples:
             lib_prep_info = []
             lib_prep_info.append(sample.get_lib_prep_code())
+            lib_prep_info.append(sample.get_sample_name())
             lib_prep_info.append(sample.get_protocol_used())
             lib_prep_info.append(sample.get_id())
             sample_info.append(lib_prep_info)
-        lib_prep_parameters['sample_info'] = sample_info
-        lib_prep_parameters['heading'] = HEADING_FOR_ADD_LIBRARY_PREPARATION_PARAMETERS
+        lib_prep_parameters['lib_prep_info'] = sample_info
+        lib_prep_parameters['lib_prep_heading'] = HEADING_FOR_ADD_LIBRARY_PREPARATION_PARAMETERS
     return lib_prep_parameters
 
 
-def get_samples_in_add_library_preparation_state ():
+def check_samples_in_lib_prep_state ():
     '''
     Description:
         The function will return a list with samples which are in add_library_preparation state.
-    Input:
 
-    Variables:
-        library_prep_information # Dictionary with the heading and the molecule information
     Return:
-        library_prep_information.
+        sample_names.
     '''
-    library_prep_information = {}
-    molecule_information = []
-    if Samples.objects.filter(sampleState__sampleStateName__exact = 'add Library preparation').exists():
-        samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact =  'add Library preparation')
-        for sample_obj in samples_obj:
-            molecules = MoleculePreparation.objects.filter(sample = sample_obj)
 
-            for molecule in molecules:
-                m_information = []
+    sample_names = []
 
-                if molecule.get_state() == 'Completed':
-                    m_information.append(molecule.get_molecule_code_id())
-                    m_information.append(molecule.get_protocol())
-                    m_information.append(molecule.get_extraction_date())
-                    m_information.append(molecule.get_id())
-                    molecule_information.append(m_information)
-        library_prep_information['lib_protocols'] = get_protocol_lib()
-        library_prep_information['molecule_information'] = molecule_information
-        library_prep_information['molecule_heading'] = HEADING_FOR_ADD_LIBRARY_PREPARATION
+    if Samples.objects.filter(sampleState__sampleStateName__exact = 'Add Library preparation').exists():
+        samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact =  'Add Library preparation')
 
-    return library_prep_information
+        for sample in samples_obj :
+            if not libraryPreparation.objects.filter(sample_id = sample).exists():
+                sample_names.append(sample.get_sample_name())
+
+
+    return sample_names
+
+    #if libraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined').exists():
+    #lib_preparations = libraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined')

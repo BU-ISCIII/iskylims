@@ -94,19 +94,7 @@
                                     <label class="col-sm-5 control-label">Define the Experiment Name for the Run</label>
                                     <div class="col-sm-5"><input class="form-control" required = "required" type="text"  name="experimentName" size="80"></div>
                                     <br><br>
-                                    <label class="col-sm-5 control-label">Define the Pool name</label>
-                                    <div class="col-sm-5"><input class="form-control" required = "required" type="text"  name="poolName" size="80"></div>
-                                    <br><br>
-                                    <label class="col-sm-5 control-label">Define Base Space Library</label>
-                                    <div class="col-sm-5">
-                                        <select class="form-control" required = "required" name="basespace" id="basespace">
-                                                <option value="">Choose a value</option>
-                                                {% for value in information_for_selected_run.base_space_library %}
-                                                    <option value="{{value}}">{{value}}</option>
-                                             {% endfor %}
-                                        </select>
-                                    </div>
-                                    <br>
+
                                 </div>
                                 <div class="form-group ">
                                     <label class="col-sm-5 control-label">Define the Plate</label>
@@ -128,10 +116,17 @@
                                         columns: [
                                             { type: 'text', title:'{{information_for_selected_run.heading.0}}', width:180 , readOnly:true },
                                             { type: 'text', title:'{{information_for_selected_run.heading.1}}', width:180 , readOnly:true },
-                                            { type: 'text', title:'{{information_for_selected_run.heading.2}}', width:80 , readOnly:true },
+                                            { type: 'text', title:'{{information_for_selected_run.heading.2}}', width:80 },
                                             { type: 'text', title:'{{information_for_selected_run.heading.3}}', width:80 },
-                                            { type: 'text', title:'{{information_for_selected_run.heading.4}}', width:190 },
-                                            { type: 'text', title:'{{information_for_selected_run.heading.5}}', width:180 },
+                                            { type: 'text', title:'{{information_for_selected_run.heading.4}}', width:100 },
+                                            { type: 'text', title:'{{information_for_selected_run.heading.5}}', width:80 },
+                                            { type: 'text', title:'{{information_for_selected_run.heading.6}}', width:100 },
+                                            { type: 'text', title:'{{information_for_selected_run.heading.7}}', width:100 },
+                                            { type: 'dropdown', title:'{{information_for_selected_run.heading.8}}', width:150 ,
+                                                    source: [{% for value in information_for_selected_run.base_space_library %} "{{value}}", {% endfor %}]},
+                                            { type: 'text', title:'{{information_for_selected_run.heading.9}}', width:250 },
+                                            { type: 'text', title:'{{information_for_selected_run.heading.10}}', width:80 },
+
                                         ],
                                         allowInsertColumn:false,
                                         allowDeleteColumn:false,
@@ -187,9 +182,9 @@
 
                     <div class="panel-body">
 
-                        <form method="post" enctype="multipart/form-data" name="continueWithRun"  id="continueWithRun" class="form-horizontal well">
+                        <form method="post" enctype="multipart/form-data" name="continueWithPool"  id="continueWithPool" class="form-horizontal well">
                         {% csrf_token %}
-                            <input type="hidden" name="action" value="continueWithRun"/>
+                            <input type="hidden" name="action" value="continueWithPool"/>
                             <input type="hidden" name="lib_prep_in_list" value="True"/>
                             <table class="table table-hover">
                                 <thead>

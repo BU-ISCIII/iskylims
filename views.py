@@ -3252,11 +3252,11 @@ def pending_to_update(request):
     # get the samples in defined state
     pending['defined'] = get_samples_in_defined_state()
     pending['extract_molecule'] = get_samples_in_extracted_molecule_state()
-    pending['add_library_preparation'] = get_samples_in_add_library_preparation_state()
-    pending['add_lib_prep_parameters'] = get_samples_add_lib_prep_parameters()
-    # get the molecules  in  defined state
-    #pending['molecules'] = get_molecules_in_state('Defined')
+    pending['create_library_preparation'] = check_samples_in_lib_prep_state()
+    pending['lib_prep_protocols'] = get_protocol_lib()
     # get the library preparation in defined state
+    pending['add_lib_prep_parameters'] = get_lib_prep_to_add_parameters()
+
 
     #import pdb; pdb.set_trace()
     return render(request, 'iSkyLIMS_wetlab/pendingToUpdate.html', {'pending':pending})
@@ -3302,7 +3302,7 @@ def display_libSample (request, sample_id):
     if 'Error' in sample_information:
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No Sample was found']})
     sample_information.update(get_all_library_information(sample_id))
-
+    import pdb; pdb.set_trace()
     return render(request, 'iSkyLIMS_wetlab/displayLibSample.html',{'sample_information':sample_information})
 
 
@@ -3413,6 +3413,7 @@ def set_Molecule_values(request):
 
 @login_required
 def set_library_preparation(request):
+    '''
     if request.method == 'POST' and request.POST['action'] == 'displayLibraryPreparation':
         if not 'molecules' in request.POST :
             return render (request,'iSkyLIMS_wetlab/error_page.html',
@@ -3441,8 +3442,8 @@ def set_library_preparation(request):
             display_lib_prep['data'].append(data)
         display_lib_prep['molecules'] = molecules
         return render (request, 'iSkyLIMS_wetlab/setLibraryPreparation.html', {'display_lib_prep':display_lib_prep})
-
-    elif request.method == 'POST' and request.POST['action'] == 'importsamplesheet':
+    '''
+    if request.method == 'POST' and request.POST['action'] == 'importsamplesheet':
         protocol = request.POST['lib_protocols']
         single_paired = request.POST['singlePairedEnd']
         read_length = request.POST['readlength']
@@ -3514,7 +3515,7 @@ def set_library_preparation(request):
         #import pdb; pdb.set_trace()
         return render (request, 'iSkyLIMS_wetlab/setLibraryPreparation.html', {'stored_lib_prep':stored_lib_prep})
 
-    elif request.method == 'POST' and request.POST['action'] == 'addProtocolParamters':
+    elif request.method == 'POST' and request.POST['action'] == 'addLibPrepParam':
 
         if  'lib_prep_in_list' in request.POST:
             lib_prep_ids = request.POST.getlist('lib_prep_id')
@@ -3524,6 +3525,7 @@ def set_library_preparation(request):
             lib_prep_ids = request.POST['lib_prep_id'].split(',')
         stored_lib_prep ={}
         stored_lib_prep['data'] =[]
+
         protocol_obj = libraryPreparation.objects.get(pk = lib_prep_ids[0]).get_protocol_obj()
         parameter_heading = get_protocol_parameters(protocol_obj)
         length_heading = len(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS) + len (parameter_heading)
@@ -3624,7 +3626,7 @@ def set_library_values (request):
 
 
 @login_required
-def select_samples_for_run (request):
+def create_pool (request):
     ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
         if not is_wetlab_manager(request):
@@ -3634,7 +3636,7 @@ def select_samples_for_run (request):
     else:
         #redirect to login webpage
         return redirect ('/accounts/login')
-    if request.method == 'POST' and request.POST['action'] == 'continueWithRun':
+    if request.method == 'POST' and request.POST['action'] == 'continueWithPool':
 
         if  'lib_prep_in_list' in request.POST:
             lib_prep_ids = request.POST.getlist('lib_prep_id')
@@ -3647,9 +3649,9 @@ def select_samples_for_run (request):
 
         if  compatible_in_run == True:
             information_for_selected_run = get_info_to_create_pool(lib_prep_ids)
-            return  render(request, 'iSkyLIMS_wetlab/selectSamplesForRun.html',{'information_for_selected_run': information_for_selected_run})
+            return  render(request, 'iSkyLIMS_wetlab/createPool.html',{'information_for_selected_run': information_for_selected_run})
         else:
-            return  render(request, 'iSkyLIMS_wetlab/selectSamplesForRun.html',{'incompatible_samples': compatible_in_run})
+            return  render(request, 'iSkyLIMS_wetlab/createPool.html',{'incompatible_samples': compatible_in_run})
 
     elif request.method == 'POST' and request.POST['action'] == 'createRun':
         if  'lib_prep_in_list' in request.POST:
@@ -3662,17 +3664,23 @@ def select_samples_for_run (request):
         exp_name = request.POST['experimentName']
         analyze_input_pool(request.POST, request.user)
 
-        return  render(request, 'iSkyLIMS_wetlab/selectSamplesForRun.html',{'incompatible_index': compatible_in_run})
+        return  render(request, 'iSkyLIMS_wetlab/createPool.html',{'incompatible_index': compatible_in_run})
     else:
         display_list = {}
         display_list['data'] = []
 
-        if libraryPreparation.objects.filter(libPrepState__libPrepState = 'Updated parameters').exists():
+        if libraryPreparation.objects.filter(libPrepState__libPrepState = 'Completed').exists():
 
-            lib_preparations =  libraryPreparation.objects.filter(libPrepState__libPrepState = 'Updated parameters').order_by('libPrepCodeID')
+            lib_preparations =  libraryPreparation.objects.filter(libPrepState__libPrepState = 'Completed').order_by('libPrepCodeID')
             for lib_prep in lib_preparations :
                 display_list['data'].append( lib_prep.get_info_for_run())
 
-            display_list['heading'] = HEADING_FOR_SELECTED_ON_RUN
+            display_list['heading'] = HEADING_FOR_SELECTING_SAMPLES
 
-        return  render(request, 'iSkyLIMS_wetlab/selectSamplesForRun.html',{'display_list': display_list})
+        return  render(request, 'iSkyLIMS_wetlab/createPool.html',{'display_list': display_list})
+
+
+@login_required
+def create_new_run (request):
+
+    return

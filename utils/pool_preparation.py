@@ -96,8 +96,8 @@ def get_info_to_create_pool(lib_prep_ids):
     information_for_selected_run = {}
     base_space_library = []
     information_for_selected_run['data'] = []
-    information_for_selected_run['heading'] = HEADING_FOR_POOL_SELECTED_IN_RUN
-    length_heading = len(HEADING_FOR_POOL_SELECTED_IN_RUN)
+    information_for_selected_run['heading'] = HEADING_FOR_CREATING_POOL
+    length_heading = len(HEADING_FOR_CREATING_POOL)
     for lib_prep_id in lib_prep_ids :
         lib_prep_obj = libraryPreparation.objects.get(pk__exact = lib_prep_id)
         info_lib_data = lib_prep_obj.get_info_for_pool()
