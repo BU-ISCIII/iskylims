@@ -283,7 +283,7 @@ def get_all_sample_information (sample_id ):
                         mol_param_value.append(MoleculeParameterValue.objects.get(molecule_id = molecule, moleculeParameter_id = p_name).get_param_value())
                 sample_information['molecule_parameter_values'].append(mol_param_value)
                 sample_information['molecule_parameter_heading'] = molecule_param_heading
-
+            
     return sample_information
 
 def get_defined_samples (register_user):
@@ -390,7 +390,7 @@ def get_samples_in_extracted_molecule_state ():
             for molecule in molecules:
                 sample_information = []
                 sample_information.append(sample_obj.get_extraction_date())
-                sample_information.append(sample_obj.get_sample_type())
+                sample_information.append(sample_obj.get_sample_name())
                 molecule_data = molecule.get_molecule_information()
                 molecule_information.append(sample_information + molecule_data)
 

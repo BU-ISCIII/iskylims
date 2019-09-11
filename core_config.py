@@ -14,8 +14,8 @@ HEADING_FOR_MOLECULE_ADDING_PARAMETERS = ['Molecule Code ID', 'Used Protocol']
 HEADING_CONFIRM_MOLECULE_RECORDED = ['Molecule Code ID', 'Used Protocol']
 
 ### Heading values when showing pending samples
-HEADING_FOR_DEFINED_SAMPLES_STATE = ['Sample extraction date', 'Sample Code ID', 'Type of Sample','To be included']
-HEADING_FOR_EXTRACTED_MOLECULES_STATE = ['Sample extraction date', 'Type of Sample', 'Molecule Code ID', 'Extraction Date',
+HEADING_FOR_DEFINED_SAMPLES_STATE = ['Sample extraction date', 'Sample Code ID', 'Sample','To be included']
+HEADING_FOR_EXTRACTED_MOLECULES_STATE = ['Sample extraction date', 'Sample', 'Molecule Code ID', 'Molecule Extraction Date',
                                     'Used Protocol', 'To be included']
 
 
