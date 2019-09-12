@@ -48,8 +48,8 @@ class ProjectsAdmin (admin.ModelAdmin):
 class BaseSpaceLibraryNameAdmin(admin.ModelAdmin):
     list_display = ('libraryName','generatedat')
 
-class IndexLibraryKitAdmin(admin.ModelAdmin):
-    list_display = ('indexLibraryName', 'version', 'plateExtension', 'adapter1', 'adapter2', 'indexLibraryFile','generatedat')
+class CollectionIndexKitAdmin(admin.ModelAdmin):
+    list_display = ('collectionIndexName', 'version', 'plateExtension', 'adapter1', 'adapter2', 'collectionIndexFile','generatedat')
 
 
 class SamplesInProjectAdmin (admin.ModelAdmin):
@@ -93,7 +93,7 @@ admin.site.register(LibParameterValue, LibParameterValueAdmin)
 admin.site.register(RunningParameters , RunningParametersAdmin)
 admin.site.register(RunProcess , RunProcessAdmin)
 admin.site.register(BaseSpaceLibraryName,BaseSpaceLibraryNameAdmin)
-admin.site.register(IndexLibraryKit,IndexLibraryKitAdmin)
+admin.site.register(CollectionIndexKit,CollectionIndexKitAdmin)
 admin.site.register(Projects, ProjectsAdmin)
 admin.site.register(RunErrors, RunErrorsAdmin)
 admin.site.register(RunStates, RunStatesAdmin)

@@ -188,32 +188,50 @@ class BaseSpaceLibraryName (models.Model):
         return '%s' %(self.libraryName)
 
 
-class IndexLibraryKit (models.Model):
-    indexLibraryName = models.CharField(max_length=125)
+
+
+
+class CollectionIndexKit (models.Model):
+    collectionIndexName = models.CharField(max_length=125)
     version = models.CharField(max_length=80,null=True)
     plateExtension = models.CharField(max_length=125, null=True)
     adapter1 = models.CharField(max_length=125,null=True)
     adapter2 = models.CharField(max_length=125, null=True)
-    indexLibraryFile =  models.FileField(upload_to=wetlab_config.LIBRARY_KITS_DIRECTORY )
+    collectionIndexFile =  models.FileField(upload_to = wetlab_config.COLLECTION_INDEX_KITS_DIRECTORY )
     generatedat = models.DateTimeField(auto_now_add=True, null=True)
 
     def __srt__ (self):
-        return '%s'(self.indexLibraryName)
+        return '%s' %(self.collectionIndexName)
 
-    def get_index_library_information (self):
+    def get_collection_index_name(self):
+        return '%s' %(self.collectionIndexName)
+
+    def get_id(self):
+        return '%s' %(self.pk)
+
+    def get_collection_index_information (self):
         if self.adapter2 =='':
-            adapter2 = 'Not used on this library'
+            adapter2 = 'Not used on this collection'
         else:
             adapter2 = self.adapter2
-        return '%s;%s;%s;%s;%s;%s' %(self.indexLibraryName, self.version, self.plateExtension ,
-                            self.adapter1  , adapter2, self.indexLibraryFile)
+        collection_info = []
+        collection_info.append(self.collectionIndexName)
+        collection_info.append(self.version)
+        collection_info.append(self.plateExtension)
+        collection_info.append(self.adapter1)
+        collection_info.append(self.adapter2)
+        collection_info.append(self.collectionIndexFile)
+        return collection_info
 
 
 
-class IndexLibraryValues (models.Model):
-    indexLibraryKit_id = models.ForeignKey(
-        IndexLibraryKit,
+
+class CollectionIndexValues (models.Model):
+
+    collectionIndexKit_id = models.ForeignKey(
+        CollectionIndexKit,
         on_delete=models.CASCADE)
+
     defaultWell = models.CharField(max_length=10,null=True)
     index_7 = models.CharField(max_length=25,null=True)
     i_7_seq = models.CharField(max_length=25,null=True)
@@ -706,7 +724,7 @@ class libPreparationUserSampleSheetManager (models.Manager):
 
     def create_lib_prep_user_sample_sheet (self, user_sample_sheet_data):
         new_lib_prep_user_sample_sheet = self.create(registerUser = user_sample_sheet_data['registerUser'],
-                    indexLibraryKit_id  = user_sample_sheet_data['indexLibraryKit_id'],
+                    collectionIndexKit_id  = user_sample_sheet_data['collectionIndexKit_id'],
                     sampleSheet = user_sample_sheet_data['sampleSheet'])
         return new_lib_prep_user_sample_sheet
 
@@ -714,11 +732,11 @@ class libPreparationUserSampleSheet (models.Model):
     registerUser = models.ForeignKey(
             User,
             on_delete=models.CASCADE)
-
+    '''
     indexLibraryKit_id = models.ForeignKey(
                 IndexLibraryKit,
                 on_delete= models.CASCADE, null = True)
-
+    '''
     sampleSheet = models.FileField(upload_to = wetlab_config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY)
     generatedat = models.DateTimeField(auto_now_add=True, null=True)
 

@@ -24,7 +24,7 @@ from .utils.sample_sheet_utils import *
 from .utils.stats_calculation import *
 from .utils.stats_graphics import *
 from .utils.generic_functions import *
-from .utils.library_kits import *
+from .utils.collection_index_functions import *
 from .utils.fetching_information import *
 from .utils.testing_wetlab_configuration import *
 from .utils.sample_functions import *
@@ -416,22 +416,23 @@ def add_collection_index_kit (request):
             -- ['libraries']
             ---['new_library_kit'] in case a new library kit was added
     '''
-    index_libraries_information ={}
-    index_library_names = []
+    collection_index_information ={}
+    collection_index_names = []
 
-    index_library_objects = IndexLibraryKit.objects.all()
-    if len(index_library_objects) > 0 :
-        for l_index in index_library_objects :
-            index_library_names.append([l_index.id, l_index.indexLibraryName])
+    collection_indexes = CollectionIndexKit.objects.all()
+    if len(collection_indexes) > 0 :
+        for c_index in collection_indexes :
+            collection_index_names.append([c_index.get_id(), c_index.get_collection_index_name])
 
-    if request.method == 'POST' and request.POST['action'] == 'addNewIndexLibraryFile':
+    if request.method == 'POST' and request.POST['action'] == 'addCollectionIndexKit':
         ## fetch the file from user form and  build the file name  including
         ## the date and time on now to store in database
-        file_name = request.FILES['newIndexLibraryFile'].name
-        saved_file = store_collection_kits_file(request.FILES['newIndexLibraryFile'])
+
+        file_name = request.FILES['newCollectionIndexFile'].name
+        saved_file = store_collection_kits_file(request.FILES['newCollectionIndexFile'])
 
         ## get the libary name to check if it is already defined
-        if not check_index_library_file_format(saved_file):
+        if not check_collection_index_file_format(saved_file):
             os.remove(saved_file)
             return render (request, 'iSkyLIMS_wetlab/error_page.html',
                            {'content':['The Collection Index Kit file', file_name,
@@ -453,93 +454,19 @@ def add_collection_index_kit (request):
                            {'content':['The Collection Index Kit Name ', file_name,
                                        'is already defined on iSkyLIMS']})
         # Get the collection settings included in the file
-        collection_settings = get_collection_settings(saved_file, file_name)
-        store_collection_settings (collection_settings)
+        collection_settings = get_collection_settings(saved_file)
+        new_collection_obj = store_collection_settings (collection_settings, file_name)
         ## get the index name and index bases for the library
         collection_index = get_index_values(saved_file)
+        store_collection_indexes(collection_index, new_collection_obj)
 
+        collection_index_information['collection_index_names'] = collection_settings['name']
+        collection_index_information ['collection_index'] = collection_index_names
 
-        '''
-
-        index_library_file = request.FILES['newIndexLibraryFile']
-        split_filename=re.search('(.*)(\.\w+$)',index_library_file.name)
-        f_name = split_filename[1]
-        f_extension = split_filename[2]
-        fs_index_lib = FileSystemStorage()
-        timestr = time.strftime("%Y%m%d-%H%M%S")
-
-        ## using the MEDIA_ROOT variable defined on settings to upload the file
-        file_name=os.path.join(wetlab_config.LIBRARY_KITS_DIRECTORY ,  str(f_name + '_' +timestr + f_extension))
-        filename = fs_index_lib.save(file_name,  index_library_file)
-        saved_file = os.path.join(settings.MEDIA_ROOT, file_name)
-
-        ## check the file is not bigger that maximum allowed size file for index library
-        file_stat = os.stat(saved_file)
-        if file_stat.st_size > int(wetlab_config.LIBRARY_MAXIMUM_SIZE) :
-            # removing the uploaded file
-            os.remove(saved_file)
-            return render (request, 'iSkyLIMS_wetlab/error_page.html',
-                           {'content':['The Index Library Kit file ', split_filename[0],
-                                       'exceed from the maximum allowed size']})
-        uploaded_file_url = fs_index_lib.url(filename)
-
-        ## check if user file has the  right format
-        if not check_index_library_file_format(saved_file):
-            ## removing the uploaded file
-            os.remove(saved_file)
-            return render (request, 'iSkyLIMS_wetlab/error_page.html',
-                           {'content':['The Index Library Kit file', split_filename[0],
-                                       'does not have the right format']})
-
-        ## get the libary name to check if it is already defined
-        library_name = getting_index_library_name(saved_file)
-        if library_name == '' :
-            # removing the uploaded file
-            os.remove(saved_file)
-            return render (request, 'iSkyLIMS_wetlab/error_page.html',
-                           {'content':['The Index Library Kit file', split_filename[0],
-                                       'does not contain the library name']})
-        # check if library name is already defined on database
-        if IndexLibraryKit.objects.filter (indexLibraryName__exact = library_name).exists():
-            # removing the uploaded file
-            os.remove(saved_file)
-            return render (request, 'iSkyLIMS_wetlab/error_page.html',
-                           {'content':['The Library Kit Name ', library_name,
-                                       'is already defined on iSkyLIMS']})
-        # Get the library settings included in the file
-        library_settings = get_library_settings(saved_file)
-
-
-        # saving library settings into database
-        if len(library_settings['adapters']) == 1:
-            adapter_2 = ''
-        else :
-            adapter_2 = library_settings['adapters'][1]
-        lib_settings_to_store = IndexLibraryKit(indexLibraryName = library_settings['name'],
-                                    version =  library_settings ['version'],
-                                    plateExtension = library_settings['plate_extension'] ,
-                                    adapter1 = library_settings['adapters'][0],
-                                    adapter2 = adapter_2, indexLibraryFile = file_name)
-        lib_settings_to_store.save()
-
-        ## get the index name and index bases for the library
-        library_index = get_index_values(saved_file)
-        # saving index values into database
-        for row in library_index :
-            index_to_store = IndexLibraryValues(indexLibraryKit_id = lib_settings_to_store,
-                                    defaultWell = row[0], index_7 = row[1],
-                                    i_7_seq = row[2], index_5 = row[3],
-                                    i_5_seq = row[4])
-            index_to_store.save()
-        '''
-        
-        index_libraries_information['new_index_library'] = library_settings['name']
-        index_libraries_information ['index_libraries'] = index_library_names
-
-        return render (request, 'iSkyLIMS_wetlab/addCollectionIndexKit.html',{'index_library_info': index_libraries_information })
+        return render (request, 'iSkyLIMS_wetlab/addCollectionIndexKit.html',{'collection_index_information': collection_index_information })
     else:
-        index_libraries_information ['index_libraries'] = index_library_names
-        return render (request, 'iSkyLIMS_wetlab/addCollectionIndexKit.html',{'list_of_index_libraries': index_libraries_information })
+        collection_index_information ['collection_index'] = collection_index_names
+        return render (request, 'iSkyLIMS_wetlab/addCollectionIndexKit.html',{'list_of_collection_index': collection_index_information })
 
 
 
@@ -1215,17 +1142,17 @@ def display_sample (request, sample_id):
 
 
 @login_required
-def display_index_library (request, index_library_id):
-    if (IndexLibraryKit.objects.filter(pk=index_library_id).exists()) :
+def display_collection_index (request, collection_index_id):
 
-        index_library_dict = index_library_information (index_library_id)
-        if index_library_dict != False:
-            return render (request, 'iSkyLIMS_wetlab/DisplayIndexLibrary.html', {'display_one_index_library': index_library_dict})
+    if (CollectionIndexKit.objects.filter(pk=collection_index_id).exists()) :
+        collection_index_dict = get_collection_index_information (collection_index_id)
+        if collection_index_dict != False:
+            return render (request, 'iSkyLIMS_wetlab/DisplayCollectionIndex.html', {'display_one_collection_index': collection_index_dict})
         else:
-            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are recorded information for the index library for ',  index_library_id]})
+            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are recorded information for the collection index for your request']})
 
     else:
-        return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the index Library  ' ]})
+        return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the Collection index ' ]})
 
 
 
