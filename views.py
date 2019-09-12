@@ -364,7 +364,7 @@ def add_basespace_library (request):
     return render(request,'iSkyLIMS_wetlab/AddBasespaceLibrary.html',{'list_of_libraries': basespace_library_information})
 
 @login_required
-def add_index_library (request):
+def add_collection_index_kit (request):
     #get the list of the already loaded index library to be displayed
     '''
     Description:
@@ -427,6 +427,40 @@ def add_index_library (request):
     if request.method == 'POST' and request.POST['action'] == 'addNewIndexLibraryFile':
         ## fetch the file from user form and  build the file name  including
         ## the date and time on now to store in database
+        file_name = request.FILES['newIndexLibraryFile'].name
+        saved_file = store_collection_kits_file(request.FILES['newIndexLibraryFile'])
+
+        ## get the libary name to check if it is already defined
+        if not check_index_library_file_format(saved_file):
+            os.remove(saved_file)
+            return render (request, 'iSkyLIMS_wetlab/error_page.html',
+                           {'content':['The Collection Index Kit file', file_name,
+                                       'does not have the right format']})
+
+        collection_name = get_collection_index_name(saved_file)
+        if collection_name == '' :
+            # removing the uploaded file
+            os.remove(saved_file)
+            return render (request, 'iSkyLIMS_wetlab/error_page.html',
+                        {'content':['The Collection Index Kit file', file_name,
+                                   'does not contain the  name']})
+
+        # check if library name is already defined on database
+        if check_collection_index_exists(collection_name) :
+            # removing the uploaded file
+            os.remove(saved_file)
+            return render (request, 'iSkyLIMS_wetlab/error_page.html',
+                           {'content':['The Collection Index Kit Name ', file_name,
+                                       'is already defined on iSkyLIMS']})
+        # Get the collection settings included in the file
+        collection_settings = get_collection_settings(saved_file, file_name)
+        store_collection_settings (collection_settings)
+        ## get the index name and index bases for the library
+        collection_index = get_index_values(saved_file)
+
+
+        '''
+
         index_library_file = request.FILES['newIndexLibraryFile']
         split_filename=re.search('(.*)(\.\w+$)',index_library_file.name)
         f_name = split_filename[1]
@@ -497,14 +531,15 @@ def add_index_library (request):
                                     i_7_seq = row[2], index_5 = row[3],
                                     i_5_seq = row[4])
             index_to_store.save()
-
+        '''
+        
         index_libraries_information['new_index_library'] = library_settings['name']
         index_libraries_information ['index_libraries'] = index_library_names
 
-        return render (request, 'iSkyLIMS_wetlab/AddIndexLibrary.html',{'index_library_info': index_libraries_information })
+        return render (request, 'iSkyLIMS_wetlab/addCollectionIndexKit.html',{'index_library_info': index_libraries_information })
     else:
         index_libraries_information ['index_libraries'] = index_library_names
-        return render (request, 'iSkyLIMS_wetlab/AddIndexLibrary.html',{'list_of_index_libraries': index_libraries_information })
+        return render (request, 'iSkyLIMS_wetlab/addCollectionIndexKit.html',{'list_of_index_libraries': index_libraries_information })
 
 
 
