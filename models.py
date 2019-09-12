@@ -142,6 +142,58 @@ class Species (models.Model):
     def get_name(self):
         return '%s' %(self.spicesName)
 
+
+
+class CollectionIndexKit (models.Model):
+    collectionIndexName = models.CharField(max_length=125)
+    version = models.CharField(max_length=80,null=True)
+    plateExtension = models.CharField(max_length=125, null=True)
+    adapter1 = models.CharField(max_length=125,null=True)
+    adapter2 = models.CharField(max_length=125, null=True)
+    collectionLibraryFile =  models.FileField(upload_to = COLLECTION_INDEX_KITS_DIRECTORY )
+    generatedat = models.DateTimeField(auto_now_add=True, null=True)
+
+    def __srt__ (self):
+        return '%s'(self.collectionLibraryName)
+
+    def get_collection_index_information (self):
+        if self.adapter2 =='':
+            adapter2 = 'Not used on this collection'
+        else:
+            adapter2 = self.adapter2
+        collection_info = []
+        collection_info.append(self.indexLibraryName)
+        collection_info.append(self.version)
+        collection_info.append(self.plateExtension)
+        collection_info.append(self.adapter1)
+        collection_info.append(self.adapter2)
+        collection_info.append(self.collectionLibraryFile)
+        return collection_info
+
+
+
+class CollectionIndexValues (models.Model):
+    collectionIndexKitid = models.ForeignKey(
+        CollectionIndexKit,
+        on_delete=models.CASCADE)
+    defaultWell = models.CharField(max_length=10,null=True)
+    index_7 = models.CharField(max_length=25,null=True)
+    i_7_seq = models.CharField(max_length=25,null=True)
+    index_5 = models.CharField(max_length=25,null=True)
+    i_5_seq = models.CharField(max_length=25,null=True)
+
+
+    def get_index_value_information (self):
+        collection_info = []
+        collection_info.append(self.defaultWell)
+        collection_info.append(self.index_7)
+        collection_info.append(self.i_7_seq)
+        collection_info.append(self.index_5)
+        collection_info.append(self.i_5_seq)
+
+        return collection_info
+
+
 class ComercialKits (models.Model):
     protocol_id = models.ForeignKey(
                     ProtocolType,
@@ -193,55 +245,6 @@ class UserComercialKits (models.Model):
         return '%s' %(self.basedComercial.get_protocol())
 
 
-
-class CollectionIndexKit (models.Model):
-    collectionLibraryName = models.CharField(max_length=125)
-    version = models.CharField(max_length=80,null=True)
-    plateExtension = models.CharField(max_length=125, null=True)
-    adapter1 = models.CharField(max_length=125,null=True)
-    adapter2 = models.CharField(max_length=125, null=True)
-    collectionLibraryFile =  models.FileField(upload_to = COLLECTION_INDEX_KITS_DIRECTORY )
-    generatedat = models.DateTimeField(auto_now_add=True, null=True)
-
-    def __srt__ (self):
-        return '%s'(self.collectionLibraryName)
-
-    def get_collection_index_information (self):
-        if self.adapter2 =='':
-            adapter2 = 'Not used on this collection'
-        else:
-            adapter2 = self.adapter2
-        collection_info = []
-        collection_info.append(self.indexLibraryName)
-        collection_info.append(self.version)
-        collection_info.append(self.plateExtension)
-        collection_info.append(self.adapter1)
-        collection_info.append(self.adapter2)
-        collection_info.append(self.collectionLibraryFile)
-        return collection_info
-
-
-
-class CollectionIndexValues (models.Model):
-    collectionIndexKitid = models.ForeignKey(
-        CollectionIndexKit,
-        on_delete=models.CASCADE)
-    defaultWell = models.CharField(max_length=10,null=True)
-    index_7 = models.CharField(max_length=25,null=True)
-    i_7_seq = models.CharField(max_length=25,null=True)
-    index_5 = models.CharField(max_length=25,null=True)
-    i_5_seq = models.CharField(max_length=25,null=True)
-
-
-    def get_index_value_information (self):
-        collection_info = []
-        collection_info.append(self.defaultWell)
-        collection_info.append(self.index_7)
-        collection_info.append(self.i_7_seq)
-        collection_info.append(self.index_5)
-        collection_info.append(self.i_5_seq)
-
-        return collection_info
 
 
 class SamplesManager (models.Manager):

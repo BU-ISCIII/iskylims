@@ -38,3 +38,6 @@ HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS = ['Parameter name', 'Order', 'Used', '
 #########  FOLDER SETTINGS TO STORE COLLECTION KITS #######
 ## Relative path from settings.MEDIA_ROOT
 COLLECTION_INDEX_KITS_DIRECTORY = 'core/collection_index_kits/'
+
+## Configuration for index library file
+COLLECTION_INDEX_HEADING = ['[Version]','[Name]', '[PlateExtension]','[Settings]', '[I7]']
