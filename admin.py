@@ -14,8 +14,8 @@ class AppAdmin(admin.ModelAdmin):
     file_link.allow_tags = True
     file_link.short_description = 'File Download'
 
-class libraryPreparationAdmin (admin.ModelAdmin):
-    list_display = ('registerUser', 'molecule_id', 'sample_id', 'protocol_id', 'libPrepState',
+class LibraryPreparationAdmin (admin.ModelAdmin):
+    list_display = ('registerUser', 'molecule_id', 'sample_id', 'protocol_id', 'libPrepState', 'collectionIndex_id',
             'user_sample_sheet', 'libPrepCodeID', 'userSampleID', 'projectInSampleSheet','samplePlate',
             'sampleWell', 'i7IndexID', 'i7Index', 'i5IndexID', 'i5Index', 'singlePairedEnd', 'lengthRead',
             'numberOfReused')
@@ -88,7 +88,7 @@ class ProtocolParametersAdmin (admin.ModelAdmin):
 
 '''
 
-admin.site.register(libraryPreparation, libraryPreparationAdmin)
+admin.site.register(LibraryPreparation, LibraryPreparationAdmin)
 admin.site.register(LibParameterValue, LibParameterValueAdmin)
 admin.site.register(RunningParameters , RunningParametersAdmin)
 admin.site.register(RunProcess , RunProcessAdmin)

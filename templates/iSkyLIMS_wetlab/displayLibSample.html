@@ -60,35 +60,36 @@
     </div> <!--  end of row -->
 {% endif %}
 
-{% if sample_information.molecule_parameter_heading %}
-  <div class="row row-space-2 margin-b-4">
-      <div class="col-sm-11">
-          <div class="panel panel-default">
-              <h3>Parameter Information for Molecules using for the sample {{ sample_information.sample_definition.0 }} </h3>
-              <div class="panel-heading"><h4>Quality Parameter Molecule Information</h4></div>
-              <div class="panel-body">
-                <table class="table table-hover">
-                    <thead>
-                      <tr>
-                      {% for values in sample_information.molecule_parameter_heading %}
-                        <th>{{ values }} </th>
-                      {%endfor%}
-                      </tr>
-                    </thead>
-                    <tbody>
-                        {% for values in sample_information.molecule_parameter_values %}
-                            <tr>
-                                {% for value in values %}
-                                    <td>{{ value }} </td>
-                                {%endfor%}
-                            </tr>
-                        {%endfor%}
-                    </tbody>
-                </table>
-              </div> <!--  end of panel body -->
-           </div> <!--  end of panel  -->
-         </div> <!--  end of col-sm-11 -->
-    </div> <!--  end of row -->
+{% if sample_information.parameter_heading_values %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-11">
+            <div class="panel panel-default">
+                <h3>Parameter Information for Molecules using for the sample {{ sample_information.sample_definition.0 }} </h3>
+                <div class="panel-heading"><h4>Quality Parameter Molecule Information</h4></div>
+                <div class="panel-body">
+                    {% for heading, values in sample_information.parameter_heading_values %}
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                  {% for head in heading %}
+                                    <th>{{ head }} </th>
+                                  {%endfor%}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    {% for value in values %}
+                                        <td>{{ value }} </td>
+                                    {%endfor%}
+                                </tr>
+                            </tbody>
+                        </table>
+                        <br><br>
+                   {%endfor%}
+                </div> <!--  end of panel body -->
+             </div> <!--  end of panel  -->
+           </div> <!--  end of col-sm-11 -->
+      </div> <!--  end of row -->
 {% endif %}
 
 
@@ -164,7 +165,7 @@
       <div class="col-sm-11">
           <div class="panel panel-default">
               <h3>Parameter Information for Library Preparation using for the sample {{ sample_information.sample_definition.0 }} </h3>
-              <div class="panel-heading"><h4>Quality Parameter Molecule Information</h4></div>
+              <div class="panel-heading"><h4>Library Preparation Quality Parameter Information</h4></div>
               <div class="panel-body">
                 <table class="table table-hover">
                     <thead>

@@ -59,6 +59,7 @@ def get_samples_in_sample_sheet(in_file):
     import codecs
     samples_dict = {}
     samples = []
+    sample_names = []
     header_found = False
     fh = codecs.open(in_file, 'r', 'utf-8')
 
@@ -70,6 +71,7 @@ def get_samples_in_sample_sheet(in_file):
         if found_header:
             header_found = True
             samples_dict['headings'] = line.split(',')
+            index_sample_name = samples_dict['headings'].index('Sample_Name')
             continue
             ## found the index for projects
         if header_found :
@@ -78,7 +80,9 @@ def get_samples_in_sample_sheet(in_file):
             if not valid_line :
                 continue
             samples.append(line.split(','))
+            sample_names.append(line.split(',')[index_sample_name])
     samples_dict['samples'] = samples
+    samples_dict['sample_names'] = sample_names
     fh.close()
     return samples_dict
 

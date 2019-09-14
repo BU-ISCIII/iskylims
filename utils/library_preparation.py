@@ -16,7 +16,7 @@ def analyze_input_param_values(request):
     parameters_length = len(headings)
     stored_params = []
     for i in range(len(lib_prep_ids)):
-        library_prep_obj = libraryPreparation.objects.get(pk = lib_prep_ids[i])
+        library_prep_obj = LibraryPreparation.objects.get(pk = lib_prep_ids[i])
 
         for p_index in range(fixed_heading_length, parameters_length):
             lib_parameter_value ={}
@@ -68,10 +68,10 @@ def get_protocol_lib ():
 
 def get_all_library_information(sample_id):
     library_information = {}
-    if libraryPreparation.objects.filter(sample_id__pk__exact = sample_id).exists():
+    if LibraryPreparation.objects.filter(sample_id__pk__exact = sample_id).exists():
         library_information['library_definition_heading'] = HEADING_FOR_LIBRARY_PREPARATION_DEFINITION
         library_information['library_definition'] = []
-        library_preparation_items = libraryPreparation.objects.filter(sample_id__pk__exact = sample_id)
+        library_preparation_items = LibraryPreparation.objects.filter(sample_id__pk__exact = sample_id)
         library_information['lib_prep_param_value'] = []
         for library_item in library_preparation_items:
             library_information['library_definition'].append(library_item.get_info_for_display())
@@ -100,8 +100,8 @@ def get_lib_prep_to_add_parameters():
         lib_prep_parameters.
     '''
     lib_prep_parameters = {}
-    if libraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined').exists():
-        samples = libraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined')
+    if LibraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined').exists():
+        samples = LibraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined')
         sample_info = []
         for sample in samples:
             lib_prep_info = []
@@ -126,15 +126,15 @@ def check_samples_in_lib_prep_state ():
 
     sample_names = []
 
-    if Samples.objects.filter(sampleState__sampleStateName__exact = 'Add Library preparation').exists():
-        samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact =  'Add Library preparation')
+    if Samples.objects.filter(sampleState__sampleStateName__exact = 'Library preparation').exists():
+        samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact =  'Library preparation')
 
         for sample in samples_obj :
-            if not libraryPreparation.objects.filter(sample_id = sample).exists():
+            if not LibraryPreparation.objects.filter(sample_id = sample).exists():
                 sample_names.append(sample.get_sample_name())
 
 
     return sample_names
 
-    #if libraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined').exists():
+    #if LibraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined').exists():
     #lib_preparations = libraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined')

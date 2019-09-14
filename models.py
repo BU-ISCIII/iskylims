@@ -191,59 +191,6 @@ class BaseSpaceLibraryName (models.Model):
 
 
 
-class CollectionIndexKit (models.Model):
-    collectionIndexName = models.CharField(max_length=125)
-    version = models.CharField(max_length=80,null=True)
-    plateExtension = models.CharField(max_length=125, null=True)
-    adapter1 = models.CharField(max_length=125,null=True)
-    adapter2 = models.CharField(max_length=125, null=True)
-    collectionIndexFile =  models.FileField(upload_to = wetlab_config.COLLECTION_INDEX_KITS_DIRECTORY )
-    generatedat = models.DateTimeField(auto_now_add=True, null=True)
-
-    def __srt__ (self):
-        return '%s' %(self.collectionIndexName)
-
-    def get_collection_index_name(self):
-        return '%s' %(self.collectionIndexName)
-
-    def get_id(self):
-        return '%s' %(self.pk)
-
-    def get_collection_index_information (self):
-        if self.adapter2 =='':
-            adapter2 = 'Not used on this collection'
-        else:
-            adapter2 = self.adapter2
-        collection_info = []
-        collection_info.append(self.collectionIndexName)
-        collection_info.append(self.version)
-        collection_info.append(self.plateExtension)
-        collection_info.append(self.adapter1)
-        collection_info.append(self.adapter2)
-        collection_info.append(self.collectionIndexFile)
-        return collection_info
-
-
-
-
-class CollectionIndexValues (models.Model):
-
-    collectionIndexKit_id = models.ForeignKey(
-        CollectionIndexKit,
-        on_delete=models.CASCADE)
-
-    defaultWell = models.CharField(max_length=10,null=True)
-    index_7 = models.CharField(max_length=25,null=True)
-    i_7_seq = models.CharField(max_length=25,null=True)
-    index_5 = models.CharField(max_length=25,null=True)
-    i_5_seq = models.CharField(max_length=25,null=True)
-
-
-    def get_index_value_information (self):
-        return '%s;%s;%s;%s;%s' %(self.defaultWell, self.index_7, self.i_7_seq,
-                        self.index_5, self.i_5_seq)
-
-
 class Projects(models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
@@ -720,6 +667,58 @@ class SamplesInProject (models.Model):
 # New objets for handling library preparation
 ################################################
 
+
+class CollectionIndexKit (models.Model):
+    collectionIndexName = models.CharField(max_length=125)
+    version = models.CharField(max_length=80,null=True)
+    plateExtension = models.CharField(max_length=125, null=True)
+    adapter1 = models.CharField(max_length=125,null=True)
+    adapter2 = models.CharField(max_length=125, null=True)
+    collectionIndexFile =  models.FileField(upload_to = wetlab_config.COLLECTION_INDEX_KITS_DIRECTORY )
+    generatedat = models.DateTimeField(auto_now_add=True, null=True)
+
+    def __str__ (self):
+        return '%s' %(self.collectionIndexName)
+
+    def get_collection_index_name(self):
+        return '%s' %(self.collectionIndexName)
+
+    def get_id(self):
+        return '%s' %(self.pk)
+
+    def get_collection_index_information (self):
+        if self.adapter2 =='':
+            adapter2 = 'Not used on this collection'
+        else:
+            adapter2 = self.adapter2
+        collection_info = []
+        collection_info.append(self.collectionIndexName)
+        collection_info.append(self.version)
+        collection_info.append(self.plateExtension)
+        collection_info.append(self.adapter1)
+        collection_info.append(self.adapter2)
+        collection_info.append(self.collectionIndexFile)
+        return collection_info
+
+
+
+
+class CollectionIndexValues (models.Model):
+    collectionIndexKit_id = models.ForeignKey(
+        CollectionIndexKit,
+        on_delete=models.CASCADE)
+
+    defaultWell = models.CharField(max_length=10,null=True)
+    index_7 = models.CharField(max_length=25,null=True)
+    i_7_seq = models.CharField(max_length=25,null=True)
+    index_5 = models.CharField(max_length=25,null=True)
+    i_5_seq = models.CharField(max_length=25,null=True)
+
+
+    def get_index_value_information (self):
+        return '%s;%s;%s;%s;%s' %(self.defaultWell, self.index_7, self.i_7_seq,
+                        self.index_5, self.i_5_seq)
+
 class libPreparationUserSampleSheetManager (models.Manager):
 
     def create_lib_prep_user_sample_sheet (self, user_sample_sheet_data):
@@ -732,11 +731,11 @@ class libPreparationUserSampleSheet (models.Model):
     registerUser = models.ForeignKey(
             User,
             on_delete=models.CASCADE)
-    '''
-    indexLibraryKit_id = models.ForeignKey(
-                IndexLibraryKit,
+
+    collectionIndexKit_id = models.ForeignKey(
+                CollectionIndexKit,
                 on_delete= models.CASCADE, null = True)
-    '''
+
     sampleSheet = models.FileField(upload_to = wetlab_config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY)
     generatedat = models.DateTimeField(auto_now_add=True, null=True)
 
@@ -745,14 +744,14 @@ class libPreparationUserSampleSheet (models.Model):
 
     objects = libPreparationUserSampleSheetManager()
 
-class LibraryPoolRunManager (models.Manager):
+class LibraryPoolManager (models.Manager):
     def create_lib_pool_run (self, pool_run_data):
         new_library_pool = self.create(registerUser = pool_run_data['registerUser']  , poolName = pool_run_data['poolName'],
                     sampleSheet = pool_run_data['sampleSheet'] , experiment_name = pool_run_data['experiment_name'] ,
                     plateName =  pool_run_data['plateName'] ,  containerID = pool_run_data['containerID'],
                     libUsedInBaseSpace = pool_run_data['libUsedInBaseSpace'])
 
-class LibraryPoolRun (models.Model):
+class LibraryPool (models.Model):
     registerUser = models.ForeignKey(
             User,
             on_delete=models.CASCADE)
@@ -766,7 +765,7 @@ class LibraryPoolRun (models.Model):
     generated_at = models.DateTimeField(auto_now_add=True)
 
 
-    objects = LibraryPoolRunManager()
+    objects = LibraryPoolManager()
 
 
 class StatesForLibraryPreparation (models.Model):
@@ -785,6 +784,7 @@ class libraryPreparationManager(models.Manager):
         lib_state = StatesForLibraryPreparation.objects.get(libPrepState =  'Defined')
         new_lib_prep = self.create(registerUser = reg_user, molecule_id = molecule_obj, sample_id = lib_prep_data['sample_id'],
             protocol_id =   lib_prep_data['protocol_obj'], user_sample_sheet = user_sample_obj, userSampleID = lib_prep_data['userSampleID'],
+            collectionIndex_id = lib_prep_data['collection_index_kit_id'],
             projectInSampleSheet = lib_prep_data['projectInSampleSheet'], samplePlate = lib_prep_data['samplePlate'],
             sampleWell = lib_prep_data['sampleWell'], i7IndexID = lib_prep_data['i7IndexID'],
             i7Index = lib_prep_data['i7Index'], i5IndexID = lib_prep_data['i5IndexID'],
@@ -793,7 +793,7 @@ class libraryPreparationManager(models.Manager):
 
         return new_lib_prep
 
-class libraryPreparation (models.Model):
+class LibraryPreparation (models.Model):
     registerUser = models.ForeignKey(
             User,
             on_delete=models.CASCADE)
@@ -814,6 +814,9 @@ class libraryPreparation (models.Model):
                 on_delete= models.CASCADE, null = True, blank = True)
     user_sample_sheet = models.ForeignKey(
                 libPreparationUserSampleSheet,
+                on_delete= models.CASCADE, null = True)
+    collectionIndex_id = models.ForeignKey(
+                CollectionIndexKit,
                 on_delete= models.CASCADE, null = True)
 
     libPrepCodeID = models.CharField(max_length=255)
@@ -890,6 +893,9 @@ class libraryPreparation (models.Model):
         lib_info.append(user_name)
         return lib_info
 
+    def get_collection_index_kit (self):
+        return '%s' %(self.collectionIndex_id.get_collection_index_name())
+
     def get_indexes (self):
         if self.i5IndexID == None:
             i5IndexID = ''
@@ -948,7 +954,7 @@ class LibParameterValue (models.Model):
                     ProtocolParameters,
                     on_delete= models.CASCADE)
     library_id = models.ForeignKey(
-                libraryPreparation,
+                LibraryPreparation,
                 on_delete= models.CASCADE)
     parameterValue = models.CharField(max_length=255)
     generated_at = models.DateTimeField(auto_now_add=True)

@@ -89,42 +89,49 @@ def get_collection_settings (input_file):
     '''
     collection_index_settings ={}
     adapter_list = []
+    found_version = False
     with open (input_file, encoding="utf-8") as fh:
         for line in fh:
+            line=line.rstrip()
+            if line == "":
+                continue
             if '[Version]' in line :
                found_version = True
                continue
             if found_version:
-                collection_index_settings['version'] = line.rstrip()
+                collection_index_settings['version'] = line
                 found_version = False
                 continue
             if '[Name]' in line :
                 found_name = True
                 continue
             if found_name:
-                collection_index_settings['name'] = line.rstrip()
+                collection_index_settings['name'] = line
                 found_name = False
                 continue
             if '[PlateExtension]' in line:
                 found_extension = True
                 continue
             if found_extension :
-                collection_index_settings['plate_extension'] = line.rstrip()
+                collection_index_settings['plate_extension'] = line
                 found_extension = False
                 continue
             if '[Settings]' in line:
                 found_settings = True
                 continue
             if found_settings :
-                line=line.rstrip()
                 line_split= line.split('\t')
                 # No more adapters  have been found. copy the adapters in library_settings
                 # dictionary and exit the loop
-                if len (line_split) == 1:
+
+                if 'Adapter' in line:
+                    adapter_list.append(line_split[-1])
+                if (len (line_split) == 1 and len(adapter_list) > 0):
+
                     collection_index_settings['adapters'] = adapter_list
                     break
                 else:
-                    adapter_list.append(line_split[-1])
+                    continue
     return collection_index_settings
 
 
@@ -183,6 +190,9 @@ def get_index_values (input_file):
     index_values = []
     with open (input_file , encoding="utf-8") as fh :
         for line in fh:
+            line=line.rstrip()
+            if line == "":
+                continue
             if '[I7]' in line :
                 found_I7 = True
                 continue
@@ -213,6 +223,8 @@ def get_index_values (input_file):
                         continue
                     else:
                         break
+                if len(index_values) > 0 :
+                    break
                 else:
                     layout_found = True
                     continue
@@ -230,7 +242,7 @@ def get_index_values (input_file):
 def store_collection_kits_file(collection_file):
     '''
     Description:
-        The function is store the collection kit file inisde COLLECTION_INDEX_KITS_DIRECTORY
+        The function is store the collection kit file inside COLLECTION_INDEX_KITS_DIRECTORY
 
     Input:
         collection_file     # contains the file to be saved

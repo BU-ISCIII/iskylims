@@ -31,7 +31,7 @@
         <div class="panel panel-default">
           <div class="panel-heading"><h3>Collection Index kits defined</h3></div>
           <div class="panel-body">
-          {% if list_of_collection_index.collection_index %}
+          {% if collection_index_information.collection_index %}
                 <table class="table table-hover">
                    <thead>
                       <tr>
@@ -39,7 +39,7 @@
                       </tr>
                    </thead>
                    <tbody>
-                    {% for  key, value in collection_index_information.index_libraries %}
+                    {% for  key, value in collection_index_information.collection_index %}
                         <tr>
                        <td><a href="/wetlab/DisplayIndexLibrary={{ key }}">{{ value }}</a></td>
                        </tr>
