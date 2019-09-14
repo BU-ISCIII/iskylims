@@ -87,7 +87,7 @@ def add_molecule_protocol_parameters(request):
         molecule_updated_list.append(molecule_obj.get_molecule_code_id())
 
         # Update sample state
-        molecule_obj.get_sample_obj().set_state('Add Library preparation')
+        molecule_obj.get_sample_obj().set_state('Library preparation')
 
         for p_index in range(fixed_heading_length, parameters_length):
             molecule_parameter_value['moleculeParameter_id'] = ProtocolParameters.objects.get(protocol_id = protocol_used_obj,
@@ -259,6 +259,7 @@ def check_if_sample_already_defined (sample_name,reg_user):
 
 def get_all_sample_information (sample_id ):
     sample_information = {}
+    parameter_heading_values = []
     if not Samples.objects.filter(pk__exact = sample_id).exists():
         return 'Error'
     sample_obj = Samples.objects.get(pk__exact = sample_id)
@@ -281,9 +282,11 @@ def get_all_sample_information (sample_id ):
                     molecule_param_heading.append(p_name.get_parameter_name())
                     if MoleculeParameterValue.objects.filter(molecule_id = molecule).exists():
                         mol_param_value.append(MoleculeParameterValue.objects.get(molecule_id = molecule, moleculeParameter_id = p_name).get_param_value())
-                sample_information['molecule_parameter_values'].append(mol_param_value)
-                sample_information['molecule_parameter_heading'] = molecule_param_heading
-            
+                parameter_heading_values.append([molecule_param_heading, mol_param_value ])
+                #sample_information['molecule_parameter_values'].append(mol_param_value)
+                #sample_information['molecule_parameter_heading'] = molecule_param_heading
+        
+        sample_information['parameter_heading_values'] = parameter_heading_values
     return sample_information
 
 def get_defined_samples (register_user):
@@ -371,7 +374,8 @@ def get_samples_in_defined_state ():
 def get_samples_in_extracted_molecule_state ():
     '''
     Description:
-        The function will return a list with samples which are in extracted_molecule state.
+        The function will return a list with samples which are in extracted_molecule state,
+        excluding the ones that molecule state are Completed.
     Input:
 
     Variables:
@@ -388,6 +392,8 @@ def get_samples_in_extracted_molecule_state ():
             molecules = MoleculePreparation.objects.filter(sample = sample_obj)
 
             for molecule in molecules:
+                if molecule.get_state() == 'Completed':
+                    continue
                 sample_information = []
                 sample_information.append(sample_obj.get_extraction_date())
                 sample_information.append(sample_obj.get_sample_name())
