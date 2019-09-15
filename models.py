@@ -774,6 +774,7 @@ class LibraryPool (models.Model):
     #plateName = models.CharField(max_length=50)
     #containerID = models.CharField(max_length=50, null =True, blank = True)
     #libUsedInBaseSpace = models.CharField(max_length=50)
+    numberOfSamples = models.IntegerField(default=0)
     poolCodeID = models.CharField(max_length=50, blank = True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
@@ -782,6 +783,16 @@ class LibraryPool (models.Model):
 
     def get_pool_name(self):
         return '%s' %(self.poolName)
+
+    def get_id(self):
+        return '%s' %(self.pk)
+
+    def get_info(self):
+        pool_info =[]
+        pool_info.append(self.poolName)
+        pool_info.append(self.poolCodeID)
+        pool_info.append(self.numberOfSamples)
+        return pool_info
 
     objects = LibraryPoolManager()
 

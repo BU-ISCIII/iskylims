@@ -30,6 +30,7 @@ from .utils.testing_wetlab_configuration import *
 from .utils.sample_functions import *
 from .utils.library_preparation import *
 from .utils.pool_preparation import *
+from .utils.run_preparation import  *
 #from .utils.samplesheet_checks import *
 #from .utils.parsing_run_info import get_machine_lanes
 #from .utils.wetlab_misc_utilities import normalized_data
@@ -3658,5 +3659,23 @@ def create_pool (request):
 
 @login_required
 def create_new_run (request):
-
+    if request.user.is_authenticated:
+        if not is_wetlab_manager(request):
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':['You do not have enough privileges to see this page ',
+                            'Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+    if request.method == 'POST' and request.POST['action'] == 'createPool':
+        pass
+    else:
+        # Selecting pools to create the Run
+        display_pools_for_run = {}
+        polls_available = get_available_pools_for_run()
+        if polls_available:
+            display_pools_for_run['pool_data'] = get_pool_info(polls_available)
+            return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run})
+        else:
+            return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'no_pools_for_run': 'No pools'})
     return

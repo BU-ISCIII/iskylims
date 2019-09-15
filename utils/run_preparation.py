@@ -74,3 +74,25 @@ def create_sample_sheet(data):
     fh.write(result)
     fh.close()
     return
+
+
+def get_available_pools_for_run():
+    if not LibraryPool.objects.filter(poolState__poolState__exact = 'Defined').exists():
+        return
+    pools_available = LibraryPool.objects.filter(poolState__poolState__exact = 'Defined')
+
+    return pools_available
+
+def get_pool_info (pools_available):
+    pool_data = {}
+    pool_data['heading'] = wetlab_config.HEADING_FOR_SELECTING_POOLS
+    pool_data['data'] = []
+    pool_ids = []
+    for pool in pools_available:
+        
+        data = pool.get_info()
+        data.append(pool.get_id())
+        pool_data['data'].append(data)
+        pool_ids.append(pool.get_id())
+    pool_data['pool_ids'] = ','.join(pool_ids)
+    return pool_data
