@@ -2,7 +2,7 @@
 from iSkyLIMS_core.models import *
 from django.contrib.auth.models import User
 
-def get_user_comercial_kits(register_user_obj, protocol_obj):
+def get_lot_comercial_kits(register_user_obj, protocol_obj):
     user_kit_list = []
 
     if UserComercialKits.objects.filter(user = register_user_obj, basedComercial__protocol_id = protocol_obj.type).exists():

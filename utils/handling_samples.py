@@ -285,7 +285,7 @@ def get_all_sample_information (sample_id ):
                 parameter_heading_values.append([molecule_param_heading, mol_param_value ])
                 #sample_information['molecule_parameter_values'].append(mol_param_value)
                 #sample_information['molecule_parameter_heading'] = molecule_param_heading
-        
+
         sample_information['parameter_heading_values'] = parameter_heading_values
     return sample_information
 
@@ -407,9 +407,13 @@ def get_samples_in_extracted_molecule_state ():
     else:
         return ''
 
-
-
 ##### End of getting samples by state
+
+def get_sample_instance(sample_id, register_user):
+    if Samples.objects.filter(sampleName__exact = sample_id, sampleUser__username__exact = register_user).exists():
+        sample_obj = Samples.objects.get(sampleName__exact = sample_id, sampleUser__username__exact = register_user)
+        return sample_obj
+    return
 
 def get_sample_type ():
     '''

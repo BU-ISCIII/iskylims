@@ -1,26 +1,27 @@
 {% extends 'iSkyLIMS_core/base.html' %}
 {% load static %}
 {% block content %}
-        <div class="row margin-b-4">
-                <div class="col-sm-6 col-sm-offset-6">
-                        {% include 'registration/login_inline.html' %}
-                </div>
-        </div>
 
-    <div class="row row-space-2 margin-t-60">
-        {% for app , text in apps_in_iskylims %}
-             <div class="col-sm-4 col-sm-offset-2">
-                 <div class="panel panel-default">
-                        <div class="panel-heading"><h3>{{text}}</h3></div>
-                        <div class="panel-body">
-                                <a href="/{{ app|cut:"iSkyLIMS_" }}/">
-                                    <img class="img-responsive" src="/static/{{app}}/img/{{ app }}.png" alt="{{ base_url }}iSkyLIMS_common_static/img/{{ app }}.png"></img>
-                                    
-                                    
-                                </a>
-                        </div>   <!--// end panel body -->
-                </div> <!--// end panel -->
-            </div> <!--// end col-sm-4-->
-        {% endfor %}
-    </div> <!--// end row -->
+<div class="row margin-b-4">
+        <div class="col-sm-6 col-sm-offset-6">
+                {% include 'registration/login_inline.html' %}
+        </div>
+</div>
+
+<div class="row row-space-2 margin-t-60">
+    {% for app , text in apps_in_iskylims %}
+         <div class="col-sm-4 col-sm-offset-2">
+             <div class="panel panel-default">
+                    <div class="panel-heading"><h3>{{text}}</h3></div>
+                    <div class="panel-body" style="height: 360px;">
+                            <a href="/{{ app|cut:"iSkyLIMS_" }}/">
+                                <img class="img-responsive" src="/static/{{app}}/img/{{ app }}.png" alt="{{ base_url }}iSkyLIMS_common_static/img/{{ app }}.png"></img>
+
+
+                            </a>
+                    </div>   <!--// end panel body -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-4-->
+    {% endfor %}
+</div> <!--// end row -->
 {% endblock %}
