@@ -24,6 +24,9 @@ class LibParameterValueAdmin (admin.ModelAdmin):
     list_display = ('parameter_id', 'library_id', 'parameterValue')
 
 
+class LibraryPoolAdmin(admin.ModelAdmin):
+    list_display = ('registerUser', 'poolState', 'poolName', 'poolCodeID')
+
 class RunErrorsAdmin (admin.ModelAdmin):
     list_display = ('errorCode', 'errorText')
 
@@ -59,6 +62,8 @@ class SamplesInProjectAdmin (admin.ModelAdmin):
 class StatesForLibraryPreparationAdmin (admin.ModelAdmin):
     list_display = ('libPrepState',)
 
+class StatesForPoolAdmin (admin.ModelAdmin):
+    list_display = ('poolState',)
 
 ### New for library preparation
 '''
@@ -90,6 +95,10 @@ class ProtocolParametersAdmin (admin.ModelAdmin):
 
 admin.site.register(LibraryPreparation, LibraryPreparationAdmin)
 admin.site.register(LibParameterValue, LibParameterValueAdmin)
+
+LibraryPool
+admin.site.register(LibraryPool, LibraryPoolAdmin)
+
 admin.site.register(RunningParameters , RunningParametersAdmin)
 admin.site.register(RunProcess , RunProcessAdmin)
 admin.site.register(BaseSpaceLibraryName,BaseSpaceLibraryNameAdmin)
@@ -98,6 +107,7 @@ admin.site.register(Projects, ProjectsAdmin)
 admin.site.register(RunErrors, RunErrorsAdmin)
 admin.site.register(RunStates, RunStatesAdmin)
 admin.site.register(StatesForLibraryPreparation, StatesForLibraryPreparationAdmin)
+admin.site.register(StatesForPool, StatesForPoolAdmin)
 
 
 

@@ -744,26 +744,44 @@ class libPreparationUserSampleSheet (models.Model):
 
     objects = libPreparationUserSampleSheetManager()
 
+class StatesForPool (models.Model):
+    poolState = models.CharField(max_length=50)
+
+    def __str__ (self):
+        return '%s' %(self.poolState)
+
+    def get_pool_state(self):
+        return '%s' %(self.poolState)
+
 class LibraryPoolManager (models.Manager):
-    def create_lib_pool_run (self, pool_run_data):
-        new_library_pool = self.create(registerUser = pool_run_data['registerUser']  , poolName = pool_run_data['poolName'],
-                    sampleSheet = pool_run_data['sampleSheet'] , experiment_name = pool_run_data['experiment_name'] ,
-                    plateName =  pool_run_data['plateName'] ,  containerID = pool_run_data['containerID'],
-                    libUsedInBaseSpace = pool_run_data['libUsedInBaseSpace'])
+    def create_lib_pool (self, pool_data):
+        new_library_pool = self.create(registerUser = pool_data['registerUser']  ,
+                    poolState = StatesForPool.objects.get(poolState__exact = 'Defined'),
+                    poolName = pool_data['poolName'], poolCodeID = pool_data['poolCodeID'])
+        return new_library_pool
+
 
 class LibraryPool (models.Model):
     registerUser = models.ForeignKey(
             User,
             on_delete=models.CASCADE)
+    poolState = models.ForeignKey(
+                StatesForPool,
+                on_delete= models.CASCADE)
     poolName = models.CharField(max_length=50)
-    sampleSheet = models.FileField(upload_to = wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY)
-    experiment_name = models.CharField(max_length=50)
-    plateName = models.CharField(max_length=50)
-    containerID = models.CharField(max_length=50, null =True, blank = True)
-    libUsedInBaseSpace = models.CharField(max_length=50)
-    poolCodeId = models.CharField(max_length=50, blank = True)
+    #sampleSheet = models.FileField(upload_to = wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY)
+    #experiment_name = models.CharField(max_length=50)
+    #plateName = models.CharField(max_length=50)
+    #containerID = models.CharField(max_length=50, null =True, blank = True)
+    #libUsedInBaseSpace = models.CharField(max_length=50)
+    poolCodeID = models.CharField(max_length=50, blank = True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__ (self):
+        return '%s' %(self.poolName)
+
+    def get_pool_name(self):
+        return '%s' %(self.poolName)
 
     objects = LibraryPoolManager()
 
@@ -802,22 +820,25 @@ class LibraryPreparation (models.Model):
                 on_delete= models.CASCADE)
     sample_id = models.ForeignKey(
                 Samples,
-                on_delete= models.CASCADE, null = True)
+                on_delete= models.CASCADE, null = True, blank = True)
     protocol_id = models.ForeignKey(
                 Protocols,
-                on_delete= models.CASCADE, null = True)
+                on_delete= models.CASCADE, null = True, blank = True)
     libPrepState = models.ForeignKey(
                 StatesForLibraryPreparation,
-                on_delete= models.CASCADE, null = True)
+                on_delete= models.CASCADE, null = True, blank = True)
     user_reagentKit_id = models.ForeignKey(
                 UserComercialKits,
                 on_delete= models.CASCADE, null = True, blank = True)
     user_sample_sheet = models.ForeignKey(
                 libPreparationUserSampleSheet,
-                on_delete= models.CASCADE, null = True)
+                on_delete= models.CASCADE, null = True, blank = True)
     collectionIndex_id = models.ForeignKey(
                 CollectionIndexKit,
-                on_delete= models.CASCADE, null = True)
+                on_delete= models.CASCADE, null = True, blank = True)
+    pool_id = models.ForeignKey(
+                LibraryPool,
+                on_delete= models.CASCADE, null = True, blank = True)
 
     libPrepCodeID = models.CharField(max_length=255)
     userSampleID = models.CharField(max_length =20)
@@ -857,51 +878,48 @@ class LibraryPreparation (models.Model):
         lib_info.append(self.numberOfReused)
         return lib_info
 
-    def get_info_for_run(self):
-        if self.user_reagentKit_id == None :
-            reagent_kit = ''
+    def get_info_for_selection_in_pool(self):
+        if self.collectionIndex_id == None :
+            collection_index_kit = ''
         else:
-            reagent_kit = self.user_reagentKit_id.get_comercial_kit()
+            collection_index_kit = self.collectionIndex_id.get_collection_index_name()
         lib_info = []
         lib_info.append(self.libPrepCodeID)
         lib_info.append(self.sample_id.get_sample_name())
-        lib_info.append(reagent_kit)
+        lib_info.append(self.registerUser.username)
+        lib_info.append(collection_index_kit)
         lib_info.append(self.i7IndexID)
         lib_info.append(self.i5IndexID)
         lib_info.append(self.pk)
         return lib_info
 
-    def get_info_for_pool (self):
+    def get_info_for_display_pool (self):
         if self.registerUser.username == None:
             user_name = ''
         else :
             user_name = self.registerUser.username
-        pool_name = ''
-        basespace_library = ''
+
         lib_info = []
         lib_info.append(self.libPrepCodeID)
         lib_info.append(self.get_sample_name())
-        lib_info.append(self.sampleWell)
-
-        lib_info.append(self.i7IndexID)
-        lib_info.append(self.i7Index)
-        lib_info.append(self.i5IndexID)
-        lib_info.append(self.i5Index)
-        lib_info.append(pool_name)
-        lib_info.append(basespace_library)
-        lib_info.append(self.projectInSampleSheet)
         lib_info.append(user_name)
+        lib_info.append(self.get_sample_id())
         return lib_info
 
     def get_collection_index_kit (self):
         return '%s' %(self.collectionIndex_id.get_collection_index_name())
 
     def get_indexes (self):
+        index = {}
         if self.i5IndexID == None:
-            i5IndexID = ''
+            index['i5_indexID'] = ''
+            index['i5_seq'] = ''
         else:
-            i5IndexID = self.i5IndexID
-        return '%s_%s' %(self.i7IndexID, i5IndexID )
+            index['i5_indexID']= self.i5IndexID
+            index['i5_seq'] = self.i5Index
+        index['i7_indexID'] = self.i7IndexID
+        index['i7_seq'] = self.i7Index
+        return index
 
     def get_lib_prep_code (self):
         return '%s' %(self.libPrepCodeID)
@@ -909,14 +927,17 @@ class LibraryPreparation (models.Model):
     def get_protocol_used (self):
         return '%s'  %(self.protocol_id.get_name())
 
+    def get_protocol_obj(self):
+        return self.protocol_id
+
     def get_reagents_kit_used(self):
         return '%s' %(self.reagent_id.get_nick_name())
 
     def get_sample_name(self):
         return '%s' %(self.sample_id.get_sample_name())
 
-    def get_protocol_obj(self):
-        return self.protocol_id
+    def get_sample_id(self):
+        return self.sample_id.pk
 
     def get_sample_obj(self):
         return self.sample_id
@@ -929,6 +950,10 @@ class LibraryPreparation (models.Model):
 
     def set_increase_reuse(self):
         self.numberOfReused += 1
+        self.save()
+
+    def set_pool (self , pool_obj):
+        self.pool_id = pool_obj
         self.save()
 
     def set_state(self , state_value):
@@ -966,3 +991,19 @@ class LibParameterValue (models.Model):
         return '%s' %(self.parameterValue)
 
     objects = LibParameterValueManager()
+
+'''
+class ChangesForBaseSpace (models.Model):
+    pool_id = models.ForeignKey(
+                LibraryPool,
+                on_delete= models.CASCADE)
+
+    lib_prep_id = models.ForeignKey(
+                LibraryPreparation,
+                on_delete= models.CASCADE)
+
+    i7IndexID = models.CharField(max_length =16)
+    i7Index = models.CharField(max_length =16)
+    i5IndexID = models.CharField(max_length =16)
+    i5Index = models.CharField(max_length =16)
+'''

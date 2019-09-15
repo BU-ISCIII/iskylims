@@ -3465,7 +3465,10 @@ def set_library_preparation(request):
                 data = ['']*length_heading
                 data[0] = extracted_data['sample_id']
                 data[1] = lib_prep_code_id
-                data[3] = collection_index_kit_id.get_collection_index_name()
+                if not collection_index_kit_id :
+                    data[3] = 'collection Index not defined'
+                else:
+                    data[3] = collection_index_kit_id.get_collection_index_name()
                 stored_lib_prep['data'].append(data)
 
             else:
@@ -3598,7 +3601,7 @@ def create_pool (request):
     else:
         #redirect to login webpage
         return redirect ('/accounts/login')
-    if request.method == 'POST' and request.POST['action'] == 'continueWithPool':
+    if request.method == 'POST' and request.POST['action'] == 'createPool':
 
         if  'lib_prep_in_list' in request.POST:
             lib_prep_ids = request.POST.getlist('lib_prep_id')
@@ -3606,36 +3609,47 @@ def create_pool (request):
                 lib_prep_ids = list(request.POST['lib_prep_id'])
         else:
             lib_prep_ids = request.POST['lib_prep_id'].split(',')
-
+        pool_name = request.POST['poolName']
         compatible_in_run = check_index_compatible(lib_prep_ids)
 
         if  compatible_in_run == True:
-            information_for_selected_run = get_info_to_create_pool(lib_prep_ids)
-            return  render(request, 'iSkyLIMS_wetlab/createPool.html',{'information_for_selected_run': information_for_selected_run})
+            pool_data = {}
+            pool_code_id = ''
+            pool_data['poolName'] = pool_name
+            pool_data['poolCodeID'] = ''
+            pool_data['registerUser'] = request.user
+            new_pool = LibraryPool.objects.create_lib_pool(pool_data)
+            # update pool_id in each library_preparation belongs the new pool
+            for lib_prep in lib_prep_ids:
+                if  LibraryPreparation.objects.filter(pk__exact = lib_prep).exists():
+                    lib_prep_obj = LibraryPreparation.objects.get(pk__exact = lib_prep)
+                    lib_prep_obj.set_pool(new_pool)
+                else:
+                    continue
+
+            information_for_created_pool = get_info_to_display_created_pool(lib_prep_ids, pool_name,pool_code_id )
+
+            return  render(request, 'iSkyLIMS_wetlab/createPool.html',{'information_for_created_pool': information_for_created_pool})
         else:
             return  render(request, 'iSkyLIMS_wetlab/createPool.html',{'incompatible_samples': compatible_in_run})
 
-    elif request.method == 'POST' and request.POST['action'] == 'createRun':
-        if  'lib_prep_in_list' in request.POST:
-            lib_prep_ids = request.POST.getlist('lib_prep_id')
-            if len('lib_prep_in_list') == 0:
-                lib_prep_ids = list(request.POST['lib_prep_id'])
-        else:
-            lib_prep_ids = request.POST['lib_prep_id'].split(',')
         exp_name = request.POST['experimentName']
-        exp_name = request.POST['experimentName']
+        plate_name = request.POST['plateName']
+        container_id = request.POST['containerID']
+        '''
         analyze_input_pool(request.POST, request.user)
 
         return  render(request, 'iSkyLIMS_wetlab/createPool.html',{'incompatible_index': compatible_in_run})
+    '''
     else:
         display_list = {}
         display_list['data'] = []
 
-        if LibraryPreparation.objects.filter(libPrepState__libPrepState = 'Completed').exists():
+        if LibraryPreparation.objects.filter(libPrepState__libPrepState = 'Completed', pool_id = None ).exists():
 
-            lib_preparations =  LibraryPreparation.objects.filter(libPrepState__libPrepState = 'Completed').order_by('registerUser')
+            lib_preparations =  LibraryPreparation.objects.filter(libPrepState__libPrepState = 'Completed', pool_id = None).order_by('registerUser')
             for lib_prep in lib_preparations :
-                display_list['data'].append( lib_prep.get_info_for_run())
+                display_list['data'].append( lib_prep.get_info_for_selection_in_pool())
 
             display_list['heading'] = HEADING_FOR_SELECTING_SAMPLES
 
