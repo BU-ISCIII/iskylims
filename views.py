@@ -21,6 +21,7 @@ from .models import *
 from iSkyLIMS_wetlab import wetlab_config
 ## import methods defined on utils.py
 from .utils.sample_sheet_utils import *
+from .utils.sample_functions import *
 from .utils.stats_calculation import *
 from .utils.stats_graphics import *
 from .utils.generic_functions import *
@@ -3234,13 +3235,53 @@ def record_samples(request):
             sample_information = prepare_sample_input_table()
             return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
         else :
+            if 'sample_id_for_action' in sample_recorded :
+                sample_recorded.update(get_available_codeID_for_resequencing(sample_recorded))
+                '''
+                mol_lib_prep_available = {}
+                lib_prep_available = ['New Library Preparation']
+                mol_lib_prep_available['New Extraction'] =['---']
+                sample_obj = get_sample_obj_from_id (sample_recorded['sample_id_for_action'])
+                molecules_obj = get_molecule_obj_from_sample(sample_recorded['sample_id_for_action'])
+
+                for molecule_obj in molecules_obj:
+                    molecule_id = get_molecule_codeid_from_object (molecule_obj)
+                    mol_lib_prep_available[molecule_id] = ['New Library Preparation']
+                    if LibraryPreparation.objects.filter(molecule_id = molecule_obj, sample_id = sample_obj).exists():
+                        libs_prep_obj =  LibraryPreparation.objects.filter(molecule_id = molecule_obj, sample_id = sample_obj)
+                        for lib_prep_obj in libs_prep_obj :
+                            lib_prep_available.append(lib_prep_obj.get_lib_prep_code())
+                            mol_lib_prep_available[molecule_id].append(lib_prep_obj.get_lib_prep_code())
+
+                sample_recorded['rep_filter_selection'] = []
+                for key, value in mol_lib_prep_available.items():
+                    sample_recorded['rep_filter_selection'].append([key, value])
+                sample_recorded['molecule_available'] = list(mol_lib_prep_available.keys())
+                sample_recorded['lib_prep_available'] = lib_prep_available
+                #import pdb; pdb.set_trace()
+                '''
             return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
     elif request.method == 'POST' and request.POST['action'] == 'reprocessSamples':
         samples = {}
-        reprocess_s_ids = request.POST['invalidSamplesID'].split(',')
-        for s_id in reprocess_s_ids:
-            samples[s_id] = request.POST[s_id]
-        reprocess_result, require_to_update = reprocess_samples(samples)
+
+        to_be_reprocessed_ids = request.POST['invalidSamplesID'].split(',')
+        reprocess_id = request.POST['sampleIDforAction']
+        json_data = json.loads(request.POST['reprocess_data'])
+        import pdb; pdb.set_trace()
+        #for s_id in reprocess_s_ids:
+        #    samples[s_id] = request.POST[s_id]
+        sample_recorded = {}
+        result = analyze_reprocess_data(json_data, reprocess_id)
+        if result == 'Invalid options':
+            to_be_reprocessed_ids.insert(0,reprocess_id)
+            sample_recorded = get_info_for_reprocess_samples(to_be_reprocessed_ids, reprocess_id)
+            sample_recorded['invalid_samples_id'] = request.POST['invalidSamplesID']
+            sample_recorded['sample_id_for_action'] = reprocess_id
+            sample_recorded.update(get_available_codeID_for_resequencing(sample_recorded))
+            sample_recorded['reprocess_result'] = 'False'
+            import pdb; pdb.set_trace()
+        return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
+
         if len(require_to_update) > 0 :
             for key, value in require_to_update.items():
                 if value == 'newLibPreparation':
@@ -3652,7 +3693,7 @@ def create_pool (request):
             for lib_prep in lib_preparations :
                 display_list['data'].append( lib_prep.get_info_for_selection_in_pool())
 
-            display_list['heading'] = HEADING_FOR_SELECTING_SAMPLES
+            display_list['heading'] = wetlab_config.HEADING_FOR_DISPLAY_SAMPLES_IN_POOL
 
         return  render(request, 'iSkyLIMS_wetlab/createPool.html',{'display_list': display_list})
 

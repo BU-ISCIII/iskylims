@@ -80,7 +80,8 @@ def get_available_pools_for_run():
     if not LibraryPool.objects.filter(poolState__poolState__exact = 'Defined').exists():
         return
     pools_available = LibraryPool.objects.filter(poolState__poolState__exact = 'Defined')
-
+    for pool in pools_available :
+        pass
     return pools_available
 
 def get_pool_info (pools_available):
@@ -89,7 +90,7 @@ def get_pool_info (pools_available):
     pool_data['data'] = []
     pool_ids = []
     for pool in pools_available:
-        
+
         data = pool.get_info()
         data.append(pool.get_id())
         pool_data['data'].append(data)
