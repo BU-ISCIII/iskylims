@@ -149,18 +149,23 @@ def analyze_input_samples (request):
             #import pdb; pdb.set_trace()
         else: # get the invalid sample to displays information to user
             sample_recorded['all_samples_valid'] = False
-            invalid_samples.append(Samples.objects.get(sampleName__exact = sample_name).get_sample_definition_information())
             sample_id = Samples.objects.get(sampleName__exact = sample_name).get_sample_id()
-            invalid_samples[len(invalid_samples)-1].append(sample_id)
-            invalid_samples_id.append(sample_id)
-        sample_recorded['valid_samples'] = valid_samples
-        sample_recorded['invalid_samples'] = invalid_samples
-        sample_recorded['invalid_samples_id'] = ','.join(invalid_samples_id)
-        sample_recorded['heading'] = HEADING_FOR_DISPLAY_RECORDED_SAMPLES
+            if not 'sample_id_for_action' in sample_recorded:
+                # get the first no valid sample to ask user for new action on the sample
+                sample_recorded['sample_data_for_action'] = Samples.objects.get(sampleName__exact = sample_name).get_sample_definition_information()
+                sample_recorded['sample_id_for_action'] = sample_id
+                invalid_samples.append(Samples.objects.get(sampleName__exact = sample_name).get_sample_definition_information())
+            else:
+                invalid_samples_id.append(sample_id)
+                invalid_samples.append(Samples.objects.get(sampleName__exact = sample_name).get_sample_definition_information())
+    sample_recorded['valid_samples'] = valid_samples
+    sample_recorded['invalid_samples'] = invalid_samples
+    sample_recorded['invalid_samples_id'] = ','.join(invalid_samples_id)
+    sample_recorded['heading'] = HEADING_FOR_DISPLAY_RECORDED_SAMPLES
 
-        if sample_recorded['all_samples_valid']:
-            sample_recorded['samples_to_continue'] = ','.join(samples_continue)
-    #import pdb; pdb.set_trace()
+    if sample_recorded['all_samples_valid']:
+        sample_recorded['samples_to_continue'] = ','.join(samples_continue)
+
     return sample_recorded
 
 def analyze_input_molecules (request):
@@ -346,6 +351,18 @@ def get_laboratory ():
         for laboratory in laboratory_names:
             laboratories.append(laboratory.get_name())
     return laboratories
+
+def get_molecule_codeid_from_object(molecule_obj):
+    return molecule_obj.get_molecule_code_id()
+
+def get_molecule_obj_from_sample(sample_obj):
+    if MoleculePreparation.objects.filter(sample = sample_obj).exists():
+        molecules_obj = MoleculePreparation.objects.filter(sample = sample_obj)
+        return molecules_obj
+    else:
+        return ''
+
+
 ##### For each state get samples
 def get_samples_in_defined_state ():
     '''
@@ -414,6 +431,10 @@ def get_sample_instance(sample_id, register_user):
         sample_obj = Samples.objects.get(sampleName__exact = sample_id, sampleUser__username__exact = register_user)
         return sample_obj
     return
+
+def get_sample_obj_from_id(sample_id):
+    sample_obj = Samples.objects.get(pk__exact = sample_id)
+    return sample_obj
 
 def get_sample_type ():
     '''
@@ -623,34 +644,20 @@ def record_molecules (request):
     molecules_recorded['molecules'] = ','.join(molecules_ids)
     return molecules_recorded
 
-def reprocess_samples(samples):
-    result = []
-    require_to_update = {}
-    for key,value in samples.items():
-        if not Samples.objects.filter(pk__exact = key).exists():
-            continue
-        sample_obj = Samples.objects.get(pk__exact = key)
-        sample_obj.set_increase_reuse()
-        if value == 'newMoleculeExtraction':
-            sample_obj.set_state('Defined')
-            result.append([key, sample_obj.get_sample_name(),'Ready for adding new Molecule parameters'])
-        elif value == 'newLibPreparation':
-            molecule_obj = MoleculePreparation.objects.get (sample = sample_obj)
-            molecule_obj.set_increase_reuse()
-            result.append([key, sample_obj.get_sample_name(),'Ready for adding new Library Preparation parameters'])
-            sample_obj.set_state('Extract molecule')
-            require_to_update[key] = value
-        elif value == 'newPool' :
-            sample_obj.set_state('Create Pool')
-            result.append([key, sample_obj.get_sample_name(),'Ready for creating new Pool'])
-            require_to_update[key] = value
-        elif value == 'sequecingRepetion' :
-            sample_obj.set_state('Sequencing')
-            result.append([key, sample_obj.get_sample_name(),'Ready for creating new Run'])
-            require_to_update[key] = value
-        else:
-            continue
-    return result, require_to_update
+def get_info_for_reprocess_samples(sample_ids, sample_in_action):
+    sample_recorded = {}
+    invalid_samples = []
+
+    for sample_id in sample_ids :
+        if sample_id == sample_in_action :
+            sample_recorded['sample_data_for_action'] = Samples.objects.get(pk__exact = sample_id).get_sample_definition_information()
+        invalid_samples.append(Samples.objects.get(pk__exact = sample_id).get_sample_definition_information())
+
+    sample_recorded['invalid_samples'] = invalid_samples
+    # sample_recorded['invalid_samples_id'] = ','.join(sample_ids)
+    sample_recorded['heading'] = HEADING_FOR_DISPLAY_RECORDED_SAMPLES
+
+    return sample_recorded
 
 def get_table_record_molecule (samples):
     '''

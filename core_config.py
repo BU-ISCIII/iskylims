@@ -4,9 +4,9 @@
 
 ################# SAMPLE SETTINGS ##############################
 ### Headings used when recording information
-HEADING_FOR_RECORD_SAMPLES = [ 'Sample Name', 'Laboratory', 'Type of Sample', 'Species', 'Sample Extraction date']
+HEADING_FOR_RECORD_SAMPLES = [ 'Sample Name', 'Laboratory', 'Type of Sample', 'Species', 'Date for entry in Lab']
 
-HEADING_FOR_DISPLAY_RECORDED_SAMPLES = ['Unique Sample ID', 'Sample CodeID', 'Sample Name', 'Sample Extraction date', 'Type of Sample']
+HEADING_FOR_DISPLAY_RECORDED_SAMPLES = ['Unique Sample ID', 'Sample CodeID', 'Sample Name', 'Date for entry in Lab', 'Type of Sample']
 
 HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION = ['Sample ID', 'Molecule type', 'Type of Extraction', 'Extraction date', 'Protocol type',
                 'Protocol to be used']

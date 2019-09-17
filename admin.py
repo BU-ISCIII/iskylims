@@ -29,7 +29,7 @@ class MoleculeParameterValueAdmin (admin.ModelAdmin):
 
 class SamplesAdmin(admin.ModelAdmin):
     list_display = ('sampleCodeID', 'sampleState', 'laboratory', 'sampleType', 'sampleUser', 'species', 'sampleName',
-                    'sampleExtractionDate', 'uniqueSampleID',  'numberOfReused' )
+                    'sampleEntryDate', 'uniqueSampleID',  'numberOfReused' )
 
 class SampleTypeAdmin(admin.ModelAdmin):
     list_display = ('sampleType',)

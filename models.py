@@ -214,7 +214,7 @@ class SamplesManager (models.Manager):
                             sampleCodeID = sample_data['sample_id'] , sampleName =  sample_data['Sample Name'],
                             uniqueSampleID = sample_data['new_unique_value'],
                             species = Species.objects.get(spicesName__exact = sample_data['Species']),
-                            sampleExtractionDate = datetime.datetime.strptime(sample_data['Sample Extraction date'],'%Y-%m-%d %H:%M:%S'))
+                            sampleEntryDate = datetime.datetime.strptime(sample_data['Date for entry in Lab'],'%Y-%m-%d %H:%M:%S'))
 
         return new_sample
 
@@ -239,7 +239,7 @@ class Samples (models.Model):
                 on_delete=models.CASCADE, null = True)
     sampleName = models.CharField(max_length=255, null = True)
     #labSampleName = models.CharField(max_length=255, null = True, blank = True)
-    sampleExtractionDate = models.DateTimeField(auto_now_add = False, null =True)
+    sampleEntryDate = models.DateTimeField(auto_now_add = False, null =True)
     uniqueSampleID = models.CharField(max_length=8, null = True)
     #patientCodeName = models.CharField(max_length=255, null = True)
     sampleCodeID = models.CharField(max_length=60, null = True)
@@ -252,17 +252,17 @@ class Samples (models.Model):
 
     def get_sample_definition_information (self):
         sample_info = []
-        recordeddate=self.sampleExtractionDate.strftime("%d , %B , %Y")
+        recordeddate=self.sampleEntryDate.strftime("%d , %B , %Y")
         sample_info.append(self.uniqueSampleID)
         sample_info.append(self.sampleCodeID)
         sample_info.append(self.sampleName)
         sample_info.append(recordeddate)
-        sample_info.append(self.sampleType)
+        sample_info.append(self.sampleType.get_name())
         return sample_info
 
     def get_info_in_defined_state(self):
         sample_info = []
-        sample_info.append(self.sampleExtractionDate.strftime("%d , %B , %Y"))
+        sample_info.append(self.sampleEntryDate.strftime("%d , %B , %Y"))
         sample_info.append(self.sampleCodeID)
         sample_info.append(self.sampleName)
         sample_info.append(str(self.pk))
@@ -273,7 +273,7 @@ class Samples (models.Model):
         sample_info.append(str(self.pk))
         sample_info.append(self.sampleName)
         sample_info.append(self.sampleState.get_sample_state())
-        sample_info.append(self.sampleExtractionDate.strftime("%d , %B , %Y"))
+        sample_info.append(self.sampleEntryDate.strftime("%d , %B , %Y"))
         sample_info.append(self.sampleCodeID)
         sample_info.append(self.sampleType.get_name())
         sample_info.append(self.species.get_name())
