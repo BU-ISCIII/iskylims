@@ -28,9 +28,12 @@ def get_available_codeID_for_resequencing(sample_recorded):
 
 def analyze_reprocess_data(json_data, reprocess_id):
     options = json_data[-3:]
+
     if "New Extraction" in options:
-        pass
+        update_sample_reused(reprocess_id)
+
     elif 'New Library Preparation' in options:
+        import pdb; pdb.set_trace()
         pass
     elif 'New Pool' in options:
         pass
@@ -38,4 +41,4 @@ def analyze_reprocess_data(json_data, reprocess_id):
         return 'Invalid options'
 
 
-    return
+    return True

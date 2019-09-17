@@ -3267,11 +3267,11 @@ def record_samples(request):
         to_be_reprocessed_ids = request.POST['invalidSamplesID'].split(',')
         reprocess_id = request.POST['sampleIDforAction']
         json_data = json.loads(request.POST['reprocess_data'])
-        import pdb; pdb.set_trace()
+
         #for s_id in reprocess_s_ids:
         #    samples[s_id] = request.POST[s_id]
-        sample_recorded = {}
-        result = analyze_reprocess_data(json_data, reprocess_id)
+        #sample_recorded = {}
+        result = analyze_reprocess_data(json_data[0], reprocess_id)
         if result == 'Invalid options':
             to_be_reprocessed_ids.insert(0,reprocess_id)
             sample_recorded = get_info_for_reprocess_samples(to_be_reprocessed_ids, reprocess_id)
@@ -3279,7 +3279,19 @@ def record_samples(request):
             sample_recorded['sample_id_for_action'] = reprocess_id
             sample_recorded.update(get_available_codeID_for_resequencing(sample_recorded))
             sample_recorded['reprocess_result'] = 'False'
-            import pdb; pdb.set_trace()
+        else:
+            if to_be_reprocessed_ids[0] == '':
+                return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'all_sucessful_reprocess':True})
+            else:
+                import pdb; pdb.set_trace()
+                next_to_be_process_id = str(to_be_reprocessed_ids[0])
+                sample_recorded = get_info_for_reprocess_samples(to_be_reprocessed_ids, next_to_be_process_id)
+                import pdb; pdb.set_trace()
+                sample_processed_id = to_be_reprocessed_ids.pop()
+                sample_recorded['invalid_samples_id'] = ','.join(to_be_reprocessed_ids)
+                sample_recorded['sample_id_for_action'] = next_to_be_process_id
+                sample_recorded.update(get_available_codeID_for_resequencing(sample_recorded))
+                sample_recorded['reprocess_result'] = 'True'
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
 
         if len(require_to_update) > 0 :
