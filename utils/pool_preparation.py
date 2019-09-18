@@ -1,4 +1,5 @@
 import json
+from datetime import date
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
 
@@ -48,17 +49,29 @@ def check_index_compatible(lib_prep_ids):
     return incompatible_samples
 
 
+def generate_pool_code_id():
+
+    today_date = date.today().strftime("%Y_%m_%d")
+    if LibraryPool.objects.filter(poolCodeID__icontains = today_date).exists():
+        lib_pool = LibraryPool.objects.filter(poolCodeID__icontains = today_date).last()
+        latest_code_id = lib_pool.get_pool_code_id()
+        last_seq_number =  int(latest_code_id.split('_')[-1])
+        return str(today_date + '_' + str(last_seq_number + 1))
+    else:
+        return str(today_date + '_1')
 
 
-def get_info_to_display_created_pool(lib_prep_ids, pool_name, pool_codeID):
+def get_info_to_display_created_pool(pool_obj):
     information_for_created_pool = {}
-    information_for_created_pool['pool_name'] = pool_name
-    information_for_created_pool['pool_codeID'] = pool_codeID
-    information_for_created_pool['heading'] = HEADING_FOR_DISPLAY_CREATED_POOL
+    information_for_created_pool['data'] = pool_obj.get_info()
+    information_for_created_pool['pool_name'] = pool_obj.get_pool_name()
+    information_for_created_pool['heading_pool'] = HEADING_FOR_DISPLAY_CREATED_POOL
     lib_prep_data = []
-    for lib_prep_id in lib_prep_ids :
-        lib_prep_obj = LibraryPreparation.objects.get(pk__exact = lib_prep_id)
-        lib_prep_data.append(lib_prep_obj.get_info_for_display_pool())
+    if LibraryPreparation.objects.filter(pool_id = pool_obj).exists():
+        lib_prep_ids = LibraryPreparation.objects.filter(pool_id = pool_obj)
+        for lib_prep_obj in lib_prep_ids :
+            lib_prep_data.append(lib_prep_obj.get_info_for_display_pool())
     information_for_created_pool['lib_prep_data'] = lib_prep_data
-    information_for_created_pool['samples_in_pool'] = len(lib_prep_ids)
+    information_for_created_pool['heading_library_pool'] = HEADING_FOR_DISPLAY_LIB_PREP_IN_POOL
+
     return information_for_created_pool

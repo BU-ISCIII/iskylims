@@ -781,8 +781,7 @@ class LibraryPool (models.Model):
     def __str__ (self):
         return '%s' %(self.poolName)
 
-    def get_pool_name(self):
-        return '%s' %(self.poolName)
+
 
     def get_id(self):
         return '%s' %(self.pk)
@@ -793,6 +792,17 @@ class LibraryPool (models.Model):
         pool_info.append(self.poolCodeID)
         pool_info.append(self.numberOfSamples)
         return pool_info
+
+    def get_pool_name(self):
+        return '%s' %(self.poolName)
+
+    def get_pool_code_id(self):
+        return '%s' %(self.poolCodeID)
+
+    def update_number_samples(self, number_s_in_pool):
+        self.numberOfSamples = number_s_in_pool
+        self.save()
+        return self
 
     objects = LibraryPoolManager()
 

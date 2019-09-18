@@ -3237,29 +3237,7 @@ def record_samples(request):
         else :
             if 'sample_id_for_action' in sample_recorded :
                 sample_recorded.update(get_available_codeID_for_resequencing(sample_recorded))
-                '''
-                mol_lib_prep_available = {}
-                lib_prep_available = ['New Library Preparation']
-                mol_lib_prep_available['New Extraction'] =['---']
-                sample_obj = get_sample_obj_from_id (sample_recorded['sample_id_for_action'])
-                molecules_obj = get_molecule_obj_from_sample(sample_recorded['sample_id_for_action'])
 
-                for molecule_obj in molecules_obj:
-                    molecule_id = get_molecule_codeid_from_object (molecule_obj)
-                    mol_lib_prep_available[molecule_id] = ['New Library Preparation']
-                    if LibraryPreparation.objects.filter(molecule_id = molecule_obj, sample_id = sample_obj).exists():
-                        libs_prep_obj =  LibraryPreparation.objects.filter(molecule_id = molecule_obj, sample_id = sample_obj)
-                        for lib_prep_obj in libs_prep_obj :
-                            lib_prep_available.append(lib_prep_obj.get_lib_prep_code())
-                            mol_lib_prep_available[molecule_id].append(lib_prep_obj.get_lib_prep_code())
-
-                sample_recorded['rep_filter_selection'] = []
-                for key, value in mol_lib_prep_available.items():
-                    sample_recorded['rep_filter_selection'].append([key, value])
-                sample_recorded['molecule_available'] = list(mol_lib_prep_available.keys())
-                sample_recorded['lib_prep_available'] = lib_prep_available
-                #import pdb; pdb.set_trace()
-                '''
             return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
     elif request.method == 'POST' and request.POST['action'] == 'reprocessSamples':
         samples = {}
@@ -3280,10 +3258,8 @@ def record_samples(request):
             if to_be_reprocessed_ids[0] == '':
                 return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'all_sucessful_reprocess':True})
             else:
-                import pdb; pdb.set_trace()
                 next_to_be_process_id = str(to_be_reprocessed_ids[0])
                 sample_recorded = get_info_for_reprocess_samples(to_be_reprocessed_ids, next_to_be_process_id)
-                import pdb; pdb.set_trace()
                 sample_processed_id = to_be_reprocessed_ids.pop()
                 sample_recorded['invalid_samples_id'] = ','.join(to_be_reprocessed_ids)
                 sample_recorded['sample_id_for_action'] = next_to_be_process_id
@@ -3467,6 +3443,19 @@ def set_library_preparation(request):
         user_sample_sheet_data = {}
         stored_lib_prep = {}
         stored_lib_prep['data'] = []
+
+
+        extracted_data_list = extract_sample_data (samples_in_s_sheet)
+        # Check if exists duplicate index in sample sheet
+        duplicate_index = find_duplicate_index(extracted_data_list)
+        if duplicate_index:
+            detail_description = {}
+            detail_description ['heading'] = ['Index', 'Samples']
+            detail_description['information'] =  duplicate_index
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':['Found some samples, has the same index' ],
+                'detail_description': detail_description })
+
         if CollectionIndexKit.objects.filter(collectionIndexName__exact = index_adapters).exists():
             collection_index_kit_id = CollectionIndexKit.objects.get(collectionIndexName__exact = index_adapters)
         else:
@@ -3479,7 +3468,7 @@ def set_library_preparation(request):
         user_sample_sheet_data['sampleSheet'] = file_name
         new_user_s_sheet_obj = libPreparationUserSampleSheet.objects.create_lib_prep_user_sample_sheet(user_sample_sheet_data)
 
-        extracted_data_list = extract_sample_data (samples_in_s_sheet)
+
         parameter_heading = get_protocol_parameters(protocol_obj)
         length_heading = len(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS) + len (parameter_heading)
         stored_lib_prep['heading'] = HEADING_FIX_FOR_ADDING_LIB_PARAMETERS
@@ -3678,20 +3667,23 @@ def create_pool (request):
 
         if  compatible_in_run == True:
             pool_data = {}
-            pool_code_id = ''
             pool_data['poolName'] = pool_name
-            pool_data['poolCodeID'] = ''
+            pool_data['poolCodeID'] = generate_pool_code_id()
             pool_data['registerUser'] = request.user
+            number_s_in_pool = 0
+
             new_pool = LibraryPool.objects.create_lib_pool(pool_data)
             # update pool_id in each library_preparation belongs the new pool
             for lib_prep in lib_prep_ids:
                 if  LibraryPreparation.objects.filter(pk__exact = lib_prep).exists():
                     lib_prep_obj = LibraryPreparation.objects.get(pk__exact = lib_prep)
                     lib_prep_obj.set_pool(new_pool)
+                    number_s_in_pool +=1
                 else:
                     continue
-
-            information_for_created_pool = get_info_to_display_created_pool(lib_prep_ids, pool_name,pool_code_id )
+            # update the number of samples
+            new_pool.update_number_samples(number_s_in_pool)
+            information_for_created_pool = get_info_to_display_created_pool(new_pool )
 
             return  render(request, 'iSkyLIMS_wetlab/createPool.html',{'information_for_created_pool': information_for_created_pool})
         else:
@@ -3730,7 +3722,7 @@ def create_new_run (request):
     else:
         #redirect to login webpage
         return redirect ('/accounts/login')
-    if request.method == 'POST' and request.POST['action'] == 'createPool':
+    if request.method == 'POST' and request.POST['action'] == 'createNewRun':
         pass
     else:
         # Selecting pools to create the Run

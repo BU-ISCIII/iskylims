@@ -56,6 +56,26 @@ def extract_sample_data (s_data):
 
     return sample_list
 
+def find_duplicate_index (extracted_data):
+    index_values = {}
+
+
+    for sample_row in extracted_data:
+        indexes_in_sample = str(sample_row['i7IndexID'] + '_' + sample_row['i5IndexID'])
+        if  indexes_in_sample not in index_values:
+            index_values[indexes_in_sample] = []
+        index_values[indexes_in_sample].append(sample_row['sample_id'])
+
+    if len(extracted_data) == len(index_values.keys()):
+        return False
+    else:
+        incompatible_index = []
+
+        for key, values in index_values.items():
+            if len(values) > 1:
+                incompatible_index.append([key, ' and  '.join(values)])
+        return incompatible_index
+
 
 def get_protocol_lib ():
     protocol_list = []

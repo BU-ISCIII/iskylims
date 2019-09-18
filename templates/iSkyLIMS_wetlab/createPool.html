@@ -76,16 +76,16 @@
                     <table class="table ">
                         <thead>
                             <tr>
-                                <th>Pool Name</th>
-                                <th>Pool CodeID</th>
-                                <th>Number of Samples in Pool</th>
+                                {% for value in information_for_created_pool.heading_pool %}
+                                    <th>{{value}}</th>
+                                {% endfor %}
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>{{information_for_created_pool.pool_name}}</td>
-                                <td>{{information_for_created_pool.pool_codeID}}</td>
-                                <td>{{information_for_created_pool.samples_in_pool}}</td>
+                                {% for value in information_for_created_pool.data %}
+                                    <td>{{value}}</td>
+                                {% endfor %}
                             </tr>
                         </tbody>
                     </table>
@@ -94,7 +94,7 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                {% for value in information_for_created_pool.heading%}
+                                {% for value in information_for_created_pool.heading_library_pool%}
                                 <th>{{value}}</th>
                                 {% endfor %}
                             </tr>
