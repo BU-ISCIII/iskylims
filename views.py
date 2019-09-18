@@ -3268,10 +3268,7 @@ def record_samples(request):
         reprocess_id = request.POST['sampleIDforAction']
         json_data = json.loads(request.POST['reprocess_data'])
 
-        #for s_id in reprocess_s_ids:
-        #    samples[s_id] = request.POST[s_id]
-        #sample_recorded = {}
-        result = analyze_reprocess_data(json_data[0], reprocess_id)
+        result = analyze_reprocess_data(json_data[0], reprocess_id, request.user)
         if result == 'Invalid options':
             to_be_reprocessed_ids.insert(0,reprocess_id)
             sample_recorded = get_info_for_reprocess_samples(to_be_reprocessed_ids, reprocess_id)
@@ -3501,20 +3498,33 @@ def set_library_preparation(request):
                 #samples_id.append(sample_obj.get_sample_id())
 
                 extracted_data['protocol_obj'] = protocol_obj
+                extracted_data['collection_index_kit_id'] = collection_index_kit_id
                 molecule_obj = MoleculePreparation.objects.filter(sample = sample_obj).last()
-                if LibraryPreparation.objects.filter(sample_id = sample_obj).exists():
-                    last_lib_prep_code_id = LibraryPreparation.objects.filter(sample_id = sample_obj).last().get_lib_prep_code()
-                    split_code = re.search('(.*_)(\d+)$',last_lib_prep_code_id)
-                    index_val = int(split_code.group(2))
-                    new_index = str(index_val +1).zfill(2)
-                    lib_prep_code_id = split_code.group(1) + new_index
+                if LibraryPreparation.objects.filter(sample_id = sample_obj, libPrepState__libPrepState__exact = 'Created for Reuse').exists():
+                    lib_prep_obj = LibraryPreparation.objects.get(sample_id = sample_obj, libPrepState__libPrepState__exact = 'Created for Reuse')
+                    molecule_obj = lib_prep_obj.get_molecule_obj()
+
+                    last_lib_prep_for_molecule = LibraryPreparation.objects.filter(sample_id = sample_obj, molecule_id = molecule_obj).exclude(libPrepState__libPrepState__exact = 'Created for Reuse').last()
+                    if last_lib_prep_for_molecule :
+                        last_lib_prep_code_id = last_lib_prep_for_molecule.get_lib_prep_code()
+                        split_code = re.search('(.*_)(\d+)$',last_lib_prep_code_id)
+                        index_val = int(split_code.group(2))
+                        new_index = str(index_val +1).zfill(2)
+                        lib_prep_code_id = split_code.group(1) + new_index
+                    else:
+                        lib_prep_code_id = molecule_obj.get_molecule_code_id() + '_LIB_01'
+                    extracted_data['lib_code_id'] = lib_prep_code_id
+                    #lib_prep_obj.update_lib_preparation_info_in_reuse_state(extracted_data)
+                    import pdb; pdb.set_trace()
+                    new_library_preparation = lib_prep_obj.update_lib_preparation_info_in_reuse_state(extracted_data, new_user_s_sheet_obj, single_paired , read_length)
+                    #new_library_preparation = LibraryPreparation.objects.update_library_preparation(extracted_data)
                 else:
                     lib_prep_code_id = molecule_obj.get_molecule_code_id() + '_LIB_01'
-                extracted_data['lib_code_id'] = lib_prep_code_id
-                extracted_data['collection_index_kit_id'] = collection_index_kit_id
-                # Create the new library preparation object
-                new_library_preparation = LibraryPreparation.objects.create_lib_preparation(extracted_data, new_user_s_sheet_obj, register_user_obj,
-                                        molecule_obj,  single_paired , read_length)
+                    extracted_data['lib_code_id'] = lib_prep_code_id
+
+                    # Create the new library preparation object
+                    new_library_preparation = LibraryPreparation.objects.create_lib_preparation(extracted_data, new_user_s_sheet_obj, register_user_obj,
+                                            molecule_obj,  single_paired , read_length)
                 lib_prep_id.append(new_library_preparation.get_id())
                 data = ['']*length_heading
                 data[0] = extracted_data['sample_id']
@@ -3543,12 +3553,12 @@ def set_library_preparation(request):
             lib_prep_ids = request.POST['lib_prep_id'].split(',')
         stored_lib_prep ={}
         stored_lib_prep['data'] =[]
-
-        protocol_obj = libraryPreparation.objects.get(pk = lib_prep_ids[0]).get_protocol_obj()
+        import pdb; pdb.set_trace()
+        protocol_obj = LibraryPreparation.objects.get(pk = lib_prep_ids[0]).get_protocol_obj()
         parameter_heading = get_protocol_parameters(protocol_obj)
         length_heading = len(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS) + len (parameter_heading)
         for lib_id in lib_prep_ids:
-            library_preparation_obj = libraryPreparation.objects.get(pk = lib_id)
+            library_preparation_obj = LibraryPreparation.objects.get(pk = lib_id)
             data = ['']*length_heading
             data[0] = library_preparation_obj.get_sample_name()
             data[1] = library_preparation_obj.get_lib_prep_code()

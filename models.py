@@ -822,6 +822,18 @@ class libraryPreparationManager(models.Manager):
 
         return new_lib_prep
 
+    def create_reused_lib_preparation (self, reg_user, molecule_obj, sample_id):
+        lib_state = StatesForLibraryPreparation.objects.get(libPrepState =  'Created for Reuse')
+        new_library_preparation = self.create(registerUser = reg_user, molecule_id = molecule_obj, sample_id = sample_id,libPrepState = lib_state)
+        return new_library_preparation
+
+
+
+
+
+
+
+
 class LibraryPreparation (models.Model):
     registerUser = models.ForeignKey(
             User,
@@ -851,18 +863,18 @@ class LibraryPreparation (models.Model):
                 LibraryPool,
                 on_delete= models.CASCADE, null = True, blank = True)
 
-    libPrepCodeID = models.CharField(max_length=255)
-    userSampleID = models.CharField(max_length =20)
-    projectInSampleSheet = models.CharField(max_length =50)
-    samplePlate = models.CharField(max_length =50)
-    sampleWell = models.CharField(max_length =20)
-    i7IndexID = models.CharField(max_length =16)
-    i7Index = models.CharField(max_length =16)
-    i5IndexID = models.CharField(max_length =16)
-    i5Index = models.CharField(max_length =16)
+    libPrepCodeID = models.CharField(max_length=255, null = True, blank = True)
+    userSampleID = models.CharField(max_length =20 , null = True, blank = True)
+    projectInSampleSheet = models.CharField(max_length =50, null = True, blank = True)
+    samplePlate = models.CharField(max_length =50, null = True, blank = True)
+    sampleWell = models.CharField(max_length =20, null = True, blank = True)
+    i7IndexID = models.CharField(max_length =16, null = True, blank = True)
+    i7Index = models.CharField(max_length =16, null = True, blank = True)
+    i5IndexID = models.CharField(max_length =16, null = True, blank = True)
+    i5Index = models.CharField(max_length =16, null = True, blank = True)
 
-    singlePairedEnd  = models.CharField(max_length =20)
-    lengthRead = models.CharField(max_length =5)
+    singlePairedEnd  = models.CharField(max_length =20, null = True, blank = True)
+    lengthRead = models.CharField(max_length =5, null = True, blank = True)
     numberOfReused = models.IntegerField(default=0)
     uniqueID = models.CharField(max_length =10, null = True, blank = True)
 
@@ -935,6 +947,9 @@ class LibraryPreparation (models.Model):
     def get_lib_prep_code (self):
         return '%s' %(self.libPrepCodeID)
 
+    def get_molecule_obj(self):
+        return self.molecule_id
+
     def get_protocol_used (self):
         return '%s'  %(self.protocol_id.get_name())
 
@@ -974,6 +989,26 @@ class LibraryPreparation (models.Model):
     def set_reagent_user_kit(self, kit_value):
         self.user_reagentKit_id = UserComercialKits.objects.get(nickName__exact = kit_value)
         self.save()
+
+    def update_lib_preparation_info_in_reuse_state (self,lib_prep_data ,user_sample_obj, single_paired , read_length):
+        lib_state = StatesForLibraryPreparation.objects.get(libPrepState =  'Defined')
+        self.protocol_id =   lib_prep_data['protocol_obj']
+        self.user_sample_sheet = user_sample_obj
+        self.userSampleID = lib_prep_data['userSampleID']
+        self.collectionIndex_id = lib_prep_data['collection_index_kit_id']
+        self.projectInSampleSheet = lib_prep_data['projectInSampleSheet']
+        self.samplePlate = lib_prep_data['samplePlate']
+        self.sampleWell = lib_prep_data['sampleWell']
+        self.i7IndexID = lib_prep_data['i7IndexID']
+        self.i7Index = lib_prep_data['i7Index']
+        self.i5IndexID = lib_prep_data['i5IndexID']
+        self.i5Index = lib_prep_data['i5Index']
+        self.singlePairedEnd = single_paired
+        self.lengthRead = read_length
+        self.libPrepCodeID = lib_prep_data['lib_code_id']
+        self.libPrepState = lib_state
+        self.save()
+        return self
 
     objects = libraryPreparationManager()
 

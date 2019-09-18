@@ -26,19 +26,29 @@ def get_available_codeID_for_resequencing(sample_recorded):
     sample_recorded['lib_prep_available'] = lib_prep_available
     return sample_recorded
 
-def analyze_reprocess_data(json_data, reprocess_id):
+def analyze_reprocess_data(json_data, reprocess_id, reg_user):
     options = json_data[-3:]
 
     if "New Extraction" in options:
-        update_sample_reused(reprocess_id)
+        sample_id= update_sample_reused(reprocess_id)
 
     elif 'New Library Preparation' in options:
-        import pdb; pdb.set_trace()
-        pass
+        molecule_code_id = options[0]
+        if molecule_code_id == '':
+            return 'Invalid options'
+        else:
+            sample_id = update_sample_reused(reprocess_id)
+
+            molecule_obj = update_molecule_reused(reprocess_id, molecule_code_id)
+
+            if not molecule_obj:
+                return 'Invalid options'
+            # create the new library preparation in "Created_for_reused" state
+
+            import pdb; pdb.set_trace()
+            new_library_preparation = LibraryPreparation.objects.create_reused_lib_preparation(reg_user, molecule_obj, sample_id)
+            return True
     elif 'New Pool' in options:
         pass
     else:
         return 'Invalid options'
-
-
-    return True

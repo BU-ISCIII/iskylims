@@ -71,7 +71,7 @@ def get_all_library_information(sample_id):
     if LibraryPreparation.objects.filter(sample_id__pk__exact = sample_id).exists():
         library_information['library_definition_heading'] = HEADING_FOR_LIBRARY_PREPARATION_DEFINITION
         library_information['library_definition'] = []
-        library_preparation_items = LibraryPreparation.objects.filter(sample_id__pk__exact = sample_id)
+        library_preparation_items = LibraryPreparation.objects.filter(sample_id__pk__exact = sample_id).exclude(libPrepState__libPrepState__exact = 'Created for Reuse')
         library_information['lib_prep_param_value'] = []
         for library_item in library_preparation_items:
             library_information['library_definition'].append(library_item.get_info_for_display())
@@ -119,7 +119,7 @@ def check_samples_in_lib_prep_state ():
     '''
     Description:
         The function will return a list with samples which are in add_library_preparation state.
-
+        Include the ones that are requested to reprocess
     Return:
         sample_names.
     '''
@@ -131,6 +131,8 @@ def check_samples_in_lib_prep_state ():
 
         for sample in samples_obj :
             if not LibraryPreparation.objects.filter(sample_id = sample).exists():
+                sample_names.append(sample.get_sample_name())
+            if LibraryPreparation.objects.filter(sample_id = sample, libPrepState__libPrepState__exact = 'Created for Reuse').exists():
                 sample_names.append(sample.get_sample_name())
 
 
