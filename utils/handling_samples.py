@@ -630,7 +630,7 @@ def record_molecules (request):
         molecule_data['moleculeCodeId'] = molecule_code_id
         molecule_data['extractionType'] =  molecule_json_data[row_index][heading_in_excel.index('type_extraction')]
         molecule_data['moleculeExtractionDate'] = molecule_json_data[row_index][heading_in_excel.index('extractionDate')]
-        molecule_data['numberOfReused'] = str(number_code - 1)
+        #molecule_data['numberOfReused'] = str(number_code - 1)
 
         new_molecule = MoleculePreparation.objects.create_molecule(molecule_data)
         molecule_list.append([molecule_code_id, protocol_used])
@@ -729,3 +729,20 @@ def search_samples(sample_name, user_name, sample_state, start_date, end_date ):
 
         sample_list.append(sample.get_info_for_searching())
     return sample_list
+
+def update_molecule_reused(sample_id, molecule_code_id):
+    sample_obj = Samples.objects.get(pk__exact = sample_id)
+    try:
+        molecule_obj = MoleculePreparation.objects.get(sample = sample_obj, moleculeCodeId__exact = molecule_code_id)
+    except:
+        return 'Error'
+    molecule_obj.set_increase_reuse()
+    sample_obj.set_state('Library Preparation')
+    return molecule_obj
+
+def update_sample_reused(reprocess_id):
+    sample_obj = Samples.objects.get(pk__exact = reprocess_id)
+    sample_obj.set_increase_reuse()
+    sample_obj.set_state('Defined')
+
+    return sample_obj
