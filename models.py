@@ -317,6 +317,9 @@ class Samples (models.Model):
         recordeddate=self.generated_at.strftime("%B %d, %Y")
         return '%s' %(recordeddate)
 
+    def get_unique_sample_id(self):
+        return '%s' %(self.uniqueSampleID)
+
     def set_state (self, state_value):
         self.sampleState = StatesForSample.objects.get(sampleStateName__exact = state_value)
         self.save()
