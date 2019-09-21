@@ -26,13 +26,13 @@ class RunStates (models.Model):
 
 class RunProcess(models.Model):
     runName = models.CharField(max_length=45)
-    sampleSheet = models.FileField(upload_to = wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY)
+    sampleSheet = models.FileField(upload_to = wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY, null = True, blank = True)
     generatedat = models.DateTimeField(auto_now_add=True)
     run_date = models.DateField(auto_now = False, null=True)
     run_finish_date = models.DateTimeField(auto_now = False, null=True, blank=True)
     bcl2fastq_finish_date = models.DateTimeField(auto_now = False, null=True, blank=True)
     run_completed_date = models.DateTimeField(auto_now = False, null=True, blank=True)
-    runState = models.CharField(max_length=25)
+    #runState = models.CharField(max_length=25)
     state = models.ForeignKey ( RunStates, on_delete = models.CASCADE, related_name = 'state_of_run', null = True, blank = True)
     index_library = models.CharField(max_length=85)
     samples= models.CharField(max_length=45,blank=True)
@@ -926,6 +926,39 @@ class LibraryPreparation (models.Model):
         lib_info.append(self.pk)
         return lib_info
 
+
+
+    def get_info_for_run_paired_end(self):
+        lib_info = []
+        lib_info.append(self.sample_id.get_unique_sample_id())
+        lib_info.append(self.sample_id.get_sample_name())
+        lib_info.append(self.samplePlate)
+        lib_info.append(self.sampleWell)
+        lib_info.append('') # position for Index_Plate_Well
+        lib_info.append(self.i7IndexID)
+        lib_info.append(self.i7Index)
+        lib_info.append(self.i5IndexID)
+        lib_info.append(self.i5Index)
+        lib_info.append(self.projectInSampleSheet)
+        lib_info.append(self.registerUser.username)
+        return lib_info
+
+
+    def get_info_for_run_single_read(self):
+        lib_info = []
+        lib_info.append(self.sample_id.get_unique_sample_id())
+        lib_info.append(self.sample_id.get_sample_name())
+        lib_info.append(self.samplePlate)
+        lib_info.append(self.sampleWell)
+        lib_info.append('') # position for Index_Plate_Well
+        lib_info.append(self.i7IndexID)
+        lib_info.append(self.i7Index)
+        lib_info.append(self.projectInSampleSheet)
+        lib_info.append(self.self.registerUser.username)
+        return lib_info
+
+
+
     def get_info_for_display_pool (self):
         if self.registerUser.username == None:
             user_name = ''
@@ -941,6 +974,12 @@ class LibraryPreparation (models.Model):
 
     def get_collection_index_kit (self):
         return '%s' %(self.collectionIndex_id.get_collection_index_name())
+
+    def get_i7_index(self):
+        return '%s' %(self.i7IndexID)
+
+    def get_i5_index(self):
+        return '%s' %(self.i5IndexID)
 
     def get_indexes (self):
         index = {}
@@ -998,6 +1037,14 @@ class LibraryPreparation (models.Model):
 
     def set_reagent_user_kit(self, kit_value):
         self.user_reagentKit_id = UserComercialKits.objects.get(nickName__exact = kit_value)
+        self.save()
+
+    def update_i7_index(self, i7_seq_value):
+        self.i7Index = i7_seq_value
+        self.save()
+
+    def update_i5_index(self, i5_seq_value):
+        self.i5Index = i5_seq_value
         self.save()
 
     def update_lib_preparation_info_in_reuse_state (self,lib_prep_data ,user_sample_obj, single_paired , read_length):

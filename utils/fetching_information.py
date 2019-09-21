@@ -325,26 +325,26 @@ def match_unkownbarcodes_with_index (unknow_dict) :
         if '+' in key:
             split_base = key.split('+')
 
-            if IndexLibraryValues.objects.filter(i_7_seq__exact = split_base[0]).exists():
-                libraries_using_base = IndexLibraryValues.objects.filter(i_7_seq__exact = split_base[0])
+            if CollectionIndexValues.objects.filter(i_7_seq__exact = split_base[0]).exists():
+                libraries_using_base = CollectionIndexValues.objects.filter(i_7_seq__exact = split_base[0])
                 index_temp = split_base[0]
                 for library in libraries_using_base :
                     library_info.append([library.index_7,library.indexLibraryKit_id.indexLibraryName])
 
 
-            if IndexLibraryValues.objects.filter(i_5_seq__exact = split_base[1]).exists():
+            if CollectionIndexValues.objects.filter(i_5_seq__exact = split_base[1]).exists():
                 if len(index_temp) == 1:
                     index_temp += (str (' + ' + split_base[1]))
                 else:
                     index_temp = split_base[1]
-                libraries_using_base = IndexLibraryValues.objects.filter(i_5_seq__exact = split_base[1])
+                libraries_using_base = CollectionIndexValues.objects.filter(i_5_seq__exact = split_base[1])
                 for library in libraries_using_base :
                     library_info.append([library.index_5,library.indexLibraryKit_id.indexLibraryName])
 
         else:
-            if IndexLibraryValues.objects.filter(i_7_seq__exact = key).exists():
+            if CollectionIndexValues.objects.filter(i_7_seq__exact = key).exists():
                 found_unknow_index.append(key)
-                libraries_using_base = IndexLibraryValues.objects.filter(i_7_seq__exact = key)
+                libraries_using_base = CollectionIndexValues.objects.filter(i_7_seq__exact = key)
                 for library in libraries_using_base :
                     library_info.append([library.index_7,library.indexLibraryKit_id.indexLibraryName])
 
@@ -496,7 +496,7 @@ def get_information_run(run_object):
                 percent_lane.append(float(lane.percentLane))
             percent_projects[project_demultiplexion.projectName] =format(statistics.mean(percent_lane),'2f')
             #series.append(project_demultiplexion.projectName)
-        
+
         # get the demultiplexion information for the default
 
         percent_default_lane = []

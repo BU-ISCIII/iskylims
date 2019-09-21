@@ -5,7 +5,7 @@
 
 
 
-{% if information_for_created_pool %}
+{% if display_sample_information %}
     <script src="{% static "iSkyLIMS_wetlab/js/jquery/v3.4.1/jquery-3.4.1.min.js" %}" type="text/javascript"></script>
     <script src="{% static "iSkyLIMS_wetlab/js/jexcel/v3/jexcel.js" %}" type="text/javascript"></script>
     <script src="{% static "iSkyLIMS_wetlab/js/jsuites/v2/jsuites.js" %}" type="text/javascript"></script>
@@ -21,23 +21,23 @@
     <div class="row row-space-4 margin-b-4">
         <div class="col-sm-10 col-sm-offset-1" >
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>Fill the information to create the Pool </h3></div>
+                <div class="panel-heading"><h3>Library Preparation information to create the new Run</h3></div>
                     <div class="panel-body">
-                        <form method="post" enctype="multipart/form-data" name="createRun"  id="createRun" class="form-horizontal well">
+                        <form method="post" enctype="multipart/form-data" name="storeDataNewRun"  id="storeDataNewRun" class="form-horizontal well">
                             {% csrf_token %}
 
-                                <input type="hidden" name="action" value="createRun"/>
-                                <input type="hidden" name="lib_prep_id" value="{{information_for_selected_run.lib_prep_id}}"/>
+                                <input type="hidden" name="action" value="storeDataNewRun"/>
+                                <input type="hidden" name="lib_prep_ids" value="{{display_sample_information.lib_prep_ids}}"/>
+                                <input type="hidden" name="pairedEnd" value="{{display_sample_information.paired_end}}"/>
                                 <div class="form-group required">
                                     <label class="col-sm-5 control-label">Define the Experiment Name for the Run</label>
                                     <div class="col-sm-5"><input class="form-control" required = "required" type="text"  name="experimentName" size="80"></div>
                                     <br><br>
 
-                                </div>
-                                <div class="form-group ">
                                     <label class="col-sm-5 control-label">Define the Plate</label>
                                     <div class="col-sm-5"><input class="form-control" type="text"  name="plateName" size="80"></div>
                                     <br><br><br>
+                                <div class="form-group">
                                     <label class="col-sm-5 control-label">Define the ContainerID</label>
                                     <div class="col-sm-5"><input class="form-control"  type="text"  name="containerID" size="80"></div>
                                 </div>
@@ -47,24 +47,24 @@
 
 
                                 <script>
-                                    var data = [{% for values in information_for_selected_run.data %}
+                                    var data = [{% for values in display_sample_information.data %}
                                         [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
                                     ];
                                     mySpreadsheet = $('#spreadsheet').jexcel({
                                         data:data,
                                         columns: [
-                                            { type: 'text', title:'{{information_for_selected_run.heading.0}}', width:180 , readOnly:true },
-                                            { type: 'text', title:'{{information_for_selected_run.heading.1}}', width:180 , readOnly:true },
-                                            { type: 'text', title:'{{information_for_selected_run.heading.2}}', width:80 , readOnly:true },
-                                            { type: 'text', title:'{{information_for_selected_run.heading.3}}', width:80 , readOnly:true },
-                                            { type: 'text', title:'{{information_for_selected_run.heading.4}}', width:100 },
-                                            { type: 'text', title:'{{information_for_selected_run.heading.5}}', width:80, readOnly:true },
-                                            { type: 'text', title:'{{information_for_selected_run.heading.6}}', width:100  },
-                                            { type: 'text', title:'{{information_for_selected_run.heading.7}}', width:100 },
-                                            { type: 'text', title:'{{information_for_selected_run.heading.8}}', width:150 },
-                                            { type: 'text', title:'{{information_for_selected_run.heading.9}}', width:250 },
-                                            { type: 'text', title:'{{information_for_selected_run.heading.10}}', width:80 },
-
+                                            { type: 'text', title:'{{display_sample_information.heading.0}}', width:180 , readOnly:true },
+                                            { type: 'text', title:'{{display_sample_information.heading.1}}', width:180 , readOnly:true },
+                                            { type: 'text', title:'{{display_sample_information.heading.2}}', width:80 },
+                                            { type: 'text', title:'{{display_sample_information.heading.3}}', width:80 },
+                                            { type: 'text', title:'{{display_sample_information.heading.4}}', width:100 },
+                                            { type: 'text', title:'{{display_sample_information.heading.5}}', width:80},
+                                            { type: 'text', title:'{{display_sample_information.heading.6}}', width:100  },
+                                            { type: 'text', title:'{{display_sample_information.heading.7}}', width:100 },
+                                            { type: 'text', title:'{{display_sample_information.heading.8}}', width:150 },
+                                            { type: 'text', title:'{{display_sample_information.heading.9}}', width:250 },
+                                            { type: 'text', title:'{{display_sample_information.heading.10}}', width:80 },
+                                            { type: 'text', title:'{{display_sample_information.heading.11}}', width:80 },
                                         ],
                                         allowInsertColumn:false,
                                         allowDeleteColumn:false,
@@ -73,7 +73,7 @@
                                         allowDeleteRow:false,
                                         tableOverflow:true,
                                         tableHeight:'200px',
-                                        csvFileName:'pool_creation',
+                                        csvFileName:'sample_sheet',
 
                                     });
                                 </script>
@@ -85,16 +85,16 @@
                          </form>
                          <script>
                              $(document).ready(function () {
-                                 $("#createRun").submit(function (e) {
+                                 $("#storeDataNewRun").submit(function (e) {
                                      //stop submitting the form to see the disabled button effect
                                      // e.preventDefault();
                                      //disable the submit button
                                      var table_data = $('#spreadsheet').jexcel('getData')
                                      var data_json = JSON.stringify(table_data)
                                      $("<input />").attr("type", "hidden")
-                                       .attr("name", "pool_data")
+                                       .attr("name", "s_sheet_data")
                                        .attr("value", data_json)
-                                       .appendTo("#createRun");
+                                       .appendTo("#storeDataNewRun");
                                      $("#btnSubmit").attr("disabled", true);
                                      return true;
                                  });
@@ -105,6 +105,20 @@
 
              </div> <!--  end of col-sm-12 -->
          </div> <!--  end of row -->
+
+{% elif created_new_run %}
+<div class="row row-space-4 margin-b-4">
+    <div class="col-sm-10 col-sm-offset-1" >
+        <div class="panel panel-default">
+            <div class="panel-heading"><h3>Sucessful Run</h3></div>
+                <div class="panel-body">
+                    <p>{{created_new_run.exp_name}} is now created on iSkyLIMS in "Recorded" state</p>
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+
+        </div> <!--  end of col-sm-12 -->
+    </div> <!--  end of row -->
+
 {% else %}
 
     <div class="row row-space-4 margin-b-4">
@@ -121,17 +135,18 @@
                                 <label class="col-sm-5 control-label">Define the Experiment Name for the Run</label>
                                 <div class="col-sm-5"><input class="form-control" required = "required" type="text"  name="experimentName" size="80"></div>
                                 <br><br>
-
-                            </div>
-                            <div class="form-group ">
                                 <label class="col-sm-5 control-label">Define the Plate</label>
                                 <div class="col-sm-5"><input class="form-control" type="text"  name="plateName" size="80"></div>
-                                <br><br><br>
+                                <br>
+                            </div>
+                            <div class="form-group ">
                                 <label class="col-sm-5 control-label">Define the ContainerID</label>
                                 <div class="col-sm-5"><input class="form-control"  type="text"  name="containerID" size="80"></div>
                             </div>
                             <br><br>
-                            <table class="table table-hover">
+                            <p>Select the Pools to be included in the new Run</p>
+                            <br>
+                            <table class="table">
                                 <thead>
                                     <tr>
                                         {% for value in display_pools_for_run.pool_data.heading%}
@@ -145,7 +160,7 @@
                                             <td>{{p_name}}</td>
                                             <td>{{p_code}}</td>
                                             <td>{{number}}</td>
-                                            <td><input type="checkbox" name="samples" value="{{p_id}}"></td>
+                                            <td><input type="checkbox" name="poolID" value="{{p_id}}"></td>
                                         </tr>
                                     {% endfor %}
 

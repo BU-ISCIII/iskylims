@@ -15,7 +15,7 @@ class AppAdmin(admin.ModelAdmin):
     file_link.short_description = 'File Download'
 
 class LibraryPreparationAdmin (admin.ModelAdmin):
-    list_display = ('registerUser', 'molecule_id', 'sample_id', 'protocol_id', 'libPrepState', 'collectionIndex_id',
+    list_display = ('registerUser', 'molecule_id', 'sample_id','pool_id', 'protocol_id', 'libPrepState', 'collectionIndex_id',
             'user_sample_sheet', 'libPrepCodeID', 'userSampleID', 'projectInSampleSheet','samplePlate',
             'sampleWell', 'i7IndexID', 'i7Index', 'i5IndexID', 'i5Index', 'singlePairedEnd', 'lengthRead',
             'numberOfReused')
@@ -42,7 +42,7 @@ class RunningParametersAdmin(admin.ModelAdmin):
     #import pdb; pdb.set_trace()
 
 class RunProcessAdmin (admin.ModelAdmin):
-    list_display = ('runName','sequencerModel','sampleSheet','generatedat','run_date','runState','runError', 'state','index_library','samples','centerRequestedBy','useSpaceImgMb','useSpaceFastaMb','useSpaceOtherMb')
+    list_display = ('runName','sequencerModel','sampleSheet','generatedat','run_date','runError', 'state','index_library','samples','centerRequestedBy','useSpaceImgMb','useSpaceFastaMb','useSpaceOtherMb')
 
 class ProjectsAdmin (admin.ModelAdmin):
     list_display= ('runprocess_id','user_id','LibraryKit_id','projectName','libraryKit','baseSpaceFile','generatedat','project_run_date')
