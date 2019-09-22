@@ -105,7 +105,7 @@ def analyze_input_samples (request):
     Description:
         The function will get the user information in the form.
         For new samples, are recorded on database and included in valid_samples Variable
-        For alredy defined, no action is done on them and included in not_valid_samples.
+        For already defined, no action is done on them and included in not_valid_samples.
     Input:
         request
     Variables:
@@ -165,7 +165,7 @@ def analyze_input_samples (request):
 
     if sample_recorded['all_samples_valid']:
         sample_recorded['samples_to_continue'] = ','.join(samples_continue)
-
+    sample_recorded['valid_samples_ids'] = samples_continue
     return sample_recorded
 
 def analyze_input_molecules (request):
