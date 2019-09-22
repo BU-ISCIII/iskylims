@@ -9,8 +9,8 @@ from django.views.generic import ListView, DetailView
 
 urlpatterns = [
     path('',views.index, name = 'index'),
-    path('recordSamples', views.record_samples, name = 'record_samples'),
-    
+    path('defineNewSamples', views.define_new_samples, name = 'define_new_samples'),
+
 ]
 
 if settings.DEBUG:

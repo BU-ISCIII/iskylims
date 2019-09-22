@@ -17,7 +17,7 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> <!-- drop menus -->
     <link href="{% static "iSkyLIMS_common_static/css/animate.css" %}" rel="stylesheet">
     <link href="{% static "iSkyLIMS_common_static/vendor/swiper/css/swiper.min.css" %}" rel="stylesheet"/>
-    
+
     <!-- THEME STYLES -->
    <link href="{% static "iSkyLIMS_common_static/css/layout.css" %}" rel="stylesheet" type="text/css"/>
      </head>
@@ -51,21 +51,21 @@
                                 <ul class="nav navbar-nav navbar-nav-right">
                                     <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/clinic/">Home</a></li>
                                     {% if user.is_authenticated %}
-                                        <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Sample Creation<span class="caret"></span></a>
+                                        <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Input Data<span class="caret"></span></a>
                                             <ul class="dropdown-menu">
-                                                <li><a href="/clinic/recordSamples">Record Samples</a></li>
-                                                <li><a href="/wetlab/setMoleculeValues">Set Molecule values to Sample</a></li>
+                                                <li><a href="/clinic/defineNewSamples">Define new Samples</a></li>
+                                                <li><a href="/clinic/definePatientInformation">Define Patient Information</a></li>
                                             </ul>
                                                         </li>
                                                 {% else %}
                                                     <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">Library Preparation</a></li>
                                                 {% endif%}
                                                 {% if user.is_authenticated %}
-                                                        <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Run Preparation<span class="caret"></span></a>
+                                                        <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Results Registration<span class="caret"></span></a>
                                                             <ul class="dropdown-menu">
 
                                                     <li><a href="/clinic/defineSampleFields">Define Sample Fields</a></li>
-                                                                    
+
                                                             </ul>
                                                     </li>
                                                 {% else %}
@@ -74,11 +74,11 @@
                                                 {% if user.is_authenticated %}
                                         <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Search<span class="caret"></span></a>
                                                             <ul class="dropdown-menu">
-                                                           
-                                                                        <li><a href="/wetlab/latest_run">Get Latest Run</a></li>
-                                                                        <li><a href="/wetlab/incompletedRuns">Get incompleted Runs</a></li>
-                                                          
-                                                                
+
+                                                                        <li><a href="/wetlab/latest_run">Search Patient </a></li>
+                                                                        <li><a href="/wetlab/incompletedRuns">Search Sample</a></li>
+
+
                                                             </ul>
                                                 </li>
                                                 {% else %}
@@ -88,9 +88,9 @@
                                         <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#"> Statistics<span class="caret"></span></a>
                                                         <ul class="dropdown-menu">
                                                             <li><a href="/wetlab/StatsPerResearcher/">Projects per Investigator </a></li>
-                                                                
+
                                                                         <li><a href="/wetlab/StatsPerTime/">Period of time</a></li>
-                                                                 
+
                                                             <li><a href="/wetlab/StatsExperiment">Experiment Type</a></li>
                                                             <li><a href="/wetlab/StatsLibrary">Library Kit Qualitty</a></li>
                                                           </ul>
