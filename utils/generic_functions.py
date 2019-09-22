@@ -44,7 +44,6 @@ def check_valid_date_format (date):
     except:
         return False
 
-
 def copy_to_remote_file (conn, run_dir, remote_file, local_file) :
     '''
     Description:
@@ -606,7 +605,7 @@ def normalized_data (set_data, all_data) :
         normalized_all_data.
     '''
     normalized_set_data, normalized_all_data = [] , []
-    
+
     min_value = min(min(set_data),min(all_data))
     max_value = max(max(set_data), max(all_data))
     for value in set_data :

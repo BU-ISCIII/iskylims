@@ -15,7 +15,7 @@ class AppAdmin(admin.ModelAdmin):
     file_link.short_description = 'File Download'
 
 class LibraryPreparationAdmin (admin.ModelAdmin):
-    list_display = ('registerUser', 'molecule_id', 'sample_id','pool_id', 'protocol_id', 'libPrepState', 'collectionIndex_id',
+    list_display = ('registerUser', 'molecule_id', 'sample_id', 'protocol_id', 'libPrepState', 'collectionIndex_id',
             'user_sample_sheet', 'libPrepCodeID', 'userSampleID', 'projectInSampleSheet','samplePlate',
             'sampleWell', 'i7IndexID', 'i7Index', 'i5IndexID', 'i5Index', 'singlePairedEnd', 'lengthRead',
             'numberOfReused')

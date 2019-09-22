@@ -128,6 +128,11 @@ class RunProcess(models.Model):
         self.save()
         return True
 
+    def update_sample_sheet(self, sample_file):
+        self.sampleSheet = sample_file 
+        self.save()
+        return True
+
     def set_used_space (self, disk_utilization):
         self.useSpaceFastaMb  = disk_utilization ['useSpaceFastaMb']
         self.useSpaceImgMb  = disk_utilization ['useSpaceImgMb']
@@ -768,6 +773,7 @@ class LibraryPool (models.Model):
     poolState = models.ForeignKey(
                 StatesForPool,
                 on_delete= models.CASCADE)
+
     poolName = models.CharField(max_length=50)
     #sampleSheet = models.FileField(upload_to = wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY)
     #experiment_name = models.CharField(max_length=50)
@@ -777,6 +783,9 @@ class LibraryPool (models.Model):
     numberOfSamples = models.IntegerField(default=0)
     poolCodeID = models.CharField(max_length=50, blank = True)
     generated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ('poolName',)
 
     def __str__ (self):
         return '%s' %(self.poolName)
@@ -798,6 +807,10 @@ class LibraryPool (models.Model):
 
     def get_pool_code_id(self):
         return '%s' %(self.poolCodeID)
+
+    def set_pool_state(self, state):
+        self.poolState = StatesForPool.objects.get(poolState__exact = state)
+        self.save()
 
     def update_number_samples(self, number_s_in_pool):
         self.numberOfSamples = number_s_in_pool
@@ -869,9 +882,7 @@ class LibraryPreparation (models.Model):
     collectionIndex_id = models.ForeignKey(
                 CollectionIndexKit,
                 on_delete= models.CASCADE, null = True, blank = True)
-    pool_id = models.ForeignKey(
-                LibraryPool,
-                on_delete= models.CASCADE, null = True, blank = True)
+    pools = models.ManyToManyField(LibraryPool)
 
     libPrepCodeID = models.CharField(max_length=255, null = True, blank = True)
     userSampleID = models.CharField(max_length =20 , null = True, blank = True)
@@ -888,7 +899,8 @@ class LibraryPreparation (models.Model):
     numberOfReused = models.IntegerField(default=0)
     uniqueID = models.CharField(max_length =10, null = True, blank = True)
 
-
+    class Meta:
+        ordering = ('libPrepCodeID',)
 
 
     def __str__ (self):
@@ -1026,26 +1038,32 @@ class LibraryPreparation (models.Model):
     def set_increase_reuse(self):
         self.numberOfReused += 1
         self.save()
+        return
 
     def set_pool (self , pool_obj):
-        self.pool_id = pool_obj
+        self.pools.add(pool_obj)
         self.save()
+        return
 
     def set_state(self , state_value):
         self.libPrepState = StatesForLibraryPreparation.objects.get(libPrepState__exact = state_value)
         self.save()
+        return
 
     def set_reagent_user_kit(self, kit_value):
         self.user_reagentKit_id = UserComercialKits.objects.get(nickName__exact = kit_value)
         self.save()
+        return
 
     def update_i7_index(self, i7_seq_value):
         self.i7Index = i7_seq_value
         self.save()
+        return
 
     def update_i5_index(self, i5_seq_value):
         self.i5Index = i5_seq_value
         self.save()
+        return
 
     def update_lib_preparation_info_in_reuse_state (self,lib_prep_data ,user_sample_obj, single_paired , read_length):
         lib_state = StatesForLibraryPreparation.objects.get(libPrepState =  'Defined')
@@ -1094,19 +1112,3 @@ class LibParameterValue (models.Model):
         return '%s' %(self.parameterValue)
 
     objects = LibParameterValueManager()
-
-'''
-class ChangesForBaseSpace (models.Model):
-    pool_id = models.ForeignKey(
-                LibraryPool,
-                on_delete= models.CASCADE)
-
-    lib_prep_id = models.ForeignKey(
-                LibraryPreparation,
-                on_delete= models.CASCADE)
-
-    i7IndexID = models.CharField(max_length =16)
-    i7Index = models.CharField(max_length =16)
-    i5IndexID = models.CharField(max_length =16)
-    i5Index = models.CharField(max_length =16)
-'''

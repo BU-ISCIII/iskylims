@@ -3646,6 +3646,7 @@ def set_library_values (request):
 @login_required
 def create_pool (request):
     ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+
     if request.user.is_authenticated:
         if not is_wetlab_manager(request):
             return render ( request,'iSkyLIMS_wetlab/error_page.html',
@@ -3654,6 +3655,7 @@ def create_pool (request):
     else:
         #redirect to login webpage
         return redirect ('/accounts/login')
+
     if request.method == 'POST' and request.POST['action'] == 'createPool':
 
         if  'lib_prep_in_list' in request.POST:
@@ -3683,6 +3685,7 @@ def create_pool (request):
                     continue
             # update the number of samples
             new_pool.update_number_samples(number_s_in_pool)
+            new_pool.set_pool_state('Selected')
             information_for_created_pool = get_info_to_display_created_pool(new_pool )
 
             return  render(request, 'iSkyLIMS_wetlab/createPool.html',{'information_for_created_pool': information_for_created_pool})
@@ -3697,9 +3700,9 @@ def create_pool (request):
         display_list = {}
         display_list['data'] = []
 
-        if LibraryPreparation.objects.filter(libPrepState__libPrepState = 'Completed', pool_id = None ).exists():
+        if LibraryPreparation.objects.filter(libPrepState__libPrepState = 'Completed', pools = None ).exists():
 
-            lib_preparations =  LibraryPreparation.objects.filter(libPrepState__libPrepState = 'Completed', pool_id = None).order_by('registerUser')
+            lib_preparations =  LibraryPreparation.objects.filter(libPrepState__libPrepState = 'Completed', pools = None).order_by('registerUser')
             for lib_prep in lib_preparations :
                 display_list['data'].append( lib_prep.get_info_for_selection_in_pool())
 
@@ -3721,16 +3724,21 @@ def create_new_run (request):
     if request.method == 'POST' and request.POST['action'] == 'createNewRun':
         experiment_name = request.POST['experimentName']
         if RunProcess.objects.filter(runName__exact = experiment_name).exists():
-            return render (request,'iSkyLIMS_wetlab/error_page.html',
-                {'content':['Experiment Name is already used. ',
-                    'Experiment Name must be unique in database.']})
+            display_pools_for_run = {}
+            polls_available = get_available_pools_for_run()
+            display_pools_for_run['pool_data'] = get_pool_info(polls_available)
+            return render (request,'iSkyLIMS_wetlab/CreateNewRun.html',{'invalid_exp_name':experiment_name, 'display_pools_for_run':display_pools_for_run})
         pool_ids = request.POST.getlist('poolID')
         lib_prep_ids = get_library_prep_in_pools (pool_ids)
+        if len(lib_prep_ids) == 0:
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':['The selected Pools have not assigned to any Library Preparation.' ]})
         compatible_index = check_index_compatible(lib_prep_ids)
 
 
         if not compatible_index == True:
             detail_description = {}
+            import pdb; pdb.set_trace()
             detail_description ['heading'] = ['Index', 'Samples']
             detail_description['information'] =  duplicate_index
             return render ( request,'iSkyLIMS_wetlab/error_page.html',
@@ -3748,7 +3756,15 @@ def create_new_run (request):
         display_sample_information['data'] = collect_lib_prep_data_for_new_run(lib_prep_ids, paired)
         display_sample_information['lib_prep_ids'] = ','.join(lib_prep_ids)
         display_sample_information['paired_end'] = paired
-        display_sample_information['experiment_name_id'] = 'experimentommmm'
+        display_sample_information['experiment_name'] = experiment_name
+        # create the new Run in Pre-Recorded state
+        center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
+        center_requested_by = Center.objects.get(pk = center_requested_id)
+        new_run =  RunProcess(runName=experiment_name, sampleSheet= '',
+                                state = RunStates.objects.get(runStateName__exact = 'Pre-Recorded'),
+                                centerRequestedBy = center_requested_by)
+        new_run.save()
+        display_sample_information['run_process_id'] = new_run.get_run_id()
         import pdb; pdb.set_trace()
         #analyze_input_pool(request.POST, request.user)
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_sample_information': display_sample_information})
@@ -3756,20 +3772,18 @@ def create_new_run (request):
         run_data = handle_input_samples_for_run(request.POST, request.user)
         if 'Error' in run_data:
             return render ( request,'iSkyLIMS_wetlab/error_page.html',
-                    {'content':['Error when fecthing information to create a new Run' ,
+                    {'content':['Error when fetching information to create a new Run' ,
                     run_data['Error']]})
         ## store data in runProcess table, run is in pre-recorded state
         center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
         center_requested_by = Center.objects.get(pk = center_requested_id)
+        run_obj = RunProcess.objects.get(pk__exact = request.POST['run_process_id'])
+        run_obj.update_sample_sheet(run_data['sample_sheet'])
+        run_obj.set_run_state('Recorded')
 
-        new_run = RunProcess(runName=run_data['exp_name'],sampleSheet= run_data['sample_sheet'],
-                                state = RunStates.objects.get(runStateName__exact = 'Recorded'),
-                                centerRequestedBy = center_requested_by)
-
-        new_run.save()
         for items, values in run_data['projects_in_lib'].items():
 
-            new_project = Projects.objects.create( runprocess_id= new_run, user_id = request.user, projectName = items, libraryKit = 'nextera', baseSpaceFile = values)
+            new_project = Projects.objects.create( runprocess_id= run_obj, user_id = request.user, projectName = items, libraryKit = 'nextera', baseSpaceFile = values)
             new_project.save()
         # update the sample state for each one in the run
         created_new_run = {}

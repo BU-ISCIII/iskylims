@@ -67,8 +67,8 @@ def get_info_to_display_created_pool(pool_obj):
     information_for_created_pool['pool_name'] = pool_obj.get_pool_name()
     information_for_created_pool['heading_pool'] = HEADING_FOR_DISPLAY_CREATED_POOL
     lib_prep_data = []
-    if LibraryPreparation.objects.filter(pool_id = pool_obj).exists():
-        lib_prep_ids = LibraryPreparation.objects.filter(pool_id = pool_obj)
+    if LibraryPreparation.objects.filter(pools = pool_obj).exists():
+        lib_prep_ids = LibraryPreparation.objects.filter(pools = pool_obj)
         for lib_prep_obj in lib_prep_ids :
             lib_prep_data.append(lib_prep_obj.get_info_for_display_pool())
     information_for_created_pool['lib_prep_data'] = lib_prep_data

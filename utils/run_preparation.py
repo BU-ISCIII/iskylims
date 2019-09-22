@@ -23,16 +23,18 @@ def handle_input_samples_for_run (user_post, user):
         dictionary wit the information to display as response
     '''
     lib_prep_ids = user_post['lib_prep_ids'].split(',')
-    exp_name = user_post['experimentName']
+    run_id = user_post['run_process_id']
+
     plate_name = user_post['plateName']
     container_id = user_post['containerID']
     paired = user_post['pairedEnd']
     json_data = json.loads(user_post['s_sheet_data'])
     # check if run exists
+    run_obj = RunProcess.objects.get(pk__exact = run_id)
+    exp_name = run_obj.get_run_name()
     record_data = {}
-    if RunProcess.objects.filter(runName__exact = exp_name).exists():
+    if RunProcess.objects.filter(runName__exact = exp_name).exclude(state__runStateName__exact = 'Pre-Recorded').exists():
         record_data['Error'] = 'Run name already exists'
-
         return record_data
     run_data= {}
     run_data['experiment_name'] = exp_name
@@ -118,7 +120,7 @@ def create_base_space_file(project_data, bs_lib, plate, container_id, experiment
     for project, values in project_data.items():
         for value in values :
             data.append(value)
-        project_dict[project] = (bs_file_relative_path)
+        project_dict[project] = (os.path.join(settings.MEDIA_URL, bs_file_relative_path))
 
     sample_data = '\n'.join(data)
     if container_id == '' :
@@ -218,8 +220,8 @@ def get_library_prep_in_pools (pool_ids):
     lib_prep_ids = []
 
     for pool_id in pool_ids:
-        if LibraryPreparation.objects.filter(pool_id__exact = pool_id).exists():
-            lib_prep_objs = LibraryPreparation.objects.filter(pool_id__exact = pool_id).order_by('registerUser')
+        if LibraryPreparation.objects.filter(pools__exact = pool_id).exists():
+            lib_prep_objs = LibraryPreparation.objects.filter(pools__exact = pool_id).order_by('registerUser')
             for lib_prep_obj in lib_prep_objs:
                 lib_prep_ids.append(lib_prep_obj.get_id())
     return lib_prep_ids
@@ -227,9 +229,9 @@ def get_library_prep_in_pools (pool_ids):
 
 
 def get_available_pools_for_run():
-    if not LibraryPool.objects.filter(poolState__poolState__exact = 'Defined').exists():
+    if not LibraryPool.objects.filter(poolState__poolState__exact = 'Selected').exists():
         return
-    pools_available = LibraryPool.objects.filter(poolState__poolState__exact = 'Defined')
+    pools_available = LibraryPool.objects.filter(poolState__poolState__exact = 'Selected')
     for pool in pools_available :
         pass
     return pools_available
