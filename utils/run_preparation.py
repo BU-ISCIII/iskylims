@@ -231,25 +231,54 @@ def get_library_prep_in_pools (pool_ids):
 def get_available_pools_for_run():
     if not LibraryPool.objects.filter(poolState__poolState__exact = 'Selected').exists():
         return
-    pools_available = LibraryPool.objects.filter(poolState__poolState__exact = 'Selected')
-    for pool in pools_available :
-        pass
-    return pools_available
+    pools_to_update = {}
+    if LibraryPool.objects.filter(poolState__poolState__exact = 'Selected', runProcess_id = None).exists():
+        pools_to_update['pools_available'] = LibraryPool.objects.filter(poolState__poolState__exact = 'Selected', runProcess_id = None)
+    if LibraryPool.objects.filter(poolState__poolState__exact = 'Selected').exclude(runProcess_id = None).exists():
+        pools_to_update['defined_runs'] = LibraryPool.objects.filter(poolState__poolState__exact = 'Selected').exclude(runProcess_id = None).order_by('runProcess_id')
 
-def get_pool_info (pools_available):
-    pool_data = {}
-    pool_data['heading'] = wetlab_config.HEADING_FOR_SELECTING_POOLS
-    pool_data['data'] = []
-    pool_ids = []
-    for pool in pools_available:
+    return pools_to_update
 
-        data = pool.get_info()
-        data.append(pool.get_id())
-        pool_data['data'].append(data)
-        pool_ids.append(pool.get_id())
-    pool_data['pool_ids'] = ','.join(pool_ids)
-    return pool_data
+def get_pool_info (pools_to_update):
+    pool_info = {}
+    if 'pools_available' in pools_to_update:
+        pool_data = {}
+        pool_data['heading'] = wetlab_config.HEADING_FOR_SELECTING_POOLS
+        pool_data['data'] = []
+        pool_ids = []
+        for pool in pools_to_update['pools_available']:
+            data = pool.get_info()
+            data.append(pool.get_id())
+            pool_data['data'].append(data)
+            pool_ids.append(pool.get_id())
+        pool_data['pool_ids'] = ','.join(pool_ids)
+        pool_info['pool_data'] = pool_data
+    if 'defined_runs' in pools_to_update:
+        run_data = {}
+        tmp_data = {}
+        #run_data['r_name'] = {}
+        for pool in pools_to_update['defined_runs']:
+            run_name = pool.get_run_name()
+            if not run_name in tmp_data:
+                tmp_data[run_name] = {}
+                tmp_data[run_name]['data'] = []
+            tmp_data[run_name]['run_id'] = pool.get_run_id()
+            pool_name = pool.get_pool_name()
+            pool_code = pool.get_pool_code_id()
+            tmp_data[run_name]['data'].append([pool_name, pool_code])
+        run_info_data = []
+        for r_name, values in tmp_data.items():
+            run_info_data.append([r_name,values['data'],values['run_id']])
 
+        run_data['heading'] = HEADING_FOR_INCOMPLETED_SELECTION_POOLS
+        run_data['data'] = run_info_data
+        pool_info['run_data'] = run_data
+    
+    return pool_info
+
+def get_pool_instance_from_id (pool_id):
+    pool_obj = LibraryPool.objects.get(pk__exact = pool_id)
+    return pool_obj
 
 def parsing_data_for_bs_file(sample_sheet_data, mapping, paired, heading_base_space):
     base_space_lib ={}

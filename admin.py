@@ -65,38 +65,11 @@ class StatesForLibraryPreparationAdmin (admin.ModelAdmin):
 class StatesForPoolAdmin (admin.ModelAdmin):
     list_display = ('poolState',)
 
-### New for library preparation
-'''
-class ProtocolInLabAdmin (admin.ModelAdmin):
-    list_display = ('protocolName',)
 
-class LaboratoryAdmin (admin.ModelAdmin):
-    list_display = ['labName' , 'labCoding' , 'labLocation' ]
-'''
-#class LibraryProtocolParametersAdmin (admin.ModelAdmin):
-#    list_display = ('parameterName', 'parameterDescription', 'parameterOrder','parameterUsed','parameterMaxValue', 'parameterMinValue')
-'''
-
-
-class ReagentsCommercialKitsAdmin (admin.ModelAdmin):
-    list_display = ('name', 'protocol_id', 'provider', 'reagentLibraryName','chipLot','usedDate', 'expirationDate')
-
-
-
-
-
-
-
-
-class ProtocolParametersAdmin (admin.ModelAdmin):
-    list_display = ('protocol_id', 'parameterName', 'parameterOrder', 'parameterUsed', 'parameterMinValue', 'parameterMaxValue', 'parameterDescription')
-
-'''
 
 admin.site.register(LibraryPreparation, LibraryPreparationAdmin)
 admin.site.register(LibParameterValue, LibParameterValueAdmin)
 
-LibraryPool
 admin.site.register(LibraryPool, LibraryPoolAdmin)
 
 admin.site.register(RunningParameters , RunningParametersAdmin)
@@ -108,30 +81,3 @@ admin.site.register(RunErrors, RunErrorsAdmin)
 admin.site.register(RunStates, RunStatesAdmin)
 admin.site.register(StatesForLibraryPreparation, StatesForLibraryPreparationAdmin)
 admin.site.register(StatesForPool, StatesForPoolAdmin)
-
-
-
-
-
-'''
-admin.site.register(Laboratory, LaboratoryAdmin)
-#admin.site.register(LibraryProtocolParameters, LibraryProtocolParametersAdmin)
-admin.site.register(NucleotidesComercialKits,NucleotidesComercialKitsAdmin)
-admin.site.register(ReagentsCommercialKits,ReagentsCommercialKitsAdmin)
-
-
-admin.site.register(NAProtocolParameters,NAProtocolParametersAdmin)
-
-admin.site.register(NAProtParamData, NAProtParamDataAdmin)
-admin.site.register(SampleType, SampleTypeAdmin)
-admin.site.register(Species, SpeciesAdmin)
-admin.site.register(StatesForSample, StatesForSampleAdmin)
-
-
-
-### new
-admin.site.register(MoleculeType,MoleculeTypeAdmin)
-admin.site.register(ProtocolType,ProtocolTypeAdmin)
-admin.site.register(Protocols,ProtocolsAdmin)
-admin.site.register(ProtocolParameters,ProtocolParametersAdmin)
-'''

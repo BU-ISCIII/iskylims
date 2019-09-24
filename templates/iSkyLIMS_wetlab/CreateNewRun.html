@@ -134,54 +134,119 @@
         </div> <!--  end of row -->
 
     {% endif %}
+    {% if display_pools_for_run.run_data.heading %}
 
     <div class="row row-space-4 margin-b-4">
         <div class="col-sm-10 col-sm-offset-1" >
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>Fill the information to create the New Run </h3></div>
+                <div class="panel-heading"><h3>The following Run have been defined, but not yet completed</h3></div>
                 <div class="panel-body">
-                    <form method="post" enctype="multipart/form-data" name="createNewRun"  id="createNewRun" class="form-horizontal well">
+                    <form method="post" enctype="multipart/form-data" name="continueWithRun"  id="continueWithRun" class="form-horizontal well">
                         {% csrf_token %}
-                            <input type="hidden" name="action" value="createNewRun"/>
-                            <input type="hidden" name="lib_prep_id" value="{{display_pools_for_run.pool_ids}}"/>
-                            <div class="form-group required">
-                                <label class="col-sm-5 control-label">Define the Experiment Name for the Run</label>
-                                <div class="col-sm-5"><input class="form-control" required = "required" type="text"  name="experimentName" size="80"></div>
-                                <br><br>
-                            </div>
-                            <p>Select the Pools to be included in the new Run</p>
-                            <br>
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        {% for value in display_pools_for_run.pool_data.heading%}
-                                            <th>{{value}} </th>
-                                        {% endfor %}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for p_name, p_code, number, p_id in display_pools_for_run.pool_data.data  %}
+                        <input type="hidden" name="action" value="continueWithRun"/>
+                        
+                        {% for r_name, p_values, r_id in display_pools_for_run.run_data.data  %}
+                            <div class="col-sm-12">
+                            <h4>Run Name {{r_name }}</h4>
+
+                            <div class="col-sm-8">
+                                <table class="table">
+                                    <thead>
                                         <tr>
-                                            <td>{{p_name}}</td>
-                                            <td>{{p_code}}</td>
-                                            <td>{{number}}</td>
-                                            <td><input type="checkbox" name="poolID" value="{{p_id}}"></td>
+                                            {% for value in display_pools_for_run.run_data.heading %}
+                                                <th>{{value}} </th>
+                                            {% endfor %}
                                         </tr>
-                                    {% endfor %}
+                                    </thead>
+                                    <tbody>
+                                        {% for p_name, p_code in  p_values  %}
+                                            <tr>
+                                                <td>{{p_name}}</td>
+                                                <td>{{p_code}}</td>
+                                            </tr>
+                                        {% endfor %}
 
-                                </tbody>
-                            </table>
-                            <br><br>
-                            <input type="button" value="Return to Home" onclick="location.href ='/wetlab' ;"/>
-                            <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
+                                    </tbody>
+                                </table>
+                                <br><br>
+                            </div> <!--  end of col-sm-10 -->
+                            <div class="col-sm-4">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Select Run</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><input type="checkbox" name="run_ids" value="{{r_id}}"></td>
+                                        </tr>
 
+                                    </tbody>
+                                </table>
+                                <br><br>
+                            </div> <!--  end of col-sm-10 -->
+
+                        </div> <!--  end of col-sm-10 -->
+                        {% endfor %}
+
+                        <input class= "btn pull-right btn-primary" type= "submit" id = "btnSubmit" value= "Submit">
                     </form>
-                </div> <!--  end of panel body -->
-            </div> <!--  end of panel  -->
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
 
-        </div> <!--  end of col-sm-12 -->
-    </div> <!--  end of row -->
+            </div> <!--  end of col-sm-10 -->
+        </div> <!--  end of row -->
 
+    {% endif %}
+    {% if display_pools_for_run.pool_data.heading %}
+        <div class="row row-space-4 margin-b-4">
+            <div class="col-sm-10 col-sm-offset-1" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Fill the information to create the New Run </h3></div>
+                    <div class="panel-body">
+                        <form method="post" enctype="multipart/form-data" name="createNewRun"  id="createNewRun" class="form-horizontal well">
+                            {% csrf_token %}
+                                <input type="hidden" name="action" value="createNewRun"/>
+                                <input type="hidden" name="lib_prep_id" value="{{display_pools_for_run.pool_ids}}"/>
+                                <div class="form-group required">
+                                    <label class="col-sm-5 control-label">Define the Experiment Name for the Run</label>
+                                    <div class="col-sm-5"><input class="form-control" required = "required" type="text"  name="experimentName" size="80"></div>
+                                    <br><br>
+                                </div>
+                                <p>Select the Pools to be included in the new Run</p>
+                                <br>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            {% for value in display_pools_for_run.pool_data.heading%}
+                                                <th>{{value}} </th>
+                                            {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for p_name, p_code, number, p_id in display_pools_for_run.pool_data.data  %}
+                                            <tr>
+                                                <td>{{p_name}}</td>
+                                                <td>{{p_code}}</td>
+                                                <td>{{number}}</td>
+                                                <td><input type="checkbox" name="poolID" value="{{p_id}}"></td>
+                                            </tr>
+                                        {% endfor %}
+
+                                    </tbody>
+                                </table>
+                                <br><br>
+                                <input type="button" value="Return to Home" onclick="location.href ='/wetlab' ;"/>
+                                <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
+
+                        </form>
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+
+            </div> <!--  end of col-sm-12 -->
+        </div> <!--  end of row -->
+        {% endif %}
 
 {% endif %}
 

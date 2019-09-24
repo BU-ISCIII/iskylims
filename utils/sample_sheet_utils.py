@@ -48,7 +48,7 @@ def get_indexes_adapters (in_file):
         if found_library :
             index_line = line.split(',')
             if index_line[1]:
-                index_adapters = index_line[1]
+                index_adapters = index_line[1].replace('"', '')
                 break
     fh.close()
 

@@ -129,7 +129,7 @@ class RunProcess(models.Model):
         return True
 
     def update_sample_sheet(self, sample_file):
-        self.sampleSheet = sample_file 
+        self.sampleSheet = sample_file
         self.save()
         return True
 
@@ -773,6 +773,9 @@ class LibraryPool (models.Model):
     poolState = models.ForeignKey(
                 StatesForPool,
                 on_delete= models.CASCADE)
+    runProcess_id = models.ForeignKey(
+            RunProcess,
+            on_delete = models.CASCADE, null = True, blank = True)
 
     poolName = models.CharField(max_length=50)
     #sampleSheet = models.FileField(upload_to = wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY)
@@ -812,12 +815,36 @@ class LibraryPool (models.Model):
         self.poolState = StatesForPool.objects.get(poolState__exact = state)
         self.save()
 
+    def get_run_name(self):
+        return '%s' %(self.runProcess_id.get_run_name())
+
+    def get_run_id(self):
+        return '%s' %(self.runProcess_id.get_run_id())
+
+
     def update_number_samples(self, number_s_in_pool):
         self.numberOfSamples = number_s_in_pool
         self.save()
         return self
 
+    def update_run_name (self, run_name):
+        self.runProcess_id = run_name
+        self.save()
+        return self
+
     objects = LibraryPoolManager()
+
+'''
+class RunPreparation (models.Model):
+    runProcess_id = models.ForeignKey(
+            RunProcess,
+            on_delete = models.CASCADE, null = True)
+    poolPreparation_id = models.ForeignKey(
+            LibraryPool,
+            on_delete = models.CASCADE, null = True)
+    coverage = models.CharField(max_length = 8, null = True, blank= True)
+    generated_at = models.DateTimeField(auto_now_add=True)
+'''
 
 
 class StatesForLibraryPreparation (models.Model):
@@ -828,6 +855,7 @@ class StatesForLibraryPreparation (models.Model):
 
     def get_lib_state(self):
         return '%s' %(self.libPrepState)
+
 
 
 class libraryPreparationManager(models.Manager):
@@ -882,7 +910,7 @@ class LibraryPreparation (models.Model):
     collectionIndex_id = models.ForeignKey(
                 CollectionIndexKit,
                 on_delete= models.CASCADE, null = True, blank = True)
-    pools = models.ManyToManyField(LibraryPool)
+    pools = models.ManyToManyField(LibraryPool, blank = True)
 
     libPrepCodeID = models.CharField(max_length=255, null = True, blank = True)
     userSampleID = models.CharField(max_length =20 , null = True, blank = True)

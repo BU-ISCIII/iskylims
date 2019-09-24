@@ -3420,13 +3420,9 @@ def set_library_preparation(request):
                 not_defined_samples.append(sample)
                 continue
 
-            '''
-            if LibraryPreparation.objects.filter(sample_id = sample_obj ).exists():
-                #lib_preparations = LibraryPreparation.objects.filter(sample_id = sample_obj )
-                #for lib_item in lib_preparations:
-                #    if lib_item.get_state() ==
+            if LibraryPreparation.objects.filter(sample_id = sample_obj , libPrepState__libPrepState__exact = 'Defined').exists():
                 not_allowed_lib_prep.append(sample)
-            '''
+
         if (not_defined_samples or not_allowed_lib_prep):
             not_defined_samples_str, not_allowed_lib_prep_str = '' , ''
             if not_defined_samples:
@@ -3437,6 +3433,7 @@ def set_library_preparation(request):
                 {'content':[not_defined_samples_str , not_allowed_lib_prep_str ]})
 
         library_prep_workflow = get_library_name(stored_file)
+
         index_adapters = get_indexes_adapters (stored_file)
 
         # store user sample sheet in database
@@ -3722,6 +3719,7 @@ def create_new_run (request):
         #redirect to login webpage
         return redirect ('/accounts/login')
     if request.method == 'POST' and request.POST['action'] == 'createNewRun':
+
         experiment_name = request.POST['experimentName']
         if RunProcess.objects.filter(runName__exact = experiment_name).exists():
             display_pools_for_run = {}
@@ -3735,10 +3733,9 @@ def create_new_run (request):
                 {'content':['The selected Pools have not assigned to any Library Preparation.' ]})
         compatible_index = check_index_compatible(lib_prep_ids)
 
-
         if not compatible_index == True:
             detail_description = {}
-            import pdb; pdb.set_trace()
+
             detail_description ['heading'] = ['Index', 'Samples']
             detail_description['information'] =  duplicate_index
             return render ( request,'iSkyLIMS_wetlab/error_page.html',
@@ -3765,9 +3762,36 @@ def create_new_run (request):
                                 centerRequestedBy = center_requested_by)
         new_run.save()
         display_sample_information['run_process_id'] = new_run.get_run_id()
-        import pdb; pdb.set_trace()
+        for pool in pool_ids:
+            pool_obj = get_pool_instance_from_id(pool)
+            pool_obj.update_run_name(new_run)
+        #import pdb; pdb.set_trace()
         #analyze_input_pool(request.POST, request.user)
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_sample_information': display_sample_information})
+
+    elif request.method == 'POST' and request.POST['action'] == 'continueWithRun':
+        run_id = request.POST['run_ids']
+
+        pool_ids = LibraryPool.objects.filter(runProcess_id__exact =run_id)
+        experiment_name = pool_ids[0].get_run_name()
+        lib_prep_ids = get_library_prep_in_pools (pool_ids)
+
+        display_sample_information = {}
+        single_paired = check_type_read_sequencing(lib_prep_ids)
+        if single_paired == 'Paired End':
+            paired = True
+            display_sample_information['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_PAIREDEND
+        else:
+            paired = False
+            display_sample_information['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD
+
+        display_sample_information['data'] = collect_lib_prep_data_for_new_run(lib_prep_ids, paired)
+        display_sample_information['lib_prep_ids'] = ','.join(lib_prep_ids)
+        display_sample_information['paired_end'] = paired
+        display_sample_information['experiment_name'] = experiment_name
+        display_sample_information['run_process_id'] = run_id
+        return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_sample_information': display_sample_information})
+
     elif request.method == 'POST' and request.POST['action'] ==  'storeDataNewRun':
         run_data = handle_input_samples_for_run(request.POST, request.user)
         if 'Error' in run_data:
@@ -3782,21 +3806,24 @@ def create_new_run (request):
         run_obj.set_run_state('Recorded')
 
         for items, values in run_data['projects_in_lib'].items():
-
             new_project = Projects.objects.create( runprocess_id= run_obj, user_id = request.user, projectName = items, libraryKit = 'nextera', baseSpaceFile = values)
             new_project.save()
         # update the sample state for each one in the run
         created_new_run = {}
         created_new_run['exp_name'] = run_data['exp_name']
-        update_batch_lib_prep_sample_state(run_data['lib_prep_ids'], 'Completed', 'Sequencing')
+        update_batch_lib_prep_sample_state(run_data['lib_prep_ids'],  'Sequencing')
+        pools_obj = LibraryPreparation.objects.filer(runProcess_id = run_obj)
+        for pool_obj in pools_obj:
+            pool_obj.set_state('Used')
 
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'created_new_run': created_new_run})
     else:
         # Selecting pools to create the Run
         display_pools_for_run = {}
-        polls_available = get_available_pools_for_run()
-        if polls_available:
-            display_pools_for_run['pool_data'] = get_pool_info(polls_available)
+        pools_to_update = get_available_pools_for_run()
+        if pools_to_update:
+            display_pools_for_run = get_pool_info(pools_to_update)
+            #import pdb; pdb.set_trace()
             return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run})
         else:
             return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'no_pools_for_run': 'No pools'})

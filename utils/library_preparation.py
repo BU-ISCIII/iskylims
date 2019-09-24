@@ -91,6 +91,7 @@ def get_all_library_information(sample_id):
     if LibraryPreparation.objects.filter(sample_id__pk__exact = sample_id).exists():
         library_information['library_definition_heading'] = HEADING_FOR_LIBRARY_PREPARATION_DEFINITION
         library_information['library_definition'] = []
+        library_information['pool_information'] = []
         library_preparation_items = LibraryPreparation.objects.filter(sample_id__pk__exact = sample_id).exclude(libPrepState__libPrepState__exact = 'Created for Reuse')
         library_information['lib_prep_param_value'] = []
         for library_item in library_preparation_items:
@@ -106,6 +107,17 @@ def get_all_library_information(sample_id):
                         lib_prep_param_value.append(LibParameterValue.objects.get(library_id = library_item, parameter_id = p_name).get_parameter_information())
                 library_information['lib_prep_param_value'].append(lib_prep_param_value)
                 library_information['lib_prep_param_heading'] = lib_prep_param_heading
+
+            if library_item.pools.all().exists() :
+                pools = library_item.pools.all()
+                lib_prep_code_id = library_item.get_lib_prep_code()
+                for pool in pools:
+                    pool_name = pool.get_pool_name()
+                    pool_code = pool.get_pool_code_id()
+                    library_information['pool_information'].append([lib_prep_code_id, pool_name,pool_code, ''])
+                    
+        if library_information['pool_information']:
+            library_information['pool_heading'] = HEADING_FOR_DISPLAY_POOL_INFORMATION_IN_SAMPLE_INFO
     return library_information
 
 def get_lib_prep_to_add_parameters():
@@ -152,9 +164,15 @@ def check_samples_in_lib_prep_state ():
         for sample in samples_obj :
             if not LibraryPreparation.objects.filter(sample_id = sample).exists():
                 sample_names.append(sample.get_sample_name())
+                continue
+            if LibraryPreparation.objects.filter(sample_id = sample, libPrepState__libPrepState__exact = 'Defined').exists():
+                continue
+            else:
+                sample_names.append(sample.get_sample_name())
+            '''
             if LibraryPreparation.objects.filter(sample_id = sample, libPrepState__libPrepState__exact = 'Created for Reuse').exists():
                 sample_names.append(sample.get_sample_name())
-
+            '''
 
     return sample_names
 
