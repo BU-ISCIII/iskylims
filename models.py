@@ -245,6 +245,8 @@ class Samples (models.Model):
     sampleCodeID = models.CharField(max_length=60, null = True)
     #reused = models.BooleanField(null = True, blank = True)
     numberOfReused = models.IntegerField(default=0)
+    sequencingDate = models.DateTimeField(auto_now_add=False, null = True)
+    completedDate = models.DateTimeField(auto_now_add=False, null = True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__ (self):
@@ -322,6 +324,9 @@ class Samples (models.Model):
 
     def set_state (self, state_value):
         self.sampleState = StatesForSample.objects.get(sampleStateName__exact = state_value)
+        import pdb; pdb.set_trace()
+        if state_value == "Sequencing":
+            self.sequencingDate = datetime.datetime.today()
         self.save()
 
     def set_increase_reuse(self):
