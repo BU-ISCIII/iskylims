@@ -28,6 +28,7 @@ def analyze_and_store_patient_data (user_post, user):
             not_match.append(json_data[c_samples_id])
             not_match_samples_ids.append(clinic_samples[c_samples_id])
         else:
+
             patient_data = {}
             patient_data['patient_id'] = patient_obj
             for map_column in  MAP_ADDITIONAL_HEADING_TO_DATABASE:
@@ -36,9 +37,16 @@ def analyze_and_store_patient_data (user_post, user):
                 #match_ids.append(clinic_samples[c_samples_id])
             patient_data['doctor_id'] = get_doctor_obj(json_data[c_samples_id][heading.index('Doctor')])
             patient_data['serviceUnit_id'] = get_service_unit_obj((json_data[c_samples_id][heading.index('Requested Service by')]))
+
             clinic_obj = get_clinic_sample_obj_from_id(clinic_samples[c_samples_id])
             clinic_obj.update(patient_data)
             stored_samples.append([json_data[c_samples_id][0], history_number , json_data[c_samples_id][heading.index('Requested Service by')]])
+            # create suspicious data for this clinic sample
+            suspicious_data = {}
+            suspicious_data['patient_id'] = patient_obj
+            suspicious_data['clinicSample_id'] = clinic_obj
+            suspicious_data['description'] = json_data[c_samples_id][heading.index('Suspicious')]
+            suspicious_obj = SuspiciousHistory.objects.create_suspicious_history(suspicious_data)
     if stored_samples :
         analyze_data['stored_samples_heading'] = HEADING_FOR_STORED_PATIENT_DATA
     if not_match:
@@ -49,7 +57,7 @@ def analyze_and_store_patient_data (user_post, user):
     analyze_data['not_match'] = not_match
     analyze_data['not_match_samples_ids'] =not_match_samples_ids
     analyze_data['stored_samples'] = stored_samples
-    
+
     return analyze_data
 
 

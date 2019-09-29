@@ -7,13 +7,13 @@ class Patient (models.Model):
     patientName = models.CharField(max_length = 80)
     numberOfHistory = models.CharField(max_length = 80)
 
-    def __str_ (self):
+    def __str__ (self):
         return '%s' %(self.patientName)
 
 class ServiceUnits (models.Model) :
     serviceUnitName = models.CharField(max_length = 80)
 
-    def __str_ (self):
+    def __str__ (self):
         return '%s' %(self.serviceUnitName)
 
     def get_name (self):
@@ -25,7 +25,7 @@ class Doctor (models.Model):
                 on_delete = models.CASCADE, null = True, blank = True)
     doctorName = models.CharField(max_length = 80)
 
-    def __str_ (self):
+    def __str__ (self):
         return '%s' %(self.doctorName)
 
     def get_name (self):
@@ -61,8 +61,8 @@ class ClinicSampleRequest (models.Model):
     serviceDate = models.DateTimeField(auto_now_add=False)
     generated_at = models.DateTimeField(auto_now_add=True)
 
-    def __str_ (self):
-        return '%s' %(self.sampleCore.get_name())
+    def __str__ (self):
+        return '%s' %(self.sampleCore)
 
     def get_id (self):
         return '%s' %(self.id)
@@ -83,7 +83,12 @@ class ClinicSampleRequest (models.Model):
         self.save()
         return self
 
-class SupiciousHistory (models.Model):
+class SuspiciousHistoryManager(models.Manager):
+    def create_suspicious_history ( self, suspicious_data):
+        new_suspicious_history = self.create( clinicSample_id = suspicious_data['clinicSample_id'],
+                    patient_id = suspicious_data['patient_id'], description = suspicious_data['description'] )
+
+class SuspiciousHistory (models.Model):
     clinicSample_id = models.ForeignKey(
             ClinicSampleRequest,
             on_delete = models.CASCADE, null = True)
@@ -92,8 +97,10 @@ class SupiciousHistory (models.Model):
             on_delete = models.CASCADE, null = True)
     description = models.CharField(max_length = 255)
 
-    def __str_ (self):
+    def __str__ (self):
         return '%s' %(self.description)
+
+    objects = SuspiciousHistoryManager()
 
 class SampleResults (models.Model):
     sampleRequest_id = models.ForeignKey(
