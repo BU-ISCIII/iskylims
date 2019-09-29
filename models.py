@@ -143,21 +143,30 @@ class Species (models.Model):
         return '%s' %(self.spicesName)
 
 
+class CommercialKitsManager(models.Manager):
+    def create_commercial_kit (self, kit_data):
 
+        new_commercial_kit = self.create(protocol_id = kit_data['protocol_id'],
+                    name = kit_data['name'],  provider  = kit_data['provider'],  cat_number = kit_data['cat_number'],
+                    description  = kit_data['description'], maximumUses = kit_data['maximumUses'] )
+        return new_commercial_kit
 
 
 class ComercialKits (models.Model):
     protocol_id = models.ForeignKey(
-                    ProtocolType,
+                    Protocols,
                     on_delete= models.CASCADE, null = True)
+    '''
     molecule_id = models.ForeignKey(
                     MoleculeType,
                     on_delete= models.CASCADE, null = True, blank = True)
-    name = models.CharField(max_length =60)
+    '''
+    name = models.CharField(max_length =150)
     provider = models.CharField(max_length =30)
     maximumUses = models.IntegerField(null = True, default = 0)
 
     cat_number = models.CharField(max_length = 40, null = True, blank = True)
+    description = models.CharField(max_length = 255, null = True, blank = True)
     generatedat = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__ (self):
@@ -169,8 +178,17 @@ class ComercialKits (models.Model):
     def get_protocol (self):
         return '%s' %(self.protocol_id.get_name())
 
+    def get_basic_data(self):
+        kit_basic_data = []
+        kit_basic_data.append(self.name)
+        kit_basic_data.append(self.provider)
+        kit_basic_data.append(self.protocol_id.get_name())
 
-class UserComercialKits (models.Model):
+        return kit_basic_data
+
+    objects = CommercialKitsManager()
+
+class UserLotComercialKits (models.Model):
     user = models.ForeignKey(
                 User,
                 on_delete=models.CASCADE, null = True)
@@ -324,7 +342,6 @@ class Samples (models.Model):
 
     def set_state (self, state_value):
         self.sampleState = StatesForSample.objects.get(sampleStateName__exact = state_value)
-        import pdb; pdb.set_trace()
         if state_value == "Sequencing":
             self.sequencingDate = datetime.datetime.today()
         self.save()

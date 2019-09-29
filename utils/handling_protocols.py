@@ -109,8 +109,13 @@ def display_available_protocols ():
 
     return molecule_protocol_list , other_protocol_list
 
-
-
+def get_defined_protocols():
+    defined_protocols = []
+    if Protocols.objects.all().exists():
+        protocols_obj = Protocols.objects.all().order_by('type')
+        for protocol_obj in protocols_obj:
+            defined_protocols.append(protocol_obj.get_name())
+    return defined_protocols
 
 def display_protocol_types ():
     '''
@@ -136,7 +141,7 @@ def get_all_protocol_info(protocol_id):
     protocol_data = {}
     protocol_data['parameters'] = []
     protocol_obj = Protocols.objects.get(pk__exact = protocol_id)
-    
+
     if ProtocolParameters.objects.filter(protocol_id = protocol_obj).exists():
         protocol_data['parameter_heading'] = HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS
         protocol_parameters = ProtocolParameters.objects.filter(protocol_id = protocol_obj).order_by('parameterOrder')
@@ -145,6 +150,11 @@ def get_all_protocol_info(protocol_id):
 
     return protocol_data
 
+def get_protocol_obj_from_name(protocol_name):
+    if Protocols.objects.filter(name__exact = protocol_name).exists():
+        return Protocols.objects.get(name__exact = protocol_name)
+    else:
+        return None
 
 def get_protocol_parameters(protocol_obj):
     '''

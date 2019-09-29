@@ -33,7 +33,11 @@ HEADING_FOR_MOLECULE_DEFINITION = ['Molecule CodeID', 'Molecule State','Extracti
 ### Headings used when defining the custom protocol parameters
 HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS = ['Parameter name', 'Order', 'Used', 'Min Value', 'Max Value', 'Description']
 
+##############################################################
+################## KITS Heading ##############################
+##############################################################
 
+HEADING_FOR_COMMERCIAL_KIT_BASIC_DATA = ['Commercial Kit Name', 'Provider',  'Protocol used for the kit']
 
 #########  FOLDER SETTINGS TO STORE COLLECTION KITS #######
 ## Relative path from settings.MEDIA_ROOT
