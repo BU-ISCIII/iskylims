@@ -33,7 +33,7 @@
                             <p>Click on the "Continue with Patient information" button to define the Patient Information to theses samples</p>
                             <br>
 
-                            <form method="post" enctype="multipart/form-data" name="continueWithPatient"  id="continueWithPatient" class="form-horizontal well">
+                            <form method="post" action= "definePatientInformation" enctype="multipart/form-data" name="continueWithPatient"  id="continueWithPatient" class="form-horizontal well">
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="continueWithPatient"/>
                                 <input type="hidden" name="clinic_samples" value="{{ sample_recorded.clinic_samples_ids }}"/>
@@ -46,91 +46,7 @@
         </div> <!--// end row -->
     {% endif %}
 
-{% elif patient_information %}
-    <script src="{% static "iSkyLIMS_wetlab/js/jquery/v3.4.1/jquery-3.4.1.min.js" %}" type="text/javascript"></script>
-    <script src="{% static "iSkyLIMS_wetlab/js/jexcel/v3/jexcel.js" %}" type="text/javascript"></script>
-    <script src="{% static "iSkyLIMS_wetlab/js/jsuites/v2/jsuites.js" %}" type="text/javascript"></script>
 
-    <link href="{% static "iSkyLIMS_wetlab/css/jexcel/v3/jexcel.css" %}" rel="stylesheet">
-    <link href="{% static "iSkyLIMS_wetlab/css/jsuites/v2/jsuites.css" %}" rel="stylesheet">
-    <style>
-        .scrolling-wrapper {
-            overflow-x: scroll;
-            white-space: nowrap;
-        }
-    </style>
-    <div class="row row-space-4 margin-b-4">
-        <div class="col-sm-12" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Set the Patient Information for the samples below</h3></div>
-                <div class="panel-body">
-                    <br><br><br>
-                    <form method="post" enctype="multipart/form-data" name="storePatientInfo"  id="storePatientInfo" class="form-horizontal well" style="min-height: 500px;">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="storePatientInfo"/>
-                        <div class="scrolling-wrapper">
-                            <div id="spreadsheet"></div>
-                            <br><br><br><br><br><br>
-                        </div> <!--  end of scrolling  -->
-                            <script>
-                                {% if patient_information.data %}
-                                    var data = [{% for values in patient_information.data %}
-                                    [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
-                                    ];
-                                {% else %}
-                                    var data = [[]];
-                                {% endif %}
-                                mySpreadsheet = $('#spreadsheet').jexcel({
-                                data:data,
-                                columns: [
-                                    { type: 'text', title:'{{patient_information.heading.0}}', width:120 , readOnly:true},
-                                    { type: 'number', title:'{{patient_information.heading.1}}', width:150 },
-                                    { type: 'text', title:'{{patient_information.heading.2}}', width:120 },
-                                    { type: 'number', title:'{{patient_information.heading.3}}', width:120 },
-
-                                    { type: 'calendar', title:'{{patient_information.heading.4}}', width:120 },
-                                    { type: 'text' , title: '{{patient_information.heading.5}}', width:150 },
-                                    { type: 'text' , title: '{{patient_information.heading.6}}', width:150 },
-                                    { type: 'text' , title: '{{patient_information.heading.7}}', width:150 },
-                                    { type: 'text' , title: '{{patient_information.heading.8}}', width:150 },
-                                    { type: 'text' , title: '{{patient_information.heading.9}}', width:150 },
-                                    ],
-                                    allowInsertColumn:false,
-                                    allowDeleteColumn:false,
-                                    allowRenameColumn:false,
-                                    csvFileName:'patient_information',
-                                    minDimensions:[{{patient_information.heading_length}},{{patient_information.data_length}}],
-                                });
-                            </script>
-                        <br>
-                        <br>
-                        <input type="button" value="Download Spreadsheet" onclick="$('#spreadsheet').jexcel('download')"/>
-                        <input class="btn pull-right btn-primary" type="submit" value="Submit">
-                    </form>
-                    <script>
-                        $(document).ready(function () {
-                            $("#storePatientInfo").submit(function (e) {
-                                //stop submitting the form to see the disabled button effect
-                                // e.preventDefault();
-                                //disable the submit button
-                                var table_data = $('#spreadsheet').jexcel('getData')
-                                var data_json = JSON.stringify(table_data)
-                                $("<input />").attr("type", "hidden")
-                                   .attr("name", "patient_data")
-                                   .attr("value", data_json)
-                                   .appendTo("#storePatientInfo");
-                                $("#btnSubmit").attr("disabled", true);
-                                return true;
-                            });
-                        });
-                    </script>
-
-                </div>  <!--  end of panel body  -->
-            </div> <!--// end panel -->
-
-        </div> <!--// end col-sm-7  -->
-
-    </div> <!--// end row -->
 
 {% else %}
 

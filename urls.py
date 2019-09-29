@@ -10,6 +10,7 @@ from django.views.generic import ListView, DetailView
 urlpatterns = [
     path('',views.index, name = 'index'),
     path('defineNewSamples', views.define_new_samples, name = 'define_new_samples'),
+    path('definePatientInformation', views.define_patient_information, name = 'define_patient_information'),
 
 ]
 

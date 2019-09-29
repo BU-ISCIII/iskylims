@@ -31,10 +31,20 @@ def define_new_samples(request):
             sample_recorded['clinic_samples_ids'] = clinic_samples_ids
 
         return render(request, 'iSkyLIMS_clinic/defineNewSamples.html', {'sample_recorded':sample_recorded})
-    if request.method == 'POST' and request.POST['action'] == 'continueWithPatient':
-        patient_information = define_patient_information(request.POST['clinic_samples'])
-        return render(request, 'iSkyLIMS_clinic/defineNewSamples.html',{'patient_information':patient_information})
     else:
         sample_information = prepare_sample_input_table()
-        import pdb; pdb.set_trace()
         return render(request, 'iSkyLIMS_clinic/defineNewSamples.html',{'sample_information':sample_information})
+
+def define_patient_information(request):
+    if request.method == 'POST' and request.POST['action'] == 'continueWithPatient':
+        patient_information = prepare_patient_form(request.POST['clinic_samples'].split(','))
+        return render(request, 'iSkyLIMS_clinic/definePatientInformation.html',{'patient_information':patient_information})
+    elif request.method == 'POST' and request.POST['action'] == 'storePatientInfo':
+        updated_information = analyze_and_store_patient_data (request.POST, request.user)
+        
+        return render(request, 'iSkyLIMS_clinic/definePatientInformation.html',{'updated_information':updated_information})
+    else:
+        clinic_samples = get_clinic_samples_by_state('Defined')
+        patient_information = prepare_patient_form(clinic_samples)
+
+        return render(request, 'iSkyLIMS_clinic/definePatientInformation.html',{'patient_information':patient_information})
