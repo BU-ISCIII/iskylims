@@ -66,12 +66,15 @@
                                     {% if user.is_authenticated %}
                         				<li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Library Preparation<span class="caret"></span></a>
                         				    <ul class="dropdown-menu">
-                                                <li><a href="/wetlab/AddCommercialKit">Add User Commercial Kit</a></li>
-
-                              					<li><a href="/wetlab/addCollectionIndexKit">Add Collection Index Kit</a></li>
-                                                <li><a href="/wetlab/recordSamples">Record Samples</a></li>
-                                                <li><a href="/wetlab/searchLibSamples">Search Samples</a></li>
-                                                <li><a href="/wetlab/pendingToUpdate">Pending Samples/Molecules/Library</a></li>
+                                                {% if request.user|has_group:"WetlabManager" %}
+                                                    <li><a href="/wetlab/addCollectionIndexKit">Add Collection Index Kit</a></li>
+                                                    <li><a href="/wetlab/AddCommercialKit">Add Commercial Kit</a></li>
+                                                {% else %}
+                                                    <li><a href="/wetlab/AddUserLotCommercialKit">Add User Lot Commercial Kit</a></li>
+                                                    <li><a href="/wetlab/recordSamples">Record Samples</a></li>
+                                                    <li><a href="/wetlab/searchLibSamples">Search Samples</a></li>
+                                                    <li><a href="/wetlab/pendingToUpdate">Pending Samples/Molecules/Library</a></li>
+                                                {% endif %}
                                             </ul>
                           				</li>
       				                {% else %}

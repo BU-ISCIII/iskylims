@@ -120,8 +120,8 @@ def create_base_space_file(project_data, bs_lib, plate, container_id, experiment
     for project, values in project_data.items():
         for value in values :
             data.append(value)
-        project_dict[project] = (os.path.join(settings.MEDIA_URL, bs_file_relative_path))
-
+        project_dict[project] = (os.path.join(settings.MEDIA_URL, bs_file_relative_path)).replace('/', '', 1)
+        
     sample_data = '\n'.join(data)
     if container_id == '' :
         today_date = datetime.datetime.today().strftime("%Y%m%d")
@@ -273,7 +273,7 @@ def get_pool_info (pools_to_update):
         run_data['heading'] = HEADING_FOR_INCOMPLETED_SELECTION_POOLS
         run_data['data'] = run_info_data
         pool_info['run_data'] = run_data
-    
+
     return pool_info
 
 def get_pool_instance_from_id (pool_id):

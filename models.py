@@ -9,7 +9,7 @@ from django_utils.models import Center
 from django.utils.translation import ugettext_lazy as _
 
 from .  import wetlab_config
-from iSkyLIMS_core.models import MoleculePreparation , Samples , ProtocolType, Protocols, ProtocolParameters, UserComercialKits
+from iSkyLIMS_core.models import MoleculePreparation , Samples , ProtocolType, Protocols, ProtocolParameters, UserLotComercialKits
 
 class RunErrors (models.Model):
     errorCode = models.CharField(max_length=10)
@@ -834,17 +834,6 @@ class LibraryPool (models.Model):
 
     objects = LibraryPoolManager()
 
-'''
-class RunPreparation (models.Model):
-    runProcess_id = models.ForeignKey(
-            RunProcess,
-            on_delete = models.CASCADE, null = True)
-    poolPreparation_id = models.ForeignKey(
-            LibraryPool,
-            on_delete = models.CASCADE, null = True)
-    coverage = models.CharField(max_length = 8, null = True, blank= True)
-    generated_at = models.DateTimeField(auto_now_add=True)
-'''
 
 
 class StatesForLibraryPreparation (models.Model):
@@ -901,9 +890,11 @@ class LibraryPreparation (models.Model):
     libPrepState = models.ForeignKey(
                 StatesForLibraryPreparation,
                 on_delete= models.CASCADE, null = True, blank = True)
+    '''
     user_reagentKit_id = models.ForeignKey(
                 UserComercialKits,
                 on_delete= models.CASCADE, null = True, blank = True)
+    '''
     user_sample_sheet = models.ForeignKey(
                 libPreparationUserSampleSheet,
                 on_delete= models.CASCADE, null = True, blank = True)

@@ -13,6 +13,7 @@ urlpatterns = [
     path('AddBasespaceLibrary/',views.add_basespace_library, name='add_basespace_library'),
     path('AddCommercialKit', views.add_commercial_kit, name='add_commercial_kit'),
     path('addCollectionIndexKit', views.add_collection_index_kit, name = 'add_collection_index_kit'),
+    path('AddUserLotCommercialKit', views.add_user_lot_commercial_kit, name ='add_user_lot_commercial_kit'),
     path('AnnualReport/',views.annual_report, name='annual_report'),
     path('change_project_libKit=<int:project_id>',views.change_project_libKit, name ='change_project_libKit'),
     path('change_run_libKit=<int:run_id>',views.change_run_libKit, name ='change_run_libKit'),

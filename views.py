@@ -3207,8 +3207,24 @@ def define_protocol_parameters (request, protocol_id):
 
 @login_required
 def add_commercial_kit (request):
+    if request.method == 'POST' and request.POST['action'] == 'addCommercialKit':
+        commercial_input = {}
+        if get_commercial_kit_id (request.POST['kitName']) :
+            defined_protocols = get_defined_protocols()
+            return render(request, 'iSkyLIMS_wetlab/AddCommercialKit.html',{'defined_protocols': defined_protocols, 'invalid_name': request.POST['kitName']})
+        new_kit = store_commercial_kit(request.POST)
+        new_kit_data = get_comercial_kit_basic_data(new_kit)
+        return render(request, 'iSkyLIMS_wetlab/AddCommercialKit.html',{'new_kit_data': new_kit_data})
+    else:
+        defined_protocols = get_defined_protocols()
+        return render(request, 'iSkyLIMS_wetlab/AddCommercialKit.html',{'defined_protocols': defined_protocols})
 
-    return render(request, 'iSkyLIMS_wetlab/AddCommercialKit.html')
+@login_required
+def add_user_lot_commercial_kit (request):
+
+    return render(request, 'iSkyLIMS_wetlab/AddUserLotCommercialKit.html')
+
+
 
 @login_required
 def pending_to_update(request):
@@ -3812,9 +3828,9 @@ def create_new_run (request):
         created_new_run = {}
         created_new_run['exp_name'] = run_data['exp_name']
         update_batch_lib_prep_sample_state(run_data['lib_prep_ids'],  'Sequencing')
-        pools_obj = LibraryPreparation.objects.filer(runProcess_id = run_obj)
+        pools_obj = LibraryPool.objects.filter(runProcess_id = run_obj)
         for pool_obj in pools_obj:
-            pool_obj.set_state('Used')
+            pool_obj.set_pool_state('Used')
 
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'created_new_run': created_new_run})
     else:

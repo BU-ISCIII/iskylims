@@ -1,92 +1,63 @@
 {% extends 'iSkyLIMS_wetlab/base.html' %}
 {% load static %}
 {% block content %}
-{% if new_kit_data %}
+{% if NoSamples %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-6 col-sm-offset-1">
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>Successful definition for Commercial Kit </h3></div>
+                <div class="panel-heading"><h3>The are not samples.</h3></div>
                 <div class="panel-body">
-                    <table class="table ">
-                     <thead>
-                        <tr>
-                            {% for value in new_kit_data.heading %}
-                                <th>{{value}}</th>
-                            {% endfor %}
-                        </tr>
-                     </thead>
-                     <tbody>
-                          <tr>
-                              {% for value in new_kit_data.data %}
-                                  <td>{{value}}</td>
-                              {% endfor %}
-                       </tr>
-                      </tbody>
-                  </table>
+
+
+
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->
         </div> <!--// end col-sm-7  -->
     </div> <!--// end row -->
 
 {% else %}
-    {% if invalid_name %}
-        <div class="row row-space-2 margin-b-4">
-            <div class="col-sm-6 col-sm-offset-1">
-                <div class="panel panel-danger">
-                    <div class="panel-heading"><h3>Commercial Kit already exists</h3></div>
-                    <div class="panel-body">
-                        <p>The Commercial kit Name <strong>{{invalid_name}}  already exists</strong></p>
-                    </div>  <!--  end of panel body  -->
-                </div> <!--// end panel -->
-            </div> <!--// end col-sm-7  -->
-        </div> <!--// end row -->
-    {% endif %}
 <div class="row row-space-2 margin-b-4">
     <div class="col-sm-6 col-sm-offset-1">
         <div class="panel panel-default">
-            <div class="panel-heading"><h3>Form to add new Commercial Kit.</h3></div>
+            <div class="panel-heading"><h3>Commercial Kit.</h3></div>
             <div class="panel-body">
                 <form method="post" enctype="multipart/form-data" name="addCommercialKit" id="addCommercialKit" class="form-horizontal well">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="addCommercialKit"/>
-                <div class="form-group required">
+                <div class="form-group">
                     <label class="col-sm-5 control-label" for="protocol" >Select the Protocol used for the Kit </label>
-                    <div class="col-sm-7">
-                        <select class="form-control" name="protocol" id="protocol">
-              				<option value="">Choose a value</option>
-                                {% for value in defined_protocols %}
-                                    <option value="{{value}}">{{value}}</option>
-                                {% endfor %}
-                        </select>
+                    <div class="col-sm-4"><select class="form-control" name="protocol" id="protocol">
+                                      				<option value="">Choose a value</option>
+                                                   {% for value in protocols %}
+                                                       <option value="{{value}}">{{value}}</option>
+                                                   {% endfor %}
+                                             </select>
                     </div>  <!-- end select input -->
                 </div>  <!-- end from-group   -->
                 <BR>
-                    <div class="form-group required">
+                    <div class="form-group">
                          <label class="col-sm-5  control-label" for="provider" >Select the Kit Provider company </label>
                            <div class="col-sm-5"><input class="form-control" type="text" name="provider" id="provider" size="100" maxlength="100"></div>
                     </div>  <!-- end from-group   -->
 
                     <br>
-
-                 <div class="form-group required">
-                      <label class="col-sm-5  control-label" for="catNo" > Cat No./ID </label>
-                        <div class="col-sm-5"><input class="form-control" type="text" name="catNo" id="catNo"></div>
+                    <div class="form-group">
+                        <label class="col-sm-5  control-label" for="provider" >Enter the barcode  </label>
+                        <input type="text" id="txtCode" class="barcodeinput"/>
+                        <input type="button" value="OK" class="nextcontrol"/>
+                        <h3 id="msg"/>
+                    </div>  <!-- end from-group   -->
+                    <br>
+                 <div class="form-group">
+                      <label class="col-sm-5  control-label" for="protocol" >Select the Protocol used for the Kit </label>
+                        <div class="col-sm-5"><input class="form-control" type="text" name="protocol" id="protocol" size="100" maxlength="100"></div>
                  </div>  <!-- end from-group   -->
                  <br>
-                    <div class="form-group required">
-                      <label class="col-sm-5 control-label" for="kitName" >Kit Name</label>
-                      <div class="col-sm-5"><input class="form-control" type="text" name="kitName" value="" id="kitName"></div>
+                    <div class="form-group">
+                      <label class="col-sm-5 control-label" for="expirationDate" >Kit Expiration Date (DD-MM-YYYY)</label>
+                      <div class="col-sm-5"><input class="form-control" type="date" name="expirationDate" value="" id="expirationDate"></div>
                 </div>  <!-- end from-group   -->
-                <br>
-                   <div class="form-group">
-                     <label class="col-sm-5 control-label" for="description" >Description</label>
-                     <div class="col-sm-7"><textarea class="form-control" name="description" value="" id="description" rows="4" cols="60" maxlength="220"></textarea></div>
-               </div>  <!-- end from-group   -->
-               <br>
-               <br>
-                   <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
-                   <input class="btn pull-right btn-primary" type="submit" value="Submit">
-               </form>
+
 
             </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
