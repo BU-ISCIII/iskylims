@@ -3208,12 +3208,11 @@ def define_protocol_parameters (request, protocol_id):
 @login_required
 def add_commercial_kit (request):
     if request.method == 'POST' and request.POST['action'] == 'addCommercialKit':
-        commercial_input = {}
         if get_commercial_kit_id (request.POST['kitName']) :
             defined_protocols = get_defined_protocols()
             return render(request, 'iSkyLIMS_wetlab/AddCommercialKit.html',{'defined_protocols': defined_protocols, 'invalid_name': request.POST['kitName']})
         new_kit = store_commercial_kit(request.POST)
-        new_kit_data = get_comercial_kit_basic_data(new_kit)
+        new_kit_data = get_commercial_kit_basic_data(new_kit)
         return render(request, 'iSkyLIMS_wetlab/AddCommercialKit.html',{'new_kit_data': new_kit_data})
     else:
         defined_protocols = get_defined_protocols()
@@ -3221,8 +3220,16 @@ def add_commercial_kit (request):
 
 @login_required
 def add_user_lot_commercial_kit (request):
-
-    return render(request, 'iSkyLIMS_wetlab/AddUserLotCommercialKit.html')
+    if request.method == 'POST' and request.POST['action'] == 'addUserLotKit':
+        if get_lot_user_commercial_kit_id (request.POST['nickName']) :
+            defined_kits = get_defined_commercial_kits()
+            return render(request, 'iSkyLIMS_wetlab/AddUserLotCommercialKit.html',{'defined_kits': defined_kits, 'invalid_name': request.POST['nickName']})
+        new_lot_kit = store_lot_user_commercial_kit(request.POST, request.user)
+        new_lot_kit_data = get_lot_user_commercial_kit_basic_data(new_lot_kit)
+        return render(request, 'iSkyLIMS_wetlab/AddUserLotCommercialKit.html',{'new_lot_kit_data':new_lot_kit_data})
+    else:
+        defined_kits = get_defined_commercial_kits()
+        return render(request, 'iSkyLIMS_wetlab/AddUserLotCommercialKit.html',{'defined_kits':defined_kits})
 
 
 

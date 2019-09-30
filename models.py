@@ -9,7 +9,7 @@ from django_utils.models import Center
 from django.utils.translation import ugettext_lazy as _
 
 from .  import wetlab_config
-from iSkyLIMS_core.models import MoleculePreparation , Samples , ProtocolType, Protocols, ProtocolParameters, UserLotComercialKits
+from iSkyLIMS_core.models import MoleculePreparation , Samples , ProtocolType, Protocols, ProtocolParameters, UserLotCommercialKits
 
 class RunErrors (models.Model):
     errorCode = models.CharField(max_length=10)
@@ -892,7 +892,7 @@ class LibraryPreparation (models.Model):
                 on_delete= models.CASCADE, null = True, blank = True)
     '''
     user_reagentKit_id = models.ForeignKey(
-                UserComercialKits,
+                UserCommercialKits,
                 on_delete= models.CASCADE, null = True, blank = True)
     '''
     user_sample_sheet = models.ForeignKey(
@@ -1070,7 +1070,7 @@ class LibraryPreparation (models.Model):
         return
 
     def set_reagent_user_kit(self, kit_value):
-        self.user_reagentKit_id = UserComercialKits.objects.get(nickName__exact = kit_value)
+        self.user_reagentKit_id = UserCmomercialKits.objects.get(nickName__exact = kit_value)
         self.save()
         return
 
