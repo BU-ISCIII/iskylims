@@ -152,7 +152,7 @@ class CommercialKitsManager(models.Manager):
         return new_commercial_kit
 
 
-class ComercialKits (models.Model):
+class CommercialKits (models.Model):
     protocol_id = models.ForeignKey(
                     Protocols,
                     on_delete= models.CASCADE, null = True)
@@ -175,6 +175,9 @@ class ComercialKits (models.Model):
     def get_name (self):
         return '%s' %(self.name)
 
+    def get_maximum_uses(self):
+        return '%s' %(self.maximumUses)
+
     def get_protocol (self):
         return '%s' %(self.protocol_id.get_name())
 
@@ -188,15 +191,25 @@ class ComercialKits (models.Model):
 
     objects = CommercialKitsManager()
 
-class UserLotComercialKits (models.Model):
+
+class UserLotCommercialKitsManager(models.Manager):
+    def create_user_lot_commercial_kit (self, kit_data):
+
+        new_user_lot_commercial_kit = self.create(user = kit_data['user'], basedCommercial = kit_data['basedCommercial'],
+                nickName = kit_data['nickName'], maximumUses = kit_data['maximumUses'],
+                chipLot = kit_data['chipLot'], expirationDate = kit_data['expirationDate'])
+        return new_user_lot_commercial_kit
+
+class UserLotCommercialKits (models.Model):
     user = models.ForeignKey(
                 User,
                 on_delete=models.CASCADE, null = True)
-    basedComercial = models.ForeignKey(
-                    ComercialKits,
+    basedCommercial = models.ForeignKey(
+                    CommercialKits,
                     on_delete= models.CASCADE, null = True)
     nickName =  models.CharField(max_length = 50, null = True, blank = True)
     numberOfuses = models.IntegerField(null = True, default = 0)
+    maximumUses = models.IntegerField(null = True, default = 0)
     chipLot = models.CharField(max_length = 50)
     latestUsedDate = models.DateTimeField(null = True, blank = True)
     expirationDate = models.DateField(auto_now_add=False)
@@ -205,16 +218,24 @@ class UserLotComercialKits (models.Model):
     def __str__ (self):
         return '%s' %(self.nickName)
 
-    def get_comercial_kit(self):
-        return '%s' %(self.basedComercial.get_name())
+    def get_basic_data(self):
+        lot_data = []
+        lot_data.append(self.nickName)
+        lot_data.append(self.basedCommercial.get_name())
+        lot_data.append(self.chipLot)
+        lot_data.append(self.expirationDate)
+        return lot_data
+
+    def get_commercial_kit(self):
+        return '%s' %(self.basedCommercial.get_name())
 
     def get_nick_name (self):
         return '%s' %(self.nickName)
 
     def get_protocol_for_kit (self):
-        return '%s' %(self.basedComercial.get_protocol())
+        return '%s' %(self.basedCommercial.get_protocol())
 
-
+    objects = UserLotCommercialKitsManager()
 
 
 class SamplesManager (models.Manager):
@@ -384,7 +405,7 @@ class MoleculePreparation (models.Model):
                 on_delete = models.CASCADE, null = True)
     '''
     usedKit =  models.ForeignKey(
-                MoleculeUserComercialKits,
+                MoleculeUserCommercialKits,
                 on_delete = models.CASCADE, null = True)
     '''
     moleculeCodeId = models.CharField(max_length=255)

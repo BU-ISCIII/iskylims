@@ -1,7 +1,7 @@
 from django.contrib import admin
 from iSkyLIMS_core.models import *
 
-class ComercialKitsAdmin (admin.ModelAdmin):
+class CommercialKitsAdmin (admin.ModelAdmin):
     list_display =( 'name','provider', 'protocol_id' ,'maximumUses','cat_number')
 
 class LaboratoryAdmin (admin.ModelAdmin):
@@ -46,11 +46,11 @@ class StatesForMoleculeAdmin (admin.ModelAdmin):
 class StatesForSampleAdmin (admin.ModelAdmin):
     list_display = ('sampleStateName',)
 
-class UserLotComercialKitsAdmin (admin.ModelAdmin):
-    list_display = ('user', 'basedComercial', 'nickName', 'numberOfuses', 'chipLot', 'latestUsedDate','expirationDate')
+class UserLotCommercialKitsAdmin (admin.ModelAdmin):
+    list_display = ('user', 'basedCommercial', 'nickName', 'numberOfuses', 'chipLot', 'latestUsedDate','expirationDate')
 
 
-admin.site.register(ComercialKits, ComercialKitsAdmin)
+admin.site.register(CommercialKits, CommercialKitsAdmin)
 admin.site.register(Laboratory, LaboratoryAdmin)
 
 admin.site.register(MoleculeType,MoleculeTypeAdmin)
@@ -64,4 +64,4 @@ admin.site.register(Samples, SamplesAdmin)
 admin.site.register(Species, SpeciesAdmin)
 admin.site.register(StatesForMolecule, StatesForMoleculeAdmin)
 admin.site.register(StatesForSample, StatesForSampleAdmin)
-admin.site.register(UserLotComercialKits, UserLotComercialKitsAdmin)
+admin.site.register(UserLotCommercialKits, UserLotCommercialKitsAdmin)

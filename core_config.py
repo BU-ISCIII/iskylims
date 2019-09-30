@@ -39,6 +39,8 @@ HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS = ['Parameter name', 'Order', 'Used', '
 
 HEADING_FOR_COMMERCIAL_KIT_BASIC_DATA = ['Commercial Kit Name', 'Provider',  'Protocol used for the kit']
 
+HEADING_FOR_LOT_USER_COMMERCIAL_KIT_BASIC_DATA = ['User given Name', 'Commercial Kit', 'Lot Barcode', 'Expiration Date']
+
 #########  FOLDER SETTINGS TO STORE COLLECTION KITS #######
 ## Relative path from settings.MEDIA_ROOT
 COLLECTION_INDEX_KITS_DIRECTORY = 'core/collection_index_kits/'
