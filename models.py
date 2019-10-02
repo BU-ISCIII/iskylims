@@ -890,11 +890,11 @@ class LibraryPreparation (models.Model):
     libPrepState = models.ForeignKey(
                 StatesForLibraryPreparation,
                 on_delete= models.CASCADE, null = True, blank = True)
-    '''
-    user_reagentKit_id = models.ForeignKey(
-                UserCommercialKits,
+
+    userLotKit_id = models.ForeignKey(
+                UserLotCommercialKits,
                 on_delete= models.CASCADE, null = True, blank = True)
-    '''
+    
     user_sample_sheet = models.ForeignKey(
                 libPreparationUserSampleSheet,
                 on_delete= models.CASCADE, null = True, blank = True)

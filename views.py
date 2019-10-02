@@ -3154,24 +3154,7 @@ def display_protocol (request, protocol_id):
             {'content':['The protocol that you are trying to get ',
                         'DOES NOT exists .']})
     protocol_data = get_all_protocol_info (protocol_id)
-    '''
-    na_params = []
-    lib_params = []
-    protocol_obj = ProtocolInLab.objects.get(pk= protocol_id)
-    if ProtocolParameters.objects.filter(protocol_id = protocol_obj).exists():
 
-        nucleic_params = NAProtocolParameters.objects.filter(protocol_id = protocol_obj).order_by('parameterOrder')
-        for nucleic_param in nucleic_params:
-            na_params.append(nucleic_param.get_na_params().split(';'))
-    if LibraryProtocolParameters.objects.filter(protocol_id = protocol_obj).exists():
-
-        library_params = LibraryProtocolParameters.objects.filter(protocol_id = protocol_obj)
-        for library_param in library_params:
-            lib_params.append(library_param.get_lib_params().split(';'))
-    protocol_data['na_params'] = na_params
-    protocol_data['lib_params'] = lib_params
-    protocol_data['heading'] = ['Parameter Name', 'Order', 'Used', 'Min Value', 'Max Value', 'Description']
-    '''
 
     return render(request, 'iSkyLIMS_wetlab/displayProtocol.html', {'protocol_data': protocol_data})
 
@@ -3237,12 +3220,14 @@ def add_user_lot_commercial_kit (request):
 def pending_to_update(request):
     pending = {}
     # get the samples in defined state
-    pending['defined'] = get_samples_in_defined_state()
-    pending['extract_molecule'] = get_samples_in_extracted_molecule_state()
+    pending['defined'] = get_samples_in_defined_state(request.user)
+    pending['extract_molecule'] = get_samples_in_extracted_molecule_state(request.user)
     pending['create_library_preparation'] = check_samples_in_lib_prep_state()
     pending['lib_prep_protocols'] = get_protocol_lib()
     # get the library preparation in defined state
     pending['add_lib_prep_parameters'] = get_lib_prep_to_add_parameters()
+
+    pending ['graphic_pending_samples'] = pending_samples_for_grafic(pending).render()
 
 
     #import pdb; pdb.set_trace()
@@ -3254,13 +3239,15 @@ def record_samples(request):
     if request.method == 'POST' and request.POST['action'] == 'recordsample':
         sample_recorded = analyze_input_samples (request)
         # if no samples are in any of the options, displays the inital page
-        if (not 'valid_samples' in sample_recorded and not 'invalid_samples' in sample_recorded) :
+        if (not 'valid_samples' in sample_recorded and not 'invalid_samples' in sample_recorded and not 'incomplete_samples' in sample_recorded) :
             sample_information = prepare_sample_input_table()
             return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
         else :
             if 'sample_id_for_action' in sample_recorded :
                 sample_recorded.update(get_available_codeID_for_resequencing(sample_recorded))
-
+            if 'incomplete_samples' in sample_recorded :
+                sample_recorded.update(prepare_sample_input_table())
+                sample_recorded['number_of_samples'] = len(sample_recorded['incomplete_samples'])
             return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
     elif request.method == 'POST' and request.POST['action'] == 'reprocessSamples':
         samples = {}
@@ -3777,6 +3764,9 @@ def create_new_run (request):
         display_sample_information['lib_prep_ids'] = ','.join(lib_prep_ids)
         display_sample_information['paired_end'] = paired
         display_sample_information['experiment_name'] = experiment_name
+        display_sample_information['reads'] = ''
+        display_sample_information['assay'] = ''
+        display_sample_information['collection_index'] = ''
         # create the new Run in Pre-Recorded state
         center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
         center_requested_by = Center.objects.get(pk = center_requested_id)

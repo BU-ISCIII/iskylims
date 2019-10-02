@@ -1,6 +1,8 @@
 {% extends 'iSkyLIMS_wetlab/base.html' %}
 {% load static %}
 {% block content %}
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script>
 <style >
     .text-large {
         font-size: 150%;
@@ -10,9 +12,10 @@
         <div class="col-sm-12" >
             <div class="col-sm-7" >
                 <div class="panel panel-default">
+                    {% if pending.defined.sample_heading %}
                     <div class="panel-heading"><h3>The following Samples can be updated with the Molecule information</h3></div>
                         <div class="panel-body">
-                            {% if pending.defined %}
+
                             <form method="post" action="/wetlab/setMoleculeValues" enctype="multipart/form-data" name="continueWithDNA"  id="continueWithDNA" class="form-horizontal well">
                             {% csrf_token %}
                                 <input type="hidden" name="action" value="continueWithMolecule"/>
@@ -42,7 +45,9 @@
                                 <input class="btn pull-right btn-primary" type="submit" value="Submit">
                              </form>
                             {% else %}
-                                <p>There is not new samples </p>
+                            <div class="panel-heading"><h3>Samples to be updated with the Molecule information</h3></div>
+                                <div class="panel-body">
+                                <p>There is not new samples that requieres to add Molecule Information data </p>
                             {% endif %}
                         </div>  <!--  end of panel body  -->
 
@@ -52,6 +57,17 @@
             <div class="panel panel-default">
                 <div class="panel-heading"><h3>Sample state graphic</h3></div>
                 <div class="panel-body">
+                    {% if pending.graphic_pending_samples %}
+
+                        <!-- Pie chart for number of pending Services chart will start here-->
+                        <div id="chart-1"> </div>
+                        <!-- dumping JavaScript code here -->
+                        {{ pending.graphic_pending_samples |safe }}
+
+                    {% endif %}
+
+
+
 
                 </div>  <!--  end of panel body  -->
 
@@ -162,7 +178,7 @@
         </div> <!--// end row -->
 {% endif %}
 
-{% if pending.add_lib_prep_parameters %}
+{% if pending.add_lib_prep_parameters.lib_prep_heading %}
 <div class="row row-space-4 margin-b-4">
     <div class="col-sm-12" >
         <div class="panel panel-default">

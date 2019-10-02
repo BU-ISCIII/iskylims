@@ -565,8 +565,8 @@ def column_graphic_one_column_highligthed (heading, sub_caption, x_axis_name, y_
 def bloxplot_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme, categories, series, data):
     '''
     Description:
-        The function will prepare the input data into the json format 
-        to be used in the graphic.  
+        The function will prepare the input data into the json format
+        to be used in the graphic.
     Input:
         heading      # contains the title name to be present in the graphic
         sub_caption  # contains the sub title name to be present in the graphic
@@ -576,14 +576,14 @@ def bloxplot_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme, cat
         categories   # contains the categories name values
         series       # contains the series name
         data         # contains the data for the series
-        
+
     Variables:
         category        # dictionary to contain the category list
         category_list   # list of the categories to display
         dataset         # list with all the values for each category
         label_category  # title name for each category
     return:
-        data_source 
+        data_source
     '''
     data_source = {}
     data_source['chart'] = {
@@ -607,20 +607,20 @@ def bloxplot_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme, cat
         "showMean": "1",
         "exportEnabled": "1"
     },
-    
+
     category = {}
     category_list = []
     for item in categories :
-        
+
         label_category = {}
         label_category['label'] = item
         category_list.append(label_category)
     category['category'] = category_list
-    
+
     data_source ['categories'] = [category]
-    
+
     dataset = []
-    
+
     for serie in range(len(series)) :
         dataset_dict ={}
         dataset_dict['seriesname'] = series[serie][0]
@@ -631,7 +631,7 @@ def bloxplot_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme, cat
             value = {}
             value['value']= item
             serie_data.append(value)
-        dataset_dict['data'] = serie_data  
+        dataset_dict['data'] = serie_data
         dataset.append(dataset_dict)
     data_source['dataset'] = dataset
 
@@ -688,12 +688,12 @@ def column_graphic_with_categories(heading, sub_caption, x_axis_name, y_axis_nam
     category = {}
     category_list = []
     for item in categories :
-        
+
         label_category = {}
         label_category['label'] = item
         category_list.append(label_category)
     category['category'] = category_list
-    
+
     data_source ['categories'] = [category]
     '''
     data_source["categories"] = [
@@ -706,9 +706,9 @@ def column_graphic_with_categories(heading, sub_caption, x_axis_name, y_axis_nam
         }
     ]
     '''
-    
+
     dataset = []
-    
+
     #for serie in series :
     for serie in range(len(series)) :
         dataset_dict ={}
@@ -720,10 +720,10 @@ def column_graphic_with_categories(heading, sub_caption, x_axis_name, y_axis_nam
             value = {}
             value['value']= item
             serie_data.append(value)
-        dataset_dict['data'] = serie_data  
+        dataset_dict['data'] = serie_data
         dataset.append(dataset_dict)
     data_source['dataset'] = dataset
-    
+
     '''
     data_source ["dataset"] = [
         {"seriesname": "Researcher Project",
@@ -783,4 +783,43 @@ def column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme
         data.append(data_dict)
     data_source['data'] = data
 
+    return data_source
+
+
+def graphic_3D_pie (heading, sub_title, axis_x_description, axis_y_description, theme, source_data) :
+    data_source = {}
+    data_source['chart'] = {
+                "caption": heading,
+                "subCaption": sub_title,
+                "xAxisName": axis_x_description,
+                "yAxisName": axis_y_description,
+                "theme": theme,
+                "numberPrefix": "",
+                "showlegend": "1",
+                "placevaluesInside": "1",
+                "showpercentvalues": "1",
+                "rotatevalues": "1",
+                #Showing canvas bg to apply background color
+                "showCanvasBg": "1",
+                #Shwoing canvas base to apply base color
+                "showCanvasBase": "1",
+                #Changing canvas base depth
+                "canvasBaseDepth": "14",
+                #Changing canvas background depth
+                "canvasBgDepth": "5",
+                #Changing canvas base color
+                "canvasBaseColor": "#aaaaaa",
+                #Changing canvas background color
+                "canvasBgColor": "#eeeeee",
+                "exportEnabled": "1"
+            }
+
+    data =[]
+
+    for key , values in source_data.items() :
+        data_dict = {}
+        data_dict['label'] = key
+        data_dict['value'] = values
+        data.append(data_dict)
+    data_source['data'] = data
     return data_source

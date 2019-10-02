@@ -30,6 +30,13 @@
                                 <input type="hidden" name="action" value="storeDataNewRun"/>
                                 <input type="hidden" name="lib_prep_ids" value="{{display_sample_information.lib_prep_ids}}"/>
                                 <input type="hidden" name="pairedEnd" value="{{display_sample_information.paired_end}}"/>
+
+                                <input type="hidden" name="reads" value="{{display_sample_information.reads}}"/>
+                                <input type="hidden" name="assay" value="{{display_sample_information.assay}}"/>
+                                <input type="hidden" name="collection_index" value="{{display_sample_information.collection_index}}"/>
+                                
+
+
                                 <input type="hidden" name="run_process_id" value="{{display_sample_information.run_process_id}}"/>
                                 <div class="form-group required">
                                     <label class="col-sm-5 control-label">Define the Plate</label>
@@ -144,7 +151,7 @@
                     <form method="post" enctype="multipart/form-data" name="continueWithRun"  id="continueWithRun" class="form-horizontal well">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="continueWithRun"/>
-                        
+
                         {% for r_name, p_values, r_id in display_pools_for_run.run_data.data  %}
                             <div class="col-sm-12">
                             <h4>Run Name {{r_name }}</h4>

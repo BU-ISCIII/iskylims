@@ -2,6 +2,9 @@ import json
 from iSkyLIMS_core.models import Samples, MoleculePreparation, Protocols
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
+from ..fusioncharts.fusioncharts import FusionCharts
+from .stats_graphics import *
+
 
 def analyze_input_param_values(request):
     if  'lib_prep_in_list' in request.POST:
@@ -115,7 +118,7 @@ def get_all_library_information(sample_id):
                     pool_name = pool.get_pool_name()
                     pool_code = pool.get_pool_code_id()
                     library_information['pool_information'].append([lib_prep_code_id, pool_name,pool_code, ''])
-                    
+
         if library_information['pool_information']:
             library_information['pool_heading'] = HEADING_FOR_DISPLAY_POOL_INFORMATION_IN_SAMPLE_INFO
     return library_information
@@ -132,6 +135,7 @@ def get_lib_prep_to_add_parameters():
         lib_prep_parameters.
     '''
     lib_prep_parameters = {}
+    lib_prep_parameters['length'] = 0
     if LibraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined').exists():
         samples = LibraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined')
         sample_info = []
@@ -144,7 +148,9 @@ def get_lib_prep_to_add_parameters():
             sample_info.append(lib_prep_info)
         lib_prep_parameters['lib_prep_info'] = sample_info
         lib_prep_parameters['lib_prep_heading'] = HEADING_FOR_ADD_LIBRARY_PREPARATION_PARAMETERS
+        lib_prep_parameters['length'] = len(sample_info)
     return lib_prep_parameters
+
 
 
 def check_samples_in_lib_prep_state ():
@@ -178,3 +184,13 @@ def check_samples_in_lib_prep_state ():
 
     #if LibraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined').exists():
     #lib_preparations = libraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined')
+
+def pending_samples_for_grafic(pending):
+    number_of_pending = {}
+    number_of_pending ['DEFINED'] = pending['defined']['length']
+    number_of_pending ['EXTRACTED MOLECULE'] = pending['extract_molecule']['length']
+    number_of_pending ['LIBRARY PREPARATION'] = len(pending['create_library_preparation'])
+
+    data_source = graphic_3D_pie('Number of Pending Samples', '', '', '', 'fint',number_of_pending)
+    graphic_pending_samples = FusionCharts("pie3d", "ex1" , "425", "350", "chart-1", "json", data_source)
+    return graphic_pending_samples

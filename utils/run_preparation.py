@@ -71,6 +71,7 @@ def handle_input_samples_for_run (user_post, user):
     new_sample_sheet_data = update_sample_sheet(sample_sheet_data, lib_prep_ids)
 
     data_for_sample_sheet_file = parsing_data_for_sample_sheet_file(new_sample_sheet_data, mapping, heading_sample_sheet)
+    # sample_sheet_file_name = create_sample_sheet_file(data_for_sample_sheet_file, user,reads, adapter, exp_name,
     sample_sheet_file_name = create_sample_sheet_file(data_for_sample_sheet_file, user, '151', 'adapter-ccc',  exp_name, 'colection_index-22', 'Nextera', paired)
 
 
@@ -121,7 +122,7 @@ def create_base_space_file(project_data, bs_lib, plate, container_id, experiment
         for value in values :
             data.append(value)
         project_dict[project] = (os.path.join(settings.MEDIA_URL, bs_file_relative_path)).replace('/', '', 1)
-        
+
     sample_data = '\n'.join(data)
     if container_id == '' :
         today_date = datetime.datetime.today().strftime("%Y%m%d")
