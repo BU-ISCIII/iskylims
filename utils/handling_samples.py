@@ -1,6 +1,7 @@
 import json, re
 from iSkyLIMS_core.core_config import *
 from iSkyLIMS_core.models import *
+from iSkyLIMS_core.utils.generic_functions import get_friend_list
 from django.contrib.auth.models import User
 
 def display_molecule_protocol_parameters (molecules):
@@ -124,6 +125,7 @@ def analyze_input_samples (request):
     invalid_samples_id =[]
     sample_recorded['all_samples_valid'] = True
     samples_continue = []
+    incomplete_samples = []
 
     reg_user = request.user.username
     for row in na_json_data :
@@ -134,9 +136,12 @@ def analyze_input_samples (request):
         if not check_if_sample_already_defined (row[heading_in_form.index('Sample Name')], reg_user):
             for i in range(len(heading_in_form)) :
                 sample_data[heading_in_form[i]] = row[i]
+            if  check_empty_fields(row):
+                incomplete_samples.append(row)
+                sample_recorded['all_samples_valid'] = False
+                continue
 
             sample_data['user'] = reg_user
-
             sample_data['sample_id'] = str(reg_user + '_' + sample_name)
             if not Samples.objects.exclude(uniqueSampleID__isnull = True).exists():
                 sample_data['new_unique_value'] = 'AAA-0001'
@@ -162,6 +167,7 @@ def analyze_input_samples (request):
     sample_recorded['invalid_samples'] = invalid_samples
     sample_recorded['invalid_samples_id'] = ','.join(invalid_samples_id)
     sample_recorded['heading'] = HEADING_FOR_DISPLAY_RECORDED_SAMPLES
+    sample_recorded['incomplete_samples'] = incomplete_samples
 
     if sample_recorded['all_samples_valid']:
         sample_recorded['samples_to_continue'] = ','.join(samples_continue)
@@ -261,6 +267,13 @@ def check_if_sample_already_defined (sample_name,reg_user):
         return True
     else:
         return False
+
+def check_empty_fields (row_data):
+    for data in row_data:
+        if data == '':
+            return True
+    return False
+
 
 def get_all_sample_information (sample_id ):
     sample_information = {}
@@ -364,7 +377,7 @@ def get_molecule_obj_from_sample(sample_obj):
 
 
 ##### For each state get samples
-def get_samples_in_defined_state ():
+def get_samples_in_defined_state (user):
     '''
     Description:
         The function will return a list with samples which are in defined state.
@@ -376,19 +389,24 @@ def get_samples_in_defined_state ():
         sample_type_names.
     '''
     sample_information = []
+    user_friend_list = get_friend_list(user)
     samples_in_state = {}
-    if Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined').exists():
-        samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined')
+    if Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined', sampleUser__in = user_friend_list).exists():
+    #if Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined').exists():
+        #samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined')
+        samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined', sampleUser__in = user_friend_list)
         for sample_obj in samples_obj:
             sample_information.append(sample_obj.get_info_in_defined_state())
         samples_in_state['sample_information'] = sample_information
         samples_in_state['sample_heading'] = HEADING_FOR_DEFINED_SAMPLES_STATE
+        samples_in_state['length'] = len(sample_information)
         return samples_in_state
 
     else:
-        return ''
+        samples_in_state['length'] = 0
+        return samples_in_state
 
-def get_samples_in_extracted_molecule_state ():
+def get_samples_in_extracted_molecule_state (user):
     '''
     Description:
         The function will return a list with samples which are in extracted_molecule state,
@@ -400,11 +418,12 @@ def get_samples_in_extracted_molecule_state ():
     Return:
         molecule_state.
     '''
-
+    user_friend_list = get_friend_list(user)
     molecule_state = {}
     molecule_information = []
-    if Samples.objects.filter(sampleState__sampleStateName__exact = 'Extract molecule').exists():
-        samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact =  'Extract molecule')
+    if Samples.objects.filter(sampleState__sampleStateName__exact = 'Extract molecule', sampleUser__in = user_friend_list).exists():
+    #if Samples.objects.filter(sampleState__sampleStateName__exact = 'Extract molecule').exists():
+        samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact = 'Extract molecule', sampleUser__in = user_friend_list)
         for sample_obj in samples_obj:
             molecules = MoleculePreparation.objects.filter(sample = sample_obj)
 
@@ -419,10 +438,12 @@ def get_samples_in_extracted_molecule_state ():
 
         molecule_state['molecule_information'] = molecule_information
         molecule_state['molecule_heading'] = HEADING_FOR_EXTRACTED_MOLECULES_STATE
+        molecule_state['length'] = len(molecule_information)
         return molecule_state
 
     else:
-        return ''
+        molecule_state['length'] = 0
+        return molecule_state
 
 ##### End of getting samples by state
 

@@ -284,8 +284,8 @@ class Samples (models.Model):
     sampleCodeID = models.CharField(max_length=60, null = True)
     #reused = models.BooleanField(null = True, blank = True)
     numberOfReused = models.IntegerField(default=0)
-    sequencingDate = models.DateTimeField(auto_now_add=False, null = True)
-    completedDate = models.DateTimeField(auto_now_add=False, null = True)
+    sequencingDate = models.DateTimeField(auto_now_add=False, null = True, blank = True)
+    completedDate = models.DateTimeField(auto_now_add=False, null = True, blank = True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__ (self):
@@ -403,11 +403,14 @@ class MoleculePreparation (models.Model):
     state =  models.ForeignKey(
                 StatesForMolecule,
                 on_delete = models.CASCADE, null = True)
-    '''
-    usedKit =  models.ForeignKey(
-                MoleculeUserCommercialKits,
-                on_delete = models.CASCADE, null = True)
-    '''
+    moleculeUser = models.ForeignKey(
+                User,
+                on_delete=models.CASCADE, null = True, blank = True)
+
+    userLotKit_id =  models.ForeignKey(
+                UserLotCommercialKits,
+                on_delete = models.CASCADE, null = True, blank = True)
+    
     moleculeCodeId = models.CharField(max_length=255)
     extractionType = models.CharField(max_length=50)
     moleculeExtractionDate = models.DateTimeField(auto_now_add = False, null =True)
