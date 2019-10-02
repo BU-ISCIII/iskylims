@@ -728,10 +728,11 @@ def search_samples(sample_name, user_name, sample_state, start_date, end_date ):
         return sample_list
     if user_name != '':
         user_name_obj = User.objects.get(username__exact = user_name)
-        if not sample_founds.objects.filter(sampleUser = user_name_obj).exists():
+        user_friend_list = get_friend_list(user_name_obj)
+        if not sample_founds.filter(sampleUser__in = user_friend_list).exists():
             return sample_list
         else :
-            sample_founds = sample_founds.objects.filter(sampleUser = user_name_obj)
+            sample_founds = sample_founds.filter(sampleUser__in = user_friend_list)
     if sample_name != '' :
 
         if sample_founds.filter(sampleName__exact = sample_name).exists():
