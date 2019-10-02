@@ -1,5 +1,7 @@
 from django.db import models
 from iSkyLIMS_core.models import Samples, SampleType
+
+from django.contrib.auth.models import User
 import datetime
 
 
@@ -54,11 +56,14 @@ class ClinicSampleRequest (models.Model):
     serviceUnit_id = models.ForeignKey(
                 ServiceUnits,
                 on_delete = models.CASCADE, null = True, blank = True)
+    sampleRequestUser = models.ForeignKey(
+                User,
+                on_delete=models.CASCADE, null = True, blank = True)
     orderInEntry = models.CharField(max_length = 8, null = True)
-    confirmationCode = models.CharField(max_length = 80)
-    priority = models.CharField(max_length = 10)
-    coments = models.CharField(max_length = 255)
-    serviceDate = models.DateTimeField(auto_now_add=False)
+    confirmationCode = models.CharField(max_length = 80, null = True, blank = True)
+    priority = models.CharField(max_length = 10, null = True, blank = True)
+    coments = models.CharField(max_length = 255, null = True, blank = True)
+    serviceDate = models.DateTimeField(auto_now_add=False, null = True, blank = True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__ (self):
