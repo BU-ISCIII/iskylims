@@ -333,7 +333,7 @@ class Samples (models.Model):
         return sample_info
 
     def get_extraction_date (self):
-        recordeddate=self.sampleExtractionDate.strftime("%B %d, %Y")
+        recordeddate=self.sampleEntryDate.strftime("%B %d, %Y")
         return '%s' %(recordeddate)
 
     def get_sample_code (self):
@@ -410,7 +410,7 @@ class MoleculePreparation (models.Model):
     userLotKit_id =  models.ForeignKey(
                 UserLotCommercialKits,
                 on_delete = models.CASCADE, null = True, blank = True)
-    
+
     moleculeCodeId = models.CharField(max_length=255)
     extractionType = models.CharField(max_length=50)
     moleculeExtractionDate = models.DateTimeField(auto_now_add = False, null =True)

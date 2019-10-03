@@ -4,6 +4,7 @@ from iSkyLIMS_core.models import *
 from iSkyLIMS_core.utils.generic_functions import get_friend_list
 from django.contrib.auth.models import User
 
+
 def display_molecule_protocol_parameters (molecules):
     '''
     Description:
@@ -199,12 +200,20 @@ def analyze_input_molecules (request):
     prot_used_in_display = ''
     molecule_recorded['molecule_id'] = []
     molecule_recorded['data'] = []
+    incomplete_molecules = []
+    incomplete_molecules_ids = []
     for row_index in range(len(molecule_json_data)) :
+        import pdb; pdb.set_trace()
         molecule_data = {}
         if not Samples.objects.filter(pk = int(samples[row_index])).exists():
             continue
         sample_obj = Samples.objects.get(pk = int(samples[row_index]))
         #import pdb; pdb.set_trace()
+        if check_empty_fields(molecule_json_data[row_index]):
+            incomplete_samples.append(molecule_json_data[row_index])
+            incomplete_molecules_ids.append(int(samples[row_index]))
+            import pdb; pdb.set_trace()
+            continue
         if MoleculePreparation.objects.filter(sample = sample_obj).exists():
             last_molecule_code = MoleculePreparation.objects.filter(sample = sample_obj).last().get_molecule_code_id()
             code_split = re.search(r'(.*_E)(\d+)$', last_molecule_code)
@@ -623,6 +632,8 @@ def record_molecules (request):
     molecules_recorded = {}
     molecules_ids = []
     molecule_list = []
+    incomplete_molecules = []
+    incomplete_molecules_ids = []
     heading_in_excel = ['sampleID', 'molecule_type', 'type_extraction', 'extractionDate',
                     'protocol_type', 'protocol_used']
     for row_index in range(len(molecule_json_data)) :
@@ -630,7 +641,10 @@ def record_molecules (request):
         if not Samples.objects.filter(pk = int(samples[row_index])).exists():
             continue
         sample_obj = Samples.objects.get(pk = int(samples[row_index]))
-
+        if check_empty_fields(molecule_json_data[row_index]):
+            incomplete_molecules.append(molecule_json_data[row_index])
+            incomplete_molecules_ids.append(samples[row_index])
+            continue
         if MoleculePreparation.objects.filter(sample = sample_obj).exists():
             last_molecule_code = MoleculePreparation.objects.filter(sample = sample_obj).last().get_molecule_code_id()
             code_split = re.search(r'(.*_E)(\d+)$', last_molecule_code)
@@ -659,10 +673,16 @@ def record_molecules (request):
         sample_obj.set_state('Extract molecule')
         # Include index key to allow adding quality parameter data
         molecules_ids.append(str(new_molecule.pk))
+    if len (molecules_ids) > 0:
+        molecules_recorded['heading'] = HEADING_CONFIRM_MOLECULE_RECORDED
+        molecules_recorded['molecule_list'] = molecule_list
+        molecules_recorded['molecules'] = ','.join(molecules_ids)
+    else:
+        molecules_recorded['samples'] = request.POST['samples']
+    if len(incomplete_molecules_ids) > 0:
+        molecules_recorded['incomplete_molecules'] = incomplete_molecules
+        molecules_recorded['incomplete_molecules_ids'] = ','.join(incomplete_molecules_ids)
 
-    molecules_recorded['heading'] = HEADING_CONFIRM_MOLECULE_RECORDED
-    molecules_recorded['molecule_list'] = molecule_list
-    molecules_recorded['molecules'] = ','.join(molecules_ids)
     return molecules_recorded
 
 def get_info_for_reprocess_samples(sample_ids, sample_in_action):
@@ -715,6 +735,11 @@ def get_table_record_molecule (samples):
     molecule_information['protocols_dict'],molecule_information['protocol_list']  = get_molecule_protocols()
     molecule_information['number_of_samples'] = len(valid_samples)
     molecule_information['table_length']  = len(HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION)
+
+    molecule_information['protocol_type'] = list(molecule_information['protocols_dict'].keys())
+    molecule_information['protocol_filter_selection'] = []
+    for key, value in molecule_information['protocols_dict'].items():
+        molecule_information['protocol_filter_selection'].append([key, value])
     return molecule_information
 
 
