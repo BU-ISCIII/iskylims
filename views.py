@@ -3362,10 +3362,12 @@ def set_Molecule_values(request):
         if 'ERROR' in molecule_protocol :
             return render (request, 'iSkyLIMS_wetlab/error_page.html',
                 {'content':['There was no valid sample selected ']})
+        '''
         molecule_protocol['protocol_type'] = list(molecule_protocol['protocols_dict'].keys())
         molecule_protocol['protocol_filter_selection'] = []
         for key, value in molecule_protocol['protocols_dict'].items():
             molecule_protocol['protocol_filter_selection'].append([key, value])
+        '''
         molecule_protocol['samples'] = ','.join(samples)
 
         return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'molecule_protocol':molecule_protocol})
@@ -3374,7 +3376,18 @@ def set_Molecule_values(request):
 
         molecule_recorded = record_molecules (request)
 
-        return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'molecule_recorded':molecule_recorded})
+        if not 'heading' in molecule_recorded:
+            samples = request.POST['samples'].split(',')
+            molecule_protocol = get_table_record_molecule (samples)
+            molecule_protocol['data'] = molecule_recorded['incomplete_molecules']
+            molecule_protocol['samples'] = ','.join(samples)
+            return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'molecule_protocol':molecule_protocol})
+        else:
+            if 'incomplete_molecules' in molecule_recorded:
+                samples = molecule_recorded['incomplete_molecules_ids'].split(',')
+                molecule_recorded.update(get_table_record_molecule (samples))
+
+            return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'molecule_recorded':molecule_recorded})
 
     elif request.method == 'POST' and request.POST['action'] == 'displayMoleculeParameters':
         if  'samples_in_list' in request.POST:
@@ -3390,23 +3403,8 @@ def set_Molecule_values(request):
     else:
         register_user = request.user.username
         display_list = get_defined_samples (register_user)
-        '''
-        s_list = []
-        all_sample_list = []
-        display_list = {}
 
-        for key in grouped_samples_obj.keys():
-            s_list = []
-            for sample in grouped_samples_obj[key]:
-                s_info = sample.get_sample_definition_information().split(';')
-                s_info.append(str(sample.pk))
-                s_list.append(s_info)
-            all_sample_list.append(s_list)
-
-        '''
-        #display_list['list_of_samples'] = all_sample_list
-        #display_list['heading'] = ['Registered date ','Sample Code ID', 'Type', 'DNA/RNA', 'Protocol', 'To be included']
-        #import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
         return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'display_list': display_list})
     return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{})
 
