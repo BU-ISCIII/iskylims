@@ -37,7 +37,7 @@ from .utils.run_preparation import  *
 #from .utils.wetlab_misc_utilities import normalized_data
 from iSkyLIMS_core.utils.handling_samples import *
 from iSkyLIMS_core.utils.handling_protocols import *
-from iSkyLIMS_core.utils.handling_comercial_kits import *
+from iSkyLIMS_core.utils.handling_commercial_kits import *
 
 def index(request):
     #
@@ -3362,12 +3362,7 @@ def set_Molecule_values(request):
         if 'ERROR' in molecule_protocol :
             return render (request, 'iSkyLIMS_wetlab/error_page.html',
                 {'content':['There was no valid sample selected ']})
-        '''
-        molecule_protocol['protocol_type'] = list(molecule_protocol['protocols_dict'].keys())
-        molecule_protocol['protocol_filter_selection'] = []
-        for key, value in molecule_protocol['protocols_dict'].items():
-            molecule_protocol['protocol_filter_selection'].append([key, value])
-        '''
+
         molecule_protocol['samples'] = ','.join(samples)
 
         return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'molecule_protocol':molecule_protocol})
@@ -3394,12 +3389,18 @@ def set_Molecule_values(request):
             molecules = request.POST.getlist('molecules')
         else:
             molecules = request.POST['molecules'].split(',')
-        show_molecule_parameters = display_molecule_protocol_parameters(molecules)
+        show_molecule_parameters = display_molecule_protocol_parameters(molecules, request.user)
         return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'show_molecule_parameters':show_molecule_parameters})
 
     elif request.method == 'POST' and request.POST['action'] == 'addMoleculeParameters':
         added_molecule_protocol_parameters = add_molecule_protocol_parameters(request)
-        return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'added_molecule_protocol_parameters':added_molecule_protocol_parameters})
+        if 'pending' in request.POST :
+            molecules = request.POST['pending'].split(',')
+            show_molecule_parameters = display_molecule_protocol_parameters(molecules)
+            return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'added_molecule_protocol_parameters':added_molecule_protocol_parameters, 'show_molecule_parameters':show_molecule_parameters})
+        else:
+            return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'added_molecule_protocol_parameters':added_molecule_protocol_parameters})
+
     else:
         register_user = request.user.username
         display_list = get_defined_samples (register_user)

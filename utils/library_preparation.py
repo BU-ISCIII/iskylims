@@ -192,5 +192,5 @@ def pending_samples_for_grafic(pending):
     number_of_pending ['LIBRARY PREPARATION'] = len(pending['create_library_preparation'])
 
     data_source = graphic_3D_pie('Number of Pending Samples', '', '', '', 'fint',number_of_pending)
-    graphic_pending_samples = FusionCharts("pie3d", "ex1" , "425", "350", "chart-1", "json", data_source)
+    graphic_pending_samples = FusionCharts("pie3d", "ex1" , "430", "450", "chart-1", "json", data_source)
     return graphic_pending_samples
