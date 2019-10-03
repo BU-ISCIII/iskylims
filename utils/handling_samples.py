@@ -2,10 +2,11 @@ import json, re
 from iSkyLIMS_core.core_config import *
 from iSkyLIMS_core.models import *
 from iSkyLIMS_core.utils.generic_functions import get_friend_list
+from iSkyLIMS_core.utils.handling_commercial_kits import get_lot_commercial_kits
 from django.contrib.auth.models import User
 
 
-def display_molecule_protocol_parameters (molecules):
+def display_molecule_protocol_parameters (molecules, user_obj):
     '''
     Description:
         The function return the quality parameters defined for the
@@ -42,6 +43,11 @@ def display_molecule_protocol_parameters (molecules):
                 length_heading = len(HEADING_FOR_MOLECULE_ADDING_PARAMETERS + parameter_list)
                 molecule_recorded['fix_heading'] = HEADING_FOR_MOLECULE_ADDING_PARAMETERS
                 molecule_recorded['param_heading'] = parameter_list
+                if Protocols.objects.filter(name__exact = prot_used_in_display).exists():
+                    protocol_obj = Protocols.objects.get(name__exact = prot_used_in_display)
+                    molecule_recorded['lot_kit'] = get_lot_commercial_kits(user_obj, protocol_obj)
+                else:
+                    molecule_recorded['lot_kit'] = ''
         #import pdb; pdb.set_trace()
         if protocol_used == prot_used_in_display :
             showed_molecule.append(molecule)
@@ -50,12 +56,12 @@ def display_molecule_protocol_parameters (molecules):
             data[1] = protocol_used
             molecule_recorded['data'].append(data)
         else:
-            pending_molecule.append(new_molecule.get_id())
+            pending_molecule.append(molecule_obj.get_id())
 
     molecule_recorded['molecule_id'] = ','.join(showed_molecule)
     molecule_recorded['pending_id'] = ','.join(pending_molecule)
     molecule_recorded['heading_in_excel'] = ','.join(parameter_list)
-    #import pdb; pdb.set_trace()
+
     return molecule_recorded
 
 

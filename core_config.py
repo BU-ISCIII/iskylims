@@ -10,7 +10,7 @@ HEADING_FOR_DISPLAY_RECORDED_SAMPLES = ['Unique Sample ID', 'Sample CodeID', 'Sa
 
 HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION = ['Sample ID', 'Molecule type', 'Type of Extraction', 'Extraction date', 'Protocol type',
                 'Protocol to be used']
-HEADING_FOR_MOLECULE_ADDING_PARAMETERS = ['Molecule Code ID', 'Used Protocol']
+HEADING_FOR_MOLECULE_ADDING_PARAMETERS = ['Molecule Code ID', 'Used Protocol', 'Lot Commercial Kit']
 
 #########
 ### Headings to confirm the sucessful recorded
