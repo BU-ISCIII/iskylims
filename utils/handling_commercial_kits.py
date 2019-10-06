@@ -44,9 +44,9 @@ def get_lot_user_commercial_kit_basic_data(kit_obj):
 
 def get_lot_commercial_kits(register_user_obj, protocol_obj):
     user_kit_list = []
-    
+
     if UserLotCommercialKits.objects.filter(user = register_user_obj, basedCommercial__protocol_id = protocol_obj).exists():
-        user_kits =UserLotCommercialKits.objects.filter(user = register_user_obj, basedCmomercial__protocol_id = protocol_obj)
+        user_kits =UserLotCommercialKits.objects.filter(user = register_user_obj, basedCommercial__protocol_id = protocol_obj)
         for user_kit in user_kits:
             user_kit_list.append(user_kit.get_nick_name)
 
