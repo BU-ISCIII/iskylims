@@ -3396,7 +3396,7 @@ def set_Molecule_values(request):
         added_molecule_protocol_parameters = add_molecule_protocol_parameters(request)
         if 'pending' in request.POST :
             molecules = request.POST['pending'].split(',')
-            show_molecule_parameters = display_molecule_protocol_parameters(molecules)
+            show_molecule_parameters = display_molecule_protocol_parameters(molecules,request.user)
             return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'added_molecule_protocol_parameters':added_molecule_protocol_parameters, 'show_molecule_parameters':show_molecule_parameters})
         else:
             return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'added_molecule_protocol_parameters':added_molecule_protocol_parameters})
