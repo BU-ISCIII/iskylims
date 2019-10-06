@@ -2,22 +2,21 @@
 {% load static %}
 {% block content %}
 {% csrf_token %}
+<script src="{% static "iSkyLIMS_clinic/js/jquery/v3.4.1/jquery-3.4.1.min.js" %}" type="text/javascript"></script>
+<script src="{% static "iSkyLIMS_clinic/js/jexcel/v3/jexcel.js" %}" type="text/javascript"></script>
+<script src="{% static "iSkyLIMS_clinic/js/jsuites/v2/jsuites.js" %}" type="text/javascript"></script>
 
+<link href="{% static "iSkyLIMS_clinic/css/jexcel/v3/jexcel.css" %}" rel="stylesheet">
+<link href="{% static "iSkyLIMS_clinic/css/jsuites/v2/jsuites.css" %}" rel="stylesheet">
+<style>
+    .scrolling-wrapper {
+        overflow-x: scroll;
+        white-space: nowrap;
+    }
+</style>
 
 
 {% if patient_information %}
-    <script src="{% static "iSkyLIMS_wetlab/js/jquery/v3.4.1/jquery-3.4.1.min.js" %}" type="text/javascript"></script>
-    <script src="{% static "iSkyLIMS_wetlab/js/jexcel/v3/jexcel.js" %}" type="text/javascript"></script>
-    <script src="{% static "iSkyLIMS_wetlab/js/jsuites/v2/jsuites.js" %}" type="text/javascript"></script>
-
-    <link href="{% static "iSkyLIMS_wetlab/css/jexcel/v3/jexcel.css" %}" rel="stylesheet">
-    <link href="{% static "iSkyLIMS_wetlab/css/jsuites/v2/jsuites.css" %}" rel="stylesheet">
-    <style>
-        .scrolling-wrapper {
-            overflow-x: scroll;
-            white-space: nowrap;
-        }
-    </style>
     <div class="row row-space-4 margin-b-4">
         <div class="col-sm-12" >
             <div class="panel panel-default">
@@ -54,8 +53,8 @@
                                     { type: 'calendar', title:'{{patient_information.heading.4}}', width:180 },
                                     { type: 'text' , title: '{{patient_information.heading.5}}', width:150 },
 
-                                    { type: 'dropdown' , title: '{{patient_information.heading.6}}', width:150 , source : [{% for value in patient_information.s_request_by %}'{{value}}',{% endfor %} ], autocomplete:true,},
-                                    { type: 'dropdown' , title: '{{patient_information.heading.7}}', width:150, source : [{% for value in patient_information.doctor %}'{{value}}',{% endfor %} ] , autocomplete:true,},
+                                    { type: 'dropdown' , title: '{{patient_information.heading.6}}', width:180 , source : [{% for value in patient_information.s_request_by %}'{{value}}',{% endfor %} ], autocomplete:true,},
+                                    { type: 'dropdown' , title: '{{patient_information.heading.7}}', width:180, source : [{% for value in patient_information.doctor %}'{{value}}',{% endfor %} ] , autocomplete:true,},
                                     { type: 'text' , title: '{{patient_information.heading.8}}', width:250 ,wordWrap:true},
                                     { type: 'text' , title: '{{patient_information.heading.9}}', width:250 , wordWrap:true},
                                     ],
@@ -102,40 +101,57 @@
 
 
 {% elif updated_information %}
-
     {% if updated_information.not_match %}
-        <script src="{% static "iSkyLIMS_wetlab/js/jquery/v3.4.1/jquery-3.4.1.min.js" %}" type="text/javascript"></script>
-        <script src="{% static "iSkyLIMS_wetlab/js/jexcel/v3/jexcel.js" %}" type="text/javascript"></script>
-        <script src="{% static "iSkyLIMS_wetlab/js/jsuites/v2/jsuites.js" %}" type="text/javascript"></script>
-
-        <link href="{% static "iSkyLIMS_wetlab/css/jexcel/v3/jexcel.css" %}" rel="stylesheet">
-        <link href="{% static "iSkyLIMS_wetlab/css/jsuites/v2/jsuites.css" %}" rel="stylesheet">
-        <style>
-            .scrolling-wrapper {
-                overflow-x: scroll;
-                white-space: nowrap;
-            }
-        </style>
         <div class="row row-space-4 margin-b-4">
             <div class="col-sm-12" >
                 <div class="panel panel-default">
                     <div class="panel-heading"><h3>The following samples have an invalid history number.</h3></div>
 
                     <div class="panel-body">
-                        <br><br><br>
+                        <br>
+                        <table class="table table-hover">
+                            <thead>
+                               <tr>
+                                   {% for value in updated_information.heading_not_match %}
+                                        <th>{{value}} </th>
+                                   {% endfor %}
+                               </tr>
+                            </thead>
+                            <tbody>
+                              {% for values in updated_information.not_match %}
+                                 <tr>
+                                    {% for value in values %}
+                                       <td>{{ value }} </td>
+                                    {%endfor%}
+                                  </tr>
+                              {%endfor%}
+                            </tbody>
+                        </table>
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-7  -->
+        </div> <!--// end row -->
+    {% endif %}
+    {% if updated_information.incomplete_clinic_samples_ids %}
+        <div class="row row-space-4 margin-b-4">
+            <div class="col-sm-12" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>The following samples requires to complete the information.</h3></div>
+
+                    <div class="panel-body">
 
                         <form method="post" enctype="multipart/form-data" name="storePatientInfo"  id="storePatientInfo" class="form-horizontal well" style="min-height: 500px;">
                             {% csrf_token %}
                             <input type="hidden" name="action" value="storePatientInfo"/>
-                            <input type= "hidden" name="clinic_samples" value="{{updated_information.clinic_samples}}"/>
+                            <input type= "hidden" name="clinic_samples" value="{{updated_information.incomplete_clinic_samples_ids}}"/>
                             <div class="scrolling-wrapper">
                                 <br><br><br>
                                 <div id="spreadsheet"></div>
                                 <br><br><br><br><br><br> <br><br><br><br><br>
                             </div> <!--  end of scrolling  -->
                                 <script>
-                                    {% if updated_information.data %}
-                                        var data = [{% for values in updated_information.data %}
+                                    {% if updated_information.incomplete_clinic_samples %}
+                                        var data = [{% for values in updated_information.incomplete_clinic_samples %}
                                         [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
                                         ];
                                     {% else %}
@@ -152,8 +168,8 @@
                                         { type: 'calendar', title:'{{updated_information.heading.4}}', width:180 },
                                         { type: 'text' , title: '{{updated_information.heading.5}}', width:150 },
 
-                                        { type: 'dropdown' , title: '{{updated_information.heading.6}}', width:150 , source : [{% for value in updated_information.s_request_by %}'{{value}}',{% endfor %} ], autocomplete:true,},
-                                        { type: 'dropdown' , title: '{{updated_information.heading.7}}', width:150, source : [{% for value in updated_information.doctor %}'{{value}}',{% endfor %} ] , autocomplete:true,},
+                                        { type: 'dropdown' , title: '{{updated_information.heading.6}}', width:180 , source : [{% for value in updated_information.s_request_by %}'{{value}}',{% endfor %} ], autocomplete:true,},
+                                        { type: 'dropdown' , title: '{{updated_information.heading.7}}', width:180, source : [{% for value in updated_information.doctor %}'{{value}}',{% endfor %} ] , autocomplete:true,},
                                         { type: 'text' , title: '{{updated_information.heading.8}}', width:250 ,wordWrap:true},
                                         { type: 'text' , title: '{{updated_information.heading.9}}', width:250 , wordWrap:true},
                                         ],

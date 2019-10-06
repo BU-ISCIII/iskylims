@@ -1,5 +1,6 @@
 from iSkyLIMS_clinic.models import *
 from iSkyLIMS_clinic.clinic_config import *
+from iSkyLIMS_clinic.utils.generic_functions import *
 import json
 
 '''
@@ -11,24 +12,31 @@ def analyze_and_store_patient_data (user_post, user):
     stored_samples = []
     analyze_data = {}
     not_match = []
-    not_match_samples_ids = []
-
+    #not_match_samples_ids = []
+    incomplete_clinic_samples = []
+    incomplete_clinic_samples_ids = []
     json_data = json.loads(user_post['patient_data'])
     clinic_samples = user_post['clinic_samples'].split(',')
     heading =  ADDITIONAL_HEADING_FOR_RECORDING_SAMPLES
     for c_samples_id in range(len(clinic_samples )):
         # check if patient history number matches
 
-        history_number = json_data[c_samples_id][heading.index('History Number')]
-        if history_number == '':
+        if check_empty_fields(json_data[c_samples_id]):
+            incomplete_clinic_samples.append(json_data[c_samples_id])
+            incomplete_clinic_samples_ids.append(clinic_samples[c_samples_id])
             continue
+
+        history_number = json_data[c_samples_id][heading.index('History Number')]
+
         patient_obj = get_patient_obj(history_number)
 
         if not patient_obj :
-            not_match.append(json_data[c_samples_id])
-            not_match_samples_ids.append(clinic_samples[c_samples_id])
+            import pdb; pdb.set_trace()
+            not_match.append(json_data[c_samples_id][0:6])
+            incomplete_clinic_samples.append(json_data[c_samples_id])
+            incomplete_clinic_samples_ids.append(clinic_samples[c_samples_id])
+            continue
         else:
-
             patient_data = {}
             patient_data['patient_id'] = patient_obj
             for map_column in  MAP_ADDITIONAL_HEADING_TO_DATABASE:
@@ -49,15 +57,25 @@ def analyze_and_store_patient_data (user_post, user):
             suspicious_obj = SuspiciousHistory.objects.create_suspicious_history(suspicious_data)
     if stored_samples :
         analyze_data['stored_samples_heading'] = HEADING_FOR_STORED_PATIENT_DATA
-    if not_match:
+    if incomplete_clinic_samples_ids:
         analyze_data['heading'] = ADDITIONAL_HEADING_FOR_RECORDING_SAMPLES
-        analyze_data['data'] = not_match
+        analyze_data['heading_length'] = len(ADDITIONAL_HEADING_FOR_RECORDING_SAMPLES)
+        analyze_data['incomplete_clinic_samples'] = incomplete_clinic_samples
+        analyze_data['data_length'] = len(incomplete_clinic_samples)
+        analyze_data['incomplete_clinic_samples_ids'] = ','.join(incomplete_clinic_samples_ids)
+        #analyze_data['data'] = not_match
         analyze_data['s_request_by'] =  get_service_units()
         analyze_data['doctor'] = get_available_doctor()
-    analyze_data['not_match'] = not_match
-    analyze_data['not_match_samples_ids'] =not_match_samples_ids
-    analyze_data['stored_samples'] = stored_samples
 
+
+    if not_match :
+        analyze_data['not_match'] = not_match
+        analyze_data['heading_not_match'] = HEADING_FOR_NOT_MATCH
+    #analyze_data['not_match_samples_ids'] =not_match_samples_ids
+    if stored_samples :
+        analyze_data['stored_samples'] = stored_samples
+
+    import pdb; pdb.set_trace()
     return analyze_data
 
 

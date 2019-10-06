@@ -6,3 +6,5 @@ MAP_ADDITIONAL_HEADING_TO_DATABASE = [('Order','orderInEntry'), ('Confirmation C
                 ('Requested Service Date','serviceDate' ), ('Comments', 'coments')]
 
 HEADING_FOR_STORED_PATIENT_DATA = ['Sample', 'History Number', 'Requested Service by']
+
+HEADING_FOR_NOT_MATCH = ['Sample', 'Order', 'Confirmation' , 'Priority' ,'Requested Service Date', 'Wrong History Number']

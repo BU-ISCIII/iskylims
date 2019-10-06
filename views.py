@@ -45,7 +45,7 @@ def define_patient_information(request):
         return render(request, 'iSkyLIMS_clinic/definePatientInformation.html',{'patient_information':patient_information})
     elif request.method == 'POST' and request.POST['action'] == 'storePatientInfo':
         updated_information = analyze_and_store_patient_data (request.POST, request.user)
-
+        
         return render(request, 'iSkyLIMS_clinic/definePatientInformation.html',{'updated_information':updated_information})
     else:
         clinic_samples = get_clinic_samples_by_state('Defined')
