@@ -1,6 +1,7 @@
 from iSkyLIMS_clinic.models import *
 from iSkyLIMS_clinic.clinic_config import *
 from iSkyLIMS_clinic.utils.generic_functions import *
+
 import json
 
 '''
@@ -31,7 +32,6 @@ def analyze_and_store_patient_data (user_post, user):
         patient_obj = get_patient_obj(history_number)
 
         if not patient_obj :
-            import pdb; pdb.set_trace()
             not_match.append(json_data[c_samples_id][0:6])
             incomplete_clinic_samples.append(json_data[c_samples_id])
             incomplete_clinic_samples_ids.append(clinic_samples[c_samples_id])
@@ -75,10 +75,24 @@ def analyze_and_store_patient_data (user_post, user):
     if stored_samples :
         analyze_data['stored_samples'] = stored_samples
 
-    import pdb; pdb.set_trace()
     return analyze_data
 
-
+def display_one_sample_info(id):
+    sample_info = {}
+    sample_obj = get_clinic_sample_obj_from_id(id)
+    sample_info['s_name'] = sample_obj.get_sample_name()
+    p_info = sample_obj.get_patient_information()
+    sample_info['patient_info'] = list(zip(HEADING_FOR_DISPLAY_PATIENT_INFORMATION, p_info))
+    r_by_info = sample_obj.get_requested_by_information()
+    sample_info['requested_by'] = list(zip(HEADING_FOR_DISPLAY_REQUESTED_BY_INFORMATION, r_by_info))
+    sample_info['sample_core_info'] = sample_obj.get_sample_core_info()
+    sample_info['sample_core_heading'] = HEADING_FOR_DISPLAY_SAMPLE_CORE_INFORMATION
+    if SuspiciousHistory.objects.filter(clinicSample_id__exact = sample_obj).exists():
+        sample_info['suspicious'] = SuspiciousHistory.objects.get(clinicSample_id__exact = sample_obj).get_suspicious_text()
+    else:
+        sample_info['suspicious'] = 'Information not available'
+    sample_info['comments'] = sample_obj.get_comments()
+    return sample_info
 
 def get_clinic_sample_obj_from_id(id):
     clinic_sample_obj = ClinicSampleRequest.objects.get(pk__exact = id)
@@ -127,6 +141,41 @@ def get_service_units():
         for service in services:
             service_unit_list.append(service.get_name())
     return service_unit_list
+
+def get_samples_clinic_in_search (data_request):
+    clinic_s_list = []
+    if ClinicSampleRequest.objects.all().exists():
+        clinic_s_found = ClinicSampleRequest.objects.all()
+    else:
+        return clinic_s_list
+    if data_request['history_number'] != '':
+        clinic_s_found = clinic_s_found.filter(patient_id__numberOfHistory__icontains = data_request['history_number'])
+
+    if data_request['patient_name'] != '':
+        clinic_s_found = clinic_s_found.filter(patient_id__patientName__icontains = data_request['patient_name'])
+    if data_request['sample_name'] != '':
+        clinic_s_found = clinic_s_found.filter(sampleCore__sampleName__icontains = data_request['sample_name'])
+        if len(clinic_s_found) == 1:
+                clinic_s_list.append(clinic_s_found[0].pk)
+                return clinic_s_list
+    if data_request['doctor_name'] != '':
+        clinic_s_found = clinic_s_found.filter(doctor_id__doctorName__exact = data_request['doctor_name'])
+    if data_request['requested_service_by'] != '':
+        clinic_s_found = clinic_s_found.filter(serviceUnit_id__serviceUnitName__exact = data_request['requested_service_by'])
+
+    if data_request['start_date'] !='' and data_request['end_date'] != '':
+        clinic_s_found = clinic_s_found.filter(generated_at___range=(data_request['start_date'], data_request['end_date'] ))
+
+    if data_request['start_date'] !='' and data_request['end_date']  == '':
+        clinic_s_found = clinic_s_found.filter(generated_at__gte = data_request['start_date'])
+
+    if data_request['start_date'] =='' and data_request['end_date']  != '':
+            clinic_s_found = clinic_s_found.filter(run_date__lte = data_request['end_date'] )
+
+    for clinic_s in clinic_s_found :
+        clinic_s_list.append(clinic_s.pk)
+
+    return clinic_s_list
 
 def prepare_patient_form (clinic_samples_ids):
 

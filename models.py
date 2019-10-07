@@ -12,6 +12,13 @@ class Patient (models.Model):
     def __str__ (self):
         return '%s' %(self.patientName)
 
+    def get_history_number(self):
+        return '%s' %(self.numberOfHistory)
+
+    def get_patient_name(self):
+        return '%s' %(self.patientName)
+
+
 class ServiceUnits (models.Model) :
     serviceUnitName = models.CharField(max_length = 80)
 
@@ -62,7 +69,7 @@ class ClinicSampleRequest (models.Model):
     orderInEntry = models.CharField(max_length = 8, null = True)
     confirmationCode = models.CharField(max_length = 80, null = True, blank = True)
     priority = models.CharField(max_length = 10, null = True, blank = True)
-    coments = models.CharField(max_length = 255, null = True, blank = True)
+    comments = models.CharField(max_length = 255, null = True, blank = True)
     serviceDate = models.DateTimeField(auto_now_add=False, null = True, blank = True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
@@ -72,15 +79,43 @@ class ClinicSampleRequest (models.Model):
     def get_id (self):
         return '%s' %(self.id)
 
+    def get_comments(self):
+        return '%s'  %(self.comments)
+
     def get_sample_name(self):
         return '%s' %(self.sampleCore.get_sample_name())
+
+    def get_patient_information(self):
+        patient_info = []
+        patient_info.append(self.patient_id.get_patient_name())
+        patient_info.append(self.patient_id.get_history_number())
+        return patient_info
+
+    def get_requested_by_information(self):
+        requested_by = []
+        requested_by.append(self.serviceUnit_id.get_name())
+        requested_by.append(self.doctor_id.get_name())
+
+        return requested_by
+
+    def get_sample_core_info(self):
+        s_core_info = []
+        s_core_info.append(self.orderInEntry)
+        s_core_info.append(self.confirmationCode)
+        s_core_info.append(self.priority)
+        s_core_info.append(self.sampleCore.get_laboratory())
+        s_core_info.append(self.sampleCore.get_sample_type())
+        s_core_info.append(self.sampleCore.get_species())
+        s_core_info.append(self.sampleCore.get_extraction_date())
+
+        return s_core_info
 
     def update(self, patient_data):
         self.clinicSampleState = ClinicSampleState.objects.get(clinicState__exact = 'Patient update')
         self.orderInEntry = patient_data['orderInEntry']
         self.confirmationCode = patient_data['confirmationCode']
         self.priority = patient_data['priority']
-        self.coments = patient_data['coments']
+        self.comments = patient_data['comments']
         self.serviceDate = patient_data['serviceDate']
         self.doctor_id = patient_data['doctor_id']
         self.patient_id = patient_data['patient_id']
@@ -103,6 +138,9 @@ class SuspiciousHistory (models.Model):
     description = models.CharField(max_length = 255)
 
     def __str__ (self):
+        return '%s' %(self.description)
+
+    def get_suspicious_text(self):
         return '%s' %(self.description)
 
     objects = SuspiciousHistoryManager()
