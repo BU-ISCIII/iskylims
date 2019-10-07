@@ -336,6 +336,8 @@ class Samples (models.Model):
         recordeddate=self.sampleEntryDate.strftime("%B %d, %Y")
         return '%s' %(recordeddate)
 
+    def get_laboratory(self):
+        return '%s' %(self.laboratory.get_name())
     def get_sample_code (self):
         return '%s' %(self.sampleCodeID)
 
@@ -347,6 +349,9 @@ class Samples (models.Model):
 
     def get_sample_name (self):
         return '%s' %(self.sampleName)
+
+    def get_species(self):
+        return '%s' %(self.species.get_name())
 
     def get_register_user(self):
         if self.sampleUser is None:
