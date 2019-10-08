@@ -3484,7 +3484,7 @@ def set_library_preparation(request):
         stored_lib_prep['heading_in_excel'] = ','.join(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS + parameter_heading)
         lib_prep_id = []
         samples_not_available = []
-        stored_lib_prep['reagents_kits'] = get_lot_comercial_kits(register_user_obj, protocol_obj)
+        stored_lib_prep['reagents_kits'] = get_lot_commercial_kits(register_user_obj, protocol_obj)
         for extracted_data in extracted_data_list :
 
             if Samples.objects.filter(sampleName__exact = extracted_data['sample_id'], sampleUser = register_user_obj,
@@ -3566,7 +3566,7 @@ def set_library_preparation(request):
         stored_lib_prep['par_heading'] = parameter_heading
         stored_lib_prep['heading_in_excel'] = ','.join(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS + parameter_heading)
         register_user_obj = User.objects.get(username__exact = request.user.username)
-        stored_lib_prep['reagents_kits'] = get_lot_comercial_kits(register_user_obj, protocol_obj)
+        stored_lib_prep['reagents_kits'] = get_lot_commercial_kits(register_user_obj, protocol_obj)
 
         return render (request, 'iSkyLIMS_wetlab/setLibraryPreparation.html', {'stored_lib_prep':stored_lib_prep})
 

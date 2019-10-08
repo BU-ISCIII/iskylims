@@ -1,9 +1,12 @@
 import json
 from iSkyLIMS_core.models import Samples, MoleculePreparation, Protocols
+from iSkyLIMS_core.utils.handling_commercial_kits import *
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
+from iSkyLIMS_wetlab.utils.sample_sheet_utils import *
 from ..fusioncharts.fusioncharts import FusionCharts
 from .stats_graphics import *
+
 
 
 def analyze_input_param_values(request):
