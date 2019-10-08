@@ -3190,16 +3190,18 @@ def define_protocol_parameters (request, protocol_id):
 
 @login_required
 def add_commercial_kit (request):
+    defined_protocols = get_defined_protocols()
+    commercial_kits_data = get_data_for_commercial_kits()
+
     if request.method == 'POST' and request.POST['action'] == 'addCommercialKit':
         if get_commercial_kit_id (request.POST['kitName']) :
-            defined_protocols = get_defined_protocols()
+
             return render(request, 'iSkyLIMS_wetlab/AddCommercialKit.html',{'defined_protocols': defined_protocols, 'invalid_name': request.POST['kitName']})
         new_kit = store_commercial_kit(request.POST)
         new_kit_data = get_commercial_kit_basic_data(new_kit)
         return render(request, 'iSkyLIMS_wetlab/AddCommercialKit.html',{'new_kit_data': new_kit_data})
     else:
-        defined_protocols = get_defined_protocols()
-        return render(request, 'iSkyLIMS_wetlab/AddCommercialKit.html',{'defined_protocols': defined_protocols})
+        return render(request, 'iSkyLIMS_wetlab/AddCommercialKit.html',{'defined_protocols': defined_protocols, 'commercial_kits_data': commercial_kits_data})
 
 @login_required
 def add_user_lot_commercial_kit (request):

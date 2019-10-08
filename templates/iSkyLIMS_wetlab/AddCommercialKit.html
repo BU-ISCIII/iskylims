@@ -42,7 +42,7 @@
         </div> <!--// end row -->
     {% endif %}
 <div class="row row-space-2 margin-b-4">
-    <div class="col-sm-6 col-sm-offset-1">
+    <div class="col-sm-6">
         <div class="panel panel-default">
             <div class="panel-heading"><h3>Form to add new Commercial Kit.</h3></div>
             <div class="panel-body">
@@ -90,8 +90,37 @@
 
             </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
-    </div> <!--// end col-sm-7  -->
+    </div> <!--// end col-sm-6  -->
+
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-5 col-sm-offset-1">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Commercial Kit defined</h3></div>
+                <div class="panel-body">
+                    <table class="table table-hover">
+                     <thead>
+                        <tr>
+                            {% for value in commercial_kits_data.heading %}
+                                <th>{{value}}</th>
+                            {% endfor %}
+                        </tr>
+                     </thead>
+                     <tbody>
+                          <tr>
+                              {% for value in commercial_kits_data.c_kits_data %}
+                                  <td>{{value}}</td>
+                              {% endfor %}
+                       </tr>
+                      </tbody>
+                  </table>
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  -->
+    </div> <!--// end row -->
+
 </div> <!--// end row -->
+
+
 
 {% endif %}
 
