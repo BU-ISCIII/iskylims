@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required
 from iSkyLIMS_clinic.models import *
 from iSkyLIMS_clinic.clinic_config import *
 from iSkyLIMS_clinic.utils.managed_samples import *
+from iSkyLIMS_clinic.utils.managed_results import *
+
 
 from iSkyLIMS_core.utils.handling_samples import *
 
@@ -58,6 +60,15 @@ def define_patient_information(request):
         return render(request, 'iSkyLIMS_clinic/definePatientInformation.html',{'patient_information':patient_information})
 
 @login_required
+def define_result_parameters(request):
+    if request.method == 'POST' and request.POST['action'] == 'defineResultParameters':
+        recorded_result_parameters = set_result_parameters(request)
+        return render(request, 'iSkyLIMS_clinic/defineResultParameters.html',{'recorded_result_parameters':recorded_result_parameters})
+    else:
+        result_parameters = define_table_for_result_parameters()
+        return render(request, 'iSkyLIMS_clinic/defineResultParameters.html',{'result_parameters':result_parameters})
+
+@login_required
 def search_sample(request):
     search_sample_data = {}
     search_sample_data['doctors'] = get_available_doctor()
@@ -99,7 +110,7 @@ def search_sample(request):
                 'Error': ERROR_MESSAGE_FOR_NO_MATCH_IN_SEARCH })
         if len(sample_c_list) == 1:
             display_sample_info = display_one_sample_info (sample_c_list[0])
-            
+
             return render(request, 'iSkyLIMS_clinic/displaySampleInfo.html', {'display_sample_info': display_sample_info })
         else:
             display_sample_list_info = display_sample_list(sample_c_list)

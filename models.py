@@ -155,18 +155,17 @@ class SampleResults (models.Model):
 
 
 class ResultParametersManager(models.Manager) :
-    def create_protocol_parameter (self, prot_param_data):
-        new_prot_parameter = self.create(protocol_id =prot_param_data['protocol_id'],parameterName = prot_param_data['Parameter name'],
+    def create_result_parameter (self, prot_param_data):
+        new_result_parameter = self.create(parameterName = prot_param_data['Parameter name'],
                     parameterDescription = prot_param_data['Description'], parameterOrder = prot_param_data['Order'],
                     parameterUsed = prot_param_data['Used'], parameterMaxValue = prot_param_data['Max Value'],
                     parameterMinValue = prot_param_data['Min Value'] )
-        return new_prot_parameter
+        return new_result_parameter
 
 class ResultParameters (models.Model):
     sampleType_id = models.ForeignKey(
                 SampleType,
                 on_delete = models.CASCADE, null = True, blank = True)
-
 
     parameterName = models.CharField(max_length=255)
     parameterDescription = models.CharField(max_length= 400, null=True, blank=True)

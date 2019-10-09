@@ -58,16 +58,15 @@
                                             </ul>
                                         </li>
                                     {% endif%}
-                                                {% if user.is_authenticated %}
-                                                        <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Results Registration<span class="caret"></span></a>
-                                                            <ul class="dropdown-menu">
-
+                                        {% if user.is_authenticated %}
+                                            <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Results Registration<span class="caret"></span></a>
+                                                <ul class="dropdown-menu">
                                                     <li><a href="/clinic/defineSampleFields">Define Sample Fields</a></li>
-
-                                                            </ul>
-                                                    </li>
-                                                {% else %}
-                                                    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_clinic">Run Preparation</a></li>
+                                                    <li><a href="/clinic/defineResultParameters">Define Result Parameters</a></li>
+                                                </ul>
+                                            </li>
+                                        {% else %}
+                                            <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_clinic">Run Preparation</a></li>
                                                 {% endif%}
                                                 {% if user.is_authenticated %}
                                         <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Search<span class="caret"></span></a>

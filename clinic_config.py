@@ -21,3 +21,8 @@ ERROR_MESSAGE_FOR_INCORRECT_END_SEARCH_DATE = ['The format for the "End Date Sea
 ERROR_MESSAGE_FOR_SORT_PATIENT_NAME = ['The Patient name must contains more than 5 characters']
 
 ERROR_MESSAGE_FOR_NO_MATCH_IN_SEARCH = 'Your query did not return any results'
+
+
+################ RESULT PARAMETER SETTINGS ##############################
+### Headings used when defining the custom result parameters
+HEADING_FOR_DEFINING_RESULT_PARAMETERS = ['Parameter name', 'Order', 'Used', 'Min Value', 'Max Value', 'Description']
