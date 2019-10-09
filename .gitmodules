@@ -6,7 +6,10 @@
 	url = git@github.com:BU-ISCIII/iSkyLIMS_wetlab.git
 [submodule "iSkyLIMS_core"]
 	path = iSkyLIMS_core
-	url = git@github.com:BU-ISCIII/iSkyLIMS_home.git
+	url = git@github.com:BU-ISCIII/iSkyLIMS_core.git
 [submodule "django_utils"]
 	path = django_utils
 	url = git@github.com:BU-ISCIII/django_utils.git
+[submodule "django_clinic"]
+	path = iSkyLIMS_clinic
+	url = git@github.com:BU-ISCIII/iSkyLIMS_clinic.git
