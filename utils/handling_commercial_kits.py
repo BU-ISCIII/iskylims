@@ -30,6 +30,17 @@ def get_commercial_kit_obj_from_name(kit_name):
         return CommercialKits.objects.get(name__exact = kit_name)
     return None
 
+def get_data_for_commercial_kits():
+    data_kits = []
+    data_commercial_kits = {}
+    if CommercialKits.objects.exists():
+        kits = CommercialKits.objects.all().order_by('protocol_id')
+        for kit in kits:
+            data_kits.append(kit.get_name())
+        data_commercial_kits['heading'] = HEADING_FOR_COMMERCIAL_KIT_BASIC_DATA
+        data_commercial_kits['c_kits_data'] = data_kits
+    return data_commercial_kits
+
 def get_commercial_kit_basic_data(kit_obj):
     kit_data = {}
     kit_data['data'] = kit_obj.get_basic_data()
