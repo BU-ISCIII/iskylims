@@ -584,19 +584,19 @@ def search_service (request):
             if services_found.filter(serviceCreatedOnDate__range=(start_date, end_date)).exists():
                 services_found = services_found.filter(serviceCreatedOnDate__range=(start_date, end_date))
             else:
-                return render (request,'django_utils/error_page.html', {'content':['There are no services containing ', service_number,
+                return render (request,'django_utils/error_page.html', {'content':['There are no services containing ', service_number_request,
                                                         ' created between ', start_date, 'and the ', end_date]})
         if start_date !='' and end_date == '':
             if services_found.filter(serviceCreatedOnDate__gte = start_date).exists():
                 services_found = services_found.filter(serviceCreatedOnDate__gte = start_date)
             else:
-                return render (request,'django_utils/error_page.html', {'content':['There are no services containing ', service_number,
+                return render (request,'django_utils/error_page.html', {'content':['There are no services containing ', service_number_request,
                                                         ' created before ', start_date]})
         if start_date =='' and end_date != '':
             if services_found.filter(serviceCreatedOnDate__lte = end_date).exists():
                 services_found = services_found.filter(serviceCreatedOnDate__lte = end_date)
             else:
-                return render (request,'django_utils/error_page.html', {'content':['There are no services containing ', service_number,
+                return render (request,'django_utils/error_page.html', {'content':['There are no services containing ', service_number_request,
                                                         ' finish before ', end_date]})
         if center != '':
             if services_found.filter(serviceRequestNumber__icontains = center).exists():
