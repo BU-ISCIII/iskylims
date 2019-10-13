@@ -170,11 +170,14 @@ def analyze_input_samples (request):
             else:
                 invalid_samples_id.append(sample_id)
                 invalid_samples.append(Samples.objects.get(sampleName__exact = sample_name).get_sample_definition_information())
-    sample_recorded['valid_samples'] = valid_samples
-    sample_recorded['invalid_samples'] = invalid_samples
-    sample_recorded['invalid_samples_id'] = ','.join(invalid_samples_id)
-    sample_recorded['heading'] = HEADING_FOR_DISPLAY_RECORDED_SAMPLES
-    sample_recorded['incomplete_samples'] = incomplete_samples
+    if len(valid_samples) > 0 :
+        sample_recorded['valid_samples'] = valid_samples
+        sample_recorded['heading'] = HEADING_FOR_DISPLAY_RECORDED_SAMPLES
+    if len(invalid_samples) >0 :
+        sample_recorded['invalid_samples'] = invalid_samples
+        sample_recorded['invalid_samples_id'] = ','.join(invalid_samples_id)
+    if len(incomplete_samples) >0 :
+        sample_recorded['incomplete_samples'] = incomplete_samples
 
     if sample_recorded['all_samples_valid']:
         sample_recorded['samples_to_continue'] = ','.join(samples_continue)
