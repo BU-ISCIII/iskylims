@@ -64,12 +64,15 @@
                                 <ul class="nav navbar-nav navbar-nav-right">
                                     <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/wetlab/">Home</a></li>
                                     {% if user.is_authenticated %}
-                        				<li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Library Preparation<span class="caret"></span></a>
-                        				    <ul class="dropdown-menu">
-                                                {% if request.user|has_group:"WetlabManager" %}
+                                        {% if request.user|has_group:"WetlabManager" %}
+                        				    <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Preliminary Preparation<span class="caret"></span></a>
+                        				        <ul class="dropdown-menu">
                                                     <li><a href="/wetlab/addCollectionIndexKit">Add Collection Index Kit</a></li>
                                                     <li><a href="/wetlab/AddCommercialKit">Add Commercial Kit</a></li>
-                                                {% else %}
+                                                    <li><a href="/wetlab/createProtocol">Create New Protocol</a></li>
+                                        {% else %}
+                                            <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Library Preparation<span class="caret"></span></a>
+                                                <ul class="dropdown-menu">
                                                     <li><a href="/wetlab/AddUserLotCommercialKit">Add User Lot Commercial Kit</a></li>
                                                     <li><a href="/wetlab/recordSamples">Record Samples</a></li>
                                                     <li><a href="/wetlab/searchLibSamples">Search Samples</a></li>
@@ -84,7 +87,6 @@
                         				<li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Run Preparation<span class="caret"></span></a>
                         				    <ul class="dropdown-menu">
                             					{% if request.user|has_group:"WetlabManager" %}
-                                                    <li><a href="/wetlab/createProtocol">Create New Protocol</a></li>
                                                     <li><a href="/wetlab/AddBasespaceLibrary">Add BasseSpace Library</a></li>
                                                     <li><a href="/wetlab/createPool">Create Pool</a></li>
                                                     <li><a href="/wetlab/createNewRun">Create New Run</a></li>
