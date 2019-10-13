@@ -40,18 +40,43 @@
         <div class="col-sm-12" >
 
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>Define Result Parameters for {{result_parameters.result_name}}</h3></div>
+                <div class="panel-heading"><h3>Define Result Parameters</h3></div>
                 <div class="panel-body">
                      <form method="post" enctype="multipart/form-data" name="defineResultParameters"  id="defineResultParameters" class="form-horizontal well">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="defineResultParameters"/>
+
                         <input type="hidden" name="protocol_id" value="{{result_parameters.protocol_id}}"/>
-                        <h4>Define the parameters used for protocol {{result_parameters.protocol_name}}</h4>
+                        <br>
+                        <div class="form-group">
+                            <label class="col-sm-5 control-label" for="sampleType" >Sample Type</label>
+                            <div class="col-sm-4">
+                                <select class="form-control" name="sampleType" id="sampleType">
+                           			<option value="">Choose a value</option>
+                                    {% for value in result_parameters.sample_types %}
+                                        <option value="{{value}}">{{value}}</option>
+                                    {% endfor %}
+                                 </select>
+                           </div>  <!-- end select input -->
+                        </div>  <!-- end from-group   -->
+                        <br>
+                        <div class="form-group">
+                            <label class="col-sm-5 control-label" for="moleculeType" >Molecule Type</label>
+                            <div class="col-sm-4">
+                                <select class="form-control" name="moleculeType" id="moleculeType">
+                           			<option value="">Choose a value</option>
+                                    {% for value in result_parameters.molecule_types %}
+                                        <option value="{{value}}">{{value}}</option>
+                                    {% endfor %}
+                                 </select>
+                           </div>  <!-- end select input -->
+                        </div>  <!-- end from-group   -->
+                        <br>
                         <div id="spreadsheet1"></div>
                         <br>
                         <br>
 
-                        <input type="button" value="Download_Protocol_Parameters" onclick="table1.download()"/>
+                        <input type="button" value="Download_Result_Parameters" onclick="table1.download()"/>
 
                      <br>
 

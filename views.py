@@ -61,6 +61,7 @@ def define_patient_information(request):
 
 @login_required
 def define_result_parameters(request):
+    
     if request.method == 'POST' and request.POST['action'] == 'defineResultParameters':
         recorded_result_parameters = set_result_parameters(request)
         return render(request, 'iSkyLIMS_clinic/defineResultParameters.html',{'recorded_result_parameters':recorded_result_parameters})

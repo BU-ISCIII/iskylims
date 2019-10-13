@@ -1,5 +1,7 @@
 from iSkyLIMS_clinic.models import *
 from iSkyLIMS_clinic.clinic_config import *
+from iSkyLIMS_clinic.utils.managed_samples import *
+from iSkyLIMS_core.utils.handling_samples import get_sample_type , get_molules_type
 import json
 
 
@@ -17,12 +19,12 @@ def define_table_for_result_parameters():
     '''
     result_parameters = {}
     #protocol_obj = Protocols.objects.get(pk__exact = protocol_id)
-
+    result_parameters['sample_types'] = get_sample_type()
+    result_parameters['molecule_types'] = get_molules_type()
     #prot_parameters['protocol_name'] = protocol_obj.get_name()
     #prot_parameters['protocol_id'] = protocol_id
     result_parameters['heading'] = HEADING_FOR_DEFINING_RESULT_PARAMETERS
     return result_parameters
-
 
 
 def set_result_parameters(request):
