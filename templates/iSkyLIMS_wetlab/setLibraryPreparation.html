@@ -161,8 +161,8 @@
                                    columns: [
                                         { type: 'text', title:'{{stored_lib_prep.heading.0}}', width:180 , readOnly:true },
                                         { type: 'text', title:'{{stored_lib_prep.heading.1}}', width:180 , readOnly:true },
-                                        { type: 'dropdown', title:'{{stored_lib_prep.heading.2}}', width:200 , source :[ {% for value in stored_lib_prep.reagents_kits %} '{{value}}', {% endfor %}]},
-                                        { type: 'text', title:'{{stored_lib_prep.heading.3}}', width:280 , readOnly:true },
+                                        { type: 'text', title:'{{stored_lib_prep.heading.2}}', width:280 , readOnly:true },
+                                        { type: 'dropdown', title:'{{stored_lib_prep.heading.3}}', width:200 , source :[ {% for value in stored_lib_prep.reagents_kits %} '{{value}}', {% endfor %}]},
                                         {% for value in stored_lib_prep.par_heading %}
                                             { type: 'text', title:'{{value}}', width:180 },
                                         {% endfor %}
