@@ -3496,6 +3496,7 @@ def set_library_preparation(request):
 
                 extracted_data['protocol_obj'] = protocol_obj
                 extracted_data['collection_index_kit_id'] = collection_index_kit_id
+
                 molecule_obj = MoleculePreparation.objects.filter(sample = sample_obj).last()
                 if LibraryPreparation.objects.filter(sample_id = sample_obj, libPrepState__libPrepState__exact = 'Created for Reuse').exists():
                     lib_prep_obj = LibraryPreparation.objects.get(sample_id = sample_obj, libPrepState__libPrepState__exact = 'Created for Reuse')
@@ -3526,6 +3527,7 @@ def set_library_preparation(request):
                 data = ['']*length_heading
                 data[0] = extracted_data['sample_id']
                 data[1] = lib_prep_code_id
+
                 if not collection_index_kit_id :
                     data[3] = 'collection Index not defined'
                 else:
@@ -3550,7 +3552,7 @@ def set_library_preparation(request):
             lib_prep_ids = request.POST['lib_prep_id'].split(',')
         stored_lib_prep ={}
         stored_lib_prep['data'] =[]
-        import pdb; pdb.set_trace()
+        
         protocol_obj = LibraryPreparation.objects.get(pk = lib_prep_ids[0]).get_protocol_obj()
         parameter_heading = get_protocol_parameters(protocol_obj)
         length_heading = len(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS) + len (parameter_heading)
@@ -3559,6 +3561,7 @@ def set_library_preparation(request):
             data = ['']*length_heading
             data[0] = library_preparation_obj.get_sample_name()
             data[1] = library_preparation_obj.get_lib_prep_code()
+            data[2] = library_preparation_obj.get_collection_index_kit()
 
             stored_lib_prep['data'].append(data)
         stored_lib_prep['lib_prep_id'] = ','.join(lib_prep_ids)
