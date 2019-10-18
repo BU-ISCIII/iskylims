@@ -64,22 +64,62 @@ def define_patient_information(request):
 
 @login_required
 def define_result_protocol(request):
+    defined_protocols, other_protocol_list = display_available_protocols (__package__)
+    defined_protocol_types = display_protocol_types (__package__)
+    if request.method == 'POST' and request.POST['action'] == 'addNewResultProtocol':
+        new_result_protocol = request.POST['newResultProtocolName']
+        protocol_type = request.POST['protocolType']
+        description = request.POST['description']
+        if check_if_protocol_exists (new_result_protocol, __package__):
+            return render(request, 'iSkyLIMS_clinic/defineResultProtocol.html',{'other_protocol_list' :other_protocol_list,'defined_protocol_types':defined_protocol_types,'Error':new_result_protocol})
 
-    if request.method == 'POST' and request.POST['action'] == 'defineResultParameters':
-        recorded_result_parameters = set_result_parameters(request)
+        new_result_protocol_id = create_new_protocol(new_result_protocol, protocol_type, description)
+        import pdb; pdb.set_trace()
+        return render(request, 'iSkyLIMS_clini/defineResultProtocol.html',{'other_protocol_list' :other_protocol_list,
+                            'defined_protocol_types':defined_protocol_types, 'new_defined_protocol': new_result_protocol,
+                            'new_protocol_id':new_result_protocol_id})
+
+
+
         return render(request, 'iSkyLIMS_clinic/defineResultProtocol.html',{'recorded_result_parameters':recorded_result_parameters})
     else:
-        defined_protocol_types = display_protocol_types (__package__)
-        
-        return render(request, 'iSkyLIMS_clinic/defineResultProtocol.html',{'defined_protocol_types':defined_protocol_types})
+
+
+        return render(request, 'iSkyLIMS_clinic/defineResultProtocol.html',{'other_protocol_list' :other_protocol_list,'defined_protocol_types':defined_protocol_types})
 
 @login_required
-def define_protocol_parameters (request, protocol_id):
-    if request.method == 'POST' and request.POST['action'] == 'define_result_protocol_parameters':
-        pass
+def display_result_protocol (request, result_protocol_id):
+    if not check_if_protocol_exists(result_protocol_id, __package__):
+        return render (request,'iSkyLIMS_clinic/error_page.html',
+            {'content':['The result protocol that you are trying to get ',
+                        'DOES NOT exists .']})
+    result_protocol_data = get_all_protocol_info (result_protocol_id)
+    import pdb; pdb.set_trace()
+    return render(request, 'iSkyLIMS_clinic/displayResultProtocol.html', {'result_protocol_data': result_protocol_data})
+
+def display_sample_info(request,sample_c_id):
+    if check_if_sample_c_exists(sample_c_id):
+        display_sample_info = display_one_sample_info (sample_c_id)
+
+        return render(request, 'iSkyLIMS_clinic/displaySampleInfo.html', {'display_sample_info': display_sample_info })
     else:
-        result_parameters = define_table_for_result_parameters()
-        return render(request, 'iSkyLIMS_clinic/defineResultProtocol.html',{'result_parameters':result_parameters})
+        return render (request,'iSkyLIMS_clinic/error_page.html',
+            {'content':['The clinic sample that you are trying to get ',
+                        'DOES NOT exists .']})
+
+@login_required
+def define_result_protocol_parameters (request, result_protocol_id):
+    if request.method == 'POST' and request.POST['action'] == 'defineResultProtocolParameters':
+        recorded_result_prot_parameters = set_protocol_parameters(request)
+        return render(request, 'iSkyLIMS_clinic/defineResultProtocolParameters.html',{'recorded_result_prot_parameters':recorded_result_prot_parameters})
+    else:
+
+        if not check_if_protocol_exists(result_protocol_id, __package__):
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',
+                        {'content':['The requested Protocol does not exist',
+                            'Create the protocol name before assigning custom protocol parameters.']})
+        result_parameters = define_table_for_prot_parameters(result_protocol_id)
+        return render(request, 'iSkyLIMS_clinic/defineResultProtocolParameters.html',{'result_parameters':result_parameters})
 
 @login_required
 def search_sample(request):

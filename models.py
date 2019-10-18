@@ -46,6 +46,9 @@ class ClinicSampleState (models.Model):
     def __str__ (self):
         return '%s' %(self.clinicState)
 
+    def get_state(self):
+        return '%s' %(self.clinicState)
+
 
 class ClinicSampleRequest (models.Model):
     sampleCore = models.ForeignKey(
@@ -108,6 +111,17 @@ class ClinicSampleRequest (models.Model):
         s_core_info.append(self.sampleCore.get_species())
         s_core_info.append(self.sampleCore.get_extraction_date())
 
+        return s_core_info
+
+    def get_sample_info_for_list (self):
+        s_core_info = []
+        s_core_info.append(self.pk)
+        s_core_info.append(self.sampleCore.get_sample_name())
+        s_core_info.append(self.patient_id.get_history_number())
+        s_core_info.append(self.doctor_id.get_name())
+        s_core_info.append(self.priority)
+        s_core_info.append(self.serviceDate.strftime('%Y-%m-%d'))
+        s_core_info.append(self.clinicSampleState.get_state())
         return s_core_info
 
     def update(self, patient_data):

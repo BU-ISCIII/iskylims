@@ -22,7 +22,10 @@ ERROR_MESSAGE_FOR_SORT_PATIENT_NAME = ['The Patient name must contains more than
 
 ERROR_MESSAGE_FOR_NO_MATCH_IN_SEARCH = 'Your query did not return any results'
 
+################ SHOWING LIST WHEN SEARCH MATCH MORE ONE RESULT ##############################
+HEADING_SEARCH_LIST_SAMPLES_CLINIC = ['Sample Clinic name', 'History Number ' ,'Doctor name' , 'Priority', 'Requested Service Date', 'State']
+
 
 ################ RESULT PARAMETER SETTINGS ##############################
 ### Headings used when defining the custom result parameters
-HEADING_FOR_DEFINING_RESULT_PARAMETERS = ['Parameter name', 'Order', 'Used', 'Min Value', 'Max Value', 'Description']
+#HEADING_FOR_DEFINING_RESULT_PARAMETERS = ['Parameter name', 'Order', 'Used', 'Min Value', 'Max Value', 'Description']

@@ -77,6 +77,12 @@ def analyze_and_store_patient_data (user_post, user):
 
     return analyze_data
 
+def check_if_sample_c_exists(sample_c_id):
+    if  ClinicSampleRequest.objects.filter(pk__exact = sample_c_id).exists():
+        return True
+    else:
+        return False
+
 def display_one_sample_info(id):
     sample_info = {}
     sample_obj = get_clinic_sample_obj_from_id(id)
@@ -93,6 +99,19 @@ def display_one_sample_info(id):
         sample_info['suspicious'] = 'Information not available'
     sample_info['comments'] = sample_obj.get_comments()
     return sample_info
+
+
+
+def display_sample_list(sample_c_list):
+    display_sample_list_info = {}
+    display_sample_list_info['heading'] = HEADING_SEARCH_LIST_SAMPLES_CLINIC
+    sample_c_data = []
+    for sample_c in sample_c_list:
+        sample_c_obj = ClinicSampleRequest.objects.get(pk__exact = sample_c)
+        sample_c_data.append(sample_c_obj.get_sample_info_for_list())
+        #import pdb; pdb.set_trace()
+    display_sample_list_info['sample_c_data'] = sample_c_data
+    return display_sample_list_info
 
 def get_clinic_sample_obj_from_id(id):
     clinic_sample_obj = ClinicSampleRequest.objects.get(pk__exact = id)

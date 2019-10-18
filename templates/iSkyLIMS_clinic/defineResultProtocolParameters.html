@@ -1,0 +1,120 @@
+{% extends 'iSkyLIMS_clinic/base.html' %}
+{% load static %}
+{% block content %}
+{% csrf_token %}
+
+{% if recorded_result_prot_parameters %}
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Sucessful store of parameters on {{recorded_result_prot_parameters.protocol_name}} Protocol</h3></div>
+                <div class="panel-body">
+
+                    <div class="col-sm-5" >
+                        <table class="table table-hover">
+                            <thead>
+                              <tr>
+                                <th> Result Parameters Name</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                            {% for  value in recorded_result_prot_parameters.parameters %}
+                                <tr>
+                               <td>{{ value }}</td>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div> <!--// end col-sm-5  -->
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-12  -->
+    </div> <!--// end row -->
+
+
+{% else %}
+    <script src="{% static "iSkyLIMS_clinic/js/jquery/v3.4.1/jquery-3.4.1.min.js" %}" type="text/javascript"></script>
+    <script src="{% static "iSkyLIMS_clinic/js/jexcel/v3/jexcel.js" %}" type="text/javascript"></script>
+    <script src="{% static "iSkyLIMS_clinic/js/jsuites/v2/jsuites.js" %}" type="text/javascript"></script>
+
+    <link href="{% static "iSkyLIMS_clinic/css/jexcel/v3/jexcel.css" %}" rel="stylesheet">
+    <link href="{% static "iSkyLIMS_clinic/css/jsuites/v2/jsuites.css" %}" rel="stylesheet">
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-12" >
+
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Define Result Protocol Parameters for {{ result_parameters.protocol_name }}</h3></div>
+                <div class="panel-body">
+                     <form method="post" enctype="multipart/form-data" name="defineResultProtocolParameters"  id="defineResultProtocolParameters" class="form-horizontal well">
+                        <p>Define the parameters used for result protocol {{ result_parameters.protocol_name }}</p>
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="defineResultProtocolParameters"/>
+
+                        <input type="hidden" name="protocol_id" value="{{result_parameters.protocol_id}}"/>
+                        <br>
+                        <br>
+                        <div id="spreadsheet1"></div>
+                        <br>
+                        <br>
+
+                        <input type="button" value="Download_Result_Parameters" onclick="table1.download()"/>
+
+                     <br>
+
+                     <script>
+
+                     var data1 = [[],
+                     ];
+
+                     var table1 = jexcel(document.getElementById('spreadsheet1'), {
+                         data:data1,
+                         columns: [
+                             { type: 'text', title:'{{result_parameters.heading.0}}', width:120 },
+                             { type: 'numeric', title:'{{result_parameters.heading.1}}', width:50, mask:' #.##,00' },
+                             { type: 'checkbox', title:'{{result_parameters.heading.2}}', width:50 },
+                             { type: 'text' , title: '{{result_parameters.heading.3}}', width:90 },
+                             { type: 'text', title:'{{result_parameters.heading.4}}', width:90 },
+                             { type: 'text', title:'{{result_parameters.heading.5}}', width:400 , wordWrap:true },
+                         ],
+                         allowInsertColumn:false,
+                         allowDeleteColumn:false,
+                         allowRenameColumn:false,
+                         csvFileName:'protocol_parameters',
+                         minDimensions:[6,3],
+                     });
+
+
+                     </script>
+                    <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                    </form>
+                    <script>
+                        $(document).ready(function () {
+                            $("#defineResultProtocolParameters").submit(function (e) {
+                                //stop submitting the form to see the disabled button effect
+                                //e.preventDefault();
+                                //disable the submit button
+                                var table_data1 = table1.getData()
+                                var data1_json = JSON.stringify(table_data1)
+                                $("<input />").attr("type", "hidden")
+                                  .attr("name", "table_data1")
+                                  .attr("value", data1_json)
+                                  .appendTo("#defineResultProtocolParameters");
+                                $("#btnSubmit").attr("disabled", true);
+                                return true;
+                            });
+                        });
+                    </script>
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+
+        </div> <!--// end col-sm-7  -->
+
+    </div> <!--// end row -->
+
+{% endif %}
+
+
+
+
+<!-- End of FORM for defining protocol parameters -->
+
+{% endblock %}

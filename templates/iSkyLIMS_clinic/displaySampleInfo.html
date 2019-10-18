@@ -101,6 +101,42 @@
     </div> <!--// end row -->
 
 {% else%}
+    <br><br>
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-10 col-sm-offset-1" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Clinic Samples</h3></div>
+                <div class="panel-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                {% for value in display_sample_list_info.heading %}
+                                    <th>{{value}}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <h4>The following clinic samples match with your input request</h4>
+                            {% for s_id, s_name, history, doc, priority, date, state in display_sample_list_info.sample_c_data %}
+                                <tr>
+                                    <td><a href="/clinic/displaySampleInfo={{s_id}}">{{ s_name }}</a> </td>
+                                    <td>{{ history }} </td>
+                                    <td>{{ doc }} </td>
+                                    <td>{{ priority }} </td>
+                                    <td>{{ date }} </td>
+                                    <td>{{ state }} </td>
+
+
+
+                                </tr>
+                            {%endfor%}
+                        </tbody>
+                    </table>
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  -->
+    </div> <!--// end row -->
+
 
 {% endif %}
 
