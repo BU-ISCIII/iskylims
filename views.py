@@ -3120,17 +3120,17 @@ def create_protocol (request):
         #redirect to login webpage
         return redirect ('/accounts/login')
     # get the list of defined protocols
-    defined_protocols, other_protocol_list = display_available_protocols ()
+    defined_protocols, other_protocol_list = display_available_protocols (__package__)
     defined_protocol_types = display_protocol_types (__package__)
 
 
     if request.method == 'POST' and request.POST['action'] == 'addNewProtocol':
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         new_protocol = request.POST['newProtocolName']
         protocol_type = request.POST['protocolType']
         description = request.POST['description']
 
-        if check_if_protocol_exists (new_protocol):
+        if check_if_protocol_exists (new_protocol, __package__):
             return render ( request,'iSkyLIMS_wetlab/error_page.html',{'content':['Protocol Name ', new_protocol,
                             'Already exists.']})
         new_protocol_id = create_new_protocol(new_protocol, protocol_type, description)
@@ -3149,7 +3149,7 @@ def display_protocol (request, protocol_id):
             {'content':['You do not have enough privileges to see this page ',
                         'Contact with your administrator .']})
     #import pdb; pdb.set_trace()
-    if not check_if_protocol_exists(protocol_id):
+    if not check_if_protocol_exists(protocol_id, __package__):
         return render (request,'iSkyLIMS_wetlab/error_page.html',
             {'content':['The protocol that you are trying to get ',
                         'DOES NOT exists .']})
@@ -3179,7 +3179,7 @@ def define_protocol_parameters (request, protocol_id):
         return render(request, 'iSkyLIMS_wetlab/defineProtocolParameters.html', {'recorded_prot_parameters':recorded_prot_parameters})
 
     else:
-        if not check_if_protocol_exists(protocol_id):
+        if not check_if_protocol_exists(protocol_id, __package__):
             return render ( request,'iSkyLIMS_wetlab/error_page.html',
                         {'content':['The requested Protocol does not exist',
                             'Create the protocol name before assigning custom protocol parameters.']})
