@@ -117,7 +117,7 @@ def get_defined_protocols():
             defined_protocols.append(protocol_obj.get_name())
     return defined_protocols
 
-def display_protocol_types ():
+def display_protocol_types (app_name):
     '''
     Description:
         The function return a list with all protocol types defined.
@@ -125,8 +125,8 @@ def display_protocol_types ():
         protocol_types_list.
     '''
     protocol_types_list = []
-    if ProtocolType.objects.all().exists():
-        protocol_types = ProtocolType.objects.all().order_by('molecule')
+    if ProtocolType.objects.filter(apps_name__exact = app_name).exists():
+        protocol_types = ProtocolType.objects.filter(apps_name__exact = app_name).order_by('molecule')
         for protocol_type in protocol_types:
             protocol_types_list.append(protocol_type.get_name())
     return protocol_types_list

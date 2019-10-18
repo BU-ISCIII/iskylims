@@ -15,10 +15,10 @@ class MoleculePreparationAdmin(admin.ModelAdmin):
                     'moleculeExtractionDate', 'numberOfReused')
 
 class ProtocolsAdmin(admin.ModelAdmin):
-    list_display = ('type', 'name', 'description')
+    list_display = ('type', 'name',  'description')
 
 class ProtocolTypeAdmin( admin.ModelAdmin):
-    list_display = ('molecule','protocol_type')
+    list_display = ('protocol_type', 'molecule', 'apps_name')
 
 
 class ProtocolParametersAdmin (admin.ModelAdmin):

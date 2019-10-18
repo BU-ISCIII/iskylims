@@ -527,7 +527,7 @@ def get_species ():
             species_names.append(species.get_name())
     return species_names
 
-def get_molules_type ():
+def get_modules_type ():
     '''
     Description:
         The function will return the list of type of molecules defined.
@@ -740,7 +740,7 @@ def get_table_record_molecule (samples):
         data = ['']*len(HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION)
         data[0] = Samples.objects.get(pk__exact = sample).get_sample_code()
         molecule_information['data'].append(data)
-    molecule_information['type_of_molecules'] = get_molules_type ()
+    molecule_information['type_of_molecules'] = get_modules_type ()
     molecule_information['protocols_dict'],molecule_information['protocol_list']  = get_molecule_protocols()
     molecule_information['number_of_samples'] = len(valid_samples)
     molecule_information['table_length']  = len(HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION)

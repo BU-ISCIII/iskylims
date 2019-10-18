@@ -36,6 +36,7 @@ class ProtocolType (models.Model):
                     MoleculeType,
                     on_delete= models.CASCADE, null = True, blank = True)
     protocol_type = models.CharField(max_length = 40)
+    apps_name = models.CharField(max_length = 40)
 
     def __str__ (self) :
         return '%s' %(self.protocol_type)
