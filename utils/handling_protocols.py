@@ -22,7 +22,7 @@ def create_new_protocol (new_protocol, protocol_type, description):
     return new_protocol_object.pk
 
 
-def check_if_protocol_exists (protocol):
+def check_if_protocol_exists (protocol, app_name):
     '''
     Description:
         The function return True if protocol exists. False if not
@@ -32,12 +32,12 @@ def check_if_protocol_exists (protocol):
         True/False.
     '''
     if type(protocol) is int:
-        if Protocols.objects.filter(pk__exact = protocol).exists():
+        if Protocols.objects.filter(pk__exact = protocol, type__apps_name__exact = app_name).exists():
             return True
         else:
             return False
     else:
-        if Protocols.objects.filter(name__exact = protocol).exists():
+        if Protocols.objects.filter(name__exact = protocol,  type__apps_name__exact = app_name).exists():
             return True
         else:
             return False
@@ -60,7 +60,7 @@ def define_table_for_prot_parameters(protocol_id):
     prot_parameters['heading'] = HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS
     return prot_parameters
 
-def display_available_protocols ():
+def display_available_protocols (app_name):
     '''
     Description:
         The function return a list with all defined protocols that contains
@@ -71,8 +71,8 @@ def display_available_protocols ():
     '''
 
     molecule_protocol_list = []
-    if ProtocolType.objects.all().exclude(molecule = None).exists():
-        protocol_types = ProtocolType.objects.all().exclude(molecule = None).order_by('molecule')
+    if ProtocolType.objects.filter(apps_name__exact = app_name).exclude(molecule = None).exists():
+        protocol_types = ProtocolType.objects.filter(apps_name__exact = app_name).exclude(molecule = None).order_by('molecule')
         for protocol_type in protocol_types :
             molecule_type = protocol_type.get_molecule_type()
             prot_type_str =  protocol_type.get_name()
@@ -90,8 +90,8 @@ def display_available_protocols ():
                         data_prot.append(False)
                     molecule_protocol_list.append(data_prot)
     other_protocol_list = []
-    if ProtocolType.objects.filter(molecule = None).exists():
-        protocol_types = ProtocolType.objects.filter(molecule = None)
+    if ProtocolType.objects.filter(molecule = None, apps_name__exact = app_name).exists():
+        protocol_types = ProtocolType.objects.filter(molecule = None, apps_name__exact = app_name)
         for protocol_type in protocol_types:
             prot_type_str =  protocol_type.get_name()
             if Protocols.objects.filter(type = protocol_type).exists():
