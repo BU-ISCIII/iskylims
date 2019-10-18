@@ -11,7 +11,7 @@ urlpatterns = [
     path('',views.index, name = 'index'),
     path('defineNewSamples', views.define_new_samples, name = 'define_new_samples'),
     path('definePatientInformation', views.define_patient_information, name = 'define_patient_information'),
-    path('defineResultParameters', views.define_result_parameters, name = 'define_result_parameters'),
+    path('defineResultProtocol', views.define_result_protocol, name = 'define_result_protocol'),
     path('searchSample', views.search_sample, name = 'search_sample'),
 
 ]

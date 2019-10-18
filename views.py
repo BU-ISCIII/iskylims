@@ -1,12 +1,15 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
+
+#from django.core.urlresolvers import resolve
+
 from iSkyLIMS_clinic.models import *
 from iSkyLIMS_clinic.clinic_config import *
 from iSkyLIMS_clinic.utils.managed_samples import *
 from iSkyLIMS_clinic.utils.managed_results import *
 
-
+from iSkyLIMS_core.utils.handling_protocols import *
 from iSkyLIMS_core.utils.handling_samples import *
 
 def index(request):
@@ -60,14 +63,23 @@ def define_patient_information(request):
         return render(request, 'iSkyLIMS_clinic/definePatientInformation.html',{'patient_information':patient_information})
 
 @login_required
-def define_result_parameters(request):
-    
+def define_result_protocol(request):
+
     if request.method == 'POST' and request.POST['action'] == 'defineResultParameters':
         recorded_result_parameters = set_result_parameters(request)
-        return render(request, 'iSkyLIMS_clinic/defineResultParameters.html',{'recorded_result_parameters':recorded_result_parameters})
+        return render(request, 'iSkyLIMS_clinic/defineResultProtocol.html',{'recorded_result_parameters':recorded_result_parameters})
+    else:
+        defined_protocol_types = display_protocol_types (__package__)
+        
+        return render(request, 'iSkyLIMS_clinic/defineResultProtocol.html',{'defined_protocol_types':defined_protocol_types})
+
+@login_required
+def define_protocol_parameters (request, protocol_id):
+    if request.method == 'POST' and request.POST['action'] == 'define_result_protocol_parameters':
+        pass
     else:
         result_parameters = define_table_for_result_parameters()
-        return render(request, 'iSkyLIMS_clinic/defineResultParameters.html',{'result_parameters':result_parameters})
+        return render(request, 'iSkyLIMS_clinic/defineResultProtocol.html',{'result_parameters':result_parameters})
 
 @login_required
 def search_sample(request):
