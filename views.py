@@ -3121,7 +3121,7 @@ def create_protocol (request):
         return redirect ('/accounts/login')
     # get the list of defined protocols
     defined_protocols, other_protocol_list = display_available_protocols ()
-    defined_protocol_types = display_protocol_types ()
+    defined_protocol_types = display_protocol_types (__package__)
 
 
     if request.method == 'POST' and request.POST['action'] == 'addNewProtocol':
@@ -3552,7 +3552,7 @@ def set_library_preparation(request):
             lib_prep_ids = request.POST['lib_prep_id'].split(',')
         stored_lib_prep ={}
         stored_lib_prep['data'] =[]
-        
+
         protocol_obj = LibraryPreparation.objects.get(pk = lib_prep_ids[0]).get_protocol_obj()
         parameter_heading = get_protocol_parameters(protocol_obj)
         length_heading = len(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS) + len (parameter_heading)
