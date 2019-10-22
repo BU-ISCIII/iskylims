@@ -42,6 +42,12 @@ def check_if_protocol_exists (protocol, app_name):
         else:
             return False
 
+def check_if_protocol_parameters_exists(protocol):
+    if ProtocolParameters.objects.filter(protocol_id__name__exact = protocol).exists():
+        return True
+    else:
+        return False
+
 def define_table_for_prot_parameters(protocol_id):
     '''
     Description:
@@ -116,6 +122,17 @@ def get_defined_protocols():
         for protocol_obj in protocols_obj:
             defined_protocols.append(protocol_obj.get_name())
     return defined_protocols
+
+def get_protocol_from_prot_types(prot_types):
+    protocols = {}
+
+    for prot_type in prot_types:
+        prot_names = []
+        prots = Protocols.objects.filter(type__protocol_type__exact = prot_type)
+        for prot in prots:
+            prot_names.append(prot.get_name())
+        protocols[prot_type] = prot_names
+    return protocols
 
 def display_protocol_types (app_name):
     '''

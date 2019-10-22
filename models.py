@@ -345,11 +345,14 @@ class Samples (models.Model):
     def get_sample_id(self):
         return '%s' %(self.id)
 
-    def get_sample_type (self):
-        return '%s' %(self.sampleType.get_name())
-
     def get_sample_name (self):
         return '%s' %(self.sampleName)
+
+    def get_sample_state(self):
+        return '%s' %(self.sampleState)
+
+    def get_sample_type (self):
+        return '%s' %(self.sampleType.get_name())
 
     def get_species(self):
         return '%s' %(self.species.get_name())

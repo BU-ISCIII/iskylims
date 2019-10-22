@@ -212,7 +212,7 @@ def analyze_input_molecules (request):
     incomplete_molecules = []
     incomplete_molecules_ids = []
     for row_index in range(len(molecule_json_data)) :
-        import pdb; pdb.set_trace()
+
         molecule_data = {}
         if not Samples.objects.filter(pk = int(samples[row_index])).exists():
             continue
@@ -721,7 +721,7 @@ def get_table_record_molecule (samples):
     '''
     molecule_information = {}
     molecule_information['headings'] = HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION
-    molecule_information['data'] = []
+
     valid_samples = []
     for sample in samples :
         try:
