@@ -2994,11 +2994,6 @@ def configuration_test (request):
         return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results,
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
 
-
-
-
-
-
     elif request.method=='POST' and request.POST['action'] == 'runMiSeq':
         if 'Delete' in request.POST :
             delete_test_run ('MiSeq_Test_0001')
@@ -3407,7 +3402,6 @@ def set_Molecule_values(request):
         register_user = request.user.username
         display_list = get_defined_samples (register_user)
 
-        import pdb; pdb.set_trace()
         return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'display_list': display_list})
     return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{})
 
