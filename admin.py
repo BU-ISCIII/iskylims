@@ -3,7 +3,7 @@ from iSkyLIMS_clinic.models import *
 
 # Register your models here.
 class ClinicSampleRequestAdmin (admin.ModelAdmin):
-    list_display= ('sampleCore', 'clinicSampleState' ,'patient_id', 'doctor_id', 'confirmationCode', 'priority', 'comments')
+    list_display= ('sampleCore', 'clinicSampleState' ,'patient_id', 'doctor_id', 'protocol_id', 'confirmationCode', 'priority', 'comments')
 
 class ClinicSampleStateAdmin (admin.ModelAdmin):
     list_display = ('clinicState',)
@@ -20,15 +20,12 @@ class DoctorAdmin(admin.ModelAdmin):
 class SuspiciousHistoryAdmin(admin.ModelAdmin):
     list_display = ('clinicSample_id', 'patient_id', 'description')
 
-class ResultParametersAdmin(admin.ModelAdmin):
-    list_display = ('sampleType_id', 'parameterName', 'parameterDescription', 'parameterOrder','parameterUsed', 'parameterMaxValue','parameterMinValue')
-
 
 
 admin.site.register(ClinicSampleRequest, ClinicSampleRequestAdmin)
 admin.site.register(ClinicSampleState,ClinicSampleStateAdmin)
 admin.site.register(Doctor,DoctorAdmin)
 admin.site.register(SuspiciousHistory,SuspiciousHistoryAdmin)
-admin.site.register(ResultParameters,ResultParametersAdmin)
+
 admin.site.register(Patient,PatientAdmin)
 admin.site.register(ServiceUnits,ServiceUnitsAdmin)

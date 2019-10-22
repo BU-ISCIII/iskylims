@@ -52,51 +52,39 @@
                                 <ul class="nav navbar-nav navbar-nav-right">
                                     <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/clinic/">Home</a></li>
                                     {% if user.is_authenticated %}
+                                        <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Preliminary Preparation<span class="caret"></span></a>
+                                            <ul class="dropdown-menu">
+                                                <li><a href="/clinic/defineResultProtocol">Define Result Protocol</a></li>
+                                            </ul>
+                                        </li>
+                                    {% endif%}
+                                    {% if user.is_authenticated %}
                                         <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Input Data<span class="caret"></span></a>
                                             <ul class="dropdown-menu">
                                                 <li><a href="/clinic/defineNewSamples">Define new Samples</a></li>
                                                 <li><a href="/clinic/definePatientInformation">Define Patient Information</a></li>
+                                                <li><a href="/clinic/addResultData">Add Result Sample data</a></li>
+                                                <li><a href="/clinic/pendingToUpdate">Pending To Update</a></li>
                                             </ul>
                                         </li>
                                     {% endif%}
-                                        {% if user.is_authenticated %}
-                                            <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Results Registration<span class="caret"></span></a>
-                                                <ul class="dropdown-menu">
-                                                    <li><a href="/clinic/defineSampleFields">Define Sample Fields</a></li>
-                                                    <li><a href="/clinic/defineResultProtocol">Define Result Protocol</a></li>
-                                                </ul>
-                                            </li>
-                                        {% else %}
-                                            <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_clinic">Run Preparation</a></li>
-                                                {% endif%}
-                                                {% if user.is_authenticated %}
+                                    {% if user.is_authenticated %}
                                         <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Search<span class="caret"></span></a>
-                                                            <ul class="dropdown-menu">
-
-                                                                        <li><a href="/clinic/searchPatient">Search Patient </a></li>
-                                                                        <li><a href="/clinic/searchSample">Search Sample</a></li>
-
-
-                                                            </ul>
-                                                </li>
-                                                {% else %}
-                                                    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_clinic">Search</a></li>
-                                                {% endif%}
-                                                {% if user.is_authenticated %}
+                                            <ul class="dropdown-menu">
+                                                <li><a href="/clinic/searchPatient">Search Patient </a></li>
+                                                <li><a href="/clinic/searchSample">Search Sample</a></li>
+                                            </ul>
+                                        </li>
+                                    {% endif%}
+                                    {% if user.is_authenticated %}
                                         <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#"> Statistics<span class="caret"></span></a>
-                                                        <ul class="dropdown-menu">
-                                                            <li><a href="/clinic/StatsPerResearcher/">Projects per Investigator </a></li>
-
-                                                                        <li><a href="/clinic/StatsPerTime/">Period of time</a></li>
-
-                                                            <li><a href="/clinic/StatsExperiment">Experiment Type</a></li>
-                                                            <li><a href="/clinic/StatsLibrary">Library Kit Qualitty</a></li>
-                                                          </ul>
-                                                </li>
-                                                {% else %}
-                                                    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_clinic"> Statistics</a></li>
-                                                {% endif%}
-
+                                            <ul class="dropdown-menu">
+                                                <li><a href="/clinic/StatsPerServices/">Requested Services</a></li>
+                                                <li><a href="/clinic/StatsPerTime/">Period of time</a></li>
+                                                <li><a href="/clinic/StatsPerUnit">Requested Unit</a></li>
+                                            </ul>
+                                        </li>
+                                    {% endif%}
                                     <!--<li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#contact">Contact</a></li>-->
                                 </ul>
 

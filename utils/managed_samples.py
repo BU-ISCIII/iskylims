@@ -2,12 +2,12 @@ from iSkyLIMS_clinic.models import *
 from iSkyLIMS_clinic.clinic_config import *
 from iSkyLIMS_clinic.utils.generic_functions import *
 
+from iSkyLIMS_core.utils.handling_samples import *
+
+
 import json
 
-'''
-Order', 'Confirmation Code', 'Priority', 'Requested Service Date',
-                'History Number','Requested Service by', 'Doctor', 'Suspicious', 'Comments']
-'''
+
 def analyze_and_store_patient_data (user_post, user):
 
     stored_samples = []
@@ -77,11 +77,31 @@ def analyze_and_store_patient_data (user_post, user):
 
     return analyze_data
 
+def check_if_need_update(c_sample_state):
+    c_samples_in_patient = get_clinic_sample_in_state(c_sample_state)
+
+    if c_samples_in_patient :
+        for c_sample in c_samples_in_patient:
+            sample_core_state = c_sample.get_sample_core_state()
+            mapped_sample_state = MAPPING_SAMPLES_CORE_VS_CLINIC[sample_core_state]
+            if mapped_sample_state == 'Patient update':
+                continue
+            # Update the clinic sample with new State
+            c_sample.set_state(mapped_sample_state)
+
+    return
+
+
 def check_if_sample_c_exists(sample_c_id):
     if  ClinicSampleRequest.objects.filter(pk__exact = sample_c_id).exists():
         return True
     else:
         return False
+
+def get_clinic_sample_in_state(state):
+    if ClinicSampleRequest.objects.filter(clinicSampleState__clinicState__exact = state).exists():
+        return ClinicSampleRequest.objects.filter(clinicSampleState__clinicState__exact = state)
+    return
 
 def display_one_sample_info(id):
     sample_info = {}
@@ -147,6 +167,39 @@ def get_patient_obj (history_number):
         return Patient.objects.get(numberOfHistory__exact = history_number)
     else:
         return None
+
+def get_clinic_samples_defined_state (user):
+    '''
+    Description:
+        The function will return a list with samples which are in defined state.
+    Input:
+        user  # pending samples limited to the logged user and the friend list
+    Variables:
+        sample_type_names # list containing all sample types names
+    Functions:
+        get_friend_list # located at core.utils.generic_functions
+    Return:
+        sample_type_names.
+    '''
+    sample_information = []
+    user_friend_list = get_friend_list(user)
+    samples_in_state = {}
+    if ClinicSampleRequest.objects.filter(sampleState__sampleStateName__exact = 'Defined', sampleUser__in = user_friend_list).exists():
+    #if Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined').exists():
+        #samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined')
+        samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined', sampleUser__in = user_friend_list)
+        for sample_obj in samples_obj:
+            sample_information.append(sample_obj.get_info_in_defined_state())
+        samples_in_state['sample_information'] = sample_information
+        samples_in_state['sample_heading'] = HEADING_FOR_DEFINED_SAMPLES_STATE
+        samples_in_state['length'] = len(sample_information)
+        return samples_in_state
+
+    else:
+        samples_in_state['length'] = 0
+        return samples_in_state
+
+
 def get_service_unit_obj(unit_name):
     if ServiceUnits.objects.filter(serviceUnitName__exact = unit_name).exists():
         return ServiceUnits.objects.get(serviceUnitName__exact = unit_name)
@@ -196,6 +249,12 @@ def get_samples_clinic_in_search (data_request):
 
     return clinic_s_list
 
+
+def get_sample_clinic_obj_from_id(c_sample_id):
+    if ClinicSampleRequest.objects.filter(pk__exact = c_sample_id).exists():
+        c_sample_obj = ClinicSampleRequest.objects.get(pk__exact = c_sample_id)
+        return c_sample_obj
+    return None
 def prepare_patient_form (clinic_samples_ids):
 
     patient_info = {}

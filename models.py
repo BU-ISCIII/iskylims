@@ -1,5 +1,5 @@
 from django.db import models
-from iSkyLIMS_core.models import Samples, SampleType
+from iSkyLIMS_core.models import Samples, SampleType, Protocols, ProtocolParameters
 
 from django.contrib.auth.models import User
 import datetime
@@ -69,6 +69,9 @@ class ClinicSampleRequest (models.Model):
     sampleRequestUser = models.ForeignKey(
                 User,
                 on_delete=models.CASCADE, null = True, blank = True)
+    protocol_id = models.ForeignKey(
+                Protocols,
+                on_delete= models.CASCADE, null = True, blank = True)
     orderInEntry = models.CharField(max_length = 8, null = True)
     confirmationCode = models.CharField(max_length = 80, null = True, blank = True)
     priority = models.CharField(max_length = 10, null = True, blank = True)
@@ -93,6 +96,12 @@ class ClinicSampleRequest (models.Model):
         patient_info.append(self.patient_id.get_patient_name())
         patient_info.append(self.patient_id.get_history_number())
         return patient_info
+
+    def get_protocol(self):
+        return '%s' %(self.protocol_id.get_name())
+
+    def get_protocol_obj(self):
+        return self.protocol_id
 
     def get_requested_by_information(self):
         requested_by = []
@@ -124,6 +133,26 @@ class ClinicSampleRequest (models.Model):
         s_core_info.append(self.clinicSampleState.get_state())
         return s_core_info
 
+    def get_sample_info_for_protocol (self):
+        s_core_info = []
+        s_core_info.append(self.sampleCore.get_sample_name())
+        s_core_info.append(self.patient_id.get_history_number())
+        s_core_info.append(self.priority)
+        return s_core_info
+
+    def get_sample_core_state (self):
+        return '%s' %(self.sampleCore.get_sample_state())
+
+    def set_protocol (self, protocol_name):
+        self.protocol_id = Protocols.objects.get(name__exact = protocol_name)
+        self.save()
+        return self
+
+    def set_state(self, new_state):
+        self.clinicSampleState = ClinicSampleState.objects.get(clinicState__exact = new_state)
+        self.save()
+        return self
+
     def update(self, patient_data):
         self.clinicSampleState = ClinicSampleState.objects.get(clinicState__exact = 'Patient update')
         self.orderInEntry = patient_data['orderInEntry']
@@ -136,6 +165,7 @@ class ClinicSampleRequest (models.Model):
         self.serviceUnit_id = patient_data['serviceUnit_id']
         self.save()
         return self
+
 
 class SuspiciousHistoryManager(models.Manager):
     def create_suspicious_history ( self, suspicious_data):
@@ -158,7 +188,7 @@ class SuspiciousHistory (models.Model):
         return '%s' %(self.description)
 
     objects = SuspiciousHistoryManager()
-
+'''
 class SampleResults (models.Model):
     sampleRequest_id = models.ForeignKey(
             ClinicSampleRequest,
@@ -166,6 +196,7 @@ class SampleResults (models.Model):
     sampleType_id =models.ForeignKey(
             SampleType,
             on_delete = models.CASCADE, null = True)
+
 
 
 class ResultParametersManager(models.Manager) :
@@ -205,7 +236,7 @@ class ResultParameters (models.Model):
         return param_info
 
     objects = ResultParametersManager()
-
+'''
 class ResultParameterValueManager (models.Manager):
     def create_result_parameter_value (self, parameter_value):
         new_result_parameter_data = self.create(resultParameter_id = parameter_value['resultParameter_id'],
@@ -214,12 +245,21 @@ class ResultParameterValueManager (models.Manager):
         return new_result_parameter_data
 
 class ResultParameterValue (models.Model):
+    '''
     resultParameter_id = models.ForeignKey(
                     ResultParameters,
                     on_delete= models.CASCADE)
+
     result_id = models.ForeignKey(
                 SampleResults,
                 on_delete= models.CASCADE)
+    '''
+    clinicSample_id = models.ForeignKey(
+            ClinicSampleRequest,
+            on_delete = models.CASCADE, null = True)
+    parameter_id = models.ForeignKey(
+            ProtocolParameters,
+            on_delete= models.CASCADE, null = True)
     parameterValue = models.CharField(max_length=255)
     generated_at = models.DateTimeField(auto_now_add=True)
 

@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 
 #from django.core.urlresolvers import resolve
 
@@ -15,6 +16,43 @@ from iSkyLIMS_core.utils.handling_samples import *
 def index(request):
     #
     return render(request, 'iSkyLIMS_clinic/index.html')
+
+def add_result_data (request):
+
+    if request.method == 'POST' and request.POST['action'] == 'updateClinicSampleProtocol':
+
+        invalid, valid_c_samples_ids = record_result_protocol (request)
+        if ('invalid_c_samples_ids' in invalid  and len(valid_c_samples_ids) == 0 ):
+            c_samples_pending_protocol = get_clinic_sample_in_state('Pending protocol')
+            result_protocol  = get_table_result_to_protocol(c_samples_pending_protocol)
+            return render(request, 'iSkyLIMS_clinic/addResultData.html' ,{'result_protocol':result_protocol})
+
+        show_result_parameters = define_table_for_result_parameters(valid_c_samples_ids)
+        return render(request, 'iSkyLIMS_clinic/addResultData.html' ,{'show_result_parameters':show_result_parameters})
+    elif request.method == 'POST' and request.POST['action'] == 'displayMoleculeParameters':
+        pass
+
+    elif request.method == 'POST' and request.POST['action'] == 'addResultParameters':
+        added_result_protocol_parameters = add_result_protocol_parameters(request)
+        if 'pending' in request.POST :
+            c_samples_pending = request.POST['pending'].split(',')
+            return render(request, 'iSkyLIMS_clinic/addResultData.html' ,{'show_result_parameters':show_result_parameters})
+        else:
+            return render(request, 'iSkyLIMS_clinic/addResultData.html' ,{'added_result_protocol_parameters':added_result_protocol_parameters})
+
+
+
+    else:
+        if 'iSkyLIMS_wetlab' in settings.INSTALLED_APPS :
+            for c_sample_state in ['Sequencing','Patient update']:
+                check_if_need_update(c_sample_state)
+        c_samples_pending_protocol = get_clinic_sample_in_state('Pending protocol')
+        if  c_samples_pending_protocol :
+
+            result_protocol  = get_table_result_to_protocol(c_samples_pending_protocol)
+            return render(request, 'iSkyLIMS_clinic/addResultData.html' ,{'result_protocol':result_protocol})
+        else:
+            return render(request, 'iSkyLIMS_clinic/addResultData.html' ,{'no_samples': True})
 
 @login_required
 def define_new_samples(request):
@@ -74,38 +112,15 @@ def define_result_protocol(request):
             return render(request, 'iSkyLIMS_clinic/defineResultProtocol.html',{'other_protocol_list' :other_protocol_list,'defined_protocol_types':defined_protocol_types,'Error':new_result_protocol})
 
         new_result_protocol_id = create_new_protocol(new_result_protocol, protocol_type, description)
-        import pdb; pdb.set_trace()
-        return render(request, 'iSkyLIMS_clini/defineResultProtocol.html',{'other_protocol_list' :other_protocol_list,
-                            'defined_protocol_types':defined_protocol_types, 'new_defined_protocol': new_result_protocol,
+
+        return render(request, 'iSkyLIMS_clinic/defineResultProtocol.html',{'other_protocol_list' :other_protocol_list,
+                            'defined_protocol_types':defined_protocol_types, 'new_defined_result_protocol': new_result_protocol,
                             'new_protocol_id':new_result_protocol_id})
-
-
-
         return render(request, 'iSkyLIMS_clinic/defineResultProtocol.html',{'recorded_result_parameters':recorded_result_parameters})
     else:
-
-
         return render(request, 'iSkyLIMS_clinic/defineResultProtocol.html',{'other_protocol_list' :other_protocol_list,'defined_protocol_types':defined_protocol_types})
 
-@login_required
-def display_result_protocol (request, result_protocol_id):
-    if not check_if_protocol_exists(result_protocol_id, __package__):
-        return render (request,'iSkyLIMS_clinic/error_page.html',
-            {'content':['The result protocol that you are trying to get ',
-                        'DOES NOT exists .']})
-    result_protocol_data = get_all_protocol_info (result_protocol_id)
-    import pdb; pdb.set_trace()
-    return render(request, 'iSkyLIMS_clinic/displayResultProtocol.html', {'result_protocol_data': result_protocol_data})
 
-def display_sample_info(request,sample_c_id):
-    if check_if_sample_c_exists(sample_c_id):
-        display_sample_info = display_one_sample_info (sample_c_id)
-
-        return render(request, 'iSkyLIMS_clinic/displaySampleInfo.html', {'display_sample_info': display_sample_info })
-    else:
-        return render (request,'iSkyLIMS_clinic/error_page.html',
-            {'content':['The clinic sample that you are trying to get ',
-                        'DOES NOT exists .']})
 
 @login_required
 def define_result_protocol_parameters (request, result_protocol_id):
@@ -120,6 +135,43 @@ def define_result_protocol_parameters (request, result_protocol_id):
                             'Create the protocol name before assigning custom protocol parameters.']})
         result_parameters = define_table_for_prot_parameters(result_protocol_id)
         return render(request, 'iSkyLIMS_clinic/defineResultProtocolParameters.html',{'result_parameters':result_parameters})
+
+@login_required
+def display_result_protocol (request, result_protocol_id):
+    if not check_if_protocol_exists(result_protocol_id, __package__):
+        return render (request,'iSkyLIMS_clinic/error_page.html',
+            {'content':['The result protocol that you are trying to get ',
+                        'DOES NOT exists .']})
+    result_protocol_data = get_all_protocol_info (result_protocol_id)
+    import pdb; pdb.set_trace()
+    return render(request, 'iSkyLIMS_clinic/displayResultProtocol.html', {'result_protocol_data': result_protocol_data})
+
+
+@login_required
+def display_sample_info(request,sample_c_id):
+    if check_if_sample_c_exists(sample_c_id):
+        display_sample_info = display_one_sample_info (sample_c_id)
+
+        return render(request, 'iSkyLIMS_clinic/displaySampleInfo.html', {'display_sample_info': display_sample_info })
+    else:
+        return render (request,'iSkyLIMS_clinic/error_page.html',
+            {'content':['The clinic sample that you are trying to get ',
+                        'DOES NOT exists .']})
+
+
+def pending_to_update(request):
+
+    pending = {}
+    # get the samples in defined state
+    pending['defined'] = get_clinic_samples_defined_state(request.user)
+    pending['patient_update'] = get_clinic_samples_patient_state(request.user)
+    pending['pending_results'] = get_clinic_samples_pending_results()
+
+    pending ['graphic_pending_samples'] = pending_clinic_samples_for_grafic(pending).render()
+
+
+    #import pdb; pdb.set_trace()
+    return render(request, 'iSkyLIMS_wetlab/pendingToUpdate.html', {'pending':pending})
 
 @login_required
 def search_sample(request):

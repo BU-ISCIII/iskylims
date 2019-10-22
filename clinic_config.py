@@ -28,4 +28,8 @@ HEADING_SEARCH_LIST_SAMPLES_CLINIC = ['Sample Clinic name', 'History Number ' ,'
 
 ################ RESULT PARAMETER SETTINGS ##############################
 ### Headings used when defining the custom result parameters
-#HEADING_FOR_DEFINING_RESULT_PARAMETERS = ['Parameter name', 'Order', 'Used', 'Min Value', 'Max Value', 'Description']
+HEADING_FOR_RESULT_TO_PROTOCOL = ['Clinic Sample', 'History Number', 'Priority', 'Protocol Type', 'Protocol to be used']
+
+################ MAPPING SAMPLE STATES ON CORE WITH CLINIC ######################
+MAPPING_SAMPLES_CORE_VS_CLINIC = {'Defined': 'Patient update', 'Extract molecule': 'Sequencing',  'Library preparation': 'Sequencing', 'Pool Preparation' : 'Sequencing',
+                                    'Sequencing': 'Sequencing', 'Completed':'Pending protocol', 'Error':'Invalid'}
