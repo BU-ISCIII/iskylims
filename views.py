@@ -1,4 +1,5 @@
 #from django.shortcuts import render
+import json
 
 from django.core.mail import send_mail, BadHeaderError
 from django.http import HttpResponse, HttpResponseRedirect
@@ -12,9 +13,9 @@ from .utils.generic_functions import *
 # Create your views here.
 
 def index(request):
-    
+
     apps_in_iskylims = get_installed_apps ()
-    
+
     #import pdb; pdb.set_trace()
     return render(request, 'iSkyLIMS_core/index.html',{'apps_in_iskylims': apps_in_iskylims})
 
@@ -27,9 +28,9 @@ def add_new_contacts (request):
     Input:
         request     # contains the request dictionary sent by django
     Variables:
-        
+
     Return:
-        
+
     '''
 
     '''
@@ -40,11 +41,11 @@ def add_new_contacts (request):
     '''
     apps_installed = {}
     apps_installed['apps_names'] = get_installed_apps ()
-    
+
     if request.method == 'POST' and request.POST['action'] == 'addNewContacts':
         import pdb; pdb.set_trace()
         pass
-        
+
     return render(request, "iSkyLIMS_core/addNewContacts.html",{'apps_installed':apps_installed})
 
 def contact(request):
@@ -69,6 +70,3 @@ def contact(request):
 def thanks(request):
     return render(request, 'iSkyLIMS_core/thanks.html')
     #return HttpResponse('Thank you for your message.')
-
-def record_samples (request):
-    return render(request, 'iSkyLIMS_core/thanks.html')

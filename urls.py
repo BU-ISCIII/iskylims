@@ -12,9 +12,8 @@ urlpatterns = [
     path('contact',views.contact, name='contact'),
     path('thanks', views.thanks, name='thanks'),
     path('about-us', LoginView.as_view(template_name='iSkyLIMS_home/about_us.html'), name="about-us"),
-    path('recordSamples', views.record_samples, name = 'record_samples'),
+
 ]
 
 if settings.DEBUG:
      urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
