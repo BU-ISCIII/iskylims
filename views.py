@@ -29,13 +29,20 @@ def add_result_data (request):
 
         show_result_parameters = define_table_for_result_parameters(valid_c_samples_ids)
         return render(request, 'iSkyLIMS_clinic/addResultData.html' ,{'show_result_parameters':show_result_parameters})
-    elif request.method == 'POST' and request.POST['action'] == 'displayMoleculeParameters':
-        pass
+    elif request.method == 'POST' and request.POST['action'] == 'showTableResultParameters':
+        if 'samples_in_list' in request.POST:
+            valid_c_samples_ids = request.POST.getlist('c_samples')
+        else:
+            valid_c_samples_ids = request.POST['c_samples'].split(',')
+
+        show_result_parameters = define_table_for_result_parameters(valid_c_samples_ids)
+        return render(request, 'iSkyLIMS_clinic/addResultData.html' ,{'show_result_parameters':show_result_parameters})
 
     elif request.method == 'POST' and request.POST['action'] == 'addResultParameters':
         added_result_protocol_parameters = add_result_protocol_parameters(request)
         if 'pending' in request.POST :
             c_samples_pending = request.POST['pending'].split(',')
+            show_result_parameters = define_table_for_result_parameters(c_samples_pending)
             return render(request, 'iSkyLIMS_clinic/addResultData.html' ,{'show_result_parameters':show_result_parameters})
         else:
             return render(request, 'iSkyLIMS_clinic/addResultData.html' ,{'added_result_protocol_parameters':added_result_protocol_parameters})
@@ -97,7 +104,7 @@ def define_new_samples(request):
 def define_patient_information(request):
     if request.method == 'POST' and request.POST['action'] == 'continueWithPatient':
         if 'samples_in_list' in request.POST:
-            patient_information = request.POST['c_samples']
+            patient_information = request.POST.getlist('c_samples')
         else:
             patient_information = prepare_patient_form(request.POST['clinic_samples'].split(','))
         return render(request, 'iSkyLIMS_clinic/definePatientInformation.html',{'patient_information':patient_information})
@@ -192,7 +199,7 @@ def pending_to_update(request):
     pending ['graphic_pending_samples'] = pending_clinic_samples_for_grafic(pending).render()
 
 
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
     return render(request, 'iSkyLIMS_clinic/pendingToUpdate.html', {'pending':pending})
 
 @login_required

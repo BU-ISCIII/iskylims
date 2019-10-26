@@ -190,9 +190,9 @@
                         <br>
                         <div class="panel-body">
                             <p>Select the samples to add the result parameters</p>
-                        <form method="post" action="/clinic/addResultData" enctype="multipart/form-data" name="addResultParameters"  id="addResultParameters" class="form-horizontal well">
+                        <form method="post" action="/clinic/addResultData" enctype="multipart/form-data" name="showTableResultParameters"  id="showTableResultParameters" class="form-horizontal well">
                         {% csrf_token %}
-                            <input type="hidden" name="action" value="addResultParameters"/>
+                            <input type="hidden" name="action" value="showTableResultParameters"/>
                             <input type="hidden" name="samples_in_list" value="True"/>
                             <table class="table table-hover">
                                 <thead>

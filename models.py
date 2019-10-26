@@ -263,8 +263,8 @@ class ResultParameters (models.Model):
 '''
 class ResultParameterValueManager (models.Manager):
     def create_result_parameter_value (self, parameter_value):
-        new_result_parameter_data = self.create(resultParameter_id = parameter_value['resultParameter_id'],
-                result_id = parameter_value['result_id'],
+        new_result_parameter_data = self.create(parameter_id = parameter_value['parameter_id'],
+                clinicSample_id = parameter_value['clinicSample_id'],
                 parameterValue = parameter_value['parameterValue'])
         return new_result_parameter_data
 
