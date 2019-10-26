@@ -85,7 +85,10 @@ def define_new_samples(request):
 @login_required
 def define_patient_information(request):
     if request.method == 'POST' and request.POST['action'] == 'continueWithPatient':
-        patient_information = prepare_patient_form(request.POST['clinic_samples'].split(','))
+        if 'samples_in_list' in request.POST:
+            patient_information = request.POST['c_samples']
+        else:
+            patient_information = prepare_patient_form(request.POST['clinic_samples'].split(','))
         return render(request, 'iSkyLIMS_clinic/definePatientInformation.html',{'patient_information':patient_information})
     elif request.method == 'POST' and request.POST['action'] == 'storePatientInfo':
         updated_information = analyze_and_store_patient_data (request.POST, request.user)
@@ -160,18 +163,26 @@ def display_sample_info(request,sample_c_id):
 
 
 def pending_to_update(request):
-
+    
+    if 'iSkyLIMS_wetlab' in settings.INSTALLED_APPS :
+        for c_sample_state in ['Sequencing','Patient update']:
+            check_if_need_update(c_sample_state)
     pending = {}
+
     # get the samples in defined state
     pending['defined'] = get_clinic_samples_defined_state(request.user)
-    pending['patient_update'] = get_clinic_samples_patient_state(request.user)
-    pending['pending_results'] = get_clinic_samples_pending_results()
+
+    pending['patient_update'] = get_clinic_samples_patient_sequencing_state(request.user, 'Patient update')
+
+    pending['sequencing'] = get_clinic_samples_patient_sequencing_state(request.user, 'Sequencing')
+    pending['pending_protocol'] = get_clinic_samples_pending_results(request.user, 'Pending protocol')
+    pending['pending_results'] = get_clinic_samples_pending_results(request.user, 'Pending results')
 
     pending ['graphic_pending_samples'] = pending_clinic_samples_for_grafic(pending).render()
 
 
-    #import pdb; pdb.set_trace()
-    return render(request, 'iSkyLIMS_wetlab/pendingToUpdate.html', {'pending':pending})
+    import pdb; pdb.set_trace()
+    return render(request, 'iSkyLIMS_clinic/pendingToUpdate.html', {'pending':pending})
 
 @login_required
 def search_sample(request):

@@ -91,7 +91,10 @@ def get_table_result_to_protocol(c_samples_pending_protocol):
 
 def record_result_protocol(request):
     json_data = json.loads(request.POST['table_data'])
-    c_samples = request.POST['c_samples'].split(',')
+    if 'samples_in_list' in request.POST:
+        c_samples = request.POST['c_samples']
+    else:
+        c_samples = request.POST['c_samples'].split(',')
     #invalid_c_samples = []
     invalid_c_samples_ids = []
     invalid = {}

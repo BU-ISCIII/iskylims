@@ -10,7 +10,13 @@ HEADING_FOR_STORED_PATIENT_DATA = ['Sample', 'History Number', 'Requested Servic
 HEADING_FOR_DISPLAY_PATIENT_INFORMATION = ['Patient Name', 'History Number']
 HEADING_FOR_DISPLAY_REQUESTED_BY_INFORMATION = ['Requested Service by', 'Doctor Name']
 
-HEADING_FOR_DISPLAY_SAMPLE_CORE_INFORMATION =['Order', 'Confirmation Code', 'Priority','Laboratory', 'Type of Sample', 'Species', 'Date for entry in Lab']
+HEADING_FOR_DISPLAY_SAMPLE_CORE_INFORMATION = ['Order', 'Confirmation Code', 'Priority','Laboratory', 'Type of Sample', 'Species', 'Date for entry in Lab']
+
+HEADING_FOR_DISPLAY_SAMPLE_DEFINED_STATE = ['Sample Name','Laboratory', 'Type of Sample', 'Species', 'Date for entry in Lab']
+
+HEADING_FOR_DISPLAY_SAMPLE_PATIENT_SEQUENCING_STATE = ['Sample Name','Order', 'Confirmation Code', 'Priority', 'History Number', 'Doctor Name' , 'Service Requested by' ]
+
+HEADING_FOR_DISPLAY_SAMPLE_PENDING_RESULT_STATE = ['Sample Name','Order', 'Confirmation Code', 'Priority', 'History Number', 'Doctor Name' , 'Service Requested by', 'To be included' ]
 
 HEADING_FOR_NOT_MATCH = ['Sample', 'Order', 'Confirmation' , 'Priority' ,'Requested Service Date', 'Wrong History Number']
 

@@ -13,12 +13,12 @@
             <div class="col-sm-7" >
                 <div class="panel panel-default">
                     {% if pending.defined.sample_heading %}
-                    <div class="panel-heading"><h3>The following Samples can be updated with the Molecule information</h3></div>
+                        <div class="panel-heading"><h3>Samples need to be updated with Patient information</h3></div>
                         <div class="panel-body">
 
-                            <form method="post" action="/wetlab/setMoleculeValues" enctype="multipart/form-data" name="continueWithDNA"  id="continueWithDNA" class="form-horizontal well">
+                            <form method="post" action="/clinic/define_patient_information" enctype="multipart/form-data" name="continueWithPatient"  id="continueWithPatient" class="form-horizontal well">
                             {% csrf_token %}
-                                <input type="hidden" name="action" value="continueWithMolecule"/>
+                                <input type="hidden" name="action" value="continueWithPatient"/>
                                 <input type="hidden" name="samples_in_list" value="True"/>
                                 <table class="table table-hover">
                                     <thead>
@@ -26,45 +26,48 @@
                                             {% for value in pending.defined.sample_heading %}
                                                 <th> {{ value }}</th>
                                             {% endfor %}
+                                            <th>To be included</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for date, code,  sampletype,  s_id in pending.defined.sample_information  %}
+                                        {% for s_name,  lab, s_type, species, date , s_id in pending.defined.sample_information  %}
                                             <tr>
+                                                    <td>{{s_name}}</td>
+                                                    <td>{{lab}}</td>
+                                                    <td>{{s_type}}</td>
+                                                    <td>{{species}}</td>
                                                     <td>{{date}}</td>
-                                                    <td>{{code}}</td>
-                                                    <td>{{sampletype}}</td>
-                                                    <td><input type="checkbox" name="samples" value="{{s_id}}"></td>
+                                                    <td><input type="checkbox" name="c_samples" value="{{s_id}}"></td>
                                             </tr>
                                         {% endfor %}
 
                                     </tbody>
                                 </table>
                                 <br><br>
-                                <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                                <input type="button" value="Return Home" onclick="location.href ='/clinic' ;"/>
                                 <input class="btn pull-right btn-primary" type="submit" value="Submit">
-                             </form>
-                            {% else %}
-                            <div class="panel-heading"><h3>Samples to be updated with the Molecule information</h3></div>
-                                <div class="panel-body">
-                                <p>There is not new samples that requieres to add Molecule Information data </p>
-                            {% endif %}
+                            </form>
+                    {% else %}
+                        <div class="panel-heading"><h3>Samples waiting for adding Patient information</h3></div>
+                        <div class="panel-body">
+                            <p>There are not samples waiting for adding Patient information </p>
+                    {% endif %}
                         </div>  <!--  end of panel body  -->
 
                 </div> <!--// end panel -->
             </div> <!--// end col-sm-7  -->
-        <div class="col-sm-5" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Sample state graphic</h3></div>
-                <div class="panel-body">
-                    {% if pending.graphic_pending_samples %}
+            <div class="col-sm-5" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Sample state graphic</h3></div>
+                    <div class="panel-body">
+                        {% if pending.graphic_pending_samples %}
 
-                        <!-- Pie chart for number of pending Services chart will start here-->
-                        <div id="chart-1"> </div>
-                        <!-- dumping JavaScript code here -->
-                        {{ pending.graphic_pending_samples |safe }}
+                            <!-- Pie chart for number of pending Services chart will start here-->
+                            <div id="chart-1"> </div>
+                            <!-- dumping JavaScript code here -->
+                            {{ pending.graphic_pending_samples |safe }}
 
-                    {% endif %}
+                        {% endif %}
 
 
 
@@ -74,195 +77,151 @@
             </div> <!--// end panel -->
         </div> <!--// end col-sm-5  -->
     </div> <!--// end row -->
-{% if pending.extract_molecule.molecule_heading %}
+{% if pending.patient_update.sample_heading %}
     <div class="row row-space-4 margin-b-4">
         <div class="col-sm-12" >
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>The following Samples can be updated with the Molecule quality parameter</h3></div>
+                <div class="panel-heading"><h3>Samples waiting for samples analysis start</h3></div>
                     <div class="panel-body">
-                        {% if pending.extract_molecule.molecule_heading %}
-                        <form method="post" action="/wetlab/setMoleculeValues" enctype="multipart/form-data" name="displayMoleculeParameters"  id="displayMoleculeParameters" class="form-horizontal well">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    {% for value in pending.patient_update.sample_heading %}
+                                        <th> {{ value }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for values in pending.patient_update.sample_information  %}
+                                    <tr>
+                                        {% for value in values %}
+                                            <td>{{value}}</td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <br><br>
+                    </div>  <!--  end of panel body  -->
+
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  -->
+    </div> <!--// end row -->
+{% endif %}
+{% if pending.sequencing.sample_heading  %}
+<div class="row row-space-4 margin-b-4">
+    <div class="col-sm-12" >
+        <div class="panel panel-default">
+            <div class="panel-heading"><h3>Samples waiting for sequencing analysis to be completed</h3></div>
+                <div class="panel-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                {% for value in pending.sequencing.sample_heading %}
+                                    <th> {{ value }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for values in pending.sequencing.sample_information  %}
+                                <tr>
+                                    {% for value in values %}
+                                        <td>{{value}}</td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <br><br>
+                </div>  <!--  end of panel body  -->
+
+        </div> <!--// end panel -->
+    </div> <!--// end col-sm-7  -->
+</div> <!--// end row -->
+{% endif %}
+
+{% if pending.pending_protocol.sample_heading %}
+<div class="row row-space-4 margin-b-4">
+    <div class="col-sm-12" >
+        <div class="panel panel-default">
+            <div class="panel-heading"><h3>The following Samples require to define the used protocol</h3></div>
+                        <br>
+                        <div class="panel-body">
+                            <p>Select the samples to add the used protocol</p>
+                        <form method="post" action="/clinic/addResultData" enctype="multipart/form-data" name="updateClinicSampleProtocol"  id="updateClinicSampleProtocol" class="form-horizontal well">
                         {% csrf_token %}
-                            <input type="hidden" name="action" value="displayMoleculeParameters"/>
+                            <input type="hidden" name="action" value="updateClinicSampleProtocol"/>
                             <input type="hidden" name="samples_in_list" value="True"/>
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        {% for value in pending.extract_molecule.molecule_heading %}
+                                        {% for value in pending.pending_protocol.sample_heading %}
                                             <th> {{ value }}</th>
                                         {% endfor %}
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for date, s_type, molecule_id, extr_date, protocol, m_id in pending.extract_molecule.molecule_information  %}
+                                    {% for s_name ,order, code, prio, history, doctor, unit, s_id in pending.pending_protocol.sample_information  %}
                                         <tr>
-                                                <td>{{date}}</td>
-                                                <td>{{s_type}}</td>
-                                                <td>{{molecule_id}}</td>
-                                                <td>{{extr_date}}</td>
-                                                <td>{{protocol}}</td>
-                                                <td><input type="checkbox" name="molecules" value="{{m_id}}"></td>
-
+                                            <td>{{s_name}}</td>
+                                            <td>{{order}}</td>
+                                            <td>{{code}}</td>
+                                            <td>{{prio}}</td>
+                                            <td>{{history}}</td>
+                                            <td>{{doctor}}</td>
+                                            <td>{{unit}}</td>
+                                            <td><input type="checkbox" name="c_samples" value="{{s_id}}"></td>
                                         </tr>
                                     {% endfor %}
 
                                 </tbody>
                             </table>
                             <br><br>
-                            <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                            <input type="button" value="Return Home" onclick="location.href ='/clinic' ;"/>
                             <input class="btn pull-right btn-primary" type="submit" value="Submit">
                          </form>
-                        {% else %}
-                            <p>There is not new samples </p>
-                        {% endif %}
-                    </div>  <!--  end of panel body  -->
 
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-7  -->
-    </div> <!--// end row -->
 {% endif %}
-{% if pending.create_library_preparation %}
-    <div class="row row-space-4 margin-b-4">
-        <div class="col-sm-12" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>The following Samples are ready for defining the library preparation data</h3></div>
-                    <div class="panel-body">
-                        <h4>Sample Names:</h4>
-                        <hr>
-                        <p class = text-large>
-                            {% for value in  pending.create_library_preparation %} {{value}} , {% endfor %}
-                            </p>
-                        <br><br>
-                        <p>Import the Sample Sheet file, generated by Illumina Experiment Manager (IEM), with your samples </p>
-                        <br>
-                        <form method="post" action="/wetlab/setLibraryPreparation" enctype="multipart/form-data" name="importsamplesheet"  id="importsamplesheet" class="form-horizontal well">
-                            {% csrf_token %}
-                            <div class="form-group required">
-                              <input type="hidden" name="action" value="importsamplesheet"/>
-                              <label class="col-sm-6 control-label" for="filesample" >Upload sample sheet from Illumina Experiment Manager (IEM) </label>
-                              <div class="col-sm-6"><input class="form-control" type="file" required = "required" accept ="text/csv" name="importsamplesheet"size="80"><br></div>
-
-                            <label class="col-sm-6 control-label" for="protocol" >Select the protocol used on the samples included in Sample Sheet file </label>
-                            <div class="col-sm-4">
-                                <select class="form-control" name="lib_protocols" id="lib_protocols">
-                        				<option value="">Choose a value</option>
-                                     {% for value in pending.lib_prep_protocols %}
-                                         <option value="{{value}}">{{value}}</option>
-                                     {% endfor %}
-
-                                </select>
-                                <br><br>
-                            </div>  <!-- end select input -->
-                            <br>
-                            <label class="col-sm-6 control-label" for="singlePairedEnd" >Select the protocol used on the samples included in Sample Sheet file </label>
-                            <div class="col-sm-4">
-                                <select class="form-control" name="singlePairedEnd" id="singlePairedEnd">
-                                    <option value="">Choose a value</option>
-                                    <option value="Single">Single Read</option>
-                                    <option value="Paired End">Paired End</option>
-                               </select>
-                               <br><br>
-                            </div>  <!-- end select input -->
-
-                            <label class="col-sm-6 control-label" for="readlength" >Length of the reads </label>
-                            <div class="col-sm-4">
-                                <input type="text" name="readlength" required = "required" value="">
-                            </div>
-
-                            <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
-                            </div> <!-- End of form-group required -->
-                        </form>
-                    </div>  <!--  end of panel body  -->
-                </div> <!--// end panel -->
-            </div> <!--// end col-sm-12  -->
-        </div> <!--// end row -->
-{% endif %}
-
-{% if pending.add_lib_prep_parameters.lib_prep_heading %}
+{% if pending.pending_results.sample_heading %}
 <div class="row row-space-4 margin-b-4">
     <div class="col-sm-12" >
         <div class="panel panel-default">
-            <div class="panel-heading"><h3>The following Library Prepartion Samples are ready for adding Quality Parameters</h3></div>
+            <div class="panel-heading"><h3>The following Samples require to add the result parameters</h3></div>
                         <br>
                         <div class="panel-body">
-                            <p>Select the samples to add the Library Preparation Information </p>
-                        <form method="post" action="/wetlab/setLibraryPreparation" enctype="multipart/form-data" name="addLibPrepParam"  id="addLibPrepParam" class="form-horizontal well">
+                            <p>Select the samples to add the result parameters</p>
+                        <form method="post" action="/clinic/addResultData" enctype="multipart/form-data" name="addResultParameters"  id="addResultParameters" class="form-horizontal well">
                         {% csrf_token %}
-                            <input type="hidden" name="action" value="addLibPrepParam"/>
-                            <input type="hidden" name="lib_prep_in_list" value="True"/>
+                            <input type="hidden" name="action" value="addResultParameters"/>
+                            <input type="hidden" name="samples_in_list" value="True"/>
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        {% for value in pending.add_lib_prep_parameters.lib_prep_heading %}
+                                        {% for value in pending.pending_results.sample_heading %}
                                             <th> {{ value }}</th>
                                         {% endfor %}
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for lib_prepID, s_name ,lib_protocol,  lib_prep_id in pending.add_lib_prep_parameters.lib_prep_info  %}
+                                    {% for s_name ,order, code, prio, history, doctor, unit, s_id in pending.pending_results.sample_information  %}
                                         <tr>
-                                            <td>{{lib_prepID}}</td>
                                             <td>{{s_name}}</td>
-                                            <td>{{lib_protocol}}</td>
-
-                                            <td><input type="checkbox" name="lib_prep_id" value="{{lib_prep_id}}"></td>
-
+                                            <td>{{order}}</td>
+                                            <td>{{code}}</td>
+                                            <td>{{prio}}</td>
+                                            <td>{{history}}</td>
+                                            <td>{{doctor}}</td>
+                                            <td>{{unit}}</td>
+                                            <td><input type="checkbox" name="c_samples" value="{{s_id}}"></td>
                                         </tr>
                                     {% endfor %}
 
                                 </tbody>
                             </table>
                             <br><br>
-                            <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                            <input type="button" value="Return Home" onclick="location.href ='/clinic' ;"/>
                             <input class="btn pull-right btn-primary" type="submit" value="Submit">
                          </form>
-
-{% endif %}
-{% if ll %}
-
-                         <br>
-                         {% if value in pending.add_lib_prep_parameters.heading %}
-                         <div class="panel-body">
-                             <p>Select the samples to add Library Preparation Quality parameters </p>
-                         <form method="post" action="/wetlab/setLibraryPreparation" enctype="multipart/form-data" name="addProtocolParamters"  id="addProtocolParamters" class="form-horizontal well">
-                         {% csrf_token %}
-                             <input type="hidden" name="action" value="addProtocolParamters"/>
-                             <input type="hidden" name="lib_prep_in_list" value="True"/>
-                             <table class="table table-hover">
-                                 <thead>
-                                     <tr>
-                                         {% for value in pending.add_lib_prep_parameters.heading %}
-                                             <th> {{ value }}</th>
-                                         {% endfor %}
-                                     </tr>
-                                 </thead>
-                                 <tbody>
-                                     {% for molecule_id, protocol, s_id in pending.add_lib_prep_parameters.sample_info  %}
-                                         <tr>
-                                             <td>{{molecule_id}}</td>
-                                             <td>{{protocol}}</td>
-                                             <td><input type="checkbox" name="lib_prep_id" value="{{s_id}}"></td>
-
-                                         </tr>
-                                     {% endfor %}
-
-                                 </tbody>
-                             </table>
-                             <br><br>
-                             <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                             <input class="btn pull-right btn-primary" type="submit" value="Submit">
-                          </form>
-
-
-
-                        {% else %}
-                            <p>There is not new samples </p>
-                        {% endif %}
-                    </div>  <!--  end of panel body  -->
-
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-7  -->
-    </div> <!--// end row -->
 
 {% endif %}
 {% endblock %}

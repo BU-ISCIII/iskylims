@@ -74,7 +74,9 @@ class ClinicSampleRequest (models.Model):
                 on_delete= models.CASCADE, null = True, blank = True)
     orderInEntry = models.CharField(max_length = 8, null = True)
     confirmationCode = models.CharField(max_length = 80, null = True, blank = True)
-    priority = models.CharField(max_length = 10, null = True, blank = True)
+    priority = models.IntegerField(null = True, blank =True)
+
+    #priority = models.CharField(max_length = 10, null = True, blank = True)
     comments = models.CharField(max_length = 255, null = True, blank = True)
     serviceDate = models.DateTimeField(auto_now_add=False, null = True, blank = True)
     generated_at = models.DateTimeField(auto_now_add=True)
@@ -121,6 +123,28 @@ class ClinicSampleRequest (models.Model):
         s_core_info.append(self.sampleCore.get_extraction_date())
 
         return s_core_info
+
+    def get_info_for_defined_state(self):
+        s_core_info = []
+        s_core_info.append(self.sampleCore.get_sample_name())
+        s_core_info.append(self.sampleCore.get_laboratory())
+        s_core_info.append(self.sampleCore.get_sample_type())
+        s_core_info.append(self.sampleCore.get_species())
+        s_core_info.append(self.sampleCore.get_extraction_date())
+        s_core_info.append(self.pk)
+        return s_core_info
+
+    def get_info_for_patient_sequencing_state(self):
+        s_core_info = []
+        s_core_info.append(self.sampleCore.get_sample_name())
+        s_core_info.append(self.orderInEntry)
+        s_core_info.append(self.confirmationCode)
+        s_core_info.append(self.priority)
+        s_core_info.append(self.patient_id.get_history_number())
+        s_core_info.append(self.doctor_id.get_name())
+        s_core_info.append(self.serviceUnit_id.get_name())
+        return s_core_info
+
 
     def get_sample_info_for_list (self):
         s_core_info = []

@@ -3,7 +3,7 @@ from iSkyLIMS_clinic.models import *
 
 # Register your models here.
 class ClinicSampleRequestAdmin (admin.ModelAdmin):
-    list_display= ('sampleCore', 'clinicSampleState' ,'patient_id', 'doctor_id', 'protocol_id', 'confirmationCode', 'priority', 'comments')
+    list_display= ('sampleCore', 'clinicSampleState', 'sampleRequestUser','patient_id', 'doctor_id', 'protocol_id', 'confirmationCode', 'priority', 'comments')
 
 class ClinicSampleStateAdmin (admin.ModelAdmin):
     list_display = ('clinicState',)

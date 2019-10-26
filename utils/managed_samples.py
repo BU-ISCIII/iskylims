@@ -167,6 +167,25 @@ def get_patient_obj (history_number):
         return Patient.objects.get(numberOfHistory__exact = history_number)
     else:
         return None
+def get_clinic_samples_in_state(user, state):
+    '''
+    Description:
+        The function will return an object list with samples which are in teh variable state.
+    Input:
+        user  # pending samples limited to the logged user and the friend list
+        state #
+    Functions:
+        get_friend_list # located at core.utils.generic_functions
+    Return:
+        samples or False
+    '''
+    user_friend_list = get_friend_list(user)
+    if ClinicSampleRequest.objects.filter(clinicSampleState__clinicState__exact = state, sampleRequestUser__in = user_friend_list).exists():
+        samples = ClinicSampleRequest.objects.filter(clinicSampleState__clinicState__exact = state, sampleRequestUser__in = user_friend_list).order_by('priority')
+        return samples
+    else:
+        return False
+
 
 def get_clinic_samples_defined_state (user):
     '''
@@ -179,25 +198,76 @@ def get_clinic_samples_defined_state (user):
     Functions:
         get_friend_list # located at core.utils.generic_functions
     Return:
-        sample_type_names.
+        samples_in_state.
     '''
     sample_information = []
-    user_friend_list = get_friend_list(user)
     samples_in_state = {}
-    if ClinicSampleRequest.objects.filter(sampleState__sampleStateName__exact = 'Defined', sampleUser__in = user_friend_list).exists():
-    #if Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined').exists():
-        #samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined')
-        samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined', sampleUser__in = user_friend_list)
+    samples_obj = get_clinic_samples_in_state(user, 'Defined')
+    if samples_obj:
         for sample_obj in samples_obj:
-            sample_information.append(sample_obj.get_info_in_defined_state())
+            sample_information.append(sample_obj.get_info_for_defined_state())
         samples_in_state['sample_information'] = sample_information
-        samples_in_state['sample_heading'] = HEADING_FOR_DEFINED_SAMPLES_STATE
+        samples_in_state['sample_heading'] = HEADING_FOR_DISPLAY_SAMPLE_DEFINED_STATE
         samples_in_state['length'] = len(sample_information)
         return samples_in_state
-
     else:
         samples_in_state['length'] = 0
         return samples_in_state
+
+def get_clinic_samples_patient_sequencing_state(user, state):
+    '''
+    Description:
+        The function will return a list with samples which are in Patient upadate state.
+    Input:
+        user  # pending samples limited to the logged user and the friend list
+    Variables:
+        sample_type_names # list containing all sample types names
+    Functions:
+        get_clinic_samples_in_state # located at this file
+    Return:
+        samples_in_state.
+    '''
+    sample_information = []
+    samples_in_state = {}
+    samples_obj = get_clinic_samples_in_state(user, state)
+    if samples_obj:
+        for sample_obj in samples_obj:
+            sample_information.append(sample_obj.get_info_for_patient_sequencing_state())
+        samples_in_state['sample_information'] = sample_information
+        samples_in_state['sample_heading'] = HEADING_FOR_DISPLAY_SAMPLE_PATIENT_SEQUENCING_STATE
+        samples_in_state['length'] = len(sample_information)
+        return samples_in_state
+    else:
+        samples_in_state['length'] = 0
+        return samples_in_state
+
+def get_clinic_samples_pending_results(user, state):
+    '''
+    Description:
+        The function will return a list with samples which are in pending protocol state.
+    Input:
+        user  # pending samples limited to the logged user and the friend list
+    Functions:
+        get_friend_list # located at core.utils.generic_functions
+    Return:
+        samples_in_state.
+    '''
+    sample_information = []
+    samples_in_state = {}
+    samples_obj = get_clinic_samples_in_state(user, state)
+    if samples_obj:
+        for sample_obj in samples_obj:
+            c_sample = sample_obj.get_info_for_patient_sequencing_state()
+            c_sample.append(sample_obj.get_id())
+            sample_information.append(c_sample)
+        samples_in_state['sample_information'] = sample_information
+        samples_in_state['sample_heading'] = HEADING_FOR_DISPLAY_SAMPLE_PENDING_RESULT_STATE
+        samples_in_state['length'] = len(sample_information)
+        return samples_in_state
+    else:
+        samples_in_state['length'] = 0
+        return samples_in_state
+
 
 
 def get_service_unit_obj(unit_name):
