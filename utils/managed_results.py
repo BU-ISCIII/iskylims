@@ -8,7 +8,7 @@ import json
 def add_result_protocol_parameters (request):
     json_data = json.loads(request.POST['parameters_data'])
     c_samples = request.POST['c_samples'].split(',')
-
+    import pdb; pdb.set_trace()
     return
 
 def define_table_for_result_parameters(c_sample_ids):
@@ -49,7 +49,7 @@ def define_table_for_result_parameters(c_sample_ids):
             result_parameters['data'].append(data)
 
         else:
-            pending_c_samples.append(new_molecule.get_id())
+            pending_c_samples.append(c_sample_obj.get_id())
 
     if len(pending_c_samples) > 0:
         result_parameters['pending_id'] = ','.join(pending_c_samples)

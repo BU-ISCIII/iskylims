@@ -16,93 +16,180 @@
  </style>
 
  {% if result_protocol %}
-     <div class="row row-space-2 margin-b-4">
-         <div class="col-sm-12">
-             <div class="panel panel-default">
-                 <div class="panel-heading"><h3>Assign Protocol to following Clinic Samples.</h3></div>
-                 <div class="panel-body">
-                     <br>
-                     <form method="post" enctype="multipart/form-data" name="updateClinicSampleProtocol"  id="updateClinicSampleProtocol" class="form-horizontal well">
-                         {% csrf_token %}
-                         <input type="hidden" name="action" value="updateClinicSampleProtocol"/>
-                         <input type="hidden" name= "c_samples" value="{{result_protocol.clinic_samples}}"/>
+    {%if result_protocol.pending_protocol%}
+         <div class="row row-space-2 margin-b-4">
+             <div class="col-sm-12">
+                 <div class="panel panel-default">
 
-                         <div id="spreadsheet"></div>
-                         <br><br><br><br>
+                     <div class="panel-heading"><h3>Assign Protocol to following Clinic Samples.</h3></div>
+                     <div class="panel-body">
+                         <br>
+                         <form method="post" enctype="multipart/form-data" name="updateClinicSampleProtocol"  id="updateClinicSampleProtocol" class="form-horizontal well">
+                             {% csrf_token %}
+                             <input type="hidden" name="action" value="updateClinicSampleProtocol"/>
+                             <input type="hidden" name= "c_samples" value="{{result_protocol.pending_protocol.clinic_samples}}"/>
 
-                         <script>
-                             var data = [{% for values in result_protocol.data %}
-                                 [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
-                             ];
+                             <div id="spreadsheet"></div>
+                             <br><br><br><br>
 
-                             dropdownFilter = function(instance, cell, c, r, source) {
-                                 var value = instance.jexcel.getValueFromCoords(c - 1, r);
-                                 {% for item, values in result_protocol.protocol_filter_selection %}
-                                     if (value == '{{item}}') {
-                                     return [{% for val in values %}'{{val}}',{% endfor %}];
-                                 }
-                                 {% endfor %}
+                             <script>
+                                 var data = [{% for values in result_protocol.pending_protocol.data %}
+                                     [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                                 ];
 
-                                 else {
-                                     return source;
-                                 }
-                             }
+                                 dropdownFilter = function(instance, cell, c, r, source) {
+                                     var value = instance.jexcel.getValueFromCoords(c - 1, r);
+                                     {% for item, values in result_protocol.pending_protocol.protocol_filter_selection %}
+                                         if (value == '{{item}}') {
+                                         return [{% for val in values %}'{{val}}',{% endfor %}];
+                                     }
+                                     {% endfor %}
 
-                             mySpreadsheet = $('#spreadsheet').jexcel({
-                                 data:data,
-                                 columns: [
-                                     { type: 'text', title:'{{result_protocol.heading.0}}', width:180 , readOnly:true },
-                                     { type: 'text', title:'{{result_protocol.heading.1}}', width:150 , readOnly:true },
-                                     { type: 'text', title:'{{result_protocol.heading.2}}', width:150 , readOnly:true },
-                                     { type: 'dropdown', title:'{{result_protocol.heading.3}}', width:150 , source :[ {% for value in result_protocol.protocol_type %}{'id':'{{value}}','name':'{{value}}'}, {% endfor %}]},
-                                     { type: 'dropdown', title: '{{result_protocol.heading.4}}', width:180 , source:[{% for value in result_protocol.protocol_list %}'{{value}}',{% endfor %} ],
-                                             filter:dropdownFilter },
-
-                                 ],
-                                 allowInsertColumn:false,
-                                 allowDeleteColumn:false,
-                                 allowRenameColumn:false,
-                                 allowInsertRow:false,
-                                 allowDeleteRow:false,
-                                 tableOverflow:true,
-                                 tableHeight:'200px',
-                                 csvFileName:'result_protocol_data',
-                                 minDimensions:[{{result_protocol.table_length}},{{result_protocol.number_of_samples}}],
-                                 onchange:function(instance, cell, c, r, value) {
-                                     if (c == 3) {
-                                         var columnName = jexcel.getColumnNameFromId([4, r]);
-                                         instance.jexcel.setValue(columnName, '');
+                                     else {
+                                         return source;
                                      }
                                  }
-                             });
-                         </script>
 
-                         <br>
-                         <input type="button" value="Download Spreadsheet" onclick="$('#spreadsheet').jexcel('download')"/>
-                         <input class="btn pull-right btn-primary" id = "btnSubmit" type="submit" value="Submit">
-                     </form>
-                     <script>
-                         $(document).ready(function () {
-                             $("#updateClinicSampleProtocol").submit(function (e) {
-                                 //stop submitting the form to see the disabled button effect
-                                 // e.preventDefault();
-                                 //disable the submit button
-                                 var table_data = $('#spreadsheet').jexcel('getData')
-                                 var data_json = JSON.stringify(table_data)
-                                 $("<input />").attr("type", "hidden")
-                                   .attr("name", "table_data")
-                                   .attr("value", data_json)
-                                   .appendTo("#updateClinicSampleProtocol");
-                                 $("#btnSubmit").attr("disabled", true);
-                                 return true;
-                             });
-                         });
-                     </script>
+                                 mySpreadsheet = $('#spreadsheet').jexcel({
+                                     data:data,
+                                     columns: [
+                                         { type: 'text', title:'{{result_protocol.pending_protocol.heading.0}}', width:180 , readOnly:true },
+                                         { type: 'text', title:'{{result_protocol.pending_protocol.heading.1}}', width:150 , readOnly:true },
+                                         { type: 'text', title:'{{result_protocol.pending_protocol.heading.2}}', width:150 , readOnly:true },
+                                         { type: 'dropdown', title:'{{result_protocol.pending_protocol.heading.3}}', width:150 , source :[ {% for value in result_protocol.pending_protocol.protocol_type %}{'id':'{{value}}','name':'{{value}}'}, {% endfor %}]},
+                                         { type: 'dropdown', title: '{{result_protocol.pending_protocol.heading.4}}', width:180 , source:[{% for value in result_protocol.pending_protocol.protocol_list %}'{{value}}',{% endfor %} ],
+                                                 filter:dropdownFilter },
 
-                 </div> <!--  end of panel body -->
-             </div> <!--  end of panel  -->
-         </div> <!--  end of col-sm-6 -->
-     </div> <!--  end of row -->
+                                    ],
+                                    allowInsertColumn:false,
+                                    allowDeleteColumn:false,
+                                    allowRenameColumn:false,
+                                    allowInsertRow:false,
+                                    allowDeleteRow:false,
+                                    tableOverflow:true,
+                                    tableHeight:'200px',
+                                    csvFileName:'result_protocol_data',
+                                    minDimensions:[{{result_protocol.pending_protocol.table_length}},{{result_protocol.pending_protocol.number_of_samples}}],
+                                    onchange:function(instance, cell, c, r, value) {
+                                        if (c == 3) {
+                                            var columnName = jexcel.getColumnNameFromId([4, r]);
+                                            instance.jexcel.setValue(columnName, '');
+                                        }
+                                    }
+                                });
+                            </script>
+
+                            <br>
+                            <input type="button" value="Download Spreadsheet" onclick="$('#spreadsheet').jexcel('download')"/>
+                            <input class="btn pull-right btn-primary" id = "btnSubmit" type="submit" value="Submit">
+                        </form>
+                        <script>
+                            $(document).ready(function () {
+                                $("#updateClinicSampleProtocol").submit(function (e) {
+                                    //stop submitting the form to see the disabled button effect
+                                    // e.preventDefault();
+                                    //disable the submit button
+                                    var table_data = $('#spreadsheet').jexcel('getData')
+                                    var data_json = JSON.stringify(table_data)
+                                    $("<input />").attr("type", "hidden")
+                                       .attr("name", "table_data")
+                                       .attr("value", data_json)
+                                       .appendTo("#updateClinicSampleProtocol");
+                                    $("#btnSubmit").attr("disabled", true);
+                                    return true;
+                                });
+                            });
+                        </script>
+
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+            </div> <!--  end of col-sm-6 -->
+        </div> <!--  end of row -->
+    {% endif %}
+
+    {% if result_protocol.pending_results %}
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Update the following clinic samples with Result Parameters.</h3></div>
+                    <div class="panel-body">
+                        {% if result_protocol.pending_results.pending_id %}
+                              <p>The selected clinic samples contain different protocol</p>
+                              <p>After Clicking the Submit buttom the next clinic samples will be displayed</p>
+                        {% endif %}
+                        <form method="post" enctype="multipart/form-data" name="addResultParameters"  id="addResultParameters" class="form-horizontal well">
+                            {% csrf_token %}
+                            <div class="scrolling-wrapper">
+                            <input type="hidden" name="action" value="addResultParameters"/>
+                            <input type="hidden" name= "c_samples" value="{{show_result_parameters.c_sample_id}}"/>
+                            <input type="hidden" name= "heading_in_excel" value="{{show_result_parameters.heading_in_excel}}"/>
+                            {% if show_result_parameters.pending_id %}
+                                 <input type="hidden" name= "pending" value="{{show_result_parameters.pending_id}}"/>
+                            {% endif %}
+                            <p></p>
+
+                                <div id="spreadsheet2"></div>
+                                <br>
+                            </div> <!--  end of scrolling  -->
+                            <script>
+                               var data = [{% for values in result_protocol.pending_results.data %}
+                                   [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                               ];
+
+                               var table2 = jexcel(document.getElementById('spreadsheet2'), {
+                                   data:data,
+                                   columns: [
+                                   { type: 'text', title:'{{result_protocol.pending_results.fix_heading.0}}', width:180 , readOnly:true },
+                                   { type: 'text', title:'{{result_protocol.pending_results.fix_heading.1}}', width:150 , readOnly:true },
+                                   { type: 'text', title:'{{result_protocol.pending_results.fix_heading.2}}', width:150 , readOnly:true },
+
+                                        {% for value in result_protocol.pending_results.param_heading %}
+                                            { type: 'text', title:'{{value}}', width:180 },
+                                       {% endfor %}
+                                   ],
+                                   allowInsertColumn:false,
+                                   allowDeleteColumn:false,
+                                   allowRenameColumn:false,
+                                   allowInsertRow:false,
+                                   allowDeleteRow:false,
+                                   tableOverflow:true,
+                                   tableHeight:'200px',
+                                   csvFileName:'quality_data',
+
+                               });
+                           </script>
+                           <br><br>
+                           <input type="button" value="Return Home" onclick="location.href ='/clinic' ;"/>
+                           <input class="btn pull-right btn-primary" id = "btnSubmit" type="submit" value="Submit">
+
+                        </form>
+                        <script>
+                            $(document).ready(function () {
+                                $("#addResultParameters").submit(function (e) {
+                                    //stop submitting the form to see the disabled button effect
+                                    // e.preventDefault();
+                                    //disable the submit button
+                                    var table_data2 = table2.getData()
+                                    var data_json = JSON.stringify(table_data2)
+                                    $("<input />").attr("type", "hidden")
+                                      .attr("name", "parameters_data")
+                                      .attr("value", data_json)
+                                      .appendTo("#addResultParameters");
+                                    $("#btnSubmit").attr("disabled", true);
+                                    return true;
+                                });
+                            });
+                        </script>
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+
+            </div> <!--  end of col-sm-12 -->
+        </div> <!--  end of row -->
+    {% endif %}
+
+
+
+
 
 {% elif show_result_parameters %}
     <div class="row row-space-2 margin-b-4">
@@ -111,8 +198,8 @@
                 <div class="panel-heading"><h3>Update the following clinic samples with Result Parameters.</h3></div>
                 <div class="panel-body">
                     {% if show_result_parameters.pending_id %}
-                          <p>The selected molecules contain different protocol</p>
-                          <p>After Clicking the Submit buttom the next molecules will be displayed</p>
+                          <p>The selected clinic samples contain different protocol</p>
+                          <p>After Clicking the Submit buttom the next clinic samples will be displayed</p>
                     {% endif %}
                     <form method="post" enctype="multipart/form-data" name="addResultParameters"  id="addResultParameters" class="form-horizontal well">
                         {% csrf_token %}
@@ -183,20 +270,20 @@
         </div> <!--  end of col-sm-12 -->
     </div> <!--  end of row -->
 
-{% elif added_molecule_protocol_parameters %}
+{% elif added_result_protocol_parameters %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12">
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>The following molecules have been updated with quality Parameters.</h3></div>
+                <div class="panel-heading"><h3>The following clinic samples have been updated with quality Parameters.</h3></div>
                 <div class="panel-body">
                    <table class="table table-hover">
                        <thead>
                           <tr>
-                            <th>Molecule Code ID</th>
+                            <th>Sample Clinic</th>
                           </tr>
                        </thead>
                        <tbody>
-                         {% for values in added_molecule_protocol_parameters %}
+                         {% for values in added_result_protocol_parameters %}
                          <tr>
                            <td>{{ values }} </td>
                          </tr>
@@ -215,14 +302,14 @@
                    <div class="panel-heading"><h3>Update the following clinic samples with Result Parameters.</h3></div>
                    <div class="panel-body">
                        {% if show_result_parameters.pending_id %}
-                             <p>The selected molecules contain different protocol</p>
-                             <p>After Clicking the Submit buttom the next molecules will be displayed</p>
+                             <p>The selected clinic samples contain different protocol</p>
+                             <p>After Clicking the Submit buttom the next clinic smamples will be displayed</p>
                        {% endif %}
                        <form method="post" enctype="multipart/form-data" name="addResultParameters"  id="addResultParameters" class="form-horizontal well">
                            {% csrf_token %}
                            <div class="scrolling-wrapper">
                            <input type="hidden" name="action" value="addResultParameters"/>
-                           <input type="hidden" name= "molecules" value="{{show_result_parameters.c_sample_id}}"/>
+                           <input type="hidden" name= "c_samples" value="{{show_result_parameters.c_sample_id}}"/>
                            <input type="hidden" name= "heading_in_excel" value="{{show_result_parameters.heading_in_excel}}"/>
                            {% if show_result_parameters.pending_id %}
                                 <input type="hidden" name= "pending" value="{{show_result_parameters.pending_id}}"/>

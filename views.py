@@ -46,10 +46,21 @@ def add_result_data (request):
         if 'iSkyLIMS_wetlab' in settings.INSTALLED_APPS :
             for c_sample_state in ['Sequencing','Patient update']:
                 check_if_need_update(c_sample_state)
+        result_protocol = {}
         c_samples_pending_protocol = get_clinic_sample_in_state('Pending protocol')
-        if  c_samples_pending_protocol :
+        c_samples_pending_results = get_clinic_sample_in_state('Pending results')
+        #pending['pending_results'] = get_clinic_samples_pending_results(request.user, 'Pending results')
 
-            result_protocol  = get_table_result_to_protocol(c_samples_pending_protocol)
+        if  c_samples_pending_protocol :
+            result_protocol['pending_protocol']  = get_table_result_to_protocol(c_samples_pending_protocol)
+        if c_samples_pending_results:
+            c_samples_ids = []
+            for c_sample in c_samples_pending_results:
+                c_samples_ids.append(c_sample.get_id())
+            result_protocol['pending_results']  = define_table_for_result_parameters(c_samples_ids)
+
+        if c_samples_pending_protocol or c_samples_pending_results :
+            #import pdb; pdb.set_trace()
             return render(request, 'iSkyLIMS_clinic/addResultData.html' ,{'result_protocol':result_protocol})
         else:
             return render(request, 'iSkyLIMS_clinic/addResultData.html' ,{'no_samples': True})
@@ -163,7 +174,7 @@ def display_sample_info(request,sample_c_id):
 
 
 def pending_to_update(request):
-    
+
     if 'iSkyLIMS_wetlab' in settings.INSTALLED_APPS :
         for c_sample_state in ['Sequencing','Patient update']:
             check_if_need_update(c_sample_state)
