@@ -118,6 +118,24 @@ def display_one_sample_info(id):
     else:
         sample_info['suspicious'] = 'Information not available'
     sample_info['comments'] = sample_obj.get_comments()
+
+    protocol = sample_obj.get_protocol()
+
+    if  protocol != 'Not Defined' :
+        sample_info['Protocol'] = protocol
+        protocol_used_obj = sample_obj.get_protocol_obj()
+
+        if ProtocolParameters.objects.filter(protocol_id = protocol_used_obj).exists():
+            parameter_names = ProtocolParameters.objects.filter(protocol_id = protocol_used_obj).order_by('parameterOrder')
+            param_heading = []
+            param_value = []
+            for p_name in parameter_names:
+                param_heading.append(p_name.get_parameter_name())
+                if ResultParameterValue.objects.filter(clinicSample_id = sample_obj).exists():
+                    param_value.append(ResultParameterValue.objects.get(clinicSample_id = sample_obj, parameter_id = p_name).get_parameter_value())
+            sample_info['parameter_values'] = param_value
+            sample_info['parameter_heading'] = param_heading
+
     return sample_info
 
 

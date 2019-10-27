@@ -67,7 +67,7 @@ def add_result_data (request):
             result_protocol['pending_results']  = define_table_for_result_parameters(c_samples_ids)
 
         if c_samples_pending_protocol or c_samples_pending_results :
-            #import pdb; pdb.set_trace()
+
             return render(request, 'iSkyLIMS_clinic/addResultData.html' ,{'result_protocol':result_protocol})
         else:
             return render(request, 'iSkyLIMS_clinic/addResultData.html' ,{'no_samples': True})
@@ -164,7 +164,7 @@ def display_result_protocol (request, result_protocol_id):
             {'content':['The result protocol that you are trying to get ',
                         'DOES NOT exists .']})
     result_protocol_data = get_all_protocol_info (result_protocol_id)
-    import pdb; pdb.set_trace()
+
     return render(request, 'iSkyLIMS_clinic/displayResultProtocol.html', {'result_protocol_data': result_protocol_data})
 
 
@@ -198,8 +198,6 @@ def pending_to_update(request):
 
     pending ['graphic_pending_samples'] = pending_clinic_samples_for_grafic(pending).render()
 
-
-    #import pdb; pdb.set_trace()
     return render(request, 'iSkyLIMS_clinic/pendingToUpdate.html', {'pending':pending})
 
 @login_required

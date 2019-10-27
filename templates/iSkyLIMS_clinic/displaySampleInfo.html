@@ -99,6 +99,35 @@
             </div> <!--// end panel -->
         </div> <!--// end col-sm-7  -->
     </div> <!--// end row -->
+    {% if display_sample_info.parameter_heading %}
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-11">
+                <div class="panel panel-default">
+                    <h3>Result Parameter used for the sample {{ sample_information.sample_definition.0 }} </h3>
+                    <div class="panel-heading"><h4>Result Parameter Information</h4></div>
+                    <div class="panel-body">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    {% for values in display_sample_info.parameter_heading %}
+                                        <th>{{ values }} </th>
+                                    {%endfor%}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    {% for value in display_sample_info.parameter_values %}
+                                        <td>{{ value }} </td>
+                                    {%endfor%}
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+            </div> <!--  end of col-sm-11 -->
+        </div> <!--  end of row -->
+    {% endif %}
+
 
 {% else%}
     <br><br>

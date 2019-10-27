@@ -94,21 +94,34 @@ class ClinicSampleRequest (models.Model):
         return '%s' %(self.sampleCore.get_sample_name())
 
     def get_patient_information(self):
-        patient_info = []
-        patient_info.append(self.patient_id.get_patient_name())
-        patient_info.append(self.patient_id.get_history_number())
+
+        if self.patient_id != None:
+            patient_info = []
+            patient_info.append(self.patient_id.get_patient_name())
+            patient_info.append(self.patient_id.get_history_number())
+        else:
+            patient_info = ['Not Defined']*2
         return patient_info
 
     def get_protocol(self):
-        return '%s' %(self.protocol_id.get_name())
+        if self.protocol_id != None:
+            return '%s' %(self.protocol_id.get_name())
+        else:
+            return 'Not Defined'
 
     def get_protocol_obj(self):
         return self.protocol_id
 
     def get_requested_by_information(self):
         requested_by = []
-        requested_by.append(self.serviceUnit_id.get_name())
-        requested_by.append(self.doctor_id.get_name())
+        if self.serviceUnit_id != None:
+            requested_by.append(self.serviceUnit_id.get_name())
+        else:
+            requested_by.append('Not Defined')
+        if self.doctor_id != None:
+            requested_by.append(self.doctor_id.get_name())
+        else:
+            requested_by.append('Not Defined')
 
         return requested_by
 
@@ -290,7 +303,7 @@ class ResultParameterValue (models.Model):
     def __str__ (self):
         return '%s' %(self.parameterValue)
 
-    def get_param_value(self):
+    def get_parameter_value(self):
         return '%s' %(self.parameterValue)
 
     objects = ResultParameterValueManager()
