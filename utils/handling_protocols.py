@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 
 
 
-def create_new_protocol (new_protocol, protocol_type, description):
+def create_new_protocol (new_protocol, protocol_type, description, apps_name):
     '''
     Description:
         The function create a new item in database.
@@ -15,7 +15,7 @@ def create_new_protocol (new_protocol, protocol_type, description):
     Return:
         ID of the new created object.
     '''
-    protocol_type_obj = ProtocolType.objects.get(protocol_type__exact = protocol_type)
+    protocol_type_obj = ProtocolType.objects.get(protocol_type__exact = protocol_type, apps_name__exact = apps_name)
     new_protocol_object = Protocols(type = protocol_type_obj, name = new_protocol,
                         description = description)
     new_protocol_object.save()
