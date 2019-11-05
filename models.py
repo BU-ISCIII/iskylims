@@ -204,12 +204,12 @@ class ClinicSampleRequest (models.Model):
         return self
 
 
-class SuspiciousHistoryManager(models.Manager):
-    def create_suspicious_history ( self, suspicious_data):
-        new_suspicious_history = self.create( clinicSample_id = suspicious_data['clinicSample_id'],
-                    patient_id = suspicious_data['patient_id'], description = suspicious_data['description'] )
+class SuspicionHistoryManager(models.Manager):
+    def create_suspicion_history ( self, suspicion_data):
+        new_suspicion_history = self.create( clinicSample_id = suspicion_data['clinicSample_id'],
+                    patient_id = suspicion_data['patient_id'], description = suspicion_data['description'] )
 
-class SuspiciousHistory (models.Model):
+class SuspicionHistory (models.Model):
     clinicSample_id = models.ForeignKey(
             ClinicSampleRequest,
             on_delete = models.CASCADE, null = True)
@@ -221,10 +221,10 @@ class SuspiciousHistory (models.Model):
     def __str__ (self):
         return '%s' %(self.description)
 
-    def get_suspicious_text(self):
+    def get_suspicion_text(self):
         return '%s' %(self.description)
 
-    objects = SuspiciousHistoryManager()
+    objects = SuspicionHistoryManager()
 '''
 class SampleResults (models.Model):
     sampleRequest_id = models.ForeignKey(

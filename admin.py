@@ -17,7 +17,7 @@ class PatientAdmin(admin.ModelAdmin):
 class DoctorAdmin(admin.ModelAdmin):
     list_display = ('doctorName',)
 
-class SuspiciousHistoryAdmin(admin.ModelAdmin):
+class SuspicionHistoryAdmin(admin.ModelAdmin):
     list_display = ('clinicSample_id', 'patient_id', 'description')
 
 
@@ -25,7 +25,7 @@ class SuspiciousHistoryAdmin(admin.ModelAdmin):
 admin.site.register(ClinicSampleRequest, ClinicSampleRequestAdmin)
 admin.site.register(ClinicSampleState,ClinicSampleStateAdmin)
 admin.site.register(Doctor,DoctorAdmin)
-admin.site.register(SuspiciousHistory,SuspiciousHistoryAdmin)
+admin.site.register(SuspicionHistory,SuspicionHistoryAdmin)
 
 admin.site.register(Patient,PatientAdmin)
 admin.site.register(ServiceUnits,ServiceUnitsAdmin)
