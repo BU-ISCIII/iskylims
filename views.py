@@ -132,7 +132,7 @@ def define_result_protocol(request):
         if check_if_protocol_exists (new_result_protocol, __package__):
             return render(request, 'iSkyLIMS_clinic/defineResultProtocol.html',{'other_protocol_list' :other_protocol_list,'defined_protocol_types':defined_protocol_types,'Error':new_result_protocol})
 
-        new_result_protocol_id = create_new_protocol(new_result_protocol, protocol_type, description)
+        new_result_protocol_id = create_new_protocol(new_result_protocol, protocol_type, description, __package__)
 
         return render(request, 'iSkyLIMS_clinic/defineResultProtocol.html',{'other_protocol_list' :other_protocol_list,
                             'defined_protocol_types':defined_protocol_types, 'new_defined_result_protocol': new_result_protocol,

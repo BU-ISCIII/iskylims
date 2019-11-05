@@ -49,12 +49,12 @@ def analyze_and_store_patient_data (user_post, user):
             clinic_obj = get_clinic_sample_obj_from_id(clinic_samples[c_samples_id])
             clinic_obj.update(patient_data)
             stored_samples.append([json_data[c_samples_id][0], history_number , json_data[c_samples_id][heading.index('Requested Service by')]])
-            # create suspicious data for this clinic sample
-            suspicious_data = {}
-            suspicious_data['patient_id'] = patient_obj
-            suspicious_data['clinicSample_id'] = clinic_obj
-            suspicious_data['description'] = json_data[c_samples_id][heading.index('Suspicious')]
-            suspicious_obj = SuspiciousHistory.objects.create_suspicious_history(suspicious_data)
+            # create suspicion data for this clinic sample
+            suspicion_data = {}
+            suspicion_data['patient_id'] = patient_obj
+            suspicion_data['clinicSample_id'] = clinic_obj
+            suspicion_data['description'] = json_data[c_samples_id][heading.index('Suspicion')]
+            suspicion_obj = SuspicionHistory.objects.create_suspicion_history(suspicion_data)
     if stored_samples :
         analyze_data['stored_samples_heading'] = HEADING_FOR_STORED_PATIENT_DATA
     if incomplete_clinic_samples_ids:
@@ -113,10 +113,10 @@ def display_one_sample_info(id):
     sample_info['requested_by'] = list(zip(HEADING_FOR_DISPLAY_REQUESTED_BY_INFORMATION, r_by_info))
     sample_info['sample_core_info'] = sample_obj.get_sample_core_info()
     sample_info['sample_core_heading'] = HEADING_FOR_DISPLAY_SAMPLE_CORE_INFORMATION
-    if SuspiciousHistory.objects.filter(clinicSample_id__exact = sample_obj).exists():
-        sample_info['suspicious'] = SuspiciousHistory.objects.get(clinicSample_id__exact = sample_obj).get_suspicious_text()
+    if SuspicionHistory.objects.filter(clinicSample_id__exact = sample_obj).exists():
+        sample_info['suspicion'] = SuspicionHistory.objects.get(clinicSample_id__exact = sample_obj).get_suspicion_text()
     else:
-        sample_info['suspicious'] = 'Information not available'
+        sample_info['suspicion'] = 'Information not available'
     sample_info['comments'] = sample_obj.get_comments()
 
     protocol = sample_obj.get_protocol()
