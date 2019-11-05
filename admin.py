@@ -38,7 +38,7 @@ class SampleTypeAdmin(admin.ModelAdmin):
 
 
 class SpeciesAdmin (admin.ModelAdmin):
-    list_display= ('spicesName', 'refGenomeName', 'refGenomeSize' , 'refGenomeID' )
+    list_display= ('speciesName', 'refGenomeName', 'refGenomeSize' , 'refGenomeID' )
 
 class StatesForMoleculeAdmin (admin.ModelAdmin):
     list_display = ('moleculeStateName',)

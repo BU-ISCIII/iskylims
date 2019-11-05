@@ -132,16 +132,16 @@ class SampleType (models.Model):
 
 
 class Species (models.Model):
-    spicesName = models.CharField(max_length=50)
+    speciesName = models.CharField(max_length=50)
     refGenomeName = models.CharField(max_length=255)
     refGenomeSize = models.CharField(max_length=100)
     refGenomeID = models.CharField(max_length=255)
 
     def __str__ (self):
-        return '%s' %(self.spicesName)
+        return '%s' %(self.speciesName)
 
     def get_name(self):
-        return '%s' %(self.spicesName)
+        return '%s' %(self.speciesName)
 
 
 class CommercialKitsManager(models.Manager):
