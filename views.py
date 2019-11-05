@@ -3128,7 +3128,7 @@ def create_protocol (request):
         if check_if_protocol_exists (new_protocol, __package__):
             return render ( request,'iSkyLIMS_wetlab/error_page.html',{'content':['Protocol Name ', new_protocol,
                             'Already exists.']})
-        new_protocol_id = create_new_protocol(new_protocol, protocol_type, description)
+        new_protocol_id = create_new_protocol(new_protocol, protocol_type, description, __package__)
 
         return render(request, 'iSkyLIMS_wetlab/createProtocol.html',{'defined_protocols': defined_protocols,
                             'defined_protocol_types':defined_protocol_types, 'new_defined_protocol': new_protocol,
@@ -3321,6 +3321,7 @@ def search_lib_samples (request):
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The user name must contains at least 5 caracters ',
                     'ADVICE:', 'write the full user name to get a better match']})
         ### check the right format of start and end date
+
         if start_date != '' and not check_valid_date_format(start_date):
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The format for the "Start Date Search" Field is incorrect ',
                     'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
@@ -3523,9 +3524,9 @@ def set_library_preparation(request):
                 data[1] = lib_prep_code_id
 
                 if not collection_index_kit_id :
-                    data[3] = 'collection Index not defined'
+                    data[2] = 'collection Index not defined'
                 else:
-                    data[3] = collection_index_kit_id.get_collection_index_name()
+                    data[2] = collection_index_kit_id.get_collection_index_name()
                 stored_lib_prep['data'].append(data)
 
             else:

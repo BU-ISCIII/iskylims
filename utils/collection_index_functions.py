@@ -279,9 +279,12 @@ def store_collection_kits_file(collection_file):
     f_extension = split_filename[2]
     fs_index_lib = FileSystemStorage()
     timestr = time.strftime("%Y%m%d-%H%M%S")
+    index_directory = wetlab_config.COLLECTION_INDEX_KITS_DIRECTORY
+    if not os.path.exists(index_directory):
+        os.makedirs(index_directory)
 
     ## using the MEDIA_ROOT variable defined on settings to upload the file
-    file_name=os.path.join(wetlab_config.COLLECTION_INDEX_KITS_DIRECTORY ,  str(f_name + '_' +timestr + f_extension))
+    file_name=os.path.join(index_directory,  str(f_name + '_' +timestr + f_extension))
     filename = fs_index_lib.save(file_name,  collection_file)
     saved_file = os.path.join(settings.MEDIA_ROOT, file_name)
 

@@ -894,7 +894,7 @@ class LibraryPreparation (models.Model):
     userLotKit_id = models.ForeignKey(
                 UserLotCommercialKits,
                 on_delete= models.CASCADE, null = True, blank = True)
-    
+
     user_sample_sheet = models.ForeignKey(
                 libPreparationUserSampleSheet,
                 on_delete= models.CASCADE, null = True, blank = True)
@@ -1070,7 +1070,7 @@ class LibraryPreparation (models.Model):
         return
 
     def set_reagent_user_kit(self, kit_value):
-        self.user_reagentKit_id = UserCmomercialKits.objects.get(nickName__exact = kit_value)
+        self.user_reagentKit_id = UserLotCommercialKits.objects.get(nickName__exact = kit_value)
         self.save()
         return
 

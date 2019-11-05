@@ -39,7 +39,7 @@ def check_all_projects_exists (project_list):
 
 def check_valid_date_format (date):
     try:
-        datetime.datetime.strptime(date, '%Y-%m-%d')
+        datetime.strptime(date, '%Y-%m-%d')
         return True
     except:
         return False

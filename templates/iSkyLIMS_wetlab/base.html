@@ -70,6 +70,7 @@
                                                     <li><a href="/wetlab/addCollectionIndexKit">Add Collection Index Kit</a></li>
                                                     <li><a href="/wetlab/AddCommercialKit">Add Commercial Kit</a></li>
                                                     <li><a href="/wetlab/createProtocol">Create New Protocol</a></li>
+                                                    <li><a href="/wetlab/searchLibSamples">Search Samples</a></li>
                                         {% else %}
                                             <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Library Preparation<span class="caret"></span></a>
                                                 <ul class="dropdown-menu">
@@ -91,6 +92,7 @@
                                                     <li><a href="/wetlab/createPool">Create Pool</a></li>
                                                     <li><a href="/wetlab/createNewRun">Create New Run</a></li>
                             					    <li><a href="/wetlab/createNextSeqRun">Create New NextSeq Run</a></li>
+                                                    <li><a href="/wetlab/pendingLibraryPreparations">Pending Library Preparations</a></li>
                         					    {% endif %}
                 				            </ul>
                     				    </li>
@@ -103,6 +105,7 @@
                             				    {% if request.user|has_group:"WetlabManager" %}
                                 					<li><a href="/wetlab/latest_run">Get Latest Run</a></li>
                                 					<li><a href="/wetlab/incompletedRuns">Get incompleted Runs</a></li>
+
                             				    {% endif %}
                             					<li><a href="/wetlab/searchRun">Search by RUN</a></li>
                             					<li><a href="/wetlab/searchProject">Search by Project</a></li>
