@@ -6,6 +6,8 @@ import string
 from Bio.Seq import Seq
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
+from iSkyLIMS_core.utils.handling_protocols import *
+from iSkyLIMS_core.utils.handling_commercial_kits import *
 from django.conf import settings
 
 def handle_input_samples_for_run (user_post, user):
@@ -72,7 +74,8 @@ def handle_input_samples_for_run (user_post, user):
 
     data_for_sample_sheet_file = parsing_data_for_sample_sheet_file(new_sample_sheet_data, mapping, heading_sample_sheet)
     # sample_sheet_file_name = create_sample_sheet_file(data_for_sample_sheet_file, user,reads, adapter, exp_name,
-    sample_sheet_file_name = create_sample_sheet_file(data_for_sample_sheet_file, user, '151', 'adapter-ccc',  exp_name, 'colection_index-22', 'Nextera', paired)
+    import pdb; pdb.set_trace()
+    sample_sheet_file_name = create_sample_sheet_file(data_for_sample_sheet_file, user, user_post.reads, user_post.adapter,  exp_name, user_post.assay , user_post.colection_index, paired)
 
 
 
@@ -292,7 +295,6 @@ def parsing_data_for_bs_file(sample_sheet_data, mapping, paired, heading_base_sp
         if not project_name in base_space_lib[lib_name]:
             base_space_lib[lib_name][project_name] = []
         bs_sample_data = {}
-
         for item in range(len(mapping)):
             bs_sample_data[mapping[item][0]] = sample_sheet_data[sample_id][mapping[item][1]]
         # modify the index 5 if paired End
@@ -325,3 +327,99 @@ def parsing_data_for_sample_sheet_file(new_sample_sheet_data, mapping, heading_s
             row_data.append(values[item])
         data.append(','.join(row_data))
     return data
+
+
+def prepare_lib_prep_table_new_run (index_adapters, request, extracted_data_list, file_name, assay):
+    protocol = request.POST['lib_protocols']
+    single_paired = request.POST['singlePairedEnd']
+    read_length = request.POST['readlength']
+    user_sample_sheet_data = {}
+    stored_lib_prep = {}
+    stored_lib_prep['data'] = []
+
+    if CollectionIndexKit.objects.filter(collectionIndexName__exact = index_adapters).exists():
+        collection_index_kit_id = CollectionIndexKit.objects.get(collectionIndexName__exact = index_adapters)
+    else:
+        collection_index_kit_id = None
+    register_user_obj = User.objects.get(username__exact = request.user.username)
+    user_sample_sheet_data['registerUser'] = register_user_obj
+    protocol_obj = Protocols.objects.get(name__exact = protocol)
+    user_sample_sheet_data['collectionIndexKit_id'] = collection_index_kit_id
+
+    user_sample_sheet_data['sampleSheet'] = file_name
+    new_user_s_sheet_obj = libPreparationUserSampleSheet.objects.create_lib_prep_user_sample_sheet(user_sample_sheet_data)
+
+
+    parameter_heading = get_protocol_parameters(protocol_obj)
+    length_heading = len(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS) + len (parameter_heading)
+    stored_lib_prep['heading'] = HEADING_FIX_FOR_ADDING_LIB_PARAMETERS
+    stored_lib_prep['par_heading'] = parameter_heading
+    stored_lib_prep['heading_in_excel'] = ','.join(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS + parameter_heading)
+    lib_prep_id = []
+    samples_not_available = []
+    stored_lib_prep['reagents_kits'] = get_lot_commercial_kits(register_user_obj, protocol_obj)
+    for extracted_data in extracted_data_list :
+
+        if Samples.objects.filter(sampleName__exact = extracted_data['sample_id'], sampleUser = register_user_obj,
+                        sampleState__sampleStateName = 'Library preparation').exists():
+
+            sample_obj = Samples.objects.get(sampleName__exact = extracted_data['sample_id'])
+            extracted_data['sample_id'] = sample_obj
+            #samples_id.append(sample_obj.get_sample_id())
+
+            extracted_data['protocol_obj'] = protocol_obj
+            extracted_data['collection_index_kit_id'] = collection_index_kit_id
+
+            molecule_obj = MoleculePreparation.objects.filter(sample = sample_obj).last()
+            if LibraryPreparation.objects.filter(sample_id = sample_obj, libPrepState__libPrepState__exact = 'Created for Reuse').exists():
+                lib_prep_obj = LibraryPreparation.objects.get(sample_id = sample_obj, libPrepState__libPrepState__exact = 'Created for Reuse')
+                molecule_obj = lib_prep_obj.get_molecule_obj()
+
+                last_lib_prep_for_molecule = LibraryPreparation.objects.filter(sample_id = sample_obj, molecule_id = molecule_obj).exclude(libPrepState__libPrepState__exact = 'Created for Reuse').last()
+                if last_lib_prep_for_molecule :
+                    last_lib_prep_code_id = last_lib_prep_for_molecule.get_lib_prep_code()
+                    split_code = re.search('(.*_)(\d+)$',last_lib_prep_code_id)
+                    index_val = int(split_code.group(2))
+                    new_index = str(index_val +1).zfill(2)
+                    lib_prep_code_id = split_code.group(1) + new_index
+                    unique_s_id_split = lib_prep_obj.get_unique_sample_id().split('-')
+                    inc_value = int(unique_s_id_split[-1]) + 1
+                    unique_s_id_split[-1] = str(inc_value)
+                    extracted_data['uniqueID'] = '-'.join(unique_s_id_split)
+
+                else:
+                    lib_prep_code_id = molecule_obj.get_molecule_code_id() + '_LIB_01'
+                    split_code = lib_prep_code_id.split('_')
+                    extracted_data['uniqueID'] = sample_obj.get_unique_sample_id() +'-' + split_code[-3][1:] + '-' + split_code[-1]
+
+                extracted_data['lib_code_id'] = lib_prep_code_id
+                #lib_prep_obj.update_lib_preparation_info_in_reuse_state(extracted_data)
+
+                new_library_preparation = lib_prep_obj.update_lib_preparation_info_in_reuse_state(extracted_data, new_user_s_sheet_obj, single_paired , read_length)
+                #new_library_preparation = LibraryPreparation.objects.update_library_preparation(extracted_data)
+            else:
+                lib_prep_code_id = molecule_obj.get_molecule_code_id() + '_LIB_01'
+                extracted_data['lib_code_id'] = lib_prep_code_id
+                split_code = lib_prep_code_id.split('_')
+                extracted_data['uniqueID'] = sample_obj.get_unique_sample_id() +'-' + split_code[-3][1:] + '-' + split_code[-1]
+                extracted_data['assay'] = assay
+                # Create the new library preparation object
+                new_library_preparation = LibraryPreparation.objects.create_lib_preparation(extracted_data, new_user_s_sheet_obj, register_user_obj,
+                                        molecule_obj,  single_paired , read_length)
+            lib_prep_id.append(new_library_preparation.get_id())
+            data = ['']*length_heading
+            data[0] = extracted_data['sample_id']
+            data[1] = lib_prep_code_id
+
+            if not collection_index_kit_id :
+                data[2] = 'collection Index not defined'
+            else:
+                data[2] = collection_index_kit_id.get_collection_index_name()
+            stored_lib_prep['data'].append(data)
+
+        else:
+            samples_not_available.append(extracted_data['sample_id'])
+
+    stored_lib_prep['lib_prep_id'] = ','.join(lib_prep_id)
+    stored_lib_prep['samples_not_available'] = samples_not_available
+    return stored_lib_prep

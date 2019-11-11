@@ -17,6 +17,23 @@ from iSkyLIMS_wetlab.models import *
 
 #from .wetlab_misc_utilities import timestamp_print
 
+def get_assay_from_file(in_file):
+    import codecs
+    assay = ''
+    fh = codecs.open(in_file, 'r', 'utf-8')
+    for line in fh:
+        line = line.rstrip()
+        if line == '':
+            continue
+        found_assay = re.search('^Assay',line)
+        if found_assay :
+            split_line = line.split(',')
+            assay = split_line[1]
+            fh.close()
+            break
+    return assay
+
+
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
@@ -49,6 +66,7 @@ def get_indexes_adapters (in_file):
             index_line = line.split(',')
             if index_line[1]:
                 index_adapters = index_line[1].replace('"', '')
+                fh.close()
                 break
     fh.close()
 

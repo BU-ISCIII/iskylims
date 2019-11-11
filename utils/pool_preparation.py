@@ -3,6 +3,19 @@ from datetime import date
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
 
+def check_lib_prep_adapter(lib_prep_ids):
+    adapters = []
+    for lib_prep_id in lib_prep_ids :
+        if not LibraryPreparation.objects.filter(pk__exact = lib_prep_id).exists():
+            continue
+        lib_prep_obj =  LibraryPreparation.objects.get(pk__exact = lib_prep_id)
+        adapters.append(lib_prep_obj.get_adapter())
+    adap_list = list(set(adapters))
+    if len(adap) == 1:
+        return True, ''.join(adap_list)
+    else:
+        return False, adap_list
+
 
 
 def check_index_compatible(lib_prep_ids):
@@ -48,6 +61,16 @@ def check_index_compatible(lib_prep_ids):
         incompatible_samples['incompatible_s_p_end'] = incompatible_s_p_end
     return incompatible_samples
 
+def check_single_paired(lib_prep_ids):
+
+    for lib_prep_id in lib_prep_ids :
+        if not LibraryPreparation.objects.filter(pk__exact = lib_prep_id).exists():
+            continue
+        lib_prep_obj =  LibraryPreparation.objects.get(pk__exact = lib_prep_id)
+        if lib_prep_obj.get_single_paired() == 'Paired End' :
+            return 'Paired End'
+    return 'Single Read'
+
 
 def generate_pool_code_id():
 
@@ -75,3 +98,43 @@ def get_info_to_display_created_pool(pool_obj):
     information_for_created_pool['heading_library_pool'] = HEADING_FOR_DISPLAY_LIB_PREP_IN_POOL
 
     return information_for_created_pool
+
+def get_lib_prep_collection_index(lib_prep_ids):
+    collection_dict = {}
+    for lib_prep_id in lib_prep_ids :
+        if not LibraryPreparation.objects.filter(pk__exact = lib_prep_id).exists():
+            continue
+        lib_prep_obj =  LibraryPreparation.objects.get(pk__exact = lib_prep_id)
+        collection_name = lib_prep_obj.get_collection_index_name()
+        if collection_name not in collection_dict:
+            collection_dict[collection_name] = 0
+        collection_dict[collection_name] += 1
+    if len(collection_dict) == 1:
+        return collection_name
+    else:
+        max_value = 0
+        for key, value in collection_dict.items():
+            if value > max_value :
+                max_value = value
+                collection_name = key
+        return collection_name
+
+def get_lib_prep_assay(lib_prep_ids):
+    assay_dict = {}
+    for lib_prep_id in lib_prep_ids :
+        if not LibraryPreparation.objects.filter(pk__exact = lib_prep_id).exists():
+            continue
+        lib_prep_obj =  LibraryPreparation.objects.get(pk__exact = lib_prep_id)
+        assay_value = lib_prep_obj.get_assay()
+        if assay_value not in assay_dict :
+            assay_dict[assay_value] = 0
+        assay_dict[assay_value] += 1
+    if len(assay_dict) == 1:
+        return assay_value
+    else:
+        max_value = 0
+        for key, value in assay_dict.items():
+            if value > max_value :
+                max_value = value
+                assay = key
+        return assay

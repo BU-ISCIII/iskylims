@@ -329,7 +329,7 @@ def match_unkownbarcodes_with_index (unknow_dict) :
                 libraries_using_base = CollectionIndexValues.objects.filter(i_7_seq__exact = split_base[0])
                 index_temp = split_base[0]
                 for library in libraries_using_base :
-                    library_info.append([library.index_7,library.indexLibraryKit_id.indexLibraryName])
+                    library_info.append([library.index_7,library.get_collection_index_name()])
 
 
             if CollectionIndexValues.objects.filter(i_5_seq__exact = split_base[1]).exists():
@@ -339,14 +339,14 @@ def match_unkownbarcodes_with_index (unknow_dict) :
                     index_temp = split_base[1]
                 libraries_using_base = CollectionIndexValues.objects.filter(i_5_seq__exact = split_base[1])
                 for library in libraries_using_base :
-                    library_info.append([library.index_5,library.indexLibraryKit_id.indexLibraryName])
+                    library_info.append([library.index_5,library.get_collection_index_name()])
 
         else:
             if CollectionIndexValues.objects.filter(i_7_seq__exact = key).exists():
                 found_unknow_index.append(key)
                 libraries_using_base = CollectionIndexValues.objects.filter(i_7_seq__exact = key)
                 for library in libraries_using_base :
-                    library_info.append([library.index_7,library.indexLibraryKit_id.indexLibraryName])
+                    library_info.append([library.index_7,library.get_collection_index_name()])
 
         if len (index_temp) == 0 :
             index_temp= 'Index not match '

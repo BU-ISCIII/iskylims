@@ -724,6 +724,9 @@ class CollectionIndexValues (models.Model):
         return '%s;%s;%s;%s;%s' %(self.defaultWell, self.index_7, self.i_7_seq,
                         self.index_5, self.i_5_seq)
 
+    def get_collection_index_name(self):
+        return '%s' %(self.collectionIndexKit_id.get_collection_index_name())
+
 class libPreparationUserSampleSheetManager (models.Manager):
 
     def create_lib_prep_user_sample_sheet (self, user_sample_sheet_data):
@@ -762,7 +765,9 @@ class LibraryPoolManager (models.Manager):
     def create_lib_pool (self, pool_data):
         new_library_pool = self.create(registerUser = pool_data['registerUser']  ,
                     poolState = StatesForPool.objects.get(poolState__exact = 'Defined'),
-                    poolName = pool_data['poolName'], poolCodeID = pool_data['poolCodeID'])
+                    poolName = pool_data['poolName'], poolCodeID = pool_data['poolCodeID'],
+                    adapter = pool_data['adapter'], pairedEnd = pool_data['pairedEnd'],
+                    assay = pool_data['assay'],  collectionIndex = pool_data['collectionIndex'])
         return new_library_pool
 
 
@@ -785,6 +790,10 @@ class LibraryPool (models.Model):
     #libUsedInBaseSpace = models.CharField(max_length=50)
     numberOfSamples = models.IntegerField(default=0)
     poolCodeID = models.CharField(max_length=50, blank = True)
+    adapter = models.CharField(max_length=50, null = True, blank = True)
+    pairedEnd = models.CharField(max_length=10, null = True, blank = True)
+    assay = models.CharField(max_length=50, null = True, blank = True)
+    collectionIndex = models.CharField(max_length=50, null = True, blank = True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -855,10 +864,11 @@ class libraryPreparationManager(models.Manager):
             protocol_id =   lib_prep_data['protocol_obj'], user_sample_sheet = user_sample_obj, userSampleID = lib_prep_data['userSampleID'],
             collectionIndex_id = lib_prep_data['collection_index_kit_id'],
             projectInSampleSheet = lib_prep_data['projectInSampleSheet'], samplePlate = lib_prep_data['samplePlate'],
-            sampleWell = lib_prep_data['sampleWell'], i7IndexID = lib_prep_data['i7IndexID'],
+            sampleWell = lib_prep_data['sampleWell'], indexPlateWell = lib_prep_data['indexPlateWell'], i7IndexID = lib_prep_data['i7IndexID'],
             i7Index = lib_prep_data['i7Index'], i5IndexID = lib_prep_data['i5IndexID'],
             i5Index = lib_prep_data['i5Index'], singlePairedEnd = single_paired, lengthRead = read_length,
-            libPrepCodeID = lib_prep_data['lib_code_id'], libPrepState = lib_state)
+            libPrepCodeID = lib_prep_data['lib_code_id'], libPrepState = lib_state,
+            uniqueID = lib_prep_data['uniqueID'], assay = lib_prep_data['assay'])
 
         return new_lib_prep
 
@@ -903,11 +913,13 @@ class LibraryPreparation (models.Model):
                 on_delete= models.CASCADE, null = True, blank = True)
     pools = models.ManyToManyField(LibraryPool, blank = True)
 
+    assay = models.CharField(max_length=70, null = True, blank = True)
     libPrepCodeID = models.CharField(max_length=255, null = True, blank = True)
     userSampleID = models.CharField(max_length =20 , null = True, blank = True)
     projectInSampleSheet = models.CharField(max_length =50, null = True, blank = True)
     samplePlate = models.CharField(max_length =50, null = True, blank = True)
     sampleWell = models.CharField(max_length =20, null = True, blank = True)
+    indexPlateWell = models.CharField(max_length =20, null = True, blank = True)
     i7IndexID = models.CharField(max_length =16, null = True, blank = True)
     i7Index = models.CharField(max_length =16, null = True, blank = True)
     i5IndexID = models.CharField(max_length =16, null = True, blank = True)
@@ -916,7 +928,7 @@ class LibraryPreparation (models.Model):
     singlePairedEnd  = models.CharField(max_length =20, null = True, blank = True)
     lengthRead = models.CharField(max_length =5, null = True, blank = True)
     numberOfReused = models.IntegerField(default=0)
-    uniqueID = models.CharField(max_length =10, null = True, blank = True)
+    uniqueID = models.CharField(max_length =16, null = True, blank = True)
 
     class Meta:
         ordering = ('libPrepCodeID',)
@@ -924,6 +936,12 @@ class LibraryPreparation (models.Model):
 
     def __str__ (self):
         return '%s' %(self.sample_id)
+
+    def get_adapter(self):
+        return '%s' %(self.adapter)
+
+    def get_collection_index_name (self):
+        return '%s' %(self.collectionIndex_id.get_collection_index_name())
 
     def get_id (self):
         return '%s' %(self.pk)
@@ -961,31 +979,33 @@ class LibraryPreparation (models.Model):
 
     def get_info_for_run_paired_end(self):
         lib_info = []
-        lib_info.append(self.sample_id.get_unique_sample_id())
+        lib_info.append(self.uniqueID)
         lib_info.append(self.sample_id.get_sample_name())
         lib_info.append(self.samplePlate)
         lib_info.append(self.sampleWell)
-        lib_info.append('') # position for Index_Plate_Well
+        lib_info.append(self.indexPlateWell)
         lib_info.append(self.i7IndexID)
         lib_info.append(self.i7Index)
         lib_info.append(self.i5IndexID)
         lib_info.append(self.i5Index)
         lib_info.append(self.projectInSampleSheet)
         lib_info.append(self.registerUser.username)
+        lib_info.append(self.collectionIndex_id.get_collection_index_name())
         return lib_info
 
 
     def get_info_for_run_single_read(self):
         lib_info = []
-        lib_info.append(self.sample_id.get_unique_sample_id())
+        lib_info.append(self.uniqueID)
         lib_info.append(self.sample_id.get_sample_name())
         lib_info.append(self.samplePlate)
         lib_info.append(self.sampleWell)
-        lib_info.append('') # position for Index_Plate_Well
+        lib_info.append(self.indexPlateWell)
         lib_info.append(self.i7IndexID)
         lib_info.append(self.i7Index)
         lib_info.append(self.projectInSampleSheet)
-        lib_info.append(self.self.registerUser.username)
+        lib_info.append(self.registerUser.username)
+        lib_info.append(self.collectionIndex_id.get_collection_index_name())
         return lib_info
 
 
@@ -1054,6 +1074,10 @@ class LibraryPreparation (models.Model):
     def get_state(self):
         return '%s' %(self.libPrepState.libPrepState)
 
+    def get_unique_id(self):
+        return '%s' %(self.uniqueID)
+
+
     def set_increase_reuse(self):
         self.numberOfReused += 1
         self.save()
@@ -1101,6 +1125,8 @@ class LibraryPreparation (models.Model):
         self.lengthRead = read_length
         self.libPrepCodeID = lib_prep_data['lib_code_id']
         self.libPrepState = lib_state
+        self.uniqueID = lib_prep_data['uniqueID']
+        self.assay = lib_prep_data['assay']
         self.save()
         return self
 

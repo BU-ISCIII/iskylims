@@ -22,7 +22,8 @@
                     <div class="panel-body">
                         <form method="post" enctype="multipart/form-data" name="storeDataNewRun"  id="storeDataNewRun" class="form-horizontal well">
                             {% csrf_token %}
-                                <p>Define the information for the Run <strong>{{display_sample_information.experiment_name}}</strong></p>
+                            <h3>{{display_sample_information.experiment_name}}</h3>
+                                <p>Confirm/ Update library preparation indexes to create the new Run <strong>{{display_sample_information.experiment_name}}</strong></p>
 
                                 <input type="hidden" name="action" value="storeDataNewRun"/>
                                 <input type="hidden" name="lib_prep_ids" value="{{display_sample_information.lib_prep_ids}}"/>
