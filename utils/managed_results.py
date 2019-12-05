@@ -16,15 +16,20 @@ def add_result_protocol_parameters (request):
     fixed_heading_length = parameters_length - len(parameter_heading)
     for row_index in range(len(json_data)) :
         c_sample_obj = get_sample_clinic_obj_from_id(c_samples[row_index])
-        c_sample_obj.set_state('Completed')
-        c_sample_updated_list.append(c_sample_obj.get_id())
 
+        empty_values = True
         for p_index in range(fixed_heading_length, parameters_length):
             result_parameter_value['parameter_id'] = ProtocolParameters.objects.get(protocol_id = protocol_used_obj,
                                 parameterName__exact = parameter_heading[p_index - fixed_heading_length])
             result_parameter_value['clinicSample_id'] = c_sample_obj
-            result_parameter_value['parameterValue'] = json_data[row_index] [p_index]
+            value = json_data[row_index] [p_index]
+            result_parameter_value['parameterValue'] = value
             new_parameters_data = ResultParameterValue.objects.create_result_parameter_value (result_parameter_value)
+            if value != '':
+                empty_values = False
+        if not empty_values :
+            c_sample_obj.set_state('Completed')
+            c_sample_updated_list.append(c_sample_obj.get_id())
     return c_sample_updated_list
 
 def define_table_for_result_parameters(c_sample_ids):

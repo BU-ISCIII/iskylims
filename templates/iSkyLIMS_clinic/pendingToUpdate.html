@@ -8,6 +8,20 @@
         font-size: 150%;
     }
 </style>
+<style>
+.table-wrapper {
+    max-height: 450px;
+    overflow: auto;
+    display:inline-block;
+    width: 610px;
+}
+.table-wrapper-sm-4 {
+    max-height: 450px;
+    overflow: auto;
+    display:inline-block;
+    width: 370px;
+}
+</style>
     <div class="row row-space-4 margin-b-4">
         <div class="col-sm-12" >
             <div class="col-sm-7" >
@@ -16,33 +30,35 @@
                         <div class="panel-heading"><h3>Samples need to be updated with Patient information</h3></div>
                         <div class="panel-body">
 
-                            <form method="post" action="/clinic/define_patient_information" enctype="multipart/form-data" name="continueWithPatient"  id="continueWithPatient" class="form-horizontal well">
+                            <form method="post" action="/clinic/definePatientInformation" enctype="multipart/form-data" name="continueWithPatient"  id="continueWithPatient" class="form-horizontal well">
                             {% csrf_token %}
                                 <input type="hidden" name="action" value="continueWithPatient"/>
                                 <input type="hidden" name="samples_in_list" value="True"/>
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            {% for value in pending.defined.sample_heading %}
-                                                <th> {{ value }}</th>
-                                            {% endfor %}
-                                            <th>To be included</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for s_name,  lab, s_type, species, date , s_id in pending.defined.sample_information  %}
+                                <div class="table-wrapper">
+                                    <table class="table table-hover">
+                                        <thead>
                                             <tr>
-                                                    <td>{{s_name}}</td>
-                                                    <td>{{lab}}</td>
-                                                    <td>{{s_type}}</td>
-                                                    <td>{{species}}</td>
-                                                    <td>{{date}}</td>
-                                                    <td><input type="checkbox" name="c_samples" value="{{s_id}}"></td>
+                                                {% for value in pending.defined.sample_heading %}
+                                                    <th> {{ value }}</th>
+                                                {% endfor %}
+                                                <th>To be included</th>
                                             </tr>
-                                        {% endfor %}
+                                        </thead>
+                                        <tbody>
+                                            {% for s_name,  lab, s_type, species, date , s_id in pending.defined.sample_information  %}
+                                                <tr>
+                                                        <td>{{s_name}}</td>
+                                                        <td>{{lab}}</td>
+                                                        <td>{{s_type}}</td>
+                                                        <td>{{species}}</td>
+                                                        <td>{{date}}</td>
+                                                        <td><input type="checkbox" name="c_samples" value="{{s_id}}"></td>
+                                                </tr>
+                                            {% endfor %}
 
-                                    </tbody>
-                                </table>
+                                        </tbody>
+                                    </table>
+                                </div> <!--  end of table wrapper  -->
                                 <br><br>
                                 <input type="button" value="Return Home" onclick="location.href ='/clinic' ;"/>
                                 <input class="btn pull-right btn-primary" type="submit" value="Submit">

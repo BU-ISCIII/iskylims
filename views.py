@@ -103,8 +103,9 @@ def define_new_samples(request):
 @login_required
 def define_patient_information(request):
     if request.method == 'POST' and request.POST['action'] == 'continueWithPatient':
+        #import pdb; pdb.set_trace()
         if 'samples_in_list' in request.POST:
-            patient_information = request.POST.getlist('c_samples')
+            patient_information = prepare_patient_form(request.POST.getlist('c_samples'))
         else:
             patient_information = prepare_patient_form(request.POST['clinic_samples'].split(','))
         return render(request, 'iSkyLIMS_clinic/definePatientInformation.html',{'patient_information':patient_information})
