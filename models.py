@@ -433,10 +433,11 @@ class MoleculePreparation (models.Model):
         return "%s" %(self.pk)
 
     def get_info_for_display(self):
+        extraction_date = self.moleculeExtractionDate.strftime("%d, %B, %Y")
         molecule_info =[]
         molecule_info.append(self.moleculeCodeId)
         molecule_info.append(self.state.get_molecule_state())
-        molecule_info.append(self.moleculeExtractionDate)
+        molecule_info.append(extraction_date )
         molecule_info.append(self.extractionType)
         molecule_info.append(self.moleculeUsed.get_name())
         molecule_info.append(self.protocolUsed.get_name())

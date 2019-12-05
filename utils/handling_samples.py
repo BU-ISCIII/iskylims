@@ -544,12 +544,12 @@ def get_modules_type ():
         molecule_type.append(type.get_name())
     return molecule_type
 
-def get_molecule_protocols ():
+def get_molecule_protocols (apps_name):
     '''
     Description:
         The function will return the protocols defined.
     Input:
-        none
+        apps_name
     Variables:
         protocols # dictionary containing all protocols using "key" as protocol type
     Return:
@@ -558,16 +558,18 @@ def get_molecule_protocols ():
     protocol_types = []
     protocol_list = []
     protocols = {}
-    p_types = ProtocolType.objects.filter(molecule__isnull = False)
+    p_types = ProtocolType.objects.filter(molecule__isnull = False, apps_name__exact = apps_name)
+
     for p_type in p_types :
         protocol_types.append(p_type.get_name())
-    for protocol_type in protocol_types:
-        if protocol_type not in protocols :
-            protocols[protocol_type] = []
-        protocols_in_type = Protocols.objects.filter(type__protocol_type__exact = protocol_type)
+    for protocol_type in p_types:
+        if protocol_type.get_name() not in protocols :
+            protocols[protocol_type.get_name()] = []
+        protocols_in_type = Protocols.objects.filter(type = protocol_type)
+        # protocols_in_type = Protocols.objects.filter(type__protocol_type__exact = protocol_type)
         for p_in_type in protocols_in_type:
             protocol_name = p_in_type.get_name()
-            protocols[protocol_type].append(protocol_name)
+            protocols[protocol_type.get_name()].append(protocol_name)
             protocol_list.append(protocol_name)
 
     return protocols, protocol_list
@@ -709,7 +711,7 @@ def get_info_for_reprocess_samples(sample_ids, sample_in_action):
 
     return sample_recorded
 
-def get_table_record_molecule (samples):
+def get_table_record_molecule (samples, apps_name):
     '''
     Description:    The function get the sampleID to create the molecule table.
     Input:
@@ -741,7 +743,7 @@ def get_table_record_molecule (samples):
         data[0] = Samples.objects.get(pk__exact = sample).get_sample_code()
         molecule_information['data'].append(data)
     molecule_information['type_of_molecules'] = get_modules_type ()
-    molecule_information['protocols_dict'],molecule_information['protocol_list']  = get_molecule_protocols()
+    molecule_information['protocols_dict'],molecule_information['protocol_list']  = get_molecule_protocols(apps_name)
     molecule_information['number_of_samples'] = len(valid_samples)
     molecule_information['table_length']  = len(HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION)
 
@@ -788,10 +790,13 @@ def search_samples(sample_name, user_name, sample_state, start_date, end_date ):
         sample_founds = sample_founds.filter(generated_at__gte = start_date)
 
     if start_date =='' and end_date  != '':
-            sample_founds = sample_founds.filter(run_date__lte = end_date )
+            sample_founds = sample_founds.filter(generated_at__lte = end_date )
+
+    if len(sample_founds) == 1:
+        sample_list.append(sample_founds[0].pk)
+        return sample_list
 
     for sample in sample_founds :
-
         sample_list.append(sample.get_info_for_searching())
     return sample_list
 
