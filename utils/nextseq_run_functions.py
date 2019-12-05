@@ -226,12 +226,12 @@ def manage_nextseq_in_processing_run(conn, run_object_name) :
         run_completion_date = run_object_name.set_run_completion_date(run_completion_date)
 
     except Exception as e:
-        logger.info ('Completion status file still is not present on the run folder')
+        logger.info ('Completion status file still is not present on the run folder for run %s ', experiment_name)
         logger.debug ('End function for handling manage_nextseq_in_processing_run waiting Completion file')
         #raise Exception ( 'Completion file not present')
         return
     finally :
-        logger.info ('Deleting local copy of completion status')
+        logger.info ('Deleting local copy of completion status for run %s' , experiment_name)
         # cleaning up the completion  in local temporary file
         os.remove(l_run_completion)
 
@@ -239,7 +239,7 @@ def manage_nextseq_in_processing_run(conn, run_object_name) :
         string_message = 'Run status was ' + completion_status
         logging_errors (string_message, False, False)
         # Set tun to Cancelled state
-        logger.info('Set run to cancelled state')
+        logger.info('Set run %s  to cancelled state', experiment_name)
         logger.debug ('End function for manage_nextseq_in_processing_run cancelled')
         raise ValueError ('Run was CANCELLED')
     else:
@@ -387,7 +387,3 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
             logger.debug ('End function fhandle_nextseq_recorded_run with exception')
             raise ValueError ('Run on wrong state')
     return
-
-
-
-

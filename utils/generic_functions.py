@@ -232,7 +232,7 @@ def get_new_runs_from_remote_server (processed_runs, conn, shared_folder):
                 continue
             # if the run folder has been already process continue searching
             if folder_run in processed_runs:
-                logger.debug('folder run  %s already processed', folder_run)
+                #logger.debug('folder run  %s already processed', folder_run)
                 continue
             else:
                 logger.info ('Found a new run  %s ',folder_run)

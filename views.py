@@ -3329,13 +3329,11 @@ def search_lib_samples (request):
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
                      'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
         ### Get projects when sample name is not empty
-
         sample_list = search_samples(sample_name, user_name, sample_state, start_date, end_date )
 
         if len(sample_list) == 0:
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No sample found with your match conditions ']})
         elif len(sample_list) == 1:
-
             return redirect ('display_libSample' , sample_id = sample_list[0])
         else:
             return render(request, 'iSkyLIMS_wetlab/searchLibSample.html',{'sample_list':sample_list})
@@ -3356,7 +3354,7 @@ def set_Molecule_values(request):
         else:
             samples = request.POST['samples'].split(',')
 
-        molecule_protocol = get_table_record_molecule (samples)
+        molecule_protocol = get_table_record_molecule (samples, __package__)
         if 'ERROR' in molecule_protocol :
             return render (request, 'iSkyLIMS_wetlab/error_page.html',
                 {'content':['There was no valid sample selected ']})
@@ -3371,7 +3369,7 @@ def set_Molecule_values(request):
 
         if not 'heading' in molecule_recorded:
             samples = request.POST['samples'].split(',')
-            molecule_protocol = get_table_record_molecule (samples)
+            molecule_protocol = get_table_record_molecule (samples, __package__)
             molecule_protocol['data'] = molecule_recorded['incomplete_molecules']
             molecule_protocol['samples'] = ','.join(samples)
             return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'molecule_protocol':molecule_protocol})
