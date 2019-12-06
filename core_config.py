@@ -21,6 +21,9 @@ HEADING_FOR_DEFINED_SAMPLES_STATE = ['Sample extraction date', 'Sample Code ID',
 HEADING_FOR_EXTRACTED_MOLECULES_STATE = ['Sample extraction date', 'Sample', 'Molecule Code ID', 'Molecule Extraction Date',
                                     'Used Protocol', 'To be included']
 
+HEADING_FOR_DEFINED_SAMPLES_STATE_WETLAB_MANAGER = ['Sample extraction date', 'Sample Code ID', 'Sample','UserID']
+HEADING_FOR_EXTRACTED_MOLECULES_STATE_WETLAB_MANAGER = ['Sample extraction date', 'Sample', 'Molecule Code ID', 'Molecule Extraction Date',
+                                    'Used Protocol', 'UserID']
 
 ### Heading for display information on sample definition
 HEADING_FOR_SAMPLE_DEFINITION = ['Sample Name', 'Sample CodeID','Sample State', 'Recorded Date', 'Sample Type', 'Species', 'Number of reused', 'User']

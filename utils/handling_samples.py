@@ -172,7 +172,6 @@ def analyze_input_samples (request):
                 invalid_samples.append(Samples.objects.get(sampleName__exact = sample_name).get_sample_definition_information())
     if len(valid_samples) > 0 :
         sample_recorded['valid_samples'] = valid_samples
-        sample_recorded['heading'] = HEADING_FOR_DISPLAY_RECORDED_SAMPLES
     if len(invalid_samples) >0 :
         sample_recorded['invalid_samples'] = invalid_samples
         sample_recorded['invalid_samples_id'] = ','.join(invalid_samples_id)
@@ -181,6 +180,7 @@ def analyze_input_samples (request):
 
     if sample_recorded['all_samples_valid']:
         sample_recorded['samples_to_continue'] = ','.join(samples_continue)
+    sample_recorded['heading'] = HEADING_FOR_DISPLAY_RECORDED_SAMPLES
     sample_recorded['valid_samples_ids'] = samples_continue
     return sample_recorded
 
@@ -394,36 +394,55 @@ def get_molecule_obj_from_sample(sample_obj):
         return ''
 
 
-##### For each state get samples
+##### For each state get samples per user
 def get_samples_in_defined_state (user):
     '''
     Description:
         The function will return a list with samples which are in defined state.
     Input:
-        state  # string of the state to be matched
+        state  # string of the state to be matched. If empty then all samples in
+                defined state is returned
     Variables:
         sample_type_names # list containing all sample types names
     Return:
-        sample_type_names.
+        samples_in_state.
     '''
     sample_information = []
-    user_friend_list = get_friend_list(user)
     samples_in_state = {}
-    if Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined', sampleUser__in = user_friend_list).exists():
-    #if Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined').exists():
-        #samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined')
-        samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined', sampleUser__in = user_friend_list)
-        for sample_obj in samples_obj:
-            sample_information.append(sample_obj.get_info_in_defined_state())
-        samples_in_state['sample_information'] = sample_information
-        samples_in_state['sample_heading'] = HEADING_FOR_DEFINED_SAMPLES_STATE
-        samples_in_state['length'] = len(sample_information)
-        return samples_in_state
+    if user != '' :
+        user_friend_list = get_friend_list(user)
 
+        if Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined', sampleUser__in = user_friend_list).exists():
+        #if Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined').exists():
+            #samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined')
+            samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined', sampleUser__in = user_friend_list)
+            for sample_obj in samples_obj:
+                sample_information.append(sample_obj.get_info_in_defined_state())
+            samples_in_state['sample_information'] = sample_information
+            samples_in_state['sample_heading'] = HEADING_FOR_DEFINED_SAMPLES_STATE
+            samples_in_state['length'] = len(sample_information)
+            return samples_in_state
+
+        else:
+            samples_in_state['length'] = 0
+            return samples_in_state
     else:
-        samples_in_state['length'] = 0
-        return samples_in_state
+        if Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined').exists():
+            samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact = 'Defined').order_by('sampleUser').order_by('sampleEntryDate')
+            for sample_obj in samples_obj:
+                sample_data = sample_obj.get_info_in_defined_state()
+                sample_data.append(sample_obj.get_register_user())
+                sample_information.append(sample_data)
+            samples_in_state['sample_information'] = sample_information
+            samples_in_state['sample_heading'] = HEADING_FOR_DEFINED_SAMPLES_STATE_WETLAB_MANAGER
+            samples_in_state['length'] = len(sample_information)
+            return samples_in_state
 
+        else:
+            samples_in_state['length'] = 0
+            return samples_in_state
+
+##### For each state get molecules per user
 def get_samples_in_extracted_molecule_state (user):
     '''
     Description:
@@ -436,32 +455,53 @@ def get_samples_in_extracted_molecule_state (user):
     Return:
         molecule_state.
     '''
-    user_friend_list = get_friend_list(user)
     molecule_state = {}
     molecule_information = []
-    if Samples.objects.filter(sampleState__sampleStateName__exact = 'Extract molecule', sampleUser__in = user_friend_list).exists():
-    #if Samples.objects.filter(sampleState__sampleStateName__exact = 'Extract molecule').exists():
-        samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact = 'Extract molecule', sampleUser__in = user_friend_list)
-        for sample_obj in samples_obj:
-            molecules = MoleculePreparation.objects.filter(sample = sample_obj)
+    if user != '' :
+        user_friend_list = get_friend_list(user)
+        if Samples.objects.filter(sampleState__sampleStateName__exact = 'Extract molecule', sampleUser__in = user_friend_list).exists():
+        #if Samples.objects.filter(sampleState__sampleStateName__exact = 'Extract molecule').exists():
+            samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact = 'Extract molecule', sampleUser__in = user_friend_list)
+            for sample_obj in samples_obj:
+                molecules = MoleculePreparation.objects.filter(sample = sample_obj)
 
-            for molecule in molecules:
-                if molecule.get_state() == 'Completed':
-                    continue
-                sample_information = []
-                sample_information.append(sample_obj.get_extraction_date())
-                sample_information.append(sample_obj.get_sample_name())
-                molecule_data = molecule.get_molecule_information()
-                molecule_information.append(sample_information + molecule_data)
+                for molecule in molecules:
+                    if molecule.get_state() == 'Completed':
+                        continue
+                    sample_information = []
+                    sample_information.append(sample_obj.get_extraction_date())
+                    sample_information.append(sample_obj.get_sample_name())
+                    molecule_data = molecule.get_molecule_information()
+                    molecule_information.append(sample_information + molecule_data)
 
-        molecule_state['molecule_information'] = molecule_information
-        molecule_state['molecule_heading'] = HEADING_FOR_EXTRACTED_MOLECULES_STATE
-        molecule_state['length'] = len(molecule_information)
-        return molecule_state
+            molecule_state['molecule_information'] = molecule_information
+            molecule_state['molecule_heading'] = HEADING_FOR_EXTRACTED_MOLECULES_STATE
+            molecule_state['length'] = len(molecule_information)
+            return molecule_state
 
-    else:
-        molecule_state['length'] = 0
-        return molecule_state
+        else:
+            molecule_state['length'] = 0
+            return molecule_state
+    else :
+        if Samples.objects.filter(sampleState__sampleStateName__exact = 'Extract molecule').exists():
+            samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact = 'Extract molecule').order_by('sampleUser').order_by('sampleEntryDate')
+            for sample_obj in samples_obj:
+                molecules = MoleculePreparation.objects.filter(sample = sample_obj)
+                for molecule in molecules:
+                    if molecule.get_state() == 'Completed':
+                        continue
+                    sample_information = sample_obj.get_info_in_defined_state()
+                    sample_information.append(sample_obj.get_register_user())
+                    molecule_data = molecule.get_molecule_information()
+                    molecule_information.append(sample_information + molecule_data)
+
+            molecule_state['molecule_information'] = molecule_information
+            molecule_state['molecule_heading'] = HEADING_FOR_EXTRACTED_MOLECULES_STATE_WETLAB_MANAGER
+            molecule_state['length'] = len(molecule_information)
+            return molecule_state
+        else :
+            molecule_state['length'] = 0
+            return molecule_state
 
 ##### End of getting samples by state
 
