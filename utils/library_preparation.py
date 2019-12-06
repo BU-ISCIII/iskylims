@@ -156,34 +156,41 @@ def get_lib_prep_to_add_parameters():
 
 
 
-def check_samples_in_lib_prep_state ():
+def get_samples_in_lib_prep_state ():
     '''
     Description:
         The function will return a list with samples which are in add_library_preparation state.
         Include the ones that are requested to reprocess
     Return:
-        sample_names.
+        samples_in_lib_prep.
     '''
 
-    sample_names = []
-
+    samples_in_lib_prep = {}
+    lib_prep_data = []
     if Samples.objects.filter(sampleState__sampleStateName__exact = 'Library preparation').exists():
-        samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact =  'Library preparation')
+        samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact =  'Library preparation').order_by('sampleUser').order_by('sampleEntryDate')
 
         for sample in samples_obj :
-            if not LibraryPreparation.objects.filter(sample_id = sample).exists():
-                sample_names.append(sample.get_sample_name())
-                continue
             if LibraryPreparation.objects.filter(sample_id = sample, libPrepState__libPrepState__exact = 'Defined').exists():
                 continue
-            else:
-                sample_names.append(sample.get_sample_name())
-            '''
-            if LibraryPreparation.objects.filter(sample_id = sample, libPrepState__libPrepState__exact = 'Created for Reuse').exists():
-                sample_names.append(sample.get_sample_name())
-            '''
+            if not LibraryPreparation.objects.filter(sample_id = sample).exists() or LibraryPreparation.objects.filter(sample_id = sample, libPrepState__libPrepState__exact = 'Created for Reuse').exists() :
+                lib_prep_information = []
+                sample_information = sample.get_info_in_defined_state()
+                sample_information.append(sample.get_register_user())
+                #sample_information.append(sample.get_sample_name())
+                molecule = MoleculePreparation.objects.filter(sample = sample,state__moleculeStateName = 'Completed').last()
+                molecule_data = molecule.get_molecule_information()
+                lib_prep_information.append(sample_information + molecule_data)
 
-    return sample_names
+        samples_in_lib_prep['library_information'] = lib_prep_information
+        samples_in_lib_prep['lib_prep_heading'] = HEADING_FOR_LIBRARY_PREPARATION_STATE
+        samples_in_lib_prep['length'] = len(samples_in_lib_prep)
+
+
+        return samples_in_lib_prep
+    else :
+        samples_in_lib_prep['length'] = 0
+        return samples_in_lib_prep
 
     #if LibraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined').exists():
     #lib_preparations = libraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined')

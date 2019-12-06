@@ -15,11 +15,12 @@
     display:inline-block;
     width: 610px;
 }
-.table-wrapper-sm-4 {
+
+.table-wrapper-sm-12{
     max-height: 450px;
     overflow: auto;
     display:inline-block;
-    width: 370px;
+    width: 1170px;
 }
 </style>
     <div class="row row-space-4 margin-b-4">
@@ -29,37 +30,29 @@
                     {% if pending.defined.sample_heading %}
                     <div class="panel-heading"><h3>The following Samples can be updated with the Molecule information</h3></div>
                         <div class="panel-body">
-                            <form method="post" action="/wetlab/setMoleculeValues" enctype="multipart/form-data" name="continueWithDNA"  id="continueWithDNA" class="form-horizontal well">
-                            {% csrf_token %}
-                                <input type="hidden" name="action" value="continueWithMolecule"/>
-                                <input type="hidden" name="samples_in_list" value="True"/>
-                                <div class="table-wrapper">
+                            <div class="table-wrapper">
                                 <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                {% for value in pending.defined.sample_heading %}
-                                                    <th> {{ value }}</th>
-                                                {% endfor %}
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for date, code,  sampletype,  s_id in pending.defined.sample_information  %}
-                                                <tr>
-                                                        <td>{{date}}</td>
-                                                        <td>{{code}}</td>
-                                                        <td>{{sampletype}}</td>
-                                                        <td><input type="checkbox" name="samples" value="{{s_id}}"></td>
-                                                </tr>
+                                    <thead>
+                                        <tr>
+                                            {% for value in pending.defined.sample_heading %}
+                                                <th> {{ value }}</th>
                                             {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for date, code,  sampletype,  s_id , user in pending.defined.sample_information  %}
+                                            <tr>
+                                                    <td><a href="displayLibSample={{s_id}}">{{date}}</a></td>
+                                                    <td>{{code}}</td>
+                                                    <td>{{sampletype}}</td>
+                                                    <td>{{user}}</td>
+                                            </tr>
+                                        {% endfor %}
 
-                                        </tbody>
-                                    </table>
-                                </div> <!--  end of table wrapper  -->
-                                <br><br>
-                                <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                                <input class="btn pull-right btn-primary" type="submit" value="Submit">
-                             </form>
-
+                                    </tbody>
+                                </table>
+                            </div> <!--  end of table wrapper  -->
+                            <br><br>
                             {% else %}
                             <div class="panel-heading"><h3>Samples to be updated with the Molecule information</h3></div>
                                 <div class="panel-body">
@@ -81,10 +74,6 @@
                         {{ pending.graphic_pending_samples |safe }}
 
                     {% endif %}
-
-
-
-
                 </div>  <!--  end of panel body  -->
 
             </div> <!--// end panel -->
@@ -97,37 +86,33 @@
                 <div class="panel-heading"><h3>The following Samples can be updated with the Molecule quality parameter</h3></div>
                     <div class="panel-body">
                         {% if pending.extract_molecule.molecule_heading %}
-                        <form method="post" action="/wetlab/setMoleculeValues" enctype="multipart/form-data" name="displayMoleculeParameters"  id="displayMoleculeParameters" class="form-horizontal well">
-                        {% csrf_token %}
-                            <input type="hidden" name="action" value="displayMoleculeParameters"/>
-                            <input type="hidden" name="samples_in_list" value="True"/>
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        {% for value in pending.extract_molecule.molecule_heading %}
-                                            <th> {{ value }}</th>
-                                        {% endfor %}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for date, s_type, molecule_id, extr_date, protocol, m_id in pending.extract_molecule.molecule_information  %}
+                            <div class="table-wrapper-sm-12">
+                                <table class="table table-hover">
+                                    <thead>
                                         <tr>
-                                                <td>{{date}}</td>
-                                                <td>{{s_type}}</td>
-                                                <td>{{molecule_id}}</td>
-                                                <td>{{extr_date}}</td>
-                                                <td>{{protocol}}</td>
-                                                <td><input type="checkbox" name="molecules" value="{{m_id}}"></td>
-
+                                            {% for value in pending.extract_molecule.molecule_heading %}
+                                                <th> {{ value }}</th>
+                                            {% endfor %}
                                         </tr>
-                                    {% endfor %}
+                                    </thead>
+                                    <tbody>
+                                        {% for date, sample_id, s_type, s_id, user, molecule_id, extr_date, protocol, m_id  in pending.extract_molecule.molecule_information  %}
+                                            <tr>
+                                                    <td><a href="displayLibSample={{s_id}}">{{date}}</a></td>
+                                                    <td>{{s_type}}</td>
+                                                    <td>{{molecule_id}}</td>
+                                                    <td>{{extr_date}}</td>
+                                                    <td>{{protocol}}</td>
+                                                    <td>{{user}}</td>
 
-                                </tbody>
-                            </table>
+                                            </tr>
+                                        {% endfor %}
+
+                                    </tbody>
+                                </table>
+                            </div> <!--  end of table wrapper  -->
                             <br><br>
-                            <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                            <input class="btn pull-right btn-primary" type="submit" value="Submit">
-                         </form>
+
                         {% else %}
                             <p>There is not new samples </p>
                         {% endif %}
@@ -169,45 +154,7 @@
                             </table>
                         </div> <!--  end of table wrapper  -->
                         <br><br>
-                        <p>Import the Sample Sheet file, generated by Illumina Experiment Manager (IEM), with your samples </p>
-                        <br>
-                        <form method="post" action="/wetlab/setLibraryPreparation" enctype="multipart/form-data" name="importsamplesheet"  id="importsamplesheet" class="form-horizontal well">
-                            {% csrf_token %}
-                            <div class="form-group required">
-                              <input type="hidden" name="action" value="importsamplesheet"/>
-                              <label class="col-sm-6 control-label" for="filesample" >Upload sample sheet from Illumina Experiment Manager (IEM) </label>
-                              <div class="col-sm-6"><input class="form-control" type="file" required = "required" accept ="text/csv" name="importsamplesheet"size="80"><br></div>
 
-                            <label class="col-sm-6 control-label" for="protocol" >Select the protocol used on the samples included in Sample Sheet file </label>
-                            <div class="col-sm-4">
-                                <select class="form-control" name="lib_protocols" id="lib_protocols">
-                        				<option value="">Choose a value</option>
-                                     {% for value in pending.lib_prep_protocols %}
-                                         <option value="{{value}}">{{value}}</option>
-                                     {% endfor %}
-
-                                </select>
-                                <br><br>
-                            </div>  <!-- end select input -->
-                            <br>
-                            <label class="col-sm-6 control-label" for="singlePairedEnd" >Select if samples are  in "Single Read" or "Paired End" </label>
-                            <div class="col-sm-4">
-                                <select class="form-control" name="singlePairedEnd" id="singlePairedEnd">
-                                    <option value="">Choose a value</option>
-                                    <option value="Single">Single Read</option>
-                                    <option value="Paired End">Paired End</option>
-                               </select>
-                               <br><br>
-                            </div>  <!-- end select input -->
-
-                            <label class="col-sm-6 control-label" for="readlength" >Length of the reads </label>
-                            <div class="col-sm-4">
-                                <input type="text" name="readlength" required = "required" value="">
-                            </div>
-
-                            <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
-                            </div> <!-- End of form-group required -->
-                        </form>
                     </div>  <!--  end of panel body  -->
                 </div> <!--// end panel -->
             </div> <!--// end col-sm-12  -->

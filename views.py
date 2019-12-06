@@ -3219,7 +3219,7 @@ def pending_to_update(request):
     # get the samples in defined state
     pending['defined'] = get_samples_in_defined_state(request.user)
     pending['extract_molecule'] = get_samples_in_extracted_molecule_state(request.user)
-    pending['create_library_preparation'] = check_samples_in_lib_prep_state()
+    pending['create_library_preparation'] = get_samples_in_lib_prep_state()
     pending['lib_prep_protocols'] = get_protocol_lib()
     # get the library preparation in defined state
     pending['add_lib_prep_parameters'] = get_lib_prep_to_add_parameters()
@@ -3754,3 +3754,17 @@ def create_new_run (request):
         else:
             return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'no_pools_for_run': 'No pools'})
     return
+
+def pending_sample_preparations(request):
+    pending = {}
+    # get the samples in defined state
+    pending['defined'] = get_samples_in_defined_state('')
+    pending['extract_molecule'] = get_samples_in_extracted_molecule_state('')
+    import pdb; pdb.set_trace()
+    pending['create_library_preparation'] = get_samples_in_lib_prep_state()
+    #pending['lib_prep_protocols'] = get_protocol_lib()
+    # get the library preparation in defined state
+    pending['add_lib_prep_parameters'] = get_lib_prep_to_add_parameters()
+
+    pending ['graphic_pending_samples'] = pending_samples_for_grafic(pending).render()
+    return render(request, 'iSkyLIMS_wetlab/pendingSamplePreparations.html',{'pending': pending})
