@@ -1,12 +1,13 @@
 from django.conf import settings
 from iSkyLIMS_drylab import drylab_config
 from smb.SMBConnection import SMBConnection
+from iSkyLIMS_drylab.models import *
 
 
 def create_pdf(request,information, template_file, pdf_file_name):
     from weasyprint import HTML, CSS
     from django.template.loader import get_template
-
+    from django.template.loader import render_to_string
     from weasyprint.fonts import FontConfiguration
 
 
@@ -140,7 +141,7 @@ def open_samba_connection():
 
         conn=SMBConnection(drylab_config.SAMBA_USER_ID, drylab_config.SAMBA_USER_PASSWORD, drylab_config.SAMBA_SHARED_FOLDER_NAME,
                             drylab_config.SAMBA_REMOTE_SERVER_NAME, use_ntlm_v2=drylab_config.SAMBA_NTLM_USED, domain = drylab_config.SAMBA_DOMAIN)
-        
+
         conn.connect(drylab_config.SAMBA_IP_SERVER, int(drylab_config.SAMBA_PORT_SERVER))
     except:
         return False
