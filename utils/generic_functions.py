@@ -374,8 +374,8 @@ def logging_errors(string_text, showing_traceback , print_on_screen ):
     logger.error('-----------------    END ERROR   --------------')
     if wetlab_config.SENT_EMAIL_ON_ERROR :
         subject = 'Error found on wetlab'
-        send_error_email_to_user (subject, string_text, FROM_EMAIL_ADDRESS,
-                                TO_EMAIL_ADDRESS)
+        send_error_email_to_user (subject, string_text, wetlab_config.FROM_EMAIL_ADDRESS,
+                                wetlab_config.TO_EMAIL_ADDRESS)
     if print_on_screen :
         from datetime import datetime
         print('********* ERROR **********')
