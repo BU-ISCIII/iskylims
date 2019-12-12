@@ -3459,7 +3459,7 @@ def set_library_preparation(request):
                 'detail_description': detail_description })
         import pdb; pdb.set_trace()
 
-        stored_lib_prep = prepare_lib_prep_table_new_run (index_adapters, request, extracted_data_list, 
+        stored_lib_prep = prepare_lib_prep_table_new_run (index_adapters, request, extracted_data_list,
                                     file_name, assay, adapter1, adapter2)
 
         return render (request, 'iSkyLIMS_wetlab/setLibraryPreparation.html', {'stored_lib_prep':stored_lib_prep})
@@ -3589,7 +3589,7 @@ def create_pool (request):
             pool_data['poolCodeID'] = generate_pool_code_id()
             pool_data['registerUser'] = request.user
             pool_data['adapter'] = adapter
-            pool_data['paired'] = paired
+            pool_data['pairedEnd'] = paired
             pool_data['collectionIndex'] = collection_index
             pool_data['assay'] = assay
             number_s_in_pool = 0

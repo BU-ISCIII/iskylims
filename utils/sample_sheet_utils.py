@@ -61,6 +61,7 @@ def get_adapters (in_file):
         line = line.rstrip()
         if line == '':
             continue
+
         found_adapter = re.search('^Adapter',line)
         if found_adapter :
             adapter_code = line.split(',')[1]
@@ -70,7 +71,7 @@ def get_adapters (in_file):
             else:
                 adapter2 = adapter_code
                 break
-        data_found = re.search('^[Data]')
+        data_found = re.search('^\[Data]',line)
         if data_found:
             break
     fh.close()

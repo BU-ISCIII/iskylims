@@ -11,7 +11,7 @@ def check_lib_prep_adapter(lib_prep_ids):
         lib_prep_obj =  LibraryPreparation.objects.get(pk__exact = lib_prep_id)
         adapters.append(lib_prep_obj.get_adapters()[0])
     adap_list = list(set(adapters))
-    if len(adap) == 1:
+    if len(adap_list) == 1:
         return True, ''.join(adap_list)
     else:
         return False, adap_list

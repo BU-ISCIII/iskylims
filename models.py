@@ -756,6 +756,9 @@ class libPreparationUserSampleSheet (models.Model):
     def __str__ (self):
         return '%s' %(self.sampleSheet)
 
+    def get_assay(self):
+        return '%s' %(self.assay)
+
     def get_adapters(self):
         adapters = []
         adapters.append(self.adapter1)
@@ -880,7 +883,7 @@ class libraryPreparationManager(models.Manager):
             i7Index = lib_prep_data['i7Index'], i5IndexID = lib_prep_data['i5IndexID'],
             i5Index = lib_prep_data['i5Index'], singlePairedEnd = single_paired, lengthRead = read_length,
             libPrepCodeID = lib_prep_data['lib_code_id'], libPrepState = lib_state,
-            uniqueID = lib_prep_data['uniqueID'], assay = lib_prep_data['assay'])
+            uniqueID = lib_prep_data['uniqueID'])
 
         return new_lib_prep
 
@@ -947,6 +950,9 @@ class LibraryPreparation (models.Model):
 
     def __str__ (self):
         return '%s' %(self.sample_id)
+
+    def get_assay(self):
+        return '%s' %(self.user_sample_sheet.get_assay())
 
     def get_adapters(self):
         return self.user_sample_sheet.get_adapters()
