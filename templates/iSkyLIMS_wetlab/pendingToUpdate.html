@@ -155,7 +155,7 @@
                                 <tbody>
                                     {% for date, sample_id, s_type, s_id, user, molecule_id, extr_date, protocol, m_id  in pending.create_library_preparation.library_information  %}
                                         <tr>
-                                                <td><a href="displayLibSample={{s_id}}">{{date}}</a></td>
+                                                <td>{{date}}</td>
                                                 <td>{{s_type}}</td>
                                                 <td>{{molecule_id}}</td>
                                                 <td>{{extr_date}}</td>

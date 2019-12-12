@@ -174,18 +174,15 @@ def get_samples_in_lib_prep_state ():
             if LibraryPreparation.objects.filter(sample_id = sample, libPrepState__libPrepState__exact = 'Defined').exists():
                 continue
             if not LibraryPreparation.objects.filter(sample_id = sample).exists() or LibraryPreparation.objects.filter(sample_id = sample, libPrepState__libPrepState__exact = 'Created for Reuse').exists() :
-                lib_prep_information = []
                 sample_information = sample.get_info_in_defined_state()
                 sample_information.append(sample.get_register_user())
-                #sample_information.append(sample.get_sample_name())
                 molecule = MoleculePreparation.objects.filter(sample = sample,state__moleculeStateName = 'Completed').last()
                 molecule_data = molecule.get_molecule_information()
-                lib_prep_information.append(sample_information + molecule_data)
+                lib_prep_data.append(sample_information + molecule_data)
 
-        samples_in_lib_prep['library_information'] = lib_prep_information
+        samples_in_lib_prep['library_information'] = lib_prep_data
         samples_in_lib_prep['lib_prep_heading'] = HEADING_FOR_LIBRARY_PREPARATION_STATE
-        samples_in_lib_prep['length'] = len(samples_in_lib_prep)
-
+        samples_in_lib_prep['length'] = len(lib_prep_data)
 
         return samples_in_lib_prep
     else :

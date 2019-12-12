@@ -204,6 +204,7 @@ class Projects(models.Model):
     LibraryKit_id = models.ForeignKey(
             BaseSpaceLibraryName,
             on_delete=models.CASCADE , null=True)
+    BaseSpaceLibrary = models.CharField(max_length=45, null=True, blank=True)
     projectName= models.CharField(max_length=45)
     libraryKit=models.CharField(max_length=125)
     baseSpaceFile = models.CharField(max_length=255)
@@ -912,7 +913,8 @@ class LibraryPreparation (models.Model):
                 CollectionIndexKit,
                 on_delete= models.CASCADE, null = True, blank = True)
     pools = models.ManyToManyField(LibraryPool, blank = True)
-
+    adapter1 = models.CharField(max_length=70, null = True, blank = True)
+    adapter2 = models.CharField(max_length=70, null = True, blank = True)
     assay = models.CharField(max_length=70, null = True, blank = True)
     libPrepCodeID = models.CharField(max_length=255, null = True, blank = True)
     userSampleID = models.CharField(max_length =20 , null = True, blank = True)

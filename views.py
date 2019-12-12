@@ -3760,7 +3760,6 @@ def pending_sample_preparations(request):
     # get the samples in defined state
     pending['defined'] = get_samples_in_defined_state('')
     pending['extract_molecule'] = get_samples_in_extracted_molecule_state('')
-    import pdb; pdb.set_trace()
     pending['create_library_preparation'] = get_samples_in_lib_prep_state()
     #pending['lib_prep_protocols'] = get_protocol_lib()
     # get the library preparation in defined state
