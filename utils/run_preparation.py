@@ -329,7 +329,7 @@ def parsing_data_for_sample_sheet_file(new_sample_sheet_data, mapping, heading_s
     return data
 
 
-def prepare_lib_prep_table_new_run (index_adapters, request, extracted_data_list, file_name, assay):
+def prepare_lib_prep_table_new_run (index_adapters, request, extracted_data_list, file_name, assay, adapter1, adapter2):
     protocol = request.POST['lib_protocols']
     single_paired = request.POST['singlePairedEnd']
     read_length = request.POST['readlength']
@@ -347,6 +347,9 @@ def prepare_lib_prep_table_new_run (index_adapters, request, extracted_data_list
     user_sample_sheet_data['collectionIndexKit_id'] = collection_index_kit_id
 
     user_sample_sheet_data['sampleSheet'] = file_name
+    user_sample_sheet_data['assay'] = assay
+    user_sample_sheet_data['adapter1'] = adapter1
+    user_sample_sheet_data['adapter2'] = adapter2
     new_user_s_sheet_obj = libPreparationUserSampleSheet.objects.create_lib_prep_user_sample_sheet(user_sample_sheet_data)
 
 

@@ -733,7 +733,9 @@ class libPreparationUserSampleSheetManager (models.Manager):
     def create_lib_prep_user_sample_sheet (self, user_sample_sheet_data):
         new_lib_prep_user_sample_sheet = self.create(registerUser = user_sample_sheet_data['registerUser'],
                     collectionIndexKit_id  = user_sample_sheet_data['collectionIndexKit_id'],
-                    sampleSheet = user_sample_sheet_data['sampleSheet'])
+                    sampleSheet = user_sample_sheet_data['sampleSheet'],
+                    assay = user_sample_sheet_data['assay'], adapter1 = user_sample_sheet_data['adapter1'],
+                    adapter2 = user_sample_sheet_data['adapter2'])
         return new_lib_prep_user_sample_sheet
 
 class libPreparationUserSampleSheet (models.Model):
@@ -747,9 +749,18 @@ class libPreparationUserSampleSheet (models.Model):
 
     sampleSheet = models.FileField(upload_to = wetlab_config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY)
     generatedat = models.DateTimeField(auto_now_add=True, null=True)
+    adapter1 = models.CharField(max_length=70, null = True, blank = True)
+    adapter2 = models.CharField(max_length=70, null = True, blank = True)
+    assay = models.CharField(max_length=70, null = True, blank = True)
 
     def __str__ (self):
         return '%s' %(self.sampleSheet)
+
+    def get_adapters(self):
+        adapters = []
+        adapters.append(self.adapter1)
+        adapters.append(self.adapter2)
+        return adapters
 
     objects = libPreparationUserSampleSheetManager()
 
@@ -913,9 +924,7 @@ class LibraryPreparation (models.Model):
                 CollectionIndexKit,
                 on_delete= models.CASCADE, null = True, blank = True)
     pools = models.ManyToManyField(LibraryPool, blank = True)
-    adapter1 = models.CharField(max_length=70, null = True, blank = True)
-    adapter2 = models.CharField(max_length=70, null = True, blank = True)
-    assay = models.CharField(max_length=70, null = True, blank = True)
+
     libPrepCodeID = models.CharField(max_length=255, null = True, blank = True)
     userSampleID = models.CharField(max_length =20 , null = True, blank = True)
     projectInSampleSheet = models.CharField(max_length =50, null = True, blank = True)
@@ -939,8 +948,8 @@ class LibraryPreparation (models.Model):
     def __str__ (self):
         return '%s' %(self.sample_id)
 
-    def get_adapter(self):
-        return '%s' %(self.adapter)
+    def get_adapters(self):
+        return self.user_sample_sheet.get_adapters()
 
     def get_collection_index_name (self):
         return '%s' %(self.collectionIndex_id.get_collection_index_name())

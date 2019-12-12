@@ -51,6 +51,32 @@ def include_csv_header (library_kit, out_file, plate, container):
     #### adding additional line
     out_file.write('\n')
 
+def get_adapters (in_file):
+    adapter1 = ''
+    adapter2 = ''
+    ## For accepting characters like spanish characters.
+    import codecs
+    fh = codecs.open(in_file, 'r', 'utf-8')
+    for line in fh:
+        line = line.rstrip()
+        if line == '':
+            continue
+        found_adapter = re.search('^Adapter',line)
+        if found_adapter :
+            adapter_code = line.split(',')[1]
+            if adapter1 == '':
+                adapter1 = adapter_code
+                continue
+            else:
+                adapter2 = adapter_code
+                break
+        data_found = re.search('^[Data]')
+        if data_found:
+            break
+    fh.close()
+
+    return adapter1, adapter2
+
 def get_indexes_adapters (in_file):
     index_adapters = ''
     ## For accepting characters like spanish characters.

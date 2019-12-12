@@ -3439,6 +3439,7 @@ def set_library_preparation(request):
         library_prep_workflow = get_library_name(stored_file)
 
         index_adapters = get_indexes_adapters (stored_file)
+        adapter1, adapter2 = get_adapters(stored_file)
         assay = get_assay_from_file (stored_file)
         # store user sample sheet in database
         #user_sample_sheet_data = {}
@@ -3456,8 +3457,10 @@ def set_library_preparation(request):
             return render ( request,'iSkyLIMS_wetlab/error_page.html',
                 {'content':['Found some samples, has the same index' ],
                 'detail_description': detail_description })
+        import pdb; pdb.set_trace()
 
-        stored_lib_prep = prepare_lib_prep_table_new_run (index_adapters, request, extracted_data_list, file_name, assay)
+        stored_lib_prep = prepare_lib_prep_table_new_run (index_adapters, request, extracted_data_list, 
+                                    file_name, assay, adapter1, adapter2)
 
         return render (request, 'iSkyLIMS_wetlab/setLibraryPreparation.html', {'stored_lib_prep':stored_lib_prep})
 
