@@ -104,7 +104,7 @@ def get_latest_miseq_log(conn, log_folder) :
 
     temporary_log = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY,'miseq_cycle.log')
     s_latest_log = os.path.join(log_folder,latest_log)
-    
+
     #with open(temporary_log ,'wb') as log_fp :
     temporary_log = fetch_remote_file (conn, log_folder, s_latest_log, temporary_log)
 
@@ -448,7 +448,7 @@ def validate_sample_sheet (sample_sheet):
             logger.debug('End the function validate sample_sheet with error')
             return False
         if Projects.objects.filter(projectName__exact = project).exists():
-            string_message = 'project name "' + project + '" already been used ' 
+            string_message = 'project name "' + project + '" already been used '
             logging_errors(string_message, False, False)
             logger.debug('Exiting the function validate sample_sheet with error')
             return False
@@ -642,6 +642,7 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
             new_run_process = save_new_miseq_run (experiment_name, run_date, instrument)
             logger.info ('New RunProcess %s was stored on database', experiment_name)
         except Exception as e :
+            string_message = new_run + 'Unable to save MiSeq Run  into Database'
             logging_errors(string_message, True, False)
             logger.info('Skiping the run %s , due to the error on saving new run ', new_run)
             # deleting temporary copy of RunParameter and RunInfo files
@@ -720,5 +721,3 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
         logging_errors(string_message, False, True)
         logger.debug ('End function for handling miSeq run with error')
         raise ValueError ('Wrong run state ')
-
-
