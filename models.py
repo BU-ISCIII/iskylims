@@ -183,7 +183,7 @@ class RunProcess(models.Model):
         self.save()
         return True
 
-class BaseSpaceLibraryName (models.Model):
+class LibraryKit (models.Model):
     libraryName = models.CharField(max_length=125)
     #sampleNumber = models.CharField(max_length = 25)
     #indexNumber = models.CharField(max_length = 25)
@@ -202,7 +202,7 @@ class Projects(models.Model):
             on_delete=models.CASCADE, null = True) # added null for new lab process functionality
     user_id= models.ForeignKey(User,on_delete=models.CASCADE, null = True)
     LibraryKit_id = models.ForeignKey(
-            BaseSpaceLibraryName,
+            LibraryKit,
             on_delete=models.CASCADE , null=True)
     BaseSpaceLibrary = models.CharField(max_length=45, null=True, blank=True)
     projectName= models.CharField(max_length=45)
