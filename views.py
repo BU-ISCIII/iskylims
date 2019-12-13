@@ -1719,68 +1719,68 @@ def stats_per_researcher (request):
                         else:
                             total_lanes_summary[sequencer] = ''
 
+                    if len(total_lanes_summary) > 0:
+                        comp_graphs, comp_seq_graphs = [] , []
+                        for sequencer in projects_name_dict.keys() :
+                            for lane_summary in total_lanes_summary[sequencer] :
+                                q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane_summary.get_stats_info().split(';')
+                                total_q_30_list.append(float(q_30_value))
+                                total_mean_q_list.append(float(mean_q_value))
+                                total_yield_mb_list.append(int(yield_mb_value.replace(',','')))
+                                total_cluster_pf_list.append(int(cluster_pf_value.replace(',','')))
+                            comp_q30_dict[sequencer]['Other investigators']= format(statistics.mean(total_q_30_list), '.2f')
+                            comp_mean_q_dict[sequencer]['Other investigators'] = format(statistics.mean(total_mean_q_list), '.2f')
+                            comp_yield_mb_dict[sequencer]['Other investigators'] = sum(total_yield_mb_list)
+                            comp_cluster_pf_dict[sequencer]['Other investigators'] = sum(total_cluster_pf_list)
+                            # create the graphic for q30 quality
 
-                    comp_graphs, comp_seq_graphs = [] , []
-                    for sequencer in projects_name_dict.keys() :
-                        for lane_summary in total_lanes_summary[sequencer] :
-                            q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane_summary.get_stats_info().split(';')
-                            total_q_30_list.append(float(q_30_value))
-                            total_mean_q_list.append(float(mean_q_value))
-                            total_yield_mb_list.append(int(yield_mb_value.replace(',','')))
-                            total_cluster_pf_list.append(int(cluster_pf_value.replace(',','')))
-                        comp_q30_dict[sequencer]['Other investigators']= format(statistics.mean(total_q_30_list), '.2f')
-                        comp_mean_q_dict[sequencer]['Other investigators'] = format(statistics.mean(total_mean_q_list), '.2f')
-                        comp_yield_mb_dict[sequencer]['Other investigators'] = sum(total_yield_mb_list)
-                        comp_cluster_pf_dict[sequencer]['Other investigators'] = sum(total_cluster_pf_list)
-                        # create the graphic for q30 quality
+                            theme = ''
+                            heading = 'Comparation graphics for Q > 30 for investigator ' + r_name
+                            sub_caption = ''
+                            x_axis_name = r_name + ' versus other investigators'
+                            y_axis_name = 'Q 30 (in %)'
 
-                        theme = ''
-                        heading = 'Comparation graphics for Q > 30 for investigator ' + r_name
-                        sub_caption = ''
-                        x_axis_name = r_name + ' versus other investigators'
-                        y_axis_name = 'Q 30 (in %)'
+                            data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_q30_dict[sequencer])
+                            seq_chart = sequencer + 'comparation_q30_chart'
+                            seq_graph = sequencer + 'comparation_q30_graph'
+                            comp_q30_seq_graph = FusionCharts("column3d", seq_graph , "500", "350",seq_chart , "json", data_source).render()
+                            comp_seq_graphs.append([seq_chart, comp_q30_seq_graph])
 
-                        data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_q30_dict[sequencer])
-                        seq_chart = sequencer + 'comparation_q30_chart'
-                        seq_graph = sequencer + 'comparation_q30_graph'
-                        comp_q30_seq_graph = FusionCharts("column3d", seq_graph , "500", "350",seq_chart , "json", data_source).render()
-                        comp_seq_graphs.append([seq_chart, comp_q30_seq_graph])
+                            theme = ''
+                            heading = 'Comparation graphics for Mean Quality for investigator ' + r_name
+                            sub_caption = ''
+                            x_axis_name = r_name + ' versus other investigators'
+                            y_axis_name = 'Mean Quality'
+                            data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_mean_q_dict[sequencer])
+                            seq_chart = sequencer + 'comparation_mean_q_chart'
+                            seq_graph = sequencer + 'comparation_mean_q_graph'
+                            comp_mean_q_seq_graph = FusionCharts("column3d", seq_graph , "500", "350",seq_chart , "json", data_source).render()
+                            comp_seq_graphs.append([seq_chart, comp_mean_q_seq_graph])
 
-                        theme = ''
-                        heading = 'Comparation graphics for Mean Quality for investigator ' + r_name
-                        sub_caption = ''
-                        x_axis_name = r_name + ' versus other investigators'
-                        y_axis_name = 'Mean Quality'
-                        data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_mean_q_dict[sequencer])
-                        seq_chart = sequencer + 'comparation_mean_q_chart'
-                        seq_graph = sequencer + 'comparation_mean_q_graph'
-                        comp_mean_q_seq_graph = FusionCharts("column3d", seq_graph , "500", "350",seq_chart , "json", data_source).render()
-                        comp_seq_graphs.append([seq_chart, comp_mean_q_seq_graph])
+                            theme = ''
+                            heading = 'Comparation graphics for Yield (Mb) for investigator ' + r_name
+                            sub_caption = ''
+                            x_axis_name = r_name + ' versus other investigators'
+                            y_axis_name = '(Mb)'
+                            data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_yield_mb_dict[sequencer])
+                            seq_chart = sequencer + 'comparation_yield_mb_chart'
+                            seq_graph = sequencer + 'comparation_yield_mb_graph'
+                            comp_yield_mb_seq_graph = FusionCharts("column3d", seq_graph , "500", "350",seq_chart , "json", data_source).render()
+                            comp_seq_graphs.append([seq_chart, comp_yield_mb_seq_graph])
 
-                        theme = ''
-                        heading = 'Comparation graphics for Yield (Mb) for investigator ' + r_name
-                        sub_caption = ''
-                        x_axis_name = r_name + ' versus other investigators'
-                        y_axis_name = '(Mb)'
-                        data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_yield_mb_dict[sequencer])
-                        seq_chart = sequencer + 'comparation_yield_mb_chart'
-                        seq_graph = sequencer + 'comparation_yield_mb_graph'
-                        comp_yield_mb_seq_graph = FusionCharts("column3d", seq_graph , "500", "350",seq_chart , "json", data_source).render()
-                        comp_seq_graphs.append([seq_chart, comp_yield_mb_seq_graph])
+                            theme = ''
+                            heading = 'Comparation graphics for Cluster PF for investigator ' + r_name
+                            sub_caption = ''
+                            x_axis_name = r_name + ' versus other investigators'
+                            y_axis_name = 'Cluster pf'
+                            data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_cluster_pf_dict[sequencer])
+                            seq_chart = sequencer + 'comparation_cluster_pf_chart'
+                            seq_graph = sequencer + 'comparation_cluster_pf_graph'
+                            comp_cluster_pf_seq_graph = FusionCharts("column3d", seq_graph , "500", "350",seq_chart , "json", data_source).render()
+                            comp_seq_graphs.append([seq_chart, comp_cluster_pf_seq_graph])
+                            comp_graphs.append(comp_seq_graphs)
 
-                        theme = ''
-                        heading = 'Comparation graphics for Cluster PF for investigator ' + r_name
-                        sub_caption = ''
-                        x_axis_name = r_name + ' versus other investigators'
-                        y_axis_name = 'Cluster pf'
-                        data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, comp_cluster_pf_dict[sequencer])
-                        seq_chart = sequencer + 'comparation_cluster_pf_chart'
-                        seq_graph = sequencer + 'comparation_cluster_pf_graph'
-                        comp_cluster_pf_seq_graph = FusionCharts("column3d", seq_graph , "500", "350",seq_chart , "json", data_source).render()
-                        comp_seq_graphs.append([seq_chart, comp_cluster_pf_seq_graph])
-                        comp_graphs.append(comp_seq_graphs)
-
-                    researcher_statistics ['comp_graphs'] = comp_graphs
+                        researcher_statistics ['comp_graphs'] = comp_graphs
 
                     # Sequencer graphic utilization
                     sequencer_used = {}

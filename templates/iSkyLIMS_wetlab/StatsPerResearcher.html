@@ -2,13 +2,13 @@
 {% load static %}
 {% block content %}
 {% csrf_token %}
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>           
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>                   
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>  
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script>   
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script>
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script>
 <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/wetlab.js" %}"></script>    
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/wetlab.js" %}"></script>
 
 {% if researcher_statistics %}
     <div class="row row-space-2 margin-b-4">
@@ -48,12 +48,12 @@
             </div> <!--// end panel -->
         </div> <!--// end col-sm-12  -->
     </div> <!--// end row -->
-    
+
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
             <div class="panel panel-default">
                 <div class="panel-heading"><h3><center>Graphic Statistics for Investigator {{researcher_statistics.researcher_name}} </center></h3></div>
-                <div class="panel-body"> 
+                <div class="panel-body">
                     {% for seq_researcher_graph in researcher_statistics.researcher_graph %}
                         {% for id_graph, chart in seq_researcher_graph %}
                             <div class="col-sm-6" >
@@ -67,35 +67,35 @@
             </div> <!--// end panel -->
         </div> <!--// end col-sm-8  -->
     </div> <!--// end row -->
-    
-    
-   
 
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-12" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3><center> {{researcher_statistics.researcher_name}} projects comparison </center></h3></div>
-                <div class="panel-body"> 
-                <!-- comparations chart starts here-->
-                    {% for seq_comp_graph in researcher_statistics.comp_graphs %}
-                        {% for id_graph, chart in seq_comp_graph %}
-                            <div class="col-sm-6" >
-                                <!-- Showing graph-->
-                                <div id="{{id_graph}}"> </div>
-                                    {{ chart|safe }}
-                            </div> <!--// end col-sm-6  -->
+
+
+    {{% if researcher_statistics.comp_graphs %}}
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-12" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3><center> {{researcher_statistics.researcher_name}} projects comparison </center></h3></div>
+                    <div class="panel-body">
+                    <!-- comparations chart starts here-->
+                        {% for seq_comp_graph in researcher_statistics.comp_graphs %}
+                            {% for id_graph, chart in seq_comp_graph %}
+                                <div class="col-sm-6" >
+                                    <!-- Showing graph-->
+                                    <div id="{{id_graph}}"> </div>
+                                        {{ chart|safe }}
+                                </div> <!--// end col-sm-6  -->
+                            {% endfor %}
                         {% endfor %}
-                    {% endfor %}                   
-                </div> <!--  end of panel body -->
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-8  -->
-    </div> <!--// end row -->
-
+                    </div> <!--  end of panel body -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-8  -->
+        </div> <!--// end row -->
+    {{% endif %}}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-8" >
             <div class="panel panel-default">
                 <div class="panel-heading"><h3><center>Statistics Sequencer utilization for  {{researcher_statistics.researcher_name}} </center></h3></div>
-                <div class="panel-body"> 
+                <div class="panel-body">
                     <!-- Sequencer pie Chart starts here-->
                         <div id="sequencer_pie_chart"> </div>
                         {{ researcher_statistics.sequencer_pie_graph |safe }}
@@ -116,7 +116,7 @@
             <form method="post" enctype="multipart/form-data" name="statsresearcher" id="statsresearcher" class="form-horizontal well">
             {% csrf_token %}
             <input type="hidden" name="action" value="researcher"/>
-             <div class="form-group required"> 
+             <div class="form-group required">
                   <label class="col-sm-5  control-label" for="researchername" >Fill the Investigator name </label>
                   {% if request.user|has_group:"WetlabManager" %}
                   <div class="col-sm-5"><input class="form-control" type="text" required = "required" name="researchername" id="reserchername" size="100" maxlength="100"></div>
@@ -124,7 +124,7 @@
                   <div class="col-sm-5"><input class="form-control" type="text" name="researchername" id="reserchername" value="{{user.get_username}}"  size="100" maxlength="100" placeholder="{{user.get_username}}" readonly></div>
                   {% endif %}
              </div>  <!-- end from-group   -->
- 
+
                 <br>
 
                 <div class="form-group">
@@ -136,7 +136,7 @@
                   <label class="col-sm-5 control-label" for="enddate" >End Date Search (DD-MM-YYYY)</label>
                   <div class="col-sm-5"><input class="form-control" type="date" name="enddate" value="" id="enddate"></div>
                 <br>
-             
+
             </div>  <!-- end from-group   -->
                 <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
                 <input class="btn pull-right btn-primary" type="submit" value="Submit">
@@ -145,7 +145,7 @@
          </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
         </div> <!--// end col-sm-7  -->
- 
+
         <!-- Insert the help panel -->
         <BR><BR>
         <div class="col-sm-3 col-sm-offset-1">
@@ -159,7 +159,7 @@
         </div> <!--// end panel -->
         <!-- Insert the Help window when clicking on the button -->
         {% include 'iSkyLIMS_wetlab/search-researcher-help.html' %}
- 
+
     </div> <!--// end row -->
     <!-- End of FORM for searching RUN information -->
 {% endif %}
