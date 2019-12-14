@@ -3191,25 +3191,25 @@ def add_commercial_kit (request):
     if request.method == 'POST' and request.POST['action'] == 'addCommercialKit':
         if get_commercial_kit_id (request.POST['kitName']) :
 
-            return render(request, 'iSkyLIMS_wetlab/AddCommercialKit.html',{'defined_protocols': defined_protocols, 'invalid_name': request.POST['kitName']})
+            return render(request, 'iSkyLIMS_wetlab/addCommercialKit.html',{'defined_protocols': defined_protocols, 'invalid_name': request.POST['kitName']})
         new_kit = store_commercial_kit(request.POST)
         new_kit_data = get_commercial_kit_basic_data(new_kit)
-        return render(request, 'iSkyLIMS_wetlab/AddCommercialKit.html',{'new_kit_data': new_kit_data})
+        return render(request, 'iSkyLIMS_wetlab/addCommercialKit.html',{'new_kit_data': new_kit_data})
     else:
-        return render(request, 'iSkyLIMS_wetlab/AddCommercialKit.html',{'defined_protocols': defined_protocols, 'commercial_kits_data': commercial_kits_data})
+        return render(request, 'iSkyLIMS_wetlab/addCommercialKit.html',{'defined_protocols': defined_protocols, 'commercial_kits_data': commercial_kits_data})
 
 @login_required
 def add_user_lot_commercial_kit (request):
     if request.method == 'POST' and request.POST['action'] == 'addUserLotKit':
         if get_lot_user_commercial_kit_id (request.POST['nickName']) :
             defined_kits = get_defined_commercial_kits()
-            return render(request, 'iSkyLIMS_wetlab/AddUserLotCommercialKit.html',{'defined_kits': defined_kits, 'invalid_name': request.POST['nickName']})
+            return render(request, 'iSkyLIMS_wetlab/addUserLotCommercialKit.html',{'defined_kits': defined_kits, 'invalid_name': request.POST['nickName']})
         new_lot_kit = store_lot_user_commercial_kit(request.POST, request.user)
         new_lot_kit_data = get_lot_user_commercial_kit_basic_data(new_lot_kit)
-        return render(request, 'iSkyLIMS_wetlab/AddUserLotCommercialKit.html',{'new_lot_kit_data':new_lot_kit_data})
+        return render(request, 'iSkyLIMS_wetlab/addUserLotCommercialKit.html',{'new_lot_kit_data':new_lot_kit_data})
     else:
         defined_kits = get_defined_commercial_kits()
-        return render(request, 'iSkyLIMS_wetlab/AddUserLotCommercialKit.html',{'defined_kits':defined_kits})
+        return render(request, 'iSkyLIMS_wetlab/addUserLotCommercialKit.html',{'defined_kits':defined_kits})
 
 
 
@@ -3436,9 +3436,14 @@ def set_library_preparation(request):
             return render ( request,'iSkyLIMS_wetlab/error_page.html',
                 {'content':[not_defined_samples_str , not_allowed_lib_prep_str ]})
 
-        library_prep_workflow = get_library_name(stored_file)
+
 
         index_adapters = get_indexes_adapters (stored_file)
+        if not CollectionIndexKit.objects.filter(collectionIndexName__iexact = index_adapters).exists():
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':['Collection Index Kit ' , index_adapters , 'is not defined' ]})
+
+        library_prep_workflow = get_library_name(stored_file)
         adapter1, adapter2 = get_adapters(stored_file)
         assay = get_assay_from_file (stored_file)
         # store user sample sheet in database
@@ -3457,7 +3462,7 @@ def set_library_preparation(request):
             return render ( request,'iSkyLIMS_wetlab/error_page.html',
                 {'content':['Found some samples, has the same index' ],
                 'detail_description': detail_description })
-        import pdb; pdb.set_trace()
+
 
         stored_lib_prep = prepare_lib_prep_table_new_run (index_adapters, request, extracted_data_list,
                                     file_name, assay, adapter1, adapter2)
@@ -3770,3 +3775,11 @@ def pending_sample_preparations(request):
 
     pending ['graphic_pending_samples'] = pending_samples_for_grafic(pending).render()
     return render(request, 'iSkyLIMS_wetlab/pendingSamplePreparations.html',{'pending': pending})
+
+def user_commercial_kit_inventory(request):
+
+    expired_kit = get_expired_lot_user_kit(request.user)
+    valid_kit = get_valid_lot_user_kit(request.user)
+
+    return render(request, 'iSkyLIMS_wetlab/userCommercialKitInventory.html',{'expired_kit': expired_kit,
+                            'valid_kit': valid_kit, 'user_name': request.user.username})

@@ -1,0 +1,72 @@
+{% extends 'iSkyLIMS_wetlab/base.html' %}
+{% load static %}
+{% block content %}
+{% if valid_kit %}
+<div class="row row-space-2 margin-b-4">
+    <div class="col-sm-6 col-sm-offset-1">
+        <div class="panel panel-default">
+            <div class="panel-heading"><h3>Expired User Lot Commercial Kits for {{user_name}}</h3></div>
+            <div class="panel-body">
+                {% for key , values in valid_kit.data.items %}
+                <h4>User kit for : {{key}} </h4>
+                    <table class="table ">
+                        <thead>
+                            <tr>
+                                {% for value in valid_kit.headings %}
+                                    <th>{{value}}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {%for name, exp_date, percent in values %}
+                                <tr>
+                                    <td>{{name}}</td>
+                                    <td>{{exp_date}}</td>
+                                    <td>{{percent}}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <br><br>
+                {% endfor %}
+            </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+    </div> <!--// end col-sm-7  -->
+</div> <!--// end row -->
+{% endif %}
+{% if expired_kit %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-6 col-sm-offset-1">
+            <div class="panel panel-danger">
+                <div class="panel-heading"><h3>Expired User Lot Commercial Kits for {{user_name}}</h3></div>
+                <div class="panel-body">
+                    {% for key , values in expired_kit.data.items %}
+                    <h4>User kit for : {{key}} </h4>
+                        <table class="table ">
+                            <thead>
+                                <tr>
+                                    {% for value in expired_kit.headings %}
+                                        <th>{{value}}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {%for name, exp_date, percent in values %}
+                                    <tr>
+                                        <td>{{name}}</td>
+                                        <td>{{exp_date}}</td>
+                                        <td>{{percent}}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <br><br>
+                    {% endfor %}
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  -->
+    </div> <!--// end row -->
+
+{% endif %}
+
+{% endblock %}
