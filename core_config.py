@@ -50,3 +50,5 @@ COLLECTION_INDEX_KITS_DIRECTORY = 'core/collection_index_kits/'
 
 ## Configuration for index library file
 COLLECTION_INDEX_HEADING = ['[Version]','[Name]', '[PlateExtension]','[Settings]', '[I7]']
+
+HEADING_FOR_USER_LOT_INVENTORY = ['Nick Name', 'Expiration date', 'Percentage used']

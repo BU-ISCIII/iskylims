@@ -3,7 +3,7 @@ from iSkyLIMS_core.models import *
 from iSkyLIMS_core.utils.handling_protocols import get_protocol_obj_from_name
 from iSkyLIMS_core.core_config import *
 from django.contrib.auth.models import User
-
+from datetime import date
 
 def get_commercial_kit_id(kit_name):
     if CommercialKits.objects.filter(name__exact = kit_name).exists():
@@ -47,21 +47,60 @@ def get_commercial_kit_basic_data(kit_obj):
     kit_data['heading'] = HEADING_FOR_COMMERCIAL_KIT_BASIC_DATA
     return  kit_data
 
+def get_expired_lot_user_kit (register_user_obj):
+
+    user_expired_kits = {}
+    user_expired_kits['data'] = {}
+    if UserLotCommercialKits.objects.filter(user = register_user_obj, expirationDate__lt = date.today()).exists():
+
+        user_kits = UserLotCommercialKits.objects.filter(user = register_user_obj, expirationDate__lte = date.today()).order_by('basedCommercial')
+        for user_kit in user_kits:
+            data_kit = []
+            c_kit = user_kit.get_commercial_kit()
+            data_kit.append(user_kit.get_nick_name())
+            data_kit.append(user_kit.get_expiration_date())
+            data_kit.append(user_kit.get_used_percentage())
+            if not c_kit in user_expired_kits['data']:
+                user_expired_kits['data'][c_kit] = []
+            user_expired_kits['data'][c_kit].append(data_kit)
+    user_expired_kits['headings'] = HEADING_FOR_USER_LOT_INVENTORY
+    return user_expired_kits
+
+def get_valid_lot_user_kit (register_user_obj):
+
+    valid_kits = {}
+    valid_kits['data'] = {}
+    if UserLotCommercialKits.objects.filter(user = register_user_obj, expirationDate__gte = date.today()).exists():
+
+        user_kits = UserLotCommercialKits.objects.filter(user = register_user_obj, expirationDate__gte = date.today()).order_by('basedCommercial')
+        for user_kit in user_kits:
+            data_kit = []
+            c_kit = user_kit.get_commercial_kit()
+            data_kit.append(user_kit.get_nick_name())
+            data_kit.append(user_kit.get_expiration_date())
+            data_kit.append(user_kit.get_used_percentage())
+            if not c_kit in valid_kits['data']:
+                valid_kits['data'][c_kit] = []
+            valid_kits['data'][c_kit].append(data_kit)
+    valid_kits['headings'] = HEADING_FOR_USER_LOT_INVENTORY
+    return valid_kits
+
 def get_lot_user_commercial_kit_basic_data(kit_obj):
     lot_kit_data = {}
     lot_kit_data['data'] = kit_obj.get_basic_data()
     lot_kit_data['heading'] = HEADING_FOR_LOT_USER_COMMERCIAL_KIT_BASIC_DATA
     return  lot_kit_data
 
-def get_lot_commercial_kits(register_user_obj, protocol_obj):
-    user_kit_list = []
 
+def get_lot_commercial_kits(register_user_obj, protocol_obj):
+
+    user_kit_list = []
     if UserLotCommercialKits.objects.filter(user = register_user_obj, basedCommercial__protocol_id = protocol_obj).exists():
         user_kits =UserLotCommercialKits.objects.filter(user = register_user_obj, basedCommercial__protocol_id = protocol_obj)
         for user_kit in user_kits:
             user_kit_list.append(user_kit.get_nick_name)
-
     return user_kit_list
+
 
 def store_commercial_kit (kit_data):
     commercial_kit_values = {}

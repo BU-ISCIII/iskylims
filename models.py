@@ -236,6 +236,17 @@ class UserLotCommercialKits (models.Model):
     def get_protocol_for_kit (self):
         return '%s' %(self.basedCommercial.get_protocol())
 
+    def get_expiration_date(self):
+        exp_date = self.expirationDate
+        return '%s' %(exp_date.strftime("%d %B, %Y"))
+
+    def get_used_percentage(self):
+        try:
+            user_percent = "{0:.2f}".format(self.numberOfuses *100 / self.maximumUses)
+        except:
+            user_percent = 'Maximum number of used not defined'
+        return user_percent
+
     objects = UserLotCommercialKitsManager()
 
 
