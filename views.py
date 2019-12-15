@@ -3185,7 +3185,8 @@ def define_protocol_parameters (request, protocol_id):
 
 @login_required
 def add_commercial_kit (request):
-    defined_protocols = get_defined_protocols()
+    app_name = __package__.split('.')[0]
+    defined_protocols = get_defined_protocols(app_name)
     commercial_kits_data = get_data_for_commercial_kits()
 
     if request.method == 'POST' and request.POST['action'] == 'addCommercialKit':
