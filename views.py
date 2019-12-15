@@ -3224,7 +3224,6 @@ def pending_to_update(request):
     pending['lib_prep_protocols'] = get_protocol_lib()
     # get the library preparation in defined state
     pending['add_lib_prep_parameters'] = get_lib_prep_to_add_parameters()
-
     pending ['graphic_pending_samples'] = pending_samples_for_grafic(pending).render()
 
 
