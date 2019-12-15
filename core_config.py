@@ -40,9 +40,15 @@ HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS = ['Parameter name', 'Order', 'Used', '
 ################## KITS Heading ##############################
 ##############################################################
 
-HEADING_FOR_COMMERCIAL_KIT_BASIC_DATA = ['Commercial Kit Name', 'Provider',  'Protocol used for the kit']
+HEADING_FOR_NEW_SAVED_COMMERCIAL_KIT = ['Commercial Kit Name', 'Provider',  'Protocol used for the kit']
+
+HEADING_FOR_COMMERCIAL_KIT_BASIC_DATA = ['Commercial Kit Name', 'Provider',  'Cat Number', 'Number of use']
+
 
 HEADING_FOR_LOT_USER_COMMERCIAL_KIT_BASIC_DATA = ['User given Name', 'Commercial Kit', 'Lot Barcode', 'Expiration Date']
+
+HEADING_FOR_USER_LOT_INVENTORY = ['Nick Name', 'Expiration date', 'Percentage used']
+
 
 #########  FOLDER SETTINGS TO STORE COLLECTION KITS #######
 ## Relative path from settings.MEDIA_ROOT
@@ -50,5 +56,3 @@ COLLECTION_INDEX_KITS_DIRECTORY = 'core/collection_index_kits/'
 
 ## Configuration for index library file
 COLLECTION_INDEX_HEADING = ['[Version]','[Name]', '[PlateExtension]','[Settings]', '[I7]']
-
-HEADING_FOR_USER_LOT_INVENTORY = ['Nick Name', 'Expiration date', 'Percentage used']

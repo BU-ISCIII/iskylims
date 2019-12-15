@@ -31,20 +31,30 @@ def get_commercial_kit_obj_from_name(kit_name):
     return None
 
 def get_data_for_commercial_kits():
-    data_kits = []
+
     data_commercial_kits = {}
+    data_commercial_kits['data'] = {}
     if CommercialKits.objects.exists():
         kits = CommercialKits.objects.all().order_by('protocol_id')
         for kit in kits:
+            data_kits = []
+            protocol = kit.get_protocol()
+
             data_kits.append(kit.get_name())
-        data_commercial_kits['heading'] = HEADING_FOR_COMMERCIAL_KIT_BASIC_DATA
-        data_commercial_kits['c_kits_data'] = data_kits
+            data_kits.append(kit.get_provider_kit_name())
+            data_kits.append(kit.get_cat_number())
+            data_kits.append(kit.get_maximum_uses())
+            if not protocol in data_commercial_kits['data']:
+                data_commercial_kits['data'][protocol] = []
+            data_commercial_kits['data'][protocol].append(data_kits)
+        data_commercial_kits['headings'] = HEADING_FOR_COMMERCIAL_KIT_BASIC_DATA
+
     return data_commercial_kits
 
 def get_commercial_kit_basic_data(kit_obj):
     kit_data = {}
     kit_data['data'] = kit_obj.get_basic_data()
-    kit_data['heading'] = HEADING_FOR_COMMERCIAL_KIT_BASIC_DATA
+    kit_data['heading'] = HEADING_FOR_NEW_SAVED_COMMERCIAL_KIT
     return  kit_data
 
 def get_expired_lot_user_kit (register_user_obj):

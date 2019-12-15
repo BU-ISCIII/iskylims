@@ -182,6 +182,12 @@ class CommercialKits (models.Model):
     def get_protocol (self):
         return '%s' %(self.protocol_id.get_name())
 
+    def get_provider_kit_name(self):
+        return '%s' %(self.provider)
+
+    def get_cat_number(self):
+        return '%s' %(self.cat_number)
+
     def get_basic_data(self):
         kit_basic_data = []
         kit_basic_data.append(self.name)

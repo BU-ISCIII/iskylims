@@ -115,10 +115,10 @@ def display_available_protocols (app_name):
 
     return molecule_protocol_list , other_protocol_list
 
-def get_defined_protocols():
+def get_defined_protocols(app_name):
     defined_protocols = []
-    if Protocols.objects.all().exists():
-        protocols_obj = Protocols.objects.all().order_by('type')
+    if Protocols.objects.filter(type__apps_name__exact = app_name).exists():
+        protocols_obj = Protocols.objects.filter(type__apps_name__exact = app_name).order_by('type')
         for protocol_obj in protocols_obj:
             defined_protocols.append(protocol_obj.get_name())
     return defined_protocols
