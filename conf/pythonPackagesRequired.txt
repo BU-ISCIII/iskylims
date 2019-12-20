@@ -6,7 +6,7 @@ asn1crypto
 bcrypt
 biopython
 cryptography
-Django
+Django==2.0
 django-blog-zinnia
 django-crispy-forms
 django-crontab
