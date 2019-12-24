@@ -4,8 +4,8 @@ from iSkyLIMS_core.models import *
 class CommercialKitsAdmin (admin.ModelAdmin):
     list_display =( 'name','provider', 'protocol_id' ,'maximumUses','cat_number')
 
-class LaboratoryAdmin (admin.ModelAdmin):
-    list_display = ['labName' , 'labCoding' , 'labLocation' ]
+class SamplesOriginAdmin (admin.ModelAdmin):
+    list_display = ['originName' , 'originNameCoding' , 'location' ]
 
 class MoleculeTypeAdmin( admin.ModelAdmin):
     list_display = ('moleculeType',)
@@ -28,13 +28,14 @@ class MoleculeParameterValueAdmin (admin.ModelAdmin):
     list_display = ('moleculeParameter_id', 'molecule_id','parameterValue')
 
 class SamplesAdmin(admin.ModelAdmin):
-    list_display = ('sampleCodeID', 'sampleState', 'laboratory', 'sampleType', 'sampleUser', 'species', 'sampleName',
+    list_display = ('sampleCodeID', 'sampleState', 'samplesOrigin', 'sampleType', 'sampleUser', 'species', 'sampleName',
                     'sampleEntryDate', 'uniqueSampleID',  'numberOfReused','sequencingDate' )
 
 class SampleTypeAdmin(admin.ModelAdmin):
     list_display = ('sampleType',)
 
-
+class SampleProjectBelongsAdmin(admin.ModelAdmin):
+    list_display = ('projectName', 'projectManager', 'projectDescription', 'contactEmail', 'contactPhone', 'contactComments')
 
 
 class SpeciesAdmin (admin.ModelAdmin):
@@ -51,7 +52,7 @@ class UserLotCommercialKitsAdmin (admin.ModelAdmin):
 
 
 admin.site.register(CommercialKits, CommercialKitsAdmin)
-admin.site.register(Laboratory, LaboratoryAdmin)
+admin.site.register(SamplesOrigin, SamplesOriginAdmin)
 
 admin.site.register(MoleculeType,MoleculeTypeAdmin)
 admin.site.register(MoleculePreparation,MoleculePreparationAdmin)
@@ -62,6 +63,7 @@ admin.site.register(MoleculeParameterValue, MoleculeParameterValueAdmin)
 admin.site.register(SampleType, SampleTypeAdmin)
 admin.site.register(Samples, SamplesAdmin)
 admin.site.register(Species, SpeciesAdmin)
+admin.site.register(SampleProjectBelongs, SampleProjectBelongsAdmin)
 admin.site.register(StatesForMolecule, StatesForMoleculeAdmin)
 admin.site.register(StatesForSample, StatesForSampleAdmin)
 admin.site.register(UserLotCommercialKits, UserLotCommercialKitsAdmin)

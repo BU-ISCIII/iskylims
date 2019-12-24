@@ -60,7 +60,7 @@ def display_molecule_protocol_parameters (molecules, user_obj):
 
     molecule_recorded['molecule_id'] = ','.join(showed_molecule)
     molecule_recorded['pending_id'] = ','.join(pending_molecule)
-    molecule_recorded['heading_in_excel'] = ','.join(parameter_list)
+    molecule_recorded['heading_in_excel'] = '::'.join(parameter_list)
 
     return molecule_recorded
 
@@ -85,7 +85,7 @@ def add_molecule_protocol_parameters(request):
     molecule_updated_list = []
     molecule_json_data = json.loads(request.POST['parameters_data'])
     molecules = request.POST['molecules'].split(',')
-    parameter_heading = request.POST['heading_in_excel'].split(',')
+    parameter_heading = request.POST['heading_in_excel'].split('::')
     parameters_length = len(molecule_json_data[0])
     fixed_heading_length = len(HEADING_FOR_MOLECULE_ADDING_PARAMETERS)
     protocol_used_obj = Protocols.objects.get(name__exact = molecule_json_data[0][1])
@@ -135,19 +135,31 @@ def analyze_input_samples (request):
     incomplete_samples = []
 
     reg_user = request.user.username
+
     for row in na_json_data :
         sample_data = {}
         sample_name = str(row[heading_in_form.index('Sample Name')])
         if sample_name == '' :
             continue
-        if not check_if_sample_already_defined (row[heading_in_form.index('Sample Name')], reg_user):
+
+        if not check_if_sample_already_defined (row[heading_in_form.index('Sample Name')], reg_user) :
+
             for i in range(len(heading_in_form)) :
-                sample_data[heading_in_form[i]] = row[i]
+                sample_data[MAPPING_SAMPLE_FORM_TO_DDBB[i][1]] = row[i]
             if  check_empty_fields(row):
                 incomplete_samples.append(row)
                 sample_recorded['all_samples_valid'] = False
                 continue
 
+            ## Check if patient name already exists on database, If not if will be created
+            if sample_data['p_name'] != '' or  sample_data['p_surname'] != '':
+                patient_obj = check_patient_exists(sample_data['p_name'], sample_data['p_surname'] )
+                if patient_obj == False:
+                    # Define the new patient name
+                    patient_obj = create_patient(sample_data['p_name'], sample_data['p_surname'] )
+            else :
+                patient_obj = None
+            sample_data['patient'] = patient_obj
             sample_data['user'] = reg_user
             sample_data['sample_id'] = str(reg_user + '_' + sample_name)
             if not Samples.objects.exclude(uniqueSampleID__isnull = True).exists():
@@ -155,10 +167,13 @@ def analyze_input_samples (request):
             else:
                 last_unique_value = Samples.objects.exclude(uniqueSampleID__isnull = True).last().uniqueSampleID
                 sample_data['new_unique_value'] = increase_unique_value(last_unique_value)
+
+            sample_data['projectBelongs'] = SampleProjectBelongs.objects.get(projectName__exact = sample_data['project_service'])
+            import pdb; pdb.set_trace()
             new_sample = Samples.objects.create_sample(sample_data)
             valid_samples.append(new_sample.get_sample_definition_information())
             samples_continue.append(new_sample.get_sample_id())
-            #import pdb; pdb.set_trace()
+            import pdb; pdb.set_trace()
         else: # get the invalid sample to displays information to user
             sample_recorded['all_samples_valid'] = False
             sample_id = Samples.objects.get(sampleName__exact = sample_name).get_sample_id()
@@ -274,10 +289,27 @@ def analyze_input_molecules (request):
     return molecule_recorded
 
 def build_record_sample_form () :
+    '''
+    Description:
+        The function collect the stored information of  species, sample origin and sample type to use in the
+        selected form.
+    Input:
+
+    Functions:
+        get_species             located at this file
+        get_sample_origin       located at this file
+        get_sample_type         located at this file
+    Variables:
+        sample_information:     Dictionnary to collect the information
+    Return:
+        sample_information
+    '''
+
     sample_information = {}
     sample_information['species'] = get_species()
-    sample_information['laboratory'] = get_laboratory()
+    sample_information['sample_origin'] = get_sample_origin()
     sample_information['sampleType'] = get_sample_type()
+    sample_information['sample_project'] = get_sample_projects ()
     return sample_information
 
 def check_if_sample_already_defined (sample_name,reg_user):
@@ -292,6 +324,36 @@ def check_empty_fields (row_data):
             return True
     return False
 
+def check_patient_exists(name, surname):
+    '''
+    Description:
+        The function check if patient name/surname is defined in database.
+    Input:
+        name:       patient name
+        surname     patient family name
+    Return:
+        False is user is not define or patient_obj is patient exists
+    '''
+    if PatientCore.objects.filter(patientName__iexact = name, patientSurName__iexact = surname).exists():
+        patient_obj = PatientCore.objects.get (patientName__iexact = name, patientSurName__iexact = surname)
+    else:
+        return False
+
+    return patient_obj
+
+def create_patient(name, surname):
+    '''
+    Description:
+        The function create patient in database.
+    Input:
+        name:       patient name
+        surname     patient family name
+    Return:
+        patient_obj
+    '''
+    patient_obj = PatientCore.objects.create_patient(name, surname)
+
+    return patient_obj
 
 def get_all_sample_information (sample_id ):
     sample_information = {}
@@ -364,24 +426,38 @@ def get_extraction_kits(username) :
     return
 
 
-def get_laboratory ():
+def get_sample_origin ():
     '''
     Description:
-        The function will return the laboratories defined in database.
-    Input:
-        none
+        The function will return the Sample origin places defined in database.
     Variables:
-        laboratories # list containing all laboratory names
+        sample_origin_places # list containing the place names
     Return:
-        laboratories.
+        sample_origin_places.
     '''
-    laboratories = []
-    if Laboratory.objects.filter().exists():
-        laboratory_names = Laboratory.objects.all()
+    sample_origin_places = []
+    if SamplesOrigin.objects.filter().exists():
+        samples_origins = SamplesOrigin.objects.all()
 
-        for laboratory in laboratory_names:
-            laboratories.append(laboratory.get_name())
-    return laboratories
+        for samples_origin in samples_origins:
+            sample_origin_places.append(samples_origin.get_name())
+    return sample_origin_places
+
+def get_sample_projects():
+    '''
+    Description:
+        The function will return the projects that a sample could belongs to.
+    Variables:
+        sample_projects # list containing the sample projects defined in database
+    Return:
+        sample_projects.
+    '''
+    sample_projects = []
+    if SampleProjectBelongs.objects.filter().exists():
+        s_projects = SampleProjectBelongs.objects.filter()
+        for s_project in s_projects:
+            sample_projects.append(s_project.get_sample_project())
+    return sample_projects
 
 def get_molecule_codeid_from_object(molecule_obj):
     return molecule_obj.get_molecule_code_id()
@@ -652,9 +728,11 @@ def increase_unique_value (old_unique_number):
 
 def prepare_sample_input_table ():
     '''
-    Description:    The function collect the species, laboratory, type of samples, and heading
+    Description:    The function collect the species, Sample origin place, type of samples, and heading
                     used in the input table. Return a dictionary with collected information.
     Input:
+    Functions:
+        build_record_sample_form  : located at this file
     Variables:
         s_information # dictionary which collects all info
     Return:

@@ -115,13 +115,34 @@ def display_available_protocols (app_name):
 
     return molecule_protocol_list , other_protocol_list
 
-def get_defined_protocols(app_name):
+def get_defined_protocols(app_name, exclude_non_molecule):
+    '''
+    Description:
+        The function return a list with all protocol defined.
+        If exclude_non_molecule = True, then only protocols which involves molecules are returned
+        If false return all protocols defined
+    Input:
+        app_name : Name of the application to return only the protocols defined under this application
+        exclude_non_molecule : True/False if exclude  non molecules are requested
+    Variables:
+        defined_protocols: list with all protocols
+    Return:
+        defined_protocols.
+    '''
     defined_protocols = []
-    if Protocols.objects.filter(type__apps_name__exact = app_name).exists():
-        protocols_obj = Protocols.objects.filter(type__apps_name__exact = app_name).order_by('type')
-        for protocol_obj in protocols_obj:
-            defined_protocols.append(protocol_obj.get_name())
+    if exclude_non_molecule :
+        if Protocols.objects.filter(type__apps_name__exact = app_name).exclude(type__molecule = None).exists():
+            protocols_obj = Protocols.objects.filter(type__apps_name__exact = app_name).exclude(type__molecule = None).order_by('type')
+            for protocol_obj in protocols_obj:
+                defined_protocols.append(protocol_obj.get_name())
+    else:
+        if Protocols.objects.filter(type__apps_name__exact = app_name).exists():
+            protocols_obj = Protocols.objects.filter(type__apps_name__exact = app_name).order_by('type')
+            for protocol_obj in protocols_obj:
+                defined_protocols.append(protocol_obj.get_name())
     return defined_protocols
+
+
 
 def get_protocol_from_prot_types(prot_types):
     protocols = {}
@@ -161,6 +182,7 @@ def get_all_protocol_info(protocol_id):
 
     if ProtocolParameters.objects.filter(protocol_id = protocol_obj).exists():
         protocol_data['parameter_heading'] = HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS
+        protocol_data['protocol_name'] = protocol_obj.get_name()
         protocol_parameters = ProtocolParameters.objects.filter(protocol_id = protocol_obj).order_by('parameterOrder')
         for parameter in protocol_parameters:
             protocol_data['parameters'].append(parameter.get_all_parameter_info())

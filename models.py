@@ -5,7 +5,7 @@ from iSkyLIMS_core.core_config import COLLECTION_INDEX_KITS_DIRECTORY
 
 
 
-
+'''
 class Laboratory (models.Model):
     labName = models.CharField(max_length=50)
     labCoding = models.CharField(max_length=10)
@@ -19,7 +19,21 @@ class Laboratory (models.Model):
 
     def get_lab_code (self):
         return '%s' %(self.labCoding)
+'''
 
+class SamplesOrigin (models.Model):
+    originName = models.CharField(max_length=50)
+    originNameCoding = models.CharField(max_length=10)
+    location = models.CharField(max_length=255)
+
+    def __str__ (self):
+        return '%s' %(self.originName)
+
+    def get_name(self):
+        return '%s' %(self.originName)
+
+    def get_sample_origin_code (self):
+        return '%s' %(self.originNameCoding)
 
 class MoleculeType (models.Model):
     moleculeType = models.CharField(max_length = 30)
@@ -255,23 +269,57 @@ class UserLotCommercialKits (models.Model):
 
     objects = UserLotCommercialKitsManager()
 
+class PatientCoreManager(models.Manager):
+    def create_patient (self,p_name, p_surname):
+        new_patient = self.create(patientName = p_name , patientSurName = p_surname)
+        return new_patient
+
+
+class PatientCore (models.Model):
+    patientName = models.CharField(max_length=255, null = True)
+    patientSurName = models.CharField(max_length=255, null = True)
+    patientCode  = models.CharField(max_length=255, null = True)
+
+    def __str__ (self):
+        return '%s' %(self.patientName)
+
+    objects = PatientCoreManager()
+
+class SampleProjectBelongs(models.Model):
+    projectName = models.CharField(max_length=255)
+    projectManager = models.CharField(max_length=255, null = True, blank = True)
+    projectDescription = models.CharField(max_length=255, null = True, blank = True)
+    contactEmail = models.CharField(max_length=50, null = True, blank = True)
+    contactPhone = models.CharField(max_length=20, null = True, blank = True)
+    contactComments = models.CharField(max_length=255, null = True, blank = True)
+
+    def __str__ (self):
+        return '%s' %(self.projectName)
+
+    def get_sample_project(self):
+        return '%s' %(self.projectName)
 
 class SamplesManager (models.Manager):
 
     def create_sample (self, sample_data):
-        ## Set to null in case that there is not Laboratory defined
-        if sample_data['Laboratory'] != '':
-            sample_data['Laboratory'] = Laboratory.objects.get(labName__exact = sample_data['Laboratory'])
+        ## Set to null in case that there is not samples_origin defined
+
+        if sample_data['samplesOrigin'] != '':
+            sample_data['samplesOrigin'] = SamplesOrigin.objects.get(originName__exact = sample_data['samplesOrigin'])
         else:
-            sample_data['Laboratory'] = None
+            sample_data['samplesOrigin'] = None
+
         new_sample = self.create(sampleState = StatesForSample.objects.get(sampleStateName__exact = 'Defined'),
-                            laboratory = sample_data['Laboratory'],
-                            sampleType = SampleType.objects.get(sampleType__exact = sample_data['Type of Sample']) ,
+                            patientCore = sample_data['patient'],
+                            samplesOrigin = sample_data['samplesOrigin'], projectBelongs = sample_data['projectBelongs'],
+                            sampleType = SampleType.objects.get(sampleType__exact = sample_data['sampleType']) ,
                             sampleUser = User.objects.get(username__exact = sample_data['user']),
-                            sampleCodeID = sample_data['sample_id'] , sampleName =  sample_data['Sample Name'],
+                            sampleCodeID = sample_data['sample_id'] , sampleName =  sample_data['sampleName'],
                             uniqueSampleID = sample_data['new_unique_value'],
-                            species = Species.objects.get(speciesName__exact = sample_data['Species']),
-                            sampleEntryDate = datetime.datetime.strptime(sample_data['Date for entry in Lab'],'%Y-%m-%d %H:%M:%S'))
+                            species = Species.objects.get(speciesName__exact = sample_data['species']),
+                            sampleLocation = sample_data['sampleLocation'],
+                            #sampleEntryDate = datetime.datetime.strptime(sample_data['Date for entry in Lab'],'%Y-%m-%d %H:%M:%S'))
+                            sampleEntryDate = datetime.datetime.strptime(sample_data['sampleEntryDate'],'%Y-%m-%d %H:%M:%S'))
 
         return new_sample
 
@@ -279,13 +327,17 @@ class Samples (models.Model):
     sampleState = models.ForeignKey(
                 StatesForSample,
                 on_delete = models.CASCADE, null = True)
-    laboratory = models.ForeignKey(
-                Laboratory,
+
+    patientCore = models.ForeignKey(
+                PatientCore,
                 on_delete = models.CASCADE, null = True, blank = True)
+    samplesOrigin = models.ForeignKey(
+                SamplesOrigin,
+                on_delete = models.CASCADE, null = True, blank = True)
+
     sampleType = models.ForeignKey(
                 SampleType,
                 on_delete = models.CASCADE, null = True)
-
 
     sampleUser = models.ForeignKey(
                 User,
@@ -294,8 +346,11 @@ class Samples (models.Model):
     species = models.ForeignKey(
                 Species,
                 on_delete=models.CASCADE, null = True)
+    projectBelongs = models.ForeignKey(
+                SampleProjectBelongs,
+                on_delete=models.CASCADE, null = True, blank = True)
     sampleName = models.CharField(max_length=255, null = True)
-    #labSampleName = models.CharField(max_length=255, null = True, blank = True)
+    sampleLocation = models.CharField(max_length=255, null = True, blank = True)
     sampleEntryDate = models.DateTimeField(auto_now_add = False, null =True)
     uniqueSampleID = models.CharField(max_length=8, null = True)
     #patientCodeName = models.CharField(max_length=255, null = True)
@@ -354,8 +409,8 @@ class Samples (models.Model):
         recordeddate=self.sampleEntryDate.strftime("%B %d, %Y")
         return '%s' %(recordeddate)
 
-    def get_laboratory(self):
-        return '%s' %(self.laboratory.get_name())
+    def get_sample_origin(self):
+        return '%s' %(self.samplesOrigin.get_name())
     def get_sample_code (self):
         return '%s' %(self.sampleCodeID)
 
@@ -496,6 +551,9 @@ class MoleculePreparation (models.Model):
     def set_increase_reuse(self):
         self.numberOfReused += 1
         self.save()
+
+    def set_user_lot_kit (self, lot_kit_name):
+        self.userLotKit_id = UserLotCommercialKits.objects.get(nickName__exact = lot_kit_name,)
 
     objects = MoleculePreparationManager()
 
