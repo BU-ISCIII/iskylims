@@ -98,6 +98,13 @@ def check_if_sample_c_exists(sample_c_id):
     else:
         return False
 
+def collect_data_for_search ():
+    search_sample_data = {}
+    search_sample_data['doctors'] = get_available_doctor()
+    search_sample_data['requested_service_by'] = get_service_units()
+    return search_sample_data
+
+
 def get_clinic_sample_in_state(state):
     if ClinicSampleRequest.objects.filter(clinicSampleState__clinicState__exact = state).exists():
         return ClinicSampleRequest.objects.filter(clinicSampleState__clinicState__exact = state)

@@ -1,22 +1,54 @@
 from django.db import models
-from iSkyLIMS_core.models import Samples, SampleType, Protocols, ProtocolParameters
+from iSkyLIMS_core.models import Samples, SampleType, Protocols, ProtocolParameters, PatientCore
 
 from django.contrib.auth.models import User
 import datetime
 
 
-class Patient (models.Model):
-    patientName = models.CharField(max_length = 80)
-    numberOfHistory = models.CharField(max_length = 80)
+class PatientHistoryManager(models.Manager):
+    def create_patient_history ( self, pat_hist_data):
+        new_suspicion_history = self.create( patiendData_id = pat_hist_data['patiendData_id'],
+                    entryDate = pat_hist_data['entryDate'], description = pat_hist_data['description'] )
+
+
+
+
+class PatientData (models.Model):
+    patienCore =  models.OneToOneField(
+            PatientCore,
+            on_delete=models.CASCADE,
+            primary_key=True, )
+    address = models.CharField(max_length = 255, null = True, blank = True)
+    phone = models.CharField(max_length = 20, null = True, blank = True)
+    email = models.CharField(max_length=50, null = True, blank = True)
+    sex = models.CharField(max_length = 20, null = True, blank = True)
+    birthday = models.DateTimeField(auto_now_add=False, null = True, blank = True)
+    smoker =  models.CharField(max_length = 20, null = True, blank = True)
+    notificationPreference =  models.CharField(max_length = 20, null = True, blank = True)
 
     def __str__ (self):
-        return '%s' %(self.patientName)
+        return '%s' %(self.patienCore_id.get_name())
 
-    def get_history_number(self):
-        return '%s' %(self.numberOfHistory)
+    def get_patient_code(self):
+        return '%s' %(self.patienCore_id.get_patient_code())
 
     def get_patient_name(self):
-        return '%s' %(self.patientName)
+        return '%s' %(self.patienCore_id.get_name())
+
+class PatientHistory (models.Model):
+    patiendData_id = models.ForeignKey (
+            PatientData,
+            on_delete = models.CASCADE, null = True, blank = True)
+    entryDate = models.DateTimeField(auto_now_add=False, null = True, blank = True)
+    description = models.CharField(max_length = 255)
+
+    def __str__ (self):
+        return '%s' %(self.description)
+
+    def get_history_text(self):
+        return '%s' %(self.description)
+
+    objects = PatientHistoryManager()
 
 
 class ServiceUnits (models.Model) :
@@ -54,9 +86,6 @@ class ClinicSampleRequest (models.Model):
     sampleCore = models.ForeignKey(
                 Samples,
                 on_delete = models.CASCADE)
-    patient_id = models.ForeignKey(
-                Patient,
-                on_delete = models.CASCADE, null = True)
     doctor_id = models.ForeignKey(
                 Doctor,
                 on_delete = models.CASCADE, null = True)
@@ -69,9 +98,6 @@ class ClinicSampleRequest (models.Model):
     sampleRequestUser = models.ForeignKey(
                 User,
                 on_delete=models.CASCADE, null = True, blank = True)
-    protocol_id = models.ForeignKey(
-                Protocols,
-                on_delete= models.CASCADE, null = True, blank = True)
     orderInEntry = models.CharField(max_length = 8, null = True)
     confirmationCode = models.CharField(max_length = 80, null = True, blank = True)
     priority = models.IntegerField(null = True, blank =True)
@@ -92,7 +118,7 @@ class ClinicSampleRequest (models.Model):
 
     def get_sample_name(self):
         return '%s' %(self.sampleCore.get_sample_name())
-
+    '''
     def get_patient_information(self):
 
         if self.patient_id != None:
@@ -102,7 +128,7 @@ class ClinicSampleRequest (models.Model):
         else:
             patient_info = ['Not Defined']*2
         return patient_info
-
+    '''
     def get_protocol(self):
         if self.protocol_id != None:
             return '%s' %(self.protocol_id.get_name())
@@ -213,27 +239,6 @@ class ClinicSampleRequest (models.Model):
         return self
 
 
-class SuspicionHistoryManager(models.Manager):
-    def create_suspicion_history ( self, suspicion_data):
-        new_suspicion_history = self.create( clinicSample_id = suspicion_data['clinicSample_id'],
-                    patient_id = suspicion_data['patient_id'], description = suspicion_data['description'] )
-
-class SuspicionHistory (models.Model):
-    clinicSample_id = models.ForeignKey(
-            ClinicSampleRequest,
-            on_delete = models.CASCADE, null = True)
-    patient_id = models.ForeignKey(
-            Patient,
-            on_delete = models.CASCADE, null = True)
-    description = models.CharField(max_length = 255)
-
-    def __str__ (self):
-        return '%s' %(self.description)
-
-    def get_suspicion_text(self):
-        return '%s' %(self.description)
-
-    objects = SuspicionHistoryManager()
 '''
 class SampleResults (models.Model):
     sampleRequest_id = models.ForeignKey(

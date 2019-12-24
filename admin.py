@@ -3,7 +3,7 @@ from iSkyLIMS_clinic.models import *
 
 # Register your models here.
 class ClinicSampleRequestAdmin (admin.ModelAdmin):
-    list_display= ('sampleCore', 'clinicSampleState', 'sampleRequestUser','patient_id', 'doctor_id', 'protocol_id', 'confirmationCode', 'priority', 'comments')
+    list_display= ('sampleCore', 'clinicSampleState', 'sampleRequestUser', 'doctor_id', 'confirmationCode', 'priority', 'serviceDate')
 
 class ClinicSampleStateAdmin (admin.ModelAdmin):
     list_display = ('clinicState',)
@@ -11,21 +11,18 @@ class ClinicSampleStateAdmin (admin.ModelAdmin):
 class ServiceUnitsAdmin(admin.ModelAdmin):
     list_display = ('serviceUnitName',)
 
-class PatientAdmin(admin.ModelAdmin):
-    list_display = ('patientName', 'numberOfHistory')
+class PatientDataAdmin(admin.ModelAdmin):
+    list_display = ('patienCore', 'address', 'phone', 'sex', 'birthday', 'smoker', 'notificationPreference')
 
 class DoctorAdmin(admin.ModelAdmin):
     list_display = ('doctorName',)
-
-class SuspicionHistoryAdmin(admin.ModelAdmin):
-    list_display = ('clinicSample_id', 'patient_id', 'description')
 
 
 
 admin.site.register(ClinicSampleRequest, ClinicSampleRequestAdmin)
 admin.site.register(ClinicSampleState,ClinicSampleStateAdmin)
 admin.site.register(Doctor,DoctorAdmin)
-admin.site.register(SuspicionHistory,SuspicionHistoryAdmin)
 
-admin.site.register(Patient,PatientAdmin)
+
+admin.site.register(PatientData,PatientDataAdmin)
 admin.site.register(ServiceUnits,ServiceUnitsAdmin)

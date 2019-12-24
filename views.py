@@ -270,9 +270,10 @@ def display_sample_info(request,sample_c_id):
 
         return render(request, 'iSkyLIMS_clinic/displaySampleInfo.html', {'display_sample_info': display_sample_info })
     else:
-        return render (request,'iSkyLIMS_clinic/error_page.html',
-            {'content':['The clinic sample that you are trying to get ',
-                        'DOES NOT exists .']})
+        search_sample_data = collect_data_for_search ()
+        error_message = ['The clinic sample that you are trying to get', 'DOES NOT exists .']
+        return render (request,'iSkyLIMS_clinic/searchSample.html', {'search_sample_data': search_sample_data,
+                                'error_message' : error_message})
 
 
 def pending_to_update(request):
@@ -295,11 +296,10 @@ def pending_to_update(request):
 
     return render(request, 'iSkyLIMS_clinic/pendingToUpdate.html', {'pending':pending})
 
+
 @login_required
 def search_sample(request):
-    search_sample_data = {}
-    search_sample_data['doctors'] = get_available_doctor()
-    search_sample_data['requested_service_by'] = get_service_units()
+    search_sample_data = collect_data_for_search ()
     if request.method == 'POST' and (request.POST['action'] == 'searchSample'):
         data_request = {}
         data_request['sample_name']  = request.POST['samplename']
@@ -344,7 +344,6 @@ def search_sample(request):
             return render(request, 'iSkyLIMS_clinic/displaySampleInfo.html', {'display_sample_list_info': display_sample_list_info })
 
     else:
-
         return render(request, 'iSkyLIMS_clinic/searchSample.html', {'search_sample_data': search_sample_data })
 
 
