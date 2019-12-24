@@ -273,6 +273,11 @@ class RunningParametersManager (models.Manager) :
         if running_data['PlannedIndex2ReadCycles'] == "":
             running_data['PlannedIndex2ReadCycles'] = 0
 
+        if running_data['LibraryID'] == None:
+            running_data['LibraryID'] = " "
+        if running_data['AnalysisWorkflowType'] == None :
+            running_data['AnalysisWorkflowType'] = " "
+
         running_parameters = self.create (runName_id = run_object,
                          RunID=running_data['RunID'], ExperimentName=running_data['ExperimentName'],
                          RTAVersion=running_data['RTAVersion'], SystemSuiteVersion= running_data['SystemSuiteVersion'],

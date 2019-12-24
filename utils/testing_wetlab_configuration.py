@@ -141,7 +141,7 @@ def folder_run_exists (conn, folder_run_name):
 
 def create_project (p_name, run_name, bs_file):
 
-    if not BaseSpaceLibraryName.objects.filter(libraryName__exact = 'Nextera XT Index Kit v2 Set B').exists() :
+    if not LibraryKit.objects.filter(libraryName__exact = 'Nextera XT Index Kit v2 Set B').exists() :
         new_lib_kit = LibraryKit(libraryName = 'Nextera XT Index Kit v2 Set B')
         new_lib_kit.save()
 

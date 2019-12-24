@@ -2889,7 +2889,7 @@ def configuration_test (request):
         log_trace = []
         working_path = settings.MEDIA_ROOT
         os.chdir(working_path)
-        config_file = os.path.join(settings.BASE_DIR,'iSkyLIMS_wetlab', 'tests', 'logging_test_config.ini' )
+        config_file = os.path.join(settings.BASE_DIR, 'conf', 'logging_test_config.ini' )
         log_file = get_log_file_name(config_file)
         if os.path.isfile (log_file):
             os.remove(log_file)
@@ -3132,7 +3132,7 @@ def create_protocol (request):
 
         return render(request, 'iSkyLIMS_wetlab/createProtocol.html',{'defined_protocols': defined_protocols,
                             'defined_protocol_types':defined_protocol_types, 'new_defined_protocol': new_protocol,
-                            'new_protocol_id':new_protocol_id})
+                            'new_protocol_id':new_protocol_id,  'other_protocol_list' :other_protocol_list})
 
     return render(request, 'iSkyLIMS_wetlab/createProtocol.html',{'defined_protocols': defined_protocols,
                         'defined_protocol_types':defined_protocol_types, 'other_protocol_list' :other_protocol_list})
@@ -3186,7 +3186,7 @@ def define_protocol_parameters (request, protocol_id):
 @login_required
 def add_commercial_kit (request):
     app_name = __package__.split('.')[0]
-    defined_protocols = get_defined_protocols(app_name)
+    defined_protocols = get_defined_protocols(app_name, False)
     commercial_kits_data = get_data_for_commercial_kits()
 
     if request.method == 'POST' and request.POST['action'] == 'addCommercialKit':
@@ -3344,7 +3344,7 @@ def search_lib_samples (request):
         return render(request, 'iSkyLIMS_wetlab/searchLibSample.html',{'search_data':search_data})
 
 @login_required
-def set_Molecule_values(request):
+def set_molecule_values(request):
     if request.method == 'POST' and request.POST['action'] == 'continueWithMolecule':
         if request.POST['samples'] == '':
             return render (request,'iSkyLIMS_wetlab/error_page.html',
@@ -3777,7 +3777,7 @@ def pending_sample_preparations(request):
     return render(request, 'iSkyLIMS_wetlab/pendingSamplePreparations.html',{'pending': pending})
 
 def user_commercial_kit_inventory(request):
-
+    import pdb; pdb.set_trace()
     expired_kit = get_expired_lot_user_kit(request.user)
     valid_kit = get_valid_lot_user_kit(request.user)
 

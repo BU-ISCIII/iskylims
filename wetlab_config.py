@@ -1,5 +1,10 @@
 import os
 from django.conf import settings
+##### Allow to import the configuration samba files from configuration folder
+import sys
+sys.path.append('../')
+from conf.wetlab_conf import *
+'''
 ################# USER SETTINGS ##############################
 ## Wetlab manager
 WETLAB_MANAGER = 'WetlabManager'
@@ -21,6 +26,7 @@ IS_DIRECT_TCP = True
 ## SAMBA_DOMAIN MUST be empty if domain value is not used for samba connection
 SAMBA_DOMAIN=''
 '''
+'''
 ## SAMBA settings for connecting quibitka server to fetch the run files
 SAMBA_USER_ID = 'bioinfocifs'
 SAMBA_USER_PASSWORD = 'fCdEg979I-W.gUx-teDr'
@@ -37,14 +43,15 @@ IS_DIRECT_TCP=True
 SAMBA_DOMAIN='ISCIII
 '''
 
-##############################################################
 
+##############################################################
+'''
 ################### EMAIL SETTINGS  ##########################
 SENT_EMAIL_ON_ERROR = False
 TO_EMAIL_ADDRESS = ['bioinformatica@isciii.es']
 FROM_EMAIL_ADDRESS = 'iSkyLIMS@isciii.es'
 ##############################################################
-
+'''
 
 ############## FOLDER SETTINGS ###############################
 ## Directory settings for processing the run data files ######
