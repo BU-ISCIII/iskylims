@@ -35,6 +35,19 @@ class PatientData (models.Model):
     def get_patient_name(self):
         return '%s' %(self.patienCore_id.get_name())
 
+    def get_patient_full_data(self):
+        patient_data = []
+        patient_data.append(self.address)
+        patient_data.append(self.phone)
+        patient_data.append(self.email)
+        patient_data.append(self.sex)
+        patient_data.append(self.birthday)
+        patient_data.append(self.smoker)
+        patient_data.append(self.notificationPreference)
+
+        return patient_data
+
+
 class PatientHistory (models.Model):
     patiendData_id = models.ForeignKey (
             PatientData,
@@ -86,6 +99,9 @@ class ClinicSampleRequest (models.Model):
     sampleCore = models.ForeignKey(
                 Samples,
                 on_delete = models.CASCADE)
+    patientCore = models.ForeignKey(
+                PatientData,
+                on_delete = models.CASCADE, null = True, blank = True)
     doctor_id = models.ForeignKey(
                 Doctor,
                 on_delete = models.CASCADE, null = True)
@@ -118,17 +134,18 @@ class ClinicSampleRequest (models.Model):
 
     def get_sample_name(self):
         return '%s' %(self.sampleCore.get_sample_name())
-    '''
+
+    def get_core_sample_obj(self):
+        return self.sampleCore
+
     def get_patient_information(self):
 
-        if self.patient_id != None:
-            patient_info = []
-            patient_info.append(self.patient_id.get_patient_name())
-            patient_info.append(self.patient_id.get_history_number())
-        else:
-            patient_info = ['Not Defined']*2
+        patient_info = []
+        patient_info.append(self.sampleCore.get_sample_patient_name())
+        patient_info.append(self.sampleCore.get_sample_patient_code())
+
         return patient_info
-    '''
+
     def get_protocol(self):
         if self.protocol_id != None:
             return '%s' %(self.protocol_id.get_name())

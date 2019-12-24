@@ -7,10 +7,13 @@ MAP_ADDITIONAL_HEADING_TO_DATABASE = [('Order','orderInEntry'), ('Confirmation C
 
 HEADING_FOR_STORED_PATIENT_DATA = ['Sample', 'History Number', 'Requested Service by']
 
-HEADING_FOR_DISPLAY_PATIENT_INFORMATION = ['Patient Name', 'History Number']
+HEADING_FOR_DISPLAY_PATIENT_BASIC_INFORMATION = ['Patient Name', 'Patient Code']
 HEADING_FOR_DISPLAY_REQUESTED_BY_INFORMATION = ['Requested Service by', 'Doctor Name']
+HEADING_FOR_DISPLAY_PATIENT_ADDITIONAL_INFORMATION = ['Address', 'Phone number', 'email', 'Sex', 'Birthday', 'Smoker', 'Notification Preferences']
 
-HEADING_FOR_DISPLAY_SAMPLE_CORE_INFORMATION = ['Order', 'Confirmation Code', 'Priority','Laboratory', 'Type of Sample', 'Species', 'Date for entry in Lab']
+
+
+HEADING_FOR_DISPLAY_SAMPLE_MAIN_INFORMATION = ['Order', 'Confirmation Code', 'Priority','Sample Origin', 'Type of Sample', 'Species', 'Entry Date', 'User name']
 
 HEADING_FOR_DISPLAY_SAMPLE_DEFINED_STATE = ['Sample Name','Sample Origin', 'Type of Sample', 'Species', 'Date for entry in Lab']
 
