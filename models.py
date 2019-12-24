@@ -283,6 +283,13 @@ class PatientCore (models.Model):
     def __str__ (self):
         return '%s' %(self.patientName)
 
+    def get_patient_name(self):
+        return '%s , %s' %(self.patientName, self. patientSurName)
+
+    def get_patient_code (self):
+        return '%s' %(self.patientCode)
+
+
     objects = PatientCoreManager()
 
 class SampleProjectBelongs(models.Model):
@@ -419,6 +426,16 @@ class Samples (models.Model):
 
     def get_sample_name (self):
         return '%s' %(self.sampleName)
+
+
+    def get_sample_patient_code (self):
+        return '%s' %(self.patientCore.get_patient_code())
+
+    def get_sample_patient_name (self):
+        return '%s' %(self.patientCore.get_patient_name())
+
+    def get_sample_patient_obj(self):
+        return self.patientCore
 
     def get_sample_state(self):
         return '%s' %(self.sampleState)
