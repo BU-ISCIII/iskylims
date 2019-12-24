@@ -12,11 +12,46 @@ from iSkyLIMS_clinic.utils.managed_results import *
 
 from iSkyLIMS_core.utils.handling_protocols import *
 from iSkyLIMS_core.utils.handling_samples import *
+from iSkyLIMS_core.utils.handling_commercial_kits import *
 
 def index(request):
     #
     return render(request, 'iSkyLIMS_clinic/index.html')
 
+
+@login_required
+def add_commercial_kit (request):
+    app_name = __package__.split('.')[0]
+    # exclude the protocols that have no molecule involved
+    defined_protocols = get_defined_protocols(app_name, True )
+    commercial_kits_data = get_data_for_commercial_kits()
+
+    if request.method == 'POST' and request.POST['action'] == 'addCommercialKit':
+        if get_commercial_kit_id (request.POST['kitName']) :
+
+            return render(request, 'iSkyLIMS_clinic/addCommercialKit.html',{'defined_protocols': defined_protocols, 'invalid_name': request.POST['kitName']})
+        new_kit = store_commercial_kit(request.POST)
+        new_kit_data = get_commercial_kit_basic_data(new_kit)
+        return render(request, 'iSkyLIMS_clinic/addCommercialKit.html',{'new_kit_data': new_kit_data})
+    else:
+        return render(request, 'iSkyLIMS_clinic/addCommercialKit.html',{'defined_protocols': defined_protocols, 'commercial_kits_data': commercial_kits_data})
+
+@login_required
+def add_user_lot_commercial_kit (request):
+    if request.method == 'POST' and request.POST['action'] == 'addUserLotKit':
+        if get_lot_user_commercial_kit_id (request.POST['nickName']) :
+            defined_kits = get_defined_commercial_kits()
+            return render(request, 'iSkyLIMS_clinic/addUserLotCommercialKit.html',{'defined_kits': defined_kits, 'invalid_name': request.POST['nickName']})
+        new_lot_kit = store_lot_user_commercial_kit(request.POST, request.user)
+        new_lot_kit_data = get_lot_user_commercial_kit_basic_data(new_lot_kit)
+        return render(request, 'iSkyLIMS_clinic/addUserLotCommercialKit.html',{'new_lot_kit_data':new_lot_kit_data})
+    else:
+        defined_kits = get_defined_commercial_kits()
+        return render(request, 'iSkyLIMS_clinic/addUserLotCommercialKit.html',{'defined_kits':defined_kits})
+
+
+
+@login_required
 def add_result_data (request):
 
     if request.method == 'POST' and request.POST['action'] == 'updateClinicSampleProtocol':
@@ -122,6 +157,65 @@ def define_patient_information(request):
 
         return render(request, 'iSkyLIMS_clinic/definePatientInformation.html',{'patient_information':patient_information})
 
+
+@login_required
+def create_protocol (request):
+    # get the list of defined protocols
+    defined_protocols, other_protocol_list = display_available_protocols (__package__)
+    defined_protocol_types = display_protocol_types (__package__)
+    import pdb; pdb.set_trace()
+
+    if request.method == 'POST' and request.POST['action'] == 'addNewProtocol':
+        #import pdb; pdb.set_trace()
+        new_protocol = request.POST['newProtocolName']
+        protocol_type = request.POST['protocolType']
+        description = request.POST['description']
+
+        if check_if_protocol_exists (new_protocol, __package__):
+            return render ( request,'iSkyLIMS_clinic/createProtocol.html',{'content':['Protocol Name ', new_protocol,
+                            'Already exists.']})
+        new_protocol_id = create_new_protocol(new_protocol, protocol_type, description, __package__)
+
+        return render(request, 'iSkyLIMS_clinic/createProtocol.html',{'defined_protocols': defined_protocols,
+                            'defined_protocol_types':defined_protocol_types, 'new_defined_protocol': new_protocol,
+                            'new_protocol_id':new_protocol_id,  'other_protocol_list' :other_protocol_list})
+
+    return render(request, 'iSkyLIMS_clinic/createProtocol.html',{'defined_protocols': defined_protocols,
+                        'defined_protocol_types':defined_protocol_types, 'other_protocol_list' :other_protocol_list})
+
+@login_required
+def display_protocol (request, protocol_id):
+    if not check_if_protocol_exists(protocol_id, __package__):
+        return render (request,'iSkyLIMS_clinic/error_page.html',
+            {'content':['The protocol that you are trying to get ',
+                        'DOES NOT exists .']})
+    protocol_data = get_all_protocol_info (protocol_id)
+    import pdb; pdb.set_trace()
+
+    return render(request, 'iSkyLIMS_clinic/displayProtocol.html', {'protocol_data': protocol_data})
+
+
+@login_required
+def define_protocol_parameters (request, protocol_id):
+    if request.method == 'POST' and request.POST['action'] == 'define_protocol_parameters':
+
+        recorded_prot_parameters = set_protocol_parameters(request)
+
+        return render(request, 'iSkyLIMS_clinic/defineProtocolParameters.html', {'recorded_prot_parameters':recorded_prot_parameters})
+
+    else:
+        if not check_if_protocol_exists(protocol_id, __package__):
+            return render ( request,'iSkyLIMS_clinic/error_page.html',
+                        {'content':['The requested Protocol does not exist',
+                            'Create the protocol name before assigning custom protocol parameters.']})
+
+
+        prot_parameters = define_table_for_prot_parameters(protocol_id)
+        return render(request, 'iSkyLIMS_clinic/defineProtocolParameters.html', {'prot_parameters':prot_parameters})
+
+
+
+
 @login_required
 def define_result_protocol(request):
     defined_protocols, other_protocol_list = display_available_protocols (__package__)
@@ -138,9 +232,9 @@ def define_result_protocol(request):
         return render(request, 'iSkyLIMS_clinic/defineResultProtocol.html',{'other_protocol_list' :other_protocol_list,
                             'defined_protocol_types':defined_protocol_types, 'new_defined_result_protocol': new_result_protocol,
                             'new_protocol_id':new_result_protocol_id})
-        return render(request, 'iSkyLIMS_clinic/defineResultProtocol.html',{'recorded_result_parameters':recorded_result_parameters})
+        return render(request, 'iSkyLIMS_clinic/defineResultProcedure.html',{'recorded_result_parameters':recorded_result_parameters})
     else:
-        return render(request, 'iSkyLIMS_clinic/defineResultProtocol.html',{'other_protocol_list' :other_protocol_list,'defined_protocol_types':defined_protocol_types})
+        return render(request, 'iSkyLIMS_clinic/defineResultProcedure.html',{'other_protocol_list' :other_protocol_list,'defined_protocol_types':defined_protocol_types})
 
 
 
@@ -152,10 +246,10 @@ def define_result_protocol_parameters (request, result_protocol_id):
     else:
 
         if not check_if_protocol_exists(result_protocol_id, __package__):
-            return render ( request,'iSkyLIMS_wetlab/error_page.html',
+            return render ( request,'iSkyLIMS_clinic/error_page.html',
                         {'content':['The requested Protocol does not exist',
                             'Create the protocol name before assigning custom protocol parameters.']})
-        result_parameters = define_table_for_prot_parameters(result_protocol_id)
+        result_parameters = define_table_for_prot_protocols(result_protocol_id)
         return render(request, 'iSkyLIMS_clinic/defineResultProtocolParameters.html',{'result_parameters':result_parameters})
 
 @login_required
@@ -252,3 +346,66 @@ def search_sample(request):
     else:
 
         return render(request, 'iSkyLIMS_clinic/searchSample.html', {'search_sample_data': search_sample_data })
+
+
+@login_required
+def set_molecule_values(request):
+    import pdb; pdb.set_trace()
+    if request.method == 'POST' and request.POST['action'] == 'continueWithMolecule':
+        if request.POST['c_samples'] == '':
+            return render (request,'iSkyLIMS_clinic/error_page.html',
+                {'content':['There was no sample selected ']})
+        if  'samples_in_list' in request.POST:
+            c_samples = request.POST.getlist('c_samples')
+        else:
+            c_samples = request.POST['c_samples'].split(',')
+
+        molecule_protocol = get_table_record_molecule (c_samples, __package__)
+        if 'ERROR' in molecule_protocol :
+            return render (request, 'iSkyLIMS_clinic/error_page.html',
+                {'content':['There was no valid sample selected ']})
+
+        molecule_protocol['samples'] = ','.join(c_samples)
+        import pdb; pdb.set_trace()
+        return render(request, 'iSkyLIMS_clinic/setMoleculeValues.html',{'molecule_protocol':molecule_protocol})
+
+    elif request.method == 'POST' and request.POST['action'] == 'updateMoleculeProtocol':
+
+        molecule_recorded = record_molecules (request)
+
+        if not 'heading' in molecule_recorded:
+            samples = request.POST['samples'].split(',')
+            molecule_protocol = get_table_record_molecule (samples, __package__)
+            molecule_protocol['data'] = molecule_recorded['incomplete_molecules']
+            molecule_protocol['samples'] = ','.join(samples)
+            return render(request, 'iSkyLIMS_clinic/setMoleculeValues.html',{'molecule_protocol':molecule_protocol})
+        else:
+            if 'incomplete_molecules' in molecule_recorded:
+                samples = molecule_recorded['incomplete_molecules_ids'].split(',')
+                molecule_recorded.update(get_table_record_molecule (samples))
+
+            return render(request, 'iSkyLIMS_clinic/setMoleculeValues.html',{'molecule_recorded':molecule_recorded})
+
+    elif request.method == 'POST' and request.POST['action'] == 'displayMoleculeParameters':
+        if  'samples_in_list' in request.POST:
+            molecules = request.POST.getlist('molecules')
+        else:
+            molecules = request.POST['molecules'].split(',')
+        show_molecule_parameters = display_molecule_protocol_parameters(molecules, request.user)
+        return render(request, 'iSkyLIMS_clinic/setMoleculeValues.html',{'show_molecule_parameters':show_molecule_parameters})
+
+    elif request.method == 'POST' and request.POST['action'] == 'addMoleculeParameters':
+        added_molecule_protocol_parameters = add_molecule_protocol_parameters(request)
+        if 'pending' in request.POST :
+            molecules = request.POST['pending'].split(',')
+            show_molecule_parameters = display_molecule_protocol_parameters(molecules,request.user)
+            return render(request, 'iSkyLIMS_clinic/setMoleculeValues.html',{'added_molecule_protocol_parameters':added_molecule_protocol_parameters, 'show_molecule_parameters':show_molecule_parameters})
+        else:
+            return render(request, 'iSkyLIMS_clinic/setMoleculeValues.html',{'added_molecule_protocol_parameters':added_molecule_protocol_parameters})
+
+    else:
+        register_user = request.user.username
+        display_list = get_defined_samples (register_user)
+
+        return render(request, 'iSkyLIMS_clinic/setMoleculeValues.html',{'display_list': display_list})
+    return render(request, 'iSkyLIMS_clinic/setMoleculeValues.html',{})

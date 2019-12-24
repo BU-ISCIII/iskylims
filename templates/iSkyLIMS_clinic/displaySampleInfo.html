@@ -1,6 +1,7 @@
 {% extends 'iSkyLIMS_clinic/base.html' %}
 {% load static %}
 {% block content %}
+
 {% if display_sample_info %}
     <div class="row row-space-4 margin-b-4">
         <div class="col-sm-7 col-sm-offset-1" >
@@ -14,50 +15,9 @@
     </div> <!--// end row -->
 
     <div class="row row-space-4 margin-b-4">
-        <div class="col-sm-5 " >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Patient Information for Sample {{display_sample_info.s_name}}</h3></div>
-                <div class="panel-body">
-                    <br>
-                    <table class="table table-hover">
-                        <tbody>
-                          {% for values in display_sample_info.patient_info %}
-                             <tr>
-                                {% for value in values %}
-                                   <td>{{ value }} </td>
-                                {%endfor%}
-                              </tr>
-                          {%endfor%}
-                        </tbody>
-                    </table>
-                </div>  <!--  end of panel body  -->
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-7  -->
-
-        <div class="col-sm-6 col-sm-offset-1" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Requested Information for Sample {{display_sample_info.s_name}}</h3></div>
-                <div class="panel-body">
-                    <table class="table table-hover">
-                        <tbody>
-                          {% for values in display_sample_info.requested_by %}
-                             <tr>
-                                {% for value in values %}
-                                   <td>{{ value }} </td>
-                                {%endfor%}
-                              </tr>
-                          {%endfor%}
-                        </tbody>
-                    </table>
-                </div>  <!--  end of panel body  -->
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-7  -->
-    </div> <!--// end row -->
-
-    <div class="row row-space-4 margin-b-4">
         <div class="col-sm-10 col-sm-offset-1" >
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>Additional Information for Sample {{display_sample_info.s_name}}</h3></div>
+                <div class="panel-heading"><h3>Main Information for Sample {{display_sample_info.s_name}}</h3></div>
                 <div class="panel-body">
                     <table class="table">
                         <thead>
@@ -80,6 +40,132 @@
         </div> <!--// end col-sm-7  -->
     </div> <!--// end row -->
 
+    <div class="row row-space-4 margin-b-1">
+        <div class="col-sm-12 ">
+            <div class="tab">
+                <button class="tablinks" onclick="summaryBin(event, 'patient')">Patient Information </button>
+                <button class="tablinks" onclick="summaryBin(event, 'analysis')">Data from Analysis</button>
+                {% if display_sample_info.run_data.heading %}
+                    <button class="tablinks" onclick="summaryBin(event, 'runData')">Run Data</button>
+                {% endif %}
+                <button class="tablinks" onclick="summaryBin(event, 'results')">Results</button>
+            </div>
+
+            <div id="patient" class="tabcontent">
+                <h3>Patient Information</h3>
+                <div class="col-sm-5 " >
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h3>Patient Information for Sample {{display_sample_info.s_name}}</h3></div>
+                        <div class="panel-body">
+                            <br>
+                            <table class="table table-hover">
+                                <tbody>
+                                  {% for values in display_sample_info.patient_info %}
+                                     <tr>
+                                        {% for value in values %}
+                                           <td>{{ value }} </td>
+                                        {%endfor%}
+                                      </tr>
+                                  {%endfor%}
+                                </tbody>
+                            </table>
+                        </div>  <!--  end of panel body  -->
+                    </div> <!--// end panel -->
+                </div> <!--// end col-sm-7  -->
+
+                <div class="col-sm-6 col-sm-offset-1" >
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h3>Requested Information for Sample {{display_sample_info.s_name}}</h3></div>
+                        <div class="panel-body">
+                            <table class="table table-hover">
+                                <tbody>
+                                  {% for values in display_sample_info.requested_by %}
+                                     <tr>
+                                        {% for value in values %}
+                                           <td>{{ value }} </td>
+                                        {%endfor%}
+                                      </tr>
+                                  {%endfor%}
+                                </tbody>
+                            </table>
+                        </div>  <!--  end of panel body  -->
+                    </div> <!--// end panel -->
+                </div> <!--// end col-sm-7  -->
+            </div> <!-- // end of tab patient -->
+
+            <div id="analysis" class="tabcontent">
+                <h3>Information collection during DNA/RNA extraction</h3>
+                <div class="col-sm-5 " >
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h3>Information for Sample {{display_sample_info.s_name}}</h3></div>
+                        <div class="panel-body">
+                            <br>
+
+
+                            {% if display_sample_info.parameter_heading %}
+                                <div class="row row-space-2 margin-b-4">
+                                    <div class="col-sm-11">
+                                        <div class="panel panel-default">
+                                            <h3>Result Parameter used for the sample {{ sample_information.sample_definition.0 }} </h3>
+                                            <div class="panel-heading"><h4>Result Parameter Information</h4></div>
+                                            <div class="panel-body">
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            {% for values in display_sample_info.parameter_heading %}
+                                                                <th>{{ values }} </th>
+                                                            {%endfor%}
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            {% for value in display_sample_info.parameter_values %}
+                                                                <td>{{ value }} </td>
+                                                            {%endfor%}
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div> <!--  end of panel body -->
+                                        </div> <!--  end of panel  -->
+                                    </div> <!--  end of col-sm-11 -->
+                                </div> <!--  end of row -->
+                            {% endif %}
+                        </div>  <!--  end of panel body  -->
+                    </div> <!--// end panel -->
+                </div> <!--// end col-sm-5  -->
+            </div> <!-- // end of tab analysis -->
+
+        </div> <!--  end of col-sm-12 -->
+    </div> <!--  end of row -->
+
+
+
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-5 " >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Patient Information for Sample {{display_sample_info.s_name}}</h3></div>
+                <div class="panel-body">
+                    <br>
+                    <table class="table table-hover">
+                        <tbody>
+                          {% for values in display_sample_info.patient_info %}
+                             <tr>
+                                {% for value in values %}
+                                   <td>{{ value }} </td>
+                                {%endfor%}
+                              </tr>
+                          {%endfor%}
+                        </tbody>
+                    </table>
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  -->
+
+
+    </div> <!--// end row -->
+
+
+
     <div class="row row-space-4 margin-b-4">
         <div class="col-sm-5 " >
             <div class="panel panel-default">
@@ -99,34 +185,7 @@
             </div> <!--// end panel -->
         </div> <!--// end col-sm-7  -->
     </div> <!--// end row -->
-    {% if display_sample_info.parameter_heading %}
-        <div class="row row-space-2 margin-b-4">
-            <div class="col-sm-11">
-                <div class="panel panel-default">
-                    <h3>Result Parameter used for the sample {{ sample_information.sample_definition.0 }} </h3>
-                    <div class="panel-heading"><h4>Result Parameter Information</h4></div>
-                    <div class="panel-body">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    {% for values in display_sample_info.parameter_heading %}
-                                        <th>{{ values }} </th>
-                                    {%endfor%}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    {% for value in display_sample_info.parameter_values %}
-                                        <td>{{ value }} </td>
-                                    {%endfor%}
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div> <!--  end of panel body -->
-                </div> <!--  end of panel  -->
-            </div> <!--  end of col-sm-11 -->
-        </div> <!--  end of row -->
-    {% endif %}
+
 
 
 {% else%}

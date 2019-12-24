@@ -1,6 +1,6 @@
 ################# SAMPLE SETTINGS ##############################
 ADDITIONAL_HEADING_FOR_RECORDING_SAMPLES = ['Sample','Order', 'Confirmation Code', 'Priority', 'Requested Service Date',
-                'History Number', 'Requested Service by', 'Doctor', 'Suspicious', 'Comments']
+                'History Number', 'Requested Service by', 'Doctor', 'Suspicion', 'Comments']
 
 MAP_ADDITIONAL_HEADING_TO_DATABASE = [('Order','orderInEntry'), ('Confirmation Code', 'confirmationCode'), ('Priority', 'priority'),
                 ('Requested Service Date','serviceDate' ), ('Comments', 'comments')]
@@ -12,7 +12,7 @@ HEADING_FOR_DISPLAY_REQUESTED_BY_INFORMATION = ['Requested Service by', 'Doctor 
 
 HEADING_FOR_DISPLAY_SAMPLE_CORE_INFORMATION = ['Order', 'Confirmation Code', 'Priority','Laboratory', 'Type of Sample', 'Species', 'Date for entry in Lab']
 
-HEADING_FOR_DISPLAY_SAMPLE_DEFINED_STATE = ['Sample Name','Laboratory', 'Type of Sample', 'Species', 'Date for entry in Lab']
+HEADING_FOR_DISPLAY_SAMPLE_DEFINED_STATE = ['Sample Name','Sample Origin', 'Type of Sample', 'Species', 'Date for entry in Lab']
 
 HEADING_FOR_DISPLAY_SAMPLE_PATIENT_SEQUENCING_STATE = ['Sample Name','Order', 'Confirmation Code', 'Priority', 'History Number', 'Doctor Name' , 'Service Requested by' ]
 

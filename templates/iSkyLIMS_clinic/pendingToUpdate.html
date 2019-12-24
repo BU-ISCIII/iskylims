@@ -27,12 +27,12 @@
             <div class="col-sm-7" >
                 <div class="panel panel-default">
                     {% if pending.defined.sample_heading %}
-                        <div class="panel-heading"><h3>Samples need to be updated with Patient information</h3></div>
+                        <div class="panel-heading"><h3>Samples need to be updated with DNA/RNA Extraction</h3></div>
                         <div class="panel-body">
 
-                            <form method="post" action="/clinic/definePatientInformation" enctype="multipart/form-data" name="continueWithPatient"  id="continueWithPatient" class="form-horizontal well">
+                            <form method="post" action="/clinic/setMoleculeValues" enctype="multipart/form-data" name="continueWithMolecule"  id="continueWithMolecule" class="form-horizontal well">
                             {% csrf_token %}
-                                <input type="hidden" name="action" value="continueWithPatient"/>
+                                <input type="hidden" name="action" value="continueWithMolecule"/>
                                 <input type="hidden" name="samples_in_list" value="True"/>
                                 <div class="table-wrapper">
                                     <table class="table table-hover">

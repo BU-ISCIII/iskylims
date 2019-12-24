@@ -147,7 +147,7 @@ def display_sample_list(sample_c_list):
     for sample_c in sample_c_list:
         sample_c_obj = ClinicSampleRequest.objects.get(pk__exact = sample_c)
         sample_c_data.append(sample_c_obj.get_sample_info_for_list())
-        #import pdb; pdb.set_trace()
+
     display_sample_list_info['sample_c_data'] = sample_c_data
     return display_sample_list_info
 

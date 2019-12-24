@@ -130,7 +130,7 @@ class ClinicSampleRequest (models.Model):
         s_core_info.append(self.orderInEntry)
         s_core_info.append(self.confirmationCode)
         s_core_info.append(self.priority)
-        s_core_info.append(self.sampleCore.get_laboratory())
+        s_core_info.append(self.sampleCore.get_sample_origin())
         s_core_info.append(self.sampleCore.get_sample_type())
         s_core_info.append(self.sampleCore.get_species())
         s_core_info.append(self.sampleCore.get_extraction_date())
@@ -140,7 +140,7 @@ class ClinicSampleRequest (models.Model):
     def get_info_for_defined_state(self):
         s_core_info = []
         s_core_info.append(self.sampleCore.get_sample_name())
-        s_core_info.append(self.sampleCore.get_laboratory())
+        s_core_info.append(self.sampleCore.get_sample_origin())
         s_core_info.append(self.sampleCore.get_sample_type())
         s_core_info.append(self.sampleCore.get_species())
         s_core_info.append(self.sampleCore.get_extraction_date())
@@ -163,10 +163,19 @@ class ClinicSampleRequest (models.Model):
         s_core_info = []
         s_core_info.append(self.pk)
         s_core_info.append(self.sampleCore.get_sample_name())
-        s_core_info.append(self.patient_id.get_history_number())
-        s_core_info.append(self.doctor_id.get_name())
+        try:
+            s_core_info.append(self.patient_id.get_history_number())
+        except:
+            s_core_info.append('History Number not available')
+        try:
+            s_core_info.append(self.doctor_id.get_name())
+        except:
+            s_core_info.append('Doctor name not available')
         s_core_info.append(self.priority)
-        s_core_info.append(self.serviceDate.strftime('%Y-%m-%d'))
+        try:
+            s_core_info.append(self.serviceDate.strftime('%Y-%m-%d'))
+        except:
+            s_core_info.append('Not available')
         s_core_info.append(self.clinicSampleState.get_state())
         return s_core_info
 
