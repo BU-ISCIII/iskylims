@@ -413,7 +413,7 @@ class Samples (models.Model):
         return sample_info
 
     def get_extraction_date (self):
-        recordeddate=self.sampleEntryDate.strftime("%B %d, %Y")
+        recordeddate=self.sampleEntryDate.strftime("%d , %B , %Y")
         return '%s' %(recordeddate)
 
     def get_sample_origin(self):
@@ -513,6 +513,7 @@ class MoleculePreparation (models.Model):
     extractionType = models.CharField(max_length=50)
     moleculeExtractionDate = models.DateTimeField(auto_now_add = False, null =True)
     numberOfReused = models.IntegerField(default=0)
+    usedForMasiveSequencing = models.BooleanField(default=True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__ (self):
