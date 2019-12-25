@@ -284,7 +284,10 @@ class PatientCore (models.Model):
         return '%s' %(self.patientName)
 
     def get_patient_name(self):
-        return '%s , %s' %(self.patientName, self. patientSurName)
+        return '%s' %(self.patientName)
+
+    def get_patient_surname(self):
+        return '%s' %(self.patientSurName)
 
     def get_patient_code (self):
         return '%s' %(self.patientCode)
@@ -434,6 +437,9 @@ class Samples (models.Model):
     def get_sample_patient_name (self):
         return '%s' %(self.patientCore.get_patient_name())
 
+    def get_sample_patient_surname (self):
+        return '%s' %(self.patientCore.get_patient_surname())
+
     def get_sample_patient_obj(self):
         return self.patientCore
 
@@ -483,6 +489,7 @@ class MoleculePreparationManager (models.Manager):
         moleculeCodeId =  molecule_data['moleculeCodeId'],
         moleculeExtractionDate = molecule_data['moleculeExtractionDate'],
         extractionType =  molecule_data['extractionType'],
+        usedForMassiveSequencing= molecule_data['usedForMassiveSequencing']
         #numberOfReused = molecule_data['numberOfReused']
         )
 
@@ -521,6 +528,9 @@ class MoleculePreparation (models.Model):
 
     def get_id (self):
         return "%s" %(self.pk)
+
+    def get_if_massive(self):
+        return self.usedForMassiveSequencing
 
     def get_info_for_display(self):
         extraction_date = self.moleculeExtractionDate.strftime("%d, %B, %Y")

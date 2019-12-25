@@ -78,11 +78,12 @@ def add_molecule_protocol_parameters(request):
     Variables:
         laboratories # list containing all laboratory names
     Return:
-        laboratories.
+        molecule_updated_list.
     '''
 
     molecule_parameter_value = {}
     molecule_updated_list = []
+    sample_updated_list = []
     molecule_json_data = json.loads(request.POST['parameters_data'])
     molecules = request.POST['molecules'].split(',')
     parameter_heading = request.POST['heading_in_excel'].split('::')
@@ -95,7 +96,13 @@ def add_molecule_protocol_parameters(request):
         molecule_updated_list.append(molecule_obj.get_molecule_code_id())
 
         # Update sample state
-        molecule_obj.get_sample_obj().set_state('Library preparation')
+        sample_obj = molecule_obj.get_sample_obj()
+        if molecule_obj.get_if_massive() == True :
+            sample_obj.set_state('Library preparation')
+        else:
+            sample_obj.set_state('Completed')
+        # Update sample list
+        sample_updated_list.append(sample_obj.get_sample_id())
 
         for p_index in range(fixed_heading_length, parameters_length):
             molecule_parameter_value['moleculeParameter_id'] = ProtocolParameters.objects.get(protocol_id = protocol_used_obj,
@@ -105,7 +112,7 @@ def add_molecule_protocol_parameters(request):
             new_parameters_data = MoleculeParameterValue.objects.create_molecule_parameter_value (molecule_parameter_value)
 
 
-    return molecule_updated_list
+    return molecule_updated_list , sample_updated_list
 
 
 def analyze_input_samples (request):
@@ -355,7 +362,7 @@ def create_patient(name, surname):
 
     return patient_obj
 
-def get_all_sample_information (sample_id ):
+def get_all_sample_information (sample_id , massive):
     sample_information = {}
     parameter_heading_values = []
     if not Samples.objects.filter(pk__exact = sample_id).exists():
@@ -364,9 +371,9 @@ def get_all_sample_information (sample_id ):
     sample_information['sample_definition'] = sample_obj.get_info_for_display()
     sample_information['sample_definition_heading'] = HEADING_FOR_SAMPLE_DEFINITION
     # check if molecule information exists for the sample
-    if MoleculePreparation.objects.filter(sample = sample_obj).exists():
+    if MoleculePreparation.objects.filter(sample = sample_obj, usedForMassiveSequencing = massive).exists():
+        molecules = MoleculePreparation.objects.filter(sample = sample_obj, usedForMassiveSequencing = massive)
         sample_information['molecule_definition_heading'] = HEADING_FOR_MOLECULE_DEFINITION
-        molecules = MoleculePreparation.objects.filter(sample = sample_obj)
         sample_information['molecule_definition'] = []
         sample_information['molecule_parameter_values'] = []
         for molecule in molecules:
@@ -744,12 +751,13 @@ def prepare_sample_input_table ():
     s_information ['table_size']= len(HEADING_FOR_RECORD_SAMPLES)
     return s_information
 
-def record_molecules (request):
+def record_molecules (request , massive):
     '''
     Description:    The function store in database the new molecule and molecule_updated_list
                     the sample state to Extracted molecule.
     Input:
         request
+        massive     Boolean to set if the molecule extraction requires massive procedure
     Variables:
         molecule_information # dictionary which collects all info
     Return:
@@ -794,6 +802,7 @@ def record_molecules (request):
         molecule_data['moleculeCodeId'] = molecule_code_id
         molecule_data['extractionType'] =  molecule_json_data[row_index][heading_in_excel.index('type_extraction')]
         molecule_data['moleculeExtractionDate'] = molecule_json_data[row_index][heading_in_excel.index('extractionDate')]
+        molecule_data['usedForMassiveSequencing'] = massive
         #molecule_data['numberOfReused'] = str(number_code - 1)
 
         new_molecule = MoleculePreparation.objects.create_molecule(molecule_data)
