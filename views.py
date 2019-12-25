@@ -3365,7 +3365,7 @@ def set_molecule_values(request):
 
     elif request.method == 'POST' and request.POST['action'] == 'updateMoleculeProtocol':
 
-        molecule_recorded = record_molecules (request)
+        molecule_recorded = record_molecules (request, True)
 
         if not 'heading' in molecule_recorded:
             samples = request.POST['samples'].split(',')
@@ -3389,7 +3389,7 @@ def set_molecule_values(request):
         return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'show_molecule_parameters':show_molecule_parameters})
 
     elif request.method == 'POST' and request.POST['action'] == 'addMoleculeParameters':
-        added_molecule_protocol_parameters = add_molecule_protocol_parameters(request)
+        added_molecule_protocol_parameters, sample_updated_list = add_molecule_protocol_parameters(request)
         if 'pending' in request.POST :
             molecules = request.POST['pending'].split(',')
             show_molecule_parameters = display_molecule_protocol_parameters(molecules,request.user)
