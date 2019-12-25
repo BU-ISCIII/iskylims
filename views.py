@@ -3294,7 +3294,7 @@ def record_samples(request):
 
 @login_required
 def display_libSample (request, sample_id):
-    sample_information = get_all_sample_information(sample_id)
+    sample_information = get_all_sample_information(sample_id, True)
     if 'Error' in sample_information:
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No Sample was found']})
     sample_information.update(get_all_library_information(sample_id))

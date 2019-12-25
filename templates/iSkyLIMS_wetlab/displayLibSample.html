@@ -38,11 +38,11 @@
               <div class="panel-body">
                 <table class="table table-hover">
                     <thead>
-                      <tr>
-                      {% for values in sample_information.molecule_definition_heading %}
-                        <th>{{ values }} </th>
-                      {%endfor%}
-                      </tr>
+                        <tr>
+                            {% for values in sample_information.molecule_definition_heading %}
+                                <th>{{ values }} </th>
+                            {%endfor%}
+                        </tr>
                     </thead>
                     <tbody>
                         {% for values in sample_information.molecule_definition %}
