@@ -20,9 +20,11 @@ urlpatterns = [
     path('defineResultProtocol', views.define_result_protocol, name = 'define_result_protocol'),
     path('defineResultProtocolParameters=<int:result_protocol_id>', views.define_result_protocol_parameters, name = 'define_result_protocol_parameters'),
     path('displayResultProtocol=<int:result_protocol_id>', views.display_result_protocol, name = 'display_result_protocol'),
+    path('displayPatientInformation=<int:patient_id>/', views.display_patient_information, name = 'display_patient_information'),
     path('displaySampleInfo=<int:sample_c_id>', views.display_sample_info, name = 'display_sample_info'),
     path('pendingToUpdate', views.pending_to_update, name = 'pending_to_update'),
     path('searchSample', views.search_sample, name = 'search_sample'),
+    path('searchPatient', views.search_patient, name = 'search_patient'),
     path('setMoleculeValues', views.set_molecule_values, name = 'set_molecule_values'),
 
 ]

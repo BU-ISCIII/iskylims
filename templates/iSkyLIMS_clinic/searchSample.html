@@ -9,7 +9,9 @@
             <div class="panel panel-danger">
                 <div class="panel-heading"><strong>No Results </strong></div>
                 <div class="panel-body">
-                    <p>{{Error}}</p>
+                    {% for message in Error %}
+                        <p>{{message}}</p>
+                    {% endfor %}
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->
         </div> <!--// end col-sm-7  -->

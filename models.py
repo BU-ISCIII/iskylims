@@ -100,7 +100,7 @@ class ClinicSampleRequest (models.Model):
                 Samples,
                 on_delete = models.CASCADE)
     patientCore = models.ForeignKey(
-                PatientData,
+                PatientCore,
                 on_delete = models.CASCADE, null = True, blank = True)
     doctor_id = models.ForeignKey(
                 Doctor,
@@ -142,6 +142,7 @@ class ClinicSampleRequest (models.Model):
 
         patient_info = []
         patient_info.append(self.sampleCore.get_sample_patient_name())
+        patient_info.append(self.sampleCore.get_sample_patient_surname())
         patient_info.append(self.sampleCore.get_sample_patient_code())
 
         return patient_info

@@ -9,6 +9,7 @@ from iSkyLIMS_clinic.models import *
 from iSkyLIMS_clinic.clinic_config import *
 from iSkyLIMS_clinic.utils.managed_samples import *
 from iSkyLIMS_clinic.utils.managed_results import *
+from iSkyLIMS_clinic.utils.managed_patient import *
 
 from iSkyLIMS_core.utils.handling_protocols import *
 from iSkyLIMS_core.utils.handling_samples import *
@@ -183,17 +184,6 @@ def create_protocol (request):
     return render(request, 'iSkyLIMS_clinic/createProtocol.html',{'defined_protocols': defined_protocols,
                         'defined_protocol_types':defined_protocol_types, 'other_protocol_list' :other_protocol_list})
 
-@login_required
-def display_protocol (request, protocol_id):
-    if not check_if_protocol_exists(protocol_id, __package__):
-        return render (request,'iSkyLIMS_clinic/error_page.html',
-            {'content':['The protocol that you are trying to get ',
-                        'DOES NOT exists .']})
-    protocol_data = get_all_protocol_info (protocol_id)
-    import pdb; pdb.set_trace()
-
-    return render(request, 'iSkyLIMS_clinic/displayProtocol.html', {'protocol_data': protocol_data})
-
 
 @login_required
 def define_protocol_parameters (request, protocol_id):
@@ -253,6 +243,29 @@ def define_result_protocol_parameters (request, result_protocol_id):
         return render(request, 'iSkyLIMS_clinic/defineResultProtocolParameters.html',{'result_parameters':result_parameters})
 
 @login_required
+def display_patient_information (request, patient_id):
+
+    display_patient_info = display_one_patient_info (patient_id)
+    if 'ERROR' in display_patient_info:
+        return render (equest, 'iSkyLIMS_clinic/displayPatientInformation.html', {'ERROR': 'ERROR'})
+    else:
+        return render(request, 'iSkyLIMS_clinic/displayPatientInformation.html', {'display_patient_info': display_patient_info })
+    return
+
+@login_required
+def display_protocol (request, protocol_id):
+    if not check_if_protocol_exists(protocol_id, __package__):
+        return render (request,'iSkyLIMS_clinic/error_page.html',
+            {'content':['The protocol that you are trying to get ',
+                        'DOES NOT exists .']})
+    protocol_data = get_all_protocol_info (protocol_id)
+    import pdb; pdb.set_trace()
+
+    return render(request, 'iSkyLIMS_clinic/displayProtocol.html', {'protocol_data': protocol_data})
+
+
+
+@login_required
 def display_result_protocol (request, result_protocol_id):
     if not check_if_protocol_exists(result_protocol_id, __package__):
         return render (request,'iSkyLIMS_clinic/error_page.html',
@@ -310,6 +323,7 @@ def search_sample(request):
         data_request['start_date'] = request.POST['startdate']
         data_request['end_date'] = request.POST['enddate']
 
+
         # check that some values are in the request if not return the form
         if len([v for v in data_request.values() if v !='']) == 0 :
             return render(request, 'iSkyLIMS_clinic/searchSample.html', {'search_sample_data': search_sample_data })
@@ -327,7 +341,7 @@ def search_sample(request):
                 return render(request, 'iSkyLIMS_clinic/searchSample.html', {'search_sample_data': search_sample_data ,
                     'Error': ERROR_MESSAGE_FOR_INCORRECT_END_SEARCH_DATE })
         # Patient name length must be longer than 5 characters
-        if data_request['patient_name'] !=''  and len(data_request['patient_name']) <5 :
+        if data_request['patient_name'] !=''  and len(data_request['patient_name']) < 4 :
             return render(request, 'iSkyLIMS_clinic/searchSample.html', {'search_sample_data': search_sample_data ,
                 'Error': ERROR_MESSAGE_FOR_SORT_PATIENT_NAME })
         sample_c_list = get_samples_clinic_in_search(data_request)
@@ -348,8 +362,36 @@ def search_sample(request):
 
 
 @login_required
+def search_patient (request):
+    if request.method == 'POST' and (request.POST['action'] == 'searchPatient'):
+        data_request = {}
+        data_request['p_name'] = request.POST['patientname']
+        data_request['p_surname'] = request.POST['patientsurname']
+        data_request['p_code'] = request.POST['patientcode']
+
+        len_search_values = len(set(data_request.values()))
+
+        if len_search_values == 1:
+            return render(request, 'iSkyLIMS_clinic/searchPatient.html')
+
+        if data_request['p_name'] !=''  and len(data_request['p_name']) < 4 :
+            return render(request, 'iSkyLIMS_clinic/searchPatient.html', {'Error': ERROR_MESSAGE_FOR_SORT_PATIENT_NAME })
+        patient_list = get_patients_in_search(data_request)
+
+        if len(patient_list) == 0:
+            return render(request, 'iSkyLIMS_clinic/searchPatient.html', {'Error': ERROR_MESSAGE_FOR_NO_MATCH_IN_SEARCH })
+        if len(patient_list) == 1:
+            return redirect ('display_patient_information', patient_id = patient_list[0] )
+        else:
+            display_patient_list_info = display_patient_list(patient_list)
+            return render(request, 'iSkyLIMS_clinic/displayPatientInformation.html', {'display_patient_list_info': display_patient_list_info })
+
+    else:
+        return render(request, 'iSkyLIMS_clinic/searchPatient.html')
+
+@login_required
 def set_molecule_values(request):
-    import pdb; pdb.set_trace()
+
     if request.method == 'POST' and request.POST['action'] == 'continueWithMolecule':
         if request.POST['c_samples'] == '':
             return render (request,'iSkyLIMS_clinic/error_page.html',
@@ -370,7 +412,7 @@ def set_molecule_values(request):
 
     elif request.method == 'POST' and request.POST['action'] == 'updateMoleculeProtocol':
 
-        molecule_recorded = record_molecules (request)
+        molecule_recorded = record_molecules (request,  False)
 
         if not 'heading' in molecule_recorded:
             samples = request.POST['samples'].split(',')
@@ -394,7 +436,11 @@ def set_molecule_values(request):
         return render(request, 'iSkyLIMS_clinic/setMoleculeValues.html',{'show_molecule_parameters':show_molecule_parameters})
 
     elif request.method == 'POST' and request.POST['action'] == 'addMoleculeParameters':
-        added_molecule_protocol_parameters = add_molecule_protocol_parameters(request)
+        added_molecule_protocol_parameters , sample_updated_list = add_molecule_protocol_parameters(request)
+        # Update the clinic sample request state
+        for sample_updated in sample_updated_list:
+            get_clinic_sample_obj_from_sample_id(sample_updated).set_state('Pending results')
+
         if 'pending' in request.POST :
             molecules = request.POST['pending'].split(',')
             show_molecule_parameters = display_molecule_protocol_parameters(molecules,request.user)

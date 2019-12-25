@@ -1,0 +1,132 @@
+{% extends 'iSkyLIMS_clinic/base.html' %}
+{% load static %}
+{% block content %}
+
+{% if display_patient_info %}
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-12" >
+        <div class="col-sm-6" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Main Information for {{display_patient_info.patient_name.0}} {{display_patient_info.patient_name.1}}</h3></div>
+                <div class="panel-body">
+
+                    <br>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th colspan="2" style="text-align:center">Patient main data</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for values in display_patient_info.patient_basic_info %}
+                                <tr>
+                                    {% for value in values %}
+                                        <td>{{ value }} </td>
+                                    {%endfor%}
+                                </tr>
+                            {%endfor%}
+                        </tbody>
+                    </table>
+
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-6  -->
+        <div class="col-sm-6" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Additional Information</h3></div>
+                <div class="panel-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th colspan="2" style="text-align:center">Patient addtional data</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for values in display_patient_info.patient_data %}
+                                <tr>
+                                    {% for value in values %}
+                                        <td>{{ value }} </td>
+                                    {%endfor%}
+                                </tr>
+                            {%endfor%}
+                        </tbody>
+                    </table>
+
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-6  -->
+    </div> <!--// end row -->
+
+    <div class="row row-space-4 margin-b-1">
+        <div class="col-sm-12 ">
+            <div class="tab">
+                <button class="tablinks" onclick="summaryBin(event, 'patient_history')">History Information </button>
+                <button class="tablinks" onclick="summaryBin(event, 'samples')">Samples handled for patient</button>
+
+                <!-- Patiente History    -->
+                <div id="patient_history" class="tabcontent">
+                    <div class="col-sm-11 ">
+                        <br>
+                        <div class="col-sm-10 " >
+                            <div class="panel panel-default">
+                                <div class="panel-heading"><h3>Patient History</h3></div>
+                                <div class="panel-body">
+                                    <br>
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th colspan="2" style="text-align:center">Patient main history</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for values in display_patient_info.patient_basic_info %}
+                                                <tr>
+                                                    {% for value in values %}
+                                                        <td>{{ value }} </td>
+                                                    {%endfor%}
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>  <!--  end of panel body  -->
+                            </div> <!--// end panel -->
+                        </div> <!--// end col-sm-9  -->
+                    </div> <!--// end col-sm-11  -->
+                </div> <!-- // end of tab patient -->
+                <!-- End Patiente History    -->
+
+                <!-- samples    -->
+                <div id="samples" class="tabcontent">
+                    <div class="col-sm-11 ">
+                        <br>
+                        <div class="col-sm-10 " >
+                            <div class="panel panel-default">
+                                <div class="panel-heading"><h3>Samples Patient </h3></div>
+                                <div class="panel-body">
+                                    <br>
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th colspan="2" style="text-align:center">Samples handled for Patient </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for values in display_patient_info.patient_basic_info %}
+                                                <tr>
+                                                    {% for value in values %}
+                                                        <td>{{ value }} </td>
+                                                    {%endfor%}
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>  <!--  end of panel body  -->
+                            </div> <!--// end panel -->
+                        </div> <!--// end col-sm-9  -->
+                    </div> <!--// end col-sm-11  -->
+                </div> <!-- // end of tab patient -->
+                <!-- End samples    -->
+            </div> <!-- End Tab    -->
+{% endif %}
+
+{% endblock %}

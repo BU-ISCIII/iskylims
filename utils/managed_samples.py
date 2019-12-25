@@ -121,6 +121,7 @@ def display_one_sample_info(id):
     sample_info['sample_core_heading'] = HEADING_FOR_DISPLAY_SAMPLE_MAIN_INFORMATION
 
     p_main_info = clinic_sample_obj.get_patient_information()
+
     # collect patient name and code
     sample_info['patient_basic_info'] = list(zip(HEADING_FOR_DISPLAY_PATIENT_BASIC_INFORMATION, p_main_info))
     # get patient data
@@ -282,6 +283,13 @@ def get_clinic_samples_patient_sequencing_state(user, state):
     else:
         samples_in_state['length'] = 0
         return samples_in_state
+
+def get_clinic_sample_obj_from_sample_id(sample_core_id):
+    if ClinicSampleRequest.objects.filter(sampleCore__exact = sample_core_id).exists():
+        c_sample_obj = ClinicSampleRequest.objects.get(sampleCore__exact = sample_core_id)
+        return c_sample_obj
+    else:
+        return 
 
 def get_clinic_samples_pending_results(user, state):
     '''
