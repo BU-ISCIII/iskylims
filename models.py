@@ -27,7 +27,7 @@ class PatientData (models.Model):
     notificationPreference =  models.CharField(max_length = 20, null = True, blank = True)
 
     def __str__ (self):
-        return '%s' %(self.patienCore_id.get_name())
+        return '%s' %(self.patienCore)
 
     def get_patient_code(self):
         return '%s' %(self.patienCore_id.get_patient_code())
@@ -41,7 +41,7 @@ class PatientData (models.Model):
         patient_data.append(self.phone)
         patient_data.append(self.email)
         patient_data.append(self.sex)
-        patient_data.append(self.birthday)
+        patient_data.append(self.birthday.strftime("%d , %B , %Y"))
         patient_data.append(self.smoker)
         patient_data.append(self.notificationPreference)
 
@@ -177,6 +177,7 @@ class ClinicSampleRequest (models.Model):
         s_core_info.append(self.sampleCore.get_sample_type())
         s_core_info.append(self.sampleCore.get_species())
         s_core_info.append(self.sampleCore.get_extraction_date())
+        s_core_info.append(self.sampleCore.get_register_user())
 
         return s_core_info
 

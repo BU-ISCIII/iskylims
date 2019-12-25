@@ -1,7 +1,7 @@
 from iSkyLIMS_clinic.models import *
 from iSkyLIMS_clinic.clinic_config import *
 from iSkyLIMS_clinic.utils.generic_functions import *
-
+from iSkyLIMS_core.models import MoleculePreparation
 from iSkyLIMS_core.utils.handling_samples import *
 
 
@@ -112,25 +112,31 @@ def get_clinic_sample_in_state(state):
 
 def display_one_sample_info(id):
     sample_info = {}
-    c_sample_obj = get_clinic_sample_obj_from_id(id)
-    sample_obj = c_sample_obj.get_core_sample_obj()
-    sample_info['s_name'] = c_sample_obj.get_sample_name()
-    import pdb; pdb.set_trace()
-    p_main_info = c_sample_obj.get_patient_information()
+    clinic_sample_obj = get_clinic_sample_obj_from_id(id)
+    core_sample_obj = clinic_sample_obj.get_core_sample_obj()
+    p_core_obj = core_sample_obj.get_sample_patient_obj()
+
+    sample_info['s_name'] = core_sample_obj.get_sample_name()
+    sample_info['sample_core_info'] = clinic_sample_obj.get_sample_core_info()
+    sample_info['sample_core_heading'] = HEADING_FOR_DISPLAY_SAMPLE_MAIN_INFORMATION
+
+    p_main_info = clinic_sample_obj.get_patient_information()
     # collect patient name and code
     sample_info['patient_basic_info'] = list(zip(HEADING_FOR_DISPLAY_PATIENT_BASIC_INFORMATION, p_main_info))
     # get patient data
-    p_data_obj = sample_obj.get_sample_patient_obj()
-    p_data_info = p_data_obj.get_patient_full_data()
-    sample_info['patient_data'] = list(zip(HEADING_FOR_DISPLAY_PATIENT_ADDITIONAL_INFORMATION, p_data_info))
-
+    if PatientData.objects.filter(patienCore__exact = p_core_obj).exists() :
+        patient_data_obj = PatientData.objects.get(patienCore__exact = p_core_obj)
+        p_data_info = patient_data_obj.get_patient_full_data()
+        sample_info['patient_data'] = list(zip(HEADING_FOR_DISPLAY_PATIENT_ADDITIONAL_INFORMATION, p_data_info))
+    sample_info['not_massive'] = get_all_sample_information(core_sample_obj.get_sample_id(), False)
+    sample_info['massive'] = get_all_sample_information(core_sample_obj.get_sample_id(), True)
+    #import pdb; pdb.set_trace()
 
     '''
     r_by_info = sample_obj.get_requested_by_information()
     sample_info['requested_by'] = list(zip(HEADING_FOR_DISPLAY_REQUESTED_BY_INFORMATION, r_by_info))
-    '''
-    sample_info['sample_core_info'] = sample_obj.get_sample_core_info()
-    sample_info['sample_core_heading'] = HEADING_FOR_DISPLAY_SAMPLE_MAIN_INFORMATION
+
+
     if PatientHistory.objects.filter(patiendData_id__exact = sample_obj).exists():
         sample_info['suspicion'] = SuspicionHistory.objects.get(clinicSample_id__exact = sample_obj).get_suspicion_text()
     else:
@@ -153,7 +159,7 @@ def display_one_sample_info(id):
                     param_value.append(ResultParameterValue.objects.get(clinicSample_id = sample_obj, parameter_id = p_name).get_parameter_value())
             sample_info['parameter_values'] = param_value
             sample_info['parameter_heading'] = param_heading
-
+    '''
     return sample_info
 
 

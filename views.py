@@ -267,7 +267,7 @@ def display_result_protocol (request, result_protocol_id):
 def display_sample_info(request,sample_c_id):
     if check_if_sample_c_exists(sample_c_id):
         display_sample_info = display_one_sample_info (sample_c_id)
-
+        #import pdb; pdb.set_trace()
         return render(request, 'iSkyLIMS_clinic/displaySampleInfo.html', {'display_sample_info': display_sample_info })
     else:
         search_sample_data = collect_data_for_search ()
