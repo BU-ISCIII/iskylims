@@ -34,7 +34,7 @@
                             ];
 
                             dropdownFilter = function(instance, cell, c, r, source) {
-                                var value = instance.jexcel.getValueFromCoords(c - 1, r);
+                                var value = instance.jexcel.getValueFromCoords(c - 3, r);
                                 {% for item, values in molecule_protocol.protocol_filter_selection %}
                                     if (value == '{{item}}') {
                                     return [{% for val in values %}'{{val}}',{% endfor %}];
@@ -53,8 +53,7 @@
                                     { type: 'dropdown', title:'{{molecule_protocol.headings.1}}', width:150 , source :[ {% for value in molecule_protocol.type_of_molecules %} '{{value}}', {% endfor %}]},
                                     { type: 'dropdown', title:'{{molecule_protocol.headings.2}}', width:150 , source :['Manual', 'Automated']},
                                     { type: 'calendar' , title: '{{molecule_protocol.headings.3}}', width:150 },
-                                    { type: 'dropdown', title:'{{molecule_protocol.headings.4}}', width:150 , source :[ {% for value in molecule_protocol.protocol_type %}{'id':'{{value}}','name':'{{value}}'}, {% endfor %}]},
-                                    { type: 'dropdown', title: '{{molecule_protocol.headings.5}}', width:180 , source:[{% for value in molecule_protocol.protocol_list %}'{{value}}',{% endfor %} ],
+                                    { type: 'dropdown', title: '{{molecule_protocol.headings.4}}', width:180 , source:[{% for value in molecule_protocol.protocol_list %}'{{value}}',{% endfor %} ],
                                             filter:dropdownFilter },
 
                                 ],
@@ -68,8 +67,8 @@
                                 csvFileName:'Molecule_data',
                                 minDimensions:[{{molecule_protocol.table_length}},{{molecule_protocol.number_of_samples}}],
                                 onchange:function(instance, cell, c, r, value) {
-                                    if (c == 4) {
-                                        var columnName = jexcel.getColumnNameFromId([5, r]);
+                                    if (c == 1) {
+                                        var columnName = jexcel.getColumnNameFromId([4, r]);
                                         instance.jexcel.setValue(columnName, '');
                                     }
                                 }
