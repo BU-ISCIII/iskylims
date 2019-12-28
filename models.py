@@ -270,8 +270,9 @@ class UserLotCommercialKits (models.Model):
     objects = UserLotCommercialKitsManager()
 
 class PatientCoreManager(models.Manager):
-    def create_patient (self,p_name, p_surname):
-        new_patient = self.create(patientName = p_name , patientSurName = p_surname)
+    def create_patient (self,p_code_id):
+        new_patient = self.create(patientName = 'Not Defined' , patientSurName = 'Notdefined',
+                    patientCode = p_code_id)
         return new_patient
 
 

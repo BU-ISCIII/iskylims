@@ -158,12 +158,12 @@ def analyze_input_samples (request):
                 sample_recorded['all_samples_valid'] = False
                 continue
 
-            ## Check if patient name already exists on database, If not if will be created
-            if sample_data['p_name'] != '' or  sample_data['p_surname'] != '':
-                patient_obj = check_patient_exists(sample_data['p_name'], sample_data['p_surname'] )
+            ## Check if patient code Id already exists on database, If not if will be created giving a sequencial dummy value
+            if sample_data['p_code_id'] != '' :
+                patient_obj = check_patient_code_exists(sample_data['p_code_id'] )
                 if patient_obj == False:
                     # Define the new patient name
-                    patient_obj = create_patient(sample_data['p_name'], sample_data['p_surname'] )
+                    patient_obj = create_patient(sample_data['p_code_id'])
             else :
                 patient_obj = None
             sample_data['patient'] = patient_obj
@@ -176,11 +176,11 @@ def analyze_input_samples (request):
                 sample_data['new_unique_value'] = increase_unique_value(last_unique_value)
 
             sample_data['projectBelongs'] = SampleProjectBelongs.objects.get(projectName__exact = sample_data['project_service'])
-            import pdb; pdb.set_trace()
+            #import pdb; pdb.set_trace()
             new_sample = Samples.objects.create_sample(sample_data)
             valid_samples.append(new_sample.get_sample_definition_information())
             samples_continue.append(new_sample.get_sample_id())
-            import pdb; pdb.set_trace()
+            #import pdb; pdb.set_trace()
         else: # get the invalid sample to displays information to user
             sample_recorded['all_samples_valid'] = False
             sample_id = Samples.objects.get(sampleName__exact = sample_name).get_sample_id()
@@ -243,7 +243,7 @@ def analyze_input_molecules (request):
         if check_empty_fields(molecule_json_data[row_index]):
             incomplete_samples.append(molecule_json_data[row_index])
             incomplete_molecules_ids.append(int(samples[row_index]))
-            import pdb; pdb.set_trace()
+            #import pdb; pdb.set_trace()
             continue
         if MoleculePreparation.objects.filter(sample = sample_obj).exists():
             last_molecule_code = MoleculePreparation.objects.filter(sample = sample_obj).last().get_molecule_code_id()
@@ -292,7 +292,7 @@ def analyze_input_molecules (request):
     molecule_recorded['molecule_id'] = ','.join(showed_molecule)
     molecule_recorded['pending_id'] = ','.join(pending_molecule)
     molecule_recorded['heading_in_excel'] = ','.join(parameter_list)
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
     return molecule_recorded
 
 def build_record_sample_form () :
@@ -331,7 +331,7 @@ def check_empty_fields (row_data):
             return True
     return False
 
-def check_patient_exists(name, surname):
+def check_patient_code_exists(p_code_id):
     '''
     Description:
         The function check if patient name/surname is defined in database.
@@ -341,14 +341,14 @@ def check_patient_exists(name, surname):
     Return:
         False is user is not define or patient_obj is patient exists
     '''
-    if PatientCore.objects.filter(patientName__iexact = name, patientSurName__iexact = surname).exists():
-        patient_obj = PatientCore.objects.get (patientName__iexact = name, patientSurName__iexact = surname)
+    if PatientCore.objects.filter(patientCode__iexact = p_code_id).exists():
+        patient_obj = PatientCore.objects.filter(patientCode__iexact = p_code_id)
     else:
         return False
 
     return patient_obj
 
-def create_patient(name, surname):
+def create_patient(p_code_id):
     '''
     Description:
         The function create patient in database.
@@ -358,7 +358,7 @@ def create_patient(name, surname):
     Return:
         patient_obj
     '''
-    patient_obj = PatientCore.objects.create_patient(name, surname)
+    patient_obj = PatientCore.objects.create_patient(p_code_id)
 
     return patient_obj
 
@@ -682,17 +682,21 @@ def get_molecule_protocols (apps_name):
     protocol_list = []
     protocols = {}
     p_types = ProtocolType.objects.filter(molecule__isnull = False, apps_name__exact = apps_name)
-
+    molecule_types = MoleculeType.objects.filter()
+    for molecule in molecule_types :
+        protocols[molecule.get_name()] = []
     for p_type in p_types :
         protocol_types.append(p_type.get_name())
     for protocol_type in p_types:
-        if protocol_type.get_name() not in protocols :
-            protocols[protocol_type.get_name()] = []
+        #if protocol_type.get_name() not in protocols :
+        #    protocols[protocol_type.get_molecule_type()] = []
+            #protocols[protocol_type.get_name()] = []
         protocols_in_type = Protocols.objects.filter(type = protocol_type)
         # protocols_in_type = Protocols.objects.filter(type__protocol_type__exact = protocol_type)
         for p_in_type in protocols_in_type:
             protocol_name = p_in_type.get_name()
-            protocols[protocol_type.get_name()].append(protocol_name)
+            protocols[protocol_type.get_molecule_type()].append(protocol_name)
+            #protocols[protocol_type.get_name()].append(protocol_name)
             protocol_list.append(protocol_name)
 
     return protocols, protocol_list
@@ -843,6 +847,8 @@ def get_table_record_molecule (samples, apps_name):
     Description:    The function get the sampleID to create the molecule table.
     Input:
         samples     # list of the samples to be include in the table
+    Functions:
+        get_molecule_protocols  located at this file
     Variables:
         molecule_information # dictionary which collects all info
     Return:
@@ -876,8 +882,11 @@ def get_table_record_molecule (samples, apps_name):
 
     molecule_information['protocol_type'] = list(molecule_information['protocols_dict'].keys())
     molecule_information['protocol_filter_selection'] = []
+    import pdb; pdb.set_trace()
+
     for key, value in molecule_information['protocols_dict'].items():
         molecule_information['protocol_filter_selection'].append([key, value])
+
     return molecule_information
 
 
