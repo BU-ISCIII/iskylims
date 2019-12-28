@@ -164,7 +164,7 @@ def create_protocol (request):
     # get the list of defined protocols
     defined_protocols, other_protocol_list = display_available_protocols (__package__)
     defined_protocol_types = display_protocol_types (__package__)
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
 
     if request.method == 'POST' and request.POST['action'] == 'addNewProtocol':
         #import pdb; pdb.set_trace()
@@ -259,7 +259,7 @@ def display_protocol (request, protocol_id):
             {'content':['The protocol that you are trying to get ',
                         'DOES NOT exists .']})
     protocol_data = get_all_protocol_info (protocol_id)
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
 
     return render(request, 'iSkyLIMS_clinic/displayProtocol.html', {'protocol_data': protocol_data})
 
@@ -407,7 +407,7 @@ def set_molecule_values(request):
                 {'content':['There was no valid sample selected ']})
 
         molecule_protocol['samples'] = ','.join(c_samples)
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         return render(request, 'iSkyLIMS_clinic/setMoleculeValues.html',{'molecule_protocol':molecule_protocol})
 
     elif request.method == 'POST' and request.POST['action'] == 'updateMoleculeProtocol':
