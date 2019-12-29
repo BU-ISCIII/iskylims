@@ -412,7 +412,7 @@ def set_molecule_values(request):
 
     elif request.method == 'POST' and request.POST['action'] == 'updateMoleculeProtocol':
 
-        molecule_recorded = record_molecules (request,  False)
+        molecule_recorded = record_molecules (request)
 
         if not 'heading' in molecule_recorded:
             samples = request.POST['samples'].split(',')
@@ -423,7 +423,7 @@ def set_molecule_values(request):
         else:
             if 'incomplete_molecules' in molecule_recorded:
                 samples = molecule_recorded['incomplete_molecules_ids'].split(',')
-                molecule_recorded.update(get_table_record_molecule (samples))
+                molecule_recorded.update(get_table_record_molecule (samples, __package__))
 
             return render(request, 'iSkyLIMS_clinic/setMoleculeValues.html',{'molecule_recorded':molecule_recorded})
 
