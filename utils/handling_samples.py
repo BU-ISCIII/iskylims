@@ -755,13 +755,12 @@ def prepare_sample_input_table ():
     s_information ['table_size']= len(HEADING_FOR_RECORD_SAMPLES)
     return s_information
 
-def record_molecules (request , massive):
+def record_molecules (request ):
     '''
     Description:    The function store in database the new molecule and molecule_updated_list
                     the sample state to Extracted molecule.
     Input:
         request
-        massive     Boolean to set if the molecule extraction requires massive procedure
     Variables:
         molecule_information # dictionary which collects all info
     Return:
@@ -775,8 +774,7 @@ def record_molecules (request , massive):
     molecule_list = []
     incomplete_molecules = []
     incomplete_molecules_ids = []
-    heading_in_excel = ['sampleID', 'molecule_type', 'type_extraction', 'extractionDate',
-                    'protocol_type', 'protocol_used']
+    heading_in_excel = ['sampleID', 'molecule_type', 'type_extraction', 'extractionDate', 'protocol_used']
     for row_index in range(len(molecule_json_data)) :
         molecule_data = {}
         if not Samples.objects.filter(pk = int(samples[row_index])).exists():
@@ -786,17 +784,19 @@ def record_molecules (request , massive):
             incomplete_molecules.append(molecule_json_data[row_index])
             incomplete_molecules_ids.append(samples[row_index])
             continue
-        if MoleculePreparation.objects.filter(sample = sample_obj).exists():
-            last_molecule_code = MoleculePreparation.objects.filter(sample = sample_obj).last().get_molecule_code_id()
+        import pdb; pdb.set_trace()
+        protocol_used = molecule_json_data[row_index][heading_in_excel.index('protocol_used')]
+        if MoleculePreparation.objects.filter(sample = sample_obj, moleculeCodeId__icontains = protocol_used).exists():
+            last_molecule_code = MoleculePreparation.objects.filter(sample = sample_obj, moleculeCodeId__icontains = protocol_used).last().get_molecule_code_id()
             code_split = re.search(r'(.*_E)(\d+)$', last_molecule_code)
             number_code = int(code_split.group(2))
             number_code +=1
             molecule_code_id = code_split.group(1) + str(number_code)
         else:
-            number_code = 1
-            molecule_code_id = sample_obj.get_sample_code() + '_E1'
+            protocol_code = protocol_used.replace(' ', '-')
+            molecule_code_id = sample_obj.get_sample_code() + '_' + protocol_code + '_E1'
 
-        protocol_used = molecule_json_data[row_index][heading_in_excel.index('protocol_used')]
+
         protocol_used_obj = Protocols.objects.get(name__exact = protocol_used)
         molecule_used_obj = MoleculeType.objects.get(moleculeType__exact = molecule_json_data[row_index][heading_in_excel.index('molecule_type')])
 
@@ -806,7 +806,7 @@ def record_molecules (request , massive):
         molecule_data['moleculeCodeId'] = molecule_code_id
         molecule_data['extractionType'] =  molecule_json_data[row_index][heading_in_excel.index('type_extraction')]
         molecule_data['moleculeExtractionDate'] = molecule_json_data[row_index][heading_in_excel.index('extractionDate')]
-        molecule_data['usedForMassiveSequencing'] = massive
+        #molecule_data['usedForMassiveSequencing'] = massive
         #molecule_data['numberOfReused'] = str(number_code - 1)
 
         new_molecule = MoleculePreparation.objects.create_molecule(molecule_data)
@@ -848,7 +848,8 @@ def get_table_record_molecule (samples, apps_name):
     Input:
         samples     # list of the samples to be include in the table
     Functions:
-        get_molecule_protocols  located at this file
+        get_modules_type         # located at this file
+        get_molecule_protocols   # located at this file
     Variables:
         molecule_information # dictionary which collects all info
     Return:
@@ -879,10 +880,8 @@ def get_table_record_molecule (samples, apps_name):
     molecule_information['protocols_dict'],molecule_information['protocol_list']  = get_molecule_protocols(apps_name)
     molecule_information['number_of_samples'] = len(valid_samples)
     molecule_information['table_length']  = len(HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION)
-
     molecule_information['protocol_type'] = list(molecule_information['protocols_dict'].keys())
     molecule_information['protocol_filter_selection'] = []
-    import pdb; pdb.set_trace()
 
     for key, value in molecule_information['protocols_dict'].items():
         molecule_information['protocol_filter_selection'].append([key, value])

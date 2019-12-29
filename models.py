@@ -490,7 +490,7 @@ class MoleculePreparationManager (models.Manager):
         moleculeCodeId =  molecule_data['moleculeCodeId'],
         moleculeExtractionDate = molecule_data['moleculeExtractionDate'],
         extractionType =  molecule_data['extractionType'],
-        usedForMassiveSequencing= molecule_data['usedForMassiveSequencing']
+        #usedForMassiveSequencing= molecule_data['usedForMassiveSequencing']
         #numberOfReused = molecule_data['numberOfReused']
         )
 
