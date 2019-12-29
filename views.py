@@ -3365,7 +3365,7 @@ def set_molecule_values(request):
 
     elif request.method == 'POST' and request.POST['action'] == 'updateMoleculeProtocol':
 
-        molecule_recorded = record_molecules (request, True)
+        molecule_recorded = record_molecules (request)
 
         if not 'heading' in molecule_recorded:
             samples = request.POST['samples'].split(',')
