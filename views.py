@@ -109,6 +109,22 @@ def add_result_data (request):
             return render(request, 'iSkyLIMS_clinic/addResultData.html' ,{'no_samples': True})
 
 @login_required
+def define_new_patient(request):
+    if request.method == 'POST' and request.POST['action'] == 'defineNewPatient':
+        import pdb; pdb.set_trace()
+        defined_patient = create_new_patient(request.POST)
+        if 'ERROR' in defined_patient:
+            patient_definition_data = fields_for_new_patient()
+            error_message = 'Patient Code already exists.'
+            return render(request, 'iSkyLIMS_clinic/defineNewPatient.html' ,{'patient_definition_data': patient_definition_data,'error': error_message })
+        return render(request, 'iSkyLIMS_clinic/defineNewPatient.html' ,{'defined_patient': defined_patient})
+    else:
+        patient_definition_data = fields_for_new_patient()
+
+
+    return render(request, 'iSkyLIMS_clinic/defineNewPatient.html' ,{'patient_definition_data': patient_definition_data})
+
+@login_required
 def define_new_samples(request):
     if request.method == 'POST' and request.POST['action'] == 'recordsample':
         sample_recorded = analyze_input_samples (request)
@@ -167,7 +183,6 @@ def create_protocol (request):
     #import pdb; pdb.set_trace()
 
     if request.method == 'POST' and request.POST['action'] == 'addNewProtocol':
-        #import pdb; pdb.set_trace()
         new_protocol = request.POST['newProtocolName']
         protocol_type = request.POST['protocolType']
         description = request.POST['description']

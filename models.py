@@ -5,11 +5,14 @@ from django.contrib.auth.models import User
 import datetime
 
 
-class PatientHistoryManager(models.Manager):
-    def create_patient_history ( self, pat_hist_data):
-        new_suspicion_history = self.create( patiendData_id = pat_hist_data['patiendData_id'],
-                    entryDate = pat_hist_data['entryDate'], description = pat_hist_data['description'] )
 
+class PatientDataManager(models.Manager):
+    def create_patient_opt_data ( self, p_opt_data):
+        new_p_opt_data = self.create( patienCore = p_opt_data['patienCore'],
+                    address = p_opt_data['address'], phone = p_opt_data['phone'], email = p_opt_data['email'],
+                    birthday = p_opt_data['birthday'] ,  smoker = p_opt_data['smoker'] ,
+                    notificationPreference = p_opt_data['notificationPreference'], comments = p_opt_data['comments'])
+        return new_p_opt_data
 
 
 
@@ -21,10 +24,11 @@ class PatientData (models.Model):
     address = models.CharField(max_length = 255, null = True, blank = True)
     phone = models.CharField(max_length = 20, null = True, blank = True)
     email = models.CharField(max_length=50, null = True, blank = True)
-    sex = models.CharField(max_length = 20, null = True, blank = True)
+    #sex = models.CharField(max_length = 20, null = True, blank = True)
     birthday = models.DateTimeField(auto_now_add=False, null = True, blank = True)
     smoker =  models.CharField(max_length = 20, null = True, blank = True)
     notificationPreference =  models.CharField(max_length = 20, null = True, blank = True)
+    comments = models.CharField(max_length = 255, null = True, blank = True)
 
     def __str__ (self):
         return '%s' %(self.patienCore)
@@ -47,6 +51,13 @@ class PatientData (models.Model):
 
         return patient_data
 
+    objects = PatientDataManager()
+
+class PatientHistoryManager(models.Manager):
+    def create_patient_history ( self, pat_hist_data):
+        new_suspicion_history = self.create( patiendData_id = pat_hist_data['patiendData_id'],
+                    entryDate = pat_hist_data['entryDate'], description = pat_hist_data['description'],
+                    comments = pat_hist_data['comments'] )
 
 class PatientHistory (models.Model):
     patiendData_id = models.ForeignKey (
@@ -340,3 +351,87 @@ class ResultParameterValue (models.Model):
         return '%s' %(self.parameterValue)
 
     objects = ResultParameterValueManager()
+
+
+
+class FamilyRelatives (models.Model):
+    relationShip = models.CharField(max_length=255)
+
+    def __str__ (self):
+        return '%s' %(self.relationShip)
+
+    def get_relation(self):
+        return '%s' %(self.relationShip)
+
+
+class Family (models.Model):
+    patienCore_id = models.ForeignKey(
+                PatientCore,
+                on_delete= models.CASCADE, null = True, blank = True)
+    FamilyRelatives_id = models.ForeignKey(
+                FamilyRelatives,
+                on_delete= models.CASCADE, null = True, blank = True)
+    familyID = models.CharField(max_length=50)
+    relative1 = models.CharField(max_length=50)
+    relative2 = models.CharField(max_length=50)
+    affected = models.BooleanField()
+    familyComments = models.CharField(max_length=255, null = True, blank = True)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__ (self):
+        return '%s' %(self.familyID)
+
+'''
+class ClinicProjects (models.Model):
+    patientCore_id = models.ForeignKey(
+                    PatientCore,
+                    on_delete= models.CASCADE, null = True, blank = True)
+    projectClinicName =  models.CharField(max_length=50)
+    projectClinicDescription =  models.CharField(max_length=50, null = True, blank = True)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__ (self):
+        return '%s' %(self.projectClinicName)
+
+
+class ClinicProjectsFields (models.Model):
+    clinicProjects_id = models.ForeignKey(
+                    ClinicProjects,
+                    on_delete= models.CASCADE, null = True, blank = True)
+    projectFieldName = models.CharField(max_length=50)
+    projectFieldDescription = models.CharField(max_length= 400, null=True, blank=True)
+    projectFieldOrder = models.IntegerField()
+    projectFieldUsed = models.BooleanField()
+
+    def __str__ (self):
+        return '%s' %(self.projectClincName)
+
+    def get_parameter_name (self):
+        return "%s"  %(self.projectFieldName)
+
+
+class ProjectFieldValueManager (models.Manager):
+    def create_project_field_value (self, field_value):
+        new_field_data = self.create(field_id = field_value['field_id'],
+                patientCore_id = field_value['patientCore_id'],
+                pFiledValue = field_value['pFiledValue'])
+        return new_field_data
+
+class ProjectFieldValue (models.Model):
+    patientCore_id = models.ForeignKey(
+                    PatientCore,
+                    on_delete= models.CASCADE, null = True, blank = True)
+    projectField_id = models.ForeignKey(
+            ClinicProjectsFields,
+            on_delete= models.CASCADE, null = True)
+    pFiledValue = models.CharField(max_length=255)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__ (self):
+        return '%s' %(self.parameterValue)
+
+    def get_parameter_value(self):
+        return '%s' %(self.parameterValue)
+
+    objects = ResultParameterValueManager()
+'''

@@ -12,7 +12,7 @@ class ServiceUnitsAdmin(admin.ModelAdmin):
     list_display = ('serviceUnitName',)
 
 class PatientDataAdmin(admin.ModelAdmin):
-    list_display = ('patienCore', 'address', 'phone', 'sex', 'birthday', 'smoker', 'notificationPreference')
+    list_display = ('patienCore', 'address', 'phone', 'birthday', 'smoker', 'notificationPreference')
 
 class DoctorAdmin(admin.ModelAdmin):
     list_display = ('doctorName',)
