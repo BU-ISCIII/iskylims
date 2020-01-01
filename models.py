@@ -280,6 +280,8 @@ class PatientProjects (models.Model):
     def __str__ (self):
         return '%s' %(self.projectName)
 
+    def get_project_name (self):
+        return '%s' %(self.projectName)
 
 class PatientProjectsFields (models.Model):
     patientProjects_id = models.ForeignKey(
@@ -291,7 +293,7 @@ class PatientProjectsFields (models.Model):
     projectFieldUsed = models.BooleanField()
 
     def __str__ (self):
-        return '%s' %(self.projectClincName)
+        return '%s' %(self.projectFieldName)
 
     def get_parameter_name (self):
         return "%s"  %(self.projectFieldName)
@@ -328,16 +330,17 @@ class PatientSex (models.Model):
 
 
 class PatientCoreManager(models.Manager):
-    def create_patient (self,p_code_id):
-        new_patient = self.create(patientName = 'Not Defined' , patientSurName = 'Notdefined',
-                    patientCode = p_code_id)
+    def create_patient (self, p_data):
+        sex = PatientSex.objects.get(sex__exact = p_data['patientSex'])
+        new_patient = self.create(patientName = p_data['patientName'] , patientSurname = p_data['patientSurname'],
+                    patientCode = p_data['patientCode'],  patientSex = sex)
         return new_patient
 
 
 class PatientCore (models.Model):
     patientProjects = models.ManyToManyField( PatientProjects,  blank = True)
     patientName = models.CharField(max_length=255, null = True)
-    patientSurName = models.CharField(max_length=255, null = True)
+    patientSurname = models.CharField(max_length=255, null = True)
     patientCode  = models.CharField(max_length=255, null = True)
     patientSex = models.ForeignKey(
             PatientSex,
