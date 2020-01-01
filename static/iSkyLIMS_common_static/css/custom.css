@@ -54,3 +54,9 @@ ul.paginator li.index, ul.paginator li.previous, ul.paginator li.next, ul.pagina
     display: none; }
   .entry-content .highlight {
     background: yellow; }
+
+
+.form-group.required .control-label:after {
+  content:"*";
+  color:red;
+}

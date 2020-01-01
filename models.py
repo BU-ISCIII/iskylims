@@ -269,6 +269,64 @@ class UserLotCommercialKits (models.Model):
 
     objects = UserLotCommercialKitsManager()
 
+
+
+class PatientProjects (models.Model):
+
+    projectName =  models.CharField(max_length=50)
+    projectDescription =  models.CharField(max_length=50, null = True, blank = True)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__ (self):
+        return '%s' %(self.projectName)
+
+
+class PatientProjectsFields (models.Model):
+    patientProjects_id = models.ForeignKey(
+                    PatientProjects,
+                    on_delete= models.CASCADE, null = True, blank = True)
+    projectFieldName = models.CharField(max_length=50)
+    projectFieldDescription = models.CharField(max_length= 400, null=True, blank=True)
+    projectFieldOrder = models.IntegerField()
+    projectFieldUsed = models.BooleanField()
+
+    def __str__ (self):
+        return '%s' %(self.projectClincName)
+
+    def get_parameter_name (self):
+        return "%s"  %(self.projectFieldName)
+
+
+class ProjectFieldValueManager (models.Manager):
+    def create_project_field_value (self, field_value):
+        new_field_data = self.create(field_id = field_value['field_id'],
+                patientCore_id = field_value['patientCore_id'],
+                pFiledValue = field_value['pFiledValue'])
+        return new_field_data
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class PatientSex (models.Model):
+    sex = models.CharField(max_length=16)
+
+    def __str__ (self):
+        return '%s' %(self.sex)
+
+    def get_patient_sex (self):
+        return '%s' %(self.sex)
+
+
 class PatientCoreManager(models.Manager):
     def create_patient (self,p_code_id):
         new_patient = self.create(patientName = 'Not Defined' , patientSurName = 'Notdefined',
@@ -277,9 +335,13 @@ class PatientCoreManager(models.Manager):
 
 
 class PatientCore (models.Model):
+    patientProjects = models.ManyToManyField( PatientProjects,  blank = True)
     patientName = models.CharField(max_length=255, null = True)
     patientSurName = models.CharField(max_length=255, null = True)
     patientCode  = models.CharField(max_length=255, null = True)
+    patientSex = models.ForeignKey(
+            PatientSex,
+            on_delete= models.CASCADE, null = True, blank = True)
 
     def __str__ (self):
         return '%s' %(self.patientName)
@@ -295,6 +357,26 @@ class PatientCore (models.Model):
 
 
     objects = PatientCoreManager()
+
+
+class ProjectFieldValue (models.Model):
+    patientCore_id = models.ForeignKey(
+                    PatientCore,
+                    on_delete= models.CASCADE, null = True, blank = True)
+    projectField_id = models.ForeignKey(
+            PatientProjectsFields,
+            on_delete= models.CASCADE, null = True)
+    pFiledValue = models.CharField(max_length=255)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__ (self):
+        return '%s' %(self.parameterValue)
+
+    def get_parameter_value(self):
+        return '%s' %(self.parameterValue)
+
+
+
 
 class SampleProjectBelongs(models.Model):
     projectName = models.CharField(max_length=255)

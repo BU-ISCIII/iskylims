@@ -784,7 +784,7 @@ def record_molecules (request ):
             incomplete_molecules.append(molecule_json_data[row_index])
             incomplete_molecules_ids.append(samples[row_index])
             continue
-        import pdb; pdb.set_trace()
+        
         protocol_used = molecule_json_data[row_index][heading_in_excel.index('protocol_used')]
         if MoleculePreparation.objects.filter(sample = sample_obj, moleculeCodeId__icontains = protocol_used).exists():
             last_molecule_code = MoleculePreparation.objects.filter(sample = sample_obj, moleculeCodeId__icontains = protocol_used).last().get_molecule_code_id()

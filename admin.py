@@ -14,6 +14,9 @@ class MoleculePreparationAdmin(admin.ModelAdmin):
     list_display = ('moleculeCodeId', 'state','sample', 'moleculeUsed', 'extractionType', 'protocolUsed',
                     'moleculeExtractionDate', 'numberOfReused')
 
+class PatientSexAdmin(admin.ModelAdmin):
+    list_display = ('sex',)
+
 class ProtocolsAdmin(admin.ModelAdmin):
     list_display = ('type', 'name',  'description')
 
@@ -56,6 +59,7 @@ admin.site.register(SamplesOrigin, SamplesOriginAdmin)
 
 admin.site.register(MoleculeType,MoleculeTypeAdmin)
 admin.site.register(MoleculePreparation,MoleculePreparationAdmin)
+admin.site.register(PatientSex,PatientSexAdmin)
 admin.site.register(ProtocolType,ProtocolTypeAdmin)
 admin.site.register(Protocols,ProtocolsAdmin)
 admin.site.register(ProtocolParameters,ProtocolParametersAdmin)
