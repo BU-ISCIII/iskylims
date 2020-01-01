@@ -274,7 +274,9 @@ class UserLotCommercialKits (models.Model):
 class PatientProjects (models.Model):
 
     projectName =  models.CharField(max_length=50)
-    projectDescription =  models.CharField(max_length=50, null = True, blank = True)
+    projectManager =  models.CharField(max_length=50, null = True, blank = True)
+    projectContact =  models.CharField(max_length=50, null = True, blank = True)
+    projectDescription =  models.CharField(max_length=255, null = True, blank = True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__ (self):
