@@ -269,7 +269,11 @@ class UserLotCommercialKits (models.Model):
 
     objects = UserLotCommercialKitsManager()
 
-
+class PatientProjectsManager (models.Manager):
+    def create_project (self, project_data):
+        new_project = self.create(  projectName = project_data['projectName'],  projectManager = project_data['projectManager'],
+                    projectContact = project_data['projectContact'],  projectDescription = project_data['projectDescription'])
+        return new_project
 
 class PatientProjects (models.Model):
 
@@ -277,13 +281,36 @@ class PatientProjects (models.Model):
     projectManager =  models.CharField(max_length=50, null = True, blank = True)
     projectContact =  models.CharField(max_length=50, null = True, blank = True)
     projectDescription =  models.CharField(max_length=255, null = True, blank = True)
+    apps_name = models.CharField(max_length = 40)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__ (self):
         return '%s' %(self.projectName)
 
+    def get_project_id (self):
+        return '%s' %(self.pk)
+
     def get_project_name (self):
         return '%s' %(self.projectName)
+
+    def get_patient_project_data (self):
+        p_data = []
+        p_data.append(self.projectName)
+        p_data.append(self.projectManager)
+        p_data.append(self.projectContact)
+        p_data.append(self.projectDescription)
+        p_data.append(self.pk)
+        return p_data
+
+
+    objects = PatientProjectsManager()
+
+class PatientProjectsFieldsManager(models.Manager) :
+    def create_project_fields (self, project_field_data):
+        new_project_field = self.create(patientProjects_id =project_field_data['project_id'], projectFieldName = project_field_data['Field name'],
+                    projectFieldDescription = project_field_data['Description'], projectFieldOrder = project_field_data['Order'],
+                    projectFieldUsed = project_field_data['Used'] )
+        return new_project_field
 
 class PatientProjectsFields (models.Model):
     patientProjects_id = models.ForeignKey(
@@ -297,8 +324,18 @@ class PatientProjectsFields (models.Model):
     def __str__ (self):
         return '%s' %(self.projectFieldName)
 
-    def get_parameter_name (self):
+    def get_field_name (self):
         return "%s"  %(self.projectFieldName)
+
+    def get_all_fields_info(self):
+        field_data = []
+        field_data.append(self.projectFieldName)
+        field_data.append(self.projectFieldDescription)
+        field_data.append(self.projectFieldOrder)
+        field_data.append(self.projectFieldUsed)
+        return field_data
+
+    objects = PatientProjectsFieldsManager()
 
 
 class ProjectFieldValueManager (models.Manager):

@@ -39,6 +39,13 @@ HEADING_FOR_MOLECULE_DEFINITION = ['Molecule CodeID', 'Molecule State','Extracti
 ### Headings used when defining the custom protocol parameters
 HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS = ['Parameter name', 'Order', 'Used', 'Min Value', 'Max Value', 'Description']
 
+
+
+################# PROJECT  SETTINGS #######################################
+### Headings used when defining the custom project fields
+HEADING_FOR_DEFINING_PROJECT_FIELDS = ['Field name', 'Order', 'Used', 'Description']
+
+
 ##############################################################
 ################## KITS Heading ##############################
 ##############################################################
@@ -59,3 +66,12 @@ COLLECTION_INDEX_KITS_DIRECTORY = 'core/collection_index_kits/'
 
 ## Configuration for index library file
 COLLECTION_INDEX_HEADING = ['[Version]','[Name]', '[PlateExtension]','[Settings]', '[I7]']
+
+
+
+###################### FIELDS NAME USED IN USER FORM  ########################################
+
+FORM_MAIN_DATA_PATIENT_DEFINITION = ['patientName', 'patientSurname', 'patientCode', 'patientSex']
+FORM_OPT_DATA_PATIENT_DEFINITION = ['address', 'phone', 'birthday', 'smoker', 'notificationPreference' , 'comments']
+
+FORM_PROJECT_CREATION = ['projectName', 'projectManager', 'projectContact', 'projectDescription']
