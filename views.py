@@ -11,9 +11,12 @@ from iSkyLIMS_clinic.utils.managed_samples import *
 from iSkyLIMS_clinic.utils.managed_results import *
 from iSkyLIMS_clinic.utils.managed_patient import *
 
+
 from iSkyLIMS_core.utils.handling_protocols import *
 from iSkyLIMS_core.utils.handling_samples import *
 from iSkyLIMS_core.utils.handling_commercial_kits import *
+from iSkyLIMS_core.utils.handling_patient_projects import *
+
 
 def index(request):
     #
@@ -109,14 +112,50 @@ def add_result_data (request):
             return render(request, 'iSkyLIMS_clinic/addResultData.html' ,{'no_samples': True})
 
 @login_required
+def create_new_project(request):
+    defined_projects = get_defined_projects()
+    if request.method == 'POST' and request.POST['action'] == 'addNewProject':
+        new_project = create_patient_project(request.POST)
+        if 'ERROR' in new_project:
+            return render(request, 'iSkyLIMS_clinic/createNewProject.html' ,{'defined_projects': defined_projects ,
+                                'error' : ERROR_MESSAGE_FOR_PROJECT_NAME_EXISTS})
+        return render(request, 'iSkyLIMS_clinic/createNewProject.html' ,{'new_project': new_project})
+    return render(request, 'iSkyLIMS_clinic/createNewProject.html' ,{'defined_projects': defined_projects})
+
+
+@login_required
+def create_protocol (request):
+    # get the list of defined protocols
+    defined_protocols, other_protocol_list = display_available_protocols (__package__)
+    defined_protocol_types = display_protocol_types (__package__)
+    #import pdb; pdb.set_trace()
+
+    if request.method == 'POST' and request.POST['action'] == 'addNewProtocol':
+        new_protocol = request.POST['newProtocolName']
+        protocol_type = request.POST['protocolType']
+        description = request.POST['description']
+
+        if check_if_protocol_exists (new_protocol, __package__):
+            return render ( request,'iSkyLIMS_clinic/createProtocol.html',{'content':['Protocol Name ', new_protocol,
+                            'Already exists.']})
+        new_protocol_id = create_new_protocol(new_protocol, protocol_type, description, __package__)
+
+        return render(request, 'iSkyLIMS_clinic/createProtocol.html',{'defined_protocols': defined_protocols,
+                            'defined_protocol_types':defined_protocol_types, 'new_defined_protocol': new_protocol,
+                            'new_protocol_id':new_protocol_id,  'other_protocol_list' :other_protocol_list})
+
+    return render(request, 'iSkyLIMS_clinic/createProtocol.html',{'defined_protocols': defined_protocols,
+                        'defined_protocol_types':defined_protocol_types, 'other_protocol_list' :other_protocol_list})
+
+
+@login_required
 def define_new_patient(request):
     if request.method == 'POST' and request.POST['action'] == 'defineNewPatient':
-        import pdb; pdb.set_trace()
         defined_patient = create_new_patient(request.POST)
         if 'ERROR' in defined_patient:
             patient_definition_data = fields_for_new_patient()
-            error_message = 'Patient Code already exists.'
-            return render(request, 'iSkyLIMS_clinic/defineNewPatient.html' ,{'patient_definition_data': patient_definition_data,'error': error_message })
+            return render(request, 'iSkyLIMS_clinic/defineNewPatient.html' ,{'patient_definition_data': patient_definition_data,
+                                                'error': ERROR_MESSAGE_FOR_PATIENT_CODE_EXISTS })
         return render(request, 'iSkyLIMS_clinic/defineNewPatient.html' ,{'defined_patient': defined_patient})
     else:
         patient_definition_data = fields_for_new_patient()
@@ -174,51 +213,29 @@ def define_patient_information(request):
 
         return render(request, 'iSkyLIMS_clinic/definePatientInformation.html',{'patient_information':patient_information})
 
-
 @login_required
-def create_protocol (request):
-    # get the list of defined protocols
-    defined_protocols, other_protocol_list = display_available_protocols (__package__)
-    defined_protocol_types = display_protocol_types (__package__)
-    #import pdb; pdb.set_trace()
-
-    if request.method == 'POST' and request.POST['action'] == 'addNewProtocol':
-        new_protocol = request.POST['newProtocolName']
-        protocol_type = request.POST['protocolType']
-        description = request.POST['description']
-
-        if check_if_protocol_exists (new_protocol, __package__):
-            return render ( request,'iSkyLIMS_clinic/createProtocol.html',{'content':['Protocol Name ', new_protocol,
-                            'Already exists.']})
-        new_protocol_id = create_new_protocol(new_protocol, protocol_type, description, __package__)
-
-        return render(request, 'iSkyLIMS_clinic/createProtocol.html',{'defined_protocols': defined_protocols,
-                            'defined_protocol_types':defined_protocol_types, 'new_defined_protocol': new_protocol,
-                            'new_protocol_id':new_protocol_id,  'other_protocol_list' :other_protocol_list})
-
-    return render(request, 'iSkyLIMS_clinic/createProtocol.html',{'defined_protocols': defined_protocols,
-                        'defined_protocol_types':defined_protocol_types, 'other_protocol_list' :other_protocol_list})
+def define_project_fields(request, project_id):
+    import pdb; pdb.set_trace()
+    if request.method == 'POST' and request.POST['action'] == 'defineProjectFields':
+        recorded_project_fields = set_project_fields(request.POST)
+        return render(request, 'iSkyLIMS_clinic/defineProjectFields.html', {'recorded_project_fields':recorded_project_fields})
+    else:
+        project_fields = define_table_for_project_fields(project_id)
+    return render(request, 'iSkyLIMS_clinic/defineProjectFields.html',{'project_fields':project_fields})
 
 
 @login_required
 def define_protocol_parameters (request, protocol_id):
     if request.method == 'POST' and request.POST['action'] == 'define_protocol_parameters':
-
         recorded_prot_parameters = set_protocol_parameters(request)
-
         return render(request, 'iSkyLIMS_clinic/defineProtocolParameters.html', {'recorded_prot_parameters':recorded_prot_parameters})
-
     else:
         if not check_if_protocol_exists(protocol_id, __package__):
             return render ( request,'iSkyLIMS_clinic/error_page.html',
                         {'content':['The requested Protocol does not exist',
                             'Create the protocol name before assigning custom protocol parameters.']})
-
-
         prot_parameters = define_table_for_prot_parameters(protocol_id)
         return render(request, 'iSkyLIMS_clinic/defineProtocolParameters.html', {'prot_parameters':prot_parameters})
-
-
 
 
 @login_required
@@ -266,6 +283,17 @@ def display_patient_information (request, patient_id):
     else:
         return render(request, 'iSkyLIMS_clinic/displayPatientInformation.html', {'display_patient_info': display_patient_info })
     return
+
+@login_required
+def display_patient_project (request, project_id):
+    if not check_if_project_exists(project_id, __package__):
+        return render (request,'iSkyLIMS_clinic/error_page.html',
+            {'content':['The project that you are trying to get ',
+                        'DOES NOT exists .']})
+    project_data = get_all_project_info (project_id)
+    #import pdb; pdb.set_trace()
+
+    return render(request, 'iSkyLIMS_clinic/displayProject.html', {'project_data': project_data})
 
 @login_required
 def display_protocol (request, protocol_id):

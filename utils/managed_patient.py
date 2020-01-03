@@ -18,15 +18,13 @@ def create_new_patient(form_data):
     #p_recorded_info = {}
     if PatientCore.objects.filter(patientCode__iexact = form_data['patientCode']).exists():
         return 'ERROR'
-    main_data = ['patientName', 'patientSurname', 'patientCode', 'patientSex']
     p_main_data = {}
-    for item in main_data:
+    for item in FORM_MAIN_DATA_PATIENT_DEFINITION:
         p_main_data[item] = form_data[item]
     new_patient_core = PatientCore.objects.create_patient(p_main_data)
-    opt_data = ['address', 'phone', 'birthday', 'smoker', 'notificationPreference' , 'comments']
     p_opt_data = {}
     p_opt_data['patienCore'] = new_patient_core
-    for item in opt_data:
+    for item in FORM_OPT_DATA_PATIENT_DEFINITION:
         p_opt_data[item] = form_data[item]
     if form_data['patientProject'] != None:
         p_fields = get_project_fields(form_data['patientProject'])
