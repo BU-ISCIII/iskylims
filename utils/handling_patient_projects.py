@@ -33,7 +33,7 @@ def check_project_fields(project_obj):
         return True
     return False
 
-def create_patient_project (form_data):
+def create_patient_project (form_data, app_name):
     '''
     Description:
         The function gets the project definition  data and stores on database.
@@ -44,11 +44,12 @@ def create_patient_project (form_data):
     Return:
         project_data.
     '''
-    if PatientProjects.objects.filter(projectName__iexact = form_data['projectName']).exists():
+    if PatientProjects.objects.filter(projectName__iexact = form_data['projectName'], apps_name__exact = app_name).exists():
         return 'ERROR'
     project_data = {}
     for item in FORM_PROJECT_CREATION:
         project_data[item] = form_data[item]
+    project_data['apps_name'] = app_name
     new_patient_core = PatientProjects.objects.create_project(project_data)
     project_data['project_id'] = new_patient_core.get_project_id()
     project_data['project_name'] = new_patient_core.get_project_name()
@@ -74,7 +75,7 @@ def get_all_project_info(proyect_id):
 
     return project_data
 
-def get_defined_projects():
+def get_defined_projects(app_name):
     '''
     Description:
         The function gets the project already defined.
@@ -83,14 +84,13 @@ def get_defined_projects():
         project_data.
     '''
     project_data = []
-    if not PatientProjects.objects.filter().exists():
+    if not PatientProjects.objects.filter(apps_name__exact = app_name).exists():
         return project_data
-    projects = PatientProjects.objects.filter().order_by('projectName')
+    projects = PatientProjects.objects.filter(apps_name__exact = app_name).order_by('projectName')
     for project in projects:
         p_data = project.get_patient_project_data()
         p_data.append(check_project_fields(project))
         project_data.append(p_data)
-        import pdb; pdb.set_trace()
     return project_data
 
 

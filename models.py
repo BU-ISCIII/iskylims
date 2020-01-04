@@ -272,7 +272,8 @@ class UserLotCommercialKits (models.Model):
 class PatientProjectsManager (models.Manager):
     def create_project (self, project_data):
         new_project = self.create(  projectName = project_data['projectName'],  projectManager = project_data['projectManager'],
-                    projectContact = project_data['projectContact'],  projectDescription = project_data['projectDescription'])
+                    projectContact = project_data['projectContact'],  projectDescription = project_data['projectDescription'],
+                    apps_name = project_data['apps_name'])
         return new_project
 
 class PatientProjects (models.Model):
