@@ -332,11 +332,16 @@ class PatientProjectsFields (models.Model):
         return '%s' %(self.projectFieldDescription)
 
     def get_all_fields_info(self):
+        if self.projectFieldUsed :
+            used = 'Yes'
+        else:
+            used = 'No'
         field_data = []
         field_data.append(self.projectFieldName)
-        field_data.append(self.projectFieldDescription)
+
         field_data.append(self.projectFieldOrder)
-        field_data.append(self.projectFieldUsed)
+        field_data.append(used)
+        field_data.append(self.projectFieldDescription)
         return field_data
 
     objects = PatientProjectsFieldsManager()

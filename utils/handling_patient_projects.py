@@ -94,6 +94,23 @@ def get_defined_projects(app_name):
     return project_data
 
 
+def get_project_fields(project_name, app_name):
+    '''
+    Description:
+        The function gets the fields tha user was defined in the project.
+        Returns a list of the fields requested for the project
+    Return:
+        project_fields.
+    '''
+    project_fields = []
+    if PatientProjects.objects.filter(projectName__exact = project_name, apps_name__exact = app_name ).exists():
+        p_project = PatientProjects.objects.get(projectName__exact = project_name, apps_name__exact = app_name)
+        if PatientProjectsFields.objects.filter(patientProjects_id = p_project).exists():
+            p_fields_obj = PatientProjectsFields.objects.filter(patientProjects_id = p_project).order_by('projectFieldOrder')
+            for p_field in p_fields_obj:
+                project_fields.append(p_field.get_field_name())
+    return project_fields
+
 def define_table_for_project_fields(project_id):
     '''
     Description:

@@ -71,7 +71,6 @@ COLLECTION_INDEX_HEADING = ['[Version]','[Name]', '[PlateExtension]','[Settings]
 
 ###################### FIELDS NAME USED IN USER FORM  ########################################
 
-FORM_MAIN_DATA_PATIENT_DEFINITION = ['patientName', 'patientSurname', 'patientCode', 'patientSex']
-FORM_OPT_DATA_PATIENT_DEFINITION = ['address', 'phone', 'birthday', 'smoker', 'notificationPreference' , 'comments']
+
 
 FORM_PROJECT_CREATION = ['projectName', 'projectManager', 'projectContact', 'projectDescription']
