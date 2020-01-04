@@ -118,7 +118,6 @@ def set_project_fields(data_form):
     json_data = json.loads(data_form['table_data1'])
     fields = HEADING_FOR_DEFINING_PROJECT_FIELDS
     project_id_obj = PatientProjects.objects.get(pk__exact = project_id)
-    import pdb; pdb.set_trace()
     saved_fields = []
     stored_fields = {}
     for row_data in json_data:
@@ -129,9 +128,8 @@ def set_project_fields(data_form):
         project_fields['project_id'] = project_id_obj
         for i in range(len(fields)):
             project_fields[fields[i]] = row_data[i]
-
-        saved_fields.append(PatientProjectsFields.objects.create_project_fields(project_fields).get_field_name())
-        import pdb; pdb.set_trace()
+        new_p_field_obj = PatientProjectsFields.objects.create_project_fields(project_fields)
+        saved_fields.append([new_p_field_obj.get_field_name(), new_p_field_obj.get_description()])
     stored_fields['fields'] = saved_fields
     stored_fields['project_name'] = project_id_obj.get_project_name()
 

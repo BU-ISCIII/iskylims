@@ -328,6 +328,9 @@ class PatientProjectsFields (models.Model):
     def get_field_name (self):
         return "%s"  %(self.projectFieldName)
 
+    def get_description(self):
+        return '%s' %(self.projectFieldDescription)
+
     def get_all_fields_info(self):
         field_data = []
         field_data.append(self.projectFieldName)
