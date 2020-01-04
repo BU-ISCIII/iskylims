@@ -42,9 +42,9 @@ ERROR_MESSAGE_FOR_SORT_PATIENT_NAME = ['The Patient name must contains more than
 
 ERROR_MESSAGE_FOR_NO_MATCH_IN_SEARCH = ['Your query did not return any results']
 
-
-
-
+###################### FIELDS NAME USED IN USER FORM  ########################################
+FORM_MAIN_DATA_PATIENT_DEFINITION = ['patientName', 'patientSurname', 'patientCode', 'patientSex']
+FORM_OPT_DATA_PATIENT_DEFINITION = ['address', 'phone', 'birthday', 'smoker', 'notificationPreference' , 'comments']
 
 ################ SHOWING LIST WHEN SEARCH MATCH MORE ONE RESULT ##############################
 HEADING_SEARCH_LIST_SAMPLES_CLINIC = ['Sample Clinic name', 'History Number ' ,'Doctor name' , 'Priority', 'Requested Service Date', 'State']

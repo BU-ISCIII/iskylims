@@ -2,8 +2,10 @@ from iSkyLIMS_clinic.models import *
 from iSkyLIMS_clinic.clinic_config import *
 from iSkyLIMS_core.models import PatientCore, PatientSex, PatientProjects
 
+from iSkyLIMS_core.utils.handling_patient_projects import *
 
-def create_new_patient(form_data):
+
+def create_new_patient(form_data, app_name):
     '''
     Description:
         The function gets the patient data and stores on database.
@@ -26,9 +28,11 @@ def create_new_patient(form_data):
     p_opt_data['patienCore'] = new_patient_core
     for item in FORM_OPT_DATA_PATIENT_DEFINITION:
         p_opt_data[item] = form_data[item]
-    if form_data['patientProject'] != None:
-        p_fields = get_project_fields(form_data['patientProject'])
-    #project_request =
+
+    if form_data['patientProject'] != 'None':
+        required_project_info = {}
+        p_main_data ['fields'] = get_project_fields(form_data['patientProject'], app_name)
+
     import pdb; pdb.set_trace()
 
     return p_main_data
@@ -64,7 +68,7 @@ def display_one_patient_info (p_id):
         patient_info['patient_data'] = list(zip(HEADING_FOR_DISPLAY_PATIENT_ADDITIONAL_INFORMATION, p_data_info))
     return patient_info
 
-def fields_for_new_patient ():
+def fields_for_new_patient (app_name):
     '''
     Description:
         The function will get the option values to display in the select menus.
@@ -77,8 +81,8 @@ def fields_for_new_patient ():
         patient_definition_data['sex_values'] = []
         for sex_obj in sex_objs:
             patient_definition_data['sex_values'].append(sex_obj.get_patient_sex())
-    if PatientProjects.objects.filter().exists():
-        projects =  PatientProjects.objects.filter()
+    if PatientProjects.objects.filter(apps_name__exact = app_name).exists():
+        projects =  PatientProjects.objects.filter(apps_name__exact = app_name)
         patient_definition_data['project_names'] = []
         for project in projects:
             patient_definition_data['project_names'].append(project.get_project_name())
@@ -117,10 +121,6 @@ def get_patients_in_search(data_request):
 def get_patient_core_obj_from_id (p_id):
     patient_obj = PatientCore.objects.get(pk__exact = p_id)
     return patient_obj
-
-def get_project_fields(project_name):
-    if PatientProjects.objects.filter(projectName__exact = project_name).exists():
-        p_project = PatientProjects.objects.get(projectName__exact = project_name)
 
 
 def set_additional_patient_data(patient_obj):

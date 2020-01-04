@@ -30,6 +30,34 @@
             </div> <!--// end panel -->
         </div> <!--// end col-sm-8 -->
     </div> <!--// end row  -->
+    {% if defined_patient.fields %}
+        <div class="row row-space-4 margin-b-4">
+            <div  class="col-sm-6  col-sm-offset-2" >
+                <div class="panel panel-default" >
+                    <div class="panel-heading"><h3>Define the additional information that project requires.</h3></div>
+                    <div class="panel-body" >
+                        <form method="post" enctype="multipart/form-data" name="defineProjectFields"  id="defineProjectFields" class="form-horizontal well" style="min-height: 700px;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="defineProjectFields"/>
+                            {% for f_name in required_project_info.fields %}
+                                <div class="form-group required">
+                                    <label class="col-sm-5  control-label" for="{{f_name}}" >{{f_name}}</label>
+                                    <div class="col-sm-5"><input class="form-control" required = "required" type="text" name="{{f_name}}" id="{{f_name}}" size="80" maxlength="80"></div>
+                                </div>  <!-- end from-group   -->
+                            {% endfor %}
+                            <BR>
+                            <div class="col-sm-10 col-sm-offset-1">
+                                <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
+                                <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                            </div>
+                        </form>
+                        <br>
+                        <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-8 -->
+        </div> <!--// end row  -->
+    {% endif %}
 {% else %}
     {%if error %}
     <div class="row row-space-4 margin-b-4">

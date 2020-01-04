@@ -151,17 +151,20 @@ def create_protocol (request):
 @login_required
 def define_new_patient(request):
     if request.method == 'POST' and request.POST['action'] == 'defineNewPatient':
-        defined_patient = create_new_patient(request.POST)
+        import pdb; pdb.set_trace()
+        defined_patient = create_new_patient(request.POST, __package__)
         if 'ERROR' in defined_patient:
-            patient_definition_data = fields_for_new_patient()
+            patient_definition_data = fields_for_new_patient(__package__)
             return render(request, 'iSkyLIMS_clinic/defineNewPatient.html' ,{'patient_definition_data': patient_definition_data,
                                                 'error': ERROR_MESSAGE_FOR_PATIENT_CODE_EXISTS })
+
+
+
+
         return render(request, 'iSkyLIMS_clinic/defineNewPatient.html' ,{'defined_patient': defined_patient})
     else:
-        patient_definition_data = fields_for_new_patient()
-
-
-    return render(request, 'iSkyLIMS_clinic/defineNewPatient.html' ,{'patient_definition_data': patient_definition_data})
+        patient_definition_data = fields_for_new_patient(__package__)
+        return render(request, 'iSkyLIMS_clinic/defineNewPatient.html' ,{'patient_definition_data': patient_definition_data})
 
 @login_required
 def define_new_samples(request):
