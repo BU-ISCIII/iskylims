@@ -14,12 +14,14 @@
                             <thead>
                               <tr>
                                 <th> Field Name</th>
+                                <th> Description</th>
                               </tr>
                             </thead>
                             <tbody>
-                            {% for  value in recorded_project_fields.fields %}
+                            {% for  field, description in recorded_project_fields.fields %}
                                 <tr>
-                               <td>{{ value }}</td>
+                               <td>{{ field }}</td>
+                               <td>{{ description }}</td>
                             {% endfor %}
                             </tbody>
                         </table>
