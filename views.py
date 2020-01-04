@@ -113,9 +113,9 @@ def add_result_data (request):
 
 @login_required
 def create_new_project(request):
-    defined_projects = get_defined_projects()
+    defined_projects = get_defined_projects(__package__)
     if request.method == 'POST' and request.POST['action'] == 'addNewProject':
-        new_project = create_patient_project(request.POST)
+        new_project = create_patient_project(request.POST, __package__)
         if 'ERROR' in new_project:
             return render(request, 'iSkyLIMS_clinic/createNewProject.html' ,{'defined_projects': defined_projects ,
                                 'error' : ERROR_MESSAGE_FOR_PROJECT_NAME_EXISTS})
@@ -215,7 +215,6 @@ def define_patient_information(request):
 
 @login_required
 def define_project_fields(request, project_id):
-    import pdb; pdb.set_trace()
     if request.method == 'POST' and request.POST['action'] == 'defineProjectFields':
         recorded_project_fields = set_project_fields(request.POST)
         return render(request, 'iSkyLIMS_clinic/defineProjectFields.html', {'recorded_project_fields':recorded_project_fields})
