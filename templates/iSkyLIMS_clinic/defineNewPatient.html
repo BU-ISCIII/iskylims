@@ -3,6 +3,7 @@
 {% block content %}
 {% csrf_token %}
 
+
 {% if defined_patient %}
     <div class="row row-space-4 margin-b-4">
         <div  class="col-sm-6  col-sm-offset-2" >
@@ -204,4 +205,5 @@
         </div> <!--// end panel -->
     </div> <!--// end row  -->
 {% endif %}
+
 {% endblock %}

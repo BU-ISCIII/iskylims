@@ -1,7 +1,7 @@
 {% extends 'iSkyLIMS_clinic/base.html' %}
 {% load static %}
 {% block content %}
-
+<link href="{% static "iSkyLIMS_common_static/css/collapse.css" %}" rel="stylesheet" type="text/css"/>
 {% if display_patient_info %}
     <div class="row row-space-4 margin-b-4">
         <div class="col-sm-12" >
@@ -30,12 +30,63 @@
 
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->
+            {% if display_patient_info.project_information %}
+                <br>
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Project Information</h3></div>
+                    <div class="panel-body">
+                        {% for key, values in display_patient_info.project_information.items %}
+
+                            <button type="button" class="collapsible">{{key}}</button>
+                                <div class="contentCollapse">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th colspan="2" style="text-align:center">Project data </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for field , value in values %}
+                                                <tr>
+                                                    <td>{{ field }} </td>
+                                                    <td>{{ value }} </td>
+                                                </tr>
+                                            {%endfor%}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+
+
+                        {%endfor%}
+
+
+                        <script>
+                            var coll = document.getElementsByClassName("collapsible");
+                            var i;
+
+                            for (i = 0; i < coll.length; i++) {
+                              coll[i].addEventListener("click", function() {
+                                this.classList.toggle("active");
+                                var content = this.nextElementSibling;
+                                if (content.style.display === "block") {
+                                  content.style.display = "none";
+                                } else {
+                                  content.style.display = "block";
+                                }
+                              });
+                            }
+                        </script>
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            {% endif %}
         </div> <!--// end col-sm-6  -->
         <div class="col-sm-6" >
             <div class="panel panel-default">
                 <div class="panel-heading"><h3>Additional Information</h3></div>
                 <div class="panel-body">
                     {% if display_patient_info.patient_data %}
+
                         <table class="table table-hover">
                             <thead>
                                 <tr>
@@ -52,54 +103,57 @@
                                 {%endfor%}
                             </tbody>
                         </table>
+
                     {% else %}
                         <h4>No additional information is recorded for {{display_patient_info.patient_name.0}}</h4>
                         <br>
-                        <p>Click on the button bellow to add it</p>
-                        <form method="post" action="/clinic/defineNewPatient" enctype="multipart/form-data" name="addAdditionalInformation"  id="addAdditionalInformation" class="form-horizontal well">
-                        {% csrf_token %}
-                            <input type="hidden" name="action" value="addAdditionalInformation"/>
-                            <input type="hidden" name="patient_id" value="{{display_patient_info.patient_id}}"/>
+                        <div class="col-sm-12 ">
+                            <button class="accordion">Click on the button to add it.</button>
+                            <div class="panelaccordion">
+                                <form method="post" action="/clinic/defineNewPatient" enctype="multipart/form-data" name="addAdditionalInformation"  id="addAdditionalInformation" class="form-horizontal well">
+                                {% csrf_token %}
+                                    <input type="hidden" name="action" value="addAdditionalInformation"/>
+                                    <input type="hidden" name="patient_id" value="{{display_patient_info.patient_id}}"/>
 
+                                    <div class="form-group">
+                                        <label class="col-sm-5  control-label" for="address" >Patient Address </label>
+                                        <div class="col-sm-5"><textarea rows="2" cols="25" name="address" form="addAdditionalInformation"></textarea></div>
+                                    </div>  <!-- end from-group   -->
+                                    <div class="form-group">
+                                        <label class="col-sm-5  control-label" for="phone" >Patient Phone Number </label>
+                                        <div class="col-sm-5"><input class="form-control" type="text" name="phone" id="phone" size="80" maxlength="80"></div>
+                                    </div>  <!-- end from-group   -->
+                                    <div class="form-group">
+                                        <label class="col-sm-5  control-label" for="email" >Patient email </label>
+                                        <div class="col-sm-5"><input class="form-control" type="text" name="email" id="email" size="80" maxlength="80"></div>
+                                    </div>  <!-- end from-group   -->
+                                    <div class="form-group">
+                                        <label class="col-sm-5  control-label" for="birthday" >Patient Birthday </label>
+                                        <div class="col-sm-5"><input class="form-control" type="date" name="birthday" id="birthday" size="80" maxlength="80"></div>
+                                    </div>  <!-- end from-group   -->
+                                    <div class="form-group">
+                                        <label class="col-sm-5  control-label" for="smoker" >Patient is Smoker? </label>
+                                        <div class="col-sm-5"><input class="form-control" type="text" name="smoker" id="smoker" size="80" maxlength="80"></div>
+                                    </div>  <!-- end from-group   -->
+                                    <div class="form-group">
+                                        <label class="col-sm-5  control-label" for="notificationPreference" >Notification Preferences</label>
+                                        <div class="col-sm-5"><input class="form-control" type="text" name="notificationPreference" id="notificationPreference" size="80" maxlength="80"></div>
+                                    </div>  <!-- end from-group   -->
+                                    <div class="form-group">
+                                        <label class="col-sm-5  control-label" for="comments" >Comments </label>
+                                        <div class="col-sm-5"><textarea rows="2" cols="25" name="comments" form="addAdditionalInformation"></textarea></div>
 
-                            <div class="form-group">
-                                <label class="col-sm-5  control-label" for="address" >Patient Address </label>
-                                <div class="col-sm-5"><textarea rows="2" cols="25" name="address" form="addAdditionalInformation"></textarea></div>
-                            </div>  <!-- end from-group   -->
-                            <div class="form-group">
-                                <label class="col-sm-5  control-label" for="phone" >Patient Phone Number </label>
-                                <div class="col-sm-5"><input class="form-control" type="text" name="phone" id="phone" size="80" maxlength="80"></div>
-                            </div>  <!-- end from-group   -->
-                            <div class="form-group">
-                                <label class="col-sm-5  control-label" for="email" >Patient email </label>
-                                <div class="col-sm-5"><input class="form-control" type="text" name="email" id="email" size="80" maxlength="80"></div>
-                            </div>  <!-- end from-group   -->
-                            <div class="form-group">
-                                <label class="col-sm-5  control-label" for="birthday" >Patient Birthday </label>
-                                <div class="col-sm-5"><input class="form-control" type="date" name="birthday" id="birthday" size="80" maxlength="80"></div>
-                            </div>  <!-- end from-group   -->
-                            <div class="form-group">
-                                <label class="col-sm-5  control-label" for="smoker" >Patient is Smoker? </label>
-                                <div class="col-sm-5"><input class="form-control" type="text" name="smoker" id="smoker" size="80" maxlength="80"></div>
-                            </div>  <!-- end from-group   -->
-                            <div class="form-group">
-                                <label class="col-sm-5  control-label" for="notificationPreference" >Notification Preferences</label>
-                                <div class="col-sm-5"><input class="form-control" type="text" name="notificationPreference" id="notificationPreference" size="80" maxlength="80"></div>
-                            </div>  <!-- end from-group   -->
-                            <div class="form-group">
-                                <label class="col-sm-5  control-label" for="comments" >Comments </label>
-                                <div class="col-sm-5"><textarea rows="2" cols="25" name="comments" form="addAdditionalInformation"></textarea></div>
+                                    </div>  <!-- end from-group   -->
+                                    <br>
 
-                            </div>  <!-- end from-group   -->
-                            <br>
+                                    <div class="col-sm-10 col-sm-offset-1">
+                                        <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
+                                        <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                                    </div>
 
-                            <div class="col-sm-10 col-sm-offset-1">
-                                <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
-                                <input class="btn pull-right btn-primary" type="submit" value="Submit">
-                            </div>
-
-                        </form>
-
+                                </form>
+                            </div> <!-- end of panelaccordion -->
+                        </div> <!--  end of col-sm-6 -->
                     {% endif %}
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->
@@ -109,8 +163,9 @@
     <div class="row row-space-4 margin-b-1">
         <div class="col-sm-12 ">
             <div class="tab">
-                <button class="tablinks" onclick="summaryBin(event, 'patient_history')">History Information </button>
+                <button class="tablinks" onclick="summaryBin(event, 'patient_history')" id="tablinksdefaultOpen">History Information </button>
                 <button class="tablinks" onclick="summaryBin(event, 'samples')">Samples handled for patient</button>
+
 
                 <!-- Patiente History    -->
                 <div id="patient_history" class="tabcontent">
@@ -177,5 +232,5 @@
                 <!-- End samples    -->
             </div> <!-- End Tab    -->
 {% endif %}
-
+<script type="text/javascript" src="{% static 'iSkyLIMS_common_static/js/accordion.js' %}"></script>
 {% endblock %}

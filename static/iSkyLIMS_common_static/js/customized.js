@@ -25,9 +25,10 @@ window.onclick = function(event) {
     }
 }
 
+
 /////////// Fade Tabs ////////
 
-function summaryBin(evt, cityName) {
+function summaryBin(evt, folderName) {
     var i, tabcontent, tablinks;
     tabcontent = document.getElementsByClassName("tabcontent");
     for (i = 0; i < tabcontent.length; i++) {
@@ -37,7 +38,7 @@ function summaryBin(evt, cityName) {
     for (i = 0; i < tablinks.length; i++) {
         tablinks[i].className = tablinks[i].className.replace(" active", "");
     }
-    document.getElementById(cityName).style.display = "block";
+    document.getElementById(folderName).style.display = "block";
     evt.currentTarget.className += " active";
 }
 

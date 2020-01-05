@@ -116,11 +116,15 @@ def display_one_patient_info (p_id):
         p_data_info = p_data_obj.get_patient_full_data()
         patient_info['patient_data'] = list(zip(HEADING_FOR_DISPLAY_PATIENT_ADDITIONAL_INFORMATION, p_data_info))
 
-    import pdb; pdb.set_trace()
     # get project information for the patient
     if patient_core_obj.patientProjects.all().exists():
         pat_projects = patient_core_obj.patientProjects.all()
+        patient_info['project_information'] = {}
 
+        for pat_project in pat_projects:
+            project_name = pat_project.get_project_name()
+            patient_info['project_information'][project_name] = get_project_field_values(pat_project.get_project_id(), patient_core_obj)
+    import pdb; pdb.set_trace()
     return patient_info
 
 def fields_for_new_patient (app_name):
