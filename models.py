@@ -44,11 +44,10 @@ class PatientData (models.Model):
         patient_data.append(self.address)
         patient_data.append(self.phone)
         patient_data.append(self.email)
-        patient_data.append(self.sex)
         patient_data.append(self.birthday.strftime("%d , %B , %Y"))
         patient_data.append(self.smoker)
         patient_data.append(self.notificationPreference)
-
+        patient_data.append(self.comments)
         return patient_data
 
     objects = PatientDataManager()

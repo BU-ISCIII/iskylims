@@ -35,23 +35,72 @@
             <div class="panel panel-default">
                 <div class="panel-heading"><h3>Additional Information</h3></div>
                 <div class="panel-body">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th colspan="2" style="text-align:center">Patient addtional data</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for values in display_patient_info.patient_data %}
+                    {% if display_patient_info.patient_data %}
+                        <table class="table table-hover">
+                            <thead>
                                 <tr>
-                                    {% for value in values %}
-                                        <td>{{ value }} </td>
-                                    {%endfor%}
+                                    <th colspan="2" style="text-align:center">Patient addtional data</th>
                                 </tr>
-                            {%endfor%}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {% for values in display_patient_info.patient_data %}
+                                    <tr>
+                                        {% for value in values %}
+                                            <td>{{ value }} </td>
+                                        {%endfor%}
+                                    </tr>
+                                {%endfor%}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <h4>No additional information is recorded for {{display_patient_info.patient_name.0}}</h4>
+                        <br>
+                        <p>Click on the button bellow to add it</p>
+                        <form method="post" action="/clinic/defineNewPatient" enctype="multipart/form-data" name="addAdditionalInformation"  id="addAdditionalInformation" class="form-horizontal well">
+                        {% csrf_token %}
+                            <input type="hidden" name="action" value="addAdditionalInformation"/>
+                            <input type="hidden" name="patient_id" value="{{display_patient_info.patient_id}}"/>
 
+
+                            <div class="form-group">
+                                <label class="col-sm-5  control-label" for="address" >Patient Address </label>
+                                <div class="col-sm-5"><textarea rows="2" cols="25" name="address" form="addAdditionalInformation"></textarea></div>
+                            </div>  <!-- end from-group   -->
+                            <div class="form-group">
+                                <label class="col-sm-5  control-label" for="phone" >Patient Phone Number </label>
+                                <div class="col-sm-5"><input class="form-control" type="text" name="phone" id="phone" size="80" maxlength="80"></div>
+                            </div>  <!-- end from-group   -->
+                            <div class="form-group">
+                                <label class="col-sm-5  control-label" for="email" >Patient email </label>
+                                <div class="col-sm-5"><input class="form-control" type="text" name="email" id="email" size="80" maxlength="80"></div>
+                            </div>  <!-- end from-group   -->
+                            <div class="form-group">
+                                <label class="col-sm-5  control-label" for="birthday" >Patient Birthday </label>
+                                <div class="col-sm-5"><input class="form-control" type="date" name="birthday" id="birthday" size="80" maxlength="80"></div>
+                            </div>  <!-- end from-group   -->
+                            <div class="form-group">
+                                <label class="col-sm-5  control-label" for="smoker" >Patient is Smoker? </label>
+                                <div class="col-sm-5"><input class="form-control" type="text" name="smoker" id="smoker" size="80" maxlength="80"></div>
+                            </div>  <!-- end from-group   -->
+                            <div class="form-group">
+                                <label class="col-sm-5  control-label" for="notificationPreference" >Notification Preferences</label>
+                                <div class="col-sm-5"><input class="form-control" type="text" name="notificationPreference" id="notificationPreference" size="80" maxlength="80"></div>
+                            </div>  <!-- end from-group   -->
+                            <div class="form-group">
+                                <label class="col-sm-5  control-label" for="comments" >Comments </label>
+                                <div class="col-sm-5"><textarea rows="2" cols="25" name="comments" form="addAdditionalInformation"></textarea></div>
+
+                            </div>  <!-- end from-group   -->
+                            <br>
+
+                            <div class="col-sm-10 col-sm-offset-1">
+                                <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
+                                <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                            </div>
+
+                        </form>
+
+                    {% endif %}
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->
         </div> <!--// end col-sm-6  -->

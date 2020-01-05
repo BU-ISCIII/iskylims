@@ -150,6 +150,7 @@ def create_protocol (request):
 
 @login_required
 def define_new_patient(request):
+
     if request.method == 'POST' and request.POST['action'] == 'defineNewPatient':
         import pdb; pdb.set_trace()
         defined_patient = create_new_patient(request.POST, __package__)
@@ -158,10 +159,15 @@ def define_new_patient(request):
             return render(request, 'iSkyLIMS_clinic/defineNewPatient.html' ,{'patient_definition_data': patient_definition_data,
                                                 'error': ERROR_MESSAGE_FOR_PATIENT_CODE_EXISTS })
 
-
-
-
         return render(request, 'iSkyLIMS_clinic/defineNewPatient.html' ,{'defined_patient': defined_patient})
+    elif request.method == 'POST' and request.POST['action'] == 'addAdditionalInformation':
+        add_additional_info = add_additional_information(request.POST)
+        return redirect ('display_patient_information', patient_id = request.POST['patient_id'] )
+        #return render(request, 'iSkyLIMS_clinic/defineNewPatient.html' ,{'defined_patient': defined_patient})
+    elif request.method == 'POST' and request.POST['action'] == 'defineProjectFields':
+        project_fields_added = add_project_fields(request.POST)
+        import pdb; pdb.set_trace()
+        return render(request, 'iSkyLIMS_clinic/defineNewPatient.html' ,{'project_fields_added': project_fields_added})
     else:
         patient_definition_data = fields_for_new_patient(__package__)
         return render(request, 'iSkyLIMS_clinic/defineNewPatient.html' ,{'patient_definition_data': patient_definition_data})
@@ -281,7 +287,7 @@ def display_patient_information (request, patient_id):
 
     display_patient_info = display_one_patient_info (patient_id)
     if 'ERROR' in display_patient_info:
-        return render (equest, 'iSkyLIMS_clinic/displayPatientInformation.html', {'ERROR': 'ERROR'})
+        return render (request, 'iSkyLIMS_clinic/displayPatientInformation.html', {'ERROR': 'ERROR'})
     else:
         return render(request, 'iSkyLIMS_clinic/displayPatientInformation.html', {'display_patient_info': display_patient_info })
     return

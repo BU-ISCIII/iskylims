@@ -4,6 +4,47 @@ from iSkyLIMS_core.models import PatientCore, PatientSex, PatientProjects
 
 from iSkyLIMS_core.utils.handling_patient_projects import *
 
+def add_additional_information(form_data):
+    '''
+    Description:
+        The function store in patient profile the additional information
+    Input:
+        form_data  #  information collected from form data
+    Return:
+        additional_data.
+    '''
+    patient_core_obj = get_patient_core_obj_from_id(form_data['patient_id'])
+    p_opt_data = {}
+    p_opt_data['patienCore'] = patient_core_obj
+    for item in FORM_OPT_DATA_PATIENT_DEFINITION:
+        p_opt_data[item] = form_data[item]
+    opt_data_obj = PatientData.objects.create_patient_opt_data(p_opt_data)
+
+    return opt_data_obj
+
+def add_project_fields (form_data):
+    '''
+    Description:
+        The function store the patient information that it is related to the project
+    Input:
+        form_data  #  information collected from form data
+    Return:
+        p_fields.
+    '''
+    p_fields ={}
+    patient_obj = get_patient_core_obj_from_id(form_data['patient_id'])
+    project_id = form_data['project_id']
+    fields = get_project_fields(form_data['project_id'])
+    field_value = {}
+    field_value['patientCore_id'] = patient_obj
+    field_ids = get_project_field_ids(form_data['project_id'])
+
+    for item in range(len(field_ids)):
+        field_value['projectField_id'] = PatientProjectsFields.objects.get(pk__exact = field_ids[item])
+        field_value['projectFieldValue'] = form_data[fields[item]]
+        new_field_value = ProjectFieldValue.objects.create_project_field_value(field_value)
+    p_fields['project_name'] = get_project_obj_from_id(project_id).get_project_name()
+    return p_fields
 
 def create_new_patient(form_data, app_name):
     '''
@@ -12,7 +53,7 @@ def create_new_patient(form_data, app_name):
         Returns info to display back to user and project fields data
         if project was selected
     Input:
-        request  #  information collected from form data
+        form_data  #  information collected from form data
 
     Return:
         p_main_data.
@@ -30,8 +71,15 @@ def create_new_patient(form_data, app_name):
         p_opt_data[item] = form_data[item]
 
     if form_data['patientProject'] != 'None':
-        required_project_info = {}
-        p_main_data ['fields'] = get_project_fields(form_data['patientProject'], app_name)
+        import pdb; pdb.set_trace()
+        project_obj = get_project_obj(form_data['patientProject'], app_name)
+        new_patient_core.patientProjects.add(project_obj)
+        p_main_data['patient_id'] = new_patient_core.get_patient_id()
+        p_main_data['project_id'] = get_project_id(form_data['patientProject'], app_name)
+        p_main_data['project_name'] = project_obj.get_project_name()
+        fields = get_project_fields(p_main_data['project_id'])
+        if fields :
+            p_main_data ['fields'] = fields
 
     import pdb; pdb.set_trace()
 
@@ -59,13 +107,20 @@ def display_one_patient_info (p_id):
     patient_info['patient_name'].append(patient_core_obj.get_patient_surname())
     p_main_info = patient_info['patient_name'][:]
     p_main_info.append(patient_core_obj.get_patient_code())
+    p_main_info.append(patient_core_obj.get_patient_sex())
 
     patient_info['patient_basic_info'] = list(zip(HEADING_FOR_DISPLAY_PATIENT_BASIC_INFORMATION, p_main_info))
-
+    patient_info['patient_id'] = p_id
     if PatientData.objects.filter(patienCore__exact = patient_core_obj).exists():
         p_data_obj = PatientData.objects.get(patienCore__exact = patient_core_obj)
         p_data_info = p_data_obj.get_patient_full_data()
         patient_info['patient_data'] = list(zip(HEADING_FOR_DISPLAY_PATIENT_ADDITIONAL_INFORMATION, p_data_info))
+
+    import pdb; pdb.set_trace()
+    # get project information for the patient
+    if patient_core_obj.patientProjects.all().exists():
+        pat_projects = patient_core_obj.patientProjects.all()
+
     return patient_info
 
 def fields_for_new_patient (app_name):

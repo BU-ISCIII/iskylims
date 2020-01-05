@@ -9,9 +9,9 @@ MAP_ADDITIONAL_HEADING_TO_DATABASE = [('Order','orderInEntry'), ('Confirmation C
 HEADING_FOR_STORED_PATIENT_DATA = ['Sample', 'History Number', 'Requested Service by']
 '''
 
-HEADING_FOR_DISPLAY_PATIENT_BASIC_INFORMATION = ['Patient Name', 'Patient Surame', 'Patient Code']
+HEADING_FOR_DISPLAY_PATIENT_BASIC_INFORMATION = ['Patient Name', 'Patient Surame', 'Patient Code' ,'Sex']
 HEADING_FOR_DISPLAY_REQUESTED_BY_INFORMATION = ['Requested Service by', 'Doctor Name']
-HEADING_FOR_DISPLAY_PATIENT_ADDITIONAL_INFORMATION = ['Address', 'Phone number', 'email', 'Sex', 'Birthday', 'Smoker', 'Notification Preferences']
+HEADING_FOR_DISPLAY_PATIENT_ADDITIONAL_INFORMATION = ['Address', 'Phone number', 'email', 'Birthday', 'Smoker', 'Notification Preferences', 'Comments']
 
 
 
@@ -44,7 +44,7 @@ ERROR_MESSAGE_FOR_NO_MATCH_IN_SEARCH = ['Your query did not return any results']
 
 ###################### FIELDS NAME USED IN USER FORM  ########################################
 FORM_MAIN_DATA_PATIENT_DEFINITION = ['patientName', 'patientSurname', 'patientCode', 'patientSex']
-FORM_OPT_DATA_PATIENT_DEFINITION = ['address', 'phone', 'birthday', 'smoker', 'notificationPreference' , 'comments']
+FORM_OPT_DATA_PATIENT_DEFINITION = ['address', 'phone', 'email', 'birthday', 'smoker', 'notificationPreference' , 'comments']
 
 ################ SHOWING LIST WHEN SEARCH MATCH MORE ONE RESULT ##############################
 HEADING_SEARCH_LIST_SAMPLES_CLINIC = ['Sample Clinic name', 'History Number ' ,'Doctor name' , 'Priority', 'Requested Service Date', 'State']

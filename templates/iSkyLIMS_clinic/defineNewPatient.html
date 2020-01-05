@@ -36,10 +36,12 @@
                 <div class="panel panel-default" >
                     <div class="panel-heading"><h3>Define the additional information that project requires.</h3></div>
                     <div class="panel-body" >
-                        <form method="post" enctype="multipart/form-data" name="defineProjectFields"  id="defineProjectFields" class="form-horizontal well" style="min-height: 700px;">
+                        <form method="post" enctype="multipart/form-data" name="defineProjectFields"  id="defineProjectFields" class="form-horizontal well" style="min-height: 300px;">
                             {% csrf_token %}
                             <input type="hidden" name="action" value="defineProjectFields"/>
-                            {% for f_name in required_project_info.fields %}
+                            <input type="hidden" name="project_id" value="{{defined_patient.project_id}}"/>
+                            <input type="hidden" name="patient_id" value="{{defined_patient.patient_id}}"/>
+                            {% for f_name in defined_patient.fields %}
                                 <div class="form-group required">
                                     <label class="col-sm-5  control-label" for="{{f_name}}" >{{f_name}}</label>
                                     <div class="col-sm-5"><input class="form-control" required = "required" type="text" name="{{f_name}}" id="{{f_name}}" size="80" maxlength="80"></div>
@@ -58,6 +60,24 @@
             </div> <!--// end col-sm-8 -->
         </div> <!--// end row  -->
     {% endif %}
+{% elif project_fields_added %}
+    <div class="row row-space-4 margin-b-4">
+        <div  class="col-sm-10  col-sm-offset-1" >
+            <div class="panel panel-default" >
+                <div class="panel-heading"><h3>Information requested by Project {{project_fields_added.project_name}} was successful recorded.</h3></div>
+                <div class="panel-body" >
+
+                    <br>
+                    <p>Click on the button below to retun to the main page</p>
+                    <form method="post" enctype="multipart/form-data" name="returnHome"  id="returnHome" class="form-horizontal well">
+                        {% csrf_token %}
+                        <br><br>
+                        <input type="button" value="Return Home" onclick="location.href ='/clinic' ;"/>
+                    </form>
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-8 -->
+    </div> <!--// end row  -->
 {% else %}
     {%if error %}
     <div class="row row-space-4 margin-b-4">
@@ -65,7 +85,7 @@
             <div class="panel panel-danger" >
                 <div class="panel-heading"><h3>Unable to record your Patient information data. </h3></div>
                 <div class="panel-body" >
-                    <br>
+
                     <h3> {{error}}</h3>
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->
