@@ -158,11 +158,11 @@ def analyze_input_samples (request):
                 sample_recorded['all_samples_valid'] = False
                 continue
 
-            ## Check if patient code Id already exists on database, If not if will be created giving a sequencial dummy value
+            ## Check if patient code  already exists on database, If not if will be created giving a sequencial dummy value
             if sample_data['p_code_id'] != '' :
                 patient_obj = check_patient_code_exists(sample_data['p_code_id'] )
                 if patient_obj == False:
-                    # Define the new patient name
+                    # Define the new patient code
                     patient_obj = create_patient(sample_data['p_code_id'])
             else :
                 patient_obj = None
@@ -342,7 +342,7 @@ def check_patient_code_exists(p_code_id):
         False is user is not define or patient_obj is patient exists
     '''
     if PatientCore.objects.filter(patientCode__iexact = p_code_id).exists():
-        patient_obj = PatientCore.objects.filter(patientCode__iexact = p_code_id)
+        patient_obj = PatientCore.objects.get(patientCode__iexact = p_code_id)
     else:
         return False
 
@@ -784,7 +784,7 @@ def record_molecules (request ):
             incomplete_molecules.append(molecule_json_data[row_index])
             incomplete_molecules_ids.append(samples[row_index])
             continue
-        
+
         protocol_used = molecule_json_data[row_index][heading_in_excel.index('protocol_used')]
         if MoleculePreparation.objects.filter(sample = sample_obj, moleculeCodeId__icontains = protocol_used).exists():
             last_molecule_code = MoleculePreparation.objects.filter(sample = sample_obj, moleculeCodeId__icontains = protocol_used).last().get_molecule_code_id()

@@ -325,6 +325,9 @@ class PatientProjectsFields (models.Model):
     def __str__ (self):
         return '%s' %(self.projectFieldName)
 
+    def get_field_id (self):
+        return "%s"  %(self.id)
+
     def get_field_name (self):
         return "%s"  %(self.projectFieldName)
 
@@ -345,26 +348,6 @@ class PatientProjectsFields (models.Model):
         return field_data
 
     objects = PatientProjectsFieldsManager()
-
-
-class ProjectFieldValueManager (models.Manager):
-    def create_project_field_value (self, field_value):
-        new_field_data = self.create(field_id = field_value['field_id'],
-                patientCore_id = field_value['patientCore_id'],
-                pFiledValue = field_value['pFiledValue'])
-        return new_field_data
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 class PatientSex (models.Model):
@@ -395,20 +378,32 @@ class PatientCore (models.Model):
             on_delete= models.CASCADE, null = True, blank = True)
 
     def __str__ (self):
-        return '%s' %(self.patientName)
+        return '%s' %(self.patientCode)
+
+    def get_patient_id (self):
+        return '%s' %(self.id)
 
     def get_patient_name(self):
         return '%s' %(self.patientName)
 
     def get_patient_surname(self):
-        return '%s' %(self.patientSurName)
+        return '%s' %(self.patientSurname)
 
     def get_patient_code (self):
         return '%s' %(self.patientCode)
 
+    def get_patient_sex (self):
+        return '%s' %(self.patientSex)
 
     objects = PatientCoreManager()
 
+
+class ProjectFieldValueManager (models.Manager):
+    def create_project_field_value (self, field_value):
+        new_field_data = self.create(projectField_id = field_value['projectField_id'],
+                patientCore_id = field_value['patientCore_id'],
+                projectFieldValue = field_value['projectFieldValue'])
+        return new_field_data
 
 class ProjectFieldValue (models.Model):
     patientCore_id = models.ForeignKey(
@@ -417,7 +412,7 @@ class ProjectFieldValue (models.Model):
     projectField_id = models.ForeignKey(
             PatientProjectsFields,
             on_delete= models.CASCADE, null = True)
-    pFiledValue = models.CharField(max_length=255)
+    projectFieldValue = models.CharField(max_length=255)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__ (self):
@@ -426,7 +421,7 @@ class ProjectFieldValue (models.Model):
     def get_parameter_value(self):
         return '%s' %(self.parameterValue)
 
-
+    objects = ProjectFieldValueManager()
 
 
 class SampleProjectBelongs(models.Model):
@@ -452,7 +447,7 @@ class SamplesManager (models.Manager):
             sample_data['samplesOrigin'] = SamplesOrigin.objects.get(originName__exact = sample_data['samplesOrigin'])
         else:
             sample_data['samplesOrigin'] = None
-
+        import pdb; pdb.set_trace()
         new_sample = self.create(sampleState = StatesForSample.objects.get(sampleStateName__exact = 'Defined'),
                             patientCore = sample_data['patient'],
                             samplesOrigin = sample_data['samplesOrigin'], projectBelongs = sample_data['projectBelongs'],

@@ -93,23 +93,84 @@ def get_defined_projects(app_name):
         project_data.append(p_data)
     return project_data
 
-
-def get_project_fields(project_name, app_name):
+def get_project_id(project_name, app_name):
     '''
     Description:
-        The function gets the fields tha user was defined in the project.
+        The function return the project id from the input project name
+    Input:
+        project_name    # project name
+        app_name       # application that created the project
+    Return:
+        project_id
+    '''
+    if PatientProjects.objects.filter(projectName__exact = project_name, apps_name__exact = app_name):
+        project_id = PatientProjects.objects.get(projectName__exact = project_name, apps_name__exact = app_name).get_project_id()
+        return project_id
+    else:
+        return None
+
+def get_project_fields(project_id):
+    '''
+    Description:
+        The function gets the fields that user was defined in the project.
         Returns a list of the fields requested for the project
     Return:
         project_fields.
     '''
     project_fields = []
-    if PatientProjects.objects.filter(projectName__exact = project_name, apps_name__exact = app_name ).exists():
-        p_project = PatientProjects.objects.get(projectName__exact = project_name, apps_name__exact = app_name)
-        if PatientProjectsFields.objects.filter(patientProjects_id = p_project).exists():
-            p_fields_obj = PatientProjectsFields.objects.filter(patientProjects_id = p_project).order_by('projectFieldOrder')
-            for p_field in p_fields_obj:
-                project_fields.append(p_field.get_field_name())
+
+    if PatientProjectsFields.objects.filter(patientProjects_id__pk = project_id).exists():
+        p_fields_obj = PatientProjectsFields.objects.filter(patientProjects_id__pk = project_id).order_by('projectFieldOrder')
+        for p_field in p_fields_obj:
+            project_fields.append(p_field.get_field_name())
     return project_fields
+
+def get_project_field_ids(project_id):
+    '''
+    Description:
+        The function gets the fields id tha user was defined in the project.
+        Returns a list of the field ids requested for the project
+    Return:
+        project_fields.
+    '''
+    project_field_ids = []
+
+    if PatientProjectsFields.objects.filter(patientProjects_id__pk = project_id).exists():
+        p_fields_obj = PatientProjectsFields.objects.filter(patientProjects_id__pk = project_id).order_by('projectFieldOrder')
+        for p_field in p_fields_obj:
+            project_field_ids.append(p_field.get_field_id())
+    return project_field_ids
+
+def get_project_obj(project_name, app_name):
+    '''
+    Description:
+        The function return the project instance from the input project name
+    Input:
+        project_name    # project name
+        app_name       # application that created the project
+    Return:
+        project_obj
+    '''
+    if PatientProjects.objects.filter(projectName__exact = project_name, apps_name__exact = app_name):
+        project_obj = PatientProjects.objects.get(projectName__exact = project_name, apps_name__exact = app_name)
+        return project_obj
+    else:
+        return None
+
+def get_project_obj_from_id (project_id):
+    '''
+    Description:
+        The function return the project instance from the project id
+    Input:
+        project_id    # project name
+    Return:
+        project_obj
+    '''
+    if PatientProjects.objects.filter(pk__exact = project_id):
+        project_obj = PatientProjects.objects.get(pk__exact = project_id)
+        return project_obj
+    else:
+        return None
 
 def define_table_for_project_fields(project_id):
     '''
