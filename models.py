@@ -416,10 +416,10 @@ class ProjectFieldValue (models.Model):
     generated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__ (self):
-        return '%s' %(self.parameterValue)
+        return '%s' %(self.projectFieldValue)
 
-    def get_parameter_value(self):
-        return '%s' %(self.parameterValue)
+    def get_field_value(self):
+        return '%s' %(self.projectFieldValue)
 
     objects = ProjectFieldValueManager()
 

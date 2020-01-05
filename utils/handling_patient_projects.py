@@ -141,6 +141,24 @@ def get_project_field_ids(project_id):
             project_field_ids.append(p_field.get_field_id())
     return project_field_ids
 
+def get_project_field_values(project_id, patient_obj):
+    '''
+    Description:
+        The function gets the fields id tha user was defined in the project.
+        Returns a list of the field ids requested for the project
+    Return:
+        project_field_values.
+    '''
+    project_field_values = []
+
+
+    p_fields_obj = PatientProjectsFields.objects.filter(patientProjects_id__pk = project_id).order_by('projectFieldOrder')
+    for p_field in p_fields_obj:
+        field_value = ProjectFieldValue.objects.get(patientCore_id = patient_obj, projectField_id =  p_field).get_field_value()
+        project_field_values.append((p_field.get_field_name(), field_value) )
+    import pdb; pdb.set_trace()
+    return project_field_values
+
 def get_project_obj(project_name, app_name):
     '''
     Description:
