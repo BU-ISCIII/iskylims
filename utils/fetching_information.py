@@ -413,7 +413,7 @@ def get_information_run(run_object):
     info_dict['run_state'] = run_state
     # if run is processing data to insert in table show a message that
     # going back again after some minutes .
-    no_valid_information = ['Processing Demultiplexing', 'Processing test', 'None', 'Pre-Recorded']
+    no_valid_information = ['Processing Demultiplexing', 'Processing test', 'None', 'Pre-Recorded','Processing Metrics']
     if run_state in no_valid_information :
         info_dict['no_stable_data'] = [[run_object.get_run_name(), run_state]]
         return info_dict
