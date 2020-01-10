@@ -54,7 +54,7 @@ def add_user_lot_commercial_kit (request):
         return render(request, 'iSkyLIMS_clinic/addUserLotCommercialKit.html',{'defined_kits':defined_kits})
 
 
-
+'''
 @login_required
 def add_result_data (request):
 
@@ -110,6 +110,7 @@ def add_result_data (request):
             return render(request, 'iSkyLIMS_clinic/addResultData.html' ,{'result_protocol':result_protocol})
         else:
             return render(request, 'iSkyLIMS_clinic/addResultData.html' ,{'no_samples': True})
+'''
 
 @login_required
 def create_new_project(request):
@@ -176,26 +177,29 @@ def define_new_samples(request):
         sample_recorded = analyze_input_samples (request)
         # if no samples are in any of the options, displays the inital page
         if (not 'valid_samples' in sample_recorded and not 'invalid_samples' in sample_recorded and not 'incomplete_samples'in sample_recorded) :
-            sample_information = prepare_sample_input_table()
+            sample_information = prepare_sample_input_table(__package__)
             return render(request, 'iSkyLIMS_clinic/defineNewSamples.html' ,{'sample_information':sample_information})
 
         if 'valid_samples' in sample_recorded :
             clinic_sample_list = []
             for sample_id in sample_recorded['valid_samples_ids']:
-                new_clinic_sample = ClinicSampleRequest.objects.create(sampleCore = get_sample_obj_from_id(sample_id),
-                            clinicSampleState = ClinicSampleState.objects.get(clinicState__exact = 'Defined'),
-                            sampleRequestUser = request.user)
-                new_clinic_sample.save()
+                c_sample_data = {}
+                sample_obj = get_sample_obj_from_id(sample_id)
+                c_sample_data['sampleCore'] = sample_obj
+                c_sample_data['patientCore'] = sample_obj.get_sample_patient_obj()
+                c_sample_data['user'] = request.user
+                new_clinic_sample = ClinicSampleRequest.objects.create_clinic_sample(c_sample_data)
+
                 clinic_sample_list.append(new_clinic_sample.get_id())
             clinic_samples_ids = ','.join(clinic_sample_list)
             sample_recorded['clinic_samples_ids'] = clinic_samples_ids
         if 'incomplete_samples' in sample_recorded :
-            sample_recorded.update(prepare_sample_input_table())
+            sample_recorded.update(prepare_sample_input_table(__package__))
             sample_recorded['number_of_samples'] = len(sample_recorded['incomplete_samples'])
 
         return render(request, 'iSkyLIMS_clinic/defineNewSamples.html', {'sample_recorded':sample_recorded})
     else:
-        sample_information = prepare_sample_input_table()
+        sample_information = prepare_sample_input_table(__package__)
         return render(request, 'iSkyLIMS_clinic/defineNewSamples.html',{'sample_information':sample_information})
 
 @login_required
@@ -243,7 +247,7 @@ def define_protocol_parameters (request, protocol_id):
         prot_parameters = define_table_for_prot_parameters(protocol_id)
         return render(request, 'iSkyLIMS_clinic/defineProtocolParameters.html', {'prot_parameters':prot_parameters})
 
-
+'''
 @login_required
 def define_result_protocol(request):
     defined_protocols, other_protocol_list = display_available_protocols (__package__)
@@ -263,9 +267,9 @@ def define_result_protocol(request):
         return render(request, 'iSkyLIMS_clinic/defineResultProcedure.html',{'recorded_result_parameters':recorded_result_parameters})
     else:
         return render(request, 'iSkyLIMS_clinic/defineResultProcedure.html',{'other_protocol_list' :other_protocol_list,'defined_protocol_types':defined_protocol_types})
+'''
 
-
-
+'''
 @login_required
 def define_result_protocol_parameters (request, result_protocol_id):
     if request.method == 'POST' and request.POST['action'] == 'defineResultProtocolParameters':
@@ -279,6 +283,7 @@ def define_result_protocol_parameters (request, result_protocol_id):
                             'Create the protocol name before assigning custom protocol parameters.']})
         result_parameters = define_table_for_prot_protocols(result_protocol_id)
         return render(request, 'iSkyLIMS_clinic/defineResultProtocolParameters.html',{'result_parameters':result_parameters})
+'''
 
 @login_required
 def display_patient_information (request, patient_id):
@@ -327,12 +332,21 @@ def display_result_protocol (request, result_protocol_id):
 
 @login_required
 def display_sample_info(request,sample_c_id):
+    '''
+    Description:
+        The function will get the option values to display in the select menus.
+    Functions:
+        display_one_sample_info         # located at iSkyLIMS_clinic/utils/managed_samples.py
+        collect_sample_data_for_search  # located at iSkyLIMS_clinic/utils/managed_samples.py
+    Return:
+        patient_definition_data.
+    '''
     if check_if_sample_c_exists(sample_c_id):
         display_sample_info = display_one_sample_info (sample_c_id)
         #import pdb; pdb.set_trace()
         return render(request, 'iSkyLIMS_clinic/displaySampleInfo.html', {'display_sample_info': display_sample_info })
     else:
-        search_sample_data = collect_data_for_search ()
+        search_sample_data = collect_sample_data_for_search ()
         error_message = ['The clinic sample that you are trying to get', 'DOES NOT exists .']
         return render (request,'iSkyLIMS_clinic/searchSample.html', {'search_sample_data': search_sample_data,
                                 'error_message' : error_message})
@@ -361,14 +375,15 @@ def pending_to_update(request):
 
 @login_required
 def search_sample(request):
-    search_sample_data = collect_data_for_search ()
+    search_sample_data = collect_sample_data_for_search ()
     if request.method == 'POST' and (request.POST['action'] == 'searchSample'):
         data_request = {}
-        data_request['sample_name']  = request.POST['samplename']
-        data_request['patient_name'] = request.POST['patientname']
-        data_request['history_number'] = request.POST['historynumber']
-        data_request['doctor_name'] = request.POST['doctor']
-        data_request['requested_service_by'] = request.POST['requestedby']
+        data_request['sampleName']  = request.POST['sampleName']
+        data_request['patientName'] = request.POST['patientName']
+        data_request['patientSurname'] = request.POST['patientSurname']
+        data_request['patientCode'] = request.POST['patientCode']
+        data_request['doctor'] = request.POST['doctor']
+        data_request['requestedby'] = request.POST['requestedby']
         data_request['start_date'] = request.POST['startdate']
         data_request['end_date'] = request.POST['enddate']
 
@@ -390,7 +405,7 @@ def search_sample(request):
                 return render(request, 'iSkyLIMS_clinic/searchSample.html', {'search_sample_data': search_sample_data ,
                     'Error': ERROR_MESSAGE_FOR_INCORRECT_END_SEARCH_DATE })
         # Patient name length must be longer than 5 characters
-        if data_request['patient_name'] !=''  and len(data_request['patient_name']) < 4 :
+        if data_request['patientName'] !=''  and len(data_request['patientName']) < 4 :
             return render(request, 'iSkyLIMS_clinic/searchSample.html', {'search_sample_data': search_sample_data ,
                 'Error': ERROR_MESSAGE_FOR_SORT_PATIENT_NAME })
         sample_c_list = get_samples_clinic_in_search(data_request)

@@ -3,6 +3,7 @@ from iSkyLIMS_clinic.clinic_config import *
 from iSkyLIMS_core.models import PatientCore, PatientSex, PatientProjects
 
 from iSkyLIMS_core.utils.handling_patient_projects import *
+from iSkyLIMS_core.utils.handling_samples import *
 
 def add_additional_information(form_data):
     '''
@@ -124,6 +125,16 @@ def display_one_patient_info (p_id):
         for pat_project in pat_projects:
             project_name = pat_project.get_project_name()
             patient_info['project_information'][project_name] = get_project_field_values(pat_project.get_project_id(), patient_core_obj)
+
+    # get Samples belongs to Patient
+    if ClinicSampleRequest.objects.filter(patientCore = patient_core_obj).exists():
+        clinic_samples = ClinicSampleRequest.objects.filter(patientCore = patient_core_obj)
+        patient_info['samples_heading'] = HEADING_FOR_DISPLAY_SAMPLE_DATA_IN_PATIENT_INFO
+        patient_info['samples_data'] = []
+        for clinic_sample in clinic_samples:
+            sample_obj = clinic_sample.get_core_sample_obj()
+            patient_info['samples_data'].append(sample_obj.get_info_for_patient())
+
     import pdb; pdb.set_trace()
     return patient_info
 

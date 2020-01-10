@@ -98,7 +98,17 @@ def check_if_sample_c_exists(sample_c_id):
     else:
         return False
 
-def collect_data_for_search ():
+def collect_sample_data_for_search ():
+    '''
+    Description:
+        The function will get the doctor names and unit services definded to inclued in
+        the option values to display in the select menus.
+    Functions:
+        get_available_doctor
+        get_service_units
+    Return:
+        search_sample_data.
+    '''
     search_sample_data = {}
     search_sample_data['doctors'] = get_available_doctor()
     search_sample_data['requested_service_by'] = get_service_units()
@@ -289,7 +299,7 @@ def get_clinic_sample_obj_from_sample_id(sample_core_id):
         c_sample_obj = ClinicSampleRequest.objects.get(sampleCore__exact = sample_core_id)
         return c_sample_obj
     else:
-        return 
+        return
 
 def get_clinic_samples_pending_results(user, state):
     '''
@@ -340,20 +350,24 @@ def get_samples_clinic_in_search (data_request):
         clinic_s_found = ClinicSampleRequest.objects.all()
     else:
         return clinic_s_list
-    if data_request['history_number'] != '':
-        clinic_s_found = clinic_s_found.filter(patient_id__numberOfHistory__icontains = data_request['history_number'])
+    if data_request['patientCode'] != '':
+        import pdb; pdb.set_trace()
+        clinic_s_found = clinic_s_found.filter(patientCore__patientCode__icontains = data_request['patientCode'])
 
-    if data_request['patient_name'] != '':
-        clinic_s_found = clinic_s_found.filter(patient_id__patientName__icontains = data_request['patient_name'])
-    if data_request['sample_name'] != '':
-        clinic_s_found = clinic_s_found.filter(sampleCore__sampleName__icontains = data_request['sample_name'])
+    if data_request['patientName'] != '':
+        clinic_s_found = clinic_s_found.filter(patientCore__patientName__icontains = data_request['patientName'])
+    if data_request['patientSurname'] != '':
+        clinic_s_found = clinic_s_found.filter(patientCore__patientSurname__icontains = data_request['patientSurname'])
+
+    if data_request['sampleName'] != '':
+        clinic_s_found = clinic_s_found.filter(sampleCore__sampleName__icontains = data_request['sampleName'])
         if len(clinic_s_found) == 1:
                 clinic_s_list.append(clinic_s_found[0].pk)
                 return clinic_s_list
-    if data_request['doctor_name'] != '':
-        clinic_s_found = clinic_s_found.filter(doctor_id__doctorName__exact = data_request['doctor_name'])
-    if data_request['requested_service_by'] != '':
-        clinic_s_found = clinic_s_found.filter(serviceUnit_id__serviceUnitName__exact = data_request['requested_service_by'])
+    if data_request['doctor'] != '':
+        clinic_s_found = clinic_s_found.filter(doctor_id__doctorName__exact = data_request['doctor'])
+    if data_request['requestedby'] != '':
+        clinic_s_found = clinic_s_found.filter(serviceUnit_id__serviceUnitName__exact = data_request['requestedby'])
 
     if data_request['start_date'] !='' and data_request['end_date'] != '':
         clinic_s_found = clinic_s_found.filter(generated_at___range=(data_request['start_date'], data_request['end_date'] ))

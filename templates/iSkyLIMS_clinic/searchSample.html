@@ -28,18 +28,23 @@
             {% csrf_token %}
             <input type="hidden" name="action" value="searchSample"/>
             <div class="form-group">
-                <label class="col-sm-5  control-label" for="samplename" >Fill the Sample name </label>
-                <div class="col-sm-5"><input class="form-control" type="text" name="samplename" id="samplename" size="80" maxlength="80"></div>
+                <label class="col-sm-5  control-label" for="sampleName" >Fill the Sample name </label>
+                <div class="col-sm-5"><input class="form-control" type="text" name="sampleName" id="sampleName" size="80" maxlength="80"></div>
              </div>  <!-- end from-group   -->
              <BR>
              <div class="form-group">
-               <label class="col-sm-5 control-label" for="patientname" >Patient Name</label>
-               <div class="col-sm-5"><input class="form-control" type="text" name="patientname" id="patientname" size="80" maxlength="80"></div>
+               <label class="col-sm-5 control-label" for="patientName" >Patient Name</label>
+               <div class="col-sm-5"><input class="form-control" type="text" name="patientName" id="patientName" size="80" maxlength="80"></div>
             </div>  <!-- end from-group   -->
             <BR>
             <div class="form-group">
-                <label class="col-sm-5 control-label" for="historynumber" >History Number</label>
-                <div class="col-sm-5"><input class="form-control" type="text" name="historynumber" id="historynumber" size="80" maxlength="80"></div>
+              <label class="col-sm-5 control-label" for="patientSurname" >Patient Family name</label>
+              <div class="col-sm-5"><input class="form-control" type="text" name="patientSurname" id="patientSurname" size="80" maxlength="80"></div>
+           </div>  <!-- end from-group   -->
+           <BR>
+            <div class="form-group">
+                <label class="col-sm-5 control-label" for="patientCode" >Patient Code</label>
+                <div class="col-sm-5"><input class="form-control" type="text" name="patientCode" id="patientCode" size="80" maxlength="80"></div>
             </div>  <!-- end from-group   -->
             <BR>
             <div class="form-group">

@@ -77,11 +77,13 @@
                     <br>
                     <p>Write down the missing information and then click on the Submit bottom</p>
                     <br><br>
+
                     <form method="post" enctype="multipart/form-data" name="sampledefinition"  id="sampledefinition" class="form-horizontal well" style="min-height: 500px;">
                         {% csrf_token %}
-                        <input type="hidden" name="action" value="recordsample"/>
-                        <div id="spreadsheet"></div>
-
+                        <div class="scrolling-wrapper">
+                            <input type="hidden" name="action" value="recordsample"/>
+                            <div id="spreadsheet"></div>
+                        </div> <!--  end of scrolling  -->
                             <script>
 
                                     var data = [{% for values in sample_recorded.incomplete_samples %}
@@ -92,21 +94,22 @@
                                 data:data,
                                 columns: [
                                     { type: 'text', title:'{{sample_recorded.heading.0}}', width:150 },
-                                    { type: 'dropdown', title:'{{sample_recorded.heading.1}}', width:120, source: [{% for value in sample_recorded.laboratory %}"{{value}}",{% endfor %}] },
-                                    { type: 'dropdown', title:'{{sample_recorded.heading.2}}', width:120 , source:[{% for value in sample_recorded.sampleType %}"{{value}}",{% endfor %}]},
-
-                                    { type: 'dropdown', title:'{{sample_recorded.heading.3}}', width:120 , source : [{% for value in sample_recorded.species %}"{{value}}",{% endfor %}] },
-                                    { type: 'calendar' , title: '{{sample_recorded.heading.4}}', width:150 },
+                                    { type: 'text', title:'{{sample_recorded.heading.1}}', width:150 },
+                                    { type: 'dropdown', title:'{{sample_recorded.heading.2}}', width:150 , source: [{% for value in sample_recorded.sample_origin %}"{{value}}",{% endfor %}] },
+                                    { type: 'dropdown', title:'{{sample_recorded.heading.3}}', width:120 , source:[{% for value in sample_recorded.sampleType %}"{{value}}",{% endfor %}]},
+                                    { type: 'dropdown', title:'{{sample_recorded.heading.4}}', width:120 , source : [{% for value in sample_recorded.species %}"{{value}}",{% endfor %}] },
+                                    { type: 'dropdown', title:'{{sample_recorded.heading.5}}', width:120 , source : [{% for value in sample_recorded.sample_project %}"{{value}}",{% endfor %}] },
+                                    { type: 'calendar' , title: '{{sample_recorded.heading.6}}', width:150 },
+                                    { type: 'text', title:'{{sample_recorded.heading.7}}', width:150 },
                                     ],
                                     allowInsertColumn:false,
                                     allowDeleteColumn:false,
                                     allowRenameColumn:false,
                                     csvFileName:'samples',
-                                    minDimensions:[{{sample_recorded.table_size}},{{sample_recorded.number_of_samples}}],
+                                    minDimensions:[{{sample_information.table_size}},3],
                                 });
                             </script>
-                        <br>
-                        <br>
+                        <br><br><br><br><br><br><br><br><br><br><br>
                         <input type="button" value="Download Spreadsheet" onclick="$('#spreadsheet').jexcel('download')"/>
                         <input class="btn pull-right btn-primary" type="submit" value="Submit">
                     </form>

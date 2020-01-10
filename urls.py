@@ -9,7 +9,7 @@ from django.views.generic import ListView, DetailView
 
 urlpatterns = [
     path('',views.index, name = 'index'),
-    path('addResultData', views.add_result_data, name = 'add_result_data'),
+    #path('addResultData', views.add_result_data, name = 'add_result_data'),
     path('addCommercialKit', views.add_commercial_kit, name='add_commercial_kit'),
     path('addUserLotCommercialKit', views.add_user_lot_commercial_kit, name ='add_user_lot_commercial_kit'),
     path('createNewProject', views.create_new_project, name= 'create_new_project'),
@@ -20,9 +20,9 @@ urlpatterns = [
     path('defineProtocolParameters=<int:protocol_id>', views.define_protocol_parameters, name = 'define_protocol_parameters'),
     path('displayPatientProject=<int:project_id>', views.display_patient_project, name = 'display_patient_project'),
     path('displayProtocol=<int:protocol_id>', views.display_protocol, name = 'display_protocol'),
-    path('defineResultProtocol', views.define_result_protocol, name = 'define_result_protocol'),
-    path('defineResultProtocolParameters=<int:result_protocol_id>', views.define_result_protocol_parameters, name = 'define_result_protocol_parameters'),
-    path('displayResultProtocol=<int:result_protocol_id>', views.display_result_protocol, name = 'display_result_protocol'),
+    #path('defineResultProtocol', views.define_result_protocol, name = 'define_result_protocol'),
+    #path('defineResultProtocolParameters=<int:result_protocol_id>', views.define_result_protocol_parameters, name = 'define_result_protocol_parameters'),
+    #path('displayResultProtocol=<int:result_protocol_id>', views.display_result_protocol, name = 'display_result_protocol'),
     path('displayPatientInformation=<int:patient_id>/', views.display_patient_information, name = 'display_patient_information'),
     path('displaySampleInfo=<int:sample_c_id>', views.display_sample_info, name = 'display_sample_info'),
     path('pendingToUpdate', views.pending_to_update, name = 'pending_to_update'),

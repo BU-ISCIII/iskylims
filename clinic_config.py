@@ -13,7 +13,7 @@ HEADING_FOR_DISPLAY_PATIENT_BASIC_INFORMATION = ['Patient Name', 'Patient Surame
 HEADING_FOR_DISPLAY_REQUESTED_BY_INFORMATION = ['Requested Service by', 'Doctor Name']
 HEADING_FOR_DISPLAY_PATIENT_ADDITIONAL_INFORMATION = ['Address', 'Phone number', 'email', 'Birthday', 'Smoker', 'Notification Preferences', 'Comments']
 
-
+HEADING_FOR_DISPLAY_SAMPLE_DATA_IN_PATIENT_INFO = ['Sample Name', 'Sample Origin', 'Entry Date', 'Sample type', 'Sample state']
 
 
 

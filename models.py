@@ -104,6 +104,13 @@ class ClinicSampleState (models.Model):
     def get_state(self):
         return '%s' %(self.clinicState)
 
+class ClinicSampleRequestManager(models.Manager):
+    def create_clinic_sample ( self, c_sample_data):
+        new_clinic_sample = self.create( sampleCore = c_sample_data['sampleCore'],
+                patientCore = c_sample_data['patientCore'] , clinicSampleState = ClinicSampleState.objects.get(clinicState__exact = 'Defined'),
+                sampleRequestUser = c_sample_data['user'])
+        return new_clinic_sample
+
 
 class ClinicSampleRequest (models.Model):
     sampleCore = models.ForeignKey(
@@ -114,7 +121,7 @@ class ClinicSampleRequest (models.Model):
                 on_delete = models.CASCADE, null = True, blank = True)
     doctor_id = models.ForeignKey(
                 Doctor,
-                on_delete = models.CASCADE, null = True)
+                on_delete = models.CASCADE, null = True, blank = True)
     clinicSampleState = models.ForeignKey(
                 ClinicSampleState,
                 on_delete = models.CASCADE)
@@ -124,7 +131,7 @@ class ClinicSampleRequest (models.Model):
     sampleRequestUser = models.ForeignKey(
                 User,
                 on_delete=models.CASCADE, null = True, blank = True)
-    orderInEntry = models.CharField(max_length = 8, null = True)
+    orderInEntry = models.CharField(max_length = 8, null = True, blank = True)
     confirmationCode = models.CharField(max_length = 80, null = True, blank = True)
     priority = models.IntegerField(null = True, blank =True)
 
@@ -267,6 +274,7 @@ class ClinicSampleRequest (models.Model):
         self.save()
         return self
 
+    objects = ClinicSampleRequestManager()
 
 '''
 class SampleResults (models.Model):
