@@ -162,8 +162,8 @@ def analyze_input_samples (request):
             if sample_data['p_code_id'] != '' :
                 patient_obj = check_patient_code_exists(sample_data['p_code_id'] )
                 if patient_obj == False:
-                    # Define the new patient code
-                    patient_obj = create_patient(sample_data['p_code_id'])
+                    # Define the new patient only Patient code is defined
+                    patient_obj = create_empty_patient(sample_data['p_code_id'])
             else :
                 patient_obj = None
             sample_data['patient'] = patient_obj
@@ -174,8 +174,13 @@ def analyze_input_samples (request):
             else:
                 last_unique_value = Samples.objects.exclude(uniqueSampleID__isnull = True).last().uniqueSampleID
                 sample_data['new_unique_value'] = increase_unique_value(last_unique_value)
+            import pdb; pdb.set_trace()
 
-            sample_data['projectBelongs'] = SampleProjectBelongs.objects.get(projectName__exact = sample_data['project_service'])
+            if sample_data['project_service'] == 'None':
+                sample_data['projectPatient'] = None
+            else:
+                sample_data['projectPatient'] = PatientProjects.objects.get(projectName__exact = sample_data['project_service'] )
+            #sample_data['projectBelongs'] = SampleProjectBelongs.objects.get(projectName__exact = sample_data['project_service'])
             #import pdb; pdb.set_trace()
             new_sample = Samples.objects.create_sample(sample_data)
             valid_samples.append(new_sample.get_sample_definition_information())
@@ -295,7 +300,7 @@ def analyze_input_molecules (request):
     #import pdb; pdb.set_trace()
     return molecule_recorded
 
-def build_record_sample_form () :
+def build_record_sample_form (app_name) :
     '''
     Description:
         The function collect the stored information of  species, sample origin and sample type to use in the
@@ -316,7 +321,8 @@ def build_record_sample_form () :
     sample_information['species'] = get_species()
     sample_information['sample_origin'] = get_sample_origin()
     sample_information['sampleType'] = get_sample_type()
-    sample_information['sample_project'] = get_sample_projects ()
+    sample_information['sample_project'] = get_defined_projects (app_name)
+    sample_information['sample_project'].insert(0,'None')
     return sample_information
 
 def check_if_sample_already_defined (sample_name,reg_user):
@@ -348,7 +354,7 @@ def check_patient_code_exists(p_code_id):
 
     return patient_obj
 
-def create_patient(p_code_id):
+def create_empty_patient(p_code_id):
     '''
     Description:
         The function create patient in database.
@@ -358,7 +364,13 @@ def create_patient(p_code_id):
     Return:
         patient_obj
     '''
-    patient_obj = PatientCore.objects.create_patient(p_code_id)
+    patient_data = {}
+    patient_data['patientSex'] = 'Not Provided'
+    patient_data['patientName'] = 'Not Provided'
+    patient_data['patientSurname'] = 'Not Provided'
+    patient_data['patientCode'] = p_code_id
+
+    patient_obj = PatientCore.objects.create_patient(patient_data)
 
     return patient_obj
 
@@ -450,7 +462,7 @@ def get_sample_origin ():
             sample_origin_places.append(samples_origin.get_name())
     return sample_origin_places
 
-def get_sample_projects():
+def get_defined_projects(app_name):
     '''
     Description:
         The function will return the projects that a sample could belongs to.
@@ -460,10 +472,10 @@ def get_sample_projects():
         sample_projects.
     '''
     sample_projects = []
-    if SampleProjectBelongs.objects.filter().exists():
-        s_projects = SampleProjectBelongs.objects.filter()
+    if PatientProjects.objects.filter(apps_name__exact = app_name).exists():
+        s_projects = PatientProjects.objects.filter(apps_name__exact = app_name)
         for s_project in s_projects:
-            sample_projects.append(s_project.get_sample_project())
+            sample_projects.append(s_project.get_project_name())
     return sample_projects
 
 def get_molecule_codeid_from_object(molecule_obj):
@@ -737,7 +749,7 @@ def increase_unique_value (old_unique_number):
     return str(letter + '-' + number_str)
 
 
-def prepare_sample_input_table ():
+def prepare_sample_input_table (app_name):
     '''
     Description:    The function collect the species, Sample origin place, type of samples, and heading
                     used in the input table. Return a dictionary with collected information.
@@ -750,7 +762,7 @@ def prepare_sample_input_table ():
         s_information #
     '''
     # get the choices to be included in the form
-    s_information = build_record_sample_form()
+    s_information = build_record_sample_form(app_name)
     s_information['heading'] = HEADING_FOR_RECORD_SAMPLES
     s_information ['table_size']= len(HEADING_FOR_RECORD_SAMPLES)
     return s_information

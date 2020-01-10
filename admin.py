@@ -37,15 +37,15 @@ class MoleculeParameterValueAdmin (admin.ModelAdmin):
     list_display = ('moleculeParameter_id', 'molecule_id','parameterValue')
 
 class SamplesAdmin(admin.ModelAdmin):
-    list_display = ('sampleCodeID', 'sampleState', 'samplesOrigin', 'sampleType', 'sampleUser', 'species', 'sampleName',
+    list_display = ('sampleCodeID', 'sampleState', 'samplesOrigin', 'sampleType', 'sampleUser', 'species','projectPatient', 'sampleName',
                     'sampleEntryDate', 'uniqueSampleID',  'numberOfReused','sequencingDate' )
 
 class SampleTypeAdmin(admin.ModelAdmin):
     list_display = ('sampleType',)
-
+'''
 class SampleProjectBelongsAdmin(admin.ModelAdmin):
     list_display = ('projectName', 'projectManager', 'projectDescription', 'contactEmail', 'contactPhone', 'contactComments')
-
+'''
 
 class SpeciesAdmin (admin.ModelAdmin):
     list_display= ('speciesName', 'refGenomeName', 'refGenomeSize' , 'refGenomeID' )
@@ -75,7 +75,7 @@ admin.site.register(MoleculeParameterValue, MoleculeParameterValueAdmin)
 admin.site.register(SampleType, SampleTypeAdmin)
 admin.site.register(Samples, SamplesAdmin)
 admin.site.register(Species, SpeciesAdmin)
-admin.site.register(SampleProjectBelongs, SampleProjectBelongsAdmin)
+# admin.site.register(SampleProjectBelongs, SampleProjectBelongsAdmin)
 admin.site.register(StatesForMolecule, StatesForMoleculeAdmin)
 admin.site.register(StatesForSample, StatesForSampleAdmin)
 admin.site.register(UserLotCommercialKits, UserLotCommercialKitsAdmin)

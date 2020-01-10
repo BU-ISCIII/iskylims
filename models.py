@@ -450,7 +450,7 @@ class SamplesManager (models.Manager):
         import pdb; pdb.set_trace()
         new_sample = self.create(sampleState = StatesForSample.objects.get(sampleStateName__exact = 'Defined'),
                             patientCore = sample_data['patient'],
-                            samplesOrigin = sample_data['samplesOrigin'], projectBelongs = sample_data['projectBelongs'],
+                            samplesOrigin = sample_data['samplesOrigin'], projectPatient = sample_data['projectPatient'],
                             sampleType = SampleType.objects.get(sampleType__exact = sample_data['sampleType']) ,
                             sampleUser = User.objects.get(username__exact = sample_data['user']),
                             sampleCodeID = sample_data['sample_id'] , sampleName =  sample_data['sampleName'],
@@ -485,9 +485,15 @@ class Samples (models.Model):
     species = models.ForeignKey(
                 Species,
                 on_delete=models.CASCADE, null = True)
+    '''
     projectBelongs = models.ForeignKey(
                 SampleProjectBelongs,
                 on_delete=models.CASCADE, null = True, blank = True)
+    '''
+    projectPatient =  models.ForeignKey(
+                PatientProjects,
+                on_delete=models.CASCADE, null = True, blank = True)
+
     sampleName = models.CharField(max_length=255, null = True)
     sampleLocation = models.CharField(max_length=255, null = True, blank = True)
     sampleEntryDate = models.DateTimeField(auto_now_add = False, null =True)
@@ -542,6 +548,17 @@ class Samples (models.Model):
         sample_info.append(self.species.get_name())
         sample_info.append(self.numberOfReused)
         sample_info.append(self.sampleUser.username)
+        return sample_info
+
+
+    def get_info_for_patient (self):
+        sample_info = []
+        sample_info.append(str(self.pk))
+        sample_info.append(self.sampleName)
+        sample_info.append(self.samplesOrigin.get_name())
+        sample_info.append(self.sampleEntryDate.strftime("%d , %B , %Y"))
+        sample_info.append(self.sampleType.get_name())
+        sample_info.append(self.sampleState.get_sample_state())
         return sample_info
 
     def get_extraction_date (self):
