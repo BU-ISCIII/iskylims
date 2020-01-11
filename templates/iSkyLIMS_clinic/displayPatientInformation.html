@@ -30,11 +30,12 @@
 
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->
-            {% if display_patient_info.project_information %}
-                <br>
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h3>Project Information</h3></div>
-                    <div class="panel-body">
+
+            <br>
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Project Information</h3></div>
+                <div class="panel-body">
+                    {% if display_patient_info.project_information %}
                         {% for key, values in display_patient_info.project_information.items %}
 
                             <button type="button" class="collapsible">{{key}}</button>
@@ -59,8 +60,6 @@
 
 
                         {%endfor%}
-
-
                         <script>
                             var coll = document.getElementsByClassName("collapsible");
                             var i;
@@ -77,9 +76,34 @@
                               });
                             }
                         </script>
-                    </div>  <!--  end of panel body  -->
-                </div> <!--// end panel -->
-            {% endif %}
+                    {% endif %}
+                    <br>
+                    {%if display_patient_info.available_projects %}
+                        <form method="post" action="/clinic/assignProject" enctype="multipart/form-data" name="addPatientProject"  id="addPatientProject" class="form-horizontal well">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="addPatientProject"/>
+                            <input type="hidden" name="patient_id" value="{{display_patient_info.patient_id}}"/>
+                            <div class="form-group">
+                                <label class="col-sm-5 control-label" for="projectName" >Assign project to patient</label>
+                                <div class="col-sm-4">
+                                    <select class="form-control" name="projectName" id="projectName">
+                                        <option value="">Choose a value</option>
+                                        {% for value in display_patient_info.available_projects %}
+                                            <option value="{{value}}">{{value}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>  <!-- end select input -->
+
+                             </div>  <!-- end from-group   -->
+
+                            <div class="col-sm-10 col-sm-offset-1">
+                                <input class="btn pull-right btn-primary" type="submit" value="Assign new Project">
+                            </div>
+                        </form>
+                    {% endif %}
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+
         </div> <!--// end col-sm-6  -->
         <div class="col-sm-6" >
             <div class="panel panel-default">
@@ -176,6 +200,7 @@
                                 <div class="panel-heading"><h3>Patient History</h3></div>
                                 <div class="panel-body">
                                     <br>
+                                    {%  if display_patient_info.pat_hist.heading %}
                                     <table class="table table-hover">
                                         <thead>
                                             <tr>
@@ -192,6 +217,17 @@
                                             {% endfor %}
                                         </tbody>
                                     </table>
+                                    {% endif %}
+                                    <br>
+                                    <form method="post" action="/clinic/defineNewPatientHistory" enctype="multipart/form-data" name="addPatientHistory"  id="addPatientHistory" class="form-horizontal well">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="addPatientHistory"/>
+                                        <input type="hidden" name="patient_id" value="{{display_patient_info.patient_id}}"/>
+
+                                        <div class="col-sm-10 col-sm-offset-1">
+                                            <input class="btn pull-right btn-primary" type="submit" value="Create New Patient History">
+                                        </div>
+                                    </form>
                                 </div>  <!--  end of panel body  -->
                             </div> <!--// end panel -->
                         </div> <!--// end col-sm-9  -->

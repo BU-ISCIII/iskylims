@@ -10,7 +10,7 @@ from iSkyLIMS_clinic.clinic_config import *
 from iSkyLIMS_clinic.utils.managed_samples import *
 from iSkyLIMS_clinic.utils.managed_results import *
 from iSkyLIMS_clinic.utils.managed_patient import *
-
+from iSkyLIMS_clinic.utils.managed_projects import *
 
 from iSkyLIMS_core.utils.handling_protocols import *
 from iSkyLIMS_core.utils.handling_samples import *
@@ -53,6 +53,19 @@ def add_user_lot_commercial_kit (request):
         defined_kits = get_defined_commercial_kits()
         return render(request, 'iSkyLIMS_clinic/addUserLotCommercialKit.html',{'defined_kits':defined_kits})
 
+@login_required
+def assign_project(request):
+    if request.method == 'POST' and request.POST['action'] == 'addPatientProject':
+        defined_project = {}
+        defined_project['fields'] , defined_project['project_id'] = assign_project_patient( request.POST, __package__)
+        defined_project['patient_id'] = request.POST['patient_id']
+        import pdb; pdb.set_trace()
+        return render(request, 'iSkyLIMS_clinic/addPatientProject.html',{'defined_project':defined_project})
+    elif request.method == 'POST' and request.POST['action'] == 'defineProjectFields':
+        project_fields_added = add_project_fields(request.POST)
+        return render(request, 'iSkyLIMS_clinic/addPatientProject.html' ,{'project_fields_added': project_fields_added})
+
+    return render(request, 'iSkyLIMS_clinic/addPatientProject.html')
 
 '''
 @login_required
@@ -172,6 +185,11 @@ def define_new_patient(request):
         return render(request, 'iSkyLIMS_clinic/defineNewPatient.html' ,{'patient_definition_data': patient_definition_data})
 
 @login_required
+def define_new_patient_history(request):
+
+    return
+
+@login_required
 def define_new_samples(request):
     if request.method == 'POST' and request.POST['action'] == 'recordsample':
         sample_recorded = analyze_input_samples (request)
@@ -288,7 +306,7 @@ def define_result_protocol_parameters (request, result_protocol_id):
 @login_required
 def display_patient_information (request, patient_id):
 
-    display_patient_info = display_one_patient_info (patient_id)
+    display_patient_info = display_one_patient_info (patient_id, __package__)
     if 'ERROR' in display_patient_info:
         return render (request, 'iSkyLIMS_clinic/displayPatientInformation.html', {'ERROR': 'ERROR'})
     else:

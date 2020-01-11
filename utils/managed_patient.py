@@ -2,6 +2,7 @@ from iSkyLIMS_clinic.models import *
 from iSkyLIMS_clinic.clinic_config import *
 from iSkyLIMS_core.models import PatientCore, PatientSex, PatientProjects
 
+from iSkyLIMS_core.utils.handling_patient_core import *
 from iSkyLIMS_core.utils.handling_patient_projects import *
 from iSkyLIMS_core.utils.handling_samples import *
 
@@ -23,29 +24,7 @@ def add_additional_information(form_data):
 
     return opt_data_obj
 
-def add_project_fields (form_data):
-    '''
-    Description:
-        The function store the patient information that it is related to the project
-    Input:
-        form_data  #  information collected from form data
-    Return:
-        p_fields.
-    '''
-    p_fields ={}
-    patient_obj = get_patient_core_obj_from_id(form_data['patient_id'])
-    project_id = form_data['project_id']
-    fields = get_project_fields(form_data['project_id'])
-    field_value = {}
-    field_value['patientCore_id'] = patient_obj
-    field_ids = get_project_field_ids(form_data['project_id'])
 
-    for item in range(len(field_ids)):
-        field_value['projectField_id'] = PatientProjectsFields.objects.get(pk__exact = field_ids[item])
-        field_value['projectFieldValue'] = form_data[fields[item]]
-        new_field_value = ProjectFieldValue.objects.create_project_field_value(field_value)
-    p_fields['project_name'] = get_project_obj_from_id(project_id).get_project_name()
-    return p_fields
 
 def create_new_patient(form_data, app_name):
     '''
@@ -82,11 +61,9 @@ def create_new_patient(form_data, app_name):
         if fields :
             p_main_data ['fields'] = fields
 
-    import pdb; pdb.set_trace()
-
     return p_main_data
 
-def display_one_patient_info (p_id):
+def display_one_patient_info (p_id, app_name):
     '''
     Description:
         The function will return the patinent information.
@@ -125,6 +102,13 @@ def display_one_patient_info (p_id):
         for pat_project in pat_projects:
             project_name = pat_project.get_project_name()
             patient_info['project_information'][project_name] = get_project_field_values(pat_project.get_project_id(), patient_core_obj)
+
+    # get other projects that patient could belongs to
+    new_projects = get_available_projects_for_patient (patient_core_obj, app_name)
+    if new_projects :
+        patient_info['available_projects'] = []
+        for new_project in new_projects:
+            patient_info['available_projects'].append(new_project.get_project_name())
 
     # get Samples belongs to Patient
     if ClinicSampleRequest.objects.filter(patientCore = patient_core_obj).exists():
@@ -187,12 +171,3 @@ def get_patients_in_search(data_request):
         patient_list.append(patient_found.pk)
 
     return patient_list
-
-def get_patient_core_obj_from_id (p_id):
-    patient_obj = PatientCore.objects.get(pk__exact = p_id)
-    return patient_obj
-
-
-def set_additional_patient_data(patient_obj):
-
-    return patient_data
