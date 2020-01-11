@@ -54,13 +54,17 @@ class PatientData (models.Model):
 
 class PatientHistoryManager(models.Manager):
     def create_patient_history ( self, pat_hist_data):
-        new_suspicion_history = self.create( patiendData_id = pat_hist_data['patiendData_id'],
-                    entryDate = pat_hist_data['entryDate'], description = pat_hist_data['description'],
-                    comments = pat_hist_data['comments'] )
+        new_suspicion_history = self.create( patientCore = pat_hist_data['patientCore'],
+                    entryDate = pat_hist_data['entryDate'], description = pat_hist_data['description'] )
 
 class PatientHistory (models.Model):
+    '''
     patiendData_id = models.ForeignKey (
             PatientData,
+            on_delete = models.CASCADE, null = True, blank = True)
+    '''
+    patientCore = models.ForeignKey (
+            PatientCore,
             on_delete = models.CASCADE, null = True, blank = True)
     entryDate = models.DateTimeField(auto_now_add=False, null = True, blank = True)
     description = models.CharField(max_length = 255)
