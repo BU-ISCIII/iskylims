@@ -3,6 +3,19 @@ from iSkyLIMS_core.models import *
 from iSkyLIMS_core.core_config import *
 
 
+def add_project_to_patient (project_obj, patient_obj):
+    '''
+    Description:
+        The function add the project to the patient
+    Input:
+        project_obj  # New project object to be added
+        patient_obj  #
+    Return:
+        None.
+    '''
+    patient_obj.patientProjects.add(project_obj)
+    return None
+
 def check_if_project_exists (project_id, app_name):
     '''
     Description:
@@ -12,7 +25,6 @@ def check_if_project_exists (project_id, app_name):
     Return:
         True/False.
     '''
-
     if PatientProjects.objects.filter(pk__exact = project_id,  apps_name__exact = app_name).exists():
         return True
     else:
@@ -75,6 +87,24 @@ def get_all_project_info(proyect_id):
 
     return project_data
 
+def get_available_projects_for_patient(patient_obj, app_name):
+    '''
+    Description:
+        The function gets the projects that are not defined for the patient but could be, because they are defined for the application
+        Returns a list with the available project
+    Input:
+        patient_obj  # Patient class
+        app_name     # application name to filter for the available projects
+    Return:
+        project_list.
+    '''
+    if PatientProjects.objects.filter(apps_name__exact = app_name).exclude(id__in = patient_obj.patientProjects.values_list('id', flat = True)).exists():
+
+        available_projects = PatientProjects.objects.filter(apps_name__exact = app_name).exclude(id__in = patient_obj.patientProjects.values_list('id', flat = True))
+        return available_projects
+    else:
+        return None
+
 def get_defined_projects(app_name):
     '''
     Description:
@@ -106,6 +136,22 @@ def get_project_id(project_name, app_name):
     if PatientProjects.objects.filter(projectName__exact = project_name, apps_name__exact = app_name):
         project_id = PatientProjects.objects.get(projectName__exact = project_name, apps_name__exact = app_name).get_project_id()
         return project_id
+    else:
+        return None
+
+def get_project_obj_from_id(project_id):
+    '''
+    Description:
+        The function return the project obj from the input project id
+    Input:
+        project_id    # project id
+
+    Return:
+        project_obj
+    '''
+    if PatientProjects.objects.filter(pk__exact = project_id).exists():
+        project_obj = PatientProjects.objects.get(pk__exact = project_id)
+        return project_obj
     else:
         return None
 
@@ -154,9 +200,11 @@ def get_project_field_values(project_id, patient_obj):
 
     p_fields_obj = PatientProjectsFields.objects.filter(patientProjects_id__pk = project_id).order_by('projectFieldOrder')
     for p_field in p_fields_obj:
-        field_value = ProjectFieldValue.objects.get(patientCore_id = patient_obj, projectField_id =  p_field).get_field_value()
+        if ProjectFieldValue.objects.filter(patientCore_id = patient_obj, projectField_id =  p_field).exists():
+            field_value = ProjectFieldValue.objects.get(patientCore_id = patient_obj, projectField_id =  p_field).get_field_value()
+        else:
+            field_value = 'Not defined'
         project_field_values.append((p_field.get_field_name(), field_value) )
-    import pdb; pdb.set_trace()
     return project_field_values
 
 def get_project_obj(project_name, app_name):
