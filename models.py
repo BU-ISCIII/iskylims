@@ -3,7 +3,38 @@ from django.contrib.auth.models import User
 import datetime
 from iSkyLIMS_core.core_config import COLLECTION_INDEX_KITS_DIRECTORY
 
+class Platform(models.Model):
+	platformName=models.CharField(max_length=20)
+    generatedat = models.DateTimeField(auto_now_add=True, null=True)
 
+	def __str__ (self):
+ 		return '%s' %(self.platformName)
+
+	def get_platform_name(self):
+		return '%s'  %(self.platformName)
+
+class LabEquipment (models.Model) :
+	platform = models.ForeignKey(Platform ,on_delete=models.CASCADE, null=True,blank=True)
+	equipmentName = models.CharField(max_length=255)
+	equipmentDescription = models.CharField(max_length=255,null=True,blank=True)
+	equipmentLocation = models.CharField(max_length=255,null=True,blank=True)
+	equipmentProvider = models.CharField(max_length=255,null=True,blank=True)
+	equipmentSerialNumber = models.CharField(max_length=255,null=True,blank=True)
+	equipmentState =  models.CharField(max_length=50,null=True,blank=True)
+	equipmentOperationStart = models.DateField(auto_now_add=False, null=True,blank=True)
+	equipmentOperationEnd = models.DateField(auto_now_add=False, null=True,blank=True)
+	equipmentNumberLanes = models.CharField(max_length= 5)
+    generatedat = models.DateTimeField(auto_now_add=True, null=True)
+    
+	def __str__ (self) :
+		return '%s' %(self.equipmentName)
+
+
+	def get_equipment_name(self):
+		return '%s'  %(self.equipmentName)
+
+	def get_number_of_lanes(self):
+		return '%s' %(self.equipmentNumberLanes)
 
 '''
 class Laboratory (models.Model):
