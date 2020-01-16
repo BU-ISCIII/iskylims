@@ -3289,7 +3289,7 @@ def record_samples(request):
 
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'reprocess_result':reprocess_result})
     else:
-        sample_information = prepare_sample_input_table()
+        sample_information = prepare_sample_input_table(__package__)
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
 
 @login_required
