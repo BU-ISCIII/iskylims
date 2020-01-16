@@ -5,7 +5,7 @@ from iSkyLIMS_core.core_config import COLLECTION_INDEX_KITS_DIRECTORY
 
 class Platform(models.Model):
 	platformName=models.CharField(max_length=20)
-    generatedat = models.DateTimeField(auto_now_add=True, null=True)
+	generatedat = models.DateTimeField(auto_now_add=True, null=True)
 
 	def __str__ (self):
  		return '%s' %(self.platformName)
@@ -24,8 +24,8 @@ class LabEquipment (models.Model) :
 	equipmentOperationStart = models.DateField(auto_now_add=False, null=True,blank=True)
 	equipmentOperationEnd = models.DateField(auto_now_add=False, null=True,blank=True)
 	equipmentNumberLanes = models.CharField(max_length= 5)
-    generatedat = models.DateTimeField(auto_now_add=True, null=True)
-    
+	generatedat = models.DateTimeField(auto_now_add=True, null=True)
+
 	def __str__ (self) :
 		return '%s' %(self.equipmentName)
 
