@@ -15,6 +15,7 @@ urlpatterns = [
     path('assignProject', views.assign_project, name='assign_project'),
     path('createNewProject', views.create_new_project, name= 'create_new_project'),
     path('createProtocol', views.create_protocol, name = 'create_protocol'),
+    path('defineExtractionMolecules', views.define_extraction_molecules, name = 'define_extraction_molecules'),
     path('defineProjectFields=<int:project_id>', views.define_project_fields, name = 'define_project_fields'),
     path('defineNewPatient', views.define_new_patient, name = 'define_new_patient'),
     path('defineNewPatientHistory' ,  views.define_new_patient_history, name = 'define_new_patient_history'),

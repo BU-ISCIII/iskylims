@@ -161,6 +161,26 @@ def create_protocol (request):
     return render(request, 'iSkyLIMS_clinic/createProtocol.html',{'defined_protocols': defined_protocols,
                         'defined_protocol_types':defined_protocol_types, 'other_protocol_list' :other_protocol_list})
 
+@login_required
+def define_extraction_molecules (request):
+    extraction_molecules = {}
+    import pdb; pdb.set_trace()
+    extraction_molecules['extract_molecule'] = get_samples_in_defined_state(request.user)
+    if request.method == 'POST' and request.POST['action'] == 'continueWithMolecule':
+        # processing the samples selected by user
+        pass
+        return render(request, 'iSkyLIMS_clinic/defineExtractionMolecules.html' ,{'extraction_molecules': extraction_molecules})
+        # return the samples that match user request
+    elif request.method == 'POST' and request.POST['action'] == 'searchSamples':
+        pass
+        return render(request, 'iSkyLIMS_clinic/defineExtractionMolecules.html' ,{'extraction_molecules': extraction_molecules})
+        # group the samples selected by user
+    elif request.method == 'POST' and request.POST['action'] == 'addingMoreSamples':
+        pass
+        return render(request, 'iSkyLIMS_clinic/defineExtractionMolecules.html' ,{'extraction_molecules': extraction_molecules})
+    else:
+        pass
+    return render(request, 'iSkyLIMS_clinic/defineExtractionMolecules.html' ,{'extraction_molecules': extraction_molecules})
 
 @login_required
 def define_new_patient(request):

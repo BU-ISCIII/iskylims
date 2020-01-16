@@ -192,9 +192,9 @@ class ClinicSampleRequest (models.Model):
 
     def get_sample_core_info(self):
         s_core_info = []
-        s_core_info.append(self.orderInEntry)
-        s_core_info.append(self.confirmationCode)
-        s_core_info.append(self.priority)
+        #s_core_info.append(self.orderInEntry)
+        #s_core_info.append(self.confirmationCode)
+        #s_core_info.append(self.priority)
         s_core_info.append(self.sampleCore.get_sample_origin())
         s_core_info.append(self.sampleCore.get_sample_type())
         s_core_info.append(self.sampleCore.get_species())

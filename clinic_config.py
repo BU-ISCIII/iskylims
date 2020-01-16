@@ -17,7 +17,7 @@ HEADING_FOR_DISPLAY_SAMPLE_DATA_IN_PATIENT_INFO = ['Sample Name', 'Sample Origin
 
 
 
-HEADING_FOR_DISPLAY_SAMPLE_MAIN_INFORMATION = ['Order', 'Confirmation Code', 'Priority','Sample Origin', 'Type of Sample', 'Species', 'Entry Date', 'User name']
+HEADING_FOR_DISPLAY_SAMPLE_MAIN_INFORMATION = ['Sample Origin', 'Type of Sample', 'Species', 'Entry Date', 'User name']
 
 HEADING_FOR_DISPLAY_SAMPLE_DEFINED_STATE = ['Sample Name','Sample Origin', 'Type of Sample', 'Species', 'Date for entry in Lab']
 
