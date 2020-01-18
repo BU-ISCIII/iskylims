@@ -24,6 +24,7 @@ urlpatterns = [
     path('createProtocol', views.create_protocol, name = 'create_protocol'),
     path('configurationTest/', views.configuration_test, name='configuration_test'),
     path('defineProtocolParameters=<int:protocol_id>', views.define_protocol_parameters, name = 'define_protocol_parameters'),
+    path('defineSampleProjects', views.define_sample_projects, name = 'define_sample_projects'),
     path('DisplayCollectionIndex=<int:collection_index_id>/', views.display_collection_index, name= 'display_collection_index'),
     path('displayLibSample=<int:sample_id>/', views.display_libSample, name = 'display_libSample'),
     path('displayProject=<int:project_id>/', views.display_project, name='display_project'),

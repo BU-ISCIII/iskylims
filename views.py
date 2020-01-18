@@ -3293,6 +3293,43 @@ def record_samples(request):
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
 
 @login_required
+def define_sample_projects (request):
+    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+    if request.user.is_authenticated:
+        if not is_wetlab_manager(request):
+            return render (
+                request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':['You do not have enough privileges to see this page ',
+                            'Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+    # get the list of defined sample Projects
+    defined_samples_projects = get_defined_sample_projects (__package__)
+
+
+    import pdb; pdb.set_trace()
+    if request.method == 'POST' and request.POST['action'] == 'addNewSampleProject':
+        #import pdb; pdb.set_trace()
+        new_protocol = request.POST['newSampleProjectName']
+        description = request.POST['description']
+
+        if check_if_protocol_exists (new_protocol, __package__):
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',{'content':['Protocol Name ', new_protocol,
+                            'Already exists.']})
+        new_protocol_id = create_new_protocol(new_protocol, protocol_type, description, __package__)
+
+        return render(request, 'iSkyLIMS_wetlab/defineSampleProjects.html',{'defined_samples_projects': defined_samples_projects,
+                            'defined_protocol_types':defined_protocol_types, 'new_defined_protocol': new_protocol,
+                            'new_protocol_id':new_protocol_id,  'other_protocol_list' :other_protocol_list})
+
+    return render(request, 'iSkyLIMS_wetlab/defineSampleProjects.html',{'defined_samples_projects': defined_samples_projects})
+
+
+
+
+
+@login_required
 def display_libSample (request, sample_id):
     sample_information = get_all_sample_information(sample_id, True)
     if 'Error' in sample_information:
