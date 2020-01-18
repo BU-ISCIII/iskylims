@@ -462,21 +462,39 @@ def get_sample_origin ():
             sample_origin_places.append(samples_origin.get_name())
     return sample_origin_places
 
-def get_defined_projects(app_name):
+
+def get_defined_sample_projects (app_name):
     '''
     Description:
-        The function will return the projects that a sample could belongs to.
+        The function will return the samples projects that a sample could has.
     Variables:
         sample_projects # list containing the sample projects defined in database
     Return:
         sample_projects.
     '''
     sample_projects = []
-    if PatientProjects.objects.filter(apps_name__exact = app_name).exists():
-        s_projects = PatientProjects.objects.filter(apps_name__exact = app_name)
+    if SampleProjects.objects.filter(apps_name__exact = app_name).exists():
+        s_projects = SampleProjects.objects.filter(apps_name__exact = app_name)
         for s_project in s_projects:
             sample_projects.append(s_project.get_project_name())
     return sample_projects
+
+
+def get_defined_patient_projects(app_name):
+    '''
+    Description:
+        The function will return the patient projects that a patient could belongs to.
+    Variables:
+        patient_projects # list containing the patient projects defined in database
+    Return:
+        patient_projects.
+    '''
+    patient_projects = []
+    if PatientProjects.objects.filter(apps_name__exact = app_name).exists():
+        pat_projects = PatientProjects.objects.filter(apps_name__exact = app_name)
+        for pat_project in pat_projects:
+            patient_projects.append(pat_project.get_project_name())
+    return patient_projects
 
 def get_molecule_codeid_from_object(molecule_obj):
     return molecule_obj.get_molecule_code_id()

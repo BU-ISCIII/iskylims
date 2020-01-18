@@ -3,38 +3,42 @@ from django.contrib.auth.models import User
 import datetime
 from iSkyLIMS_core.core_config import COLLECTION_INDEX_KITS_DIRECTORY
 
+
+
+
+
 class Platform(models.Model):
-	platformName=models.CharField(max_length=20)
-	generatedat = models.DateTimeField(auto_now_add=True, null=True)
+    platformName=models.CharField(max_length=20)
+    generatedat = models.DateTimeField(auto_now_add=True, null=True)
 
-	def __str__ (self):
- 		return '%s' %(self.platformName)
+    def __str__ (self):
+ 	    return '%s' %(self.platformName)
 
-	def get_platform_name(self):
-		return '%s'  %(self.platformName)
+    def get_platform_name(self):
+        return '%s'  %(self.platformName)
 
 class LabEquipment (models.Model) :
-	platform = models.ForeignKey(Platform ,on_delete=models.CASCADE, null=True,blank=True)
-	equipmentName = models.CharField(max_length=255)
-	equipmentDescription = models.CharField(max_length=255,null=True,blank=True)
-	equipmentLocation = models.CharField(max_length=255,null=True,blank=True)
-	equipmentProvider = models.CharField(max_length=255,null=True,blank=True)
-	equipmentSerialNumber = models.CharField(max_length=255,null=True,blank=True)
-	equipmentState =  models.CharField(max_length=50,null=True,blank=True)
-	equipmentOperationStart = models.DateField(auto_now_add=False, null=True,blank=True)
-	equipmentOperationEnd = models.DateField(auto_now_add=False, null=True,blank=True)
-	equipmentNumberLanes = models.CharField(max_length= 5)
-	generatedat = models.DateTimeField(auto_now_add=True, null=True)
+    platform = models.ForeignKey(Platform ,on_delete=models.CASCADE, null=True,blank=True)
+    equipmentName = models.CharField(max_length=255)
+    equipmentDescription = models.CharField(max_length=255,null=True,blank=True)
+    equipmentLocation = models.CharField(max_length=255,null=True,blank=True)
+    equipmentProvider = models.CharField(max_length=255,null=True,blank=True)
+    equipmentSerialNumber = models.CharField(max_length=255,null=True,blank=True)
+    equipmentState =  models.CharField(max_length=50,null=True,blank=True)
+    equipmentOperationStart = models.DateField(auto_now_add=False, null=True,blank=True)
+    equipmentOperationEnd = models.DateField(auto_now_add=False, null=True,blank=True)
+    equipmentNumberLanes = models.CharField(max_length= 5)
+    generatedat = models.DateTimeField(auto_now_add=True, null=True)
 
-	def __str__ (self) :
-		return '%s' %(self.equipmentName)
+    def __str__ (self) :
+        return '%s' %(self.equipmentName)
 
 
-	def get_equipment_name(self):
-		return '%s'  %(self.equipmentName)
+    def get_equipment_name(self):
+        return '%s'  %(self.equipmentName)
 
-	def get_number_of_lanes(self):
-		return '%s' %(self.equipmentNumberLanes)
+    def get_number_of_lanes(self):
+        return '%s' %(self.equipmentNumberLanes)
 
 '''
 class Laboratory (models.Model):
@@ -429,14 +433,14 @@ class PatientCore (models.Model):
     objects = PatientCoreManager()
 
 
-class ProjectFieldValueManager (models.Manager):
+class PatientProjectFieldValueManager (models.Manager):
     def create_project_field_value (self, field_value):
         new_field_data = self.create(projectField_id = field_value['projectField_id'],
                 patientCore_id = field_value['patientCore_id'],
                 projectFieldValue = field_value['projectFieldValue'])
         return new_field_data
 
-class ProjectFieldValue (models.Model):
+class PatientProjectFieldValue (models.Model):
     patientCore_id = models.ForeignKey(
                     PatientCore,
                     on_delete= models.CASCADE, null = True, blank = True)
@@ -452,22 +456,85 @@ class ProjectFieldValue (models.Model):
     def get_field_value(self):
         return '%s' %(self.projectFieldValue)
 
-    objects = ProjectFieldValueManager()
+    objects = PatientProjectFieldValueManager()
 
 
-class SampleProjectBelongs(models.Model):
-    projectName = models.CharField(max_length=255)
-    projectManager = models.CharField(max_length=255, null = True, blank = True)
-    projectDescription = models.CharField(max_length=255, null = True, blank = True)
-    contactEmail = models.CharField(max_length=50, null = True, blank = True)
-    contactPhone = models.CharField(max_length=20, null = True, blank = True)
-    contactComments = models.CharField(max_length=255, null = True, blank = True)
+class SamplesProjectsOptionValues(models.Model):
+    orderedPosition = models.IntegerField(default = 1)
+    optionStringValue = models.CharField(max_length=40)
+    generated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__ (self):
-        return '%s' %(self.projectName)
+        return '%s' %(self.optionStringValue)
+
+    def get_option_value(self):
+        return '%s' %(self.optionStringValue)
+
+class SampleProjects (models.Model):
+    sampleProjectName = models.CharField(max_length = 255)
+    sampleProjectManager =  models.CharField(max_length=50, null = True, blank = True)
+    sampleProjectContact =  models.CharField(max_length=250, null = True, blank = True)
+    sampleProjectDescription =  models.CharField(max_length=255, null = True, blank = True)
+    apps_name = models.CharField(max_length = 255)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__ (self):
+        return '%s' %(self.sampleProjectName)
 
     def get_sample_project(self):
-        return '%s' %(self.projectName)
+        return '%s' %(self.sampleProjectName)
+
+
+
+class SampleProjectsFieldsManager(models.Manager) :
+    def create_project_fields (self, project_field_data):
+        new_project_field = self.create(patientProjects_id =project_field_data['project_id'], projectFieldName = project_field_data['Field name'],
+                    projectFieldDescription = project_field_data['Description'], projectFieldOrder = project_field_data['Order'],
+                    projectFieldUsed = project_field_data['Used'] )
+        return new_project_field
+
+class SampleProjectsFields (models.Model):
+    sampleProjects_id = models.ForeignKey(
+                SampleProjects,
+                on_delete= models.CASCADE, null = True, blank = True)
+    sampleProjectsOptionValues = models.ManyToManyField(SamplesProjectsOptionValues, blank = True)
+
+    sampleProjectFieldName = models.CharField(max_length=50)
+    projectFieldDescription = models.CharField(max_length= 400, null=True, blank=True)
+    sampleProjectFieldOrder = models.IntegerField()
+    sampleProjectFieldUsed = models.BooleanField()
+    sampleProjectFieldType = models.CharField(max_length = 20)
+    sampleProjectSearchable = models.BooleanField(default= False)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__ (self):
+        return '%s' %(self.projectFieldName)
+
+    def get_field_id (self):
+        return "%s"  %(self.id)
+
+    def get_field_name (self):
+        return "%s"  %(self.projectFieldName)
+
+    def get_description(self):
+        return '%s' %(self.projectFieldDescription)
+
+    def get_all_fields_info(self):
+        if self.projectFieldUsed :
+            used = 'Yes'
+        else:
+            used = 'No'
+        field_data = []
+        field_data.append(self.projectFieldName)
+
+        field_data.append(self.projectFieldOrder)
+        field_data.append(used)
+        field_data.append(self.projectFieldDescription)
+        return field_data
+
+    objects = PatientProjectsFieldsManager()
+
+
 
 class SamplesManager (models.Manager):
 
@@ -478,7 +545,6 @@ class SamplesManager (models.Manager):
             sample_data['samplesOrigin'] = SamplesOrigin.objects.get(originName__exact = sample_data['samplesOrigin'])
         else:
             sample_data['samplesOrigin'] = None
-        import pdb; pdb.set_trace()
         new_sample = self.create(sampleState = StatesForSample.objects.get(sampleStateName__exact = 'Defined'),
                             patientCore = sample_data['patient'],
                             samplesOrigin = sample_data['samplesOrigin'], projectPatient = sample_data['projectPatient'],
@@ -515,23 +581,21 @@ class Samples (models.Model):
 
     species = models.ForeignKey(
                 Species,
-                on_delete=models.CASCADE, null = True)
-    '''
-    projectBelongs = models.ForeignKey(
-                SampleProjectBelongs,
                 on_delete=models.CASCADE, null = True, blank = True)
-    '''
+
     projectPatient =  models.ForeignKey(
                 PatientProjects,
+                on_delete=models.CASCADE, null = True, blank = True)
+
+    sampleProject = models.ForeignKey(
+                SampleProjects,
                 on_delete=models.CASCADE, null = True, blank = True)
 
     sampleName = models.CharField(max_length=255, null = True)
     sampleLocation = models.CharField(max_length=255, null = True, blank = True)
     sampleEntryDate = models.DateTimeField(auto_now_add = False, null =True)
     uniqueSampleID = models.CharField(max_length=8, null = True)
-    #patientCodeName = models.CharField(max_length=255, null = True)
     sampleCodeID = models.CharField(max_length=60, null = True)
-    #reused = models.BooleanField(null = True, blank = True)
     numberOfReused = models.IntegerField(default=0)
     sequencingDate = models.DateTimeField(auto_now_add=False, null = True, blank = True)
     completedDate = models.DateTimeField(auto_now_add=False, null = True, blank = True)
@@ -653,6 +717,39 @@ class Samples (models.Model):
         self.save()
 
     objects = SamplesManager()
+
+
+
+
+
+class SampleProjectFieldValueManager (models.Manager):
+    def create_project_field_value (self, field_value):
+        new_field_data = self.create(sample_id = field_value['sample_id'],
+                sampleProjecttField_id = field_value['sampleProjecttField_id'],
+                sampleProjectFieldValue = field_value['sampleProjectFieldValue'])
+        return new_field_data
+
+class SampleProjectFieldValue (models.Model):
+    sample_id = models.ForeignKey(
+                    Samples,
+                    on_delete= models.CASCADE, null = True, blank = True)
+    sampleProjecttField_id = models.ForeignKey(
+            SampleProjectsFields,
+            on_delete= models.CASCADE, null = True)
+    sampleProjectFieldValue = models.CharField(max_length=255)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__ (self):
+        return '%s' %(self.projectFieldValue)
+
+    def get_field_value(self):
+        return '%s' %(self.projectFieldValue)
+
+    objects = SampleProjectFieldValueManager()
+
+
+
+
 
 class MoleculePreparationManager (models.Manager):
 
