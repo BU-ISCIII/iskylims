@@ -127,7 +127,7 @@ def add_result_data (request):
 
 @login_required
 def create_new_project(request):
-    defined_projects = get_defined_projects(__package__)
+    defined_projects = get_defined_patient_projects(__package__)
     if request.method == 'POST' and request.POST['action'] == 'addNewProject':
         new_project = create_patient_project(request.POST, __package__)
         if 'ERROR' in new_project:
@@ -540,6 +540,7 @@ def set_molecule_values(request):
     elif request.method == 'POST' and request.POST['action'] == 'addMoleculeParameters':
         added_molecule_protocol_parameters , sample_updated_list = add_molecule_protocol_parameters(request)
         # Update the clinic sample request state
+        import pdb; pdb.set_trace()
         for sample_updated in sample_updated_list:
             get_clinic_sample_obj_from_sample_id(sample_updated).set_state('Pending results')
 
