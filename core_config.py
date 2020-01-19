@@ -15,6 +15,7 @@ MAPPING_SAMPLE_FORM_TO_DDBB = [('Patient Code ID','p_code_id'), ('Sample Name', 
 HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION = ['Sample ID', 'Molecule type', 'Type of Extraction', 'Extraction date', 'Protocol to be used']
 HEADING_FOR_MOLECULE_ADDING_PARAMETERS = ['Molecule Code ID', 'Used Protocol', 'Lot Commercial Kit']
 
+
 #########
 ### Headings to confirm the sucessful recorded
 HEADING_CONFIRM_MOLECULE_RECORDED = ['Molecule Code ID', 'Used Protocol']
@@ -39,7 +40,7 @@ HEADING_FOR_MOLECULE_DEFINITION = ['Molecule CodeID', 'Molecule State','Extracti
 ### Headings used when defining the custom protocol parameters
 HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS = ['Parameter name', 'Order', 'Used', 'Min Value', 'Max Value', 'Description']
 
-
+HEADING_FOR_SAMPLE_PROJECT_FIELDS = ['Field name', 'Order', 'Used', 'Searchable','Field type', 'Option Values', 'Description']
 
 ################# PROJECT  SETTINGS #######################################
 ### Headings used when defining the custom project fields

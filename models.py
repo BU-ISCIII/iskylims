@@ -458,17 +458,12 @@ class PatientProjectFieldValue (models.Model):
 
     objects = PatientProjectFieldValueManager()
 
-
-class SamplesProjectsOptionValues(models.Model):
-    orderedPosition = models.IntegerField(default = 1)
-    optionStringValue = models.CharField(max_length=40)
-    generated_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__ (self):
-        return '%s' %(self.optionStringValue)
-
-    def get_option_value(self):
-        return '%s' %(self.optionStringValue)
+class SampleProjectsManager(models.Manager):
+    def create_sample_project(self, s_project_data):
+        new_sample_project = self.create(sampleProjectName = s_project_data['sampleProjectName'] ,
+                    sampleProjectManager = s_project_data['sampleProjectManager'], sampleProjectContact= s_project_data['sampleProjectContact'],
+                    sampleProjectDescription= s_project_data['sampleProjectDescription'], apps_name= s_project_data['apps_name'])
+        return new_sample_project
 
 class SampleProjects (models.Model):
     sampleProjectName = models.CharField(max_length = 255)
@@ -481,60 +476,98 @@ class SampleProjects (models.Model):
     def __str__ (self):
         return '%s' %(self.sampleProjectName)
 
-    def get_sample_project(self):
+    def get_id(self):
+        return '%s' %(self.pk)
+
+    def get_sample_project_name(self):
         return '%s' %(self.sampleProjectName)
 
+    def get_info_to_display (self):
+        s_project_info = []
+        s_project_info.append(self.pk)
+        s_project_info.append(self.sampleProjectName)
+        s_project_info.append(self.sampleProjectManager)
+        return s_project_info
+
+    objects = SampleProjectsManager()
 
 
 class SampleProjectsFieldsManager(models.Manager) :
-    def create_project_fields (self, project_field_data):
-        new_project_field = self.create(patientProjects_id =project_field_data['project_id'], projectFieldName = project_field_data['Field name'],
-                    projectFieldDescription = project_field_data['Description'], projectFieldOrder = project_field_data['Order'],
-                    projectFieldUsed = project_field_data['Used'] )
+    def create_sample_project_fields (self, project_field_data):
+        new_project_field = self.create(sampleProjects_id =project_field_data['sample_project_id'], sampleProjectFieldName = project_field_data['Field name'],
+                    sampleProjectFieldDescription = project_field_data['Description'], sampleProjectFieldOrder = project_field_data['Order'],
+                    sampleProjectFieldUsed = project_field_data['Used'] , sampleProjectFieldType = project_field_data['Field type'],
+                    sampleProjectSearchable = project_field_data['Searchable'], sampleProjectOptionList = project_field_data['Option Values'])
         return new_project_field
 
 class SampleProjectsFields (models.Model):
     sampleProjects_id = models.ForeignKey(
                 SampleProjects,
                 on_delete= models.CASCADE, null = True, blank = True)
-    sampleProjectsOptionValues = models.ManyToManyField(SamplesProjectsOptionValues, blank = True)
+    #sampleProjectsOptionValues = models.ManyToManyField(SamplesProjectsOptionValues, blank = True)
 
     sampleProjectFieldName = models.CharField(max_length=50)
-    projectFieldDescription = models.CharField(max_length= 400, null=True, blank=True)
+    sampleProjectFieldDescription = models.CharField(max_length= 400, null=True, blank=True)
     sampleProjectFieldOrder = models.IntegerField()
     sampleProjectFieldUsed = models.BooleanField()
     sampleProjectFieldType = models.CharField(max_length = 20)
+    sampleProjectOptionList = models.CharField(max_length = 255, null=True, blank=True)
     sampleProjectSearchable = models.BooleanField(default= False)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__ (self):
-        return '%s' %(self.projectFieldName)
+        return '%s' %(self.sampleProjectFieldName)
 
     def get_field_id (self):
         return "%s"  %(self.id)
 
     def get_field_name (self):
-        return "%s"  %(self.projectFieldName)
+        return "%s"  %(self.sampleProjectFieldName)
 
     def get_description(self):
-        return '%s' %(self.projectFieldDescription)
+        return '%s' %(self.sampleProjectFieldDescription)
 
-    def get_all_fields_info(self):
-        if self.projectFieldUsed :
+    def get_sample_project_fields_name(self):
+        if self.sampleProjectFieldUsed :
             used = 'Yes'
         else:
             used = 'No'
-        field_data = []
-        field_data.append(self.projectFieldName)
 
-        field_data.append(self.projectFieldOrder)
+        field_data = []
+        field_data.append(self.sampleProjectFieldName)
+
+        field_data.append(self.sampleProjectFieldOrder)
         field_data.append(used)
-        field_data.append(self.projectFieldDescription)
+        field_data.append(self.sampleProjectSearchable)
+        field_data.append(self.sampleProjectFieldType)
+        field_data.append(self.sampleProjectOptionList)
+        field_data.append(self.sampleProjectFieldDescription)
         return field_data
 
-    objects = PatientProjectsFieldsManager()
+    objects = SampleProjectsFieldsManager()
+'''
+class SamplesProjectsOptionValuesManager():
+    def create_sample_project_option_value (self, option_data):
+        new_sample_project_opt_value = self.create( sampleProjectField = option_data['sample_project_field_obj'],
+                    orderedPosition = option_data['position'], optionStringValue = option_data['value'])
+        return new_sample_project_opt_value
 
+class SamplesProjectsOptionValues(models.Model):
+    sampleProjectField = models.ForeignKey(
+                SampleProjectsFields,
+                on_delete = models.CASCADE, null = True, blank = True)
+    orderedPosition = models.IntegerField(default = 1)
+    optionStringValue = models.CharField(max_length=40)
+    generated_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__ (self):
+        return '%s' %(self.optionStringValue)
+
+    def get_option_value(self):
+        return '%s' %(self.optionStringValue)
+
+    objects = SamplesProjectsOptionValuesManager()
+'''
 
 class SamplesManager (models.Manager):
 

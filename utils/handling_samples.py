@@ -331,6 +331,25 @@ def check_if_sample_already_defined (sample_name,reg_user):
     else:
         return False
 
+def check_if_sample_project_id_exists(sample_project_id):
+    if SampleProjects.objects.filter(pk__exact = sample_project_id).exists():
+        return True
+    return False
+
+def check_if_sample_project_exists(sample_project, app_name):
+    '''
+    Description:
+        The function check if sample project name is defined in database.
+    Input:
+        sample_project:       sample project name
+        app_name :           # application name
+    Return:
+        False is sample project does not exists. True if sample project exists
+    '''
+    if SampleProjects.objects.filter(sampleProjectName__iexact = sample_project, apps_name__exact = app_name).exists():
+        return True
+    return False
+
 def check_empty_fields (row_data):
     for data in row_data:
         if data == '':
@@ -373,6 +392,47 @@ def create_empty_patient(p_code_id):
     patient_obj = PatientCore.objects.create_patient(patient_data)
 
     return patient_obj
+
+def create_new_sample_project(form_data, app_name):
+    '''
+    Description:
+        The function create sample project in database.
+    Input:
+        form_data:  Information collected in the user form
+        app_name    application name
+    Return:
+        patient_obj
+    '''
+    s_project_data = {}
+    form_fields = ['sampleProyectName', 'sampleProyectManager', 'sampleProyectManagerContact', 'description']
+    db_fields = ['sampleProjectName','sampleProjectManager', 'sampleProjectContact','sampleProjectDescription']
+    for i in range(len(form_fields)):
+        s_project_data[db_fields[i]] = form_data[form_fields[i]]
+    s_project_data['apps_name'] = app_name
+    new_sample_project = SampleProjects.objects.create_sample_project(s_project_data)
+
+    new_sample_project_id = new_sample_project.get_id()
+
+    return new_sample_project_id
+
+def define_table_for_sample_project_fields(sample_project_id):
+    '''
+    Description:
+        The function return a dictionary with the information to create the table
+        for defining the fields used in the sample project
+    Input:
+        sample_project_id # id  to get sample project information
+    Return:
+        sample_project_data
+    '''
+    sample_project_data = {}
+    sample_project_obj = SampleProjects.objects.get(pk__exact = sample_project_id)
+
+    sample_project_data['sample_project_name'] = sample_project_obj.get_sample_project_name()
+    sample_project_data['sample_project_id'] = sample_project_id
+    sample_project_data['heading'] = HEADING_FOR_SAMPLE_PROJECT_FIELDS
+    return sample_project_data
+
 
 def get_all_sample_information (sample_id , massive):
     sample_information = {}
@@ -462,6 +522,27 @@ def get_sample_origin ():
             sample_origin_places.append(samples_origin.get_name())
     return sample_origin_places
 
+def get_info_to_display_sample_projects (app_name):
+    '''
+    Description:
+        The function return a list with all defined sample projects that contains
+        molecule definition. This means to exclude any other protocol that their
+        parameters are not stored in iSkyLIMS_core.
+    Return:
+        protocol_list.
+    '''
+    info_s_projects = []
+    if SampleProjects.objects.filter(apps_name__exact = app_name).exists():
+        s_projects = SampleProjects.objects.filter(apps_name__exact = app_name)
+        for s_project in s_projects:
+            s_project_data = s_project.get_info_to_display()
+            if SampleProjectsFields.objects.filter(sampleProjects_id = s_project).exists():
+                s_project_data.append(True)
+            else:
+                s_project_data.append(False)
+            info_s_projects.append(s_project_data)
+    return info_s_projects
+
 
 def get_defined_sample_projects (app_name):
     '''
@@ -476,7 +557,7 @@ def get_defined_sample_projects (app_name):
     if SampleProjects.objects.filter(apps_name__exact = app_name).exists():
         s_projects = SampleProjects.objects.filter(apps_name__exact = app_name)
         for s_project in s_projects:
-            sample_projects.append(s_project.get_project_name())
+            sample_projects.append(s_project.get_sample_project_name())
     return sample_projects
 
 
@@ -964,6 +1045,44 @@ def search_samples(sample_name, user_name, sample_state, start_date, end_date ):
     for sample in sample_founds :
         sample_list.append(sample.get_info_for_searching())
     return sample_list
+
+
+def set_sample_project_fields (data_form):
+    sample_project_id = data_form['sample_project_id']
+    json_data = json.loads(data_form['table_data1'])
+    fields = HEADING_FOR_SAMPLE_PROJECT_FIELDS
+    import pdb; pdb.set_trace()
+    sample_project_obj = SampleProjects.objects.get(pk__exact = sample_project_id)
+
+    saved_fields = []
+    stored_fields = {}
+    for row_data in json_data:
+        if row_data[0] == '':
+            continue
+        s_p_fields = {}
+
+        s_p_fields['sample_project_id'] = sample_project_obj
+        for i in range(len(fields)):
+            s_p_fields[fields[i]] = row_data[i]
+
+        if row_data[fields.index('Field type')] == 'Option List':
+            option_list_values =  row_data[fields.index('Option Values')].split(',')
+            clean_value_list = []
+            for opt_value in option_list_values:
+                value = opt_value.strip()
+                if value != '':
+                    clean_value_list.append(value)
+
+            s_p_fields['Option Values'] =','.join(clean_value_list)
+        else:
+            s_p_fields['Option Values'] = ''
+        saved_fields.append(SampleProjectsFields.objects.create_sample_project_fields(s_p_fields).get_sample_project_fields_name())
+        import pdb; pdb.set_trace()
+    stored_fields['fields'] = saved_fields
+    stored_fields['heading'] = HEADING_FOR_SAMPLE_PROJECT_FIELDS
+    stored_fields['sample_project_name'] = sample_project_obj.get_sample_project_name()
+
+    return stored_fields
 
 def update_molecule_reused(sample_id, molecule_code_id):
     sample_obj = Samples.objects.get(pk__exact = sample_id)
