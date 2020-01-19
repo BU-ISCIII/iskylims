@@ -230,3 +230,7 @@ HEADING_FOR_CREATING_RUN = ['Library CodeID', 'Sample Name', 'Pool Name', 'Sampl
 HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_PAIREDEND = ['Unique_Sample_ID','Sample_Name','Sample_Plate','Sample_Well','Index_Plate_Well','I7_Index_ID','index','I5_Index_ID','index2','Sample_Project','Description', 'Base Space Library']
 
 HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD = ['Unique_Sample_ID','Sample_Name','Sample_Plate','Sample_Well','Index_Plate_Well','I7_Index_ID','index','Sample_Project','Description','Base Space Library']
+
+
+########## ERROR MESSAGES  #########################
+ERROR_SAMPLE_PROJECT_ALREADY_EXISTS = ['Sample Project is already defined']

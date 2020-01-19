@@ -3137,6 +3137,39 @@ def create_protocol (request):
     return render(request, 'iSkyLIMS_wetlab/createProtocol.html',{'defined_protocols': defined_protocols,
                         'defined_protocol_types':defined_protocol_types, 'other_protocol_list' :other_protocol_list})
 
+
+@login_required
+def create_sample_projects (request):
+    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+    if request.user.is_authenticated:
+        if not is_wetlab_manager(request):
+            return render (
+                request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':['You do not have enough privileges to see this page ',
+                            'Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+    # get the information of defined sample Projects
+    defined_samples_projects = get_info_to_display_sample_projects (__package__)
+
+    if request.method == 'POST' and request.POST['action'] == 'addNewSampleProject':
+        #import pdb; pdb.set_trace()
+        sample_project_name = request.POST['sampleProyectName']
+        #description = request.POST['description']
+
+        if check_if_sample_project_exists (sample_project_name, __package__):
+            error_message = ERROR_SAMPLE_PROJECT_ALREADY_EXISTS
+            import pdb; pdb.set_trace()
+            return render ( request,'iSkyLIMS_wetlab/createSampleProjects.html',{'defined_samples_projects': defined_samples_projects,
+                                    'error_message' : error_message})
+        new_sample_project_id = create_new_sample_project (request.POST, __package__)
+        new_defined_sample_project = sample_project_name
+        return render(request, 'iSkyLIMS_wetlab/createSampleProjects.html',{'defined_samples_projects': defined_samples_projects,
+                             'new_sample_project_id': new_sample_project_id, 'new_defined_sample_project' : new_defined_sample_project})
+
+    return render(request, 'iSkyLIMS_wetlab/createSampleProjects.html',{'defined_samples_projects': defined_samples_projects})
+
 @login_required
 def display_protocol (request, protocol_id):
     if not is_wetlab_manager(request):
@@ -3293,7 +3326,7 @@ def record_samples(request):
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
 
 @login_required
-def define_sample_projects (request):
+def define_sample_projects_fields (request, sample_project_id):
     ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
         if not is_wetlab_manager(request):
@@ -3305,25 +3338,22 @@ def define_sample_projects (request):
         #redirect to login webpage
         return redirect ('/accounts/login')
     # get the list of defined sample Projects
-    defined_samples_projects = get_defined_sample_projects (__package__)
+
+    if request.method == 'POST' and request.POST['action'] == 'defineSampleProjectFields':
+
+        sample_project_field_data = set_sample_project_fields(request.POST)
+
+        return render(request, 'iSkyLIMS_wetlab/defineProtocolParameters.html', {'sample_project_field_data':sample_project_field_data})
+
+    else:
+        if not check_if_sample_project_id_exists(sample_project_id):
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',
+                        {'content':['The requested Protocol does not exist',
+                            'Create the protocol name before assigning custom protocol parameters.']})
 
 
-    import pdb; pdb.set_trace()
-    if request.method == 'POST' and request.POST['action'] == 'addNewSampleProject':
-        #import pdb; pdb.set_trace()
-        new_protocol = request.POST['newSampleProjectName']
-        description = request.POST['description']
-
-        if check_if_protocol_exists (new_protocol, __package__):
-            return render ( request,'iSkyLIMS_wetlab/error_page.html',{'content':['Protocol Name ', new_protocol,
-                            'Already exists.']})
-        new_protocol_id = create_new_protocol(new_protocol, protocol_type, description, __package__)
-
-        return render(request, 'iSkyLIMS_wetlab/defineSampleProjects.html',{'defined_samples_projects': defined_samples_projects,
-                            'defined_protocol_types':defined_protocol_types, 'new_defined_protocol': new_protocol,
-                            'new_protocol_id':new_protocol_id,  'other_protocol_list' :other_protocol_list})
-
-    return render(request, 'iSkyLIMS_wetlab/defineSampleProjects.html',{'defined_samples_projects': defined_samples_projects})
+        sample_project_data = define_table_for_sample_project_fields(sample_project_id)
+        return render(request, 'iSkyLIMS_wetlab/defineSampleProjectFields.html', {'sample_project_data':sample_project_data})
 
 
 
