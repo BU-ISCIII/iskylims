@@ -321,7 +321,7 @@ def build_record_sample_form (app_name) :
     sample_information['species'] = get_species()
     sample_information['sample_origin'] = get_sample_origin()
     sample_information['sampleType'] = get_sample_type()
-    sample_information['sample_project'] = get_defined_projects (app_name)
+    sample_information['sample_project'] = get_defined_sample_projects (app_name)
     sample_information['sample_project'].insert(0,'None')
     return sample_information
 
