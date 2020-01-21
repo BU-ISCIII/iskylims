@@ -86,7 +86,7 @@
                        <tbody>
                         {% for  id, s_p_name, manager, add_field in defined_samples_projects %}
                             <tr>
-                                {% if add_par %}
+                                {% if add_field %}
                                     <td><a href="/wetlab/displaySampleProject={{id}}">{{s_p_name}}</a></td>
                                     <td>{{manager}}</td>
                                     <td>Fields already defined</td>

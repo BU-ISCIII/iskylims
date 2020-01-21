@@ -3160,7 +3160,6 @@ def create_sample_projects (request):
 
         if check_if_sample_project_exists (sample_project_name, __package__):
             error_message = ERROR_SAMPLE_PROJECT_ALREADY_EXISTS
-            import pdb; pdb.set_trace()
             return render ( request,'iSkyLIMS_wetlab/createSampleProjects.html',{'defined_samples_projects': defined_samples_projects,
                                     'error_message' : error_message})
         new_sample_project_id = create_new_sample_project (request.POST, __package__)
@@ -3169,6 +3168,15 @@ def create_sample_projects (request):
                              'new_sample_project_id': new_sample_project_id, 'new_defined_sample_project' : new_defined_sample_project})
 
     return render(request, 'iSkyLIMS_wetlab/createSampleProjects.html',{'defined_samples_projects': defined_samples_projects})
+
+@login_required
+def display_sample_project(request,sample_project_id):
+
+    samples_project_data = get_info_to_display_sample_project (sample_project_id)
+    if 'ERROR' in samples_project_data :
+        error_message = ERROR_SAMPLE_PROJECT_DOES_NOT_EXISTS
+        return render (request,'iSkyLIMS_wetlab/error_page.html', {'content': error_message })
+    return render(request, 'iSkyLIMS_wetlab/createSampleProjects.html',{'samples_project_data': samples_project_data})
 
 @login_required
 def display_protocol (request, protocol_id):
@@ -3269,10 +3277,11 @@ def record_samples(request):
     if request.method == 'POST' and request.POST['action'] == 'recordsample':
         sample_recorded = analyze_input_samples (request)
         # if no samples are in any of the options, displays the inital page
-        if (not 'valid_samples' in sample_recorded and not 'invalid_samples' in sample_recorded and not 'incomplete_samples' in sample_recorded) :
+        if (not 'defined_samples' in sample_recorded and not 'pre_defined_samples' in sample_recorded and not 'invalid_samples' in sample_recorded and not 'incomplete_samples' in sample_recorded) :
             sample_information = prepare_sample_input_table()
             return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
         else :
+            import pdb; pdb.set_trace()
             if 'sample_id_for_action' in sample_recorded :
                 sample_recorded.update(get_available_codeID_for_resequencing(sample_recorded))
             if 'incomplete_samples' in sample_recorded :

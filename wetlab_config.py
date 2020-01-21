@@ -234,3 +234,4 @@ HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD = ['Unique_Sample_ID','Samp
 
 ########## ERROR MESSAGES  #########################
 ERROR_SAMPLE_PROJECT_ALREADY_EXISTS = ['Sample Project is already defined']
+ERROR_SAMPLE_PROJECT_DOES_NOT_EXISTS = ['The Sample Project that you requested ', 'Does not exist']
