@@ -200,8 +200,8 @@ def get_project_field_values(project_id, patient_obj):
 
     p_fields_obj = PatientProjectsFields.objects.filter(patientProjects_id__pk = project_id).order_by('projectFieldOrder')
     for p_field in p_fields_obj:
-        if ProjectFieldValue.objects.filter(patientCore_id = patient_obj, projectField_id =  p_field).exists():
-            field_value = ProjectFieldValue.objects.get(patientCore_id = patient_obj, projectField_id =  p_field).get_field_value()
+        if PatientProjectFieldValue.objects.filter(patientCore_id = patient_obj, projectField_id =  p_field).exists():
+            field_value = PatientProjectFieldValue.objects.get(patientCore_id = patient_obj, projectField_id =  p_field).get_field_value()
         else:
             field_value = 'Not defined'
         project_field_values.append((p_field.get_field_name(), field_value) )

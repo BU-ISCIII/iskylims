@@ -37,7 +37,7 @@ class MoleculeParameterValueAdmin (admin.ModelAdmin):
     list_display = ('moleculeParameter_id', 'molecule_id','parameterValue')
 
 class SamplesAdmin(admin.ModelAdmin):
-    list_display = ('sampleCodeID', 'sampleState', 'samplesOrigin', 'sampleType', 'sampleUser', 'species','projectPatient', 'sampleName',
+    list_display = ('sampleCodeID', 'sampleState', 'samplesOrigin', 'sampleType', 'sampleUser', 'species','sampleProject', 'sampleName',
                     'sampleEntryDate', 'uniqueSampleID',  'numberOfReused','sequencingDate' )
 
 class SampleTypeAdmin(admin.ModelAdmin):

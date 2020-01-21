@@ -118,15 +118,24 @@ def add_molecule_protocol_parameters(request):
 def analyze_input_samples (request):
     '''
     Description:
-        The function will get the user information in the form.
-        For new samples, are recorded on database and included in valid_samples Variable
-        For already defined, no action is done on them and included in not_valid_samples.
+        The function will get the samples data that user filled in the form.
+        defined_samples are the samples that either has no sample project or for
+            the sample projects that no requires additional data
+        pre_definde_samples are the ones that requires additional Information
+        For already defined samples, no action are done on them and  they are included in not_valid_samples.
+        it will return a dictionary which contains the processed samples.
     Input:
         request
     Variables:
-         # list containing all laboratory names
+        defined_samples  # contains the list of sample in defined state
+        samples_continue  # samples id's from the samples in defined state
+        pre_defined_samples  # contains the list of sample in pre-defined state
+        pre_defined_samples_id  # samples id's from the samples in pre-defined state
+        invalid_samples     # samples that already exists on database
+        invalid_samples_id  # sample id's from the samples that already exists on database
+        incomplete_samples  # samples that contain missing information
     Return:
-        valid_samples, not_valid_samples.
+        sample_recorded # Dictionnary with all samples cases .
     '''
 
     na_json_data = json.loads(request.POST['table_data'])
@@ -134,12 +143,11 @@ def analyze_input_samples (request):
 
     sample_recorded = {}
 
-    valid_samples =[]
-    invalid_samples = []
-    invalid_samples_id =[]
-    sample_recorded['all_samples_valid'] = True
-    samples_continue = []
+    defined_samples, samples_continue  = [] , []
+    pre_defined_samples , pre_defined_samples_id = [] ,[]
+    invalid_samples , invalid_samples_id = [] ,[]
     incomplete_samples = []
+    sample_recorded['all_samples_defined'] = True
 
     reg_user = request.user.username
 
@@ -153,9 +161,13 @@ def analyze_input_samples (request):
 
             for i in range(len(heading_in_form)) :
                 sample_data[MAPPING_SAMPLE_FORM_TO_DDBB[i][1]] = row[i]
-            if  check_empty_fields(row):
+            optional_fields = []
+            for opt_field in OPTIONAL_SAMPLES_FIELDS:
+                optional_fields.append(HEADING_FOR_RECORD_SAMPLES.index(opt_field))
+            # check_empty_fields does not consider if the optional values are empty
+            if  check_empty_fields(row,optional_fields):
                 incomplete_samples.append(row)
-                sample_recorded['all_samples_valid'] = False
+                sample_recorded['all_samples_defined'] = False
                 continue
 
             ## Check if patient code  already exists on database, If not if will be created giving a sequencial dummy value
@@ -174,20 +186,30 @@ def analyze_input_samples (request):
             else:
                 last_unique_value = Samples.objects.exclude(uniqueSampleID__isnull = True).last().uniqueSampleID
                 sample_data['new_unique_value'] = increase_unique_value(last_unique_value)
-            import pdb; pdb.set_trace()
-
+            # set to Defined state the sample if not required to add more additional data
             if sample_data['project_service'] == 'None':
-                sample_data['projectPatient'] = None
+                sample_data['sampleProject'] = None
+                sample_data['sampleState'] = 'Defined'
             else:
-                sample_data['projectPatient'] = PatientProjects.objects.get(projectName__exact = sample_data['project_service'] )
-            #sample_data['projectBelongs'] = SampleProjectBelongs.objects.get(projectName__exact = sample_data['project_service'])
+                sample_data['sampleProject'] = SampleProjects.objects.get(sampleProjectName__exact = sample_data['project_service'] )
+                if SampleProjectFields.objects.filter(sampleProjects_id = sample_data['sampleProject']).exists():
+                    sample_data['sampleState'] = 'Defined'
+                else:
+                    sample_recorded['all_samples_defined'] = False
+                    sample_data['sampleState'] = 'Pre-Defined'
+
             #import pdb; pdb.set_trace()
             new_sample = Samples.objects.create_sample(sample_data)
-            valid_samples.append(new_sample.get_sample_definition_information())
-            samples_continue.append(new_sample.get_sample_id())
+            if sample_data['sampleState'] == 'Defined':
+                defined_samples.append(new_sample.get_sample_definition_information())
+                samples_continue.append(new_sample.get_sample_id())
+            else:
+                # select the samples that requires to add additional Information
+                pre_defined_samples.append(new_sample.get_sample_name())
+                pre_defined_samples_id.appent(new_sample.get_sample_id())
             #import pdb; pdb.set_trace()
         else: # get the invalid sample to displays information to user
-            sample_recorded['all_samples_valid'] = False
+            sample_recorded['all_samples_defined'] = False
             sample_id = Samples.objects.get(sampleName__exact = sample_name).get_sample_id()
             if not 'sample_id_for_action' in sample_recorded:
                 # get the first no valid sample to ask user for new action on the sample
@@ -197,15 +219,18 @@ def analyze_input_samples (request):
             else:
                 invalid_samples_id.append(sample_id)
                 invalid_samples.append(Samples.objects.get(sampleName__exact = sample_name).get_sample_definition_information())
-    if len(valid_samples) > 0 :
-        sample_recorded['valid_samples'] = valid_samples
+    if len(defined_samples) > 0 :
+        sample_recorded['defined_samples'] = defined_samples
     if len(invalid_samples) >0 :
         sample_recorded['invalid_samples'] = invalid_samples
         sample_recorded['invalid_samples_id'] = ','.join(invalid_samples_id)
     if len(incomplete_samples) >0 :
         sample_recorded['incomplete_samples'] = incomplete_samples
+    if len(pre_defined_samples) >0 :
+        sample_recorded['pre_defined_samples'] = pre_defined_samples
+        sample_recorded['pre_defined_samples_id'] = ','.join(pre_defined_samples_id)
 
-    if sample_recorded['all_samples_valid']:
+    if sample_recorded['all_samples_defined']:
         sample_recorded['samples_to_continue'] = ','.join(samples_continue)
     sample_recorded['heading'] = HEADING_FOR_DISPLAY_RECORDED_SAMPLES
     sample_recorded['valid_samples_ids'] = samples_continue
@@ -245,7 +270,8 @@ def analyze_input_molecules (request):
             continue
         sample_obj = Samples.objects.get(pk = int(samples[row_index]))
         #import pdb; pdb.set_trace()
-        if check_empty_fields(molecule_json_data[row_index]):
+        # check_empty_fields does not consider if the optional values are empty
+        if check_empty_fields(molecule_json_data[row_index],['']):
             incomplete_samples.append(molecule_json_data[row_index])
             incomplete_molecules_ids.append(int(samples[row_index]))
             #import pdb; pdb.set_trace()
@@ -350,9 +376,19 @@ def check_if_sample_project_exists(sample_project, app_name):
         return True
     return False
 
-def check_empty_fields (row_data):
-    for data in row_data:
-        if data == '':
+def check_empty_fields (row_data, optional_index):
+    '''
+    Description:
+        The function check if row_data contains empty values. If a empty field is defined as optional
+        it will be ignored.
+    Input:
+        row_data:       # data to be checked
+        optional_index :   # list with the index values that can be empty
+    Return:
+        False is all mandatory fields contain data. True if any of them are empty
+    '''
+    for i in range(len(row_data)):
+        if row_data[i] == '' and i not in optional_index:
             return True
     return False
 
@@ -522,14 +558,38 @@ def get_sample_origin ():
             sample_origin_places.append(samples_origin.get_name())
     return sample_origin_places
 
+def get_info_to_display_sample_project (sample_project_id):
+    '''
+    Description:
+        The function return the information for the requested sample project
+    Return:
+        info_s_project.
+    '''
+    info_s_project = {}
+    if SampleProjects.objects.filter(pk__exact = sample_project_id).exists():
+        sample_project_obj = SampleProjects.objects.get(pk__exact = sample_project_id)
+        # collect data from project
+        info_s_project['main_data'] = sample_project_obj.get_info_to_display()
+        import pdb; pdb.set_trace()
+        if SampleProjectsFields.objects.filter(sampleProjects_id = sample_project_obj).exists():
+            sample_project_fields = SampleProjectsFields.objects.filter(sampleProjects_id = sample_project_obj).order_by('sampleProjectFieldOrder')
+            s_project_fields_list = []
+            for sample_project_field in sample_project_fields:
+                s_project_fields_list.append(sample_project_field.get_sample_project_fields_name())
+            info_s_project['fields'] = s_project_fields_list
+        info_s_project['heading'] = HEADING_FOR_SAMPLE_PROJECT_FIELDS
+    else:
+        return 'ERROR'
+    import pdb; pdb.set_trace()
+    return info_s_project
+
+
 def get_info_to_display_sample_projects (app_name):
     '''
     Description:
-        The function return a list with all defined sample projects that contains
-        molecule definition. This means to exclude any other protocol that their
-        parameters are not stored in iSkyLIMS_core.
+        The function return a list with all defined sample projects.
     Return:
-        protocol_list.
+        info_s_projects.
     '''
     info_s_projects = []
     if SampleProjects.objects.filter(apps_name__exact = app_name).exists():
@@ -891,7 +951,8 @@ def record_molecules (request ):
         if not Samples.objects.filter(pk = int(samples[row_index])).exists():
             continue
         sample_obj = Samples.objects.get(pk = int(samples[row_index]))
-        if check_empty_fields(molecule_json_data[row_index]):
+        # check_empty_fields does not consider if the optional values are empty
+        if check_empty_fields(molecule_json_data[row_index],['']):
             incomplete_molecules.append(molecule_json_data[row_index])
             incomplete_molecules_ids.append(samples[row_index])
             continue

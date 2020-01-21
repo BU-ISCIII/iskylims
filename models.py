@@ -578,9 +578,9 @@ class SamplesManager (models.Manager):
             sample_data['samplesOrigin'] = SamplesOrigin.objects.get(originName__exact = sample_data['samplesOrigin'])
         else:
             sample_data['samplesOrigin'] = None
-        new_sample = self.create(sampleState = StatesForSample.objects.get(sampleStateName__exact = 'Defined'),
+        new_sample = self.create(sampleState = StatesForSample.objects.get(sampleStateName__exact = sample_data['sampleState']),
                             patientCore = sample_data['patient'],
-                            samplesOrigin = sample_data['samplesOrigin'], projectPatient = sample_data['projectPatient'],
+                            samplesOrigin = sample_data['samplesOrigin'], sampleProject = sample_data['sampleProject'],
                             sampleType = SampleType.objects.get(sampleType__exact = sample_data['sampleType']) ,
                             sampleUser = User.objects.get(username__exact = sample_data['user']),
                             sampleCodeID = sample_data['sample_id'] , sampleName =  sample_data['sampleName'],
@@ -615,11 +615,11 @@ class Samples (models.Model):
     species = models.ForeignKey(
                 Species,
                 on_delete=models.CASCADE, null = True, blank = True)
-
+    '''
     projectPatient =  models.ForeignKey(
                 PatientProjects,
                 on_delete=models.CASCADE, null = True, blank = True)
-
+    '''
     sampleProject = models.ForeignKey(
                 SampleProjects,
                 on_delete=models.CASCADE, null = True, blank = True)
