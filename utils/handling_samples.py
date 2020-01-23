@@ -126,6 +126,16 @@ def analyze_input_samples (request):
         it will return a dictionary which contains the processed samples.
     Input:
         request
+    Functions:
+        check_if_sample_already_defined : located at this file
+        check_empty_fields :            located at this file
+        check_patient_code_exists :     located at this file
+        create_empty_patient :          located at this file
+        increase_unique_value :         located at this file
+    Constants:
+        HEADING_FOR_DISPLAY_RECORDED_SAMPLES
+        HEADING_FOR_RECORD_SAMPLES
+        OPTIONAL_SAMPLES_FIELDS
     Variables:
         defined_samples  # contains the list of sample in defined state
         samples_continue  # samples id's from the samples in defined state
@@ -638,9 +648,26 @@ def get_defined_patient_projects(app_name):
     return patient_projects
 
 def get_molecule_codeid_from_object(molecule_obj):
+    '''
+    Description:
+        The function will return the molecule id form the object class.
+    Input:
+        molecule_obj : molecule object from where to get the molecule id
+    Return:
+        molecules_id.
+    '''
     return molecule_obj.get_molecule_code_id()
 
 def get_molecule_obj_from_sample(sample_obj):
+    '''
+    Description:
+        The function will return the molecule object that are assigned to the sample.
+        It returns '' if no molecule is assigned yet to the sample
+    Input:
+        sample_obj : sample object from where to get the molecule
+    Return:
+        molecules_obj.
+    '''
     if MoleculePreparation.objects.filter(sample = sample_obj).exists():
         molecules_obj = MoleculePreparation.objects.filter(sample = sample_obj)
         return molecules_obj
@@ -766,6 +793,14 @@ def get_sample_instance(sample_id, register_user):
     return
 
 def get_sample_obj_from_id(sample_id):
+    '''
+    Description:
+        The function will return the class object from id number of the class.
+    Input:
+        sample_id
+    Return:
+        sample_obj.
+    '''
     sample_obj = Samples.objects.get(pk__exact = sample_id)
     return sample_obj
 
@@ -999,6 +1034,43 @@ def record_molecules (request ):
 
     return molecules_recorded
 
+
+def prepare_sample_project_input_table (pre_defined_samples_id):
+    '''
+    Description:    The function collects the sample project fields for the samples in the input variable.
+            It return the fields heading of the sample project
+            In case that samples do not have the same project then it grouped store in database the new molecule and molecule_updated_list
+                    the sample state to Extracted molecule.
+    Input:
+        pre_defined_samples_id  # sample_id list to be processed
+    Variables:
+        molecule_information # dictionary which collects all info
+    Return:
+        molecules_recorded with the list of the recorded molecules and the heading to
+        display them
+    '''
+    sample_projects = {}
+    selected_sample_project = ''
+    sample_project_field_heading = []
+    updated_pre_defined_samples_id = []
+    pending_pre_defined_samples_id = []
+    for sample_id in pre_defined_samples_id:
+        sample_obj = get_sample_obj_from_id(sample_id)
+        s_project_obj = sample_obj.get_sample_project_obj()
+        if selected_sample_project == '':
+            selected_sample_project = s_project_obj.get_sample_project_name()
+            s_project_fields = SampleProjectFields.objects.filter(sampleProjects_id = s_project_obj).exclude(sampleProjectFieldUsed = None).order_by('sampleProjectFieldOrder')
+            for s_project_field in s_project_fields :
+                sample_project_field_heading.append(s_project_field.get_field_name())
+        if selected_sample_project == s_project_obj.get_sample_project_name():
+            updated_pre_defined_samples_id.append(sample_id)
+        else:
+            pending_pre_defined_samples_id.append(sample_id)
+    sample_projects['pre_defined_fields_heading'] = sample_project_field_heading
+    sample_projects['updated_pre_defined_samples_id'] = sample_project_field_heading
+    sample_projects['pending_pre_defined_samples_id'] = pending_pre_defined_samples_id
+    return sample_projects
+
 def get_info_for_reprocess_samples(sample_ids, sample_in_action):
     sample_recorded = {}
     invalid_samples = []
@@ -1146,6 +1218,15 @@ def set_sample_project_fields (data_form):
     return stored_fields
 
 def update_molecule_reused(sample_id, molecule_code_id):
+    '''
+    Description:    The function update the sample state to start reprocessing it and increments
+            the number of reused.
+    Input:
+        sample_id     # sample id
+        molecule_code_id # molecule id to be reprocessed
+    Return:
+        sample_obj #
+    '''
     sample_obj = Samples.objects.get(pk__exact = sample_id)
     try:
         molecule_obj = MoleculePreparation.objects.get(sample = sample_obj, moleculeCodeId__exact = molecule_code_id)
@@ -1156,6 +1237,14 @@ def update_molecule_reused(sample_id, molecule_code_id):
     return molecule_obj
 
 def update_sample_reused(reprocess_id):
+    '''
+    Description:    The function update the sample state to start reprocessing it and increments
+            the number of reused.
+    Input:
+        reprocess_id     # sample id to be reprocessed
+    Return:
+        sample_obj #
+    '''
     sample_obj = Samples.objects.get(pk__exact = reprocess_id)
     sample_obj.set_increase_reuse()
     sample_obj.set_state('Defined')

@@ -524,6 +524,9 @@ class SampleProjectsFields (models.Model):
     def get_field_name (self):
         return "%s"  %(self.sampleProjectFieldName)
 
+    def get_field_type (self):
+        return "%s"  %(self.sampleProjectFieldType)
+
     def get_description(self):
         return '%s' %(self.sampleProjectFieldDescription)
 
@@ -704,7 +707,6 @@ class Samples (models.Model):
     def get_sample_name (self):
         return '%s' %(self.sampleName)
 
-
     def get_sample_patient_code (self):
         return '%s' %(self.patientCore.get_patient_code())
 
@@ -735,6 +737,10 @@ class Samples (models.Model):
     def get_registered_sample (self):
         recordeddate=self.generated_at.strftime("%B %d, %Y")
         return '%s' %(recordeddate)
+
+
+    def get_sample_project_obj (self):
+        return self.sampleProject
 
     def get_unique_sample_id(self):
         return '%s' %(self.uniqueSampleID)
