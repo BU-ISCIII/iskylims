@@ -3,7 +3,26 @@ from iSkyLIMS_core.utils.handling_samples import *
 
 
 
-def get_available_codeID_for_resequencing(sample_recorded):
+def get_codeID_for_resequencing(sample_recorded):
+    '''
+    Description:
+        The function will get the already defined molecule and library preparation objects that
+        are related to the sample to allow user to choose the difference alternatives for
+        resequencing the sample
+        Return a dictionary with all available possibilities
+    Input:
+        sample_recorded : sample id
+    Functions:
+        get_sample_obj_from_id : located at iSkyLIMS_core/utils/handling_samples.py
+        get_molecule_obj_from_sample : located at iSkyLIMS_core/utils/handling_samples.py
+        get_molecule_codeid_from_object : located at iSkyLIMS_core/utils/handling_samples.py
+    Variables:
+        lib_prep_available # list all possibilities for library preparation
+        mol_lib_prep_available # list all possibilities for molecule
+    Return:
+        sample_recorded.
+    '''
+
     mol_lib_prep_available = {}
     lib_prep_available = ['New Library Preparation']
     mol_lib_prep_available['New Extraction'] =['']
@@ -27,6 +46,22 @@ def get_available_codeID_for_resequencing(sample_recorded):
     return sample_recorded
 
 def analyze_reprocess_data(json_data, reprocess_id, reg_user):
+    '''
+    Description:
+        The function will get the option of reprocessing sample and it updates the sample state for reprocessing.
+        In case that a new library preparation was required a new object is created.
+
+        Return a dictionary with all available possibilities
+    Input:
+        json_data       # data collected from the user
+        reprocess_id    # sample id to reprocess
+        reg_user        # register user
+    Functions:
+        update_sample_reused : located at iSkyLIMS_core/utils/handling_samples.py
+        update_molecule_reused : located at iSkyLIMS_core/utils/handling_samples.
+    Return:
+        True if user request were right, or Invalid options if user requests were wrong.
+    '''
     options = json_data[-3:]
 
     if "New Extraction" in options:

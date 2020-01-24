@@ -66,9 +66,91 @@
         </div> <!--// end row -->
     {% endif %}
 
-    {% if sample_recorded.pre_defined_samples %}
+    {% if sample_recorded.pre_defined_samples_id %}
+        <div class="row row-space-4 margin-b-4">
+            <div  class="col-sm-12" >
 
+                <div class="panel panel-default" >
+                    <div class="panel-heading"><h3>The following samples require additional information as requested by project.</h3></div>
+                    <div class="panel-body" >
+                        <br>
+                        <br><br>
+
+                        <form method="post" enctype="multipart/form-data" name="sampleprojectdata"  id="sampleprojectdata" class="form-horizontal well" style="min-height: 500px;">
+                            {% csrf_token %}
+
+                                <input type="hidden" name="action" value="sampleprojectdata"/>
+                                <input type="hidden" name="pending_pre_defined" value="{{sample_recorded.pending_pre_defined_samples_id}}"/>
+                                <input type="hidden" name="pre_defined_id" value="{{sample_recorded.updated_pre_defined_samples_id}}"/>
+                                <input type="hidden" name="pre_defined_samples" value="{{sample_recorded.pre_defined_samples_name}}"/>
+                                <div id="spreadsheet2"></div>
+
+                                <script>
+                                    var data2 = [{% for values in sample_recorded.pre_defined_sample_data %}
+                                            [{% for value in values %}'{{value}}',{% endfor %}],
+                                            {% endfor %}
+                                    ];
+
+
+
+                                    var table2 = jexcel(document.getElementById('spreadsheet2'), {
+                                    data:data2,
+                                    columns: [
+                                        { type: 'text', title:'Sample Name', width:150 , readOnly:true },
+                                        {% for name, type, options in sample_recorded.pre_defined_fields_heading_type %}
+                                            {% if type == 'Date' %}
+                                                { type: 'calendar', title:'{{name}}', width:150 },
+                                            {% elif type == 'Option List'%}
+
+                                                { type: 'dropdown', title:'{{name}}', width:150 , source: [{% for value in options %}"{{value}}",{% endfor %}] },
+                                            {% else %}
+                                                { type: 'text', title:'{{name}}', width:150 },
+                                            {% endif %}
+                                        {% endfor %}
+                                        ],
+                                        allowInsertColumn:false,
+                                        allowDeleteColumn:false,
+                                        allowRenameColumn:false,
+                                        csvFileName:'samples_projects_values',
+                                        minDimensions:[{{sample_recorded.pre_defined_fields_length}},{{sample_recorded.pre_defined_samples_length}}],
+                                    });
+                                </script>
+                            <br><br><br><br><br><br><br><br><br><br><br>
+                            <input type="button" value="Download Spreadsheet" onclick="$('#spreadsheet').jexcel('download')"/>
+                            <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                        </form>
+                        <script>
+                            $(document).ready(function () {
+                                $("#sampleprojectdata").submit(function (e) {
+                                    //stop submitting the form to see the disabled button effect
+                                    // e.preventDefault();
+                                    //disable the submit button
+                                    var table_data = $('#spreadsheet').jexcel('getData')
+                                    var data_json = JSON.stringify(table_data)
+                                    $("<input />").attr("type", "hidden")
+                                       .attr("name", "table_data")
+                                       .attr("value", data_json)
+                                       .appendTo("#sampleprojectdata");
+                                    $("#btnSubmit").attr("disabled", true);
+                                    return true;
+                                });
+                            });
+                        </script>
+
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+
+            </div> <!--// end col-sm-7  -->
+
+        </div> <!--// end row -->
     {% endif %}
+
+
+
+
+
+
+
     {% if sample_recorded.invalid_samples %}
         <div class="row row-space-2 margin-b-4">
             <div class="col-sm-11 col-sm-offset-1">
@@ -312,6 +394,8 @@
                         </div> <!--  end of scrolling  -->
 
                             <script>
+
+
                                 {% if sample_information.data %}
                                     var data = [{% for values in sample_information.data %}
                                     [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
@@ -336,7 +420,9 @@
                                     allowRenameColumn:false,
                                     csvFileName:'samples',
                                     minDimensions:[{{sample_information.table_size}},3],
+
                                 });
+
                             </script>
                         <br><br><br><br><br><br><br><br><br><br><br>
                         <br>
@@ -346,6 +432,7 @@
 
                     <script>
                         $(document).ready(function () {
+
                             $("#sampledefinition").submit(function (e) {
                                 //stop submitting the form to see the disabled button effect
                                 // e.preventDefault();

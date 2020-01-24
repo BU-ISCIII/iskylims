@@ -200,12 +200,13 @@ def collect_lib_prep_data_for_new_run(lib_prep_ids, paired):
 
 
 
-def update_sample_sheet(sample_sheet_data, lib_prep_ids) :
+def update_index_in_sample_sheet(sample_sheet_data, lib_prep_ids) :
     # check in index hve been changed to adapt them to base space.
     # if changes were made the reverte the changes in the sample sheet but
     # keep the changes in the sequencing in case the number of the adapter
     # is intencianality shorter to get increase te length reads
     for  index_lib in range(len(lib_prep_ids)):
+        import pdb; pdb.set_trace()
         lib_prep_obj = LibraryPreparation.objects.get(pk__exact = lib_prep_ids[index_lib])
         sample_sheet_data[lib_prep_ids[index_lib]]['I7_Index_ID'] = lib_prep_obj.get_i7_index()
         lib_prep_obj.update_i7_index(sample_sheet_data[lib_prep_ids[index_lib]]['index'])

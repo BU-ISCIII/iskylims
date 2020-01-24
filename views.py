@@ -196,7 +196,7 @@ def create_nextseq_run (request):
         run_info_values['runname']= run_name
         ## Get the list of the library kit used (libraryKit)
         used_libraries = []
-        list_libraries = BaseSpaceLibraryName.objects.order_by().values_list('libraryName', flat=True)
+        list_libraries = LibraryKit.objects.order_by().values_list('libraryName', flat=True)
         run_info_values['used_libraryKit'] =  list_libraries
 
         user_names = []
@@ -281,7 +281,7 @@ def create_nextseq_run (request):
             my_project = projects [p]
             my_name = user_name[p]
             my_libkit = library_kit[p]
-            library_kit_id = BaseSpaceLibraryName.objects.get(libraryName__exact = library_kit[p])
+            library_kit_id = LibraryKit.objects.get(libraryName__exact = library_kit[p])
             update_info_proj=Projects.objects.get(projectName = my_project)
             update_info_proj.libraryKit=project_index_kit[p]
             update_info_proj.baseSpaceFile=bs_file[project_index_kit[p]]
@@ -344,7 +344,7 @@ def add_basespace_library (request):
     basespace_library_information ={}
     basespace_library = []
 
-    basespace_library_objects = BaseSpaceLibraryName.objects.all()
+    basespace_library_objects = LibraryKit.objects.all()
     if len(basespace_library_objects) >0 :
         for l_kit in basespace_library_objects :
             basespace_library.append(l_kit.libraryName)
@@ -353,13 +353,13 @@ def add_basespace_library (request):
         new_basespace_library_name = request.POST['newBasespaceLibrary']
 
         ## Check that library kit is not already defined in database
-        if BaseSpaceLibraryName.objects.filter(libraryName__icontains = new_basespace_library_name).exists():
+        if LibraryKit.objects.filter(libraryName__icontains = new_basespace_library_name).exists():
             return render (request, 'iSkyLIMS_wetlab/error_page.html', {'content':['The Library Kit ', new_basespace_library_name, 'is already defined on the system']})
 
         basespace_library_information['new_basespace_library'] = new_basespace_library_name
         basespace_library.append(new_basespace_library_name)
         #save the new library on database
-        b_library = BaseSpaceLibraryName(libraryName= new_basespace_library_name)
+        b_library = LibraryKit(libraryName= new_basespace_library_name)
         b_library.save()
 
     basespace_library_information ['libraries'] = basespace_library
@@ -3274,20 +3274,36 @@ def pending_to_update(request):
 
 @login_required
 def record_samples(request):
+    '''
+    Functions :
+        analyze_input_samples  : located at iSkyLIMS_core/handling_samples.py
+        prepare_sample_input_table : located at iSkyLIMS_core/utils/handling_samples.py
+        get_codeID_for_resequencing : located at iSkyLIMS_wetlab/utils/sample_functions.py
+        prepare_sample_project_input_table :  located at iSkyLIMS_core/utils/handling_samples.py
+        analyze_reprocess_data  : located at iSkyLIMS_wetlab/utils/sample_functions.py
+        get_info_for_reprocess_samples : located at iSkyLIMS_core/utils/handling_samples.py
+    '''
     if request.method == 'POST' and request.POST['action'] == 'recordsample':
         sample_recorded = analyze_input_samples (request)
         # if no samples are in any of the options, displays the inital page
         if (not 'defined_samples' in sample_recorded and not 'pre_defined_samples' in sample_recorded and not 'invalid_samples' in sample_recorded and not 'incomplete_samples' in sample_recorded) :
             sample_information = prepare_sample_input_table()
             return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
-        else :
-            import pdb; pdb.set_trace()
-            if 'sample_id_for_action' in sample_recorded :
-                sample_recorded.update(get_available_codeID_for_resequencing(sample_recorded))
-            if 'incomplete_samples' in sample_recorded :
-                sample_recorded.update(prepare_sample_input_table())
-                sample_recorded['number_of_samples'] = len(sample_recorded['incomplete_samples'])
-            return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
+
+
+        if 'sample_id_for_action' in sample_recorded :
+            sample_recorded.update(get_codeID_for_resequencing(sample_recorded))
+        if 'incomplete_samples' in sample_recorded :
+            sample_recorded.update(prepare_sample_input_table())
+            sample_recorded['number_of_samples'] = len(sample_recorded['incomplete_samples'])
+
+        if 'pre_defined_samples_id' in sample_recorded:
+
+            sample_recorded.update(prepare_sample_project_input_table(sample_recorded['pre_defined_samples_id']))
+        return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
+
+
+
     elif request.method == 'POST' and request.POST['action'] == 'reprocessSamples':
         samples = {}
 
@@ -3301,7 +3317,7 @@ def record_samples(request):
             sample_recorded = get_info_for_reprocess_samples(to_be_reprocessed_ids, reprocess_id)
             sample_recorded['invalid_samples_id'] = request.POST['invalidSamplesID']
             sample_recorded['sample_id_for_action'] = reprocess_id
-            sample_recorded.update(get_available_codeID_for_resequencing(sample_recorded))
+            sample_recorded.update(get_codeID_for_resequencing(sample_recorded))
             sample_recorded['reprocess_result'] = 'False'
         else:
             if to_be_reprocessed_ids[0] == '':
@@ -3312,7 +3328,7 @@ def record_samples(request):
                 sample_processed_id = to_be_reprocessed_ids.pop()
                 sample_recorded['invalid_samples_id'] = ','.join(to_be_reprocessed_ids)
                 sample_recorded['sample_id_for_action'] = next_to_be_process_id
-                sample_recorded.update(get_available_codeID_for_resequencing(sample_recorded))
+                sample_recorded.update(get_codeID_for_resequencing(sample_recorded))
                 sample_recorded['reprocess_result'] = 'True'
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
 
@@ -3330,6 +3346,12 @@ def record_samples(request):
                     continue
 
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'reprocess_result':reprocess_result})
+    elif request.method == 'POST' and request.POST['action'] == 'reprocessSamples':
+        pass
+
+
+
+
     else:
         sample_information = prepare_sample_input_table(__package__)
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
@@ -3812,9 +3834,11 @@ def create_new_run (request):
         center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
         center_requested_by = Center.objects.get(pk = center_requested_id)
         run_obj = RunProcess.objects.get(pk__exact = request.POST['run_process_id'])
-        run_obj.update_sample_sheet(run_data['sample_sheet'])
-        run_obj.set_run_state('Recorded')
         import pdb; pdb.set_trace()
+        # stop here to debug the function update_index_in_sample_sheet
+        run_obj.update_index_in_sample_sheet(run_data['sample_sheet'])
+        run_obj.set_run_state('Recorded')
+
         for items, values in run_data['projects_in_lib'].items():
             new_project = Projects.objects.create( runprocess_id= run_obj, user_id = request.user, projectName = items, libraryKit = 'nextera', baseSpaceFile = values)
             new_project.save()
