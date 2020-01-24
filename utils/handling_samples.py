@@ -197,16 +197,18 @@ def analyze_input_samples (request):
                 last_unique_value = Samples.objects.exclude(uniqueSampleID__isnull = True).last().uniqueSampleID
                 sample_data['new_unique_value'] = increase_unique_value(last_unique_value)
             # set to Defined state the sample if not required to add more additional data
+
             if sample_data['project_service'] == 'None':
                 sample_data['sampleProject'] = None
                 sample_data['sampleState'] = 'Defined'
             else:
                 sample_data['sampleProject'] = SampleProjects.objects.get(sampleProjectName__exact = sample_data['project_service'] )
-                if SampleProjectFields.objects.filter(sampleProjects_id = sample_data['sampleProject']).exists():
-                    sample_data['sampleState'] = 'Defined'
-                else:
+                if SampleProjectsFields.objects.filter(sampleProjects_id = sample_data['sampleProject']).exists():
                     sample_recorded['all_samples_defined'] = False
                     sample_data['sampleState'] = 'Pre-Defined'
+
+                else:
+                    sample_data['sampleState'] = 'Defined'
 
             #import pdb; pdb.set_trace()
             new_sample = Samples.objects.create_sample(sample_data)
@@ -216,7 +218,7 @@ def analyze_input_samples (request):
             else:
                 # select the samples that requires to add additional Information
                 pre_defined_samples.append(new_sample.get_sample_name())
-                pre_defined_samples_id.appent(new_sample.get_sample_id())
+                pre_defined_samples_id.append(new_sample.get_sample_id())
             #import pdb; pdb.set_trace()
         else: # get the invalid sample to displays information to user
             sample_recorded['all_samples_defined'] = False
@@ -229,6 +231,7 @@ def analyze_input_samples (request):
             else:
                 invalid_samples_id.append(sample_id)
                 invalid_samples.append(Samples.objects.get(sampleName__exact = sample_name).get_sample_definition_information())
+
     if len(defined_samples) > 0 :
         sample_recorded['defined_samples'] = defined_samples
     if len(invalid_samples) >0 :
@@ -238,7 +241,7 @@ def analyze_input_samples (request):
         sample_recorded['incomplete_samples'] = incomplete_samples
     if len(pre_defined_samples) >0 :
         sample_recorded['pre_defined_samples'] = pre_defined_samples
-        sample_recorded['pre_defined_samples_id'] = ','.join(pre_defined_samples_id)
+        sample_recorded['pre_defined_samples_id'] = pre_defined_samples_id
 
     if sample_recorded['all_samples_defined']:
         sample_recorded['samples_to_continue'] = ','.join(samples_continue)
@@ -1054,21 +1057,38 @@ def prepare_sample_project_input_table (pre_defined_samples_id):
     sample_project_field_heading = []
     updated_pre_defined_samples_id = []
     pending_pre_defined_samples_id = []
+    sample_projects['pre_defined_sample_data'] = []
+    pre_defined_samples_name = []
     for sample_id in pre_defined_samples_id:
         sample_obj = get_sample_obj_from_id(sample_id)
         s_project_obj = sample_obj.get_sample_project_obj()
         if selected_sample_project == '':
             selected_sample_project = s_project_obj.get_sample_project_name()
-            s_project_fields = SampleProjectFields.objects.filter(sampleProjects_id = s_project_obj).exclude(sampleProjectFieldUsed = None).order_by('sampleProjectFieldOrder')
+            s_project_fields = SampleProjectsFields.objects.filter(sampleProjects_id = s_project_obj).exclude(sampleProjectFieldUsed = None).order_by('sampleProjectFieldOrder')
             for s_project_field in s_project_fields :
-                sample_project_field_heading.append(s_project_field.get_field_name())
+                heading_item = []
+                heading_item.append(s_project_field.get_field_name())
+                heading_item.append(s_project_field.get_field_type())
+                heading_item.append(s_project_field.get_field_option_list().split(','))
+                sample_project_field_heading.append(heading_item)
+            heading_length = len(sample_project_field_heading)
+        #import pdb; pdb.set_trace()
         if selected_sample_project == s_project_obj.get_sample_project_name():
             updated_pre_defined_samples_id.append(sample_id)
+            data = ['']*(heading_length +1)
+            sample_name = sample_obj.get_sample_name()
+            data[0] = sample_name
+            pre_defined_samples_name.append(sample_name)
+            sample_projects['pre_defined_sample_data'].append(data)
         else:
             pending_pre_defined_samples_id.append(sample_id)
-    sample_projects['pre_defined_fields_heading'] = sample_project_field_heading
-    sample_projects['updated_pre_defined_samples_id'] = sample_project_field_heading
-    sample_projects['pending_pre_defined_samples_id'] = pending_pre_defined_samples_id
+
+    sample_projects['updated_pre_defined_samples_id'] = ','.join(updated_pre_defined_samples_id)
+    sample_projects['pending_pre_defined_samples_id'] = ','.join(pending_pre_defined_samples_id)
+    sample_projects['pre_defined_fields_heading_type'] = sample_project_field_heading
+    sample_projects['pre_defined_fields_length'] =  heading_length + 1
+    sample_projects['pre_defined_samples_length'] =  len(updated_pre_defined_samples_id)
+    sample_projects['pre_defined_samples_name'] = ','.join(pre_defined_samples_name)
     return sample_projects
 
 def get_info_for_reprocess_samples(sample_ids, sample_in_action):

@@ -521,6 +521,9 @@ class SampleProjectsFields (models.Model):
     def get_field_id (self):
         return "%s"  %(self.id)
 
+    def get_field_option_list (self):
+        return "%s"  %(self.sampleProjectOptionList)
+
     def get_field_name (self):
         return "%s"  %(self.sampleProjectFieldName)
 
@@ -618,11 +621,7 @@ class Samples (models.Model):
     species = models.ForeignKey(
                 Species,
                 on_delete=models.CASCADE, null = True, blank = True)
-    '''
-    projectPatient =  models.ForeignKey(
-                PatientProjects,
-                on_delete=models.CASCADE, null = True, blank = True)
-    '''
+
     sampleProject = models.ForeignKey(
                 SampleProjects,
                 on_delete=models.CASCADE, null = True, blank = True)
@@ -702,7 +701,7 @@ class Samples (models.Model):
         return '%s' %(self.sampleCodeID)
 
     def get_sample_id(self):
-        return '%s' %(self.id)
+        return '%s' %(self.pk)
 
     def get_sample_name (self):
         return '%s' %(self.sampleName)
@@ -718,6 +717,7 @@ class Samples (models.Model):
 
     def get_sample_patient_obj(self):
         return self.patientCore
+
 
     def get_sample_state(self):
         return '%s' %(self.sampleState)
@@ -761,14 +761,14 @@ class Samples (models.Model):
 
 
 
-class SampleProjectFieldValueManager (models.Manager):
+class SampleProjectsFieldsValueManager (models.Manager):
     def create_project_field_value (self, field_value):
         new_field_data = self.create(sample_id = field_value['sample_id'],
                 sampleProjecttField_id = field_value['sampleProjecttField_id'],
                 sampleProjectFieldValue = field_value['sampleProjectFieldValue'])
         return new_field_data
 
-class SampleProjectFieldValue (models.Model):
+class SampleProjectsFieldsValue (models.Model):
     sample_id = models.ForeignKey(
                     Samples,
                     on_delete= models.CASCADE, null = True, blank = True)
@@ -784,7 +784,7 @@ class SampleProjectFieldValue (models.Model):
     def get_field_value(self):
         return '%s' %(self.projectFieldValue)
 
-    objects = SampleProjectFieldValueManager()
+    objects = SampleProjectsFieldsValueManager()
 
 
 
