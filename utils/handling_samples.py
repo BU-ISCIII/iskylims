@@ -231,12 +231,26 @@ def analyze_input_samples (request):
             else:
                 invalid_samples_id.append(sample_id)
                 invalid_samples.append(Samples.objects.get(sampleName__exact = sample_name).get_sample_definition_information())
-
+    ## Add already recorded sample in Pre-defined that were not processed because incomplete informatio in samples
+    if 'pre_defined_id' in request.POST:
+        old_pre_defined_list = request.POST['pre_defined_id'].split(',')
+        for old_pre_defined in old_pre_defined_list :
+            sample_obj = get_sample_obj_from_id(old_pre_defined)
+            pre_defined_samples.append(sample_obj.get_sample_name())
+            pre_defined_samples_id.append(old_pre_defined)
+    if 'pending_pre_defined' in request.POST:
+        old_pending_pre_defined_list = request.POST['pending_pre_defined'].split(',')
+        for old_pending_pre_defined in old_pending_pre_defined_list :
+            sample_obj = get_sample_obj_from_id(old_pending_pre_defined)
+            pre_defined_samples.append(sample_obj.get_sample_name())
+            pre_defined_samples_id.append(old_pending_pre_defined)
+    ##   collect data into sample_recorded
     if len(defined_samples) > 0 :
         sample_recorded['defined_samples'] = defined_samples
     if len(invalid_samples) >0 :
         sample_recorded['invalid_samples'] = invalid_samples
         sample_recorded['invalid_samples_id'] = ','.join(invalid_samples_id)
+        sample_recorded['invalid_heading'] = HEADING_FOR_DISPLAY_RECORDED_SAMPLES
     if len(incomplete_samples) >0 :
         sample_recorded['incomplete_samples'] = incomplete_samples
     if len(pre_defined_samples) >0 :
@@ -245,7 +259,7 @@ def analyze_input_samples (request):
 
     if sample_recorded['all_samples_defined']:
         sample_recorded['samples_to_continue'] = ','.join(samples_continue)
-    sample_recorded['heading'] = HEADING_FOR_DISPLAY_RECORDED_SAMPLES
+    sample_recorded['recorded_sample_heading'] = HEADING_FOR_DISPLAY_RECORDED_SAMPLES
     sample_recorded['valid_samples_ids'] = samples_continue
     return sample_recorded
 
@@ -338,6 +352,43 @@ def analyze_input_molecules (request):
     molecule_recorded['heading_in_excel'] = ','.join(parameter_list)
     #import pdb; pdb.set_trace()
     return molecule_recorded
+
+
+def analyze_input_sample_project_fields (form_data):
+    '''
+    Description:
+        The function analyze the user data to assign values to the sample project field.
+
+
+    Input:
+        form_data
+    Functions:
+        get_sample_obj_from_id   : located at this file
+
+    Return:
+        sample_to_display.
+    '''
+    sample_recorded = {}
+    field_value_json_data = json.loads(form_data['table_data'])
+    samples_name = form_data['pre_defined_samples'].split(',')
+    samples_ids = form_data['pre_defined_id'].split(',')
+    pending_ids = form_data['pending_pre_defined'].split(',')
+    heading_list = form_data['pre_defined_heading'].split(',')
+    sample_to_display = []
+    for i in range(len(samples_ids)):
+        right_id = samples_ids[samples_name.index(field_value_json_data[i][0])]
+        sample_obj = get_sample_obj_from_id(right_id)
+        sample_project_obj = sample_obj.get_sample_project_obj()
+        for j in range(len(heading_list)):
+            sample_project_field = SampleProjectsFields.objects.get(sampleProjects_id = sample_project_obj, sampleProjectFieldName__exact = heading_list[j])
+            field_value = {}
+            field_value['sample_id'] = sample_obj
+            field_value['sampleProjecttField_id'] = sample_project_field
+            field_value['sampleProjectFieldValue'] = field_value_json_data[i][j+1]
+            new_sample_project_f_value = SampleProjectsFieldsValue.objects.create_project_field_value(field_value)
+        sample_to_display.append([field_value_json_data[i][0], right_id])
+    sample_recorded['display_samples'] = sample_to_display
+    return sample_recorded
 
 def build_record_sample_form (app_name) :
     '''
@@ -1057,6 +1108,7 @@ def prepare_sample_project_input_table (pre_defined_samples_id):
     sample_project_field_heading = []
     updated_pre_defined_samples_id = []
     pending_pre_defined_samples_id = []
+    only_field_heading_name = []
     sample_projects['pre_defined_sample_data'] = []
     pre_defined_samples_name = []
     for sample_id in pre_defined_samples_id:
@@ -1071,6 +1123,7 @@ def prepare_sample_project_input_table (pre_defined_samples_id):
                 heading_item.append(s_project_field.get_field_type())
                 heading_item.append(s_project_field.get_field_option_list().split(','))
                 sample_project_field_heading.append(heading_item)
+                only_field_heading_name.append(s_project_field.get_field_name())
             heading_length = len(sample_project_field_heading)
         #import pdb; pdb.set_trace()
         if selected_sample_project == s_project_obj.get_sample_project_name():
@@ -1086,6 +1139,7 @@ def prepare_sample_project_input_table (pre_defined_samples_id):
     sample_projects['updated_pre_defined_samples_id'] = ','.join(updated_pre_defined_samples_id)
     sample_projects['pending_pre_defined_samples_id'] = ','.join(pending_pre_defined_samples_id)
     sample_projects['pre_defined_fields_heading_type'] = sample_project_field_heading
+    sample_projects['pre_defined_fields_heading_list'] = ','.join(only_field_heading_name)
     sample_projects['pre_defined_fields_length'] =  heading_length + 1
     sample_projects['pre_defined_samples_length'] =  len(updated_pre_defined_samples_id)
     sample_projects['pre_defined_samples_name'] = ','.join(pre_defined_samples_name)
