@@ -27,7 +27,7 @@ urlpatterns = [
     path('defineProtocolParameters=<int:protocol_id>', views.define_protocol_parameters, name = 'define_protocol_parameters'),
     path('defineSampleProjectFields=<int:sample_project_id>', views.define_sample_projects_fields, name = 'define_sample_projects_fields'),
     path('DisplayCollectionIndex=<int:collection_index_id>/', views.display_collection_index, name= 'display_collection_index'),
-    path('displayLibSample=<int:sample_id>/', views.display_libSample, name = 'display_libSample'),
+    path('displaySample=<int:sample_id>/', views.display_sample, name = 'display_sample'),
     path('displayProject=<int:project_id>/', views.display_project, name='display_project'),
     path('displayProtocol=<int:protocol_id>', views.display_protocol, name = 'display_protocol'),
     path('displayRun=<int:run_id>/', views.display_run, name='display_run'),

@@ -1111,7 +1111,7 @@ def display_project (request, project_id):
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the project  ' ]})
 
 @login_required
-def display_sample (request, sample_id):
+def display_sample_project (request, sample_project_id):
     '''
     Description:
         The function will check if the requested sample id exists, then
@@ -1130,9 +1130,8 @@ def display_sample (request, sample_id):
         -- Error page in case the sample id in the request does not exists.
         -- sample_data_information with the information collected by get_info_sample()
     '''
-
-    if (SamplesInProject.objects.filter(pk=sample_id).exists()):
-        sample_found_id = SamplesInProject.objects.get(pk=sample_id)
+    if (SamplesInProject.objects.filter(pk=sample_project_id).exists()):
+        sample_found_id = SamplesInProject.objects.get(pk=sample_project_id)
         sample_data_information = get_info_sample (sample_found_id)
         return render(request, 'iSkyLIMS_wetlab/SearchSample.html',{'display_one_sample': sample_data_information })
     else:
@@ -3168,7 +3167,7 @@ def create_sample_projects (request):
                              'new_sample_project_id': new_sample_project_id, 'new_defined_sample_project' : new_defined_sample_project})
 
     return render(request, 'iSkyLIMS_wetlab/createSampleProjects.html',{'defined_samples_projects': defined_samples_projects})
-
+'''
 @login_required
 def display_sample_project(request,sample_project_id):
 
@@ -3176,8 +3175,8 @@ def display_sample_project(request,sample_project_id):
     if 'ERROR' in samples_project_data :
         error_message = ERROR_SAMPLE_PROJECT_DOES_NOT_EXISTS
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content': error_message })
-    return render(request, 'iSkyLIMS_wetlab/createSampleProjects.html',{'samples_project_data': samples_project_data})
-
+    return render(request, 'iSkyLIMS_wetlab/displaySampleProject.html',{'samples_project_data': samples_project_data})
+'''
 @login_required
 def display_protocol (request, protocol_id):
     if not is_wetlab_manager(request):
@@ -3277,33 +3276,33 @@ def record_samples(request):
     '''
     Functions :
         analyze_input_samples  : located at iSkyLIMS_core/handling_samples.py
+        analyze_input_sample_project_fields  : located at iSkyLIMS_core/handling_samples.py
         prepare_sample_input_table : located at iSkyLIMS_core/utils/handling_samples.py
         get_codeID_for_resequencing : located at iSkyLIMS_wetlab/utils/sample_functions.py
         prepare_sample_project_input_table :  located at iSkyLIMS_core/utils/handling_samples.py
         analyze_reprocess_data  : located at iSkyLIMS_wetlab/utils/sample_functions.py
         get_info_for_reprocess_samples : located at iSkyLIMS_core/utils/handling_samples.py
     '''
+    ## Record new samples
     if request.method == 'POST' and request.POST['action'] == 'recordsample':
         sample_recorded = analyze_input_samples (request)
         # if no samples are in any of the options, displays the inital page
         if (not 'defined_samples' in sample_recorded and not 'pre_defined_samples' in sample_recorded and not 'invalid_samples' in sample_recorded and not 'incomplete_samples' in sample_recorded) :
-            sample_information = prepare_sample_input_table()
+            sample_information = prepare_sample_input_table(__package__)
             return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
-
 
         if 'sample_id_for_action' in sample_recorded :
             sample_recorded.update(get_codeID_for_resequencing(sample_recorded))
         if 'incomplete_samples' in sample_recorded :
-            sample_recorded.update(prepare_sample_input_table())
+            sample_recorded.update(prepare_sample_input_table(__package__))
             sample_recorded['number_of_samples'] = len(sample_recorded['incomplete_samples'])
-
         if 'pre_defined_samples_id' in sample_recorded:
-
             sample_recorded.update(prepare_sample_project_input_table(sample_recorded['pre_defined_samples_id']))
+
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
 
 
-
+    ## Request to reprocess the samples
     elif request.method == 'POST' and request.POST['action'] == 'reprocessSamples':
         samples = {}
 
@@ -3346,12 +3345,18 @@ def record_samples(request):
                     continue
 
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'reprocess_result':reprocess_result})
-    elif request.method == 'POST' and request.POST['action'] == 'reprocessSamples':
-        pass
 
+    ## Add the additional information related to the project
+    elif request.method == 'POST' and request.POST['action'] == 'sampleprojectdata':
+        sample_recorded = analyze_input_sample_project_fields(request.POST)
+        
+        if request.POST['pending_pre_defined'] != '':
+            sample_recorded.update(prepare_sample_project_input_table(request.POST['pending_pre_defined']))
+            return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
+        else:
+            return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
 
-
-
+    ## Form to get the new samples
     else:
         sample_information = prepare_sample_input_table(__package__)
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
@@ -3391,13 +3396,13 @@ def define_sample_projects_fields (request, sample_project_id):
 
 
 @login_required
-def display_libSample (request, sample_id):
+def display_sample (request, sample_id):
     sample_information = get_all_sample_information(sample_id, True)
     if 'Error' in sample_information:
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No Sample was found']})
     sample_information.update(get_all_library_information(sample_id))
 
-    return render(request, 'iSkyLIMS_wetlab/displayLibSample.html',{'sample_information':sample_information})
+    return render(request, 'iSkyLIMS_wetlab/displaySample.html',{'sample_information':sample_information})
 
 
 @login_required
