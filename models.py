@@ -779,10 +779,10 @@ class SampleProjectsFieldsValue (models.Model):
     generated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__ (self):
-        return '%s' %(self.projectFieldValue)
+        return '%s' %(self.sampleProjectFieldValue)
 
     def get_field_value(self):
-        return '%s' %(self.projectFieldValue)
+        return '%s' %(self.sampleProjectFieldValue)
 
     objects = SampleProjectsFieldsValueManager()
 

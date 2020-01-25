@@ -8,6 +8,8 @@ HEADING_FOR_RECORD_SAMPLES = [ 'Patient Code ID', 'Sample Name', 'Sample Origin'
 
 HEADING_FOR_DISPLAY_RECORDED_SAMPLES = ['Unique Sample ID', 'Sample CodeID', 'Sample Name', 'Date for entry in Lab', 'Type of Sample']
 
+HEADING_FOR_COMPLETION_SAMPLES_PRE_DEFINED = ['Date sample extraction' , 'Sample CodeID', 'Sample name']
+
 MAPPING_SAMPLE_FORM_TO_DDBB = [('Patient Code ID','p_code_id'), ('Sample Name', 'sampleName'), ('Sample Origin', 'samplesOrigin'),
                 ('Type of Sample','sampleType'), ('Species', 'species'),('Project/Service', 'project_service'),('Date sample extraction', 'sampleEntryDate'),
                 ('Sample Storage Location', 'sampleLocation')]

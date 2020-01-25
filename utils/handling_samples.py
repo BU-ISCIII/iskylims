@@ -545,6 +545,20 @@ def get_all_sample_information (sample_id , massive):
     sample_obj = Samples.objects.get(pk__exact = sample_id)
     sample_information['sample_definition'] = sample_obj.get_info_for_display()
     sample_information['sample_definition_heading'] = HEADING_FOR_SAMPLE_DEFINITION
+    # get the sample project information fields
+    sample_project_obj = sample_obj.get_sample_project_obj()
+    if sample_project_obj != None:
+        sample_information['sample_project_name'] = sample_project_obj.get_sample_project_name()
+        if SampleProjectsFields.objects.filter(sampleProjects_id = sample_project_obj).exists():
+            sample_information['sample_project_field_heading'] = []
+            sample_information['sample_project_field_value'] = []
+            sample_project_fields = SampleProjectsFields.objects.filter(sampleProjects_id = sample_project_obj)
+            for s_p_field in sample_project_fields :
+                sample_information['sample_project_field_heading'].append(s_p_field.get_field_name())
+                field_value = SampleProjectsFieldsValue.objects.get(sample_id = sample_obj, sampleProjecttField_id = s_p_field ).get_field_value()
+                if s_p_field.get_field_type() == 'Date':
+                    field_value = field_value.replace(' 00:00:00','')
+                sample_information['sample_project_field_value'].append(field_value)
     # check if molecule information exists for the sample
     if MoleculePreparation.objects.filter(sample = sample_obj, usedForMassiveSequencing = massive).exists():
         molecules = MoleculePreparation.objects.filter(sample = sample_obj, usedForMassiveSequencing = massive)
@@ -894,6 +908,19 @@ def get_sample_states ():
             sample_states.append(state.get_sample_state())
     return sample_states
 
+def get_samples_in_state (state):
+    '''
+    Description:
+        The function returns a object list with the samples in the requested state.
+    Return:
+        sample_objs. False if no samples found in the requested state.
+    '''
+    if Samples.objects.filter(sampleState__sampleStateName__exact = state).exists():
+        sample_objs = Samples.objects.filter(sampleState__sampleStateName__exact = state)
+        return sample_objs
+    else:
+        return False
+
 def get_species ():
     '''
     Description:
@@ -1016,7 +1043,15 @@ def prepare_sample_input_table (app_name):
     s_information = build_record_sample_form(app_name)
     s_information['heading'] = HEADING_FOR_RECORD_SAMPLES
     s_information ['table_size']= len(HEADING_FOR_RECORD_SAMPLES)
+    sample_objs = get_samples_in_state('Pre-defined')
+    if sample_objs :
+        s_information['pre_defined_samples'] = []
+        s_information['pre_defined_heading'] = HEADING_FOR_COMPLETION_SAMPLES_PRE_DEFINED
+        for sample_obj in sample_objs :
+            s_information['pre_defined_samples'].append(sample_obj.get_info_in_defined_state())
+
     return s_information
+
 
 def record_molecules (request ):
     '''
@@ -1024,6 +1059,8 @@ def record_molecules (request ):
                     the sample state to Extracted molecule.
     Input:
         request
+    Functions:
+        check_empty_fields  : located at this file
     Variables:
         molecule_information # dictionary which collects all info
     Return:
