@@ -123,6 +123,28 @@ def get_defined_projects(app_name):
         project_data.append(p_data)
     return project_data
 
+def get_defined_patient_projects(app_name):
+    '''
+    Description:
+        The function will return the patient projects that a patient could belongs to.
+    Variables:
+        patient_projects # list containing the patient projects defined in database
+    Return:
+        patient_projects.
+    '''
+    patient_projects = []
+    if PatientProjects.objects.filter(apps_name__exact = app_name).exists():
+        pat_projects = PatientProjects.objects.filter(apps_name__exact = app_name)
+        for pat_project in pat_projects:
+            data = pat_project.get_patient_project_data()
+            if PatientProjectsFields.objects.filter(patientProjects_id = pat_project).exists():
+                data.append(True)
+            else:
+                data.append(False)
+            patient_projects.append(data)
+    return patient_projects
+
+
 def get_project_id(project_name, app_name):
     '''
     Description:

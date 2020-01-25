@@ -489,6 +489,14 @@ class SampleProjects (models.Model):
         s_project_info.append(self.sampleProjectManager)
         return s_project_info
 
+    def get_full_info_to_display (self):
+        s_project_info = []
+        s_project_info.append(self.sampleProjectName)
+        s_project_info.append(self.sampleProjectManager)
+        s_project_info.append(self.sampleProjectContact)
+        s_project_info.append(self.sampleProjectDescription)
+        return s_project_info
+
     objects = SampleProjectsManager()
 
 

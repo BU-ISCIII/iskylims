@@ -77,6 +77,6 @@ COLLECTION_INDEX_HEADING = ['[Version]','[Name]', '[PlateExtension]','[Settings]
 
 ###################### FIELDS NAME USED IN USER FORM  ########################################
 
-
+SAMPLE_PROJECT_MAIN_DATA = ['Sample Project Name', 'Project Manager', 'Contact data', 'Description']
 
 FORM_PROJECT_CREATION = ['projectName', 'projectManager', 'projectContact', 'projectDescription']

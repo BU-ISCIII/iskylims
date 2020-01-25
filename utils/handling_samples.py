@@ -650,8 +650,8 @@ def get_info_to_display_sample_project (sample_project_id):
     if SampleProjects.objects.filter(pk__exact = sample_project_id).exists():
         sample_project_obj = SampleProjects.objects.get(pk__exact = sample_project_id)
         # collect data from project
-        info_s_project['main_data'] = sample_project_obj.get_info_to_display()
-        import pdb; pdb.set_trace()
+        info_s_project['main_data'] = list(zip (SAMPLE_PROJECT_MAIN_DATA, sample_project_obj.get_full_info_to_display()))
+
         if SampleProjectsFields.objects.filter(sampleProjects_id = sample_project_obj).exists():
             sample_project_fields = SampleProjectsFields.objects.filter(sampleProjects_id = sample_project_obj).order_by('sampleProjectFieldOrder')
             s_project_fields_list = []
@@ -701,22 +701,6 @@ def get_defined_sample_projects (app_name):
             sample_projects.append(s_project.get_sample_project_name())
     return sample_projects
 
-
-def get_defined_patient_projects(app_name):
-    '''
-    Description:
-        The function will return the patient projects that a patient could belongs to.
-    Variables:
-        patient_projects # list containing the patient projects defined in database
-    Return:
-        patient_projects.
-    '''
-    patient_projects = []
-    if PatientProjects.objects.filter(apps_name__exact = app_name).exists():
-        pat_projects = PatientProjects.objects.filter(apps_name__exact = app_name)
-        for pat_project in pat_projects:
-            patient_projects.append(pat_project.get_project_name())
-    return patient_projects
 
 def get_molecule_codeid_from_object(molecule_obj):
     '''
@@ -1298,7 +1282,7 @@ def set_sample_project_fields (data_form):
     sample_project_id = data_form['sample_project_id']
     json_data = json.loads(data_form['table_data1'])
     fields = HEADING_FOR_SAMPLE_PROJECT_FIELDS
-    import pdb; pdb.set_trace()
+
     sample_project_obj = SampleProjects.objects.get(pk__exact = sample_project_id)
 
     saved_fields = []
@@ -1324,7 +1308,7 @@ def set_sample_project_fields (data_form):
         else:
             s_p_fields['Option Values'] = ''
         saved_fields.append(SampleProjectsFields.objects.create_sample_project_fields(s_p_fields).get_sample_project_fields_name())
-        import pdb; pdb.set_trace()
+
     stored_fields['fields'] = saved_fields
     stored_fields['heading'] = HEADING_FOR_SAMPLE_PROJECT_FIELDS
     stored_fields['sample_project_name'] = sample_project_obj.get_sample_project_name()
