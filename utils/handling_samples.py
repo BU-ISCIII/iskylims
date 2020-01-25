@@ -387,7 +387,10 @@ def analyze_input_sample_project_fields (form_data):
             field_value['sampleProjectFieldValue'] = field_value_json_data[i][j+1]
             new_sample_project_f_value = SampleProjectsFieldsValue.objects.create_project_field_value(field_value)
         sample_to_display.append([field_value_json_data[i][0], right_id])
+        # Update Sample state to defined
+        sample_obj.set_state('Defined')
     sample_recorded['display_samples'] = sample_to_display
+
     return sample_recorded
 
 def build_record_sample_form (app_name) :
