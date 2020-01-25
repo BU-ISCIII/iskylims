@@ -126,7 +126,7 @@ def add_result_data (request):
 '''
 
 @login_required
-def create_new_project(request):
+def create_new_patient_project(request):
     defined_projects = get_defined_patient_projects(__package__)
     if request.method == 'POST' and request.POST['action'] == 'addNewProject':
         new_project = create_patient_project(request.POST, __package__)
@@ -134,6 +134,7 @@ def create_new_project(request):
             return render(request, 'iSkyLIMS_clinic/createNewProject.html' ,{'defined_projects': defined_projects ,
                                 'error' : ERROR_MESSAGE_FOR_PROJECT_NAME_EXISTS})
         return render(request, 'iSkyLIMS_clinic/createNewProject.html' ,{'new_project': new_project})
+    import pdb; pdb.set_trace()
     return render(request, 'iSkyLIMS_clinic/createNewProject.html' ,{'defined_projects': defined_projects})
 
 
@@ -160,6 +161,29 @@ def create_protocol (request):
 
     return render(request, 'iSkyLIMS_clinic/createProtocol.html',{'defined_protocols': defined_protocols,
                         'defined_protocol_types':defined_protocol_types, 'other_protocol_list' :other_protocol_list})
+
+@login_required
+def create_sample_projects (request):
+
+    # get the information of defined sample Projects
+    defined_samples_projects = get_info_to_display_sample_projects (__package__)
+
+    if request.method == 'POST' and request.POST['action'] == 'addNewSampleProject':
+        #import pdb; pdb.set_trace()
+        sample_project_name = request.POST['sampleProyectName']
+        #description = request.POST['description']
+
+        if check_if_sample_project_exists (sample_project_name, __package__):
+            error_message = ERROR_SAMPLE_PROJECT_ALREADY_EXISTS
+            return render ( request,'iSkyLIMS_clinic/createSampleProjects.html',{'defined_samples_projects': defined_samples_projects,
+                                    'error_message' : error_message})
+        new_sample_project_id = create_new_sample_project (request.POST, __package__)
+        new_defined_sample_project = sample_project_name
+        return render(request, 'iSkyLIMS_clinic/createSampleProjects.html',{'defined_samples_projects': defined_samples_projects,
+                             'new_sample_project_id': new_sample_project_id, 'new_defined_sample_project' : new_defined_sample_project})
+
+    return render(request, 'iSkyLIMS_clinic/createSampleProjects.html',{'defined_samples_projects': defined_samples_projects})
+
 
 @login_required
 def define_extraction_molecules (request):
@@ -211,6 +235,17 @@ def define_new_patient_history(request):
 
 @login_required
 def define_new_samples(request):
+    '''
+    Functions :
+        analyze_input_samples  : located at iSkyLIMS_core/handling_samples.py
+        analyze_input_sample_project_fields  : located at iSkyLIMS_core/handling_samples.py
+        prepare_sample_input_table : located at iSkyLIMS_core/utils/handling_samples.py
+        get_codeID_for_resequencing : located at iSkyLIMS_wetlab/utils/sample_functions.py
+        prepare_sample_project_input_table :  located at iSkyLIMS_core/utils/handling_samples.py
+        analyze_reprocess_data  : located at iSkyLIMS_wetlab/utils/sample_functions.py
+        get_info_for_reprocess_samples : located at iSkyLIMS_core/utils/handling_samples.py
+    '''
+    ## Record new samples
     if request.method == 'POST' and request.POST['action'] == 'recordsample':
         sample_recorded = analyze_input_samples (request)
         # if no samples are in any of the options, displays the inital page
@@ -219,6 +254,7 @@ def define_new_samples(request):
             return render(request, 'iSkyLIMS_clinic/defineNewSamples.html' ,{'sample_information':sample_information})
 
         if 'valid_samples' in sample_recorded :
+            # Define the clinic sample
             clinic_sample_list = []
             for sample_id in sample_recorded['valid_samples_ids']:
                 c_sample_data = {}
@@ -235,6 +271,10 @@ def define_new_samples(request):
             sample_recorded.update(prepare_sample_input_table(__package__))
             sample_recorded['number_of_samples'] = len(sample_recorded['incomplete_samples'])
 
+        if 'pre_defined_samples_id' in sample_recorded:
+            sample_recorded.update(prepare_sample_project_input_table(sample_recorded['pre_defined_samples_id']))
+
+        import pdb; pdb.set_trace()
         return render(request, 'iSkyLIMS_clinic/defineNewSamples.html', {'sample_recorded':sample_recorded})
     else:
         sample_information = prepare_sample_input_table(__package__)
@@ -323,6 +363,29 @@ def define_result_protocol_parameters (request, result_protocol_id):
         return render(request, 'iSkyLIMS_clinic/defineResultProtocolParameters.html',{'result_parameters':result_parameters})
 '''
 
+
+@login_required
+def define_sample_projects_fields (request, sample_project_id):
+    # get the list of defined sample Projects
+
+    if request.method == 'POST' and request.POST['action'] == 'defineSampleProjectFields':
+
+        sample_project_field_data = set_sample_project_fields(request.POST)
+
+        return render(request, 'iSkyLIMS_clinic/defineSampleProjectFields.html', {'sample_project_field_data':sample_project_field_data})
+
+    else:
+        if not check_if_sample_project_id_exists(sample_project_id):
+            return render ( request,'iSkyLIMS_clinic/error_page.html',
+                        {'content':['The requested Protocol does not exist',
+                            'Create the protocol name before assigning custom protocol parameters.']})
+
+
+        sample_project_data = define_table_for_sample_project_fields(sample_project_id)
+        return render(request, 'iSkyLIMS_clinic/defineSampleProjectFields.html', {'sample_project_data':sample_project_data})
+
+
+
 @login_required
 def display_patient_information (request, patient_id):
 
@@ -389,6 +452,16 @@ def display_sample_info(request,sample_c_id):
         return render (request,'iSkyLIMS_clinic/searchSample.html', {'search_sample_data': search_sample_data,
                                 'error_message' : error_message})
 
+
+@login_required
+def display_sample_project(request,sample_project_id):
+
+    samples_project_data = get_info_to_display_sample_project (sample_project_id)
+    if 'ERROR' in samples_project_data :
+        error_message = ERROR_SAMPLE_PROJECT_DOES_NOT_EXISTS
+        return render (request,'iSkyLIMS_clinic/error_page.html', {'content': error_message })
+    import pdb; pdb.set_trace()
+    return render(request, 'iSkyLIMS_clinic/displaySampleProject.html',{'samples_project_data': samples_project_data})
 
 def pending_to_update(request):
 

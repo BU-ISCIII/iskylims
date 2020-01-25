@@ -33,6 +33,7 @@ HEADING_FOR_DISPLAY_SAMPLE_DEFINED_STATE = ['Sample Name','Sample Origin', 'Type
 ##############################################################
 ERROR_MESSAGE_FOR_PATIENT_CODE_EXISTS = 'Patient Code already exists.'
 ERROR_MESSAGE_FOR_PROJECT_NAME_EXISTS = 'Project Name already exists.'
+ERROR_SAMPLE_PROJECT_ALREADY_EXISTS = ['Sample Project is already defined']
 
 ERROR_MESSAGE_FOR_INCORRECT_START_SEARCH_DATE = ['The format for the "Start Date Search" Field is incorrect ', 'Use the format  (DD-MM-YYYY)']
 
