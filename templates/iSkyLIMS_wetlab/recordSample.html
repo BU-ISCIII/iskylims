@@ -317,7 +317,7 @@
     </div> <!--// end row -->
 
 
-    {% elif sample_recorded.pre_defined_samples_id %}
+    {% elif sample_recorded.updated_pre_defined_samples_id %}
         <div class="row row-space-4 margin-b-4">
             <div  class="col-sm-12" >
 
@@ -397,6 +397,47 @@
 
 
 {% else %}
+
+    {% if sample_information.pre_defined_heading %}
+        <div class="row row-space-4 margin-b-4">
+            <div  class="col-sm-7 col-sm-offset-2" >
+                <div class="panel panel-default" >
+                    <div class="panel-heading"><h3>These samples require additional information </h3></div>
+                    <div class="panel-body" >
+                        <form method="post" action="/wetlab/recordSamples" enctype="multipart/form-data" name="select_samples_pre_defined"  id="select_samples_pre_defined" class="form-horizontal well">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="select_samples_pre_defined"/>
+                            <input type="hidden" name="samples_in_list" value="True"/>
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        {% for value in sample_information.pre_defined_heading %}
+                                            <th> {{ value }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for date, code,  name,  s_id in sample_information.pre_defined_samples %}
+                                        <tr>
+                                                <td>{{date}}</td>
+                                                <td>{{code}}</td>
+                                                <td>{{name}}</td>
+                                                <td><input type="checkbox" name="samples" value="{{s_id}}"></td>
+                                        </tr>
+                                    {% endfor %}
+
+                                </tbody>
+                            </table>
+                            <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                        </form>
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+
+            </div> <!--// end col-sm-7  -->
+
+        </div> <!--// end row -->
+
+    {% endif %}
     <div class="row row-space-4 margin-b-4">
         <div  class="col-sm-12" >
 

@@ -25,6 +25,30 @@
                     </tbody>
                 </table>
             </div> <!--  end of panel body -->
+            {% if sample_information.sample_project_name %}
+                <div class="panel-heading"><h4>Sample Information {{sample_information.sample_project_name }}</h4></div>
+                <div class="panel-body">
+
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                {% for values in sample_information.sample_project_field_heading %}
+                                  <th>{{ values }} </th>
+                                {%endfor%}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    {% for values in sample_information.sample_project_field_value %}
+                                        <td>{{ values }} </td>
+                                    {%endfor%}
+                                </tr>
+                            </tbody>
+                        </table>
+
+                </div> <!--  end of panel body -->
+            {% endif %}
+
         </div> <!--  end of panel  -->
     </div> <!--  end of col-sm-11 -->
 </div> <!--  end of row -->

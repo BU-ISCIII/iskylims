@@ -3346,10 +3346,17 @@ def record_samples(request):
 
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'reprocess_result':reprocess_result})
 
+    ## display the form to show the samples in pre-defined state that user requested to complete
+    elif request.method == 'POST' and request.POST['action'] == 'select_samples_pre_defined':
+        if 'samples_in_list' in request.POST :
+            pre_defined_samples_id = request.POST.getlist('samples')
+        sample_recorded = prepare_sample_project_input_table(pre_defined_samples_id)
+        return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
+
     ## Add the additional information related to the project
     elif request.method == 'POST' and request.POST['action'] == 'sampleprojectdata':
         sample_recorded = analyze_input_sample_project_fields(request.POST)
-        
+
         if request.POST['pending_pre_defined'] != '':
             sample_recorded.update(prepare_sample_project_input_table(request.POST['pending_pre_defined']))
             return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
@@ -3397,6 +3404,10 @@ def define_sample_projects_fields (request, sample_project_id):
 
 @login_required
 def display_sample (request, sample_id):
+    '''
+    Functions:
+        get_all_sample_information : located at iSkyLIMS_core/utils/handling_samples.py
+    '''
     sample_information = get_all_sample_information(sample_id, True)
     if 'Error' in sample_information:
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No Sample was found']})
