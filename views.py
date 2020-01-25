@@ -1111,7 +1111,7 @@ def display_project (request, project_id):
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the project  ' ]})
 
 @login_required
-def display_sample_project (request, sample_project_id):
+def display_sample_in_run (request, sample_run_project_id):
     '''
     Description:
         The function will check if the requested sample id exists, then
@@ -1130,8 +1130,8 @@ def display_sample_project (request, sample_project_id):
         -- Error page in case the sample id in the request does not exists.
         -- sample_data_information with the information collected by get_info_sample()
     '''
-    if (SamplesInProject.objects.filter(pk=sample_project_id).exists()):
-        sample_found_id = SamplesInProject.objects.get(pk=sample_project_id)
+    if (SamplesInProject.objects.filter(pk=sample_run_project_id).exists()):
+        sample_found_id = SamplesInProject.objects.get(pk=sample_run_project_id)
         sample_data_information = get_info_sample (sample_found_id)
         return render(request, 'iSkyLIMS_wetlab/SearchSample.html',{'display_one_sample': sample_data_information })
     else:
@@ -3167,7 +3167,7 @@ def create_sample_projects (request):
                              'new_sample_project_id': new_sample_project_id, 'new_defined_sample_project' : new_defined_sample_project})
 
     return render(request, 'iSkyLIMS_wetlab/createSampleProjects.html',{'defined_samples_projects': defined_samples_projects})
-'''
+
 @login_required
 def display_sample_project(request,sample_project_id):
 
@@ -3175,8 +3175,9 @@ def display_sample_project(request,sample_project_id):
     if 'ERROR' in samples_project_data :
         error_message = ERROR_SAMPLE_PROJECT_DOES_NOT_EXISTS
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content': error_message })
+    import pdb; pdb.set_trace()
     return render(request, 'iSkyLIMS_wetlab/displaySampleProject.html',{'samples_project_data': samples_project_data})
-'''
+
 @login_required
 def display_protocol (request, protocol_id):
     if not is_wetlab_manager(request):
@@ -3386,7 +3387,7 @@ def define_sample_projects_fields (request, sample_project_id):
 
         sample_project_field_data = set_sample_project_fields(request.POST)
 
-        return render(request, 'iSkyLIMS_wetlab/defineProtocolParameters.html', {'sample_project_field_data':sample_project_field_data})
+        return render(request, 'iSkyLIMS_wetlab/defineSampleProjectFields.html', {'sample_project_field_data':sample_project_field_data})
 
     else:
         if not check_if_sample_project_id_exists(sample_project_id):
