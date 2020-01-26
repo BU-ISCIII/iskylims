@@ -111,7 +111,7 @@ class ClinicSampleState (models.Model):
 class ClinicSampleRequestManager(models.Manager):
     def create_clinic_sample ( self, c_sample_data):
         new_clinic_sample = self.create( sampleCore = c_sample_data['sampleCore'],
-                patientCore = c_sample_data['patientCore'] , clinicSampleState = ClinicSampleState.objects.get(clinicState__exact = 'Defined'),
+                patientCore = c_sample_data['patientCore'] , clinicSampleState = ClinicSampleState.objects.get(clinicState__exact = c_sample_data['state']),
                 sampleRequestUser = c_sample_data['user'])
         return new_clinic_sample
 

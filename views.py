@@ -249,22 +249,25 @@ def define_new_samples(request):
     if request.method == 'POST' and request.POST['action'] == 'recordsample':
         sample_recorded = analyze_input_samples (request)
         # if no samples are in any of the options, displays the inital page
-        if (not 'valid_samples' in sample_recorded and not 'invalid_samples' in sample_recorded and not 'incomplete_samples'in sample_recorded) :
+        if (not 'defined_samples' in sample_recorded and not 'pre_defined_samples' in sample_recorded and not 'invalid_samples' in sample_recorded and not 'incomplete_samples' in sample_recorded) :
             sample_information = prepare_sample_input_table(__package__)
             return render(request, 'iSkyLIMS_clinic/defineNewSamples.html' ,{'sample_information':sample_information})
 
         if 'valid_samples' in sample_recorded :
-            # Define the clinic sample
-            clinic_sample_list = []
+            # create the clinic sample  in Define state
+            clinic_sample_list = define_clinic_samples(sample_recorded['valid_samples'], request.user, 'Defined')
+            '''
             for sample_id in sample_recorded['valid_samples_ids']:
                 c_sample_data = {}
                 sample_obj = get_sample_obj_from_id(sample_id)
                 c_sample_data['sampleCore'] = sample_obj
                 c_sample_data['patientCore'] = sample_obj.get_sample_patient_obj()
                 c_sample_data['user'] = request.user
+                c_sample_data['state'] = 'Defined'
                 new_clinic_sample = ClinicSampleRequest.objects.create_clinic_sample(c_sample_data)
 
                 clinic_sample_list.append(new_clinic_sample.get_id())
+            '''
             clinic_samples_ids = ','.join(clinic_sample_list)
             sample_recorded['clinic_samples_ids'] = clinic_samples_ids
         if 'incomplete_samples' in sample_recorded :
@@ -272,10 +275,33 @@ def define_new_samples(request):
             sample_recorded['number_of_samples'] = len(sample_recorded['incomplete_samples'])
 
         if 'pre_defined_samples_id' in sample_recorded:
+            # create the clinic sample  in Define state
+            clinic_sample_list = define_clinic_samples(sample_recorded['pre_defined_samples_id'], request.user, 'Pre-Defined')
+
             sample_recorded.update(prepare_sample_project_input_table(sample_recorded['pre_defined_samples_id']))
 
         import pdb; pdb.set_trace()
         return render(request, 'iSkyLIMS_clinic/defineNewSamples.html', {'sample_recorded':sample_recorded})
+
+    ## display the form to show the samples in pre-defined state that user requested to complete
+    elif request.method == 'POST' and request.POST['action'] == 'select_samples_pre_defined':
+        if 'samples_in_list' in request.POST :
+            pre_defined_samples_id = request.POST.getlist('samples')
+        sample_recorded = prepare_sample_project_input_table(pre_defined_samples_id)
+
+        return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
+
+    ## Add the additional information related to the project
+    elif request.method == 'POST' and request.POST['action'] == 'sampleprojectdata':
+        sample_recorded = analyze_input_sample_project_fields(request.POST)
+        clinic_sample_for_update = request.POST['pre_defined_id']
+        update_clinic_sample_state_from_core_sample_id(clinic_sample_for_update, 'Defined')
+        if request.POST['pending_pre_defined'] != '':
+            sample_recorded.update(prepare_sample_project_input_table(request.POST['pending_pre_defined']))
+            return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
+        else:
+            return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
+
     else:
         sample_information = prepare_sample_input_table(__package__)
         return render(request, 'iSkyLIMS_clinic/defineNewSamples.html',{'sample_information':sample_information})
@@ -432,7 +458,7 @@ def display_result_protocol (request, result_protocol_id):
 
 
 @login_required
-def display_sample_info(request,sample_c_id):
+def display_sample_clinic_info(request,sample_c_id):
     '''
     Description:
         The function will get the option values to display in the select menus.
@@ -444,8 +470,8 @@ def display_sample_info(request,sample_c_id):
     '''
     if check_if_sample_c_exists(sample_c_id):
         display_sample_info = display_one_sample_info (sample_c_id)
-        #import pdb; pdb.set_trace()
-        return render(request, 'iSkyLIMS_clinic/displaySampleInfo.html', {'display_sample_info': display_sample_info })
+        import pdb; pdb.set_trace()
+        return render(request, 'iSkyLIMS_clinic/displaySampleClinicInfo.html', {'display_sample_info': display_sample_info })
     else:
         search_sample_data = collect_sample_data_for_search ()
         error_message = ['The clinic sample that you are trying to get', 'DOES NOT exists .']
@@ -526,11 +552,11 @@ def search_sample(request):
                 'Error': ERROR_MESSAGE_FOR_NO_MATCH_IN_SEARCH })
         if len(sample_c_list) == 1:
             display_sample_info = display_one_sample_info (sample_c_list[0])
-
-            return render(request, 'iSkyLIMS_clinic/displaySampleInfo.html', {'display_sample_info': display_sample_info })
+            import pdb; pdb.set_trace()
+            return render(request, 'iSkyLIMS_clinic/displaySampleClinicInfo.html', {'display_sample_info': display_sample_info })
         else:
             display_sample_list_info = display_sample_list(sample_c_list)
-            return render(request, 'iSkyLIMS_clinic/displaySampleInfo.html', {'display_sample_list_info': display_sample_list_info })
+            return render(request, 'iSkyLIMS_clinic/displaySampleClinicInfo.html', {'display_sample_list_info': display_sample_list_info })
 
     else:
         return render(request, 'iSkyLIMS_clinic/searchSample.html', {'search_sample_data': search_sample_data })

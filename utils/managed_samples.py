@@ -120,6 +120,19 @@ def get_clinic_sample_in_state(state):
         return ClinicSampleRequest.objects.filter(clinicSampleState__clinicState__exact = state)
     return
 
+def define_clinic_samples (sample_list,  user ,state):
+    clinic_sample_list = []
+    for sample_id in sample_list:
+        c_sample_data = {}
+        sample_obj = get_sample_obj_from_id(sample_id)
+        c_sample_data['sampleCore'] = sample_obj
+        c_sample_data['patientCore'] = sample_obj.get_sample_patient_obj()
+        c_sample_data['user'] = user
+        c_sample_data['state'] = 'Defined'
+        new_clinic_sample = ClinicSampleRequest.objects.create_clinic_sample(c_sample_data)
+        clinic_sample_list.append(new_clinic_sample.get_id())
+    return clinic_sample_list
+
 def display_one_sample_info(id):
     sample_info = {}
     clinic_sample_obj = get_clinic_sample_obj_from_id(id)
@@ -408,3 +421,11 @@ def prepare_patient_form (clinic_samples_ids):
     patient_info['s_request_by'] = get_service_units()
     patient_info['clinic_samples'] = ','.join(clinic_samples_ids)
     return patient_info
+
+def update_clinic_sample_state_from_core_sample_id(sample_list, state):
+    clinic_sample_list = []
+    for core_sample_id in sample_list:
+        core_sample_obj = get_sample_obj_from_id(core_sample_id)
+        clinic_sample_obj = ClinicSampleRequest.objects.get(sampleCore = core_sample_obj)
+        clinic_sample_obj.set_state(state)
+    return

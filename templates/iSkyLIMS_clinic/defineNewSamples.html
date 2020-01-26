@@ -2,21 +2,14 @@
 {% load static %}
 {% block content %}
 {% csrf_token %}
-
-<script src="{% static "iSkyLIMS_clinic/js/jquery/v3.4.1/jquery-3.4.1.min.js" %}" type="text/javascript"></script>
-<script src="{% static "iSkyLIMS_clinic/js/jexcel/v3/jexcel.js" %}" type="text/javascript"></script>
-<script src="{% static "iSkyLIMS_clinic/js/jsuites/v2/jsuites.js" %}" type="text/javascript"></script>
-
-<link href="{% static "iSkyLIMS_clinic/css/jexcel/v3/jexcel.css" %}" rel="stylesheet">
-<link href="{% static "iSkyLIMS_clinic/css/jsuites/v2/jsuites.css" %}" rel="stylesheet">
+{%include 'iSkyLIMS_core/jexcel_functionality.html' %}
 
 <style>
     .scrolling-wrapper {
         overflow-x: auto;
-        white-space: nowrap
-
-        height: 500px;
-
+        overflow-y: auto;
+        white-space: nowrap;
+        height: 400px;
     }
  </style>
 
@@ -63,8 +56,31 @@
             </div> <!--// end col-sm-7  -->
         </div> <!--// end row -->
     {% endif %}
-
-
+    {% if sample_recorded.display_samples %}
+            <div class="row row-space-4 margin-b-4">
+                <div class="col-sm-5 col-sm-offset-3" >
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h3>The following Samples have been sucessfuly recorded</h3></div>
+                        <div class="panel-body">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Sample name</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for name, id  in  sample_recorded.display_samples %}
+                                        <tr>
+                                            <td><a href="/clinic/displaySampleClinicInfo={{id}}">{{ name }}</a></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>  <!--  end of panel body  -->
+                    </div> <!--// end panel -->
+                </div> <!--// end col-sm-7  -->
+            </div> <!--// end row -->
+        {% endif %}
 
     {% if sample_recorded.incomplete_samples %}
 
@@ -137,7 +153,84 @@
         </div> <!--// end col-sm-7  -->
 
     </div> <!--// end row -->
+    {% elif sample_recorded.updated_pre_defined_samples_id %}
+        <div class="row row-space-4 margin-b-4">
+            <div  class="col-sm-12" >
+
+                <div class="panel panel-default" >
+                    <div class="panel-heading"><h3>The following samples require additional information as requested by project.</h3></div>
+                    <div class="panel-body" >
+                        <br>
+                        <br><br>
+
+                        <form method="post" enctype="multipart/form-data" name="sampleprojectdata"  id="sampleprojectdata" class="form-horizontal well" style="min-height: 500px;">
+                            {% csrf_token %}
+
+                                <input type="hidden" name="action" value="sampleprojectdata"/>
+                                <input type="hidden" name="pending_pre_defined" value="{{sample_recorded.pending_pre_defined_samples_id}}"/>
+                                <input type="hidden" name="pre_defined_id" value="{{sample_recorded.updated_pre_defined_samples_id}}"/>
+                                <input type="hidden" name="pre_defined_samples" value="{{sample_recorded.pre_defined_samples_name}}"/>
+                                <input type="hidden" name="pre_defined_heading" value="{{sample_recorded.pre_defined_fields_heading_list}}"/>
+                                <div id="spreadsheet_pre_def"></div>
+
+                                <script>
+                                    var data_pre_def = [{% for values in sample_recorded.pre_defined_sample_data %}
+                                            [{% for value in values %}'{{value}}',{% endfor %}],
+                                            {% endfor %}
+                                    ];
+
+                                    var pre_def_table = jexcel(document.getElementById('spreadsheet_pre_def'), {
+                                    data:data_pre_def,
+                                    columns: [
+                                        { type: 'text', title:'Sample Name', width:150 , readOnly:true },
+                                        {% for name, type, options in sample_recorded.pre_defined_fields_heading_type %}
+                                            {% if type == 'Date' %}
+                                                { type: 'calendar', title:'{{name}}', width:150 },
+                                            {% elif type == 'Option List'%}
+
+                                                { type: 'dropdown', title:'{{name}}', width:150 , source: [{% for value in options %}"{{value}}",{% endfor %}] },
+                                            {% else %}
+                                                { type: 'text', title:'{{name}}', width:150 },
+                                            {% endif %}
+                                        {% endfor %}
+                                        ],
+                                        allowInsertColumn:false,
+                                        allowDeleteColumn:false,
+                                        allowRenameColumn:false,
+                                        csvFileName:'samples_projects_values',
+                                        minDimensions:[{{sample_recorded.pre_defined_fields_length}},{{sample_recorded.pre_defined_samples_length}}],
+                                    });
+                                </script>
+                            <br><br><br><br><br><br><br><br><br><br><br>
+                            <input type="button" value="Download Spreadsheet" onclick="pre_def_table.download()"/>
+                            <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                        </form>
+                        <script>
+                            $(document).ready(function () {
+                                $("#sampleprojectdata").submit(function (e) {
+                                    //stop submitting the form to see the disabled button effect
+                                    // e.preventDefault();
+                                    //disable the submit button
+                                    var table_data = pre_def_table.getData()
+                                    var data_json = JSON.stringify(table_data)
+                                    $("<input />").attr("type", "hidden")
+                                       .attr("name", "table_data")
+                                       .attr("value", data_json)
+                                       .appendTo("#sampleprojectdata");
+                                    $("#btnSubmit").attr("disabled", true);
+                                    return true;
+                                });
+                            });
+                        </script>
+
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+
+            </div> <!--// end col-sm-7  -->
+
+        </div> <!--// end row -->
     {% endif %}
+
 {% else %}
     <div class="row row-space-4 margin-b-4">
         <div  class="col-sm-12" >

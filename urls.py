@@ -29,7 +29,7 @@ urlpatterns = [
     #path('defineResultProtocolParameters=<int:result_protocol_id>', views.define_result_protocol_parameters, name = 'define_result_protocol_parameters'),
     #path('displayResultProtocol=<int:result_protocol_id>', views.display_result_protocol, name = 'display_result_protocol'),
     path('displayPatientInformation=<int:patient_id>/', views.display_patient_information, name = 'display_patient_information'),
-    path('displaySampleInfo=<int:sample_c_id>', views.display_sample_info, name = 'display_sample_info'),
+    path('displaySampleClinicInfo=<int:sample_c_id>', views.display_sample_clinic_info, name = 'display_sample_clinic_info'),
     path('displaySampleProject=<int:sample_project_id>/', views.display_sample_project, name = 'display_sample_project'),
     path('pendingToUpdate', views.pending_to_update, name = 'pending_to_update'),
     path('searchSample', views.search_sample, name = 'search_sample'),
