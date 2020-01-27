@@ -15,7 +15,7 @@ MAPPING_SAMPLE_FORM_TO_DDBB = [('Patient Code ID','p_code_id'), ('Sample Name', 
                 ('Sample Storage Location', 'sampleLocation')]
 
 HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION = ['Sample ID', 'Molecule type', 'Type of Extraction', 'Extraction date', 'Protocol to be used']
-HEADING_FOR_MOLECULE_ADDING_PARAMETERS = ['Molecule Code ID', 'Used Protocol', 'Lot Commercial Kit']
+HEADING_FOR_MOLECULE_ADDING_PARAMETERS = ['Molecule Code ID', 'Lot Commercial Kit']
 
 ################ OPTIONAL FIELDS IN SAMPLE RECORD DEFINITION #########################3
 OPTIONAL_SAMPLES_FIELDS = ['Patient Code ID', 'Species']
@@ -27,6 +27,7 @@ HEADING_CONFIRM_MOLECULE_RECORDED = ['Molecule Code ID', 'Used Protocol']
 
 ### Heading values when showing pending samples
 HEADING_FOR_DEFINED_SAMPLES_STATE = ['Sample extraction date', 'Sample Code ID', 'Sample','To be included']
+
 HEADING_FOR_EXTRACTED_MOLECULES_STATE = ['Sample extraction date', 'Sample', 'Molecule Code ID', 'Molecule Extraction Date',
                                     'Used Protocol', 'To be included']
 
@@ -80,3 +81,7 @@ COLLECTION_INDEX_HEADING = ['[Version]','[Name]', '[PlateExtension]','[Settings]
 SAMPLE_PROJECT_MAIN_DATA = ['Sample Project Name', 'Project Manager', 'Contact data', 'Description']
 
 FORM_PROJECT_CREATION = ['projectName', 'projectManager', 'projectContact', 'projectDescription']
+
+
+##################### DEFAULT INFORMATION  ################
+VALUE_NOT_PROVIDED = 'Not Provided'

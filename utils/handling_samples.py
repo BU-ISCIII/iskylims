@@ -5,15 +5,37 @@ from iSkyLIMS_core.utils.generic_functions import get_friend_list
 from iSkyLIMS_core.utils.handling_commercial_kits import get_lot_commercial_kits
 from django.contrib.auth.models import User
 
+def create_table_to_select_molecules (samples_list):
+    '''
+    Description:
+        The function return a dictionary with the information to display to user to
+        select the molecules.
+    Input:
+        samples_list  : sample list object to get the information
+    Variables:
 
-def display_molecule_protocol_parameters (molecules, user_obj):
+    Return:
+        sample_information.
+    '''
+    sample_information = {}
+    sample_information['sample_information'] =[]
+    sample_code_id =[]
+    for sample in samples_list :
+        sample_information['sample_information'].append(sample.get_info_in_defined_state())
+        sample_code_id.append(sample.get_sample_code())
+    sample_information['sample_heading'] = HEADING_FOR_DEFINED_SAMPLES_STATE
+    sample_information['sample_code_ids'] = ','.join(sample_code_id)
+
+    return sample_information
+
+def display_molecule_protocol_parameters (molecule_ids, user_obj):
     '''
     Description:
         The function return the quality parameters defined for the
         selected protocol.
 
     Input:
-        request
+        molecule_ids
     Variables:
 
     Return:
@@ -24,18 +46,18 @@ def display_molecule_protocol_parameters (molecules, user_obj):
     showed_molecule =[]
     molecule_recorded['data'] = []
     pending_molecule =[]
-    prot_used_in_display = ''
-    for molecule in molecules :
+    selected_protocol = ''
+    for molecule in molecule_ids :
         if not MoleculePreparation.objects.filter(pk = int(molecule)).exists():
             continue
         molecule_obj = MoleculePreparation.objects.get(pk = int(molecule))
         protocol_used = molecule_obj.get_protocol()
-        protocol_used_obj = Protocols.objects.get(name__exact = protocol_used)
+        protocol_used_obj = molecule_obj.get_protocol_obj()
 
 
-        if prot_used_in_display == '':
+        if selected_protocol == '':
             if ProtocolParameters.objects.filter(protocol_id__exact = protocol_used_obj).exists():
-                prot_used_in_display = protocol_used
+                selected_protocol = protocol_used
                 protocol_parameters = ProtocolParameters.objects.filter(protocol_id__exact = protocol_used_obj, parameterUsed = True).order_by('parameterOrder')
                 parameter_list = []
                 for parameter in protocol_parameters :
@@ -43,13 +65,13 @@ def display_molecule_protocol_parameters (molecules, user_obj):
                 length_heading = len(HEADING_FOR_MOLECULE_ADDING_PARAMETERS + parameter_list)
                 molecule_recorded['fix_heading'] = HEADING_FOR_MOLECULE_ADDING_PARAMETERS
                 molecule_recorded['param_heading'] = parameter_list
-                if Protocols.objects.filter(name__exact = prot_used_in_display).exists():
-                    protocol_obj = Protocols.objects.get(name__exact = prot_used_in_display)
+                if Protocols.objects.filter(name__exact = selected_protocol).exists():
+                    protocol_obj = Protocols.objects.get(name__exact = selected_protocol)
                     molecule_recorded['lot_kit'] = get_lot_commercial_kits(user_obj, protocol_obj)
                 else:
                     molecule_recorded['lot_kit'] = ''
         #import pdb; pdb.set_trace()
-        if protocol_used == prot_used_in_display :
+        if protocol_used == selected_protocol :
             showed_molecule.append(molecule)
             data = ['']*length_heading
             data[0] = molecule_obj.get_molecule_code_id()
@@ -62,6 +84,7 @@ def display_molecule_protocol_parameters (molecules, user_obj):
     molecule_recorded['pending_id'] = ','.join(pending_molecule)
     molecule_recorded['heading_in_excel'] = '::'.join(parameter_list)
 
+    import pdb; pdb.set_trace()
     return molecule_recorded
 
 
@@ -555,9 +578,12 @@ def get_all_sample_information (sample_id , massive):
             sample_project_fields = SampleProjectsFields.objects.filter(sampleProjects_id = sample_project_obj)
             for s_p_field in sample_project_fields :
                 sample_information['sample_project_field_heading'].append(s_p_field.get_field_name())
-                field_value = SampleProjectsFieldsValue.objects.get(sample_id = sample_obj, sampleProjecttField_id = s_p_field ).get_field_value()
-                if s_p_field.get_field_type() == 'Date':
-                    field_value = field_value.replace(' 00:00:00','')
+                if SampleProjectsFieldsValue.objects.filter(sample_id = sample_obj, sampleProjecttField_id = s_p_field ).exists() :
+                    field_value = SampleProjectsFieldsValue.objects.get(sample_id = sample_obj, sampleProjecttField_id = s_p_field ).get_field_value()
+                    if s_p_field.get_field_type() == 'Date':
+                        field_value = field_value.replace(' 00:00:00','')
+                else:
+                    field_value = VALUE_NOT_PROVIDED
                 sample_information['sample_project_field_value'].append(field_value)
     # check if molecule information exists for the sample
     if MoleculePreparation.objects.filter(sample = sample_obj, usedForMassiveSequencing = massive).exists():
@@ -924,6 +950,8 @@ def get_species ():
             species_names.append(species.get_name())
     return species_names
 
+
+
 def get_modules_type ():
     '''
     Description:
@@ -1037,39 +1065,49 @@ def prepare_sample_input_table (app_name):
     return s_information
 
 
-def record_molecules (request ):
+def record_molecules (form_data, user , app_name):
     '''
     Description:    The function store in database the new molecule and molecule_updated_list
                     the sample state to Extracted molecule.
+                    When user did not write any of the fields , the sample is added to incomplete_samples
     Input:
-        request
+        form_data   # form from the user
+        user        # logged user
+        app_name    # application name to assign the right protocol
     Functions:
         check_empty_fields  : located at this file
     Variables:
         molecule_information # dictionary which collects all info
+        molecules_code_ids
     Return:
         molecules_recorded with the list of the recorded molecules and the heading to
         display them
     '''
-    molecule_json_data = json.loads(request.POST['molecule_data'])
-    samples = request.POST['samples'].split(',')
+    molecule_json_data = json.loads(form_data['molecule_data'])
+    samples_ids = form_data['samples'].split(',')
+    samples_code_ids = form_data['samples_code_ids'].split(',')
     molecules_recorded = {}
-    molecules_ids = []
+    molecules_ids, molecules_code_ids = [] , []
     molecule_list = []
-    incomplete_molecules = []
-    incomplete_molecules_ids = []
+    incomplete_sample_data = []
+    incomplete_sample_ids = []
+    incomplete_sample_code_ids = []
+
     heading_in_excel = ['sampleID', 'molecule_type', 'type_extraction', 'extractionDate', 'protocol_used']
     for row_index in range(len(molecule_json_data)) :
-        molecule_data = {}
-        if not Samples.objects.filter(pk = int(samples[row_index])).exists():
+        right_id = samples_ids[samples_code_ids.index(molecule_json_data[row_index][0])]
+        if not Samples.objects.filter(pk__exact = right_id).exists():
             continue
-        sample_obj = Samples.objects.get(pk = int(samples[row_index]))
+        sample_obj = get_sample_obj_from_id(right_id)
+
         # check_empty_fields does not consider if the optional values are empty
         if check_empty_fields(molecule_json_data[row_index],['']):
-            incomplete_molecules.append(molecule_json_data[row_index])
-            incomplete_molecules_ids.append(samples[row_index])
+            incomplete_sample_data.append(molecule_json_data[row_index])
+            incomplete_sample_ids.append(right_id)
+            incomplete_sample_code_ids.append(molecule_json_data[row_index][0])
             continue
 
+        molecule_data = {}
         protocol_used = molecule_json_data[row_index][heading_in_excel.index('protocol_used')]
         if MoleculePreparation.objects.filter(sample = sample_obj, moleculeCodeId__icontains = protocol_used).exists():
             last_molecule_code = MoleculePreparation.objects.filter(sample = sample_obj, moleculeCodeId__icontains = protocol_used).last().get_molecule_code_id()
@@ -1082,33 +1120,37 @@ def record_molecules (request ):
             molecule_code_id = sample_obj.get_sample_code() + '_' + protocol_code + '_E1'
 
 
-        protocol_used_obj = Protocols.objects.get(name__exact = protocol_used)
-        molecule_used_obj = MoleculeType.objects.get(moleculeType__exact = molecule_json_data[row_index][heading_in_excel.index('molecule_type')])
+        #protocol_used_obj = Protocols.objects.get(name__exact = protocol_used)
+        molecule_used = molecule_json_data[row_index][heading_in_excel.index('molecule_type')]
 
-        molecule_data['protocolUsed'] =  protocol_used_obj
+        molecule_data['protocolUsed'] =  protocol_used
+        molecule_data['app_name'] = app_name
         molecule_data['sample'] = sample_obj
-        molecule_data['moleculeUsed'] =  molecule_used_obj
+        molecule_data['moleculeUsed'] =  molecule_used
         molecule_data['moleculeCodeId'] = molecule_code_id
         molecule_data['extractionType'] =  molecule_json_data[row_index][heading_in_excel.index('type_extraction')]
         molecule_data['moleculeExtractionDate'] = molecule_json_data[row_index][heading_in_excel.index('extractionDate')]
+        molecule_data['user'] = user
         #molecule_data['usedForMassiveSequencing'] = massive
         #molecule_data['numberOfReused'] = str(number_code - 1)
 
         new_molecule = MoleculePreparation.objects.create_molecule(molecule_data)
+
         molecule_list.append([molecule_code_id, protocol_used])
         # Update Sample state to "Extracted molecule"
         sample_obj.set_state('Extract molecule')
         # Include index key to allow adding quality parameter data
-        molecules_ids.append(str(new_molecule.pk))
+        molecules_ids.append(new_molecule.get_molecule_id())
+        molecules_code_ids.append(molecule_code_id)
     if len (molecules_ids) > 0:
         molecules_recorded['heading'] = HEADING_CONFIRM_MOLECULE_RECORDED
         molecules_recorded['molecule_list'] = molecule_list
-        molecules_recorded['molecules'] = ','.join(molecules_ids)
-    else:
-        molecules_recorded['samples'] = request.POST['samples']
-    if len(incomplete_molecules_ids) > 0:
-        molecules_recorded['incomplete_molecules'] = incomplete_molecules
-        molecules_recorded['incomplete_molecules_ids'] = ','.join(incomplete_molecules_ids)
+        molecules_recorded['molecule_ids'] = ','.join(molecules_ids)
+        molecules_recorded['molecule_code_ids'] = ','.join(molecules_code_ids)
+    if len(incomplete_sample_ids) > 0:
+        molecules_recorded['incomplete_sample_data'] = incomplete_sample_data
+        molecules_recorded['incomplete_sample_ids'] = ','.join(incomplete_sample_ids)
+        molecules_recorded['incomplete_sample_code_ids'] = ','.join(incomplete_sample_code_ids)
 
     return molecules_recorded
 
@@ -1186,7 +1228,8 @@ def get_info_for_reprocess_samples(sample_ids, sample_in_action):
 
 def get_table_record_molecule (samples, apps_name):
     '''
-    Description:    The function get the sampleID to create the molecule table.
+    Description:    The function get the sample ids to create the molecule table where
+            define the type of molecule and the protocol usec from the extracion.
     Input:
         samples     # list of the samples to be include in the table
     Functions:
@@ -1199,7 +1242,7 @@ def get_table_record_molecule (samples, apps_name):
     '''
     molecule_information = {}
     molecule_information['headings'] = HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION
-
+    sample_code_ids = []
     valid_samples = []
     for sample in samples :
         try:
@@ -1213,18 +1256,21 @@ def get_table_record_molecule (samples, apps_name):
     sample_code_id = []
     molecule_information['data'] =[]
     for sample in valid_samples:
-
+        sample_obj = get_sample_obj_from_id(sample)
+        sample_code_id = sample_obj.get_sample_code()
+        sample_code_ids.append(sample_code_id)
         #sample_code_id.append(Samples.objects.get(pk__exact = sample).get_sample_code())
         data = ['']*len(HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION)
-        data[0] = Samples.objects.get(pk__exact = sample).get_sample_code()
+        data[0] = sample_code_id
         molecule_information['data'].append(data)
+
     molecule_information['type_of_molecules'] = get_modules_type ()
     molecule_information['protocols_dict'],molecule_information['protocol_list']  = get_molecule_protocols(apps_name)
     molecule_information['number_of_samples'] = len(valid_samples)
     molecule_information['table_length']  = len(HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION)
     molecule_information['protocol_type'] = list(molecule_information['protocols_dict'].keys())
     molecule_information['protocol_filter_selection'] = []
-
+    molecule_information['sample_code_ids'] = ','.join(sample_code_ids)
     for key, value in molecule_information['protocols_dict'].items():
         molecule_information['protocol_filter_selection'].append([key, value])
 

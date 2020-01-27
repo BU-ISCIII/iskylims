@@ -801,18 +801,14 @@ class SampleProjectsFieldsValue (models.Model):
 class MoleculePreparationManager (models.Manager):
 
     def  create_molecule (self, molecule_data) :
-        protocol_used = molecule_data['protocolUsed']
-        molecule_used = MoleculeType.objects.get(moleculeType__exact = molecule_data['moleculeUsed'])
-        new_molecule = self.create( protocolUsed = protocol_used,
-        sample =  molecule_data['sample'],
-        moleculeUsed =  molecule_used,
-        state = StatesForMolecule.objects.get(moleculeStateName__exact = 'Defined'),
-        moleculeCodeId =  molecule_data['moleculeCodeId'],
-        moleculeExtractionDate = molecule_data['moleculeExtractionDate'],
-        extractionType =  molecule_data['extractionType'],
-        #usedForMassiveSequencing= molecule_data['usedForMassiveSequencing']
-        #numberOfReused = molecule_data['numberOfReused']
-        )
+
+        molecule_used_obj = MoleculeType.objects.get(moleculeType__exact = molecule_data['moleculeUsed'])
+        protocol_type_obj = ProtocolType.objects.get(molecule = molecule_used_obj, apps_name__exact = molecule_data['app_name'])
+        protocol_used_obj = Protocols.objects.get(name__exact = molecule_data['protocolUsed'], type = protocol_type_obj)
+        new_molecule = self.create( protocolUsed = protocol_used_obj, sample =  molecule_data['sample'],
+                    moleculeUsed =  molecule_used_obj, state = StatesForMolecule.objects.get(moleculeStateName__exact = 'Defined'),
+                    moleculeCodeId =  molecule_data['moleculeCodeId'], moleculeExtractionDate = molecule_data['moleculeExtractionDate'],
+                    extractionType =  molecule_data['extractionType'], moleculeUser = User.objects.get(username__exact = molecule_data['user']))
 
         return new_molecule
 
@@ -841,7 +837,7 @@ class MoleculePreparation (models.Model):
     extractionType = models.CharField(max_length=50)
     moleculeExtractionDate = models.DateTimeField(auto_now_add = False, null =True)
     numberOfReused = models.IntegerField(default=0)
-    usedForMassiveSequencing = models.BooleanField(default=True)
+    usedForMassiveSequencing = models.BooleanField(null = True, blank = True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__ (self):
@@ -869,6 +865,8 @@ class MoleculePreparation (models.Model):
     def get_extraction_date (self):
         return "%s" %(self.moleculeExtractionDate.strftime("%B %d, %Y"))
 
+    def get_molecule_id (self):
+        return "%s" %(self.pk)
 
     def get_molecule_code_id (self):
         return '%s' %(self.moleculeCodeId)
