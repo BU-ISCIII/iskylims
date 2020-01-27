@@ -42,7 +42,7 @@
                                     <tbody>
                                         {% for date, code,  sampletype,  s_id , user in pending.defined.sample_information  %}
                                             <tr>
-                                                    <td><a href="displayLibSample={{s_id}}">{{date}}</a></td>
+                                                    <td><a href="displaySample={{s_id}}">{{date}}</a></td>
                                                     <td>{{code}}</td>
                                                     <td>{{sampletype}}</td>
                                                     <td>{{user}}</td>
@@ -98,7 +98,7 @@
                                     <tbody>
                                         {% for date, sample_id, s_type, s_id, user, molecule_id, extr_date, protocol, m_id  in pending.extract_molecule.molecule_information  %}
                                             <tr>
-                                                    <td><a href="displayLibSample={{s_id}}">{{date}}</a></td>
+                                                    <td><a href="displaySample={{s_id}}">{{date}}</a></td>
                                                     <td>{{s_type}}</td>
                                                     <td>{{molecule_id}}</td>
                                                     <td>{{extr_date}}</td>
@@ -140,7 +140,7 @@
                                 <tbody>
                                     {% for date, sample_id, s_type, s_id, user, molecule_id, extr_date, protocol, m_id  in pending.create_library_preparation.library_information  %}
                                         <tr>
-                                                <td><a href="displayLibSample={{s_id}}">{{date}}</a></td>
+                                                <td><a href="displaySample={{s_id}}">{{date}}</a></td>
                                                 <td>{{s_type}}</td>
                                                 <td>{{molecule_id}}</td>
                                                 <td>{{extr_date}}</td>

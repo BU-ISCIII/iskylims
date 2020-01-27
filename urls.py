@@ -34,6 +34,7 @@ urlpatterns = [
     path('displaySample=<int:sample_id>/', views.display_sample, name= 'display_sample'),
     path('displaySampleInRun=<int:sample_run_project_id>/', views.display_sample_in_run, name = 'display_sample_in_run'),
     path('displaySampleProject=<int:sample_project_id>/', views.display_sample_project, name = 'display_sample_project'),
+    path('handlingMolecules', views.handling_molecules, name = 'handling_molecules'),
     path('latest_run/',views.latest_run, name='latest_run'),
     path('incompletedRuns', views.incompleted_runs, name = 'incompleted_runs'),
     path('MonthlyReport/', views.monthly_report, name='montly_report'),

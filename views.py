@@ -3259,7 +3259,8 @@ def add_user_lot_commercial_kit (request):
 def pending_to_update(request):
     pending = {}
     # get the samples in defined state
-    pending['defined'] = get_samples_in_defined_state(request.user)
+
+    pending['defined'] = get_samples_in_defined_state('')
     pending['extract_molecule'] = get_samples_in_extracted_molecule_state(request.user)
     pending['create_library_preparation'] = get_samples_in_lib_prep_state()
     pending['lib_prep_protocols'] = get_protocol_lib()
@@ -3401,8 +3402,6 @@ def define_sample_projects_fields (request, sample_project_id):
 
 
 
-
-
 @login_required
 def display_sample (request, sample_id):
     '''
@@ -3416,6 +3415,66 @@ def display_sample (request, sample_id):
 
     return render(request, 'iSkyLIMS_wetlab/displaySample.html',{'sample_information':sample_information})
 
+def handling_molecules(request):
+    '''
+    Functions:
+        get_samples_in_state : located at iSkyLIMS_core/utils/handling_samples.py
+        create_table_to_select_molecules : located at iSkyLIMS_core/utils/handling_samples.py
+    '''
+    if request.method == 'POST' and request.POST['action'] == 'selectedMolecules':
+        if request.POST['samples'] == '':
+            # If no samples are selected , display again the sample list
+            samples_list = get_samples_in_state ('Defined')
+            if len(samples_list) > 0 :
+                sample_availables = create_table_to_select_molecules (samples_list)
+            return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'sample_availables': sample_availables})
+        if  'samples_in_list' in request.POST:
+            samples = request.POST.getlist('samples')
+        # keeping the possibility that samples are selected directly from sample definition
+        else:
+            samples = request.POST['samples'].split(',')
+
+        molecule_protocol = get_table_record_molecule (samples, __package__)
+        if 'ERROR' in molecule_protocol :
+            return render (request, 'iSkyLIMS_wetlab/error_page.html',
+                {'content':['There was no valid sample selected ']})
+        molecule_protocol['samples'] = ','.join(samples)
+
+        return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'molecule_protocol':molecule_protocol})
+
+    elif request.method == 'POST' and request.POST['action'] == 'updateMoleculeProtocol':
+        molecule_recorded = record_molecules (request.POST, request.user, __package__)
+        import pdb; pdb.set_trace()
+        if 'molecule_code_ids' in request.POST and request.POST['molecule_code_ids'] != '' and 'molecule_code_ids' in molecule_recorded :
+            # Add the already recorded molecules to the new ones
+            molecule_recorded['molecule_code_ids'] += ',' + request.POST['molecule_code_ids']
+            molecule_recorded['molecule_ids'] += ',' + request.POST['molecule_ids']
+        if 'incomplete_sample_ids' in molecule_recorded:
+            ## collect the information to select in the option fields
+            molecule_recorded.update(get_table_record_molecule (molecule_recorded['incomplete_sample_ids'], __package__))
+            import pdb; pdb.set_trace()
+            return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'molecule_recorded':molecule_recorded})
+        import pdb; pdb.set_trace()
+        show_molecule_parameters = display_molecule_protocol_parameters(molecule_recorded['molecule_ids'].split(','),request.user)
+        return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'molecule_recorded':molecule_recorded, 'show_molecule_parameters': show_molecule_parameters})
+        #     added_molecule_protocol_parameters, sample_updated_list = add_molecule_protocol_parameters(request)
+        #if 'pending' in request.POST :
+        #molecules = request.POST['pending'].split(',')
+        #show_molecule_parameters = display_molecule_protocol_parameters(molecules,request.user)
+        #return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'added_molecule_protocol_parameters':added_molecule_protocol_parameters, 'show_molecule_parameters':show_molecule_parameters})
+        #else:
+        #return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'added_molecule_protocol_parameters':added_molecule_protocol_parameters})
+
+
+
+
+    else:
+        samples_list = get_samples_in_state ('Defined')
+        if len(samples_list) > 0 :
+            sample_availables = create_table_to_select_molecules (samples_list)
+            return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'sample_availables': sample_availables})
+
+    return
 
 @login_required
 def search_lib_samples (request):
