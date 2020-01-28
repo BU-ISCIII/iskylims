@@ -541,6 +541,28 @@ def create_new_sample_project(form_data, app_name):
 
     return new_sample_project_id
 
+def create_table_user_molecules (user_owner_molecules) :
+    '''
+    Description:
+        The function prepare the user molecule information to display.
+    Input:
+        user_owner_molecules:  list of molecules belongs to user
+    Return:
+        patient_obj
+    '''
+    molecule_data = {}
+    molecule_data['data'] = []
+    for molecule in user_owner_molecules :
+        data = []
+        data.append(molecule.get_sample_name())
+        data += molecule.get_molecule_information()
+        molecule_data['data'].append(data)
+
+    molecule_data['molecule_heading'] = HEADING_FOR_USER_PENDING_MOLECULES
+
+    return molecule_data
+
+
 def define_table_for_sample_project_fields(sample_project_id):
     '''
     Description:
@@ -755,6 +777,34 @@ def get_molecule_obj_from_sample(sample_obj):
     else:
         return ''
 
+def get_molecule_in_state( state, user):
+    '''
+    Description:
+        The function will return a list with moelcules which are in the state defined
+        in state variable
+        If user is included the result are limited to this user and their friend list.
+        If user is empty then no user restriction applies.
+    Input:
+        state       # state name to match
+        user        # user object to limit the results
+    Functions:
+        get_friend_list
+    Variables:
+        molecule_state # Dictionnary with the heading and the molecule information
+    Return:
+        molecule_objs.
+    '''
+    molecule_objs = ''
+    if user != '' :
+        user_friend_list = get_friend_list(user)
+        if MoleculePreparation.objects.filter(state__moleculeStateName__exact = state, moleculeUser__in = user_friend_list).exists():
+            molecule_objs = MoleculePreparation.objects.filter(state__moleculeStateName__exact = state, moleculeUser__in = user_friend_list).order_by('generated_at')
+
+    else :
+        if  MoleculePreparation.objects.filter(state__moleculeStateName__exact = state).exists():
+            molecule_objs =  MoleculePreparation.objects.filter(state__moleculeStateName__exact = state).order_by('moleculeUser').order_by('generated_at')
+
+    return molecule_objs
 
 ##### For each state get samples per user
 def get_samples_in_defined_state (user):

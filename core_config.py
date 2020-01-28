@@ -29,7 +29,9 @@ HEADING_CONFIRM_MOLECULE_RECORDED = ['Molecule Code ID', 'Used Protocol']
 HEADING_FOR_DEFINED_SAMPLES_STATE = ['Sample extraction date', 'Sample Code ID', 'Sample','To be included']
 
 HEADING_FOR_EXTRACTED_MOLECULES_STATE = ['Sample extraction date', 'Sample', 'Molecule Code ID', 'Molecule Extraction Date',
-                                    'Used Protocol', 'To be included']
+                                    'Used Protocol', 'Select sample']
+
+HEADING_FOR_USER_PENDING_MOLECULES = ['Sample', 'Molecule Code ID', 'Molecule Extraction Date', 'Used Protocol', 'Select Molecule']
 
 HEADING_FOR_DEFINED_SAMPLES_STATE_WETLAB_MANAGER = ['Sample extraction date', 'Sample Code ID', 'Sample','UserID']
 HEADING_FOR_EXTRACTED_MOLECULES_STATE_WETLAB_MANAGER = ['Sample extraction date', 'Sample', 'Molecule Code ID', 'Molecule Extraction Date',

@@ -862,6 +862,7 @@ class MoleculePreparation (models.Model):
         return molecule_info
 
 
+
     def get_extraction_date (self):
         return "%s" %(self.moleculeExtractionDate.strftime("%B %d, %Y"))
 
@@ -878,6 +879,9 @@ class MoleculePreparation (models.Model):
         data.append(self.protocolUsed.get_name())
         data.append(str(self.pk))
         return data
+
+    def get_sample_name(self):
+        return '%s' %(self.sample.get_sample_name())
 
     def get_sample_obj(self):
         return self.sample
