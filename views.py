@@ -3469,10 +3469,16 @@ def handling_molecules(request):
 
 
     else:
+        sample_availables , user_molecules = '' ,''
         samples_list = get_samples_in_state ('Defined')
         if len(samples_list) > 0 :
             sample_availables = create_table_to_select_molecules (samples_list)
-            return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'sample_availables': sample_availables})
+
+        user_owner_molecules = get_molecule_in_state ('Defined' , request.user)
+        if len(user_owner_molecules) > 0 :
+            user_molecules = create_table_user_molecules (user_owner_molecules)
+
+        return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'sample_availables': sample_availables, 'user_molecules': user_molecules})
 
     return
 

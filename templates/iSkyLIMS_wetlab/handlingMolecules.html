@@ -2,6 +2,7 @@
 {% load static %}
 {% block content %}
 {%include 'iSkyLIMS_core/jexcel_functionality.html' %}
+<link href="{% static "iSkyLIMS_common_static/css/collapse.css" %}" rel="stylesheet" type="text/css"/>
 <style>
     .table-wrapper-sm-7 {
         max-height: 450px;
@@ -14,9 +15,9 @@
             white-space: nowrap;
         }
 </style>
-{% if sample_recorded %}
 
-{% elif molecule_protocol %}
+
+{% if molecule_protocol %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12">
             <div class="panel panel-default">
@@ -327,51 +328,104 @@
 ###########################  All parameter filled
 
 {% else %}
-    <div class="row row-space-4 margin-b-4">
-        <div class="col-sm-12" >
-            <div class="col-sm-7" >
-                <div class="panel panel-default">
-                    {% if sample_availables.sample_heading %}
-                    <div class="panel-heading"><h3>Select the Samples to add Molecule information</h3></div>
-                        <div class="panel-body">
-                            <form method="post" action="/wetlab/handlingMolecules" enctype="multipart/form-data" name="selectedMolecules"  id="selectedMolecules" class="form-horizontal well">
-                                {% csrf_token %}
-                                <input type="hidden" name="action" value="selectedMolecules"/>
-                                <input type="hidden" name="samples_in_list" value="True"/>
-                                <div class="table-wrapper-sm-7">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                {% for value in sample_availables.sample_heading %}
-                                                    <th> {{ value }}</th>
-                                                {% endfor %}
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for date, code,  sampletype,  s_id  in sample_availables.sample_information  %}
-                                                <tr>
-                                                        <td>{{date}}</td>
-                                                        <td>{{code}}</td>
-                                                        <td>{{sampletype}}</td>
-                                                        <td><input type="checkbox" name="samples" value="{{s_id}}"></td>
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div> <!--  end of table wrapper  -->
-                                <br><br>
-                                <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                                <input class="btn pull-right btn-primary" type="submit" value="Submit">
-                             </form>
-                         </div>  <!--  end of panel body  -->
-                    {% else %}
-                        <div class="panel-heading"><h3>Molecule information</h3></div>
-                        <div class="panel-body">
-                            <h4>There is no samples to add Molecule Extraction information</h4>
-                        </div>  <!--  end of panel body  -->
-                    {% endif %}
+    <div class="row row-space-4 margin-b-1">
+        <div class="col-sm-12 ">
+            <div class="tab">
+                <button class="tablinks" onclick="summaryBin(event, 'new_samples')" id="tablinksdefaultOpen">New Samples </button>
+                <button class="tablinks" onclick="summaryBin(event, 'molecules')">My pending molecules</button>
+
+
+                <div id="molecules" class="tabcontent">
+                    <div class="col-sm-11" >
+                        <div class="panel panel-default">
+                            <div class="panel-heading"><h3>Select the molecules to add Extraction information</h3></div>
+                            <div class="panel-body">
+                                {% if user_molecules %}
+                                    <form method="post" action="/wetlab/handlingMolecules" enctype="multipart/form-data" name="selectedOwnerMolecules"  id="selectedOwnerMolecules" class="form-horizontal well">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="selectedOwnerMolecules"/>
+                                        <input type="hidden" name="samples_in_list" value="True"/>
+                                        <div class="table-wrapper-sm-7">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        {% for value in user_molecules.molecule_heading %}
+                                                            <th> {{ value }}</th>
+                                                        {% endfor %}
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for s_name , code, date, protocol,  m_id  in user_molecules.data  %}
+                                                        <tr>
+                                                            <td>{{s_name}}</td>
+                                                            <td>{{code}}</td>
+                                                            <td>{{date}}</td>
+                                                            <td>{{protocol}}</td>
+                                                            <td><input type="checkbox" name="molecules" value="{{m_id}}"></td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div> <!--  end of table wrapper  -->
+                                        <br><br>
+                                        <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                                        <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                                     </form>
+                                {% else %}
+                                    <h4> Your pending  molecule list is empty </h4>
+                                {% endif %}
+                            </div>  <!--  end of panel body  -->
+
+                        </div> <!--// end panel -->
+                    </div> <!--// end col-sm-7  -->
+                </div> <!-- // end of tab molecules -->
+
+                <div id="new_samples" class="tabcontent">
+                    <div class="col-sm-11" >
+                        <div class="panel panel-default">
+                            {% if sample_availables.sample_heading %}
+                                <div class="panel-heading"><h3>Select the Samples to add Molecule information</h3></div>
+                                <div class="panel-body">
+                                    <form method="post" action="/wetlab/handlingMolecules" enctype="multipart/form-data" name="selectedMolecules"  id="selectedMolecules" class="form-horizontal well">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="selectedMolecules"/>
+                                        <input type="hidden" name="samples_in_list" value="True"/>
+                                        <div class="table-wrapper-sm-7">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        {% for value in sample_availables.sample_heading %}
+                                                            <th> {{ value }}</th>
+                                                        {% endfor %}
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for date, code,  sampletype,  s_id  in sample_availables.sample_information  %}
+                                                        <tr>
+                                                                <td>{{date}}</td>
+                                                                <td>{{code}}</td>
+                                                                <td>{{sampletype}}</td>
+                                                                <td><input type="checkbox" name="samples" value="{{s_id}}"></td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div> <!--  end of table wrapper  -->
+                                        <br><br>
+                                        <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                                        <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                                     </form>
+                                 </div>  <!--  end of panel body  -->
+                            {% else %}
+                                <div class="panel-heading"><h3>Molecule information</h3></div>
+                                <div class="panel-body">
+                                    <h4>There is no samples to add Molecule Extraction information</h4>
+                                </div>  <!--  end of panel body  -->
+                            {% endif %}
                      </div> <!--// end panel -->
-                 </div> <!--// end col-sm-5  -->
-         </div> <!--// end row -->
+                 </div> <!--// end col-sm-7  -->
+            </div> <!-- // end of tab new_samples -->
+         </div> <!--// end col-sm-12  -->
+    </div> <!--// end row -->
 {% endif %}
 {% endblock %}
