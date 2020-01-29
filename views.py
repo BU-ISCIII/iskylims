@@ -3422,12 +3422,10 @@ def handling_molecules(request):
         create_table_to_select_molecules : located at iSkyLIMS_core/utils/handling_samples.py
     '''
     if request.method == 'POST' and request.POST['action'] == 'selectedMolecules':
-        if request.POST['samples'] == '':
-            # If no samples are selected , display again the sample list
-            samples_list = get_samples_in_state ('Defined')
-            if len(samples_list) > 0 :
-                sample_availables = create_table_to_select_molecules (samples_list)
-            return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'sample_availables': sample_availables})
+        # If no samples are selected , call again this function to display again the sample list
+        if not 'samples' in request.POST :
+            return redirect ('handling_molecules')
+
         if  'samples_in_list' in request.POST:
             samples = request.POST.getlist('samples')
         # keeping the possibility that samples are selected directly from sample definition
@@ -3464,6 +3462,12 @@ def handling_molecules(request):
         #return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'added_molecule_protocol_parameters':added_molecule_protocol_parameters, 'show_molecule_parameters':show_molecule_parameters})
         #else:
         #return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'added_molecule_protocol_parameters':added_molecule_protocol_parameters})
+
+
+    elif request.method == 'POST' and request.POST['action'] == 'selectedOwnerMolecules':
+        # If no samples are selected , call again this function to display again the sample list
+        if not 'molecutes' in request.POST :
+            return redirect ('handling_molecules')
 
 
 
