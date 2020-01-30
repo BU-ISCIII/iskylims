@@ -104,6 +104,14 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
                 dict_value_data['Species']=''
                 dict_value_data['NucleicAcid']='DNA'
                 ### adding well information
+                #well_column = number_well
+                dict_value_data['Well']=str(letter_well + number_well)
+                number_well =str(int(number_well)+1).zfill(2)
+                if number_well == '13':
+                # reset the number well to 1 and increase the letter
+                    number_well = '01'
+                    letter_well=chr(ord(letter_well)+1)
+                '''  Removed
                 if not dict_value_data['Index1Name'] in well_column:
                     well_column[dict_value_data['Index1Name']]=number_well
                     number_well =str(int(number_well)+1).zfill(2)
@@ -118,7 +126,7 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
                     letter_well = 'A'
                     dict_value_data['Well']=str(letter_well + well_column[dict_value_data['Index1Name']])
 
-
+                '''
                 data_raw.append(dict_value_data)
 
     fh.close()
@@ -355,20 +363,20 @@ def create_unique_sample_id_values (infile, index_file):
 def set_user_names_in_sample_sheet (in_file, user_names):
     '''
     Description:
-        The function modifies/set the user names in the description 
-        column 
+        The function modifies/set the user names in the description
+        column
     Input:
         in_file # sample sheet file to be updated
-        user_names # dictionary having projects as key and user names 
+        user_names # dictionary having projects as key and user names
                     as their value
     Variable:
         data_line  # split line into list to set user name
         description_index # column number where is located the description
                             inside sample Sheet
         found_sample_line # flag to identify if sample heading was found
-        project_index # column number where is located the project inside 
+        project_index # column number where is located the project inside
                         sample Sheet
-                        
+
         temp_sample_sheet # temporary sample sheet to store the information
                             it will replace the in_file
     Return:
@@ -397,7 +405,7 @@ def set_user_names_in_sample_sheet (in_file, user_names):
 
             new_line = ','.join(data_line)
             fh_out_file.write(str(new_line + '\n'))
-        
+
         else:
             fh_out_file. write(line)
     fh.close()
