@@ -100,8 +100,9 @@ def fetch_remote_file (conn, run_dir, remote_file, local_file) :
     logger.debug ('Starting function for fetching remote file')
     with open(local_file ,'wb') as r_par_fp :
         try:
+            #import pdb; pdb.set_trace()
             conn.retrieveFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME, remote_file, r_par_fp)
-            logger.info('Retrieving the remote %s file for %s', local_file, run_dir)
+            logger.info('Retrieving the remote %s file for %s/%s', local_file, run_dir,remote_file)
         except Exception as e:
             string_message = 'Unable to fetch the ' + local_file + 'file on folder ' + run_dir
             logging_errors (string_message, False, True)
