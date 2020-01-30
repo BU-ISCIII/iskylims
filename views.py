@@ -3469,6 +3469,8 @@ def handling_molecules(request):
         if not 'molecutes' in request.POST :
             return redirect ('handling_molecules')
 
+        return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'molecule_recorded':molecule_recorded, 'show_molecule_parameters': show_molecule_parameters})
+
 
 
 
