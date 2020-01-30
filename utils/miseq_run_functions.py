@@ -101,15 +101,14 @@ def get_latest_miseq_log(conn, log_folder) :
             if cycle_number > max_cycle :
                 max_cycle = cycle_number
                 latest_log = file_remote
-
     temporary_log = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY,'miseq_cycle.log')
     s_latest_log = os.path.join(log_folder,latest_log)
 
     #with open(temporary_log ,'wb') as log_fp :
     temporary_log = fetch_remote_file (conn, log_folder, s_latest_log, temporary_log)
-
     with open (temporary_log, 'r', encoding='utf8') as fh :
         log_file_content = fh.read()
+
     os.remove(temporary_log)
     logger.debug ('End function get_latest_miseq_log')
     return max_cycle, log_file_content
