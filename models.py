@@ -812,7 +812,7 @@ class MoleculePreparationManager (models.Manager):
 
     def  create_molecule (self, molecule_data) :
 
-        molecule_used_obj = MoleculeType.objects.get(moleculeType__exact = molecule_data['moleculeUsed'])
+        molecule_used_obj = MoleculeType.objects.get(moleculeType__exact = molecule_data['moleculeType'])
         protocol_type_obj = ProtocolType.objects.get(molecule = molecule_used_obj, apps_name__exact = molecule_data['app_name'])
         protocol_used_obj = Protocols.objects.get(name__exact = molecule_data['protocolUsed'], type = protocol_type_obj)
         new_molecule = self.create( protocolUsed = protocol_used_obj, sample =  molecule_data['sample'],
@@ -829,7 +829,7 @@ class MoleculePreparation (models.Model):
     sample = models.ForeignKey(
                 Samples,
                 on_delete = models.CASCADE)
-    moleculeUsed = models.ForeignKey(
+    moleculeType = models.ForeignKey(
                 MoleculeType,
                 on_delete = models.CASCADE)
     state =  models.ForeignKey(
@@ -843,7 +843,7 @@ class MoleculePreparation (models.Model):
                 UserLotCommercialKits,
                 on_delete = models.CASCADE, null = True, blank = True)
 
-    moleculeUsed = models.ForeignKey(
+    moleculeUsedFor = models.ForeignKey(
                 MoleculeUsedFor,
                 on_delete=models.CASCADE, null = True, blank = True)
 
@@ -851,7 +851,7 @@ class MoleculePreparation (models.Model):
     extractionType = models.CharField(max_length=50)
     moleculeExtractionDate = models.DateTimeField(auto_now_add = False, null =True)
     numberOfReused = models.IntegerField(default=0)
-    usedForMassiveSequencing = models.NullBooleanField()
+    #usedForMassiveSequencing = models.NullBooleanField()
     generated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__ (self):
@@ -859,10 +859,10 @@ class MoleculePreparation (models.Model):
 
     def get_id (self):
         return "%s" %(self.pk)
-
+    '''
     def get_if_massive(self):
         return self.usedForMassiveSequencing
-
+    '''
     def get_info_for_display(self):
         extraction_date = self.moleculeExtractionDate.strftime("%d, %B, %Y")
         molecule_info =[]
