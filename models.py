@@ -171,7 +171,8 @@ class StatesForMolecule (models.Model):
 
 class SampleType (models.Model):
     sampleType = models.CharField(max_length=50)
-
+    apps_name = models.CharField(max_length = 50)
+    optional_fields = models.CharField(max_length = 50, null = True, blank = True)
 
     def __str__ (self):
         return '%s' %(self.sampleType)
@@ -795,7 +796,16 @@ class SampleProjectsFieldsValue (models.Model):
     objects = SampleProjectsFieldsValueManager()
 
 
+class MoleculeUsedFor (models.Model):
+    usedFor = models.CharField(max_length = 50)
+    apps_name = models.CharField(max_length = 50)
+    massiveUse = models.BooleanField(default= False)
 
+    def __str__ (self):
+        return '%s' %(self.usedFor)
+
+    def get_massive(self):
+        return '%s' %(self.massiveUse)
 
 
 class MoleculePreparationManager (models.Manager):
@@ -833,11 +843,15 @@ class MoleculePreparation (models.Model):
                 UserLotCommercialKits,
                 on_delete = models.CASCADE, null = True, blank = True)
 
+    moleculeUsed = models.ForeignKey(
+                MoleculeUsedFor,
+                on_delete=models.CASCADE, null = True, blank = True)
+
     moleculeCodeId = models.CharField(max_length=255)
     extractionType = models.CharField(max_length=50)
     moleculeExtractionDate = models.DateTimeField(auto_now_add = False, null =True)
     numberOfReused = models.IntegerField(default=0)
-    usedForMassiveSequencing = models.BooleanField(null = True, blank = True)
+    usedForMassiveSequencing = models.NullBooleanField()
     generated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__ (self):
