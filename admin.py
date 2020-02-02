@@ -11,8 +11,11 @@ class MoleculeTypeAdmin( admin.ModelAdmin):
     list_display = ('moleculeType',)
 
 class MoleculePreparationAdmin(admin.ModelAdmin):
-    list_display = ('moleculeCodeId', 'state','sample', 'moleculeUsed', 'extractionType', 'protocolUsed',
-                    'moleculeExtractionDate', 'numberOfReused')
+    list_display = ('moleculeCodeId', 'state','sample', 'moleculeType', 'extractionType', 'protocolUsed',
+                    'moleculeExtractionDate', 'moleculeUsedFor','numberOfReused')
+
+class MoleculeUsedForAdmin(admin.ModelAdmin):
+    list_display = ['usedFor' ,'apps_name', 'massiveUse']
 
 class PatientCoreAdmin(admin.ModelAdmin):
     list_display = ('patientName', 'patientSurname', 'patientCode', 'patientSex')
@@ -64,6 +67,7 @@ admin.site.register(CommercialKits, CommercialKitsAdmin)
 admin.site.register(SamplesOrigin, SamplesOriginAdmin)
 
 admin.site.register(MoleculeType,MoleculeTypeAdmin)
+admin.site.register(MoleculeUsedFor,MoleculeUsedForAdmin)
 admin.site.register(MoleculePreparation,MoleculePreparationAdmin)
 admin.site.register(PatientCore,PatientCoreAdmin)
 admin.site.register(PatientSex,PatientSexAdmin)

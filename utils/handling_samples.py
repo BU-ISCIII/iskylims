@@ -46,6 +46,7 @@ def display_molecule_protocol_parameters (molecule_ids, user_obj):
     showed_molecule =[]
     molecule_recorded['data'] = []
     pending_molecule =[]
+    molecule_code_ids = []
     selected_protocol = ''
     for molecule in molecule_ids :
         if not MoleculePreparation.objects.filter(pk = int(molecule)).exists():
@@ -77,10 +78,12 @@ def display_molecule_protocol_parameters (molecule_ids, user_obj):
             data[0] = molecule_obj.get_molecule_code_id()
             data[1] = protocol_used
             molecule_recorded['data'].append(data)
+            molecule_code_ids.append(molecule_obj.get_molecule_code_id())
         else:
             pending_molecule.append(molecule_obj.get_id())
 
     molecule_recorded['molecule_id'] = ','.join(showed_molecule)
+    molecule_recorded ['molecule_code_ids'] = '.'.join(molecule_code_ids)
     molecule_recorded['pending_id'] = ','.join(pending_molecule)
     molecule_recorded['heading_in_excel'] = '::'.join(parameter_list)
 
@@ -91,7 +94,7 @@ def display_molecule_protocol_parameters (molecule_ids, user_obj):
 
 
 
-def add_molecule_protocol_parameters(request):
+def add_molecule_protocol_parameters(form_data):
     '''
     Description:
         The function will store in database the molecule parameters.
@@ -107,25 +110,21 @@ def add_molecule_protocol_parameters(request):
     molecule_parameter_value = {}
     molecule_updated_list = []
     sample_updated_list = []
-    molecule_json_data = json.loads(request.POST['parameters_data'])
-    molecules = request.POST['molecules'].split(',')
-    parameter_heading = request.POST['heading_in_excel'].split('::')
+
+    molecule_json_data = json.loads(form_data['parameters_data'])
+    molecule_ids = form_data['molecules'].split(',')
+    molecule_code_ids = form_data['molecule_code_ids'].split(',')
+    parameter_heading = form_data['heading_in_excel'].split('::')
     parameters_length = len(molecule_json_data[0])
     fixed_heading_length = len(HEADING_FOR_MOLECULE_ADDING_PARAMETERS)
     protocol_used_obj = Protocols.objects.get(name__exact = molecule_json_data[0][1])
     for row_index in range(len(molecule_json_data)) :
-        molecule_obj = MoleculePreparation.objects.get(pk = int(molecules[row_index]))
+        right_id = molecule_ids[molecule_code_ids.index(molecule_json_data[row_index][0])]
+
+        #molecule_obj = MoleculePreparation.objects.get(pk = int(molecules[row_index]))
+        molecule_obj = get_molecule_obj_from_id(right_id)
         molecule_obj.set_state('Completed')
         molecule_updated_list.append(molecule_obj.get_molecule_code_id())
-
-        # Update sample state
-        sample_obj = molecule_obj.get_sample_obj()
-        if molecule_obj.get_if_massive() == True :
-            sample_obj.set_state('Library preparation')
-        else:
-            sample_obj.set_state('Completed')
-        # Update sample list
-        sample_updated_list.append(sample_obj.get_sample_id())
 
         for p_index in range(fixed_heading_length, parameters_length):
             molecule_parameter_value['moleculeParameter_id'] = ProtocolParameters.objects.get(protocol_id = protocol_used_obj,
@@ -134,8 +133,13 @@ def add_molecule_protocol_parameters(request):
             molecule_parameter_value['parameterValue'] = molecule_json_data[row_index] [p_index]
             new_parameters_data = MoleculeParameterValue.objects.create_molecule_parameter_value (molecule_parameter_value)
 
+        # Update sample state
+        sample_obj = molecule_obj.get_sample_obj()
+        sample_obj.set_state('Pending for use')
+        # Update sample list
+        #sample_updated_list.append(sample_obj.get_sample_id())
 
-    return molecule_updated_list , sample_updated_list
+    return molecule_updated_list
 
 
 def analyze_input_samples (request):
@@ -337,11 +341,11 @@ def analyze_input_molecules (request):
             molecule_code_id = sample_obj.get_sample_code() + '_E1'
         protocol_used = molecule_json_data[row_index][heading_in_excel.index('protocol_used')]
         protocol_used_obj = Protocols.objects.get(name__exact = protocol_used)
-        molecule_used_obj = MoleculeType.objects.get(moleculeType__exact = molecule_json_data[row_index][heading_in_excel.index('molecule_type')])
+        molecule_type_obj = MoleculeType.objects.get(moleculeType__exact = molecule_json_data[row_index][heading_in_excel.index('molecule_type')])
 
         molecule_data['protocolUsed'] =  protocol_used_obj
         molecule_data['sample'] = sample_obj
-        molecule_data['moleculeUsed'] =  molecule_used_obj
+        molecule_data['moleculeType'] =  molecule_type_obj
         molecule_data['moleculeCodeId'] = molecule_code_id
         molecule_data['extractionType'] =  molecule_json_data[row_index][heading_in_excel.index('type_extraction')]
         molecule_data['moleculeExtractionDate'] = molecule_json_data[row_index][heading_in_excel.index('extractionDate')]
@@ -436,7 +440,7 @@ def build_record_sample_form (app_name) :
     sample_information = {}
     sample_information['species'] = get_species()
     sample_information['sample_origin'] = get_sample_origin()
-    sample_information['sampleType'] = get_sample_type()
+    sample_information['sampleType'] = get_sample_type(app_name)
     sample_information['sample_project'] = get_defined_sample_projects (app_name)
     sample_information['sample_project'].insert(0,'None')
     return sample_information
@@ -541,6 +545,45 @@ def create_new_sample_project(form_data, app_name):
 
     return new_sample_project_id
 
+
+def create_table_pending_use(sample_list, app_name):
+    '''
+    Description:
+        The function get the type of use that the molecule can have to assign it.
+    Input:
+        sample_list:  list of samples that are pending the use that the molecuel will have
+        app_name : application name
+    Return:
+        patient_obj
+    '''
+    use_type = {}
+    use_type['types'] = []
+    use_type['data'] = []
+    molecule_code_ids = []
+    molecule_ids = []
+
+    if MoleculeUsedFor.objects.filter(apps_name__exact = app_name).exists() :
+        m_used = MoleculeUsedFor.objects.filter(apps_name__exact = app_name)
+        for used in m_used :
+            use_type['types'].append(used.get_molecule_use())
+
+    use_type['heading'] = HEADING_FOR_SELECTING_MOLECULE_USE
+    length_heading = len(HEADING_FOR_SELECTING_MOLECULE_USE)
+    if MoleculePreparation.objects.filter(moleculeUsedFor = None, state__moleculeStateName__exact = 'Completed').exists():
+        molecules = MoleculePreparation.objects.filter(moleculeUsedFor = None, state__moleculeStateName__exact = 'Completed')
+        for molecule in molecules :
+            molecule_code_id = molecule.get_molecule_code_id()
+            data=['']*length_heading
+            data[0] = molecule.get_sample_name()
+            data[1] = molecule_code_id
+            molecule_ids.append(molecule.get_molecule_id())
+            molecule_code_ids.append(molecule_code_id)
+            use_type['data'].append(data)
+
+    use_type['molecule_ids'] = ','.join(molecule_ids)
+    use_type['molecule_code_ids'] = ','.join(molecule_code_ids)
+    return use_type
+
 def create_table_user_molecules (user_owner_molecules) :
     '''
     Description:
@@ -548,7 +591,7 @@ def create_table_user_molecules (user_owner_molecules) :
     Input:
         user_owner_molecules:  list of molecules belongs to user
     Return:
-        patient_obj
+        molecule_data
     '''
     molecule_data = {}
     molecule_data['data'] = []
@@ -582,6 +625,24 @@ def define_table_for_sample_project_fields(sample_project_id):
     return sample_project_data
 
 
+def display_sample_types (app_name):
+    '''
+    Description:
+        The function return a dictionary with the information to define the type of sample and
+        the fields that can be empty
+
+    Input:
+        sample_project_id # id  to get sample project information
+    Return:
+        sample_project_data
+    '''
+    sample_types = {}
+    if SampleType.objects.filter(apps_name__exact = app_name).exists():
+        s_types = SampleType.objects.filter(apps_name__exact = app_name)
+
+    sample_types['optional_values'] = HEADING_FOR_OPTIONAL_FIELD_SAMPLES
+    return sample_types
+
 def get_all_sample_information (sample_id , massive):
     sample_information = {}
     parameter_heading_values = []
@@ -608,6 +669,7 @@ def get_all_sample_information (sample_id , massive):
                     field_value = VALUE_NOT_PROVIDED
                 sample_information['sample_project_field_value'].append(field_value)
     # check if molecule information exists for the sample
+    ############ Modificar
     if MoleculePreparation.objects.filter(sample = sample_obj, usedForMassiveSequencing = massive).exists():
         molecules = MoleculePreparation.objects.filter(sample = sample_obj, usedForMassiveSequencing = massive)
         sample_information['molecule_definition_heading'] = HEADING_FOR_MOLECULE_DEFINITION
@@ -761,6 +823,22 @@ def get_molecule_codeid_from_object(molecule_obj):
     '''
     return molecule_obj.get_molecule_code_id()
 
+def get_molecule_obj_from_id(molecule_id):
+    '''
+    Description:
+        The function will return the molecule object that are assigned to the id.
+        It returns '' if molecule does not have the id
+    Input:
+        molecule_id : id number from where to get the molecule
+    Return:
+        molecules_obj.
+    '''
+    if MoleculePreparation.objects.filter(pk__exact = molecule_id).exists():
+        molecules_obj = MoleculePreparation.objects.get(pk__exact = molecule_id)
+        return molecules_obj
+    else:
+        return ''
+
 def get_molecule_obj_from_sample(sample_obj):
     '''
     Description:
@@ -772,7 +850,7 @@ def get_molecule_obj_from_sample(sample_obj):
         molecules_obj.
     '''
     if MoleculePreparation.objects.filter(sample = sample_obj).exists():
-        molecules_obj = MoleculePreparation.objects.filter(sample = sample_obj)
+        molecules_obj = MoleculePreparation.objects.get(sample = sample_obj)
         return molecules_obj
     else:
         return ''
@@ -935,7 +1013,7 @@ def get_sample_obj_from_id(sample_id):
     sample_obj = Samples.objects.get(pk__exact = sample_id)
     return sample_obj
 
-def get_sample_type ():
+def get_sample_type (app_name):
     '''
     Description:
         The function will return the type of samples defined in database.
@@ -947,8 +1025,8 @@ def get_sample_type ():
         sample_type_names.
     '''
     sample_type_names = []
-    if SampleType.objects.filter().exists():
-        sample_types = SampleType.objects.all()
+    if SampleType.objects.filter(apps_name__exact = app_name).exists():
+        sample_types = SampleType.objects.filter(apps_name__exact = app_name)
 
         for sample in sample_types:
             sample_type_names.append(sample.get_name())
@@ -1373,6 +1451,44 @@ def search_samples(sample_name, user_name, sample_state, start_date, end_date ):
         sample_list.append(sample.get_info_for_searching())
     return sample_list
 
+def set_molecule_use(form_data, app_name) :
+    '''
+    Description:    The function get the molecule use decided by user.
+            Sample state is changed to Library preparation, and molecule is updated with the use value.
+    Input:
+        form_data     # form data from user
+    Functions:
+        get_modules_type         # located at this file
+        get_molecule_protocols   # located at this file
+    Variables:
+        molecule_update # dictionary which collects all info
+    Return:
+        molecule_update #
+    '''
+    molecule_json_data = json.loads(form_data['molecule_used_for'])
+    molecule_ids = form_data['molecule_ids'].split(',')
+    molecule_code_ids = form_data['molecule_code_ids'].split(',')
+    molecule_update = {}
+    molecule_update['data'] = []
+    molecules_length = len(molecule_json_data[0])
+    for row_index in range(len(molecule_json_data)) :
+        if molecule_json_data[row_index][2] != '':
+            data = []
+
+            import pdb; pdb.set_trace()
+            right_id = molecule_ids[molecule_code_ids.index(molecule_json_data[row_index][1])]
+            molecule_obj = get_molecule_obj_from_id(right_id)
+            molecule_obj.set_molecule_use(molecule_json_data[row_index][2], app_name)
+            sample_obj = molecule_obj.get_sample_obj()
+            if molecule_obj.get_used_for_massive ():
+                sample_obj.set_state('Library preparation')
+            else:
+                sample_obj.set_state('Completed')
+            molecule_update['data'].append(molecule_json_data[row_index])
+            import pdb; pdb.set_trace()
+    if len(molecule_update['data']) > 0:
+        molecule_update['heading'] = HEADING_FOR_SELECTING_MOLECULE_USE
+    return molecule_update
 
 def set_sample_project_fields (data_form):
     sample_project_id = data_form['sample_project_id']
