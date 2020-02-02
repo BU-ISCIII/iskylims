@@ -173,6 +173,7 @@ class SampleType (models.Model):
     sampleType = models.CharField(max_length=50)
     apps_name = models.CharField(max_length = 50)
     optional_fields = models.CharField(max_length = 50, null = True, blank = True)
+    generatedat = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__ (self):
         return '%s' %(self.sampleType)
@@ -186,6 +187,7 @@ class Species (models.Model):
     refGenomeName = models.CharField(max_length=255)
     refGenomeSize = models.CharField(max_length=100)
     refGenomeID = models.CharField(max_length=255)
+    generatedat = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__ (self):
         return '%s' %(self.speciesName)
@@ -804,6 +806,9 @@ class MoleculeUsedFor (models.Model):
     def __str__ (self):
         return '%s' %(self.usedFor)
 
+    def get_molecule_use (self):
+        return '%s' %(self.usedFor)
+
     def get_massive(self):
         return '%s' %(self.massiveUse)
 
@@ -851,14 +856,12 @@ class MoleculePreparation (models.Model):
     extractionType = models.CharField(max_length=50)
     moleculeExtractionDate = models.DateTimeField(auto_now_add = False, null =True)
     numberOfReused = models.IntegerField(default=0)
-    #usedForMassiveSequencing = models.NullBooleanField()
+    usedForMassiveSequencing = models.NullBooleanField()
     generated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__ (self):
         return "%s" %(self.moleculeCodeId)
 
-    def get_id (self):
-        return "%s" %(self.pk)
     '''
     def get_if_massive(self):
         return self.usedForMassiveSequencing
@@ -870,7 +873,8 @@ class MoleculePreparation (models.Model):
         molecule_info.append(self.state.get_molecule_state())
         molecule_info.append(extraction_date )
         molecule_info.append(self.extractionType)
-        molecule_info.append(self.moleculeUsed.get_name())
+        molecule_info.append(self.moleculeType.get_name())
+        molecule_info.append(self.moleculeUsedFor.get_molecule_use())
         molecule_info.append(self.protocolUsed.get_name())
         molecule_info.append(self.numberOfReused)
         return molecule_info
@@ -909,6 +913,16 @@ class MoleculePreparation (models.Model):
     def get_state (self):
         return '%s' %(self.state)
 
+    def get_used_for_massive(self):
+        return self.usedForMassiveSequencing
+
+
+    def set_molecule_use ( self, use_for_molecule, app_name):
+        self.moleculeUsedFor = MoleculeUsedFor.objects.get(usedFor__exact = use_for_molecule, apps_name__exact = app_name)
+        self.save()
+        self.usedForMassiveSequencing = self.moleculeUsedFor.get_massive()
+        self.save()
+        return self
     def set_state (self, state_value):
         self.state = StatesForMolecule.objects.get(moleculeStateName__exact = state_value)
         self.save()
