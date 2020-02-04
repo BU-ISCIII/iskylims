@@ -90,3 +90,9 @@ FORM_PROJECT_CREATION = ['projectName', 'projectManager', 'projectContact', 'pro
 
 ##################### DEFAULT INFORMATION  ################
 VALUE_NOT_PROVIDED = 'Not Provided'
+
+
+##################### ERROR MESSAGES  #####################
+ERROR_TYPE_OF_SAMPLE_EXISTS = ['Type of sample is already recorded',]
+ERROR_TYPE_OF_SAMPLE_ID_DOES_NOT_EXISTS = ['The type of sample that you request does not exist']
+ERROR_MOLECULE_USE_FOR_EXISTS = ['Molecule use has been already recorded']

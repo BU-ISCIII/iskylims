@@ -628,20 +628,82 @@ def define_table_for_sample_project_fields(sample_project_id):
 def display_sample_types (app_name):
     '''
     Description:
-        The function return a dictionary with the information to define the type of sample and
-        the fields that can be empty
-
+        The function return a dictionary with the information to define the type of sample
     Input:
-        sample_project_id # id  to get sample project information
+        app_name # application name where are sample type are defined
     Return:
-        sample_project_data
+        sample_types
     '''
     sample_types = {}
+    defined_sample_types = []
+
     if SampleType.objects.filter(apps_name__exact = app_name).exists():
         s_types = SampleType.objects.filter(apps_name__exact = app_name)
-
+        for s_type in s_types:
+            defined_sample_types.append([s_type.get_sample_type_id, s_type.get_name])
+        sample_types['defined_sample_types'] = defined_sample_types
     sample_types['optional_values'] = HEADING_FOR_OPTIONAL_FIELD_SAMPLES
     return sample_types
+
+def get_type_of_sample_information (sample_type_id):
+    '''
+    Description:
+        The function return a dictionary with the information to display the type of sample
+        and the optional fields
+    Input:
+        sample_type_id # id for the type of sample to display
+    Return:
+        sample_type_data
+    '''
+    sample_type_data = {}
+    sample_type_data['optional_data'] = []
+    if SampleType.objects.filter(pk__exact = sample_type_id).exists():
+        sample_type_obj = SampleType.objects.get(pk__exact = sample_type_id)
+        opt_list = sample_type_obj.get_optional_values()
+        sample_type_data['sample_type_name'] = sample_type_obj.get_name()
+        for i in range(len(HEADING_FOR_RECORD_SAMPLES)):
+            if i in opt_list :
+                sample_type_data['optional_data'].append([HEADING_FOR_RECORD_SAMPLES[i], 'Not Required'])
+            else:
+                sample_type_data['optional_data'].append([HEADING_FOR_RECORD_SAMPLES[i], 'Mandatory'])
+    else:
+        sample_type_data['ERROR'] = ERROR_TYPE_OF_SAMPLE_ID_DOES_NOT_EXISTS
+    return sample_type_data
+
+
+def save_type_of_sample(form_data, app_name):
+    '''
+    Description:
+        The function store the new type of sample, together with the index of the optional fields
+        that can be empty
+
+    Input:
+        form_data # information collected from the form
+        app_name # application name where are sample type are defined
+    Return:
+        sample_types
+    '''
+    save_s_type = {}
+    index_field_list = []
+    if SampleType.objects.filter(sampleType__exact = form_data['sampleTypeName'] , apps_name__exact = app_name).exists():
+        save_s_type['ERROR'] = ERROR_TYPE_OF_SAMPLE_EXISTS
+        return save_s_type
+    # select the optional fields and get the indexes
+    for field in HEADING_FOR_RECORD_SAMPLES:
+        if not field in form_data :
+            continue
+        index_field = HEADING_FOR_RECORD_SAMPLES.index(field)
+        index_field_list.append(str(index_field))
+    data = {}
+    data['sampleType'] = form_data['sampleTypeName']
+    data['apps_name'] = app_name
+    data['optional_fields'] = ','.join(index_field_list)
+    import pdb; pdb.set_trace()
+    sample_type = SampleType.objects.create_sample_type(data)
+
+    save_s_type['new_defined_sample_type'] = form_data['sampleTypeName']
+    save_s_type['new_defined_id'] = sample_type.get_sample_type_id()
+    return save_s_type
 
 def get_all_sample_information (sample_id , massive):
     sample_information = {}
@@ -1192,6 +1254,57 @@ def prepare_sample_input_table (app_name):
 
     return s_information
 
+
+def display_molecule_use(app_name):
+    '''
+    Description:    The function collect the defined molecule use
+
+    Input:
+        app_name    # application name to assign the right molecule use
+    Return:
+        molecule_use_data #
+    '''
+    molecule_use_data = {}
+    molecule_use_data['defined_molecule_use'] = []
+    if MoleculeUsedFor.objects.filter(apps_name__exact = app_name).exists():
+        molecule_uses = MoleculeUsedFor.objects.filter(apps_name__exact = app_name)
+        for molecule in molecule_uses :
+            massive = molecule.get_massive()
+            if massive == 'True':
+                molecule_use_data['defined_molecule_use'].append([molecule.get_molecule_use_name(), 'YES'])
+            else:
+                molecule_use_data['defined_molecule_use'].append([molecule.get_molecule_use_name(), 'NO'])
+    return molecule_use_data
+
+def record_molecule_use (from_data, app_name):
+    '''
+    Description:    The function collect the name for the molecule use field and the tag if massive
+                and store it on database .
+                Returns the molecule use object created.
+    Input:
+        form_data   # form from the user
+        app_name    # application name to assign the right molecule use
+    Functions:
+        build_record_sample_form  : located at this file
+    Variables:
+        s_information # dictionary which collects all info
+    Return:
+        molecule_use_information #
+    '''
+    molecule_use_information = {}
+    if MoleculeUsedFor.objects.filter(usedFor__exact = from_data['moleculeUseName']).exists():
+        molecule_use_information['ERROR'] = ERROR_MOLECULE_USE_FOR_EXISTS
+        return molecule_use_information
+    molecule_use_data ={}
+    molecule_use_data['usedFor'] = from_data['moleculeUseName']
+    molecule_use_data['apps_name'] = app_name
+    if 'requiresMassive' in from_data :
+        molecule_use_data['massiveUse'] = True
+    else:
+        molecule_use_data['massiveUse'] = False
+    new_molecule_use = MoleculeUsedFor.objects.create_molecule_use_for(molecule_use_data)
+    molecule_use_information['new_defined_molecule_use'] = from_data['moleculeUseName']
+    return molecule_use_information
 
 def record_molecules (form_data, user , app_name):
     '''

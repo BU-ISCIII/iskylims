@@ -169,6 +169,12 @@ class StatesForMolecule (models.Model):
     def get_molecule_state (self):
         return '%s' %(self.moleculeStateName)
 
+class SampleTypeManager(models.Manager):
+    def create_sample_type (self, sample_type_data):
+        new_sample_type = self.create(sampleType = sample_type_data['sampleType'] , apps_name = sample_type_data['apps_name'] ,
+                optional_fields = sample_type_data['optional_fields'] )
+        return new_sample_type
+
 class SampleType (models.Model):
     sampleType = models.CharField(max_length=50)
     apps_name = models.CharField(max_length = 50)
@@ -178,9 +184,18 @@ class SampleType (models.Model):
     def __str__ (self):
         return '%s' %(self.sampleType)
 
+
+    def get_sample_type_id(self):
+        return '%s' %(self.pk)
+
     def get_name(self):
         return '%s' %(self.sampleType)
 
+    def get_optional_values(self):
+        return list(map(int, self.optional_fields.split(',')))
+
+
+    objects = SampleTypeManager()
 
 class Species (models.Model):
     speciesName = models.CharField(max_length=50)
@@ -797,6 +812,12 @@ class SampleProjectsFieldsValue (models.Model):
 
     objects = SampleProjectsFieldsValueManager()
 
+class MoleculeUsedForManager(models.Manager):
+
+    def create_molecule_use_for(self, molecule_use_data):
+        new_molecule_use = self.create( usedFor = molecule_use_data['usedFor'],
+                    apps_name = molecule_use_data['apps_name'] , massiveUse = molecule_use_data['massiveUse'])
+        return new_molecule_use
 
 class MoleculeUsedFor (models.Model):
     usedFor = models.CharField(max_length = 50)
@@ -806,12 +827,13 @@ class MoleculeUsedFor (models.Model):
     def __str__ (self):
         return '%s' %(self.usedFor)
 
-    def get_molecule_use (self):
+    def get_molecule_use_name (self):
         return '%s' %(self.usedFor)
 
     def get_massive(self):
         return '%s' %(self.massiveUse)
 
+    objects = MoleculeUsedForManager()
 
 class MoleculePreparationManager (models.Manager):
 
