@@ -3400,6 +3400,21 @@ def define_sample_projects_fields (request, sample_project_id):
         sample_project_data = define_table_for_sample_project_fields(sample_project_id)
         return render(request, 'iSkyLIMS_wetlab/defineSampleProjectFields.html', {'sample_project_data':sample_project_data})
 
+@login_required
+def define_molecule_uses (request):
+
+    return
+
+@login_required
+def define_type_of_samples (request):
+    if request.method == 'POST' and request.POST['action'] == 'storeSampleType':
+        pass
+
+    else:
+        sample_types = display_sample_types (__package__)
+
+
+        return render(request, 'iSkyLIMS_wetlab/defineTypeOfSamples.html', {'sample_types':sample_types})
 
 
 @login_required
@@ -3414,6 +3429,12 @@ def display_sample (request, sample_id):
     sample_information.update(get_all_library_information(sample_id))
 
     return render(request, 'iSkyLIMS_wetlab/displaySample.html',{'sample_information':sample_information})
+
+@login_required
+def handling_library_preparations(request):
+
+    return
+
 
 def handling_molecules(request):
     '''
@@ -3466,23 +3487,48 @@ def handling_molecules(request):
 
     elif request.method == 'POST' and request.POST['action'] == 'selectedOwnerMolecules':
         # If no samples are selected , call again this function to display again the sample list
-        if not 'molecutes' in request.POST :
+        if not 'molecules' in request.POST :
             return redirect ('handling_molecules')
+        molecules = request.POST.getlist('molecules')
+        # Set to true to reuse the html Code
+        molecule_recorded = True
+        show_molecule_parameters = display_molecule_protocol_parameters(molecules, request.user)
+        return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'molecule_recorded':molecule_recorded, 'show_molecule_parameters': show_molecule_parameters})
+
+    elif request.method == 'POST' and request.POST['action'] == 'addMoleculeParameters':
+        molecule_parameters_updated = add_molecule_protocol_parameters(request.POST)
+        if 'pending' in request.POST :
+            molecules = request.POST['pending'].split(',')
+            show_molecule_parameters = display_molecule_protocol_parameters(molecules,request.user)
+            return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'molecule_parameters_updated':molecule_parameters_updated, 'show_molecule_parameters': show_molecule_parameters})
+        else:
+            return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'molecule_parameters_updated':molecule_parameters_updated})
+
+    elif request.method == 'POST' and request.POST['action'] == 'requestMoleculeUse':
 
 
 
+
+
+        molecule_use = set_molecule_use(request.POST, __package__)
+        import pdb; pdb.set_trace()
+        return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'molecule_use':molecule_use})
 
     else:
-        sample_availables , user_molecules = '' ,''
+        sample_availables , user_molecules, request_molecule_use = '' ,'' ,''
         samples_list = get_samples_in_state ('Defined')
-        if len(samples_list) > 0 :
+        if samples_list :
             sample_availables = create_table_to_select_molecules (samples_list)
 
         user_owner_molecules = get_molecule_in_state ('Defined' , request.user)
         if len(user_owner_molecules) > 0 :
             user_molecules = create_table_user_molecules (user_owner_molecules)
 
-        return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'sample_availables': sample_availables, 'user_molecules': user_molecules})
+        samples_pending_use = get_samples_in_state ('Pending for use')
+        if samples_pending_use:
+            request_molecule_use = create_table_pending_use(samples_pending_use, __package__)
+
+        return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'sample_availables': sample_availables, 'user_molecules': user_molecules ,'request_molecule_use':request_molecule_use})
 
     return
 
@@ -3518,7 +3564,7 @@ def search_lib_samples (request):
         if len(sample_list) == 0:
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No sample found with your match conditions ']})
         elif len(sample_list) == 1:
-            return redirect ('display_libSample' , sample_id = sample_list[0])
+            return redirect ('display_sample' , sample_id = sample_list[0])
         else:
             return render(request, 'iSkyLIMS_wetlab/searchLibSample.html',{'sample_list':sample_list})
 
