@@ -36,6 +36,7 @@ urlpatterns = [
     path('displaySample=<int:sample_id>/', views.display_sample, name= 'display_sample'),
     path('displaySampleInRun=<int:sample_run_project_id>/', views.display_sample_in_run, name = 'display_sample_in_run'),
     path('displaySampleProject=<int:sample_project_id>/', views.display_sample_project, name = 'display_sample_project'),
+    path('displayTypeOfSample=<int:sample_type_id>/', views.display_type_of_sample, name = 'display_type_of_sample'),
     path('handlingLibraryPreparations', views.handling_library_preparations, name = 'handling_library_preparations'),
     path('handlingMolecules', views.handling_molecules, name = 'handling_molecules'),
     path('latest_run/',views.latest_run, name='latest_run'),

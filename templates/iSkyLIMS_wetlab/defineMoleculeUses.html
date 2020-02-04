@@ -2,14 +2,14 @@
 {% load static %}_
 {% block content %}
 {% csrf_token %}
-{% if sample_types.error_message %}
+{% if molecule_use_data.error_message %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-6 col-sm-offset-2"" >
             <div class="panel panel-warning">
                 <div class="panel-heading"><h3>Unable to record your Sample Type</h3> </div>
                 <div class="panel-body">
                     <p>
-                        {% for value in sample_types.error_message %}
+                        {% for value in molecule_use_data.error_message %}
                             {{ value }} <br>
                         {% endfor %}
                     </p>
@@ -19,15 +19,14 @@
     </div> <!--// end row -->
 {% endif %}
 <BR>
-
 <div class="row row-space-2 margin-b-4">
     <div class="col-sm-12" >
-        {% if sample_types.new_defined_sample_type %}
+        {% if molecule_use_data.new_defined_molecule_use %}
             <div class="col-sm-6" >
                 <div class="panel panel-default">
-                    <div class="panel-heading"><h3>New sample type has been added</h3> </div>
+                    <div class="panel-heading"><h3>New molecule use added</h3> </div>
                     <div class="panel-body">
-                        <p>New sample type :<br> <a href="/wetlab/displayTypeOfSample={{sample_types.new_defined_id}}">{{ sample_types.new_defined_sample_type }} has been recorded</a></p>
+                        <p>New Molecule use :<br> {{ molecule_use_data.new_defined_molecule_use }} is recorded</p>
                         <br><br><br>
 
                     </div>  <!--  end of panel body  -->
@@ -36,33 +35,23 @@
         {% endif %}
         <div class="col-sm-6" >
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>Form to add a new type of sample</h3> </div>
+                <div class="panel-heading"><h3>Form to add a new Molecule use</h3> </div>
                 <div class="panel-body">
-                    <form method="post" enctype="multipart/form-data" name="addNewSampleType" id="addNewSampleType" class="form-horizontal">
+                    <form method="post" enctype="multipart/form-data" name="record_molecule_use" id="record_molecule_use" class="form-horizontal">
                         {% csrf_token %}
                         <div class="form-group required">
-                            <input type="hidden" name="action" value="addNewSampleType"/>
-                            <label class="col-sm-5 control-label">Type of sample</label>
-                            <div class="col-sm-6"><input class="form-control" required = "required" type="text"  name="sampleTypeName" size="80"></div>
-                            <br><br><br>
-                        </div>
-
-                        <div class="col-sm-6" >
-                            <br>
-                            <p align="center">Field name in Sample </p>
-                        </div>
-                        <div class="col-sm-6" >
-                            <p>Check for allowing empty field when recording a new Sample</p>
+                            <input type="hidden" name="action" value="record_molecule_use"/>
+                            <label class="col-sm-5 control-label">Name for Molecule use</label>
+                            <div class="col-sm-6"><input class="form-control" required = "required" type="text"  name="moleculeUseName" size="80"></div>
+                            <br><br>
                         </div>
                         <div class="form-group">
-                            {% for values  in sample_types.optional_values  %}
-                                <label class="col-sm-5 control-label">{{values}}</label>
-                                <div class="col-sm-6"><input class="form-control" type="checkbox"  name="{{values}}" size="80"></div>
-
-                            {% endfor %}
-
-                            <BR> <BR> <BR>
+                            <br>
+                            <label class="col-sm-6 control-label">Requires Massive Sequencing ?</label>
+                            <div class="col-sm-5"><input class="form-control" type="checkbox"  name="requiresMassive" size="80"></div>
                         </div>
+                        <BR> <BR> <BR>
+
                         <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
                     </form>
                 </div>  <!--  end of panel body  -->
@@ -71,23 +60,25 @@
         </div> <!--// end of sm-6 -->
     </div> <!--// end of sm-12 -->
 </div> <!--// end row -->
-{% if sample_types.defined_sample_types %}
+{% if molecule_use_data.defined_molecule_use %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-8" >
             <BR> <BR> <BR>
             <div class="panel panel-default">
-              <div class="panel-heading"><h3>Type of Samples already defined</h3></div>
+              <div class="panel-heading"><h3>Molecule uses already defined</h3></div>
               <div class="panel-body">
                     <table class="table table-hover">
                        <thead>
                           <tr>
-                            <th>Type of Sample</th>
+                            <th>Molecule use Name</th>
+                            <th>Require massive</th>
                           </tr>
                        </thead>
                        <tbody>
-                            {% for  id, name in sample_types.defined_sample_types %}
+                            {% for  name , massive in molecule_use_data.defined_molecule_use %}
                                 <tr>
-                                    <td><a href="/wetlab/displayTypeOfSample={{id}}">{{name}}</a></td>
+                                    <td>{{name}}</td>
+                                    <td>{{massive}}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>

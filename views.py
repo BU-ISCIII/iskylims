@@ -3402,19 +3402,29 @@ def define_sample_projects_fields (request, sample_project_id):
 
 @login_required
 def define_molecule_uses (request):
+    '''
+    Functions:
+        display_molecule_use : located at iSkyLIMS_core/utils/handling_samples.py
+        record_molecule_use : located at iSkyLIMS_core/utils/handling_samples.py
+    '''
+    molecule_use_data = display_molecule_use(__package__)
+    if request.method == 'POST' and request.POST['action'] == 'record_molecule_use':
+        molecule_use_data.update(record_molecule_use (request.POST, __package__))
 
-    return
+    return render(request, 'iSkyLIMS_wetlab/defineMoleculeUses.html', {'molecule_use_data':molecule_use_data})
 
 @login_required
 def define_type_of_samples (request):
-    if request.method == 'POST' and request.POST['action'] == 'storeSampleType':
-        pass
-
-    else:
-        sample_types = display_sample_types (__package__)
-
-
-        return render(request, 'iSkyLIMS_wetlab/defineTypeOfSamples.html', {'sample_types':sample_types})
+    '''
+    Functions:
+        display_sample_types : located at iSkyLIMS_core/utils/handling_samples.py
+        save_type_of_sample : located at iSkyLIMS_core/utils/handling_samples.py
+    '''
+    sample_types = display_sample_types (__package__)
+    if request.method == 'POST' and request.POST['action'] == 'addNewSampleType':
+        sample_types.update(save_type_of_sample(request.POST, __package__))
+        import pdb; pdb.set_trace()
+    return render(request, 'iSkyLIMS_wetlab/defineTypeOfSamples.html', {'sample_types':sample_types})
 
 
 @login_required
@@ -3431,8 +3441,20 @@ def display_sample (request, sample_id):
     return render(request, 'iSkyLIMS_wetlab/displaySample.html',{'sample_information':sample_information})
 
 @login_required
-def handling_library_preparations(request):
+def display_type_of_sample(request, sample_type_id):
+    '''
+    Functions:
+        get_type_of_sample_information : located at iSkyLIMS_core/utils/handling_samples.py
+    '''
+    type_of_sample_data = get_type_of_sample_information(sample_type_id)
+    return render(request, 'iSkyLIMS_wetlab/displayTypeOfSample.html',{'type_of_sample_data':type_of_sample_data})
 
+@login_required
+def handling_library_preparations(request):
+    '''
+    Functions:
+        get_type_of_sample_information : located at iSkyLIMS_core/utils/handling_samples.py
+    '''
     return
 
 
