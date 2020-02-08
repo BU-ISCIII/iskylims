@@ -47,6 +47,7 @@ urlpatterns = [
     path('QuarterReport/', views.quarter_report, name='quarter_report'),
     path('recordSamples', views.record_samples, name='record_samples'),
     path('register_wetlab/',views.register_wetlab, name='register_wetlab'),
+    path('repeatMoleculeExtraction', views.repeat_molecule_extraction, name = 'repeat_molecule_extraction'),
     path('searchIndexLibrary', views.search_index_library, name='search_index_library'),
     path('searchLibSamples', views.search_lib_samples, name = 'search_lib_samples'),
     path('searchProject/', views.search_project, name ='search_project'),

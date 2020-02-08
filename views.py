@@ -3287,7 +3287,7 @@ def record_samples(request):
     '''
     ## Record new samples
     if request.method == 'POST' and request.POST['action'] == 'recordsample':
-        sample_recorded = analyze_input_samples (request)
+        sample_recorded = analyze_input_samples (request, __package__)
         # if no samples are in any of the options, displays the inital page
         if (not 'defined_samples' in sample_recorded and not 'pre_defined_samples' in sample_recorded and not 'invalid_samples' in sample_recorded and not 'incomplete_samples' in sample_recorded) :
             sample_information = prepare_sample_input_table(__package__)
@@ -3464,6 +3464,7 @@ def handling_molecules(request):
         get_samples_in_state : located at iSkyLIMS_core/utils/handling_samples.py
         create_table_to_select_molecules : located at iSkyLIMS_core/utils/handling_samples.py
     '''
+    import pdb; pdb.set_trace()
     if request.method == 'POST' and request.POST['action'] == 'selectedMolecules':
         # If no samples are selected , call again this function to display again the sample list
         if not 'samples' in request.POST :
@@ -3493,7 +3494,7 @@ def handling_molecules(request):
         if 'incomplete_sample_ids' in molecule_recorded:
             ## collect the information to select in the option fields
             molecule_recorded.update(get_table_record_molecule (molecule_recorded['incomplete_sample_ids'], __package__))
-            import pdb; pdb.set_trace()
+
             return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'molecule_recorded':molecule_recorded})
         import pdb; pdb.set_trace()
         show_molecule_parameters = display_molecule_protocol_parameters(molecule_recorded['molecule_ids'].split(','),request.user)
@@ -3552,6 +3553,31 @@ def handling_molecules(request):
 
         return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'sample_availables': sample_availables, 'user_molecules': user_molecules ,'request_molecule_use':request_molecule_use})
 
+    return
+
+@login_required
+def repeat_molecule_extraction(request):
+    '''
+    Functions:
+    analyze_reprocess_data  : located at utils/sample_functions.py
+    get_table_record_molecule : located at iSkyLIMS_core/utils/handling_samples.py
+    '''
+
+    if  request.method == 'POST' and request.POST['action'] == 'repeat_extraction':
+        sample_id = request.POST['sample_id']
+        if analyze_reprocess_data(['New Extraction'], sample_id, request.user):
+            molecule_protocol = get_table_record_molecule ([sample_id], __package__)
+            molecule_protocol['samples'] = sample_id
+            # create a copy of the request, to allow to modify it
+            #request.POST = request.POST.copy()
+            #request.POST['action'] = 'selectedMolecules'
+            #request.POST['samples'] = sample_id
+
+
+
+
+
+            return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'molecule_protocol':molecule_protocol})
     return
 
 @login_required

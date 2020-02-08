@@ -30,7 +30,7 @@
                 <div class="panel-heading"><h3>Assign the Molecule Protocol to following samples.</h3></div>
                 <div class="panel-body">
                     <br>
-                    <form method="post" enctype="multipart/form-data" name="updateMoleculeProtocol"  id="updateMoleculeProtocol" class="form-horizontal well">
+                    <form method="post" action= "/wetlab/handlingMolecules" enctype="multipart/form-data" name="updateMoleculeProtocol"  id="updateMoleculeProtocol" class="form-horizontal well">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="updateMoleculeProtocol"/>
                         <input type="hidden" name= "samples" value="{{molecule_protocol.samples}}"/>

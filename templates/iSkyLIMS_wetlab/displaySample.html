@@ -74,10 +74,19 @@
                                 {% for value in values %}
                                     <td>{{ value }} </td>
                                 {%endfor%}
+
                             </tr>
                         {%endfor%}
                     </tbody>
                 </table>
+                <br>
+                <form class="" action="/wetlab/repeatMoleculeExtraction" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="repeat_extraction">
+                    <input type="hidden" name="sample_id" value="{{sample_information.sample_id}}">
+                    <input class="btn pull-right btn-default" type="submit" value="Repeat Molecule Extraction">
+                </form>
+                <br>
               </div> <!--  end of panel body -->
            </div> <!--  end of panel  -->
          </div> <!--  end of col-sm-11 -->

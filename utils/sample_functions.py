@@ -50,8 +50,6 @@ def analyze_reprocess_data(json_data, reprocess_id, reg_user):
     Description:
         The function will get the option of reprocessing sample and it updates the sample state for reprocessing.
         In case that a new library preparation was required a new object is created.
-
-        Return a dictionary with all available possibilities
     Input:
         json_data       # data collected from the user
         reprocess_id    # sample id to reprocess
@@ -65,7 +63,8 @@ def analyze_reprocess_data(json_data, reprocess_id, reg_user):
     options = json_data[-3:]
 
     if "New Extraction" in options:
-        sample_id= update_sample_reused(reprocess_id)
+        sample_obj =  update_sample_reused(reprocess_id)
+        return True
 
     elif 'New Library Preparation' in options:
         molecule_code_id = options[0]
