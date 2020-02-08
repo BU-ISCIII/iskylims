@@ -142,7 +142,7 @@ def add_molecule_protocol_parameters(form_data):
     return molecule_updated_list
 
 
-def analyze_input_samples (request):
+def analyze_input_samples (request, app_name):
     '''
     Description:
         The function will get the samples data that user filled in the form.
@@ -195,18 +195,21 @@ def analyze_input_samples (request):
             continue
 
         if not check_if_sample_already_defined (row[heading_in_form.index('Sample Name')], reg_user) :
+            sample_type = str(row[heading_in_form.index('Type of Sample')])
 
             for i in range(len(heading_in_form)) :
                 sample_data[MAPPING_SAMPLE_FORM_TO_DDBB[i][1]] = row[i]
-            optional_fields = []
-            for opt_field in OPTIONAL_SAMPLES_FIELDS:
-                optional_fields.append(HEADING_FOR_RECORD_SAMPLES.index(opt_field))
+            #optional_fields = []
+
+            #for opt_field in OPTIONAL_SAMPLES_FIELDS:
+            #    optional_fields.append(HEADING_FOR_RECORD_SAMPLES.index(opt_field))
+            optional_fields = SampleType.objects.get(sampleType__exact = sample_type, apps_name__exact = app_name).get_optional_values()
+
             # check_empty_fields does not consider if the optional values are empty
             if  check_empty_fields(row,optional_fields):
                 incomplete_samples.append(row)
                 sample_recorded['all_samples_defined'] = False
                 continue
-
             ## Check if patient code  already exists on database, If not if will be created giving a sequencial dummy value
             if sample_data['p_code_id'] != '' :
                 patient_obj = check_patient_code_exists(sample_data['p_code_id'] )
@@ -565,7 +568,7 @@ def create_table_pending_use(sample_list, app_name):
     if MoleculeUsedFor.objects.filter(apps_name__exact = app_name).exists() :
         m_used = MoleculeUsedFor.objects.filter(apps_name__exact = app_name)
         for used in m_used :
-            use_type['types'].append(used.get_molecule_use())
+            use_type['types'].append(used.get_molecule_use_name())
 
     use_type['heading'] = HEADING_FOR_SELECTING_MOLECULE_USE
     length_heading = len(HEADING_FOR_SELECTING_MOLECULE_USE)
@@ -707,6 +710,7 @@ def save_type_of_sample(form_data, app_name):
 
 def get_all_sample_information (sample_id , massive):
     sample_information = {}
+    sample_information['sample_id'] = sample_id
     parameter_heading_values = []
     if not Samples.objects.filter(pk__exact = sample_id).exists():
         return 'Error'
@@ -731,9 +735,9 @@ def get_all_sample_information (sample_id , massive):
                     field_value = VALUE_NOT_PROVIDED
                 sample_information['sample_project_field_value'].append(field_value)
     # check if molecule information exists for the sample
-    ############ Modificar
-    if MoleculePreparation.objects.filter(sample = sample_obj, usedForMassiveSequencing = massive).exists():
-        molecules = MoleculePreparation.objects.filter(sample = sample_obj, usedForMassiveSequencing = massive)
+
+    if MoleculePreparation.objects.filter(sample = sample_obj).exists():
+        molecules = MoleculePreparation.objects.filter(sample = sample_obj)
         sample_information['molecule_definition_heading'] = HEADING_FOR_MOLECULE_DEFINITION
         sample_information['molecule_definition'] = []
         sample_information['molecule_parameter_values'] = []
@@ -1284,10 +1288,6 @@ def record_molecule_use (from_data, app_name):
     Input:
         form_data   # form from the user
         app_name    # application name to assign the right molecule use
-    Functions:
-        build_record_sample_form  : located at this file
-    Variables:
-        s_information # dictionary which collects all info
     Return:
         molecule_use_information #
     '''
@@ -1362,12 +1362,13 @@ def record_molecules (form_data, user , app_name):
 
 
         #protocol_used_obj = Protocols.objects.get(name__exact = protocol_used)
+        import pdb; pdb.set_trace()
         molecule_used = molecule_json_data[row_index][heading_in_excel.index('molecule_type')]
 
         molecule_data['protocolUsed'] =  protocol_used
         molecule_data['app_name'] = app_name
         molecule_data['sample'] = sample_obj
-        molecule_data['moleculeUsed'] =  molecule_used
+        molecule_data['moleculeType'] =  molecule_used
         molecule_data['moleculeCodeId'] = molecule_code_id
         molecule_data['extractionType'] =  molecule_json_data[row_index][heading_in_excel.index('type_extraction')]
         molecule_data['moleculeExtractionDate'] = molecule_json_data[row_index][heading_in_excel.index('extractionDate')]

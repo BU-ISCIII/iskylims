@@ -192,7 +192,10 @@ class SampleType (models.Model):
         return '%s' %(self.sampleType)
 
     def get_optional_values(self):
-        return list(map(int, self.optional_fields.split(',')))
+        if self.optional_fields == None:
+            return []
+        else:
+            return list(map(int, self.optional_fields.split(',')))
 
 
     objects = SampleTypeManager()
@@ -610,6 +613,10 @@ class SamplesManager (models.Manager):
             sample_data['samplesOrigin'] = SamplesOrigin.objects.get(originName__exact = sample_data['samplesOrigin'])
         else:
             sample_data['samplesOrigin'] = None
+        if sample_data['species'] != '':
+            sample_data['species'] = Species.objects.get(speciesName__exact = sample_data['species'])
+        else:
+            sample_data['species'] = None
         new_sample = self.create(sampleState = StatesForSample.objects.get(sampleStateName__exact = sample_data['sampleState']),
                             patientCore = sample_data['patient'],
                             samplesOrigin = sample_data['samplesOrigin'], sampleProject = sample_data['sampleProject'],
@@ -617,7 +624,7 @@ class SamplesManager (models.Manager):
                             sampleUser = User.objects.get(username__exact = sample_data['user']),
                             sampleCodeID = sample_data['sample_id'] , sampleName =  sample_data['sampleName'],
                             uniqueSampleID = sample_data['new_unique_value'],
-                            species = Species.objects.get(speciesName__exact = sample_data['species']),
+                            species = sample_data['species'],
                             sampleLocation = sample_data['sampleLocation'],
                             #sampleEntryDate = datetime.datetime.strptime(sample_data['Date for entry in Lab'],'%Y-%m-%d %H:%M:%S'))
                             sampleEntryDate = datetime.datetime.strptime(sample_data['sampleEntryDate'],'%Y-%m-%d %H:%M:%S'))
@@ -843,7 +850,7 @@ class MoleculePreparationManager (models.Manager):
         protocol_type_obj = ProtocolType.objects.get(molecule = molecule_used_obj, apps_name__exact = molecule_data['app_name'])
         protocol_used_obj = Protocols.objects.get(name__exact = molecule_data['protocolUsed'], type = protocol_type_obj)
         new_molecule = self.create( protocolUsed = protocol_used_obj, sample =  molecule_data['sample'],
-                    moleculeUsed =  molecule_used_obj, state = StatesForMolecule.objects.get(moleculeStateName__exact = 'Defined'),
+                    moleculeType =  molecule_used_obj, state = StatesForMolecule.objects.get(moleculeStateName__exact = 'Defined'),
                     moleculeCodeId =  molecule_data['moleculeCodeId'], moleculeExtractionDate = molecule_data['moleculeExtractionDate'],
                     extractionType =  molecule_data['extractionType'], moleculeUser = User.objects.get(username__exact = molecule_data['user']))
 
@@ -896,7 +903,10 @@ class MoleculePreparation (models.Model):
         molecule_info.append(extraction_date )
         molecule_info.append(self.extractionType)
         molecule_info.append(self.moleculeType.get_name())
-        molecule_info.append(self.moleculeUsedFor.get_molecule_use())
+        if self.moleculeUsedFor == None :
+            molecule_info.append('Not defined yet')
+        else:
+            molecule_info.append(self.moleculeUsedFor.get_molecule_use_name())
         molecule_info.append(self.protocolUsed.get_name())
         molecule_info.append(self.numberOfReused)
         return molecule_info

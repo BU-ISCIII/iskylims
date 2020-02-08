@@ -19,9 +19,6 @@ MAPPING_SAMPLE_FORM_TO_DDBB = [('Patient Code ID','p_code_id'), ('Sample Name', 
 HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION = ['Sample ID', 'Molecule type', 'Type of Extraction', 'Extraction date', 'Protocol to be used']
 HEADING_FOR_MOLECULE_ADDING_PARAMETERS = ['Molecule Code ID', 'Lot Commercial Kit']
 
-################ OPTIONAL FIELDS IN SAMPLE RECORD DEFINITION #########################3
-OPTIONAL_SAMPLES_FIELDS = ['Patient Code ID', 'Species']
-
 
 #########
 ### Headings to confirm the sucessful recorded
