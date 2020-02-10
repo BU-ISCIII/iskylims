@@ -2,7 +2,7 @@ from django.conf import settings
 from iSkyLIMS_drylab import drylab_config
 from smb.SMBConnection import SMBConnection
 from iSkyLIMS_drylab.models import *
-
+import re
 
 def create_pdf(request,information, template_file, pdf_file_name):
     from weasyprint import HTML, CSS
