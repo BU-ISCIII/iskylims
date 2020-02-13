@@ -83,11 +83,10 @@ def display_molecule_protocol_parameters (molecule_ids, user_obj):
             pending_molecule.append(molecule_obj.get_id())
 
     molecule_recorded['molecule_id'] = ','.join(showed_molecule)
-    molecule_recorded ['molecule_code_ids'] = '.'.join(molecule_code_ids)
+    molecule_recorded ['molecule_code_ids'] = ','.join(molecule_code_ids)
     molecule_recorded['pending_id'] = ','.join(pending_molecule)
     molecule_recorded['heading_in_excel'] = '::'.join(parameter_list)
 
-    import pdb; pdb.set_trace()
     return molecule_recorded
 
 
@@ -121,7 +120,6 @@ def add_molecule_protocol_parameters(form_data):
     for row_index in range(len(molecule_json_data)) :
         right_id = molecule_ids[molecule_code_ids.index(molecule_json_data[row_index][0])]
 
-        #molecule_obj = MoleculePreparation.objects.get(pk = int(molecules[row_index]))
         molecule_obj = get_molecule_obj_from_id(right_id)
         molecule_obj.set_state('Completed')
         molecule_updated_list.append(molecule_obj.get_molecule_code_id())
@@ -1061,9 +1059,9 @@ def get_samples_in_extracted_molecule_state (user):
 
 ##### End of getting samples by state
 
-def get_sample_instance(sample_id, register_user):
-    if Samples.objects.filter(sampleName__exact = sample_id, sampleUser__username__exact = register_user).exists():
-        sample_obj = Samples.objects.get(sampleName__exact = sample_id, sampleUser__username__exact = register_user)
+def get_sample_obj_from_sample_name (sample_name):
+    if Samples.objects.filter(sampleName__exact = sample_name ).exists():
+        sample_obj = Samples.objects.get(sampleName__exact = sample_name)
         return sample_obj
     return
 
@@ -1362,7 +1360,6 @@ def record_molecules (form_data, user , app_name):
 
 
         #protocol_used_obj = Protocols.objects.get(name__exact = protocol_used)
-        import pdb; pdb.set_trace()
         molecule_used = molecule_json_data[row_index][heading_in_excel.index('molecule_type')]
 
         molecule_data['protocolUsed'] =  protocol_used
