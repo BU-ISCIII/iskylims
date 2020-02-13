@@ -3263,7 +3263,7 @@ def pending_to_update(request):
     pending['defined'] = get_samples_in_defined_state('')
     pending['extract_molecule'] = get_samples_in_extracted_molecule_state(request.user)
     pending['create_library_preparation'] = get_samples_in_lib_prep_state()
-    pending['lib_prep_protocols'] = get_protocol_lib()
+    pending['lib_prep_protocols'] = get_protocols_for_library_preparation()
     # get the library preparation in defined state
     pending['add_lib_prep_parameters'] = get_lib_prep_to_add_parameters()
     pending ['graphic_pending_samples'] = pending_samples_for_grafic(pending).render()
@@ -3432,6 +3432,7 @@ def display_sample (request, sample_id):
     '''
     Functions:
         get_all_sample_information : located at iSkyLIMS_core/utils/handling_samples.py
+        get_all_library_information :
     '''
     sample_information = get_all_sample_information(sample_id, True)
     if 'Error' in sample_information:
@@ -3454,8 +3455,39 @@ def handling_library_preparations(request):
     '''
     Functions:
         get_type_of_sample_information : located at iSkyLIMS_core/utils/handling_samples.py
+        get_protocols_for_library_preparation : located at utils/library_preparation.py
+        get_samples_in_lib_prep_state :  located at utils/library_preparation.py
     '''
-    return
+    # get the information for returning the uploaded file in case errors in the sample sheet
+    upload_file = {}
+    if check_samples_for_library_preparation():
+        upload_file['lib_prep_protocols'] = get_protocols_for_library_preparation()
+    else:
+        upload_file['no_samples'] = 'No samples'
+
+    if request.method == 'POST' and request.POST['action'] == 'importsamplesheet':
+
+        sample_sheet_data = extract_user_sample_sheet_data(request.FILES['uploadfile'] )
+        if 'ERROR' in sample_sheet_data :
+            upload_file['ERROR'] = sample_sheet_data['ERROR']
+            upload_file['file_name'] = request.FILES['uploadfile'].name
+            return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'upload_file':upload_file})
+
+        valid_data = validate_sample_sheet_data(sample_sheet_data)
+        import pdb; pdb.set_trace()
+        if 'ERROR' in valid_data:
+            upload_file['ERROR'] = valid_data['ERROR']
+            upload_file['file_name'] = request.FILES['uploadfile'].name
+            return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'upload_file':upload_file})
+        import pdb; pdb.set_trace()
+        lib_prep_sample_sheet_obj = store_library_preparation_sample_sheet(request.POST)
+        stored_sample = store_library_preparation_samples(sample_sheet_data,  request.user)
+
+        return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_lib_prep':stored_lib_prep})
+    if request.method == 'POST' and request.POST['action'] == 'addLibPrepParam':
+        pass
+    else:
+        return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'upload_file':upload_file})
 
 
 def handling_molecules(request):
@@ -3464,7 +3496,7 @@ def handling_molecules(request):
         get_samples_in_state : located at iSkyLIMS_core/utils/handling_samples.py
         create_table_to_select_molecules : located at iSkyLIMS_core/utils/handling_samples.py
     '''
-    import pdb; pdb.set_trace()
+
     if request.method == 'POST' and request.POST['action'] == 'selectedMolecules':
         # If no samples are selected , call again this function to display again the sample list
         if not 'samples' in request.POST :
@@ -3486,7 +3518,7 @@ def handling_molecules(request):
 
     elif request.method == 'POST' and request.POST['action'] == 'updateMoleculeProtocol':
         molecule_recorded = record_molecules (request.POST, request.user, __package__)
-        import pdb; pdb.set_trace()
+
         if 'molecule_code_ids' in request.POST and request.POST['molecule_code_ids'] != '' and 'molecule_code_ids' in molecule_recorded :
             # Add the already recorded molecules to the new ones
             molecule_recorded['molecule_code_ids'] += ',' + request.POST['molecule_code_ids']
@@ -3496,7 +3528,7 @@ def handling_molecules(request):
             molecule_recorded.update(get_table_record_molecule (molecule_recorded['incomplete_sample_ids'], __package__))
 
             return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'molecule_recorded':molecule_recorded})
-        import pdb; pdb.set_trace()
+
         show_molecule_parameters = display_molecule_protocol_parameters(molecule_recorded['molecule_ids'].split(','),request.user)
         return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'molecule_recorded':molecule_recorded, 'show_molecule_parameters': show_molecule_parameters})
         #     added_molecule_protocol_parameters, sample_updated_list = add_molecule_protocol_parameters(request)
@@ -3716,7 +3748,7 @@ def set_library_preparation(request):
 
 
 
-        index_adapters = get_indexes_adapters (stored_file)
+        #index_adapters = get_indexes_adapters (stored_file)
         if not CollectionIndexKit.objects.filter(collectionIndexName__iexact = index_adapters).exists():
             return render ( request,'iSkyLIMS_wetlab/error_page.html',
                 {'content':['Collection Index Kit ' , index_adapters , 'is not defined' ]})

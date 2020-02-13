@@ -319,13 +319,13 @@ def save_miseq_projects_found (projects_users , experiment_name, library_name):
     logger = logging.getLogger(__name__)
     logger.debug('Executing the function save_miseq_projects_found' )
 
-    if BaseSpaceLibraryName.objects.filter(libraryName__exact = wetlab_config.DEFAULT_LIBRARY_KIT).exists():
-        library_kit = BaseSpaceLibraryName.objects.get(libraryName__exact = wetlab_config.DEFAULT_LIBRARY_KIT)
+    if LibraryKit.objects.filter(libraryName__exact = wetlab_config.DEFAULT_LIBRARY_KIT).exists():
+        library_kit = LibraryKit.objects.get(libraryName__exact = wetlab_config.DEFAULT_LIBRARY_KIT)
     else:
         string_message = 'The default library ' +  wetlab_config.DEFAULT_LIBRARY_KIT + ' defined in config wetlab file does not exist'
         logging_errors( string_message, True, True)
         logger.info('Using the first library kit defined in database')
-        library_kit = BaseSpaceLibraryName.objects.all().first()
+        library_kit = LibraryKit.objects.all().first()
 
     run_process = RunProcess.objects.get(runName = experiment_name)
     sample_sheet_on_database = run_process.get_sample_file()

@@ -40,7 +40,7 @@ def check_collection_index_exists(collection_name):
     Return:
         True if exists on database , else if not
     '''
-    if CollectionIndexKit.objects.filter( collectionIndexName__exact = collection_name):
+    if CollectionIndexKit.objects.filter( collectionIndexName__exact = collection_name).exists():
         return True
     return False
 

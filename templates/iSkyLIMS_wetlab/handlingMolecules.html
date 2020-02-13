@@ -251,6 +251,19 @@
 
         {% endif %}
         {% if show_molecule_parameters %}
+            {% if not show_molecule_parameters.lot_kit %}
+                <div class="row row-space-2 margin-b-4">
+                    <div class="col-sm-10 col-sm-offset-1">
+                        <div class="panel panel-danger">
+                            <div class="panel-heading"><h3>Not Available User Lot Kits.</h3></div>
+                            <div class="panel-body">
+                               <p>There is not User Lot Kit defined on your name.</p>
+                               <p>Please define your Lot Kit first and return again to assign the molecule parameter</p>
+                            </div> <!--  end of panel body -->
+                        </div> <!--  end of panel  -->
+                    </div> <!--  end of col-sm-6 -->
+               </div> <!--  end of row -->
+            {% endif %}
             <div class="row row-space-2 margin-b-4">
                <div class="col-sm-12">
                    <div class="panel panel-default">
@@ -344,7 +357,7 @@
                           </tr>
                        </thead>
                        <tbody>
-                         {% for values in added_molecule_protocol_parameters %}
+                         {% for values in molecule_parameters_updated %}
                          <tr>
                            <td>{{ values }} </td>
                          </tr>

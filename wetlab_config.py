@@ -182,6 +182,9 @@ MAPPING_BASESPACE_SAMPLE_SHEET_ONE_INDEX = [('SampleID','Unique_Sample_ID'),('Na
 MAPPING_BASESPACE_SAMPLE_SHEET_TWO_INDEX = [('SampleID','Unique_Sample_ID'),('Name','Sample_Name'), ('Project','Sample_Project'),('Well', 'Sample_Well'),
                 ('Index1Name','I7_Index_ID'), ('Index1Sequence','index' ),('Index2Name','I5_Index_ID'),('Index2Sequence','index2') ]
 
+# Sections to check in the IEM file created by user
+SECTIONS_IN_IEM_SAMPLE_SHEET = ['[Header]', '[Reads]', '[Settings]', '[Data]']
+
 ##############################################################
 
 ##### SETTINGS FOR CLEANUP RUNS AND NOT VALID FILES ##########
@@ -233,5 +236,12 @@ HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD = ['Unique_Sample_ID','Samp
 
 
 ########## ERROR MESSAGES  #########################
+ERROR_INVALID_FILE_FORMAT = ['Invalid file format for the selected file', 'Select the valid file and submit it again']
+ERROR_UNABLE_TO_DELETE_USER_FILE = 'Unable to delete user file form iSkyLIMS'
+ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES = ['Sample sheet cannot be uploaded because there are samples', 'which are not defined yet.']
+ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION = ['Sample sheet cannot be uploaded because there are samples', ' in a state from which cannot accept data from library preparation.']
+ERROR_SAMPLES_INVALID_DUPLICATED_INDEXES = ['Sample sheet cannot be uploaded because there are samples', 'which have duplicated index']
+ERROR_COLLECTION_INDEX_KIT_NOT_DEFINED = ['Sample sheet cannot be uploaded because collection Index Kit', 'is not defined']
+
 ERROR_SAMPLE_PROJECT_ALREADY_EXISTS = ['Sample Project is already defined']
 ERROR_SAMPLE_PROJECT_DOES_NOT_EXISTS = ['The Sample Project that you requested ', 'Does not exist']

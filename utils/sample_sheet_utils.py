@@ -6,6 +6,7 @@ from datetime import datetime
 import time
 import string
 import random
+import codecs
 
 from Bio.Seq import Seq
 from django.conf import settings
@@ -17,8 +18,27 @@ from iSkyLIMS_wetlab.models import *
 
 #from .wetlab_misc_utilities import timestamp_print
 
+
+def delete_stored_file (input_file):
+    '''
+    Description:
+        The function delete the requested file
+    Input:
+        input_file  # input file to delete
+    Return
+        True
+    '''
+    if os.path.exists(input_file):
+        try:
+            os.remove(input_file)
+        except:
+            return False
+        return True
+    return False
+
+
 def get_assay_from_file(in_file):
-    import codecs
+
     assay = ''
     fh = codecs.open(in_file, 'r', 'utf-8')
     for line in fh:
@@ -51,17 +71,13 @@ def include_csv_header (library_kit, out_file, plate, container):
     #### adding additional line
     out_file.write('\n')
 
-def get_adapters (in_file):
+def get_adapters (file_lines):
     adapter1 = ''
     adapter2 = ''
     ## For accepting characters like spanish characters.
-    import codecs
-    fh = codecs.open(in_file, 'r', 'utf-8')
-    for line in fh:
-        line = line.rstrip()
+    for line in file_lines:
         if line == '':
             continue
-
         found_adapter = re.search('^Adapter',line)
         if found_adapter :
             adapter_code = line.split(',')[1]
@@ -74,42 +90,62 @@ def get_adapters (in_file):
         data_found = re.search('^\[Data]',line)
         if data_found:
             break
-    fh.close()
 
     return adapter1, adapter2
 
-def get_indexes_adapters (in_file):
+def get_index_adapter (file_lines):
+    '''
+    Description :
+        get the indexes adapter information from the file_lines
+    Input:
+        file_lines  # sample sheet file converted to list of lines
+    Return:
+        index_adapters . List of the reads
+    '''
     index_adapters = ''
-    ## For accepting characters like spanish characters.
-    import codecs
-    fh = codecs.open(in_file, 'r', 'utf-8')
-    #fh = open(in_file, 'r')
-    for line in fh:
-        line = line.rstrip()
-        if line == '':
-            continue
-        found_library = re.search('^Index Adapters',line)
-        if found_library :
-            index_line = line.split(',')
-            if index_line[1]:
-                index_adapters = index_line[1].replace('"', '')
-                fh.close()
-                break
-    fh.close()
+    for line in file_lines:
+        if 'Index Adapters' in line:
+            index_adapters = line.split(',')[1].replace('"', '')
+            break
 
     return index_adapters
 
+def get_reads(file_lines):
+    '''
+    Description :
+        get the reads information from the file_lines
+    Input:
+        file_lines  # sample sheet file converted to list of lines
+    Return:
+        reads . List of the reads
+    '''
+    read_found = False
+    reads = []
+    for line in file_lines :
+        if '[Reads]' in line :
+            read_found = True
+            continue
+        if '[Settings]' in line:
+            break
+        if read_found and  re.search('^\w+',line):
+            reads.append(line.split(',')[0])
+    return reads
 
-def get_samples_in_sample_sheet(in_file):
-    import codecs
+def get_samples_in_sample_sheet(file_lines):
+    '''
+    Description :
+        get the sample information from the file_lines
+    Input:
+        file_lines  # sample sheet file converted to list of lines
+    Return:
+        samples_dict contains in 'samples' key the sample name.  'sample_data'
+        is a list for each sample row
+    '''
     samples_dict = {}
-    samples = []
-    sample_names = []
+    samples_dict['samples'] = []
+    samples_dict['sample_data'] = []
     header_found = False
-    fh = codecs.open(in_file, 'r', 'utf-8')
-
-    for line in fh:
-        line = line.rstrip()
+    for line in file_lines:
         if line == '':
             continue
         found_header=re.search('^Sample_ID,Sample_Name',line)
@@ -124,14 +160,68 @@ def get_samples_in_sample_sheet(in_file):
             valid_line = re.search('^\w+',line)
             if not valid_line :
                 continue
-            samples.append(line.split(','))
-            sample_names.append(line.split(',')[index_sample_name])
-    samples_dict['samples'] = samples
-    samples_dict['sample_names'] = sample_names
-    fh.close()
+
+            samples_dict['sample_data'].append(line.split(','))
+            samples_dict['samples'].append(line.split(',')[index_sample_name])
+
     return samples_dict
 
+def get_sample_sheet_data (in_file):
+    '''
+    Description:
+        The function reads the user sample sheet from IEM and extracts : samples, adaters, reads
+        assay, index adapters, application
+    Input:
+        form_data  # form data from user
+        file_in    # csv file from IEM
+        user_obj   # user who is uploading the sampleSheet
+    Functions:
+        get_adapters    # located at this file
+        get_reads       # located at this file
+        get_index_adapter  # located at this file
+        get_samples_in_sample_sheet  # located at this file
+    Constant:
+        COMPLETION_SUCCESS
+    Variables
+        file_lines # contain the information of the file converted to list
+    Return
+        sample_sheet_data dictionary with the extracted information
+    '''
+    fh = codecs.open(in_file, 'r', 'utf-8')
+    try:
+        file_read = fh.read()
+        fh.close()
+    except:
+        fh.close()
+        return False
 
+    sample_sheet_data = {}
+    file_lines = file_read.split('\n')
+    # get assay information
+    for line in file_lines :
+        if 'Assay' in line:
+            sample_sheet_data['assay'] = line.split(',')[1]
+            break
+    # get index adapters information
+    #for line in file_lines :
+    #    if 'Index Adapters' in line :
+    #        sample_sheet_data['index_adapters'] = line.split(',')[1]
+    #        break
+    # get application information
+    for line in file_lines :
+        if 'Application' in line :
+            sample_sheet_data['application'] = line.split(',')[1]
+            break
+    # get adapters information
+    sample_sheet_data['adapter1'], sample_sheet_data['adapter2'] = get_adapters(file_lines)
+    # get indexes adapters information
+    sample_sheet_data['index_adapter'] = get_index_adapter (file_lines)
+    # get reads information
+    sample_sheet_data['reads'] = get_reads(file_lines)
+    # get samples information
+    sample_sheet_data.update(get_samples_in_sample_sheet(file_lines))
+
+    return sample_sheet_data
 
 def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects, plate):
     data_raw=[]
@@ -522,19 +612,80 @@ def set_user_names_in_sample_sheet (in_file, user_names):
     return True
 
 
-def store_user_input_file (user_input_file, default_extension):
-    split_filename=re.search('(.*)(\.\w+$)',user_input_file.name)
-    if None == split_filename:
-        ext_file = default_extension
-    else:
-        ext_file=split_filename.group(2)
+def store_user_input_file (user_input_file):
+    '''
+    Description:
+        The function rename the file name with the present time and it stores it in
+        LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY
+    Input:
+        user_input_file  # input file from user
+    Constant:
+        LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY
+    Return
+        stored_path_file contains the full path of the file and file_name
+    '''
+    # create thd directory if not exists
+    if not os.path.exists(wetlab_config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY):
+        os.makedirs(wetlab_config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY)
+
+    filename, file_extension = os.path.splitext(user_input_file.name)
     fs = FileSystemStorage()
     timestr = time.strftime("%Y%m%d-%H%M%S")
     ## including the timestamp to the sample sheet file
-    file_name=str(wetlab_config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY
-                 + split_filename.group(1)  + '_' + timestr + ext_file)
+    file_name = str(wetlab_config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY
+                 + filename  + '_' + timestr + file_extension)
     filename = fs.save(file_name,  user_input_file)
 
     ### add the document directory to the input file
-    stored_file = os.path.join(settings.MEDIA_ROOT, file_name)
-    return stored_file, file_name
+    stored_path_file = os.path.join(settings.MEDIA_ROOT, file_name)
+    return stored_path_file, file_name
+
+def valid_user_iem_file (in_file):
+    '''
+    Description:
+        The function check if tthe user IEM file has a valid format by checking the headings and
+        if all fields are included in the data section. in particular the description field
+        where username has to be defined to assing the sample to the user.
+        If there is no sample function return False
+    Input:
+        in_file  # input file from user
+    Constant:
+        SECTIONS_IN_IEM_SAMPLE_SHEET
+    Return
+        False if file cannot be read or do not have all information
+    '''
+    fh = codecs.open(in_file, 'r', 'utf-8')
+    try:
+        file_read = fh.read()
+        fh.close()
+    except:
+        fh.close()
+        return False
+
+    for section in wetlab_config.SECTIONS_IN_IEM_SAMPLE_SHEET :
+        if section not in file_read :
+            return False
+
+    lines = file_read.split('\n')
+    data_section_found = False
+    data_field_length = ''
+    sample_number = 0
+    for line in lines:
+        line=line.rstrip()
+        if line == '':
+            continue
+        if '[Data]' in line:
+            data_section_found = True
+            continue
+        if data_section_found :
+            if data_field_length == '':
+                data_field_length = len(line.split(','))
+                continue
+            line_split = line.split(',')
+            if len(line_split) != data_field_length or line_split[-1] == '' :
+                return False
+            else:
+                sample_number +=1
+    if sample_number == 0:
+        return False
+    return True
