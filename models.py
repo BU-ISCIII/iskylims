@@ -40,21 +40,6 @@ class LabEquipment (models.Model) :
     def get_number_of_lanes(self):
         return '%s' %(self.equipmentNumberLanes)
 
-'''
-class Laboratory (models.Model):
-    labName = models.CharField(max_length=50)
-    labCoding = models.CharField(max_length=10)
-    labLocation = models.CharField(max_length=255)
-
-    def __str__ (self):
-        return '%s' %(self.labName)
-
-    def get_name(self):
-        return '%s' %(self.labName)
-
-    def get_lab_code (self):
-        return '%s' %(self.labCoding)
-'''
 
 class SamplesOrigin (models.Model):
     originName = models.CharField(max_length=50)
@@ -111,6 +96,9 @@ class Protocols (models.Model):
 
     def get_type (self):
         return '%s' %(self.type.get_name())
+
+    def get_protocol_id(self):
+        return '%s' %(self.pk)
 
 
 class ProtocolParametersManager(models.Manager) :
