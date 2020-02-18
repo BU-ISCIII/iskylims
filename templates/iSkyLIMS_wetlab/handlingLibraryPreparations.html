@@ -91,7 +91,20 @@
       white-space: nowrap;
     }
      </style>
+    {% if not stored_lib_prep.reagents_kits%}
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-10">
+                <div class="panel panel-danger">
+                    <div class="panel-heading"><h3>Not available Reagents Kit for the user in the sample sheet.</h3></div>
+                    <div class="panel-body">
+                        <p>Define new Reagents kits</p>
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
 
+            </div> <!--  end of col-sm-10 -->
+        </div> <!--  end of row -->
+
+    {% endif %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12">
             <div class="panel panel-default">
@@ -100,10 +113,12 @@
 
                    <form method="post" enctype="multipart/form-data" name="recordProtocolParamters"  id="recordProtocolParamters" class="form-horizontal well">
                        {% csrf_token %}
-                       <div class="scrolling-wrapper">
-                           <input type="hidden" name="action" value="recordProtocolParamters"/>
-                           <input type="hidden" name= "lib_prep_id" value="{{stored_lib_prep.lib_prep_id}}"/>
-                           <input type="hidden" name= "heading_in_excel" value="{{stored_lib_prep.heading_in_excel}}"/>
+                        <div class="scrolling-wrapper">
+                            <input type="hidden" name="action" value="recordProtocolParamters"/>
+                            <input type="hidden" name= "lib_prep_ids" value="{{stored_lib_prep.lib_prep_ids}}"/>
+                            <input type="hidden" name= "lib_prep_code_ids" value="{{stored_lib_prep.lib_prep_code_ids}}"/>
+                            <input type="hidden" name= "protocol_id" value="{{stored_lib_prep.protocol_id}}"/>
+                            <input type="hidden" name= "heading_in_excel" value="{{stored_lib_prep.heading_in_excel}}"/>
 
                            <p></p>
 
@@ -119,9 +134,8 @@
                                    columns: [
                                         { type: 'text', title:'{{stored_lib_prep.heading.0}}', width:180 , readOnly:true },
                                         { type: 'text', title:'{{stored_lib_prep.heading.1}}', width:180 , readOnly:true },
-                                        { type: 'text', title:'{{stored_lib_prep.heading.2}}', width:280 , readOnly:true },
                                         { type: 'dropdown', title:'{{stored_lib_prep.heading.3}}', width:200 , source :[ {% for value in stored_lib_prep.reagents_kits %} '{{value}}', {% endfor %}]},
-                                        {% for value in stored_lib_prep.par_heading %}
+                                        {% for value in stored_lib_prep.param_heading %}
                                             { type: 'text', title:'{{value}}', width:180 },
                                         {% endfor %}
                                    ],
@@ -256,6 +270,7 @@
                                     <br><br>
                                 </div>  <!-- end select input -->
                                 <br>
+                                <!--
                                 <label class="col-sm-6 control-label" for="singlePairedEnd" >Select if samples are  in "Single Read" or "Paired End" </label>
                                 <div class="col-sm-4">
                                     <select class="form-control" name="singlePairedEnd" id="singlePairedEnd">
@@ -265,12 +280,12 @@
                                    </select>
                                    <br><br>
                                 </div>  <!-- end select input -->
-
+                                <!--
                                 <label class="col-sm-6 control-label" for="readlength" >Length of the reads </label>
                                 <div class="col-sm-4">
                                     <input type="text" name="readlength" required = "required" value="">
                                 </div>
-
+                                -->
                                 <div class="col-sm-11">
                                     <br>
                                     <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">

@@ -1,6 +1,7 @@
 import json
 from iSkyLIMS_core.models import Samples, MoleculePreparation, Protocols
 from iSkyLIMS_core.utils.handling_commercial_kits import *
+from iSkyLIMS_core.utils.handling_protocols import *
 from iSkyLIMS_core.utils.handling_samples import  get_sample_obj_from_sample_name
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
@@ -58,6 +59,10 @@ def check_samples_for_library_preparation():
 
 
 def extract_sample_data (s_data):
+    '''
+
+    BORRAR
+    '''
     headings = s_data['headings']
     sample_list = []
     #columns = ['Sample_ID','Sample_Name','Sample_Plate','Sample_Well','Index_Plate_Well','I7_Index_ID','index','I5_Index_ID','index2','Sample_Project']
@@ -117,8 +122,10 @@ def valid_samples_for_lib_preparation(samples):
     Constant:
         ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES
         ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION
+    Variables:
+        sample_objs  # list of the sample objects
     Return
-        error or True
+        error mesage or sample_objs
     '''
     sample_objs = []
     invalid_samples = []
@@ -135,16 +142,22 @@ def valid_samples_for_lib_preparation(samples):
         error_message.insert(1,' , '.join(invalid_samples))
         error['ERROR'] = error_message
         return error
+
     for sample_obj in sample_objs:
-        if not 'Library Preparation' == sample_obj.get_sample_state():
+        # mark as invalid sample when it is not in Library preparation state
+        if not 'Library preparation' == sample_obj.get_sample_state() :
             invalid_samples.append(sample_obj.get_sample_name())
+        # mark as invalid when library prepation object is alreade created and it is not in Created for reused state
+        elif  LibraryPreparation.objects.filter(sample_id = sample_obj).exists() and not LibraryPreparation.objects.filter(sample_id = sample_obj ,libPrepState__libPrepState__exact = 'Created for Reuse').exists():
+                invalid_samples.append(sample_obj.get_sample_name())
+
     if len(invalid_samples) > 0:
         error = {}
         error_message = ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION.copy()
         error_message.insert(1,' , '.join(invalid_samples))
         error['ERROR'] = error_message
         return error
-    return True
+    return sample_objs
 
 def validate_sample_sheet_data (input_data ):
     '''
@@ -164,7 +177,7 @@ def validate_sample_sheet_data (input_data ):
         ERROR_INVALID_FILE_FORMAT
         ERROR_UNABLE_TO_DELETE_USER_FILE
     Return
-        data with the extracted information from sample sheet or error if file is invalid
+        sample data objects if all checks are valid or ERROR if file is invalid
     '''
     # check that samples are defined and in the right state
     valid_samples = valid_samples_for_lib_preparation (input_data['samples'])
@@ -172,11 +185,13 @@ def validate_sample_sheet_data (input_data ):
         delete_stored_file(input_data['full_path_file'])
         return valid_samples
     # check if sample sheet has duplicate index
+
     duplicate_index = find_duplicate_index(input_data['sample_data'], input_data['heading'] )
     if 'ERROR' in duplicate_index:
         delete_stored_file(input_data['full_path_file'])
         return duplicate_index
-    # check if collection index is defined
+    # check if collection index kit is defined
+
     if not check_collection_index_exists (input_data['index_adapter']):
         error = {}
         error_message = ERROR_COLLECTION_INDEX_KIT_NOT_DEFINED.copy()
@@ -184,7 +199,7 @@ def validate_sample_sheet_data (input_data ):
         error['ERROR'] = error_message
         delete_stored_file(input_data['full_path_file'])
         return error
-    return True
+    return valid_samples
 
 def find_duplicate_index (sample_row_data, heading):
     '''
@@ -207,6 +222,7 @@ def find_duplicate_index (sample_row_data, heading):
         i5_index = heading.index('I5_Index_ID')
     sample_name_index = heading.index('Sample_Name')
     for sample_row in sample_row_data:
+
         if i5_index :
             indexes_in_sample = str(sample_row[i7_index] + '_' + sample_row[i5_index])
         else:
@@ -215,10 +231,13 @@ def find_duplicate_index (sample_row_data, heading):
             index_values[indexes_in_sample] = []
         else:
             duplicated_index_sample.append(sample_row[sample_name_index])
+
+        if not sample_row[sample_name_index] in index_values :
+            index_values [sample_row[sample_name_index]] = []
         index_values [sample_row[sample_name_index]].append([indexes_in_sample])
 
     if len(duplicated_index_sample) == 0:
-        return False
+        return 'False'
     else:
         error = {}
         error_message = ERROR_SAMPLES_INVALID_DUPLICATED_INDEXES.copy()
@@ -347,41 +366,207 @@ def pending_samples_for_grafic(pending):
     graphic_pending_samples = FusionCharts("pie3d", "ex1" , "430", "450", "chart-1", "json", data_source)
     return graphic_pending_samples
 
-
-def store_library_preparation_samples(sample_sheet_data, form_data,user):
+def store_library_preparation_sample_sheet(sample_sheet_data, user) :
     '''
     Description:
-        The function will get the user data in the form and the extracted sample information from sample sheet.
+        The function will get the extracted data from sample sheet.
         Then store the libraryPreparation data for each sample and update the sample state to "library Preparation"
+    Input:
+        sample_sheet_data   # extracted data from sample sheet in dictionary format
+        user        # user object
     Return:
-        True .
+        new_user_s_sheet_obj .
+    '''
+    sample_sheet_data['user'] = user
+    new_user_s_sheet_obj = libPreparationUserSampleSheet.objects.create_lib_prep_user_sample_sheet(sample_sheet_data)
+
+    return new_user_s_sheet_obj
+
+def get_library_code_and_unique_id (sample_obj):
+    '''
+    Description:
+        The function will find out the latest library preparation uniqueID", increment the value
+        and will return the updated value to use
+    Input:
+        sample_obj        # sample object
+    Variables:
+
+    Return:
+        uniqueID .
+    '''
+    if LibraryPreparation.objects.filter(sample_id = sample_obj, libPrepState__libPrepState__exact = 'Created for Reuse').exists():
+        lib_prep_obj = LibraryPreparation.objects.get(sample_id = sample_obj, libPrepState__libPrepState__exact = 'Created for Reuse')
+        molecule_obj = lib_prep_obj.get_molecule_obj()
+        import pdb; pdb.set_trace()
+        last_lib_prep_for_molecule = LibraryPreparation.objects.filter(sample_id = sample_obj, molecule_id = molecule_obj).exclude(libPrepState__libPrepState__exact = 'Created for Reuse').last()
+        if last_lib_prep_for_molecule :
+            last_lib_prep_code_id = last_lib_prep_for_molecule.get_lib_prep_code()
+            split_code = re.search('(.*_)(\d+)$',last_lib_prep_code_id)
+            index_val = int(split_code.group(2))
+            new_index = str(index_val +1).zfill(2)
+            lib_prep_code_id = split_code.group(1) + new_index
+            unique_s_id_split = lib_prep_obj.get_unique_id().split('-')
+            inc_value = int(unique_s_id_split[-1]) + 1
+            unique_s_id_split[-1] = str(inc_value)
+            uniqueID = '-'.join(unique_s_id_split)
+
+        else:
+            lib_prep_code_id = molecule_obj.get_molecule_code_id() + '_LIB_01'
+            split_code = lib_prep_code_id.split('_')
+            uniqueID = sample_obj.get_unique_sample_id() +'-' + split_code[-3][1:] + '-' + split_code[-1]
+    else:
+        molecule_obj = MoleculePreparation.objects.filter(sample = sample_obj).last()
+        lib_prep_code_id = molecule_obj.get_molecule_code_id() + '_LIB_01'
+
+        split_code = lib_prep_code_id.split('_')
+        uniqueID = sample_obj.get_unique_sample_id() +'-' + split_code[-3][1:] + '-' + split_code[-1]
+
+    return lib_prep_code_id, uniqueID
+
+def store_library_preparation_samples(sample_sheet_data, user, protocol , user_sample_sheet_obj):
+    '''
+    Description:
+        The function will get the sample names, extracted data from sample sheet, index, .
+        Then store the libraryPreparation data for each sample and update the sample state to "library Preparation"
+    Input:
+        sample_sheet_data   # extracted data from sample sheet in dictionary format
+        user        # user object
+        protocol    # protocol name to be used for these library preparation samples
+        user_sample_sheet_obj # user_sample_sheet object for assigning to each library preparation
+    Constamt:
+        MAP_USER_SAMPLE_SHEET_TO_DATABASE_ONE_INDEX
+        MAP_USER_SAMPLE_SHEET_TO_DATABASE_TWO_INDEX
+    Functions:
+        get_library_unique_id # located at this file
+        get_sample_obj_from_sample_name  # located at iSkyLIMS_core/utils/handling_samples.py
+        get_protocol_parameters   # located at iSkyLIMS_core/utils/handling_protocols.py
+    Variables:
+        stored_lib_prep     # dictionary to get data to create the library preparation object
+    Return:
+        stored_lib_prep .Including the lib_prep_code_id and lib_prep_id
+    '''
+    stored_lib_prep = {}
+    lib_prep_id = []
+    protocol_obj = Protocols.objects.get(name__exact = protocol)
+
+    if 'I5_Index_ID' in  sample_sheet_data['heading'] :
+        single_paired = 'Paired End'
+        mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_TWO_INDEX
+    else:
+        single_paired = 'Single Reads'
+        mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_ONE_INDEX
+    for lib_prep_sample_data in sample_sheet_data['sample_data'] :
+        stored_lib_prep = {}
+        stored_lib_prep['protocol_obj'] = protocol_obj
+        stored_lib_prep['single_paired'] = single_paired
+        stored_lib_prep['read_length'] = sample_sheet_data['reads'][0]
+        for item in mapping :
+            stored_lib_prep[item[1]] =  lib_prep_sample_data[sample_sheet_data['heading'].index(item[0])]
+        # if Single reads then set the index 5 to empty
+        if not 'I5_Index_ID' in sample_sheet_data['heading'] :
+            stored_lib_prep['i5IndexID'] = ''
+            stored_lib_prep['i5Index'] = ''
+        stored_lib_prep['protocol_id'] = protocol_obj
+        stored_lib_prep['user_sample_sheet'] = user_sample_sheet_obj
+
+        sample_obj = get_sample_obj_from_sample_name(stored_lib_prep['sample_name'])
+        # get the latest molecule extraction to assing it by default to the library preparation
+        molecule_obj = MoleculePreparation.objects.filter(sample = sample_obj).last()
+        stored_lib_prep['lib_prep_code_id'], stored_lib_prep['uniqueID'] = get_library_code_and_unique_id(sample_obj)
+
+        # update the library preparation when it was already created for reuse
+        if LibraryPreparation.objects.filter(sample_id = sample_obj, libPrepState__libPrepState__exact = 'Created for Reuse').exists():
+            lib_prep_obj = LibraryPreparation.objects.get(sample_id = sample_obj, libPrepState__libPrepState__exact = 'Created for Reuse')
+            new_library_preparation = lib_prep_obj.update_lib_preparation_info_in_reuse_state(stored_lib_prep)
+        else:
+            stored_lib_prep['molecule_obj'] = molecule_obj
+            new_library_preparation = LibraryPreparation.objects.create_lib_preparation(stored_lib_prep)
+
+        lib_prep_id.append(new_library_preparation.get_id())
+        #lib_prep_code_id.append(new_library_preparation.get_lib_prep_code())
+
+        import pdb; pdb.set_trace()
+
+    #stored_lib_prep['lib_prep_id'] = ','.join(lib_prep_id)
+    #stored_lib_prep['lib_prep_code_id'] = ','.join(lib_prep_code_id)
+    return lib_prep_id
+
+def get_library_preparation_heading_for_samples (lib_prep_ids , protocol):
+    '''
+    Description:
+        The function gets the information to display the library preparation to assing the protocol parameter values sample names, extracted data from sample sheet, index, .
+        Then store the libraryPreparation data for each sample and update the sample state to "library Preparation"
+    Input:
+        lib_prep_ids   # Library preparation ids
+        user        # user object
+        protocol    # protocol name to get the protocol parameters
+    Constamt:
+        HEADING_FIX_FOR_ADDING_LIB_PARAMETERS
+
+    Functions:
+        get_lib_prep_obj_from_id # located at this file
+        get_lot_commercial_kits  # located at iSkyLIMS_core/utils/handling_samples.py
+        get_protocol_parameters   # located at iSkyLIMS_core/utils/handling_protocols.py
+    Variables:
+        stored_lib_prep     # dictionary to get data to create the library preparation object
+    Return:
+        stored_lib_prep .Including the lib_prep_code_id and lib_prep_id
+    '''
+    stored_lib_prep_data = {}
+    stored_lib_prep_data['data'] = []
+    valid_lib_prep_ids = []
+    lib_prep_code_ids =  []
+    user_list = []
+    protocol_obj = Protocols.objects.get(name__exact = protocol)
+    parameter_heading = get_protocol_parameters(protocol_obj)
+    length_heading = len(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS) + len (parameter_heading)
+
+    for lib_prep in lib_prep_ids :
+        lib_prep_obj = get_lib_prep_obj_from_id (lib_prep)
+        if lib_prep_obj == 'None':
+            continue
+
+        lib_prep_code = lib_prep_obj.get_lib_prep_code()
+        data = ['']*length_heading
+        data[0] = lib_prep_obj.get_sample_name()
+        data[1] = lib_prep_code
+
+        stored_lib_prep_data['data'].append(data)
+        valid_lib_prep_ids.append(lib_prep)
+        lib_prep_code_ids.append(lib_prep_code)
+        user_obj = lib_prep_obj.get_user_obj()
+        if not user_obj in user_list:
+            user_list.append(user_obj)
+    # collect the reagents kits from the user in the sample_sheet
+
+    reagents_kits = []
+    for user_obj in user_list:
+        reagents_kits += get_lot_commercial_kits(user_obj, protocol_obj)
+    # get only unique regents Kits
+    unique_reagents_kits = list(set(reagents_kits))
+    stored_lib_prep_data['heading'] = HEADING_FIX_FOR_ADDING_LIB_PARAMETERS
+    stored_lib_prep_data['param_heading'] = parameter_heading
+    stored_lib_prep_data['lib_prep_ids'] = ','.join(valid_lib_prep_ids)
+    stored_lib_prep_data['lib_prep_code_ids'] = ','.join(lib_prep_code_ids)
+    stored_lib_prep_data['heading_in_excel'] = ','.join(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS + parameter_heading)
+    stored_lib_prep_data['protocol_id'] = protocol_obj.get_protocol_id()
+    stored_lib_prep_data['reagents_kits'] = unique_reagents_kits
+
+    return stored_lib_prep_data
+
+
+def get_lib_prep_obj_from_id (library_preparation_id):
+    '''
+    Description:
+        The function gets the library preparation id and it returns the object instance
+    Input:
+
+    Return:
+        library_preparation_obj or None if not match
     '''
 
-    return
-
-
-    protocol = request.POST['lib_protocols']
-    single_paired = request.POST['singlePairedEnd']
-    read_length = request.POST['readlength']
-    user_sample_sheet_data = {}
-    stored_lib_prep = {}
-    stored_lib_prep['data'] = []
-
-    if CollectionIndexKit.objects.filter(collectionIndexName__exact = index_adapters).exists():
-        collection_index_kit_id = CollectionIndexKit.objects.get(collectionIndexName__exact = index_adapters)
+    if LibraryPreparation.objects.filter(pk__exact = library_preparation_id).exists():
+        library_preparation_obj = LibraryPreparation.objects.get(pk__exact = library_preparation_id)
+        return library_preparation_obj
     else:
-        collection_index_kit_id = None
-    register_user_obj = User.objects.get(username__exact = request.user.username)
-    user_sample_sheet_data['registerUser'] = register_user_obj
-    protocol_obj = Protocols.objects.get(name__exact = protocol)
-    user_sample_sheet_data['collectionIndexKit_id'] = collection_index_kit_id
-
-    user_sample_sheet_data['sampleSheet'] = file_name
-    user_sample_sheet_data['assay'] = assay
-    user_sample_sheet_data['adapter1'] = adapter1
-    user_sample_sheet_data['adapter2'] = adapter2
-    new_user_s_sheet_obj = libPreparationUserSampleSheet.objects.create_lib_prep_user_sample_sheet(user_sample_sheet_data)
-
-
-
-    return
+        return 'None'

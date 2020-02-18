@@ -131,6 +131,7 @@ def get_reads(file_lines):
             reads.append(line.split(',')[0])
     return reads
 
+
 def get_samples_in_sample_sheet(file_lines):
     '''
     Description :
@@ -151,8 +152,8 @@ def get_samples_in_sample_sheet(file_lines):
         found_header=re.search('^Sample_ID,Sample_Name',line)
         if found_header:
             header_found = True
-            samples_dict['headings'] = line.split(',')
-            index_sample_name = samples_dict['headings'].index('Sample_Name')
+            samples_dict['heading'] = line.split(',')
+            index_sample_name = samples_dict['heading'].index('Sample_Name')
             continue
             ## found the index for projects
         if header_found :
@@ -218,7 +219,8 @@ def get_sample_sheet_data (in_file):
     sample_sheet_data['index_adapter'] = get_index_adapter (file_lines)
     # get reads information
     sample_sheet_data['reads'] = get_reads(file_lines)
-    # get samples information
+
+    # update sample sheet data
     sample_sheet_data.update(get_samples_in_sample_sheet(file_lines))
 
     return sample_sheet_data

@@ -1,4 +1,4 @@
-import datetime
+import datetime, os
 
 from django.db import models
 from django import forms
@@ -736,11 +736,13 @@ class CollectionIndexValues (models.Model):
 class libPreparationUserSampleSheetManager (models.Manager):
 
     def create_lib_prep_user_sample_sheet (self, user_sample_sheet_data):
-        new_lib_prep_user_sample_sheet = self.create(registerUser = user_sample_sheet_data['registerUser'],
-                    collectionIndexKit_id  = user_sample_sheet_data['collectionIndexKit_id'],
-                    sampleSheet = user_sample_sheet_data['sampleSheet'],
-                    assay = user_sample_sheet_data['assay'], adapter1 = user_sample_sheet_data['adapter1'],
-                    adapter2 = user_sample_sheet_data['adapter2'])
+        register_user_obj = User.objects.get(username__exact = user_sample_sheet_data['user'])
+        collection_index_kit_id = CollectionIndexKit.objects.get(collectionIndexName__exact = user_sample_sheet_data['index_adapter'])
+        file_name =  os.path.basename(user_sample_sheet_data['file_name'])
+        new_lib_prep_user_sample_sheet = self.create(registerUser = register_user_obj,
+                    collectionIndexKit_id  = collection_index_kit_id, reads = ','.join(user_sample_sheet_data['reads']),
+                    sampleSheet = file_name, assay = user_sample_sheet_data['assay'],
+                    adapter1 = user_sample_sheet_data['adapter1'], adapter2 = user_sample_sheet_data['adapter2'])
         return new_lib_prep_user_sample_sheet
 
 class libPreparationUserSampleSheet (models.Model):
@@ -757,6 +759,7 @@ class libPreparationUserSampleSheet (models.Model):
     adapter1 = models.CharField(max_length=70, null = True, blank = True)
     adapter2 = models.CharField(max_length=70, null = True, blank = True)
     assay = models.CharField(max_length=70, null = True, blank = True)
+    reads = models.CharField(max_length=10, null = True, blank = True)
 
     def __str__ (self):
         return '%s' %(self.sampleSheet)
@@ -877,18 +880,18 @@ class StatesForLibraryPreparation (models.Model):
 
 
 class libraryPreparationManager(models.Manager):
-    def create_lib_preparation (self, lib_prep_data, user_sample_obj, reg_user ,molecule_obj,  single_paired , read_length):
+    def create_lib_preparation (self, lib_prep_data):
         #import pdb; pdb.set_trace()
-        lib_state = StatesForLibraryPreparation.objects.get(libPrepState =  'Defined')
-        new_lib_prep = self.create(registerUser = reg_user, molecule_id = molecule_obj, sample_id = lib_prep_data['sample_id'],
-            protocol_id =   lib_prep_data['protocol_obj'], user_sample_sheet = user_sample_obj, userSampleID = lib_prep_data['userSampleID'],
-            collectionIndex_id = lib_prep_data['collection_index_kit_id'],
+        registerUser_obj = User.objects.get(username__exact  = lib_prep_data['registerUser'])
+        sample_obj = Samples.objects.get(sampleName__exact = lib_prep_data['sample_name'])
+        lib_state_obj = StatesForLibraryPreparation.objects.get(libPrepState__exact =  'Defined')
+        new_lib_prep = self.create(registerUser = registerUser_obj, molecule_id = lib_prep_data['molecule_obj'], sample_id = sample_obj,
+            protocol_id =   lib_prep_data['protocol_obj'], libPrepState = lib_state_obj, user_sample_sheet = lib_prep_data['user_sample_sheet'],
+            libPrepCodeID = lib_prep_data['lib_prep_code_id'], userSampleID = lib_prep_data['userSampleID'],
             projectInSampleSheet = lib_prep_data['projectInSampleSheet'], samplePlate = lib_prep_data['samplePlate'],
             sampleWell = lib_prep_data['sampleWell'], indexPlateWell = lib_prep_data['indexPlateWell'], i7IndexID = lib_prep_data['i7IndexID'],
-            i7Index = lib_prep_data['i7Index'], i5IndexID = lib_prep_data['i5IndexID'],
-            i5Index = lib_prep_data['i5Index'], singlePairedEnd = single_paired, lengthRead = read_length,
-            libPrepCodeID = lib_prep_data['lib_code_id'], libPrepState = lib_state,
-            uniqueID = lib_prep_data['uniqueID'])
+            i7Index = lib_prep_data['i7Index'], i5IndexID = lib_prep_data['i5IndexID'], i5Index = lib_prep_data['i5Index'],
+            singlePairedEnd = lib_prep_data['single_paired'], lengthRead = lib_prep_data['read_length'], uniqueID = lib_prep_data['uniqueID'])
 
         return new_lib_prep
 
@@ -896,13 +899,6 @@ class libraryPreparationManager(models.Manager):
         lib_state = StatesForLibraryPreparation.objects.get(libPrepState =  'Created for Reuse')
         new_library_preparation = self.create(registerUser = reg_user, molecule_id = molecule_obj, sample_id = sample_id,libPrepState = lib_state)
         return new_library_preparation
-
-
-
-
-
-
-
 
 class LibraryPreparation (models.Model):
     registerUser = models.ForeignKey(
@@ -928,9 +924,7 @@ class LibraryPreparation (models.Model):
     user_sample_sheet = models.ForeignKey(
                 libPreparationUserSampleSheet,
                 on_delete= models.CASCADE, null = True, blank = True)
-    collectionIndex_id = models.ForeignKey(
-                CollectionIndexKit,
-                on_delete= models.CASCADE, null = True, blank = True)
+
     pools = models.ManyToManyField(LibraryPool, blank = True)
 
     libPrepCodeID = models.CharField(max_length=255, null = True, blank = True)
@@ -956,14 +950,13 @@ class LibraryPreparation (models.Model):
     def __str__ (self):
         return '%s' %(self.sample_id)
 
-    def get_assay(self):
-        return '%s' %(self.user_sample_sheet.get_assay())
-
     def get_adapters(self):
         return self.user_sample_sheet.get_adapters()
 
+    '''
     def get_collection_index_name (self):
         return '%s' %(self.collectionIndex_id.get_collection_index_name())
+    '''
 
     def get_id (self):
         return '%s' %(self.pk)
@@ -1099,7 +1092,9 @@ class LibraryPreparation (models.Model):
     def get_unique_id(self):
         return '%s' %(self.uniqueID)
 
-
+    def get_user_obj(self):
+        return self.registerUser
+        
     def set_increase_reuse(self):
         self.numberOfReused += 1
         self.save()
@@ -1130,25 +1125,28 @@ class LibraryPreparation (models.Model):
         self.save()
         return
 
-    def update_lib_preparation_info_in_reuse_state (self,lib_prep_data ,user_sample_obj, single_paired , read_length):
-        lib_state = StatesForLibraryPreparation.objects.get(libPrepState =  'Defined')
+    def update_lib_preparation_info_in_reuse_state (self, lib_prep_data):
+        # Update the instance with the sample sheet information
+        self.registerUser = User.objects.get(username__exact  = lib_prep_data['registerUser'])
         self.protocol_id =   lib_prep_data['protocol_obj']
-        self.user_sample_sheet = user_sample_obj
-        self.userSampleID = lib_prep_data['userSampleID']
-        self.collectionIndex_id = lib_prep_data['collection_index_kit_id']
+        lib_state = StatesForLibraryPreparation.objects.get(libPrepState__exact =  'Defined')
+        self.user_sample_sheet = lib_prep_data['user_sample_sheet']
+        self.libPrepCodeID = lib_prep_data['lib_prep_code_id']
         self.projectInSampleSheet = lib_prep_data['projectInSampleSheet']
+        self.userSampleID = lib_prep_data['userSampleID']
         self.samplePlate = lib_prep_data['samplePlate']
         self.sampleWell = lib_prep_data['sampleWell']
+        self.indexPlateWell =  lib_prep_data['indexPlateWell']
         self.i7IndexID = lib_prep_data['i7IndexID']
         self.i7Index = lib_prep_data['i7Index']
         self.i5IndexID = lib_prep_data['i5IndexID']
         self.i5Index = lib_prep_data['i5Index']
-        self.singlePairedEnd = single_paired
-        self.lengthRead = read_length
-        self.libPrepCodeID = lib_prep_data['lib_code_id']
-        self.libPrepState = lib_state
+        self.singlePairedEnd = lib_prep_data['single_paired']
+        self.lengthRead = lib_prep_data['read_length']
+
+
         self.uniqueID = lib_prep_data['uniqueID']
-        self.assay = lib_prep_data['assay']
+
         self.save()
         return self
 

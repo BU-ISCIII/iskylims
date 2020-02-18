@@ -169,11 +169,16 @@ MAP_BASESPACE_SAMPLE_SHEET_TWO_INDEX = [('SampleID','Sample_ID'),('Name','Sample
                 ('Index1Name','I7_Index_ID'), ('Index1Sequence','index' ),('Index2Name','I5_Index_ID'),('Index2Sequence','index2') ]
 
 ######### MAPPIING COLUMNS IN SAMPLE SHEET FROM USER TO DATABASE   #############
-MAP_USER_SAMPLE_SHEET_TO_DATABASE = [('Sample_ID','userSampleID'), ('Sample_Name','sample_id'), ('Sample_Plate','samplePlate'),
+MAP_USER_SAMPLE_SHEET_TO_DATABASE_TWO_INDEX = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
             ('Sample_Well','sampleWell'),('Index_Plate_Well','indexPlateWell'),('I7_Index_ID','i7IndexID'),
-            ('index','i7Index'),('I5_Index_ID','i5IndexID'),('index2','i5Index'),('Sample_Project','projectInSampleSheet')]
+            ('index','i7Index'),('I5_Index_ID','i5IndexID'),('index2','i5Index'),('Sample_Project','projectInSampleSheet'),('Description', 'registerUser')]
 
+MAP_USER_SAMPLE_SHEET_TO_DATABASE_ONE_INDEX = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
+            ('Sample_Well','sampleWell'),('Index_Plate_Well','indexPlateWell'),('I7_Index_ID','i7IndexID'),
+            ('index','i7Index'),('Sample_Project','projectInSampleSheet'),('Description', 'registerUser')]
 ###### mapping including WELL
+
+
 
 # mapping structure when sample sheet contains only one index
 MAPPING_BASESPACE_SAMPLE_SHEET_ONE_INDEX = [('SampleID','Unique_Sample_ID'),('Name','Sample_Name'), ('Project','Sample_Project'),('Well', 'Sample_Well'),
@@ -202,7 +207,7 @@ HEADING_FOR_LIBRARY_PREPARATION_STATE = ['Sample extraction date', 'Sample', 'Mo
 
 #######HEADING_FOR_ADD_LIBRARY_PREPARATION = ['Molecule Code ID', 'Protocol', 'Extraction Date', 'To be included']
 HEADING_FOR_ADD_LIBRARY_PREPARATION_PARAMETERS = ['Library Preparation Code ID', 'Sample Name', 'Protocol used', 'Add Library']
-HEADING_FIX_FOR_ADDING_LIB_PARAMETERS = ['Sample Name', 'Library Preparation Code ID',  'Collection Index Kit', 'Lot Regents Kit used']
+HEADING_FIX_FOR_ADDING_LIB_PARAMETERS = ['Sample Name', 'Library Preparation Code ID',  'Lot Regents Kit used']
 HEADING_FOR_CREATION_LIBRARY_PREPARATION = ['Molecule Code ID', 'Protocol used', 'Single/Paired end', 'Length read']
 
 ### Heading for display information on library Preparation definition

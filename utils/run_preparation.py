@@ -331,6 +331,12 @@ def parsing_data_for_sample_sheet_file(new_sample_sheet_data, mapping, heading_s
 
 
 def prepare_lib_prep_table_new_run (index_adapters, request, extracted_data_list, file_name, assay, adapter1, adapter2):
+
+    '''
+
+    BORRAR
+    BORRAR esta funcion
+    '''
     protocol = request.POST['lib_protocols']
     single_paired = request.POST['singlePairedEnd']
     read_length = request.POST['readlength']

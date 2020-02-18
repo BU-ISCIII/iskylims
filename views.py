@@ -3457,6 +3457,7 @@ def handling_library_preparations(request):
         get_type_of_sample_information : located at iSkyLIMS_core/utils/handling_samples.py
         get_protocols_for_library_preparation : located at utils/library_preparation.py
         get_samples_in_lib_prep_state :  located at utils/library_preparation.py
+        validate_sample_sheet_data
     '''
     # get the information for returning the uploaded file in case errors in the sample sheet
     upload_file = {}
@@ -3479,10 +3480,13 @@ def handling_library_preparations(request):
             upload_file['ERROR'] = valid_data['ERROR']
             upload_file['file_name'] = request.FILES['uploadfile'].name
             return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'upload_file':upload_file})
-        import pdb; pdb.set_trace()
-        lib_prep_sample_sheet_obj = store_library_preparation_sample_sheet(request.POST)
-        stored_sample = store_library_preparation_samples(sample_sheet_data,  request.user)
 
+        lib_prep_sample_sheet_obj = store_library_preparation_sample_sheet(sample_sheet_data, request.user)
+
+        stored_lib_prep_sample = store_library_preparation_samples(sample_sheet_data,  request.user, request.POST['lib_protocols'], lib_prep_sample_sheet_obj)
+        
+        stored_lib_prep = get_library_preparation_heading_for_samples(stored_lib_prep_sample, request.POST['lib_protocols'])
+        import pdb; pdb.set_trace()
         return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_lib_prep':stored_lib_prep})
     if request.method == 'POST' and request.POST['action'] == 'addLibPrepParam':
         pass
