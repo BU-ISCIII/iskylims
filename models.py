@@ -773,6 +773,9 @@ class libPreparationUserSampleSheet (models.Model):
         adapters.append(self.adapter2)
         return adapters
 
+    def get_collection_index_kit (self):
+        return '%s' %(self.collectionIndexKit_id.get_collection_index_name())
+
     objects = libPreparationUserSampleSheetManager()
 
 class StatesForPool (models.Model):
@@ -976,15 +979,11 @@ class LibraryPreparation (models.Model):
         return lib_info
 
     def get_info_for_selection_in_pool(self):
-        if self.collectionIndex_id == None :
-            collection_index_kit = ''
-        else:
-            collection_index_kit = self.collectionIndex_id.get_collection_index_name()
         lib_info = []
         lib_info.append(self.libPrepCodeID)
         lib_info.append(self.sample_id.get_sample_name())
         lib_info.append(self.registerUser.username)
-        lib_info.append(collection_index_kit)
+        lib_info.append(self.user_sample_sheet.get_collection_index_kit())
         lib_info.append(self.i7IndexID)
         lib_info.append(self.i5IndexID)
         lib_info.append(self.pk)
@@ -1094,7 +1093,7 @@ class LibraryPreparation (models.Model):
 
     def get_user_obj(self):
         return self.registerUser
-        
+
     def set_increase_reuse(self):
         self.numberOfReused += 1
         self.save()
