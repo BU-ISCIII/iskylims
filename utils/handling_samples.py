@@ -1586,7 +1586,6 @@ def set_molecule_use(form_data, app_name) :
         if molecule_json_data[row_index][2] != '':
             data = []
 
-            import pdb; pdb.set_trace()
             right_id = molecule_ids[molecule_code_ids.index(molecule_json_data[row_index][1])]
             molecule_obj = get_molecule_obj_from_id(right_id)
             molecule_obj.set_molecule_use(molecule_json_data[row_index][2], app_name)
@@ -1596,7 +1595,7 @@ def set_molecule_use(form_data, app_name) :
             else:
                 sample_obj.set_state('Completed')
             molecule_update['data'].append(molecule_json_data[row_index])
-            import pdb; pdb.set_trace()
+
     if len(molecule_update['data']) > 0:
         molecule_update['heading'] = HEADING_FOR_SELECTING_MOLECULE_USE
     return molecule_update

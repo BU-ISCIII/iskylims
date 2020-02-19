@@ -209,6 +209,19 @@ def get_protocol_parameters(protocol_obj):
             protocol_parameter_list.append(protocol_parameter.get_parameter_name())
     return protocol_parameter_list
 
+def get_project_name_by_id(protocol_id):
+    '''
+    Description:
+        The function return a protocol_name for a ginven protocol id.
+    Return:
+        protocol_name.
+    '''
+    if Protocols.objects.filter(pk__exact = protocol_id).exists():
+        protocol_name = Protocols.objects.get(pk__exact = protocol_id).get_name()
+        return protocol_name
+    else:
+        'None'
+
 def set_protocol_parameters(request):
     protocol_id = request.POST['protocol_id']
     json_data = json.loads(request.POST['table_data1'])
