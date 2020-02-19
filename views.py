@@ -3484,12 +3484,26 @@ def handling_library_preparations(request):
         lib_prep_sample_sheet_obj = store_library_preparation_sample_sheet(sample_sheet_data, request.user)
 
         stored_lib_prep_sample = store_library_preparation_samples(sample_sheet_data,  request.user, request.POST['lib_protocols'], lib_prep_sample_sheet_obj)
-        
+
         stored_lib_prep = get_library_preparation_heading_for_samples(stored_lib_prep_sample, request.POST['lib_protocols'])
         import pdb; pdb.set_trace()
         return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_lib_prep':stored_lib_prep})
-    if request.method == 'POST' and request.POST['action'] == 'addLibPrepParam':
-        pass
+    # store the parameter librarry preparation protocol
+    if request.method == 'POST' and request.POST['action'] == 'recordProtocolParamters':
+        stored_params = analyze_input_param_values (request.POST)
+        if 'ERROR' in stored_params:
+            protocol_name = get_project_name_by_id(request.POST['protocol_id'])
+            lib_prep_ids = request.POST['lib_prep_ids'].split(',')
+            import pdb; pdb.set_trace()
+            stored_lib_prep = get_library_preparation_heading_for_samples(lib_prep_ids, protocol_name)
+            stored_lib_prep['ERROR'] = stored_params['ERROR']
+            # update the data with the one already defined by user
+            import pdb; pdb.set_trace()
+            stored_lib_prep['data'] = json_data = json.loads(request.POST['protocol_data'])
+            return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_lib_prep':stored_lib_prep})
+
+        return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_params':stored_params})
+
     else:
         return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'upload_file':upload_file})
 

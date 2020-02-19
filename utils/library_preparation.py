@@ -10,39 +10,75 @@ from iSkyLIMS_wetlab.utils.collection_index_functions import check_collection_in
 from ..fusioncharts.fusioncharts import FusionCharts
 from .stats_graphics import *
 
+def check_empty_fields (data):
+    '''
+    Description:
+        The function check if row_data contains empty values.
+    Input:
+        data:       # data to be checked
+    Return:
+        False is all fields contain data. True if any of them are empty
+    '''
 
+    for row_data in data :
+        for field in row_data :
+            if field == '':
+                return True
+    return False
 
-def analyze_input_param_values(request):
-    if  'lib_prep_in_list' in request.POST:
-        lib_prep_ids = request.POST.getlist('lib_prep_id')
+def analyze_input_param_values(form_data):
+    '''
+    Description:
+        The function get the user input  for the library preparation parameters and store them
+        in database.
+    Input:
+
+    Constant:
+        HEADING_FIX_FOR_ADDING_LIB_PARAMETERS
+        ERROR_EMPTY_VALUES
+    Return:
+        ERROR message if some of the data are missing, or a list of recorded library prepartion obj
+    '''
+    if  'lib_prep_in_list' in form_data:
+        lib_prep_ids = form_data.getlist('lib_prep_ids')
         if len('lib_prep_in_list') == 0:
-            lib_prep_ids = list(request.POST['lib_prep_id'])
+            lib_prep_ids = list(form_data['lib_prep_ids'])
     else:
-        lib_prep_ids = request.POST['lib_prep_id'].split(',')
-    headings = request.POST['heading_in_excel'].split(',')
-    json_data = json.loads(request.POST['protocol_data'])
+        lib_prep_ids = form_data['lib_prep_ids'].split(',')
+    lib_prep_code_ids = form_data['lib_prep_code_ids'].split(',')
+    headings = form_data['heading_in_excel'].split(',')
+    json_data = json.loads(form_data['protocol_data'])
     fixed_heading_length = len(HEADING_FIX_FOR_ADDING_LIB_PARAMETERS)
     parameters_length = len(headings)
+
+    if check_empty_fields(json_data) :
+        stored_params = {}
+        stored_params['ERROR'] = ERROR_EMPTY_VALUES
+        return stored_params
+
     stored_params = []
-    for i in range(len(lib_prep_ids)):
-        library_prep_obj = LibraryPreparation.objects.get(pk = lib_prep_ids[i])
+    for row_index in range(len(json_data)):
+        right_id = lib_prep_ids[lib_prep_code_ids.index(json_data[row_index][1])]
+
+        library_prep_obj = get_lib_prep_obj_from_id(right_id)
 
         for p_index in range(fixed_heading_length, parameters_length):
             lib_parameter_value ={}
-            lib_parameter_value['parameter_id'] = ProtocolParameters.objects.get(protocol_id = library_prep_obj.protocol_id,
+            lib_parameter_value['parameter_id'] = ProtocolParameters.objects.get(protocol_id__exact = form_data['protocol_id'],
                                 parameterName__exact = headings[p_index])
             lib_parameter_value['library_id'] = library_prep_obj
-            lib_parameter_value['parameterValue'] = json_data[i] [p_index]
+            lib_parameter_value['parameterValue'] = json_data[row_index][p_index]
 
             new_parameters_data = LibParameterValue.objects.create_library_parameter_value (lib_parameter_value)
+
         kit_index = HEADING_FIX_FOR_ADDING_LIB_PARAMETERS.index('Lot Regents Kit used')
-        library_prep_obj.set_reagent_user_kit(json_data[i] [kit_index])
+        library_prep_obj.set_reagent_user_kit(json_data[row_index] [kit_index])
         stored_params.append([library_prep_obj.get_sample_name(), library_prep_obj.get_lib_prep_code()])
+
         library_prep_obj.set_state('Completed')
         sample_obj = library_prep_obj.get_sample_obj ()
         # Update the sample state to "Create Pool"
         sample_obj.set_state('Pool Preparation')
-    #import pdb; pdb.set_trace()
     return stored_params
 
 def check_samples_for_library_preparation():
@@ -505,7 +541,7 @@ def get_library_preparation_heading_for_samples (lib_prep_ids , protocol):
 
     Functions:
         get_lib_prep_obj_from_id # located at this file
-        get_lot_commercial_kits  # located at iSkyLIMS_core/utils/handling_samples.py
+        get_lot_commercial_kits  # located at iSkyLIMS_core/utils/handling_commercial_kits.py
         get_protocol_parameters   # located at iSkyLIMS_core/utils/handling_protocols.py
     Variables:
         stored_lib_prep     # dictionary to get data to create the library preparation object
@@ -541,6 +577,7 @@ def get_library_preparation_heading_for_samples (lib_prep_ids , protocol):
 
     reagents_kits = []
     for user_obj in user_list:
+        import pdb; pdb.set_trace()
         reagents_kits += get_lot_commercial_kits(user_obj, protocol_obj)
     # get only unique regents Kits
     unique_reagents_kits = list(set(reagents_kits))

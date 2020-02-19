@@ -248,5 +248,7 @@ ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION = ['Sample sheet cannot be u
 ERROR_SAMPLES_INVALID_DUPLICATED_INDEXES = ['Sample sheet cannot be uploaded because there are samples', 'which have duplicated index']
 ERROR_COLLECTION_INDEX_KIT_NOT_DEFINED = ['Sample sheet cannot be uploaded because collection Index Kit', 'is not defined']
 
+ERROR_EMPTY_VALUES = ['Your request cannot be recorded because ', 'it contains empty values']
+
 ERROR_SAMPLE_PROJECT_ALREADY_EXISTS = ['Sample Project is already defined']
 ERROR_SAMPLE_PROJECT_DOES_NOT_EXISTS = ['The Sample Project that you requested ', 'Does not exist']
