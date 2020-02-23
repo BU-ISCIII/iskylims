@@ -58,6 +58,7 @@ urlpatterns = [
     path('setLibraryValues', views.set_library_values, name = 'set_library_values'),
     path('StatsExperiment/', views.stats_experiment, name ='stats_experiment'),
     path('StatsLibrary/', views.stats_per_library , name ='stats_per_library'),
+    path('StatsPerMachine/', views.stats_per_machine, name ='stats_per_machine'),
     path('StatsPerResearcher/',views.stats_per_researcher, name='stats_per_researcher'),
     path('StatsPerTime/', views.stats_per_time, name ='stats_per_time'),
     #path('updateSamples', views.update_samples, name = 'update_samples'),

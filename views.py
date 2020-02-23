@@ -1509,6 +1509,309 @@ def stats_experiment (request):
     return render (request, 'iSkyLIMS_wetlab/StatsPerExperiment.html', {})
 
 @login_required
+def stats_per_machine (request):
+    if request.method == 'POST':
+        m_name = request.POST['machinename']
+        start_date=request.POST['startdate']
+        end_date=request.POST['enddate']
+
+        if start_date != '':
+            try:
+                datetime.datetime.strptime(start_date, '%Y-%m-%d')
+            except:
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The format for the "From Start Date" Field is incorrect ',
+                                                                    'ADVICE:', 'Use the format  (YYYY-MM-DD)']})
+        if end_date !='' :
+            try:
+                datetime.datetime.strptime(end_date, '%Y-%m-%d')
+            except:
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
+                                                                    'ADVICE:', 'Use the format  (YYYY-MM-DD)']})
+        if len(m_name) < 5 :
+            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['machine name is too sort fo fined a match', 'Name must be at least 6 characters long'
+                                                            'ADVICE:', 'write a longer name in the machine field ']})
+
+        if Machines.objects.filter(machineName__icontains = m_name).exists():
+            m_name = Machines.objects.get(machineName__icontains = m_name).machineName
+
+            if RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name).exists():
+                if RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name, state__runStateName = "Completed").exists():
+                    run_by_machine = RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name, state__runStateName = "Completed")
+                    run_by_machine_no_completed = RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name).exclude(state__runStateName = "Completed")
+
+
+                    projects_by_machine = Projects.objects.filter(runprocess_id__sequencerModel__machineName__iexact = m_name, runprocess_id__state__runStateName = "Completed").order_by('generatedat')
+
+                # check if start and end date are present in the form
+                    if start_date != '' and end_date !='':
+
+
+                        if RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name, state__runStateName = "Completed", run_date__range=(start_date, end_date)).exists():
+                            run_by_machine = RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name, state__runStateName = "Completed", run_date__range=(start_date, end_date))
+                            projects_by_machine = Projects.objects.filter(runprocess_id__sequencerModel__machineName__iexact = m_name , runprocess_id__state__runStateName = "Completed", generatedat__range=(start_date, end_date))
+
+                            #r_project_by_researcher = r_project_by_researcher.filter(generatedat__range=(start_date, end_date))
+                        else:
+                            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Machine does not have projects associated for the period ',
+                                                    'starting date  = ', start_date, 'and with ending date = ', end_date,
+                                                                'ADVICE:', 'Contact with your administrator']})
+
+                    if start_date != '' and end_date =='':
+                        end_date = str(datetime.datetime.now().date())
+                        if RunProcess.objects.filter(sequencerModel__machineName__iexact =m_name, state__runStateName = "Completed", run_date__range=(start_date, end_date)).exists():
+                            run_by_machine = RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name, state__runStateName = "Completed", run_date__range=(start_date, end_date))
+                            projects_by_machine = Projects.objects.filter(runprocess_id__sequencerModel__machineName__iexact = m_name, runprocess_id__state__runStateName = "Completed", generatedat__range=(start_date, end_date))
+
+                        else:
+                            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Machine does not have projects associated for the period ',
+                                                    'starting date  = ', start_date,
+                                                                'ADVICE:', 'Contact with your administrator']})
+
+                    if start_date == '' and end_date !='':
+                        if RunProcess.objects.filter(sequencerModel_machineName__iexact =m_name, state__runStateName = "Completed", generatedat__lte= end_date).exists():
+                            run_by_machine =RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name, state__runStateName = "Completed", run_date__lte = end_date)
+                            projects_by_machine = Projects.objects.filter(runprocess_id__sequencerModel__machineName__iexact = m_name, runprocess_id__state__runStateName = "Completed", generatedat__lte = end_date)
+                        else:
+                            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Machine does not have projects associated for the period ',
+                                                    'ending date  = ', end_date,
+                                                                'ADVICE:', 'Contact with your administrator']})
+
+
+
+                    # Get data from researcher projects
+
+
+
+
+                    machine_statistics = {}
+
+                    machine_statistics ['run_heading'] = ['Run name' , 'Run Date' , 'Sequencer Model' , 'State' , 'Space Img(Mb)' , 'Space Fasta(Mb)' , 'Space Other(Mb)']
+                    runs_data = []
+                    sequencer_run = {}
+                    runs_data_list = []
+                    runs_time_list = []
+                    for run_machine in run_by_machine:
+                        ru_seq_model = run_machine.get_run_sequencerModel()
+                        ru_data=run_machine.get_info_process().split(';')
+                        #runName, state, requested_center, generated_date, rundate,completed_date, bcl2fastq_date, finish_date, useSpaceImgMb, useSpaceFastaMb,useSpaceOtherMb
+                        runs_data_list.append([ru_data[0], ru_data[4] , ru_seq_model , ru_data[3] , ru_data[8] , ru_data[9] , ru_data[10]])
+                        # time the run took from run_date to completed_date
+                        runs_time_list.append([ru_data[0], ru_data[5]-ru_data[4]])
+
+                    sequencer_run[ru_seq_model] = runs_data_list
+                    runs_data.append(sequencer_run)
+                    machine_statistics['run_data'] = runs_data
+                    # Get data from machine projects
+
+                    machine_statistics ['projects_heading'] = ['Project name', 'Date', 'Libraty Kit','Samples', 'Cluster PF', 'Yield Mb', '% Q> 30', 'Mean','Sequencer ID']
+                    projects_data =[]
+                    p_machine_date , p_machine_num_sample = {} , {}
+                    p_machine_lib_kit, p_machine_sequencer = {}, {}
+                    p_machine_q30_dict, p_machine_mean_dict = {} , {}
+                    p_machine_yield_mb_dict, p_machine_cluster_pf_dict ={} , {}
+                    projects_name_dict , projects_id_list = {} , {}
+
+                    # if run_by_machine_no_completed = 0 --> not pie graph
+
+                    if len(run_by_machine_no_completed) != 0 :
+                        run_num= {}
+                        run_num['Completed']= len(run_by_machine)
+                        run_num['Not Completed']= len(run_by_machine_no_completed)
+                        theme = 'ocean'
+                        heading = '%Runs Completed vs Runs Not Completed for ' + ru_seq_model
+                        sub_caption = ''
+                        data_source = pie_graphic_standard (heading, sub_caption, theme, run_num)
+                        run_pie_graph = FusionCharts("pie3d", "run_pie_graph" , "500", "400", "run_pie_chart", "json", data_source).render()
+                        machine_statistics ['run_pie_graph'] = run_pie_graph
+
+
+
+
+                    #import pdb; pdb.set_trace()
+                    for project_machine in projects_by_machine:
+
+                        q_30_list , mean_q_list = [] , []
+                        yield_mb_list,  cluster_pf_list = [], []
+                        p_name = project_machine.get_project_name()
+
+                        sequencer_in_project = project_machine.runprocess_id.get_run_sequencerModel()
+                        if not sequencer_in_project in projects_name_dict :
+                            p_machine_num_sample[sequencer_in_project] ={}
+                            p_machine_sequencer[sequencer_in_project] ={}
+                            p_machine_date[sequencer_in_project] ={}
+                            p_machine_lib_kit[sequencer_in_project] ={}
+                            p_machine_q30_dict[sequencer_in_project] ={}
+                            p_machine_mean_dict[sequencer_in_project] ={}
+                            p_machine_yield_mb_dict[sequencer_in_project] ={}
+                            p_machine_cluster_pf_dict[sequencer_in_project] ={}
+                            projects_name_dict[sequencer_in_project] = []
+                            projects_id_list[sequencer_in_project] =  []
+                        projects_name_dict[sequencer_in_project].append(p_name)
+                        m_project_id = project_machine.id
+                        projects_id_list[sequencer_in_project].append(m_project_id)
+                        p_machine_num_sample[sequencer_in_project][p_name] = StatsFlSummary.objects.get(project_id__exact = m_project_id).sampleNumber
+                        p_machine_date [sequencer_in_project][p_name] = project_machine.get_date()
+                        p_machine_lib_kit[sequencer_in_project][p_name]= project_machine.get_library_name()
+                        p_machine_sequencer[sequencer_in_project][p_name] = str(project_machine.runprocess_id.sequencerModel)
+                        lanes_in_project = StatsLaneSummary.objects.filter( project_id__exact = m_project_id)
+                        for lane in lanes_in_project :
+                            q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane.get_stats_info().split(';')
+                            q_30_list.append(float(q_30_value))
+                            mean_q_list.append(float(mean_q_value))
+                            yield_mb_list.append(float(yield_mb_value.replace(',','')))
+                            cluster_pf_list.append(float(cluster_pf_value.replace(',','')))
+                        p_machine_q30_dict[sequencer_in_project] [p_name]= format(statistics.mean(q_30_list), '.2f')
+                        p_machine_mean_dict[sequencer_in_project][p_name] = format(statistics.mean(mean_q_list), '.2f')
+                        p_machine_yield_mb_dict[sequencer_in_project][p_name] = round(sum(yield_mb_list))
+                        p_machine_cluster_pf_dict[sequencer_in_project][p_name] = round(sum(cluster_pf_list))
+
+                    # Create the table with projects executed by the machine
+                    machine_seq_graphs, machine_graphs = [], []
+                    for sequencer, projects_name_list in projects_name_dict.items() :
+                        sequencer_proj = {}
+                        proj_data =[]
+                        for project_name in projects_name_list :
+                            proj_data.append([project_name, p_machine_date[sequencer][project_name], p_machine_lib_kit[sequencer][project_name],
+                                    p_machine_num_sample[sequencer][project_name], '{0:,}'.format(int(p_machine_cluster_pf_dict[sequencer][project_name])),
+                                    '{0:,}'.format(int(p_machine_yield_mb_dict[sequencer][project_name])), p_machine_q30_dict[sequencer][project_name],
+                                    p_machine_mean_dict[sequencer][project_name], p_machine_sequencer[sequencer][project_name]])
+                        sequencer_proj[sequencer] = proj_data
+                        projects_data.append(sequencer_proj)
+                        # create the graphic for q30 quality
+                        theme = 'ocean'
+                        heading = 'Graphics for Q > 30 for machine ' + m_name
+                        sub_caption = 'Sequencer ' + sequencer
+                        x_axis_name = 'Projects'
+                        y_axis_name = 'Q 30 (in %)'
+
+                        data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_machine_q30_dict[sequencer])
+                        seq_chart = sequencer + 'q30_chart'
+                        seq_graph = sequencer + 'q30_graph'
+                        q30_machine_seq_graph = FusionCharts("column3d", seq_graph , "500", "350",seq_chart , "json", data_source).render()
+
+                        machine_seq_graphs.append([seq_chart, q30_machine_seq_graph])
+                        # create the graphic for mean quality
+                        theme = 'carbon'
+                        heading = 'Graphics for Mean quality for machine ' + m_name
+                        sub_caption = 'Sequencer ' + sequencer
+                        x_axis_name = 'Projects'
+                        y_axis_name = 'Mean Quality'
+                        data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_machine_mean_dict[sequencer])
+                        seq_chart = sequencer + 'mean_q_chart'
+                        seq_graph = sequencer + 'mean_q_graph'
+                        mean_q_machine_seq_graph = FusionCharts("column3d", seq_graph , "500", "350", seq_chart, "json", data_source).render()
+                        machine_seq_graphs.append([seq_chart, mean_q_machine_seq_graph])
+
+                        # create the graphic for yield Mb
+                        theme = 'zune'
+                        heading = 'Graphics for Yield Mb for machine ' + m_name
+                        sub_caption = 'Sequencer ' + sequencer
+                        x_axis_name = 'Projects'
+                        y_axis_name = 'Yield Mb'
+                        data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_machine_yield_mb_dict[sequencer])
+                        seq_chart = sequencer + 'yield_mb_chart'
+                        seq_graph = sequencer + 'yield_mb_graph'
+                        yield_mb_machine_graph = FusionCharts("column3d", seq_graph , "500", "350", seq_chart, "json", data_source).render()
+                        machine_seq_graphs.append([seq_chart, yield_mb_machine_graph])
+                        # create the graphic for cluster Pf
+                        theme = 'ocean'
+                        heading = 'Graphics for Cluster Pf for machine ' + m_name
+                        sub_caption = 'Sequencer ' + sequencer
+                        x_axis_name = 'Projects'
+                        y_axis_name = 'Cluster Pf'
+                        data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_machine_cluster_pf_dict[sequencer])
+                        seq_chart = sequencer + 'cluster_pf_chart'
+                        seq_graph = sequencer + 'cluster_pf_graph'
+                        cluster_pf_machine_graph = FusionCharts("column3d", seq_graph , "500", "350", seq_chart, "json", data_source).render()
+                        machine_seq_graphs.append([seq_chart, cluster_pf_machine_graph])
+
+
+                        machine_graphs.append(machine_seq_graphs)
+
+                    machine_statistics ['machine_graph'] = machine_graphs
+                    machine_statistics ['machine_name'] = m_name
+                    machine_statistics['projects_data'] = projects_data
+                    #import pdb; pdb.set_trace()
+
+                    #collecting data for comparation graphics
+
+                    # Calculating the mean for all projects performed by researcher
+                    comp_q30_dict, comp_mean_q_dict = {} , {}
+                    comp_yield_mb_dict, comp_cluster_pf_dict = {} , {}
+
+                    q30_val = p_machine_q30_dict.values()
+                    mean_q_val = p_machine_mean_dict.values()
+                    yield_mb_val = p_machine_yield_mb_dict.values()
+                    cluster_pf = p_machine_cluster_pf_dict.values()
+
+                    for sequencer in projects_name_dict.keys() :
+                        #sequencer_proj = {}
+                        #proj_data =[]
+                        comp_q30_dict[sequencer] , comp_mean_q_dict [sequencer]= {} , {}
+                        comp_yield_mb_dict[sequencer], comp_cluster_pf_dict [sequencer] = {}, {}
+                        comp_q30_dict [sequencer][m_name] = format(statistics.mean( [float(x) for x in list(p_machine_q30_dict[sequencer].values())]),'.2f')
+                        comp_mean_q_dict[sequencer] [m_name] = format(statistics.mean( [float(x) for x in list(p_machine_mean_dict[sequencer].values())]),'.2f')
+
+                        comp_yield_mb_dict[sequencer] [m_name] = sum(list(p_machine_yield_mb_dict[sequencer].values()))
+                        comp_cluster_pf_dict[sequencer] [m_name] = sum(list(p_machine_cluster_pf_dict[sequencer].values()))
+
+                    total_q_30_list, total_mean_q_list = [] , []
+                    total_yield_mb_list, total_cluster_pf_list = [] , []
+                    total_lanes_summary = {}
+
+                    for sequencer in projects_name_dict.keys() :
+                        runs_sequencer = RunProcess.objects.filter(sequencerModel__machineName__exact = sequencer)
+                        run_sequencer_id_list = []
+                        for run in runs_sequencer :
+                            run_sequencer_id_list.append(run.pk)
+
+                        if StatsLaneSummary.objects.filter(runprocess_id__in  = run_sequencer_id_list).exclude(defaultAll__isnull = False).exclude(project_id__in = projects_id_list[sequencer]).exists():
+                            total_lanes_summary[sequencer] = StatsLaneSummary.objects.filter(runprocess_id__in  = run_sequencer_id_list).exclude(defaultAll__isnull = False).exclude(project_id__in = projects_id_list[sequencer])
+                        else:
+                            total_lanes_summary[sequencer] = ''
+
+
+                    comp_graphs, comp_seq_graphs = [] , []
+                    for sequencer in projects_name_dict.keys() :
+                        for lane_summary in total_lanes_summary[sequencer] :
+                            q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane_summary.get_stats_info().split(';')
+                            total_q_30_list.append(float(q_30_value))
+                            total_mean_q_list.append(float(mean_q_value))
+                            total_yield_mb_list.append(int(yield_mb_value.replace(',','')))
+                            total_cluster_pf_list.append(int(cluster_pf_value.replace(',','')))
+
+
+                    machine_statistics ['comp_graphs'] = comp_graphs
+
+                    # Sequencer graphic utilization
+                    sequencer_used = {}
+                    for sequencer in projects_name_dict.keys() :
+                        sequencer_used[sequencer] = len( projects_name_dict[sequencer])
+
+                    theme = 'ocean'
+                    heading = 'Sequencer utilization for machine ' + m_name
+                    sub_caption = ''
+                    data_source = pie_graphic_standard (heading, sub_caption, theme, sequencer_used)
+                    sequencer_pie_graph = FusionCharts("pie3d", "sequencer_pie_graph" , "500", "400", "sequencer_pie_chart", "json", data_source).render()
+                    machine_statistics ['sequencer_pie_graph'] = sequencer_pie_graph
+
+                    return  render(request, 'iSkyLIMS_wetlab/StatsPerMachine.html', {'machine_statistics' : machine_statistics})
+                else: #if RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name, state__runStateName = "Completed").exists():
+                    return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Machine does not have projects in Completed state. ',
+                                                            'ADVICE:', 'Contact with your administrator']})
+
+            else: #if RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name).exists():
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Machine does not have projects associated to him ',
+                                                            'ADVICE:', 'Contact with your administrator']})
+
+        else: #if Machines.objects.filter(machineName__icontains = m_name).exists():
+            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for machine name  ',
+                                                                'ADVICE:', 'Contact with your administrator']})
+    else: #if request.method == 'POST':
+        return render (request, 'iSkyLIMS_wetlab/StatsPerMachine.html', {})
+
+
+@login_required
 def stats_per_researcher (request):
     if request.method == 'POST':
         r_name = request.POST['researchername']
