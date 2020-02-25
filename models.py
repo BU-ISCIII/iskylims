@@ -793,7 +793,7 @@ class LibraryPoolManager (models.Manager):
                     poolState = StatesForPool.objects.get(poolState__exact = 'Defined'),
                     poolName = pool_data['poolName'], poolCodeID = pool_data['poolCodeID'],
                     adapter = pool_data['adapter'], pairedEnd = pool_data['pairedEnd'],
-                    assay = pool_data['assay'],  collectionIndex = pool_data['collectionIndex'])
+                    numberOfSamples = pool_data['n_samples'])
         return new_library_pool
 
 
@@ -818,8 +818,8 @@ class LibraryPool (models.Model):
     poolCodeID = models.CharField(max_length=50, blank = True)
     adapter = models.CharField(max_length=50, null = True, blank = True)
     pairedEnd = models.CharField(max_length=10, null = True, blank = True)
-    assay = models.CharField(max_length=50, null = True, blank = True)
-    collectionIndex = models.CharField(max_length=50, null = True, blank = True)
+    #assay = models.CharField(max_length=50, null = True, blank = True)
+    #collectionIndex = models.CharField(max_length=50, null = True, blank = True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -252,3 +252,5 @@ ERROR_EMPTY_VALUES = ['Your request cannot be recorded because ', 'it contains e
 
 ERROR_SAMPLE_PROJECT_ALREADY_EXISTS = ['Sample Project is already defined']
 ERROR_SAMPLE_PROJECT_DOES_NOT_EXISTS = ['The Sample Project that you requested ', 'Does not exist']
+
+ERROR_LIBRARY_PREPARATION_NOT_EXISTS = ['Library preparation are not defined', '']

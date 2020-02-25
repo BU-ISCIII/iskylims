@@ -2,72 +2,10 @@
 {% load static %}
 {% block content %}
 
-{% if incompatible_samples %}
-    {% if incompatible_samples.incompatible_index %}
 
-        <div class="row row-space-4 margin-b-4">
-            <div class="col-sm-6 col-sm-offset-3" >
-                <div class="panel panel-warning">
-                    <div class="panel-heading"><h3>Index not compatible found</h3></div>
 
-                        <div class="panel-body">
-                            <p>The selected samples can not be included in the same pool because they are using the same indexes</p>
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Sample Name  </th>
-                                        <th>Indexes</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for s_name, s_index in incompatible_samples.incompatible_index  %}
-                                        <tr>
-                                            <td>{{s_name}}</td>
-                                            <td>{{s_index}}</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                            <p>Click on the "Return to Select Sample" button to select only one from the ones that are not compatibles </p>
-                            <input type="button" value="Return to Select Sample" onclick="location.href ='/wetlab/selectSamplesForRun' ;"/>
-                        </div> <!--  end of panel body -->
-                    </div> <!--  end of panel  -->
 
-                </div> <!--  end of col-sm-6 -->
-            </div> <!--  end of row -->
-    {% endif %}
-    {% if incompatible_samples.incompatible_s_p_end %}
-
-        <div class="row row-space-4 margin-b-4">
-            <div class="col-sm-6 col-sm-offset-3" >
-                <div class="panel panel-warning">
-                    <div class="panel-heading"><h3>Index not compatible found</h3></div>
-
-                        <div class="panel-body">
-                            <p>The selected samples can not be included in the same pool because they have different "Single Read" / Paired End Values</p>
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Sample Name  </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for s_name in incompatible_samples.incompatible_s_p_end  %}
-                                        <tr>
-                                            <td>{{s_name}}</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                            <p>Click on the "Return to Select Sample" button to select only one from the ones that are not compatibles </p>
-                            <input type="button" value="Return to Select Sample" onclick="location.href ='/wetlab/selectSamplesForRun' ;"/>
-                        </div> <!--  end of panel body -->
-                    </div> <!--  end of panel  -->
-
-                </div> <!--  end of col-sm-6 -->
-            </div> <!--  end of row -->
-    {% endif %}
-{% elif information_for_created_pool %}
+{% if information_for_created_pool %}
 <div class="row row-space-4 margin-b-4">
     <div class="col-sm-10 col-sm-offset-1" >
         <div class="panel panel-default">
@@ -103,7 +41,7 @@
                             {% for lib_code, sample, user, s_id in information_for_created_pool.lib_prep_data%}
                                 <tr>
                                     <td>{{lib_code}}</td>
-                                    <td><a href="/wetlab/displayLibSample={{s_id}}">{{sample}}</a></td>
+                                    <td><a href="/wetlab/displaySample={{s_id}}">{{sample}}</a></td>
                                     <td>{{ user }}</td>
                                 </tr>
                             {% endfor %}
@@ -115,55 +53,141 @@
     </div> <!--// end row -->
 
 {% else %}
+    {% if display_list.ERROR %}
+        <div class="row row-space-4 margin-b-4">
+            <div class="col-sm-12" >
+                <div class="panel panel-danger">
+                    <div class="panel-heading"><h3>The following Samples are ready to be included inside a Pool</h3></div>
+                    <div class="panel-body">
+                        {% for value in display_list.ERROR %}
+                            <p>{{value}}</p>
+                        {% endfor %}
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-10  -->
+        </div> <!--// end row -->
+
+    {% endif %}
+    {% if display_list.incompatible_s_p_end %}
+
+        <div class="row row-space-4 margin-b-4">
+            <div class="col-sm-6 col-sm-offset-3" >
+                <div class="panel panel-warning">
+                    <div class="panel-heading"><h3>Index not compatible found</h3></div>
+                        <div class="panel-body">
+                            <p>The selected samples can not be included in the same pool because they have different "Single Read" / Paired End Values</p>
+                        </div> <!--  end of panel body -->
+                    </div> <!--  end of panel  -->
+                </div> <!--  end of col-sm-6 -->
+            </div> <!--  end of row -->
+    {% endif %}
+
+    {% if display_list.duplicated_index %}
+        <div class="row row-space-4 margin-b-4">
+            <div class="col-sm-6 col-sm-offset-3" >
+                <div class="panel panel-danger">
+                    <div class="panel-heading"><h3>Samples with duplicated Indexes were found</h3></div>
+                    <div class="panel-body">
+                        <p>The selected samples can not be included in the same pool because they are using the same indexes</p>
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Sample Name  </th>
+                                    <th>Indexes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s_name, s_index in display_list.incompatible_index  %}
+                                    <tr>
+                                        <td>{{s_name}}</td>
+                                        <td>{{s_index}}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+
+            </div> <!--  end of col-sm-6 -->
+        </div> <!--  end of row -->
+    {% endif %}
+
+    {% if display_list.multiple_adapters %}
+        <div class="row row-space-4 margin-b-4">
+            <div class="col-sm-6 col-sm-offset-3" >
+                <div class="panel panel-danger">
+                    <div class="panel-heading"><h3>Samples have multiple adapters</h3></div>
+                    <div class="panel-body">
+                        <p>The selected samples can not be included in the same pool because they have different adapters</p>
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Adapters </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for value in display_list.multiple_adapters  %}
+                                    <tr>
+                                        <td>{{value}}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+
+            </div> <!--  end of col-sm-6 -->
+        </div> <!--  end of row -->
+    {% endif %}
 
     <div class="row row-space-4 margin-b-4">
         <div class="col-sm-12" >
             <div class="panel panel-default">
                 {% if  display_list.heading %}
                     <div class="panel-heading"><h3>The following Samples are ready to be included inside a Pool</h3></div>
-                        <div class="panel-body">
-                            <form method="post" enctype="multipart/form-data" name="createPool"  id="createPool" class="form-horizontal well">
-                            {% csrf_token %}
-                                <input type="hidden" name="action" value="createPool"/>
-                                <input type="hidden" name="lib_prep_in_list" value="True"/>
-                                <div class="form-group required ">
-                                    <label class="col-sm-5 control-label">Define the Pool Name</label>
-                                    <div class="col-sm-5"><input class="form-control" required = "required" type="text"  name="poolName" size="80" value="{{display_list.poolID}}"></div>
-                                    <br><br><br>
-                                </div>
-                                <br><br>
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            {% for value in display_list.heading %}
-                                                <th> {{ value }}</th>
-                                            {% endfor %}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-
-                                        {% for lib_code, s_name, user, col_kit, index7, index5 ,  lib_id in display_list.data  %}
-                                            <tr>
-
-                                                    <td>{{lib_code}}</td>
-                                                    <td>{{s_name}}</td>
-                                                    <td>{{user}}</td>
-                                                    <td>{{col_kit}}</td>
-                                                    <td>{{index7}}</td>
-                                                    <td>{{index5}}</td>
-                                                    <td><input type="checkbox" name="lib_prep_id" value="{{lib_id}}"></td>
-
-                                            </tr>
+                    <div class="panel-body">
+                        <form method="post" enctype="multipart/form-data" name="createPool"  id="createPool" class="form-horizontal well">
+                        {% csrf_token %}
+                            <input type="hidden" name="action" value="createPool"/>
+                            <input type="hidden" name="lib_prep_in_list" value="True"/>
+                            <div class="form-group required ">
+                                <label class="col-sm-5 control-label">Define the Pool Name</label>
+                                <div class="col-sm-5"><input class="form-control" required = "required" type="text"  name="poolName" size="80" value="{{display_list.poolID}}"></div>
+                                <br><br><br>
+                            </div>
+                            <br><br>
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        {% for value in display_list.heading %}
+                                            <th> {{ value }}</th>
                                         {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
 
-                                    </tbody>
-                                </table>
-                                <br><br>
-                                <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                                <input class="btn pull-right btn-primary" type="submit" value="Submit">
-                             </form>
+                                    {% for lib_code, s_name, user, col_kit, index7, index5 ,  lib_id in display_list.data  %}
+                                        <tr>
 
-                        </div>  <!--  end of panel body  -->
+                                                <td>{{lib_code}}</td>
+                                                <td>{{s_name}}</td>
+                                                <td>{{user}}</td>
+                                                <td>{{col_kit}}</td>
+                                                <td>{{index7}}</td>
+                                                <td>{{index5}}</td>
+                                                <td><input type="checkbox" name="lib_prep_id" value="{{lib_id}}"></td>
+
+                                        </tr>
+                                    {% endfor %}
+
+                                </tbody>
+                            </table>
+                            <br><br>
+                            <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                            <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                         </form>
+
+                    </div>  <!--  end of panel body  -->
                 {% else %}
                     <div class="panel-heading"><h3>There is not samples available to be included inside a Pool</h3></div>
                         <div class="panel-body">

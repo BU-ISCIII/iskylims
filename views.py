@@ -4194,7 +4194,6 @@ def set_library_values (request):
 @login_required
 def create_pool (request):
     ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
-
     if request.user.is_authenticated:
         if not is_wetlab_manager(request):
             return render ( request,'iSkyLIMS_wetlab/error_page.html',
@@ -4203,70 +4202,18 @@ def create_pool (request):
     else:
         #redirect to login webpage
         return redirect ('/accounts/login')
-
+    # collect the information for collecting
+    display_list = get_lib_prep_to_select_in_pool()
     if request.method == 'POST' and request.POST['action'] == 'createPool':
-
-        if  'lib_prep_in_list' in request.POST:
-            lib_prep_ids = request.POST.getlist('lib_prep_id')
-            if len('lib_prep_in_list') == 0:
-                lib_prep_ids = list(request.POST['lib_prep_id'])
-        else:
-            lib_prep_ids = request.POST['lib_prep_id'].split(',')
-        pool_name = request.POST['poolName']
-        compatible_in_pool = check_index_compatible(lib_prep_ids)
-        unique_adapter, adapter = check_lib_prep_adapter(lib_prep_ids)
-        assay = get_lib_prep_assay(lib_prep_ids)
-        collection_index = get_lib_prep_collection_index(lib_prep_ids)
-        paired = check_single_paired(lib_prep_ids)
-
-        if  compatible_in_pool == True and unique_adapter == True :
-            pool_data = {}
-            pool_data['poolName'] = pool_name
-            pool_data['poolCodeID'] = generate_pool_code_id()
-            pool_data['registerUser'] = request.user
-            pool_data['adapter'] = adapter
-            pool_data['pairedEnd'] = paired
-            pool_data['collectionIndex'] = collection_index
-            pool_data['assay'] = assay
-            number_s_in_pool = 0
-
-            new_pool = LibraryPool.objects.create_lib_pool(pool_data)
-            # update pool_id in each library_preparation belongs the new pool
-            for lib_prep in lib_prep_ids:
-                if  LibraryPreparation.objects.filter(pk__exact = lib_prep).exists():
-                    lib_prep_obj = LibraryPreparation.objects.get(pk__exact = lib_prep)
-                    lib_prep_obj.set_pool(new_pool)
-                    number_s_in_pool +=1
-                else:
-                    continue
-            # update the number of samples
-            new_pool.update_number_samples(number_s_in_pool)
-            new_pool.set_pool_state('Selected')
-            information_for_created_pool = get_info_to_display_created_pool(new_pool )
-
-            return  render(request, 'iSkyLIMS_wetlab/createPool.html',{'information_for_created_pool': information_for_created_pool})
-        elif compatible_in_pool == True :
-            return  render(request, 'iSkyLIMS_wetlab/createPool.html',{'incompatible_samples': compatible_in_pool})
-        else:
-            return  render(request, 'iSkyLIMS_wetlab/createPool.html',{'incompatible_adapters': adapters})
-
-        exp_name = request.POST['experimentName']
-        plate_name = request.POST['plateName']
-        container_id = request.POST['containerID']
+        new_pool = define_new_pool(request.POST,  request.user)
+        import pdb; pdb.set_trace()
+        if not isinstance(new_pool, LibraryPool) :
+            display_list.update(new_pool)
+            return  render(request, 'iSkyLIMS_wetlab/createPool.html',{'display_list': display_list})
+        information_for_created_pool = get_info_to_display_created_pool(new_pool )
+        return  render(request, 'iSkyLIMS_wetlab/createPool.html',{'information_for_created_pool': information_for_created_pool})
 
     else:
-        display_list = {}
-        display_list['data'] = []
-
-        if LibraryPreparation.objects.filter(libPrepState__libPrepState = 'Completed', pools = None ).exists():
-
-            lib_preparations =  LibraryPreparation.objects.filter(libPrepState__libPrepState = 'Completed', pools = None).order_by('registerUser')
-            for lib_prep in lib_preparations :
-                display_list['data'].append( lib_prep.get_info_for_selection_in_pool())
-
-            display_list['heading'] = wetlab_config.HEADING_FOR_DISPLAY_SAMPLES_IN_POOL
-            #display_list['poolID'] = generate_pool_code_id()
-
         return  render(request, 'iSkyLIMS_wetlab/createPool.html',{'display_list': display_list})
 
 
