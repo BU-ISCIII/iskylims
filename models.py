@@ -835,8 +835,9 @@ class MoleculePreparationManager (models.Manager):
     def  create_molecule (self, molecule_data) :
 
         molecule_used_obj = MoleculeType.objects.get(moleculeType__exact = molecule_data['moleculeType'])
-        protocol_type_obj = ProtocolType.objects.get(molecule = molecule_used_obj, apps_name__exact = molecule_data['app_name'])
-        protocol_used_obj = Protocols.objects.get(name__exact = molecule_data['protocolUsed'], type = protocol_type_obj)
+        import pdb; pdb.set_trace()
+        protocol_type_obj = ProtocolType.objects.filter(molecule = molecule_used_obj, apps_name__exact = molecule_data['app_name'])
+        protocol_used_obj = Protocols.objects.get(name__exact = molecule_data['protocolUsed'], type__in = protocol_type_obj)
         new_molecule = self.create( protocolUsed = protocol_used_obj, sample =  molecule_data['sample'],
                     moleculeType =  molecule_used_obj, state = StatesForMolecule.objects.get(moleculeStateName__exact = 'Defined'),
                     moleculeCodeId =  molecule_data['moleculeCodeId'], moleculeExtractionDate = molecule_data['moleculeExtractionDate'],
