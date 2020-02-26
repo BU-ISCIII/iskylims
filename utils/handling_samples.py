@@ -54,8 +54,7 @@ def display_molecule_protocol_parameters (molecule_ids, user_obj):
         molecule_obj = MoleculePreparation.objects.get(pk = int(molecule))
         protocol_used = molecule_obj.get_protocol()
         protocol_used_obj = molecule_obj.get_protocol_obj()
-
-
+        
         if selected_protocol == '':
             if ProtocolParameters.objects.filter(protocol_id__exact = protocol_used_obj).exists():
                 selected_protocol = protocol_used
@@ -66,11 +65,11 @@ def display_molecule_protocol_parameters (molecule_ids, user_obj):
                 length_heading = len(HEADING_FOR_MOLECULE_ADDING_PARAMETERS + parameter_list)
                 molecule_recorded['fix_heading'] = HEADING_FOR_MOLECULE_ADDING_PARAMETERS
                 molecule_recorded['param_heading'] = parameter_list
-                if Protocols.objects.filter(name__exact = selected_protocol).exists():
-                    protocol_obj = Protocols.objects.get(name__exact = selected_protocol)
-                    molecule_recorded['lot_kit'] = get_lot_commercial_kits(user_obj, protocol_obj)
-                else:
-                    molecule_recorded['lot_kit'] = ''
+                #if Protocols.objects.filter(name__exact = selected_protocol).exists():
+                    #protocol_obj = Protocols.objects.get(name__exact = selected_protocol)
+                molecule_recorded['lot_kit'] = get_lot_commercial_kits(user_obj, protocol_used_obj)
+                #else:
+                #     molecule_recorded['lot_kit'] = ''
         #import pdb; pdb.set_trace()
         if protocol_used == selected_protocol :
             showed_molecule.append(molecule)
