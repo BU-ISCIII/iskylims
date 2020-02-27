@@ -7,3 +7,9 @@
 [submodule "django_utils"]
 	path = django_utils
 	url = git@github.com:BU-ISCIII/django_utils.git
+[submodule "iSkyLIMS_clinic"]
+	path = iSkyLIMS_clinic
+	url = git@github.com:BU-ISCIII/iSkyLIMS_clinic.git
+[submodule "iSkylims_core"]
+	path = iSkylims_core
+	url = git@github.com:BU-ISCIII/iSkylims_core.git
