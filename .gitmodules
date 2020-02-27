@@ -4,9 +4,12 @@
 [submodule "iSkyLIMS_wetlab"]
 	path = iSkyLIMS_wetlab
 	url = https://github.com/BU-ISCIII/iSkyLIMS_wetlab.git
-[submodule "iSkyLIMS_home"]
-	path = iSkyLIMS_home
-	url = https://github.com/BU-ISCIII/iSkyLIMS_home.git
+[submodule "iSkyLIMS_core"]
+	path = iSkyLIMS_core
+	url = https://github.com/BU-ISCIII/iSkyLIMS_core.git
+[submodule "iSkyLIMS_clinic"]
+	path = iSkyLIMS_clinic
+	url = https://github.com/BU-ISCIII/iSkyLIMS_clinic.git
 [submodule "django_utils"]
 	path = django_utils
 	url = https://github.com/BU-ISCIII/django_utils.git
