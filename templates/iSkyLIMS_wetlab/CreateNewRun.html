@@ -1,14 +1,10 @@
 {% extends 'iSkyLIMS_wetlab/base.html' %}
 {% load static %}
 {% block content %}
+{%include 'iSkyLIMS_core/jexcel_functionality.html' %}
 
 {% if display_sample_information %}
-    <script src="{% static "iSkyLIMS_wetlab/js/jquery/v3.4.1/jquery-3.4.1.min.js" %}" type="text/javascript"></script>
-    <script src="{% static "iSkyLIMS_wetlab/js/jexcel/v3/jexcel.js" %}" type="text/javascript"></script>
-    <script src="{% static "iSkyLIMS_wetlab/js/jsuites/v2/jsuites.js" %}" type="text/javascript"></script>
 
-    <link href="{% static "iSkyLIMS_wetlab/css/jexcel/v3/jexcel.css" %}" rel="stylesheet">
-    <link href="{% static "iSkyLIMS_wetlab/css/jsuites/v2/jsuites.css" %}" rel="stylesheet">
     <style>
         .scrolling-wrapper {
      overflow-x: scroll;
@@ -111,10 +107,10 @@
          </div> <!--  end of row -->
 
 {% elif created_new_run %}
-<div class="row row-space-4 margin-b-4">
-    <div class="col-sm-10 col-sm-offset-1" >
-        <div class="panel panel-default">
-            <div class="panel-heading"><h3>Sucessful Run</h3></div>
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-10 col-sm-offset-1" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Sucessful Run</h3></div>
                 <div class="panel-body">
                     <p>{{created_new_run.exp_name}} is now created on iSkyLIMS in "Recorded" state</p>
                 </div> <!--  end of panel body -->
@@ -139,6 +135,44 @@
         </div> <!--  end of row -->
 
     {% endif %}
+    {% if display_pools_for_run.invalid_run_data.heading %}
+        <div class="row row-space-4 margin-b-4">
+            <div class="col-sm-10 col-sm-offset-1" >
+                <div class="panel panel-danger">
+                    <div class="panel-heading"><h3>Invalid pools </h3></div>
+                    <div class="panel-body">
+                        <p>Some of the samples in the following pools are missing.</p>
+                        <br>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    {% for value in display_pools_for_run.invalid_run_data.heading%}
+                                        <th>{{value}} </th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p_name, p_code, number, p_id in display_pools_for_run.invalid_run_data.data  %}
+                                    <tr>
+                                        <td>{{p_name}}</td>
+                                        <td>{{p_code}}</td>
+                                        <td>{{number}}</td>
+                                    </tr>
+                                {% endfor %}
+
+                            </tbody>
+                        </table>
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+
+            </div> <!--  end of col-sm-12 -->
+        </div> <!--  end of row -->
+        {% endif %}
+
+
+
+
+
     {% if display_pools_for_run.run_data.heading %}
 
     <div class="row row-space-4 margin-b-4">
@@ -164,10 +198,11 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for p_name, p_code in  p_values  %}
+                                        {% for p_name, p_code, p_number in  p_values  %}
                                             <tr>
                                                 <td>{{p_name}}</td>
                                                 <td>{{p_code}}</td>
+                                                <td>{{p_number}}</td>
                                             </tr>
                                         {% endfor %}
 
@@ -252,7 +287,7 @@
             </div> <!--  end of col-sm-12 -->
         </div> <!--  end of row -->
         {% endif %}
-        {% if no_pools_for_run %}
+        {% if not display_pools_for_run.pool_data.heading and not display_pools_for_run.run_data.heading %}
             <div class="row row-space-4 margin-b-4">
                 <div class="col-sm-10 col-sm-offset-1" >
                     <div class="panel panel-default">

@@ -6,6 +6,8 @@ import string
 from Bio.Seq import Seq
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
+
+from iSkyLIMS_wetlab.utils.pool_preparation import  check_if_duplicated_index
 from iSkyLIMS_core.utils.handling_protocols import *
 from iSkyLIMS_core.utils.handling_commercial_kits import *
 from django.conf import settings
@@ -112,6 +114,106 @@ def handle_input_samples_for_run (user_post, user):
     '''
     return project_bs_files
 
+def get_pool_objs_from_ids (pool_ids):
+    '''
+    Description:
+        The function get the pool instance from the list of pool ids, and return a lisf of pool objs
+    Return:
+        pool_obj
+    '''
+    pool_objs = []
+    for pool in pool_ids :
+        pool_objs.append(LibraryPool.objects.get(pk__exact = pool))
+    return pool_objs
+
+def get_pool_adapters(pool_objs):
+    '''
+    Description:
+        The function get the adapters used for each pool.
+        return a dictionary with adapter as a key and the pool name list as value
+    Return:
+        adapters
+    '''
+    adapters = {}
+    for pool in pool_obj :
+        adapter = pool.get_adapter()
+        if not adapter in adapters:
+            adapters[adapter] = []
+        adapters[adapter].append(pool.get_pool_name())
+
+    return adapters
+
+def get_pool_single_paired(pool_objs):
+    '''
+    Description:
+        The function get the single read and paired ened  used for each pool.
+        return a dictionary with single_paired as a key and the pool name list as value
+    Return:
+        adapters
+    '''
+    single_paired = {}
+    for pool in pool_obj :
+        s_p = pool.get_pool_single_paired()
+        if not s_p in single_paired:
+            single_paired[s_p] = []
+        single_paired[s_p].append(pool.get_pool_name())
+
+    return single_paired
+
+def get_pool_duplicated_index(pool_objs):
+    '''
+    Description:
+        The function get the single read and paired ened  used for each pool.
+        return a dictionary with single_paired as a key and the pool name list as value
+    Functions:
+        check_if_duplicated_index   # located at iSkyLIMS_wetlab/utils/pool_preparation.py
+    Return:
+        False if no duplicated found or the result_index cotaining the duplicated samples index
+    '''
+    library_preparation_ids = []
+    for pool in pool_objs :
+        lib_prep_objs = LibraryPreparation.objects.filter(pools = pool)
+        for lib_prep_obj in lib_prep_objs :
+            library_preparation_ids.append(lib_prep_obj.get_id)
+
+        result_index = check_if_duplicated_index(library_preparation_ids)
+    if 'True' in result_index:
+        return 'False'
+    else:
+        return result_index
+
+def check_pools_compatible(data_form):
+    '''
+    Description:
+        The function in case that more than one pools are used for a new run it will check if, single_paired, adapters are the same.
+        It checks that there are not duplicate_index.
+    Functions:
+        get_pool_objs_from_ids       # located at this file
+        get_pool_adapters            # located at this file
+        get_single_paired            # located at this file
+        get_pool_duplicated_index   # located at this file
+    Return:
+        True if all cheks are ok, or error message to display to user
+    '''
+    pool_ids = data_form.getlist('poolID')
+    if len(pool_ids) == 1 :
+        return 'True'
+    pool_objs = get_pool_objs_from_ids (pool_ids)
+    # get adapters used in the pools
+    adapters = get_pool_adapters(pool_objs)
+    if len(adapters) > 1:
+        error = {}
+        error['ERROR'] = adapters
+        return error
+    single_paired = get_single_paired (pool_objs)
+    if len(single_paired) > 1:
+        error['single_paired'] = single_paired
+        return error
+    duplicated_index = get_pool_duplicated_index(pool_objs)
+    if not 'False' in duplicate_index:
+        error['duplicated_index'] = duplicate_index
+        return error
+    return 'True'
 
 def create_base_space_file(project_data, bs_lib, plate, container_id, experiment_name, paired):
     data = []
@@ -175,21 +277,62 @@ def create_sample_sheet_file(data, user, reads, adapter, exp_name, colection_ind
 
     return ss_file_relative_path
 
-def check_type_read_sequencing(lib_prep_ids):
-    single_read = 0
-    paired_end = 0
-    for lib_prep_id in lib_prep_ids :
-        single_paired = LibraryPreparation.objects.get(pk__exact = lib_prep_id).get_single_paired()
-        if single_paired == 'Paired End':
-            paired_end +=1
-        else:
-            single_read += 1
-    if paired_end == 0:
-        return 'Single Read'
+
+def get_library_preparation_data_in_run (lib_prep_ids, pool_ids):
+    '''
+    Description:
+        The function returns the value of th pool singlePaired
+    Input:
+        lib_prep_ids    # list having the library preparation id
+        pool_ids        # pool id list
+    Constant:
+        HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_PAIREDEND
+        HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD
+    Function:
+        get_type_read_sequencing             # located at this file
+        collect_lib_prep_data_for_new_run    # located at this file
+    Return:
+        display_sample_information
+    '''
+    display_sample_information ={}
+    single_paired = get_type_read_sequencing(pool_ids[0])
+    if single_paired == 'Paired End':
+        paired = True
+        display_sample_information['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_PAIREDEND
     else:
-        return 'Paired End'
+        paired = False
+        display_sample_information['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD
+    import pdb; pdb.set_trace()
+    display_sample_information['data'] = collect_lib_prep_data_for_new_run(lib_prep_ids, paired)
+    display_sample_information['lib_prep_ids'] = ','.join(lib_prep_ids)
+    display_sample_information['paired_end'] = paired
+    display_sample_information['reads'] = ''
+    display_sample_information['assay'] = ''
+
+    return display_sample_information
+
+def get_type_read_sequencing(pool_id):
+    '''
+    Description:
+        The function returns the value of th pool singlePaired
+    Input:
+        pool_id         # pool id
+    Return:
+        single_paired
+    '''
+    single_paired = LibraryPool.objects.get(pk__exact = pool_id).get_pool_single_paired()
+    return single_paired
 
 def collect_lib_prep_data_for_new_run(lib_prep_ids, paired):
+    '''
+    Description:
+        The function returns the library preparation data for each one in the lib_prep_ids
+    Input:
+        lib_prep_ids        # list of library preparations
+        pairedEnd           # Boolean variable of True is "paired end" False is "single read"
+    Return:
+        data
+    '''
     data = []
     for lib_prep_id in lib_prep_ids:
         if paired:
@@ -222,6 +365,12 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
 
 
 def get_library_prep_in_pools (pool_ids):
+    '''
+    Description:
+        The function get the pool id list and returns the the ids for the LibraryPreparation
+    Return:
+        lib_prep_ids
+    '''
     lib_prep_ids = []
 
     for pool_id in pool_ids:
@@ -233,18 +382,36 @@ def get_library_prep_in_pools (pool_ids):
 
 
 
+
+
 def get_available_pools_for_run():
-    if not LibraryPool.objects.filter(poolState__poolState__exact = 'Selected').exists():
-        return
+    '''
+    Description:
+        The function get the pool which are not used in a run. It split in 2 keys. Pool which are not assigned
+        yet to a run and the pools that are associated but there is information missing to be filled.
+    Return:
+        pools_to_update
+    '''
     pools_to_update = {}
     if LibraryPool.objects.filter(poolState__poolState__exact = 'Selected', runProcess_id = None).exists():
         pools_to_update['pools_available'] = LibraryPool.objects.filter(poolState__poolState__exact = 'Selected', runProcess_id = None)
+    # get the pools that are associated to a run but not yet completed
     if LibraryPool.objects.filter(poolState__poolState__exact = 'Selected').exclude(runProcess_id = None).exists():
         pools_to_update['defined_runs'] = LibraryPool.objects.filter(poolState__poolState__exact = 'Selected').exclude(runProcess_id = None).order_by('runProcess_id')
 
     return pools_to_update
 
 def get_pool_info (pools_to_update):
+    '''
+    Description:
+        The function get the information for pool which are not used in a run.
+        And information for pools that are only defined the run name
+    Constant:
+        HEADING_FOR_SELECTING_POOLS
+        HEADING_FOR_INCOMPLETED_SELECTION_POOLS
+    Return:
+        pools_to_update
+    '''
     pool_info = {}
     if 'pools_available' in pools_to_update:
         pool_data = {}
@@ -253,9 +420,15 @@ def get_pool_info (pools_to_update):
         pool_ids = []
         for pool in pools_to_update['pools_available']:
             data = pool.get_info()
-            data.append(pool.get_id())
-            pool_data['data'].append(data)
-            pool_ids.append(pool.get_id())
+            if int(pool.get_number_of_samples()) == len(LibraryPreparation.objects.filter(pools = pool)) :
+                data.append(pool.get_id())
+                pool_data['data'].append(data)
+                pool_ids.append(pool.get_id())
+            else:
+                if not 'invalid_run_data' in pool_info :
+                    pool_info ['invalid_run_data'] = {}
+                    pool_info['invalid_run_data']['data']= []
+                pool_info['invalid_run_data']['data'].append(data)
         pool_data['pool_ids'] = ','.join(pool_ids)
         pool_info['pool_data'] = pool_data
     if 'defined_runs' in pools_to_update:
@@ -263,23 +436,50 @@ def get_pool_info (pools_to_update):
         tmp_data = {}
         #run_data['r_name'] = {}
         for pool in pools_to_update['defined_runs']:
-            run_name = pool.get_run_name()
-            if not run_name in tmp_data:
-                tmp_data[run_name] = {}
-                tmp_data[run_name]['data'] = []
-            tmp_data[run_name]['run_id'] = pool.get_run_id()
-            pool_name = pool.get_pool_name()
-            pool_code = pool.get_pool_code_id()
-            tmp_data[run_name]['data'].append([pool_name, pool_code])
+            if int(pool.get_number_of_samples()) == len(LibraryPreparation.objects.filter(pools = pool)) :
+                run_name = pool.get_run_name()
+                if not run_name in tmp_data:
+                    tmp_data[run_name] = {}
+                    tmp_data[run_name]['data'] = []
+                tmp_data[run_name]['run_id'] = pool.get_run_id()
+                pool_name = pool.get_pool_name()
+                pool_code = pool.get_pool_code_id()
+                pool_numbers = pool.get_number_of_samples()
+                tmp_data[run_name]['data'].append([pool_name, pool_code, pool_numbers])
+            else:
+                if not 'invalid_run_data' in pool_info :
+                    pool_info['invalid_run_data'] ={}
+                    pool_info['invalid_run_data']['data']= []
+                pool_info['invalid_run_data']['data'].append(data)
         run_info_data = []
         for r_name, values in tmp_data.items():
             run_info_data.append([r_name,values['data'],values['run_id']])
-
-        run_data['heading'] = HEADING_FOR_INCOMPLETED_SELECTION_POOLS
-        run_data['data'] = run_info_data
-        pool_info['run_data'] = run_data
+        if len(run_info_data) > 0:
+            run_data['heading'] = wetlab_config.HEADING_FOR_INCOMPLETED_SELECTION_POOLS
+            run_data['data'] = run_info_data
+            pool_info['run_data'] = run_data
+        if 'invalid_run_data' in pool_info :
+            pool_info['invalid_run_data']['heading'] = wetlab_config.HEADING_FOR_INCOMPLETED_SELECTION_POOLS
 
     return pool_info
+
+def display_available_pools():
+    '''
+    Description:
+        The function call 2 functions:
+        - get_available_pools_for_run to get pool instances that are available
+        - get_pool_info for adding the information to display
+    Functions:
+        get_available_pools_for_run     # located at this file
+        get_pool_info                    # located at this file
+    Return:
+        display_pools_for_run
+    '''
+    display_pools_for_run = {}
+    pools_to_update = get_available_pools_for_run()
+    if pools_to_update:
+        display_pools_for_run = get_pool_info(pools_to_update)
+    return display_pools_for_run
 
 def get_pool_instance_from_id (pool_id):
     pool_obj = LibraryPool.objects.get(pk__exact = pool_id)

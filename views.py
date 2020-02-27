@@ -4227,21 +4227,35 @@ def create_new_run (request):
     else:
         #redirect to login webpage
         return redirect ('/accounts/login')
-    if request.method == 'POST' and request.POST['action'] == 'createNewRun':
 
+    #display_pools_for_run = display_available_pools()
+    if request.method == 'POST' and request.POST['action'] == 'createNewRun':
         experiment_name = request.POST['experimentName']
-        if RunProcess.objects.filter(runName__exact = experiment_name).exists():
-            display_pools_for_run = {}
-            polls_available = get_available_pools_for_run()
-            display_pools_for_run['pool_data'] = get_pool_info(polls_available)
-            return render (request,'iSkyLIMS_wetlab/CreateNewRun.html',{'invalid_exp_name':experiment_name, 'display_pools_for_run':display_pools_for_run})
         pool_ids = request.POST.getlist('poolID')
+        display_pools_for_run = display_available_pools()
+
+        if RunProcess.objects.filter(runName__exact = experiment_name).exists():
+            return render (request,'iSkyLIMS_wetlab/CreateNewRun.html',{'invalid_exp_name':experiment_name, 'display_pools_for_run':display_pools_for_run})
+        result_compatibility = check_pools_compatible (request.POST)
+        if not 'True' in result_compatibility :
+            display_pools_for_run.update(result_compatibility)
+            return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run})
+
+
         lib_prep_ids = get_library_prep_in_pools (pool_ids)
         if len(lib_prep_ids) == 0:
-            return render ( request,'iSkyLIMS_wetlab/error_page.html',
-                {'content':['The selected Pools have not assigned to any Library Preparation.' ]})
-        compatible_index = check_index_compatible(lib_prep_ids)
+            display_pools_for_run['ERROR'] = wetlab_config.ERROR_POOLS_WITH_NO_LIBRARY
+            return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run})
+        # return an error message if logged user does not have assigned either Profile or Center
+        try:
+            center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
+            center_requested_by = Center.objects.get(pk = center_requested_id)
+        except:
+            display_pools_for_run['ERROR'] = wetlab_config.ERROR_NO_PROFILE_OR_CENTER_FOR_USER
+            return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run})
 
+        #compatible_index = check_index_compatible(lib_prep_ids)
+        '''
         if not compatible_index == True:
             detail_description = {}
 
@@ -4250,35 +4264,27 @@ def create_new_run (request):
             return render ( request,'iSkyLIMS_wetlab/error_page.html',
                 {'content':['Found that some samples in the selected Pools, has the same index' ],
                 'detail_description': detail_description })
-        display_sample_information = {}
-        single_paired = check_type_read_sequencing(lib_prep_ids)
-        if single_paired == 'Paired End':
-            paired = True
-            display_sample_information['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_PAIREDEND
-        else:
-            paired = False
-            display_sample_information['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD
-
-        display_sample_information['data'] = collect_lib_prep_data_for_new_run(lib_prep_ids, paired)
-        display_sample_information['lib_prep_ids'] = ','.join(lib_prep_ids)
-        display_sample_information['paired_end'] = paired
+        '''
+        display_sample_information = get_library_preparation_data_in_run(lib_prep_ids, pool_ids)
         display_sample_information['experiment_name'] = experiment_name
-        display_sample_information['reads'] = ''
-        display_sample_information['assay'] = ''
-        display_sample_information['collection_index'] = ''
+
+        #display_sample_information['collection_index'] = ''
         # create the new Run in Pre-Recorded state
-        center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
-        center_requested_by = Center.objects.get(pk = center_requested_id)
+
+        '''
         new_run =  RunProcess(runName=experiment_name, sampleSheet= '',
                                 state = RunStates.objects.get(runStateName__exact = 'Pre-Recorded'),
                                 centerRequestedBy = center_requested_by)
         new_run.save()
-        display_sample_information['run_process_id'] = new_run.get_run_id()
+        '''
+        #display_sample_information['run_process_id'] = new_run.get_run_id()
+        '''
         for pool in pool_ids:
             pool_obj = get_pool_instance_from_id(pool)
             pool_obj.update_run_name(new_run)
         #import pdb; pdb.set_trace()
         #analyze_input_pool(request.POST, request.user)
+        '''
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_sample_information': display_sample_information})
 
     elif request.method == 'POST' and request.POST['action'] == 'continueWithRun':
@@ -4332,16 +4338,11 @@ def create_new_run (request):
 
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'created_new_run': created_new_run})
     else:
-        # Selecting pools to create the Run
-        display_pools_for_run = {}
-        pools_to_update = get_available_pools_for_run()
-        if pools_to_update:
-            display_pools_for_run = get_pool_info(pools_to_update)
-            #import pdb; pdb.set_trace()
-            return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run})
-        else:
-            return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'no_pools_for_run': 'No pools'})
-    return
+        display_pools_for_run = display_available_pools()
+
+        return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run})
+
+
 
 def pending_sample_preparations(request):
     pending = {}

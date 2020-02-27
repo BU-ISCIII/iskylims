@@ -828,7 +828,8 @@ class LibraryPool (models.Model):
     def __str__ (self):
         return '%s' %(self.poolName)
 
-
+    def get_adapter(self):
+        return '%s' %(self.adapter)
 
     def get_id(self):
         return '%s' %(self.pk)
@@ -840,21 +841,30 @@ class LibraryPool (models.Model):
         pool_info.append(self.numberOfSamples)
         return pool_info
 
+    def get_number_of_samples (self):
+        return '%s' %(self.numberOfSamples)
+
     def get_pool_name(self):
         return '%s' %(self.poolName)
 
     def get_pool_code_id(self):
         return '%s' %(self.poolCodeID)
 
-    def set_pool_state(self, state):
-        self.poolState = StatesForPool.objects.get(poolState__exact = state)
-        self.save()
+    def get_pool_single_paired(self):
+        return '%s' %(self.pairedEnd)
 
     def get_run_name(self):
         return '%s' %(self.runProcess_id.get_run_name())
 
     def get_run_id(self):
         return '%s' %(self.runProcess_id.get_run_id())
+
+
+    def set_pool_state(self, state):
+        self.poolState = StatesForPool.objects.get(poolState__exact = state)
+        self.save()
+
+
 
 
     def update_number_samples(self, number_s_in_pool):
@@ -1004,7 +1014,7 @@ class LibraryPreparation (models.Model):
         lib_info.append(self.i5Index)
         lib_info.append(self.projectInSampleSheet)
         lib_info.append(self.registerUser.username)
-        lib_info.append(self.collectionIndex_id.get_collection_index_name())
+        #lib_info.append(self.collectionIndex_id.get_collection_index_name())
         return lib_info
 
 
@@ -1019,7 +1029,7 @@ class LibraryPreparation (models.Model):
         lib_info.append(self.i7Index)
         lib_info.append(self.projectInSampleSheet)
         lib_info.append(self.registerUser.username)
-        lib_info.append(self.collectionIndex_id.get_collection_index_name())
+        #lib_info.append(self.collectionIndex_id.get_collection_index_name())
         return lib_info
 
 
@@ -1036,10 +1046,10 @@ class LibraryPreparation (models.Model):
         lib_info.append(user_name)
         lib_info.append(self.get_sample_id())
         return lib_info
-
+    '''
     def get_collection_index_kit (self):
         return '%s' %(self.collectionIndex_id.get_collection_index_name())
-
+    '''
     def get_i7_index(self):
         return '%s' %(self.i7IndexID)
 

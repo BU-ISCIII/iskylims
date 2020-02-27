@@ -15,7 +15,7 @@ class AppAdmin(admin.ModelAdmin):
     file_link.short_description = 'File Download'
 
 class LibraryPreparationAdmin (admin.ModelAdmin):
-    list_display = ('registerUser', 'molecule_id', 'sample_id', 'protocol_id', 'libPrepState', 
+    list_display = ('registerUser', 'molecule_id', 'sample_id', 'protocol_id', 'libPrepState',
             'user_sample_sheet', 'libPrepCodeID', 'userSampleID', 'projectInSampleSheet','samplePlate',
             'sampleWell', 'i7IndexID', 'i7Index', 'i5IndexID', 'i5Index', 'singlePairedEnd', 'lengthRead',
             'numberOfReused')
@@ -25,7 +25,7 @@ class LibParameterValueAdmin (admin.ModelAdmin):
 
 
 class LibraryPoolAdmin(admin.ModelAdmin):
-    list_display = ('registerUser', 'poolState', 'poolName', 'poolCodeID')
+    list_display = ('registerUser', 'poolState', 'poolName', 'poolCodeID', 'runProcess_id')
 
 class RunErrorsAdmin (admin.ModelAdmin):
     list_display = ('errorCode', 'errorText')

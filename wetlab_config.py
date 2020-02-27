@@ -225,7 +225,7 @@ HEADING_FOR_DISPLAY_LIB_PREP_IN_POOL = ['Library Code', 'Sample Name', 'User Nam
 ### Heading for display samples to be selected for Run
 HEADING_FOR_SELECTING_POOLS = ['Pool Name', 'Pool Code', 'Number of samples', 'Include in the Run']
 
-HEADING_FOR_INCOMPLETED_SELECTION_POOLS = ['Pool Name', 'Pool Code']
+HEADING_FOR_INCOMPLETED_SELECTION_POOLS = ['Pool Name', 'Pool Code', 'Number of Samples']
 
 ### Heading for display pool information when showing sample information
 HEADING_FOR_DISPLAY_POOL_INFORMATION_IN_SAMPLE_INFO = ['Library Code', 'Pool Name', 'Pool Code', 'Run Name']
@@ -254,3 +254,7 @@ ERROR_SAMPLE_PROJECT_ALREADY_EXISTS = ['Sample Project is already defined']
 ERROR_SAMPLE_PROJECT_DOES_NOT_EXISTS = ['The Sample Project that you requested ', 'Does not exist']
 
 ERROR_LIBRARY_PREPARATION_NOT_EXISTS = ['Library preparation are not defined', '']
+
+ERROR_POOLS_WITH_NO_LIBRARY  = ['The selected Pools have not assigned to any Library Preparation.' ]
+
+ERROR_NO_PROFILE_OR_CENTER_FOR_USER = ['Unable to save your request.', 'Update your Profile/ Center first']
