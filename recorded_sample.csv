@@ -1,0 +1,23 @@
+[Header],,,,,,,,,,
+IEMFileVersion,5,,,,,,,,,
+Experiment Name,CNM_0023 ,,,,,,,,,
+Date,29/08/2019,,,,,,,,,
+Workflow,GenerateFASTQ,,,,,,,,,
+Application,NextSeq FASTQ Only,,,,,,,,,
+Instrument Type,NextSeq/MiniSeq,,,,,,,,,
+Assay,Nextera DNA Flex,,,,,,,,,
+Index Adapters,Nextera DNA CD Indexes (96 Indexes plated),,,,,,,,,
+Chemistry,Amplicon,,,,,,,,,
+,,,,,,,,,,
+[Reads],,,,,,,,,,
+151,,,,,,,,,,
+151,,,,,,,,,,
+,,,,,,,,,,
+[Settings],,,,,,,,,,
+Adapter,CTGTCTCTTATACACATCT,,,,,,,,,
+,,,,,,,,,,
+[Data],,,,,,,,,,
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,Index_Plate_Well,I7_Index_ID,index,I5_Index_ID,index2,Sample_Project,Description
+4898-AA,3941,NextSeq_CNM_179_plate,A01,A01,H701,TAAGGCGA,H505,CTCCTTAC,Project mine,rabad
+4899-AA,3942,NextSeq_CNM_179_plate,A02,B01,H702,CGTACTAG,H517,TCTTACGC,Project mine,rabad
+4900-AA,3943,NextSeq_CNM_179_plate,A03,C01,H703,AGGCAGAA,H506,TATGCAGT,NextSeq_CNM_179_20190829_rabad,rabad
