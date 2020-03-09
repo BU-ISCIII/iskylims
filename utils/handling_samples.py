@@ -48,18 +48,19 @@ def display_molecule_protocol_parameters (molecule_ids, user_obj):
     pending_molecule =[]
     molecule_code_ids = []
     selected_protocol = ''
+    parameter_list = []
     for molecule in molecule_ids :
         if not MoleculePreparation.objects.filter(pk = int(molecule)).exists():
             continue
         molecule_obj = MoleculePreparation.objects.get(pk = int(molecule))
         protocol_used = molecule_obj.get_protocol()
         protocol_used_obj = molecule_obj.get_protocol_obj()
-        
+
         if selected_protocol == '':
             if ProtocolParameters.objects.filter(protocol_id__exact = protocol_used_obj).exists():
                 selected_protocol = protocol_used
                 protocol_parameters = ProtocolParameters.objects.filter(protocol_id__exact = protocol_used_obj, parameterUsed = True).order_by('parameterOrder')
-                parameter_list = []
+
                 for parameter in protocol_parameters :
                     parameter_list.append(parameter.get_parameter_name())
                 length_heading = len(HEADING_FOR_MOLECULE_ADDING_PARAMETERS + parameter_list)
@@ -79,7 +80,7 @@ def display_molecule_protocol_parameters (molecule_ids, user_obj):
             molecule_recorded['data'].append(data)
             molecule_code_ids.append(molecule_obj.get_molecule_code_id())
         else:
-            pending_molecule.append(molecule_obj.get_id())
+            pending_molecule.append(molecule_obj.get_molecule_id())
 
     molecule_recorded['molecule_id'] = ','.join(showed_molecule)
     molecule_recorded ['molecule_code_ids'] = ','.join(molecule_code_ids)
