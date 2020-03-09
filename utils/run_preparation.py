@@ -8,11 +8,13 @@ from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
 
 from iSkyLIMS_wetlab.utils.pool_preparation import  check_if_duplicated_index
+from iSkyLIMS_wetlab.utils.library_preparation import  get_lib_prep_obj_from_id
+
 from iSkyLIMS_core.utils.handling_protocols import *
 from iSkyLIMS_core.utils.handling_commercial_kits import *
 from django.conf import settings
 
-def handle_input_samples_for_run (user_post, user):
+def handle_input_samples_for_run (data_form, user):
     '''
     Description:
         Function will check the information to create the new run.
@@ -26,24 +28,30 @@ def handle_input_samples_for_run (user_post, user):
         Error if experiment name already exists
         dictionary wit the information to display as response
     '''
-    lib_prep_ids = user_post['lib_prep_ids'].split(',')
-    run_id = user_post['run_process_id']
+    lib_prep_ids = data_form['lib_prep_ids'].split(',')
+    lib_prep_unique_ids = data_form['lib_prep_unique_ids'].split(',')
+    run_id = data_form['run_process_id']
 
-    plate_name = user_post['plateName']
-    container_id = user_post['containerID']
-    paired = user_post['pairedEnd']
-    json_data = json.loads(user_post['s_sheet_data'])
+    plate_name = data_form['plateName']
+    container_id = data_form['containerID']
+    paired = data_form['pairedEnd']
+    json_data = json.loads(data_form['s_sheet_data'])
     # check if run exists
+    '''
     run_obj = RunProcess.objects.get(pk__exact = run_id)
     exp_name = run_obj.get_run_name()
     record_data = {}
     if RunProcess.objects.filter(runName__exact = exp_name).exclude(state__runStateName__exact = 'Pre-Recorded').exists():
         record_data['Error'] = 'Run name already exists'
         return record_data
+
+
+    run_data['plateName'] = data_form['plateName']
+    run_data['containerID'] = data_form['containerID']
+    '''
     run_data= {}
+    exp_name = 'mi experimento'
     run_data['experiment_name'] = exp_name
-    run_data['plateName'] = user_post['plateName']
-    run_data['containerID'] = user_post['containerID']
 
     if paired == 'True':
         heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_PAIREDEND
@@ -57,30 +65,42 @@ def handle_input_samples_for_run (user_post, user):
         heading_sample_sheet = HEADING_FOR_SAMPLE_SHEET_ONE_INDEX
     sample_sheet_data = {}
     # collect the data to prepare the sample Sheet
-    for lib_id  in range(len(lib_prep_ids)) :
-        sample_sheet_data[lib_prep_ids[lib_id]] = {}
+    right_id_list = []
+    for row_index in range(len(json_data)) :
+
+        right_id = lib_prep_ids[lib_prep_unique_ids.index(json_data[row_index][0])]
+        right_id_list.append(right_id)
+        sample_sheet_data[right_id] = {}
+
         for column_index in range(len(heading)):
-            sample_sheet_data[lib_prep_ids[lib_id]][heading[column_index]] = json_data[lib_id][column_index]
+            sample_sheet_data[right_id][heading[column_index]] = json_data[row_index][column_index]
 
     #parsing data for Base Space
     base_space_lib = parsing_data_for_bs_file(sample_sheet_data, mapping, paired, heading_base_space )
     # Collect the information to prepare and save the file for Base Space
     project_bs_files = {}
+
     for bs_lib, projects in base_space_lib.items():
         project_bs_files.update(create_base_space_file(projects, bs_lib, plate_name, container_id , exp_name, paired))
-    #import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
+
     # Handle the input information to create the sample sheet file
 
     #sample_sheet_file = handle_sample_sheet(sample_sheet_data)
-    new_sample_sheet_data = update_sample_sheet(sample_sheet_data, lib_prep_ids)
+    new_sample_sheet_data = update_index_in_sample_sheet(sample_sheet_data, right_id_list)
 
     data_for_sample_sheet_file = parsing_data_for_sample_sheet_file(new_sample_sheet_data, mapping, heading_sample_sheet)
     # sample_sheet_file_name = create_sample_sheet_file(data_for_sample_sheet_file, user,reads, adapter, exp_name,
-    import pdb; pdb.set_trace()
-    sample_sheet_file_name = create_sample_sheet_file(data_for_sample_sheet_file, user, user_post.reads, user_post.adapter,  exp_name, user_post.assay , user_post.colection_index, paired)
 
 
+    fields = prepare_fields_to_create_sample_sheet_from_template(data_form, user)
 
+    #user_sample_sheet_obj = LibraryPreparation.objects.get(pk=right_id_list[0]).user_sample_sheet
+
+    sample_sheet_file_name = create_sample_sheet_file(fields)
+
+
+    record_data = {}
     record_data['sample_sheet'] = sample_sheet_file_name
     record_data['exp_name'] = exp_name
     record_data['lib_prep_ids'] = lib_prep_ids
@@ -250,38 +270,79 @@ def create_base_space_file(project_data, bs_lib, plate, container_id, experiment
     return project_dict
 
 
-def create_sample_sheet_file(data, user, reads, adapter, exp_name, colection_index, assay, paired):
+def create_sample_sheet_file(fields):
     today_date = datetime.datetime.today().strftime("%Y%m%d_%H%M%S")
-    file_name = str(exp_name + today_date + SAMPLE_SHEET)
+    file_name = str(fields['exp_name'] + today_date + SAMPLE_SHEET)
     ss_file_relative_path = os.path.join( RUN_SAMPLE_SHEET_DIRECTORY, file_name)
     ss_file_full_path = os.path.join(settings.MEDIA_ROOT, ss_file_relative_path)
 
     today_date = datetime.datetime.today().strftime("%d/%m/%Y")
 
-    if paired:
-        template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_TWO_INDEX_TEMPLATE_NAME)
+    d = {'user':fields['user'],'exp_name': fields['exp_name'] , 'date': today_date, 'application': fields['application'],
+        'instrument':fields['instrument'], 'assay':fields['assay'] , 'collection_index': fields['collection_index'], 'reads': fields['reads'],
+        'adapter':fields['adapter'], 'sample_data': fields['data']}
+
+    if fields['pairedEnd'] == 'True':
+        if 'adapter2' in fields:
+            d['adapter2'] = fields['adapter2']
+            template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_TWO_INDEX_TWO_ADAPTERS_TEMPLATE_NAME)
+
+        else:
+
+            template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_TWO_INDEX_ONE_ADAPTER_TEMPLATE_NAME)
     else:
-        template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_ONE_INDEX_TEMPLATE_NAME)
-    sample_data = '\n'.join(data)
+        if 'adapter2' in fields:
+            d['adapter2'] = fields['adapter2']
+            template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_ONE_INDEX_TWO_ADAPTERS_TEMPLATE_NAME)
+        else:
+            template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_ONE_INDEX_ONE_ADAPTER_TEMPLATE_NAME)
+    #sample_data = '\n'.join(data)
 
     with open (template_file, 'r') as filein:
         #filein = open(template_file, 'r')
         ss_template = string.Template (filein.read())
 
-    d = {'exp_name': exp_name ,'user':user, 'reads': reads, 'date': today_date, 'colection_index': colection_index, 'assay':assay ,'adapter':adapter, 'sample_data': sample_data}
+
     updated_info = ss_template.substitute(d)
 
     fh = open(ss_file_full_path, 'w')
     fh.write(updated_info)
     fh.close()
-
     return ss_file_relative_path
 
+def get_experiment_name (run_id):
+    '''
+    Description:
+        The function returns the experiment name
+    Input:
+        run_id # run process id
+    Return:
+        experiment_name
+    '''
+    run_obj= RunProcess.objects.get(pk__exact = run_id)
+    experiment_name = run_obj.get_run_name()
+    return experiment_name
+
+def get_library_preparation_unique_id (lib_prep_ids):
+    '''
+    Description:
+        The function returns the library preparation unique id for the input list
+    Input:
+        lib_prep_ids # list having the library preparation id
+    Functions:
+        get_lib_prep_obj_from_id   # located at iSkyLIMS_wetlab/utils/library_preparation.py
+    Return:
+        unique_id_list
+    '''
+    unique_id_list =[]
+    for lib_prep_id in lib_prep_ids :
+        unique_id_list.append(get_lib_prep_obj_from_id(lib_prep_id).get_unique_id())
+    return unique_id_list
 
 def get_library_preparation_data_in_run (lib_prep_ids, pool_ids):
     '''
     Description:
-        The function returns the value of th pool singlePaired
+        The function returns the information for the library preparation
     Input:
         lib_prep_ids    # list having the library preparation id
         pool_ids        # pool id list
@@ -291,6 +352,7 @@ def get_library_preparation_data_in_run (lib_prep_ids, pool_ids):
     Function:
         get_type_read_sequencing             # located at this file
         collect_lib_prep_data_for_new_run    # located at this file
+        get_library_preparation_unique_id    # located at this file
     Return:
         display_sample_information
     '''
@@ -302,14 +364,33 @@ def get_library_preparation_data_in_run (lib_prep_ids, pool_ids):
     else:
         paired = False
         display_sample_information['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD
-    import pdb; pdb.set_trace()
+
     display_sample_information['data'] = collect_lib_prep_data_for_new_run(lib_prep_ids, paired)
     display_sample_information['lib_prep_ids'] = ','.join(lib_prep_ids)
+    display_sample_information['lib_prep_unique_ids'] = ','.join(get_library_preparation_unique_id(lib_prep_ids))
     display_sample_information['paired_end'] = paired
-    display_sample_information['reads'] = ''
-    display_sample_information['assay'] = ''
 
     return display_sample_information
+
+def get_stored_user_sample_sheet(lib_prep_id):
+    '''
+    Description:
+        The function returns the stored values of the user sample sheet
+    Input:
+        lib_prep_id   # pool id
+    Return:
+        sample_sheet_data
+    '''
+    sample_sheet_data = {}
+    lib_prep_obj = get_lib_prep_obj_from_id(lib_prep_id)
+    u_sampl_sheet_obj = lib_prep_obj.get_user_sample_sheet_obj()
+    fields = ['collection_index','application', 'instrument', 'adapter1', 'adapter2','assay','reads']
+    data = u_sampl_sheet_obj.get_all_data()
+
+    for i in range(len(fields)) :
+        sample_sheet_data[fields[i]] = data[i]
+
+    return sample_sheet_data
 
 def get_type_read_sequencing(pool_id):
     '''
@@ -349,7 +430,7 @@ def update_index_in_sample_sheet(sample_sheet_data, lib_prep_ids) :
     # keep the changes in the sequencing in case the number of the adapter
     # is intencianality shorter to get increase te length reads
     for  index_lib in range(len(lib_prep_ids)):
-        import pdb; pdb.set_trace()
+
         lib_prep_obj = LibraryPreparation.objects.get(pk__exact = lib_prep_ids[index_lib])
         sample_sheet_data[lib_prep_ids[index_lib]]['I7_Index_ID'] = lib_prep_obj.get_i7_index()
         lib_prep_obj.update_i7_index(sample_sheet_data[lib_prep_ids[index_lib]]['index'])
@@ -368,6 +449,7 @@ def get_library_prep_in_pools (pool_ids):
     '''
     Description:
         The function get the pool id list and returns the the ids for the LibraryPreparation
+
     Return:
         lib_prep_ids
     '''
@@ -436,8 +518,9 @@ def get_pool_info (pools_to_update):
         tmp_data = {}
         #run_data['r_name'] = {}
         for pool in pools_to_update['defined_runs']:
+            run_name = pool.get_run_name()
             if int(pool.get_number_of_samples()) == len(LibraryPreparation.objects.filter(pools = pool)) :
-                run_name = pool.get_run_name()
+
                 if not run_name in tmp_data:
                     tmp_data[run_name] = {}
                     tmp_data[run_name]['data'] = []
@@ -447,6 +530,9 @@ def get_pool_info (pools_to_update):
                 pool_numbers = pool.get_number_of_samples()
                 tmp_data[run_name]['data'].append([pool_name, pool_code, pool_numbers])
             else:
+                data = pool.get_info()
+                data.append(pool.get_id())
+
                 if not 'invalid_run_data' in pool_info :
                     pool_info['invalid_run_data'] ={}
                     pool_info['invalid_run_data']['data']= []
@@ -462,6 +548,18 @@ def get_pool_info (pools_to_update):
             pool_info['invalid_run_data']['heading'] = wetlab_config.HEADING_FOR_INCOMPLETED_SELECTION_POOLS
 
     return pool_info
+
+def get_run_obj_from_id(run_id):
+    '''
+    Description:
+        The function return the runprocess object for the run_id
+    Input:
+        run_id     # runProcess id
+    Return:
+        run_obj
+    '''
+    run_obj = RunProcess.objects.get(pk__exact = run_id)
+    return run_obj
 
 def display_available_pools():
     '''
@@ -529,6 +627,42 @@ def parsing_data_for_sample_sheet_file(new_sample_sheet_data, mapping, heading_s
         data.append(','.join(row_data))
     return data
 
+
+def prepare_fields_to_create_sample_sheet_from_template(data_form, user):
+    '''
+    Description:
+        The function collect data from user form to build the dictionary with the right values to replace on the tmeplate
+    Input:
+        data_for    # information from the user form
+        user        # userid
+    Functions:
+        get_available_pools_for_run     # located at this file
+        get_pool_info                    # located at this file
+    Return:
+        fields  # dictionary having the key and values used to replace in the template
+    '''
+    fields={}
+    data = []
+    temp_data =  json.loads(data_form['s_sheet_data'])
+    for line in temp_data:
+        # remove the last item in data (base space field)
+        line.pop()
+        data.append(','.join(line))
+
+    fields['data'] = '\n'.join(data)
+    fields['exp_name']= get_run_obj_from_id(data_form['run_process_id']).get_run_name()
+    fields['user'] = user
+    fields['application'] = data_form['application']
+    fields['instrument'] = data_form['instrument']
+    fields['assay'] = data_form['assay']
+    fields['collection_index'] = data_form['collection_index']
+    fields['pairedEnd'] = data_form['pairedEnd']
+    fields['reads'] = data_form['reads']
+    fields['adapter'] = data_form['adapter']
+    if 'adapter2' in data_form:
+        fields['adapter2'] = data_form['adapter2']
+
+    return fields
 
 def prepare_lib_prep_table_new_run (index_adapters, request, extracted_data_list, file_name, assay, adapter1, adapter2):
 

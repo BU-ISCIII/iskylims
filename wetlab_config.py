@@ -143,8 +143,10 @@ MIGRATION_DIRECTORY_FILES = 'wetlab/BaseSpaceMigrationFiles/'
 ##############################################################
 BASE_SPACE_TWO_INDEX_TEMPLATE_NAME = 'base_space_two_index_template.csv'
 BASE_SPACE_ONE_INDEX_TEMPLATE_NAME = 'base_space_one_index_template.csv'
-SAMPLE_SHEET_TWO_INDEX_TEMPLATE_NAME = 'sample_sheet_two_index_template.csv'
-SAMPLE_SHEET_ONE_INDEX_TEMPLATE_NAME = 'sample_sheet_one_index_template.csv'
+SAMPLE_SHEET_TWO_INDEX_TWO_ADAPTERS_TEMPLATE_NAME = 'sample_sheet_two_index_two_adapters_template.csv'
+SAMPLE_SHEET_TWO_INDEX_ONE_ADAPTER_TEMPLATE_NAME = 'sample_sheet_two_index_one_adapter_template.csv'
+SAMPLE_SHEET_ONE_INDEX_TWO_ADAPTERS_TEMPLATE_NAME = 'sample_sheet_one_index_two_adapters_template.csv'
+SAMPLE_SHEET_ONE_INDEX_ONE_ADAPTER_TEMPLATE_NAME = 'sample_sheet_one_index_one_adapter_template.csv'
 
 
 ##### CONFIGURATION FOR SAMPLE SHEET CONVERSION ##############

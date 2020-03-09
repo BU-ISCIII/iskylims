@@ -7,12 +7,12 @@
 
     <style>
         .scrolling-wrapper {
-     overflow-x: scroll;
-     white-space: nowrap;
-    }
+             overflow-x: scroll;
+             white-space: nowrap;
+            }
     </style>
     <div class="row row-space-4 margin-b-4">
-        <div class="col-sm-10 col-sm-offset-1" >
+        <div class="col-sm-12" >
             <div class="panel panel-default">
                 <div class="panel-heading"><h3>Library Preparation information to create the new Run</h3></div>
                     <div class="panel-body">
@@ -23,62 +23,90 @@
 
                                 <input type="hidden" name="action" value="storeDataNewRun"/>
                                 <input type="hidden" name="lib_prep_ids" value="{{display_sample_information.lib_prep_ids}}"/>
+                                <input type="hidden" name="lib_prep_unique_ids" value="{{display_sample_information.lib_prep_unique_ids}}"/>
                                 <input type="hidden" name="pairedEnd" value="{{display_sample_information.paired_end}}"/>
-
-                                <input type="hidden" name="reads" value="{{display_sample_information.reads}}"/>
-                                <input type="hidden" name="assay" value="{{display_sample_information.assay}}"/>
-                                <input type="hidden" name="collection_index" value="{{display_sample_information.collection_index}}"/>
-
-
-
                                 <input type="hidden" name="run_process_id" value="{{display_sample_information.run_process_id}}"/>
-                                <div class="form-group required">
-                                    <label class="col-sm-5 control-label">Define the Plate</label>
-                                    <div class="col-sm-5"><input class="form-control" type="text"  name="plateName" size="80"></div>
-                                    <br><br><br>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-sm-5 control-label">Define the ContainerID</label>
-                                    <div class="col-sm-5"><input class="form-control"  type="text"  name="containerID" size="80"></div>
-                                </div>
+                                <div class="col-sm-12" >
+                                    <div class="col-sm-6" >
+                                        <div class="form-group required">
+                                            <h4>Sample Sheet confirmation data</h4>
+                                            <label class="col-sm-5 control-label">Application</label>
+                                            <div class="col-sm-5"><input class="form-control" required = "required" type="text" value="{{display_sample_information.application}}" name="application" size="80"></div>
+                                            <br><br>
+                                            <label class="col-sm-5 control-label">Instrument</label>
+                                            <div class="col-sm-5"><input class="form-control"  required = "required" type="text" value="{{display_sample_information.instrument}}" name="instrument" size="80"></div>
+                                            <br><br>
+                                            <label class="col-sm-5 control-label">Assay</label>
+                                            <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  value="{{display_sample_information.assay}}"  name="assay" size="80"></div>
+                                            <br><br>
+                                            <label class="col-sm-5 control-label">Index Adapters</label>
+                                            <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  value="{{display_sample_information.collection_index}}"  name="collection_index" size="80"></div>
+                                            <br><br>
+                                            <label class="col-sm-5 control-label">Reads</label>
+                                            <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  value="{{display_sample_information.reads}}"  name="reads" size="80"></div>
+                                            <br><br>
+                                            <label class="col-sm-5 control-label">Adapter-1</label>
+                                            <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  value="{{display_sample_information.adapter1}}"  name="adapter" size="80"></div>
+                                            <br><br>
+                                            {% if display_sample_information.adapter2 %}
+                                                <label class="col-sm-5 control-label">Adapter-2</label>
+                                                <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  value="{{display_sample_information.adapter2}}"  name="adapter2" size="80"></div>
+                                                <br><br><br>
+                                            {% endif %}
+                                        </div> <!--  end of form-group -->
+                                    </div> <!--  end of col-sm-6 -->
+                                    <div class="col-sm-6" >
+                                        <div class="form-group required">
+                                            <h4>Base Space confirmation data</h4>
+                                            <label class="col-sm-5 control-label">Define the Plate</label>
+                                            <div class="col-sm-5"><input class="form-control" required = "required" type="text"  value="Plate96"  name="plateName" size="80"></div>
+                                            <br><br><br>
+
+                                            <label class="col-sm-5 control-label">Define the ContainerID</label>
+                                            <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  name="containerID" size="80"></div>
+                                        </div> <!--  end of form-group -->
+                                    </div> <!--  end of col-sm-6 -->
+                                </div> <!--  end of col-sm-12 -->
                                 <br><br>
-                                <div class="scrolling-wrapper">
-                                <div id="spreadsheet"></div>
+                                <div class="col-sm-12" >
+                                    <div class="scrolling-wrapper">
+                                        <div id="spreadsheet"></div>
 
 
-                                <script>
-                                    var data = [{% for values in display_sample_information.data %}
-                                        [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
-                                    ];
-                                    mySpreadsheet = $('#spreadsheet').jexcel({
-                                        data:data,
-                                        columns: [
-                                            { type: 'text', title:'{{display_sample_information.heading.0}}', width:180 , readOnly:true },
-                                            { type: 'text', title:'{{display_sample_information.heading.1}}', width:180 , readOnly:true },
-                                            { type: 'text', title:'{{display_sample_information.heading.2}}', width:80 },
-                                            { type: 'text', title:'{{display_sample_information.heading.3}}', width:80 },
-                                            { type: 'text', title:'{{display_sample_information.heading.4}}', width:100 },
-                                            { type: 'text', title:'{{display_sample_information.heading.5}}', width:80},
-                                            { type: 'text', title:'{{display_sample_information.heading.6}}', width:100  },
-                                            { type: 'text', title:'{{display_sample_information.heading.7}}', width:100 },
-                                            { type: 'text', title:'{{display_sample_information.heading.8}}', width:150 },
-                                            { type: 'text', title:'{{display_sample_information.heading.9}}', width:250 },
-                                            { type: 'text', title:'{{display_sample_information.heading.10}}', width:80 },
-                                            { type: 'text', title:'{{display_sample_information.heading.11}}', width:180 },
-                                        ],
-                                        allowInsertColumn:false,
-                                        allowDeleteColumn:false,
-                                        allowRenameColumn:false,
-                                        allowInsertRow:false,
-                                        allowDeleteRow:false,
-                                        tableOverflow:true,
-                                        tableHeight:'200px',
-                                        csvFileName:'sample_sheet',
+                                        <script>
+                                            var data = [{% for values in display_sample_information.data %}
+                                                [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                                            ];
+                                            mySpreadsheet = $('#spreadsheet').jexcel({
+                                                data:data,
+                                                columns: [
+                                                    { type: 'text', title:'{{display_sample_information.heading.0}}', width:180 , readOnly:true },
+                                                    { type: 'text', title:'{{display_sample_information.heading.1}}', width:180 , readOnly:true },
+                                                    { type: 'text', title:'{{display_sample_information.heading.2}}', width:80 },
+                                                    { type: 'text', title:'{{display_sample_information.heading.3}}', width:80 },
+                                                    { type: 'text', title:'{{display_sample_information.heading.4}}', width:100 },
+                                                    { type: 'text', title:'{{display_sample_information.heading.5}}', width:80},
+                                                    { type: 'text', title:'{{display_sample_information.heading.6}}', width:100  },
+                                                    { type: 'text', title:'{{display_sample_information.heading.7}}', width:100 },
+                                                    { type: 'text', title:'{{display_sample_information.heading.8}}', width:150 },
+                                                    { type: 'text', title:'{{display_sample_information.heading.9}}', width:250 },
+                                                    { type: 'text', title:'{{display_sample_information.heading.10}}', width:80 },
+                                                    { type: 'text', title:'{{display_sample_information.heading.11}}', width:180 },
+                                                ],
+                                                allowInsertColumn:false,
+                                                allowDeleteColumn:false,
+                                                allowRenameColumn:false,
+                                                allowInsertRow:false,
+                                                allowDeleteRow:false,
+                                                tableOverflow:true,
+                                                tableHeight:'200px',
+                                                csvFileName:'sample_sheet',
 
-                                    });
-                                </script>
-                                </div> <!--  end of scrolling  -->
-                                <br><br>
+                                            });
+                                        </script>
+                                    </div> <!--  end of scrolling  -->
+                                </div> <!--  end of col-sm-12 -->
+                                <br><br><br><br>
                                 <input type="button" value="Return to Select Sample" onclick="location.href ='/wetlab/selectSamplesForRun' ;"/>
                                 <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
 
@@ -186,30 +214,30 @@
 
                         {% for r_name, p_values, r_id in display_pools_for_run.run_data.data  %}
                             <div class="col-sm-12">
-                            <h4>Run Name {{r_name }}</h4>
+                                <h4>Run Name {{r_name }}</h4>
 
-                            <div class="col-sm-8">
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            {% for value in display_pools_for_run.run_data.heading %}
-                                                <th>{{value}} </th>
-                                            {% endfor %}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for p_name, p_code, p_number in  p_values  %}
+                                <div class="col-sm-8">
+                                    <table class="table">
+                                        <thead>
                                             <tr>
-                                                <td>{{p_name}}</td>
-                                                <td>{{p_code}}</td>
-                                                <td>{{p_number}}</td>
+                                                {% for value in display_pools_for_run.run_data.heading %}
+                                                    <th>{{value}} </th>
+                                                {% endfor %}
                                             </tr>
-                                        {% endfor %}
+                                        </thead>
+                                        <tbody>
+                                            {% for p_name, p_code, p_number in  p_values  %}
+                                                <tr>
+                                                    <td>{{p_name}}</td>
+                                                    <td>{{p_code}}</td>
+                                                    <td>{{p_number}}</td>
+                                                </tr>
+                                            {% endfor %}
 
-                                    </tbody>
-                                </table>
-                                <br><br>
-                            </div> <!--  end of col-sm-10 -->
+                                        </tbody>
+                                    </table>
+                                    <br><br>
+                                </div> <!--  end of col-sm-8 -->
                             <div class="col-sm-4">
                                 <table class="table">
                                     <thead>

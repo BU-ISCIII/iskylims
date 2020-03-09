@@ -4266,6 +4266,7 @@ def create_new_run (request):
                 'detail_description': detail_description })
         '''
         display_sample_information = get_library_preparation_data_in_run(lib_prep_ids, pool_ids)
+        display_sample_information.update(get_stored_user_sample_sheet(lib_prep_ids[0]))
         display_sample_information['experiment_name'] = experiment_name
 
         #display_sample_information['collection_index'] = ''
@@ -4289,6 +4290,20 @@ def create_new_run (request):
 
     elif request.method == 'POST' and request.POST['action'] == 'continueWithRun':
         run_id = request.POST['run_ids']
+        experiment_name = get_experiment_name(run_id)
+        #experiment_name = request.POST['experimentName']
+        pool_objs = LibraryPool.objects.filter(runProcess_id__exact =run_id)
+        pool_ids = []
+        for pool in pool_objs :
+            pool_ids.append(pool.get_id())
+        lib_prep_ids = get_library_prep_in_pools (pool_ids)
+
+        display_sample_information = get_library_preparation_data_in_run(lib_prep_ids, pool_ids)
+        display_sample_information.update(get_stored_user_sample_sheet(lib_prep_ids[0]))
+        display_sample_information['experiment_name'] = experiment_name
+        display_sample_information['run_process_id'] = run_id
+        '''
+        run_id = request.POST['run_ids']
 
         pool_ids = LibraryPool.objects.filter(runProcess_id__exact =run_id)
         experiment_name = pool_ids[0].get_run_name()
@@ -4308,6 +4323,8 @@ def create_new_run (request):
         display_sample_information['paired_end'] = paired
         display_sample_information['experiment_name'] = experiment_name
         display_sample_information['run_process_id'] = run_id
+        '''
+        import pdb; pdb.set_trace()
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_sample_information': display_sample_information})
 
     elif request.method == 'POST' and request.POST['action'] ==  'storeDataNewRun':

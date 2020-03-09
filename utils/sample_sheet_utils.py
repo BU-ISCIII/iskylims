@@ -171,7 +171,7 @@ def get_sample_sheet_data (in_file):
     '''
     Description:
         The function reads the user sample sheet from IEM and extracts : samples, adaters, reads
-        assay, index adapters, application
+        assay, index adapters, application and instrument
     Input:
         form_data  # form data from user
         file_in    # csv file from IEM
@@ -212,6 +212,11 @@ def get_sample_sheet_data (in_file):
     for line in file_lines :
         if 'Application' in line :
             sample_sheet_data['application'] = line.split(',')[1]
+            break
+    # get Instrument information
+    for line in file_lines :
+        if 'Instrument' in line :
+            sample_sheet_data['instrument'] = line.split(',')[1]
             break
     # get adapters information
     sample_sheet_data['adapter1'], sample_sheet_data['adapter2'] = get_adapters(file_lines)

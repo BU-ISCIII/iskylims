@@ -741,7 +741,8 @@ class libPreparationUserSampleSheetManager (models.Manager):
         file_name =  os.path.basename(user_sample_sheet_data['file_name'])
         new_lib_prep_user_sample_sheet = self.create(registerUser = register_user_obj,
                     collectionIndexKit_id  = collection_index_kit_id, reads = ','.join(user_sample_sheet_data['reads']),
-                    sampleSheet = file_name, assay = user_sample_sheet_data['assay'],
+                    sampleSheet = file_name, application = user_sample_sheet_data['application'],
+                    instrument = user_sample_sheet_data ['instrument'], assay = user_sample_sheet_data['assay'],
                     adapter1 = user_sample_sheet_data['adapter1'], adapter2 = user_sample_sheet_data['adapter2'])
         return new_lib_prep_user_sample_sheet
 
@@ -756,6 +757,8 @@ class libPreparationUserSampleSheet (models.Model):
 
     sampleSheet = models.FileField(upload_to = wetlab_config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY)
     generatedat = models.DateTimeField(auto_now_add=True, null=True)
+    application = models.CharField(max_length=70, null = True, blank = True)
+    instrument = models.CharField(max_length=70, null = True, blank = True)
     adapter1 = models.CharField(max_length=70, null = True, blank = True)
     adapter2 = models.CharField(max_length=70, null = True, blank = True)
     assay = models.CharField(max_length=70, null = True, blank = True)
@@ -773,8 +776,20 @@ class libPreparationUserSampleSheet (models.Model):
         adapters.append(self.adapter2)
         return adapters
 
+
     def get_collection_index_kit (self):
         return '%s' %(self.collectionIndexKit_id.get_collection_index_name())
+
+    def get_all_data(self):
+        s_s_data = []
+        s_s_data.append(self.collectionIndexKit_id.get_collection_index_name())
+        s_s_data.append(self.application)
+        s_s_data.append(self.instrument)
+        s_s_data.append(self.adapter1)
+        s_s_data.append(self.adapter2)
+        s_s_data.append(self.assay)
+        s_s_data.append(self.reads.split(',')[0])
+        return s_s_data
 
     objects = libPreparationUserSampleSheetManager()
 
@@ -1104,6 +1119,9 @@ class LibraryPreparation (models.Model):
     def get_user_obj(self):
         return self.registerUser
 
+    def get_user_sample_sheet_obj (self):
+        return self.user_sample_sheet
+
     def set_increase_reuse(self):
         self.numberOfReused += 1
         self.save()
@@ -1152,8 +1170,6 @@ class LibraryPreparation (models.Model):
         self.i5Index = lib_prep_data['i5Index']
         self.singlePairedEnd = lib_prep_data['single_paired']
         self.lengthRead = lib_prep_data['read_length']
-
-
         self.uniqueID = lib_prep_data['uniqueID']
 
         self.save()
