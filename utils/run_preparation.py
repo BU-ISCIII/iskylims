@@ -1,4 +1,4 @@
-import json, os
+import json, os, shutil
 import random
 from datetime import datetime
 import string
@@ -22,8 +22,24 @@ def handle_input_samples_for_run (data_form, user):
         Return True if all are in , False if not
     Input:
         project_list    #list of the project to check
-    variables:
-        logger # logging object to write in the log file
+    Functions:
+        parsing_data_for_bs_file    # located at this file
+        create_base_space_file
+        update_index_in_sample_sheet
+        parsing_data_for_sample_sheet_file
+        prepare_fields_to_create_sample_sheet_from_template
+        create_sample_sheet_file
+    Constants:
+    HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_PAIREDEND
+    MAPPING_BASESPACE_SAMPLE_SHEET_TWO_INDEX
+    BASESPACE_FILE_TWO_INDEX
+    HEADING_FOR_SAMPLE_SHEET_TWO_INDEX
+    HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD
+    MAPPING_BASESPACE_SAMPLE_SHEET_ONE_INDEX
+    BASESPACE_FILE_ONE_INDEX
+    HEADING_FOR_SAMPLE_SHEET_ONE_INDEX
+
+
     Return:
         Error if experiment name already exists
         dictionary wit the information to display as response
@@ -82,7 +98,7 @@ def handle_input_samples_for_run (data_form, user):
     project_bs_files = {}
 
     for bs_lib  in base_space_lib.keys():
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         #for project in base_space_lib[bs_lib].keys():
         #    import pdb; pdb.set_trace()
         #project_bs_files.update(create_base_space_file(base_space_lib[bs_lib][project]['data'], bs_lib, plate_name, container_id , exp_name, paired, base_space_lib[bs_lib][project]['project_user']))
@@ -277,6 +293,28 @@ def create_base_space_file(projects, bs_lib, plate, container_id, experiment_nam
 
 
 def create_sample_sheet_file(fields):
+    '''
+    Description:
+        The function store the sample sheet for the run, using the template and returning the file name including the relative path
+
+    Functions:
+        get_pool_objs_from_ids       # located at this file
+        get_pool_adapters            # located at this file
+        get_single_paired            # located at this file
+        get_pool_duplicated_index   # located at this file
+    Constants:
+        SAMPLE_SHEET
+        RUN_SAMPLE_SHEET_DIRECTORY
+        MEDIA_ROOT
+        TEMPLATE_FILES_DIRECTORY
+        SAMPLE_SHEET_TWO_INDEX_TWO_ADAPTERS_TEMPLATE_NAME
+        SAMPLE_SHEET_TWO_INDEX_ONE_ADAPTER_TEMPLATE_NAME
+        SAMPLE_SHEET_ONE_INDEX_TWO_ADAPTERS_TEMPLATE_NAME
+        SAMPLE_SHEET_ONE_INDEX_ONE_ADAPTER_TEMPLATE_NAME
+    Return:
+        True sample sheet name including the relative path
+    '''
+
     today_date = datetime.datetime.today().strftime("%Y%m%d_%H%M%S")
     file_name = str(fields['exp_name'] + today_date + SAMPLE_SHEET)
     ss_file_relative_path = os.path.join( RUN_SAMPLE_SHEET_DIRECTORY, file_name)
@@ -314,6 +352,8 @@ def create_sample_sheet_file(fields):
     fh = open(ss_file_full_path, 'w')
     fh.write(updated_info)
     fh.close()
+    import pdb; pdb.set_trace()
+
     return ss_file_relative_path
 
 def get_experiment_name (run_id):
@@ -680,7 +720,7 @@ def store_sample_sheet_in_tmp_folder(run_process_id):
     Input:
         run_process_id    # run process id
     Constants:
-        MEDIA_ROOT     
+        MEDIA_ROOT
         RUN_TEMP_DIRECTORY_RECORDED
     Return:
         None
@@ -688,7 +728,8 @@ def store_sample_sheet_in_tmp_folder(run_process_id):
     run_obj = get_run_obj_from_id(run_process_id)
     sample_sheet_original = os.path.join(settings.MEDIA_ROOT ,run_obj.get_sample_file())
     temp_directory = os.path.join(settings.MEDIA_ROOT , wetlab_config.RUN_TEMP_DIRECTORY_RECORDED, run_process_id)
-    os.mkdir(temp_directory)
+    if not os.path.exists(temp_directory) :
+        os.mkdir(temp_directory)
     # set group writing permission to the temporary directory
     os.chmod(temp_directory, 0o774)
 
@@ -696,7 +737,23 @@ def store_sample_sheet_in_tmp_folder(run_process_id):
     shutil.copy(sample_sheet_original,sample_sheet_copy)
     # set the group write permission to the Sample Sheet File
     os.chmod(sample_sheet_copy, 0o664)
+    import pdb; pdb.set_trace()
+    return
 
+def update_run_with_sample_sheet(run_process_id, sample_sheet):
+    '''
+    Description:
+        The function update the runProcess instance with the sample sheet name
+    Input:
+        run_process_id    # run process id
+        sample_sheet        # sample sheet file name
+    Functions:
+
+    Return:
+        None
+    '''
+    run_obj = get_run_obj_from_id(run_process_id)
+    run_obj.set_run_sample_sheet(sample_sheet)
     return
 
 def prepare_lib_prep_table_new_run (index_adapters, request, extracted_data_list, file_name, assay, adapter1, adapter2):

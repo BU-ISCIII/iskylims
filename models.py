@@ -181,6 +181,11 @@ class RunProcess(models.Model):
         self.save()
         return True
 
+    def set_run_sample_sheet(self, sample_sheet):
+        self.sampleSheet = sample_sheet
+        self.save()
+        return True
+
     def set_sequencer (self, sequencer):
         self.sequencerModel = sequencer
         self.save()
