@@ -3789,7 +3789,7 @@ def handling_library_preparations(request):
         stored_lib_prep_sample = store_library_preparation_samples(sample_sheet_data,  request.user, request.POST['lib_protocols'], lib_prep_sample_sheet_obj)
 
         stored_lib_prep = get_library_preparation_heading_for_samples(stored_lib_prep_sample, request.POST['lib_protocols'])
-        import pdb; pdb.set_trace()
+
         return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_lib_prep':stored_lib_prep})
     # store the parameter librarry preparation protocol
     if request.method == 'POST' and request.POST['action'] == 'recordProtocolParamters':
@@ -4231,8 +4231,10 @@ def create_new_run (request):
     #display_pools_for_run = display_available_pools()
     if request.method == 'POST' and request.POST['action'] == 'createNewRun':
         experiment_name = request.POST['experimentName']
-        pool_ids = request.POST.getlist('poolID')
         display_pools_for_run = display_available_pools()
+        if not 'poolID' in request.POST :
+            return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run})
+        pool_ids = request.POST.getlist('poolID')
 
         if RunProcess.objects.filter(runName__exact = experiment_name).exists():
             return render (request,'iSkyLIMS_wetlab/CreateNewRun.html',{'invalid_exp_name':experiment_name, 'display_pools_for_run':display_pools_for_run})
@@ -4272,13 +4274,13 @@ def create_new_run (request):
         #display_sample_information['collection_index'] = ''
         # create the new Run in Pre-Recorded state
 
-        '''
+
         new_run =  RunProcess(runName=experiment_name, sampleSheet= '',
                                 state = RunStates.objects.get(runStateName__exact = 'Pre-Recorded'),
                                 centerRequestedBy = center_requested_by)
         new_run.save()
-        '''
-        #display_sample_information['run_process_id'] = new_run.get_run_id()
+
+        display_sample_information['run_process_id'] = new_run.get_run_id()
         '''
         for pool in pool_ids:
             pool_obj = get_pool_instance_from_id(pool)

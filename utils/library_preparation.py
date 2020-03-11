@@ -577,7 +577,6 @@ def get_library_preparation_heading_for_samples (lib_prep_ids , protocol):
 
     reagents_kits = []
     for user_obj in user_list:
-        import pdb; pdb.set_trace()
         reagents_kits += get_lot_commercial_kits(user_obj, protocol_obj)
     # get only unique regents Kits
     unique_reagents_kits = list(set(reagents_kits))
