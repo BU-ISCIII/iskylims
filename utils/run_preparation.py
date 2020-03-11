@@ -672,6 +672,33 @@ def prepare_fields_to_create_sample_sheet_from_template(data_form, user):
 
     return fields
 
+
+def store_sample_sheet_in_tmp_folder(run_process_id):
+    '''
+    Description:
+        The function get the orignal sample sheet and copy it into the tmp/run_process_id folder
+    Input:
+        run_process_id    # run process id
+    Constants:
+        MEDIA_ROOT     
+        RUN_TEMP_DIRECTORY_RECORDED
+    Return:
+        None
+    '''
+    run_obj = get_run_obj_from_id(run_process_id)
+    sample_sheet_original = os.path.join(settings.MEDIA_ROOT ,run_obj.get_sample_file())
+    temp_directory = os.path.join(settings.MEDIA_ROOT , wetlab_config.RUN_TEMP_DIRECTORY_RECORDED, run_process_id)
+    os.mkdir(temp_directory)
+    # set group writing permission to the temporary directory
+    os.chmod(temp_directory, 0o774)
+
+    sample_sheet_copy= os.path.join(temp_directory, 'samplesheet.csv' )
+    shutil.copy(sample_sheet_original,sample_sheet_copy)
+    # set the group write permission to the Sample Sheet File
+    os.chmod(sample_sheet_copy, 0o664)
+
+    return
+
 def prepare_lib_prep_table_new_run (index_adapters, request, extracted_data_list, file_name, assay, adapter1, adapter2):
 
     '''

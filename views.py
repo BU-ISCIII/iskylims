@@ -4355,6 +4355,8 @@ def create_new_run (request):
         pools_obj = LibraryPool.objects.filter(runProcess_id = run_obj)
         for pool_obj in pools_obj:
             pool_obj.set_pool_state('Used')
+        # save sample sheet on the tmp folder
+        store_sample_sheet_in_tmp_folder(request.POST['run_process_id'])
         run_obj.set_run_state('Recorded')
         import pdb; pdb.set_trace()
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'created_new_run': created_new_run})
