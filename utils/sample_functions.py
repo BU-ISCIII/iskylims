@@ -86,5 +86,5 @@ def analyze_reprocess_data(json_data, reprocess_id, reg_user):
 def update_batch_lib_prep_sample_state(lib_prep_ids,  sample_state):
     for lib_id in lib_prep_ids:
         lib_obj = LibraryPreparation.objects.get(pk__exact = lib_id)
-        lib_obj.get_sample_obj().set_state(sample_state)
+        lib_obj.set_state(sample_state)
     return

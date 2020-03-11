@@ -316,6 +316,11 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
 
         run_date = run_process.set_run_date(run_date)
 
+        if  Projects.objects.filter(runprocess_id = run_process).exists():
+            project_objs = Projects.objects.filter(runprocess_id = run_process)
+            for project_obj in project_objs :
+                project_obj.set_project_run_date(run_date)
+
         if not RunningParameters.objects.filter(runName_id = run_process).exists():
             run_parameters = RunningParameters.objects.create_running_parameters(running_parameters, run_process)
         else:

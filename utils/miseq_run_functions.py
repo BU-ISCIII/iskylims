@@ -328,6 +328,7 @@ def save_miseq_projects_found (projects_users , experiment_name, library_name):
         library_kit = LibraryKit.objects.all().first()
 
     run_process = RunProcess.objects.get(runName = experiment_name)
+    run_date_no_format = run_process.get_run_data_no_format()
     sample_sheet_on_database = run_process.get_sample_file()
     base_space_file = os.path.join(settings.MEDIA_URL.replace('/',''), sample_sheet_on_database)
 
@@ -335,7 +336,7 @@ def save_miseq_projects_found (projects_users , experiment_name, library_name):
         userid=User.objects.get(username__exact = user)
         p_data=Projects(runprocess_id = run_process, projectName = project,
                         user_id = userid,
-                        baseSpaceFile = base_space_file,
+                        baseSpaceFile = base_space_file, project_run_date = run_date_no_format,
                         LibraryKit_id = library_kit, libraryKit = library_name)
         p_data.save()
     logger.info('Updated Projects table with the new projects found')

@@ -50,6 +50,9 @@ class RunProcess(models.Model):
     def get_run_id (self):
         return '%s' %(self.id)
 
+    def get_run_data_no_format(self):
+        return self.run_date
+
     def get_run_date (self):
         if self.run_date is None :
             rundate = 'Run NOT started'
@@ -258,6 +261,11 @@ class Projects(models.Model):
 
     def get_project_id(self):
         return '%s' %(self.id)
+
+    def set_project_run_date(self, date):
+        self.project_run_date = date
+        self.save()
+        return self
 
 
 class RunningParametersManager (models.Manager) :

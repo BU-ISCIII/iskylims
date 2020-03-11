@@ -37,21 +37,22 @@ def handle_input_samples_for_run (data_form, user):
     paired = data_form['pairedEnd']
     json_data = json.loads(data_form['s_sheet_data'])
     # check if run exists
-    '''
+
     run_obj = RunProcess.objects.get(pk__exact = run_id)
     exp_name = run_obj.get_run_name()
     record_data = {}
-    if RunProcess.objects.filter(runName__exact = exp_name).exclude(state__runStateName__exact = 'Pre-Recorded').exists():
-        record_data['Error'] = 'Run name already exists'
+    if run_obj.get_state() != 'Pre-Recorded':
+        record_data['Error'] = ERROR_RUN_IN_WRONG_STATE
+        record_data['Error'].append(run_obj.get_state())
         return record_data
 
 
-    run_data['plateName'] = data_form['plateName']
-    run_data['containerID'] = data_form['containerID']
-    '''
+    #run_data['plateName'] = data_form['plateName']
+    #run_data['containerID'] = data_form['containerID']
+
     run_data= {}
-    exp_name = 'mi experimento'
-    run_data['experiment_name'] = exp_name
+    #exp_name = 'mi experimento'
+    #run_data['experiment_name'] = exp_name
 
     if paired == 'True':
         heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_PAIREDEND
@@ -99,11 +100,12 @@ def handle_input_samples_for_run (data_form, user):
 
     sample_sheet_file_name = create_sample_sheet_file(fields)
 
+    record_data['run_obj'] = run_obj
+    record_data['collection_index'] = data_form['collection_index']
 
-    record_data = {}
     record_data['sample_sheet'] = sample_sheet_file_name
     record_data['exp_name'] = exp_name
-    record_data['lib_prep_ids'] = lib_prep_ids
+    record_data['lib_prep_ids'] = right_id_list
     record_data['projects_in_lib']= project_bs_files
     return record_data
     '''
@@ -246,7 +248,7 @@ def create_base_space_file(project_data, bs_lib, plate, container_id, experiment
     for project, values in project_data.items():
         for value in values :
             data.append(value)
-        project_dict[project] = (os.path.join(settings.MEDIA_URL, bs_file_relative_path)).replace('/', '', 1)
+        project_dict[project] = [(os.path.join(settings.MEDIA_URL, bs_file_relative_path)).replace('/', '', 1), bs_lib, user]
 
     sample_data = '\n'.join(data)
     if container_id == '' :

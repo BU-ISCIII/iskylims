@@ -4337,13 +4337,15 @@ def create_new_run (request):
         center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
         center_requested_by = Center.objects.get(pk = center_requested_id)
         run_obj = RunProcess.objects.get(pk__exact = request.POST['run_process_id'])
-        import pdb; pdb.set_trace()
-        # stop here to debug the function update_index_in_sample_sheet
-        run_obj.update_index_in_sample_sheet(run_data['sample_sheet'])
-        run_obj.set_run_state('Recorded')
 
         for items, values in run_data['projects_in_lib'].items():
-            new_project = Projects.objects.create( runprocess_id= run_obj, user_id = request.user, projectName = items, libraryKit = 'nextera', baseSpaceFile = values)
+            import pdb; pdb.set_trace()
+            try:
+                user_obj = User.objects.get(username__exact = values[2])
+            except:
+                user_obj = None
+            new_project = Projects.objects.create( runprocess_id= run_data['run_obj'], user_id = user_obj, projectName = items,
+                        libraryKit = run_data['collection_index'], baseSpaceFile = values[0], BaseSpaceLibrary = values[1])
             new_project.save()
         # update the sample state for each one in the run
         created_new_run = {}
@@ -4352,7 +4354,7 @@ def create_new_run (request):
         pools_obj = LibraryPool.objects.filter(runProcess_id = run_obj)
         for pool_obj in pools_obj:
             pool_obj.set_pool_state('Used')
-
+        run_obj.set_run_state('Recorded')
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'created_new_run': created_new_run})
     else:
         display_pools_for_run = display_available_pools()

@@ -260,3 +260,5 @@ ERROR_LIBRARY_PREPARATION_NOT_EXISTS = ['Library preparation are not defined', '
 ERROR_POOLS_WITH_NO_LIBRARY  = ['The selected Pools have not assigned to any Library Preparation.' ]
 
 ERROR_NO_PROFILE_OR_CENTER_FOR_USER = ['Unable to save your request.', 'Update your Profile/ Center first']
+
+ERROR_RUN_IN_WRONG_STATE = ['Unable to accept your Run definition', 'Because your Run is in state']
