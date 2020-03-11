@@ -1141,6 +1141,7 @@ class LibraryPreparation (models.Model):
         return
 
     def set_state(self , state_value):
+        import pdb; pdb.set_trace()
         self.libPrepState = StatesForLibraryPreparation.objects.get(libPrepState__exact = state_value)
         self.save()
         return

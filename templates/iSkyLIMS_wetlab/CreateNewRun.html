@@ -3,6 +3,23 @@
 {% block content %}
 {%include 'iSkyLIMS_core/jexcel_functionality.html' %}
 
+{% if Error %}
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-10 col-sm-offset-1" >
+            <div class="panel panel-danger">
+                <div class="panel-heading"><h3>Unable to accept your request</h3></div>
+                <div class="panel-body">
+                    {% for value in Error %}
+                        <p class="text-center">{{value}}</p>
+                    {% endfor %}
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+
+        </div> <!--  end of col-sm-12 -->
+    </div> <!--  end of row -->
+{% endif %}
+
+
 {% if display_sample_information %}
 
     <style>
@@ -140,7 +157,7 @@
             <div class="panel panel-default">
                 <div class="panel-heading"><h3>Sucessful Run</h3></div>
                 <div class="panel-body">
-                    <p>{{created_new_run.exp_name}} is now created on iSkyLIMS in "Recorded" state</p>
+                    <p><a href="/wetlab/displayRun={{created_new_run.run_process_id}}">{{created_new_run.exp_name}} </a> is now created on iSkyLIMS in "Recorded" state</p>
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
 

@@ -81,8 +81,13 @@ def handle_input_samples_for_run (data_form, user):
     # Collect the information to prepare and save the file for Base Space
     project_bs_files = {}
 
-    for bs_lib, projects in base_space_lib.items():
-        project_bs_files.update(create_base_space_file(projects, bs_lib, plate_name, container_id , exp_name, paired))
+    for bs_lib  in base_space_lib.keys():
+        import pdb; pdb.set_trace()
+        #for project in base_space_lib[bs_lib].keys():
+        #    import pdb; pdb.set_trace()
+        #project_bs_files.update(create_base_space_file(base_space_lib[bs_lib][project]['data'], bs_lib, plate_name, container_id , exp_name, paired, base_space_lib[bs_lib][project]['project_user']))
+        project_bs_files.update(create_base_space_file(base_space_lib[bs_lib], bs_lib, plate_name, container_id , exp_name, paired))
+
         #import pdb; pdb.set_trace()
 
     # Handle the input information to create the sample sheet file
@@ -237,7 +242,7 @@ def check_pools_compatible(data_form):
         return error
     return 'True'
 
-def create_base_space_file(project_data, bs_lib, plate, container_id, experiment_name, paired):
+def create_base_space_file(projects, bs_lib, plate, container_id, experiment_name, paired, ):
     data = []
     project_dict ={}
 
@@ -245,10 +250,10 @@ def create_base_space_file(project_data, bs_lib, plate, container_id, experiment
     file_name = str(experiment_name + today_date + '_for_basespace_'+ bs_lib + '.csv')
     bs_file_relative_path = os.path.join( MIGRATION_DIRECTORY_FILES, file_name)
     bs_file_full_path = os.path.join(settings.MEDIA_ROOT, bs_file_relative_path)
-    for project, values in project_data.items():
-        for value in values :
+    for project in projects.keys():
+        for value in projects[project]['data'] :
             data.append(value)
-        project_dict[project] = [(os.path.join(settings.MEDIA_URL, bs_file_relative_path)).replace('/', '', 1), bs_lib, user]
+        project_dict[project] = [(os.path.join(settings.MEDIA_URL, bs_file_relative_path)).replace('/', '', 1), bs_lib, projects[project]['project_user']]
 
     sample_data = '\n'.join(data)
     if container_id == '' :
@@ -268,7 +273,6 @@ def create_base_space_file(project_data, bs_lib, plate, container_id, experiment
     fh = open(bs_file_full_path, 'w')
     fh.write(updated_info)
     fh.close()
-
     return project_dict
 
 
@@ -594,7 +598,9 @@ def parsing_data_for_bs_file(sample_sheet_data, mapping, paired, heading_base_sp
         project_name = sample_sheet_data[sample_id]['Sample_Project']
 
         if not project_name in base_space_lib[lib_name]:
-            base_space_lib[lib_name][project_name] = []
+            base_space_lib[lib_name][project_name] = {}
+            base_space_lib[lib_name][project_name]['data'] = []
+            base_space_lib[lib_name][project_name]['project_user'] = sample_sheet_data[sample_id]['Description']
         bs_sample_data = {}
         for item in range(len(mapping)):
             bs_sample_data[mapping[item][0]] = sample_sheet_data[sample_id][mapping[item][1]]
@@ -613,7 +619,7 @@ def parsing_data_for_bs_file(sample_sheet_data, mapping, paired, heading_base_sp
         for item in heading_base_space:
             bs_row_data.append(bs_sample_data[item])
         string_row_data = ','.join(bs_row_data)
-        base_space_lib[lib_name][project_name].append(string_row_data)
+        base_space_lib[lib_name][project_name]['data'].append(string_row_data)
     return base_space_lib
 
 def parsing_data_for_sample_sheet_file(new_sample_sheet_data, mapping, heading_sample_sheet):

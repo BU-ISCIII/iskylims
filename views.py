@@ -4324,22 +4324,21 @@ def create_new_run (request):
         display_sample_information['experiment_name'] = experiment_name
         display_sample_information['run_process_id'] = run_id
         '''
-        import pdb; pdb.set_trace()
+
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_sample_information': display_sample_information})
 
     elif request.method == 'POST' and request.POST['action'] ==  'storeDataNewRun':
         run_data = handle_input_samples_for_run(request.POST, request.user)
         if 'Error' in run_data:
-            return render ( request,'iSkyLIMS_wetlab/error_page.html',
-                    {'content':['Error when fetching information to create a new Run' ,
-                    run_data['Error']]})
+            display_pools_for_run = display_available_pools()
+            return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run, 'Error': run_data['Error']})
+
         ## store data in runProcess table, run is in pre-recorded state
         center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
         center_requested_by = Center.objects.get(pk = center_requested_id)
         run_obj = RunProcess.objects.get(pk__exact = request.POST['run_process_id'])
 
         for items, values in run_data['projects_in_lib'].items():
-            import pdb; pdb.set_trace()
             try:
                 user_obj = User.objects.get(username__exact = values[2])
             except:
@@ -4350,11 +4349,14 @@ def create_new_run (request):
         # update the sample state for each one in the run
         created_new_run = {}
         created_new_run['exp_name'] = run_data['exp_name']
+        created_new_run['run_process_id'] = request.POST['run_process_id']
+
         update_batch_lib_prep_sample_state(run_data['lib_prep_ids'],  'Sequencing')
         pools_obj = LibraryPool.objects.filter(runProcess_id = run_obj)
         for pool_obj in pools_obj:
             pool_obj.set_pool_state('Used')
         run_obj.set_run_state('Recorded')
+        import pdb; pdb.set_trace()
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'created_new_run': created_new_run})
     else:
         display_pools_for_run = display_available_pools()

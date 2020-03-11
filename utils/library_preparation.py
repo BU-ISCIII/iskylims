@@ -607,3 +607,20 @@ def get_lib_prep_obj_from_id (library_preparation_id):
         return library_preparation_obj
     else:
         return 'None'
+
+
+def update_batch_lib_prep_sample_state(lib_prep_ids,  sample_state):
+    '''
+    Description:
+        The function set the sample state having as input the list of library preparation ids
+    Input:
+        lib_prep_ids        # list of library preparation ids
+        sample_state        # state to be set
+    Return:
+        None
+    '''
+    for lib_id in lib_prep_ids:
+        lib_obj = LibraryPreparation.objects.get(pk__exact = lib_id)
+        sample_obj = lib_obj.get_sample_obj().set_state(sample_state)
+
+    return
