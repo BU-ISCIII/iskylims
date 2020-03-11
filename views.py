@@ -4300,6 +4300,7 @@ def create_new_run (request):
         update_run_with_sample_sheet(request.POST['run_process_id'], run_data['sample_sheet'])
 
         run_obj = get_run_obj_from_id(request.POST['run_process_id'])
+        base_space_file = {}
         for items, values in run_data['projects_in_lib'].items():
             try:
                 user_obj = User.objects.get(username__exact = values[2])
@@ -4308,19 +4309,22 @@ def create_new_run (request):
             new_project = Projects.objects.create( runprocess_id= run_data['run_obj'], user_id = user_obj, projectName = items,
                         libraryKit = run_data['collection_index'], baseSpaceFile = values[0], BaseSpaceLibrary = values[1])
             new_project.save()
+            if not values[1] in base_space_file :
+                base_space_file[values[1]] = values[0]
         # update the sample state for each one in the run
-        created_new_run = {}
-        created_new_run['exp_name'] = run_data['exp_name']
-        created_new_run['run_process_id'] = request.POST['run_process_id']
-
         update_batch_lib_prep_sample_state(run_data['lib_prep_ids'],  'Sequencing')
         pools_obj = LibraryPool.objects.filter(runProcess_id = run_obj)
         import pdb; pdb.set_trace()
         for pool_obj in pools_obj:
             pool_obj.set_pool_state('Used')
         # save sample sheet on the tmp folder
-        store_sample_sheet_in_tmp_folder(request.POST['run_process_id'])
+        sample_sheet = store_sample_sheet_in_tmp_folder(request.POST['run_process_id'])
         run_obj.set_run_state('Recorded')
+        created_new_run = {}
+        created_new_run['exp_name'] = run_data['exp_name']
+        created_new_run['run_process_id'] = request.POST['run_process_id']
+        created_new_run['sample_sheet'] = sample_sheet
+        created_new_run['base_space'] = base_space_file
         import pdb; pdb.set_trace()
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'created_new_run': created_new_run})
     else:

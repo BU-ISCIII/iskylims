@@ -723,10 +723,11 @@ def store_sample_sheet_in_tmp_folder(run_process_id):
         MEDIA_ROOT
         RUN_TEMP_DIRECTORY_RECORDED
     Return:
-        None
+        sample_sheet_relative 
     '''
     run_obj = get_run_obj_from_id(run_process_id)
-    sample_sheet_original = os.path.join(settings.MEDIA_ROOT ,run_obj.get_sample_file())
+    sample_sheet_relative = run_obj.get_sample_file()
+    sample_sheet_original = os.path.join(settings.MEDIA_ROOT ,sample_sheet_relative )
     temp_directory = os.path.join(settings.MEDIA_ROOT , wetlab_config.RUN_TEMP_DIRECTORY_RECORDED, run_process_id)
     if not os.path.exists(temp_directory) :
         os.mkdir(temp_directory)
@@ -737,8 +738,8 @@ def store_sample_sheet_in_tmp_folder(run_process_id):
     shutil.copy(sample_sheet_original,sample_sheet_copy)
     # set the group write permission to the Sample Sheet File
     os.chmod(sample_sheet_copy, 0o664)
-    import pdb; pdb.set_trace()
-    return
+
+    return sample_sheet_relative
 
 def update_run_with_sample_sheet(run_process_id, sample_sheet):
     '''
