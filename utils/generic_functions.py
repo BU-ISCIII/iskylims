@@ -12,7 +12,7 @@ from django.contrib.auth.models import Group
 from .sample_sheet_utils import get_projects_in_run
 from django.conf import settings
 from iSkyLIMS_wetlab import wetlab_config
-from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects
+from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters
 
 
 def check_all_projects_exists (project_list):
@@ -36,6 +36,26 @@ def check_all_projects_exists (project_list):
             return False
     logger.debug ('End function for check_all_projects_exists')
     return True
+
+def get_run_in_same_year_to_compare (run_object):
+    '''
+    Description:
+        The function return a list with all runs that have been created on the same year and they
+        are based on the same chemistry.
+    Input:
+        run_object    # runProcess object
+    Return:
+        same_run_in_year run_object list
+    '''
+    # get the chemistry type for the run, that will be used to compare runs with the same chemistry value
+    chem_high_mid = RunningParameters.objects.get(runName_id__exact = run_object).get_run_chemistry()
+    run_different_chemistry = RunningParameters.objects.all(). exclude(Chemistry__exact = chem_high_mid)
+    run_year = run_object.get_run_year()
+
+    start_date = str(run_year) + '-1-1'
+    end_date = str(run_year) +'-12-31'
+    same_run_in_year = RunProcess.objects.filter(run_date__range=(start_date, end_date)).exclude(runName__in = run_different_chemistry)
+    return same_run_in_year
 
 def check_valid_date_format (date):
     try:

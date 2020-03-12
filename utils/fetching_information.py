@@ -8,7 +8,7 @@ from django.contrib.auth.models import Group
 
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import RUN_IMAGES_DIRECTORY, WETLAB_MANAGER
-from .generic_functions import normalized_data
+from .generic_functions import normalized_data, get_run_in_same_year_to_compare
 from .stats_graphics import *
 
 
@@ -22,6 +22,7 @@ def get_boxplot_comparation_runs (run_object):
     functions:
         normalized_data # located at utils.generic_functions
         bloxplot_graphic # located at utils.
+        get_run_in_same_year_to_compare # located at utils.generic_functions
     Variables:
         categories          # category list of the data to display
         chem_high_mid       # chemistry value of the run to compare
@@ -75,6 +76,7 @@ def get_boxplot_comparation_runs (run_object):
         cluster_pf_run_value_float.append(float(cluster_pf_value.replace(',','')))
 
     # get the chemistry type for the run, that will be used to compare runs with the same chemistry value
+    '''
     chem_high_mid = RunningParameters.objects.get(runName_id__exact = run_object).Chemistry
     run_different_chemistry = RunningParameters.objects.all(). exclude(Chemistry__exact = chem_high_mid)
     run_year = run_object.run_date.timetuple().tm_year
@@ -82,7 +84,8 @@ def get_boxplot_comparation_runs (run_object):
     start_date = str(run_year) + '-1-1'
     end_date = str(run_year) +'-12-31'
     same_run_in_year = RunProcess.objects.filter(run_date__range=(start_date, end_date)).exclude(runName__in = run_different_chemistry)
-
+    '''
+    same_run_in_year = get_run_in_same_year_to_compare(run_object)
     same_runs_in_year_list = []
     for run in same_run_in_year :
         same_runs_in_year_list.append(run.get_run_id())
@@ -115,6 +118,7 @@ def get_boxplot_comparation_runs (run_object):
     cluster_pf_all_str = ','.join(cluster_pf_all_normalized)
 
     # prepare the graphic
+    run_year = run_object.get_run_year()
     heading =  run_object.get_run_name() +' versus runs executed on '
     sub_caption = str( 'year ' + str(run_year))
     theme = 'fint'
@@ -373,6 +377,7 @@ def get_information_run(run_object):
         get_machine_lanes   # imported from parsing_run_info
         get_running_parameters # located at this file
         normalized_data     # imported from wetlab_misc_utilities
+        check_run_in_same_year # imported from generic_functions
     Constants:
         RUN_IMAGES_DIRECTORY
         MEDIA_URL
@@ -482,9 +487,12 @@ def get_information_run(run_object):
 
     ## get the stats information if run is completed
     if run_state == 'Completed':
-        # prepare the data for run comparations
-        info_dict ['boxplot'] = get_boxplot_comparation_runs (run_object)
-
+        # check if there are more runs in the same year to make the box comparation
+        if len(get_run_in_same_year_to_compare(run_object)) > 1 :
+            # prepare the data for run comparations
+            info_dict ['boxplot'] = get_boxplot_comparation_runs (run_object)
+        else:
+            info_dict['not_boxplot'] = "True"
         percent_projects = {}
 
         # get the demultiplexion information for projects included in the run

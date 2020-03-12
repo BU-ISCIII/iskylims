@@ -60,6 +60,9 @@ class RunProcess(models.Model):
             rundate=self.run_date.strftime("%B %d, %Y")
         return rundate
 
+    def get_run_year(self):
+        return '%s' %(self.run_date.timetuple().tm_year)
+
     def get_error_text (self):
         return '%s' %(self.runError)
 
@@ -334,6 +337,9 @@ class RunningParameters (models.Model):
     def __str__(self):
         return '%s' %(self.RunID)
         #return '%s' %(self.runName_id)
+
+    def get_run_chemistry(self):
+        return '%s' %(self.Chemistry)
 
     def get_run_parameters_info (self):
         #str_run_start_date=self.RunStartDate.strftime("%I:%M%p on %B %d, %Y")
