@@ -103,7 +103,7 @@ def create_nextseq_run (request):
 
         ## Fetch the experiment name and the library name from the sample sheet file
         index_library_name = get_library_name(stored_file)
-        run_name = get_experiment_name(stored_file)
+        run_name = get_experiment_name_from_file(stored_file)
 
         if run_name == '':
             ## define an temporary unique value for the run name

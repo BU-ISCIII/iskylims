@@ -413,7 +413,7 @@ def get_projects_in_run(in_file):
     return projects
 
 
-def get_experiment_name (in_file):
+def get_experiment_name_from_file (in_file):
     experiment_name = ''
 
     import codecs
