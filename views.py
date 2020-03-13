@@ -3741,7 +3741,6 @@ def display_sample (request, sample_id):
     if 'Error' in sample_information:
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No Sample was found']})
     sample_information.update(get_all_library_information(sample_id))
-
     return render(request, 'iSkyLIMS_wetlab/displaySample.html',{'sample_information':sample_information})
 
 @login_required
