@@ -113,7 +113,7 @@
                                         <h3>Parameter Information for Molecules using for the sample {{ sample_information.sample_definition.0 }} </h3>
                                         <div class="panel-heading"><h4>Quality Parameter Molecule Information</h4></div>
                                         <div class="panel-body">
-                                            {% for heading, values in sample_information.parameter_heading_values %}
+                                            {% for heading, values  in sample_information.parameter_heading_values %}
                                                 <table class="table">
                                                     <thead>
                                                         <tr>
@@ -130,6 +130,8 @@
                                                         </tr>
                                                     </tbody>
                                                 </table>
+                                                <br>
+                                                <br>
                                                 <br><br>
                                            {%endfor%}
                                         </div> <!--  end of panel body -->
@@ -156,67 +158,70 @@
 
                 {% if sample_information.library_definition_heading %}
                     <div id="library" class="tabcontent">
-                        <div class="row row-space-2 margin-b-4">
-                          <div class="col-sm-11">
-                                <div class="panel panel-default">
-                                    <h3>Library Preparation Information for sample  {{ sample_information.sample_definition.0 }} </h3>
-                                    <div class="panel-heading"><h4>Index used for sample {{ sample_information.sample_definition.0 }}</h4></div>
-                                    <div class="panel-body">
-                                        <table class="table table-hover">
-                                            <thead>
-                                              <tr>
-                                              {% for values in sample_information.library_definition_heading %}
-                                                <th>{{ values }} </th>
-                                              {%endfor%}
-                                              </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for values in sample_information.library_definition %}
+                        {% for lib_values, lib_param_heading , lib_param_values, lib_prep_id , lib_prep_code in sample_information.lib_prep_data %}
+                            <div class="row row-space-2 margin-b-4">
+                                <div class="col-sm-11">
+                                    <div class="panel panel-default">
+
+                                        <div class="panel-heading"><h4>Index used for sample {{ lib_prep_code }}</h4></div>
+                                        <div class="panel-body">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                  <tr>
+                                                  {% for values in sample_information.library_definition_heading %}
+                                                    <th>{{ values }} </th>
+                                                  {%endfor%}
+                                                  </tr>
+                                                </thead>
+                                                <tbody>
                                                     <tr>
-                                                        {% for value in values %}
-                                                            <td>{{ value }} </td>
+                                                        {% for lib_value in lib_values %}
+                                                            <td>{{ lib_value }} </td>
                                                         {%endfor%}
                                                     </tr>
-                                                {%endfor%}
-                                            </tbody>
-                                        </table>
-                                    </div> <!--  end of panel body -->
-                                </div> <!--  end of panel  -->
-                            </div> <!--  end of col-sm-11 -->
-                        </div> <!--  end of row -->
-
-
-                        {% if sample_information.lib_prep_param_heading %}
-
-                          <div class="row row-space-2 margin-b-4">
-                              <div class="col-sm-11">
-                                  <div class="panel panel-default">
-                                      <h3>Parameter Information for Library Preparation using for the sample {{ sample_information.sample_definition.0 }} </h3>
-                                      <div class="panel-heading"><h4>Quality Parameter Library Preparation Information</h4></div>
-                                      <div class="panel-body">
-                                        <table class="table table-hover">
-                                            <thead>
-                                              <tr>
-                                              {% for values in sample_information.lib_prep_param_heading %}
-                                                <th>{{ values }} </th>
-                                              {%endfor%}
-                                              </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for values in sample_information.lib_prep_param_value %}
-                                                    <tr>
-                                                        {% for value in values %}
-                                                            <td>{{ value }} </td>
-                                                        {%endfor%}
-                                                    </tr>
-                                                {%endfor%}
-                                            </tbody>
-                                        </table>
-                                      </div> <!--  end of panel body -->
-                                   </div> <!--  end of panel  -->
-                                 </div> <!--  end of col-sm-11 -->
+                                                </tbody>
+                                            </table>
+                                        </div> <!--  end of panel body -->
+                                    </div> <!--  end of panel  -->
+                                </div> <!--  end of col-sm-11 -->
                             </div> <!--  end of row -->
-                        {% endif %}
+                            {% if lib_param_heading != None %}
+
+                              <div class="row row-space-2 margin-b-4">
+                                  <div class="col-sm-12">
+                                      <div class="panel panel-default">
+                                          <div class="panel-heading"><h4>Quality Parameter Library Preparation Information</h4></div>
+                                          <div class="panel-body">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        {% for lib_par_head in lib_param_heading %}
+                                                            <th>{{ lib_par_head }} </th>
+                                                        {%endfor%}
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        {% for value in lib_param_values %}
+                                                            <td>{{ value }} </td>
+                                                        {%endfor%}
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                          </div> <!--  end of panel body -->
+                                       </div> <!--  end of panel  -->
+                                     </div> <!--  end of col-sm-12 -->
+                                </div> <!--  end of row -->
+                            {% endif %}
+
+                            <form class="" action="/wetlab/repeatLibraryPreparation" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="repeat_library_preparation">
+                                <input type="hidden" name="lib_prep_id" value="{{lib_prep_id}}">
+                                <input class="btn pull-right btn-default" type="submit" value="Repeat {{lib_prep_code}}">
+                            </form>
+
+                        {% endfor %}
                     </div> <!-- // end of tab libary -->
                 {% endif %}
                 {% if sample_information.pool_heading %}

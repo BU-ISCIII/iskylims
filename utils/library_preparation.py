@@ -293,6 +293,17 @@ def get_protocols_for_library_preparation ():
 
 
 def get_all_library_information(sample_id):
+    '''
+    Description:
+        The function get the library preparation information for sample.
+        It return a dictionary with heading and lib_prep_data which is a list
+        having index values, parameter heading, parameter values, library preparation id
+        and library preparation codeID
+    Input:
+        sample_id  # sample id
+    Return
+        library_information
+    '''
     library_information = {}
     if LibraryPreparation.objects.filter(sample_id__pk__exact = sample_id).exists():
         library_information['library_definition_heading'] = HEADING_FOR_LIBRARY_PREPARATION_DEFINITION
@@ -300,8 +311,11 @@ def get_all_library_information(sample_id):
         library_information['pool_information'] = []
         library_preparation_items = LibraryPreparation.objects.filter(sample_id__pk__exact = sample_id).exclude(libPrepState__libPrepState__exact = 'Created for Reuse')
         library_information['lib_prep_param_value'] = []
+        library_information['lib_prep_data'] = []
         for library_item in library_preparation_items:
-            library_information['library_definition'].append(library_item.get_info_for_display())
+
+            lib_prep_data = []
+            lib_prep_data.append(library_item.get_info_for_display())
             protocol_used_obj = library_item.get_protocol_obj()
             if ProtocolParameters.objects.filter(protocol_id = protocol_used_obj).exists():
                 parameter_names = ProtocolParameters.objects.filter(protocol_id = protocol_used_obj).order_by('parameterOrder')
@@ -311,8 +325,16 @@ def get_all_library_information(sample_id):
                     lib_prep_param_heading.append(p_name.get_parameter_name())
                     if LibParameterValue.objects.filter(library_id = library_item).exists():
                         lib_prep_param_value.append(LibParameterValue.objects.get(library_id = library_item, parameter_id = p_name).get_parameter_information())
-                library_information['lib_prep_param_value'].append(lib_prep_param_value)
-                library_information['lib_prep_param_heading'] = lib_prep_param_heading
+                lib_prep_data.append(lib_prep_param_heading)
+                lib_prep_data.append(lib_prep_param_value)
+            else:
+
+                lib_prep_data.append('')
+                lib_prep_data.append('')
+            lib_prep_data.append(library_item.get_id())
+            lib_prep_data.append(library_item.get_lib_prep_code())
+            library_information['lib_prep_data'].append(lib_prep_data)
+
 
             if library_item.pools.all().exists() :
                 pools = library_item.pools.all()
@@ -320,10 +342,12 @@ def get_all_library_information(sample_id):
                 for pool in pools:
                     pool_name = pool.get_pool_name()
                     pool_code = pool.get_pool_code_id()
-                    library_information['pool_information'].append([lib_prep_code_id, pool_name,pool_code, ''])
+                    run_name= pool.get_run_name()
+                    library_information['pool_information'].append([lib_prep_code_id, pool_name,pool_code, run_name])
 
         if library_information['pool_information']:
             library_information['pool_heading'] = HEADING_FOR_DISPLAY_POOL_INFORMATION_IN_SAMPLE_INFO
+
     return library_information
 
 def get_lib_prep_to_add_parameters():
