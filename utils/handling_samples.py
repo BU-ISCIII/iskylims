@@ -903,7 +903,7 @@ def get_molecule_obj_from_id(molecule_id):
     else:
         return ''
 
-def get_molecule_obj_from_sample(sample_obj):
+def get_molecule_objs_from_sample(sample_obj):
     '''
     Description:
         The function will return the molecule object that are assigned to the sample.
@@ -914,7 +914,7 @@ def get_molecule_obj_from_sample(sample_obj):
         molecules_obj.
     '''
     if MoleculePreparation.objects.filter(sample = sample_obj).exists():
-        molecules_obj = MoleculePreparation.objects.get(sample = sample_obj)
+        molecules_obj = MoleculePreparation.objects.filter(sample = sample_obj)
         return molecules_obj
     else:
         return ''
