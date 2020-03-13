@@ -3625,6 +3625,7 @@ def record_samples(request):
             sample_recorded['reprocess_result'] = 'False'
         else:
             if to_be_reprocessed_ids[0] == '':
+
                 return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'all_sucessful_reprocess':True})
             else:
                 next_to_be_process_id = str(to_be_reprocessed_ids[0])
@@ -3634,7 +3635,7 @@ def record_samples(request):
                 sample_recorded['sample_id_for_action'] = next_to_be_process_id
                 sample_recorded.update(get_codeID_for_resequencing(sample_recorded))
                 sample_recorded['reprocess_result'] = 'True'
-        return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
+                return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
 
         if len(require_to_update) > 0 :
             for key, value in require_to_update.items():
@@ -3735,7 +3736,7 @@ def display_sample (request, sample_id):
     '''
     Functions:
         get_all_sample_information : located at iSkyLIMS_core/utils/handling_samples.py
-        get_all_library_information :
+        get_all_library_information  located at iSkyLIMS_wetlab/utils/library_preparation.py
     '''
     sample_information = get_all_sample_information(sample_id, True)
     if 'Error' in sample_information:

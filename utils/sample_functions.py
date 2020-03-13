@@ -14,7 +14,7 @@ def get_codeID_for_resequencing(sample_recorded):
         sample_recorded : sample id
     Functions:
         get_sample_obj_from_id : located at iSkyLIMS_core/utils/handling_samples.py
-        get_molecule_obj_from_sample : located at iSkyLIMS_core/utils/handling_samples.py
+        get_molecule_objs_from_sample : located at iSkyLIMS_core/utils/handling_samples.py
         get_molecule_codeid_from_object : located at iSkyLIMS_core/utils/handling_samples.py
     Variables:
         lib_prep_available # list all possibilities for library preparation
@@ -27,9 +27,9 @@ def get_codeID_for_resequencing(sample_recorded):
     lib_prep_available = ['New Library Preparation']
     mol_lib_prep_available['New Extraction'] =['']
     sample_obj = get_sample_obj_from_id (sample_recorded['sample_id_for_action'])
-    molecules_obj = get_molecule_obj_from_sample(sample_recorded['sample_id_for_action'])
+    molecule_objs = get_molecule_objs_from_sample(sample_recorded['sample_id_for_action'])
 
-    for molecule_obj in molecules_obj:
+    for molecule_obj in molecule_objs:
         molecule_id = get_molecule_codeid_from_object (molecule_obj)
         mol_lib_prep_available[molecule_id] = ['New Library Preparation']
         if LibraryPreparation.objects.filter(molecule_id = molecule_obj, sample_id = sample_obj).exists():

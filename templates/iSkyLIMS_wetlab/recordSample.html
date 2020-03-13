@@ -375,7 +375,18 @@
         </div> <!--// end row -->
     {% endif %}
 
+{% elif all_sucessful_reprocess %}
+    <div class="row row-space-4 margin-b-4">
+        <div  class="col-sm-7 col-sm-offset-2" >
+            <div class="panel panel-default" >
+                <div class="panel-heading"><h3>All samples have been set to reprocess </h3></div>
+                <div class="panel-body" >
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
 
+        </div> <!--// end col-sm-7  -->
+
+    </div> <!--// end row -->
 {% else %}
 
     {% if sample_information.pre_defined_heading %}

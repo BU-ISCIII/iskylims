@@ -301,6 +301,9 @@ def get_all_library_information(sample_id):
         and library preparation codeID
     Input:
         sample_id  # sample id
+    Constants:
+        HEADING_FOR_LIBRARY_PREPARATION_DEFINITION
+        HEADING_FOR_DISPLAY_POOL_INFORMATION_IN_SAMPLE_INFO
     Return
         library_information
     '''
