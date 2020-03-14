@@ -1,4 +1,4 @@
-import json, re
+import json, re, datetime
 from iSkyLIMS_core.core_config import *
 from iSkyLIMS_core.models import *
 from iSkyLIMS_core.utils.generic_functions import get_friend_list
@@ -116,8 +116,15 @@ def add_molecule_protocol_parameters(form_data):
     parameter_heading = form_data['heading_in_excel'].split('::')
     parameters_length = len(molecule_json_data[0])
     fixed_heading_length = len(HEADING_FOR_MOLECULE_ADDING_PARAMETERS)
-    protocol_used_obj = Protocols.objects.get(name__exact = molecule_json_data[0][1])
+
+    user_lot_commercial_kit_obj = UserLotCommercialKits.objects.get(nickName__exact = molecule_json_data[0][1])
+    protocol_used_obj = user_lot_commercial_kit_obj.get_protocol_obj_for_kit()
+
+    #protocol_used_obj = Protocols.objects.get(name__exact = molecule_json_data[0][1])
     for row_index in range(len(molecule_json_data)) :
+        # increase the number of use and updated the last use date
+        user_lot_commercial_kit_obj.set_increase_use()
+        user_lot_commercial_kit_obj.set_latest_use(datetime.datetime.now())
         right_id = molecule_ids[molecule_code_ids.index(molecule_json_data[row_index][0])]
 
         molecule_obj = get_molecule_obj_from_id(right_id)
@@ -739,7 +746,32 @@ def get_all_sample_information (sample_id , massive):
         sample_information['molecule_definition_heading'] = HEADING_FOR_MOLECULE_DEFINITION
         sample_information['molecule_definition'] = []
         sample_information['molecule_parameter_values'] = []
+        sample_information['molecule_definition_data'] = []
+
         for molecule in molecules:
+            molecule_definition_data = []
+            molecule_definition_data.append(molecule.get_info_for_display())
+            protocol_used_obj = molecule.get_protocol_obj()
+            if ProtocolParameters.objects.filter(protocol_id = protocol_used_obj).exists():
+                parameter_names = ProtocolParameters.objects.filter(protocol_id = protocol_used_obj).order_by('parameterOrder')
+                molecule_param_heading = ['Molecule CodeID']
+                mol_param_value = [molecule.get_molecule_code_id()]
+                for p_name in parameter_names:
+                    molecule_param_heading.append(p_name.get_parameter_name())
+                    if MoleculeParameterValue.objects.filter(molecule_id = molecule).exists():
+                        mol_param_value.append(MoleculeParameterValue.objects.get(molecule_id = molecule, moleculeParameter_id = p_name).get_param_value())
+                #parameter_heading_values.append([molecule_param_heading, mol_param_value ])
+                molecule_definition_data.append(molecule_param_heading)
+                molecule_definition_data.append(mol_param_value)
+            else:
+                # Add empty values in case that there is no paramters defined yet
+                molecule_definition_data.append('')
+                molecule_definition_data.append('')
+            sample_information['molecule_definition_data'].append(molecule_definition_data)
+
+
+
+        '''
             sample_information['molecule_definition'].append(molecule.get_info_for_display())
             protocol_used_obj = molecule.get_protocol_obj()
             if ProtocolParameters.objects.filter(protocol_id = protocol_used_obj).exists():
@@ -753,8 +785,9 @@ def get_all_sample_information (sample_id , massive):
                 parameter_heading_values.append([molecule_param_heading, mol_param_value ])
                 #sample_information['molecule_parameter_values'].append(mol_param_value)
                 #sample_information['molecule_parameter_heading'] = molecule_param_heading
+        '''
+        #sample_information['parameter_heading_values'] = parameter_heading_values
 
-        sample_information['parameter_heading_values'] = parameter_heading_values
     return sample_information
 
 def get_defined_samples (register_user):
@@ -1348,15 +1381,16 @@ def record_molecules (form_data, user , app_name):
 
         molecule_data = {}
         protocol_used = molecule_json_data[row_index][heading_in_excel.index('protocol_used')]
-        if MoleculePreparation.objects.filter(sample = sample_obj, moleculeCodeId__icontains = protocol_used).exists():
-            last_molecule_code = MoleculePreparation.objects.filter(sample = sample_obj, moleculeCodeId__icontains = protocol_used).last().get_molecule_code_id()
+        #if MoleculePreparation.objects.filter(sample = sample_obj, moleculeCodeId__icontains = protocol_used).exists():
+        if MoleculePreparation.objects.filter(sample = sample_obj).exists():
+            last_molecule_code = MoleculePreparation.objects.filter(sample = sample_obj).last().get_molecule_code_id()
             code_split = re.search(r'(.*_E)(\d+)$', last_molecule_code)
             number_code = int(code_split.group(2))
             number_code +=1
             molecule_code_id = code_split.group(1) + str(number_code)
         else:
             protocol_code = protocol_used.replace(' ', '-')
-            molecule_code_id = sample_obj.get_sample_code() + '_' + protocol_code + '_E1'
+            molecule_code_id = sample_obj.get_sample_code() + '_E1'
 
 
         #protocol_used_obj = Protocols.objects.get(name__exact = protocol_used)

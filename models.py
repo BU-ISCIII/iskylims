@@ -240,6 +240,9 @@ class CommercialKits (models.Model):
     def get_protocol (self):
         return '%s' %(self.protocol_id.get_name())
 
+    def get_protocol_obj(self):
+        return self.protocol_id
+
     def get_provider_kit_name(self):
         return '%s' %(self.provider)
 
@@ -300,17 +303,29 @@ class UserLotCommercialKits (models.Model):
     def get_protocol_for_kit (self):
         return '%s' %(self.basedCommercial.get_protocol())
 
+    def get_protocol_obj_for_kit (self):
+        return self.basedCommercial.get_protocol_obj()
+
     def get_expiration_date(self):
         exp_date = self.expirationDate
         return '%s' %(exp_date.strftime("%d %B, %Y"))
 
+    def set_increase_use(self):
+        self.numberOfuses += 1
+        self.save()
+        return self
+    def set_latest_use(self,date):
+        self.latestUsedDate = date
+        self.save()
+        return self
+    '''
     def get_used_percentage(self):
         try:
             user_percent = "{0:.2f}".format(self.numberOfuses *100 / self.maximumUses)
         except:
             user_percent = 'Maximum number of used not defined'
         return user_percent
-
+    '''
     objects = UserLotCommercialKitsManager()
 
 class PatientProjectsManager (models.Manager):
@@ -835,7 +850,7 @@ class MoleculePreparationManager (models.Manager):
     def  create_molecule (self, molecule_data) :
 
         molecule_used_obj = MoleculeType.objects.get(moleculeType__exact = molecule_data['moleculeType'])
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         protocol_type_obj = ProtocolType.objects.filter(molecule = molecule_used_obj, apps_name__exact = molecule_data['app_name'])
         protocol_used_obj = Protocols.objects.get(name__exact = molecule_data['protocolUsed'], type__in = protocol_type_obj)
         new_molecule = self.create( protocolUsed = protocol_used_obj, sample =  molecule_data['sample'],
