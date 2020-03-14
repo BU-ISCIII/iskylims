@@ -3887,7 +3887,7 @@ def handling_molecules(request):
 
 
         molecule_use = set_molecule_use(request.POST, __package__)
-        import pdb; pdb.set_trace()
+        
         return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'molecule_use':molecule_use})
 
     else:
