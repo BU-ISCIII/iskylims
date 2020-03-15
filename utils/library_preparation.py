@@ -137,7 +137,6 @@ def extract_user_sample_sheet_data(file_in):
     data = {}
 
     data['full_path_file'], data['file_name'] = store_user_input_file (file_in)
-
     if not valid_user_iem_file(data['full_path_file']):
         data['ERROR'] = ERROR_INVALID_FILE_FORMAT
         if not delete_stored_file(full_path_file):
@@ -171,7 +170,7 @@ def valid_samples_for_lib_preparation(samples):
             invalid_samples.append(sample)
         else:
             sample_objs.append(s_obj)
-
+    import pdb; pdb.set_trace()
     if len(invalid_samples) > 0:
         error = {}
         error_message = ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES.copy()
@@ -184,7 +183,8 @@ def valid_samples_for_lib_preparation(samples):
         if not 'Library preparation' == sample_obj.get_sample_state() :
             invalid_samples.append(sample_obj.get_sample_name())
         # mark as invalid when library prepation object is alreade created and it is not in Created for reused state
-        elif  LibraryPreparation.objects.filter(sample_id = sample_obj).exists() and not LibraryPreparation.objects.filter(sample_id = sample_obj ,libPrepState__libPrepState__exact = 'Created for Reuse').exists():
+        #elif  LibraryPreparation.objects.filter(sample_id = sample_obj).exists() and not LibraryPreparation.objects.filter(sample_id = sample_obj ,libPrepState__libPrepState__exact = 'Created for Reuse').exists():
+        elif  LibraryPreparation.objects.filter(sample_id = sample_obj , libPrepState__libPrepState__exact = 'Defined').exists():
                 invalid_samples.append(sample_obj.get_sample_name())
 
     if len(invalid_samples) > 0:
@@ -216,6 +216,7 @@ def validate_sample_sheet_data (input_data ):
         sample data objects if all checks are valid or ERROR if file is invalid
     '''
     # check that samples are defined and in the right state
+    import pdb; pdb.set_trace()
     valid_samples = valid_samples_for_lib_preparation (input_data['samples'])
     if 'ERROR'in valid_samples:
         delete_stored_file(input_data['full_path_file'])
