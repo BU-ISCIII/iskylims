@@ -260,8 +260,15 @@
                                                         {%endfor%}
                                                     </tr>
                                                 {%endfor%}
+
                                             </tbody>
                                         </table>
+                                        <form class="" action="/wetlab/repeatPool" method="post">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="repeat_pool">
+                                            <input type="hidden" name="poold_id" value="{{pool_id}}">
+                                            <input class="btn pull-right btn-default" type="submit" value="Repeat Pool {{pool_code}}">
+                                        </form>
                                     </div> <!--  end of panel body -->
                                 </div> <!--  end of panel  -->
                             </div> <!--  end of col-sm-11 -->
