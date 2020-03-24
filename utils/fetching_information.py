@@ -62,6 +62,9 @@ def get_boxplot_comparation_runs (run_object):
         FusionCharts object with the graphic data
     '''
     # fetch Q>30 , mean_q and yield mb for all projects per lane to create the boxplot
+    if not StatsLaneSummary.objects.filter(runprocess_id__exact =run_object ).exclude(defaultAll__isnull = False).exits():
+        # return empty information . No information for stats stored on database
+        return
     run_lane_summary = StatsLaneSummary.objects.filter(runprocess_id__exact =run_object ).exclude(defaultAll__isnull = False)
     q_30_run_value , mean_run_value = [] , []
     q_30_run_value_float , mean_run_value_float , yield_mb_run_value_float, cluster_pf_run_value_float = [] , [], [] , []
@@ -498,6 +501,9 @@ def get_information_run(run_object):
         # get the demultiplexion information for projects included in the run
 
         for project_demultiplexion in p_list :
+            if not StatsLaneSummary.objects.filter(runprocess_id__exact = run_object, project_id = project_demultiplexion.id ).exists():
+                # continue with the stats for the next proyect in the run
+                continue
             lanes_for_percent_graphic = StatsLaneSummary.objects.filter(runprocess_id__exact = run_object, project_id = project_demultiplexion.id )
             percent_lane = []
             for lane in lanes_for_percent_graphic :
