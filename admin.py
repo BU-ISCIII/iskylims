@@ -65,6 +65,32 @@ class StatesForLibraryPreparationAdmin (admin.ModelAdmin):
 class StatesForPoolAdmin (admin.ModelAdmin):
     list_display = ('poolState',)
 
+class StatsRunSummaryAdmin (admin.ModelAdmin):
+    list_display = ('runprocess_id', 'level', 'yieldTotal', 'projectedTotalYield', 'aligned', 'errorRate', 'intensityCycle', 'biggerQ30', 'stats_summary_run_date')
+
+
+class StatsRunReadAdmin(admin.ModelAdmin):
+    list_display = ('runprocess_id', 'read', 'lane', 'tiles', 'density', 'cluster_PF', 'phas_prephas', 'reads', 'reads_PF', 'q30', 'yields', 'cyclesErrRated', 'aligned',
+                    'errorRate', 'errorRate35',  'errorRate50', 'errorRate75', 'errorRate100' ,'intensityCycle' ,'stats_read_run_date')
+
+class RawDemuxStatsAdmin(admin.ModelAdmin):
+    list_display = ('runprocess_id', 'project_id', 'defaultAll' ,'rawYield', 'rawYieldQ30', 'rawQuality', 'PF_Yield', 'PF_YieldQ30' ,'PF_QualityScore')
+
+class RawTopUnknowBarcodesdmin(admin.ModelAdmin):
+    list_display = ('runprocess_id', 'lane_number' , 'top_number', 'count', 'sequence')
+
+
+class StatsLaneSummaryAdmin(admin.ModelAdmin):
+    list_display = ('runprocess_id', 'project_id', 'defaultAll' ,'lane', 'pfCluster', 'percentLane', 'perfectBarcode', 'oneMismatch' ,'yieldMb', 'biggerQ30', 'meanQuality' )
+
+class StatsFlSummaryAdmin(admin.ModelAdmin):
+    list_display = ('runprocess_id', 'project_id', 'defaultAll' , 'flowRawCluster', 'flowPfCluster', 'flowYieldMb', 'sampleNumber')
+
+
+
+
+class GraphicsStatsAdmin(admin.ModelAdmin):
+    list_display = ('runprocess_id', 'folderRunGraphic', 'cluserCountGraph', 'flowCellGraph', 'intensityByCycleGraph', 'heatMapGraph', 'histogramGraph', 'sampleQcGraph')
 
 
 admin.site.register(LibraryPreparation, LibraryPreparationAdmin)
@@ -81,3 +107,12 @@ admin.site.register(RunErrors, RunErrorsAdmin)
 admin.site.register(RunStates, RunStatesAdmin)
 admin.site.register(StatesForLibraryPreparation, StatesForLibraryPreparationAdmin)
 admin.site.register(StatesForPool, StatesForPoolAdmin)
+
+
+admin.site.register(StatsRunSummary, StatsRunSummaryAdmin)
+admin.site.register(StatsRunRead, StatsRunReadAdmin)
+admin.site.register(RawDemuxStats, RawDemuxStatsAdmin)
+admin.site.register(RawTopUnknowBarcodes, RawTopUnknowBarcodesdmin)
+admin.site.register(StatsLaneSummary, StatsLaneSummaryAdmin)
+admin.site.register(StatsFlSummary, StatsFlSummaryAdmin)
+admin.site.register(GraphicsStats, GraphicsStatsAdmin)

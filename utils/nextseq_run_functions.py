@@ -92,10 +92,15 @@ def nextseq_parsing_run_information(l_run_info, l_run_parameter) :
     running_data['RTAVersion']=parameter_data_root.find('RTAVersion').text
     running_data['Chemistry']=parameter_data_root.find('Chemistry').text
     running_data['RunStartDate']=parameter_data_root.find('RunStartDate').text
-    running_data['RunManagementType']=parameter_data_root.find('RunManagementType').text
+    ###
+    try:
+        running_data['RunManagementType']=parameter_data_root.find('RunManagementType').text
+    except:
+        running_data['RunManagementType']=''
     running_data['ApplicationVersion']=p_parameter.find('ApplicationVersion').text
     running_data['NumTilesPerSwath']=p_parameter.find('NumTilesPerSwath').text
     running_data['SystemSuiteVersion']=parameter_data_root.find('SystemSuiteVersion').text
+    ##
     running_data['LibraryID']=parameter_data_root.find('LibraryID').text
     running_data['AnalysisWorkflowType']=parameter_data_root.find('AnalysisWorkflowType').text
     running_data['PlannedRead1Cycles']=parameter_data_root.find('PlannedRead1Cycles').text
@@ -314,7 +319,7 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
 
         running_parameters, run_date, instrument = nextseq_parsing_run_information(l_run_info, l_run_parameter)
 
-        run_date = run_process.set_run_date(run_date)
+        run_process.set_run_date(run_date)
 
         if  Projects.objects.filter(runprocess_id = run_process).exists():
             project_objs = Projects.objects.filter(runprocess_id = run_process)
