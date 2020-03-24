@@ -235,7 +235,12 @@ def create_nextseq_run (request):
 
         in_file = os.path.join(settings.MEDIA_ROOT,s_file)
         # Set unique Sample_ID in the sample sheet
+
         index_file = os.path.join(settings.MEDIA_ROOT,'wetlab', 'index_file')
+        # if file does not exists create the file and assing the first value
+        if not os.path.isfile(index_file) :
+            with open(index_file, 'w') as index_fh:
+                index_fh.write('0000-AA')
         create_unique_sample_id_values (in_file, index_file)
         # create the projects/users to update sample sheet
         user_names_in_projects ={}
@@ -293,7 +298,8 @@ def create_nextseq_run (request):
         subfolder_name=str(run_p.id)
 
         temp_directory = os.path.join(settings.MEDIA_ROOT , wetlab_config.RUN_TEMP_DIRECTORY_RECORDED, subfolder_name)
-        os.mkdir(temp_directory)
+        os.makedirs(temp_directory)
+        # os.mkdir(temp_directory)
         # set group writing permission to the temporary directory
         os.chmod(temp_directory, 0o774)
         #os.mkdir(os.path.join(settings.MEDIA_ROOT, 'wetlab/tmp/recorded', subfolder_name ))
@@ -3887,7 +3893,7 @@ def handling_molecules(request):
 
 
         molecule_use = set_molecule_use(request.POST, __package__)
-        
+
         return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'molecule_use':molecule_use})
 
     else:
