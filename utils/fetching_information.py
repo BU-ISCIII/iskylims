@@ -62,7 +62,7 @@ def get_boxplot_comparation_runs (run_object):
         FusionCharts object with the graphic data
     '''
     # fetch Q>30 , mean_q and yield mb for all projects per lane to create the boxplot
-    if not StatsLaneSummary.objects.filter(runprocess_id__exact =run_object ).exclude(defaultAll__isnull = False).exits():
+    if not StatsLaneSummary.objects.filter(runprocess_id__exact =run_object ).exclude(defaultAll__isnull = False).exists():
         # return empty information . No information for stats stored on database
         return
     run_lane_summary = StatsLaneSummary.objects.filter(runprocess_id__exact =run_object ).exclude(defaultAll__isnull = False)

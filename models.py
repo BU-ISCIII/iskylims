@@ -562,7 +562,7 @@ class StatsFlSummary(models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
             on_delete=models.CASCADE)
-    project_id = models.ForeignKey(Projects, on_delete=models.CASCADE, null=True)
+    project_id = models.ForeignKey(Projects, on_delete=models.CASCADE, null=True, blank=True)
     defaultAll =models.CharField(max_length=40, null=True)
     flowRawCluster = models.CharField(max_length=40)
     flowPfCluster= models.CharField(max_length=40)
@@ -591,7 +591,7 @@ class StatsLaneSummary (models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
             on_delete=models.CASCADE)
-    project_id = models.ForeignKey(Projects, on_delete=models.CASCADE,  null=True)
+    project_id = models.ForeignKey(Projects, on_delete=models.CASCADE,  null=True, blank=True)
     defaultAll =models.CharField(max_length=40, null=True)
     lane= models.CharField(max_length=10)
     pfCluster = models.CharField(max_length=64)
