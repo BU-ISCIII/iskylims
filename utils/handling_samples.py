@@ -1495,7 +1495,7 @@ def get_info_for_reprocess_samples(sample_ids, sample_in_action):
 
     sample_recorded['invalid_samples'] = invalid_samples
     # sample_recorded['invalid_samples_id'] = ','.join(sample_ids)
-    sample_recorded['heading'] = HEADING_FOR_DISPLAY_RECORDED_SAMPLES
+    sample_recorded['invalid_heading'] = HEADING_FOR_DISPLAY_RECORDED_SAMPLES
 
     return sample_recorded
 
