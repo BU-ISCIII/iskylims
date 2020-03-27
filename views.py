@@ -3609,7 +3609,6 @@ def record_samples(request):
             sample_recorded['number_of_samples'] = len(sample_recorded['incomplete_samples'])
         if 'pre_defined_samples_id' in sample_recorded:
             sample_recorded.update(prepare_sample_project_input_table(sample_recorded['pre_defined_samples_id']))
-
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
 
 
@@ -4210,6 +4209,7 @@ def create_pool (request):
         return redirect ('/accounts/login')
     # collect the information for collecting
     display_list = get_lib_prep_to_select_in_pool()
+    import pdb; pdb.set_trace()
     if request.method == 'POST' and request.POST['action'] == 'createPool':
         new_pool = define_new_pool(request.POST,  request.user)
 
@@ -4331,7 +4331,7 @@ def create_new_run (request):
         created_new_run['run_process_id'] = request.POST['run_process_id']
         created_new_run['sample_sheet'] = sample_sheet
         created_new_run['base_space'] = base_space_file
-        
+
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'created_new_run': created_new_run})
     else:
         display_pools_for_run = display_available_pools()

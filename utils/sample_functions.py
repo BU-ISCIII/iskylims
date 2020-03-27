@@ -57,6 +57,7 @@ def analyze_reprocess_data(json_data, reprocess_id, reg_user):
     Functions:
         update_sample_reused : located at iSkyLIMS_core/utils/handling_samples.py
         update_molecule_reused : located at iSkyLIMS_core/utils/handling_samples.
+        get_sample_obj_from_id : located at iSkyLIMS_core/utils/handling_samples.
     Return:
         True if user request were right, or Invalid options if user requests were wrong.
     '''
@@ -71,14 +72,28 @@ def analyze_reprocess_data(json_data, reprocess_id, reg_user):
         if molecule_code_id == '':
             return 'Invalid options'
         else:
-            sample_id = update_sample_reused(reprocess_id)
             molecule_obj = update_molecule_reused(reprocess_id, molecule_code_id)
             if not molecule_obj:
                 return 'Invalid options'
-            # create the new library preparation in "Created_for_reused" state
-            new_library_preparation = LibraryPreparation.objects.create_reused_lib_preparation(reg_user, molecule_obj, sample_id)
+            sample_obj = get_sample_obj_from_id (sample_id)
+            if 'Library preparation' != sample_obj.get_sample_state():
+                sample_id = update_sample_reused(reprocess_id)
+                # create the new library preparation in "Created_for_reused" state
+                new_library_preparation = LibraryPreparation.objects.create_reused_lib_preparation(reg_user, molecule_obj, sample_id)
             return True
     elif 'New Pool' in options:
-        pass
+        molecule_code_id = options[0]
+        lib_prep_code_id = options[1]
+
+        import pdb; pdb.set_trace()
+        if not LibraryPreparation.objects.filter(sample_id__pk__exact = reprocess_id, libPrepCodeID__exact = lib_prep_code_id).exists():
+            return 'Invalid options'
+        lib_prep_obj = LibraryPreparation.objects.filter(sample_id__pk__exact = reprocess_id, libPrepCodeID__exact = lib_prep_code_id)
+        sample_id = update_sample_reused(reprocess_id)
+        molecule_obj = update_molecule_reused(reprocess_id, molecule_code_id)
+        lib_prep_obj.set_state('Reused pool')
+        reused = lib_prep_obj.set_increase_reuse()
+
+
     else:
         return 'Invalid options'

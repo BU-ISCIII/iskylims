@@ -107,7 +107,8 @@ def get_single_paired(lib_prep_id):
 def define_new_pool(form_data, user_obj):
     '''
     Description:
-        The function performs some checks to verify the new pool can be created
+        The function performs some checks to verify the new pool can be created.
+
     Input:
         lib_prep_ids  # library preparation id list
     Constants:
@@ -168,6 +169,9 @@ def define_new_pool(form_data, user_obj):
     for lib_prep in lib_prep_ids:
         lib_prep_obj = LibraryPreparation.objects.get(pk__exact = lib_prep)
         lib_prep_obj.set_pool(new_pool)
+        # return back to state completed if a library prepatarion was used for reused pool
+        if lib_prep_obj.get_state() == 'Reused pool':
+            lib_prep_obj.set_state('Completed')
 
     # update the number of samples
     new_pool.set_pool_state('Selected')
@@ -204,10 +208,11 @@ def get_lib_prep_to_select_in_pool():
     '''
     display_list = {}
     display_list['data'] = []
-
-    if LibraryPreparation.objects.filter(libPrepState__libPrepState = 'Completed', pools = None ).exists():
-
-        lib_preparations =  LibraryPreparation.objects.filter(libPrepState__libPrepState = 'Completed', pools = None).order_by('registerUser')
+    #import pdb; pdb.set_trace()
+    from django.db.models import Q
+    if LibraryPreparation.objects.filter(Q (libPrepState__libPrepState__exact = 'Completed', pools = None )| Q(libPrepState__libPrepState__exact = 'Reused pool' )).exists():
+        lib_preparations =  LibraryPreparation.objects.filter(Q (libPrepState__libPrepState__exact = 'Completed', pools = None )| Q(libPrepState__libPrepState__exact = 'Reused pool' )).order_by('registerUser')
+        #lib_preparations =  LibraryPreparation.objects.filter(libPrepState__libPrepState = 'Completed', pools = None).order_by('registerUser')
         for lib_prep in lib_preparations :
             display_list['data'].append( lib_prep.get_info_for_selection_in_pool())
 
