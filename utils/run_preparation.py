@@ -352,7 +352,6 @@ def create_sample_sheet_file(fields):
     fh = open(ss_file_full_path, 'w')
     fh.write(updated_info)
     fh.close()
-    import pdb; pdb.set_trace()
 
     return ss_file_relative_path
 
@@ -411,9 +410,10 @@ def get_library_preparation_data_in_run (lib_prep_ids, pool_ids):
         paired = False
         display_sample_information['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD
 
-    display_sample_information['data'] = collect_lib_prep_data_for_new_run(lib_prep_ids, paired)
+    display_sample_information['data'] , uniqueID_list = collect_lib_prep_data_for_new_run(lib_prep_ids, paired)
     display_sample_information['lib_prep_ids'] = ','.join(lib_prep_ids)
-    display_sample_information['lib_prep_unique_ids'] = ','.join(get_library_preparation_unique_id(lib_prep_ids))
+    display_sample_information['lib_prep_unique_ids'] = ','.join(uniqueID_list)
+    #display_sample_information['lib_prep_unique_ids'] = ','.join(get_library_preparation_unique_id(lib_prep_ids))
     display_sample_information['paired_end'] = paired
 
     return display_sample_information
@@ -462,6 +462,7 @@ def collect_lib_prep_data_for_new_run(lib_prep_ids, paired):
         data
     '''
     data = []
+    uniqueID_list = []
     for lib_prep_id in lib_prep_ids:
         lib_prep_obj =LibraryPreparation.objects.get(pk__exact = lib_prep_id)
         if paired:
@@ -469,8 +470,9 @@ def collect_lib_prep_data_for_new_run(lib_prep_ids, paired):
         else:
             row_data = lib_prep_obj.get_info_for_run_single_read()
         row_data[0] = row_data[0] + '-' + lib_prep_obj.get_reused_value()
+        uniqueID_list.append(row_data[0])
         data.append(row_data)
-    return data
+    return data ,uniqueID_list
 
 
 

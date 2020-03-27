@@ -4212,7 +4212,7 @@ def create_pool (request):
     display_list = get_lib_prep_to_select_in_pool()
     if request.method == 'POST' and request.POST['action'] == 'createPool':
         new_pool = define_new_pool(request.POST,  request.user)
-        
+
         if not isinstance(new_pool, LibraryPool) :
             display_list.update(new_pool)
             return  render(request, 'iSkyLIMS_wetlab/createPool.html',{'display_list': display_list})
@@ -4320,7 +4320,7 @@ def create_new_run (request):
         # update the sample state for each one in the run
         update_batch_lib_prep_sample_state(run_data['lib_prep_ids'],  'Sequencing')
         pools_obj = LibraryPool.objects.filter(runProcess_id = run_obj)
-        import pdb; pdb.set_trace()
+
         for pool_obj in pools_obj:
             pool_obj.set_pool_state('Used')
         # save sample sheet on the tmp folder
@@ -4331,7 +4331,7 @@ def create_new_run (request):
         created_new_run['run_process_id'] = request.POST['run_process_id']
         created_new_run['sample_sheet'] = sample_sheet
         created_new_run['base_space'] = base_space_file
-        import pdb; pdb.set_trace()
+        
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'created_new_run': created_new_run})
     else:
         display_pools_for_run = display_available_pools()
