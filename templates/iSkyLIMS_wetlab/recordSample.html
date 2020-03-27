@@ -159,7 +159,7 @@
                                     }
                                     mySpreadsheet = $('#spreadsheet').jexcel({
                                         data:data,
-                                        columns: [{% for values in sample_recorded.invalid_heading%}
+                                        columns: [{% for values in sample_recorded.heading%}
                                             { type: 'text', title:'{{values}}', width:100 , readOnly:true },
                                             {% endfor %}
                                             { type: 'dropdown', title:'Molecule Extraction', width:130 , source :[ {% for value in sample_recorded.molecule_available %}{'id':'{{value}}','name':'{{value}}'}, {% endfor %}]},

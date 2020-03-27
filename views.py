@@ -3784,7 +3784,7 @@ def handling_library_preparations(request):
             return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'upload_file':upload_file})
 
         valid_data = validate_sample_sheet_data(sample_sheet_data)
-        import pdb; pdb.set_trace()
+
         if 'ERROR' in valid_data:
             upload_file['ERROR'] = valid_data['ERROR']
             upload_file['file_name'] = request.FILES['uploadfile'].name
@@ -3795,7 +3795,7 @@ def handling_library_preparations(request):
         stored_lib_prep_sample = store_library_preparation_samples(sample_sheet_data,  request.user, request.POST['lib_protocols'], lib_prep_sample_sheet_obj)
 
         stored_lib_prep = get_library_preparation_heading_for_samples(stored_lib_prep_sample, request.POST['lib_protocols'])
-
+        import pdb; pdb.set_trace()
         return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_lib_prep':stored_lib_prep})
     # store the parameter librarry preparation protocol
     if request.method == 'POST' and request.POST['action'] == 'recordProtocolParamters':
@@ -4212,7 +4212,7 @@ def create_pool (request):
     display_list = get_lib_prep_to_select_in_pool()
     if request.method == 'POST' and request.POST['action'] == 'createPool':
         new_pool = define_new_pool(request.POST,  request.user)
-        import pdb; pdb.set_trace()
+        
         if not isinstance(new_pool, LibraryPool) :
             display_list.update(new_pool)
             return  render(request, 'iSkyLIMS_wetlab/createPool.html',{'display_list': display_list})

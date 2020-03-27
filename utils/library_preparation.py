@@ -216,7 +216,7 @@ def validate_sample_sheet_data (input_data ):
         sample data objects if all checks are valid or ERROR if file is invalid
     '''
     # check that samples are defined and in the right state
-    import pdb; pdb.set_trace()
+
     valid_samples = valid_samples_for_lib_preparation (input_data['samples'])
     if 'ERROR'in valid_samples:
         delete_stored_file(input_data['full_path_file'])
@@ -461,7 +461,6 @@ def get_library_code_and_unique_id (sample_obj):
     if LibraryPreparation.objects.filter(sample_id = sample_obj, libPrepState__libPrepState__exact = 'Created for Reuse').exists():
         lib_prep_obj = LibraryPreparation.objects.get(sample_id = sample_obj, libPrepState__libPrepState__exact = 'Created for Reuse')
         molecule_obj = lib_prep_obj.get_molecule_obj()
-        import pdb; pdb.set_trace()
         last_lib_prep_for_molecule = LibraryPreparation.objects.filter(sample_id = sample_obj, molecule_id = molecule_obj).exclude(libPrepState__libPrepState__exact = 'Created for Reuse').last()
         if last_lib_prep_for_molecule :
             last_lib_prep_code_id = last_lib_prep_for_molecule.get_lib_prep_code()
@@ -469,11 +468,13 @@ def get_library_code_and_unique_id (sample_obj):
             index_val = int(split_code.group(2))
             new_index = str(index_val +1).zfill(2)
             lib_prep_code_id = split_code.group(1) + new_index
-            unique_s_id_split = lib_prep_obj.get_unique_id().split('-')
-            inc_value = int(unique_s_id_split[-1]) + 1
-            unique_s_id_split[-1] = str(inc_value)
-            uniqueID = '-'.join(unique_s_id_split)
-
+            s_uniqueID = sample_obj.get_unique_sample_id()
+            #unique_s_id_split = lib_prep_obj.get_unique_id().split('-')
+            # count the number that library preparation was used on the same sample
+            lib_prep_times = str(LibraryPreparation.objects.filter(sample_id = sample_obj).count())
+            #inc_value = int(unique_s_id_split[-1]) + 1
+            #unique_s_id_split[-1] = str(inc_value)
+            uniqueID = s_uniqueID + '-' + lib_prep_times
         else:
             lib_prep_code_id = molecule_obj.get_molecule_code_id() + '_LIB_01'
             split_code = lib_prep_code_id.split('_')
@@ -482,9 +483,9 @@ def get_library_code_and_unique_id (sample_obj):
         molecule_obj = MoleculePreparation.objects.filter(sample = sample_obj).last()
         lib_prep_code_id = molecule_obj.get_molecule_code_id() + '_LIB_01'
 
-        split_code = lib_prep_code_id.split('_')
-        uniqueID = sample_obj.get_unique_sample_id() +'-' + split_code[-3][1:] + '-' + split_code[-1]
-
+        #split_code = lib_prep_code_id.split('_')
+        #uniqueID = sample_obj.get_unique_sample_id() +'-' + split_code[-3][1:] + '-' + split_code[-1]
+        uniqueID = sample_obj.get_unique_sample_id() +'-1'
     return lib_prep_code_id, uniqueID
 
 def store_library_preparation_samples(sample_sheet_data, user, protocol , user_sample_sheet_obj):

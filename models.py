@@ -1117,6 +1117,9 @@ class LibraryPreparation (models.Model):
     def get_reagents_kit_used(self):
         return '%s' %(self.reagent_id.get_nick_name())
 
+    def get_reused_value(self):
+        return '%s' %(self.numberOfReused)
+
     def get_sample_name(self):
         return '%s' %(self.sample_id.get_sample_name())
 

@@ -453,7 +453,8 @@ def get_type_read_sequencing(pool_id):
 def collect_lib_prep_data_for_new_run(lib_prep_ids, paired):
     '''
     Description:
-        The function returns the library preparation data for each one in the lib_prep_ids
+        The function returns the library preparation data for each one in the lib_prep_ids.
+        Sample_uniqueID is modified by adding '-' and the number of reused for the library preparation
     Input:
         lib_prep_ids        # list of library preparations
         pairedEnd           # Boolean variable of True is "paired end" False is "single read"
@@ -462,10 +463,13 @@ def collect_lib_prep_data_for_new_run(lib_prep_ids, paired):
     '''
     data = []
     for lib_prep_id in lib_prep_ids:
+        lib_prep_obj =LibraryPreparation.objects.get(pk__exact = lib_prep_id)
         if paired:
-            data.append( LibraryPreparation.objects.get(pk__exact = lib_prep_id).get_info_for_run_paired_end())
+            row_data = lib_prep_obj.get_info_for_run_paired_end()
         else:
-            data.append(LibraryPreparation.objects.get(pk__exact = lib_prep_id).get_info_for_run_single_read())
+            row_data = lib_prep_obj.get_info_for_run_single_read()
+        row_data[0] = row_data[0] + '-' + lib_prep_obj.get_reused_value()
+        data.append(row_data)
     return data
 
 
@@ -723,7 +727,7 @@ def store_sample_sheet_in_tmp_folder(run_process_id):
         MEDIA_ROOT
         RUN_TEMP_DIRECTORY_RECORDED
     Return:
-        sample_sheet_relative 
+        sample_sheet_relative
     '''
     run_obj = get_run_obj_from_id(run_process_id)
     sample_sheet_relative = run_obj.get_sample_file()
