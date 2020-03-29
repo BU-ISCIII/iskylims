@@ -1701,6 +1701,5 @@ def update_sample_reused(reprocess_id):
     '''
     sample_obj = Samples.objects.get(pk__exact = reprocess_id)
     sample_obj.set_increase_reuse()
-    sample_obj.set_state('Defined')
 
     return sample_obj
