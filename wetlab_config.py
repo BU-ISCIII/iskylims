@@ -242,6 +242,10 @@ HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_PAIREDEND = ['Unique_Sample_ID','Sampl
 HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD = ['Unique_Sample_ID','Sample_Name','Sample_Plate','Sample_Well','Index_Plate_Well','I7_Index_ID','index','Sample_Project','Description','Base Space Library']
 
 
+########## OTHER MESSAGES TO DISPLAY  ###########################
+SUCCESSFUL_REUSE_LIB_PREP = ['Library Preparation has been set for reused ', 'Now is ready to be assigned to a new pool']
+
+
 ########## ERROR MESSAGES  #########################
 ERROR_INVALID_FILE_FORMAT = ['Invalid file format for the selected file', 'Select the valid file and submit it again']
 ERROR_UNABLE_TO_DELETE_USER_FILE = 'Unable to delete user file form iSkyLIMS'
@@ -262,3 +266,7 @@ ERROR_POOLS_WITH_NO_LIBRARY  = ['The selected Pools have not assigned to any Lib
 ERROR_NO_PROFILE_OR_CENTER_FOR_USER = ['Unable to save your request.', 'Update your Profile/ Center first']
 
 ERROR_RUN_IN_WRONG_STATE = ['Unable to accept your Run definition', 'Because your Run is in state']
+
+ERROR_UNABLE_SAVE_REQUEST = ['Unable to save your request.']
+
+ERROR_INVALID_PARAMETERS_WHEN_REUSING_LIB_PREP = ['Invalid data when trying to reuse library preparation', '']

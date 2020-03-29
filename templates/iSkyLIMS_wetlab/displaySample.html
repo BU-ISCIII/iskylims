@@ -159,7 +159,7 @@
 
                 {% if sample_information.library_definition_heading %}
                     <div id="library" class="tabcontent">
-                        {% for lib_values, lib_param_heading , lib_param_values, lib_prep_id , lib_prep_code in sample_information.lib_prep_data %}
+                        {% for lib_values, lib_param_heading , lib_param_values, lib_prep_id , lib_prep_code, molecule_id, sample_id in sample_information.lib_prep_data %}
                             <div class="row row-space-2 margin-b-4">
                                 <div class="col-sm-12">
                                     <div class="panel panel-default">
@@ -221,8 +221,10 @@
                                             <form class="" action="/wetlab/repeatLibraryPreparation" method="post">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="action" value="repeat_library_preparation">
+                                                <input type="hidden" name="sample_id" value="{{sample_id}}">
+                                                <input type="hidden" name="molecule_code_id" value="{{molecule_id}}">
                                                 <input type="hidden" name="lib_prep_id" value="{{lib_prep_id}}">
-                                                <input class="btn pull-right btn-default" type="submit" value="Repeat {{lib_prep_code}}">
+                                                <input class="btn pull-right btn-default" type="submit" value="Repeat by reusing extraction">
                                             </form>
                                         </div> <!--  end of panel body -->
                                     </div> <!--  end of panel  -->
@@ -250,25 +252,32 @@
                                               {% for values in sample_information.pool_heading %}
                                                 <th>{{ values }} </th>
                                               {%endfor%}
+                                                <th></th>
                                               </tr>
                                             </thead>
                                             <tbody>
-                                                {% for values in sample_information.pool_information %}
+                                                {% for lib_prep_code_id,  pool_name, pool_code, run_name, lib_prep_id in sample_information.pool_information %}
                                                     <tr>
-                                                        {% for value in values %}
-                                                            <td>{{ value }} </td>
-                                                        {%endfor%}
+
+                                                        <td>{{ lib_prep_code_id }} </td>
+                                                        <td>{{ pool_name }} </td>
+                                                        <td>{{ pool_code }} </td>
+                                                        <td>{{ run_name }} </td>
+                                                        <td>
+                                                            <form class="" action="/wetlab/repeatPool" method="post">
+                                                                {% csrf_token %}
+                                                                <input type="hidden" name="action" value="repeat_pool">
+                                                                <input type="hidden" name="poold_id" value="{{lib_prep_id}}">
+                                                                <input class="btn pull-right btn-default" type="submit" value="Reuse in new Pool">
+                                                            </form>
+                                                        </td>
                                                     </tr>
+
                                                 {%endfor%}
 
                                             </tbody>
                                         </table>
-                                        <form class="" action="/wetlab/repeatPool" method="post">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="action" value="repeat_pool">
-                                            <input type="hidden" name="poold_id" value="{{pool_id}}">
-                                            <input class="btn pull-right btn-default" type="submit" value="Repeat Pool {{pool_code}}">
-                                        </form>
+
                                     </div> <!--  end of panel body -->
                                 </div> <!--  end of panel  -->
                             </div> <!--  end of col-sm-11 -->

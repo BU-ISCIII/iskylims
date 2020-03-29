@@ -3914,6 +3914,28 @@ def handling_molecules(request):
     return
 
 @login_required
+def repeat_library_preparation(request):
+    '''
+    Functions:
+    analyze_reprocess_data  : located at utils/sample_functions.py
+    '''
+
+    if  request.method == 'POST' and request.POST['action'] == 'repeat_library_preparation':
+        lib_prep_id = request.POST['lib_prep_id']
+        molecule_code_id = request.POST['molecule_code_id']
+        sample_id = request.POST['sample_id']
+        result = analyze_reprocess_data([molecule_code_id, 'New Library Preparation'], sample_id, request.user)
+        detail_description = {}
+        if result == 'Invalid options':
+            detail_description['heading'] = ERROR_UNABLE_SAVE_REQUEST
+            detail_description['information'] = [ERROR_INVALID_PARAMETERS_WHEN_REUSING_LIB_PREP]
+            return render(request, 'iSkyLIMS_wetlab/error_page.html',{'detail_description':detail_description})
+        detail_description['information'] = SUCCESSFUL_REUSE_LIB_PREP
+        return render(request, 'iSkyLIMS_wetlab/successful_page.html',{'detail_description':detail_description})
+    # return to the main page because the page was not requested for the right page
+    return redirect('')
+
+@login_required
 def repeat_molecule_extraction(request):
     '''
     Functions:
@@ -3931,12 +3953,17 @@ def repeat_molecule_extraction(request):
             #request.POST['action'] = 'selectedMolecules'
             #request.POST['samples'] = sample_id
 
-
-
-
-
             return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'molecule_protocol':molecule_protocol})
-    return
+    # return to the main page because the page was not requested for the right page
+    return redirect('')
+
+
+@login_required
+def repeat_pool (request):
+
+
+    # return to the main page because the page was not requested for the right page
+    return redirect('')
 
 @login_required
 def search_lib_samples (request):

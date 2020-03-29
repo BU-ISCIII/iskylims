@@ -65,6 +65,7 @@ def analyze_reprocess_data(json_data, reprocess_id, reg_user):
 
     if "New Extraction" in options:
         sample_obj =  update_sample_reused(reprocess_id)
+        sample_obj.set_state('Defined')
         return True
 
     elif 'New Library Preparation' in options:
@@ -72,20 +73,22 @@ def analyze_reprocess_data(json_data, reprocess_id, reg_user):
         if molecule_code_id == '':
             return 'Invalid options'
         else:
-            molecule_obj = update_molecule_reused(reprocess_id, molecule_code_id)
-            if not molecule_obj:
-                return 'Invalid options'
-            sample_obj = get_sample_obj_from_id (sample_id)
+            sample_obj = get_sample_obj_from_id (reprocess_id)
             if 'Library preparation' != sample_obj.get_sample_state():
-                sample_id = update_sample_reused(reprocess_id)
+                molecule_obj = update_molecule_reused(reprocess_id, molecule_code_id)
+                if not molecule_obj:
+                    return 'Invalid options'
+                #
+                sample_obj = update_sample_reused(reprocess_id)
+                sample_obj.set_state('Library preparation')
                 # create the new library preparation in "Created_for_reused" state
-                new_library_preparation = LibraryPreparation.objects.create_reused_lib_preparation(reg_user, molecule_obj, sample_id)
+                new_library_preparation = LibraryPreparation.objects.create_reused_lib_preparation(reg_user, molecule_obj, sample_obj)
             return True
     elif 'New Pool' in options:
         molecule_code_id = options[0]
         lib_prep_code_id = options[1]
 
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         if not LibraryPreparation.objects.filter(sample_id__pk__exact = reprocess_id, libPrepCodeID__exact = lib_prep_code_id).exists():
             return 'Invalid options'
         lib_prep_obj = LibraryPreparation.objects.filter(sample_id__pk__exact = reprocess_id, libPrepCodeID__exact = lib_prep_code_id)
