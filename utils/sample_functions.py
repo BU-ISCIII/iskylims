@@ -1,5 +1,6 @@
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_core.utils.handling_samples import *
+from iSkyLIMS_core.utils.generic_functions import get_friend_list
 
 
 
@@ -88,10 +89,9 @@ def analyze_reprocess_data(json_data, reprocess_id, reg_user):
         molecule_code_id = options[0]
         lib_prep_code_id = options[1]
 
-        #import pdb; pdb.set_trace()
         if not LibraryPreparation.objects.filter(sample_id__pk__exact = reprocess_id, libPrepCodeID__exact = lib_prep_code_id).exists():
             return 'Invalid options'
-        lib_prep_obj = LibraryPreparation.objects.filter(sample_id__pk__exact = reprocess_id, libPrepCodeID__exact = lib_prep_code_id)
+        lib_prep_obj = LibraryPreparation.objects.get(sample_id__pk__exact = reprocess_id, libPrepCodeID__exact = lib_prep_code_id)
         sample_id = update_sample_reused(reprocess_id)
         molecule_obj = update_molecule_reused(reprocess_id, molecule_code_id)
         lib_prep_obj.set_state('Reused pool')
@@ -100,3 +100,97 @@ def analyze_reprocess_data(json_data, reprocess_id, reg_user):
 
     else:
         return 'Invalid options'
+
+
+def get_sample_in_project_obj_from_id (sample_in_project_id):
+    '''
+    Description:
+        The function gets the sampleInProject id and return the object
+        Return the if of sampleInProject
+    Input:
+        sample_name     # sample name to look at
+    Return:
+        sample_in_project_obj.
+    '''
+    sample_in_project_obj = ''
+    if SamplesInProject.objects.filter(pk__exact = sample_in_project_id).exists():
+        sample_in_project_obj = SamplesInProject.objects.filter(sampleName__exact = sample_name)
+
+    return sample_in_project_obj
+
+
+def get_run_sample_id ( sample_name):
+    '''
+    Description:
+        The function gets the sample name and if found it returns the SamplesInProject objects.
+        Return the if of sampleInProject
+    Input:
+        sample_name     # sample name to look at
+    Return:
+        run_sample_obj.
+    '''
+    run_sample_obj = ''
+    if SamplesInProject.objects.filter(sampleName__exact = sample_name).exists():
+        sample_run_objs = SamplesInProject.objects.filter(sampleName__exact = sample_name)
+        if len(sample_run_objs) > 1:
+            pass
+        else:
+            run_sample_obj = SamplesInProject.objects.get(sampleName__exact = sample_name)
+    return run_sample_obj
+
+def search_run_samples(sample_name, user_name, start_date, end_date):
+    '''
+    Description:
+        The function search the run samples that matchs with the requested conditions.
+        Return the if of sampleInProject
+    Input:
+        sample_name     # sample name to look at
+        user_name       # user name
+        start_date      # date from starting the search
+        end_date        # date from ending the search
+    Functions:
+        get_friend_list # located at iSkyLIMS_core/utils/generic_functions.py
+    Return:
+        run_sample_obj.
+    '''
+    run_sample_list = []
+
+    if SamplesInProject.objects.all().exists():
+        run_sample_founds = SamplesInProject.objects.all()
+    else:
+        return sample_list
+    if user_name != '':
+        user_name_obj = User.objects.get(username__exact = user_name)
+        user_friend_list = get_friend_list(user_name_obj)
+        if not run_sample_founds.filter(sampleUser__in = user_friend_list).exists():
+            return run_sample_list
+        else :
+            run_sample_founds = run_sample_founds.filter(sampleUser__in = user_friend_list)
+    if sample_name != '' :
+        if run_sample_founds.filter(sampleName__exact = sample_name).exists():
+            run_sample_founds = run_sample_founds.filter(sampleName__exact = sample_name)
+            if len(run_sample_founds) == 1:
+                run_sample_list.append(run_sample_founds[0].pk)
+                return run_sample_list
+
+        elif run_sample_founds.filter(sampleName__icontains = sample_name).exists():
+            run_sample_founds = run_sample_founds.filter(sampleName__icontains = sample_name)
+        else:
+            return run_sample_list
+    if start_date !='' and end_date != '':
+        run_sample_founds = run_sample_founds.filter(generated_at___range=(start_date, end_date ))
+
+    if start_date !='' and end_date  == '':
+        run_sample_founds = run_sample_founds.filter(generated_at__gte = start_date)
+
+    if start_date =='' and end_date  != '':
+            run_sample_founds = run_sample_founds.filter(generated_at__lte = end_date )
+
+    if len(run_sample_founds) == 1:
+        sample_list.append(run_sample_founds[0].pk)
+        return run_sample_list
+
+    for run_sample in run_sample_founds :
+        run_sample_list.append(run_sample.get_info_for_searching())
+
+    return run_sample_list

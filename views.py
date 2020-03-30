@@ -846,11 +846,12 @@ def search_project (request):
 
 
 
-
+'''
 
 @login_required
 def search_sample (request):
-    '''
+'''
+'''
     Description:
         The function is called from web, having 2 main parts:
             - User form with the information to search samples
@@ -884,7 +885,8 @@ def search_sample (request):
             -- sample_data_information   # in case that only one run is matched
             ---sample_list         # in case several run matches the user conditions.
 
-    '''
+'''
+'''
     if request.method=='POST' and (request.POST['action']=='searchsample'):
         sample_name=request.POST['samplename']
         start_date=request.POST['startdate']
@@ -922,7 +924,7 @@ def search_sample (request):
                 if len(sample_found) == 1:
                     # get information from the sample found
                     ########################################
-                    sample_data_information = get_info_sample (sample_found[0])
+                    sample_data_information = get_info_sample_in_run (sample_found[0])
                     return render(request, 'iSkyLIMS_wetlab/SearchSample.html',{'display_one_sample': sample_data_information })
             elif SamplesInProject.objects.filter(sampleName__contains = sample_name).exists():
                 sample_found = SamplesInProject.objects.filter(sampleName__contains = sample_name)
@@ -986,7 +988,7 @@ def search_sample (request):
                         {'content':[text_error,  'ADVICE:',
                         'Contact with your administrator to find out the reason for not matching any result' ]})
         if len(sample_found) == 1:
-            sample_data_information = get_info_sample (sample_found[0])
+            sample_data_information = get_info_sample_in_run (sample_found[0])
             return render(request, 'iSkyLIMS_wetlab/SearchSample.html',
                             {'display_one_sample': sample_data_information })
 
@@ -1006,7 +1008,7 @@ def search_sample (request):
     #
         return render(request, 'iSkyLIMS_wetlab/SearchSample.html')
 
-
+'''
 
 @login_required
 def display_run (request, run_id):
@@ -1121,7 +1123,7 @@ def display_sample_in_run (request, sample_run_project_id):
     '''
     Description:
         The function will check if the requested sample id exists, then
-        it will call to get_info_sample function to collect all information
+        it will call to get_info_sample_in_run function to collect all information
     Input:
         request     # contains the request dictionary sent by django
         sample_id   # contains the sample id to display the information
@@ -1130,16 +1132,16 @@ def display_sample_in_run (request, sample_run_project_id):
                                 to include in the web page
         sample_found_id  # contains the object for the sample id
     Functions:
-        get_info_sample (sample_found_id)
+        get_info_sample_in_run (sample_found_id)
     Return:
         Return the different information depending on the execution:
         -- Error page in case the sample id in the request does not exists.
-        -- sample_data_information with the information collected by get_info_sample()
+        -- sample_data_information with the information collected by get_info_sample_in_run()
     '''
     if (SamplesInProject.objects.filter(pk=sample_run_project_id).exists()):
         sample_found_id = SamplesInProject.objects.get(pk=sample_run_project_id)
-        sample_data_information = get_info_sample (sample_found_id)
-        return render(request, 'iSkyLIMS_wetlab/SearchSample.html',{'display_one_sample': sample_data_information })
+        sample_data_information = get_info_sample_in_run (sample_found_id)
+        return render(request, 'iSkyLIMS_wetlab/displaySampleInRun.html',{'display_one_sample': sample_data_information })
     else:
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the sample  ' ]})
 
@@ -3744,10 +3746,17 @@ def display_sample (request, sample_id):
         get_all_library_information  located at iSkyLIMS_wetlab/utils/library_preparation.py
     '''
     sample_information = get_all_sample_information(sample_id, True)
-    if 'Error' in sample_information:
+    run_sample_id = get_run_sample_id(sample_id)
+    if not 'Error' in sample_information:
+        sample_information.update(get_all_library_information(sample_id))
+    else:
+        sample_information = {}
+    if run_sample_id != '':
+        sample_information.update(get_info_sample_in_run(run_sample_id))
+    if len(sample_information) == 0  :
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No Sample was found']})
-    sample_information.update(get_all_library_information(sample_id))
-    return render(request, 'iSkyLIMS_wetlab/displaySample.html',{'sample_information':sample_information})
+    else:
+        return render(request, 'iSkyLIMS_wetlab/displaySample.html',{'sample_information':sample_information})
 
 @login_required
 def display_type_of_sample(request, sample_type_id):
@@ -3930,7 +3939,7 @@ def repeat_library_preparation(request):
             detail_description['heading'] = ERROR_UNABLE_SAVE_REQUEST
             detail_description['information'] = [ERROR_INVALID_PARAMETERS_WHEN_REUSING_LIB_PREP]
             return render(request, 'iSkyLIMS_wetlab/error_page.html',{'detail_description':detail_description})
-        detail_description['information'] = SUCCESSFUL_REUSE_LIB_PREP
+        detail_description['information'] = SUCCESSFUL_REUSE_MOLECULE_EXTRACTION
         return render(request, 'iSkyLIMS_wetlab/successful_page.html',{'detail_description':detail_description})
     # return to the main page because the page was not requested for the right page
     return redirect('')
@@ -3960,13 +3969,40 @@ def repeat_molecule_extraction(request):
 
 @login_required
 def repeat_pool (request):
+    '''
+    Functions:
+    analyze_reprocess_data  : located at utils/sample_functions.py
+    '''
+    if  request.method == 'POST' and request.POST['action'] == 'repeat_pool':
 
-
+        lib_prep_obj = get_lib_prep_obj_from_id (request.POST['lib_prep_id'])
+        lib_prep_code_id =  lib_prep_obj.get_lib_prep_code()
+        molecule_code_id = lib_prep_obj.get_molecule_code_id()
+        sample_id = lib_prep_obj.get_sample_id()
+        import pdb; pdb.set_trace()
+        result = analyze_reprocess_data([molecule_code_id, lib_prep_code_id, 'New Pool'], sample_id, request.user)
+        detail_description = {}
+        if result == 'Invalid options':
+            detail_description['heading'] = ERROR_UNABLE_SAVE_REQUEST
+            detail_description['information'] = [ERROR_INVALID_PARAMETERS_WHEN_REUSING_LIB_PREP]
+            return render(request, 'iSkyLIMS_wetlab/error_page.html',{'detail_description':detail_description})
+        detail_description['information'] = SUCCESSFUL_REUSE_LIB_PREP
+        return render(request, 'iSkyLIMS_wetlab/successful_page.html',{'detail_description':detail_description})
     # return to the main page because the page was not requested for the right page
     return redirect('')
 
 @login_required
-def search_lib_samples (request):
+def search_sample (request):
+    '''
+    Functions:
+        get_sample_states  : located at iSkyLIMS_core/utils/handling_samples.py
+        check_valid_date_format : located at utils/generic_functions.py
+        search_samples          : located at iSkyLIMS_core/utils/handling_samples.py
+        search_run_samples      : located at utils/sample_functions.py
+    '''
+    search_data = {}
+    search_data['s_state'] = get_sample_states()
+
     if  request.method == 'POST' and request.POST['action'] == 'searchsample':
         sample_name=request.POST['samplename']
         start_date=request.POST['startdate']
@@ -3976,9 +4012,7 @@ def search_lib_samples (request):
 
         # check that some values are in the request if not return the form
         if user_name == '' and start_date == '' and end_date == '' and sample_name =='' and sample_state == '':
-            search_data = {}
-            search_data['s_state'] = get_sample_states()
-            return render(request, 'iSkyLIMS_wetlab/searchLibSample.html',{'search_data':search_data})
+            return render(request, 'iSkyLIMS_wetlab/searchSample.html',{'search_data':search_data})
 
         if user_name !=''  and len(user_name) <5 :
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The user name must contains at least 5 caracters ',
@@ -3994,17 +4028,27 @@ def search_lib_samples (request):
         ### Get projects when sample name is not empty
         sample_list = search_samples(sample_name, user_name, sample_state, start_date, end_date )
 
-        if len(sample_list) == 0:
-            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No sample found with your match conditions ']})
-        elif len(sample_list) == 1:
+        run_sample_list = search_run_samples(sample_name, user_name, start_date, end_date)
+
+        if len(sample_list) == 0 and len(run_sample_list) == 0:
+            return render (request,'iSkyLIMS_wetlab/searchLibSample.html', {'no_samples':ERROR_NO_SAMPLE_FOUND, 'sample_list':sample_list})
+        elif len(sample_list) == 1 and len(run_sample_list) == 0:
             return redirect ('display_sample' , sample_id = sample_list[0])
+        elif len(sample_list) == 0 and len(run_sample_list) == 1:
+            get_info_sample_in_run (run_sample_list[0])
+            return redirect ('display_run_sample' , run_sample_id = run_sample_list[0])
         else:
-            return render(request, 'iSkyLIMS_wetlab/searchLibSample.html',{'sample_list':sample_list})
+            # get the sample information to select it , because there are also matches on run_sample
+            if len(sample_list) == 1:
+                sample_obj = get_sample_obj_from_id(sample_list[0])
+                sample_list = [sample_obj.get_info_for_searching()]
+            if len(run_sample_list) == 1:
+                run_sample_obj = sample_in_project_obj(run_sample_list[0])
+                run_sample_list = [run_sample_obj.get_info_for_searching()]
+            return render(request, 'iSkyLIMS_wetlab/searchSample.html',{'sample_list':sample_list , 'run_sample_list':run_sample_list})
 
     else:
-        search_data = {}
-        search_data['s_state'] = get_sample_states()
-        return render(request, 'iSkyLIMS_wetlab/searchLibSample.html',{'search_data':search_data})
+        return render(request, 'iSkyLIMS_wetlab/searchSample.html',{'search_data':search_data})
 
 @login_required
 def set_molecule_values(request):

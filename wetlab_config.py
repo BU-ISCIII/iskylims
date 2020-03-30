@@ -243,8 +243,8 @@ HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD = ['Unique_Sample_ID','Samp
 
 
 ########## OTHER MESSAGES TO DISPLAY  ###########################
+SUCCESSFUL_REUSE_MOLECULE_EXTRACTION = ['Molecule Extraction has been set for reused ', 'Now is ready to be create a new library preparation']
 SUCCESSFUL_REUSE_LIB_PREP = ['Library Preparation has been set for reused ', 'Now is ready to be assigned to a new pool']
-
 
 ########## ERROR MESSAGES  #########################
 ERROR_INVALID_FILE_FORMAT = ['Invalid file format for the selected file', 'Select the valid file and submit it again']
@@ -270,3 +270,5 @@ ERROR_RUN_IN_WRONG_STATE = ['Unable to accept your Run definition', 'Because you
 ERROR_UNABLE_SAVE_REQUEST = ['Unable to save your request.']
 
 ERROR_INVALID_PARAMETERS_WHEN_REUSING_LIB_PREP = ['Invalid data when trying to reuse library preparation', '']
+
+ERROR_NO_SAMPLE_FOUND = ['No sample found which  match your  conditions ','']

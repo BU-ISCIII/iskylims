@@ -719,7 +719,7 @@ def get_information_project (project_id, request):
 
 
 
-def get_info_sample (sample_id):
+def get_info_sample_in_run (sample_id):
     '''
     Description:
         The function will get the information from a specific sample
@@ -742,7 +742,7 @@ def get_info_sample (sample_id):
 
     sample_info_dict ={}
     #collect the general information from the Sample
-    sample_info_dict['sample_name'] = sample_id.sampleName
+    sample_info_dict['sample_name'] = sample_id.get_sample_name()
     sample_info_dict['project_name'] = sample_id.get_project_name()
     project_id= sample_id.project_id.id
     sample_info_dict['project_id'] = project_id
@@ -773,4 +773,5 @@ def get_info_sample (sample_id):
     #
     percentage_chart = FusionCharts("column3d", 'samplesProject' , "750", "300", 'samples-chart-2', "json", data_source)
     sample_info_dict['percentage_chart'] = percentage_chart.render()
+    
     return sample_info_dict

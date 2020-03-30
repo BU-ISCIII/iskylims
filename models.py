@@ -250,6 +250,9 @@ class Projects(models.Model):
 
         return '%s;%s;%s;%s;%s'%(run_name, self.projectName, projectdate, user_name, self.libraryKit)
 
+    def get_run_name(self):
+        return '%s' %(self.runprocess_id.get_run_name())
+
     def get_user_name (self):
         user_name = self.user_id.username
         return '%s' %(user_name)
@@ -671,10 +674,23 @@ class SamplesInProject (models.Model):
     def __str__ (self):
         return '%s' %(self.sampleName)
 
+    def get_info_for_searching(self):
+        sample_info = []
+        sample_info.append(self.pk)
+        sample_info.append(self.sampleName)
+        sample_info.append(self.project_id.get_project_name())
+        sample_info.append(self.project_id.get_run_name())
+        sample_info.append(self.generated_at.strftime("%I:%M%p on %B %d, %Y"))
+        return sample_info
+
+    def get_sample_id(self):
+        return '%s' %(self.id)
+
     def get_sample_information(self):
         return '%s;%s;%s;%s;%s;%s;%s' %(self.sampleName , self.barcodeName,
                 self.pfClusters ,self.percentInProject, self.yieldMb ,
                 self.qualityQ30 , self.meanQuality )
+
     def get_sample_name(self):
         return '%s' %(self.sampleName)
 
