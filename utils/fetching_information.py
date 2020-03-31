@@ -449,7 +449,7 @@ def get_information_for_incompleted_run():
         for key in run_information.keys():
             runs_in_state[key] = len(run_information[key])
     #graphic_3D_pie (heading, sub_title, axis_x_description, axis_y_description, theme, source_data)
-    data_source = graphic_3D_pie('Incompleted Runs', '', '', '', 'fint',runs_in_state)
+    data_source = graphic_3D_pie('Incomplete Runs', '', '', '', 'fint',runs_in_state)
 
     run_information['incompleted_graphic'] = FusionCharts("pie3d", "ex1" , "550", "400", "chart-1", "json", data_source).render()
     return run_information
