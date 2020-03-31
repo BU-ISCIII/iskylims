@@ -1074,14 +1074,16 @@ def incompleted_runs (request) :
         #redirect to login webpage
         return redirect ('/accounts/login')
     if RunProcess.objects.all().exclude(state__runStateName = 'Completed').exists() :
-        display_incomplete_run_list = {}
-        unfinished_runs = RunProcess.objects.all().exclude(state__runStateName = 'Completed').order_by('runName')
-        for run in unfinished_runs:
-            display_incomplete_run_list[run.id] = [[run.runName, run.get_state()]]
+
+        display_incompleted_run = get_information_for_incompleted_run()
+        return render (request, 'iSkyLIMS_wetlab/incompletedRuns.html',{'display_incompleted_run':display_incompleted_run})
+        #unfinished_runs = RunProcess.objects.all().exclude(state__runStateName = 'Completed').order_by('runName')
+        #for run in unfinished_runs:
+        #display_incomplete_run_list[run.id] = [[run.runName, run.get_state()]]
     else:
         return render (request,'iSkyLIMS_wetlab/info_page.html', {'content':['There is no project in incompleted state' , 'All Runs are finished']})
 
-    return render (request, 'iSkyLIMS_wetlab/incompletedRuns.html',{'display_incomplete_run_list':display_incomplete_run_list})
+
 
 
 

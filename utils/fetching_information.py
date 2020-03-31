@@ -10,7 +10,7 @@ from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import RUN_IMAGES_DIRECTORY, WETLAB_MANAGER
 from .generic_functions import normalized_data, get_run_in_same_year_to_compare
 from .stats_graphics import *
-
+from datetime import date
 
 def get_boxplot_comparation_runs (run_object):
     '''
@@ -365,6 +365,94 @@ def match_unkownbarcodes_with_index (unknow_dict) :
         index_match_list.append(found_unknow_index)
 
     return index_match_list
+
+def get_information_for_incompleted_run():
+    '''
+    Description:
+        The function will get the information from the runs that are incompleted.
+        It creates a 4 groups. Recorded, Error, Canceled and rest of the states.
+        Creates a pie graphic
+    Functions:
+        graphic_3D_pie      # located at iSkyLIMS_wetlab/utils/stats_graphics
+    Return:
+        run_information with information collected for each run
+    '''
+    run_information = {}
+    today = date.today()
+    if RunProcess.objects.filter(state__runStateName = 'Recorded').exists():
+        run_information['recorded'] = []
+        run_objs = RunProcess.objects.filter(state__runStateName = 'Recorded').order_by('runName')
+        for run_obj in run_objs :
+            data = []
+            data.append(run_obj.get_run_id())
+            data.append(run_obj.get_run_name())
+            recorded_date = run_obj.get_recorded_date_no_format().date()
+            data.append(recorded_date.strftime("%d %B  %Y"))
+            data.append(str((today - recorded_date).days))
+            run_information['recorded'].append(data)
+
+
+    if RunProcess.objects.filter(state__runStateName = 'Error').exists():
+        run_information['error'] = []
+        run_objs = RunProcess.objects.filter(state__runStateName = 'Error').order_by('runName')
+        for run_obj in run_objs :
+            data = []
+            data.append(run_obj.get_run_id())
+            data.append(run_obj.get_run_name())
+            run_date = run_obj.get_run_date_no_format()
+            if run_date == None:
+                # if no value stored on run date use the recorded date instead
+                run_date = run_obj.get_recorded_date_no_format().date()
+            data.append(run_date.strftime("%d %B  %Y"))
+            data.append(run_obj.get_state_before_error())
+            data.append(run_obj.get_error_text())
+            data.append(str((today - run_date).days))
+            run_information['error'].append(data)
+
+    if RunProcess.objects.filter(state__runStateName = 'Cancelled').exists():
+        run_information['cancelled'] = []
+        run_objs = RunProcess.objects.filter(state__runStateName = 'Cancelled').order_by('runName')
+        for run_obj in run_objs :
+            data = []
+            data.append(run_obj.get_run_id())
+            data.append(run_obj.get_run_name())
+            #import pdb; pdb.set_trace()
+            run_date = run_obj.get_run_date_no_format()
+            if run_date == None:
+                # if no value stored on run date use the recorded date instead
+                run_date = run_obj.get_recorded_date_no_format().date()
+            data.append(run_date.strftime("%d %B %Y"))
+
+            data.append(str((today - run_date).days))
+            run_information['cancelled'].append(data)
+
+    exclude_state = ['Recorded', 'Error', 'Cancelled', 'Completed','Pre-Recorded']
+
+    if RunProcess.objects.all().exclude(state__runStateName__in = exclude_state).exists():
+        run_information['other'] = []
+        run_objs = RunProcess.objects.all().exclude(state__runStateName__in = exclude_state).order_by('state__runStateName')
+        for run_obj in run_objs :
+            data = []
+            data.append(run_obj.get_run_id())
+            data.append(run_obj.get_run_name())
+            run_date = run_obj.get_run_date_no_format()
+            if run_date == None:
+                # if no value stored on run date use the recorded date instead
+                run_date = run_obj.get_recorded_date_no_format().date()
+            data.append(run_date.strftime("%d %B %Y"))
+            data.append(run_obj.get_state())
+            data.append(str((today - run_date).days))
+            run_information['other'].append(data)
+
+    if len(run_information) > 0:
+        runs_in_state = {}
+        for key in run_information.keys():
+            runs_in_state[key] = len(run_information[key])
+    #graphic_3D_pie (heading, sub_title, axis_x_description, axis_y_description, theme, source_data)
+    data_source = graphic_3D_pie('Incompleted Runs', '', '', '', 'fint',runs_in_state)
+
+    run_information['incompleted_graphic'] = FusionCharts("pie3d", "ex1" , "550", "400", "chart-1", "json", data_source).render()
+    return run_information
 
 
 def get_information_run(run_object):
@@ -773,5 +861,5 @@ def get_info_sample_in_run (sample_id):
     #
     percentage_chart = FusionCharts("column3d", 'samplesProject' , "750", "300", 'samples-chart-2', "json", data_source)
     sample_info_dict['percentage_chart'] = percentage_chart.render()
-    
+
     return sample_info_dict

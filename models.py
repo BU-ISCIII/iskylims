@@ -50,7 +50,10 @@ class RunProcess(models.Model):
     def get_run_id (self):
         return '%s' %(self.id)
 
-    def get_run_data_no_format(self):
+    def get_recorded_date_no_format(self):
+        return self.generatedat
+
+    def get_run_date_no_format(self):
         return self.run_date
 
     def get_run_date (self):

@@ -1,31 +1,166 @@
 {% extends 'iSkyLIMS_wetlab/base.html' %}
 {% load static %}
-{% block content %}
 
-{% if display_incomplete_run_list %}
+{% block content %}
+{% include "iSkyLIMS_core/graphic_chart_functionality.html" %}
+
+<style>
+
+.scroll-wrapper-sm-6 {
+    max-height: 400px;
+    overflow: auto;
+    display:inline-block;
+    width: 580px;
+}
+</style>
+{% if display_incompleted_run %}
     <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-7">
+        <div class="col-sm-6">
             <div class="panel panel-default">
-                <div class="panel-heading">The following list contains the Runs taht are not Completed </div>
-                <div class="panel-body">
+                <div class="panel-heading"><h3>Runs in Recorded state</h3></div>
+                <div class="panel-body scroll-wrapper-sm-6">
                     <table class="table table-hover">
                         <thead>
                            <tr>
                                <th>Run Name </th>
-                               <th>State of the Run</th>
+                               <th>Recorded date</th>
+                               <th>Number of days in recorded</th>
                            </tr>
                         </thead>
                         <tbody>
-                          {% for key, values in display_incomplete_run_list.items %}
-                             <tr>
-                                {% for runName, state in values %}
-                                   <td><a href="/wetlab/displayRun={{ key }}">{{ runName }}</a> </td>
-                                   <td> {{ state }} </td>
-                                {%endfor%}
-                              </tr>
-                          {%endfor%}
-                          </tbody>
+                            {% for id, name, date , days in display_incompleted_run.recorded %}
+                                <tr>
+                                    <td><a href="/wetlab/displayRun={{ id }}">{{ name }}</a> </td>
+                                    <td> {{ date }} </td>
+                                    <td align="center"> {{ days }} </td>
+
+                                </tr>
+                            {%endfor%}
+                        </tbody>
                     </table>
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-7 -->
+        <div class="col-sm-6">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Graphic for incompleted Runs</h3> </div>
+                <div class="panel-body">
+                    <!-- Quality Sample graphic -->
+                    <div id="chart-1"> </div>
+                    <!-- dumping JavaScript code  -->
+                    {{ display_incompleted_run.incompleted_graphic|safe }}
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-7 -->
+    </div> <!--  end of row -->
+
+    {% if display_incompleted_run.error or display_incompleted_run.cancelled %}
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-6">
+                {% if display_incompleted_run.error %}
+                    <div class="panel panel-default">
+
+                        <div class="panel-heading"><h3>Runs incompleted because they got an Error</h3></div>
+                        <div class="panel-body scroll-wrapper-sm-6">
+                            <table class="table table-hover">
+                                <thead>
+                                   <tr>
+                                       <th>Run Name </th>
+                                       <th>Run date</th>
+                                       <th>State before error</th>
+                                       <th>Error type</th>
+                                       <th>Number of days</th>
+                                   </tr>
+                                </thead>
+                                <tbody>
+                                    {% for id, name, date ,state, error, days in display_incompleted_run.error %}
+                                        <tr>
+                                            <td><a href="/wetlab/displayRun={{ id }}">{{ name }}</a> </td>
+                                            <td> {{ date }} </td>
+                                            <td> {{ state }} </td>
+                                            <td> {{ error }} </td>
+                                            <td align="center"> {{ days }} </td>
+
+                                        </tr>
+                                    {%endfor%}
+                                </tbody>
+                            </table>
+                        </div> <!--  end of panel body -->
+                    </div> <!--  end of panel  -->
+                {% endif %}
+            </div> <!--  end of col-sm-6 -->
+            <div class="col-sm-6">
+                {% if display_incompleted_run.cancelled %}
+                    <div class="panel panel-default">
+
+                        <div class="panel-heading"><h3>Runs Cancelled</h3></div>
+                        <div class="panel-body scroll-wrapper-sm-6">
+                            <table class="table table-hover">
+                                <thead>
+                                   <tr>
+                                       <th>Run Name </th>
+                                       <th>Run date</th>
+                                       <th>Number of days</th>
+                                   </tr>
+                                </thead>
+                                <tbody>
+                                    {% for id, name, date , days in display_incompleted_run.cancelled %}
+                                        <tr>
+                                            <td><a href="/wetlab/displayRun={{ id }}">{{ name }}</a> </td>
+                                            <td> {{ date }} </td>
+                                            <td align="center"> {{ days }} </td>
+
+                                        </tr>
+                                    {%endfor%}
+                                </tbody>
+                            </table>
+                        </div> <!--  end of panel body -->
+                    </div> <!--  end of panel  -->
+                {% endif %}
+            </div> <!--  end of col-sm-6 -->
+        </div> <!--  end of row -->
+    {% endif %}
+    {% if display_incompleted_run.other %}
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-6">
+                <div class="panel panel-default">
+
+                    <div class="panel-heading"><h3>Runs incompleted </h3></div>
+                    <div class="panel-body scroll-wrapper-sm-6">
+                        <table class="table table-hover">
+                            <thead>
+                               <tr>
+                                   <th>Run Name </th>
+                                   <th>Run date</th>
+                                   <th>State </th>
+                                   <th>Number of days</th>
+                               </tr>
+                            </thead>
+                            <tbody>
+                                {% for id, name, date ,state, days in display_incompleted_run.other %}
+                                    <tr>
+                                        <td><a href="/wetlab/displayRun={{ id }}">{{ name }}</a> </td>
+                                        <td> {{ date }} </td>
+                                        <td> {{ state }} </td>
+                                        <td align="center"> {{ days }} </td>
+
+                                    </tr>
+                                {%endfor%}
+                            </tbody>
+                        </table>
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+            </div> <!--  end of col-sm-6 -->
+        </div> <!--  end of row -->
+    {% endif %}
+
+{% else %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7">
+            <div class="panel panel-default">
+                <div class="panel-heading">All runs are Completed</div>
+                <div class="panel-body">
+
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-7 -->

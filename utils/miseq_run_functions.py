@@ -328,7 +328,7 @@ def save_miseq_projects_found (projects_users , experiment_name, library_name):
         library_kit = LibraryKit.objects.all().first()
 
     run_process = RunProcess.objects.get(runName = experiment_name)
-    run_date_no_format = run_process.get_run_data_no_format()
+    run_date_no_format = run_process.get_run_date_no_format()
     sample_sheet_on_database = run_process.get_sample_file()
     base_space_file = os.path.join(settings.MEDIA_URL.replace('/',''), sample_sheet_on_database)
 
