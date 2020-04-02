@@ -1178,7 +1178,7 @@ def search_collection_index_library (request):
         index_sequence=request.POST['indexbase']
 
         # check that some values are in the request if not return the form
-        if collection_index_kit_name == '' and adapter_1 =='' and adapter_2 == '' and index_name == '' and index_base == '' :
+        if collection_index_kit_name == '' and adapter_1 =='' and adapter_2 == '' and index_name == '' and index_sequence == '' :
             return render(request, 'iSkyLIMS_wetlab/searchCollectionIndexLibrary.html')
 
         if index_sequence !='' :
