@@ -276,3 +276,5 @@ ERROR_NO_SAMPLE_FOUND = ['No sample found which  match your  conditions ','']
 ERROR_TOO_SHORT_INDEX_BASE_SEQUENCE = ['Index Sequence must contains at least 6  caracters' ,'' ]
 
 ERROR_NO_COLLECTION_INDEX_FOUND = ['There are no recorded information for the Collection index kit' ]
+
+ERROR_INVALID_SEQUENCE_CHARACTERS = ['Invalid characters in Index sequene', '']

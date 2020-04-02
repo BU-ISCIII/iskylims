@@ -1181,9 +1181,15 @@ def search_collection_index_library (request):
         if collection_index_kit_name == '' and adapter_1 =='' and adapter_2 == '' and index_name == '' and index_base == '' :
             return render(request, 'iSkyLIMS_wetlab/searchCollectionIndexLibrary.html')
 
-        if index_sequence !=''  and len(index_sequence) < 6 :
-             return render (request,'iSkyLIMS_wetlab/searchCollectionIndexLibrary.html', {'error_message':ERROR_TOO_SHORT_INDEX_BASE_SEQUENCE})
-        ### check the right format of start and end date
+        if index_sequence !='' :
+            if len(index_sequence) < 6 :
+                return render (request,'iSkyLIMS_wetlab/searchCollectionIndexLibrary.html', {'error_message':ERROR_TOO_SHORT_INDEX_BASE_SEQUENCE})
+            else:
+                valid_seq_characters = ['a','A','c','C', 'g', 'G', 't','T']
+                for letter in index_sequence:
+                    if letter not in valid_seq_characters:
+                        return render (request,'iSkyLIMS_wetlab/searchCollectionIndexLibrary.html', {'error_message':ERROR_INVALID_SEQUENCE_CHARACTERS})
+
 
         collection_indexes = CollectionIndexKit.objects.all()
         if collection_index_kit_name != '':
