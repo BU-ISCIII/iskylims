@@ -161,7 +161,7 @@
                               {% for key, values_sample in display_one_project.sample_table.items %}
                                 <tr>
                                     {% for sample, barcode, pf_cluster, percent, yield, q30 ,mean in values_sample %}
-                                    <td><a href="/wetlab/displaySampleProject={{ key }}">{{ sample }}</a> </td>
+                                    <td><a href="/wetlab/displaySampleInRun={{ key }}">{{ sample }}</a> </td>
                                     <td>{{ barcode }} </td>
                                     <td>{{ pf_cluster }} </td>
                                     <td>{{ percent }} </td>

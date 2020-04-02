@@ -9,6 +9,7 @@ from iSkyLIMS_wetlab.utils.sample_sheet_utils import *
 from iSkyLIMS_wetlab.utils.collection_index_functions import check_collection_index_exists
 from ..fusioncharts.fusioncharts import FusionCharts
 from .stats_graphics import *
+from Bio import SeqIO
 
 def check_empty_fields (data):
     '''
@@ -419,8 +420,27 @@ def get_samples_in_lib_prep_state ():
         samples_in_lib_prep['length'] = 0
         return samples_in_lib_prep
 
-    #if LibraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined').exists():
-    #lib_preparations = libraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined')
+def find_index_sequence_collection_values_kit(sequence):
+    '''
+    Description:
+        The function will try to find the sequence by looking on the I7 index and if not matched
+        check on the I5 first on the forward and then on the reverse sequence.
+    Input:
+        sequence        : Sequence for searching
+    Return:
+        index_found and the sequence
+    '''
+    
+    if CollectionIndexValues.objects.filter(i_7_seq__icontains =sequence).exists():
+        return ['I7', sequence]
+    if CollectionIndexValues.objects.filter(i_5_seq__icontains =sequence).exists():
+        return ['I5', sequence]
+    rev_sequence = SeqIO.Seq(sequence).reverse_complement().seq
+    if CollectionIndexValues.objects.filter(i_5_seq__icontains =rev_sequence).exists():
+        return ['I5', rev_sequence]
+    return 'None', sequence
+
+
 
 def pending_samples_for_grafic(pending):
     number_of_pending = {}

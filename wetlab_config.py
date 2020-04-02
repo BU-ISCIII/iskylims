@@ -272,3 +272,7 @@ ERROR_UNABLE_SAVE_REQUEST = ['Unable to save your request.']
 ERROR_INVALID_PARAMETERS_WHEN_REUSING_LIB_PREP = ['Invalid data when trying to reuse library preparation', '']
 
 ERROR_NO_SAMPLE_FOUND = ['No sample found which  match your  conditions ','']
+
+ERROR_TOO_SHORT_INDEX_BASE_SEQUENCE = ['Index Sequence must contains at least 6  caracters' ,'' ]
+
+ERROR_NO_COLLECTION_INDEX_FOUND = ['There are no recorded information for the Collection index kit' ]

@@ -768,6 +768,9 @@ class CollectionIndexValues (models.Model):
         return '%s;%s;%s;%s;%s' %(self.defaultWell, self.index_7, self.i_7_seq,
                         self.index_5, self.i_5_seq)
 
+    def get_collection_index_id(self):
+        return '%s' %(self.collectionIndexKit_id.get_id())
+
     def get_collection_index_name(self):
         return '%s' %(self.collectionIndexKit_id.get_collection_index_name())
 
