@@ -7,7 +7,7 @@ from django.conf import settings
 from django.contrib.auth.models import Group
 
 from iSkyLIMS_wetlab.models import *
-from iSkyLIMS_wetlab.wetlab_config import RUN_IMAGES_DIRECTORY, WETLAB_MANAGER
+from iSkyLIMS_wetlab.wetlab_config import *
 from .generic_functions import normalized_data, get_run_in_same_year_to_compare
 from .stats_graphics import *
 from datetime import date
@@ -710,6 +710,7 @@ def get_information_project (project_id, request):
         normalized_data     # imported from wetlab_misc_utilities
     Constants:
         WETLAB_MANAGER  #
+        HEADING_FOR_PROJECT_DATES
     Variables:
         groups          # get the group objects to check if requested user
                         belongs to wetlab manager group
@@ -731,43 +732,28 @@ def get_information_project (project_id, request):
         project_info_dict with all information collected in the function
     '''
     project_info_dict = {}
-    p_data = []
-    project_info_dict['project_id'] = project_id.id
-    project_info_text = ['Project Name','Library Kit','File to upload to BaseSpace','Project Recorder date', 'Project date','Run name']
-    project_values = project_id.get_project_info().split(';')
+    #p_data = []
+    #project_info_dict['project_id'] = project_id.id
+    project_info_dict['p_name'] = project_id.get_project_name()
+    project_info_dict ['user_id'] = project_id.get_user_name()
+    project_info_dict['run_name'] = project_id.get_run_name()
+    project_info_dict['collection_index'] = project_id.get_library_name()
+    project_info_dict['base_space_file'] = project_id.get_base_space_file()
+    project_info_dict['dates'] = list(zip(HEADING_FOR_PROJECT_DATES, project_id.get_project_dates() ))
     run_name = project_id.runprocess_id.runName
     groups = Group.objects.get(name = WETLAB_MANAGER)
 
-    if groups not in request.user.groups.all():
-        project_info_dict['run_id'] = ''
-    else:
-        project_info_dict['run_id'] = project_id.runprocess_id.id
-    project_values.append(run_name )
-    for item in range(len(project_info_text)):
-        p_data.append([project_info_text[item], project_values[item]])
-    project_info_dict['p_data'] = p_data
+    if groups in request.user.groups.all():
+        project_info_dict['run_id'] = project_id.get_run_id()
 
-    project_info_dict ['user_name'] = project_id.get_user_name()
+    #for item in range(len(project_info_text)):
+    #    p_data.append([project_info_text[item], project_values[item]])
+    #project_info_dict['p_data'] = p_data
+
+
     p_state = project_id.get_state()
     project_info_dict['state'] = p_state
     project_info_dict['graphic_value'], project_info_dict['graphic_color'] = graphics_state(p_state)
-    '''
-    if p_state.startswith('ERROR'):
-        project_info_dict['graphic_value']=10
-        project_info_dict['graphic_color']='red'
-    if p_state == 'Recorded':
-        project_info_dict['graphic_value']=25
-        project_info_dict['graphic_color']='violet'
-    if p_state == 'Sample Sent':
-        project_info_dict['graphic_value']= 50
-        project_info_dict['graphic_color']='brown'
-    if p_state == 'B2FqExecuted':
-        project_info_dict['graphic_value']= 75
-        project_info_dict['graphic_color']='yellow'
-    if p_state == 'Completed':
-        project_info_dict['graphic_value']= 100
-        project_info_dict['graphic_color']='green'
-    '''
 
     if p_state == 'Completed':
 

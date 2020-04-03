@@ -435,7 +435,6 @@ def find_index_sequence_collection_values_kit(sequence):
         return ['I7', sequence]
     if CollectionIndexValues.objects.filter(i_5_seq__icontains =sequence).exists():
         return ['I5', sequence]
-    import pdb; pdb.set_trace()
     rev_sequence = str(Seq(sequence).reverse_complement())
     if CollectionIndexValues.objects.filter(i_5_seq__icontains =rev_sequence).exists():
         return ['I5', rev_sequence]

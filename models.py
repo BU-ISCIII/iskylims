@@ -231,17 +231,21 @@ class Projects(models.Model):
     def __str__(self):
         return '%s' %(self.projectName)
 
+    def get_base_space_file (self):
+        return '%s' %(self.baseSpaceFile)
+
     def get_state(self):
         return '%s' %(self.runprocess_id.state.runStateName)
 
-    def get_project_info (self):
-        generated_date=self.generatedat.strftime("%I:%M%p on %B %d, %Y")
+    def get_project_dates (self):
         if self.project_run_date is None:
             projectdate = 'Run NOT started'
         else :
             projectdate=self.project_run_date.strftime("%B %d, %Y")
-        return '%s;%s;%s;%s;%s' %(self.projectName, self.libraryKit,
-                        self.baseSpaceFile, generated_date, projectdate )
+        p_info = []
+        p_info.append(self.generatedat.strftime("%B %d, %Y"))
+        p_info.append(projectdate)
+        return p_info
 
     def get_p_info_change_library (self):
         run_name = self.runprocess_id.runName
@@ -255,6 +259,9 @@ class Projects(models.Model):
 
     def get_run_name(self):
         return '%s' %(self.runprocess_id.get_run_name())
+
+    def get_run_id(self):
+        return '%s' %(self.runprocess_id.get_run_id())
 
     def get_user_name (self):
         user_name = self.user_id.username

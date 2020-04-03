@@ -727,7 +727,7 @@ def search_project (request):
             available_states = get_available_run_state()
             return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'platforms': available_platforms,'run_states':available_states})
 
-        if user_name !=''  and len(user_name) <5 :
+        if user_name !=''  and len(user_name) < 5 :
              return render (request,'iSkyLIMS_wetlab/error_page.html',
                         {'content':['The user name must contains at least 5 caracters ',
                                     'ADVICE:', 'write the full user name to get a better match']})
@@ -748,14 +748,11 @@ def search_project (request):
                                     'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
         ### Get projects when project name is not empty
         if project_name != '' :
-            if Projects.objects.filter(projectName__exact = project_name).exists():
-                project_id = Projects.objects.get (projectName__exact = project_name).id
-                project_found_id = Projects.objects.get(pk=project_id)
-                p_data_display  = get_information_project(project_found_id, request)
-                return render(request, 'iSkyLIMS_wetlab/SearchProject.html',
-                        {'display_one_project': p_data_display })
-            if  Projects.objects.filter (projectName__contains = project_name).exists():
-                projects_found = Projects.objects.filter (projectName__contains = project_name)
+            if Projects.objects.filter(projectName__iexact = project_name).exists():
+                project_id = Projects.objects.get (projectName__iexact = project_name).id
+                return redirect ('display_project', project_id = project_id)
+            if  Projects.objects.filter (projectName__icontains = project_name).exists():
+                projects_found = Projects.objects.filter (projectName__icontains = project_name)
             else:
                 return render (request,'iSkyLIMS_wetlab/error_page.html',
                         {'content':['No Project found with the string , ', project_name ]})
@@ -825,10 +822,7 @@ def search_project (request):
         #If only 1 project mathes the user conditions, then get the project information
 
         if len (projects_found) == 1:
-            project_id = projects_found[0].id
-            project_found_id = Projects.objects.get(pk=project_id)
-            p_data_display  = get_information_project(project_found_id, request)
-            return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'display_one_project': p_data_display })
+            return redirect ('display_project', project_id = projects_found[0].id)
         else :
             # Display a list with all projects that matches the conditions
             project_list_dict = {}
@@ -1116,8 +1110,8 @@ def display_project (request, project_id):
             #redirect to login webpage
             return redirect ('/accounts/login')
         # Display the proyect information
-        p_data_display  = get_information_project(project_found_id, request)
-        return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'display_one_project': p_data_display })
+        display_project_data  = get_information_project(project_found_id, request)
+        return render(request, 'iSkyLIMS_wetlab/displayProject.html', {'display_project_data': display_project_data })
     else:
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the project  ' ]})
 

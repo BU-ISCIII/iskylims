@@ -278,3 +278,7 @@ ERROR_TOO_SHORT_INDEX_BASE_SEQUENCE = ['Index Sequence must contains at least 6 
 ERROR_NO_COLLECTION_INDEX_FOUND = ['There are no recorded information for the Collection index kit' ]
 
 ERROR_INVALID_SEQUENCE_CHARACTERS = ['Invalid characters in Index sequene', '']
+
+
+############### HEADING FOR PROJECT DATA VISUALIZATION #####################
+HEADING_FOR_PROJECT_DATES = ['Project Recorder date', 'Project date']
