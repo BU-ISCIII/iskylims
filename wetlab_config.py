@@ -282,3 +282,10 @@ ERROR_INVALID_SEQUENCE_CHARACTERS = ['Invalid characters in Index sequene', '']
 
 ############### HEADING FOR PROJECT DATA VISUALIZATION #####################
 HEADING_FOR_PROJECT_DATES = ['Project Recorder date', 'Project date']
+
+
+
+
+############### FIELD NAME TO COLLECT FROM RunParameter FILE #####################
+FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE = ['RunID','ExperimentName','RTAVersion','Chemistry','RunStartDate','RunManagementType','ApplicationVersion','NumTilesPerSwath',
+                    'SystemSuiteVersion', 'LibraryID', 'AnalysisWorkflowType','PlannedRead1Cycles','PlannedRead2Cycles','PlannedIndex1ReadCycles','PlannedIndex2ReadCycles' ]

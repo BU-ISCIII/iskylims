@@ -5,6 +5,7 @@ import shutil
 from .generic_functions import *
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_drylab.models import Machines, Platform
+from iSkyLIMS_wetlab.wetlab_config import *
 
 from django_utils.models import Center
 
@@ -49,8 +50,8 @@ def nextseq_parsing_run_information(l_run_info, l_run_parameter) :
         run_info    # contains the path for RunInfo.xml file
         run_parameter # contains the path for RunParameter.xml file
         run_id      # contains the id value of the run
-    Import:
-        xml.etree.ElementTree
+    CONSTANTS:
+        FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE
     Variables:
         image_channel   # list containing the image channel values
         logger          # contains the logger object to write information
@@ -77,6 +78,8 @@ def nextseq_parsing_run_information(l_run_info, l_run_parameter) :
     logger.info('parsing the runInfo.xml file ')
     p_run=run_root[0]
     ## getting the common values NextSeq and MiSeq
+
+
     running_data['Flowcell']=p_run.find('Flowcell').text
     running_data['FlowcellLayout']=p_run.find('FlowcellLayout').attrib
     #################################################
@@ -87,6 +90,13 @@ def nextseq_parsing_run_information(l_run_info, l_run_parameter) :
     parameter_data_root=parameter_data.getroot()
     p_parameter=parameter_data_root[1]
     ## getting the common values NextSeq and MiSeq
+    for field in FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE:
+        try:
+            running_data[field] = parameter_data_root.find(field).text
+        except:
+            running_data[field] = ''
+
+    '''
     running_data['RunID']=parameter_data_root.find('RunID').text
     running_data['ExperimentName']=parameter_data_root.find('ExperimentName').text
     running_data['RTAVersion']=parameter_data_root.find('RTAVersion').text
@@ -107,6 +117,7 @@ def nextseq_parsing_run_information(l_run_info, l_run_parameter) :
     running_data['PlannedRead2Cycles']=parameter_data_root.find('PlannedRead2Cycles').text
     running_data['PlannedIndex1ReadCycles']=parameter_data_root.find('PlannedIndex1ReadCycles').text
     running_data['PlannedIndex2ReadCycles']=parameter_data_root.find('PlannedIndex2ReadCycles').text
+    '''
 
     for i in run_root.iter('Name'):
         image_channel.append(i.text)
