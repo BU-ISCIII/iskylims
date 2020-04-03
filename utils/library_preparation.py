@@ -9,7 +9,7 @@ from iSkyLIMS_wetlab.utils.sample_sheet_utils import *
 from iSkyLIMS_wetlab.utils.collection_index_functions import check_collection_index_exists
 from ..fusioncharts.fusioncharts import FusionCharts
 from .stats_graphics import *
-from Bio import SeqIO
+from Bio.Seq import Seq
 
 def check_empty_fields (data):
     '''
@@ -430,12 +430,13 @@ def find_index_sequence_collection_values_kit(sequence):
     Return:
         index_found and the sequence
     '''
-    
+
     if CollectionIndexValues.objects.filter(i_7_seq__icontains =sequence).exists():
         return ['I7', sequence]
     if CollectionIndexValues.objects.filter(i_5_seq__icontains =sequence).exists():
         return ['I5', sequence]
-    rev_sequence = SeqIO.Seq(sequence).reverse_complement().seq
+    import pdb; pdb.set_trace()
+    rev_sequence = str(Seq(sequence).reverse_complement())
     if CollectionIndexValues.objects.filter(i_5_seq__icontains =rev_sequence).exists():
         return ['I5', rev_sequence]
     return 'None', sequence
