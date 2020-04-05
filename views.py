@@ -4000,7 +4000,7 @@ def search_sample (request):
             run_sample_list = ''
 
         if len(sample_list) == 0 and len(run_sample_list) == 0:
-            return render (request,'iSkyLIMS_wetlab/searchSample.html', {'no_samples':ERROR_NO_SAMPLE_FOUND, 'sample_list':sample_list})
+            return render (request,'iSkyLIMS_wetlab/searchSample.html', {'no_samples':ERROR_NO_SAMPLE_FOUND, 'sample_list':sample_list, 'search_data':search_data})
         elif len(sample_list) == 1 and len(run_sample_list) == 0:
             return redirect ('display_sample' , sample_id = sample_list[0])
         elif len(sample_list) == 0 and len(run_sample_list) == 1:
