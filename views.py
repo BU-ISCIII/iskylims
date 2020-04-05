@@ -3994,8 +3994,10 @@ def search_sample (request):
                      'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
         ### Get projects when sample name is not empty
         sample_list = search_samples(sample_name, user_name, sample_state, start_date, end_date )
-
-        run_sample_list = search_run_samples(sample_name, user_name, start_date, end_date)
+        if sample_state == '':
+            run_sample_list = search_run_samples(sample_name, user_name, start_date, end_date)
+        else:
+            run_sample_list = ''
 
         if len(sample_list) == 0 and len(run_sample_list) == 0:
             return render (request,'iSkyLIMS_wetlab/searchLibSample.html', {'no_samples':ERROR_NO_SAMPLE_FOUND, 'sample_list':sample_list})
