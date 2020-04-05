@@ -826,7 +826,7 @@ def get_info_sample_in_run (sample_id):
     user_name_id = sample_id.project_id.user_id
     sample_info_dict['investigator_name'] = user_name_id.username
     # collect the Sample information
-    sample_info_dict['heading_samples_info'] = ['Sample', 'Barcode', 'PF Cluster', '% of Project','Yield (Mbases)','>= Q30 bases','Mean Quality Score']
+    sample_info_dict['heading_samples_info'] = ['Sample', 'Index used', 'PF Cluster', '% of Project','Yield (Mbases)','>= Q30 bases','Mean Quality Score']
     sample_info_dict['data_samples_info'] = sample_id.get_sample_information().split(';')
     # Quality graphic
     quality_sample = sample_id.get_quality_sample()
