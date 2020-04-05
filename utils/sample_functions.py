@@ -114,7 +114,7 @@ def get_sample_in_project_obj_from_id (sample_in_project_id):
     '''
     sample_in_project_obj = ''
     if SamplesInProject.objects.filter(pk__exact = sample_in_project_id).exists():
-        sample_in_project_obj = SamplesInProject.objects.filter(sampleName__exact = sample_name)
+        sample_in_project_obj = SamplesInProject.objects.get(pk__exact = sample_in_project_id)
 
     return sample_in_project_obj
 
@@ -187,7 +187,7 @@ def search_run_samples(sample_name, user_name, start_date, end_date):
             run_sample_founds = run_sample_founds.filter(generated_at__lte = end_date )
 
     if len(run_sample_founds) == 1:
-        sample_list.append(run_sample_founds[0].pk)
+        run_sample_list.append(run_sample_founds[0].pk)
         return run_sample_list
 
     for run_sample in run_sample_founds :
