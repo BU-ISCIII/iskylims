@@ -701,7 +701,10 @@ class Samples (models.Model):
         sample_info.append(self.sampleEntryDate.strftime("%d , %B , %Y"))
         sample_info.append(self.sampleCodeID)
         sample_info.append(self.sampleType.get_name())
-        sample_info.append(self.species.get_name())
+        try:
+            sample_info.append(self.species.get_name())
+        except:
+            sample_info.append('Not defined')
         return sample_info
 
     def get_info_for_display (self):
