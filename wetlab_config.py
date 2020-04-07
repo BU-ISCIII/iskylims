@@ -242,7 +242,9 @@ HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_PAIREDEND = ['Unique_Sample_ID','Sampl
 HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD = ['Unique_Sample_ID','Sample_Name','Sample_Plate','Sample_Well','Index_Plate_Well','I7_Index_ID','index','Sample_Project','Description','Base Space Library']
 
 
-########## OTHER MESSAGES TO DISPLAY  ###########################
+############### SUCCESSFUL_MESSAGES #######################################
+SUCCESSFUL_RUN_STATE_CHANGE_FOR_RETRY = ['State of the Run has changed back to the state previous to error', 'Now the run is again in the process for updating information',
+                'Check the run from time to time this run to verify that run is moving forward.']
 SUCCESSFUL_REUSE_MOLECULE_EXTRACTION = ['Molecule Extraction has been set for reused ', 'Now is ready to be create a new library preparation']
 SUCCESSFUL_REUSE_LIB_PREP = ['Library Preparation has been set for reused ', 'Now is ready to be assigned to a new pool']
 
@@ -278,6 +280,8 @@ ERROR_TOO_SHORT_INDEX_BASE_SEQUENCE = ['Index Sequence must contains at least 6 
 ERROR_NO_COLLECTION_INDEX_FOUND = ['There are no recorded information for the Collection index kit' ]
 
 ERROR_INVALID_SEQUENCE_CHARACTERS = ['Invalid characters in Index sequene', '']
+
+
 
 
 ############### HEADING FOR PROJECT DATA VISUALIZATION #####################

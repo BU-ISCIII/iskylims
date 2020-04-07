@@ -50,6 +50,7 @@ urlpatterns = [
     path('repeatLibraryPreparation', views.repeat_library_preparation, name = 'repeat_library_preparation'),
     path('repeatMoleculeExtraction', views.repeat_molecule_extraction, name = 'repeat_molecule_extraction'),
     path('repeatPool', views.repeat_pool, name = 'repeat_pool'),
+    path('retryErrorRun', views.retry_error_run, name= 'retry_error_run'),
     path('searchCollectionIndexLibrary', views.search_collection_index_library, name='search_collection_index_library'),
     #path('searchLibSamples', views.search_lib_samples, name = 'search_lib_samples'),
     path('searchProject/', views.search_project, name ='search_project'),

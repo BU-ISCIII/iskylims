@@ -841,169 +841,35 @@ def search_project (request):
 
 
 
-'''
-
 @login_required
-def search_sample (request):
-'''
-'''
-    Description:
-        The function is called from web, having 2 main parts:
-            - User form with the information to search samples
-            - Result information can be :
-                - list of the matched samples
-                - sample information in case that only 1 match is found
-    Input:
-        request     # contains the request dictionary sent by django
-    Variables:
+def retry_error_run (request):
+    # check user privileges
+    if request.user.is_authenticated:
 
-        User inputs from search options
-            sample_name     # string characters to find in the project name
-            start_date      # filter of starting date of the project
-            end_date        # filter for the end of the project
-            user_name       # name of user owner of the sample
-
-
-        sample_found        # Sample object that contains the result query
-                            # it is updated with the user form conditions
-        project_id_list     # contains the a list of projects objects
-                            owner of the enter used name for filtering
-                            the previous matched samples
-        sample_data_information # Contains all the sample information
-                            to be displayed on the web page
-        sample_list         # contains the sample list that mathches
-                            the user conditions
-    Return:
-        Return the different information depending on the execution:
-        -- Error page in case no sample is founded on the matching conditions.
-        -- SearchSample.html is returned with one of the following information :
-            -- sample_data_information   # in case that only one run is matched
-            ---sample_list         # in case several run matches the user conditions.
-
-'''
-'''
-    if request.method=='POST' and (request.POST['action']=='searchsample'):
-        sample_name=request.POST['samplename']
-        start_date=request.POST['startdate']
-        end_date=request.POST['enddate']
-        user_name = request.POST['username']
-
-        # check that some values are in the request if not return the form
-        if user_name == '' and start_date == '' and end_date == '' and sample_name =='':
-            return render(request, 'iSkyLIMS_wetlab/SearchSample.html')
-
-        if user_name !=''  and len(user_name) <5 :
-             return render (request,'iSkyLIMS_wetlab/error_page.html',
-                    {'content':['The user name must contains at least 5 caracters ',
-                    'ADVICE:', 'write the full user name to get a better match']})
-        ### check the right format of start and end date
-        if start_date != '':
-            try:
-                datetime.datetime.strptime(start_date, '%Y-%m-%d')
-            except:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                    {'content':['The format for the "Start Date Search" Field is incorrect ',
-                    'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
-        if end_date != '':
-            try:
-                datetime.datetime.strptime(end_date, '%Y-%m-%d')
-            except:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                    {'content':['The format for the "End Date Search" Field is incorrect ',
-                     'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
-        ### Get projects when sample name is not empty
-        if sample_name != '' :
-
-            if SamplesInProject.objects.filter(sampleName__exact = sample_name).exists():
-                sample_found = SamplesInProject.objects.filter(sampleName__exact = sample_name)
-                if len(sample_found) == 1:
-                    # get information from the sample found
-                    ########################################
-                    sample_data_information = get_info_sample_in_run (sample_found[0])
-                    return render(request, 'iSkyLIMS_wetlab/SearchSample.html',{'display_one_sample': sample_data_information })
-            elif SamplesInProject.objects.filter(sampleName__contains = sample_name).exists():
-                sample_found = SamplesInProject.objects.filter(sampleName__contains = sample_name)
-                #
-            else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                    {'content':['No sample found with the string , ', sample_name ]})
-
-        ### if there is no project name, then get all which will be filtered by other conditions set by user
-        #
-        else :
-            sample_found = SamplesInProject.objects.all()
-        # Check the start and end date
-        if start_date !='' and end_date != '':
-
-            if sample_found.filter(generated_at__range=(start_date, end_date)).exists():
-                 sample_found = sample_found.filter(generated_at__range=(start_date, end_date))
-            else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                        {'content':['There are no Projects containing ', sample_name,
-                        ' created between ', start_date, 'and the ', end_date]})
-        if start_date !='' and end_date == '':
-            if sample_found.filter(generated_at__gte = start_date).exists():
-                 sample_found = sample_found.filter(generated_at__gte = start_date)
-            else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                        {'content':['There are no Projects containing ', sample_name,
-                                        ' starting from', start_date]})
-        if start_date =='' and end_date != '':
-            if sample_found.filter(generated_at__lte = end_date).exists():
-                 sample_found = sample_found.filter(generated_at__lte = end_date)
-            else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                        {'content':['There are no Projects containing ', sample_name,
-                         ' finish before ', end_date]})
-                # check if user name is not empty
-        if user_name != '':
-            #
-            if User.objects.filter(username__contains = user_name).exists():
-                users = User.objects.filter (username__contains = user_name)
-                if len(users) == 1:
-                    user_id= users[0].id
-                    project_id_list = Projects.objects.prefetch_related('user_id').filter(user_id = user_id)
-                    sample_found = sample_found.filter(project_id__in = project_id_list)
-
-                else:
-                    text_error= 'There are too many users names containing ' + sample_name  + '  which match your query'
-                    return render (request,'iSkyLIMS_wetlab/error_page.html',
-                        {'content':[text_error, 'ADVICE:',
-                        'Fill in the user name field the full name of the user' ]})
-
-                #r_name_id = User.objects.get(username__icontains = user_name).id
-
-            else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                    {'content':['The samples found did not belong to the user, ', user_name ]})
-
-        if len(sample_found) == 0:
-            text_error = 'User ' + user_name +' does not have yet any samples'
-            return render (request,'iSkyLIMS_wetlab/error_page.html',
-                        {'content':[text_error,  'ADVICE:',
-                        'Contact with your administrator to find out the reason for not matching any result' ]})
-        if len(sample_found) == 1:
-            sample_data_information = get_info_sample_in_run (sample_found[0])
-            return render(request, 'iSkyLIMS_wetlab/SearchSample.html',
-                            {'display_one_sample': sample_data_information })
-
-        else:
-            sample_list= {}
-            s_list  = {}
-            for sample in sample_found:
-                sample_project =  sample.get_project_name()
-                s_list [sample.id] = [[sample.sampleName, sample_project]]
-            sample_list ['s_list'] = s_list
-
-            #
-
-            return render (request, 'iSkyLIMS_wetlab/SearchSample.html',
-                                {'multiple_samples': sample_list})
+        try:
+            groups = Group.objects.get(name='WetlabManager')
+            if groups not in request.user.groups.all():
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+        except:
+            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
     else:
-    #
-        return render(request, 'iSkyLIMS_wetlab/SearchSample.html')
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+    if request.method=='POST' and (request.POST['action']=='retry_correct_error'):
+        run_id = request.POST['run_id']
+        if (RunProcess.objects.filter(pk__exact=run_id).exists()):
+            run_name_found = RunProcess.objects.get(pk__exact=run_id)
+            previous_error_state = run_name_found.get_state_before_error()
+            run_name_found.set_run_state(previous_error_state)
+            detail_description = {}
+            detail_description['information'] = SUCCESSFUL_RUN_STATE_CHANGE_FOR_RETRY
+            return render (request,'iSkyLIMS_wetlab/successful_page.html', {'detail_description': detail_description })
+        else:
+            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Run does not exist ']})
+    else:
+        #return redirect (request,'/')
+        return render(request, 'iSkyLIMS_wetlab/index.html')
 
-'''
 
 @login_required
 def display_run (request, run_id):
@@ -1031,7 +897,7 @@ def display_run (request, run_id):
     if (RunProcess.objects.filter(pk=run_id).exists()):
         run_name_found = RunProcess.objects.get(pk=run_id)
         r_data_display  = get_information_run(run_name_found)
-        return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_one_run': r_data_display })
+        return render(request, 'iSkyLIMS_wetlab/displayRun.html', {'display_one_run': r_data_display })
     else:
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the run  ']})
 

@@ -536,7 +536,8 @@ def get_information_run(run_object):
     if run_state == 'Error' :
         # get the state before the error to present run information
         run_state = run_object.get_state_before_error()
-        info_dict['error_run'] = [[run_object.get_run_name(), run_state, run_object.get_error_text()]]
+        info_dict['error_run'] = [run_object.get_run_name(), run_state, run_object.get_error_text(), run_object.get_run_id()]
+
 
     p_list= Projects.objects.filter(runprocess_id=run_object)
     if p_list !='':
