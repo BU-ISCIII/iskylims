@@ -492,6 +492,8 @@ def search_run (request):
     Imports:
         Machines and Platform are imported from iSkyLIMS_drylab.models
             for filtering runs based on the platform
+    Constants:
+    ERROR_NO_MATCHES_FOR_RUN_SEARCH
     Functions:
         get_information_run() # Collects information about one run
     Variables:
@@ -536,6 +538,8 @@ def search_run (request):
     #############################################################
     ## Search for runs that fullfil the input values
     #############################################################
+    run_form_data = get_run_search_fields_form()
+    error_message = ERROR_NO_MATCHES_FOR_RUN_SEARCH
     if request.method == 'POST' and (request.POST['action'] == 'runsearch'):
         run_name = request.POST['runname']
         start_date = request.POST['startdate']
@@ -579,13 +583,11 @@ def search_run (request):
 
         ### Get runs when run name is not empty
         if run_name !='':
-            if (RunProcess.objects.filter(runName__exact =run_name).exists()):
-                run_name_found=RunProcess.objects.filter(runName__exact =run_name)
-                if (len(run_name_found)>1):
-                    return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Too many matches found when searching for the run name ', run_name ,
-                                                                    'ADVICE:', 'Select additional filter to find the run that you are looking for']})
-                r_data_display= get_information_run(run_name_found[0])
-                return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_one_run': r_data_display })
+            if (RunProcess.objects.filter(runName__iexact =run_name).exists()):
+                run_name_found=RunProcess.objects.filter(runName__iexact =run_name)
+                if len(run_name_found) == 1:
+                    r_data_display= get_information_run(run_name_found[0])
+                    return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_one_run': r_data_display })
             if (runs_found.filter(runName__icontains =run_name).exists()):
                 runs_found=runs_found.filter(runName__icontains =run_name).order_by('runName')
             else:
@@ -593,47 +595,36 @@ def search_run (request):
                                     {'content':['No matches have been found for the run name ',
                                      run_name ]})
         if platform_name != '' :
-            from iSkyLIMS_drylab.models import Machines, Platform
-            if Machines.objects.filter(platformID__exact = Platform.objects.get(platformName__exact = platform_name)).exists() :
-                machine_list = Machines.objects.filter(platformID__exact = Platform.objects.get(platformName__exact = platform_name))
-                if runs_found.filter(sequencerModel__in = machine_list).exists() :
-                    runs_found = runs_found.filter(sequencerModel__in = machine_list)
-                else:
-                    return render (request,'iSkyLIMS_wetlab/error_page.html',
-                                    {'content':['No matches have been found for the platform ',
-                                     platform_name ]})
+            sequencer_list = get_sequencer_names_from_platform(platform_name)
+            if len(sequencer_list) > 0:
+                runs_found = runs_found.filter(usedSequencer__sequencerName__in = sequencer_list)
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                                {'content':['No matches have been found for the platform ', platform_name ]})
-
+                return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data, 'error_message' : error_message})
         ### Check if state is not empty
         if run_state != '':
             s_state = RunStates.objects.get(runStateName__exact = run_state)
             if runs_found.filter(state__runStateName__exact = s_state).exists():
                 runs_found = runs_found.filter(state__runStateName__exact = s_state).order_by('runName')
             else :
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ,
-                                                                    'and the state', run_state ]})
+                return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data, 'error_message' : error_message})
         ### Check if start_date is not empty
         if start_date !='' and end_date != '':
 
             if runs_found.filter(run_date__range=(start_date, end_date)).exists():
                  runs_found = runs_found.filter(run_date__range=(start_date, end_date))
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no runs containing ', run_name,
-                                        ' created between ', start_date, 'and the ', end_date]})
+                return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data, 'error_message' : error_message})
         if start_date !='' and end_date == '':
             if runs_found.filter(run_date__gte = start_date).exists():
                  runs_found = runs_found.filter(run_date__gte = start_date)
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Runs containing ', run_name,
-                                        ' starting from', start_date]})
+                return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data, 'error_message' : error_message})
         if start_date =='' and end_date != '':
             if runs_found.filter(run_date__lte = end_date).exists():
                  runs_found = runs_found.filter(run_date__lte = end_date)
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Runs containing ', run_name,
-                                        ' finish before ', end_date]})
+                return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data, 'error_message' : error_message})
+
         #If only 1 run mathes the user conditions, then get the project information
 
         if (len(runs_found)== 1) :

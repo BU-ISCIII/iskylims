@@ -11,6 +11,7 @@ from iSkyLIMS_wetlab.wetlab_config import *
 from .generic_functions import normalized_data, get_run_in_same_year_to_compare
 from .stats_graphics import *
 from datetime import date
+from iSkyLIMS_core.models import SequencerInLab, SequencingPlatform
 
 def get_boxplot_comparation_runs (run_object):
     '''
@@ -368,7 +369,6 @@ def match_unkownbarcodes_with_index (unknow_dict) :
 
 
 def get_run_search_fields_form():
-    from iSkyLIMS_core.models import SequencerInLab, SequencingPlatform
     run_form_data = {}
 
     run_form_data['run_states'] = []
@@ -870,3 +870,22 @@ def get_info_sample_in_run (sample_id):
     sample_info_dict['percentage_chart'] = percentage_chart.render()
 
     return sample_info_dict
+
+def get_sequencer_names_from_platform(platform):
+    '''
+    Description:
+        The function will get list of the sequencers using the platform value in the input data
+    Input:
+        platform           # contains the platform name
+    Variables:
+        data_source # reused variable to have the json data format for
+
+    Return:
+        sample_info_dict with all information collected in the function
+    '''
+    sequencer_list = []
+    if SequencerInLab.objects.filter(platformID__platformName__exact = platform).exists():
+        sequencers = SequencerInLab.objects.filter(platformID__platformName__exact = platform)
+        for sequencer in sequencers:
+            sequencer_list.append(sequencer.get_sequencer_name())
+    return sequencer_list

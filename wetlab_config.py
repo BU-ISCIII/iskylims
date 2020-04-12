@@ -281,7 +281,8 @@ ERROR_NO_COLLECTION_INDEX_FOUND = ['There are no recorded information for the Co
 
 ERROR_INVALID_SEQUENCE_CHARACTERS = ['Invalid characters in Index sequene', '']
 
-
+###### ERROR TEXT FOR SEACHING #############################################
+ERROR_NO_MATCHES_FOR_RUN_SEARCH = ['There is not any run that mathes your input conditions']
 
 
 ############### HEADING FOR PROJECT DATA VISUALIZATION #####################
