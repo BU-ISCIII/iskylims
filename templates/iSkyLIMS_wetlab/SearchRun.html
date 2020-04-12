@@ -2,6 +2,14 @@
 {% load static %}
 {% block content %}
 {% csrf_token %}
+<style>
+    .scroll-wrapper-sm-7 {
+        max-height: 350px;
+        overflow: auto;
+        display:inline-block;
+        width: 670px;
+    }
+</style>
 
 {% if error_message %}
     <div class="row row-space-2 margin-b-4">
@@ -26,10 +34,21 @@
         <div class="col-sm-7">
             <div class="panel panel-default">
                 <div class="panel-heading"><h3>The following list matches with yor search:</h3> </div>
-                <div class="panel-body">
-                {% for key, values in display_run_list %}
-                    <div class="col-sm-6"><a href="/wetlab/displayRun={{ values }}">{{ key }}</a></div><BR>
-                 {% endfor %}
+                <div class="panel-body scroll-wrapper-sm-7">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>The following Runs were found for your search:</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for key, values in display_run_list %}
+                                <tr>
+                                    <td><a href="/wetlab/displayRun={{ values }}">{{ key }}</a> </td>
+                                </tr>
+                            {%endfor%}
+                        </tbody>
+                    </table>
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-7 -->

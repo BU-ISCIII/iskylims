@@ -10,8 +10,7 @@ from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
 from .generic_functions import normalized_data, get_run_in_same_year_to_compare
 from .stats_graphics import *
-from datetime import date
-from iSkyLIMS_core.models import SequencerInLab, SequencingPlatform
+
 
 def get_boxplot_comparation_runs (run_object):
     '''
@@ -367,25 +366,6 @@ def match_unkownbarcodes_with_index (unknow_dict) :
 
     return index_match_list
 
-
-def get_run_search_fields_form():
-    run_form_data = {}
-
-    run_form_data['run_states'] = []
-    run_form_data['available_platforms'] = []
-    run_form_data['available_sequencers'] = []
-    run_states = RunStates.objects.all()
-    for r_state in run_states :
-        run_form_data['run_states'].append(r_state.get_run_state_name())
-
-    platforms = SequencingPlatform.objects.all()
-    for platform in platforms :
-        run_form_data['available_platforms'].append(platform.get_platform_name())
-    machines = SequencerInLab.objects.all()
-    for machine in machines :
-        run_form_data['available_sequencers'].append(machine.get_sequencer_name())
-
-    return run_form_data
 
 
 def get_information_for_incompleted_run():

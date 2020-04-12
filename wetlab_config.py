@@ -283,6 +283,9 @@ ERROR_INVALID_SEQUENCE_CHARACTERS = ['Invalid characters in Index sequene', '']
 
 ###### ERROR TEXT FOR SEACHING #############################################
 ERROR_NO_MATCHES_FOR_RUN_SEARCH = ['There is not any run that mathes your input conditions']
+ERROR_NO_MATCHES_FOR_PROJECT_SEARCH = ['There is not any project that mathes your input conditions']
+ERROR_INVALID_FORMAT_FOR_DATES = ['Invalid date format. Use the format  (DD-MM-YYYY)']
+ERROR_USER_NAME_TOO_SHORT = ['User name must contains at least 5 characters']
 
 
 ############### HEADING FOR PROJECT DATA VISUALIZATION #####################

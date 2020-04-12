@@ -13,6 +13,10 @@ from .sample_sheet_utils import get_projects_in_run
 from django.conf import settings
 from iSkyLIMS_wetlab import wetlab_config
 from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters
+from iSkyLIMS_core.models import SequencerInLab, SequencingPlatform
+
+
+
 
 
 def check_all_projects_exists (project_list):
@@ -36,6 +40,22 @@ def check_all_projects_exists (project_list):
             return False
     logger.debug ('End function for check_all_projects_exists')
     return True
+
+
+def check_format_date_in_form(input_date):
+    '''
+    Description:
+        The function check if user enter a valid format date in the form
+    Input:
+        input_date # user input date
+
+    '''
+    try:
+        datetime.strptime(input_date, '%Y-%m-%d')
+    except:
+        return False
+    return True
+
 
 def get_run_in_same_year_to_compare (run_object):
     '''
@@ -189,18 +209,15 @@ def get_available_platform ():
     Description:
         The function fetch the available run states by quering
         the run_state table
-    Import:
-        platform object from iSkyLIMS_drylab
     Variable:
         available_states   # list containing the run state names
         platforms   # all platform objects
     Return:
-        available_states
+        available_platforms
     '''
-    from iSkyLIMS_drylab.models import Platform
     available_platforms =[]
 
-    platforms = Platform.objects.all()
+    platforms = SequencingPlatform.objects.all()
     for platform in platforms :
         available_platforms.append(platform.get_platform_name())
     return available_platforms
@@ -644,3 +661,44 @@ def send_error_email_to_user ( subject, body_message, from_user, to_user):
     Input:
     '''
     send_mail (subject, body_message, from_user, to_user)
+
+
+
+def get_project_search_fields_form():
+    project_form_data = {}
+
+    project_form_data['run_states'] = []
+    project_form_data['available_platforms'] = []
+    project_form_data['available_sequencers'] = []
+    run_states = RunStates.objects.all()
+    for r_state in run_states :
+        project_form_data['run_states'].append(r_state.get_run_state_name())
+
+    platforms = SequencingPlatform.objects.all()
+    for platform in platforms :
+        project_form_data['available_platforms'].append(platform.get_platform_name())
+    sequencers = SequencerInLab.objects.all()
+    for sequencer in sequencers :
+        project_form_data['available_sequencers'].append(sequencer.get_sequencer_name())
+
+    return project_form_data
+
+
+def get_run_search_fields_form():
+    run_form_data = {}
+
+    run_form_data['run_states'] = []
+    run_form_data['available_platforms'] = []
+    run_form_data['available_sequencers'] = []
+    run_states = RunStates.objects.all()
+    for r_state in run_states :
+        run_form_data['run_states'].append(r_state.get_run_state_name())
+
+    platforms = SequencingPlatform.objects.all()
+    for platform in platforms :
+        run_form_data['available_platforms'].append(platform.get_platform_name())
+    machines = SequencerInLab.objects.all()
+    for machine in machines :
+        run_form_data['available_sequencers'].append(machine.get_sequencer_name())
+
+    return run_form_data

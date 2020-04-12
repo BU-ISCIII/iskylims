@@ -552,19 +552,14 @@ def search_run (request):
 
         ### check the right format of start and end date
         if start_date != '':
-            try:
-                datetime.datetime.strptime(start_date, '%Y-%m-%d')
-            except:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                            {'content':['The format for the "Start Date Search" Field is incorrect ',
-                            'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
+            if not check_format_date_in_form(start_date) :
+                error_message = ERROR_INVALID_FORMAT_FOR_DATES
+                return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data, 'error_message' : error_message})
         if end_date != '':
-            try:
-                datetime.datetime.strptime(end_date, '%Y-%m-%d')
-            except:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                            {'content':['The format for the "End Date Search" Field is incorrect ',
-                            'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
+            if not check_format_date_in_form(start_date) :
+                error_message = ERROR_INVALID_FORMAT_FOR_DATES
+                return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data, 'error_message' : error_message})
+
         ### Get all the available runs to start the filtering
         if allowed_all_runs :
             runs_found=RunProcess.objects.all().order_by('runName')
@@ -577,9 +572,8 @@ def search_run (request):
             if RunProcess.objects.filter(pk__in = run_list).exists():
                 runs_found = RunProcess.objects.filter(pk__in = run_list)
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                                    {'content':['There are not run where ',
-                                    request.user.username , 'was involved' ]})
+                error_message = ['There are not run where ' + request.user.username + ' was involved' ]
+                return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data, 'error_message' : error_message})
 
         ### Get runs when run name is not empty
         if run_name !='':
@@ -591,9 +585,7 @@ def search_run (request):
             if (runs_found.filter(runName__icontains =run_name).exists()):
                 runs_found=runs_found.filter(runName__icontains =run_name).order_by('runName')
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                                    {'content':['No matches have been found for the run name ',
-                                     run_name ]})
+                return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data, 'error_message' : error_message})
         if platform_name != '' :
             sequencer_list = get_sequencer_names_from_platform(platform_name)
             if len(sequencer_list) > 0:
@@ -637,9 +629,6 @@ def search_run (request):
                 run_list.append([runs_found[i],runs_found[i].id])
             return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_run_list': run_list })
     else:
-        run_form_data = get_run_search_fields_form()
-
-
         return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data})
 
 @login_required
@@ -665,8 +654,6 @@ def search_project (request):
             start_date      # filter of starting date of the project
             end_date        # filter for the end of the project
 
-
-
         available_platforms # contains the list of platform defined in
                             # iSkyLIMS.models.Platform
         machine_list        # list of machines to filter on the matches runs
@@ -688,6 +675,8 @@ def search_project (request):
             ---run_list         # in case several run matches the user conditions.
 
     '''
+    project_form_data = get_project_search_fields_form()
+    error_message = ERROR_NO_MATCHES_FOR_PROJECT_SEARCH
     if request.method=='POST' and (request.POST['action']=='searchproject'):
         project_name=request.POST['projectname']
         start_date=request.POST['startdate']
@@ -698,67 +687,60 @@ def search_project (request):
         run_process_ids = []
         # check that some values are in the request if not return the form
         if project_name == '' and start_date == '' and end_date == '' and user_name =='' and platform_name == '' and run_state == '':
-            available_platforms = get_available_platform()
-            available_states = get_available_run_state()
-            return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'platforms': available_platforms,'run_states':available_states})
+            return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data})
 
         if user_name !=''  and len(user_name) < 5 :
-             return render (request,'iSkyLIMS_wetlab/error_page.html',
-                        {'content':['The user name must contains at least 5 caracters ',
-                                    'ADVICE:', 'write the full user name to get a better match']})
+            error_message = ERROR_USER_NAME_TOO_SHORT
+            return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
+
         ### check the right format of start and end date
         if start_date != '':
-            try:
-                datetime.datetime.strptime(start_date, '%Y-%m-%d')
-            except:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                        {'content':['The format for the "Start Date Search" Field is incorrect ',
-                                    'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
+            if not check_format_date_in_form(start_date) :
+                error_message = ERROR_INVALID_FORMAT_FOR_DATES
+                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
+
         if end_date != '':
-            try:
-                datetime.datetime.strptime(end_date, '%Y-%m-%d')
-            except:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                        {'content':['The format for the "End Date Search" Field is incorrect ',
-                                    'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
+            if not check_format_date_in_form(start_date) :
+                error_message = ERROR_INVALID_FORMAT_FOR_DATES
+                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
         ### Get projects when project name is not empty
         if project_name != '' :
             if Projects.objects.filter(projectName__iexact = project_name).exists():
-                project_id = Projects.objects.get (projectName__iexact = project_name).id
-                return redirect ('display_project', project_id = project_id)
+                projects = Projects.objects.filter (projectName__iexact = project_name)
+                if len(projects) == 1 :
+                    return redirect ('display_project', project_id = projects[0].get_project_id())
             if  Projects.objects.filter (projectName__icontains = project_name).exists():
                 projects_found = Projects.objects.filter (projectName__icontains = project_name)
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                        {'content':['No Project found with the string , ', project_name ]})
+                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
         ### if there is no project name, then get all which will be filtered by other conditions set by user
         #
         if project_name == '':
             projects_found = Projects.objects.all()
         if platform_name != '':
-            from iSkyLIMS_drylab.models import Machines, Platform
-            if Machines.objects.filter(platformID__platformName__exact = platform_name).exists() :
-                machine_list = Machines.objects.filter(platformID__platformName__exact = platform_name)
+            sequencer_list = get_sequencer_names_from_platform(platform_name)
+            if len(sequencer_list) == 0:
+                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
 
-                if RunProcess.objects.filter(sequencerModel__in = machine_list).exists() :
-                    runs_found = RunProcess.objects.filter(sequencerModel__in = machine_list)
-                    for run in runs_found :
-                        run_process_ids.append(run.id)
-                    if projects_found.filter(runprocess_id__in = run_process_ids).exists():
-                        projects_found = projects_found.filter(runprocess_id__in = run_process_ids)
-                    else:
-                        return render (request,'iSkyLIMS_wetlab/error_page.html',
-                                    {'content':['No matches have been found for the platform ',
-                                     platform_name ]})
+            #    projects_found = projects_found.filter(usedSequencer__sequencerName__in = sequencer_list)
+
+            #from iSkyLIMS_drylab.models import Machines, Platform
+            #if Machines.objects.filter(platformID__platformName__exact = platform_name).exists() :
+            #   machine_list = Machines.objects.filter(platformID__platformName__exact = platform_name)
+
+            if RunProcess.objects.filter(usedSequencer__sequencerName__in = sequencer_list).exists() :
+                runs_found = RunProcess.objects.filter(usedSequencer__sequencerName__in= sequencer_list)
+                for run in runs_found :
+                    run_process_ids.append(run.get_run_id())
+                if projects_found.filter(runprocess_id__in = run_process_ids).exists():
+                    projects_found = projects_found.filter(runprocess_id__in = run_process_ids)
                 else:
-                    return render (request,'iSkyLIMS_wetlab/error_page.html',
-                                    {'content':['No matches have been found for the platform ',
-                                     platform_name ]})
+                    return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                                {'content':['No matches have been found for the platform ', platform_name ]})
+                    return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
 
-                # check if user name is not empty
+
+            # check if user name is not empty
         if user_name != '':
             if User.objects.filter(username__icontains = user_name).exists():
                 r_name_id = User.objects.get(username__icontains = user_name).id
@@ -767,33 +749,33 @@ def search_project (request):
                 else:
                      return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The Project found does not belong to the user, ', user_name ]})
             else:
+
+                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The Project found does not belong to the user, ', user_name ]})
         if (run_state !='' ):
             if projects_found.filter(runprocess_id__state__runStateName__exact = run_state):
                 projects_found = projects_found.filter(runprocess_id__state__runStateName__exact = run_state)
             else :
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There ane not Projects containing ', project_name,
-                                               'in state', project_state ]})
+                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
+
         if start_date !='' and end_date != '':
 
             if projects_found.filter(project_run_date__range=(start_date, end_date)).exists():
                  projects_found = projects_found.filter(project_run_date__range=(start_date, end_date))
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Projects containing ', project_name,
-                                        ' created between ', start_date, 'and the ', end_date]})
+                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
         if start_date !='' and end_date == '':
             if projects_found.filter(project_run_date__gte = start_date).exists():
                  projects_found = projects_found.filter(project_run_date__gte = start_date)
                  #
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Projects containing ', project_name,
-                                        ' starting from', start_date]})
+                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
+
         if start_date =='' and end_date != '':
             if projects_found.filter(project_run_date__lte = end_date).exists():
                  projects_found = projects_found.filter(project_run_date__lte = end_date)
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Projects containing ', project_name,
-                                        ' finish before ', end_date]})
+                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
         #If only 1 project mathes the user conditions, then get the project information
 
         if len (projects_found) == 1:
@@ -810,9 +792,9 @@ def search_project (request):
             return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'display_project_list': project_list_dict })
 
     else:
-        available_platforms = get_available_platform()
-        available_states = get_available_run_state()
-        return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'platforms': available_platforms,'run_states':available_states})
+        #available_platforms = get_available_platform()
+        #available_states = get_available_run_state()
+        return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data})
 
 
 
