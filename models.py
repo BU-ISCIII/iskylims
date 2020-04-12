@@ -1000,3 +1000,43 @@ class MoleculeParameterValue (models.Model):
         return '%s' %(self.parameterValue)
 
     objects = MoleculeParameterValueManager()
+
+
+
+class SequencingPlatform(models.Model):
+    platformName = models.CharField(max_length=30)
+    companyName = models.CharField(max_length=30)
+    sequencingTecnology = models.CharField(max_length=30)
+
+    def __str__ (self):
+        return '%s' %(self.platformName)
+
+    def get_platform_name(self):
+	       return '%s'  %(self.platformName)
+
+    def get_company_name(self):
+        return '%s'  %(self.companyName)
+
+class SequencerInLab (models.Model) :
+    platformID = models.ForeignKey(SequencingPlatform ,on_delete=models.CASCADE, null = True, blank = True)
+
+    sequencerName = models.CharField(max_length=255)
+    sequencerDescription = models.CharField(max_length=255,null=True,blank=True)
+    sequencerLocation = models.CharField(max_length=255,null=True,blank=True)
+    sequencerSerialNumber = models.CharField(max_length=255,null=True,blank=True)
+    sequencerState =  models.CharField(max_length=50,null=True,blank=True)
+    sequencerOperationStart = models.DateField(auto_now_add=False, null=True,blank=True)
+    sequencerOperationEnd = models.DateField(auto_now_add=False, null=True,blank=True)
+    sequencerNumberLanes = models.CharField( max_length= 5, null=True,blank=True)
+
+    def __str__ (self) :
+        return '%s' %(self.sequencerName)
+
+    def get_sequencer_name(self):
+        return '%s'  %(self.sequencerName)
+
+    def get_number_of_lanes(self):
+	    return '%s' %(self.sequencerNumberLanes)
+
+    def get_sequencing_platform_name(self):
+        return '%s' %(self.platformID.get_platform_name())

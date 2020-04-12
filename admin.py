@@ -50,6 +50,13 @@ class SampleProjectBelongsAdmin(admin.ModelAdmin):
     list_display = ('projectName', 'projectManager', 'projectDescription', 'contactEmail', 'contactPhone', 'contactComments')
 '''
 
+
+class SequencingPlatformAdmin(admin.ModelAdmin):
+    list_display = ('platformName', 'companyName', 'sequencingTecnology')
+
+class SequencerInLabAdmin(admin.ModelAdmin):
+    list_display = ('platformID', 'sequencerName', 'sequencerDescription', 'sequencerLocation', 'sequencerSerialNumber', 'sequencerState', 'sequencerOperationStart', 'sequencerOperationEnd','sequencerNumberLanes')
+
 class SpeciesAdmin (admin.ModelAdmin):
     list_display= ('speciesName', 'refGenomeName', 'refGenomeSize' , 'refGenomeID' )
 
@@ -78,6 +85,10 @@ admin.site.register(ProtocolParameters,ProtocolParametersAdmin)
 admin.site.register(MoleculeParameterValue, MoleculeParameterValueAdmin)
 admin.site.register(SampleType, SampleTypeAdmin)
 admin.site.register(Samples, SamplesAdmin)
+
+admin.site.register(SequencingPlatform, SequencingPlatformAdmin)
+admin.site.register(SequencerInLab, SequencerInLabAdmin)
+
 admin.site.register(Species, SpeciesAdmin)
 # admin.site.register(SampleProjectBelongs, SampleProjectBelongsAdmin)
 admin.site.register(StatesForMolecule, StatesForMoleculeAdmin)
