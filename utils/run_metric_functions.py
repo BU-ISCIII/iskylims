@@ -146,7 +146,7 @@ def parsing_run_metrics(run_metric_folder, run_object_name):
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function parsing_run_metrics')
     # get the number of lanes for the sequencer
-    number_of_lanes = run_object_name.get_machine_lanes()
+    number_of_lanes = run_object_name.get_sequencing_lanes()
     # get run folder
     run_folder = RunningParameters.objects.get(runName_id = run_object_name).get_run_folder()
     # get number of reads for the run
@@ -365,5 +365,3 @@ def create_graphics(run_metric_folder,run_object_name):
     logger.info('Store Graphic plots in database')
     logger.debug ('End function create_graphics')
     return True
-
-

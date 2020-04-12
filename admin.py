@@ -42,7 +42,7 @@ class RunningParametersAdmin(admin.ModelAdmin):
     #import pdb; pdb.set_trace()
 
 class RunProcessAdmin (admin.ModelAdmin):
-    list_display = ('runName','sequencerModel','sampleSheet','generatedat','run_date','runError', 'state','index_library','samples','centerRequestedBy','useSpaceImgMb','useSpaceFastaMb','useSpaceOtherMb')
+    list_display = ('runName','usedSequencer','sampleSheet','generatedat','run_date','runError', 'state','index_library','samples','centerRequestedBy','useSpaceImgMb','useSpaceFastaMb','useSpaceOtherMb')
 
 class ProjectsAdmin (admin.ModelAdmin):
     list_display= ('runprocess_id','user_id','LibraryKit_id','projectName','libraryKit','baseSpaceFile','generatedat','project_run_date')

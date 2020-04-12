@@ -9,7 +9,7 @@ from django_utils.models import Center
 from django.utils.translation import ugettext_lazy as _
 
 from .  import wetlab_config
-from iSkyLIMS_core.models import MoleculePreparation , Samples , ProtocolType, Protocols, ProtocolParameters, UserLotCommercialKits
+from iSkyLIMS_core.models import MoleculePreparation , Samples , ProtocolType, Protocols, ProtocolParameters, UserLotCommercialKits, SequencerInLab
 
 class RunErrors (models.Model):
     errorCode = models.CharField(max_length=10)
@@ -22,6 +22,9 @@ class RunStates (models.Model):
     runStateName = models.CharField(max_length=50)
 
     def __str__ (self):
+        return '%s' %(self.runStateName)
+
+    def get_run_state_name(self):
         return '%s' %(self.runStateName)
 
 class RunProcess(models.Model):
@@ -41,6 +44,7 @@ class RunProcess(models.Model):
     useSpaceOtherMb=models.CharField(max_length=10, blank=True)
     centerRequestedBy = models.ForeignKey (Center, on_delete=models.CASCADE)
     sequencerModel = models.ForeignKey ('iSkyLIMS_drylab.Machines', on_delete=models.CASCADE, null=True, blank=True)
+    usedSequencer = models.ForeignKey(SequencerInLab,  on_delete=models.CASCADE, blank=True, null = True)
     runError = models.ForeignKey( RunErrors, on_delete=models.CASCADE, null = True, blank = True)
     stateBeforeError = models.ForeignKey ( RunStates, on_delete = models.CASCADE, null = True, blank = True)
 
@@ -70,7 +74,7 @@ class RunProcess(models.Model):
         return '%s' %(self.runError)
 
     def get_state(self):
-        return '%s' %(self.state)
+        return '%s' %(self.state.get_run_state_name())
 
     def get_state_before_error(self):
         return '%s' %(self.stateBeforeError)
@@ -118,16 +122,24 @@ class RunProcess(models.Model):
         other_size = int(other_size_str.replace(',',''))
         total_size = image_size + data_size + other_size
         return '%s'%(total_size)
-
+    '''
     def get_run_sequencerModel (self):
         return '%s' %(self.sequencerModel)
+    '''
+    def get_run_used_sequencer (self):
+        return '%s' %(self.usedSequencer)
 
     def get_run_platform (self):
-        return '%s' %self.sequencerModel.platformID
-
+        return '%s' %(self.usedSequencer.get_sequencing_platform_name())
+    '''
     def get_machine_lanes(self):
         number_of_lanes = self.sequencerModel.get_number_of_lanes()
         return int(number_of_lanes)
+    '''
+    def get_sequencing_lanes(self):
+        number_of_lanes = self.usedSequencer.get_number_of_lanes()
+        return int(number_of_lanes)
+
 
     def get_sample_file (self):
         return '%s' %(self.sampleSheet)
@@ -191,9 +203,14 @@ class RunProcess(models.Model):
         self.sampleSheet = sample_sheet
         self.save()
         return True
-
+    '''
     def set_sequencer (self, sequencer):
         self.sequencerModel = sequencer
+        self.save()
+        return True
+    '''
+    def set_used_sequencer (self, sequencer):
+        self.usedSequencer = sequencer
         self.save()
         return True
 

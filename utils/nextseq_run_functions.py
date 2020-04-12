@@ -344,7 +344,7 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
             logging_warnings(string_message,False)
         if  Machines.objects.filter(machineName__exact = instrument).exists() :
             sequencer = Machines.objects.get(machineName__exact = instrument)
-            instrument = run_process.set_sequencer(sequencer)
+            instrument = run_process.set_used_sequencer(sequencer)
             logger.info('Sequencer  stored on database')
         else:
             string_message = instrument + ' has been not defined on machines '

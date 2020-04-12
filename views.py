@@ -33,7 +33,6 @@ from .utils.library_preparation import *
 from .utils.pool_preparation import *
 from .utils.run_preparation import  *
 #from .utils.samplesheet_checks import *
-#from .utils.parsing_run_info import get_machine_lanes
 #from .utils.wetlab_misc_utilities import normalized_data
 from iSkyLIMS_core.utils.handling_samples import *
 #from iSkyLIMS_core.utils.handling_protocols import *
@@ -647,25 +646,10 @@ def search_run (request):
                 run_list.append([runs_found[i],runs_found[i].id])
             return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_run_list': run_list })
     else:
-        available_platforms = []
-        available_machines = []
-        from iSkyLIMS_drylab.models import Platform, Machines
-
-        available_states = []
-
-        run_states = RunStates.objects.all()
-        for state in run_states :
-            available_states.append(state.runStateName)
-
-        platforms = Platform.objects.all()
-        for platform in platforms :
-            available_platforms.append(platform.get_platform_name())
-        machines = Machines.objects.all()
-        for machine in machines :
-            available_machines.append(machine.get_machine_name())
+        run_form_data = get_run_search_fields_form()
 
 
-        return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'platforms': available_platforms,'machines':available_machines,'run_states':available_states})
+        return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data})
 
 @login_required
 def search_project (request):
@@ -1432,7 +1416,7 @@ def stats_per_machine (request):
                     runs_data_list = []
                     runs_time_list = []
                     for run_machine in run_by_machine:
-                        ru_seq_model = run_machine.get_run_sequencerModel()
+                        ru_seq_model = run_machine.get_run_used_sequencer()
                         ru_data=run_machine.get_info_process().split(';')
                         #runName, state, requested_center, generated_date, rundate,completed_date, bcl2fastq_date, finish_date, useSpaceImgMb, useSpaceFastaMb,useSpaceOtherMb
                         runs_data_list.append([ru_data[0], ru_data[4] , ru_seq_model , ru_data[3] , ru_data[8] , ru_data[9] , ru_data[10]])
@@ -1475,7 +1459,7 @@ def stats_per_machine (request):
                         yield_mb_list,  cluster_pf_list = [], []
                         p_name = project_machine.get_project_name()
 
-                        sequencer_in_project = project_machine.runprocess_id.get_run_sequencerModel()
+                        sequencer_in_project = project_machine.runprocess_id.get_run_used_sequencer()
                         if not sequencer_in_project in projects_name_dict :
                             p_machine_num_sample[sequencer_in_project] ={}
                             p_machine_sequencer[sequencer_in_project] ={}
@@ -1725,7 +1709,7 @@ def stats_per_researcher (request):
                         yield_mb_list,  cluster_pf_list = [], []
                         p_name = project_researcher.get_project_name()
 
-                        sequencer_in_project = project_researcher.runprocess_id.get_run_sequencerModel()
+                        sequencer_in_project = project_researcher.runprocess_id.get_run_used_sequencer()
                         if not sequencer_in_project in projects_name_dict :
                             p_researcher_num_sample[sequencer_in_project] ={}
                             p_researcher_sequencer[sequencer_in_project] ={}
@@ -2057,7 +2041,7 @@ def stats_per_time (request):
 
                 for run in run_stats_list:
                     run_id = run.id
-                    number_of_lanes=run.get_machine_lanes()
+                    number_of_lanes=run.get_sequencing_lanes()
                     top_unbarcode_all_runs  = {}
                     for lane_number in range (1, number_of_lanes +1):
                         lane_unbarcodes = RawTopUnknowBarcodes.objects.filter(runprocess_id =run, lane_number__exact = lane_number)
@@ -2131,7 +2115,7 @@ def get_list_of_libraries_values (library_found, q30_comparations, mean_comparat
         project_to_compare_id = project_to_compare.id
         q30_compare_lib, mean_compare_lib, yield_mb_compare_lib = [], [] , []
         # get the number of lanes by quering the SequencerModel in the RunProcess
-        number_of_lanes = project_to_compare.runprocess_id.get_machine_lanes()
+        number_of_lanes = project_to_compare.runprocess_id.get_sequencing_lanes()
         for lane_number in range (1,number_of_lanes + 1):
             lane_in_project = StatsLaneSummary.objects.get(project_id__exact = project_to_compare_id, lane__exact = lane_number)
             q_30_value, mean_q_value, yield_mb , cluster_pf = lane_in_project.get_stats_info().split(';')

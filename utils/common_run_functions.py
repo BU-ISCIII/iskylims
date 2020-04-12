@@ -5,110 +5,7 @@ from .generic_functions import *
 from .run_metric_functions import *
 import xml.etree.ElementTree as ET
 
-'''
-def process_xml_stats(stats_projects, run_id, logger):
-    # get the total number of read per lane
-    M_BASE=1.004361/1000000
-    logger.debug('starting the process_xml_stats method')
-    total_cluster_lane=(stats_projects['all']['PerfectBarcodeCount'])
-    logger.info('processing flowcell stats for %s ', run_id)
-    number_of_lanes=get_machine_lanes(run_id)
-    for project in stats_projects:
-        if project == 'TopUnknownBarcodes':
-            continue
-        flow_raw_cluster, flow_pf_cluster, flow_yield_mb = 0, 0, 0
-        for fl_item in range(number_of_lanes):
-             # make the calculation for Flowcell
-            flow_raw_cluster +=int(stats_projects[project]['BarcodeCount'][fl_item])
-            flow_pf_cluster +=int(stats_projects[project]['PerfectBarcodeCount'][fl_item])
-            flow_yield_mb +=float(stats_projects[project]['PF_Yield'][fl_item])*M_BASE
 
-        flow_raw_cluster='{0:,}'.format(flow_raw_cluster)
-        flow_pf_cluster='{0:,}'.format(flow_pf_cluster)
-        flow_yield_mb= '{0:,}'.format(round(flow_yield_mb))
-        sample_number=stats_projects[project]['sampleNumber']
-
-        if project == 'all' or project == 'default' :
-            logger.info('Found project %s setting the project_id to NULL', project)
-            project_id= None
-            default_all = project
-        else:
-            p_name_id=Projects.objects.get(projectName__exact = project).id
-            project_id= Projects.objects.get(pk=p_name_id)
-            default_all = None
-
-        #store in database
-        logger.info('Processed information for flow Summary for project %s', project)
-        ns_fl_summary = NextSeqStatsFlSummary(runprocess_id=RunProcess.objects.get(pk=run_id),
-                                project_id=project_id, defaultAll=default_all, flowRawCluster=flow_raw_cluster,
-                                flowPfCluster=flow_pf_cluster, flowYieldMb= flow_yield_mb,
-                                sampleNumber= sample_number)
-
-        ns_fl_summary.save()
-        logger.info('saving processing flowcell xml data  for project %s', project)
-
-    for project in stats_projects:
-        if project == 'TopUnknownBarcodes':
-            continue
-        logger.info('processing lane stats for %s', project)
-
-        for i in range (number_of_lanes):
-            # get the lane information
-            lane_number=str(i + 1)
-            pf_cluster_int=(int(stats_projects[project]['PerfectBarcodeCount'][i]))
-            pf_cluster='{0:,}'.format(pf_cluster_int)
-            perfect_barcode=(format(int(stats_projects[project]['PerfectBarcodeCount'][i])*100/int(stats_projects[project]['BarcodeCount'][i]),'.3f'))
-            percent_lane=  format(float(int(pf_cluster_int)/int(total_cluster_lane[i]))*100, '.3f')
-            one_mismatch=stats_projects[project]['OneMismatchBarcodeCount'][i]
-            yield_mb= '{0:,}'.format(round(float(stats_projects[project]['PF_Yield'][i])*M_BASE))
-
-            bigger_q30=format(float(stats_projects[project]['PF_YieldQ30'][i])*100/float( stats_projects[project]['PF_Yield'][i]),'.3f')
-
-            mean_quality=format(float(stats_projects[project]['PF_QualityScore'][i])/float(stats_projects[project]['PF_Yield'][i]),'.3f')
-
-            # make the calculation for Flowcell
-            flow_raw_cluster = stats_projects[project]['BarcodeCount'][i]
-            flow_pf_cluster = stats_projects[project]['PerfectBarcodeCount'][i]
-            flow_yield_mb ='{0:,}'.format(round(float(stats_projects[project]['PF_Yield'][i])*M_BASE))
-
-            #store in database
-            if project == 'all' or project == 'default':
-                logger.info('Found project %s setting the project_id to NULL', project)
-                project_id= None
-                default_all =project
-            else:
-                p_name_id=Projects.objects.get(projectName__exact = project).id
-                project_id= Projects.objects.get(pk=p_name_id)
-                default_all = None
-
-            #store in database
-            logger.info('Processed information for Lane %s for project %s', lane_number, project)
-            ns_lane_summary = NextSeqStatsLaneSummary(runprocess_id=RunProcess.objects.get(pk=run_id),
-                                                 project_id=project_id, defaultAll = default_all, lane = lane_number,
-                                                 pfCluster=pf_cluster, percentLane=percent_lane, perfectBarcode=perfect_barcode,
-                                                 oneMismatch= one_mismatch, yieldMb=yield_mb,
-                                                 biggerQ30=bigger_q30, meanQuality=mean_quality )
-
-            ns_lane_summary.save()
-
-    logger.info ('processing the TopUnknownBarcodes')
-    for project in stats_projects:
-        if project == 'TopUnknownBarcodes':
-            for un_lane in range(number_of_lanes) :
-                logger.info('Processing lane %s for TopUnknownBarcodes', un_lane)
-                count_top=0
-                lane_number=str(un_lane + 1)
-                top_number =1
-                for barcode_line in stats_projects[project][un_lane]:
-                    barcode_count= '{0:,}'.format(int(barcode_line['count']))
-                    barcode_sequence= barcode_line['sequence']
-
-                    raw_unknow_barcode = RawTopUnknowBarcodes(runprocess_id=RunProcess.objects.get(pk=run_id),
-                                                             lane_number = lane_number, top_number=str(top_number),
-                                                             count=barcode_count, sequence=barcode_sequence)
-                    raw_unknow_barcode.save()
-                    top_number +=1
-'''
 
 def get_bcl2fastq_output_files (conn, run_folder):
     '''
@@ -275,8 +172,6 @@ def parsing_demux_and_conversion_files( demux_file, conversion_file, number_of_l
     Input:
         demux_file   # local copy of the demultiplexting file
         conversion_file # local copy of the conversion file
-    Functions:
-        get_machine_lanes
     Variables:
         barcodeCount # value of the barcodeCount fetched in the parsing
         one_mismatch_count # count of number of one mismatch
@@ -311,7 +206,7 @@ def parsing_demux_and_conversion_files( demux_file, conversion_file, number_of_l
     for child in root.iter('Project'):
         projects.append(child.attrib['name'])
     total_samples = 0
-    #number_of_lanes = get_machine_lanes(run_id)
+
     for i in range(len(projects)):
         p_temp=root[0][i]
         barcodeCount ,perfectBarcodeCount, b_count =[], [] ,[]
@@ -466,7 +361,7 @@ def parsing_demux_sample_project(demux_file, conversion_file, number_of_lanes):
     demux_stat=ET.parse(demux_file)
     root=demux_stat.getroot()
     projects=[]
-    #number_of_lanes=get_machine_lanes(run_id)
+
     logger.info('Starting parsing DemultiplexingStats.XML for getting Sample information')
     for child in root.iter('Project'):
         projects.append(child.attrib['name'])
@@ -580,7 +475,7 @@ def process_fl_summary_stats (stats_projects, run_object_name):
     M_BASE=1.004361/1000000
     total_cluster_lane=(stats_projects['all']['PerfectBarcodeCount'])
     processed_fl_summary_data = []
-    number_of_lanes = run_object_name.get_machine_lanes()
+    number_of_lanes = run_object_name.get_sequencing_lanes()
     for project in stats_projects:
         project_flowcell = {}
         if project == 'TopUnknownBarcodes':
@@ -646,7 +541,7 @@ def process_lane_summary_stats (stats_projects, run_object_name):
     logger.debug ('Starting function process_lane_summary_stats')
     M_BASE=1.004361/1000000
     processed_lane_summary_data = []
-    number_of_lanes = run_object_name.get_machine_lanes()
+    number_of_lanes = run_object_name.get_sequencing_lanes()
     total_cluster_lane=(stats_projects['all']['PerfectBarcodeCount'])
     for project in stats_projects:
         if project == 'TopUnknownBarcodes':
@@ -657,7 +552,7 @@ def process_lane_summary_stats (stats_projects, run_object_name):
             project_lane = {}
             project_lane['lane'] = str(i + 1)
             pf_cluster_int=(int(stats_projects[project]['PerfectBarcodeCount'][i]))
-            
+
             project_lane['pfCluster'] = '{0:,}'.format(pf_cluster_int)
             try:
                 project_lane['perfectBarcode'] = (format(int(stats_projects[project]['PerfectBarcodeCount'][i])*100/int(stats_projects[project]['BarcodeCount'][i]),'.3f'))
@@ -874,7 +769,7 @@ def process_unknow_barcode_stats (stats_projects, run_object_name):
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function process_unknow_barcode_stats')
-    number_of_lanes = run_object_name.get_machine_lanes()
+    number_of_lanes = run_object_name.get_sequencing_lanes()
     processed_barcode_data = []
     for project in stats_projects:
         if project == 'TopUnknownBarcodes':
@@ -1102,7 +997,7 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
     logger.debug ('Starting function manage_run_in_processed_bcl2fast2_run')
     experiment_name = run_object_name.get_run_name()
     run_folder = RunningParameters.objects.get(runName_id = run_object_name).get_run_folder()
-    number_of_lanes = run_object_name.get_machine_lanes()
+    number_of_lanes = run_object_name.get_sequencing_lanes()
 
     if 'Processed Bcl2fastq' == run_object_name.get_state() :
         run_state = run_object_name.set_run_state('Processing Demultiplexing')

@@ -38,7 +38,7 @@
                <label class="col-sm-5 control-label" for="platform" >Platform</label>
                <div class="col-sm-4"><select class="form-control" name="platform" id="platform">
                                				<option value="">Choose a value</option>
-                                            {% for value in platforms %}
+                                            {% for value in run_form_data.available_platforms %}
                                                 <option value="{{value}}">{{value}}</option>
                                             {% endfor %}
 
@@ -50,7 +50,7 @@
                <label class="col-sm-5 control-label" for="runstate" >Run state</label>
                <div class="col-sm-4"><select class="form-control" name="runstate" id="runstate">
                                				<option value="">Choose a value</option>
-                                            {% for value in run_states %}
+                                            {% for value in run_form_data.run_states %}
                                                 <option value="{{value}}">{{value}}</option>
                                             {% endfor %}
                                       </select>
