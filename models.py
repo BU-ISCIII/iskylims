@@ -1017,9 +1017,22 @@ class SequencingPlatform(models.Model):
     def get_company_name(self):
         return '%s'  %(self.companyName)
 
-class SequencerInLab (models.Model) :
-    platformID = models.ForeignKey(SequencingPlatform ,on_delete=models.CASCADE, null = True, blank = True)
 
+class SequencerInLabManager(models.Manager):
+    def create_sequencer_in_lab (self, sequencer_value):
+        new_sequencer = self.create( platformID = sequencer_value['platformID'], sequencerName= sequencer_value['sequencerName'] ,
+                    sequencerDescription = sequencer_value['sequencerDescription'],  sequencerLocation = sequencer_value['sequencerLocation'],
+                    sequencerSerialNumber = sequencer_value['sequencerSerialNumber'], sequencerState = sequencer_value['sequencerState'],
+                    sequencerOperationStart = sequencer_value['sequencerOperationStart'], sequencerOperationEnd= sequencer_value['sequencerOperationEnd'] ,
+                    sequencerNumberLanes = sequencer_value['sequencerNumberLanes'])
+
+        return new_sequencer
+
+
+class SequencerInLab (models.Model) :
+    platformID = models.ForeignKey(
+                SequencingPlatform ,
+                on_delete=models.CASCADE, null = True, blank = True)
     sequencerName = models.CharField(max_length=255)
     sequencerDescription = models.CharField(max_length=255,null=True,blank=True)
     sequencerLocation = models.CharField(max_length=255,null=True,blank=True)
@@ -1040,3 +1053,5 @@ class SequencerInLab (models.Model) :
 
     def get_sequencing_platform_name(self):
         return '%s' %(self.platformID.get_platform_name())
+
+    objects = SequencerInLabManager()
