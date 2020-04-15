@@ -42,21 +42,6 @@ def check_all_projects_exists (project_list):
     return True
 
 
-def check_format_date_in_form(input_date):
-    '''
-    Description:
-        The function check if user enter a valid format date in the form
-    Input:
-        input_date # user input date
-
-    '''
-    try:
-        datetime.strptime(input_date, '%Y-%m-%d')
-    except:
-        return False
-    return True
-
-
 def get_run_in_same_year_to_compare (run_object):
     '''
     Description:
@@ -114,7 +99,64 @@ def copy_to_remote_file (conn, run_dir, remote_file, local_file) :
             raise Exception('File not copied')
     logger.debug ('End function for copy file to remote')
     return True
+    '''
+    def get_sequencer_lanes_number_from_file (input_file, experiment_name):
+    '''
+    '''
+    Description:
+        Function read the RunInfo.xml file to get the number of lanes
+    Input:
+        input_file        # input file to get the number of lanes
+        experiment_name     # experiment name used for logging
+    Return:
+        number_of_lanes
+    '''
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('%s : Starting function get_sequencer_lanes_number_from_file', experiment_name)
+    number_of_lanes = ''
+    fh = open (input_file, 'r')
+    search_line = '.*LaneCount="(\d).*'
+    for line in fh:
+        lane_found = re.search('^\s+ %s' % search_line, line)
+        if lane_found:
+            number_of_lanes = lane_found.group(1)
+            break
+    fh.close()
+    logger.info('%s : number of lanes %s' , experiment_name , number_of_lanes)
+    logger.debug ('%s : End function get_sequencer_lanes_number_from_file', experiment_name)
+    return number_of_lanes
+    '''
 
+def create_new_sequencer_lab_not_defined (sequencer_name,l_run_parameter, experiment_name):
+    '''
+    Description:
+
+        creates a new entry in database wit only the sequencer name and the lane numbers
+    Input:
+        sequencer_name    # sequencer name
+        l_run_parameter        # runParameter.xml file
+    Functions:
+        get_sequencer_lanes_number_from_file # located at this file
+    Return:
+        new_sequencer
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('%s : Starting function create_new_sequencer_lab_not_defined', experiment_name)
+
+    number_of_lanes = find_xml_tag_text (l_run_parameter, 'NumLanes')
+    #number_of_lanes = get_sequencer_lanes_number_from_file (l_run_parameter, experiment_name)
+    seq_data = {}
+    empty_fields_in_sequencer = ['platformID', 'sequencerDescription', 'sequencerDescription', 'sequencerLocation', 'sequencerSerialNumber',
+                'sequencerState' , 'sequencerOperationStart', 'sequencerOperationEnd']
+    for item in empty_fields_in_sequencer :
+        seq_data[item] = None
+    seq_data['sequencerName'] = sequencer_name
+    seq_data['sequencerNumberLanes'] = number_of_lanes
+    new_sequencer = SequencerInLab.objects.create_sequencer_in_lab(seq_data)
+    logger.info('%s : Created the new sequencer in database' , experiment_name )
+    logger.debug ('%s : End function create_new_sequencer_lab_not_defined', experiment_name)
+    return new_sequencer
 
 def fetch_remote_file (conn, run_dir, remote_file, local_file) :
     '''
@@ -137,18 +179,18 @@ def fetch_remote_file (conn, run_dir, remote_file, local_file) :
         Exception if file could not be fetched
     '''
     logger = logging.getLogger(__name__)
-    logger.debug ('Starting function for fetching remote file')
+    logger.debug ('%s : Starting function for fetching remote file', run_dir)
     with open(local_file ,'wb') as r_par_fp :
         try:
             #import pdb; pdb.set_trace()
             conn.retrieveFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME, remote_file, r_par_fp)
             logger.info('Retrieving the remote %s file for %s/%s', local_file, run_dir,remote_file)
         except Exception as e:
-            string_message = 'Unable to fetch the ' + local_file + 'file on folder ' + run_dir
+            string_message = 'Unable to fetch the ' + local_file + 'file on folder : ' + run_dir
             logging_errors (string_message, False, True)
             os.remove(local_file)
             raise Exception('File not found')
-    logger.debug ('End function for fetching remote file')
+    logger.debug ('%s : End function for fetching remote file', run_dir)
     return local_file
 
 
@@ -260,8 +302,8 @@ def get_new_runs_from_remote_server (processed_runs, conn, shared_folder):
     logger = logging.getLogger(__name__)
     logger.debug('Starting function get_new_runs_on_remote_server' )
     new_runs = []
-    #run_data_root_folder = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, '/')
     run_data_root_folder = os.path.join('/', wetlab_config.SAMBA_APPLICATION_FOLDER_NAME )
+    logger.debug('Shared folder  on remote server is : %s', run_data_root_folder)
     run_folder_list = conn.listPath( shared_folder, run_data_root_folder)
     for sfh in run_folder_list:
         if sfh.isDirectory:
@@ -270,7 +312,6 @@ def get_new_runs_from_remote_server (processed_runs, conn, shared_folder):
                 continue
             # if the run folder has been already process continue searching
             if folder_run in processed_runs:
-                #logger.debug('folder run  %s already processed', folder_run)
                 continue
             else:
                 logger.info ('Found a new run  %s ',folder_run)
@@ -286,6 +327,8 @@ def get_experiment_name_from_file (l_run_parameter) :
         file and it will return the experiment name value
     Input:
         l_run_parameter  # file to find the tag
+    Functions:
+        find_xml_tag_text
     Variables:
         experiment_name # name of the experiment found in runParameter file
     Return:
@@ -512,15 +555,15 @@ def open_samba_connection():
         wetlab_config.SAMBA_SHARED_FOLDER_NAME,wetlab_config.SAMBA_REMOTE_SERVER_NAME,
         use_ntlm_v2=wetlab_config.SAMBA_NTLM_USED,domain=wetlab_config.SAMBA_DOMAIN,
         is_direct_tcp=wetlab_config.IS_DIRECT_TCP )
-    try:
-        if wetlab_config.SAMBA_HOST_NAME :
-            conn.connect(socket.gethostbyname(wetlab_config.SAMBA_HOST_NAME), int(wetlab_config.SAMBA_PORT_SERVER))
-        else:
-            conn.connect(wetlab_config.SAMBA_IP_SERVER, int(wetlab_config.SAMBA_PORT_SERVER))
-    except:
-        string_message = 'Unable to connect to remote server'
-        logging_errors (string_message, True, True)
-        raise IOError ('Samba connection error')
+    #try:
+    if wetlab_config.SAMBA_HOST_NAME :
+        conn.connect(socket.gethostbyname(wetlab_config.SAMBA_HOST_NAME), int(wetlab_config.SAMBA_PORT_SERVER))
+    else:
+        conn.connect(wetlab_config.SAMBA_IP_SERVER, int(wetlab_config.SAMBA_PORT_SERVER))
+    #except:
+        #string_message = 'Unable to connect to remote server'
+        #logging_errors (string_message, True, True)
+    #    raise IOError ('Samba connection error')
 
 
     logger.debug ('End function open_samba_connection')

@@ -131,6 +131,7 @@ def search_update_new_runs ():
         open_samba_connection # located in utils.wetlab_misc_utilities.py
         get_list_processed_runs # located at this file
         get_new_runs_on_remote_server # located at utils.generic_functions.py
+        get_experiment_name_from_file # located at utils.generic_functions.py
         validate_sample_sheet   # located at this file
         save_new_miseq_run # located at this file
     Constants:
@@ -163,9 +164,8 @@ def search_update_new_runs ():
     except Exception as e:
         string_message = 'Unable to open SAMBA connection for the process search update runs'
         # raising the exception to stop crontab
-        raise logging_errors(string_message, True, False)
-    new_runs = get_new_runs_from_remote_server (processed_runs, conn,
-                            wetlab_config.SAMBA_SHARED_FOLDER_NAME)
+        raise logging_errors(string_message, True, True)
+    new_runs = get_new_runs_from_remote_server (processed_runs, conn, wetlab_config.SAMBA_SHARED_FOLDER_NAME)
 
     if len (new_runs) > 0 :
         for new_run in new_runs :
@@ -175,12 +175,11 @@ def search_update_new_runs ():
                l_run_parameter = fetch_remote_file (conn, new_run, s_run_parameter, l_run_parameter)
                logger.info('Sucessfully fetch of RunParameter file')
             except:
-                string_message = 'Experiment name for ' + new_run + ' is empty'
-                logging_errors(string_message, False, True)
+                logger.info('Continue with the next run folder')
                 continue
 
             experiment_name = get_experiment_name_from_file (l_run_parameter)
-            logger.debug('found the experiment name  , %s', experiment_name)
+
             if experiment_name == '' :
                 string_message = 'Experiment name for ' + new_run + ' is empty'
                 logging_errors(string_message, False, True)
@@ -188,38 +187,38 @@ def search_update_new_runs ():
                 logger.info('Deleted temporary run parameter file')
                 logger.info('Exceptional condition reported on log. Continue with the next run')
                 continue
-
+            logger.debug('%s  : found the experiment name ', experiment_name)
             if RunProcess.objects.filter(runName__exact = experiment_name).exclude(state__runStateName ='Recorded').exists():
                 # This situation should not occurr. The run_processed file should
                 # have this value. To avoid new iterations with this run
                 # we update the run process file with this run and continue
                 # with the next item
                 run_state = RunProcess.objects.get(runName__exact = experiment_name).get_state()
-                string_message = 'The run ' + experiment_name + 'is in state ' + run_state + '. Should be in Recorded'
+                string_message = experiment_name + ' : is in state ' + run_state + '. Should be in Recorded'
                 logging_errors( string_message, False, False)
-                logger.info('Deleting temporary runParameter file')
+                logger.info('%s : Deleting temporary runParameter file' , experiment_name)
                 os.remove(l_run_parameter)
                 continue
             # Run is new or it is in Recorded state.
             # Finding out the platform to continue the run processing
             run_platform =  get_run_platform_from_file (l_run_parameter)
-            logger.debug('found the platform name  , %s', run_platform)
+            logger.debug('%s : Found platform name  , %s', experiment_name, run_platform)
             if 'MiSeq' in run_platform :
-                logger.debug('MiSeq run found. Executing miseq handler ')
+                logger.debug('%s  : MiSeq run found. Executing miseq handler ', experiment_name)
                 try:
                     update_miseq_process_run =  handle_miseq_run (conn, new_run, l_run_parameter, experiment_name)
                     if update_miseq_process_run != '' :
                         new_processed_runs.append(experiment_name)
-                        logger.info('Run %s was successfully processed ', experiment_name)
-                        logger.debug('Finished miSeq handling process')
+                        logger.info('%s : was successfully processed ', experiment_name)
+                        logger.debug('%s : Finished miSeq handling process', experiment_name)
                     continue
                 except ValueError as e :
-                    logger.warning('Error found when processing miSeq run %s ', e)
+                    logger.warning(' %s : Error found when processing miSeq run %s ', experiment_name, e)
                     run_with_error.append(experiment_name)
-                    logger.debug('Finished miSeq handling process with error')
+                    logger.debug('%s : Finished miSeq handling process with error', experiment_name)
                     continue
                 except Exception as e:
-                    string_message = "Unexpected Error " + str (e)
+                    string_message = experiment_name + " : Unexpected Error " + str (e)
                     logging_errors(string_message, True, True)
                     continue
                 '''
@@ -340,7 +339,10 @@ def search_not_completed_run ():
         run_state = RunStates.objects.get(runStateName__exact = state)
         #import pdb; pdb.set_trace()
         if RunProcess.objects.filter(state__exact = run_state).exists():
-            runs_to_handle[state]=RunProcess.objects.filter(state__exact = run_state)
+            runs_found_in_state = RunProcess.objects.filter(state__exact = run_state)
+            runs_to_handle[state] = []
+            for run_found_in_state in runs_found_in_state :
+                runs_to_handle[state].append(run_found_in_state)
 
     for state in runs_to_handle:
         logger.info ('Start processing the run found for state %s', state)
@@ -348,37 +350,56 @@ def search_not_completed_run ():
         if state == 'Sample Sent':
             updated_run['Sample Sent'] = []
             runs_with_error['Sample Sent'] = []
-            logger.debug('Start handling the runs in Sample Sent state')
+            logger.debug('--------Start handling the runs in Sample Sent state--------')
+            import pdb; pdb.set_trace()
             for run_in_sample_sent in runs_to_handle[state] :
+                experiment_name = run_in_sample_sent.get_run_name()
                 # get platform
-                run_platform = run_in_sample_sent.get_run_platform()
-                experiment_name = run_in_sample_sent.runName
-                logger.info('Start handling the runs  %s in Sample Sent state', experiment_name)
                 try:
-                    if 'Next-Seq' in run_platform :
+                    run_platform = run_in_sample_sent.get_run_platform()
+                except:
+                    string_message = experiment_name + ' : Platform not defined'
+                    logging_errors (string_message , False, True)
+                    continue
+                experiment_name = run_in_sample_sent.runName
+                logger.info(' %s : Start handling in Sample Sent state', experiment_name)
+                try:
+                    if 'NextSeq' in run_platform :
+                        logger.info(' %s : Handle on NextSeq branch', experiment_name)
                         updated_run['Sample Sent'].append(manage_nextseq_in_samplesent(conn, run_in_sample_sent))
-                    elif 'Mi-Seq' in run_platform :
+                    elif 'MiSeq' in run_platform :
+                        logger.info(' %s : Handle on MiSeq branch', experiment_name)
                         updated_run['Sample Sent'].append(manage_miseq_in_samplesent(conn, run_in_sample_sent))
                     else:
-                        string_message = 'Platform ' + run_platform +' is not supported '
-                        logging_errors (string_message , False, False)
+                        string_message = experiment_name + ' : Platform ' + run_platform +' is not supported '
+                        logging_errors (string_message , False, True)
                         continue
                 except :
                     runs_with_error[state].append(run_in_sample_sent.get_run_name())
-                    logger.info('Handling the exception to continue with the next item')
+                    logger.info('%s : Handling the exception to continue with the next item', experiment_name)
                     continue
-            logger.debug('End runs in Sample Sent state')
+            logger.debug('--------End runs in Sample Sent state--------')
 
         elif state == 'Processing Run':
             updated_run[state] = []
             runs_with_error[state] = []
-            logger.debug('Start handling the runs in  Processing Run state')
+            logger.debug('--------Start handling the runs in  Processing Run state------')
+            import pdb; pdb.set_trace()
             for run_in_processing_run in runs_to_handle[state] :
-                run_platform = run_in_processing_run.get_run_platform()
+                experiment_name = run_in_processing_run.get_run_name()
                 try:
-                    if 'Next-Seq' in run_platform :
+                    run_platform = run_in_processing_run.get_run_platform()
+                except:
+                    string_message = experiment_name + ' : Platform not defined'
+                    logging_errors (string_message , False, True)
+                    continue
+                experiment_name = run_in_processing_run.get_run_name()
+                logger.info(' %s : Start handling in Processing run state', experiment_name)
+
+                try:
+                    if 'NextSeq' in run_platform :
                         updated_run[state].append(manage_nextseq_in_processing_run(conn, run_in_processing_run))
-                    elif 'Mi-Seq' in run_platform :
+                    elif 'MiSeq' in run_platform :
                         updated_run[state].append(manage_miseq_in_processing_run(conn, run_in_processing_run))
                     else:
                         string_message = 'Platform ' + run_platform +' is not supported '
@@ -386,14 +407,15 @@ def search_not_completed_run ():
                         continue
                 except :
                     runs_with_error[state].append(run_in_processing_run.get_run_name())
-                    logger.info('Handling the exception to continue with the next item')
+                    logger.info('%s : Handling the exception to continue with the next item', experiment_name)
                     continue
-            logger.debug('End runs in Processing Run state')
+            logger.debug('--------End runs in Processing Run state--------')
 
         elif state == 'Processed Run':
             updated_run[state] = []
             runs_with_error[state] = []
-            logger.debug('Start handling the runs in  Processed Run state')
+            logger.debug('--------Start handling the runs in  Processed Run state--------')
+            import pdb; pdb.set_trace()
             for run_in_processed_run in runs_to_handle[state]:
                 try:
                     updated_run[state].append(manage_run_in_processed_run(conn, run_in_processed_run))
@@ -401,11 +423,13 @@ def search_not_completed_run ():
                     runs_with_error[state].append(run_in_processed_run.get_run_name())
                     logger.info('Handling the exception to continue with the next item')
                     continue
-            logger.debug('End runs in Processed Run state')
+            logger.debug('--------End runs in Processed Run state--------')
 
         elif state == 'Processing Bcl2fastq':
             updated_run[state] = []
             runs_with_error[state] = []
+            logger.debug('--------Start handling the runs in  Processing Bcl2fastq--------')
+            import pdb; pdb.set_trace()
             for run_in_processing_bcl2fastq_run in runs_to_handle[state] :
                 try:
                     updated_run[state].append( manage_run_in_processing_bcl2fastq (conn, run_in_processing_bcl2fastq_run))
@@ -413,9 +437,11 @@ def search_not_completed_run ():
                     runs_with_error[state].append(run_in_processing_bcl2fastq_run.get_run_name())
                     logger.info('Handling the exception on Processing Bcl2fastq.  Continue with the next item')
                     continue
+            logger.debug('--------End handling the runs in  Processing Bcl2fastq--------')
         elif state == 'Processed Bcl2fastq':
             updated_run[state] = []
             runs_with_error[state] = []
+            logger.debug('--------Start handling the runs in  Processed Bcl2fastq--------')
             for run_in_processed_bcl2fastq_run in runs_to_handle[state] :
                 try:
                     updated_run[state].append( manage_run_in_processed_bcl2fastq (conn, run_in_processed_bcl2fastq_run))
@@ -423,10 +449,10 @@ def search_not_completed_run ():
                     runs_with_error[state].append(run_in_processed_bcl2fastq_run.get_run_name())
                     logger.info('Handling the exception on Processed Bcl2fastq.  Continue with the next item')
                     continue
+            logger.debug('--------End handling the runs in  Processed Bcl2fastq--------')
         else:
             string_message = 'Run in unexpected state. ' + state
             logging_errors (string_message , False, False)
             continue
     logger.debug ('End function for search_not_completed_run')
     return updated_run, runs_with_error
-

@@ -119,7 +119,7 @@
                             				        {% if request.user|has_group:"WetlabManager" %}
                                 				        <li><a href="/wetlab/StatsPerTime/">Period of time</a></li>
                                 				    {% endif %}
-                                                 <li><a href="/wetlab/StatsPerMachine/">Per Sequencer</a></li>
+                                                 <li><a href="/wetlab/StatsPerSequencer/">Per Sequencer</a></li>
                             				    <li><a href="/wetlab/StatsExperiment">Experiment Type</a></li>
                             				    <li><a href="/wetlab/StatsLibrary">Library Kit Qualitty</a></li>
                         				  </ul>
@@ -127,6 +127,7 @@
                     				{% else %}
                     				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab"> Statistics</a></li>
                     				{% endif%}
+                                    <!--
                     				{% if user.is_authenticated %}
                     				    {% if request.user|has_group:"WetlabManager" %}
                             				<li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Reports<span class="caret"></span></a>
@@ -138,8 +139,9 @@
                             				    {% endif %}
                             				</li>
                     				    {% else %}
-                    				    <!--<li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">Reports</a></li>-->
+
                     				{% endif%}
+                                -->
                                     <!--<li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#contact">Contact</a></li>-->
                                 </ul>
 

@@ -102,7 +102,7 @@ def create_nextseq_run (request):
         stored_file = os.path.join(settings.MEDIA_ROOT, file_name)
 
         ## Fetch the experiment name and the library name from the sample sheet file
-        index_library_name = get_library_name(stored_file)
+        index_library_name = get_index_library_name(stored_file)
         run_name = get_experiment_name_from_file(stored_file)
 
         if run_name == '':
@@ -552,11 +552,11 @@ def search_run (request):
 
         ### check the right format of start and end date
         if start_date != '':
-            if not check_format_date_in_form(start_date) :
+            if not check_valid_date_format(start_date) :
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data, 'error_message' : error_message})
         if end_date != '':
-            if not check_format_date_in_form(start_date) :
+            if not check_valid_date_format(start_date) :
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data, 'error_message' : error_message})
 
@@ -695,12 +695,12 @@ def search_project (request):
 
         ### check the right format of start and end date
         if start_date != '':
-            if not check_format_date_in_form(start_date) :
+            if not check_valid_date_format(start_date) :
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
 
         if end_date != '':
-            if not check_format_date_in_form(start_date) :
+            if not check_valid_date_format(start_date) :
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
         ### Get projects when project name is not empty
@@ -722,12 +722,6 @@ def search_project (request):
             if len(sequencer_list) == 0:
                 return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
 
-            #    projects_found = projects_found.filter(usedSequencer__sequencerName__in = sequencer_list)
-
-            #from iSkyLIMS_drylab.models import Machines, Platform
-            #if Machines.objects.filter(platformID__platformName__exact = platform_name).exists() :
-            #   machine_list = Machines.objects.filter(platformID__platformName__exact = platform_name)
-
             if RunProcess.objects.filter(usedSequencer__sequencerName__in = sequencer_list).exists() :
                 runs_found = RunProcess.objects.filter(usedSequencer__sequencerName__in= sequencer_list)
                 for run in runs_found :
@@ -738,7 +732,6 @@ def search_project (request):
                     return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
             else:
                     return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
-
 
             # check if user name is not empty
         if user_name != '':
@@ -792,8 +785,6 @@ def search_project (request):
             return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'display_project_list': project_list_dict })
 
     else:
-        #available_platforms = get_available_platform()
-        #available_states = get_available_run_state()
         return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data})
 
 
@@ -874,9 +865,9 @@ def latest_run (request) :
         return redirect ('/accounts/login')
 
     latest_run = RunProcess.objects.order_by('id').last()
-    run_id = latest_run.id
-    r_data_display  = get_information_run(latest_run)
-    return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_one_run': r_data_display })
+
+    return redirect ('display_run', run_id = latest_run.id)
+
 
 @login_required
 def incompleted_runs (request) :
@@ -1124,7 +1115,7 @@ def change_project_libKit (request, project_id) :
 
         if request.method == 'POST' and request.POST['action'] == 'change_project_libKit':
             new_library_name = request.POST['projectlibkit']
-            old_library_name = project.get_library_name()
+            old_library_name = project.get_index_library_name()
             if old_library_name == new_library_name :
                 return render (request, 'iSkyLIMS_wetlab/info_page.html', {'content': ['The library kit from the input text is the same to the existing defined for this project', 'No change is done']})
             # check if there is no other project in the same Run with the same Library Kit
@@ -1201,7 +1192,7 @@ def change_run_libKit (request, run_id):
             if len(new_library_kit) == 1 :
                 # Check if new library kit was set in the form
                 project = Projects.objects.get(projectName__exact = projects_name[0])
-                old_library_kit = project.get_library_name()
+                old_library_kit = project.get_index_library_name()
                 if new_library_kit[0] == old_library_kit :
                     return render (request, 'iSkyLIMS_wetlab/info_page.html', {'content': ['The library kit from the input text is the same to the existing defined for this project', 'No change is done']})
                 # change the library name
@@ -1307,7 +1298,7 @@ def stats_experiment (request):
     return render (request, 'iSkyLIMS_wetlab/StatsPerExperiment.html', {})
 
 @login_required
-def stats_per_machine (request):
+def stats_per_sequencer (request):
     if request.method == 'POST':
         m_name = request.POST['machinename']
         start_date=request.POST['startdate']
@@ -1381,9 +1372,9 @@ def stats_per_machine (request):
 
 
 
-                    machine_statistics = {}
+                    sequencer_statistics = {}
 
-                    machine_statistics ['run_heading'] = ['Run name' , 'Run Date' , 'Sequencer Model' , 'State' , 'Space Img(Mb)' , 'Space Fasta(Mb)' , 'Space Other(Mb)']
+                    sequencer_statistics ['run_heading'] = ['Run name' , 'Run Date' , 'Sequencer Model' , 'State' , 'Space Img(Mb)' , 'Space Fasta(Mb)' , 'Space Other(Mb)']
                     runs_data = []
                     sequencer_run = {}
                     runs_data_list = []
@@ -1398,10 +1389,10 @@ def stats_per_machine (request):
 
                     sequencer_run[ru_seq_model] = runs_data_list
                     runs_data.append(sequencer_run)
-                    machine_statistics['run_data'] = runs_data
+                    sequencer_statistics['run_data'] = runs_data
                     # Get data from machine projects
 
-                    machine_statistics ['projects_heading'] = ['Project name', 'Date', 'Libraty Kit','Samples', 'Cluster PF', 'Yield Mb', '% Q> 30', 'Mean','Sequencer ID']
+                    sequencer_statistics ['projects_heading'] = ['Project name', 'Date', 'Libraty Kit','Samples', 'Cluster PF', 'Yield Mb', '% Q> 30', 'Mean','Sequencer ID']
                     projects_data =[]
                     p_machine_date , p_machine_num_sample = {} , {}
                     p_machine_lib_kit, p_machine_sequencer = {}, {}
@@ -1420,7 +1411,7 @@ def stats_per_machine (request):
                         sub_caption = ''
                         data_source = pie_graphic_standard (heading, sub_caption, theme, run_num)
                         run_pie_graph = FusionCharts("pie3d", "run_pie_graph" , "500", "400", "run_pie_chart", "json", data_source).render()
-                        machine_statistics ['run_pie_graph'] = run_pie_graph
+                        sequencer_statistics ['run_pie_graph'] = run_pie_graph
 
 
 
@@ -1449,7 +1440,7 @@ def stats_per_machine (request):
                         projects_id_list[sequencer_in_project].append(m_project_id)
                         p_machine_num_sample[sequencer_in_project][p_name] = StatsFlSummary.objects.get(project_id__exact = m_project_id).sampleNumber
                         p_machine_date [sequencer_in_project][p_name] = project_machine.get_date()
-                        p_machine_lib_kit[sequencer_in_project][p_name]= project_machine.get_library_name()
+                        p_machine_lib_kit[sequencer_in_project][p_name]= project_machine.get_index_library_name()
                         p_machine_sequencer[sequencer_in_project][p_name] = str(project_machine.runprocess_id.sequencerModel)
                         lanes_in_project = StatsLaneSummary.objects.filter( project_id__exact = m_project_id)
                         for lane in lanes_in_project :
@@ -1526,9 +1517,9 @@ def stats_per_machine (request):
 
                         machine_graphs.append(machine_seq_graphs)
 
-                    machine_statistics ['machine_graph'] = machine_graphs
-                    machine_statistics ['machine_name'] = m_name
-                    machine_statistics['projects_data'] = projects_data
+                    sequencer_statistics ['machine_graph'] = machine_graphs
+                    sequencer_statistics ['machine_name'] = m_name
+                    sequencer_statistics['projects_data'] = projects_data
                     #import pdb; pdb.set_trace()
 
                     #collecting data for comparation graphics
@@ -1579,7 +1570,7 @@ def stats_per_machine (request):
                             total_cluster_pf_list.append(int(cluster_pf_value.replace(',','')))
 
 
-                    machine_statistics ['comp_graphs'] = comp_graphs
+                    sequencer_statistics ['comp_graphs'] = comp_graphs
 
                     # Sequencer graphic utilization
                     sequencer_used = {}
@@ -1591,9 +1582,9 @@ def stats_per_machine (request):
                     sub_caption = ''
                     data_source = pie_graphic_standard (heading, sub_caption, theme, sequencer_used)
                     sequencer_pie_graph = FusionCharts("pie3d", "sequencer_pie_graph" , "500", "400", "sequencer_pie_chart", "json", data_source).render()
-                    machine_statistics ['sequencer_pie_graph'] = sequencer_pie_graph
+                    sequencer_statistics ['sequencer_pie_graph'] = sequencer_pie_graph
 
-                    return  render(request, 'iSkyLIMS_wetlab/StatsPerMachine.html', {'machine_statistics' : machine_statistics})
+                    return  render(request, 'iSkyLIMS_wetlab/StatsPerMachine.html', {'sequencer_statistics' : sequencer_statistics})
                 else: #if RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name, state__runStateName = "Completed").exists():
                     return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Machine does not have projects in Completed state. ',
                                                             'ADVICE:', 'Contact with your administrator']})
@@ -1606,7 +1597,7 @@ def stats_per_machine (request):
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for machine name  ',
                                                                 'ADVICE:', 'Contact with your administrator']})
     else: #if request.method == 'POST':
-        return render (request, 'iSkyLIMS_wetlab/StatsPerMachine.html', {})
+        return render (request, 'iSkyLIMS_wetlab/StatsPerSequencer.html', {})
 
 
 @login_required
@@ -1699,7 +1690,7 @@ def stats_per_researcher (request):
                         projects_id_list[sequencer_in_project].append(r_project_id)
                         p_researcher_num_sample[sequencer_in_project][p_name] = StatsFlSummary.objects.get(project_id__exact = r_project_id).sampleNumber
                         p_researcher_date [sequencer_in_project][p_name] = project_researcher.get_date()
-                        p_researcher_lib_kit[sequencer_in_project][p_name]= project_researcher.get_library_name()
+                        p_researcher_lib_kit[sequencer_in_project][p_name]= project_researcher.get_index_library_name()
                         #
                         p_researcher_sequencer[sequencer_in_project][p_name] = str(project_researcher.runprocess_id.sequencerModel)
                         lanes_in_project = StatsLaneSummary.objects.filter( project_id__exact = r_project_id)
@@ -2084,7 +2075,7 @@ def stats_per_time (request):
 def get_list_of_libraries_values (library_found, q30_comparations, mean_comparations , n_bases_comparations) :
 
     for project_to_compare in library_found :
-        library_to_compare_name = project_to_compare.get_library_name()
+        library_to_compare_name = project_to_compare.get_index_library_name()
         project_to_compare_id = project_to_compare.id
         q30_compare_lib, mean_compare_lib, yield_mb_compare_lib = [], [] , []
         # get the number of lanes by quering the SequencerModel in the RunProcess
@@ -2228,7 +2219,7 @@ def stats_per_library (request):
                 library_stats [mean_graphic] = mean_lane_graphic.render()
 
 
-            library_name = project.get_library_name()
+            library_name = project.get_index_library_name()
             library_stats['library_name'] = library_name
             library_stats['project_names'] = projects_name_in_library
             #
@@ -2267,7 +2258,7 @@ def stats_per_library (request):
 
             if error_in_library_to_compare == '':
                 for project_to_compare in libraries_to_compare :
-                    library_to_compare_name = project_to_compare.get_library_name()
+                    library_to_compare_name = project_to_compare.get_index_library_name()
                     project_to_compare_id = project_to_compare.id
                     #q_30_lane , mean_q_lane , yield_mb_lane = {} , {} ,{}
                     q30_compare_lib, mean_compare_lib, yield_mb_compare_lib = [], [] , []
@@ -2314,7 +2305,7 @@ def stats_per_library (request):
             libraries_found_name =[]
             # get the library names that match with the searching criteria
             for library in library_found :
-                lib_name =library.get_library_name ()
+                lib_name =library.get_index_library_name ()
                 if not lib_name in libraries_found_name :
                     libraries_found_name.append(lib_name)
             #
@@ -2382,7 +2373,7 @@ def stats_per_library (request):
 
             count_libraries = {}
             for library_used in all_libraries :
-                lib_name = library_used.get_library_name()
+                lib_name = library_used.get_index_library_name()
                 if not lib_name in count_libraries :
                     count_libraries[lib_name] = 1
                 else:
@@ -3942,7 +3933,7 @@ def set_library_preparation(request):
             return render ( request,'iSkyLIMS_wetlab/error_page.html',
                 {'content':['Collection Index Kit ' , index_adapters , 'is not defined' ]})
 
-        library_prep_workflow = get_library_name(stored_file)
+        library_prep_workflow = get_index_library_name(stored_file)
         adapter1, adapter2 = get_adapters(stored_file)
         assay = get_assay_from_file (stored_file)
         # store user sample sheet in database

@@ -28,6 +28,21 @@ class RunStates (models.Model):
         return '%s' %(self.runStateName)
 
 class RunProcess(models.Model):
+    usedSequencer = models.ForeignKey(
+                        SequencerInLab,
+                        on_delete=models.CASCADE, blank=True, null = True)
+    runError = models.ForeignKey(
+                        RunErrors,
+                        on_delete=models.CASCADE, null = True, blank = True)
+    stateBeforeError = models.ForeignKey (
+                        RunStates,
+                        on_delete = models.CASCADE, null = True, blank = True)
+    state = models.ForeignKey (
+                        RunStates,
+                        on_delete = models.CASCADE, related_name = 'state_of_run', null = True, blank = True)
+    centerRequestedBy = models.ForeignKey (
+                        Center,
+                        on_delete=models.CASCADE, null = True, blank = True )
     runName = models.CharField(max_length=45)
     sampleSheet = models.FileField(upload_to = wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY, null = True, blank = True)
     generatedat = models.DateTimeField(auto_now_add=True)
@@ -36,17 +51,15 @@ class RunProcess(models.Model):
     bcl2fastq_finish_date = models.DateTimeField(auto_now = False, null=True, blank=True)
     run_completed_date = models.DateTimeField(auto_now = False, null=True, blank=True)
     #runState = models.CharField(max_length=25)
-    state = models.ForeignKey ( RunStates, on_delete = models.CASCADE, related_name = 'state_of_run', null = True, blank = True)
+
     index_library = models.CharField(max_length=85)
     samples= models.CharField(max_length=45,blank=True)
     useSpaceImgMb=models.CharField(max_length=10, blank=True)
     useSpaceFastaMb=models.CharField(max_length=10, blank=True)
     useSpaceOtherMb=models.CharField(max_length=10, blank=True)
-    centerRequestedBy = models.ForeignKey (Center, on_delete=models.CASCADE)
+
     sequencerModel = models.ForeignKey ('iSkyLIMS_drylab.Machines', on_delete=models.CASCADE, null=True, blank=True)
-    usedSequencer = models.ForeignKey(SequencerInLab,  on_delete=models.CASCADE, blank=True, null = True)
-    runError = models.ForeignKey( RunErrors, on_delete=models.CASCADE, null = True, blank = True)
-    stateBeforeError = models.ForeignKey ( RunStates, on_delete = models.CASCADE, null = True, blank = True)
+
 
     def __str__(self):
         return '%s' %(self.runName)
@@ -144,8 +157,8 @@ class RunProcess(models.Model):
     def get_sample_file (self):
         return '%s' %(self.sampleSheet)
 
-    def update_library (self, library_name):
-        self.index_library = library_name
+    def update_index_library (self, index_library_name):
+        self.index_library = index_library_name
         self.save()
         return True
 
@@ -234,7 +247,7 @@ class Projects(models.Model):
     user_id= models.ForeignKey(User,on_delete=models.CASCADE, null = True)
     LibraryKit_id = models.ForeignKey(
             LibraryKit,
-            on_delete=models.CASCADE , null=True)
+            on_delete=models.CASCADE , null=True, blank = True)
     BaseSpaceLibrary = models.CharField(max_length=45, null=True, blank=True)
     projectName= models.CharField(max_length=45)
     libraryKit=models.CharField(max_length=125)

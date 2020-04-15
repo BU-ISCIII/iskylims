@@ -437,22 +437,34 @@ def get_experiment_name_from_file (in_file):
 
     return experiment_name
 
-def get_library_name (in_file):
+def get_index_library_name (in_file):
+    '''
+    Description:
+        The function get the index library adapters. It searchs in the  assay value (used for version 4 of IEM sample sheet
+        and in hte Index Adapters on sample sheet version 5.
+        If Index adapters is found they are used if not the assay value
+    Input:
+        in_file     # shample sheet file
+    Output:
+        library_value
+    '''
     library_name = ''
     ## For accepting characters like spanish characters.
     import codecs
     fh = codecs.open(in_file, 'r', 'utf-8')
-    #fh = open(in_file, 'r')
     for line in fh:
         line = line.rstrip()
         if line == '':
             continue
-        found_library = re.search('^Assay',line)
-        if found_library :
-            library_value = line.split(',')
-            if library_value[1]:
-                library_name = library_value[1]
-                found_library = 0
+        found_assay = re.search('^Assay',line)
+        if found_assay :
+            library_value = line.split(',')[1]
+            continue
+        found_adapters = re.search('^Index Adapters',line)
+        if found_adapters :
+            library_value = line.split(',')[1]
+            break
+
     fh.close()
 
     return library_name
@@ -699,3 +711,4 @@ def valid_user_iem_file (in_file):
     if sample_number == 0:
         return False
     return True
+get_index_library_name
