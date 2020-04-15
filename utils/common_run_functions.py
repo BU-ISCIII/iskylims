@@ -803,6 +803,7 @@ def manage_run_in_processed_run (conn, run_object_name):
     Functions:
         check_run_metrics_processed # Located in this file
         create_graphics         # Located at utils.run_metrics_functions
+        delete_run_metric_files # Located at utils.run_metrics_functions
         get_run_metric_files    # Located at utils.run_metrics_functions
         handling_errors_in_run  # Located at utils.generic_functions
         parsing_run_metrics     # Located at utils.run_metrics_functions
@@ -860,7 +861,7 @@ def manage_run_in_processed_run (conn, run_object_name):
             run_graphics = create_graphics (wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING, run_object_name)
             logger.info('%s : run metrics graphics processed and copied to plot image folder',experiment_name)
             # deleting temporary run metrics files
-            delete_run_metric_files (run_metric_files)
+            delete_run_metric_files (run_metric_files, experiment_name)
             # return the state to Processed Run
             run_state = run_object_name.set_run_state('Processed Run')
 
@@ -907,9 +908,9 @@ def manage_run_in_processing_bcl2fastq (conn, run_object_name):
         experiment_name if the run is updated. Empty if not
     '''
     logger = logging.getLogger(__name__)
-    logger.debug ('Starting function manage_run_in_processing_bcl2fast2_run')
     experiment_name = run_object_name.get_run_name()
-    logger.info('Start handling run %s', experiment_name)
+    logger.debug ('%s : Starting function manage_run_in_processing_bcl2fast2_run', experiment_name)
+    logger.info('%s : Start handling in Processing_Bcl2fastq state', experiment_name)
     run_folder = RunningParameters.objects.get(runName_id = run_object_name).get_run_folder()
     statistics_folder = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, run_folder, wetlab_config.DEMULTIPLEXION_BCL2FASTQ_FOLDER)
 
@@ -918,14 +919,14 @@ def manage_run_in_processing_bcl2fastq (conn, run_object_name):
         try:
             file_list = conn.listPath( wetlab_config.SAMBA_SHARED_FOLDER_NAME, statistics_folder)
         except Exception as e:
-            string_message = 'Folder statistics have been deleted for ' + experiment_name
+            string_message = experiment_name + ' : Folder statistics does not exists '
             logging_errors(string_message, False, False)
-            logger.debug ('End function manage_run_in_processing_bcl2fast2 with error')
+            logger.debug ('%s :End function manage_run_in_processing_bcl2fast2 with error',experiment_name)
             return ''
         for sh in file_list:
             if sh.filename == wetlab_config.REPORT_FOLDER :
 
-                logger.info('bcl2fastq has been completed for  %s', experiment_name)
+                logger.info('%s : bcl2fastq has been completed . Extracting data', experiment_name)
                 # Get the time when  the Bcl2Fastq process is ending
                 s_conversion_stats = os.path.join (statistics_folder, wetlab_config.STATS_FOLDER, wetlab_config.CONVERSION_STATS_FILE)
                 conversion_attributes = conn.getAttributes(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,s_conversion_stats)
@@ -934,16 +935,16 @@ def manage_run_in_processing_bcl2fastq (conn, run_object_name):
                 run_object_name.set_run_state('Processed Bcl2fastq')
                 # Do not update the projects state. They will keep in Processed Run
 
-                logger.info ('Updated the Bcl2Fastq time in the run %s', experiment_name)
+                logger.info ('%s : Updated the Bcl2Fastq time in the run ', experiment_name)
                 break
 
     else:
-        string_message = 'Invalid state when calling to ' + experiment_name
+        string_message = experiment_name + ' : Invalid state when calling to '
         logging_errors(string_message , False , False)
-        logger.debug ('End function manage_run_in_processing_bcl2fast2 with error')
+        logger.debug ('%s : End function manage_run_in_processing_bcl2fast2 with error',experiment_name)
         return ''
 
-    logger.debug ('End function manage_run_in_processing_bcl2fast2')
+    logger.debug ('%s : End function manage_run_in_processing_bcl2fast2', experiment_name)
     return experiment_name
 
 
@@ -998,8 +999,9 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
         Exception if any error occurs
     '''
     logger = logging.getLogger(__name__)
-    logger.debug ('Starting function manage_run_in_processed_bcl2fast2_run')
     experiment_name = run_object_name.get_run_name()
+    logger.debug ('%s : Starting function manage_run_in_processed_bcl2fast2_run',experiment_name)
+
     run_folder = RunningParameters.objects.get(runName_id = run_object_name).get_run_folder()
     number_of_lanes = run_object_name.get_sequencing_lanes()
 
@@ -1010,96 +1012,96 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
         try:
             l_demux , l_conversion= get_bcl2fastq_output_files (conn, run_folder)
         except:
-            string_message = 'Unable to fetch stats files for ' + experiment_name
+            string_message = experiment_name + ' : Unable to fetch stats files '
             logging_errors(string_message, False, False)
             handling_errors_in_run(experiment_name, '11')
-            logger.debug ('End function manage_run_in_processed_bcl2fast2 with error')
+            logger.debug ('%s : End function manage_run_in_processed_bcl2fast2 with error',experiment_name)
             raise
         # parsing the files to get the xml Stats
-        logger.info('Start parsing  demultiplexing files')
+        logger.info('%s : Start parsing  demultiplexing files',experiment_name)
         parsed_result = parsing_demux_and_conversion_files(l_demux, l_conversion, number_of_lanes)
 
         # parsing and processing the project samples
-        logger.info('Start parsing  samples demultiplexing')
+        logger.info('%s : Start parsing  samples demultiplexing',experiment_name)
         sample_parsed_result = parsing_demux_sample_project (l_demux, l_conversion, number_of_lanes)
         # clean up the fetched files in the local temporary folder
         os.remove(l_conversion)
         os.remove(l_demux)
-        logger.info ('Deleted temporary demultiplexing and conversion files')
+        logger.info ('%s : Deleted temporary demultiplexing and conversion files', experiment_name)
 
         processed_raw_stats = process_raw_demux_stats(parsed_result, run_object_name)
         try:
             for raw_stats in processed_raw_stats :
                 new_raw_stats = RawDemuxStats.objects.create_stats_run_read(raw_stats, run_object_name)
-            logger.info('Saved information to RawDemuxStats')
+            logger.info('%s : Saved information to RawDemuxStats', experiment_name)
         except:
             string_message = 'Unable to save raw stats for ' + experiment_name
             logging_errors(string_message, False, False)
             handling_errors_in_run (experiment_name, '11' )
             cleanup_demux_tables_if_error(run_object_name)
-            logger.debug('End function manage_run_in_processed_bcl2fast2_run with error')
+            logger.debug('%s : End function manage_run_in_processed_bcl2fast2_run with error', experiment_name)
             raise
 
         processed_samples_stats = process_samples_projects(sample_parsed_result, run_object_name)
         try:
             for sample_stats in processed_samples_stats :
                 new_sample_stats = SamplesInProject.objects.create_sample_project(sample_stats)
-            logger.info('Saved information to SamplesInProject')
+            logger.info('%s : Saved information to SamplesInProject', experiment_name)
         except:
-            string_message = 'Unable to save sample stats saving for ' + experiment_name
+            string_message = experiment_name + ' : Unable to save sample stats'
             logging_errors(string_message, False, False)
             handling_errors_in_run (experiment_name, '13' )
             cleanup_demux_tables_if_error(run_object_name)
-            logger.debug('End function manage_run_in_processed_bcl2fast2_run with error')
+            logger.debug('%s : End function manage_run_in_processed_bcl2fast2_run with error', experiment_name)
             raise
         processed_fl_summary = process_fl_summary_stats(parsed_result, run_object_name)
         try:
             for fl_summary in processed_fl_summary :
                 new_fl_summary = StatsFlSummary.objects.create_fl_summary(fl_summary)
-            logger.info('Saved information to StatsFlSummary')
+            logger.info('%s : Saved information to StatsFlSummary', experiment_name)
         except:
-            string_message = 'Unable to save FL Summary  stats for ' + experiment_name
+            string_message = experiment_name + ' : Unable to save FL Summary stats'
             logging_errors(string_message, False, False)
             handling_errors_in_run (experiment_name, '14' )
             cleanup_demux_tables_if_error(run_object_name)
-            logger.debug('End function manage_run_in_processed_bcl2fast2_run with error')
+            logger.debug('%s : End function manage_run_in_processed_bcl2fast2_run with error', experiment_name)
             raise
 
         processed_lane_summary = process_lane_summary_stats(parsed_result, run_object_name)
         try:
             for lane_summary in processed_lane_summary :
                 new_lane_summary = StatsLaneSummary.objects.create_lane_summary(lane_summary)
-            logger.info('Saved information to StatsLaneSummary')
+            logger.info('%s : Saved information to StatsLaneSummary', experiment_name)
         except:
-            string_message = 'Unable to save Lane Summary stats for ' + experiment_name
+            string_message = experiment_name + ' : Unable to save Lane Summary stats'
             logging_errors(string_message, False, False)
             handling_errors_in_run (experiment_name, '15' )
             cleanup_demux_tables_if_error(run_object_name)
-            logger.debug('End function manage_run_in_processed_bcl2fast2_run with error')
+            logger.debug('%s :End function manage_run_in_processed_bcl2fast2_run with error', experiment_name)
             raise
 
         processed_unknow_barcode = process_unknow_barcode_stats(parsed_result, run_object_name)
         try:
             for unknow_barcode in processed_unknow_barcode :
                 new_unknow_barcode = RawTopUnknowBarcodes.objects.create_unknow_barcode(unknow_barcode)
-            logger.info('Saved information to RawTopUnknowBarcodes')
+            logger.info('%s : Saved information to RawTopUnknowBarcodes',experiment_name)
         except:
-            string_message = 'Unable to Unknow Barcode stats for ' + experiment_name
+            string_message = experiment_name + ' : Unable to Unknow Barcode stats'
             logging_errors(string_message, False, False)
             handling_errors_in_run (experiment_name, '16' )
             cleanup_demux_tables_if_error(run_object_name)
-            logger.debug('End function manage_run_in_processed_bcl2fast2_run with error')
+            logger.debug('%s : End function manage_run_in_processed_bcl2fast2_run with error', experiment_name)
             raise
 
         ## Get the disk space utilization for this run
         try:
             disk_utilization = get_run_disk_utilization (conn, run_folder)
         except:
-            string_message = 'Error when fetching the log file for the run ' + new_run
+            string_message = experiment_name + ' : Error when fetching the disk utilizaton'
             logging_errors (string_message, False, False)
             handling_errors_in_run (experiment_name, '17' )
             cleanup_demux_tables_if_error(run_object_name)
-            logger.debug('End function manage_run_in_processed_bcl2fast2_run with error')
+            logger.debug('%s : End function manage_run_in_processed_bcl2fast2_run with error', experiment_name)
             raise
 
         result_store_usage = run_object_name.set_used_space (disk_utilization)
@@ -1107,12 +1109,13 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
         result_set_finish_date = run_object_name.set_run_finish_date(finish_date)
         # Update the run state to completed
         run_state = run_object_name.set_run_state('Completed')
-        #projects_state = set_state_in_all_projects(experiment_name, 'Completed')
+        logger.info('%s : is Completed',experiment_name)
+
 
     else:
-        string_message = 'Invalid state when calling to ' + experiment_name
+        string_message = experiment_name + ' : Invalid state when calling this function'
         logging_errors(string_message , False , False)
-        logger.debug ('End function manage_run_in_processed_bcl2fast2 with error')
+        logger.debug ('%s : End function manage_run_in_processed_bcl2fast2 with error', experiment_name)
         return ''
-    logger.debug ('End function manage_run_in_processed_bcl2fast2 ')
+    logger.debug ('%s : End function manage_run_in_processed_bcl2fast2 ', experiment_name)
     return experiment_name

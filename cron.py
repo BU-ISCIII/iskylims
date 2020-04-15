@@ -93,7 +93,7 @@ def looking_for_new_runs ():
         for state in run_with_error:
             if len (run_with_error[state]) > 0 :
                 for run_error in run_with_error[state]:
-                    logger.info('Run  %s was set to Error when processing run on %s state', run_error, state)
+                    logger.info('%s : Unable to process because of error found in %s state', run_error, state)
 
     logger.info('------- End summary for search_update_new_runs -----')
     time_stop= datetime.now().strftime('%Y-%m-%d %H:%M:%S')

@@ -312,10 +312,15 @@ def save_new_miseq_run ( experiment_name, run_date, instrument, l_run_parameter)
         raise ValueError ('Unable to find machine ')
     '''
     run_state = RunStates.objects.get(runStateName__exact = 'Recorded')
-    run_process = RunProcess(runName=experiment_name,sampleSheet= '', run_date = run_date, index_library = '',
-                            state = run_state, centerRequestedBy = None, usedSequencer = sequencer)
-    run_process.save()
-    logger.info('%s : Create the new runProcess into database', experiment_name)
+    if RunProcess.objects.filter(runName__exact = experiment).exists():
+        run_process = RunProcess.objects.filter(runName__exact = experiment)
+        run_process.set_run_date(run_date)
+        logger.info('%s : RunProcess already create on database. Updated run date', experiment_name)
+    else:
+        run_process = RunProcess(runName=experiment_name,sampleSheet= '', run_date = run_date, index_library = '',
+                                state = run_state, centerRequestedBy = None, usedSequencer = sequencer)
+        run_process.save()
+        logger.info('%s : Create the new runProcess into database', experiment_name)
     logger.debug('%s : Exiting the function save_new_miseq_run', experiment_name )
     return run_process
 
@@ -363,12 +368,16 @@ def save_miseq_projects_found (projects_users , experiment_name, index_library_n
 
     for project, user  in projects_users.items():
         userid = User.objects.get(username__exact = user)
+        if Projects.objects.filter(runprocess_id = run_process_obj, projectName__exact = project).exists():
+            logger.info('%s : Project  : %s already defined. Skip creation.', experiment_name, project)
+            continue
         p_data = Projects(runprocess_id = run_process_obj, projectName = project,
                         user_id = userid,
                         baseSpaceFile = base_space_file, project_run_date = run_date_no_format,
                         #LibraryKit_id = library_kit,
                         libraryKit = index_library_name)
         p_data.save()
+        logger.debug('%s : Project  : %s created in DDBB.', experiment_name, project)
     logger.info('%s : Updated Projects table with the new projects found', experiment_name)
     logger.debug('%s : End the function save_miseq_projects_found' , experiment_name)
     return ''
@@ -543,7 +552,7 @@ def manage_miseq_in_processing_run (conn, run_name):
             run_name.run_finish_date = run_completion_date
             run_name.save()
             logger.info('%s  : updated to processed run', experiment_name)
-            logger.debug ('%s : End function manage_miseq_in_processing_run %s' , experiment_name)
+            logger.debug ('%s : End function manage_miseq_in_processing_run' , experiment_name)
             return experiment_name
     except ValueError :
         logger.debug ('%s : End function manage_miseq_in_processing_run with error', experiment_name)
@@ -695,7 +704,7 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
     # deleting temporary copy of RunParameter and RunInfo files
     os.remove(l_run_parameter)
     os.remove(l_run_info)
-    logger.info('Deleted RunParameter and RunInfo files')
+    logger.info('%s : Deleted RunParameter and RunInfo files',experiment_name)
 
     if run_waiting_for_sample_sheet (experiment_name) :
         # Fetch sample sheet from remote server
@@ -731,7 +740,7 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
 
             #experiment_name, library_name = get_experiment_library_name(l_sample_sheet)
             index_library_name = get_index_library_name(l_sample_sheet)
-            logger.info('%s : Fetched experiment name and index library name from sample sheet',experiment_name)
+            logger.info('%s : Fetched index library name %s',experiment_name, index_library_name)
 
             sample_sheet_on_database = store_sample_sheet_in_run (l_sample_sheet, experiment_name )
             updated_library_name = update_library_name_in_run (experiment_name, index_library_name)

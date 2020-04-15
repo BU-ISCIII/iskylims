@@ -448,7 +448,7 @@ def get_index_library_name (in_file):
     Output:
         library_value
     '''
-    library_name = ''
+    library_value = ''
     ## For accepting characters like spanish characters.
     import codecs
     fh = codecs.open(in_file, 'r', 'utf-8')
@@ -466,8 +466,7 @@ def get_index_library_name (in_file):
             break
 
     fh.close()
-
-    return library_name
+    return library_value
 
 def update_library_kit_field (library_file_name, library_kit_name, library_name):
     #result_directory='documents/wetlab/BaseSpaceMigrationFiles/'

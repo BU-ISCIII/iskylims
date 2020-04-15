@@ -351,7 +351,6 @@ def search_not_completed_run ():
             updated_run['Sample Sent'] = []
             runs_with_error['Sample Sent'] = []
             logger.debug('--------Start handling the runs in Sample Sent state--------')
-            import pdb; pdb.set_trace()
             for run_in_sample_sent in runs_to_handle[state] :
                 experiment_name = run_in_sample_sent.get_run_name()
                 # get platform
@@ -384,7 +383,6 @@ def search_not_completed_run ():
             updated_run[state] = []
             runs_with_error[state] = []
             logger.debug('--------Start handling the runs in  Processing Run state------')
-            import pdb; pdb.set_trace()
             for run_in_processing_run in runs_to_handle[state] :
                 experiment_name = run_in_processing_run.get_run_name()
                 try:
@@ -415,7 +413,6 @@ def search_not_completed_run ():
             updated_run[state] = []
             runs_with_error[state] = []
             logger.debug('--------Start handling the runs in  Processed Run state--------')
-            import pdb; pdb.set_trace()
             for run_in_processed_run in runs_to_handle[state]:
                 try:
                     updated_run[state].append(manage_run_in_processed_run(conn, run_in_processed_run))
@@ -429,7 +426,6 @@ def search_not_completed_run ():
             updated_run[state] = []
             runs_with_error[state] = []
             logger.debug('--------Start handling the runs in  Processing Bcl2fastq--------')
-            import pdb; pdb.set_trace()
             for run_in_processing_bcl2fastq_run in runs_to_handle[state] :
                 try:
                     updated_run[state].append( manage_run_in_processing_bcl2fastq (conn, run_in_processing_bcl2fastq_run))
