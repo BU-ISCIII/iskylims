@@ -3,42 +3,56 @@
 {% block content %}
 {% csrf_token %}
 {% include "iSkyLIMS_core/graphic_chart_functionality.html" %}
-
+<style>
+    .scroll-wrapper-sm-12 {
+        max-height: 350px;
+        overflow: auto;
+        display:inline-block;
+        width: 1170px;
+    }
+</style>
 {% if researcher_statistics %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
             <div class="panel panel-default">
                 <div class="panel-heading"><h2>Statistics results for Investigator {{researcher_statistics.researcher_name}} </h2></div>
-                <div class="panel-body">
                 {% for sequencer in researcher_statistics.projects_data  %}
-                    {% for sequencer_name, values_in_dict in sequencer.items %}
-                        <h3> Projects using the sequencer {{sequencer_name }} : </h3>
-                        <button onclick="exportTableToExcel('sequencer{{sequencer_name}}')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
-                        <BR>
-                        <div class="table-wrapper-scroll-y ">
-                            <table id="sequencer{{sequencer_name}}" class="table  table-hover">
-                                <thead>
-                                    <tr>
-                                        {% for values  in researcher_statistics.projects_heading %}
-                                            <th>{{ values }} </th>
-                                        {%endfor%}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for values in values_in_dict %}
-                                        <tr>
-                                            {% for value in values %}
-                                                <td>{{ value }}</td>
-                                            {% endfor %}
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                    <div class="row row-space-2 margin-b-4">
+
+                        {% for sequencer_name, values_in_dict in sequencer.items %}
+
+                            <div class="row row-space-2 margin-b-4">
+                                <div class="col-sm-12" >
+                                    <h3 style="text-align:center"> Projects using the sequencer {{sequencer_name }} : </h3>
+                                </div> <!--// end col-sm-12  -->
+                            </div>  <!--// end row -->
+                            <button onclick="exportTableToExcel('sequencer{{sequencer_name}}')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
                             <BR>
-                        </div> <!--  end of col-table-responsive -->
-                    {% endfor%}
+                            <div class="panel-body scroll-wrapper-sm-12">
+                                <table id="sequencer{{sequencer_name}}" class="table  table-hover">
+                                    <thead>
+                                        <tr>
+                                            {% for values  in researcher_statistics.projects_heading %}
+                                                <th>{{ values }} </th>
+                                            {%endfor%}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for values in values_in_dict %}
+                                            <tr>
+                                                {% for value in values %}
+                                                    <td>{{ value }}</td>
+                                                {% endfor %}
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                <BR>
+                            </div> <!--  end of col-scroll-wrapper -->
+                        {% endfor%}
+                    </div>  <!--// end row -->
                 {% endfor %}
-                </div>  <!--  end of panel body  -->
+
             </div> <!--// end panel -->
         </div> <!--// end col-sm-12  -->
     </div> <!--// end row -->

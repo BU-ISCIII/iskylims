@@ -293,6 +293,9 @@ class Projects(models.Model):
     def get_run_id(self):
         return '%s' %(self.runprocess_id.get_run_id())
 
+    def get_run_obj(self):
+        return self.runprocess_id
+
     def get_user_name (self):
         user_name = self.user_id.username
         return '%s' %(user_name)
@@ -300,7 +303,7 @@ class Projects(models.Model):
     def get_project_name (self):
         return '%s' %(self.projectName)
 
-    def get_library_name (self):
+    def get_index_library_name (self):
         return '%s' %(self.libraryKit)
 
     def get_date (self):
@@ -659,8 +662,12 @@ class StatsLaneSummary (models.Model):
                 self.yieldMb, self.biggerQ30, self.meanQuality)
 
     def get_stats_info (self):
-
-        return'%s;%s;%s;%s' %(self.biggerQ30, self.meanQuality, self.yieldMb, self.pfCluster)
+        stats_info = []
+        stats_info.append(self.biggerQ30)
+        stats_info.append(self.meanQuality)
+        stats_info.append(self.yieldMb)
+        stats_info.append(self.pfCluster)
+        return stats_info
 
     objects = StatsLaneSummaryManager ()
 

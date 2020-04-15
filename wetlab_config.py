@@ -277,6 +277,8 @@ ERROR_NO_SAMPLE_FOUND = ['No sample found which  match your  conditions ','']
 
 ERROR_TOO_SHORT_INDEX_BASE_SEQUENCE = ['Index Sequence must contains at least 6  caracters' ,'' ]
 
+ERROR_TOO_SHORT_INDEX_LIBRAY_NAME = ['Index Library Name  must contains at least 5  caracters' ,'' ]
+
 ERROR_NO_COLLECTION_INDEX_FOUND = ['There are no recorded information for the Collection index kit' ]
 
 ERROR_INVALID_SEQUENCE_CHARACTERS = ['Invalid characters in Index sequene', '']
@@ -284,6 +286,7 @@ ERROR_INVALID_SEQUENCE_CHARACTERS = ['Invalid characters in Index sequene', '']
 ###### ERROR TEXT FOR SEACHING #############################################
 ERROR_NO_MATCHES_FOR_RUN_SEARCH = ['There is not any run that mathes your input conditions']
 ERROR_NO_MATCHES_FOR_PROJECT_SEARCH = ['There is not any project that mathes your input conditions']
+ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS = ['There is not any Index Library Kit  that mathes your input conditions']
 ERROR_INVALID_FORMAT_FOR_DATES = ['Invalid date format. Use the format  (DD-MM-YYYY)']
 ERROR_USER_NAME_TOO_SHORT = ['User name must contains at least 5 characters']
 

@@ -1444,7 +1444,7 @@ def stats_per_sequencer (request):
                         p_machine_sequencer[sequencer_in_project][p_name] = str(project_machine.runprocess_id.sequencerModel)
                         lanes_in_project = StatsLaneSummary.objects.filter( project_id__exact = m_project_id)
                         for lane in lanes_in_project :
-                            q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane.get_stats_info().split(';')
+                            q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane.get_stats_info()
                             q_30_list.append(float(q_30_value))
                             mean_q_list.append(float(mean_q_value))
                             yield_mb_list.append(float(yield_mb_value.replace(',','')))
@@ -1563,7 +1563,7 @@ def stats_per_sequencer (request):
                     comp_graphs, comp_seq_graphs = [] , []
                     for sequencer in projects_name_dict.keys() :
                         for lane_summary in total_lanes_summary[sequencer] :
-                            q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane_summary.get_stats_info().split(';')
+                            q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane_summary.get_stats_info()
                             total_q_30_list.append(float(q_30_value))
                             total_mean_q_list.append(float(mean_q_value))
                             total_yield_mb_list.append(int(yield_mb_value.replace(',','')))
@@ -1695,7 +1695,7 @@ def stats_per_researcher (request):
                         p_researcher_sequencer[sequencer_in_project][p_name] = str(project_researcher.runprocess_id.sequencerModel)
                         lanes_in_project = StatsLaneSummary.objects.filter( project_id__exact = r_project_id)
                         for lane in lanes_in_project :
-                            q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane.get_stats_info().split(';')
+                            q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane.get_stats_info()
                             q_30_list.append(float(q_30_value))
                             mean_q_list.append(float(mean_q_value))
                             yield_mb_list.append(float(yield_mb_value.replace(',','')))
@@ -1814,7 +1814,7 @@ def stats_per_researcher (request):
                         comp_graphs, comp_seq_graphs = [] , []
                         for sequencer in projects_name_dict.keys() :
                             for lane_summary in total_lanes_summary[sequencer] :
-                                q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane_summary.get_stats_info().split(';')
+                                q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane_summary.get_stats_info()
                                 total_q_30_list.append(float(q_30_value))
                                 total_mean_q_list.append(float(mean_q_value))
                                 total_yield_mb_list.append(int(yield_mb_value.replace(',','')))
@@ -2082,7 +2082,7 @@ def get_list_of_libraries_values (library_found, q30_comparations, mean_comparat
         number_of_lanes = project_to_compare.runprocess_id.get_sequencing_lanes()
         for lane_number in range (1,number_of_lanes + 1):
             lane_in_project = StatsLaneSummary.objects.get(project_id__exact = project_to_compare_id, lane__exact = lane_number)
-            q_30_value, mean_q_value, yield_mb , cluster_pf = lane_in_project.get_stats_info().split(';')
+            q_30_value, mean_q_value, yield_mb , cluster_pf = lane_in_project.get_stats_info()
             q30_compare_lib.append(float(q_30_value))
             mean_compare_lib.append(float(mean_q_value))
             yield_mb_compare_lib.append(float(yield_mb.replace(',','')))
@@ -2110,49 +2110,48 @@ def stats_per_library (request):
         if library_kit_name == '' and start_date == '' and end_date == '' :
             return render(request, 'iSkyLIMS_wetlab/StatsPerLibrary.html')
 
-        if library_kit_name !=''  and len(library_kit_name) <3 :
-             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The user name must contains at least 4 caracters ',
-                                                                    'ADVICE:', 'write the full Library Kit name to get a better match']})
+        if library_kit_name !=''  and len(library_kit_name) < 5 :
+            error_message = ERROR_TOO_SHORT_INDEX_LIBRAY_NAME
+            return render(request, 'iSkyLIMS_wetlab/StatsPerLibrary.html', {'error_message':error_message})
+
         ### check the right format of start and end date
         if start_date != '':
-            try:
-                datetime.datetime.strptime(start_date, '%Y-%m-%d')
-            except:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The format for the "Start Date Search" Field is incorrect ',
-                                                                    'ADVICE:', 'Use the format  (YYYY-MM-DD)']})
+            if not check_valid_date_format(start_date) :
+                error_message = ERROR_INVALID_FORMAT_FOR_DATES
+            return render(request, 'iSkyLIMS_wetlab/StatsPerLibrary.html', {'error_message':error_message})
         if end_date != '':
-            try:
-                datetime.datetime.strptime(end_date, '%Y-%m-%d')
-            except:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
-                                                                    'ADVICE:', 'Use the format  (YYYY-MM-DD)']})
+            if not check_valid_date_format(end_date) :
+                error_message = ERROR_INVALID_FORMAT_FOR_DATES
+            return render(request, 'iSkyLIMS_wetlab/StatsPerLibrary.html', {'error_message':error_message})
+
         if library_kit_name != '':
             if Projects.objects.filter(libraryKit__icontains = library_kit_name, runprocess_id__state__runStateName__exact = 'Completed').exists():
                 library_found = Projects.objects.filter(libraryKit__icontains = library_kit_name, runprocess_id__state__runStateName__exact = 'Completed')
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Library containing ', library_kit_name]})
+                error_message = ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS
+                return render(request, 'iSkyLIMS_wetlab/StatsPerLibrary.html' , {'error_message':error_message})
         else:
             library_found = Projects.objects.filter(runprocess_id__state__runStateName__exact = 'Completed')
         if (start_date != '' and end_date != ''):
             if library_found.filter(project_run_date__range=(start_date, end_date)).exists():
                  library_found = library_found.filter(project_run_date__range=(start_date, end_date))
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Library containing ', library_kit_name,
-                                        ' created between ', start_date, 'and the ', end_date]})
+                error_message = ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS
+                return render(request, 'iSkyLIMS_wetlab/StatsPerLibrary.html', {'error_message':error_message})
         if start_date !='' and end_date == '':
             if library_found.filter(project_run_date__gte = start_date).exists():
                  library_found = library_found.filter(project_run_date__gte = start_date)
                  #
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Library containing ', library_kit_name,
-                                        ' starting from', start_date]})
+                error_message = ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS
+                return render(request, 'iSkyLIMS_wetlab/StatsPerLibrary.html', {'error_message':error_message})
         if start_date =='' and end_date != '':
             if library_found.filter(project_run_date__lte = end_date).exists():
                 #
                 library_found = library_found.filter(project_run_date__lte = end_date)
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Library containing ', library_kit_name,
-                                        ' finish before ', end_date]})
+                error_message = ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS
+                return render(request, 'iSkyLIMS_wetlab/StatsPerLibrary.html', {'error_message':error_message})
 
         #Collecting the statistics for the selected library
         # Get the projects which are using the library kit
@@ -2164,7 +2163,7 @@ def stats_per_library (request):
         #check if only 1 library kit matches the query
         library_names ={}
         for library in library_found :
-            library_names [library.libraryKit] = 1
+            library_names [library.get_index_library_name()] = 1
         #
         if len(library_names) == 1:
             # There is only 1 library in the query. Results displays all projects data which have this library kit
@@ -2175,11 +2174,11 @@ def stats_per_library (request):
             for lane_number in range (1,5):
                 q_30_lane , mean_q_lane , yield_mb_lane = {} , {} ,{}
                 for project in library_found :
-                    project_id = project.id
+                    project_id = project.get_project_id()
                     # Get quality information for each Lane summary of the project id
                     #
                     lane_in_project = StatsLaneSummary.objects.get(project_id__exact = project_id, lane__exact = lane_number)
-                    q_30_value, mean_q_value, yield_mb , cluster_pf = lane_in_project.get_stats_info().split(';')
+                    q_30_value, mean_q_value, yield_mb , cluster_pf = lane_in_project.get_stats_info()
                     project_name = project.get_project_name()
                     q_30_lane[project_name] = q_30_value
                     q30_in_lib.append(float(q_30_value))
@@ -2255,16 +2254,20 @@ def stats_per_library (request):
                     libraries_to_compare = Projects.objects.filter(runprocess_id__state__runStateName__exact = 'Completed', generatedat__range =(start_date, end_date)).exclude(libraryKit__exact = library_name)
                 else :
                     error_in_library_to_compare ='No other library have been found for doing the comparison for the start date  ' + start_date + '  and with the ending date  ' + end_date
-
+            
             if error_in_library_to_compare == '':
                 for project_to_compare in libraries_to_compare :
                     library_to_compare_name = project_to_compare.get_index_library_name()
-                    project_to_compare_id = project_to_compare.id
+                    project_to_compare_id = project_to_compare.get_project_id()
                     #q_30_lane , mean_q_lane , yield_mb_lane = {} , {} ,{}
                     q30_compare_lib, mean_compare_lib, yield_mb_compare_lib = [], [] , []
-                    for lane_number in range (1,5):
+
+                    run_obj = project_to_compare.get_run_obj()
+                    lanes_in_sequencer = int(run_obj.get_sequencing_lanes())
+                    for lane_number in range (1,lanes_in_sequencer+ 1):
+
                         lane_in_project = StatsLaneSummary.objects.get(project_id__exact = project_to_compare_id, lane__exact = lane_number)
-                        q_30_value, mean_q_value, yield_mb , cluster_pf = lane_in_project.get_stats_info().split(';')
+                        q_30_value, mean_q_value, yield_mb , cluster_pf = lane_in_project.get_stats_info()
                         q30_compare_lib.append(float(q_30_value))
                         mean_compare_lib.append(float(mean_q_value))
                         yield_mb_compare_lib.append(float(yield_mb.replace(',','')))

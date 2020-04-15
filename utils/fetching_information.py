@@ -547,7 +547,7 @@ def get_information_run(run_object):
         for p in range (len(p_list)):
             p_info.append([p_list[p].projectName,p_list[p].id])
             # get information about the library kits used for this run
-            lib_kit = p_list[p].libraryKit
+            lib_kit = p_list[p].get_index_library_name()
             if not lib_kit in p_library_kits :
                 p_library_kits.append(lib_kit)
         info_dict['projects']=p_info
