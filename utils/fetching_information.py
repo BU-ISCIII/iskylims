@@ -71,7 +71,7 @@ def get_boxplot_comparation_runs (run_object):
     q_30_all_value_float , mean_all_value_float , yield_mb_all_value_float , cluster_pf_all_value_float = [] , [] , [], []
 
     for item in run_lane_summary:
-        q_30_value, mean_value , yield_mb_value , cluster_pf_value, = item.get_stats_info().split(';')
+        q_30_value, mean_value , yield_mb_value , cluster_pf_value, = item.get_stats_info()
 
         q_30_run_value_float.append(float(q_30_value))
         mean_run_value_float.append(float(mean_value))
@@ -98,7 +98,7 @@ def get_boxplot_comparation_runs (run_object):
         # It is the first run in the year. Then include it until more than one run was stored
         all_lane_summary = StatsLaneSummary.objects.filter(runprocess_id__in = same_runs_in_year_list).exclude(defaultAll__isnull = False)
     for item in all_lane_summary:
-        q_30_value, mean_value , yield_mb_value , cluster_pf_value = item.get_stats_info().split(';')
+        q_30_value, mean_value , yield_mb_value , cluster_pf_value = item.get_stats_info()
 
         q_30_all_value_float.append(float(q_30_value))
         mean_all_value_float.append(float(mean_value))
@@ -738,7 +738,7 @@ def get_information_project (project_id, request):
     project_info_dict['p_name'] = project_id.get_project_name()
     project_info_dict ['user_id'] = project_id.get_user_name()
     project_info_dict['run_name'] = project_id.get_run_name()
-    project_info_dict['collection_index'] = project_id.get_library_name()
+    project_info_dict['collection_index'] = project_id.get_index_library_name()
     project_info_dict['base_space_file'] = project_id.get_base_space_file()
     project_info_dict['dates'] = list(zip(HEADING_FOR_PROJECT_DATES, project_id.get_project_dates() ))
     run_name = project_id.runprocess_id.runName
