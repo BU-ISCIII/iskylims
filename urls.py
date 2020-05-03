@@ -23,6 +23,7 @@ urlpatterns = [
     path('createPool/', views.create_pool, name='create_pool'),
     path('createProtocol', views.create_protocol, name = 'create_protocol'),
     path('createSampleProjects', views.create_sample_projects, name = 'create_sample_projects'),
+    path('configuration', views.configuration, name='configuration'),
     path('configurationTest/', views.configuration_test, name='configuration_test'),
     path('defineMoleculeUses', views.define_molecule_uses, name='define_molecule_uses'),
     path('defineProtocolParameters=<int:protocol_id>', views.define_protocol_parameters, name = 'define_protocol_parameters'),

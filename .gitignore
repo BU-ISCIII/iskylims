@@ -5,7 +5,7 @@ migrations/
 tmp/
 logs/
 tests/
-
+wetlab_samba_conf.py
 ## Default for python projects
 # Byte-compiled / optimized / DLL files
 __pycache__/

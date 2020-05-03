@@ -2,9 +2,15 @@ import os
 from django.conf import settings
 ##### Allow to import the configuration samba files from configuration folder
 import sys
-sys.path.append('../')
-from conf.wetlab_conf import *
+sys.path.append
+try:
+    from .wetlab_samba_conf import *
+except:
+    pass
+
 '''
+
+
 ################# USER SETTINGS ##############################
 ## Wetlab manager
 WETLAB_MANAGER = 'WetlabManager'
@@ -293,6 +299,8 @@ ERROR_INVALID_FORMAT_FOR_DATES = ['Invalid date format. Use the format  (DD-MM-Y
 ERROR_USER_NAME_TOO_SHORT = ['User name must contains at least 5 characters']
 ERROR_NO_MATCHES_FOR_SEQUENCER_STATS = ['There is not any run that where using the sequencer']
 
+ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS = ['Unsuccessful configuration settings for Samba connection']
+
 ############### HEADING FOR PROJECT DATA VISUALIZATION #####################
 HEADING_FOR_PROJECT_DATES = ['Project Recorder date', 'Project date']
 
@@ -302,3 +310,11 @@ HEADING_FOR_PROJECT_DATES = ['Project Recorder date', 'Project date']
 ############### FIELD NAME TO COLLECT FROM RunParameter FILE #####################
 FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE = ['RunID','ExperimentName','RTAVersion','Chemistry','RunStartDate','RunManagementType','ApplicationVersion','NumTilesPerSwath',
                     'SystemSuiteVersion', 'LibraryID', 'AnalysisWorkflowType','PlannedRead1Cycles','PlannedRead2Cycles','PlannedIndex1ReadCycles','PlannedIndex2ReadCycles' ]
+
+
+################ SAMBA CONFIGURATION FIELDS ###############################
+SAMBA_CONFIGURATION_FIELDS = ['SAMBA_USER_ID', 'SAMBA_USER_PASSWORD', 'SAMBA_SHARED_FOLDER_NAME', 'SAMBA_APPLICATION_FOLDER_NAME', 'SAMBA_REMOTE_SERVER_NAME',
+                'SAMBA_NTLM_USED', 'SAMBA_IP_SERVER', 'SAMBA_HOST_NAME', 'SAMBA_PORT_SERVER', 'IS_DIRECT_TCP', 'SAMBA_DOMAIN']
+
+SAMBA_CONFIGURATION_FILE_HEADING = '############# SAMBA CONFIGURATION FILE ########\n#DO NOT MODIFY MANUALLY THIS FILE\n#VALUES WILL BE MODIFIED WHEN USING THE CONFIGURATION FORM\n'
+SAMBA_CONFIGURATION_FILE_END = '########## END SAMBA CONFIGURATION FILE'

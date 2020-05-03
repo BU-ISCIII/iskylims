@@ -47,6 +47,7 @@
                             <div class="menu-container">
                                 <ul class="nav navbar-nav navbar-nav-right">
                                     <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/wetlab/">Home</a></li>
+                                    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/wetlab/configuration">Configuration</a></li>
                                     {% if user.is_authenticated %}
                                         {% if request.user|has_group:"WetlabManager" %}
                         				    <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Preliminary Preparation<span class="caret"></span></a>

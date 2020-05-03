@@ -48,6 +48,24 @@ def register_wetlab(request):
     #
     return render(request, 'iSkyLIMS_wetlab/index.html')
 
+@login_required
+def configuration(request):
+    if request.method == 'POST' and (request.POST['action']=='sambaconfiguration'):
+        # reload configuration samba settings
+        samba_user_field ={}
+        for field in SAMBA_CONFIGURATION_FIELDS:
+            samba_user_field[field] = request.POST[field]
+        samba_file = create_samba_conf_file (samba_user_field)
+
+        import importlib
+        importlib.reload(wetlab_config)
+        try:
+            open_samba_connection()
+        except:
+            error_message = ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS
+            return render(request, 'iSkyLIMS_wetlab/configuration.html',{'samba_user_field':samba_user_field, 'error_message': error_message} )
+    else:
+        return render(request, 'iSkyLIMS_wetlab/configuration.html')
 
 @login_required
 def create_nextseq_run (request):

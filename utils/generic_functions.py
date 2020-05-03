@@ -158,6 +158,54 @@ def create_new_sequencer_lab_not_defined (sequencer_name,l_run_parameter, experi
     logger.debug ('%s : End function create_new_sequencer_lab_not_defined', experiment_name)
     return new_sequencer
 
+def create_samba_conf_file(samba_fields):
+    '''
+    Description:
+        create the samba configuration file . If exists the old information is deleted
+    Input:
+        samba_fields    # Samba fields settings
+    Functions:
+        get_sequencer_lanes_number_from_file # located at this file
+    Return:
+        new_sequencer
+    '''
+    conf_file = os.path.join(settings.BASE_DIR,'iSkyLIMS_wetlab','wetlab_samba_conf.py')
+    #if os.path.isfile(conf_file):
+    try:
+
+        with open (conf_file, 'w') as out_fh:
+            out_fh.write(wetlab_config.SAMBA_CONFIGURATION_FILE_HEADING)
+            for key in sorted(samba_fields):
+                type_of_data = get_type_of_data(samba_fields[key])
+                if type_of_data == 'boolean' or type_of_data == 'integer':
+                    out_fh.write(key + ' = '+ samba_fields[key]+ '\n')
+                else:
+                    out_fh.write(key + ' = \''+ samba_fields[key]+ '\'\n')
+            out_fh.write(wetlab_config.SAMBA_CONFIGURATION_FILE_END)
+    except:
+        return False
+
+    return True
+
+def get_type_of_data (data):
+    '''
+    Description:
+        The function get always as input a string class.
+        By trying to convert the input data to int or bolean it will decide the type of data
+        If not possible to conver it returns string
+    Return:
+        type_of_data
+    '''
+    boolean_values = ['True', 'False', 'None']
+    if data in boolean_values :
+        return 'boolean'
+    try:
+        integer = int(data)
+        return 'integer'
+    except:
+        return 'string'
+
+
 def fetch_remote_file (conn, run_dir, remote_file, local_file) :
     '''
     Description:
@@ -182,7 +230,6 @@ def fetch_remote_file (conn, run_dir, remote_file, local_file) :
     logger.debug ('%s : Starting function for fetching remote file', run_dir)
     with open(local_file ,'wb') as r_par_fp :
         try:
-            #import pdb; pdb.set_trace()
             conn.retrieveFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME, remote_file, r_par_fp)
             logger.info('Retrieving the remote %s file for %s/%s', local_file, run_dir,remote_file)
         except Exception as e:
