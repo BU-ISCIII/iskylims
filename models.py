@@ -73,6 +73,10 @@ class RunProcess(models.Model):
     def get_run_date_no_format(self):
         return self.run_date
 
+    def get_run_finish_date_no_format(self):
+        return self.run_finish_date
+
+
     def get_run_date (self):
         if self.run_date is None :
             rundate = 'Run NOT started'
@@ -216,12 +220,7 @@ class RunProcess(models.Model):
         self.sampleSheet = sample_sheet
         self.save()
         return True
-    '''
-    def set_sequencer (self, sequencer):
-        self.sequencerModel = sequencer
-        self.save()
-        return True
-    '''
+
     def set_used_sequencer (self, sequencer):
         self.usedSequencer = sequencer
         self.save()

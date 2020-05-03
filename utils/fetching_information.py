@@ -1,11 +1,12 @@
 
 import statistics
 import os
+from datetime import datetime
 from ..fusioncharts.fusioncharts import FusionCharts
 
 from django.conf import settings
 from django.contrib.auth.models import Group
-
+from iSkyLIMS_core.models import SequencerInLab
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
 from .generic_functions import normalized_data, get_run_in_same_year_to_compare
@@ -180,13 +181,16 @@ def get_run_graphics (run_object) :
         run_graphics
     '''
     # prepare the graphics for the run
+    run_graphics = []
+    if not GraphicsStats.objects.filter(runprocess_id__exact = run_object).exists():
+        return run_graphics
     run_graphics_object = GraphicsStats.objects.get(runprocess_id__exact = run_object)
     folder_graphic = os.path.join( settings.MEDIA_URL, wetlab_config.RUN_IMAGES_DIRECTORY,
                             run_graphics_object.get_folder_graphic() )
     graphics = run_graphics_object.get_graphics().split(';')
 
     graphic_text= ['Data By Lane','Flow Cell Chart','Data By Cycle','QScore Heatmap','QScore Distribution','Indexing QC']
-    run_graphics = []
+
 
     for index_graph in range (len(graphics)):
         run_graphics.append([graphic_text[index_graph], os.path.join(folder_graphic, graphics[index_graph])])
@@ -851,15 +855,70 @@ def get_info_sample_in_run (sample_id):
 
     return sample_info_dict
 
+def get_sequencers_run_from_time_interval(sequencer,start_date, end_date):
+    '''
+    Description:
+        The function will get the runs executed in the sequencer, during a period of time
+        divided in completed runs and not completed runs
+    Return:
+        runs_using_sequencer
+    '''
+    runs_using_sequencer = {}
+    if SequencerInLab.objects.filter(sequencerName__exact = sequencer).exists():
+        sequencer_obj = SequencerInLab.objects.get(sequencerName__exact = sequencer)
+        if RunProcess.objects.filter(usedSequencer = sequencer_obj, run_date__range=(start_date, end_date)).exists():
+            runs_using_sequencer['completed_run_objs'] = []
+            runs_using_sequencer['not_completed_run_objs'] = []
+            run_objs_found = RunProcess.objects.filter(usedSequencer = sequencer_obj, run_date__range=(start_date, end_date))
+            query_completed = run_objs_found.filter(state__runStateName__exact = 'Completed')
+            for item in query_completed :
+                runs_using_sequencer['completed_run_objs'].append(item)
+            query_not_completed = run_objs_found.exclude(state__runStateName__exact = 'Completed')
+            for item in query_not_completed :
+                runs_using_sequencer['not_completed_run_objs'].append(item)
+
+    return runs_using_sequencer
+
+
+
+def get_sequencer_installed_names():
+    '''
+    Description:
+        The function will get list names of the sequencers
+    Return:
+        sample_info_dict with all information collected in the function
+    '''
+    sequencer_list = []
+    if SequencerInLab.objects.all().exists():
+        sequencers = SequencerInLab.objects.all().order_by('platformID')
+        for sequencer in sequencers:
+            sequencer_list.append(sequencer.get_sequencer_name())
+    return sequencer_list
+
+def get_number_of_runs_per_sequencer():
+    '''
+    Description:
+        The function will get a dictionary with the sequencer name and the number
+        of runs executed in each
+    Functions:
+        get_sequencer_installed_names   # located at this file
+    Return:
+        number_of_runs
+    '''
+    number_of_runs = {}
+    sequencer_list = get_sequencer_installed_names()
+    for sequencer in sequencer_list:
+        if RunProcess.objects.filter(usedSequencer__sequencerName__exact = sequencer).exists():
+            number_of_runs[sequencer]= RunProcess.objects.filter(usedSequencer__sequencerName__exact = sequencer).count()
+    return number_of_runs
+
+
 def get_sequencer_names_from_platform(platform):
     '''
     Description:
         The function will get list of the sequencers using the platform value in the input data
     Input:
         platform           # contains the platform name
-    Variables:
-        data_source # reused variable to have the json data format for
-
     Return:
         sample_info_dict with all information collected in the function
     '''
@@ -869,3 +928,81 @@ def get_sequencer_names_from_platform(platform):
         for sequencer in sequencers:
             sequencer_list.append(sequencer.get_sequencer_name())
     return sequencer_list
+def  get_stats_sequencer_data_from_selected_runs (runs_using_sequencer, sequencer,start_date, end_date):
+    '''
+    Description:
+        The function will get the sequencer statistic information from the runs selected
+        in runs_using_sequencer
+    Input:
+        runs_using_sequencer  # contains the dictionary with completed and not completed runs
+        sequencer       # sequencer name
+        start_date
+        end_date
+    Constants:
+        HEADING_FOR_STATISTICS_RUNS_BASIC_DATA
+
+    Return:
+        sequencer_data        # with all information collected in the function
+    '''
+    sequencer_data = {}
+    sequencer_data['sequencer_name'] = sequencer
+    sequencer_data['run_completed'] = []
+    sequencer_data['not_run_completed'] = []
+    sequencer_data['run_name_heading'] = HEADING_FOR_STATISTICS_RUNS_BASIC_DATA
+    # get the run completed and not completed for the sequencer
+    for run_in_seq in runs_using_sequencer['completed_run_objs']:
+        sequencer_data['run_completed'].append([run_in_seq.get_run_name(),run_in_seq.get_run_date(),run_in_seq.get_run_id()])
+    for run_in_seq in runs_using_sequencer['not_completed_run_objs'] :
+        sequencer_data['not_run_completed'].append([run_in_seq.get_run_name(),run_in_seq.get_run_date(),run_in_seq.get_run_id()])
+
+    # get the data for comparation sequencer vs all sequencers
+    sequencer_runs = get_number_of_runs_per_sequencer()
+    heading = 'Runs executed in each sequencer in (%)'
+    data_source = pie_graphic_standard (heading, '', 'ocean', sequencer_runs)
+    run_pie_graph = FusionCharts("pie3d", "run_pie_graph" , "500", "400", "run_pie_chart", "json", data_source).render()
+    sequencer_data ['run_pie_graph'] = run_pie_graph
+
+    # get data to display the time between run stats and finish
+    # mean of all data is done
+    time_diference =[]
+    for run_in_seq in runs_using_sequencer['completed_run_objs']:
+        #import pdb; pdb.set_trace()
+        time_diference.append((run_in_seq.get_run_finish_date_no_format().date()- run_in_seq.get_run_date_no_format()).days)
+    sequencer_data['mean_time_duration'] = format(statistics.mean(time_diference), '.2f')
+
+    # get the data for run executed in the sequencer per months
+    run_time_dict ={}
+    for run_in_seq in runs_using_sequencer['completed_run_objs']:
+        run_year_month = run_in_seq.get_run_date_no_format().strftime("%Y_%m")
+        if run_year_month in run_time_dict:
+            run_time_dict[run_year_month] +=1
+        else:
+            run_time_dict[run_year_month] = 1
+    run_time_tupla =[]
+    for key in sorted(run_time_dict.keys()):
+        run_time_tupla.append([key,run_time_dict[key]])
+    heading = 'Runs executed per months in the sequencer'
+    data_source = column_graphic_tupla (heading, '', '', 'Number of Runs','ocean', run_time_tupla)
+    sequencer_data ['sequencer_runs_per_month_graph'] = FusionCharts("column3d", "run_per_month_graph" , "500", "400", "chart_seq_month", "json", data_source).render()
+
+    # get the data for run executed in other sequencers per months
+    if RunProcess.objects.filter(state__runStateName__exact = 'Completed').exclude(usedSequencer__sequencerName__exact = sequencer).exists():
+        runs_in_other_sequencers = RunProcess.objects.filter(state__runStateName__exact = 'Completed').exclude(usedSequencer__sequencerName__exact = sequencer)
+        run_time_dict ={}
+        for run_in_other_seq in runs_in_other_sequencers:
+            run_year_month = run_in_other_seq.get_run_date_no_format().strftime("%Y_%m")
+            if run_year_month in run_time_dict:
+                run_time_dict[run_year_month] +=1
+            else:
+                run_time_dict[run_year_month] = 1
+        run_time_tupla =[]
+        for key in sorted(run_time_dict.keys()):
+            run_time_tupla.append([key,run_time_dict[key]])
+        heading = 'Runs executed per months in the rest of the sequencers'
+        data_source = column_graphic_tupla (heading, '', '', 'Number of Runs','fint', run_time_tupla)
+        sequencer_data ['other_sequencers_runs_per_month_graph'] = FusionCharts("column3d", "other_run_per_month_graph" , "500", "400", "chart_other_seq_month", "json", data_source).render()
+
+
+
+    import pdb; pdb.set_trace()
+    return sequencer_data

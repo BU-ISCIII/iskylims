@@ -1299,72 +1299,31 @@ def stats_experiment (request):
 
 @login_required
 def stats_per_sequencer (request):
+    sequencer_names = get_sequencer_installed_names()
     if request.method == 'POST':
-        m_name = request.POST['machinename']
+        sequencer = request.POST['sequencer']
         start_date=request.POST['startdate']
         end_date=request.POST['enddate']
 
         if start_date != '':
-            try:
-                datetime.datetime.strptime(start_date, '%Y-%m-%d')
-            except:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The format for the "From Start Date" Field is incorrect ',
-                                                                    'ADVICE:', 'Use the format  (YYYY-MM-DD)']})
+            if not check_valid_date_format(start_date):
+                error_message = ERROR_INVALID_FORMAT_FOR_DATES
+                return render (request, 'iSkyLIMS_wetlab/StatsPerSequencer.html', {'sequencer_names':sequencer_names, 'error_message': error_message})
         if end_date !='' :
-            try:
-                datetime.datetime.strptime(end_date, '%Y-%m-%d')
-            except:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
-                                                                    'ADVICE:', 'Use the format  (YYYY-MM-DD)']})
-        if len(m_name) < 5 :
-            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['machine name is too sort fo fined a match', 'Name must be at least 6 characters long'
-                                                            'ADVICE:', 'write a longer name in the machine field ']})
-
-        if Machines.objects.filter(machineName__icontains = m_name).exists():
-            m_name = Machines.objects.get(machineName__icontains = m_name).machineName
-
-            if RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name).exists():
-                if RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name, state__runStateName = "Completed").exists():
-                    run_by_machine = RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name, state__runStateName = "Completed")
-                    run_by_machine_no_completed = RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name).exclude(state__runStateName = "Completed")
+            if not check_valid_date_format(end_date):
+                error_message = ERROR_INVALID_FORMAT_FOR_DATES
+                return render (request, 'iSkyLIMS_wetlab/StatsPerSequencer.html', {'sequencer_names':sequencer_names, 'error_message': error_message})
+        runs_using_sequencer = get_sequencers_run_from_time_interval(sequencer, start_date, end_date )
+        if len(runs_using_sequencer) == 0:
+            error_message = ERROR_NO_MATCHES_FOR_SEQUENCER_STATS
+            return render (request, 'iSkyLIMS_wetlab/StatsPerSequencer.html', {'sequencer_names':sequencer_names, 'error_message': error_message})
+        sequencer_data = get_stats_sequencer_data_from_selected_runs (runs_using_sequencer,sequencer, start_date, end_date )
 
 
-                    projects_by_machine = Projects.objects.filter(runprocess_id__sequencerModel__machineName__iexact = m_name, runprocess_id__state__runStateName = "Completed").order_by('generatedat')
-
-                # check if start and end date are present in the form
-                    if start_date != '' and end_date !='':
 
 
-                        if RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name, state__runStateName = "Completed", run_date__range=(start_date, end_date)).exists():
-                            run_by_machine = RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name, state__runStateName = "Completed", run_date__range=(start_date, end_date))
-                            projects_by_machine = Projects.objects.filter(runprocess_id__sequencerModel__machineName__iexact = m_name , runprocess_id__state__runStateName = "Completed", generatedat__range=(start_date, end_date))
 
-                            #r_project_by_researcher = r_project_by_researcher.filter(generatedat__range=(start_date, end_date))
-                        else:
-                            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Machine does not have projects associated for the period ',
-                                                    'starting date  = ', start_date, 'and with ending date = ', end_date,
-                                                                'ADVICE:', 'Contact with your administrator']})
-
-                    if start_date != '' and end_date =='':
-                        end_date = str(datetime.datetime.now().date())
-                        if RunProcess.objects.filter(sequencerModel__machineName__iexact =m_name, state__runStateName = "Completed", run_date__range=(start_date, end_date)).exists():
-                            run_by_machine = RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name, state__runStateName = "Completed", run_date__range=(start_date, end_date))
-                            projects_by_machine = Projects.objects.filter(runprocess_id__sequencerModel__machineName__iexact = m_name, runprocess_id__state__runStateName = "Completed", generatedat__range=(start_date, end_date))
-
-                        else:
-                            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Machine does not have projects associated for the period ',
-                                                    'starting date  = ', start_date,
-                                                                'ADVICE:', 'Contact with your administrator']})
-
-                    if start_date == '' and end_date !='':
-                        if RunProcess.objects.filter(sequencerModel_machineName__iexact =m_name, state__runStateName = "Completed", generatedat__lte= end_date).exists():
-                            run_by_machine =RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name, state__runStateName = "Completed", run_date__lte = end_date)
-                            projects_by_machine = Projects.objects.filter(runprocess_id__sequencerModel__machineName__iexact = m_name, runprocess_id__state__runStateName = "Completed", generatedat__lte = end_date)
-                        else:
-                            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Machine does not have projects associated for the period ',
-                                                    'ending date  = ', end_date,
-                                                                'ADVICE:', 'Contact with your administrator']})
-
+        '''
 
 
                     # Get data from researcher projects
@@ -1399,21 +1358,6 @@ def stats_per_sequencer (request):
                     p_machine_q30_dict, p_machine_mean_dict = {} , {}
                     p_machine_yield_mb_dict, p_machine_cluster_pf_dict ={} , {}
                     projects_name_dict , projects_id_list = {} , {}
-
-                    # if run_by_machine_no_completed = 0 --> not pie graph
-
-                    if len(run_by_machine_no_completed) != 0 :
-                        run_num= {}
-                        run_num['Completed']= len(run_by_machine)
-                        run_num['Not Completed']= len(run_by_machine_no_completed)
-                        theme = 'ocean'
-                        heading = '%Runs Completed vs Runs Not Completed for ' + ru_seq_model
-                        sub_caption = ''
-                        data_source = pie_graphic_standard (heading, sub_caption, theme, run_num)
-                        run_pie_graph = FusionCharts("pie3d", "run_pie_graph" , "500", "400", "run_pie_chart", "json", data_source).render()
-                        sequencer_statistics ['run_pie_graph'] = run_pie_graph
-
-
 
 
                     #import pdb; pdb.set_trace()
@@ -1585,19 +1529,11 @@ def stats_per_sequencer (request):
                     sequencer_statistics ['sequencer_pie_graph'] = sequencer_pie_graph
 
                     return  render(request, 'iSkyLIMS_wetlab/StatsPerMachine.html', {'sequencer_statistics' : sequencer_statistics})
-                else: #if RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name, state__runStateName = "Completed").exists():
-                    return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Machine does not have projects in Completed state. ',
-                                                            'ADVICE:', 'Contact with your administrator']})
+        '''
+        return render (request, 'iSkyLIMS_wetlab/StatsPerSequencer.html', {'sequencer_data':sequencer_data})
 
-            else: #if RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name).exists():
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Machine does not have projects associated to him ',
-                                                            'ADVICE:', 'Contact with your administrator']})
-
-        else: #if Machines.objects.filter(machineName__icontains = m_name).exists():
-            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for machine name  ',
-                                                                'ADVICE:', 'Contact with your administrator']})
-    else: #if request.method == 'POST':
-        return render (request, 'iSkyLIMS_wetlab/StatsPerSequencer.html', {})
+    else:
+        return render (request, 'iSkyLIMS_wetlab/StatsPerSequencer.html', {'sequencer_names':sequencer_names})
 
 
 @login_required
@@ -2058,7 +1994,7 @@ def stats_per_time (request):
                 disk_space_period_index_graph = 'diskusage1'
 
                 data_source = researcher_project_column_graphic (heading, sub_caption, x_axis_name, y_axis_name, 'carbon', run_disk_utilization)
-                stat_per_time['disk_space_period_graphic'] = FusionCharts("column3d", disk_space_period_index_graph , "550", "350", disk_space_period_chart_number, "json", data_source).render()
+                stat_per_time['disk_space_period_graphic'] = FusionCharts("column3d", disk_space_period_index_graph , "950", "350", disk_space_period_chart_number, "json", data_source).render()
 
                 #
                 return render(request, 'iSkyLIMS_wetlab/StatsPerTime.html', {'display_stats_per_time': stat_per_time })
@@ -2254,7 +2190,7 @@ def stats_per_library (request):
                     libraries_to_compare = Projects.objects.filter(runprocess_id__state__runStateName__exact = 'Completed', generatedat__range =(start_date, end_date)).exclude(libraryKit__exact = library_name)
                 else :
                     error_in_library_to_compare ='No other library have been found for doing the comparison for the start date  ' + start_date + '  and with the ending date  ' + end_date
-            
+
             if error_in_library_to_compare == '':
                 for project_to_compare in libraries_to_compare :
                     library_to_compare_name = project_to_compare.get_index_library_name()
@@ -4066,7 +4002,7 @@ def create_pool (request):
         return redirect ('/accounts/login')
     # collect the information for collecting
     display_list = get_lib_prep_to_select_in_pool()
-    import pdb; pdb.set_trace()
+
     if request.method == 'POST' and request.POST['action'] == 'createPool':
         new_pool = define_new_pool(request.POST,  request.user)
 

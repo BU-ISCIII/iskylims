@@ -42,6 +42,12 @@ def get_list_machines ():
 
 
 def run ():
+    '''
+    The script migration is needed to copy the sequencer information from the table in
+    drylab to core. No data is deleted 'sequencerModel' will stll remain in database
+    but this value is not longer used. In the next release this field will be removed 
+
+    '''
     check_migration_is_allow()
     run_objs = RunProcess.objects.all()
     number_runs = len(run_objs)
