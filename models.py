@@ -1001,9 +1001,10 @@ class libraryPreparationManager(models.Manager):
             protocol_id =   lib_prep_data['protocol_obj'], libPrepState = lib_state_obj, user_sample_sheet = lib_prep_data['user_sample_sheet'],
             libPrepCodeID = lib_prep_data['lib_prep_code_id'], userSampleID = lib_prep_data['userSampleID'],
             projectInSampleSheet = lib_prep_data['projectInSampleSheet'], samplePlate = lib_prep_data['samplePlate'],
-            sampleWell = lib_prep_data['sampleWell'], indexPlateWell = lib_prep_data['indexPlateWell'], i7IndexID = lib_prep_data['i7IndexID'],
+            sampleWell = lib_prep_data['sampleWell'],  i7IndexID = lib_prep_data['i7IndexID'],
             i7Index = lib_prep_data['i7Index'], i5IndexID = lib_prep_data['i5IndexID'], i5Index = lib_prep_data['i5Index'],
-            singlePairedEnd = lib_prep_data['single_paired'], lengthRead = lib_prep_data['read_length'], uniqueID = lib_prep_data['uniqueID'])
+            singlePairedEnd = lib_prep_data['single_paired'], lengthRead = lib_prep_data['read_length'], uniqueID = lib_prep_data['uniqueID'],
+            indexPlateWell = lib_prep_data['indexPlateWell'], genomeFolder = lib_prep_data['genomeFolder'],manifest = lib_prep_data['manifest'])
 
         return new_lib_prep
 
@@ -1049,7 +1050,10 @@ class LibraryPreparation (models.Model):
     i7Index = models.CharField(max_length =16, null = True, blank = True)
     i5IndexID = models.CharField(max_length =16, null = True, blank = True)
     i5Index = models.CharField(max_length =16, null = True, blank = True)
-
+    ## Miseq fields
+    genomeFolder = models.CharField(max_length =80, null = True, blank = True)
+    manifest = models.CharField(max_length =80, null = True, blank = True)
+    ##### End Miseq fields
     singlePairedEnd  = models.CharField(max_length =20, null = True, blank = True)
     lengthRead = models.CharField(max_length =5, null = True, blank = True)
     numberOfReused = models.IntegerField(default=0)
@@ -1131,7 +1135,13 @@ class LibraryPreparation (models.Model):
         #lib_info.append(self.collectionIndex_id.get_collection_index_name())
         return lib_info
 
-
+    def get_basic_data(self):
+        lib_info = []
+        lib_info.append(self.sample_id.get_sample_name())
+        lib_info.append(self.uniqueID)
+        lib_info.append(self.protocol_id.get_name())
+        lib_info.append(self.pk)
+        return lib_info
 
     def get_info_for_display_pool (self):
         if self.registerUser.username == None:

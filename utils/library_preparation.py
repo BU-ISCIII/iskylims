@@ -147,6 +147,8 @@ def extract_user_sample_sheet_data(file_in):
     return data
 
 
+
+
 def valid_samples_for_lib_preparation(samples):
     '''
     Description:
@@ -171,7 +173,7 @@ def valid_samples_for_lib_preparation(samples):
             invalid_samples.append(sample)
         else:
             sample_objs.append(s_obj)
-    import pdb; pdb.set_trace()
+
     if len(invalid_samples) > 0:
         error = {}
         error_message = ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES.copy()
@@ -283,6 +285,21 @@ def find_duplicate_index (sample_row_data, heading):
         error['ERROR'] = error_message
         return error
 
+
+def get_data_for_library_preparation_in_defined():
+    '''
+    Description:
+        The function get the basic data for Library preparation which are in defined state
+    Return
+        lib_prep_data
+    '''
+
+    lib_prep_data = []
+    if LibraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined').exists():
+        libs_preps_defined = LibraryPreparation.objects.filter(libPrepState__libPrepState__exact = 'Defined').order_by('libPrepCodeID')
+        for lib_prep in libs_preps_defined :
+            lib_prep_data.append(lib_prep.get_basic_data())
+    return lib_prep_data
 
 
 def get_protocols_for_library_preparation ():
@@ -521,8 +538,9 @@ def store_library_preparation_samples(sample_sheet_data, user, protocol , user_s
         protocol    # protocol name to be used for these library preparation samples
         user_sample_sheet_obj # user_sample_sheet object for assigning to each library preparation
     Constamt:
-        MAP_USER_SAMPLE_SHEET_TO_DATABASE_ONE_INDEX
         MAP_USER_SAMPLE_SHEET_TO_DATABASE_TWO_INDEX
+        MAP_USER_SAMPLE_SHEET_TO_DATABASE_ONE_INDEX
+        MAP_USER_SAMPLE_SHEET_ADDITIONAL_FIELDS_FROM_TYPE_OF_SECUENCER
     Functions:
         get_library_unique_id # located at this file
         get_sample_obj_from_sample_name  # located at iSkyLIMS_core/utils/handling_samples.py
@@ -535,7 +553,6 @@ def store_library_preparation_samples(sample_sheet_data, user, protocol , user_s
     stored_lib_prep = {}
     lib_prep_id = []
     protocol_obj = Protocols.objects.get(name__exact = protocol)
-
     if 'I5_Index_ID' in  sample_sheet_data['heading'] :
         single_paired = 'Paired End'
         mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_TWO_INDEX
@@ -547,15 +564,22 @@ def store_library_preparation_samples(sample_sheet_data, user, protocol , user_s
         stored_lib_prep['protocol_obj'] = protocol_obj
         stored_lib_prep['single_paired'] = single_paired
         stored_lib_prep['read_length'] = sample_sheet_data['reads'][0]
+        import pdb; pdb.set_trace()
         for item in mapping :
             stored_lib_prep[item[1]] =  lib_prep_sample_data[sample_sheet_data['heading'].index(item[0])]
+        for item in MAP_USER_SAMPLE_SHEET_ADDITIONAL_FIELDS_FROM_TYPE_OF_SECUENCER :
+            try:
+                stored_lib_prep[item[1]] =  lib_prep_sample_data[sample_sheet_data['heading'].index(item[0])]
+            except:
+                stored_lib_prep[item[1]] = None
+
         # if Single reads then set the index 5 to empty
         if not 'I5_Index_ID' in sample_sheet_data['heading'] :
             stored_lib_prep['i5IndexID'] = ''
             stored_lib_prep['i5Index'] = ''
         stored_lib_prep['protocol_id'] = protocol_obj
         stored_lib_prep['user_sample_sheet'] = user_sample_sheet_obj
-
+        import pdb; pdb.set_trace()
         sample_obj = get_sample_obj_from_sample_name(stored_lib_prep['sample_name'])
         # get the latest molecule extraction to assing it by default to the library preparation
         molecule_obj = MoleculePreparation.objects.filter(sample = sample_obj).last()

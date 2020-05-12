@@ -56,11 +56,14 @@ def configuration(request):
         for field in SAMBA_CONFIGURATION_FIELDS:
             samba_user_field[field] = request.POST[field]
         samba_file = create_samba_conf_file (samba_user_field)
-
+        if not samba_file :
+            error_message = ERROR_UNABLE_TO_SAVE_SAMBA_CONFIGURATION_SETTINGS
+            return render(request, 'iSkyLIMS_wetlab/configuration.html',{'samba_user_field':samba_user_field, 'error_message': error_message} )
         import importlib
         importlib.reload(wetlab_config)
         try:
             open_samba_connection()
+            return render(request, 'iSkyLIMS_wetlab/configuration.html',{'succesful_setins':True})
         except:
             error_message = ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS
             return render(request, 'iSkyLIMS_wetlab/configuration.html',{'samba_user_field':samba_user_field, 'error_message': error_message} )
@@ -2072,11 +2075,11 @@ def stats_per_library (request):
         if start_date != '':
             if not check_valid_date_format(start_date) :
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
-            return render(request, 'iSkyLIMS_wetlab/StatsPerLibrary.html', {'error_message':error_message})
+                return render(request, 'iSkyLIMS_wetlab/StatsPerLibrary.html', {'error_message':error_message})
         if end_date != '':
             if not check_valid_date_format(end_date) :
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
-            return render(request, 'iSkyLIMS_wetlab/StatsPerLibrary.html', {'error_message':error_message})
+                return render(request, 'iSkyLIMS_wetlab/StatsPerLibrary.html', {'error_message':error_message})
 
         if library_kit_name != '':
             if Projects.objects.filter(libraryKit__icontains = library_kit_name, runprocess_id__state__runStateName__exact = 'Completed').exists():
@@ -3518,6 +3521,7 @@ def handling_library_preparations(request):
     upload_file = {}
     if check_samples_for_library_preparation():
         upload_file['lib_prep_protocols'] = get_protocols_for_library_preparation()
+        upload_file['lib_prep_defined'] = get_data_for_library_preparation_in_defined()
     else:
         upload_file['no_samples'] = 'No samples'
 
@@ -3530,7 +3534,7 @@ def handling_library_preparations(request):
             return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'upload_file':upload_file})
 
         valid_data = validate_sample_sheet_data(sample_sheet_data)
-
+        import pdb; pdb.set_trace()
         if 'ERROR' in valid_data:
             upload_file['ERROR'] = valid_data['ERROR']
             upload_file['file_name'] = request.FILES['uploadfile'].name

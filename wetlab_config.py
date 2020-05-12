@@ -13,7 +13,7 @@ except:
 
 ################# USER SETTINGS ##############################
 ## Wetlab manager
-WETLAB_MANAGER = 'WetlabManager'
+
 ##############################################################
 ################### SAMBA SETTINGS  ##########################
 ## SAMBA settings for connecting quibitka server to fetch the run files
@@ -58,6 +58,8 @@ TO_EMAIL_ADDRESS = ['bioinformatica@isciii.es']
 FROM_EMAIL_ADDRESS = 'iSkyLIMS@isciii.es'
 ##############################################################
 '''
+
+WETLAB_MANAGER = 'WetlabManager'
 
 ############## FOLDER SETTINGS ###############################
 ## Directory settings for processing the run data files ######
@@ -176,16 +178,26 @@ MAP_BASESPACE_SAMPLE_SHEET_ONE_INDEX = [('SampleID','Sample_ID'),('Name','Sample
 MAP_BASESPACE_SAMPLE_SHEET_TWO_INDEX = [('SampleID','Sample_ID'),('Name','Sample_Name'), ('Project','Sample_Project'),
                 ('Index1Name','I7_Index_ID'), ('Index1Sequence','index' ),('Index2Name','I5_Index_ID'),('Index2Sequence','index2') ]
 
-######### MAPPIING COLUMNS IN SAMPLE SHEET FROM USER TO DATABASE   #############
+######### MAPPING COLUMNS IN SAMPLE SHEET FROM USER TO DATABASE   #############
 MAP_USER_SAMPLE_SHEET_TO_DATABASE_TWO_INDEX = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
-            ('Sample_Well','sampleWell'),('Index_Plate_Well','indexPlateWell'),('I7_Index_ID','i7IndexID'),
+            ('Sample_Well','sampleWell'),('I7_Index_ID','i7IndexID'),
             ('index','i7Index'),('I5_Index_ID','i5IndexID'),('index2','i5Index'),('Sample_Project','projectInSampleSheet'),('Description', 'registerUser')]
 
 MAP_USER_SAMPLE_SHEET_TO_DATABASE_ONE_INDEX = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
+            ('Sample_Well','sampleWell'),('I7_Index_ID','i7IndexID'),
+            ('index','i7Index'),('Sample_Project','projectInSampleSheet'),('Description', 'registerUser')]
+
+######### MAPPING OPTIONAL COLUMNS THAT COULD BE IN SAMPLE SHEET FROM USER TO DATABASE   #############
+MAP_USER_SAMPLE_SHEET_ADDITIONAL_FIELDS_FROM_TYPE_OF_SECUENCER = [('Index_Plate_Well','indexPlateWell'), ('Manifest', 'manifest'), ('GenomeFolder', 'genomeFolder')]
+
+
+MAP_USER_SAMPLE_SHEET_TO_DATABASE_TWO_INDEX_WITH_WELL = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
+            ('Sample_Well','sampleWell'),('Index_Plate_Well','indexPlateWell'),('I7_Index_ID','i7IndexID'),
+            ('index','i7Index'),('I5_Index_ID','i5IndexID'),('index2','i5Index'),('Sample_Project','projectInSampleSheet'),('Description', 'registerUser')]
+
+MAP_USER_NEXTSEQ_SAMPLE_SHEET_TO_DATABASE_TWO_INDEX_WITH_WELL = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
             ('Sample_Well','sampleWell'),('Index_Plate_Well','indexPlateWell'),('I7_Index_ID','i7IndexID'),
             ('index','i7Index'),('Sample_Project','projectInSampleSheet'),('Description', 'registerUser')]
-###### mapping including WELL
-
 
 
 # mapping structure when sample sheet contains only one index
@@ -300,6 +312,7 @@ ERROR_USER_NAME_TOO_SHORT = ['User name must contains at least 5 characters']
 ERROR_NO_MATCHES_FOR_SEQUENCER_STATS = ['There is not any run that where using the sequencer']
 
 ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS = ['Unsuccessful configuration settings for Samba connection']
+ERROR_UNABLE_TO_SAVE_SAMBA_CONFIGURATION_SETTINGS = ['Unable to save the Samba configuration file ', 'check if folder iSkyLIMS_wetlab has write permision for apache user']
 
 ############### HEADING FOR PROJECT DATA VISUALIZATION #####################
 HEADING_FOR_PROJECT_DATES = ['Project Recorder date', 'Project date']

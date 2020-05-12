@@ -107,8 +107,8 @@ def get_index_adapter (file_lines):
         if 'Index Adapters' in line:
             index_adapters = line.split(',')[1].replace('"', '')
             break
-
-    return index_adapters
+    #remove the \n or \r
+    return index_adapters.rstrip()
 
 def get_reads(file_lines):
     '''
@@ -147,6 +147,7 @@ def get_samples_in_sample_sheet(file_lines):
     samples_dict['sample_data'] = []
     header_found = False
     for line in file_lines:
+        line = line.rstrip()
         if line == '':
             continue
         found_header=re.search('^Sample_ID,Sample_Name',line)
@@ -164,7 +165,7 @@ def get_samples_in_sample_sheet(file_lines):
 
             samples_dict['sample_data'].append(line.split(','))
             samples_dict['samples'].append(line.split(',')[index_sample_name])
-
+    import pdb; pdb.set_trace()
     return samples_dict
 
 def get_sample_sheet_data (in_file):

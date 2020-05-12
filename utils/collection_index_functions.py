@@ -292,15 +292,17 @@ def store_collection_kits_file(collection_file):
 
 def store_collection_settings (collection_settings, file_name) :
     # saving library settings into database
-    if len(collection_settings['adapters']) == 1:
-        adapter_2 = ''
-    else :
-        adapter_2 = collection_settings['adapters'][1]
+
+    if not 'adapters' in collection_settings:
+        collection_settings['adapters'] = ['']*2
+    elif len(collection_settings['adapters']) == 1:
+        collection_settings['adapters'].append('')
     new_collection_settings = CollectionIndexKit(collectionIndexName = collection_settings['name'],
                                 version =  collection_settings ['version'],
                                 plateExtension = collection_settings['plate_extension'] ,
                                 adapter1 = collection_settings['adapters'][0],
-                                adapter2 = adapter_2, collectionIndexFile = file_name)
+                                adapter2 = collection_settings['adapters'][1],
+                                collectionIndexFile = file_name)
     new_collection_settings.save()
     return new_collection_settings
 

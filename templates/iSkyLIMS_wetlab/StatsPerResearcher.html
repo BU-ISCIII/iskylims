@@ -125,7 +125,7 @@
             {% csrf_token %}
             <input type="hidden" name="action" value="researcher"/>
              <div class="form-group required">
-                  <label class="col-sm-5  control-label" for="researchername" >Fill the Investigator name </label>
+                  <label class="col-sm-5  control-label" for="researchername" >Investigator UserID </label>
                   {% if request.user|has_group:"WetlabManager" %}
                   <div class="col-sm-5"><input class="form-control" type="text" required = "required" name="researchername" id="reserchername" size="100" maxlength="100"></div>
                   {% else %}
@@ -158,15 +158,15 @@
         <BR><BR>
         <div class="col-sm-3 col-sm-offset-1">
           <div class="panel panel-default">
-             <div class="panel-heading">Searching information project per Investigator</div>
+             <div class="panel-heading"><h5>Statistics information per Investigator</h5></div>
              <div class="panel-body">
-             <p>Searching information for the projects created by a Investigator<BR>
+             <p>Statistics information for the projects created by a Investigator<BR>
              <p>For extended help click on the button below.</p>
             <center><button id="myBtn"> Help </button></center>
             </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
         <!-- Insert the Help window when clicking on the button -->
-        {% include 'iSkyLIMS_wetlab/search-researcher-help.html' %}
+        {% include 'iSkyLIMS_wetlab/statistics-researcher-help.html' %}
 
     </div> <!--// end row -->
     <!-- End of FORM for searching RUN information -->
