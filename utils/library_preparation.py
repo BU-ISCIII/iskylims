@@ -378,8 +378,6 @@ def get_lib_prep_to_add_parameters():
     '''
     Description:
         The function will return a list with samples which are needs to add library preparation parameters
-    Input:
-
     Variables:
         library_prep_information # Dictionary with the heading and the molecule information
     Return:
@@ -403,6 +401,18 @@ def get_lib_prep_to_add_parameters():
     return lib_prep_parameters
 
 
+def get_protocol_from_library_id (library_prep_id):
+    '''
+    Description:
+        The function will return a list with samples which are needs to add library preparation parameters
+    Input:
+        library_prep_id # id to get the protocol name
+    Return:
+        protocol name or empty if library id does not exists.
+    '''
+    if LibraryPreparation.objects.filter(pk__exact = library_prep_id).exists():
+         return LibraryPreparation.objects.get(pk__exact = library_prep_id).get_protocol_used()
+    return ''
 
 def get_samples_in_lib_prep_state ():
     '''
