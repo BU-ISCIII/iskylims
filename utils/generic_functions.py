@@ -158,18 +158,20 @@ def create_new_sequencer_lab_not_defined (sequencer_name,l_run_parameter, experi
     logger.debug ('%s : End function create_new_sequencer_lab_not_defined', experiment_name)
     return new_sequencer
 
-def create_samba_conf_file(samba_fields):
+def create_samba_conf_file(samba_fields, application):
     '''
     Description:
         create the samba configuration file . If exists the old information is deleted
     Input:
         samba_fields    # Samba fields settings
+    Constants:
+        SAMBA_CONFIGURATION_FILE_HEADING
     Functions:
-        get_sequencer_lanes_number_from_file # located at this file
+        get_type_of_data # located at this file
     Return:
-        new_sequencer
+        True if sucessful creation
     '''
-    conf_file = os.path.join(settings.BASE_DIR,'iSkyLIMS_wetlab','wetlab_samba_conf.py')
+    conf_file = os.path.join(settings.BASE_DIR, application,'wetlab_samba_conf.py')
     #if os.path.isfile(conf_file):
     try:
 
@@ -186,6 +188,39 @@ def create_samba_conf_file(samba_fields):
         return False
 
     return True
+
+def get_samba_data_from_file(application):
+    '''
+    Description:
+        Fetch the samba configuration file
+    Inputs:
+        application     # Application name
+    Constants:
+        SAMBA_CONFIGURATION_FILE_HEADING
+        SAMBA_CONFIGURATION_FILE_END
+    Functions:
+        get_sequencer_lanes_number_from_file # located at this file
+    Return:
+        samba_data
+    '''
+    conf_file = os.path.join(settings.BASE_DIR, application,'wetlab_samba_conf.py')
+    samba_data = {}
+    heading_found = False
+    try:
+        with open (conf_file, 'r') as fh:
+            for line in fh.readlines():
+                if not heading_found and wetlab_config.SAMBA_CONFIGURATION_FILE_HEADING.split('\n')[-2] in line :
+                    heading_found = True
+                    continue
+                if wetlab_config.SAMBA_CONFIGURATION_FILE_END in line:
+                    break
+                if heading_found :
+                    line = line.rstrip()
+                    key , value = line.split(' = ')
+                    samba_data[key] = value.replace('\'','')
+        return samba_data
+    except:
+        samba_data
 
 def get_type_of_data (data):
     '''

@@ -50,15 +50,15 @@ def register_wetlab(request):
 
 @login_required
 def configuration(request):
+    samba_conf_data = get_samba_data_from_file(__package__)
     if request.method == 'POST' and (request.POST['action']=='sambaconfiguration'):
         # reload configuration samba settings
         samba_user_field ={}
         for field in SAMBA_CONFIGURATION_FIELDS:
             samba_user_field[field] = request.POST[field]
-        samba_file = create_samba_conf_file (samba_user_field)
-        if not samba_file :
+        if not create_samba_conf_file (samba_user_field, __package__) :
             error_message = ERROR_UNABLE_TO_SAVE_SAMBA_CONFIGURATION_SETTINGS
-            return render(request, 'iSkyLIMS_wetlab/configuration.html',{'samba_user_field':samba_user_field, 'error_message': error_message} )
+            return render(request, 'iSkyLIMS_wetlab/configuration.html',{'samba_conf_data':samba_user_field, 'error_message': error_message} )
         import importlib
         importlib.reload(wetlab_config)
         try:
@@ -66,9 +66,10 @@ def configuration(request):
             return render(request, 'iSkyLIMS_wetlab/configuration.html',{'succesful_setins':True})
         except:
             error_message = ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS
-            return render(request, 'iSkyLIMS_wetlab/configuration.html',{'samba_user_field':samba_user_field, 'error_message': error_message} )
+            return render(request, 'iSkyLIMS_wetlab/configuration.html',{'samba_conf_data':samba_user_field, 'error_message': error_message} )
     else:
-        return render(request, 'iSkyLIMS_wetlab/configuration.html')
+        samba_conf_data = get_samba_data_from_file(__package__)
+        return render(request, 'iSkyLIMS_wetlab/configuration.html',{'samba_conf_data': samba_conf_data})
 
 @login_required
 def create_nextseq_run (request):
