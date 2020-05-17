@@ -252,9 +252,9 @@
 
 
                 <div class="tab">
-                    <button class="tablinks" onclick="summaryBin(event, 'UploadFile')" id="tablinksdefaultOpen">New Samples </button>
+                    <button class="tablinks" onclick="summaryBin(event, 'UploadFile')" id="tablinksdefaultOpen">Upload Library Preparation</button>
                     {% if upload_file.lib_prep_defined %}
-                        <button class="tablinks" onclick="summaryBin(event, 'pending')">My pending molecules</button>
+                        <button class="tablinks" onclick="summaryBin(event, 'pending')">Pending Library Preparations</button>
 
                         <div id="pending" class="tabcontent">
                             <div class="col-sm-11" >
@@ -288,7 +288,7 @@
                                             </div> <!--  end of from group -->
                                             <br><br>
                                             <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                                            <input class="btn pull-right btn-primary" id = "btnSubmit" type="submit" value="Submit">
+                                            <input class="btn pull-right btn-primary" id = "btnSubmit2" type="submit" value="Submit">
                                         </form>
                                     </div> <!--  end of panel body -->
                                 </div> <!--  end of panel  -->
@@ -354,12 +354,18 @@
                                         </div> <!-- End of form-group required -->
                                     </form>
                                     <script>
-                                        $('input[type="submit"]').prop("disabled", true);
+                                        //$('input[type="submit"]').prop("disabled", true);
+                                        $('#btnSubmit').prop('disabled',true);
                                         var a=0;
                                         //binds to onchange event of your input field
                                         $('#uploadfile').bind('change', function() {
+                                            /*
                                             if ($('input:submit').attr('disabled',false)){
                                                 $('input:submit').attr('disabled',true);
+                                            }
+                                            */
+                                            if ($('#btnSubmit').attr('disabled',false)){
+                                                $('#btnSubmit').attr('disabled',true);
                                             }
                                             var ext = $('#uploadfile').val().split('.').pop().toLowerCase();
                                             if ($.inArray(ext, ['csv']) == -1){
@@ -379,7 +385,8 @@
                                                 }
                                                 $('#error1').slideUp("slow");
                                                 if (a==1){
-                                                    $('input:submit').attr('disabled',false);
+                                                    //$('input:submit').attr('disabled',false);
+                                                    $('#btnSubmit').attr('disabled',false);
                                                 }
                                             }
                                         });
