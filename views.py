@@ -48,8 +48,20 @@ def register_wetlab(request):
     #
     return render(request, 'iSkyLIMS_wetlab/index.html')
 
+
 @login_required
-def configuration(request):
+def configuration_email(request):
+    if request.user.username != 'admin':
+        return redirect('')
+    if request.method == 'POST' and (request.POST['action']=='emailconfiguration'):
+        pass
+    email_conf_data = {}
+    return render(request, 'iSkyLIMS_wetlab/configurationEmail.html',{'email_conf_data': email_conf_data})
+
+@login_required
+def configuration_samba(request):
+    if request.user.username != 'admin':
+        return redirect('')
     samba_conf_data = get_samba_data_from_file(__package__)
     if request.method == 'POST' and (request.POST['action']=='sambaconfiguration'):
         # reload configuration samba settings
@@ -58,18 +70,18 @@ def configuration(request):
             samba_user_field[field] = request.POST[field]
         if not create_samba_conf_file (samba_user_field, __package__) :
             error_message = ERROR_UNABLE_TO_SAVE_SAMBA_CONFIGURATION_SETTINGS
-            return render(request, 'iSkyLIMS_wetlab/configuration.html',{'samba_conf_data':samba_user_field, 'error_message': error_message} )
+            return render(request, 'iSkyLIMS_wetlab/configurationSamba.html',{'samba_conf_data':samba_user_field, 'error_message': error_message} )
         import importlib
         importlib.reload(wetlab_config)
         try:
             open_samba_connection()
-            return render(request, 'iSkyLIMS_wetlab/configuration.html',{'succesful_setins':True})
+            return render(request, 'iSkyLIMS_wetlab/configurationSamba.html',{'succesful_setins':True})
         except:
             error_message = ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS
-            return render(request, 'iSkyLIMS_wetlab/configuration.html',{'samba_conf_data':samba_user_field, 'error_message': error_message} )
+            return render(request, 'iSkyLIMS_wetlab/configurationSamba.html',{'samba_conf_data':samba_user_field, 'error_message': error_message} )
     else:
         samba_conf_data = get_samba_data_from_file(__package__)
-        return render(request, 'iSkyLIMS_wetlab/configuration.html',{'samba_conf_data': samba_conf_data})
+        return render(request, 'iSkyLIMS_wetlab/configurationSamba.html',{'samba_conf_data': samba_conf_data})
 
 @login_required
 def create_nextseq_run (request):
@@ -3550,15 +3562,11 @@ def handling_library_preparations(request):
         return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_lib_prep':stored_lib_prep})
 
     if request.method == 'POST' and request.POST['action'] == 'libpreparationdefined':
-        import pdb; pdb.set_trace()
-
         lib_prep_defined = request.POST.getlist('libpreparation')
         lib_protocols = get_protocol_from_library_id(lib_prep_defined[0])
-
-        import pdb; pdb.set_trace()
         stored_lib_prep = get_library_preparation_heading_for_samples(lib_prep_defined, lib_protocols)
-
         return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_lib_prep':stored_lib_prep})
+
     # store the parameter library preparation protocol
     if request.method == 'POST' and request.POST['action'] == 'recordProtocolParamters':
         stored_params = analyze_input_param_values (request.POST)
