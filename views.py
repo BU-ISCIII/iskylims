@@ -1084,7 +1084,6 @@ def search_collection_index_library (request):
                         collection_index_id_list.append(collection_value.get_collection_index_id())
                         matched_collection_index.append([collection_value.get_collection_index_id(), collection_value.get_collection_index_name()])
                 if len (matched_collection_index) == 1:
-                    import pdb; pdb.set_trace()
                     return redirect ('display_collection_index', collection_index_id = matched_collection_index[0][0])
                 else:
                     return render (request,'iSkyLIMS_wetlab/searchCollectionIndexLibrary.html', {'matched_collection_index': matched_collection_index})
@@ -1355,8 +1354,6 @@ def stats_per_sequencer (request):
 
 
 
-
-
         '''
 
 
@@ -1394,7 +1391,7 @@ def stats_per_sequencer (request):
                     projects_name_dict , projects_id_list = {} , {}
 
 
-                    #import pdb; pdb.set_trace()
+
                     for project_machine in projects_by_machine:
 
                         q_30_list , mean_q_list = [] , []
@@ -1498,7 +1495,7 @@ def stats_per_sequencer (request):
                     sequencer_statistics ['machine_graph'] = machine_graphs
                     sequencer_statistics ['machine_name'] = m_name
                     sequencer_statistics['projects_data'] = projects_data
-                    #import pdb; pdb.set_trace()
+
 
                     #collecting data for comparation graphics
 
@@ -2916,7 +2913,6 @@ def update_tables_date (request):
 def configuration_test (request):
     # check user privileges
     if request.user.is_authenticated:
-        #import pdb; pdb.set_trace()
         if not request.user.is_staff or not request.user.is_superuser:
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
     else:
@@ -2983,7 +2979,6 @@ def configuration_test (request):
                 for line in fh :
                     line = line.replace('\n', '')
                     log_trace.append(line)
-            #import pdb; pdb.set_trace()
             return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results,
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
         else:
@@ -3087,7 +3082,6 @@ def configuration_test (request):
                 for line in fh :
                     line = line.replace('\n', '')
                     log_trace.append(line)
-            #import pdb; pdb.set_trace()
             return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runMiSeq_results,
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
         else:
@@ -3184,7 +3178,6 @@ def create_protocol (request):
 
 
     if request.method == 'POST' and request.POST['action'] == 'addNewProtocol':
-        #import pdb; pdb.set_trace()
         new_protocol = request.POST['newProtocolName']
         protocol_type = request.POST['protocolType']
         description = request.POST['description']
@@ -3218,7 +3211,6 @@ def create_sample_projects (request):
     defined_samples_projects = get_info_to_display_sample_projects (__package__)
 
     if request.method == 'POST' and request.POST['action'] == 'addNewSampleProject':
-        #import pdb; pdb.set_trace()
         sample_project_name = request.POST['sampleProyectName']
         #description = request.POST['description']
 
@@ -3240,7 +3232,6 @@ def display_sample_project(request,sample_project_id):
     if 'ERROR' in samples_project_data :
         error_message = ERROR_SAMPLE_PROJECT_DOES_NOT_EXISTS
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content': error_message })
-    import pdb; pdb.set_trace()
     return render(request, 'iSkyLIMS_wetlab/displaySampleProject.html',{'samples_project_data': samples_project_data})
 
 @login_required
@@ -3249,7 +3240,6 @@ def display_protocol (request, protocol_id):
         return render (request,'iSkyLIMS_wetlab/error_page.html',
             {'content':['You do not have enough privileges to see this page ',
                         'Contact with your administrator .']})
-    #import pdb; pdb.set_trace()
     if not check_if_protocol_exists(protocol_id, __package__):
         return render (request,'iSkyLIMS_wetlab/error_page.html',
             {'content':['The protocol that you are trying to get ',
@@ -3333,8 +3323,6 @@ def pending_to_update(request):
     pending['add_lib_prep_parameters'] = get_lib_prep_to_add_parameters()
     pending ['graphic_pending_samples'] = pending_samples_for_grafic(pending).render()
 
-
-    #import pdb; pdb.set_trace()
     return render(request, 'iSkyLIMS_wetlab/pendingToUpdate.html', {'pending':pending})
 
 
@@ -3488,7 +3476,7 @@ def define_type_of_samples (request):
     sample_types = display_sample_types (__package__)
     if request.method == 'POST' and request.POST['action'] == 'addNewSampleType':
         sample_types.update(save_type_of_sample(request.POST, __package__))
-        import pdb; pdb.set_trace()
+
     return render(request, 'iSkyLIMS_wetlab/defineTypeOfSamples.html', {'sample_types':sample_types})
 
 
@@ -3734,7 +3722,7 @@ def repeat_pool (request):
         lib_prep_code_id =  lib_prep_obj.get_lib_prep_code()
         molecule_code_id = lib_prep_obj.get_molecule_code_id()
         sample_id = lib_prep_obj.get_sample_id()
-        import pdb; pdb.set_trace()
+
         result = analyze_reprocess_data([molecule_code_id, lib_prep_code_id, 'New Pool'], sample_id, request.user)
         detail_description = {}
         if result == 'Invalid options':
@@ -3996,7 +3984,7 @@ def set_library_preparation(request):
 @login_required
 def set_library_values (request):
     fix_headings = ['DNA Code ID', 'Protocol', 'Extraction Kit']
-    import pdb; pdb.set_trace()
+
     if request.method == 'POST' and request.POST['action'] == 'continueWithDNA':
         lib_preparation_data = {}
     else:
@@ -4018,10 +4006,8 @@ def set_library_values (request):
 
         display_list['list_of_samples'] = all_sample_list
         display_list['heading'] = ['Registered date ','Sample Code ID', 'Type', 'DNA/RNA', 'Protocol', 'Library Kit']
-        #import pdb; pdb.set_trace()
-        return render(request, 'iSkyLIMS_wetlab/setLibraryValues.html',{'display_list': display_list})
-    #import pdb; pdb.set_trace()
 
+        return render(request, 'iSkyLIMS_wetlab/setLibraryValues.html',{'display_list': display_list})
 
 
 @login_required
@@ -4182,7 +4168,6 @@ def pending_sample_preparations(request):
     return render(request, 'iSkyLIMS_wetlab/pendingSamplePreparations.html',{'pending': pending})
 
 def user_commercial_kit_inventory(request):
-    import pdb; pdb.set_trace()
     expired_kit = get_expired_lot_user_kit(request.user)
     valid_kit = get_valid_lot_user_kit(request.user)
 

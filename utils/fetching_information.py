@@ -1002,7 +1002,4 @@ def  get_stats_sequencer_data_from_selected_runs (runs_using_sequencer, sequence
         data_source = column_graphic_tupla (heading, '', '', 'Number of Runs','fint', run_time_tupla)
         sequencer_data ['other_sequencers_runs_per_month_graph'] = FusionCharts("column3d", "other_run_per_month_graph" , "500", "400", "chart_other_seq_month", "json", data_source).render()
 
-
-
-    import pdb; pdb.set_trace()
     return sequencer_data

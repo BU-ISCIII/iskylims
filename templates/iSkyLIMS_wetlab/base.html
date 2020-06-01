@@ -121,36 +121,18 @@
                     				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab">Search</a></li>
                     				{% endif%}
                     				{% if user.is_authenticated %}
-                                        <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#"> Statistics<span class="caret"></span></a>
-                    				        <ul class="dropdown-menu">
-                            				    <li><a href="/wetlab/StatsPerResearcher/">Projects per Investigator </a></li>
-                            				        {% if request.user|has_group:"WetlabManager" %}
-                                				        <li><a href="/wetlab/StatsPerTime/">Period of time</a></li>
-                                				    {% endif %}
-                                                 <li><a href="/wetlab/StatsPerSequencer/">Per Sequencer</a></li>
-                            				    <li><a href="/wetlab/StatsExperiment">Experiment Type</a></li>
-                            				    <li><a href="/wetlab/StatsLibrary">Library Kit Quality</a></li>
-                        				  </ul>
-                    				</li>
-                    				{% else %}
-                    				    <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="register_wetlab"> Statistics</a></li>
-                    				{% endif%}
-                                    <!--
-                    				{% if user.is_authenticated %}
-                    				    {% if request.user|has_group:"WetlabManager" %}
-                            				<li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Reports<span class="caret"></span></a>
-                            				    <ul class="dropdown-menu">
-                            				    <li><a href="/wetlab/AnnualReport">Annual Reports</a></li>
-                            				    <li><a href="/wetlab/QuarterReport">Quarter Reports</a></li>
-                            				    <li><a href="/wetlab/MonthlyReport">Monthly Reports</a></li>
+                                        {% if request.user|has_group:"WetlabManager" %}
+                                            <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#"> Statistics<span class="caret"></span></a>
+                        				        <ul class="dropdown-menu">
+                                				    <li><a href="/wetlab/StatsPerResearcher/">Projects per Investigator </a></li>
+                                    				<li><a href="/wetlab/StatsPerTime/">Period of time</a></li>
+                                                    <li><a href="/wetlab/StatsPerSequencer/">Per Sequencer</a></li>
+                                				    <li><a href="/wetlab/StatsExperiment">Experiment Type</a></li>
+                                				    <li><a href="/wetlab/StatsLibrary">Library Kit Quality</a></li>
                             				    </ul>
-                            				    {% endif %}
-                            				</li>
-                    				    {% else %}
-
+                        				    </li>
+                                        {% endif %}
                     				{% endif%}
-                                -->
-                                    <!--<li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#contact">Contact</a></li>-->
                                 </ul>
 
                             </div> <!-- menu- container -->

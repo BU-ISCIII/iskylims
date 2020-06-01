@@ -113,7 +113,7 @@
                 </div> <!--// end col-sm-12  -->
                 <div class="col-sm-12" >
                     <div class="panel panel-default">
-                        <div class="panel-heading"><h3 style="text-align:center">Time spenct in sequencing</h3></div>
+                        <div class="panel-heading"><h3 style="text-align:center">Time spent in sequencing</h3></div>
                         <div class="panel-body">
                             <h5> Mean value for the time that run starts until {{sequencer_data.sequencer}} ends the sequencing is :</h5>
                             <h5 style="text-align:center"> {{sequencer_data.mean_time_duration}} days</h5>
@@ -181,62 +181,6 @@
             </div> <!--// end panel -->
         </div> <!--// end col-sm-12  -->
     </div> <!--// end row -->
-
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-12" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3><center>Graphic Statistics for Machine {{sequencer_statistics.machine_name}} </center></h3></div>
-                <div class="panel-body">
-                    {% for seq_machine_graph in sequencer_statistics.machine_graph %}
-                        {% for id_graph, chart in seq_machine_graph %}
-                            <div class="col-sm-6" >
-                                <!-- Showing graph-->
-                                <div id="{{id_graph}}"> </div>
-                                    {{ chart|safe }}
-                            </div> <!--// end col-sm-6  -->
-                        {% endfor %}
-                    {% endfor %}
-                </div> <!--  end of panel body -->
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-8  -->
-    </div> <!--// end row -->
-
-
-
-    {% if sequencer_statistics.comp_graphs %}
-        <div class="row row-space-2 margin-b-4">
-            <div class="col-sm-12" >
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h3><center> {{sequencer_statistics.machine_name}} projects comparison </center></h3></div>
-                    <div class="panel-body">
-                    <!-- comparations chart starts here-->
-                        {% for seq_comp_graph in sequencer_statistics.comp_graphs %}
-                            {% for id_graph, chart in seq_comp_graph %}
-                                <div class="col-sm-6" >
-                                    <!-- Showing graph-->
-                                    <div id="{{id_graph}}"> </div>
-                                        {{ chart|safe }}
-                                </div> <!--// end col-sm-6  -->
-                            {% endfor %}
-                        {% endfor %}
-                    </div> <!--  end of panel body -->
-                </div> <!--// end panel -->
-            </div> <!--// end col-sm-8  -->
-        </div> <!--// end row -->
-    {% endif %}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-8" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3><center>Statistics Sequencer utilization for  {{sequencer_statistics.machine_name}} </center></h3></div>
-                <div class="panel-body">
-                    <!-- Sequencer pie Chart starts here-->
-                        <div id="sequencer_pie_chart"> </div>
-                        {{ sequencer_statistics.sequencer_pie_graph |safe }}
-                </div> <!--  end of panel body -->
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-8  -->
-    </div> <!--// end row -->
-
 
 {% else %}
     {% load user_groups %}
