@@ -1296,8 +1296,11 @@ def stats_by_services_request (request):
                 #preparing stats for request by Area
                 user_area_dict ={}
                 for service in services_found:
-                    user_id = service.serviceUserId.id
-                    user_area = Profile.objects.get(profileUserID = user_id).profileArea
+                    user_id = service.get_service_id()
+                    if Profile.objects.filter(profileUserID = user_id).exists():
+                        user_area = Profile.objects.get(profileUserID = user_id).profileArea
+                    else:
+                        user_area = 'No_user_area'
 
                     if user_area in user_area_dict:
                         user_area_dict[user_area] +=1
@@ -1311,9 +1314,11 @@ def stats_by_services_request (request):
                 #preparing stats for services request by Center
                 user_center_dict ={}
                 for service in services_found:
-                    user_id = service.serviceUserId.id
-                    user_center = Profile.objects.get(profileUserID = user_id).profileCenter.centerAbbr
-
+                    user_id = service.get_service_id()
+                    if Profile.objects.filter(profileUserID = user_id).exists():
+                        user_center = Profile.objects.get(profileUserID = user_id).profileCenter.centerAbbr
+                    else:
+                        user_center = 'Not defined'
                     if user_center in user_center_dict:
                         user_center_dict[user_center] +=1
                     else:
@@ -1339,9 +1344,12 @@ def stats_by_services_request (request):
                 center_period = {}
                 time_values_dict = {}
                 for service in services_found:
-                    user_id = service.serviceUserId.id
+                    user_id = service.get_service_id()
                     date_service = service.serviceCreatedOnDate.strftime(period_year_month)
-                    user_center = Profile.objects.get(profileUserID = user_id).profileCenter.centerAbbr
+                    if Profile.objects.filter(profileUserID = user_id).exists():
+                        user_center = Profile.objects.get(profileUserID = user_id).profileCenter.centerAbbr
+                    else:
+                        user_center = 'Not defined'
                     if not date_service in time_values_dict:
                         time_values_dict[date_service] = 1
                     if user_center in user_services_period:
@@ -1373,7 +1381,10 @@ def stats_by_services_request (request):
                 for service in services_found:
                     user_id = service.serviceUserId.id
                     date_service = service.serviceCreatedOnDate.strftime(period_year_month)
-                    user_area =  Profile.objects.get(profileUserID = user_id).profileArea
+                    if  Profile.objects.filter(profileUserID = user_id).exists():
+                        user_area =  Profile.objects.get(profileUserID = user_id).profileArea
+                    else:
+                        user_center = 'Not defined'
                     if not date_service in time_values_dict:
                         time_values_dict[date_service] = 1
                     if user_area in user_area_services_period:

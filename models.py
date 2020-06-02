@@ -121,6 +121,9 @@ class Service(models.Model):
 
 		return '%s;%s;%s;%s'  %(self.serviceRequestNumber ,self.serviceRunSpecs, self.serviceSeqCenter, platform)
 
+	def get_service_id (self):
+		return '%s' %self.serviceUserId.pk
+
 	def get_service_information_with_service_name (self):
 		platform = str(self.servicePlatform)
 		if Resolution.objects.filter(resolutionServiceID__exact = self).exists():
@@ -262,5 +265,3 @@ class Delivery(models.Model):
 		delivery_info.append(self.deliveryDate.strftime("%d %B, %Y"))
 		delivery_info.append(self.deliveryNotes)
 		return delivery_info
-
-
