@@ -31,6 +31,7 @@ class ServiceRequestFormInternalSequencing(forms.ModelForm):
  		self.helper = FormHelper()
  		self.helper.form_action=""
  		self.helper.form_method="POST"
+ 		self.fields['serviceProjectNames'].required = True
 
  		self.helper.layout = layout.Layout(
 				layout.Div(
