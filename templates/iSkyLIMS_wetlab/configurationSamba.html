@@ -17,8 +17,17 @@
         </div> <!--  end of col-sm-7 -->
     </div> <!--  end of row -->
 {% endif %}
-{% if showing_result_samba %}
-
+{% if succesful_setings %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7 col-sm-offset-3">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3 style="text-align:center">Sucessful Configuration settings</h3> </div>
+                <div class="panel-body">
+                    <h5 style="text-align:center">Your Samba settings are OK</h5>
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-7 -->
+    </div> <!--  end of row -->
 
 {% else %}
 <!-- FORM for searching RUN  Information -->

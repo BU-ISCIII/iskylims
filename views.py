@@ -75,7 +75,7 @@ def configuration_samba(request):
         importlib.reload(wetlab_config)
         try:
             open_samba_connection()
-            return render(request, 'iSkyLIMS_wetlab/configurationSamba.html',{'succesful_setins':True})
+            return render(request, 'iSkyLIMS_wetlab/configurationSamba.html',{'succesful_setings':True})
         except:
             error_message = ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS
             return render(request, 'iSkyLIMS_wetlab/configurationSamba.html',{'samba_conf_data':samba_user_field, 'error_message': error_message} )
