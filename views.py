@@ -53,9 +53,18 @@ def register_wetlab(request):
 def configuration_email(request):
     if request.user.username != 'admin':
         return redirect('')
+    email_conf_data = get_email_data_from_file(__package__)
     if request.method == 'POST' and (request.POST['action']=='emailconfiguration'):
-        pass
-    email_conf_data = {}
+        email_user_field ={}
+        for field in EMAIL_CONFIGURATION_FIELDS:
+            email_user_field[field] = request.POST[field]
+
+        if not create_email_conf_file (email_user_field, __package__) :
+            error_message = ERROR_UNABLE_TO_SAVE_EMAIL_CONFIGURATION_SETTINGS
+            return render(request, 'iSkyLIMS_wetlab/configurationEmail.html',{'email_conf_data':email_user_field, 'error_message': error_message} )
+        import importlib
+        importlib.reload(wetlab_config)
+        return render(request, 'iSkyLIMS_wetlab/configurationEmail.html',{'succesful_settings':True})
     return render(request, 'iSkyLIMS_wetlab/configurationEmail.html',{'email_conf_data': email_conf_data})
 
 @login_required
@@ -75,7 +84,7 @@ def configuration_samba(request):
         importlib.reload(wetlab_config)
         try:
             open_samba_connection()
-            return render(request, 'iSkyLIMS_wetlab/configurationSamba.html',{'succesful_setings':True})
+            return render(request, 'iSkyLIMS_wetlab/configurationSamba.html',{'succesful_settings':True})
         except:
             error_message = ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS
             return render(request, 'iSkyLIMS_wetlab/configurationSamba.html',{'samba_conf_data':samba_user_field, 'error_message': error_message} )

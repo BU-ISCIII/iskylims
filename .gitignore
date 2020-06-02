@@ -6,6 +6,7 @@ tmp/
 logs/
 tests/
 wetlab_samba_conf.py
+wetlab_email_conf.py
 ## Default for python projects
 # Byte-compiled / optimized / DLL files
 __pycache__/

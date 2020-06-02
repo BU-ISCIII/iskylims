@@ -7,57 +7,13 @@ try:
     from .wetlab_samba_conf import *
 except:
     pass
-
-'''
-
-
-################# USER SETTINGS ##############################
-## Wetlab manager
+try:
+    from .wetlab_email_conf import *
+except:
+    pass
 
 ##############################################################
-################### SAMBA SETTINGS  ##########################
-## SAMBA settings for connecting quibitka server to fetch the run files
-SAMBA_USER_ID = 'luigi'
-SAMBA_USER_PASSWORD = 'Apple123'
-SAMBA_SHARED_FOLDER_NAME = 'NGS_Data'
-#    Write the subfolder name in case that run folder are not under the
-#    shared folder directory. Leave empty in other case
-SAMBA_APPLICATION_FOLDER_NAME = ''
-SAMBA_REMOTE_SERVER_NAME = 'Luigi-PC'
-SAMBA_NTLM_USED = True
-SAMBA_IP_SERVER = '192.168.1.3'
-SAMBA_PORT_SERVER = '445'
-SAMBA_HOST_NAME = ''
-IS_DIRECT_TCP = True
-## SAMBA_DOMAIN MUST be empty if domain value is not used for samba connection
-SAMBA_DOMAIN=''
-'''
-'''
-## SAMBA settings for connecting quibitka server to fetch the run files
-SAMBA_USER_ID = 'bioinfocifs'
-SAMBA_USER_PASSWORD = 'fCdEg979I-W.gUx-teDr'
-SAMBA_SHARED_FOLDER_NAME = 'NGS_Data'
-#    Write the subfolder name in case that run folder are not under the
-#    shared folder directory. Leave empty in other case
-SAMBA_APPLICATION_FOLDER_NAME = ''
-SAMBA_REMOTE_SERVER_NAME = 'galera'
-SAMBA_NTLM_USED = True
-SAMBA_PORT_SERVER = '445'
-SAMBA_HOST_NAME = 'galera.isciii.es'
-IS_DIRECT_TCP=True
-## SAMBA_DOMAIN MUST be empty if domain value is not used for samba connection
-SAMBA_DOMAIN='ISCIII
-'''
 
-
-##############################################################
-'''
-################### EMAIL SETTINGS  ##########################
-SENT_EMAIL_ON_ERROR = False
-TO_EMAIL_ADDRESS = ['bioinformatica@isciii.es']
-FROM_EMAIL_ADDRESS = 'iSkyLIMS@isciii.es'
-##############################################################
-'''
 
 WETLAB_MANAGER = 'WetlabManager'
 
@@ -313,6 +269,7 @@ ERROR_NO_MATCHES_FOR_SEQUENCER_STATS = ['There is not any run that where using t
 
 ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS = ['Unsuccessful configuration settings for Samba connection']
 ERROR_UNABLE_TO_SAVE_SAMBA_CONFIGURATION_SETTINGS = ['Unable to save the Samba configuration file ', 'check if folder iSkyLIMS_wetlab has write permision for apache user']
+ERROR_UNABLE_TO_SAVE_EMAIL_CONFIGURATION_SETTINGS = ['Unable to save the email configuration file ', 'check if folder iSkyLIMS_wetlab has write permision for apache user']
 
 ############### HEADING FOR PROJECT DATA VISUALIZATION #####################
 HEADING_FOR_PROJECT_DATES = ['Project Recorder date', 'Project date']
@@ -323,6 +280,11 @@ HEADING_FOR_PROJECT_DATES = ['Project Recorder date', 'Project date']
 ############### FIELD NAME TO COLLECT FROM RunParameter FILE #####################
 FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE = ['RunID','ExperimentName','RTAVersion','Chemistry','RunStartDate','RunManagementType','ApplicationVersion','NumTilesPerSwath',
                     'SystemSuiteVersion', 'LibraryID', 'AnalysisWorkflowType','PlannedRead1Cycles','PlannedRead2Cycles','PlannedIndex1ReadCycles','PlannedIndex2ReadCycles' ]
+
+################ EMAIL CONFIGURATION FIELDS ###############################
+EMAIL_CONFIGURATION_FIELDS = ['USER_NAME', 'USER_EMAIL', 'EMAIL_HOST', 'EMAIL_PORT']
+EMAIL_CONFIGURATION_FILE_HEADING = '############# EMAIL CONFIGURATION FILE ########\n#DO NOT MODIFY MANUALLY THIS FILE\n#VALUES WILL BE MODIFIED WHEN USING THE CONFIGURATION FORM\n'
+EMAIL_CONFIGURATION_FILE_END = '########## END EMAIL CONFIGURATION FILE'
 
 
 ################ SAMBA CONFIGURATION FIELDS ###############################

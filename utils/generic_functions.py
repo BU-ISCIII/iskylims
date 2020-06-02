@@ -158,6 +158,38 @@ def create_new_sequencer_lab_not_defined (sequencer_name,l_run_parameter, experi
     logger.debug ('%s : End function create_new_sequencer_lab_not_defined', experiment_name)
     return new_sequencer
 
+
+def create_email_conf_file(email_fields, application):
+    '''
+    Description:
+        create the email configuration file . If exists the old information is deleted
+    Input:
+        email_fields    # Email fields settings
+    Constants:
+        EMAIL_CONFIGURATION_FILE_HEADING
+    Functions:
+        get_type_of_data # located at this file
+    Return:
+        True if sucessful creation
+    '''
+    conf_file = os.path.join(settings.BASE_DIR, application,'wetlab_email_conf.py')
+    #if os.path.isfile(conf_file):
+    try:
+
+        with open (conf_file, 'w') as out_fh:
+            out_fh.write(wetlab_config.EMAIL_CONFIGURATION_FILE_HEADING)
+            for key in sorted(email_fields):
+                type_of_data = get_type_of_data(email_fields[key])
+                if type_of_data == 'boolean' or type_of_data == 'integer':
+                    out_fh.write(key + ' = '+ email_fields[key]+ '\n')
+                else:
+                    out_fh.write(key + ' = \''+ email_fields[key]+ '\'\n')
+            out_fh.write(wetlab_config.EMAIL_CONFIGURATION_FILE_END)
+    except:
+        return False
+
+    return True
+
 def create_samba_conf_file(samba_fields, application):
     '''
     Description:
@@ -189,6 +221,37 @@ def create_samba_conf_file(samba_fields, application):
 
     return True
 
+def get_email_data_from_file(application):
+    '''
+    Description:
+        Fetch the email configuration file
+    Inputs:
+        application     # Application name
+    Constants:
+        EMAIL_CONFIGURATION_FILE_HEADING
+        EMAIL_CONFIGURATION_FILE_END
+    Return:
+        email_data
+    '''
+    conf_file = os.path.join(settings.BASE_DIR, application,'wetlab_email_conf.py')
+    email_data = {}
+    heading_found = False
+    try:
+        with open (conf_file, 'r') as fh:
+            for line in fh.readlines():
+                if not heading_found and wetlab_config.EMAIL_CONFIGURATION_FILE_HEADING.split('\n')[-2] in line :
+                    heading_found = True
+                    continue
+                if wetlab_config.EMAIL_CONFIGURATION_FILE_END in line:
+                    break
+                if heading_found :
+                    line = line.rstrip()
+                    key , value = line.split(' = ')
+                    email_data[key] = value.replace('\'','')
+        return email_data
+    except:
+        email_data
+
 def get_samba_data_from_file(application):
     '''
     Description:
@@ -198,8 +261,6 @@ def get_samba_data_from_file(application):
     Constants:
         SAMBA_CONFIGURATION_FILE_HEADING
         SAMBA_CONFIGURATION_FILE_END
-    Functions:
-        get_sequencer_lanes_number_from_file # located at this file
     Return:
         samba_data
     '''
