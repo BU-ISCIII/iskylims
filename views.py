@@ -3865,6 +3865,7 @@ def set_molecule_values(request):
         return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'display_list': display_list})
     return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{})
 
+'''   Replaced by handling_library_preparations
 @login_required
 def set_library_preparation(request):
 
@@ -3949,7 +3950,7 @@ def set_library_preparation(request):
             data = ['']*length_heading
             data[0] = library_preparation_obj.get_sample_name()
             data[1] = library_preparation_obj.get_lib_prep_code()
-            data[2] = library_preparation_obj.get_collection_index_kit()
+            #data[2] = library_preparation_obj.get_collection_index_kit()
 
             stored_lib_prep['data'].append(data)
         stored_lib_prep['lib_prep_id'] = ','.join(lib_prep_ids)
@@ -3989,6 +3990,7 @@ def set_library_preparation(request):
             valid_molecules.append(molecules[i])
             prot_lib_parameters = ProtocolLibraryParameters.objects.filter(protocol_id = protocol_obj)
 
+'''
 
 @login_required
 def set_library_values (request):

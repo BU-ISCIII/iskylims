@@ -27,6 +27,10 @@ class LibParameterValueAdmin (admin.ModelAdmin):
 class LibraryPoolAdmin(admin.ModelAdmin):
     list_display = ('registerUser', 'poolState', 'poolName', 'poolCodeID', 'runProcess_id')
 
+class libPreparationUserSampleSheetAdmin(admin.ModelAdmin):
+    list_display = ['registerUser', 'collectionIndexKit_id', 'sampleSheet', 'application','instrument', 'adapter1', 'adapter2', 'assay','reads']
+
+
 class RunErrorsAdmin (admin.ModelAdmin):
     list_display = ('errorCode', 'errorText')
 
@@ -97,6 +101,7 @@ admin.site.register(LibraryPreparation, LibraryPreparationAdmin)
 admin.site.register(LibParameterValue, LibParameterValueAdmin)
 
 admin.site.register(LibraryPool, LibraryPoolAdmin)
+admin.site.register(libPreparationUserSampleSheet, libPreparationUserSampleSheetAdmin)
 
 admin.site.register(RunningParameters , RunningParametersAdmin)
 admin.site.register(RunProcess , RunProcessAdmin)

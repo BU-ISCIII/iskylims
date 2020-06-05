@@ -169,7 +169,7 @@
                         <br>
                         <div class="panel-body">
                             <p>Select the samples to add the Library Preparation Information </p>
-                        <form method="post" action="/wetlab/setLibraryPreparation" enctype="multipart/form-data" name="addLibPrepParam"  id="addLibPrepParam" class="form-horizontal well">
+                        <form method="post" action="/wetlab/handlingLibraryPreparations" enctype="multipart/form-data" name="addLibPrepParam"  id="addLibPrepParam" class="form-horizontal well">
                         {% csrf_token %}
                             <input type="hidden" name="action" value="addLibPrepParam"/>
                             <input type="hidden" name="lib_prep_in_list" value="True"/>
@@ -207,7 +207,7 @@
                          {% if value in pending.add_lib_prep_parameters.heading %}
                          <div class="panel-body">
                              <p>Select the samples to add Library Preparation Quality parameters </p>
-                         <form method="post" action="/wetlab/setLibraryPreparation" enctype="multipart/form-data" name="addProtocolParamters"  id="addProtocolParamters" class="form-horizontal well">
+                         <form method="post" action="/wetlab/handlingLibraryPreparations" enctype="multipart/form-data" name="addProtocolParamters"  id="addProtocolParamters" class="form-horizontal well">
                          {% csrf_token %}
                              <input type="hidden" name="action" value="addProtocolParamters"/>
                              <input type="hidden" name="lib_prep_in_list" value="True"/>

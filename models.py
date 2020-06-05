@@ -1155,10 +1155,10 @@ class LibraryPreparation (models.Model):
         lib_info.append(user_name)
         lib_info.append(self.get_sample_id())
         return lib_info
-    '''
+    
     def get_collection_index_kit (self):
         return '%s' %(self.collectionIndex_id.get_collection_index_name())
-    '''
+
     def get_i7_index(self):
         return '%s' %(self.i7IndexID)
 
