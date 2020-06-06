@@ -230,7 +230,18 @@ ERROR_UNABLE_TO_DELETE_USER_FILE = 'Unable to delete user file form iSkyLIMS'
 ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES = ['Sample sheet cannot be uploaded because there are samples', 'which are not defined yet.']
 ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION = ['Sample sheet cannot be uploaded because there are samples', ' in a state from which cannot accept data from library preparation.']
 ERROR_SAMPLES_INVALID_DUPLICATED_INDEXES = ['Sample sheet cannot be uploaded because there are samples', 'which have duplicated index']
+
+
 ERROR_COLLECTION_INDEX_KIT_NOT_DEFINED = ['Sample sheet cannot be uploaded because collection Index Kit', 'is not defined']
+ERROR_NO_COLLECTION_INDEX_KIT_ARE_DEFINED = ['There is not Collection Kit defined', 'Please add the ones that will be used in your unit']
+
+ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_COLLECTION_INDEX = ['Sample Sheet does not have Index Adapters field']
+ERROR_SAMPLE_SHEET_INSTRUMENT_TYPE_NOT_INCLUDED = ['Sample Sheet does not have Instrument type']
+ERROR_SAMPLE_SHEET_BOTH_INSTRUMENT_AND_INDEX_NOT_INCLUDED = ['Sample Sheet does not have Instrument type neither Index Adapters']
+ERROR_SAMPLE_SHEET_USERS_ARE_NOT_DEFINED = ['Users in sample sheet are not defined']
+ERROR_SAMPLE_SHEET_USER_IS_NOT_DEFINED = ['User in sample sheet is not defined']
+ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD = ['Sample sheet does not have Description column ']
+ERROR_SAMPLE_SHEET_WHEN_FETCHING_USERID_NAMES = ['Sample sheet does not have the rigth format on the Description column']
 
 ERROR_EMPTY_VALUES = ['Your request cannot be recorded because ', 'it contains empty values']
 

@@ -193,7 +193,7 @@
 
 {% elif stored_params %}
     <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-6">
+        <div class="col-sm-10">
             <div class="panel panel-default">
                 <div class="panel-heading"><h3>The following samples have been updated with Library Preparation Parameters.</h3></div>
                 <div class="panel-body">
@@ -217,7 +217,7 @@
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
 
-        </div> <!--  end of col-sm-6 -->
+        </div> <!--  end of col-sm-10 -->
     </div> <!--  end of row -->
 
 {% else %}
@@ -238,7 +238,10 @@
             <div class="row row-space-2 margin-b-4">
                 <div class="col-sm-10">
                     <div class="panel panel-danger">
-                        <div class="panel-heading"><h3>ERROR when uploading the file :</h3> <h4>{{upload_file.file_name}}</h4></div>
+                        <div class="panel-heading">
+                            <h3 style="text-align:center">ERROR when uploading the file :</h3>
+                            <h4 style="text-align:center">{{upload_file.file_name}}</h4>
+                        </div>
                         <div class="panel-body">
                             {% for line in upload_file.ERROR %}
                                 <p>{{line}}</p>
@@ -252,10 +255,8 @@
         {% endif %}
         <div class="row row-space-2 margin-b-4">
             <div class="col-sm-10">
-
-
                 <div class="tab">
-                    <button class="tablinks" onclick="summaryBin(event, 'UploadFile')" id="tablinksdefaultOpen">Upload Library Preparation</button>
+                    <button class="tablinks" onclick="summaryBin(event, 'UploadFile')" id="defaultOpen"">Upload Library Preparation</button>
                     {% if upload_file.lib_prep_defined %}
                         <button class="tablinks" onclick="summaryBin(event, 'pending')">Pending Library Preparations</button>
 
@@ -334,22 +335,36 @@
                                                 <br><br>
                                             </div>  <!-- end select input -->
                                             <br>
-                                            <!--
-                                            <label class="col-sm-6 control-label" for="singlePairedEnd" >Select if samples are  in "Single Read" or "Paired End" </label>
-                                            <div class="col-sm-4">
-                                                <select class="form-control" name="singlePairedEnd" id="singlePairedEnd">
-                                                    <option value="">Choose a value</option>
-                                                    <option value="Single">Single Read</option>
-                                                    <option value="Paired End">Paired End</option>
-                                               </select>
-                                               <br><br>
-                                            </div>  <!-- end select input -->
-                                            <!--
-                                            <label class="col-sm-6 control-label" for="readlength" >Length of the reads </label>
-                                            <div class="col-sm-4">
-                                                <input type="text" name="readlength" required = "required" value="">
-                                            </div>
-                                            -->
+                                            {% if upload_file.index_adapter or upload_file.instrument %}
+                                                <div class="col-sm-12">
+                                                    <h5 style="text-align:center">Add the missing information in Sample Sheet</h5>
+                                                </div>
+                                            {% endif %}
+                                            {% if upload_file.index_adapter %}
+                                                <label class="col-sm-6 control-label" for="index_adapter" >Select Index adapters</label>
+                                                <div class="col-sm-4">
+                                                    <select class="form-control" name="index_adapter" id="index_adapter">
+                                                        <option value="">Choose a value</option>
+                                                        {% for value in  upload_file.index_adapter %}
+                                                            <option value="{{value}}">{{value}}</option>
+                                                        {% endfor %}
+                                                   </select>
+                                                   <br><br>
+                                                </div>  <!-- end select input -->
+
+                                            {% endif %}
+                                            {% if upload_file.instrument %}
+                                                <label class="col-sm-6 control-label" for="instrument" >Select Instrument Type</label>
+                                                <div class="col-sm-4">
+                                                    <select class="form-control" name="instrument" id="instrument">
+                                                        <option value="">Choose a value</option>
+                                                        <option value="Nextseq">NextSeq</option>
+                                                        <option value="miSeq">miSeq</option>
+                                                    </select>
+                                                    <br><br>
+                                                </div>  <!-- end select input -->
+                                            {% endif %}
+                                             <br><br>
                                             <div class="col-sm-11">
                                                 <br>
                                                 <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
@@ -394,6 +409,12 @@
                                             }
                                         });
                                     </script>
+                                    {% if upload_file.index_adapter or upload_file.instrument %}
+                                        <script>
+                                            // Get the element with id="defaultOpen" and click on it
+                                            document.getElementById("defaultOpen").click();
+                                        </script>
+                                    {% endif %}
                                 </div> <!--  end of panel body -->
                             </div> <!--  end of panel  -->
                         </div> <!--  end of col-sm-11 -->

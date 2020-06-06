@@ -16,7 +16,46 @@ from django.core.files.storage import FileSystemStorage
 from iSkyLIMS_wetlab import wetlab_config
 from iSkyLIMS_wetlab.models import *
 
-#from .wetlab_misc_utilities import timestamp_print
+def get_userid_in_user_iem_file (file_read):
+    '''
+    Description:
+        The function get if userids included in the user IEM file
+    Input:
+        file_read  # content of the IEM file from user
+    Constant:
+        SECTIONS_IN_IEM_SAMPLE_SHEET
+    Return
+        False if file cannot be read or do not have Description information
+        userids with the ids found
+    '''
+
+    lines = file_read.split('\n')
+    data_section_found = False
+    description_index = False
+    userid_names = []
+    for line in lines:
+        line=line.rstrip()
+        if line == '':
+            continue
+        if '[Data]' in line:
+            data_section_found = True
+            continue
+        if data_section_found :
+            line = line.split(',')
+            if not description_index :
+                try:
+                    description_index = line.index('Description')
+                    continue
+                except:
+                    return 'ERROR-1'
+            else:
+                try:
+                    userid_names.append(line[description_index])
+                except:
+                    return 'ERROR-2'
+
+    return list(set(userid_names))
+
 
 
 def delete_stored_file (input_file):
@@ -165,38 +204,23 @@ def get_samples_in_sample_sheet(file_lines):
 
             samples_dict['sample_data'].append(line.split(','))
             samples_dict['samples'].append(line.split(',')[index_sample_name])
-    import pdb; pdb.set_trace()
     return samples_dict
 
-def get_sample_sheet_data (in_file):
+def get_sample_sheet_data (file_read):
     '''
     Description:
         The function reads the user sample sheet from IEM and extracts : samples, adaters, reads
         assay, index adapters, application and instrument
     Input:
-        form_data  # form data from user
-        file_in    # csv file from IEM
-        user_obj   # user who is uploading the sampleSheet
+        file_read    # content of the user IEM
     Functions:
         get_adapters    # located at this file
         get_reads       # located at this file
         get_index_adapter  # located at this file
         get_samples_in_sample_sheet  # located at this file
-    Constant:
-        COMPLETION_SUCCESS
-    Variables
-        file_lines # contain the information of the file converted to list
     Return
         sample_sheet_data dictionary with the extracted information
     '''
-    fh = codecs.open(in_file, 'r', 'utf-8')
-    try:
-        file_read = fh.read()
-        fh.close()
-    except:
-        fh.close()
-        return False
-
     sample_sheet_data = {}
     file_lines = file_read.split('\n')
     # get assay information
@@ -662,7 +686,26 @@ def store_user_input_file (user_input_file):
     stored_path_file = os.path.join(settings.MEDIA_ROOT, file_name)
     return stored_path_file, file_name
 
-def valid_user_iem_file (in_file):
+
+def read_user_iem_file(in_file):
+    '''
+    Description:
+        The function reads the input file and return the content in a variable
+
+    Return:
+        file_read
+    '''
+    fh = codecs.open(in_file, 'r', 'utf-8')
+    try:
+        file_read = fh.read()
+        fh.close()
+        return file_read
+    except:
+        fh.close()
+        return False
+
+
+def valid_user_iem_file (file_read):
     '''
     Description:
         The function check if tthe user IEM file has a valid format by checking the headings and
@@ -670,20 +713,12 @@ def valid_user_iem_file (in_file):
         where username has to be defined to assing the sample to the user.
         If there is no sample function return False
     Input:
-        in_file  # input file from user
+        file_read  # content of the input file from user
     Constant:
         SECTIONS_IN_IEM_SAMPLE_SHEET
     Return
         False if file cannot be read or do not have all information
     '''
-    fh = codecs.open(in_file, 'r', 'utf-8')
-    try:
-        file_read = fh.read()
-        fh.close()
-    except:
-        fh.close()
-        return False
-
     for section in wetlab_config.SECTIONS_IN_IEM_SAMPLE_SHEET :
         if section not in file_read :
             return False
@@ -711,4 +746,3 @@ def valid_user_iem_file (in_file):
     if sample_number == 0:
         return False
     return True
-get_index_library_name

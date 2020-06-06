@@ -14,7 +14,7 @@
         max-height: 450px;
         overflow: auto;
         display:inline-block;
-        width: 1000px;
+        width: 950px;
     }
     .scrolling-wrapper {
             overflow-x: scroll;
@@ -258,7 +258,10 @@
                             <div class="panel-heading"><h3>Not Available User Lot Kits.</h3></div>
                             <div class="panel-body">
                                <p>There is not User Lot Kit defined on your name.</p>
-                               <p>Please define your Lot Kit first and return again to assign the molecule parameter</p>
+                               <p>Click on the bottom below to define your Lot Kit first. Then return again to assign the molecule parameter</p>
+
+                               <br><br>
+                               <button type="button" class="btn btn-default" onclick="location.href = '/wetlab/addUserLotCommercialKit';">Define new User Reagent Kit</button>
                             </div> <!--  end of panel body -->
                         </div> <!--  end of panel  -->
                     </div> <!--  end of col-sm-6 -->
@@ -542,7 +545,7 @@
                                         {% csrf_token %}
                                         <input type="hidden" name="action" value="selectedMolecules"/>
                                         <input type="hidden" name="samples_in_list" value="True"/>
-                                        <div class="table-wrapper-sm-7">
+                                        <div class="table-wrapper-sm-10">
                                             <table class="table table-hover">
                                                 <thead>
                                                     <tr>

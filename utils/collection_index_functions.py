@@ -239,6 +239,23 @@ def get_index_values (input_file):
                     index_values.append([line_split[0], line_split[1], index_7[line_split[1]], '', ''])
     return index_values
 
+
+def get_list_of_collection_kits ():
+    '''
+    Description:
+        The function get the collection kit list names defined in database
+    Return:
+        collection_kit_list
+    '''
+    collection_kit_list = []
+    if CollectionIndexKit.objects.all().exists():
+        collection_objs = CollectionIndexKit.objects.all().order_by('collectionIndexName')
+        for collection in collection_objs:
+            collection_kit_list.append(collection.get_collection_index_name())
+        return collection_kit_list
+
+    return collection_kit_list
+
 def store_collection_kits_file(collection_file):
     '''
     Description:

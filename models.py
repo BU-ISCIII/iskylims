@@ -821,7 +821,10 @@ class libPreparationUserSampleSheetManager (models.Manager):
 
     def create_lib_prep_user_sample_sheet (self, user_sample_sheet_data):
         register_user_obj = User.objects.get(username__exact = user_sample_sheet_data['user'])
-        collection_index_kit_id = CollectionIndexKit.objects.get(collectionIndexName__exact = user_sample_sheet_data['index_adapter'])
+        if user_sample_sheet_data['index_adapter'] == '':
+            collection_index_kit_id = None
+        else:
+            collection_index_kit_id = CollectionIndexKit.objects.get(collectionIndexName__exact = user_sample_sheet_data['index_adapter'])
         file_name =  os.path.basename(user_sample_sheet_data['file_name'])
         new_lib_prep_user_sample_sheet = self.create(registerUser = register_user_obj,
                     collectionIndexKit_id  = collection_index_kit_id, reads = ','.join(user_sample_sheet_data['reads']),
@@ -1155,7 +1158,7 @@ class LibraryPreparation (models.Model):
         lib_info.append(user_name)
         lib_info.append(self.get_sample_id())
         return lib_info
-    
+
     def get_collection_index_kit (self):
         return '%s' %(self.collectionIndex_id.get_collection_index_name())
 
