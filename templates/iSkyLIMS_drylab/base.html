@@ -1,34 +1,8 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
-    <title>iSkyLIMS</title>
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    {% load staticfiles  %}
-    <!-- GLOBAL MANDATORY STYLES -->
-    <link href="http://fonts.googleapis.com/css?family=Hind:300,400,500,600,700" rel="stylesheet" type="text/css">
-    <!--<link href="{% static "iSkyLIMS_common_static/vendor/simple-line-icons/css/simple-line-icons.css" %}" rel="stylesheet" type="text/css"/>-->
-    <!-- ICON STYLES -->
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.10/css/all.css" integrity="sha384-+d0P83n9kaQMCwj8F4RJB66tzIwOKmrdb46+porD/OvrJ+37WqIM7UoBtwHO6Nlg" crossorigin="anonymous">
-    <link href="{% static "iSkyLIMS_common_static/css/icons.css" %}"  rel="stylesheet" type="text/css"/>
-    <link href="{% static "iSkyLIMS_common_static/vendor/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet" type="text/css"/>
-    <link href="{% static "iSkyLIMS_common_static/css/custom.css" %}" rel="stylesheet" type="text/css"/>
-
-        <!-- GLOBAL MANDATORY JAVA SCRIPTS -->
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script> <!-- drop menus -->
-
-    <!-- PAGE LEVEL PLUGIN STYLES -->
-    <link href="{% static "iSkyLIMS_common_static/css/animate.css" %}" rel="stylesheet">
-    <link href="{% static "iSkyLIMS_common_static/vendor/swiper/css/swiper.min.css" %}"rel="stylesheet" type="text/css"/>
-        <link href="{% static "iSkyLIMS_common_static/css/form.css" %}" rel="stylesheet" type="text/css"/>
-
-    <!-- THEME STYLES -->
-    <link href="{% static "iSkyLIMS_common_static/css/layout.css" %}" rel="stylesheet" type="text/css"/>
-
-    <!-- Place favicon.ico in the root directory -->
-
+    {% include "iSkyLIMS_core/header.html" %}
+    {% load static %}
     {% load user_groups %}
     {% load mptt_tags %}
   </head>
@@ -62,42 +36,52 @@
                         <div class="menu-container">
                             <ul class="nav navbar-nav navbar-nav-right">
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/drylab/">Home</a></li>
-                                 {% if user.is_authenticated and not request.user|has_group:"admin_iSkyLIMS" %}
                                     <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">SERVICES REQUEST<span class="caret"></span></a>
                                         <ul class="dropdown-menu">
                                             <li><a href="/drylab/service_request_internal_sequencing">GENOMICS UNIT SEQUENCING</a></li>
                                             <li><a href="/drylab/service_request_external_sequencing">EXTERNAL SEQUENCING</a></li>
+                                            <li><a href="/drylab/counseling_request">COUNSELING REQUEST</a></li>
+                                            <li><a href="/drylab/infrastructure_request">INFRASTRUCTURE REQUEST</a></li>
+                                            <li><a href="/drylab/">RECORD NEW SAMPLES</a></li>
                                         </ul>
                                     </li>
-                                <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/drylab/counseling_request">COUNSELING REQUEST</a></li>
-                                <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/drylab/infrastructure_request">INFRASTRUCTURE REQUEST</a></li>
-                                {% endif %}
-                                {% if user.is_authenticated and request.user|has_group:"Admin_iSkyLIMS" %}
-                                <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">MANAGE SERVICES</a>
-                                    <ul class="dropdown-menu">
-                                                <li><a href="/drylab/searchService">SEARCH SERVICE</a></li>
-                                                <li><a href="/drylab/pendingServices">PENDING SERVICES</a></li>
+                                    <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">PIPELENES<span class="caret"></span></a>
+                                        <ul class="dropdown-menu">
+                                            <li><a href="/drylab/">REQUEST NEW PIPELINE SERVICE </a></li>
+                                            <li><a href="/drylab/">MANAGE PIPELINE</a></li>
                                         </ul>
-                                </li>
-                                <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">SERVICES STATISTICS</a>
-                                    <ul class="dropdown-menu">
-                                                <li><a href="/drylab/statsByDateUser">REQUESTED BY USER</a></li>
-                                                <li><a href="/drylab/statsByServicesRequest">SERVICES REQUESTED</a></li>
-                        <li><a href="/drylab/statsBySamplesProcessed">SAMPLES PROCESSED</a></li>
-                                                <li><a href="/drylab/statsTimeDelivery">STATS TIME DELIVERY</a></li>
-                                                                        </ul>
-                                </li>
+                                    </li>
+                                    <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">ANALYSIS<span class="caret"></span></a>
+                                        <ul class="dropdown-menu">
+                                            <li><a href="/drylab/">REQUEST ANALYSIS</a></li>
+                                            <li><a href="/drylab/">MANAGE ANALYSIS </a></li>
+                                        </ul>
+                                    </li>
+                                {% if user.is_authenticated and request.user|has_group:"Admin_iSkyLIMS" %}
+                                    <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">MANAGE SERVICES<span class="caret"></span></a>
+                                        <ul class="dropdown-menu">
+                                            <li><a href="/drylab/searchService">SEARCH SERVICE</a></li>
+                                            <li><a href="/drylab/pendingServices">PENDING SERVICES</a></li>
+                                        </ul>
+                                    </li>
+                                    <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">SERVICES STATISTICS<span class="caret"></span></a>
+                                        <ul class="dropdown-menu">
+                                            <li><a href="/drylab/statsByDateUser">REQUESTED BY USER</a></li>
+                                            <li><a href="/drylab/statsByServicesRequest">SERVICES REQUESTED</a></li>
+                                            <li><a href="/drylab/statsBySamplesProcessed">SAMPLES PROCESSED</a></li>
+                                            <li><a href="/drylab/statsTimeDelivery">STATS TIME DELIVERY</a></li>
+                                        </ul>
+                                    </li>
+                                {% endif %}
+                                {% if user.username == admin %}
                                 <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">USER ACTIVITY</a>
                                     <ul class="dropdown-menu">
-                                                <li><a href="/drylab/openSessions">CURRENT OPEN USER SESSIONS</a></li>
-                                                <li><a href="/drylab/userLogin">USER LAST LOGING</a></li>
-                                                <li><a href="/drylab/#">MORE TO ADD</a></li>
-                                                                        </ul>
+                                        <li><a href="/drylab/openSessions">CURRENT OPEN USER SESSIONS</a></li>
+                                        <li><a href="/drylab/userLogin">USER LAST LOGING</a></li>
+                                        <li><a href="/drylab/#">MORE TO ADD</a></li>
+                                    </ul>
                                 </li>
                                 {% endif %}
-                                <!--<li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="#contact">CONTACT</a></li>-->
-                            </ul>
-
                         </div>
                     </div>
                     <!-- End Navbar Collapse -->
@@ -128,7 +112,7 @@
         </div> <!--// end bg-color -->
 
 
-                {% include "iSkyLIMS_core/footer.html" %}
+        {% include "iSkyLIMS_core/footer.html" %}
         <!--========== END FOOTER ==========-->
 
         <!-- Back To Top -->
