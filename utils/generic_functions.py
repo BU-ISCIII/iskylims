@@ -587,6 +587,7 @@ def logging_errors(string_text, showing_traceback , print_on_screen ):
         send_error_email_to_user # located on utils.wetlab_misc_utilities
     Constant:
         SENT_EMAIL_ON_ERROR
+        EMAIL_USER_CONFIGURED
     Variables:
         subject # text to include in the subject email
     '''
@@ -596,9 +597,10 @@ def logging_errors(string_text, showing_traceback , print_on_screen ):
     if showing_traceback :
         logger.error('Showing traceback: ',  exc_info=True)
     logger.error('-----------------    END ERROR   --------------')
-    if wetlab_config.SENT_EMAIL_ON_ERROR :
-        subject = 'Error found on wetlab'
-        send_error_email_to_user (subject, string_text, wetlab_config.FROM_EMAIL_ADDRESS,
+    if wetlab_config.EMAIL_USER_CONFIGURED:
+        if wetlab_config.SENT_EMAIL_ON_ERROR :
+            subject = 'Error found on wetlab'
+            send_error_email_to_user (subject, string_text, wetlab_config.FROM_EMAIL_ADDRESS,
                                 wetlab_config.TO_EMAIL_ADDRESS)
     if print_on_screen :
         from datetime import datetime

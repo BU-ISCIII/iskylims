@@ -5,12 +5,14 @@ import sys
 sys.path.append
 try:
     from .wetlab_samba_conf import *
+    SAMBA_USER_CONFIGURED = True
 except:
-    pass
+    SAMBA_USER_CONFIGURED = False
 try:
     from .wetlab_email_conf import *
+    EMAIL_USER_CONFIGURED = True
 except:
-    pass
+    EMAIL_USER_CONFIGURED = False
 
 ##############################################################
 
@@ -293,7 +295,7 @@ FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE = ['RunID','ExperimentName','RTAVersion','C
                     'SystemSuiteVersion', 'LibraryID', 'AnalysisWorkflowType','PlannedRead1Cycles','PlannedRead2Cycles','PlannedIndex1ReadCycles','PlannedIndex2ReadCycles' ]
 
 ################ EMAIL CONFIGURATION FIELDS ###############################
-EMAIL_CONFIGURATION_FIELDS = ['USER_NAME', 'USER_EMAIL', 'EMAIL_HOST', 'EMAIL_PORT']
+EMAIL_CONFIGURATION_FIELDS = ['USER_NAME', 'USER_EMAIL', 'EMAIL_HOST', 'EMAIL_PORT', 'SENT_EMAIL_ON_ERROR']
 EMAIL_CONFIGURATION_FILE_HEADING = '############# EMAIL CONFIGURATION FILE ########\n#DO NOT MODIFY MANUALLY THIS FILE\n#VALUES WILL BE MODIFIED WHEN USING THE CONFIGURATION FORM\n'
 EMAIL_CONFIGURATION_FILE_END = '########## END EMAIL CONFIGURATION FILE'
 
