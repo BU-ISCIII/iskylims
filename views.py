@@ -29,7 +29,7 @@ from iSkyLIMS_wetlab.models import RunProcess, Projects
 #from django.shortcuts import RequestContext
 
 #pdb.set_trace()
-
+#PNL
 @login_required
 def index(request):
     if Service.objects.all().exclude(serviceStatus = 'delivered').exclude(serviceStatus = 'rejected').exclude(serviceStatus = 'approved').exists():
