@@ -1,6 +1,7 @@
 # Custom
 drylab_config.py
-
+*.save*
+*.swp
 
 # Django migrations
 __migrations__/
