@@ -76,6 +76,9 @@ class AvailableService(MPTTModel):
 	def __str__(self):
 		return '%s' %(self.availServiceDescription)
 
+	def get_service_description(self):
+		return '%s' %(self.availServiceDescription)
+
 	class Meta:
 		ordering = ["tree_id","lft"]
 		verbose_name = ("AvailableService")
@@ -265,3 +268,22 @@ class Delivery(models.Model):
 		delivery_info.append(self.deliveryDate.strftime("%d %B, %Y"))
 		delivery_info.append(self.deliveryNotes)
 		return delivery_info
+
+
+class Pipelines(models.Model):
+	availableService = models.ForeignKey(
+				AvailableService,
+				on_delete = models.CASCADE)
+	automatic = models.BooleanField(default = True)
+	default = models.BooleanField(default = True)
+
+
+class ActionPipeline (models.Model):
+	pipeline = models.ForeignKey(
+				Pipelines,
+				on_delete = models.CASCADE)
+	actionName = models.CharField(max_length = 50)
+	order = models.CharField(max_length = 10)
+	fake = models.BooleanField(default = False)
+
+#class PipelineActionParameter (models.Model):

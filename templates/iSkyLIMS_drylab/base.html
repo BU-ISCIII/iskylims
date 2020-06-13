@@ -36,6 +36,14 @@
                         <div class="menu-container">
                             <ul class="nav navbar-nav navbar-nav-right">
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/drylab/">Home</a></li>
+                                {% if user.username == "admin" %}
+                                        <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Configuration<span class="caret"></span></a>
+                                            <ul class="dropdown-menu">
+                                                <li><a href="/drylab/configurationSamba">Configuration Samba</a></li>
+                                                <li><a href="/drylab/configurationEmail">Configuration Email</a></li>
+                                            </ul>
+                                        </li>
+                                    {% endif %}
                                     <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">SERVICES REQUEST<span class="caret"></span></a>
                                         <ul class="dropdown-menu">
                                             <li><a href="/drylab/service_request_internal_sequencing">GENOMICS UNIT SEQUENCING</a></li>
@@ -47,7 +55,7 @@
                                     </li>
                                     <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">PIPELENES<span class="caret"></span></a>
                                         <ul class="dropdown-menu">
-                                            <li><a href="/drylab/">REQUEST NEW PIPELINE SERVICE </a></li>
+                                            <li><a href="/drylab/definePipelineService">DEFINE PIPELINE SERVICE </a></li>
                                             <li><a href="/drylab/">MANAGE PIPELINE</a></li>
                                         </ul>
                                     </li>

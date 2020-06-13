@@ -1,0 +1,95 @@
+{% extends 'iSkyLIMS_drylab/base.html' %}
+{% load static %}
+{% block content %}
+{% csrf_token %}
+
+{% if error_message %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7 col-sm-offset-3">
+            <div class="panel panel-danger">
+                <div class="panel-heading"><h3 style="text-align:center">Invalid settings</h3> </div>
+                <div class="panel-body">
+                    {% for values in error_message %}
+                        <h4>{{values}}</h4>
+                    {% endfor %}
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-7 -->
+    </div> <!--  end of row -->
+{% endif %}
+{% if succesful_settings %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7 col-sm-offset-3">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3 style="text-align:center">Sucessful Configuration settings</h3> </div>
+                <div class="panel-body">
+                    <h5 style="text-align:center">Your Samba settings are OK</h5>
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-7 -->
+    </div> <!--  end of row -->
+
+{% else %}
+<!-- FORM for searching RUN  Information -->
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Configuration settings for Samba connection</h3></div>
+                <div class="panel-body">
+                    <form method="post" enctype="multipart/form-data" name="sambaconfiguration" id="sambaconfiguration" class="form-horizontal well">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="sambaconfiguration"/>
+                        <div class="form-group required">
+                            <label class="col-sm-5  control-label" for="SAMBA_USER_ID" >Samba UserId </label>
+                            <div class="col-sm-5"><input class="form-control" type="text" required = "required" name="SAMBA_USER_ID" id="SAMBA_USER_ID" value = "{{samba_conf_data.SAMBA_USER_ID}}" size="100" maxlength="100" ></div>
+                            <br><br>
+                            <label class="col-sm-5  control-label" for="SAMBA_USER_PASSWORD" >Samba User Password</label>
+                            <div class="col-sm-5"><input class="form-control" type="text" required = "required" name="SAMBA_USER_PASSWORD" id="SAMBA_USER_PASSWORD" value = "{{samba_conf_data.SAMBA_USER_PASSWORD}}" size="100" maxlength="100" ></div>
+                            <br><br>
+                            <label class="col-sm-5  control-label" for="SAMBA_SHARED_FOLDER_NAME" >Samba Folder name</label>
+                            <div class="col-sm-5"><input class="form-control" type="text" required = "required" name="SAMBA_SHARED_FOLDER_NAME" id="SAMBA_SHARED_FOLDER_NAME" value = "{{samba_conf_data.SAMBA_SHARED_FOLDER_NAME}}" size="100" maxlength="100" ></div>
+                            <br><br>
+                            <label class="col-sm-5  control-label" for="SAMBA_REMOTE_SERVER_NAME" >Samba Remote Server Name</label>
+                            <div class="col-sm-5"><input class="form-control" type="text" required = "required" name="SAMBA_REMOTE_SERVER_NAME" id="SAMBA_REMOTE_SERVER_NAME" value = "{{samba_conf_data.SAMBA_REMOTE_SERVER_NAME}}" size="100" maxlength="100" ></div>
+                            <br><br>
+                            <label class="col-sm-5  control-label" for="SAMBA_PORT_SERVER" >Samba Port Number</label>
+                            <div class="col-sm-5"><input class="form-control" type="text" required = "required" name="SAMBA_PORT_SERVER" id="SAMBA_PORT_SERVER" value = "{{samba_conf_data.SAMBA_PORT_SERVER}}" size="100" maxlength="100" ></div>
+                            <br><br>
+                            <label class="col-sm-5  control-label" for="SAMBA_NTLM_USED" >Samba NTLM used </label>
+                            <div class="col-sm-5">
+                                <label class="radio-inline"><input type="radio" name="SAMBA_NTLM_USED" required = "required" value="True" checked>YES</label>
+                                <label class="radio-inline"><input type="radio" name="SAMBA_NTLM_USED" required = "required" value="False" >NO</label>
+                            </div>  <!-- end  radio -->
+                            <br><br>
+                            <label class="col-sm-5  control-label" for="IS_DIRECT_TCP" >TCP direct connection</label>
+                            <div class="col-sm-5">
+                                <label class="radio-inline"><input type="radio" name="IS_DIRECT_TCP" required = "required" value="True" checked>YES</label>
+                                <label class="radio-inline"><input type="radio" name="IS_DIRECT_TCP" required = "required" value="False" >NO</label>
+                            </div>  <!-- end  radio -->
+
+                        </div>  <!-- end from-group   -->
+                        <div class="form-group">
+                            <label class="col-sm-5  control-label" for="SAMBA_IP_SERVER" >Samba IP address </label>
+                            <div class="col-sm-5"><input class="form-control" type="text" name="SAMBA_IP_SERVER" id="SAMBA_IP_SERVER" value = "{{samba_conf_data.SAMBA_IP_SERVER}}" size="100" maxlength="100" value="{{samba_user_field.SAMBA_IP_SERVER}}"></div>
+                            <br><br>
+                            <label class="col-sm-5  control-label" for="SAMBA_HOST_NAME">Samba Host Name</label>
+                            <div class="col-sm-5"><input class="form-control" type="text" name="SAMBA_HOST_NAME" id="SAMBA_HOST_NAME" value = "{{samba_conf_data.SAMBA_HOST_NAME}}" size="100" maxlength="100" value="{{samba_user_field.SAMBA_HOST_NAME}}"></div>
+                            <br><br>
+                            <label class="col-sm-5  control-label" for="SAMBA_APPLICATION_FOLDER_NAME" >Samba Application Folder</label>
+                            <div class="col-sm-5"><input class="form-control" type="text" name="SAMBA_APPLICATION_FOLDER_NAME" id="SAMBA_APPLICATION_FOLDER_NAME" value = "{{samba_conf_data.SAMBA_APPLICATION_FOLDER_NAME}}" size="100" maxlength="100" value="{{samba_user_field.SAMBA_APPLICATION_FOLDER_NAME}}"></div>
+                            <br><br>
+                            <label class="col-sm-5  control-label" for="SAMBA_DOMAIN" >Samba Domain</label>
+                            <div class="col-sm-5"><input class="form-control" type="text" name="SAMBA_DOMAIN " id="SAMBA_DOMAIN " value = "{{samba_conf_data.SAMBA_DOMAIN}}" size="100" maxlength="100"></div>
+                            <br><br>
+                        </div>
+                        <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
+                        <input class="btn pull-right btn-primary" type="submit" value="Submit and check">
+                    </form>
+                    <p> Fields marked with <FONT COLOR= "Red">*</FONT> are mandatory</p>
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-12  -->
+    </div> <!--  end of row -->
+
+{% endif %}
+{% endblock %}

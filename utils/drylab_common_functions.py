@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.auth.models import Group
 from iSkyLIMS_drylab import drylab_config
 from smb.SMBConnection import SMBConnection
 from iSkyLIMS_drylab.models import *
@@ -128,6 +129,88 @@ def get_service_information (service_id):
 
     return display_service_details
 
+def is_drylab_manager (request):
+    '''
+    Description:
+        The function will check if the logged user belongs to drylab
+        manager group
+    Input:
+        request # contains the session information
+    Variables:
+        groups # wetlab manager object group
+    Return:
+        Return True if the user belongs to Wetlab Manager, False if not
+    '''
+    try:
+        groups = Group.objects.get(name = drylab_config.DRYLAB_MANAGER)
+        if groups not in request.user.groups.all():
+            return False
+    except:
+        return False
+
+    return True
+
+def get_email_data_from_file(application):
+    '''
+    Description:
+        Fetch the email configuration file
+    Inputs:
+        application     # Application name
+    Constants:
+        EMAIL_CONFIGURATION_FILE_HEADING
+        EMAIL_CONFIGURATION_FILE_END
+    Return:
+        email_data
+    '''
+    conf_file = os.path.join(settings.BASE_DIR, application,'drylab_email_conf.py')
+    email_data = {}
+    heading_found = False
+    try:
+        with open (conf_file, 'r') as fh:
+            for line in fh.readlines():
+                if not heading_found and wetlab_config.EMAIL_CONFIGURATION_FILE_HEADING.split('\n')[-2] in line :
+                    heading_found = True
+                    continue
+                if wetlab_config.EMAIL_CONFIGURATION_FILE_END in line:
+                    break
+                if heading_found :
+                    line = line.rstrip()
+                    key , value = line.split(' = ')
+                    email_data[key] = value.replace('\'','')
+        return email_data
+    except:
+        email_data
+
+def get_samba_data_from_file(application):
+    '''
+    Description:
+        Fetch the samba configuration file
+    Inputs:
+        application     # Application name
+    Constants:
+        SAMBA_CONFIGURATION_FILE_HEADING
+        SAMBA_CONFIGURATION_FILE_END
+    Return:
+        samba_data
+    '''
+    conf_file = os.path.join(settings.BASE_DIR, application,'drylab_samba_conf.py')
+    samba_data = {}
+    heading_found = False
+    try:
+        with open (conf_file, 'r') as fh:
+            for line in fh.readlines():
+                if not heading_found and wetlab_config.SAMBA_CONFIGURATION_FILE_HEADING.split('\n')[-2] in line :
+                    heading_found = True
+                    continue
+                if wetlab_config.SAMBA_CONFIGURATION_FILE_END in line:
+                    break
+                if heading_found :
+                    line = line.rstrip()
+                    key , value = line.split(' = ')
+                    samba_data[key] = value.replace('\'','')
+        return samba_data
+    except:
+        samba_data
 
 def open_samba_connection():
     '''
@@ -163,3 +246,18 @@ def increment_service_number ( user_name):
     return service_number
 
 
+def get_children_available_services():
+    '''
+    Description:
+        The function collect the available services and the fields to present information
+        in the form
+    Return:
+        children_services
+    '''
+    children_services = []
+    if AvailableService.objects.filter(parent = None).exists():
+        all_services = AvailableService.objects.filter(parent = None).get_descendants()
+        for service in all_services :
+            if not service.get_children().exists():
+                children_services.append([service.pk, service.get_service_description()])
+    return children_services

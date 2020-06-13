@@ -1,0 +1,121 @@
+{% extends 'iSkyLIMS_drylab/base.html' %}
+{% load static %}
+{% block content %}
+{%include 'iSkyLIMS_core/jexcel_functionality.html' %}
+
+<style>
+    .scrolling-wrapper {
+        overflow-x: auto;
+        overflow-y: auto;
+        white-space: nowrap;
+        height: 300px;
+    }
+ </style>
+{% if defined_service_actions %}
+
+{% else %}
+    {% if not data_actions.available_services %}
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-8 col-sm-offset-2" >
+                <div class="panel panel-danger">
+                    <div class="panel-heading"><h3 style="text-align:center">No Services have been defined so far</h3></div>
+                    <div class="panel-body">
+                        <h5 style="text-align:center">Check in the User Guide to define services </h5>
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+            </div> <!--  end of col-sm-12 -->
+        </div> <!--  end of row -->
+    {% else %}
+    	<div class="row row-space-2 margin-b-4">
+    		<div class="col-sm-12">
+    			<div class="panel panel-default">
+    				<div class="panel-heading"><h3>Define the pipeline and preparation actions for the selected service.</h3></div>
+    				<div class="panel-body">
+    					<form method="post" enctype="multipart/form-data" name="actionsPipeline"  id="actionsPipeline" class="form-horizontal well">
+    						{% csrf_token %}
+                            <input type="hidden" name="action" value="actionsPipeline"/>
+    						<div class="row row-space-2 margin-b-4">
+                                <div class="form-group required">
+        							<div class="col-sm-6">
+
+                                        <label class="col-sm-6 control-label" for="service_id" >Select a Service</label>
+                                        <div class="col-sm-6"><select class="form-control"  required = "required" name="service_id" id="service_id">
+                                            <option selected="">Select one service</option>
+                                            {% for id, name in data_actions.available_services %}
+                                                <option value="{{id}}">{{name}}</option>
+                                            {% endfor %}
+                                            </select>
+                                        </div>
+        							</div> <!--  end of col-sm-6 -->
+        							<div class="col-sm-6">
+                                        <label class="col-sm-5  control-label" for="pipelineName" >Pipeline Name </label>
+                                    <div class="col-sm-6"><input class="form-control" type="text" required = "required" name="pipelineName" id="pipelineName" size="100" maxlength="100"></div>
+                                    <BR><br>
+        								<label class="col-sm-5 control-label" for="automaticAction" >Automatic execution</label>
+        	                            <div class="col-sm-5">
+        									<label class="radio-inline"><input type="radio" name="automaticAction" required = "required" value="True" checked>YES</label>
+        		                            <label class="radio-inline"><input type="radio" name="automaticAction" required = "required" value="False" >NO</label>
+        								</div>  <!-- end  radio -->
+        							</div> <!--  end of col-sm-6-->
+                                </div>  <!-- end from-group   -->
+        						<br><br>
+        						<div  class="scrolling-wrapper">
+        							<div id="spreadsheet"></div>
+            	                    <br>
+        						    <script>
+        	                            var data = [{% for values in data_actions.data %}
+        	                               [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+        	                            ];
+        	                           mySpreadsheet = $('#spreadsheet').jexcel({
+        	                               data:data,
+        	                               columns: [
+        	                                    { type: 'text', title:'{{data_actions.heading.0}}', width:180  },
+        										{ type: 'numeric', title:'{{data_actions.heading.1}}', width:50, mask:' #.##' },
+        	                                    { type: 'dropdown', title:'{{data_actions.heading.2}}', width:100 , source :[ {% for value in data_actions.available_actions %} '{{value}}', {% endfor %}]},
+        	                                    { type: 'checkbox', title:'{{data_actions.heading.3}}', width:100  },
+        										{ type: 'text', title:'{{data_actions.heading.4}}', width:180  },
+        										{ type: 'text', title:'{{data_actions.heading.5}}', width:180  },
+                                                { type: 'text', title:'{{data_actions.heading.6}}', width:180  },
+
+        	                               ],
+        	                               allowInsertColumn:false,
+        	                               allowDeleteColumn:false,
+        	                               allowRenameColumn:false,
+        	                               allowInsertRow:true,
+        	                               allowDeleteRow:true,
+        	                               tableOverflow:true,
+        	                               tableHeight:'200px',
+        								   minDimensions:[{{data_actions.heading|length}},3],
+        								   csvFileName:'actionsPipeline',
+        	                           });
+        	                        </script>
+        	                       <input type="button" value="Return Home" onclick="location.href ='/drylab' ;"/>
+        	                       <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
+    				   		    </div> <!--  end of scrolling  -->
+                            </div> <!--  end of row -->
+                        </form>
+                        <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
+                        <script>
+                            $(document).ready(function () {
+                                $("#actionsPipeline").submit(function (e) {
+                                    //stop submitting the form to see the disabled button effect
+                                    // e.preventDefault();
+                                    //disable the submit button
+                                    var table_data = $('#spreadsheet').jexcel('getData')
+                                    var data_json = JSON.stringify(table_data)
+                                    $("<input />").attr("type", "hidden")
+                                      .attr("name", "protocol_data")
+                                      .attr("value", data_json)
+                                      .appendTo("#actionsPipeline");
+                                    $("#btnSubmit").attr("disabled", true);
+                                    return true;
+                                });
+                            });
+                        </script>
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+            </div> <!--  end of col-sm-12 -->
+        </div> <!--  end of row -->
+    {% endif %}
+{% endif %}
+{% endblock %}

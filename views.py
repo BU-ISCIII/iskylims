@@ -20,6 +20,7 @@ from django.conf import settings
 from iSkyLIMS_drylab import drylab_config
 from iSkyLIMS_drylab.utils.testing_drylab_configuration import *
 from iSkyLIMS_drylab.utils.drylab_common_functions import *
+from iSkyLIMS_drylab.utils.handling_pipelines import *
 
 from smb.SMBConnection import SMBConnection
 from iSkyLIMS_wetlab.models import RunProcess, Projects
@@ -56,6 +57,50 @@ def index(request):
         return render(request, 'iSkyLIMS_drylab/index.html',{'service_list': service_list})
     else:
         return render(request, 'iSkyLIMS_drylab/index.html')
+
+@login_required
+def configuration_email(request):
+    if request.user.username != 'admin':
+        return redirect('')
+    email_conf_data = get_email_data_from_file(__package__)
+    if request.method == 'POST' and (request.POST['action']=='emailconfiguration'):
+        email_user_field ={}
+        for field in EMAIL_CONFIGURATION_FIELDS:
+            email_user_field[field] = request.POST[field]
+
+        if not create_email_conf_file (email_user_field, __package__) :
+            error_message = ERROR_UNABLE_TO_SAVE_EMAIL_CONFIGURATION_SETTINGS
+            return render(request, 'iSkyLIMS_drylab/configurationEmail.html',{'email_conf_data':email_user_field, 'error_message': error_message} )
+        import importlib
+        importlib.reload(wetlab_config)
+        return render(request, 'iSkyLIMS_drylab/configurationEmail.html',{'succesful_settings':True})
+    return render(request, 'iSkyLIMS_drylab/configurationEmail.html',{'email_conf_data': email_conf_data})
+
+
+@login_required
+def configuration_samba(request):
+    if request.user.username != 'admin':
+        return redirect('')
+    samba_conf_data = get_samba_data_from_file(__package__)
+    if request.method == 'POST' and (request.POST['action']=='sambaconfiguration'):
+        # reload configuration samba settings
+        samba_user_field ={}
+        for field in SAMBA_CONFIGURATION_FIELDS:
+            samba_user_field[field] = request.POST[field]
+        if not create_samba_conf_file (samba_user_field, __package__) :
+            error_message = ERROR_UNABLE_TO_SAVE_SAMBA_CONFIGURATION_SETTINGS
+            return render(request, 'iSkyLIMS_drylab/configurationSamba.html',{'samba_conf_data':samba_user_field, 'error_message': error_message} )
+        import importlib
+        importlib.reload(drylab_config)
+        try:
+            open_samba_connection()
+            return render(request, 'iSkyLIMS_drylab/configurationSamba.html',{'succesful_settings':True})
+        except:
+            error_message = ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS
+            return render(request, 'iSkyLIMS_drylab/configurationSamba.html',{'samba_conf_data':samba_user_field, 'error_message': error_message} )
+    else:
+        samba_conf_data = get_samba_data_from_file(__package__)
+        return render(request, 'iSkyLIMS_drylab/configurationSamba.html',{'samba_conf_data': samba_conf_data})
 
 '''
 def increment_service_number ( user_name):
@@ -384,6 +429,7 @@ def counseling_request(request):
 
     form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Bioinformatics consulting and training").get_descendants(include_self=True)
     return render(request, 'iSkyLIMS_drylab/RequestForm.html' , { 'form' : form ,  'consulting_request': 'consulting_request'})
+
 
 @login_required
 def infrastructure_request(request):
@@ -1077,6 +1123,7 @@ def add_delivery (request , resolution_id):
             return render (request,'django_utils/error_page.html', {'content':['The resolution that you are trying to upadate does not exists ','Contact with your administrator .']})
     return
 
+
 @login_required
 def stats_by_date_user (request):
     if request.user.is_authenticated:
@@ -1656,3 +1703,16 @@ def configuration_test (request):
             return render (request,'iSkyLIMS_drylab/ConfigurationTest.html', {'resolution_results': resolution_results})
     else:
         return render(request,'iSkyLIMS_drylab/ConfigurationTest.html')
+
+@login_required
+def define_pipeline_service(request):
+    if request.user.is_authenticated:
+        if not is_drylab_manager(request):
+            return render (request,'django_utils/error_page.html', {'content':drylab_config.ERROR_USER_NOT_ALLOWED })
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+    data_actions = get_data_form_pipeline_actions()
+    if request.method == 'POST' and request.POST['action'] == 'actionsPipeline':
+        pipeline_action = analyze_input_pipelines(request)
+    return render(request,'iSkyLIMS_drylab/definePipelineService.html', {'data_actions': data_actions})
