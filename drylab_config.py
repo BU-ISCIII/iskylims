@@ -37,13 +37,17 @@ ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS = ['Unsuccessful configuration settings
 ERROR_UNABLE_TO_SAVE_SAMBA_CONFIGURATION_SETTINGS = ['Unable to save the Samba configuration file ', 'check if folder iSkyLIMS_wetlab has write permision for apache user']
 ERROR_UNABLE_TO_SAVE_EMAIL_CONFIGURATION_SETTINGS = ['Unable to save the email configuration file ', 'check if folder iSkyLIMS_wetlab has write permision for apache user']
 
-
+ERROR_PIPELINE_ALREADY_EXISTS = ['Pipeline name and version is already defined']
 
 AVAILABLE_ACTIONS_IN_PIPELINE = ['Copy','Symbolic link',]
-HEADING_ACTIONS_PIPELINES = ['Given name for action', 'Order', 'Action', 'Fake Action', 'Parameter1', 'Parameter2', 'Parameter3']
+HEADING_ACTIONS_PIPELINES = ['Given name for action', 'Order', 'Action', 'Fake Action']
+HEADING_ACTIONS_PARAMETERS = ['Parameter1', 'Parameter2', 'Parameter3']
 
 
+HEADING_MANAGE_PIPELINES = ['Service', 'Pipeline Name', 'Pipeline Version', 'Date', 'id']
 
+DISPLAY_NEW_DEFINED_PIPELINE = ['Service', 'Pipeline Name' , 'Pipeline Version']
+DISPLAY_MULTYPLE_DEFINED_PIPELINE = ['Service', 'User', 'Pipeline Name' , 'Pipeline Version', 'Date', 'Default']
 
 ################ EMAIL CONFIGURATION FIELDS ###############################
 EMAIL_CONFIGURATION_FIELDS = ['USER_NAME', 'USER_EMAIL', 'EMAIL_HOST', 'EMAIL_PORT', 'SENT_EMAIL_ON_ERROR']

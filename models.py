@@ -1,6 +1,7 @@
-import os
+import datetime, os
 from django.db import models
 from django import forms
+from django.contrib.auth.models import User
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel
@@ -270,13 +271,67 @@ class Delivery(models.Model):
 		return delivery_info
 
 
+class PipelinesManager (models.Manager):
+	def create_pipeline(self, data):
+		availableService = AvailableService.objects.get(pk__exact = data['availableService_id'])
+
+		new_pipeline = self.create(availableService = availableService, userName = data['userName'],
+				pipelineName = data['pipelineName'],
+				pipelineVersion	= data['pipelineVersion'], pipelineStrFolder = data['pipelineStrFolder'],
+				automatic = data['automatic'])
+		return new_pipeline
+
 class Pipelines(models.Model):
 	availableService = models.ForeignKey(
 				AvailableService,
 				on_delete = models.CASCADE)
+	userName = models.ForeignKey(
+                User,
+                on_delete=models.CASCADE)
+	pipelineName = models.CharField(max_length = 50)
+	pipelineVersion = models.CharField(max_length = 10)
+	pipelineStrFolder = models.CharField(max_length = 20)
 	automatic = models.BooleanField(default = True)
-	default = models.BooleanField(default = True)
+	default = models.BooleanField(default = False)
+	generated_at = models.DateTimeField(auto_now_add = True)
 
+	def __str__ (self):
+		return '%s' %(self.pipelineName)
+
+	def get_pipeline_name (self):
+		return '%s' %(self.pipelineName)
+
+	def get_pipeline_info(self):
+		data = []
+		data.append(self.availableService.get_service_description())
+		data.append(self.userName.username)
+		data.append(self.pipelineName)
+		data.append(self.pipelineVersion)
+		data.append(self.generated_at.strftime("%B %d, %Y"))
+		data.append(self.default)
+		data.append(self.pk)
+		return data
+
+	def remove_default_pipeline(self):
+		self.default = False
+		self.save()
+		return self
+
+	def set_default_pipeline(self):
+		self.default = True
+		self.save()
+		return self
+
+
+	objects = PipelinesManager()
+
+
+class ActionPipelineManager(models.Manager):
+	def create_pipeline_action(self, pipeline, pipeline_actions):
+		new_pipeline_action = self.create(pipeline = pipeline, actionName = pipeline_actions['Given name for action'],
+			order = pipeline_actions['Order'],	action= pipeline_actions['Action'],
+			fake = pipeline_actions['Fake Action'])
+		return new_pipeline_action
 
 class ActionPipeline (models.Model):
 	pipeline = models.ForeignKey(
@@ -284,6 +339,46 @@ class ActionPipeline (models.Model):
 				on_delete = models.CASCADE)
 	actionName = models.CharField(max_length = 50)
 	order = models.CharField(max_length = 10)
+	action = models.CharField(max_length = 20)
 	fake = models.BooleanField(default = False)
 
-#class PipelineActionParameter (models.Model):
+	def __str__ (self):
+		return '%s' %(self.actionName)
+
+	def get_action_pipeline_name (self):
+		return '%s' %(self.actionName)
+
+	objects = ActionPipelineManager()
+
+
+class ParameterActionPipelineManager(models.Manager):
+	def create_pipeline_parameters(self, pipeline_action, pipeline_parameters):
+		for item, values in pipeline_parameters.items():
+			if values == '' :
+				pipeline_parameters[item] = None
+		new_parameter_action_pipeline = self.create(actionPipeline = pipeline_action,
+					parameter1 = pipeline_parameters['Parameter1'], parameter2 = pipeline_parameters['Parameter2'],
+					parameter3 = pipeline_parameters['Parameter3'])
+
+class ParameterActionPipeline (models.Model):
+	actionPipeline = models.ForeignKey(
+				ActionPipeline,
+				on_delete = models.CASCADE)
+	parameter1 = models.CharField(max_length = 80, null = True, blank = True)
+	parameter2 = models.CharField(max_length = 80, null = True, blank = True)
+	parameter3 = models.CharField(max_length = 80, null = True, blank = True)
+
+	def __str__ (self):
+		return '%s' %(self.parameter1)
+
+	def get_parameter_action_pipeline (self):
+		return '%s' %(self.parameter1)
+
+	def get_all_action_parameters(self):
+		data = []
+		data.append(self.parameter1 if self.parameter1 != None else '' )
+		data.append(self.parameter2 if self.parameter2 != None else '' )
+		data.append(self.parameter3 if self.parameter3 != None else '' )
+		return data
+
+	objects = ParameterActionPipelineManager()

@@ -1,4 +1,55 @@
+import json
 from .drylab_common_functions import *
+from iSkyLIMS_drylab import drylab_config
+from iSkyLIMS_drylab.models import *
+
+
+def analyze_input_pipelines(request):
+    '''
+    Description:
+        The function extract the information from the user form
+    Return:
+        pipeline_actions
+    '''
+    pipeline_actions = {}
+    pipeline_actions['availableService_id'] = request.POST['service_id']
+    pipeline_actions['userName'] = request.user
+    pipeline_actions['pipelineName'] =request.POST['pipelineName']
+    pipeline_actions['pipelineVersion'] = request.POST['pipelineVersion']
+    pipeline_actions['pipelineStrFolder'] = request.POST['pipelineStrFolder']
+    pipeline_actions['automatic'] = request.POST['automaticAction']
+    pipeline_json_data = json.loads(request.POST['pipeline_data'])
+
+    action_length = len(drylab_config.HEADING_ACTIONS_PIPELINES)
+    pipeline_actions['actions'] = []
+    pipeline_actions['parameters'] = []
+    for row in pipeline_json_data :
+        action_name = str(row[drylab_config.HEADING_ACTIONS_PIPELINES.index('Given name for action')])
+        if action_name == '' :
+            continue
+        action_dict = {}
+        param_dict = {}
+        for i in range(len(drylab_config.HEADING_ACTIONS_PIPELINES)):
+            action_dict[drylab_config.HEADING_ACTIONS_PIPELINES[i]] = row[i]
+        pipeline_actions['actions'].append(action_dict)
+
+        for i in range(len(drylab_config.HEADING_ACTIONS_PARAMETERS)):
+            param_dict[drylab_config.HEADING_ACTIONS_PARAMETERS[i]] = row[action_length + i]
+        pipeline_actions['parameters'].append(param_dict)
+    pipeline_actions['data'] = pipeline_json_data
+
+    return pipeline_actions
+
+def check_if_pipelines_exists_for_service(service_id):
+    '''
+    Description:
+        The function check if the service had already a pipeline
+    Return:
+        True or False
+    '''
+    if Pipelines.objects.filter(availableService__pk__exact = service_id).count() > 1:
+        return True
+    return False
 
 def get_data_form_pipeline_actions():
     '''
@@ -6,12 +57,77 @@ def get_data_form_pipeline_actions():
         The function collect the available services and the fields to present information
         in the form
     Functions:
-        get_available_services  # located at drylab_common_functions
+        get_children_available_services  # located at drylab_common_functions
     Return:
         data_actions
     '''
     data_actions = {}
     data_actions ['available_services']= get_children_available_services ()
-    data_actions['heading']= drylab_config.HEADING_ACTIONS_PIPELINES
+    data_actions['heading']= drylab_config.HEADING_ACTIONS_PIPELINES +  drylab_config.HEADING_ACTIONS_PARAMETERS
     data_actions['available_actions'] = drylab_config.AVAILABLE_ACTIONS_IN_PIPELINE
     return data_actions
+
+def get_pipeline_data_to_display(pipeline_information):
+    '''
+    Description:
+        The function collect data to display information for a new defined pipeline
+
+    Return:
+        pipeline_data
+    '''
+    pipeline_data = {}
+    if check_if_pipelines_exists_for_service(pipeline_information['availableService_id']):
+        return  get_pipelines_for_service(pipeline_information['availableService_id'])
+    service_name = get_service_name_from_id (pipeline_information['availableService_id'])
+    pipeline_data['one_pipeline'] = [service_name, pipeline_information['pipelineName'],pipeline_information['pipelineVersion']]
+    pipeline_data['heading_one_pipeline']= drylab_config.DISPLAY_NEW_DEFINED_PIPELINE
+    return pipeline_data
+
+def get_pipelines_for_service(service_id):
+    '''
+    Description:
+        The function get the service name from service id
+    Return:
+        service_name
+    '''
+    pipeline_data = {}
+    pipeline_data['multiple_pipeline'] = []
+    pipeline_objs = Pipelines.objects.filter(availableService__pk__exact = service_id)
+    for pipeline_obj in pipeline_objs :
+        pipeline_data['multiple_pipeline'].append(pipeline_obj.get_pipeline_info())
+    pipeline_data['heading_multi_pipeline'] = drylab_config.DISPLAY_MULTYPLE_DEFINED_PIPELINE
+    return pipeline_data
+
+def get_service_name_from_id(service_id):
+    '''
+    Description:
+        The function get the service name from service id
+    Return:
+        service_name
+    '''
+    return AvailableService.objects.get(pk__exact = service_id).get_service_description()
+
+def pipeline_version_exists(pipeline_name, pipeline_version):
+    '''
+    Description:
+        The function check if pipeline name and version already exists
+    Return:
+        True if already exists
+    '''
+    if Pipelines.objects.filter(pipelineName__iexact = pipeline_name, pipelineVersion__iexact = pipeline_version).exists():
+        return True
+    return False
+
+
+def store_pipeline_actions(pipeline_obj, pipeline_actions, pipeline_parameters):
+    '''
+    Description:
+        The function store in database the actions and parameters for the pipeline
+
+    Return:
+        True if already exists
+    '''
+    for i in range(len(pipeline_actions)):
+        new_pipeline_action = ActionPipeline.objects.create_pipeline_action(pipeline_obj, pipeline_actions[i])
+        new_pipeline_parameters = ParameterActionPipeline.objects.create_pipeline_parameters( new_pipeline_action, pipeline_parameters[i])
+    return

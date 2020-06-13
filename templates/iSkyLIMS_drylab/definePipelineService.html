@@ -12,8 +12,94 @@
     }
  </style>
 {% if defined_service_actions %}
+    {% if defined_service_actions.one_pipeline %}
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-8 col-sm-offset-2">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3  style="text-align:center">Successful Pipeline recorded.</h3></div>
+                    <div class="panel-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    {% for value in defined_service_actions.heading_one_pipeline %}
+                                        <th>{{value}}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    {% for value in defined_service_actions.one_pipeline %}
+                                        <td>{{value}}</td>
+                                    {% endfor %}
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+            </div> <!--  end of col-sm-12 -->
+        </div> <!--  end of row -->
+    {% else %}
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-8 col-sm-offset-2">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3  style="text-align:center">Multiple Pipeline for a service.</h3></div>
+                    <div class="panel-body">
+                        <h5  style="text-align:center">Select the default pipeline for the service </h5>
+                        <form method="post" enctype="multipart/form-data" name="selectDefaultPipeline"  id="selectDefaultPipeline" class="form-horizontal well">
+    						{% csrf_token %}
+                            <input type="hidden" name="action" value="selectDefaultPipeline"/>
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        {% for value in defined_service_actions.heading_multi_pipeline %}
+                                            <th>{{value}}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for service, user, name, version, date, default, pipeline_id  in defined_service_actions.multiple_pipeline %}
+                                        <tr>
 
+                                            <td>{{service}}</td>
+                                            <td>{{user}}</td>
+                                            <td>{{name}}</td>
+                                            <td>{{version}}</td>
+                                            <td>{{date}}</td>
+                                            <td>
+                                                {% if default  %}
+                                                    <input type="radio" name="pipelineID" required = "required" value="{{pipeline_id}}" checked>
+                                                {% else %}
+                                                    <input type="radio" name="pipelineID" required = "required" value="{{pipeline_id}}">
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <br><br>
+                            <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
+                        </form>
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+            </div> <!--  end of col-sm-12 -->
+        </div> <!--  end of row -->
+
+    {% endif %}
 {% else %}
+    {% if error_message %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7 col-sm-offset-3">
+            <div class="panel panel-danger">
+                <div class="panel-heading"><h3 style="text-align:center">ERROR</h3> </div>
+                <div class="panel-body">
+                    {% for values in error_message %}
+                        <h4>{{values}}</h4>
+                    {% endfor %}
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-7 -->
+    </div> <!--  end of row -->
+    {% endif %}
     {% if not data_actions.available_services %}
         <div class="row row-space-2 margin-b-4">
             <div class="col-sm-8 col-sm-offset-2" >
@@ -40,7 +126,7 @@
 
                                         <label class="col-sm-6 control-label" for="service_id" >Select a Service</label>
                                         <div class="col-sm-6"><select class="form-control"  required = "required" name="service_id" id="service_id">
-                                            <option selected="">Select one service</option>
+                                            <option value="">Select one service</option>
                                             {% for id, name in data_actions.available_services %}
                                                 <option value="{{id}}">{{name}}</option>
                                             {% endfor %}
@@ -49,8 +135,14 @@
         							</div> <!--  end of col-sm-6 -->
         							<div class="col-sm-6">
                                         <label class="col-sm-5  control-label" for="pipelineName" >Pipeline Name </label>
-                                    <div class="col-sm-6"><input class="form-control" type="text" required = "required" name="pipelineName" id="pipelineName" size="100" maxlength="100"></div>
-                                    <BR><br>
+                                        <div class="col-sm-6"><input class="form-control" type="text" required = "required" name="pipelineName" id="pipelineName" value ="{{data_actions.pipelineName}}" size="100" maxlength="100"></div>
+                                        <BR><br>
+                                        <label class="col-sm-5  control-label" for="pipelineVersion" >Pipeline Version </label>
+                                        <div class="col-sm-6"><input class="form-control" type="text" required = "required" name="pipelineVersion" id="pipelineVersion" value ="{{data_actions.pipelineVersion}}"  size="20" maxlength="100"></div>
+                                        <BR><br>
+                                        <label class="col-sm-5  control-label" for="pipelineStrFolder" >Pipeline SubString Folder </label>
+                                        <div class="col-sm-6"><input class="form-control" type="text" required = "required" name="pipelineStrFolder" id="pipelineStrFolder" value ="{{data_actions.pipelineStrFolder}}" size="20" maxlength="100"></div>
+                                        <BR><br>
         								<label class="col-sm-5 control-label" for="automaticAction" >Automatic execution</label>
         	                            <div class="col-sm-5">
         									<label class="radio-inline"><input type="radio" name="automaticAction" required = "required" value="True" checked>YES</label>
@@ -104,7 +196,7 @@
                                     var table_data = $('#spreadsheet').jexcel('getData')
                                     var data_json = JSON.stringify(table_data)
                                     $("<input />").attr("type", "hidden")
-                                      .attr("name", "protocol_data")
+                                      .attr("name", "pipeline_data")
                                       .attr("value", data_json)
                                       .appendTo("#actionsPipeline");
                                     $("#btnSubmit").attr("disabled", true);

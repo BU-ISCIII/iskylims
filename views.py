@@ -1715,4 +1715,14 @@ def define_pipeline_service(request):
     data_actions = get_data_form_pipeline_actions()
     if request.method == 'POST' and request.POST['action'] == 'actionsPipeline':
         pipeline_action = analyze_input_pipelines(request)
+        if pipeline_version_exists(pipeline_action['pipelineName'], pipeline_action['pipelineVersion']):
+            error_message = drylab_config.ERROR_PIPELINE_ALREADY_EXISTS
+            data_actions.update(pipeline_action)
+            return render(request,'iSkyLIMS_drylab/definePipelineService.html', {'data_actions': data_actions,'error_message': error_message})
+        new_pipeline = Pipelines.objects.create_pipeline(pipeline_action)
+        store_pipeline_actions(new_pipeline, pipeline_action['actions'], pipeline_action['parameters'])
+        defined_service_actions = get_pipeline_data_to_display(pipeline_action)
+        return render(request,'iSkyLIMS_drylab/definePipelineService.html', {'defined_service_actions': defined_service_actions})
+    if request.method == 'POST' and request.POST['action'] == 'selectDefaultPipeline':
+        pass
     return render(request,'iSkyLIMS_drylab/definePipelineService.html', {'data_actions': data_actions})
