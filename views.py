@@ -1722,6 +1722,8 @@ def define_pipeline_service(request):
         new_pipeline = Pipelines.objects.create_pipeline(pipeline_action)
         store_pipeline_actions(new_pipeline, pipeline_action['actions'], pipeline_action['parameters'])
         defined_service_actions = get_pipeline_data_to_display(pipeline_action)
+        if 'one_pipeline' in defined_service_actions:
+            new_pipeline.set_default_pipeline()
         return render(request,'iSkyLIMS_drylab/definePipelineService.html', {'defined_service_actions': defined_service_actions})
     if request.method == 'POST' and request.POST['action'] == 'selectDefaultPipeline':
         pass
