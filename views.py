@@ -1578,16 +1578,11 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 '''
 @login_required
 def open_sessions (request):
-    if request.user.is_authenticated:
-        try:
-            groups = Group.objects.get(name='Admin_iSkyLIMS')
-            if groups not in request.user.groups.all():
-                return render (request,'django_utils/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
-        except:
-            return render (request,'django_utils/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
-    else:
-        #redirect to login webpage
+    if not request.user.is_authenticated:
         return redirect ('/accounts/login')
+    if request.user.username != 'admin':
+        return redirect('')
+
     user_connected = {}
     if get_current_users().exists():
         user_list_connected = get_current_users()
@@ -1603,16 +1598,11 @@ def open_sessions (request):
 
 @login_required
 def user_login (request):
-    if request.user.is_authenticated:
-        try:
-            groups = Group.objects.get(name='Admin_iSkyLIMS')
-            if groups not in request.user.groups.all():
-                return render (request,'django_utils/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
-        except:
-            return render (request,'django_utils/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
-    else:
-        #redirect to login webpage
+    if not request.user.is_authenticated:
         return redirect ('/accounts/login')
+    if request.user.username != 'admin':
+        return redirect('')
+    
     user_data = []
     login_data = {}
     user_list = User.objects.all().order_by('-last_login')
@@ -1728,3 +1718,7 @@ def define_pipeline_service(request):
     if request.method == 'POST' and request.POST['action'] == 'selectDefaultPipeline':
         pass
     return render(request,'iSkyLIMS_drylab/definePipelineService.html', {'data_actions': data_actions})
+
+@login_required
+def manage_pipelines(request):
+    pass

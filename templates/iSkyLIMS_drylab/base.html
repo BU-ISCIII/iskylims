@@ -56,7 +56,7 @@
                                     <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">PIPELENES<span class="caret"></span></a>
                                         <ul class="dropdown-menu">
                                             <li><a href="/drylab/definePipelineService">DEFINE PIPELINE SERVICE </a></li>
-                                            <li><a href="/drylab/">MANAGE PIPELINE</a></li>
+                                            <li><a href="/drylab/managePipelines">MANAGE PIPELINES</a></li>
                                         </ul>
                                     </li>
                                     <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">ANALYSIS<span class="caret"></span></a>
@@ -81,12 +81,11 @@
                                         </ul>
                                     </li>
                                 {% endif %}
-                                {% if user.username == admin %}
+                                {% if user.username == "admin" %}
                                 <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">USER ACTIVITY</a>
                                     <ul class="dropdown-menu">
                                         <li><a href="/drylab/openSessions">CURRENT OPEN USER SESSIONS</a></li>
                                         <li><a href="/drylab/userLogin">USER LAST LOGING</a></li>
-                                        <li><a href="/drylab/#">MORE TO ADD</a></li>
                                     </ul>
                                 </li>
                                 {% endif %}

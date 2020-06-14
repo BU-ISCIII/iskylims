@@ -1,10 +1,13 @@
 # Custom
 *.save*
 *.swp
+drylab_samba_conf.py
+drylab_email_conf.py
 
 # Django migrations
 __migrations__/
 migrations/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

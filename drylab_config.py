@@ -44,7 +44,7 @@ HEADING_ACTIONS_PIPELINES = ['Given name for action', 'Order', 'Action', 'Fake A
 HEADING_ACTIONS_PARAMETERS = ['Parameter1', 'Parameter2', 'Parameter3']
 
 
-HEADING_MANAGE_PIPELINES = ['Service', 'Pipeline Name', 'Pipeline Version', 'Date', 'id']
+HEADING_MANAGE_PIPELINES = ['Service', 'User' ,'Pipeline Name', 'Pipeline Version', 'Date', 'Default', 'In use', 'id']
 
 DISPLAY_NEW_DEFINED_PIPELINE = ['Service', 'Pipeline Name' , 'Pipeline Version']
 DISPLAY_MULTYPLE_DEFINED_PIPELINE = ['Service', 'User', 'Pipeline Name' , 'Pipeline Version', 'Date', 'Default']

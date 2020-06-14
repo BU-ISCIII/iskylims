@@ -276,7 +276,7 @@ class PipelinesManager (models.Manager):
 		availableService = AvailableService.objects.get(pk__exact = data['availableService_id'])
 
 		new_pipeline = self.create(availableService = availableService, userName = data['userName'],
-				pipelineName = data['pipelineName'],
+				pipelineName = data['pipelineName'], pipelineInUse = True,
 				pipelineVersion	= data['pipelineVersion'], pipelineStrFolder = data['pipelineStrFolder'],
 				automatic = data['automatic'])
 		return new_pipeline
@@ -293,6 +293,7 @@ class Pipelines(models.Model):
 	pipelineStrFolder = models.CharField(max_length = 20)
 	automatic = models.BooleanField(default = True)
 	default = models.BooleanField(default = False)
+	pipelineInUse = models.BooleanField(default = True)
 	generated_at = models.DateTimeField(auto_now_add = True)
 
 	def __str__ (self):
