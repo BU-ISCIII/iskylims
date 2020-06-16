@@ -312,8 +312,8 @@ def save_new_miseq_run ( experiment_name, run_date, instrument, l_run_parameter)
         raise ValueError ('Unable to find machine ')
     '''
     run_state = RunStates.objects.get(runStateName__exact = 'Recorded')
-    if RunProcess.objects.filter(runName__exact = experiment).exists():
-        run_process = RunProcess.objects.filter(runName__exact = experiment)
+    if RunProcess.objects.filter(runName__exact = experiment_name).exists():
+        run_process = RunProcess.objects.filter(runName__exact = experiment_name)
         run_process.set_run_date(run_date)
         logger.info('%s : RunProcess already create on database. Updated run date', experiment_name)
     else:

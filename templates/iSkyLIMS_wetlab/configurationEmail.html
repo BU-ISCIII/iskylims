@@ -45,12 +45,6 @@
                             <label class="col-sm-5  control-label" for="USER_EMAIL" >User email </label>
                             <div class="col-sm-5"><input class="form-control" type="email" required = "required" name="USER_EMAIL" id="USER_EMAIL" value = "{{email_conf_data.USER_EMAIL}}" size="100" maxlength="100"></div>
                             <br><br>
-                            <label class="col-sm-5  control-label" for="EMAIL_HOST" >email sever host name </label>
-                            <div class="col-sm-5"><input class="form-control" type="text" required = "required" name="EMAIL_HOST" id="EMAIL_HOST" value = "{{email_conf_data.EMAIL_HOST}}" size="100" maxlength="100" ></div>
-                            <br><br>
-                            <label class="col-sm-5  control-label" for="EMAIL_PORT" >email server port </label>
-                            <div class="col-sm-5"><input class="form-control" type="text" required = "required" name="EMAIL_PORT" id="EMAIL_PORT" value = "{{email_conf_data.EMAIL_PORT}}" size="100" maxlength="100" ></div>
-                            <br><br>
                             <label class="col-sm-5  control-label" for="SENT_EMAIL_ON_ERROR" >send email on crontab found error</label>
                             <div class="col-sm-5">
                                 {% if email_conf_data.SENT_EMAIL_ON_ERROR %}
