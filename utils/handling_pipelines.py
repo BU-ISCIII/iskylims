@@ -67,6 +67,36 @@ def get_data_form_pipeline_actions():
     data_actions['available_actions'] = drylab_config.AVAILABLE_ACTIONS_IN_PIPELINE
     return data_actions
 
+def get_detail_pipeline_data(pipeline_id):
+    '''
+    Description:
+        The function collect the all information for the pipeline
+    Input:
+        pipeline_id     # id of the pipeline
+    Return:
+        detail_pipelines_data
+    '''
+    detail_pipelines_data = {}
+    if Pipelines.objects.filter(pk__exact = pipeline_id).exists():
+        pipeline_obj = Pipelines.objects.get(pk__exact = pipeline_id)
+        detail_pipelines_data['pipeline_name'] = pipeline_obj.get_pipeline_name()
+        detail_pipelines_data['pipeline_basic'] = pipeline_obj.get_pipeline_basic()
+        detail_pipelines_data['pipeline_basic_heading'] = drylab_config.DISPLAY_DETAIL_PIPELINE_BASIC_INFO
+        detail_pipelines_data['pipeline_additional_data'] = zip( drylab_config.DISPLAY_DETAIL_PIPELINE_ADDITIONAL_INFO, pipeline_obj.get_pipeline_additional())
+        detail_pipelines_data['actions_heading'] = drylab_config.HEADING_ACTIONS_PIPELINES + drylab_config.HEADING_ACTIONS_PARAMETERS
+        pipeline_obj = get_pipeline_obj_from_id (pipeline_id)
+        if ActionPipeline.objects.filter(pipeline = pipeline_obj).exists():
+            action_objs = ActionPipeline.objects.filter(pipeline = pipeline_obj).order_by('order')
+            detail_pipelines_data['actions'] = []
+            for action in action_objs :
+                parameter_obj = ParameterActionPipeline.objects.get(actionPipeline = action)
+                detail_pipelines_data['actions'].append(action.get_action_pipeline_data() + parameter_obj.get_all_action_parameters())
+
+
+
+    import pdb; pdb.set_trace()
+    return detail_pipelines_data
+
 def get_pipeline_data_to_display(pipeline_information):
     '''
     Description:
@@ -83,6 +113,23 @@ def get_pipeline_data_to_display(pipeline_information):
     pipeline_data['heading_one_pipeline']= drylab_config.DISPLAY_NEW_DEFINED_PIPELINE
     return pipeline_data
 
+def get_pipelines_for_manage():
+    '''
+    Description:
+        The function get all pipelines defined for the services
+    Return:
+        pipeline_data
+    '''
+    pipeline_data = {}
+    if Pipelines.objects.all().exists():
+        pipelines_objs = Pipelines.objects.all().order_by('availableService')
+        pipeline_data['data'] = []
+        for pipeline in pipelines_objs:
+            pipeline_data['data'].append(pipeline.get_pipeline_info())
+        pipeline_data['heading'] = drylab_config.HEADING_MANAGE_PIPELINES
+
+    return pipeline_data
+
 def get_pipelines_for_service(service_id):
     '''
     Description:
@@ -97,6 +144,15 @@ def get_pipelines_for_service(service_id):
         pipeline_data['multiple_pipeline'].append(pipeline_obj.get_pipeline_info())
     pipeline_data['heading_multi_pipeline'] = drylab_config.DISPLAY_MULTYPLE_DEFINED_PIPELINE
     return pipeline_data
+
+def get_pipeline_obj_from_id (pipeline_id):
+    '''
+    Description:
+        The function get the pipeline object from the pipeline id
+    Return:
+        pipeline_obj
+    '''
+    return Pipelines.objects.get(pk__exact = pipeline_id)
 
 def get_service_name_from_id(service_id):
     '''

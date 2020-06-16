@@ -3,6 +3,9 @@ from django.contrib.auth.models import Group
 from iSkyLIMS_drylab import drylab_config
 from smb.SMBConnection import SMBConnection
 from iSkyLIMS_drylab.models import *
+from django.template.loader import render_to_string
+from django.core.mail import send_mail
+from django.conf import settings
 import re
 
 def create_pdf(request,information, template_file, pdf_file_name):
@@ -11,8 +14,6 @@ def create_pdf(request,information, template_file, pdf_file_name):
     from django.template.loader import render_to_string
     from weasyprint.fonts import FontConfiguration
 
-
-    #import pdb; pdb.set_trace()
     #font_config = FontConfiguration()
     html_string = render_to_string(template_file, {'information': information})
     pdf_file =  os.path.join (settings.BASE_DIR, drylab_config.OUTPUT_DIR_TEMPLATE , pdf_file_name)
@@ -66,6 +67,26 @@ def get_data_for_service_confirmation (service_requested):
     information['service_data'] = service_data
 
     return information
+
+def create_service_pdf_file (service_request_number):
+    '''
+    Description:
+        The function collect the information to create the pdf file
+    Input:
+        request # contains the session information
+    Functions:
+        get_data_for_service_confirmation   # located at this file
+        create_pdf                          # located at this file
+    Return:
+        pdf_file which contains the full path and name of the pdf file
+    '''
+
+    information_to_include = get_data_for_service_confirmation(service_request_number)
+    pdf_file_name = service_request_number + '.pdf'
+    full_path_pdf_file = create_pdf(request, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name)
+    pdf_url=full_path_pdf_file.replace(settings.BASE_DIR,'')
+    return pdf_file
+
 
 def get_service_information (service_id):
     service= Service.objects.get(pk=service_id)
@@ -137,9 +158,9 @@ def is_drylab_manager (request):
     Input:
         request # contains the session information
     Variables:
-        groups # wetlab manager object group
+        groups # drylab manager object group
     Return:
-        Return True if the user belongs to Wetlab Manager, False if not
+        Return True if the user belongs to drylab Manager, False if not
     '''
     try:
         groups = Group.objects.get(name = drylab_config.DRYLAB_MANAGER)
@@ -168,10 +189,10 @@ def get_email_data_from_file(application):
     try:
         with open (conf_file, 'r') as fh:
             for line in fh.readlines():
-                if not heading_found and wetlab_config.EMAIL_CONFIGURATION_FILE_HEADING.split('\n')[-2] in line :
+                if not heading_found and drylab_config.EMAIL_CONFIGURATION_FILE_HEADING.split('\n')[-2] in line :
                     heading_found = True
                     continue
-                if wetlab_config.EMAIL_CONFIGURATION_FILE_END in line:
+                if drylab_config.EMAIL_CONFIGURATION_FILE_END in line:
                     break
                 if heading_found :
                     line = line.rstrip()
@@ -199,10 +220,10 @@ def get_samba_data_from_file(application):
     try:
         with open (conf_file, 'r') as fh:
             for line in fh.readlines():
-                if not heading_found and wetlab_config.SAMBA_CONFIGURATION_FILE_HEADING.split('\n')[-2] in line :
+                if not heading_found and drylab_config.SAMBA_CONFIGURATION_FILE_HEADING.split('\n')[-2] in line :
                     heading_found = True
                     continue
-                if wetlab_config.SAMBA_CONFIGURATION_FILE_END in line:
+                if drylab_config.SAMBA_CONFIGURATION_FILE_END in line:
                     break
                 if heading_found :
                     line = line.rstrip()
@@ -261,3 +282,27 @@ def get_children_available_services():
             if not service.get_children().exists():
                 children_services.append([service.pk, service.get_service_description()])
     return children_services
+
+
+def send_service_creation_confirmation_email(email_data):
+    '''
+    Description:
+        The function send the service email confirmation to user.
+        Functions uses the send_email django core function to send the email
+    Input:
+        email_data      # Contains the information to include in the email
+    Return:
+        children_services
+    '''
+    subject = drylab_config.SUBJECT_SERVICE_RECORDED.copy()
+    subject.insert(1, email_data['service_number'])
+
+    body_preparation = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', email_data['service_number']), BODY_SERVICE_RECORDED))
+    body_preparation = list(map(lambda st: str.replace(st, 'USER_NAME', email_data['user_name']), body_preparation))
+    body = '\n'.join(body_preparation)
+
+    from_user = drylab_config.USER_EMAIL
+    to_users = [email_data['user_email'], drylab_config.USER_EMAIL]
+
+    send_mail (subject, body_message, from_user, to_users)
+    return

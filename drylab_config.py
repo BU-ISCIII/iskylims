@@ -30,8 +30,13 @@ SAMBA_SERVICE_FOLDER = 'services'
 FOLDERS_FOR_SERVICES = ['request', 'resolution', 'result'] # 0= request, 1= resolution, 2 = result (keep order as suggested)
 #RESOLUTION_PREFIX = 'Resolution_'
 
+CONFIRMATION_TEXT_MESSAGE = ['Your service request has been successfully recorded.',
+                    'The sequence number assigned for your request is: SERVICE_NUMBER', 'Keep this number safe for refering your request',
+                    'You will be contacted shortly.']
 
 ERROR_USER_NOT_ALLOWED = ['You do have the enough privileges to see this page ','Contact with your administrator .']
+ERROR_UNABLE_TO_RECORD_YOUR_SERVICE = ['Your service request cannot be recorded.', 'Check that all information is provided correctly.',
+                                'If problem persist, contact your administrator']
 
 ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS = ['Unsuccessful configuration settings for Samba connection']
 ERROR_UNABLE_TO_SAVE_SAMBA_CONFIGURATION_SETTINGS = ['Unable to save the Samba configuration file ', 'check if folder iSkyLIMS_wetlab has write permision for apache user']
@@ -47,7 +52,15 @@ HEADING_ACTIONS_PARAMETERS = ['Parameter1', 'Parameter2', 'Parameter3']
 HEADING_MANAGE_PIPELINES = ['Service', 'User' ,'Pipeline Name', 'Pipeline Version', 'Date', 'Default', 'In use', 'id']
 
 DISPLAY_NEW_DEFINED_PIPELINE = ['Service', 'Pipeline Name' , 'Pipeline Version']
-DISPLAY_MULTYPLE_DEFINED_PIPELINE = ['Service', 'User', 'Pipeline Name' , 'Pipeline Version', 'Date', 'Default']
+DISPLAY_MULTYPLE_DEFINED_PIPELINE = ['Service', 'User', 'Pipeline Name' , 'Pipeline Version', 'Date', 'Default', 'In Use']
+
+DISPLAY_DETAIL_PIPELINE_BASIC_INFO = ['Pipeline Name', 'Pipeline Version', 'Service']
+DISPLAY_DETAIL_PIPELINE_ADDITIONAL_INFO = ['User', 'Creation Date', 'String Folder', 'Default', 'In Use', 'Automatic']
+
+################ EMAIL TEXT   ##################################
+SUBJECT_SERVICE_RECORDED = ['Service ', ' has been recorded']
+BODY_SERVICE_RECORDED = ['Dear ','Your service  SERVICE_NUMBER has been recorded.','You will received the resolution of the request as soon as possible.',
+                    'Kind regards', 'BU-ISCIII']
 
 ################ EMAIL CONFIGURATION FIELDS ###############################
 EMAIL_CONFIGURATION_FIELDS = ['USER_NAME', 'USER_EMAIL', 'EMAIL_HOST', 'EMAIL_PORT', 'SENT_EMAIL_ON_ERROR']

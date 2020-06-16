@@ -89,31 +89,38 @@ class Service(models.Model):
 	## User requesting service:
 	# 'serviceUsername' refactored to 'serviceUserid' which shows better its true nature
 	#  decision taken to change Foreign Key from 'Profile'  to 'User' until full develop of "user registration"
-	serviceUserId=models.ForeignKey(User ,on_delete=models.CASCADE, null=True)
+	serviceUserId = models.ForeignKey(
+				User ,
+				on_delete=models.CASCADE, null=True)
+	servicePlatform = models.ForeignKey(
+				Platform ,
+				on_delete=models.CASCADE ,
+				verbose_name=_("Sequencing platform"),blank=True,null=True)
+	serviceFileExt = models.ForeignKey(
+				FileExt ,
+				on_delete=models.CASCADE ,
+				verbose_name=_("File extension"),blank=True,null=True)
+	serviceAvailableService = TreeManyToManyField(
+				AvailableService,
+				verbose_name=_("AvailableServices"))
+
+	serviceProjectNames = models.ManyToManyField(
+				'iSkyLIMS_wetlab.Projects',
+				verbose_name=_("User's projects"),blank=True)
+
 	serviceSeqCenter=models.CharField(_("Sequencing center"),max_length=50,blank=False,null=True)
 	serviceRequestNumber=models.CharField(max_length=80, null=True)
 	serviceRequestInt=models.CharField(max_length=80, null=True)
-	## 'serviceRunID' is not used in forms.py/serviceRequestForm() or rest of code
-
-	## Addition of member 'serviceProjectNames' to support
-	# implementation of drop down menu to choose a project name of a list of projects
-	# belonging to the logged-in user in the service request form
-	serviceProjectNames=models.ManyToManyField('iSkyLIMS_wetlab.Projects',verbose_name=_("User's projects"),blank=True)
-	servicePlatform=models.ForeignKey(Platform ,on_delete=models.CASCADE , verbose_name=_("Sequencing platform"),blank=True,null=True)
 	serviceRunSpecs=models.CharField(_("Run specifications"),max_length=10,blank=True,null=True)
-	serviceFileExt=models.ForeignKey(FileExt ,on_delete=models.CASCADE ,verbose_name=_("File extension"),blank=True,null=True)
-	serviceAvailableService=TreeManyToManyField(AvailableService,verbose_name=_("AvailableServices"))
 	serviceFile=models.FileField(_("Service description file"),upload_to=service_files_upload, null=True,blank=True)
 	serviceStatus=models.CharField(_("Service status"),max_length=15,choices=STATUS_CHOICES)
 	serviceNotes=models.TextField(_("Service Notes"),max_length=2048,null=True)
 	serviceCreatedOnDate= models.DateField(auto_now_add=True,null=True)
-	#serviceCreatedOnDate= models.DateField(auto_now_add=False)
+
 	serviceOnApprovedDate = models.DateField(auto_now_add=False, null=True,blank=True)
 	serviceOnRejectedDate = models.DateField(auto_now_add=False, null=True,blank=True)
-	#serviceOnQueuedDate = models.DateField(auto_now_add=False, null=True)
-	#serviceOnInProgressDate = models.DateField(auto_now_add=False, null=True)
+
 	serviceOnDeliveredDate = models.DateField(auto_now_add=False, null=True)
-	#serviceOnArchivedDate = models.DateField(auto_now_add=False, null=True)
 
 
 
@@ -203,6 +210,9 @@ class Service(models.Model):
 
 	def get_service_creation_time (self):
 		return self.serviceCreatedOnDate.strftime("%d %B, %Y")
+
+	def get_service_request_number(self):
+		return '%s' %(self.serviceRequestNumber)
 
 	def get_time_to_delivery (self):
 
@@ -299,8 +309,38 @@ class Pipelines(models.Model):
 	def __str__ (self):
 		return '%s' %(self.pipelineName)
 
+	'''
+	def get_all_pipeline_data(self):
+		data = []
+		data.append(self.availableService.get_service_description())
+		data.append(self.userName.username)
+		data.append(self.pipelineName)
+		data.append(self.pipelineVersion)
+		data.append(self.generated_at.strftime("%B %d, %Y"))
+		data.append(self.default)
+		data.append(self.pipelineInUse)
+		return data
+	'''
+
 	def get_pipeline_name (self):
 		return '%s' %(self.pipelineName)
+
+	def get_pipeline_additional(self):
+		data = []
+		data.append(self.userName.username)
+		data.append(self.generated_at.strftime("%B %d, %Y"))
+		data.append(self.pipelineStrFolder)
+		data.append(self.default)
+		data.append(self.pipelineInUse)
+		data.append(self.automatic)
+		return data
+
+	def get_pipeline_basic (self):
+		data = []
+		data.append(self.pipelineName)
+		data.append(self.pipelineVersion)
+		data.append(self.availableService.get_service_description())
+		return data
 
 	def get_pipeline_info(self):
 		data = []
@@ -310,6 +350,7 @@ class Pipelines(models.Model):
 		data.append(self.pipelineVersion)
 		data.append(self.generated_at.strftime("%B %d, %Y"))
 		data.append(self.default)
+		data.append(self.pipelineInUse)
 		data.append(self.pk)
 		return data
 
@@ -348,6 +389,14 @@ class ActionPipeline (models.Model):
 
 	def get_action_pipeline_name (self):
 		return '%s' %(self.actionName)
+
+	def get_action_pipeline_data (self):
+		data = []
+		data.append(self.actionName)
+		data.append(self.order)
+		data.append(self.action)
+		data.append(self.fake)
+		return data
 
 	objects = ActionPipelineManager()
 

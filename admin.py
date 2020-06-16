@@ -28,7 +28,7 @@ class DeliveryAdmin(admin.ModelAdmin):
 	list_display=('deliveryResolutionID','deliveryDate','deliveryNotes')
 
 class PipelinesManager(admin.ModelAdmin):
-	list_display = ['availableService', 'userName','pipelineName','pipelineVersion','pipelineStrFolder','automatic', 'default']
+	list_display = ['availableService', 'userName','pipelineName','pipelineVersion','pipelineStrFolder', 'pipelineInUse', 'automatic', 'default']
 
 class ActionPipelineManager(admin.ModelAdmin):
 	list_display = ['pipeline', 'actionName', 'order', 'action', 'fake']
