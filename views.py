@@ -21,9 +21,10 @@ from iSkyLIMS_drylab.utils.testing_drylab_configuration import *
 from iSkyLIMS_drylab.utils.drylab_common_functions import *
 from iSkyLIMS_drylab.utils.handling_pipelines import *
 from iSkyLIMS_drylab.utils.handling_forms import *
+from iSkyLIMS_drylab.utils.configuration_functions import *
 
 from smb.SMBConnection import SMBConnection
-# from iSkyLIMS_wetlab.models import RunProcess, Projects
+# from iSkyLIMS_drylab.models import RunProcess, Projects
 
 ####### Import libraries for static files
 #from django.shortcuts import render_to_response
@@ -65,14 +66,14 @@ def configuration_email(request):
     email_conf_data = get_email_data_from_file(__package__)
     if request.method == 'POST' and (request.POST['action']=='emailconfiguration'):
         email_user_field ={}
-        for field in EMAIL_CONFIGURATION_FIELDS:
+        for field in drylab_config.EMAIL_CONFIGURATION_FIELDS:
             email_user_field[field] = request.POST[field]
 
         if not create_email_conf_file (email_user_field, __package__) :
-            error_message = ERROR_UNABLE_TO_SAVE_EMAIL_CONFIGURATION_SETTINGS
+            error_message = drylab_config.ERROR_UNABLE_TO_SAVE_EMAIL_CONFIGURATION_SETTINGS
             return render(request, 'iSkyLIMS_drylab/configurationEmail.html',{'email_conf_data':email_user_field, 'error_message': error_message} )
         import importlib
-        importlib.reload(wetlab_config)
+        importlib.reload(drylab_config)
         return render(request, 'iSkyLIMS_drylab/configurationEmail.html',{'succesful_settings':True})
     return render(request, 'iSkyLIMS_drylab/configurationEmail.html',{'email_conf_data': email_conf_data})
 
@@ -85,10 +86,10 @@ def configuration_samba(request):
     if request.method == 'POST' and (request.POST['action']=='sambaconfiguration'):
         # reload configuration samba settings
         samba_user_field ={}
-        for field in SAMBA_CONFIGURATION_FIELDS:
+        for field in drylab_config.SAMBA_CONFIGURATION_FIELDS:
             samba_user_field[field] = request.POST[field]
         if not create_samba_conf_file (samba_user_field, __package__) :
-            error_message = ERROR_UNABLE_TO_SAVE_SAMBA_CONFIGURATION_SETTINGS
+            error_message = drylab_config.ERROR_UNABLE_TO_SAVE_SAMBA_CONFIGURATION_SETTINGS
             return render(request, 'iSkyLIMS_drylab/configurationSamba.html',{'samba_conf_data':samba_user_field, 'error_message': error_message} )
         import importlib
         importlib.reload(drylab_config)
@@ -96,7 +97,7 @@ def configuration_samba(request):
             open_samba_connection()
             return render(request, 'iSkyLIMS_drylab/configurationSamba.html',{'succesful_settings':True})
         except:
-            error_message = ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS
+            error_message = drylab_config.ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS
             return render(request, 'iSkyLIMS_drylab/configurationSamba.html',{'samba_conf_data':samba_user_field, 'error_message': error_message} )
     else:
         samba_conf_data = get_samba_data_from_file(__package__)

@@ -171,88 +171,6 @@ def is_drylab_manager (request):
 
     return True
 
-def get_email_data_from_file(application):
-    '''
-    Description:
-        Fetch the email configuration file
-    Inputs:
-        application     # Application name
-    Constants:
-        EMAIL_CONFIGURATION_FILE_HEADING
-        EMAIL_CONFIGURATION_FILE_END
-    Return:
-        email_data
-    '''
-    conf_file = os.path.join(settings.BASE_DIR, application,'drylab_email_conf.py')
-    email_data = {}
-    heading_found = False
-    try:
-        with open (conf_file, 'r') as fh:
-            for line in fh.readlines():
-                if not heading_found and drylab_config.EMAIL_CONFIGURATION_FILE_HEADING.split('\n')[-2] in line :
-                    heading_found = True
-                    continue
-                if drylab_config.EMAIL_CONFIGURATION_FILE_END in line:
-                    break
-                if heading_found :
-                    line = line.rstrip()
-                    key , value = line.split(' = ')
-                    email_data[key] = value.replace('\'','')
-        return email_data
-    except:
-        email_data
-
-def get_samba_data_from_file(application):
-    '''
-    Description:
-        Fetch the samba configuration file
-    Inputs:
-        application     # Application name
-    Constants:
-        SAMBA_CONFIGURATION_FILE_HEADING
-        SAMBA_CONFIGURATION_FILE_END
-    Return:
-        samba_data
-    '''
-    conf_file = os.path.join(settings.BASE_DIR, application,'drylab_samba_conf.py')
-    samba_data = {}
-    heading_found = False
-    try:
-        with open (conf_file, 'r') as fh:
-            for line in fh.readlines():
-                if not heading_found and drylab_config.SAMBA_CONFIGURATION_FILE_HEADING.split('\n')[-2] in line :
-                    heading_found = True
-                    continue
-                if drylab_config.SAMBA_CONFIGURATION_FILE_END in line:
-                    break
-                if heading_found :
-                    line = line.rstrip()
-                    key , value = line.split(' = ')
-                    samba_data[key] = value.replace('\'','')
-        return samba_data
-    except:
-        samba_data
-
-def open_samba_connection():
-    '''
-    Description:
-        The function open a samba connection with the parameter settings
-        defined in frylab configuration file
-    Return:
-        conn object for the samba connection
-    '''
-    try:
-
-        conn=SMBConnection(drylab_config.SAMBA_USER_ID, drylab_config.SAMBA_USER_PASSWORD, drylab_config.SAMBA_SHARED_FOLDER_NAME,
-                            drylab_config.SAMBA_REMOTE_SERVER_NAME, use_ntlm_v2=drylab_config.SAMBA_NTLM_USED, domain = drylab_config.SAMBA_DOMAIN)
-
-        conn.connect(drylab_config.SAMBA_IP_SERVER, int(drylab_config.SAMBA_PORT_SERVER))
-    except:
-        return False
-
-    return conn
-
-
 
 def increment_service_number ( user_name):
     # check user center
@@ -298,9 +216,9 @@ def send_service_creation_confirmation_email(email_data):
     subject = drylab_config.SUBJECT_SERVICE_RECORDED.copy()
     subject.insert(1, email_data['service_number'])
 
-    body_preparation = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', email_data['service_number']), BODY_SERVICE_RECORDED))
+    body_preparation = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', email_data['service_number']), drylab_config.BODY_SERVICE_RECORDED))
     body_preparation = list(map(lambda st: str.replace(st, 'USER_NAME', email_data['user_name']), body_preparation))
-    body = '\n'.join(body_preparation)
+    body_message = '\n'.join(body_preparation)
 
     from_user = drylab_config.USER_EMAIL
     to_users = [email_data['user_email'], drylab_config.USER_EMAIL]
