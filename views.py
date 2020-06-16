@@ -29,7 +29,7 @@ from smb.SMBConnection import SMBConnection
 #from django.shortcuts import render_to_response
 #from django.shortcuts import RequestContext
 
-#pdb.set_trace()
+
 #PNL
 @login_required
 def index(request):
@@ -44,7 +44,7 @@ def index(request):
                 service_delivery_date = 'Not defined yet'
             else:
                 if Resolution.objects.filter(resolutionServiceID = service).exists():
-                    #import pdb; pdb.set_trace()
+
                     if Resolution.objects.filter(resolutionServiceID = service).last().resolutionEstimatedDate is not None:
                         service_delivery_date = Resolution.objects.filter(resolutionServiceID = service).last().resolutionEstimatedDate.strftime("%d %B, %Y")
                     else:
@@ -53,7 +53,7 @@ def index(request):
                     service_delivery_date = 'Not defined yet'
             service_info.append(service_delivery_date)
             service_list.append(service_info)
-        #import pdb; pdb.set_trace()
+
         return render(request, 'iSkyLIMS_drylab/index.html',{'service_list': service_list})
     else:
         return render(request, 'iSkyLIMS_drylab/index.html')
@@ -112,7 +112,7 @@ def service_request(request, serviceRequestType):
                 # Create but dont save for following modif
                 new_service = form.save(commit=False)
                 new_service.serviceStatus = "recorded"
-                new_service.serviceSeqCenter = "GENOMIC_SEQ_UNIT"
+                new_service.serviceSeqCenter = drylab_config.INTERNAL_SEQUENCING_UNIT
 
                 # new_service.serviceUserId = User.objects.get(id=request.user.id)
                 new_service.serviceUserId = request.user
@@ -133,14 +133,16 @@ def service_request(request, serviceRequestType):
                     send_service_creation_confirmation_email(email_data)
 
                 # PDF preparation file for confirmation of service request
-                pdf_file = create_service_pdf_file(service_request_number)
+
+                absolute_url = request.build_absolute_uri()
+                pdf_file = create_service_pdf_file(service_request_number, absolute_url)
 
                 confirmation_result = {}
                 confirmation_result['download_file'] = pdf_file
-                confirmation_result['text'] = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), CONFIRMATION_TEXT_MESSAGE))
+                confirmation_result['text'] = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), drylab_config.CONFIRMATION_TEXT_MESSAGE))
                 return render(request,'iSkyLIMS_drylab/RequestForm.html',{'confirmation_result':confirmation_result})
             else:
-                error_message = ERROR_UNABLE_TO_RECORD_YOUR_SERVICE
+                error_message = drylab_config.ERROR_UNABLE_TO_RECORD_YOUR_SERVICE
                 request_type['type'] = 'Internal'
                 return render(request, 'iSkyLIMS_drylab/RequestForm.html',{'error_message': error_message , 'request_type': request_type})
         else:
@@ -188,6 +190,7 @@ def service_request(request, serviceRequestType):
             form = ServiceRequestFormExternalSequencing()
             form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
             return render(request, 'iSkyLIMS_drylab/RequestForm.html' , { 'form' : form ,  'request_external': 'request_external' })
+
 
 
 @login_required
@@ -265,7 +268,7 @@ def counseling_request(request):
                                 'You will be contacted shortly.']})
 
         else:
-            #import pdb; pdb.set_trace()
+
             return render(request,'iSkyLIMS_drylab/error_page.html',{'content':['Your service request cannot be recorded.',
                                                 'Check that all information is provided correctly.']})
     else:
@@ -279,14 +282,14 @@ def counseling_request(request):
 def infrastructure_request(request):
     if request.method == "POST":
         form = ServiceRequestForm_extended(data=request.POST or None,files=request.FILES)
-        #import pdb; pdb.set_trace()
+
         if form.is_valid():
             new_service = form.save(commit=False)
             new_service.serviceStatus = "recorded"
             new_service.serviceUserId = User.objects.get(id=request.user.id)
             new_service.serviceRequestInt = increment_service_number(request.user)
             new_service.serviceRequestNumber = create_service_id(new_service.serviceRequestInt,request.user)
-            #import pdb; pdb.set_trace()
+
             new_service.save()
             form.save_m2m()
             ## Send email
@@ -306,14 +309,14 @@ def infrastructure_request(request):
                                 'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
                                 'Keep this number safe for refering your request',download_file,'You will be contacted shortly.']})
         else:
-            #import pdb; pdb.set_trace()
+
             return render(request,'iSkyLIMS_drylab/error_page.html',{'content':['Your service request cannot be recorded.',
                                                 'Check that all information is provided correctly.']})
     else:
         form = ServiceRequestForm_extended()
 
     form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="User support").get_descendants(include_self=True)
-    #pdb.set_trace()
+
     #form.helper[1].update_atrributes(hidden="true")
     return render(request, 'iSkyLIMS_drylab/RequestForm.html' , { 'form' : form , 'infrastructure_request': 'infrastructure_request'})
 
@@ -341,7 +344,7 @@ def get_service_information (service_id):
     display_service_details['service_dates'] = service_dates
     if service.serviceStatus != 'approved'and service.serviceStatus != 'recorded':
         # get the proposal for the delivery date
-        #import pdb; pdb.set_trace()
+
         resolution_folder = Resolution.objects.filter(resolutionServiceID = service).last().resolutionFullNumber
         display_service_details['resolution_folder'] = resolution_folder
         resolution_estimated_date = Resolution.objects.filter(resolutionServiceID = service).last().resolutionEstimatedDate
@@ -368,7 +371,7 @@ def get_service_information (service_id):
         for resolution_item in resolution_list :
             resolution_info.append([resolution_item.get_resolution_information()])
         display_service_details['resolutions'] = resolution_info
-    #import pdb; pdb.set_trace()
+
     if Resolution.objects.filter(resolutionServiceID = service).exists():
         resolution_list = Resolution.objects.filter(resolutionServiceID = service)
         delivery_info = []
@@ -398,7 +401,7 @@ def display_service (request, service_id):
         # displays the service information with the latest changes done using the forms
         display_service_details = get_service_information(service_id)
 
-        #import pdb; pdb.set_trace()
+
         return render (request,'iSkyLIMS_drylab/display_service.html',{'display_service': display_service_details})
     else:
         return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The service that you are trying to get does not exist ','Contact with your administrator .']})
@@ -432,7 +435,7 @@ def search_service (request):
                 center_list_abbr.append (center.centerAbbr)
             services_search_list ['centers'] = center_list_abbr
             services_search_list ['status'] = STATUS_CHOICES
-            #import pdb; pdb.set_trace()
+
             return render( request,'iSkyLIMS_drylab/searchService.html',{'services_search_list': services_search_list })
 
         ### check the right format of start and end date
@@ -454,7 +457,7 @@ def search_service (request):
         if service_number_request != '':
             # check if the requested service in the form matches exactly with the existing service in DB
             if Service.objects.filter(serviceRequestNumber__exact = service_number_request).exists():
-                #import pdb; pdb.set_trace()
+
                 services_found = Service.objects.get(serviceRequestNumber__exact = service_number_request)
                 redirect_page = '/drylab/display_service=' + str(services_found.id)
                 return redirect (redirect_page)
@@ -520,14 +523,14 @@ def search_service (request):
             display_multiple_services['s_list'] = s_list
             return render (request,'iSkyLIMS_drylab/searchService.html', {'display_multiple_services': display_multiple_services})
     services_search_list = {}
-    #import pdb; pdb.set_trace()
+
     center_list_abbr = []
     center_availables = Center.objects.all().order_by ('centerAbbr')
     for center in center_availables:
         center_list_abbr.append (center.centerAbbr)
     services_search_list ['centers'] = center_list_abbr
     services_search_list ['status'] = STATUS_CHOICES
-    #import pdb; pdb.set_trace()
+
     return render( request,'iSkyLIMS_drylab/searchService.html',{'services_search_list': services_search_list })
 
 
@@ -570,7 +573,7 @@ def pending_services (request):
     graphic_pending_services = FusionCharts("pie3d", "ex1" , "425", "350", "chart-1", "json", data_source)
     pending_services_details ['graphic_pending_services'] = graphic_pending_services.render()
 
-    #import pdb ; pdb.set_trace()
+
 
     return render (request, 'iSkyLIMS_drylab/pendingServices.html', {'pending_services': pending_services_details})
 
@@ -590,11 +593,11 @@ def add_resolution (request, service_id):
     if request.method == "POST":
 
         form = AddResolutionService(data=request.POST)
-        #import pdb ; pdb.set_trace()
+
         if form.is_valid():
             service_acepted_rejected = request.POST['radio_buttons']
             new_resolution = form.save(commit=False)
-            #import pdb ; pdb.set_trace()
+
             service_reference = Service.objects.get(pk=service_id)
             if len(Resolution.objects.filter(resolutionServiceID = service_reference)) == 0:
                 service_reference.serviceOnApprovedDate = datetime.date.today()
@@ -644,7 +647,7 @@ def add_resolution (request, service_id):
                 conn = open_samba_connection()
                 if conn is False:
                     return render (request, 'iSkyLIMS_drylab/error_page.html', {'content': ['Creation of the structure can not be done because there is not communication to : ',  drylab_config.SAMBA_REMOTE_SERVER_NAME]})
-                #import pdb ; pdb.set_trace()
+
                 result_creation_structure = create_service_structure (conn, service_request_file , service_file_uploaded, new_resolution.resolutionFullNumber ,resolution_file)
                 if result_creation_structure != True:
                     return render (request, 'iSkyLIMS_drylab/error_page.html', {'content': ['Creation of the structure can not be done because of ' , result_creation_structure]})
@@ -669,20 +672,20 @@ def add_resolution (request, service_id):
             from_user = 'bioinformatica@isciii.es'
             to_user = [service_user_mail,'bioinformatica@isciii.es']
             send_mail (subject, body_message, from_user, to_user)
-            #import pdb ; pdb.set_trace()
+
             return render(request,'django_utils/info_page.html',{'content':['Your resolution proposal has been successfully recorded with Resolution Number.', resolution_number]})
     else:
         if Service.objects.filter(pk=service_id).exists():
             service_id= Service.objects.get(pk=service_id)
             service_number = service_id.serviceRequestNumber
-            #import pdb ; pdb.set_trace()
+
             if Resolution.objects.filter(resolutionServiceID__exact = service_id).exists():
                 existing_resolution = Resolution.objects.filter(resolutionServiceID__exact = service_id).last()
                 resolutionFullNumber = existing_resolution.resolutionFullNumber
             else :
                 resolutionFullNumber =''
             form = AddResolutionService(initial= {'resolutionFullNumber': resolutionFullNumber})
-            #import pdb ; pdb.set_trace()
+
 
             return render(request, 'iSkyLIMS_drylab/addResolution.html' , { 'form' : form ,'prueba':'pepe'})
 '''
@@ -834,14 +837,14 @@ def create_service_structure (conn, service_request_file, service_file_uploaded,
     year_folder = os.path.join(drylab_config.SAMBA_SERVICE_FOLDER, year)
     if not year_folder_exists :
         conn.createDirectory (drylab_config.SAMBA_SHARED_FOLDER_NAME, year_folder)
-    #import pdb ; pdb.set_trace()
+
     service_path = os.path.join(year_folder, full_service_path)
     #create the directory for the new service
     conn.createDirectory (drylab_config.SAMBA_SHARED_FOLDER_NAME, service_path)
     for sub_folder in drylab_config.FOLDERS_FOR_SERVICES:
         sub_folder_path = os.path.join(service_path,sub_folder)
         conn.createDirectory(drylab_config.SAMBA_SHARED_FOLDER_NAME, sub_folder_path)
-    #import pdb ; pdb.set_trace()
+
     #copy service confirmation file into request folder
     temp_file=resolution_file.split('/')
     resolution_name_file = temp_file[-1]
@@ -853,10 +856,10 @@ def create_service_structure (conn, service_request_file, service_file_uploaded,
     except:
         return 'ERROR:: Unable to copy resolution file'
     temp_file=service_request_file.split('/')
-    #import pdb; pdb.set_trace()
+
     request_name_file = temp_file[-1]
     request_remote_file = os.path.join(service_path,drylab_config.FOLDERS_FOR_SERVICES[0],request_name_file)
-    #import pdb; pdb.set_trace()
+
     try:
         with open(service_request_file ,'rb') as  req_samba_fp:
             conn.storeFile(drylab_config.SAMBA_SHARED_FOLDER_NAME, request_remote_file, req_samba_fp)
@@ -867,7 +870,7 @@ def create_service_structure (conn, service_request_file, service_file_uploaded,
         temp_file_name = service_file_uploaded.split('/')
         uploaded_name_file = temp_file_name [-1]
         uploaded_remote_file = os.path.join(service_path, drylab_config.FOLDERS_FOR_SERVICES[0],uploaded_name_file)
-        #import pdb; pdb.set_trace()
+
         try:
             with open(service_file_uploaded ,'rb') as  upload_samba_fp:
                 conn.storeFile(drylab_config.SAMBA_SHARED_FOLDER_NAME, uploaded_remote_file, upload_samba_fp)
@@ -902,7 +905,7 @@ def add_in_progress (request, resolution_id):
         resolution = Resolution.objects.get(pk = resolution_id)
         service_to_update = resolution.resolutionServiceID
         # update the service status and in_porgress date
-        #import pdb ; pdb.set_trace()
+
         service_to_update.serviceStatus = 'in_progress'
         service_to_update.save()
         resolution.resolutionOnInProgressDate = datetime.date.today()
@@ -917,7 +920,7 @@ def add_in_progress (request, resolution_id):
         return render (request,'django_utils/info_page.html',{'content':['Your resolution  request ', resolution.resolutionNumber,
                                 'has been successfully upated to In Progress state']})
     else:
-        #import pdb ; pdb.set_trace()
+
         return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The resolution that you are trying to upadate does not exists ','Contact with your administrator .']})
     return
 
@@ -936,7 +939,7 @@ def add_delivery (request , resolution_id):
     if request.method == 'POST' :
         form = AddDeliveryService(data=request.POST)
         if form.is_valid():
-            #import pdb ; pdb.set_trace()
+
             resolution_id = Resolution.objects.get(pk = resolution_id)
             new_delivery = form.save(commit=False)
             new_delivery.deliveryDate = datetime.date.today()
@@ -958,12 +961,12 @@ def add_delivery (request , resolution_id):
             return render(request,'django_utils/info_page.html',{'content':['The service is now on Delivery status ']})
     else:
         if Resolution.objects.filter(pk = resolution_id).exists():
-            #import pdb ; pdb.set_trace()
+
             form = AddDeliveryService()
             delivery_info = {}
             return render (request, 'iSkyLIMS_drylab/addDelivery.html', {'form':form, 'delivery_info': delivery_info})
         else:
-            #import pdb ; pdb.set_trace()
+
             return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The resolution that you are trying to upadate does not exists ','Contact with your administrator .']})
     return
 
@@ -1040,7 +1043,7 @@ def stats_by_date_user (request):
             for service_item in services_user:
                 service_by_user.append(service_item.get_stats_information())
 
-            #import pdb ; pdb.set_trace()
+
             stats_info ['user_name'] = user_name
             stats_info ['service_by_user'] = service_by_user
 
@@ -1108,13 +1111,13 @@ def stats_by_date_user (request):
             #creating the graphic for monthly requested services
             service_time_tupla =[]
             for key , value in sorted(service_time_dict.items()):
-                #import pdb ; pdb.set_trace()
+
                 service_time_tupla.append([key,service_time_dict[key]])
             data_source = column_graphic_tupla('Requested Services by:', user_name, '', '','fint',service_time_tupla)
             graphic_date_requested_services = FusionCharts("column3d", "ex3" , "600", "350", "chart-3", "json", data_source)
             stats_info ['graphic_date_requested_services'] = graphic_date_requested_services.render()
 
-            #import pdb ; pdb.set_trace()
+
             return render (request, 'iSkyLIMS_drylab/statsByDateUser.html', {'stats_info':stats_info})
     else:
         form = ByDateUserStats()
@@ -1163,7 +1166,7 @@ def stats_by_services_request (request):
                         user_services[user] +=1
                     else:
                         user_services[user] = 1
-                #import pdb ; pdb.set_trace()
+
                 period_of_time_selected = str(' For the period between ' + start_date + ' and ' + end_date)
                 #creating the graphic for requested services
                 data_source = column_graphic_dict('Requested Services by:', period_of_time_selected , 'User names', 'Number of Services','fint',user_services)
@@ -1173,7 +1176,7 @@ def stats_by_services_request (request):
                 status_services ={}
                 for service in services_found:
                     #user_id = service.serviceUserId.id
-                    #import pdb ; pdb.set_trace()
+
                     status = service.serviceStatus
                     if status in status_services :
                         status_services[status] +=1
@@ -1218,7 +1221,7 @@ def stats_by_services_request (request):
                 data_source = column_graphic_dict('Services requested per Center', period_of_time_selected, 'Center ', 'Number of Services','fint',user_center_dict)
                 graphic_center_services = FusionCharts("column3d", "ex4" , "600", "350", "chart-4", "json", data_source)
                 services_stats_info ['graphic_center_services'] = graphic_center_services.render()
-                #import pdb ; pdb.set_trace()
+
 
                 ################################################
                 ## Preparing the statistics per period of time
@@ -1263,7 +1266,7 @@ def stats_by_services_request (request):
                 data_source = column_graphic_per_time ('Services requested by center ',period_of_time_selected,  'date', 'number of services', time_values , user_services_period)
                 graphic_center_services_per_time = FusionCharts("mscolumn3d", "ex5" , "525", "350", "chart-5", "json", data_source)
                 services_stats_info ['graphic_center_services_per_time'] = graphic_center_services_per_time.render()
-                #import pdb ; pdb.set_trace()
+
 
                 ## Preparing the statistics for Area on period of time
                 user_area_services_period ={}
@@ -1300,7 +1303,7 @@ def stats_by_services_request (request):
                 services_stats_info ['graphic_area_services_per_time'] = graphic_area_services_per_time.render()
 
                 services_stats_info['period_time']= period_of_time_selected
-                #import pdb ; pdb.set_trace()
+
 
                 # statistics on Requested Level 2 Services
 
@@ -1313,7 +1316,7 @@ def stats_by_services_request (request):
                             service_dict [service_name] += 1
                         else:
                             service_dict [service_name] = 1
-                #import pdb ; pdb.set_trace()
+
                 #creating the graphic for requested services
                 data_source = column_graphic_dict('Requested Services:', 'level 2 ', '', '','fint',service_dict)
                 graphic_req_l2_services = FusionCharts("column3d", "ex7" , "800", "375", "chart-7", "json", data_source)
@@ -1330,7 +1333,7 @@ def stats_by_services_request (request):
                             service_dict [service_name] += 1
                         else:
                             service_dict [service_name] = 1
-                #import pdb ; pdb.set_trace()
+
                 #creating the graphic for requested services
                 data_source = column_graphic_dict('Requested Services:', 'level 3 ', '', '','fint',service_dict)
                 graphic_req_l3_services = FusionCharts("column3d", "ex8" , "800", "375", "chart-8", "json", data_source)
@@ -1339,7 +1342,7 @@ def stats_by_services_request (request):
 
 
 
-                #import pdb ; pdb.set_trace()
+
                 return render (request, 'iSkyLIMS_drylab/statsByServicesRequest.html', {'services_stats_info':services_stats_info})
 
             else:
@@ -1460,7 +1463,7 @@ def user_login (request):
 def configuration_test (request):
     # check user privileges
     if request.user.is_authenticated:
-        #import pdb; pdb.set_trace()
+
         if not request.user.is_staff or not request.user.is_superuser:
             return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
     else:
@@ -1479,7 +1482,7 @@ def configuration_test (request):
             test_results['database_access'] = 'NOK'
 
         # check if available services are defined
-        #import pdb; pdb.set_trace()
+
         list_available_services = AvailableService.objects.all()
 
         if len(list_available_services) == 0:
@@ -1511,7 +1514,7 @@ def configuration_test (request):
         resolution_results = {}
         service_requested = 'SRVTEST-IIER001'
         resolution_results['CreateService'], result = create_service_test(service_requested)
-        #import pdb; pdb.set_trace()
+
         if result == 'NOK' :
             resolution_results['create_service_ok'] = 'NOK'
             return render (request,'iSkyLIMS_drylab/ConfigurationTest.html', {'resolution_results': resolution_results})
@@ -1532,7 +1535,7 @@ def configuration_test (request):
             #service_file_uploaded = ''
 
             #create_service_structure (conn, service_request_file, service_file_uploaded, full_service_path, resolution_file)
-            #import pdb; pdb.set_trace()
+
             return render (request,'iSkyLIMS_drylab/ConfigurationTest.html', {'resolution_results': resolution_results})
     else:
         return render(request,'iSkyLIMS_drylab/ConfigurationTest.html')

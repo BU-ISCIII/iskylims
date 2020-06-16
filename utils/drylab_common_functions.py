@@ -8,7 +8,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 import re
 
-def create_pdf(request,information, template_file, pdf_file_name):
+def create_pdf(absolute_url,information, template_file, pdf_file_name):
     from weasyprint import HTML, CSS
     from django.template.loader import get_template
     from django.template.loader import render_to_string
@@ -17,7 +17,7 @@ def create_pdf(request,information, template_file, pdf_file_name):
     #font_config = FontConfiguration()
     html_string = render_to_string(template_file, {'information': information})
     pdf_file =  os.path.join (settings.BASE_DIR, drylab_config.OUTPUT_DIR_TEMPLATE , pdf_file_name)
-    html = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf(pdf_file,stylesheets=[CSS(settings.BASE_DIR + drylab_config.CSS_FOR_PDF)])
+    html = HTML(string=html_string, base_url=absolute_url).write_pdf(pdf_file,stylesheets=[CSS(settings.BASE_DIR + drylab_config.CSS_FOR_PDF)])
 
     return pdf_file
 
@@ -68,7 +68,7 @@ def get_data_for_service_confirmation (service_requested):
 
     return information
 
-def create_service_pdf_file (service_request_number):
+def create_service_pdf_file (service_request_number, absolute_url):
     '''
     Description:
         The function collect the information to create the pdf file
@@ -83,8 +83,8 @@ def create_service_pdf_file (service_request_number):
 
     information_to_include = get_data_for_service_confirmation(service_request_number)
     pdf_file_name = service_request_number + '.pdf'
-    full_path_pdf_file = create_pdf(request, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name)
-    pdf_url=full_path_pdf_file.replace(settings.BASE_DIR,'')
+    full_path_pdf_file = create_pdf(absolute_url, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name)
+    pdf_file = full_path_pdf_file.replace(settings.BASE_DIR,'')
     return pdf_file
 
 
@@ -111,7 +111,7 @@ def get_service_information (service_id):
     display_service_details['service_dates'] = service_dates
     if service.serviceStatus != 'approved'and service.serviceStatus != 'recorded':
         # get the proposal for the delivery date
-        #import pdb; pdb.set_trace()
+
         resolution_folder = Resolution.objects.filter(resolutionServiceID = service).last().resolutionFullNumber
         display_service_details['resolution_folder'] = resolution_folder
         resolution_estimated_date = Resolution.objects.filter(resolutionServiceID = service).last().resolutionEstimatedDate
@@ -260,7 +260,7 @@ def increment_service_number ( user_name):
     user_center = Profile.objects.get(profileUserID = user_name).profileCenter.centerAbbr
     # get latest service used for user's center
     if Service.objects.filter(serviceUserId__profile__profileCenter__centerAbbr=user_center).exists():
-        import pdb; pdb.set_trace()
+
         number_request = Service.objects.filter(serviceUserId__profile__profileCenter__centerAbbr=user_center).last().serviceRequestInt
         service_number = str(int(number_request) + 1).zfill(3)
     else:

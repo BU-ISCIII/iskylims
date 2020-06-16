@@ -16,6 +16,9 @@ except:
 
 
 DRYLAB_MANAGER = 'ServiceManager'
+
+INTERNAL_SEQUENCING_UNIT = "GENOMIC_SEQ_UNIT"
+
 ## CSS file to be used for creating the PDF files
 CSS_FOR_PDF = '/documents/drylab/services_templates/css/print_services.css'
 
@@ -63,7 +66,7 @@ BODY_SERVICE_RECORDED = ['Dear ','Your service  SERVICE_NUMBER has been recorded
                     'Kind regards', 'BU-ISCIII']
 
 ################ EMAIL CONFIGURATION FIELDS ###############################
-EMAIL_CONFIGURATION_FIELDS = ['USER_NAME', 'USER_EMAIL', 'EMAIL_HOST', 'EMAIL_PORT', 'SENT_EMAIL_ON_ERROR']
+EMAIL_CONFIGURATION_FIELDS = ['USER_NAME', 'USER_EMAIL','SENT_EMAIL_ON_ERROR']
 EMAIL_CONFIGURATION_FILE_HEADING = '############# EMAIL CONFIGURATION FILE ########\n#DO NOT MODIFY MANUALLY THIS FILE\n#VALUES WILL BE MODIFIED WHEN USING THE CONFIGURATION FORM\n'
 EMAIL_CONFIGURATION_FILE_END = '########## END EMAIL CONFIGURATION FILE'
 
