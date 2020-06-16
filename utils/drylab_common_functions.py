@@ -260,6 +260,7 @@ def increment_service_number ( user_name):
     user_center = Profile.objects.get(profileUserID = user_name).profileCenter.centerAbbr
     # get latest service used for user's center
     if Service.objects.filter(serviceUserId__profile__profileCenter__centerAbbr=user_center).exists():
+        import pdb; pdb.set_trace()
         number_request = Service.objects.filter(serviceUserId__profile__profileCenter__centerAbbr=user_center).last().serviceRequestInt
         service_number = str(int(number_request) + 1).zfill(3)
     else:

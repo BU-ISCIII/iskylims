@@ -94,7 +94,7 @@ def get_detail_pipeline_data(pipeline_id):
 
 
 
-    import pdb; pdb.set_trace()
+
     return detail_pipelines_data
 
 def get_pipeline_data_to_display(pipeline_information):

@@ -53,10 +53,10 @@
                                             <li><a href="/drylab/">RECORD NEW SAMPLES</a></li>
                                         </ul>
                                     </li>
-                                    <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">PIPELENES<span class="caret"></span></a>
+                                    <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">PREPARATION PIPELENES<span class="caret"></span></a>
                                         <ul class="dropdown-menu">
-                                            <li><a href="/drylab/definePipelineService">DEFINE PIPELINE SERVICE </a></li>
-                                            <li><a href="/drylab/managePipelines">MANAGE PIPELINES</a></li>
+                                            <li><a href="/drylab/definePipelineService">DEFINE PREPARATION PIPELINE SERVICE </a></li>
+                                            <li><a href="/drylab/managePipelines">MANAGE PREPARATION PIPELINES</a></li>
                                         </ul>
                                     </li>
                                     <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">ANALYSIS<span class="caret"></span></a>
@@ -65,7 +65,7 @@
                                             <li><a href="/drylab/">MANAGE ANALYSIS </a></li>
                                         </ul>
                                     </li>
-                                {% if user.is_authenticated and request.user|has_group:"Admin_iSkyLIMS" %}
+                                {% if user.is_authenticated and request.user|has_group:"ServiceManager" %}
                                     <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">MANAGE SERVICES<span class="caret"></span></a>
                                         <ul class="dropdown-menu">
                                             <li><a href="/drylab/searchService">SEARCH SERVICE</a></li>
