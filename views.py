@@ -18,8 +18,10 @@ import datetime
 import statistics
 from django.conf import settings
 from iSkyLIMS_drylab import drylab_config
+from iSkyLIMS_drylab import copy_drylab_config
 from iSkyLIMS_drylab.utils.testing_drylab_configuration import *
 from iSkyLIMS_drylab.utils.drylab_common_functions import *
+from iSkyLIMS_drylab.pipe_functions import *
 
 from smb.SMBConnection import SMBConnection
 from iSkyLIMS_wetlab.models import RunProcess, Projects
