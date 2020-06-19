@@ -36,56 +36,63 @@
                         <div class="menu-container">
                             <ul class="nav navbar-nav navbar-nav-right">
                                 <li class="js_nav-item nav-item"><a class="nav-item-child nav-item-hover" href="/drylab/">Home</a></li>
-                                    <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">SERVICES REQUEST<span class="caret"></span></a>
+                                {% if user.username == "admin" %}
+                                    <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Configuration<span class="caret"></span></a>
                                         <ul class="dropdown-menu">
-                                            <li><a href="/drylab/service_request_internal_sequencing">GENOMICS UNIT SEQUENCING</a></li>
-                                            <li><a href="/drylab/service_request_external_sequencing">EXTERNAL SEQUENCING</a></li>
-                                            <li><a href="/drylab/counseling_request">COUNSELING REQUEST</a></li>
-                                            <li><a href="/drylab/infrastructure_request">INFRASTRUCTURE REQUEST</a></li>
-                                            <li><a href="/drylab/">RECORD NEW SAMPLES</a></li>
+                                            <li><a href="/drylab/configurationSamba">Configuration Samba</a></li>
+                                            <li><a href="/drylab/configurationEmail">Configuration Email</a></li>
                                         </ul>
                                     </li>
-                                    <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">PIPELENES<span class="caret"></span></a>
-                                        <ul class="dropdown-menu">
-                                            <li><a href="/drylab/">REQUEST NEW PIPELINE SERVICE </a></li>
-                                            <li><a href="/drylab/">MANAGE PIPELINE</a></li>
-                                        </ul>
-                                    </li>
-                                    <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">ANALYSIS<span class="caret"></span></a>
-                                        <ul class="dropdown-menu">
-                                            <li><a href="/drylab/">REQUEST ANALYSIS</a></li>
-                                            <li><a href="/drylab/">MANAGE ANALYSIS </a></li>
-                                        </ul>
-                                    </li>
-                                {% if user.is_authenticated and request.user|has_group:"Admin_iSkyLIMS" %}
+                                {% endif %}
+                                <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">SERVICES REQUEST<span class="caret"></span></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="/drylab/service_request_internal_sequencing">GENOMICS UNIT SEQUENCING</a></li>
+                                        <li><a href="/drylab/service_request_external_sequencing">EXTERNAL SEQUENCING</a></li>
+                                        <li><a href="/drylab/counseling_request">COUNSELING REQUEST</a></li>
+                                        <li><a href="/drylab/infrastructure_request">INFRASTRUCTURE REQUEST</a></li>
+                                        <li><a href="/drylab/">RECORD NEW SAMPLES</a></li>
+                                    </ul>
+                                </li>
+                                <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">PREPARATION PIPELENES<span class="caret"></span></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="/drylab/definePipelineService">DEFINE PREPARATION PIPELINE SERVICE </a></li>
+                                        <li><a href="/drylab/managePipelines">MANAGE PREPARATION PIPELINES</a></li>
+                                    </ul>
+                                </li>
+                                <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">ANALYSIS<span class="caret"></span></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="/drylab/">REQUEST ANALYSIS</a></li>
+                                        <li><a href="/drylab/">MANAGE ANALYSIS </a></li>
+                                    </ul>
+                                </li>
+                                {% if user.is_authenticated and request.user|has_group:"ServiceManager" %}
                                     <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">MANAGE SERVICES<span class="caret"></span></a>
                                         <ul class="dropdown-menu">
                                             <li><a href="/drylab/searchService">SEARCH SERVICE</a></li>
                                             <li><a href="/drylab/pendingServices">PENDING SERVICES</a></li>
-                                        </ul>
-                                    </li>
-                                    <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">SERVICES STATISTICS<span class="caret"></span></a>
-                                        <ul class="dropdown-menu">
+                                            <li style="text-align:center"><a  class="list-group-item disabled">STATISTIC SERVICES</a></li>
                                             <li><a href="/drylab/statsByDateUser">REQUESTED BY USER</a></li>
                                             <li><a href="/drylab/statsByServicesRequest">SERVICES REQUESTED</a></li>
                                             <li><a href="/drylab/statsBySamplesProcessed">SAMPLES PROCESSED</a></li>
                                             <li><a href="/drylab/statsTimeDelivery">STATS TIME DELIVERY</a></li>
                                         </ul>
                                     </li>
+
                                 {% endif %}
-                                {% if user.username == admin %}
-                                <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">USER ACTIVITY</a>
-                                    <ul class="dropdown-menu">
-                                        <li><a href="/drylab/openSessions">CURRENT OPEN USER SESSIONS</a></li>
-                                        <li><a href="/drylab/userLogin">USER LAST LOGING</a></li>
-                                        <li><a href="/drylab/#">MORE TO ADD</a></li>
-                                    </ul>
-                                </li>
+                                {% if user.username == "admin" %}
+                                    <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">USER ACTIVITY</a>
+                                        <ul class="dropdown-menu">
+                                            <li><a href="/drylab/openSessions">CURRENT OPEN USER SESSIONS</a></li>
+                                            <li><a href="/drylab/userLogin">USER LAST LOGING</a></li>
+                                        </ul>
+                                    </li>
                                 {% endif %}
-                        </div>
-                    </div>
+                            </ul>
+                        </div> <!-- menu- container -->
                     <!-- End Navbar Collapse -->
-                </div>
+                    </div> <!-- class menu-container -->
+                </div> <!-- class container -->
+
             </nav>
             <!-- Navbar -->
         </header>
@@ -100,7 +107,7 @@
                 <!-- Loggin pannel -->
                 <div class="row row-space-2 margin-b-4">
                     <div class="col-sm-6 col-sm-offset-6">
-                    {% include 'registration/login_inline.html' %}
+                     {% include 'registration/login_inline.html' %}
                     </div>
                 </div>
             <!-- End Loggin pannel -->

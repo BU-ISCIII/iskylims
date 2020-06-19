@@ -1,6 +1,7 @@
-import os
+import datetime, os
 from django.db import models
 from django import forms
+from django.contrib.auth.models import User
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel
@@ -76,6 +77,9 @@ class AvailableService(MPTTModel):
 	def __str__(self):
 		return '%s' %(self.availServiceDescription)
 
+	def get_service_description(self):
+		return '%s' %(self.availServiceDescription)
+
 	class Meta:
 		ordering = ["tree_id","lft"]
 		verbose_name = ("AvailableService")
@@ -85,31 +89,38 @@ class Service(models.Model):
 	## User requesting service:
 	# 'serviceUsername' refactored to 'serviceUserid' which shows better its true nature
 	#  decision taken to change Foreign Key from 'Profile'  to 'User' until full develop of "user registration"
-	serviceUserId=models.ForeignKey(User ,on_delete=models.CASCADE, null=True)
+	serviceUserId = models.ForeignKey(
+				User ,
+				on_delete=models.CASCADE, null=True)
+	servicePlatform = models.ForeignKey(
+				Platform ,
+				on_delete=models.CASCADE ,
+				verbose_name=_("Sequencing platform"),blank=True,null=True)
+	serviceFileExt = models.ForeignKey(
+				FileExt ,
+				on_delete=models.CASCADE ,
+				verbose_name=_("File extension"),blank=True,null=True)
+	serviceAvailableService = TreeManyToManyField(
+				AvailableService,
+				verbose_name=_("AvailableServices"))
+
+	serviceProjectNames = models.ManyToManyField(
+				'iSkyLIMS_wetlab.Projects',
+				verbose_name=_("User's projects"),blank=True)
+
 	serviceSeqCenter=models.CharField(_("Sequencing center"),max_length=50,blank=False,null=True)
 	serviceRequestNumber=models.CharField(max_length=80, null=True)
 	serviceRequestInt=models.CharField(max_length=80, null=True)
-	## 'serviceRunID' is not used in forms.py/serviceRequestForm() or rest of code
-
-	## Addition of member 'serviceProjectNames' to support
-	# implementation of drop down menu to choose a project name of a list of projects
-	# belonging to the logged-in user in the service request form
-	serviceProjectNames=models.ManyToManyField('iSkyLIMS_wetlab.Projects',verbose_name=_("User's projects"),blank=True)
-	servicePlatform=models.ForeignKey(Platform ,on_delete=models.CASCADE , verbose_name=_("Sequencing platform"),blank=True,null=True)
 	serviceRunSpecs=models.CharField(_("Run specifications"),max_length=10,blank=True,null=True)
-	serviceFileExt=models.ForeignKey(FileExt ,on_delete=models.CASCADE ,verbose_name=_("File extension"),blank=True,null=True)
-	serviceAvailableService=TreeManyToManyField(AvailableService,verbose_name=_("AvailableServices"))
 	serviceFile=models.FileField(_("Service description file"),upload_to=service_files_upload, null=True,blank=True)
 	serviceStatus=models.CharField(_("Service status"),max_length=15,choices=STATUS_CHOICES)
 	serviceNotes=models.TextField(_("Service Notes"),max_length=2048,null=True)
 	serviceCreatedOnDate= models.DateField(auto_now_add=True,null=True)
-	#serviceCreatedOnDate= models.DateField(auto_now_add=False)
+
 	serviceOnApprovedDate = models.DateField(auto_now_add=False, null=True,blank=True)
 	serviceOnRejectedDate = models.DateField(auto_now_add=False, null=True,blank=True)
-	#serviceOnQueuedDate = models.DateField(auto_now_add=False, null=True)
-	#serviceOnInProgressDate = models.DateField(auto_now_add=False, null=True)
+
 	serviceOnDeliveredDate = models.DateField(auto_now_add=False, null=True)
-	#serviceOnArchivedDate = models.DateField(auto_now_add=False, null=True)
 
 
 
@@ -200,6 +211,9 @@ class Service(models.Model):
 	def get_service_creation_time (self):
 		return self.serviceCreatedOnDate.strftime("%d %B, %Y")
 
+	def get_service_request_number(self):
+		return '%s' %(self.serviceRequestNumber)
+
 	def get_time_to_delivery (self):
 
 		if self.serviceOnDeliveredDate == self.serviceCreatedOnDate :
@@ -265,3 +279,156 @@ class Delivery(models.Model):
 		delivery_info.append(self.deliveryDate.strftime("%d %B, %Y"))
 		delivery_info.append(self.deliveryNotes)
 		return delivery_info
+
+
+class PipelinesManager (models.Manager):
+	def create_pipeline(self, data):
+		availableService = AvailableService.objects.get(pk__exact = data['availableService_id'])
+
+		new_pipeline = self.create(availableService = availableService, userName = data['userName'],
+				pipelineName = data['pipelineName'], pipelineInUse = True,
+				pipelineVersion	= data['pipelineVersion'], pipelineStrFolder = data['pipelineStrFolder'],
+				automatic = data['automatic'])
+		return new_pipeline
+
+class Pipelines(models.Model):
+	availableService = models.ForeignKey(
+				AvailableService,
+				on_delete = models.CASCADE)
+	userName = models.ForeignKey(
+                User,
+                on_delete=models.CASCADE)
+	pipelineName = models.CharField(max_length = 50)
+	pipelineVersion = models.CharField(max_length = 10)
+	pipelineStrFolder = models.CharField(max_length = 20)
+	automatic = models.BooleanField(default = True)
+	default = models.BooleanField(default = False)
+	pipelineInUse = models.BooleanField(default = True)
+	generated_at = models.DateTimeField(auto_now_add = True)
+
+	def __str__ (self):
+		return '%s' %(self.pipelineName)
+
+	'''
+	def get_all_pipeline_data(self):
+		data = []
+		data.append(self.availableService.get_service_description())
+		data.append(self.userName.username)
+		data.append(self.pipelineName)
+		data.append(self.pipelineVersion)
+		data.append(self.generated_at.strftime("%B %d, %Y"))
+		data.append(self.default)
+		data.append(self.pipelineInUse)
+		return data
+	'''
+
+	def get_pipeline_name (self):
+		return '%s' %(self.pipelineName)
+
+	def get_pipeline_additional(self):
+		data = []
+		data.append(self.userName.username)
+		data.append(self.generated_at.strftime("%B %d, %Y"))
+		data.append(self.pipelineStrFolder)
+		data.append(self.default)
+		data.append(self.pipelineInUse)
+		data.append(self.automatic)
+		return data
+
+	def get_pipeline_basic (self):
+		data = []
+		data.append(self.pipelineName)
+		data.append(self.pipelineVersion)
+		data.append(self.availableService.get_service_description())
+		return data
+
+	def get_pipeline_info(self):
+		data = []
+		data.append(self.availableService.get_service_description())
+		data.append(self.userName.username)
+		data.append(self.pipelineName)
+		data.append(self.pipelineVersion)
+		data.append(self.generated_at.strftime("%B %d, %Y"))
+		data.append(self.default)
+		data.append(self.pipelineInUse)
+		data.append(self.pk)
+		return data
+
+	def remove_default_pipeline(self):
+		self.default = False
+		self.save()
+		return self
+
+	def set_default_pipeline(self):
+		self.default = True
+		self.save()
+		return self
+
+
+	objects = PipelinesManager()
+
+
+class ActionPipelineManager(models.Manager):
+	def create_pipeline_action(self, pipeline, pipeline_actions):
+		new_pipeline_action = self.create(pipeline = pipeline, actionName = pipeline_actions['Given name for action'],
+			order = pipeline_actions['Order'],	action= pipeline_actions['Action'],
+			fake = pipeline_actions['Fake Action'])
+		return new_pipeline_action
+
+class ActionPipeline (models.Model):
+	pipeline = models.ForeignKey(
+				Pipelines,
+				on_delete = models.CASCADE)
+	actionName = models.CharField(max_length = 50)
+	order = models.CharField(max_length = 10)
+	action = models.CharField(max_length = 20)
+	fake = models.BooleanField(default = False)
+
+	def __str__ (self):
+		return '%s' %(self.actionName)
+
+	def get_action_pipeline_name (self):
+		return '%s' %(self.actionName)
+
+	def get_action_pipeline_data (self):
+		data = []
+		data.append(self.actionName)
+		data.append(self.order)
+		data.append(self.action)
+		data.append(self.fake)
+		return data
+
+	objects = ActionPipelineManager()
+
+
+class ParameterActionPipelineManager(models.Manager):
+	def create_pipeline_parameters(self, pipeline_action, pipeline_parameters):
+		for item, values in pipeline_parameters.items():
+			if values == '' :
+				pipeline_parameters[item] = None
+		new_parameter_action_pipeline = self.create(actionPipeline = pipeline_action,
+					parameter1 = pipeline_parameters['Parameter1'], parameter2 = pipeline_parameters['Parameter2'],
+					parameter3 = pipeline_parameters['Parameter3'])
+
+class ParameterActionPipeline (models.Model):
+	actionPipeline = models.ForeignKey(
+				ActionPipeline,
+				on_delete = models.CASCADE)
+	parameter1 = models.CharField(max_length = 80, null = True, blank = True)
+	parameter2 = models.CharField(max_length = 80, null = True, blank = True)
+	parameter3 = models.CharField(max_length = 80, null = True, blank = True)
+
+	def __str__ (self):
+		return '%s' %(self.parameter1)
+
+	def get_parameter_action_pipeline (self):
+		return '%s' %(self.parameter1)
+
+	def get_all_action_parameters(self):
+		data = []
+		data.append(self.parameter1 if self.parameter1 != None else '' )
+		data.append(self.parameter2 if self.parameter2 != None else '' )
+		data.append(self.parameter3 if self.parameter3 != None else '' )
+		return data
+
+	objects = ParameterActionPipelineManager()

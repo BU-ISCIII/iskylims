@@ -27,6 +27,15 @@ class ResolutionAdmin(admin.ModelAdmin):
 class DeliveryAdmin(admin.ModelAdmin):
 	list_display=('deliveryResolutionID','deliveryDate','deliveryNotes')
 
+class PipelinesManager(admin.ModelAdmin):
+	list_display = ['availableService', 'userName','pipelineName','pipelineVersion','pipelineStrFolder', 'pipelineInUse', 'automatic', 'default']
+
+class ActionPipelineManager(admin.ModelAdmin):
+	list_display = ['pipeline', 'actionName', 'order', 'action', 'fake']
+
+class ParameterActionPipelineManager(admin.ModelAdmin):
+	list_display = ['actionPipeline', 'parameter1', 'parameter2', 'parameter3']
+
 admin.site.register(FileExt,FileExtAdmin)
 admin.site.register(Platform,PlatformAdmin)
 admin.site.register(Machines,MachinesAdmin)
@@ -35,3 +44,6 @@ admin.site.register(AvailableService,AvailableServiceAdmin)
 admin.site.register(Resolution,ResolutionAdmin)
 admin.site.register(Delivery,DeliveryAdmin)
 
+admin.site.register(ActionPipeline,ActionPipelineManager)
+admin.site.register(Pipelines,PipelinesManager)
+admin.site.register(ParameterActionPipeline,ParameterActionPipelineManager)
