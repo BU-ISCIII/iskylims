@@ -186,6 +186,17 @@ def increment_service_number ( user_name):
     return service_number
 
 
+def get_latest_child_from_request_service(service):
+    '''
+    Description:
+        The function collect the  child requested service
+    Input:
+        service
+    Return:
+        children_services
+    '''
+    return
+
 def get_children_available_services():
     '''
     Description:
@@ -210,8 +221,12 @@ def send_service_creation_confirmation_email(email_data):
         Functions uses the send_email django core function to send the email
     Input:
         email_data      # Contains the information to include in the email
+    Constant:
+        SUBJECT_SERVICE_RECORDED
+        BODY_SERVICE_RECORDED
+        USER_EMAIL
     Return:
-        children_services
+        None
     '''
     subject = drylab_config.SUBJECT_SERVICE_RECORDED.copy()
     subject.insert(1, email_data['service_number'])

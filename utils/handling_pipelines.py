@@ -18,6 +18,7 @@ def analyze_input_pipelines(request):
     pipeline_actions['pipelineVersion'] = request.POST['pipelineVersion']
     pipeline_actions['pipelineStrFolder'] = request.POST['pipelineStrFolder']
     pipeline_actions['automatic'] = request.POST['automaticAction']
+    pipeline_actions['useRunFolder'] = request.POST['useRunFolder']
     pipeline_json_data = json.loads(request.POST['pipeline_data'])
 
     action_length = len(drylab_config.HEADING_ACTIONS_PIPELINES)
@@ -50,6 +51,7 @@ def check_if_pipelines_exists_for_service(service_id):
     if Pipelines.objects.filter(availableService__pk__exact = service_id).count() > 1:
         return True
     return False
+
 
 def get_data_form_pipeline_actions():
     '''
@@ -92,9 +94,6 @@ def get_detail_pipeline_data(pipeline_id):
                 parameter_obj = ParameterActionPipeline.objects.get(actionPipeline = action)
                 detail_pipelines_data['actions'].append(action.get_action_pipeline_data() + parameter_obj.get_all_action_parameters())
 
-
-
-
     return detail_pipelines_data
 
 def get_pipeline_data_to_display(pipeline_information):
@@ -133,7 +132,7 @@ def get_pipelines_for_manage():
 def get_pipelines_for_service(service_id):
     '''
     Description:
-        The function get the service name from service id
+        The function get the list of defined pipelines for a service
     Return:
         service_name
     '''
@@ -174,6 +173,49 @@ def pipeline_version_exists(pipeline_name, pipeline_version):
         return True
     return False
 
+def send_required_preparation_pipeline_email(service_request_number):
+    '''
+    Description:
+        The function sends an email to defined user in configuration with the service number.
+
+    Input:
+        service_request_number     # service number
+    Constant:
+        SUBJECT_SERVICE_ON_QUEUED
+    Return:
+        None
+    '''
+    subject = drylab_config.SUBJECT_SERVICE_ON_QUEUED.copy()
+    subject.insert(1, service_request_number)
+
+    body_preparation = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), drylab_config.BODY_SERVICE_ON_QUEUED))
+    body_message = '\n'.join(body_preparation)
+
+    from_user = drylab_config.USER_EMAIL
+    to_users = [drylab_config.USER_EMAIL]
+
+    send_mail (subject, body_message, from_user, to_users)
+    return
+
+def services_added_preparation_pipeline(service_obj):
+    '''
+    Description:
+        The function check if services requires preparation before starting the pipeline.
+        Then adds the service into the actionJobs table.
+    Input:
+        service_obj     # service instance to check if requires preparation
+    Return:
+        services_added
+    '''
+    services_added = []
+    all_services = service_obj.get_child_services()
+    for service_id, service_name in all_services:
+        if Pipelines.objects.filter(availableService__pk__exact = service_id, default = True).exists():
+            preparation_data = {}
+            preparation_data['pipeline'] = Pipelines.objects.filter(availableService__pk__exact = service_id, default = True).last()
+            preparation_data['availableService'] = AvailableService.objects.get(pk__exact = service_id)
+            services_added.append(PreparationPipelineJobs.objects.create_preparation_pipeline_job(preparation_data))
+    return services_added
 
 def store_pipeline_actions(pipeline_obj, pipeline_actions, pipeline_parameters):
     '''

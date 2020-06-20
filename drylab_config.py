@@ -33,11 +33,19 @@ SAMBA_SERVICE_FOLDER = 'services'
 FOLDERS_FOR_SERVICES = ['request', 'resolution', 'result'] # 0= request, 1= resolution, 2 = result (keep order as suggested)
 #RESOLUTION_PREFIX = 'Resolution_'
 
+############## FOLDER SETTINGS ###############################
+## Directory settings for processing the run data files ######
+## Relative path from settings.BASE_DIR
+LOG_DIRECTORY = 'logs/'
+
+################# CONFIG FILE LOG NAME ###############################
+LOGGING_CONFIG_FILE = 'logging_config.ini'
+
 CONFIRMATION_TEXT_MESSAGE = ['Your service request has been successfully recorded.',
                     'The sequence number assigned for your request is: SERVICE_NUMBER', 'Keep this number safe for refering your request',
                     'You will be contacted shortly.']
 
-ERROR_USER_NOT_ALLOWED = ['You do have the enough privileges to see this page ','Contact with your administrator .']
+ERROR_USER_NOT_ALLOWED = ['You do not have the enough privileges to see this page ','Contact with your administrator .']
 ERROR_UNABLE_TO_RECORD_YOUR_SERVICE = ['Your service request cannot be recorded.', 'Check that all information is provided correctly.',
                                 'If problem persist, contact your administrator']
 
@@ -64,6 +72,9 @@ DISPLAY_DETAIL_PIPELINE_ADDITIONAL_INFO = ['User', 'Creation Date', 'String Fold
 SUBJECT_SERVICE_RECORDED = ['Service ', ' has been recorded']
 BODY_SERVICE_RECORDED = ['Dear ','Your service  SERVICE_NUMBER has been recorded.','You will received the resolution of the request as soon as possible.',
                     'Kind regards', 'BU-ISCIII']
+
+SUBJECT_SERVICE_ON_QUEUED = ['Service ', 'sent to preparation pipelines Jobs']
+BODY_SERVICE_ON_QUEUED = ['Service  SERVICE_NUMBER is on queued ']
 
 ################ EMAIL CONFIGURATION FIELDS ###############################
 EMAIL_CONFIGURATION_FIELDS = ['USER_NAME', 'USER_EMAIL','SENT_EMAIL_ON_ERROR']

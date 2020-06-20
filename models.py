@@ -215,13 +215,20 @@ class Service(models.Model):
 		return '%s' %(self.serviceRequestNumber)
 
 	def get_time_to_delivery (self):
-
 		if self.serviceOnDeliveredDate == self.serviceCreatedOnDate :
 			return 1
 		else:
 			number_days, time = str(self.serviceOnDeliveredDate - self.serviceCreatedOnDate).split(',')
 			number, string_value = number_days.split(' ')
 		return number
+
+	def get_child_services (self):
+		children_services = []
+		all_services = self.serviceAvailableService.all()
+		for service in all_services :
+			if not service.get_children().exists():
+				children_services.append([service.pk, service.get_service_description()])
+		return children_services
 
 class Resolution(models.Model):
 	resolutionServiceID=models.ForeignKey(Service ,on_delete=models.CASCADE)
@@ -288,7 +295,7 @@ class PipelinesManager (models.Manager):
 		new_pipeline = self.create(availableService = availableService, userName = data['userName'],
 				pipelineName = data['pipelineName'], pipelineInUse = True,
 				pipelineVersion	= data['pipelineVersion'], pipelineStrFolder = data['pipelineStrFolder'],
-				automatic = data['automatic'])
+				automatic = data['automatic'], useRunFolder = data['useRunFolder'])
 		return new_pipeline
 
 class Pipelines(models.Model):
@@ -301,6 +308,7 @@ class Pipelines(models.Model):
 	pipelineName = models.CharField(max_length = 50)
 	pipelineVersion = models.CharField(max_length = 10)
 	pipelineStrFolder = models.CharField(max_length = 20)
+	useRunFolder = models.BooleanField(default = True, null = True)
 	automatic = models.BooleanField(default = True)
 	default = models.BooleanField(default = False)
 	pipelineInUse = models.BooleanField(default = True)
@@ -353,6 +361,9 @@ class Pipelines(models.Model):
 		data.append(self.pipelineInUse)
 		data.append(self.pk)
 		return data
+
+	def get_used_run_folder (self):
+		return '%s' %(self.useRunFolder)
 
 	def remove_default_pipeline(self):
 		self.default = False
@@ -409,6 +420,7 @@ class ParameterActionPipelineManager(models.Manager):
 		new_parameter_action_pipeline = self.create(actionPipeline = pipeline_action,
 					parameter1 = pipeline_parameters['Parameter1'], parameter2 = pipeline_parameters['Parameter2'],
 					parameter3 = pipeline_parameters['Parameter3'])
+		return new_parameter_action_pipeline
 
 class ParameterActionPipeline (models.Model):
 	actionPipeline = models.ForeignKey(
@@ -432,3 +444,40 @@ class ParameterActionPipeline (models.Model):
 		return data
 
 	objects = ParameterActionPipelineManager()
+
+class JobStates (models.Model):
+	jobStateName = models.CharField(max_length = 20)
+
+	def __str__ (self):
+		return '%s' %(self.jobStateName)
+
+	def get_job_state (self):
+		return '%s' %(self.jobStateName)
+
+
+class PreparationPipelineJobsManager(models.Manager):
+	def create_preparation_pipeline_job (self, preparation_data):
+		jobState = JobStates.objects.get(jobStateName__exact = 'Queued')
+		new_preparation_pipeline = self.create(pipeline = preparation_data['pipeline'],
+				availableService = preparation_data['availableService'], jobState =  jobState)
+		return new_preparation_pipeline
+
+class PreparationPipelineJobs (models.Model):
+	pipeline = models.ForeignKey(
+				Pipelines,
+				on_delete = models.CASCADE)
+	availableService = models.ForeignKey(
+				AvailableService,
+				on_delete = models.CASCADE)
+	jobState =  models.ForeignKey(
+				JobStates,
+				on_delete = models.CASCADE)
+	generated_at = models.DateTimeField(auto_now_add = True)
+	jobStart = models.DateTimeField(auto_now_add = False, null = True, blank = True)
+	jobEnd = models.DateTimeField(auto_now_add = False, null = True, blank = True)
+
+	def __str__ (self):
+		return '%s_%s' %(self.pipeline, self.availableService)
+
+
+	objects = PreparationPipelineJobsManager()
