@@ -15,9 +15,16 @@ except:
     EMAIL_USER_CONFIGURED = False
 
 ##############################################################
-
-
+####
 WETLAB_MANAGER = 'WetlabManager'
+####
+##############################################################
+
+##### SETTINGS FOR CLEANUP RUNS AND NOT VALID FILES ##########
+####
+RETENTION_TIME = '7' # in days
+####
+##############################################################
 
 ############## FOLDER SETTINGS ###############################
 ## Directory settings for processing the run data files ######
@@ -168,13 +175,7 @@ MAPPING_BASESPACE_SAMPLE_SHEET_TWO_INDEX = [('SampleID','Unique_Sample_ID'),('Na
 # Sections to check in the IEM file created by user
 SECTIONS_IN_IEM_SAMPLE_SHEET = ['[Header]', '[Reads]', '[Settings]', '[Data]']
 
-##############################################################
 
-##### SETTINGS FOR CLEANUP RUNS AND NOT VALID FILES ##########
-
-RETENTION_TIME = '7' # in days
-
-##############################################################
 
 ##### HEADINGS VALUES
 
