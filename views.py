@@ -29,6 +29,8 @@ from smb.SMBConnection import SMBConnection
 ####### Import libraries for static files
 #from django.shortcuts import render_to_response
 #from django.shortcuts import RequestContext
+###### api to wetlab ############
+from iSkyLIMS_wetlab.utils.api.wetlab_api import *
 
 
 #PNL
@@ -108,24 +110,36 @@ def service_request(request, serviceRequestType):
     request_type = {}
     if serviceRequestType == 'internal_sequencing':
         if request.method == "POST":
-            form = ServiceRequestFormInternalSequencing(data=request.POST,files=request.FILES)
+            from django.http import QueryDict
+            if 'serviceProjects' in request.POST:
+                project_list = request.POST.getlist('serviceProjects')
+                data_dict = request.POST.dict()
+                dummy_value = data_dict.pop('serviceProjects', None)
+                data = QueryDict('', mutable=True)
+                data.update(data_dict)
+            #project_list = data.pop('serviceProjects', None)
+            form = ServiceRequestFormInternalSequencing(data=data,files=request.FILES)
             if form.is_valid():
-                # Create but dont save for following modif
-                new_service = form.save(commit=False)
-                new_service.serviceStatus = "recorded"
-                new_service.serviceSeqCenter = drylab_config.INTERNAL_SEQUENCING_UNIT
-
-                # new_service.serviceUserId = User.objects.get(id=request.user.id)
-                new_service.serviceUserId = request.user
-                new_service.serviceRequestInt = increment_service_number(request.user)
-                new_service.serviceRequestNumber = create_service_id(new_service.serviceRequestInt,request.user)
-                # Save the new instance
-                new_service.save()
-                # Save the many-to-many data for the form
-                form.save_m2m()
+                new_service = save_service_request_form(form, request.user, drylab_config.INTERNAL_SEQUENCING_UNIT)
+                # # Create but dont save for following modif
+                # new_service = form.save(commit=False)
+                # new_service.serviceStatus = "recorded"
+                # new_service.serviceSeqCenter = drylab_config.INTERNAL_SEQUENCING_UNIT
+                #
+                # # new_service.serviceUserId = User.objects.get(id=request.user.id)
+                # new_service.serviceUserId = request.user
+                # new_service.serviceRequestInt = increment_service_number(request.user)
+                # new_service.serviceRequestNumber = create_service_id(new_service.serviceRequestInt,request.user)
+                # # Save the new instance
+                # new_service.save()
+                # # Save the many-to-many data for the form
+                # form.save_m2m()
+                # import pdb; pdb.set_trace()
                 service_request_number = new_service.get_service_request_number()
-                ## Send mail to user and drylab admin group
+                if 'serviceProjects' in request.POST:
+                    stored_projects = store_projects_from_form(project_list, new_service)
 
+                ## Send mail to user and drylab admin group
                 if drylab_config.EMAIL_USER_CONFIGURED :
                     email_data = {}
                     email_data['user_email'] = request.user.email
@@ -134,12 +148,11 @@ def service_request(request, serviceRequestType):
                     send_service_creation_confirmation_email(email_data)
 
                 # PDF preparation file for confirmation of service request
-
-                absolute_url = request.build_absolute_uri()
-                pdf_file = create_service_pdf_file(service_request_number, absolute_url)
+                #absolute_url = request.build_absolute_uri()
+                pdf_file = create_service_pdf_file(service_request_number, request.build_absolute_uri())
 
                 # check if service requires automatic preparation before start pipeline
-                if services_added_preparation_pipeline(new_service):
+                if len(services_added_preparation_pipeline(new_service, stored_projects)) > 0:
                     if drylab_config.EMAIL_USER_CONFIGURED :
                         send_required_preparation_pipeline_email(service_request_number)
 
@@ -150,11 +163,31 @@ def service_request(request, serviceRequestType):
                 return render(request,'iSkyLIMS_drylab/RequestForm.html',{'confirmation_result':confirmation_result})
             else:
                 error_message = drylab_config.ERROR_UNABLE_TO_RECORD_YOUR_SERVICE
-                request_type['type'] = 'Internal'
-                return render(request, 'iSkyLIMS_drylab/RequestForm.html',{'error_message': error_message , 'request_type': request_type})
+                request_type['type'] = 'Internal Sequencing'
+                form = prepare_form_data_internal_sequencing(request.user)
+                return render(request, 'iSkyLIMS_drylab/RequestForm.html',{'form': form, 'error_message': error_message , 'request_type': request_type})
         else:
             form = prepare_form_data_internal_sequencing(request.user)
-            request_type['type'] = 'Internal'
+            #form = ServiceRequestFormInternalSequencing()
+            # getting projects from user sharing list
+            '''
+            user_groups = request.user.groups.values_list('name',flat=True)
+            #from iSkyLIMS_wetlab.utils.api.wetlab_api import *
+            if len (user_groups) > 0 :
+                sharing_list = []
+                for user in user_groups :
+                    #import pdb; pdb.set_trace()
+                    if User.objects.filter(username__exact = user).exists():
+                        sharing_list.append(User.objects.get(username__exact = user).id)
+                sharing_list.append(request.user.id)
+                #form.fields['serviceProjectNames'].queryset = Projects.objects.filter(user_id__in = sharing_list)
+            else:
+                form.fields['serviceProjectNames'].queryset = Projects.objects.filter(user_id__exact = request.user.id)
+            #form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
+            request_type['type'] = 'Internal Sequencing'
+            form.fields['serviceProjects'].choices = data_test
+            '''
+            request_type['type'] = 'Internal Sequencing'
             return render(request, 'iSkyLIMS_drylab/RequestForm.html' , { 'form' : form , 'request_type': request_type})
 
 

@@ -197,24 +197,46 @@ def send_required_preparation_pipeline_email(service_request_number):
     send_mail (subject, body_message, from_user, to_users)
     return
 
-def services_added_preparation_pipeline(service_obj):
+def services_added_preparation_pipeline(service_obj, project_requested_objs):
     '''
     Description:
         The function check if services requires preparation before starting the pipeline.
         Then adds the service into the actionJobs table.
     Input:
         service_obj     # service instance to check if requires preparation
+    Functions:
+        get_run_folder_from_user_project  # API from iSkyLIMS_wetlab located at file wetlab_api
     Return:
         services_added
     '''
     services_added = []
+    #
     all_services = service_obj.get_child_services()
     for service_id, service_name in all_services:
         if Pipelines.objects.filter(availableService__pk__exact = service_id, default = True).exists():
-            preparation_data = {}
-            preparation_data['pipeline'] = Pipelines.objects.filter(availableService__pk__exact = service_id, default = True).last()
-            preparation_data['availableService'] = AvailableService.objects.get(pk__exact = service_id)
-            services_added.append(PreparationPipelineJobs.objects.create_preparation_pipeline_job(preparation_data))
+            pipeline_obj = Pipelines.objects.filter(availableService__pk__exact = service_id, default = True).last()
+            if pipeline_obj.get_automatic_preparation_pipeline() == 'True':
+                preparation_data = {}
+                preparation_data['pipeline'] = pipeline_obj
+                preparation_data['availableService'] = AvailableService.objects.get(pk__exact = service_id)
+                if pipeline_obj.get_used_run_folder() == 'True':
+                    run_folders = []
+                    for project_request in project_requested_objs:
+                        run_folder = get_run_folder_from_user_project(project_request.get_requested_project_id())
+                        if run_folder :
+                            if not run_folder in run_folders :
+                                run_folders.append(run_folder)
+                                preparation_data['pendingToSetFolder'] = False
+                                preparation_data['folderData'] = run_folder
+                                services_added.append(PreparationPipelineJobs.objects.create_preparation_pipeline_job(preparation_data))
+                        else:
+                            preparation_data['pendingToSetFolder'] = True
+                            preparation_data['folderData'] = None
+                            services_added.append(PreparationPipelineJobs.objects.create_preparation_pipeline_job(preparation_data))
+                else:
+                    preparation_data['pendingToSetFolder'] = False
+                    preparation_data['folderData'] = ''
+                    services_added.append(PreparationPipelineJobs.objects.create_preparation_pipeline_job(preparation_data))
     return services_added
 
 def store_pipeline_actions(pipeline_obj, pipeline_actions, pipeline_parameters):

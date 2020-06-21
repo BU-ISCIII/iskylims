@@ -2,6 +2,14 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
+<style>
+    .scrolling-wrapper {
+        overflow-x: auto;
+        overflow-y: auto;
+        white-space: nowrap;
+        height: 400px;
+    }
+ </style>
 {% if error_message %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-7 col-sm-offset-3">
@@ -36,19 +44,19 @@
     </div> <!--  end of row -->
 
 {% else %}
-    <h1><div class="color-heading">Service Request Form</div></h1>
         <div class="row row-space-2 margin-b-4">
-            <div class="col-sm-7">
+            <div class="col-sm-12">
     			<div class="panel panel-default">
-                      <div class="panel-heading">Service form for requesting {{request_type.type}} service to Bioinformatic Unit</div>
+                      <div class="panel-heading"><h3 style="text-align:center">{{request_type.type}} Requesting form service</h3></div>
                       <div class="panel-body">
+                          <div class="container-fluid margin-t-40">
+                          	{% crispy form %}
+                          </div>
                       </div> <!--// end panel body -->
                 </div> <!--// end panel -->
-            </div> <!--// end col-sm-7  Recorded  pending services  -->
+            </div> <!--// end col-sm-12  Recorded  pending services  -->
     	</div> <!-- //  end row -->
-    <div class="container-fluid margin-t-40">
-    	{% crispy form %}
-    </div>
+
     <script>
         $(document).ready(function () {
             $("form").submit(function (e) {

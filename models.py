@@ -13,6 +13,8 @@ from django.utils.timezone import now as timezone_now
 from django_utils.models import Profile,Center
 from django.contrib.auth.models import User
 
+from iSkyLIMS_core.models import Samples
+
 
 STATUS_CHOICES = (
 			('recorded',_("Recorded")),
@@ -230,6 +232,45 @@ class Service(models.Model):
 				children_services.append([service.pk, service.get_service_description()])
 		return children_services
 
+class RequestedProjectInServicesManager(models.Manager):
+	def create_request_project_service(self, data):
+		new_project_request =self.create( projectService = data['projectService'], externalProjectKey = data['externalProjectKey'],
+					externalProjectName = data['externalProjectName'])
+		return new_project_request
+
+class RequestedProjectInServices (models.Model):
+	projectService = models.ForeignKey(
+					Service,
+					on_delete = models.CASCADE)
+	externalProjectKey = models.CharField(max_length = 5, null = True, blank = True)
+	externalProjectName = models.CharField(max_length = 5, null = True, blank = True)
+	generated_at = models.DateField(auto_now_add = True)
+
+	def __str__ (self):
+		return '%s' %(self.externalProjectName)
+
+	def get_requested_project_name (self):
+		return '%s' %(self.externalProjectName)
+
+	def get_requested_project_id (self):
+		return '%s' %(self.pk)
+
+	objects = RequestedProjectInServicesManager()
+
+class RequestedSamplesInServices (models.Model):
+	samplesInService = models.ForeignKey(
+					Service,
+					on_delete = models.CASCADE)
+	sample = models.ForeignKey(
+					Samples,
+					null = True, blank = True, on_delete = models.CASCADE)
+	externalSampleKey = models.CharField(max_length = 5, null = True, blank = True)
+	externalSampleName = models.CharField(max_length = 50, null = True, blank = True)
+	externalSamplePath =  models.CharField(max_length = 100, null = True, blank = True)
+
+	generated_at = models.DateField(auto_now_add = True)
+
+
 class Resolution(models.Model):
 	resolutionServiceID=models.ForeignKey(Service ,on_delete=models.CASCADE)
 	resolutionNumber=models.CharField(_("Resolutions name"),max_length=255,null=True)
@@ -329,6 +370,10 @@ class Pipelines(models.Model):
 		data.append(self.pipelineInUse)
 		return data
 	'''
+
+	def get_automatic_preparation_pipeline (self):
+		return '%s' %(self.automatic)
+
 
 	def get_pipeline_name (self):
 		return '%s' %(self.pipelineName)
@@ -472,6 +517,9 @@ class PreparationPipelineJobs (models.Model):
 	jobState =  models.ForeignKey(
 				JobStates,
 				on_delete = models.CASCADE)
+	folderData = models.CharField(max_length = 80, null = True, blank = True)
+	folderIsAvailable = models.BooleanField( default = False)
+	pendingToSetFolder =  models.BooleanField(default = True)
 	generated_at = models.DateTimeField(auto_now_add = True)
 	jobStart = models.DateTimeField(auto_now_add = False, null = True, blank = True)
 	jobEnd = models.DateTimeField(auto_now_add = False, null = True, blank = True)

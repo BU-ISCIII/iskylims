@@ -23,8 +23,23 @@ def create_pdf(absolute_url,information, template_file, pdf_file_name):
 
 
 def create_service_id (service_number,user_name):
-    user_center = Profile.objects.get(profileUserID = user_name).profileCenter.centerAbbr
-    service_id = 'SRV' + user_center + service_number
+    '''
+	Description:
+		The function get the user center to build the service ID string
+	Input:
+		service_number      # number of the service
+        user_name           # user name to get the center
+	Constants:
+		USER_CENTER_USED_WHEN_NOT_PROVIDED
+        ABBREVIATION_USED_FOR_SERVICE_REQUEST
+	Return:
+		service_id
+	'''
+    try:
+        user_center = Profile.objects.get(profileUserID = user_name).profileCenter.centerAbbr
+    except:
+        user_center = drylab_config.USER_CENTER_USED_WHEN_NOT_PROVIDED
+    service_id = drylab_config.ABBREVIATION_USED_FOR_SERVICE_REQUEST + user_center + service_number
     return service_id
 
 
@@ -51,7 +66,7 @@ def get_data_for_service_confirmation (service_requested):
     projects_in_service = []
     projects_class = service.serviceProjectNames.all()
     for project in projects_class:
-        projects_in_service.append(project.get_project_name())
+        projects_in_service.append(project.get_requested_project_name())
     service_data['projects'] = projects_in_service
     service_data['platform'] = platform
     service_data['run_specifications'] = run_specs
@@ -99,7 +114,7 @@ def get_service_information (service_id):
     projects_class = service.serviceProjectNames.all()
     for project in projects_class:
         project_id = project.id
-        projects_in_service[project_id]=project.get_project_name()
+        projects_in_service[project_id]=project.get_requested_project_name()
     display_service_details['projects'] = projects_in_service
     display_service_details['user_name'] = service.serviceUserId.username
     display_service_details['file'] = os.path.join(settings.MEDIA_URL,str(service.serviceFile))

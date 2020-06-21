@@ -1,73 +1,65 @@
-## iSkyLIMS_drylab/forms.py
 from django import forms
 from django.utils.translation import ugettext_lazy as _, ugettext
 from crispy_forms.helper import FormHelper
 from crispy_forms import layout, bootstrap
 from crispy_forms.layout import Field
 from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field
-#from crispy_forms.bootstrap import InlineField
-#from django_utils.fields import MultipleChoiceTreeField
+
 from mptt.forms import TreeNodeMultipleChoiceField
-from .models import *
+from iSkyLIMS_drylab.models import Service, Resolution , Delivery
 #from django.contrib.auth.forms import UserCreationForm
 
 
 ## Management of a 'Services request':
-# case a) (internal) GENOMICS_UNIT_SEQUENCING
+class ServiceRequestFormInternalSequencing(forms.ModelForm ):
+    class Meta:
+        model = Service
+        ##Addition of serviceProjectNames for
+        # implementation of drop down menu to choose a project name of a list of projects
+        # belonging to the logged-in user in the service request form
 
-class ServiceRequestFormInternalSequencing(forms.ModelForm):
- 	class Meta:
- 		model = Service
-		##Addition of serviceProjectNames for
-		# implementation of drop down menu to choose a project name of a list of projects
-		# belonging to the logged-in user in the service request form
- 		fields = ['serviceProjectNames','servicePlatform','serviceRunSpecs','serviceFileExt','serviceAvailableService','serviceFile','serviceNotes']
- 		field_classes = {
-				'serviceAvailableService': TreeNodeMultipleChoiceField,
-				}
+        fields = ['servicePlatform','serviceRunSpecs','serviceFileExt','serviceAvailableService','serviceFile','serviceNotes']
+        #fields = ['serviceProjectNames','servicePlatform','serviceRunSpecs','serviceFileExt','serviceAvailableService','serviceFile','serviceNotes']
+        field_classes = {
+			'serviceAvailableService': TreeNodeMultipleChoiceField,
 
- 	def __init__(self,*args, **kwargs):
- 		super(ServiceRequestFormInternalSequencing, self).__init__(*args, **kwargs)
- 		self.helper = FormHelper()
- 		self.helper.form_action=""
- 		self.helper.form_method="POST"
- 		self.fields['serviceProjectNames'].required = True
+			}
 
- 		self.helper.layout = layout.Layout(
-				layout.Div(
- 					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Sequencing Data</h3></div>"""),
- 					layout.Div(
- 						layout.Div(
- 							layout.Field('serviceProjectNames'),
- 							css_class="col-md-6",
- 						),
- 						layout.Div(
- 							layout.Field('serviceRunSpecs'),
-							layout.Field('serviceFileExt'),
-							css_class="col-md-6",
-						),
-						css_class="row panel-body"
-						)
-,
- 					layout.Div(
- 						layout.Div(
- 							layout.Field('servicePlatform'),
- 							css_class="col-md-12",
- 						),
-						css_class="row panel-body"
-						),
-
-					css_class = "panel panel-default"
-					),
+    serviceProjects =  forms.MultipleChoiceField()
 
 
+    def __init__(self, *args, **kwargs):
+        super(ServiceRequestFormInternalSequencing, self).__init__(*args, **kwargs)
+        #self.fields['serviceProjects'] = forms.MultipleChoiceField(
+        #    choices= data_test )
+        self.helper = FormHelper()
+        self.helper.form_action=""
+        self.helper.form_method="POST"
+
+        self.fields['serviceProjects'].required = False
+
+        self.helper.layout = layout.Layout(
+            layout.Div(
+                layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Sequencing Data</h3></div>"""),
+                    layout.Div(
+                        layout.Div(	layout.Field('serviceProjects'),
+                            css_class="col-md-6"),
+                    layout.Div(
+                    	layout.Field('serviceRunSpecs'),
+                    	layout.Field('serviceFileExt'),
+                        layout.Field('servicePlatform'),
+            			css_class="col-md-6",
+            		),
+            		css_class="row panel-body"
+            		),
+                css_class = "panel panel-default"),
 
                 layout.Div(
                 	layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Service selection</h3></div>"""),
                 	layout.Div(
                 		layout.Div(
                 			layout.Field('serviceAvailableService',template="django_utils/checkbox_select_multiple_tree.html"),
-                			css_class="col-md-12"
+                            css_class="scrolling-wrapper"
                 			),
                     	css_class="row panel-body"
                     	),
@@ -90,7 +82,6 @@ class ServiceRequestFormInternalSequencing(forms.ModelForm):
                     )
 				)
 
-# case b) (external) EXTERNAL_SEQUENCING
 class ServiceRequestFormExternalSequencing(forms.ModelForm):
  	class Meta:
  		model = Service

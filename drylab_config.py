@@ -27,6 +27,8 @@ REQUESTED_CONFIRMATION_SERVICE = 'request_service_template.html'
 RESOLUTION_TEMPLATE = 'resolution_template.html'
 OUTPUT_DIR_TEMPLATE ='documents/drylab/' # Directory to store the pdf templates before moving to service folder
 
+ABBREVIATION_USED_FOR_SERVICE_REQUEST = 'SRV'
+USER_CENTER_USED_WHEN_NOT_PROVIDED = 'NO_CENTER'
 
 SAMBA_SERVICE_FOLDER = 'services'
 ## Folders to be created when service is accepted
