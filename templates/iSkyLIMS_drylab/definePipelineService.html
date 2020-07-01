@@ -143,7 +143,13 @@
                                         <label class="col-sm-5  control-label" for="pipelineStrFolder" >Pipeline SubString Folder </label>
                                         <div class="col-sm-6"><input class="form-control" type="text" required = "required" name="pipelineStrFolder" id="pipelineStrFolder" value ="{{data_actions.pipelineStrFolder}}" size="20" maxlength="100"></div>
                                         <BR><br>
-        								<label class="col-sm-5 control-label" for="automaticAction" >Automatic execution</label>
+        								<label class="col-sm-5 control-label" for="useRunFolder" >Use files from Run folder</label>
+        	                            <div class="col-sm-5">
+        									<label class="radio-inline"><input type="radio" name="useRunFolder" required = "required" value="True" checked>YES</label>
+        		                            <label class="radio-inline"><input type="radio" name="useRunFolder" required = "required" value="False" >NO</label>
+        								</div>  <!-- end  radio -->
+                                        <br><br>
+                                        <label class="col-sm-5 control-label" for="automaticAction" >Automatic execution</label>
         	                            <div class="col-sm-5">
         									<label class="radio-inline"><input type="radio" name="automaticAction" required = "required" value="True" checked>YES</label>
         		                            <label class="radio-inline"><input type="radio" name="automaticAction" required = "required" value="False" >NO</label>

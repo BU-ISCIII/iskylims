@@ -146,7 +146,21 @@ def open_samba_connection():
 
     return conn
 
-
+def open_log(config_file):
+    '''
+    Description:
+        The function will create the log object to write all logging information
+    Input:
+        logger_name    # contains the logger name that will be included
+                        in the log file
+    Constant:
+        LOGGING_CONFIG_FILE
+    Return:
+        logger object
+    '''
+    fileConfig(config_file)
+    logger = logging.getLogger(__name__)
+    return logger
 
 def get_type_of_data (data):
     '''

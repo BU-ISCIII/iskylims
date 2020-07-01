@@ -106,11 +106,24 @@
             <div class="row margin-b-40">
                 <!-- Loggin pannel -->
                 <div class="row row-space-2 margin-b-4">
-                    <div class="col-sm-6 col-sm-offset-6">
-                     {% include 'registration/login_inline.html' %}
-                    </div>
+                    <div class="col-sm-12">
+                        <div class="col-sm-6">
+                            <div class="text-center"> <!-- Logo -->
+                                <a class="logo-wrap" href="/drylab">
+                                    <img src="{% static "iSkyLIMS_drylab/img/logo_iSkyLIMS_drylab.png" %}" alt="iSkyLIMS_Drylab_Logo">
+                                </a>
+                            </div>  <!-- End Logo -->
+                        </div>
+                        <div class="col-sm-6">
+                         {% include 'registration/login_inline.html' %}
+                        </div>
+                    </div>  <!-- End Loggin pannel -->
                 </div>
-            <!-- End Loggin pannel -->
+                <div class="row row-space-2 margin-b-4">
+                    <div class="col-sm-12">
+                        <h1 class="text-center"> Requesting Services Application</h1>
+                    </div>  <!-- End application pannel -->
+                </div>
             {% block content %}
         <!--========== HERE WILL BE THE INFORMATION FROM DJANGO CODE  ==========-->
             {% endblock %}
