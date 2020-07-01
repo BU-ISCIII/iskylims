@@ -333,7 +333,7 @@ class RunIDFolder (models.Model):
 				Service,
 				on_delete = models.CASCADE)
 	run_id_Folder = models.CharField(max_length = 50)
-	
+
 	def __str__ (self):
 		return '%s' %(self.run_id_Folder)
 
@@ -356,7 +356,7 @@ class Pipelines(models.Model):
                 on_delete=models.CASCADE)
 	pipelineName = models.CharField(max_length = 50)
 	pipelineVersion = models.CharField(max_length = 10)
-	useRunFolder = models.BooleanField(default = True, null = True)
+	useRunFolder = models.NullBooleanField(default = True, null = True)
 	externalRequest = models.BooleanField(default = True)
 	default = models.BooleanField(default = False)
 	pipelineInUse = models.BooleanField(default = True)
