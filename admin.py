@@ -28,19 +28,16 @@ class DeliveryAdmin(admin.ModelAdmin):
 	list_display=('deliveryResolutionID','deliveryDate','deliveryNotes')
 
 class PipelinesManager(admin.ModelAdmin):
-	list_display = ['availableService', 'userName','pipelineName','pipelineVersion','pipelineStrFolder', 'pipelineInUse', 'automatic', 'useRunFolder','default']
+	list_display = ['availableService', 'userName','pipelineName','pipelineVersion','pipelineInUse', 'externalRequest', 'useRunFolder','default']
 
-class ActionPipelineManager(admin.ModelAdmin):
-	list_display = ['pipeline', 'actionName', 'order', 'action', 'fake']
-
-class ParameterActionPipelineManager(admin.ModelAdmin):
-	list_display = ['actionPipeline', 'parameter1', 'parameter2', 'parameter3']
+class ParameterPipelineManager(admin.ModelAdmin):
+	list_display = ['parameterPipeline', 'parameterName', 'parameterValue']
 
 class JobStatesManager(admin.ModelAdmin):
 	list_display = ['jobStateName']
 
-class PreparationPipelineJobsManager(admin.ModelAdmin):
-	list_display = ['pipeline', 'availableService', 'jobState', 'generated_at', 'jobStart', 'jobEnd']
+class PipelineExternalDataJobsManager(admin.ModelAdmin):
+	list_display = ['pipeline', 'availableService', 'jobState', 'lastRequestedTime', 'pipelineName', 'pipelineVersion']
 
 admin.site.register(FileExt,FileExtAdmin)
 admin.site.register(Platform,PlatformAdmin)
@@ -50,9 +47,8 @@ admin.site.register(AvailableService,AvailableServiceAdmin)
 admin.site.register(Resolution,ResolutionAdmin)
 admin.site.register(Delivery,DeliveryAdmin)
 
-admin.site.register(ActionPipeline,ActionPipelineManager)
 admin.site.register(Pipelines,PipelinesManager)
-admin.site.register(ParameterActionPipeline,ParameterActionPipelineManager)
+admin.site.register(ParameterPipeline,ParameterPipelineManager)
 
 admin.site.register(JobStates,JobStatesManager)
-admin.site.register(PreparationPipelineJobs, PreparationPipelineJobsManager)
+admin.site.register(PipelineExternalDataJobs, PipelineExternalDataJobsManager)

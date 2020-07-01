@@ -151,8 +151,8 @@ def service_request(request, serviceRequestType):
                 #absolute_url = request.build_absolute_uri()
                 pdf_file = create_service_pdf_file(service_request_number, request.build_absolute_uri())
 
-                # check if service requires automatic preparation before start pipeline
-                if len(services_added_preparation_pipeline(new_service, stored_projects)) > 0:
+                # check if service allows to get data from external applications
+                if len(services_allow_external_data(new_service, stored_projects)) > 0:
                     if drylab_config.EMAIL_USER_CONFIGURED :
                         send_required_preparation_pipeline_email(service_request_number)
 
@@ -1587,22 +1587,23 @@ def define_pipeline_service(request):
             return render (request,'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_USER_NOT_ALLOWED })
     else:
         return redirect ('/accounts/login')
-    data_actions = get_data_form_pipeline_actions()
-    if request.method == 'POST' and request.POST['action'] == 'actionsPipeline':
-        if pipeline_version_exists(pipeline_action['pipelineName'], pipeline_action['pipelineVersion']):
+    data_pipeline = get_data_form_pipeline()
+    if request.method == 'POST' and request.POST['action'] == 'servicePipeline':
+        pipeline_data_form = analyze_input_pipelines(request)
+        if pipeline_version_exists(request.POST['pipelineName'], request.POST['pipelineVersion']):
             error_message = drylab_config.ERROR_PIPELINE_ALREADY_EXISTS
-            data_actions.update(pipeline_action)
-            return render(request,'iSkyLIMS_drylab/definePipelineService.html', {'data_actions': data_actions,'error_message': error_message})
-        pipeline_action = analyze_input_pipelines(request)
-        new_pipeline = Pipelines.objects.create_pipeline(pipeline_action)
-        store_pipeline_actions(new_pipeline, pipeline_action['actions'], pipeline_action['parameters'])
-        defined_service_actions = get_pipeline_data_to_display(pipeline_action)
-        if 'one_pipeline' in defined_service_actions:
-            new_pipeline.set_default_pipeline()
-        return render(request,'iSkyLIMS_drylab/definePipelineService.html', {'defined_service_actions': defined_service_actions})
-    if request.method == 'POST' and request.POST['action'] == 'selectDefaultPipeline':
-        pass
-    return render(request,'iSkyLIMS_drylab/definePipelineService.html', {'data_actions': data_actions})
+            data_pipeline.update(pipeline_data_form)
+            return render(request,'iSkyLIMS_drylab/definePipelineService.html', {'data_pipeline': data_pipeline,'error_message': error_message})
+        pipeline_data_form = analyze_input_pipelines(request)
+        new_pipeline = Pipelines.objects.create_pipeline(pipeline_data_form)
+        if 'additional_parameters' in  pipeline_data_form :
+            store_pipeline_actions(new_pipeline, pipeline_data_form['additional_parameters'])
+        defined_service_pipeline = get_pipeline_data_to_display(pipeline_data_form)
+
+        set_default_service_pipeline(new_pipeline)
+        return render(request,'iSkyLIMS_drylab/definePipelineService.html', {'defined_service_pipeline': defined_service_pipeline})
+
+    return render(request,'iSkyLIMS_drylab/definePipelineService.html', {'data_pipeline': data_pipeline})
 
 @login_required
 def manage_pipelines(request):
