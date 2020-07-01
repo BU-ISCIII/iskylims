@@ -57,9 +57,9 @@ ERROR_UNABLE_TO_SAVE_EMAIL_CONFIGURATION_SETTINGS = ['Unable to save the email c
 
 ERROR_PIPELINE_ALREADY_EXISTS = ['Pipeline name and version is already defined']
 
-AVAILABLE_ACTIONS_IN_PIPELINE = ['Copy','Symbolic link',]
-HEADING_ACTIONS_PIPELINES = ['Given name for action', 'Order', 'Action', 'Fake Action']
-HEADING_ACTIONS_PARAMETERS = ['Parameter1', 'Parameter2', 'Parameter3']
+#AVAILABLE_ACTIONS_IN_PIPELINE = ['Copy','Symbolic link',]
+HEADING_ADDITIONAL_PIPELINE_PARAMETERS = ['Additional parameter name', 'Additional Parameter Value']
+#HEADING_ACTIONS_PARAMETERS = ['Parameter1', 'Parameter2', 'Parameter3']
 
 
 HEADING_MANAGE_PIPELINES = ['Service', 'User' ,'Pipeline Name', 'Pipeline Version', 'Date', 'Default', 'In use', 'id']
