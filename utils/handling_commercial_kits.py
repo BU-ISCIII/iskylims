@@ -68,6 +68,7 @@ def get_expired_lot_user_kit (register_user_obj):
             data_kit = []
             c_kit = user_kit.get_commercial_kit()
             data_kit.append(user_kit.get_nick_name())
+            data_kit.append(user_kit.get_lot_number())
             data_kit.append(user_kit.get_expiration_date())
             data_kit.append(user_kit.get_used_percentage())
             if not c_kit in user_expired_kits['data']:
@@ -87,6 +88,7 @@ def get_valid_lot_user_kit (register_user_obj):
             data_kit = []
             c_kit = user_kit.get_commercial_kit()
             data_kit.append(user_kit.get_nick_name())
+            data_kit.append(user_kit.get_lot_number())
             data_kit.append(user_kit.get_expiration_date())
             data_kit.append(user_kit.get_used_percentage())
             if not c_kit in valid_kits['data']:
@@ -108,7 +110,7 @@ def get_lot_commercial_kits(register_user_obj, protocol_obj):
     if UserLotCommercialKits.objects.filter(user = register_user_obj, basedCommercial__protocol_id = protocol_obj).exists():
         user_kits =UserLotCommercialKits.objects.filter(user = register_user_obj, basedCommercial__protocol_id = protocol_obj)
         for user_kit in user_kits:
-            user_kit_list.append(user_kit.get_nick_name)
+            user_kit_list.append(user_kit.get_lot_number)
     return user_kit_list
 
 

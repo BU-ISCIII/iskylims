@@ -66,7 +66,7 @@ HEADING_FOR_COMMERCIAL_KIT_BASIC_DATA = ['Commercial Kit Name', 'Provider',  'Ca
 
 HEADING_FOR_LOT_USER_COMMERCIAL_KIT_BASIC_DATA = ['User given Name', 'Commercial Kit', 'Lot Barcode', 'Expiration Date']
 
-HEADING_FOR_USER_LOT_INVENTORY = ['Nick Name', 'Expiration date', 'Percentage used']
+HEADING_FOR_USER_LOT_INVENTORY = ['Nick Name', 'Lot Number' , 'Expiration date', 'Percentage used']
 
 
 #########  FOLDER SETTINGS TO STORE COLLECTION KITS #######

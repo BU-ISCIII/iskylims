@@ -297,6 +297,9 @@ class UserLotCommercialKits (models.Model):
     def get_commercial_kit(self):
         return '%s' %(self.basedCommercial.get_name())
 
+    def get_lot_number (self):
+        return '%s' %(self.chipLot)
+
     def get_nick_name (self):
         return '%s' %(self.nickName)
 
