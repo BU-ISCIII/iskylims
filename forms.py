@@ -78,7 +78,7 @@ class ServiceRequestFormInternalSequencing(forms.ModelForm ):
 					css_class = "panel panel-default"
 					),
 				bootstrap.FormActions(
-					layout.Submit(('submit'),_('Save')),
+					layout.Submit(('submit'),_('Submit your request')),
                     )
 				)
 
@@ -137,7 +137,7 @@ class ServiceRequestFormExternalSequencing(forms.ModelForm):
 					css_class = "panel panel-default"
 					),
 				bootstrap.FormActions(
-					layout.Submit(('submit'),_('Save')),
+					layout.Submit(('submit'),_('Submit your request')),
                     )
 				)
 

@@ -2,6 +2,7 @@ import json
 from .drylab_common_functions import *
 from iSkyLIMS_drylab import drylab_config
 from iSkyLIMS_drylab.models import *
+from iSkyLIMS_wetlab.utils.api.wetlab_api import get_run_folder_from_user_project
 
 
 def analyze_input_pipelines(request):
@@ -205,6 +206,8 @@ def services_allow_external_data(service_obj, project_requested_objs):
             if pipeline_obj.get_external_request() == 'True':
                 preparation_data = {}
                 preparation_data['pipeline'] = pipeline_obj
+                preparation_data['pipelineName'] = pipeline_obj.get_pipeline_name()
+                preparation_data['pipelineVersion'] = pipeline_obj.get_pipeline_version()
                 preparation_data['availableService'] = AvailableService.objects.get(pk__exact = service_id)
                 if pipeline_obj.get_used_run_folder() == 'True':
                     runID_folders = []
