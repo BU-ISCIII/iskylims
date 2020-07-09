@@ -43,6 +43,7 @@ urlpatterns = [
     path('handlingMolecules', views.handling_molecules, name = 'handling_molecules'),
     path('latest_run/',views.latest_run, name='latest_run'),
     path('incompletedRuns', views.incompleted_runs, name = 'incompleted_runs'),
+    path('modifySampleProjectFields=<int:sample_project_id>/', views.modify_sample_project_fields, name = 'modify_sample_project_fields'),
     path('MonthlyReport/', views.monthly_report, name='montly_report'),
     path('pendingSamplePreparations', views.pending_sample_preparations, name = 'pending_sample_preparations'),
     path('pendingToUpdate/', views.pending_to_update, name='pending_to_update'),

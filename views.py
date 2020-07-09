@@ -3462,6 +3462,39 @@ def define_sample_projects_fields (request, sample_project_id):
         sample_project_data = define_table_for_sample_project_fields(sample_project_id)
         return render(request, 'iSkyLIMS_wetlab/defineSampleProjectFields.html', {'sample_project_data':sample_project_data})
 
+
+@login_required
+def modify_sample_project_fields(request, sample_project_id):
+    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+    if request.user.is_authenticated:
+        if not is_wetlab_manager(request):
+            return render (
+                request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':['You do not have enough privileges to see this page ',
+                            'Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+
+    if request.method == 'POST' and request.POST['action'] == 'modifySampleProjectFields':
+
+        sample_project_field_data = set_sample_project_fields(request.POST)
+
+        return render(request, 'iSkyLIMS_wetlab/modifySampleProjectFields.html', {'sample_project_field_data':sample_project_field_data})
+
+    else:
+        if not check_if_sample_project_id_exists(sample_project_id):
+
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',
+                        {'content':['The requested Sample project does not exist',
+                            'Create the sample project name before assigning custom sample project parameters.']})
+
+
+        sample_project_parameter = get_parameters_sample_project(sample_project_id)
+        #import pdb; pdb.set_trace()
+        return render(request, 'iSkyLIMS_wetlab/modifySampleProjectFields.html', {'sample_project_parameter':sample_project_parameter})
+
+
 @login_required
 def define_molecule_uses (request):
     '''
