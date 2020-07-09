@@ -872,7 +872,7 @@ def get_info_to_display_sample_project (sample_project_id):
     return info_s_project
 
 
-def get_defined_sample_projects (app_name):
+def get_info_for_defined_sample_projects (app_name):
     '''
     Description:
         The function return a list with all defined sample projects.
