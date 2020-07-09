@@ -4,7 +4,7 @@
 
 ################# SAMPLE SETTINGS ##############################
 ### Headings used when recording information
-HEADING_FOR_RECORD_SAMPLES = [ 'Patient Code ID', 'Sample Name', 'Sample Origin', 'Type of Sample', 'Species', 'Project/Service', 'Date sample extraction', 'Sample Storage Location']
+HEADING_FOR_RECORD_SAMPLES = [ 'Patient Code ID', 'Sample Name', 'Sample Origin', 'Type of Sample', 'Species', 'Project/Service', 'Date sample reception', 'Sample Storage Location']
 
 HEADING_FOR_OPTIONAL_FIELD_SAMPLES = [ 'Patient Code ID', 'Sample Origin', 'Species', 'Date sample extraction', 'Sample Storage Location']
 

@@ -706,7 +706,7 @@ def save_type_of_sample(form_data, app_name):
     data['sampleType'] = form_data['sampleTypeName']
     data['apps_name'] = app_name
     data['optional_fields'] = ','.join(index_field_list)
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
     sample_type = SampleType.objects.create_sample_type(data)
 
     save_s_type['new_defined_sample_type'] = form_data['sampleTypeName']
@@ -868,11 +868,11 @@ def get_info_to_display_sample_project (sample_project_id):
         info_s_project['heading'] = HEADING_FOR_SAMPLE_PROJECT_FIELDS
     else:
         return 'ERROR'
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
     return info_s_project
 
 
-def get_info_to_display_sample_projects (app_name):
+def get_defined_sample_projects (app_name):
     '''
     Description:
         The function return a list with all defined sample projects.
