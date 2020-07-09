@@ -585,6 +585,26 @@ class SampleProjectsFields (models.Model):
         field_data.append(self.sampleProjectFieldDescription)
         return field_data
 
+    def get_sample_project_fields_for_javascript(self):
+        if self.sampleProjectFieldUsed :
+            used = 'true'
+        else:
+            used = 'false'
+        if self.sampleProjectSearchable :
+            searchable = 'true'
+        else:
+            searchable = 'false'
+        field_data = []
+        field_data.append(self.sampleProjectFieldName)
+
+        field_data.append(self.sampleProjectFieldOrder)
+        field_data.append(used)
+        field_data.append(searchable)
+        field_data.append(self.sampleProjectFieldType)
+        field_data.append(self.sampleProjectOptionList)
+        field_data.append(self.sampleProjectFieldDescription)
+        return field_data
+
     objects = SampleProjectsFieldsManager()
 '''
 class SamplesProjectsOptionValuesManager():

@@ -50,6 +50,8 @@ HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS = ['Parameter name', 'Order', 'Used', '
 
 HEADING_FOR_SAMPLE_PROJECT_FIELDS = ['Field name', 'Order', 'Used', 'Searchable','Field type', 'Option Values', 'Description']
 
+HEADING_FOR_MODIFY_SAMPLE_PROJECT_FIELDS = ['Old field name','New field name', 'Order', 'Used', 'Searchable','Field type', 'Option Values', 'Description']
+
 ################# PROJECT  SETTINGS #######################################
 ### Headings used when defining the custom project fields
 HEADING_FOR_DEFINING_PROJECT_FIELDS = ['Field name', 'Order', 'Used', 'Description']

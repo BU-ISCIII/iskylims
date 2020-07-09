@@ -857,6 +857,7 @@ def get_info_to_display_sample_project (sample_project_id):
     if SampleProjects.objects.filter(pk__exact = sample_project_id).exists():
         sample_project_obj = SampleProjects.objects.get(pk__exact = sample_project_id)
         # collect data from project
+        info_s_project['sample_project_id'] = sample_project_id
         info_s_project['main_data'] = list(zip (SAMPLE_PROJECT_MAIN_DATA, sample_project_obj.get_full_info_to_display()))
 
         if SampleProjectsFields.objects.filter(sampleProjects_id = sample_project_obj).exists():
@@ -871,6 +872,33 @@ def get_info_to_display_sample_project (sample_project_id):
     #import pdb; pdb.set_trace()
     return info_s_project
 
+
+
+def get_parameters_sample_project(sample_project_id):
+    '''
+    Description:
+        The function return the parameters definded for the sample project id.
+    Input:
+        sample_project_id       # id of the sample project
+    Return:
+        info_s_projects.
+    '''
+    parameters_s_project = {}
+    if SampleProjects.objects.filter(pk__exact = sample_project_id).exists():
+        sample_project_obj = SampleProjects.objects.get(pk__exact = sample_project_id)
+        if SampleProjectsFields.objects.filter(sampleProjects_id = sample_project_obj).exists():
+            sample_project_fields = SampleProjectsFields.objects.filter(sampleProjects_id = sample_project_obj).order_by('sampleProjectFieldOrder')
+            s_project_fields_list = []
+            for sample_project_field in sample_project_fields:
+                parameter_data =  sample_project_field.get_sample_project_fields_for_javascript()
+                parameter_data.insert(1,'')
+                s_project_fields_list.append(parameter_data)
+            parameters_s_project['fields'] = s_project_fields_list
+        parameters_s_project['heading'] = HEADING_FOR_MODIFY_SAMPLE_PROJECT_FIELDS
+    else:
+        return 'ERROR'
+
+    return parameters_s_project
 
 def get_info_for_defined_sample_projects (app_name):
     '''
