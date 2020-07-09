@@ -166,7 +166,7 @@ def create_protocol (request):
 def create_sample_projects (request):
 
     # get the information of defined sample Projects
-    defined_samples_projects = get_defined_sample_projects (__package__)
+    defined_samples_projects = get_info_for_defined_sample_projects (__package__)
 
     if request.method == 'POST' and request.POST['action'] == 'addNewSampleProject':
         #import pdb; pdb.set_trace()
