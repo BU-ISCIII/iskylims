@@ -49,7 +49,12 @@ class SampleTypeAdmin(admin.ModelAdmin):
 class SampleProjectBelongsAdmin(admin.ModelAdmin):
     list_display = ('projectName', 'projectManager', 'projectDescription', 'contactEmail', 'contactPhone', 'contactComments')
 '''
+class SampleProjectsAdmin(admin.ModelAdmin):
+    list_display = ['sampleProjectName', 'sampleProjectManager', 'sampleProjectContact', 'sampleProjectDescription', 'apps_name']
 
+
+class SampleProjectsFieldsAdmin(admin.ModelAdmin):
+    list_display  = ['sampleProjects_id', 'sampleProjectFieldName', 'sampleProjectFieldDescription', 'sampleProjectFieldOrder', 'sampleProjectFieldUsed']
 
 class SequencingPlatformAdmin(admin.ModelAdmin):
     list_display = ('platformName', 'companyName', 'sequencingTecnology')
@@ -85,6 +90,8 @@ admin.site.register(ProtocolParameters,ProtocolParametersAdmin)
 admin.site.register(MoleculeParameterValue, MoleculeParameterValueAdmin)
 admin.site.register(SampleType, SampleTypeAdmin)
 admin.site.register(Samples, SamplesAdmin)
+admin.site.register(SampleProjects,SampleProjectsAdmin)
+admin.site.register(SampleProjectsFields,SampleProjectsFieldsAdmin)
 
 admin.site.register(SequencingPlatform, SequencingPlatformAdmin)
 admin.site.register(SequencerInLab, SequencerInLabAdmin)
