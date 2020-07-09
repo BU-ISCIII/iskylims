@@ -3217,7 +3217,7 @@ def create_sample_projects (request):
         #redirect to login webpage
         return redirect ('/accounts/login')
     # get the information of defined sample Projects
-    defined_samples_projects = get_info_to_display_sample_projects (__package__)
+    defined_samples_projects = get_defined_sample_projects (__package__)
 
     if request.method == 'POST' and request.POST['action'] == 'addNewSampleProject':
         sample_project_name = request.POST['sampleProyectName']
