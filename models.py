@@ -243,7 +243,7 @@ class RequestedProjectInServices (models.Model):
 					Service,
 					on_delete = models.CASCADE)
 	externalProjectKey = models.CharField(max_length = 5, null = True, blank = True)
-	externalProjectName = models.CharField(max_length = 5, null = True, blank = True)
+	externalProjectName = models.CharField(max_length = 70, null = True, blank = True)
 	generated_at = models.DateField(auto_now_add = True)
 
 	def __str__ (self):
@@ -396,6 +396,9 @@ class Pipelines(models.Model):
 
 	def get_pipleline_service_obj(self):
 		return self.availableService
+
+	def get_pipeline_version(self):
+		return '%s' %(self.pipelineVersion)
 
 	def get_pipeline_additional(self):
 		data = []

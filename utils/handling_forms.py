@@ -81,7 +81,7 @@ def store_projects_from_form(project_list, service):
 	project_names = get_user_project_name(project_list)
 	created_projects = []
 	for i in range(len(project_list)):
-		data = []
+		data = {}
 		data['projectService'] = service
 		data['externalProjectKey'] = project_list[i]
 		data['externalProjectName'] = project_names[i]
