@@ -13,7 +13,6 @@ urlpatterns = [
     path('addDelivery=<int:resolution_id>/', views.add_delivery, name= 'add_delivery'),
     path('counseling_request',views.counseling_request, name='counseling_service'),
     path('configurationEmail', views.configuration_email, name='configuration_email'),
-    path('configurationSamba', views.configuration_samba, name='configuration_samba'),
     path('configurationTest',views.configuration_test, name='configuration_test'),
     path('detailPipeline=<int:pipeline_id>', views.detail_pipeline, name = 'detail_pipeline'),
     path('definePipelineService', views.define_pipeline_service, name = 'define_pipeline_service'),
