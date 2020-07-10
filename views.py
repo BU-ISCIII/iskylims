@@ -101,20 +101,7 @@ def service_request(request, serviceRequestType):
             form = ServiceRequestFormInternalSequencing(data = data, files = request.FILES)
             if form.is_valid():
                 new_service = save_service_request_form(form, request.user, drylab_config.INTERNAL_SEQUENCING_UNIT)
-                # # Create but dont save for following modif
-                # new_service = form.save(commit=False)
-                # new_service.serviceStatus = "recorded"
-                # new_service.serviceSeqCenter = drylab_config.INTERNAL_SEQUENCING_UNIT
-                #
-                # # new_service.serviceUserId = User.objects.get(id=request.user.id)
-                # new_service.serviceUserId = request.user
-                # new_service.serviceRequestInt = increment_service_number(request.user)
-                # new_service.serviceRequestNumber = create_service_id(new_service.serviceRequestInt,request.user)
-                # # Save the new instance
-                # new_service.save()
-                # # Save the many-to-many data for the form
-                # form.save_m2m()
-                # import pdb; pdb.set_trace()
+
                 service_request_number = new_service.get_service_request_number()
                 if 'serviceProjects' in request.POST:
                     stored_projects = store_projects_from_form(project_list, new_service)
@@ -135,8 +122,6 @@ def service_request(request, serviceRequestType):
                 if len(services_allow_external_data(new_service, stored_projects)) > 0:
                     if drylab_config.EMAIL_USER_CONFIGURED :
                         send_required_preparation_pipeline_email(service_request_number)
-
-                import pdb; pdb.set_trace()
                 confirmation_result = {}
                 confirmation_result['download_file'] = pdf_file
                 confirmation_result['text'] = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), drylab_config.CONFIRMATION_TEXT_MESSAGE))
@@ -148,25 +133,6 @@ def service_request(request, serviceRequestType):
                 return render(request, 'iSkyLIMS_drylab/RequestForm.html',{'form': form, 'error_message': error_message , 'request_type': request_type})
         else:
             form = prepare_form_data_internal_sequencing(request.user)
-            #form = ServiceRequestFormInternalSequencing()
-            # getting projects from user sharing list
-            '''
-            user_groups = request.user.groups.values_list('name',flat=True)
-            #from iSkyLIMS_wetlab.utils.api.wetlab_api import *
-            if len (user_groups) > 0 :
-                sharing_list = []
-                for user in user_groups :
-                    #import pdb; pdb.set_trace()
-                    if User.objects.filter(username__exact = user).exists():
-                        sharing_list.append(User.objects.get(username__exact = user).id)
-                sharing_list.append(request.user.id)
-                #form.fields['serviceProjectNames'].queryset = Projects.objects.filter(user_id__in = sharing_list)
-            else:
-                form.fields['serviceProjectNames'].queryset = Projects.objects.filter(user_id__exact = request.user.id)
-            #form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
-            request_type['type'] = 'Internal Sequencing'
-            form.fields['serviceProjects'].choices = data_test
-            '''
             request_type['type'] = 'Internal Sequencing'
             return render(request, 'iSkyLIMS_drylab/RequestForm.html' , { 'form' : form , 'request_type': request_type})
 
@@ -175,44 +141,34 @@ def service_request(request, serviceRequestType):
         if request.method == "POST":
             form = ServiceRequestFormExternalSequencing(data=request.POST,files=request.FILES)
             if form.is_valid():
-                new_service = form.save(commit=False)
-                new_service.serviceStatus = "recorded"
-                new_service.serviceUserId = User.objects.get(id=request.user.id)
-                new_service.serviceRequestInt = increment_service_number(request.user)
-                new_service.serviceRequestNumber = create_service_id(new_service.serviceRequestInt,request.user)
-                new_service.save()
-                form.save_m2m()
+                new_service = save_service_request_form(form, request.user, request.POST['serviceSeqCenter'])
+                service_request_number = new_service.get_service_request_number()
+
                 ## Send email
-                subject = 'Service ' + new_service.serviceRequestNumber + " has been recorded"
-                body_message = 'Dear ' + request.user.username + "\n Your service " + new_service.serviceRequestNumber + " has been recorded. You will received the resolution of the request as soon as possible.\n Kind regards \n BU-ISCIII \n bioinformatica@isciii.es"
-                from_user = 'bioinformatica@isciii.es'
-                to_user = [request.user.email,'bioinformatica@isciii.es']
-                send_mail (subject, body_message, from_user, to_user)
+                ## Send mail to user and drylab admin group
+                if drylab_config.EMAIL_USER_CONFIGURED :
+                    email_data = {}
+                    email_data['user_email'] = request.user.email
+                    email_data['user_name'] = request.user.username
+                    email_data['service_number'] = service_request_number
+                    send_service_creation_confirmation_email(email_data)
+
                 # PDF preparation file for confirmation of service request
-                information_to_include = get_data_for_service_confirmation(str(new_service.serviceRequestNumber))
-                pdf_file_name = str(new_service.serviceRequestNumber) + '.pdf'
-                pdf_file = create_pdf(request, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name)
-                '''
-                fs = FileSystemStorage(drylab_config.OUTPUT_DIR_TEMPLATE)
-                with fs.open(pdf_file_name) as pdf:
-                    response = HttpResponse(pdf, content_type='application/pdf')
-                    response['Content-Disposition'] = 'inline;filename=' + pdf_file_name
-                return response
-                '''
-                pdf_url = pdf_file.replace(settings.BASE_DIR,'')
-                download_file = '<a href="'+ pdf_url + '">Download the service request confirmation file</a>'
-                return render(request,'django_utils/info_page.html',{'content':['Your service request has been successfully recorded.',
-                                'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
-                                'Keep this number safe for refering your request', download_file ,
-                                'You will be contacted shortly.']})
+                #absolute_url = request.build_absolute_uri()
+                pdf_file = create_service_pdf_file(service_request_number, request.build_absolute_uri())
+                confirmation_result = {}
+                confirmation_result['download_file'] = pdf_file
+                confirmation_result['text'] = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), drylab_config.CONFIRMATION_TEXT_MESSAGE))
+                return render(request,'iSkyLIMS_drylab/RequestForm.html',{'confirmation_result':confirmation_result})
 
         else:
             form = ServiceRequestFormExternalSequencing()
             form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
-            return render(request, 'iSkyLIMS_drylab/RequestForm.html' , { 'form' : form ,  'request_external': 'request_external' })
+            request_type['type'] = 'External Sequencing'
+            return render(request, 'iSkyLIMS_drylab/RequestForm.html' , { 'form' : form ,  'request_external': 'request_external','request_type': request_type })
 
 
-
+'''
 @login_required
 def service_request_external_sequencing(request):
     if request.method == "POST":
@@ -229,13 +185,13 @@ def service_request_external_sequencing(request):
             information_to_include = get_data_for_service_confirmation(str(new_service.serviceRequestNumber))
             pdf_file_name = str(new_service.serviceRequestNumber) + '.pdf'
             pdf_file = create_pdf(request, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name)
-            '''
+
             fs = FileSystemStorage(drylab_config.OUTPUT_DIR_TEMPLATE)
             with fs.open(pdf_file_name) as pdf:
                 response = HttpResponse(pdf, content_type='application/pdf')
                 response['Content-Disposition'] = 'inline;filename=' + pdf_file_name
             return response
-            '''
+
             pdf_url = pdf_file.replace(settings.BASE_DIR,'')
             download_file = '<a href="'+ pdf_url + '">Download the service request confirmation file</a>'
             return render(request,'django_utils/info_page.html',{'content':['Your service request has been successfully recorded.',
@@ -249,6 +205,7 @@ def service_request_external_sequencing(request):
     form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
     return render(request, 'iSkyLIMS_drylab/RequestForm.html' , { 'form' : form })
 
+'''
 
 @login_required
 def counseling_request(request):

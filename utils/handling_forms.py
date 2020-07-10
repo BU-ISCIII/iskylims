@@ -62,7 +62,6 @@ def save_service_request_form(form, user, unit):
 	# Save the new instance
 	new_service.save()
 	# Save the many-to-many data for the form
-	import pdb; pdb.set_trace()
 	form.save_m2m()
 	return new_service
 
@@ -79,6 +78,7 @@ def store_projects_from_form(project_list, service):
 	Return:
 		new_service		# recorded instance of the form
 	'''
+
 	project_names = get_user_project_name(project_list)
 	created_projects = []
 	for i in range(len(project_list)):
