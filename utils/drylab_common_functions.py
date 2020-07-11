@@ -8,6 +8,21 @@ from django.core.mail import send_mail
 from django.conf import settings
 import re
 
+
+def check_service_id_exists(service_id):
+    '''
+    Description:
+        The function check if service id exists
+    Input:
+        service_id      # id of the service
+    Return:
+        True if service id exists
+    '''
+    if Service.objects.filter(pk=service_id).exists():
+        return True
+    else:
+        return False
+
 def create_pdf(absolute_url,information, template_file, pdf_file_name):
     from weasyprint import HTML, CSS
     from django.template.loader import get_template
@@ -104,81 +119,99 @@ def create_service_pdf_file (service_request_number, absolute_url):
 
 
 def get_service_information (service_id):
-    service= Service.objects.get(pk=service_id)
+    service_obj = Service.objects.get(pk=service_id)
     display_service_details = {}
-    text_for_dates = ['Service Date Creation', 'Approval Service Date', 'Rejected Service Date']
-    service_dates = []
-    display_service_details['service_name'] = service.serviceRequestNumber
-    # get the list of projects
-    projects_in_service = {}
-    projects_class = service.serviceProjectNames.all()
-    for project in projects_class:
-        project_id = project.id
-        projects_in_service[project_id]=project.get_requested_project_name()
-    display_service_details['projects'] = projects_in_service
-    display_service_details['user_name'] = service.serviceUserId.username
-    display_service_details['file'] = os.path.join(settings.MEDIA_URL,str(service.serviceFile))
-    display_service_details['state'] = service.serviceStatus
-    display_service_details['service_notes'] = service.serviceNotes
-    dates_for_services = service.get_service_dates()
-    for i in range(len(dates_for_services)):
-        service_dates.append([text_for_dates[i],dates_for_services[i]])
-    display_service_details['service_dates'] = service_dates
-    if service.serviceStatus != 'approved'and service.serviceStatus != 'recorded':
-        # get the proposal for the delivery date
 
-        resolution_folder = Resolution.objects.filter(resolutionServiceID = service).last().resolutionFullNumber
-        display_service_details['resolution_folder'] = resolution_folder
-        resolution_estimated_date = Resolution.objects.filter(resolutionServiceID = service).last().resolutionEstimatedDate
-        if resolution_estimated_date is None:
-            resolution_estimated_date = "Not defined yet"
-        display_service_details['estimated_delivery_date'] = resolution_estimated_date
+    #text_for_dates = ['Service Date Creation', 'Approval Service Date', 'Rejected Service Date']
+    service_dates = []
+    display_service_details['service_name'] = service_obj.get_service_request_number()
+    # get the list of projects
+    #projects_in_service = {}
+    if RequestedProjectInServices.objects.filter(projectService = service_obj).exists():
+        projects_in_service = RequestedProjectInServices.objects.filter(projectService = service_obj)
+        display_service_details['projects'] = []
+        for project in projects_in_service:
+            display_service_details['projects'].append([project.get_requested_external_project_id(), project.get_requested_project_name()])
+
+    #projects_class = service.serviceProjectNames.all()
+    # for project in projects_class:
+    #     project_id = project.id
+    #     projects_in_service[project_id]=project.get_requested_project_name()
+    #display_service_details['projects'] = projects_in_service
+    display_service_details['user_name'] = service_obj.get_service_requested_user()
+    user_input_file = service_obj.get_service_file()
+    if user_input_file:
+        display_service_details['file'] = os.path.join(settings.MEDIA_URL,user_input_file)
+    display_service_details['state'] = service_obj.get_service_state()
+    display_service_details['service_notes'] = service_obj.get_service_user_notes()
+    #dates_for_services = service.get_service_dates()
+    # for i in range(len(dates_for_services)):
+    #     service_dates.append([text_for_dates[i],dates_for_services[i]])
+    display_service_details['service_dates'] = zip (drylab_config.HEADING_SERVICE_DATES, service_obj.get_service_dates() )
+    #display_service_details['service_dates'] = service_dates
+    # if display_service_details['state'] != 'approved' and display_service_details['state'] != 'recorded':
+        # get the proposal for the delivery date
+    if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
+        last_resolution = Resolution.objects.filter(resolutionServiceID = service_obj).last()
+        display_service_details['resolution_folder'] = last_resolution.get_resolution_number()
+        #display_service_details['resolution_folder'] = resolution_folder
+        resolution_estimated_date = last_resolution.get_resolution_estimated_date()
+
 
     # get all services
-    display_service_details['nodes']= service.serviceAvailableService.all()
+    display_service_details['nodes']= service_obj.serviceAvailableService.all()
     # adding actions fields
-    if service.serviceStatus != 'rejected' or service.serviceStatus != 'archived':
+    if service_obj.serviceStatus != 'rejected' or service_obj.serviceStatus != 'archived':
         display_service_details['add_resolution_action'] = service_id
-    if service.serviceStatus == 'queued':
-        resolution_id = Resolution.objects.filter(resolutionServiceID = service).last().id
+    if service_obj.serviceStatus == 'queued':
+        resolution_id = Resolution.objects.filter(resolutionServiceID = service_obj).last().id
         display_service_details['add_in_progress_action'] = resolution_id
-    if service.serviceStatus == 'in_progress':
-        resolution_id = Resolution.objects.filter(resolutionServiceID = service).last().id
+    if service_obj.serviceStatus == 'in_progress':
+        resolution_id = Resolution.objects.filter(resolutionServiceID = service_obj).last().id
         display_service_details['add_delivery_action'] = resolution_id
 
 
-    if Resolution.objects.filter(resolutionServiceID = service).exists():
-        resolution_list = Resolution.objects.filter(resolutionServiceID = service)
+    if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
+        resolution_list = Resolution.objects.filter(resolutionServiceID = service_obj)
         resolution_info =[]
         for resolution_item in resolution_list :
             resolution_info.append([resolution_item.get_resolution_information()])
         display_service_details['resolutions'] = resolution_info
     #import pdb; pdb.set_trace()
-    if Resolution.objects.filter(resolutionServiceID = service).exists():
-        resolution_list = Resolution.objects.filter(resolutionServiceID = service)
+    if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
+        resolution_list = Resolution.objects.filter(resolutionServiceID = service_obj)
         delivery_info = []
         for resolution_id in resolution_list :
             if Delivery.objects.filter(deliveryResolutionID = resolution_id).exists():
                 delivery = Delivery.objects.get(deliveryResolutionID = resolution_id)
                 delivery_info.append([delivery.get_delivery_information()])
                 display_service_details['delivery'] = delivery_info
+    
+    if service_obj.servicePipelines.all().exists():
+        display_service_details['pipelines'] = {}
+        display_service_details['pipelines']['heading'] = drylab_config.DISPLAY_NEW_DEFINED_PIPELINE
+        display_service_details['pipelines']['services'] = []
+        services_pipelines_objs = service_obj.servicePipelines.all()
+        for service_pipeline in services_pipelines_objs:
+            service_name = service_pipeline.get_pipleline_service()
+            display_service_details['pipelines']['services'].append(service_pipeline.get_pipeline_basic())
 
     return display_service_details
 
-def is_drylab_manager (request):
+def is_service_manager (request):
     '''
     Description:
-        The function will check if the logged user belongs to drylab
+        The function will check if the logged user belongs to service
         manager group
     Input:
         request # contains the session information
     Variables:
         groups # drylab manager object group
     Return:
-        Return True if the user belongs to drylab Manager, False if not
+        Return True if the user belongs to service Manager, False if not
     '''
     try:
-        groups = Group.objects.get(name = drylab_config.DRYLAB_MANAGER)
+        groups = Group.objects.get(name = drylab_config.SERVICE_MANAGER)
         if groups not in request.user.groups.all():
             return False
     except:

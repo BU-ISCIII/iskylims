@@ -1,12 +1,18 @@
 from django.conf import settings
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
+
 from iSkyLIMS_drylab import drylab_config
 from iSkyLIMS_drylab.models import *
 from iSkyLIMS_drylab.forms import *
 
 #from iSkyLIMS_wetlab.models import Projects
-from iSkyLIMS_drylab.utils.drylab_common_functions import create_service_id , increment_service_number
-from iSkyLIMS_wetlab.utils.api.wetlab_api import *
+from iSkyLIMS_drylab.utils.drylab_common_functions import *
+#### API from Wetlab ######
+try :
+	from iSkyLIMS_wetlab.utils.api.wetlab_api import *
+	wetlab_api_available = True
+except:
+	wetlab_api_available = False
 
 def prepare_form_data_internal_sequencing (request_user):
 	'''
@@ -29,13 +35,35 @@ def prepare_form_data_internal_sequencing (request_user):
 		if User.objects.filter(username__exact = user).exists():
 			sharing_list.append(User.objects.get(username__exact = user).id)
 	sharing_list.append(request_user.id)
-
-	form.fields['serviceProjects'].choices = get_user_projects(sharing_list)
-	form.fields['serviceProjects'].label='User Projects'
+	if wetlab_api_available :
+		form.fields['serviceProjects'].choices = get_user_projects(sharing_list)
+		form.fields['serviceProjects'].label='User Projects'
 
 	return form
 
+def prepare_form_data_add_resolution(service_id):
+	'''
+	Description:
+		The function collect additional info and then save the form
+	Input:
+		service_id		# id of the service
+	Return:
+	 	form_data
+	'''
+	form_data = {}
+	service_obj= Service.objects.get(pk__exact = service_id)
+	form_data['service_number'] = service_obj.get_service_request_number()
 
+	if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
+		existing_resolution = Resolution.objects.filter(resolutionServiceID = service_obj).last()
+		form_data['resolutionFullNumber'] = existing_resolution.get_resolution_number()
+	users = User.objects.filter( groups__name = drylab_config.SERVICE_MANAGER)
+	form_data['assigned_user'] =[]
+
+	for user in users:
+		form_data['assigned_user'].append([user.pk,user.username])
+
+	return form_data
 
 def save_service_request_form(form, user, unit):
 	'''

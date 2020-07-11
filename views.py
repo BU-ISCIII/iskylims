@@ -168,45 +168,6 @@ def service_request(request, serviceRequestType):
             return render(request, 'iSkyLIMS_drylab/RequestForm.html' , { 'form' : form ,  'request_external': 'request_external','request_type': request_type })
 
 
-'''
-@login_required
-def service_request_external_sequencing(request):
-    if request.method == "POST":
-        form = ServiceRequestFormExternalSequencing(data=request.POST,files=request.FILES)
-        if form.is_valid():
-            new_service = form.save(commit=False)
-            new_service.serviceStatus = "recorded"
-            new_service.serviceUserId = request.user
-            new_service.serviceRequestInt = increment_service_number(request.user)
-            new_service.serviceRequestNumber = create_service_id(new_service.serviceRequestInt,request.user)
-            new_service.save()
-            form.save_m2m()
-            # PDF preparation file for confirmation of service request
-            information_to_include = get_data_for_service_confirmation(str(new_service.serviceRequestNumber))
-            pdf_file_name = str(new_service.serviceRequestNumber) + '.pdf'
-            pdf_file = create_pdf(request, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name)
-
-            fs = FileSystemStorage(drylab_config.OUTPUT_DIR_TEMPLATE)
-            with fs.open(pdf_file_name) as pdf:
-                response = HttpResponse(pdf, content_type='application/pdf')
-                response['Content-Disposition'] = 'inline;filename=' + pdf_file_name
-            return response
-
-            pdf_url = pdf_file.replace(settings.BASE_DIR,'')
-            download_file = '<a href="'+ pdf_url + '">Download the service request confirmation file</a>'
-            return render(request,'django_utils/info_page.html',{'content':['Your service request has been successfully recorded.',
-                                'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
-                                'Keep this number safe for refering your request', download_file ,
-                                'You will be contacted shortly.']})
-
-    else:
-        form = ServiceRequestFormExternalSequencing()
-
-    form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
-    return render(request, 'iSkyLIMS_drylab/RequestForm.html' , { 'form' : form })
-
-'''
-
 @login_required
 def counseling_request(request):
     if request.method == "POST":
@@ -230,13 +191,7 @@ def counseling_request(request):
             information_to_include = get_data_for_service_confirmation(str(new_service.serviceRequestNumber))
             pdf_file_name = str(new_service.serviceRequestNumber) + '.pdf'
             pdf_file = create_pdf(request, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name)
-            '''
-            fs = FileSystemStorage(drylab_config.OUTPUT_DIR_TEMPLATE)
-            with fs.open(pdf_file_name) as pdf:
-                response = HttpResponse(pdf, content_type='application/pdf')
-                response['Content-Disposition'] = 'inline;filename=' + pdf_file_name
-            return response
-            '''
+
             pdf_url = pdf_file.replace(settings.BASE_DIR,'')
             download_file = '<a href="'+ pdf_url + '">Download the service request confirmation file</a>'
             return render(request,'django_utils/info_page.html',{'content':['Your service request has been successfully recorded.',
@@ -297,88 +252,18 @@ def infrastructure_request(request):
     #form.helper[1].update_atrributes(hidden="true")
     return render(request, 'iSkyLIMS_drylab/RequestForm.html' , { 'form' : form , 'infrastructure_request': 'infrastructure_request'})
 
-'''
-def get_service_information (service_id):
-    service= Service.objects.get(pk=service_id)
-    display_service_details = {}
-    text_for_dates = ['Service Date Creation', 'Approval Service Date', 'Rejected Service Date']
-    service_dates = []
-    display_service_details['service_name'] = service.serviceRequestNumber
-    # get the list of projects
-    projects_in_service = {}
-    projects_class = service.serviceProjectNames.all()
-    for project in projects_class:
-        project_id = project.id
-        projects_in_service[project_id]=project.get_project_name()
-    display_service_details['projects'] = projects_in_service
-    display_service_details['user_name'] = service.serviceUserId.username
-    display_service_details['file'] = os.path.join(settings.MEDIA_URL,str(service.serviceFile))
-    display_service_details['state'] = service.serviceStatus
-    display_service_details['service_notes'] = service.serviceNotes
-    dates_for_services = service.get_service_dates()
-    for i in range(len(dates_for_services)):
-        service_dates.append([text_for_dates[i],dates_for_services[i]])
-    display_service_details['service_dates'] = service_dates
-    if service.serviceStatus != 'approved'and service.serviceStatus != 'recorded':
-        # get the proposal for the delivery date
-
-        resolution_folder = Resolution.objects.filter(resolutionServiceID = service).last().resolutionFullNumber
-        display_service_details['resolution_folder'] = resolution_folder
-        resolution_estimated_date = Resolution.objects.filter(resolutionServiceID = service).last().resolutionEstimatedDate
-        if resolution_estimated_date is None:
-            resolution_estimated_date = "Not defined yet"
-        display_service_details['estimated_delivery_date'] = resolution_estimated_date
-
-    # get all services
-    display_service_details['nodes']= service.serviceAvailableService.all()
-    # adding actions fields
-    if service.serviceStatus != 'rejected' or service.serviceStatus != 'archived':
-        display_service_details['add_resolution_action'] = service_id
-    if service.serviceStatus == 'queued':
-        resolution_id = Resolution.objects.filter(resolutionServiceID = service).last().id
-        display_service_details['add_in_progress_action'] = resolution_id
-    if service.serviceStatus == 'in_progress':
-        resolution_id = Resolution.objects.filter(resolutionServiceID = service).last().id
-        display_service_details['add_delivery_action'] = resolution_id
-
-
-    if Resolution.objects.filter(resolutionServiceID = service).exists():
-        resolution_list = Resolution.objects.filter(resolutionServiceID = service)
-        resolution_info =[]
-        for resolution_item in resolution_list :
-            resolution_info.append([resolution_item.get_resolution_information()])
-        display_service_details['resolutions'] = resolution_info
-
-    if Resolution.objects.filter(resolutionServiceID = service).exists():
-        resolution_list = Resolution.objects.filter(resolutionServiceID = service)
-        delivery_info = []
-        for resolution_id in resolution_list :
-            if Delivery.objects.filter(deliveryResolutionID = resolution_id).exists():
-                delivery = Delivery.objects.get(deliveryResolutionID = resolution_id)
-                delivery_info.append([delivery.get_delivery_information()])
-                display_service_details['delivery'] = delivery_info
-
-    return display_service_details
-'''
 
 @login_required
 def display_service (request, service_id):
     if request.user.is_authenticated:
-        try:
-            groups = Group.objects.get(name='Admin_iSkyLIMS')
-            if groups not in request.user.groups.all():
-                return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
-        except:
-            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+        if not is_service_manager(request):
+            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_USER_NOT_ALLOWED })
     else:
         #redirect to login webpage
         return redirect ('/accounts/login')
     if Service.objects.filter(pk=service_id).exists():
-
         # displays the service information with the latest changes done using the forms
         display_service_details = get_service_information(service_id)
-
-
         return render (request,'iSkyLIMS_drylab/display_service.html',{'display_service': display_service_details})
     else:
         return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The service that you are trying to get does not exist ','Contact with your administrator .']})
@@ -387,12 +272,8 @@ def display_service (request, service_id):
 @login_required
 def search_service (request):
     if request.user.is_authenticated:
-        try:
-            groups = Group.objects.get(name='Admin_iSkyLIMS')
-            if groups not in request.user.groups.all():
-                return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
-        except:
-            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+        if not is_service_manager(request):
+            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_USER_NOT_ALLOWED })
     else:
         #redirect to login webpage
         return redirect ('/accounts/login')
@@ -514,12 +395,8 @@ def search_service (request):
 @login_required
 def pending_services (request):
     if request.user.is_authenticated:
-        try:
-            groups = Group.objects.get(name='Admin_iSkyLIMS')
-            if groups not in request.user.groups.all():
-                return render (request,'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_USER_NOT_ALLOWED})
-        except:
-            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_USER_NOT_ALLOWED})
+        if not is_service_manager(request):
+            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_USER_NOT_ALLOWED })
     else:
         #redirect to login webpage
         return redirect ('/accounts/login')
@@ -557,12 +434,8 @@ def pending_services (request):
 @login_required
 def add_resolution (request, service_id):
     if request.user.is_authenticated:
-        try:
-            groups = Group.objects.get(name='Admin_iSkyLIMS')
-            if groups not in request.user.groups.all():
-                return render (request,'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_USER_NOT_ALLOWED})
-        except:
-            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_USER_NOT_ALLOWED})
+        if not is_service_manager(request):
+            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_USER_NOT_ALLOWED })
     else:
         #redirect to login webpage
         return redirect ('/accounts/login')
@@ -652,33 +525,23 @@ def add_resolution (request, service_id):
 
             return render(request,'django_utils/info_page.html',{'content':['Your resolution proposal has been successfully recorded with Resolution Number.', resolution_number]})
     else:
-        if Service.objects.filter(pk=service_id).exists():
-            service_id= Service.objects.get(pk=service_id)
-            service_number = service_id.serviceRequestNumber
-
-            if Resolution.objects.filter(resolutionServiceID__exact = service_id).exists():
-                existing_resolution = Resolution.objects.filter(resolutionServiceID__exact = service_id).last()
-                resolutionFullNumber = existing_resolution.resolutionFullNumber
-            else :
-                resolutionFullNumber =''
-            form = AddResolutionService(initial= {'resolutionFullNumber': resolutionFullNumber})
-
-
-            return render(request, 'iSkyLIMS_drylab/addResolution.html' , { 'form' : form ,'prueba':'pepe'})
-'''
-def open_samba_connection():
-    ## open samba connection
-    try:
-
-        conn=SMBConnection(drylab_config.SAMBA_USER_ID, drylab_config.SAMBA_USER_PASSWORD, drylab_config.SAMBA_SHARED_FOLDER_NAME,
-                            drylab_config.SAMBA_REMOTE_SERVER_NAME, use_ntlm_v2=drylab_config.SAMBA_NTLM_USED, domain = drylab_config.SAMBA_DOMAIN)
-        conn.connect(drylab_config.SAMBA_IP_SERVER, int(drylab_config.SAMBA_PORT_SERVER))
-    except:
-        return False
+        if check_service_id_exists(service_id):
+            form_data = prepare_form_data_add_resolution(service_id)
+            # service_id= Service.objects.get(pk=service_id)
+            # service_number = service_id.serviceRequestNumber
+            #
+            # if Resolution.objects.filter(resolutionServiceID__exact = service_id).exists():
+            #     existing_resolution = Resolution.objects.filter(resolutionServiceID__exact = service_id).last()
+            #     resolutionFullNumber = existing_resolution.resolutionFullNumber
+            # else :
+            #     resolutionFullNumber =''
+            # form = AddResolutionService(initial= {'resolutionFullNumber': resolutionFullNumber})
 
 
-    return conn
-'''
+            return render(request, 'iSkyLIMS_drylab/addResolution.html' , { 'form_data' : form_data})
+        else:
+            return render (request, 'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_SERVICE_ID_NOT_FOUND})
+
 
 def get_data_for_resolution(service_requested, resolution_number ):
     information, user, resolution_data = {}, {}, {}
@@ -869,7 +732,7 @@ def create_service_structure (conn, service_request_file, service_file_uploaded,
 def add_in_progress (request, resolution_id):
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(name='Admin_iSkyLIMS')
+            groups = Group.objects.get(name = drylab_config.SERVICE_MANAGER)
             if groups not in request.user.groups.all():
                 return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
         except:
@@ -905,7 +768,7 @@ def add_in_progress (request, resolution_id):
 def add_delivery (request , resolution_id):
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(name='Admin_iSkyLIMS')
+            groups = Group.objects.get(name = drylab_config.SERVICE_MANAGER)
             if groups not in request.user.groups.all():
                 return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
         except:
@@ -952,7 +815,7 @@ def add_delivery (request , resolution_id):
 def stats_by_date_user (request):
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(name='Admin_iSkyLIMS')
+            groups = Group.objects.get(name = drylab_config.SERVICE_MANAGER)
             if groups not in request.user.groups.all():
                 return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
         except:
@@ -1105,7 +968,7 @@ def stats_by_date_user (request):
 def stats_by_services_request (request):
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(name='Admin_iSkyLIMS')
+            groups = Group.objects.get(name = drylab_config.SERVICE_MANAGER)
             if groups not in request.user.groups.all():
                 return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
         except:
@@ -1337,7 +1200,7 @@ def stats_by_services_request (request):
 def stats_by_samples_processed (request):
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(name='Admin_iSkyLIMS')
+            groups = Group.objects.get(name = drylab_config.SERVICE_MANAGER)
             if groups not in request.user.groups.all():
                 return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
         except:
@@ -1363,7 +1226,7 @@ def stats_by_samples_processed (request):
 def stats_time_delivery (request):
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(name='Admin_iSkyLIMS')
+            groups = Group.objects.get(name = drylab_config.SERVICE_MANAGER)
             if groups not in request.user.groups.all():
                 return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
         except:
@@ -1520,7 +1383,7 @@ def configuration_test (request):
 @login_required
 def define_pipeline_service(request):
     if request.user.is_authenticated:
-        if not is_drylab_manager(request):
+        if not is_service_manager(request):
             return render (request,'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_USER_NOT_ALLOWED })
     else:
         return redirect ('/accounts/login')
@@ -1545,7 +1408,7 @@ def define_pipeline_service(request):
 @login_required
 def manage_pipelines(request):
     if request.user.is_authenticated:
-        if not is_drylab_manager(request):
+        if not is_service_manager(request):
             return render (request,'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_USER_NOT_ALLOWED })
     else:
         #redirect to login webpage
@@ -1556,7 +1419,7 @@ def manage_pipelines(request):
 @login_required
 def detail_pipeline(request,pipeline_id):
     if request.user.is_authenticated:
-        if not is_drylab_manager(request):
+        if not is_service_manager(request):
             return render (request,'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_USER_NOT_ALLOWED })
     else:
         #redirect to login webpage
