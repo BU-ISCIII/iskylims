@@ -136,6 +136,9 @@ class Pipelines(models.Model):
 	def get_external_request(self):
 		return '%s' %(self.externalRequest)
 
+	def get_pipleline_service(self):
+		return  '%s' %(self.availableService.get_service_description())
+
 	def get_pipleline_service_obj(self):
 		return self.availableService
 
@@ -316,8 +319,21 @@ class Service(models.Model):
 	def get_service_creation_time (self):
 		return self.serviceCreatedOnDate.strftime("%d %B, %Y")
 
+	def get_service_file(self):
+		if self.serviceFile != None :
+			return '%s' %(self.serviceFile)
+		return None
 	def get_service_request_number(self):
 		return '%s' %(self.serviceRequestNumber)
+
+	def get_service_requested_user(self):
+		return '%s' %(self.serviceUserId.username)
+
+	def get_service_state(self):
+		return '%s' %(self.serviceStatus)
+
+	def get_service_user_notes(self):
+		return '%s' %(self.serviceNotes)
 
 	def get_time_to_delivery (self):
 		if self.serviceOnDeliveredDate == self.serviceCreatedOnDate :
@@ -354,6 +370,9 @@ class RequestedProjectInServices (models.Model):
 
 	def get_requested_project_name (self):
 		return '%s' %(self.externalProjectName)
+
+	def get_requested_external_project_id (self):
+		return '%s' %(self.externalProjectKey)
 
 	def get_requested_project_id (self):
 		return '%s' %(self.pk)
@@ -412,7 +431,15 @@ class Resolution(models.Model):
 		resolution_info.append(self.resolutionNotes)
 
 		return resolution_info
+	def get_service_request_number(self):
+		return '%s' %self.resolutionNumber
 
+	def get_resolution_number(self):
+		return '%s' %(self.resolutionFullNumber)
+	def get_resolution_estimated_date(self):
+		if self.resolutionEstimatedDate != None:
+			return '%s' %(self.resolutionEstimatedDate)
+		return 'Not yet defined'
 
 class Delivery(models.Model):
 	deliveryResolutionID=models.ForeignKey(Resolution ,on_delete=models.CASCADE )

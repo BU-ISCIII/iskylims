@@ -7,6 +7,7 @@ from crispy_forms.layout import Layout, Div, Submit, HTML, Button, Row, Field
 
 from mptt.forms import TreeNodeMultipleChoiceField
 from iSkyLIMS_drylab.models import Service, Resolution , Delivery
+from django.contrib.auth.models import User
 #from django.contrib.auth.forms import UserCreationForm
 
 
@@ -173,7 +174,7 @@ class ServiceRequestForm_extended(ServiceRequestFormExternalSequencing):
 class DateInput(forms.DateInput):
     input_type = 'date'
 
-
+'''
 class AddResolutionService(forms.ModelForm):
 
 	class Meta:
@@ -242,7 +243,7 @@ class AddResolutionService(forms.ModelForm):
 					css_class = "panel panel-default"
 					),
 				)
-
+'''
 class AddDeliveryService (forms.ModelForm) :
 
 	class Meta:

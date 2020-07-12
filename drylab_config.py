@@ -10,7 +10,7 @@ except:
     EMAIL_USER_CONFIGURED = False
 
 
-DRYLAB_MANAGER = 'ServiceManager'
+SERVICE_MANAGER = 'ServiceManager'
 
 INTERNAL_SEQUENCING_UNIT = "GENOMIC_SEQ_UNIT"
 
@@ -42,21 +42,29 @@ CONFIRMATION_TEXT_MESSAGE = ['Your service request has been successfully recorde
                     'The sequence number assigned for your request is: SERVICE_NUMBER', 'Keep this number safe for refering your request',
                     'You will be contacted shortly.']
 
+
+################# ERROR  #########################
 ERROR_USER_NOT_ALLOWED = ['You do not have the enough privileges to see this page ','Contact with your administrator .']
 ERROR_UNABLE_TO_RECORD_YOUR_SERVICE = ['Your service request cannot be recorded.', 'Check that all information is provided correctly.',
                                 'If problem persist, contact your administrator']
 
+ERROR_SERVICE_ID_NOT_FOUND = ['Service ID not found']
+'''
 ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS = ['Unsuccessful configuration settings for Samba connection']
 ERROR_UNABLE_TO_SAVE_SAMBA_CONFIGURATION_SETTINGS = ['Unable to save the Samba configuration file ', 'check if folder iSkyLIMS_wetlab has write permision for apache user']
 ERROR_UNABLE_TO_SAVE_EMAIL_CONFIGURATION_SETTINGS = ['Unable to save the email configuration file ', 'check if folder iSkyLIMS_wetlab has write permision for apache user']
-
+'''
 ERROR_PIPELINE_ALREADY_EXISTS = ['Pipeline name and version is already defined']
+
+
 
 HEADING_ADDITIONAL_PIPELINE_PARAMETERS = ['Additional parameter name', 'Additional Parameter Value']
 
-
+HEADING_SERVICE_DATES = ['Service Date Creation', 'Approval Service Date', 'Rejected Service Date']
 
 HEADING_MANAGE_PIPELINES = ['Service', 'User' ,'Pipeline Name', 'Pipeline Version', 'Date', 'Default', 'In use', 'id']
+
+DATE_NOT_YET_DEFINED = 'Not Yet Defined'
 
 DISPLAY_NEW_DEFINED_PIPELINE = ['Service', 'Pipeline Name' , 'Pipeline Version']
 DISPLAY_MULTYPLE_DEFINED_PIPELINE = ['Service', 'User', 'Pipeline Name' , 'Pipeline Version', 'Date', 'Default', 'In Use']
