@@ -75,14 +75,15 @@ def get_detail_pipeline_data(pipeline_id):
         detail_pipelines_data['pipeline_basic'] = pipeline_obj.get_pipeline_basic()
         detail_pipelines_data['pipeline_basic_heading'] = drylab_config.DISPLAY_DETAIL_PIPELINE_BASIC_INFO
         detail_pipelines_data['pipeline_additional_data'] = zip( drylab_config.DISPLAY_DETAIL_PIPELINE_ADDITIONAL_INFO, pipeline_obj.get_pipeline_additional())
-        detail_pipelines_data['actions_heading'] = drylab_config.HEADING_ACTIONS_PIPELINES + drylab_config.HEADING_ACTIONS_PARAMETERS
-        pipeline_obj = get_pipeline_obj_from_id (pipeline_id)
-        if ActionPipeline.objects.filter(pipeline = pipeline_obj).exists():
-            action_objs = ActionPipeline.objects.filter(pipeline = pipeline_obj).order_by('order')
-            detail_pipelines_data['actions'] = []
-            for action in action_objs :
-                parameter_obj = ParameterActionPipeline.objects.get(actionPipeline = action)
-                detail_pipelines_data['actions'].append(action.get_action_pipeline_data() + parameter_obj.get_all_action_parameters())
+
+        #pipeline_obj = get_pipeline_obj_from_id (pipeline_id)
+        if ParameterPipeline.objects.filter(parameterPipeline = pipeline_obj).exists():
+            parameter_objs = ParameterPipeline.objects.filter(parameterPipeline = pipeline_obj)
+            detail_pipelines_data['parameter_heading'] = drylab_config.HEADING_ADDITIONAL_PIPELINE_PARAMETERS
+            detail_pipelines_data['parameters'] = []
+            for parameter_obj in parameter_objs :
+
+                detail_pipelines_data['parameters'].append([parameter_obj.get_pipeline_parameter_name(), parameter_obj.get_pipeline_parameter_value()])
 
     return detail_pipelines_data
 
@@ -198,14 +199,17 @@ def services_allow_external_data(service_obj, project_requested_objs):
         services_added
     '''
     services_added = []
-    #
+
     all_services = service_obj.get_child_services()
     for service_id, service_name in all_services:
         if Pipelines.objects.filter(availableService__pk__exact = service_id, default = True).exists():
             pipeline_obj = Pipelines.objects.filter(availableService__pk__exact = service_id, default = True).last()
+            # add
+            service_obj.servicePipelines.add(pipeline_obj)
             if pipeline_obj.get_external_request() == 'True':
                 preparation_data = {}
                 preparation_data['pipeline'] = pipeline_obj
+                preparation_data['serviceRequestNumber']=  service_obj.get_service_request_number()
                 preparation_data['pipelineName'] = pipeline_obj.get_pipeline_name()
                 preparation_data['pipelineVersion'] = pipeline_obj.get_pipeline_version()
                 preparation_data['availableService'] = AvailableService.objects.get(pk__exact = service_id)
@@ -227,6 +231,7 @@ def services_allow_external_data(service_obj, project_requested_objs):
                     preparation_data['pendingToSetFolder'] = False
                     preparation_data['folderData'] = ''
                     services_added.append(PreparationPipelineJobs.objects.create_preparation_pipeline_job(preparation_data))
+
     return services_added
 
 def set_default_service_pipeline(new_pipeline):

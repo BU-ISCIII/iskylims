@@ -1676,45 +1676,25 @@ def configuration_email(request):
     return render(request, 'iSkyLIMS_drylab/configurationEmail.html',{'email_conf_data': email_conf_data})
 
 
-@login_required
-def configuration_samba(request):
-    if request.user.username != 'admin':
-        return redirect('')
-    samba_conf_data = get_samba_data_from_file(__package__)
-    if request.method == 'POST' and (request.POST['action']=='sambaconfiguration'):
-        # reload configuration samba settings
-        samba_user_field ={}
-        for field in drylab_config.SAMBA_CONFIGURATION_FIELDS:
-            samba_user_field[field] = request.POST[field]
-        if not create_samba_conf_file (samba_user_field, __package__) :
-            error_message = drylab_config.ERROR_UNABLE_TO_SAVE_SAMBA_CONFIGURATION_SETTINGS
-            return render(request, 'iSkyLIMS_drylab/configurationSamba.html',{'samba_conf_data':samba_user_field, 'error_message': error_message} )
-        import importlib
-        importlib.reload(drylab_config)
-        try:
-            open_samba_connection()
-            return render(request, 'iSkyLIMS_drylab/configurationSamba.html',{'succesful_settings':True})
-        except:
-            error_message = drylab_config.ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS
-            return render(request, 'iSkyLIMS_drylab/configurationSamba.html',{'samba_conf_data':samba_user_field, 'error_message': error_message} )
-    else:
-        samba_conf_data = get_samba_data_from_file(__package__)
-        return render(request, 'iSkyLIMS_drylab/configurationSamba.html',{'samba_conf_data': samba_conf_data})
 
 @login_required
 def service_request(request, serviceRequestType):
     request_type = {}
     if serviceRequestType == 'internal_sequencing':
         if request.method == "POST":
-            from django.http import QueryDict
             if 'serviceProjects' in request.POST:
-                project_list = request.POST.getlist('serviceProjects')
-                data_dict = request.POST.dict()
-                dummy_value = data_dict.pop('serviceProjects', None)
+                from django.http import QueryDict
+                #project_list = data.pop('serviceProjects', None)
+                #data_dict = request.POST.dict()
                 data = QueryDict('', mutable=True)
-                data.update(data_dict)
-            #project_list = data.pop('serviceProjects', None)
-            form = ServiceRequestFormInternalSequencing(data=data,files=request.FILES)
+                data.update(request.POST)
+                project_list = request.POST.getlist('serviceProjects')
+                #data_dict['serviceAvailableService'] = request.POST.getlist('serviceAvailableService')
+                dummy_value = data.pop('serviceProjects', None)
+            else:
+                data=request.POST
+            #import pdb; pdb.set_trace()
+            form = ServiceRequestFormInternalSequencing(data = data, files = request.FILES)
             if form.is_valid():
                 new_service = save_service_request_form(form, request.user, drylab_config.INTERNAL_SEQUENCING_UNIT)
                 # # Create but dont save for following modif

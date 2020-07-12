@@ -37,7 +37,7 @@ class JobStatesManager(admin.ModelAdmin):
 	list_display = ['jobStateName']
 
 class PipelineExternalDataJobsManager(admin.ModelAdmin):
-	list_display = ['pipeline', 'availableService', 'jobState', 'lastRequestedTime', 'pipelineName', 'pipelineVersion']
+	list_display = ['pipeline', 'availableService', 'serviceRequestNumber', 'folderData', 'jobState', 'lastRequestedTime', 'pipelineName', 'pipelineVersion']
 
 admin.site.register(FileExt,FileExtAdmin)
 admin.site.register(Platform,PlatformAdmin)

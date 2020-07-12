@@ -62,6 +62,7 @@ def save_service_request_form(form, user, unit):
 	# Save the new instance
 	new_service.save()
 	# Save the many-to-many data for the form
+	import pdb; pdb.set_trace()
 	form.save_m2m()
 	return new_service
 

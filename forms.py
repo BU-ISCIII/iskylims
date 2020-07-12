@@ -17,7 +17,7 @@ class ServiceRequestFormInternalSequencing(forms.ModelForm ):
         ##Addition of serviceProjectNames for
         # implementation of drop down menu to choose a project name of a list of projects
         # belonging to the logged-in user in the service request form
-
+        exclude = ['serviceProjectNames', 'serviceProjects']
         fields = ['servicePlatform','serviceRunSpecs','serviceFileExt','serviceAvailableService','serviceFile','serviceNotes']
         #fields = ['serviceProjectNames','servicePlatform','serviceRunSpecs','serviceFileExt','serviceAvailableService','serviceFile','serviceNotes']
         field_classes = {

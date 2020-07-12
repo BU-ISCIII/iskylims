@@ -87,6 +87,107 @@ class AvailableService(MPTTModel):
 		verbose_name = ("AvailableService")
 		verbose_name_plural = ("AvailableServices")
 
+
+class PipelinesManager (models.Manager):
+	def create_pipeline(self, data):
+		availableService = AvailableService.objects.get(pk__exact = data['availableService_id'])
+
+		new_pipeline = self.create(availableService = availableService, userName = data['userName'],
+				pipelineName = data['pipelineName'], pipelineInUse = True,
+				pipelineVersion	= data['pipelineVersion'],
+				externalRequest = data['externalRequest'], useRunFolder = data['useRunFolder'])
+		return new_pipeline
+
+class Pipelines(models.Model):
+	availableService = models.ForeignKey(
+				AvailableService,
+				on_delete = models.CASCADE)
+	userName = models.ForeignKey(
+                User,
+                on_delete=models.CASCADE)
+	pipelineName = models.CharField(max_length = 50)
+	pipelineVersion = models.CharField(max_length = 10)
+	useRunFolder = models.NullBooleanField(default = True, null = True)
+	externalRequest = models.BooleanField(default = True)
+	default = models.BooleanField(default = False)
+	pipelineInUse = models.BooleanField(default = True)
+	generated_at = models.DateTimeField(auto_now_add = True)
+
+	def __str__ (self):
+		return '%s_%s' %(self.pipelineName, self.pipelineVersion)
+
+	'''
+	def get_all_pipeline_data(self):
+		data = []
+		data.append(self.availableService.get_service_description())
+		data.append(self.userName.username)
+		data.append(self.pipelineName)
+		data.append(self.pipelineVersion)
+		data.append(self.generated_at.strftime("%B %d, %Y"))
+		data.append(self.default)
+		data.append(self.pipelineInUse)
+		return data
+	'''
+
+
+	def get_pipeline_name (self):
+		return '%s' %(self.pipelineName)
+
+	def get_external_request(self):
+		return '%s' %(self.externalRequest)
+
+	def get_pipleline_service_obj(self):
+		return self.availableService
+
+	def get_pipeline_version(self):
+		return '%s' %(self.pipelineVersion)
+
+	def get_pipeline_additional(self):
+		data = []
+		data.append(self.userName.username)
+		data.append(self.generated_at.strftime("%B %d, %Y"))
+
+		data.append(self.default)
+		data.append(self.pipelineInUse)
+		data.append(self.externalRequest)
+		return data
+
+	def get_pipeline_basic (self):
+		data = []
+		data.append(self.pipelineName)
+		data.append(self.pipelineVersion)
+		data.append(self.availableService.get_service_description())
+		return data
+
+	def get_pipeline_info(self):
+		data = []
+		data.append(self.availableService.get_service_description())
+		data.append(self.userName.username)
+		data.append(self.pipelineName)
+		data.append(self.pipelineVersion)
+		data.append(self.generated_at.strftime("%B %d, %Y"))
+		data.append(self.default)
+		data.append(self.pipelineInUse)
+		data.append(self.pk)
+		return data
+
+	def get_used_run_folder (self):
+		return '%s' %(self.useRunFolder)
+
+	def remove_default_pipeline(self):
+		self.default = False
+		self.save()
+		return self
+
+	def set_default_pipeline(self):
+		self.default = True
+		self.save()
+		return self
+
+
+	objects = PipelinesManager()
+
+
 class Service(models.Model):
 	## User requesting service:
 	# 'serviceUsername' refactored to 'serviceUserid' which shows better its true nature
@@ -109,7 +210,9 @@ class Service(models.Model):
 	serviceProjectNames = models.ManyToManyField(
 				'iSkyLIMS_wetlab.Projects',
 				verbose_name=_("User's projects"),blank=True)
-
+	servicePipelines = models.ManyToManyField(
+				Pipelines,
+				verbose_name=_("Pipeline"),blank=True)
 	serviceSeqCenter=models.CharField(_("Sequencing center"),max_length=50,blank=False,null=True)
 	serviceRequestNumber=models.CharField(max_length=80, null=True)
 	serviceRequestInt=models.CharField(max_length=80, null=True)
@@ -337,6 +440,7 @@ class RunIDFolder (models.Model):
 	def __str__ (self):
 		return '%s' %(self.run_id_Folder)
 
+
 class PipelinesManager (models.Manager):
 	def create_pipeline(self, data):
 		availableService = AvailableService.objects.get(pk__exact = data['availableService_id'])
@@ -446,6 +550,7 @@ class Pipelines(models.Model):
 	objects = PipelinesManager()
 
 
+
 class ParameterPipelineManager(models.Manager):
 	def create_pipeline_parameters(self, pipeline_parameters):
 		new_parameter_action_pipeline = self.create(parameterPipeline = pipeline_parameters['parameterPipeline'],
@@ -491,7 +596,9 @@ class PipelineExternalDataJobsManager(models.Manager):
 		jobState = JobStates.objects.get(jobStateName__exact = 'Queued')
 		new_preparation_pipeline = self.create(pipeline = preparation_data['pipeline'],
 				availableService = preparation_data['availableService'], jobState =  jobState,
-				pipelineName = preparation_data['pipelineName'],  pipelineVersion = preparation_data['pipelineVersion'])
+				pipelineName = preparation_data['pipelineName'],  pipelineVersion = preparation_data['pipelineVersion'],
+				serviceRequestNumber = preparation_data ['serviceRequestNumber'], pendingToSetFolder = preparation_data['pendingToSetFolder'],
+				folderData = preparation_data['folderData'] )
 		return new_preparation_pipeline
 
 class PipelineExternalDataJobs (models.Model):
@@ -507,7 +614,9 @@ class PipelineExternalDataJobs (models.Model):
 
 	pipelineName = models.CharField(max_length = 50)
 	pipelineVersion = models.CharField(max_length = 10)
-
+	serviceRequestNumber =  models.CharField(max_length = 20, null = True, blank = True)
+	pendingToSetFolder = models.BooleanField(default = False)
+	folderData = models.CharField(max_length = 80, null = True, blank = True)
 	generated_at = models.DateTimeField(auto_now_add = True)
 	lastRequestedTime = models.DateTimeField(auto_now_add = False, null = True, blank = True)
 
