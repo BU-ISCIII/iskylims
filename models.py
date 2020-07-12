@@ -441,6 +441,22 @@ class Resolution(models.Model):
 			return '%s' %(self.resolutionEstimatedDate)
 		return 'Not yet defined'
 
+class ResolutionParameters (models.Model):
+	resolution = models.ForeignKey(
+				Resolution,
+				on_delete = models.CASCADE)
+	resolutionParameter = models.CharField(max_length = 50)
+	resolutionParamValue = models.CharField(max_length = 80)
+	resolutionParamNotes = models.CharField(max_length = 200, null = True, blank = True)
+	generated_at = models.DateTimeField(auto_now_add = True)
+
+	def __str__(self):
+		return '%s' %(self.resolutionParameter)
+
+	def get_resolution_parameter_name(self):
+		return '%s' %(self.resolutionParameter)
+
+
 class Delivery(models.Model):
 	deliveryResolutionID=models.ForeignKey(Resolution ,on_delete=models.CASCADE )
 	#deliveryResolutionID=models.OneToOneField(Resolution ,on_delete=models.CASCADE )
@@ -543,3 +559,19 @@ class PipelineExternalDataJobs (models.Model):
 
 
 	objects = PipelineExternalDataJobsManager()
+
+class ExternalParameterData (models.Model):
+	serviceRequest = models.ForeignKey(
+					Service,
+					on_delete = models.CASCADE)
+	availableServiceID = models.CharField(max_length = 20)
+	serviceName =  models.CharField(max_length = 50)
+	parameterName = models.CharField(max_length = 50)
+	parameterValue = models.CharField(max_length = 100)
+	generated_at = models.DateTimeField(auto_now_add = True)
+
+	def __str__ (self):
+		return '%s' %(self.serviceRequest)
+
+	def get_service_request(self):
+		return '%s' %(self.serviceRequest)
