@@ -117,7 +117,7 @@ def add_molecule_protocol_parameters(form_data):
     parameters_length = len(molecule_json_data[0])
     fixed_heading_length = len(HEADING_FOR_MOLECULE_ADDING_PARAMETERS)
 
-    user_lot_commercial_kit_obj = UserLotCommercialKits.objects.get(nickName__exact = molecule_json_data[0][1])
+    user_lot_commercial_kit_obj = UserLotCommercialKits.objects.get(chipLot__exact = molecule_json_data[0][1])
     protocol_used_obj = user_lot_commercial_kit_obj.get_protocol_obj_for_kit()
 
     #protocol_used_obj = Protocols.objects.get(name__exact = molecule_json_data[0][1])
