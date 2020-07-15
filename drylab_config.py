@@ -64,6 +64,8 @@ HEADING_SERVICE_DATES = ['Service Date Creation', 'Approval Service Date', 'Reje
 
 HEADING_MANAGE_PIPELINES = ['Service', 'User' ,'Pipeline Name', 'Pipeline Version', 'Date', 'Default', 'In use', 'id']
 
+HEADING_ADDITIONAL_RESOLUTION_PARAMETERS = ['Parameter name', 'Parameter value', 'Notes']
+
 DATE_NOT_YET_DEFINED = 'Not Yet Defined'
 
 DISPLAY_NEW_DEFINED_PIPELINE = ['Service', 'Pipeline Name' , 'Pipeline Version']

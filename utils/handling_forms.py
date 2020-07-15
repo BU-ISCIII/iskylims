@@ -59,10 +59,9 @@ def prepare_form_data_add_resolution(service_id):
 		form_data['resolutionFullNumber'] = existing_resolution.get_resolution_number()
 	users = User.objects.filter( groups__name = drylab_config.SERVICE_MANAGER)
 	form_data['assigned_user'] =[]
-
 	for user in users:
 		form_data['assigned_user'].append([user.pk,user.username])
-
+	form_data['heading'] = drylab_config.HEADING_ADDITIONAL_RESOLUTION_PARAMETERS
 	return form_data
 
 def save_service_request_form(form, user, unit):

@@ -440,10 +440,11 @@ def add_resolution (request, service_id):
         #redirect to login webpage
         return redirect ('/accounts/login')
 
-    if request.method == "POST":
+    if request.method == "POST" and request.POST['action'] == 'addResolutionService' :
 
-        form = AddResolutionService(data=request.POST)
+        #form = AddResolutionService(data=request.POST)
 
+        import pdb; pdb.set_trace()
         if form.is_valid():
             service_acepted_rejected = request.POST['radio_buttons']
             new_resolution = form.save(commit=False)

@@ -22,7 +22,7 @@
 								<label class="col-sm-5 control-label" for="resolutionFullNumber" >Acronym Service Name</label>
 			                	<div class="col-sm-5"><input class="form-control" required = "required" type="text" name="resolutionFullNumber" id="resolutionFullNumber"></div>
 			                	<br><br>
-								<label class="col-sm-5 control-label" for="resolutionAsignedUser" >Master Mix labware</label>
+								<label class="col-sm-5 control-label" for="resolutionAsignedUser" >Assign to user</label>
 		                        <div class="col-sm-5">
 									<select class="form-control"  required = "required" name="resolutionAsignedUser" id="resolutionAsignedUser">
 		                                {% for id , name in form_data.assigned_user %}
@@ -50,9 +50,9 @@
 							   mySpreadsheet = $('#spreadsheet').jexcel({
 								   data:data,
 								   columns: [
-										{ type: 'text', title:'{{data_pipeline.heading.0}}', width:300  },
-										{ type: 'text', title:'{{data_pipeline.heading.1}}', width:250 },
-										{type: 'text', title:'{{data_pipeline.heading.1}}', width:400 },
+										{ type: 'text', title:'{{form_data.heading.0}}', width:300  },
+										{ type: 'text', title:'{{form_data.heading.1}}', width:250 },
+										{type: 'text', title:'{{form_data.heading.2}}', width:400 },
 								   ],
 								   allowInsertColumn:false,
 								   allowDeleteColumn:false,
