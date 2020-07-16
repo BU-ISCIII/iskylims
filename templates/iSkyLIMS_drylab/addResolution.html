@@ -2,91 +2,132 @@
 {% load static %}
 
 {% block content %}
-{%include 'iSkyLIMS_core/jexcel_functionality.html' %}
-	<div class="row row-space-4 margin-b-1">
-        <div class="col-sm-12 ">
+
+{% if created_resolution %}
+	<div class="row row-space-4 margin-b-4">
+		<div class="col-sm-10 col-sm-offset-1" >
 			<div class="panel panel-default">
-				<div class="panel-heading"><h3 style="text-align:center">Add Resolution Form</h3></div>
-	            <div class="panel-body">
+				<div class="panel-heading"><h3 style="text-align:center">Resolution has been created</h3></div>
+                <div class="panel-body">
+					<h5>Your resolution proposal has been successfully recorded with Resolution Number {{created_resolution.resolution_number}}</h5>
+					<br><br>
+					<input type="button" value="Return Home" onclick="location.href ='/drylab' ;"/>
+					<input class="btn pull-right btn-primary" type="button" value="Return Pending Services" onclick="location.href ='/drylab/pendingServices' ;"/>
+				</div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-10 -->
+    </div> <!--  end of row -->
+{% else %}
+	{%include 'iSkyLIMS_core/jexcel_functionality.html' %}
+		<div class="row row-space-4 margin-b-1">
+	        <div class="col-sm-12 ">
+				<div class="panel panel-default">
+					<div class="panel-heading"><h3 style="text-align:center">Add Resolution Form</h3></div>
+		            <div class="panel-body">
 
-					<form method="post" enctype="multipart/form-data" name="addResolutionService" id="addResolutionService" class="form-horizontal well">
-	                    {% csrf_token %}
-						<h5 style="text-align:center">Service {{form_data.service_number}}</h5>
-	                    <input type="hidden" name="action" value="addResolutionService"/>
-						<br>
-
-			             	<div class="form-group required ">
-			                	<label class="col-sm-5 control-label" for="resolutionEstimatedDate" >Estimated resolution date</label>
-			                	<div class="col-sm-5"><input class="form-control" required = "required" type="date" name="resolutionEstimatedDate" id="resolutionEstimatedDate"></div>
-			                	<br><br>
-								<label class="col-sm-5 control-label" for="resolutionFullNumber" >Acronym Service Name</label>
-			                	<div class="col-sm-5"><input class="form-control" required = "required" type="text" name="resolutionFullNumber" id="resolutionFullNumber"></div>
-			                	<br><br>
-								<label class="col-sm-5 control-label" for="resolutionAsignedUser" >Assign to user</label>
-		                        <div class="col-sm-5">
-									<select class="form-control"  required = "required" name="resolutionAsignedUser" id="resolutionAsignedUser">
-		                                {% for id , name in form_data.assigned_user %}
-		                                    <option value="{{id}}">{{name}}</option>
-		                                {% endfor %}
-		                            </select>
-		                        </div>  <!-- end select input -->
-		                        <br><br>
-								<label class="col-sm-5 control-label" for="resolutionNotes" >User Notes</label>
-		                        <div class="col-sm-5">
-		                            <textarea class="form-control" name="resolutionNotes" required = "required" value="" id="resolutionNotes" rows="4" cols="60" maxlength="440"></textarea>
-		                        </div>  <!-- end textarea input -->
-		                        <br>
-			             	</div>  <!-- end from-group   -->
-
-						<br>
-	                    <br>
-
-							<div id="spreadsheet"></div>
+						<form method="post" enctype="multipart/form-data" name="addResolutionService" id="addResolutionService" class="form-horizontal well">
+		                    {% csrf_token %}
+							<h5 style="text-align:center">Service {{form_data.service_number}}</h5>
+		                    <input type="hidden" name="action" value="addResolutionService"/>
+							<input type="hidden" name="service_id" value="{{form_data.service_id}}"/>
 							<br>
-							<script>
-								var data = [{% for item , value in data_pipeline.additional_parameters.items %}
-								   ['{{item}}', '{{value}}'],{% endfor %}
-								];
-							   mySpreadsheet = $('#spreadsheet').jexcel({
-								   data:data,
-								   columns: [
-										{ type: 'text', title:'{{form_data.heading.0}}', width:300  },
-										{ type: 'text', title:'{{form_data.heading.1}}', width:250 },
-										{type: 'text', title:'{{form_data.heading.2}}', width:400 },
-								   ],
-								   allowInsertColumn:false,
-								   allowDeleteColumn:false,
-								   allowRenameColumn:false,
-								   allowInsertRow:true,
-								   allowDeleteRow:true,
-								   tableOverflow:true,
-								   tableHeight:'200px',
-								   minDimensions:[{{data_actions.heading|length}},3],
-								   csvFileName:'servicePipeline',
-							   });
-							</script>
 
-						<br>
-	                    <br>
+				             	<div class="form-group required ">
+				                	<label class="col-sm-5 control-label" for="resolutionEstimatedDate" >Estimated resolution date</label>
+				                	<div class="col-sm-5"><input class="form-control" required = "required" type="date" name="resolutionEstimatedDate" id="resolutionEstimatedDate"></div>
+				                	<br><br>
+									<label class="col-sm-5 control-label" for="acronymName" >Acronym Service Name</label>
+				                	<div class="col-sm-5"><input class="form-control" required = "required" type="text" name="acronymName" id="acronymName"></div>
+				                	<br><br>
+									<label class="col-sm-5 control-label" for="resolutionAsignedUser" >Assign to user</label>
+			                        <div class="col-sm-5">
+										<select class="form-control"  required = "required" name="resolutionAsignedUser" id="resolutionAsignedUser">
+			                                {% for id , name in form_data.assigned_user %}
+			                                    <option value="{{id}}">{{name}}</option>
+			                                {% endfor %}
+			                            </select>
+			                        </div>  <!-- end select input -->
+									<br><br>
+									<label class="col-sm-5 control-label" for="serviceAccepted" >Service Request</label>
+	                                <div class="col-sm-4">
+	                                    <label class="radio-inline"><input type="radio" name="serviceAccepted" required = "required" value="Accepted" checked>Accepted</label>
+	                                    <label class="radio-inline"><input type="radio" name="serviceAccepted" required = "required" value="Rejected" >Rejected</label>
+	                                </div>  <!-- end  radio -->
+			                        <br><br>
+									<label class="col-sm-5 control-label" for="resolutionNotes" >User Notes</label>
+			                        <div class="col-sm-5">
+			                            <textarea class="form-control" name="resolutionNotes" required = "required" value="" id="resolutionNotes" rows="4" cols="60" maxlength="440"></textarea>
+			                        </div>  <!-- end textarea input -->
+			                        <br>
+				             	</div>  <!-- end from-group   -->
 
-		                    <input class="btn btn-primary" type="reset" value="Reset Fields">
-		                    <input class="btn pull-right btn-primary" type="submit" value="Submit">
+							<br>
+		                    <br>
 
-					</form>
-	                <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
-				</div>  <!--  end of panel body  -->
-        	</div> <!--// end panel -->
-		</div><!-- // end of col-sm-8 -->
-    </div><!-- // end of row -->
-<script>
-    $(document).ready(function () {
-        $("form").submit(function (e) {
-            //stop submitting the form to see the disabled button effect
-            // e.preventDefault();
-            //disable the submit button
-            $("input:submit").attr("disabled", true);
-            return true;
-        });
-    });
-</script>
+								<div id="spreadsheet"></div>
+								<br>
+								<script>
+									var data = [{% for item , value in data_pipeline.additional_parameters.items %}
+									   ['{{item}}', '{{value}}'],{% endfor %}
+									];
+								   mySpreadsheet = $('#spreadsheet').jexcel({
+									   data:data,
+									   columns: [
+											{ type: 'text', title:'{{form_data.heading.0}}', width:300  },
+											{ type: 'text', title:'{{form_data.heading.1}}', width:250 },
+											{type: 'text', title:'{{form_data.heading.2}}', width:400 },
+									   ],
+									   allowInsertColumn:false,
+									   allowDeleteColumn:false,
+									   allowRenameColumn:false,
+									   allowInsertRow:true,
+									   allowDeleteRow:true,
+									   tableOverflow:true,
+									   tableHeight:'200px',
+									   minDimensions:[{{data_actions.heading|length}},3],
+									   csvFileName:'servicePipeline',
+								   });
+								</script>
+
+							<br>
+		                    <br>
+
+			                    <input class="btn btn-primary" type="reset" value="Reset Fields">
+			                    <input class="btn pull-right btn-primary" type="submit" value="Submit">
+
+						</form>
+		                <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
+						<script>
+                        $(document).ready(function () {
+                            $("#addResolutionService").submit(function (e) {
+                                //stop submitting the form to see the disabled button effect
+                                //e.preventDefault();
+                                //disable the submit button
+                                var table_data = $('#spreadsheet').jexcel('getData')
+                                var data_json = JSON.stringify(table_data)
+                                $("<input />").attr("type", "hidden")
+                                  .attr("name", "parameters_data")
+                                  .attr("value", data_json)
+                                  .appendTo("#addResolutionService");
+                                $("#btnSubmit").attr("disabled", true);
+                                return true;
+                            });
+                        });
+                    </script>
+					</div>  <!--  end of panel body  -->
+	        	</div> <!--// end panel -->
+			</div><!-- // end of col-sm-8 -->
+	    </div><!-- // end of row -->
+	<script>
+	    $(document).ready(function () {
+	        $("form").submit(function (e) {
+	            //stop submitting the form to see the disabled button effect
+	            // e.preventDefault();
+	            //disable the submit button
+	            $("input:submit").attr("disabled", true);
+	            return true;
+	        });
+	    });
+	</script>
+{% endif %}
 {% endblock %}

@@ -115,7 +115,6 @@ def service_request(request, serviceRequestType):
                     send_service_creation_confirmation_email(email_data)
 
                 # PDF preparation file for confirmation of service request
-                #absolute_url = request.build_absolute_uri()
                 pdf_file = create_service_pdf_file(service_request_number, request.build_absolute_uri())
 
                 # check if service allows to get data from external applications
@@ -443,142 +442,54 @@ def add_resolution (request, service_id):
     if request.method == "POST" and request.POST['action'] == 'addResolutionService' :
 
         #form = AddResolutionService(data=request.POST)
+        if check_service_id_exists(request.POST['service_id']):
 
-        import pdb; pdb.set_trace()
-        if form.is_valid():
-            service_acepted_rejected = request.POST['radio_buttons']
-            new_resolution = form.save(commit=False)
+            resolution_data_form = get_add_resolution_data_form(request.POST)
+            resolution_data_form['resolutionFullNumber'] = get_assign_resolution_full_number(resolution_data_form['service_id'], resolution_data_form['acronymName'])
+            resolution_data_form['resolutionNumber'] = create_resolution_number(request.POST['service_id'])
+            service_obj = get_service_obj_from_id(request.POST['service_id'])
+            service_request_number = service_obj.get_service_request_number()
+            if resolution_data_form['serviceAccepted'] == 'Accepted':
+                service_obj.update_service_status("queued")
+                service_obj.update_approved_date(datetime.date.today())
+            else:
+                service_obj.update_service_status("rejected")
+                service_obj.update_rejected_date(datetime.date.today())
 
-            service_reference = Service.objects.get(pk=service_id)
-            if len(Resolution.objects.filter(resolutionServiceID = service_reference)) == 0:
-                service_reference.serviceOnApprovedDate = datetime.date.today()
-                number_list = []
-                number_list.append(str(service_reference.serviceRequestNumber))
-                number_list.append(str(datetime.date.today()).replace('-',''))
-                number_list.append(new_resolution.resolutionFullNumber)
-                number_list.append(str(service_reference.serviceUserId))
-                number_list.append('S')
-                new_resolution.resolutionFullNumber = '_'.join(number_list)
-            else:
-                new_resolution.resolutionFullNumber = Resolution.objects.filter(resolutionServiceID = service_reference).last().resolutionFullNumber
+            new_resolution = Resolution.objects.create_resolution(resolution_data_form)
+            import pdb; pdb.set_trace()
+            if 'additional_parameters' in resolution_data_form:
+                store_resolution_additional_parameter(resolution_data_form['additional_parameters'], new_resolution)
 
-            if service_acepted_rejected == 'accepted':
-                service_reference.serviceStatus = "approved"
-            else:
-                service_reference.serviceStatus = "rejected"
-                service_reference.serviceOnRejectedDate = datetime.date.today()
-            service_reference.save()
-            if Resolution.objects.filter(resolutionServiceID = service_reference).exists():
-                resolution_count =  Resolution.objects.filter(resolutionServiceID = service_reference).count()
-                resolution_number = str(service_reference.serviceRequestNumber) + '.' + str(resolution_count +1 )
-            else:
-                resolution_number = str(service_reference.serviceRequestNumber) + '.1'
-            new_resolution.resolutionServiceID = service_reference
-            new_resolution.resolutionNumber = resolution_number
-            new_resolution.resolutionOnQueuedDate = datetime.date.today()
-            if service_reference.serviceStatus == "approved":
-                service_reference.serviceStatus = "queued"
-                service_reference.save()
-            new_resolution.save()
-            form.save_m2m()
             # create a new resolution to be added to the service folder including the path where file is stored
-            information = get_data_for_resolution(str(service_reference.serviceRequestNumber), resolution_number )
-            pdf_name = resolution_number + ".pdf"
-            resolution_file = create_pdf(request,information, drylab_config.RESOLUTION_TEMPLATE, pdf_name)
-
-            if len(Resolution.objects.filter(resolutionServiceID = service_reference)) == 1:
-                ## create service folder structure on the samba server. It is the first time to create a resolution
-                # move the resolution and the service request to the right folders
-                service_request_file =os.path.join (settings.BASE_DIR, drylab_config.OUTPUT_DIR_TEMPLATE,str(service_reference.serviceRequestNumber+ '.pdf'))
-                if service_reference.serviceFile != '' :
-                    service_file_uploaded = os.path.join (settings.MEDIA_ROOT, str(service_reference.serviceFile))
-                else :
-                    service_file_uploaded = ''
-
-                conn = open_samba_connection()
-                if conn is False:
-                    return render (request, 'iSkyLIMS_drylab/error_page.html', {'content': ['Creation of the structure can not be done because there is not communication to : ',  drylab_config.SAMBA_REMOTE_SERVER_NAME]})
-
-                result_creation_structure = create_service_structure (conn, service_request_file , service_file_uploaded, new_resolution.resolutionFullNumber ,resolution_file)
-                if result_creation_structure != True:
-                    return render (request, 'iSkyLIMS_drylab/error_page.html', {'content': ['Creation of the structure can not be done because of ' , result_creation_structure]})
-
-            else:
-                # connect to SAMBA server and copy the new resolution file into resolution folder
-                conn = open_samba_connection()
-                if conn is False:
-                    return render (request, 'iSkyLIMS_drylab/error_page.html', {'content': ['Creation of the structure can not be done because there is not communication to : ',  drylab_config.SAMBA_REMOTE_SERVER_NAME]})
-
-                result_adding_resolution_file = add_new_resolution_file (conn, new_resolution.resolutionFullNumber,resolution_file,service_reference.serviceCreatedOnDate.year)
-                if result_adding_resolution_file is not True:
-                    return render (request, 'iSkyLIMS_drylab/error_page.html', {'content':['Error when adding the new resolution file ', result_adding_resolution_file]})
+            import pdb; pdb.set_trace()
+            pdf_file = create_resolution_pdf_file(service_obj,new_resolution, request.build_absolute_uri())
+            new_resolution.update_resolution_file(pdf_file)
+            #pdf_name = resolution_data_form['resolutionNumber'] + ".pdf"
+            #resolution_file = create_pdf(request,information, drylab_config.RESOLUTION_TEMPLATE, pdf_name)
 
             ## Send email
-            service_user_mail = service_reference.serviceUserId.email
-            subject = 'Service ' + service_reference.serviceRequestNumber + " has been updated"
-            if service_acepted_rejected == "accepted":
-                body_message = 'Dear ' + service_reference.serviceUserId.username + "\n A new resolution has been added for your service: " + resolution_number + "\n. Your service has been "+ service_reference.serviceStatus + " and your delivery estimated date is " + new_resolution.resolutionEstimatedDate.strftime('%d %B %Y') + ".\n Your service is now queued and you will be notified when it is updated. \n Kind regards \n BU-ISCIII \n bioinformatica@isciii.es"
-            else:
-                body_message= 'Dear ' + service_reference.serviceUserId.username + "\n A new resolution has been added for your service: " + resolution_number + "\n. Your service  has been "+ service_reference.serviceStatus + " because it does not fullfil our requirements or is not in our services portfolio. If you have any question please contact us. \n Kind regards \n BU-ISCIII \n bioinformatica@isciii.es"
-            from_user = 'bioinformatica@isciii.es'
-            to_user = [service_user_mail,'bioinformatica@isciii.es']
-            send_mail (subject, body_message, from_user, to_user)
-
-            return render(request,'django_utils/info_page.html',{'content':['Your resolution proposal has been successfully recorded with Resolution Number.', resolution_number]})
+            if drylab_config.EMAIL_USER_CONFIGURED :
+                email_data = {}
+                email_data['user_email'] = request.user.email
+                email_data['user_name'] = request.user.username
+                email_data['service_number'] = service_request_number
+                email_data['status'] = resolution_data_form['serviceAccepted']
+                email_data['date'] = resolution_data_form['resolutionEstimatedDate']
+                send_resolution_creation_email(email_data)
+            created_resolution = {}
+            created_resolution['resolution_number'] = resolution_data_form['resolutionNumber']
+            return render(request,'iSkyLIMS_drylab/addResolution.html',{'created_resolution': created_resolution})
+        else:
+            return render (request, 'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_SERVICE_ID_NOT_FOUND})
     else:
         if check_service_id_exists(service_id):
             form_data = prepare_form_data_add_resolution(service_id)
-            # service_id= Service.objects.get(pk=service_id)
-            # service_number = service_id.serviceRequestNumber
-            #
-            # if Resolution.objects.filter(resolutionServiceID__exact = service_id).exists():
-            #     existing_resolution = Resolution.objects.filter(resolutionServiceID__exact = service_id).last()
-            #     resolutionFullNumber = existing_resolution.resolutionFullNumber
-            # else :
-            #     resolutionFullNumber =''
-            # form = AddResolutionService(initial= {'resolutionFullNumber': resolutionFullNumber})
-
-
             return render(request, 'iSkyLIMS_drylab/addResolution.html' , { 'form_data' : form_data})
         else:
             return render (request, 'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_SERVICE_ID_NOT_FOUND})
 
 
-def get_data_for_resolution(service_requested, resolution_number ):
-    information, user, resolution_data = {}, {}, {}
-    # get service object
-    service = Service.objects.get(serviceRequestNumber = service_requested)
-    service_number ,run_specs, center, platform = service.get_service_information().split(';')
-    # get resolution object
-    resolution = Resolution.objects.get(resolutionNumber = resolution_number)
-    resolution_info = resolution.get_resolution_information()
-    # get profile object
-    user_id = service.serviceUserId.id
-
-    information['resolution_number'] = resolution_number
-    information['requested_date'] = service.get_service_creation_time()
-    information['resolution_date'] = resolution_info[4]
-    information['nodes']= service.serviceAvailableService.all()
-    user['name'] = service.serviceUserId.first_name
-    user['surname'] = service.serviceUserId.last_name
-
-    user['area'] = Profile.objects.get(profileUserID = user_id).profileArea
-    user['center'] = Profile.objects.get(profileUserID = user_id).profileCenter
-    user['position'] = Profile.objects.get(profileUserID = user_id).profilePosition
-    user['phone'] = Profile.objects.get(profileUserID = user_id).profileExtension
-    user['email'] = service.serviceUserId.email
-    information['user'] = user
-    resolution_info_split = resolution_info[1].split('_')
-    resolution_data['acronym'] = resolution_info_split[2]
-    resolution_data['estimated_date'] = resolution_info[3]
-    resolution_data['notes'] = resolution_info[6]
-    resolution_data['decission'] = service.serviceStatus
-    information['service_data'] = service.serviceNotes
-
-    resolution_data['folder'] = resolution_info[1]
-    information['resolution_data'] = resolution_data
-
-    return information
 '''
 def test (request):
     resolution_number = 'SRVIIER001.1'
@@ -656,7 +567,7 @@ def add_new_resolution_file (conn, full_service_path,resolution_file,year):
 
     return True
 
-
+'''
 def create_service_structure (conn, service_request_file, service_file_uploaded, full_service_path, resolution_file):
     ## service_request_file and resolution_file contains the full path where these files
     ## are stored on iSkyLIMS. It means that OUTPUT_DIR_TEMPLATE value is added to thes variable
@@ -725,9 +636,8 @@ def create_service_structure (conn, service_request_file, service_file_uploaded,
     except:
         return 'ERROR:: Unable to delete the service_requested_file/ resolution_file'
 
-
-
     return True
+'''
 
 @login_required
 def add_in_progress (request, resolution_id):

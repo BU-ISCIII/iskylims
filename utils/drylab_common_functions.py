@@ -23,7 +23,7 @@ def check_service_id_exists(service_id):
     else:
         return False
 
-def create_pdf(absolute_url,information, template_file, pdf_file_name):
+def create_pdf(absolute_url,information, template_file, pdf_file_name , out_dir):
     from weasyprint import HTML, CSS
     from django.template.loader import get_template
     from django.template.loader import render_to_string
@@ -31,7 +31,10 @@ def create_pdf(absolute_url,information, template_file, pdf_file_name):
 
     #font_config = FontConfiguration()
     html_string = render_to_string(template_file, {'information': information})
-    pdf_file =  os.path.join (settings.BASE_DIR, drylab_config.OUTPUT_DIR_TEMPLATE , pdf_file_name)
+    pdf_dir =  os.path.join (settings.BASE_DIR, out_dir)
+    if not os.path.exists(pdf_dir):
+        os.makedirs(pdf_dir)
+    pdf_file = os.path.join(pdf_dir, pdf_file_name)
     html = HTML(string=html_string, base_url=absolute_url).write_pdf(pdf_file,stylesheets=[CSS(settings.BASE_DIR + drylab_config.CSS_FOR_PDF)])
 
     return pdf_file
@@ -98,6 +101,27 @@ def get_data_for_service_confirmation (service_requested):
 
     return information
 
+def create_resolution_pdf_file (service_obj,new_resolution, absolute_url):
+    '''
+    Description:
+        The function collect the information to create the pdf file
+    Input:
+        request # contains the session information
+    Functions:
+        get_data_for_service_confirmation   # located at this file
+        create_pdf                          # located at this file
+    Constants:
+        OUTPUT_DIR_RESOLUTION_PDF
+    Return:
+        pdf_file which contains the full path and name of the pdf file
+    '''
+    information_to_include = get_data_for_resolution(service_obj, new_resolution )
+
+    pdf_file_name = new_resolution.get_resolution_number() + '.pdf'
+    full_path_pdf_file = create_pdf(absolute_url, information_to_include, drylab_config.RESOLUTION_TEMPLATE, pdf_file_name, drylab_config.OUTPUT_DIR_RESOLUTION_PDF)
+    pdf_file = full_path_pdf_file.replace(settings.BASE_DIR,'')
+    return pdf_file
+
 def create_service_pdf_file (service_request_number, absolute_url):
     '''
     Description:
@@ -107,15 +131,97 @@ def create_service_pdf_file (service_request_number, absolute_url):
     Functions:
         get_data_for_service_confirmation   # located at this file
         create_pdf                          # located at this file
+    Constants:
+        OUTPUT_DIR_SERVICE_REQUEST_PDF
     Return:
         pdf_file which contains the full path and name of the pdf file
     '''
 
     information_to_include = get_data_for_service_confirmation(service_request_number)
     pdf_file_name = service_request_number + '.pdf'
-    full_path_pdf_file = create_pdf(absolute_url, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name)
-    pdf_file = full_path_pdf_file.replace(settings.BASE_DIR,'')
+    full_path_pdf_file = create_pdf(absolute_url, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name,  drylab_config.OUTPUT_DIR_SERVICE_REQUEST_PDF)
+    pdf_file = full_path_pdf_file.replace(settings.MEDIA_ROOT,'')
     return pdf_file
+
+
+def get_assign_resolution_full_number(service_id, acronymName):
+    '''
+    Description:
+        The function get the resolution full number if resolution already exists.
+        Build the resolution  full number if it is the first resolution for the service
+    Input:
+        service_id # contains the service id
+        acronymName # acronym name given to the service
+    Functions:
+        get_service_obj_from_id   # located at this file
+    Return:
+        resolution_full_number
+    '''
+    service_obj = get_service_obj_from_id(service_id)
+    if Resolution.objects.filter(resolutionServiceID = service_id).exists():
+        resolution_full_number = Resolution.objects.filter(resolutionServiceID = service_obj).last().get_resolution_number()
+    else:
+        resolution_full_number = ''
+        resolution_full_number += service_obj.get_service_request_number() + '_'
+        resolution_full_number += str(datetime.date.today()).replace('-','') + '_'
+        resolution_full_number += acronymName + '_'
+        resolution_full_number += service_obj.get_service_requested_user() + '_S'
+    return resolution_full_number
+
+def create_resolution_number(service_id):
+    '''
+    Description:
+        The function create the resolution number and step it if more than 1 resolution
+        have been created for the service.
+    Input:
+        service_id # contains the service id
+    Functions:
+        get_service_obj_from_id   # located at this file
+    Return:
+        resolution_number
+    '''
+    service_obj = get_service_obj_from_id(service_id)
+    service_request_number = service_obj.get_service_request_number()
+    if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
+        resolution_count =  Resolution.objects.filter(resolutionServiceID = service_obj).count()
+        resolution_number = service_request_number + '.' + str(resolution_count +1 )
+    else:
+        resolution_number = service_request_number + '.1'
+    return resolution_number
+
+
+def get_data_for_resolution(service_obj, resolution_obj ):
+    information, user, resolution_data = {}, {}, {}
+    service_number ,run_specs, center, platform = service_obj.get_service_information().split(';')
+
+    resolution_info = resolution_obj.get_resolution_information()
+    # get profile object
+    user_id = service_obj.serviceUserId.id
+
+    information['resolution_number'] = resolution_obj.get_resolution_number()
+    information['requested_date'] = service_obj.get_service_creation_time()
+    information['resolution_date'] = resolution_info[4]
+    information['nodes']= service_obj.serviceAvailableService.all()
+    user['name'] = service_obj.serviceUserId.first_name
+    user['surname'] = service_obj.serviceUserId.last_name
+
+    user['area'] = Profile.objects.get(profileUserID = user_id).profileArea
+    user['center'] = Profile.objects.get(profileUserID = user_id).profileCenter
+    user['position'] = Profile.objects.get(profileUserID = user_id).profilePosition
+    user['phone'] = Profile.objects.get(profileUserID = user_id).profileExtension
+    user['email'] = service_obj.get_user_email()
+    information['user'] = user
+    resolution_info_split = resolution_info[1].split('_')
+    resolution_data['acronym'] = resolution_info_split[2]
+    resolution_data['estimated_date'] = resolution_info[3]
+    resolution_data['notes'] = resolution_info[6]
+    resolution_data['decission'] = service_obj.get_service_state()
+    information['service_data'] = service_obj.get_service_user_notes()
+
+    resolution_data['folder'] = resolution_info[1]
+    information['resolution_data'] = resolution_data
+
+    return information
 
 
 def get_service_information (service_id):
@@ -186,7 +292,7 @@ def get_service_information (service_id):
                 delivery = Delivery.objects.get(deliveryResolutionID = resolution_id)
                 delivery_info.append([delivery.get_delivery_information()])
                 display_service_details['delivery'] = delivery_info
-    
+
     if service_obj.servicePipelines.all().exists():
         display_service_details['pipelines'] = {}
         display_service_details['pipelines']['heading'] = drylab_config.DISPLAY_NEW_DEFINED_PIPELINE
@@ -197,6 +303,19 @@ def get_service_information (service_id):
             display_service_details['pipelines']['services'].append(service_pipeline.get_pipeline_basic())
 
     return display_service_details
+
+def get_service_obj_from_id (service_request_id):
+    '''
+    Description:
+        The function return the service instance from service id
+    Input:
+        service_request_id  # contains the id of the service request
+    Return:
+        service_request_obj
+    '''
+    if Service.objects.filter(pk__exact = service_request_id).exists():
+        return Service.objects.get(pk__exact = service_request_id)
+    return False
 
 def is_service_manager (request):
     '''
@@ -261,6 +380,38 @@ def get_children_available_services():
                 children_services.append([service.pk, service.get_service_description()])
     return children_services
 
+def send_resolution_creation_email (email_data):
+    '''
+    Description:
+        The function send the service email for resolution to user.
+        Functions uses the send_email django core function to send the email
+    Input:
+        email_data      # Contains the information to include in the email
+    Constant:
+        SUBJECT_RESOLUTION_RECORDED
+        BODY_RESOLUTION_RECORDED
+        USER_EMAIL
+    Return:
+        None
+    '''
+    subject = drylab_config.SUBJECT_RESOLUTION_RECORDED.copy()
+    subject.insert(1, email_data['service_number'])
+    if email_data['status'] == 'Accepted':
+        date = email_data['date'].strftime("%d %B, %Y")
+        body_preparation = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', email_data['service_number']), drylab_config.BODY_RESOLUTION_ACCEPTED))
+        body_preparation = list(map(lambda st: str.replace(st, 'USER_NAME', email_data['user_name']), body_preparation))
+        body_preparation = list(map(lambda st: str.replace(st, 'STATUS', email_data['status']), body_preparation))
+        body_preparation = list(map(lambda st: str.replace(st, 'DATE', date), body_preparation))
+    else:
+        body_preparation = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', email_data['service_number']), drylab_config.BODY_RESOLUTION_REJECTED))
+        body_preparation = list(map(lambda st: str.replace(st, 'USER_NAME', email_data['user_name']), body_preparation))
+        body_preparation = list(map(lambda st: str.replace(st, 'STATUS', email_data['status']), body_preparation))
+    body_message = '\n'.join(body_preparation)
+
+    from_user = drylab_config.USER_EMAIL
+    to_users = [email_data['user_email'], drylab_config.USER_EMAIL]
+    send_mail (subject, body_message, from_user, to_users)
+    return
 
 def send_service_creation_confirmation_email(email_data):
     '''
@@ -285,6 +436,26 @@ def send_service_creation_confirmation_email(email_data):
 
     from_user = drylab_config.USER_EMAIL
     to_users = [email_data['user_email'], drylab_config.USER_EMAIL]
-
     send_mail (subject, body_message, from_user, to_users)
     return
+
+
+def store_resolution_additional_parameter(additional_parameters, resolution_obj):
+    '''
+    Description:
+        The function store in database the additional resolution parameters.
+    Input:
+        additional_parameters       # Contains the list with the additional parameters
+        resolution_obj              # resolution instance
+    Return:
+        None
+    '''
+
+    for additional_parameter in additional_parameters:
+
+        parameter = {}
+        parameter['resolution'] =resolution_obj
+        for field in drylab_config.MAPPING_ADDITIONAL_RESOLUTION_PARAMETERS:
+            import pdb; pdb.set_trace()
+            parameter[field[0]] = additional_parameter[field[1]]
+        new_parameter = ResolutionParameters.objects.create_resolution_parameters(parameter)

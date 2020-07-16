@@ -20,20 +20,24 @@ CSS_FOR_PDF = '/documents/drylab/services_templates/css/print_services.css'
 ## template files for generating the PDF files
 REQUESTED_CONFIRMATION_SERVICE = 'request_service_template.html'
 RESOLUTION_TEMPLATE = 'resolution_template.html'
-OUTPUT_DIR_TEMPLATE ='documents/drylab/' # Directory to store the pdf templates before moving to service folder
+OUTPUT_DIR_SERVICE_REQUEST_PDF ='documents/drylab/service_request' # Directory to store service request pdf
+OUTPUT_DIR_RESOLUTION_PDF ='documents/drylab/resolution' # Directory to store resolution pdf
+
+RESOLUTION_FILES_DIRECTORY = 'documents/drylab/resolutions'
 
 ABBREVIATION_USED_FOR_SERVICE_REQUEST = 'SRV'
 USER_CENTER_USED_WHEN_NOT_PROVIDED = 'NO_CENTER'
 
-SAMBA_SERVICE_FOLDER = 'services'
+#SAMBA_SERVICE_FOLDER = 'services'
 ## Folders to be created when service is accepted
-FOLDERS_FOR_SERVICES = ['request', 'resolution', 'result'] # 0= request, 1= resolution, 2 = result (keep order as suggested)
+#FOLDERS_FOR_SERVICES = ['request', 'resolution', 'result'] # 0= request, 1= resolution, 2 = result (keep order as suggested)
 #RESOLUTION_PREFIX = 'Resolution_'
 
 ############## FOLDER SETTINGS ###############################
 ## Directory settings for processing the run data files ######
 ## Relative path from settings.BASE_DIR
 LOG_DIRECTORY = 'logs/'
+
 
 ################# CONFIG FILE LOG NAME ###############################
 LOGGING_CONFIG_FILE = 'logging_config.ini'
@@ -66,6 +70,8 @@ HEADING_MANAGE_PIPELINES = ['Service', 'User' ,'Pipeline Name', 'Pipeline Versio
 
 HEADING_ADDITIONAL_RESOLUTION_PARAMETERS = ['Parameter name', 'Parameter value', 'Notes']
 
+MAPPING_ADDITIONAL_RESOLUTION_PARAMETERS = [('resolutionParameter', 'Parameter name'),('resolutionParamValue', 'Parameter value'),('resolutionParamNotes', 'Notes')]
+
 DATE_NOT_YET_DEFINED = 'Not Yet Defined'
 
 DISPLAY_NEW_DEFINED_PIPELINE = ['Service', 'Pipeline Name' , 'Pipeline Version']
@@ -76,8 +82,17 @@ DISPLAY_DETAIL_PIPELINE_ADDITIONAL_INFO = ['User', 'Creation Date', 'String Fold
 
 ################ EMAIL TEXT   ##################################
 SUBJECT_SERVICE_RECORDED = ['Service ', ' has been recorded']
-BODY_SERVICE_RECORDED = ['Dear ','Your service  SERVICE_NUMBER has been recorded.','You will received the resolution of the request as soon as possible.',
+BODY_SERVICE_RECORDED = ['Dear USER_NAME','Your service  SERVICE_NUMBER has been recorded.','You will received the resolution of the request as soon as possible.',
                     'Kind regards', 'BU-ISCIII']
+
+SUBJECT_RESOLUTION_RECORDED = ['Resolution ', ' has been updated']
+BODY_RESOLUTION_ACCEPTED = ['Dear  USER_NAME','A new resolution has been added for your service:  SERVICE_NUMBER.', 'Your service has been STATUS',
+                    'and your delivery estimated date is DATE','Your service is now queued and you will be notified when it is updated',
+                     'Kind regards', 'BU-ISCIII']
+BODY_RESOLUTION_REJECTED = ['Dear  USER_NAME','A new resolution has been added for your service:  SERVICE_NUMBER.', 'Your service has been STATUS',
+                    'because it does not fullfil our requirements or is not in our services portfolio. If you have any question please contact us.',
+                     'Kind regards', 'BU-ISCIII']
+
 
 SUBJECT_SERVICE_ON_QUEUED = ['Service ', 'sent to preparation pipelines Jobs']
 BODY_SERVICE_ON_QUEUED = ['Service  SERVICE_NUMBER is on queued ']

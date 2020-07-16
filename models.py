@@ -14,6 +14,7 @@ from django_utils.models import Profile,Center
 from django.contrib.auth.models import User
 
 from iSkyLIMS_core.models import Samples
+from iSkyLIMS_drylab import drylab_config
 
 
 STATUS_CHOICES = (
@@ -264,8 +265,6 @@ class Service(models.Model):
 		else:
 			approved_date = self.serviceOnApprovedDate.strftime("%d %B, %Y")
 
-
-
 		if resolutions.resolutionEstimatedDate is None:
 			estimated_date = 'Not defined'
 		else:
@@ -343,6 +342,9 @@ class Service(models.Model):
 			number, string_value = number_days.split(' ')
 		return number
 
+	def get_user_email(self):
+		return '%s' %(self.serviceUserId.email)
+
 	def get_child_services (self):
 		children_services = []
 		all_services = self.serviceAvailableService.all()
@@ -350,6 +352,26 @@ class Service(models.Model):
 			if not service.get_children().exists():
 				children_services.append([service.pk, service.get_service_description()])
 		return children_services
+
+	def update_approved_date(self, date):
+		self.serviceOnApprovedDate = date
+		self.save()
+
+	def update_service_status(self, status):
+		self.serviceStatus = status
+		self.save()
+
+	def update_service_approved_date(self, date):
+		self.serviceOnApprovedDate = date
+		self.save()
+
+	def update_service_delivered_date(self, date):
+		self.serviceOnDeliveredDate = date
+		self.save()
+
+	def update_service_rejected_date(self, date):
+		self.serviceOnRejectedDate = date
+		self.save()
 
 class RequestedProjectInServicesManager(models.Manager):
 	def create_request_project_service(self, data):
@@ -393,19 +415,36 @@ class RequestedSamplesInServices (models.Model):
 	generated_at = models.DateField(auto_now_add = True)
 
 
+class ResolutionManager(models.Manager):
+	def create_resolution (self, resolution_data):
+		today = datetime.date.today()
+		resolutionAsignedUser = User.objects.get(pk__exact = resolution_data['resolutionAsignedUser'])
+		resolutionServiceID = Service.objects.get(pk__exact = resolution_data['service_id'])
+		new_resolution = self.create(resolutionServiceID = resolutionServiceID, resolutionAsignedUser  = resolutionAsignedUser,
+					resolutionNumber = resolution_data['resolutionNumber'],  resolutionEstimatedDate= resolution_data['resolutionEstimatedDate'],
+					resolutionOnQueuedDate =  datetime.date.today(), resolutionNotes = resolution_data['resolutionNotes'],
+					resolutionFullNumber = resolution_data['resolutionFullNumber'])
+		return new_resolution
+
+
 class Resolution(models.Model):
-	resolutionServiceID=models.ForeignKey(Service ,on_delete=models.CASCADE)
+	resolutionServiceID =  models.ForeignKey(
+				Service ,
+				on_delete=models.CASCADE)
+	resolutionAsignedUser = models.ForeignKey(
+				User,
+				related_name='groups+',
+				on_delete=models.CASCADE, null=True,blank=True )
 	resolutionNumber=models.CharField(_("Resolutions name"),max_length=255,null=True)
-	#resolutionServiceSRV=models.CharField(_("Service identifier"),max_length=10)
 	resolutionEstimatedDate=models.DateField(_(" Estimated resolution date"), null = True,blank=False)
 	resolutionDate=models.DateField(_("Resolution date"),auto_now_add=True,blank=True)
-	#resolutionDate=models.DateField(_("Resolution date"),auto_now_add=False,blank=True)
 	resolutionOnQueuedDate = models.DateField(auto_now_add=False, null=True,blank=True)
 	resolutionOnInProgressDate = models.DateField(auto_now_add=False, null=True,blank=True)
 	resolutionNotes=models.TextField(_("Resolution notes"),max_length=1000, null=True)
 	resolutionFullNumber = models.CharField(_("Acronym Name"),max_length=255,null=True,blank=True)
-	resolutionAsignedUser = models.ForeignKey(User, related_name='groups+', on_delete=models.CASCADE, null=True,blank=True )
-	#resolutionAsignedUser = models.ForeignKey(User ,on_delete=models.CASCADE, null=True)
+	resolutionPdfFile = models.FileField(upload_to = drylab_config.RESOLUTION_FILES_DIRECTORY, null=True,blank=True)
+
+
 	def __str__ (self):
 		return '%s' %(self.resolutionNumber)
 	def get_resolution_information (self):
@@ -414,7 +453,7 @@ class Resolution(models.Model):
 		resolution_info.append(self.resolutionFullNumber)
 		resolution_info.append(self.resolutionAsignedUser)
 		if self.resolutionEstimatedDate is not None:
-		    resolution_info.append(self.resolutionEstimatedDate.strftime("%d %B, %Y"))
+			resolution_info.append(self.resolutionEstimatedDate.strftime("%d %B, %Y"))
 		else:
 		    resolution_info.append("Not defined yet")
 
@@ -441,6 +480,19 @@ class Resolution(models.Model):
 			return '%s' %(self.resolutionEstimatedDate)
 		return 'Not yet defined'
 
+	def update_resolution_file(self, file):
+		self.resolutionPdfFile = file
+		self.save()
+
+	objects = ResolutionManager()
+
+class ResolutionParametersManager(models.Manager):
+	def create_resolution_parameters(self,data):
+		new_resolution_parameter = self.create(resolution = data['resolution'],
+				resolutionParameter = data ['resolutionParameter'], resolutionParamValue = data['resolutionParamValue'],
+				resolutionParamNotes = data['resolutionParamNotes'])
+		return new_resolution_parameter
+
 class ResolutionParameters (models.Model):
 	resolution = models.ForeignKey(
 				Resolution,
@@ -456,6 +508,7 @@ class ResolutionParameters (models.Model):
 	def get_resolution_parameter_name(self):
 		return '%s' %(self.resolutionParameter)
 
+	objects = ResolutionParametersManager()
 
 class Delivery(models.Model):
 	deliveryResolutionID=models.ForeignKey(Resolution ,on_delete=models.CASCADE )
