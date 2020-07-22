@@ -1,7 +1,12 @@
 from rest_framework import serializers
-from iSkyLIMS_drylab.models import Pipelines
+from iSkyLIMS_drylab.models import PipelineExternalDataJobs
 
-class PipelinesSerializer (serializers.ModelSerializer):
+class PipelineExternalDataJobsSerializer (serializers.ModelSerializer):
     class Meta:
-         model = Pipelines
+         model = PipelineExternalDataJobs
          fields = '__all__'
+
+class PipelineExternalDataJobsBSerializer (serializers.ModelSerializer):
+    class Meta:
+         model = PipelineExternalDataJobs
+         fields =  ['serviceRequestNumber','jobState']

@@ -28,7 +28,7 @@ urlpatterns = [
     path('statsBySamplesProcessed',views.stats_by_samples_processed, name = 'stats_by_samples_processed'),
     path('statsTimeDelivery', views.stats_time_delivery, name = 'stats_time_delivery'),
     path('userLogin', views.user_login, name = 'user_login'),
-
+    
 ]
 
 if settings.DEBUG:
