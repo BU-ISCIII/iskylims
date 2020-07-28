@@ -97,7 +97,7 @@ def service_request(request, serviceRequestType):
                 dummy_value = data.pop('serviceProjects', None)
             else:
                 data=request.POST
-            #import pdb; pdb.set_trace()
+
             form = ServiceRequestFormInternalSequencing(data = data, files = request.FILES)
             if form.is_valid():
                 new_service = save_service_request_form(form, request.user, drylab_config.INTERNAL_SEQUENCING_UNIT)
@@ -105,6 +105,8 @@ def service_request(request, serviceRequestType):
                 service_request_number = new_service.get_service_request_number()
                 if 'serviceProjects' in request.POST:
                     stored_projects = store_projects_from_form(project_list, new_service)
+                else:
+                    stored_projects = ''
 
                 ## Send mail to user and drylab admin group
                 if drylab_config.EMAIL_USER_CONFIGURED :
@@ -457,12 +459,12 @@ def add_resolution (request, service_id):
                 service_obj.update_rejected_date(datetime.date.today())
 
             new_resolution = Resolution.objects.create_resolution(resolution_data_form)
-            import pdb; pdb.set_trace()
+
             if 'additional_parameters' in resolution_data_form:
                 store_resolution_additional_parameter(resolution_data_form['additional_parameters'], new_resolution)
 
             # create a new resolution to be added to the service folder including the path where file is stored
-            import pdb; pdb.set_trace()
+
             pdf_file = create_resolution_pdf_file(service_obj,new_resolution, request.build_absolute_uri())
             new_resolution.update_resolution_file(pdf_file)
             #pdf_name = resolution_data_form['resolutionNumber'] + ".pdf"

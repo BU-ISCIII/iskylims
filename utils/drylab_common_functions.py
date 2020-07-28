@@ -140,7 +140,7 @@ def create_service_pdf_file (service_request_number, absolute_url):
     information_to_include = get_data_for_service_confirmation(service_request_number)
     pdf_file_name = service_request_number + '.pdf'
     full_path_pdf_file = create_pdf(absolute_url, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name,  drylab_config.OUTPUT_DIR_SERVICE_REQUEST_PDF)
-    pdf_file = full_path_pdf_file.replace(settings.MEDIA_ROOT,'')
+    pdf_file = full_path_pdf_file.replace(settings.BASE_DIR,'')
     return pdf_file
 
 
@@ -283,7 +283,7 @@ def get_service_information (service_id):
         for resolution_item in resolution_list :
             resolution_info.append([resolution_item.get_resolution_information()])
         display_service_details['resolutions'] = resolution_info
-    #import pdb; pdb.set_trace()
+
     if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
         resolution_list = Resolution.objects.filter(resolutionServiceID = service_obj)
         delivery_info = []
@@ -341,7 +341,7 @@ def is_service_manager (request):
 
 def increment_service_number ( user_name):
     # check user center
-    #import pdb; pdb.set_trace()
+
     user_center = Profile.objects.get(profileUserID = user_name).profileCenter.centerAbbr
     # get latest service used for user's center
     if Service.objects.filter(serviceUserId__profile__profileCenter__centerAbbr=user_center).exists():
@@ -456,6 +456,5 @@ def store_resolution_additional_parameter(additional_parameters, resolution_obj)
         parameter = {}
         parameter['resolution'] =resolution_obj
         for field in drylab_config.MAPPING_ADDITIONAL_RESOLUTION_PARAMETERS:
-            import pdb; pdb.set_trace()
             parameter[field[0]] = additional_parameter[field[1]]
         new_parameter = ResolutionParameters.objects.create_resolution_parameters(parameter)

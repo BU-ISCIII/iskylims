@@ -98,22 +98,22 @@
 						</form>
 		                <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
 						<script>
-                        $(document).ready(function () {
-                            $("#addResolutionService").submit(function (e) {
-                                //stop submitting the form to see the disabled button effect
-                                //e.preventDefault();
-                                //disable the submit button
-                                var table_data = $('#spreadsheet').jexcel('getData')
-                                var data_json = JSON.stringify(table_data)
-                                $("<input />").attr("type", "hidden")
-                                  .attr("name", "parameters_data")
-                                  .attr("value", data_json)
-                                  .appendTo("#addResolutionService");
-                                $("#btnSubmit").attr("disabled", true);
-                                return true;
-                            });
-                        });
-                    </script>
+	                        $(document).ready(function () {
+	                            $("#addResolutionService").submit(function (e) {
+	                                //stop submitting the form to see the disabled button effect
+	                                //e.preventDefault();
+	                                //disable the submit button
+	                                var table_data = $('#spreadsheet').jexcel('getData')
+	                                var data_json = JSON.stringify(table_data)
+	                                $("<input />").attr("type", "hidden")
+	                                  .attr("name", "parameters_data")
+	                                  .attr("value", data_json)
+	                                  .appendTo("#addResolutionService");
+	                                $("#btnSubmit").attr("disabled", true);
+	                                return true;
+	                            });
+	                        });
+	                    </script>
 					</div>  <!--  end of panel body  -->
 	        	</div> <!--// end panel -->
 			</div><!-- // end of col-sm-8 -->
