@@ -67,3 +67,24 @@ def get_user_project_name (project_id_list):
         else:
             project_names.append('')
     return project_names
+
+def get_samples_projects (project_id_list):
+    '''
+    Description:
+        The function api return a dictionnary having as key the project id and
+        value a list of tupla sample_id, sample_name
+    Input:
+        project_id_list     # list of project ids
+    Return:
+        samples_projects
+    '''
+    samples_projects = {}
+    for project_id in project_id_list:
+        samples_projects[project_id] = []
+        if Projects.objects.filter(pk__exact = project_id).exists():
+            project_obj = Projects.objects.get(pk__exact = project_id)
+            if SamplesInProject.objects.filter(project_id = project_obj).exists():
+                samples_obj = SamplesInProject.objects.filter(project_id = project_obj)
+                for sample_obj in samples_obj:
+                    samples_projects[project_id].append([sample_obj.get_sample_id(), sample_obj.get_sample_name()])
+    return samples_projects
