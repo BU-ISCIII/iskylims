@@ -30,7 +30,11 @@ from smb.SMBConnection import SMBConnection
 #from django.shortcuts import render_to_response
 #from django.shortcuts import RequestContext
 ###### api to wetlab ############
-from iSkyLIMS_wetlab.utils.api.wetlab_api import *
+try :
+	from iSkyLIMS_wetlab.utils.api.wetlab_api import *
+	wetlab_api_available = True
+except:
+	wetlab_api_available = False
 
 
 #PNL
