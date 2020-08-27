@@ -106,7 +106,7 @@ class ProtocolParametersManager(models.Manager) :
         new_prot_parameter = self.create(protocol_id =prot_param_data['protocol_id'],parameterName = prot_param_data['Parameter name'],
                     parameterDescription = prot_param_data['Description'], parameterOrder = prot_param_data['Order'],
                     parameterUsed = prot_param_data['Used'], parameterMaxValue = prot_param_data['Max Value'],
-                    parameterMinValue = prot_param_data['Min Value'] )
+                    parameterMinValue = prot_param_data['Min Value'] , optionValues = prot_param_data['optionValues'])
         return new_prot_parameter
 
 class ProtocolParameters (models.Model):
@@ -117,6 +117,7 @@ class ProtocolParameters (models.Model):
     parameterDescription = models.CharField(max_length= 400, null=True, blank=True)
     parameterOrder = models.IntegerField()
     parameterUsed = models.BooleanField()
+    optionValues = models.CharField(max_length = 400, null = True, blank = True)
     parameterMaxValue = models.CharField(max_length = 50, null = True, blank = True)
     parameterMinValue = models.CharField(max_length = 50, null = True, blank = True)
 

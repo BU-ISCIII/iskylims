@@ -1563,6 +1563,7 @@ def get_table_record_molecule (samples, apps_name):
         #sample_code_id.append(Samples.objects.get(pk__exact = sample).get_sample_code())
         data = ['']*len(HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION)
         data[0] = sample_code_id
+        data[1] = sample_obj.get_sample_type()
         molecule_information['data'].append(data)
 
     molecule_information['type_of_molecules'] = get_modules_type ()

@@ -16,7 +16,7 @@ MAPPING_SAMPLE_FORM_TO_DDBB = [('Patient Code ID','p_code_id'), ('Sample Name', 
                 ('Type of Sample','sampleType'), ('Species', 'species'),('Project/Service', 'project_service'),('Date sample extraction', 'sampleEntryDate'),
                 ('Sample Storage Location', 'sampleLocation')]
 
-HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION = ['Sample ID', 'Molecule type', 'Type of Extraction', 'Extraction date', 'Protocol to be used']
+HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION = ['Sample ID','Sample Type', 'Molecule type', 'Type of Extraction', 'Extraction date', 'Protocol to be used']
 HEADING_FOR_MOLECULE_ADDING_PARAMETERS = ['Molecule Code ID', 'Lot Commercial Kit']
 
 
@@ -46,7 +46,7 @@ HEADING_FOR_SELECTING_MOLECULE_USE = ['Sample Name','Molecule CodeID', 'Molecule
 
 ################# PROTOCOL PARAMETER SETTINGS ##############################
 ### Headings used when defining the custom protocol parameters
-HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS = ['Parameter name', 'Order', 'Used', 'Min Value', 'Max Value', 'Description']
+HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS = ['Parameter name', 'Order', 'Used', 'Option Values' ,'Min Value', 'Max Value', 'Description']
 
 HEADING_FOR_SAMPLE_PROJECT_FIELDS = ['Field name', 'Order', 'Used', 'Searchable','Field type', 'Option Values', 'Description']
 
