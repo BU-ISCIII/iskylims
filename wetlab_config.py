@@ -181,6 +181,8 @@ SECTIONS_IN_IEM_SAMPLE_SHEET = ['[Header]', '[Reads]', '[Settings]', '[Data]']
 
 ## Heading for pending Library Preparation state
 
+HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL = ['Sample Name', 'Molecule Code ID', 'Library Preparation Protocol']
+
 HEADING_FOR_LIBRARY_PREPARATION_STATE = ['Sample extraction date', 'Sample', 'Molecule Code ID', 'Molecule Extraction Date',
                                     'Used Protocol', 'UserID']
 

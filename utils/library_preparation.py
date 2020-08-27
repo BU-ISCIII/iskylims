@@ -100,17 +100,29 @@ def analyze_input_param_values(form_data):
         sample_obj.set_state('Pool Preparation')
     return stored_params
 
-def check_samples_for_library_preparation():
+def get_samples_for_library_preparation():
     '''
     Description:
         The function checks if there are samples in run was success
     Return:
-
+        samples_in_lib_prep
     '''
+    samples_in_lib_prep = {}
+    samples_in_lib_prep['data'] = []
     if Samples.objects.filter(sampleState__sampleStateName__exact = 'Library preparation').exists():
-        return True
+        data = ['']* len(HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL)
+        samples_in_lib_prep['heading'] = HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL
+        samples_objs = Samples.objects.filter(sampleState__sampleStateName__exact = 'Library preparation')
+        for samples_obj in samples_objs:
+            data = ['']* len(HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL)
+            data[0] = samples_obj.get_sample_name()
+            data[1] = MoleculePreparation.objects.filter(sample = samples_obj, state__moleculeStateName__exact = 'Completed',usedForMassiveSequencing = True).last().get_molecule_code_id()
+            samples_in_lib_prep['data'].append(data)
+        samples_in_lib_prep['lib_prep_protocols'] = get_protocols_for_library_preparation()
+        #samples_in_lib_prep['lib_prep_defined'] = get_data_for_library_preparation_in_defined()
     else:
-        return False
+        samples_in_lib_prep ['no_samples'] = 'No samples'
+    return samples_in_lib_prep
 
 
 def extract_sample_data (s_data):
@@ -649,7 +661,7 @@ def store_library_preparation_samples(sample_sheet_data, user, protocol , user_s
         lib_prep_id.append(new_library_preparation.get_id())
         #lib_prep_code_id.append(new_library_preparation.get_lib_prep_code())
 
-        
+
 
     #stored_lib_prep['lib_prep_id'] = ','.join(lib_prep_id)
     #stored_lib_prep['lib_prep_code_id'] = ','.join(lib_prep_code_id)

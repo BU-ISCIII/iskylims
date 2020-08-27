@@ -3554,7 +3554,7 @@ def display_type_of_sample(request, sample_type_id):
 def handling_library_preparations(request):
     '''
     Functions:
-        check_samples_for_library_preparation : located at utils/library_preparation.py
+        get_samples_for_library_preparation : located at utils/library_preparation.py
         check_users_exists
         extract_user_sample_sheet_data
         get_data_for_library_preparation_in_defined : located at iSkyLIMS_core/utils/handling_samples.py
@@ -3565,13 +3565,8 @@ def handling_library_preparations(request):
         get_list_of_collection_kits     : located at utils/collection_index_function.py
     '''
     # get the information for returning the uploaded file in case errors in the sample sheet
-    upload_file = {}
-    if check_samples_for_library_preparation():
-        upload_file['lib_prep_protocols'] = get_protocols_for_library_preparation()
-        upload_file['lib_prep_defined'] = get_data_for_library_preparation_in_defined()
-    else:
-        upload_file['no_samples'] = 'No samples'
-
+    samples_in_lib_prep = get_samples_for_library_preparation()
+    
     if request.method == 'POST' and request.POST['action'] == 'importsamplesheet':
 
         sample_sheet_data = extract_user_sample_sheet_data(request.FILES['uploadfile'] )
@@ -3639,7 +3634,7 @@ def handling_library_preparations(request):
         return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_params':stored_params})
 
     else:
-        return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'upload_file':upload_file})
+        return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'samples_in_lib_prep':samples_in_lib_prep})
 
 
 def handling_molecules(request):
