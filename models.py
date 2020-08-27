@@ -206,25 +206,25 @@ class Species (models.Model):
 class CommercialKitsManager(models.Manager):
     def create_commercial_kit (self, kit_data):
 
-        new_commercial_kit = self.create(protocol_id = kit_data['protocol_id'],
-                    name = kit_data['name'],  provider  = kit_data['provider'],  cat_number = kit_data['cat_number'],
+        new_commercial_kit = self.create(name = kit_data['name'],
+                    provider  = kit_data['provider'],  cat_number = kit_data['cat_number'],
                     description  = kit_data['description'], maximumUses = kit_data['maximumUses'] )
         return new_commercial_kit
 
 
 class CommercialKits (models.Model):
+    '''
     protocol_id = models.ForeignKey(
                     Protocols,
                     on_delete= models.CASCADE, null = True)
     '''
-    molecule_id = models.ForeignKey(
-                    MoleculeType,
-                    on_delete= models.CASCADE, null = True, blank = True)
-    '''
+    protocolKits = models.ManyToManyField(
+                    Protocols, blank = True)
+
     name = models.CharField(max_length =150)
     provider = models.CharField(max_length =30)
     maximumUses = models.IntegerField(null = True, default = 0)
-
+    #capacity = models.CharField(max_length =30, null = True, blank = True)
     cat_number = models.CharField(max_length = 40, null = True, blank = True)
     description = models.CharField(max_length = 255, null = True, blank = True)
     generatedat = models.DateTimeField(auto_now_add=True, null=True)
@@ -254,7 +254,11 @@ class CommercialKits (models.Model):
         kit_basic_data = []
         kit_basic_data.append(self.name)
         kit_basic_data.append(self.provider)
-        kit_basic_data.append(self.protocol_id.get_name())
+        protocols = []
+        protocol_objs = self.protocolKits.all()
+        for protocol_obj in protocol_objs:
+            protocols.append(protocol_obj.get_name())
+        kit_basic_data.append(protocols)
 
         return kit_basic_data
 

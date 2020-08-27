@@ -6,8 +6,8 @@ from django.contrib.auth.models import User
 from datetime import date
 
 def get_commercial_kit_id(kit_name):
-    if CommercialKits.objects.filter(name__exact = kit_name).exists():
-        return CommercialKits.objects.get(name__exact = kit_name)
+    if CommercialKits.objects.filter(name__iexact = kit_name).exists():
+        return CommercialKits.objects.get(name__iexact = kit_name)
     else:
         return None
 
@@ -35,18 +35,26 @@ def get_data_for_commercial_kits():
     data_commercial_kits = {}
     data_commercial_kits['data'] = {}
     if CommercialKits.objects.exists():
-        kits = CommercialKits.objects.all().order_by('protocol_id')
+        kits = CommercialKits.objects.all().order_by('name')
         for kit in kits:
             data_kits = []
-            protocol = kit.get_protocol()
+            commercial_kit_name = kit.get_name()
 
-            data_kits.append(kit.get_name())
+            protocol_objs = kit.protocolKits.all()
+            protocols = []
+            for protocol_obj in protocol_objs:
+                protocols.append(protocol_obj.get_name())
+
+            data_kits.append(protocols)
+            #data_kits.append(kit.get_name())
             data_kits.append(kit.get_provider_kit_name())
             data_kits.append(kit.get_cat_number())
             data_kits.append(kit.get_maximum_uses())
-            if not protocol in data_commercial_kits['data']:
-                data_commercial_kits['data'][protocol] = []
-            data_commercial_kits['data'][protocol].append(data_kits)
+
+
+            #if not protocol in data_commercial_kits['data']:
+            #   data_commercial_kits['data'][protocols] = []
+            data_commercial_kits['data'][commercial_kit_name] = [data_kits]
         data_commercial_kits['headings'] = HEADING_FOR_COMMERCIAL_KIT_BASIC_DATA
 
     return data_commercial_kits
@@ -116,7 +124,7 @@ def get_lot_commercial_kits(register_user_obj, protocol_obj):
 
 def store_commercial_kit (kit_data):
     commercial_kit_values = {}
-    commercial_kit_values['protocol_id']= get_protocol_obj_from_name(kit_data['protocol'])
+    #commercial_kit_values['protocol_id']= get_protocol_obj_from_name(kit_data['protocol'])
     commercial_kit_values['name'] = kit_data['kitName']
     commercial_kit_values['provider'] = kit_data['provider']
     commercial_kit_values['cat_number'] = kit_data ['catNo']
@@ -125,6 +133,8 @@ def store_commercial_kit (kit_data):
     commercial_kit_values['maximumUses'] =  0
 
     new_kit = CommercialKits.objects.create_commercial_kit(commercial_kit_values )
+    for protocol in kit_data.getlist('protocol'):
+        new_kit.protocolKits.add(get_protocol_obj_from_name(protocol))
     return new_kit
 
 def store_lot_user_commercial_kit (kit_data, user_name):
