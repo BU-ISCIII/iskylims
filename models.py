@@ -279,16 +279,15 @@ class UserLotCommercialKits (models.Model):
     basedCommercial = models.ForeignKey(
                     CommercialKits,
                     on_delete= models.CASCADE, null = True)
-    #nickName =  models.CharField(max_length = 50, null = True, blank = True)
+
     numberOfuses = models.IntegerField(null = True, default = 0)
-    #maximumUses = models.IntegerField(null = True, default = 0)
     chipLot = models.CharField(max_length = 50)
     latestUsedDate = models.DateTimeField(null = True, blank = True)
     expirationDate = models.DateField(auto_now_add=False)
     generatedat = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__ (self):
-        return '%s' %(self.nickName)
+        return '%s' %(self.chipLot)
 
     def get_basic_data(self):
         lot_data = []
@@ -987,7 +986,7 @@ class MoleculePreparation (models.Model):
         self.save()
 
     def set_user_lot_kit (self, lot_kit_name):
-        self.userLotKit_id = UserLotCommercialKits.objects.get(nickName__exact = lot_kit_name,)
+        self.userLotKit_id = UserLotCommercialKits.objects.get(chipLot__exact = lot_kit_name,)
 
     objects = MoleculePreparationManager()
 
