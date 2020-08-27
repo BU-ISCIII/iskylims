@@ -269,7 +269,6 @@ class UserLotCommercialKitsManager(models.Manager):
     def create_user_lot_commercial_kit (self, kit_data):
 
         new_user_lot_commercial_kit = self.create(user = kit_data['user'], basedCommercial = kit_data['basedCommercial'],
-                nickName = kit_data['nickName'], maximumUses = kit_data['maximumUses'],
                 chipLot = kit_data['chipLot'], expirationDate = kit_data['expirationDate'])
         return new_user_lot_commercial_kit
 
@@ -280,9 +279,9 @@ class UserLotCommercialKits (models.Model):
     basedCommercial = models.ForeignKey(
                     CommercialKits,
                     on_delete= models.CASCADE, null = True)
-    nickName =  models.CharField(max_length = 50, null = True, blank = True)
+    #nickName =  models.CharField(max_length = 50, null = True, blank = True)
     numberOfuses = models.IntegerField(null = True, default = 0)
-    maximumUses = models.IntegerField(null = True, default = 0)
+    #maximumUses = models.IntegerField(null = True, default = 0)
     chipLot = models.CharField(max_length = 50)
     latestUsedDate = models.DateTimeField(null = True, blank = True)
     expirationDate = models.DateField(auto_now_add=False)
@@ -293,7 +292,6 @@ class UserLotCommercialKits (models.Model):
 
     def get_basic_data(self):
         lot_data = []
-        lot_data.append(self.nickName)
         lot_data.append(self.basedCommercial.get_name())
         lot_data.append(self.chipLot)
         lot_data.append(self.expirationDate)
@@ -304,9 +302,6 @@ class UserLotCommercialKits (models.Model):
 
     def get_lot_number (self):
         return '%s' %(self.chipLot)
-
-    def get_nick_name (self):
-        return '%s' %(self.nickName)
 
     def get_protocol_for_kit (self):
         return '%s' %(self.basedCommercial.get_protocol())
@@ -326,14 +321,7 @@ class UserLotCommercialKits (models.Model):
         self.latestUsedDate = date
         self.save()
         return self
-    '''
-    def get_used_percentage(self):
-        try:
-            user_percent = "{0:.2f}".format(self.numberOfuses *100 / self.maximumUses)
-        except:
-            user_percent = 'Maximum number of used not defined'
-        return user_percent
-    '''
+
     objects = UserLotCommercialKitsManager()
 
 class PatientProjectsManager (models.Manager):

@@ -66,7 +66,7 @@ HEADING_FOR_NEW_SAVED_COMMERCIAL_KIT = ['Commercial Kit Name', 'Provider',  'Pro
 HEADING_FOR_COMMERCIAL_KIT_BASIC_DATA = ['Protocols used for Commercial Kit', 'Provider',  'Cat Number', 'Capacity']
 
 
-HEADING_FOR_LOT_USER_COMMERCIAL_KIT_BASIC_DATA = ['User given Name', 'Commercial Kit', 'Lot Barcode', 'Expiration Date']
+HEADING_FOR_LOT_USER_COMMERCIAL_KIT_BASIC_DATA = ['Commercial Kit', 'Lot Barcode', 'Expiration Date']
 
 HEADING_FOR_USER_LOT_INVENTORY = ['Nick Name', 'Lot Number' , 'Expiration date', 'Percentage used']
 

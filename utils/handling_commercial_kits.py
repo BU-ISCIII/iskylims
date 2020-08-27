@@ -14,14 +14,14 @@ def get_commercial_kit_id(kit_name):
 def get_defined_commercial_kits():
     commercial_kit_list = []
     if CommercialKits.objects.exists():
-        kits = CommercialKits.objects.all().order_by('protocol_id')
+        kits = CommercialKits.objects.all().order_by('name')
         for kit in kits:
             commercial_kit_list.append(kit.get_name())
     return commercial_kit_list
 
-def get_lot_user_commercial_kit_id(nick_name):
-    if UserLotCommercialKits.objects.filter(nickName__exact = nick_name).exists():
-        return UserLotCommercialKits.objects.get(nickName__exact = nick_name)
+def get_lot_user_commercial_kit_id(lot_number):
+    if UserLotCommercialKits.objects.filter(chipLot__iexact = lot_number).exists():
+        return UserLotCommercialKits.objects.get(chipLot__iexact = lot_number)
     else:
         return None
 
@@ -142,11 +142,8 @@ def store_lot_user_commercial_kit (kit_data, user_name):
     lot_kit_values = {}
     lot_kit_values['user'] = user_name
     lot_kit_values['basedCommercial']= commercial_kit_obj
-    lot_kit_values['nickName'] = kit_data['nickName']
-    lot_kit_values['chipLot'] = kit_data['txtCode']
+    lot_kit_values['chipLot'] = kit_data['barCode']
     lot_kit_values['expirationDate'] = kit_data ['expirationDate']
-    lot_kit_values['maximumUses'] = commercial_kit_obj.get_maximum_uses()
-
 
     new_kit = UserLotCommercialKits.objects.create_user_lot_commercial_kit(lot_kit_values )
     return new_kit
