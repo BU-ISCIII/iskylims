@@ -5,7 +5,7 @@
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-6 col-sm-offset-1">
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>Successful definition for Commercial Kit </h3></div>
+                <div class="panel-heading"><h3>Successful definition for User Lot Kit </h3></div>
                 <div class="panel-body">
                     <table class="table ">
                      <thead>
@@ -52,7 +52,7 @@
                     <input type="hidden" name="action" value="addUserLotKit"/>
                     <div class="form-group required">
                         <label class="col-sm-5 control-label" for="commercialKit" >Select the Commercial Kit name</label>
-                        <div class="col-sm-7"><select class="form-control" name="commercialKit" id="commercialKit">
+                        <div class="col-sm-7"><select class="form-control" required = "required"  name="commercialKit" id="commercialKit">
                                           				<option value="">Choose a value</option>
                                                        {% for value in defined_kits %}
                                                            <option value="{{value}}">{{value}}</option>
@@ -61,15 +61,11 @@
                         </div>  <!-- end select input -->
                     </div>  <!-- end from-group   -->
                     <BR>
-                        <div class="form-group required">
-                             <label class="col-sm-5  control-label" for="nickName" >Define the nick name</label>
-                               <div class="col-sm-5"><input class="form-control" type="text" name="nickName" id="nickName" size="100" maxlength="100"></div>
-                        </div>  <!-- end from-group   -->
 
                         <br>
                         <div class="form-group required">
-                            <label class="col-sm-5  control-label" for="txtCode" >Enter the Lot barcode  </label>
-                            <input type="text" id="txtCode" class="barcodeinput" name="txtCode"/>
+                            <label class="col-sm-5  control-label" for="barCode" >Enter the Lot barcode  </label>
+                            <input type="text" id="barCode" required = "required"  class="barcodeinput" name="barCode"/>
                             <input type="button" value="OK" class="nextcontrol"/>
                             <h3 id="msg"/>
                         </div>  <!-- end from-group   -->
@@ -77,7 +73,7 @@
 
                         <div class="form-group required">
                           <label class="col-sm-5 control-label" for="expirationDate" >Kit Expiration Date (DD-MM-YYYY)</label>
-                          <div class="col-sm-5"><input class="form-control" type="date" name="expirationDate" value="" id="expirationDate"></div>
+                          <div class="col-sm-5"><input class="form-control" type="date" required = "required"  name="expirationDate" value="" id="expirationDate"></div>
                     </div>  <!-- end from-group   -->
                     <br>
                         <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">

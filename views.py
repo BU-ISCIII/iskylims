@@ -3306,15 +3306,14 @@ def add_commercial_kit (request):
 
 @login_required
 def add_user_lot_commercial_kit (request):
+    defined_kits = get_defined_commercial_kits()
     if request.method == 'POST' and request.POST['action'] == 'addUserLotKit':
-        if get_lot_user_commercial_kit_id (request.POST['nickName']) :
-            defined_kits = get_defined_commercial_kits()
+        if get_lot_user_commercial_kit_id (request.POST['barCode']) :
             return render(request, 'iSkyLIMS_wetlab/addUserLotCommercialKit.html',{'defined_kits': defined_kits, 'invalid_name': request.POST['nickName']})
         new_lot_kit = store_lot_user_commercial_kit(request.POST, request.user)
         new_lot_kit_data = get_lot_user_commercial_kit_basic_data(new_lot_kit)
         return render(request, 'iSkyLIMS_wetlab/addUserLotCommercialKit.html',{'new_lot_kit_data':new_lot_kit_data})
     else:
-        defined_kits = get_defined_commercial_kits()
         return render(request, 'iSkyLIMS_wetlab/addUserLotCommercialKit.html',{'defined_kits':defined_kits})
 
 
