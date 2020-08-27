@@ -671,8 +671,9 @@ def store_user_input_file (user_input_file):
         stored_path_file contains the full path of the file and file_name
     '''
     # create thd directory if not exists
-    if not os.path.exists(wetlab_config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY):
-        os.makedirs(wetlab_config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY)
+    template_dir = os.path.join(settings.MEDIA_ROOT, wetlab_config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY)
+    if not os.path.exists(template_dir):
+        os.makedirs(template_dir)
 
     filename, file_extension = os.path.splitext(user_input_file.name)
     fs = FileSystemStorage()
