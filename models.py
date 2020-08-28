@@ -1002,10 +1002,11 @@ class libraryPreparationManager(models.Manager):
         molecule_obj = MoleculePreparation.objects.get(pk__exact = lib_prep_data['molecule_id'])
         lib_state_obj = StatesForLibraryPreparation.objects.get(libPrepState__exact =  'Defined')
         new_lib_prep = self.create(registerUser = registerUser_obj, molecule_id = molecule_obj, sample_id = sample_obj,
-            protocol_id =   lib_prep_data['protocol_obj'], libPrepState = lib_state_obj)
+            protocol_id =   lib_prep_data['protocol_obj'], libPrepState = lib_state_obj,
+            libPrepCodeID = lib_prep_data['lib_prep_code_id'], userSampleID = lib_prep_data['userSampleID'])
         '''
         user_sample_sheet = lib_prep_data['user_sample_sheet'],
-        libPrepCodeID = lib_prep_data['lib_prep_code_id'], userSampleID = lib_prep_data['userSampleID'],
+        ,
         projectInSampleSheet = lib_prep_data['projectInSampleSheet'], samplePlate = lib_prep_data['samplePlate'],
         sampleWell = lib_prep_data['sampleWell'],  i7IndexID = lib_prep_data['i7IndexID'],
         i7Index = lib_prep_data['i7Index'], i5IndexID = lib_prep_data['i5IndexID'], i5Index = lib_prep_data['i5Index'],

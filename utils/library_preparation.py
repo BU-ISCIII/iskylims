@@ -2,7 +2,7 @@ import json
 from iSkyLIMS_core.models import Samples, MoleculePreparation, Protocols
 from iSkyLIMS_core.utils.handling_commercial_kits import *
 from iSkyLIMS_core.utils.handling_protocols import *
-from iSkyLIMS_core.utils.handling_samples import  get_sample_obj_from_sample_name
+from iSkyLIMS_core.utils.handling_samples import  get_sample_obj_from_sample_name, get_sample_obj_from_id
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
 from iSkyLIMS_wetlab.utils.sample_sheet_utils import *
@@ -118,6 +118,7 @@ def create_library_preparation_instance(samples_data, user):
         lib_prep_data['molecule_id'] = values[1]
         lib_prep_data['protocol_obj'] = Protocols.objects.filter(type__protocol_type__exact ='Library Preparation', name__exact = values[2]).last()
         lib_prep_data['registerUser'] = user
+        lib_prep_data['lib_prep_code_id'], lib_prep_data['uniqueID'] = get_library_code_and_unique_id(lib_prep_data['sample_id'])
         library_preparation_objs.append(LibraryPreparation.objects.create_lib_preparation(lib_prep_data))
         import pdb; pdb.set_trace()
     return library_preparation_objs
@@ -192,13 +193,15 @@ def get_samples_for_library_preparation():
         samples_in_lib_prep
     '''
     samples_in_lib_prep = {}
-    samples_in_lib_prep['data'] = []
+    samples_in_lib_prep['avail_samples'] = {}
+    samples_in_lib_prep['avail_samples']['data'] = []
     samples_id = []
     molecules_id = []
     samples_names = []
+
     if Samples.objects.filter(sampleState__sampleStateName__exact = 'Library preparation').exists():
         data = ['']* len(HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL)
-        samples_in_lib_prep['heading'] = HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL
+        samples_in_lib_prep['avail_samples']['heading'] = HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL
         samples_objs = Samples.objects.filter(sampleState__sampleStateName__exact = 'Library preparation')
         for samples_obj in samples_objs:
             if LibraryPreparation.objects.filter(sample_id = samples_obj).exists():
@@ -206,7 +209,17 @@ def get_samples_for_library_preparation():
                 lib_prep_obj_state = library_preparation_obj.get_state()
                 if lib_prep_obj_state == 'Defined':
                     # get the library preparations that need to add parameters
-                    pass
+                    if not 'lib_prep_defined' in samples_in_lib_prep:
+                        samples_in_lib_prep['lib_prep_defined'] = {}
+                    protocol_name = library_preparation_obj.get_protocol_used()
+                    if not protocol_name in samples_in_lib_prep['lib_prep_defined']:
+                        samples_in_lib_prep['lib_prep_defined'][protocol_name] = []
+                    lib_prep_data = []
+                    lib_prep_data.append(library_preparation_obj.get_sample_name())
+                    lib_prep_data.append(library_preparation_obj.get_lib_prep_code())
+                    lib_prep_data.append(library_preparation_obj.get_lib_prep_id())
+                    samples_in_lib_prep['lib_prep_defined'][protocol_name].append(lib_prep_data)
+                    
                 elif lib_prep_obj_state == 'Updated parameters':
                     # get the library preparations that need to add kits
                     pass
@@ -217,14 +230,14 @@ def get_samples_for_library_preparation():
                 data[0] = sample_name
                 molecule_obj = MoleculePreparation.objects.filter(sample = samples_obj, state__moleculeStateName__exact = 'Completed',usedForMassiveSequencing = True).last()
                 data[1] = molecule_obj.get_molecule_code_id()
-                samples_in_lib_prep['data'].append(data)
+                samples_in_lib_prep['avail_samples']['data'].append(data)
                 samples_id.append(samples_obj.get_sample_id())
                 samples_names.append(sample_name)
                 molecules_id.append(molecule_obj.get_molecule_id())
-        samples_in_lib_prep['lib_prep_protocols'] = get_protocols_for_library_preparation()
-        samples_in_lib_prep['samplesID'] = ','.join(samples_id)
-        samples_in_lib_prep['samplesNames'] = ','.join(samples_names)
-        samples_in_lib_prep['moleculesID'] = ','.join(molecules_id)
+        samples_in_lib_prep['avail_samples']['lib_prep_protocols'] = get_protocols_for_library_preparation()
+        samples_in_lib_prep['avail_samples']['samplesID'] = ','.join(samples_id)
+        samples_in_lib_prep['avail_samples']['samplesNames'] = ','.join(samples_names)
+        samples_in_lib_prep['avail_samples']['moleculesID'] = ','.join(molecules_id)
 
     else:
         samples_in_lib_prep ['no_samples'] = 'No samples'
@@ -657,18 +670,19 @@ def store_library_preparation_sample_sheet(sample_sheet_data, user) :
 
     return new_user_s_sheet_obj
 
-def get_library_code_and_unique_id (sample_obj):
+def get_library_code_and_unique_id (sample_id):
     '''
     Description:
         The function will find out the latest library preparation uniqueID", increment the value
         and will return the updated value to use
     Input:
-        sample_obj        # sample object
+        sample_id        # id of the sample
     Variables:
 
     Return:
         uniqueID .
     '''
+    sample_obj = get_sample_obj_from_id(sample_id)
     if LibraryPreparation.objects.filter(sample_id = sample_obj, libPrepState__libPrepState__exact = 'Created for Reuse').exists():
         lib_prep_obj = LibraryPreparation.objects.get(sample_id = sample_obj, libPrepState__libPrepState__exact = 'Created for Reuse')
         molecule_obj = lib_prep_obj.get_molecule_obj()

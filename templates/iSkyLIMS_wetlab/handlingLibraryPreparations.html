@@ -251,67 +251,50 @@
             </div> <!--  end of col-sm-6 -->
         </div> <!--  end of row -->
     {% else %}
-        {% if  samples_in_lib_prep.ERROR %}
-            <div class="row row-space-2 margin-b-4">
-                <div class="col-sm-10">
-                    <div class="panel panel-danger">
-                        <div class="panel-heading">
-                            <h3 style="text-align:center">ERROR when uploading the file :</h3>
-                            <h4 style="text-align:center">{{upload_file.file_name}}</h4>
-                        </div>
-                        <div class="panel-body">
-                            {% for line in upload_file.ERROR %}
-                                <p>{{line}}</p>
-                            {% endfor %}
-                        </div> <!--  end of panel body -->
-                    </div> <!--  end of panel  -->
-
-                </div> <!--  end of col-sm-6 -->
-            </div> <!--  end of row -->
-
-        {% endif %}
         <div class="row row-space-2 margin-b-4">
             <div class="col-sm-12">
                 <h3>Library Preparation</h3>
                 <div class="tab">
                     <button class="tablinks" onclick="summaryBin(event, 'assigningProtocol')" id="defaultOpen">Available Samples </button>
-                    {% if upload_file.lib_prep_defined %}
-                        <button class="tablinks" onclick="summaryBin(event, 'pending')">Pending Library Preparations</button>
+                    {% if samples_in_lib_prep.lib_prep_defined %}
+                        <button class="tablinks" onclick="summaryBin(event, 'defined')">Pending Protocol Parameters</button>
 
-                        <div id="pending" class="tabcontent">
+                        <div id="defined" class="tabcontent">
                             <div class="col-sm-11" >
                                 <div class="panel panel-default">
-                                    <div class="panel-heading"><h3>Select the Library Preparation to add Library Preparation information</h3></div>
+                                    <div class="panel-heading"><h3>Select the Library Preparation to add Protocol Parameter Information</h3></div>
                                     <div class="panel-body">
-                                        <form method="post" action="/wetlab/handlingLibraryPreparations" enctype="multipart/form-data" name="libpreparationdefined"  id="libpreparationdefined" class="form-horizontal well">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="action" value="libpreparationdefined"/>
-                                            <div class="form-group">
-                                                <table class="table table-hover">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Sample Name</th>
-                                                            <th>Library PreparationID</th>
-                                                            <th>Protocol used</th>
-                                                            <th>Select Library preparation</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {% for sample, code,  prot,  lib_id  in upload_file.lib_prep_defined  %}
+                                        {% for key, values in samples_in_lib_prep.lib_prep_defined.items %}
+                                        <h3>Library Preparation defined for using protocol {{key}}</h3>
+                                            <form method="post" enctype="multipart/form-data" name="libpreparationdefined"  id="libpreparationdefined" class="form-horizontal well">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="addProtocolParameter"/>
+                                                <div class="form-group">
+                                                    <table class="table table-hover">
+                                                        <thead>
                                                             <tr>
+                                                                <th>Sample Name</th>
+                                                                <th>Library PreparationID</th>
+                                                                <th>Select Library preparation</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for sample, code,  lib_id  in values  %}
+                                                                <tr>
                                                                     <td>{{sample}}</td>
                                                                     <td>{{code}}</td>
-                                                                    <td>{{prot}}</td>
                                                                     <td><input type="checkbox" name="libpreparation" value="{{lib_id}}"></td>
-                                                            </tr>
-                                                        {% endfor %}
-                                                    </tbody>
-                                                </table>
-                                            </div> <!--  end of from group -->
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div> <!--  end of from group -->
+                                                <br><br>
+                                                <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                                                <input class="btn pull-right btn-primary" id = "btnSubmit2" type="submit" value="Submit">
+                                            </form>
                                             <br><br>
-                                            <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                                            <input class="btn pull-right btn-primary" id = "btnSubmit2" type="submit" value="Submit">
-                                        </form>
+                                        {% endfor %}
                                     </div> <!--  end of panel body -->
                                 </div> <!--  end of panel  -->
 
@@ -330,22 +313,22 @@
                                         {% csrf_token %}
                                         <div class="form-group required">
                                             <input type="hidden" name="action" value="assignProtocol"/>
-                                            <input type="hidden" name="samplesID" value="{{samples_in_lib_prep.samplesID}}">
-                                            <input type="hidden" name="samplesNames" value="{{samples_in_lib_prep.samplesNames}}">
-                                            <input type="hidden" name="moleculesID" value="{{samples_in_lib_prep.moleculesID}}">
+                                            <input type="hidden" name="samplesID" value="{{samples_in_lib_prep.avail_samples.samplesID}}">
+                                            <input type="hidden" name="samplesNames" value="{{samples_in_lib_prep.avail_samples.samplesNames}}">
+                                            <input type="hidden" name="moleculesID" value="{{samples_in_lib_prep.avail_samples.moleculesID}}">
                                             <div id="spreadsheet"></div>
                                             <br><br><br><br>
 
                                             <script>
-                                                var data = [{% for values in samples_in_lib_prep.data %}
+                                                var data = [{% for values in samples_in_lib_prep.avail_samples.data %}
                                                     [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
                                                 ];
                                                 mySpreadsheet = $('#spreadsheet').jexcel({
                                                     data:data,
                                                     columns: [
-                                                        { type: 'text', title:'{{samples_in_lib_prep.heading.0}}', width:180 , readOnly:true },
-                                                        { type: 'text', title:'{{samples_in_lib_prep.heading.1}}', width:180 , readOnly:true },
-                                                        { type: 'dropdown', title:'{{samples_in_lib_prep.heading.2}}', width:200 , source :[ {% for value in samples_in_lib_prep.lib_prep_protocols %} '{{value}}', {% endfor %}]},
+                                                        { type: 'text', title:'{{samples_in_lib_prep.avail_samples.heading.0}}', width:280 , readOnly:true },
+                                                        { type: 'text', title:'{{samples_in_lib_prep.avail_samples.heading.1}}', width:280 , readOnly:true },
+                                                        { type: 'dropdown', title:'{{samples_in_lib_prep.avail_samples.heading.2}}', width:200 , source :[ {% for value in samples_in_lib_prep.avail_samples.lib_prep_protocols %} '{{value}}', {% endfor %}]},
                                                     ],
                                                     allowInsertColumn:false,
                                                     allowDeleteColumn:false,
@@ -382,7 +365,7 @@
 
 
 
-                                    {% if samples_in_lib_prep.heading %}
+                                    {% if samples_in_lib_prep.avail_samples.heading %}
                                         <script>
                                             // Get the element with id="defaultOpen" and click on it
                                             document.getElementById("defaultOpen").click();
