@@ -73,7 +73,7 @@ def display_available_protocols (app_name):
         molecule definition. This means to exclude any other protocol that their
         parameters are not stored in iSkyLIMS_core.
     Return:
-        protocol_list.
+        molecule_protocol_list and other_protocol_list .
     '''
 
     molecule_protocol_list = []
@@ -208,6 +208,24 @@ def get_protocol_parameters(protocol_obj):
         for protocol_parameter in protocol_parameters :
             protocol_parameter_list.append(protocol_parameter.get_parameter_name())
     return protocol_parameter_list
+
+def get_protocol_parameters_and_type(protocol_obj):
+    '''
+    Description:
+        The function return a list of the used parameters and types.
+    Return:
+        protocol_parameter_type_list.
+    '''
+    protocol_parameter_type_list = []
+    if ProtocolParameters.objects.filter(protocol_id = protocol_obj).exists():
+        protocol_parameters = ProtocolParameters.objects.filter(protocol_id = protocol_obj, parameterUsed = True). order_by('parameterOrder')
+        for protocol_parameter in protocol_parameters :
+            heading_item = []
+            heading_item.append(protocol_parameter.get_parameter_name())
+            heading_item.append(protocol_parameter.get_parameter_type())
+            heading_item.append(protocol_parameter.get_parameter_option_values().split(','))
+            protocol_parameter_type_list.append(heading_item)
+    return protocol_parameter_type_list
 
 def get_project_name_by_id(protocol_id):
     '''

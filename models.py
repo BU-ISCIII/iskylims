@@ -129,11 +129,19 @@ class ProtocolParameters (models.Model):
     def get_parameter_name (self):
         return "%s"  %(self.parameterName)
 
+    def get_parameter_option_values(self):
+        return "%s"  %(self.parameterOptionValues)
+
+    def get_parameter_type(self):
+        return '%s' %(self.parameterType)
+
     def get_all_parameter_info(self):
         param_info = []
         param_info.append(self.parameterName)
         param_info.append(self.parameterOrder)
         param_info.append(self.parameterUsed)
+        param_info.append(self.parameterType)
+        param_info.append(self.parameterOptionValues)
         param_info.append(self.parameterMinValue)
         param_info.append(self.parameterMaxValue)
         param_info.append(self.parameterDescription)
