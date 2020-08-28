@@ -46,7 +46,7 @@ HEADING_FOR_SELECTING_MOLECULE_USE = ['Sample Name','Molecule CodeID', 'Molecule
 
 ################# PROTOCOL PARAMETER SETTINGS ##############################
 ### Headings used when defining the custom protocol parameters
-HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS = ['Parameter name', 'Order', 'Used', 'Option Values' ,'Min Value', 'Max Value', 'Description']
+HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS = ['Parameter name', 'Order', 'Used', 'Parameter Type' ,'Option Values' ,'Min Value', 'Max Value', 'Description']
 
 HEADING_FOR_SAMPLE_PROJECT_FIELDS = ['Field name', 'Order', 'Used', 'Searchable','Field type', 'Option Values', 'Description']
 

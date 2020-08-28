@@ -240,6 +240,18 @@ def set_protocol_parameters(request):
         for i in range(len(parameters)):
             prot_parameters[parameters[i]] = row_data[i]
 
+        if row_data[parameters.index('Parameter Type')] == 'Option List':
+            option_list_values =  row_data[parameters.index('Option Values')].split(',')
+            clean_value_list = []
+            for opt_value in option_list_values:
+                value = opt_value.strip()
+                if value != '':
+                    clean_value_list.append(value)
+
+            prot_parameters['Option Values'] =','.join(clean_value_list)
+        else:
+            prot_parameters['Option Values'] = ''
+        import pdb; pdb.set_trace()
         saved_parameters.append(ProtocolParameters.objects.create_protocol_parameter(prot_parameters).get_parameter_name())
     stored_parameters['parameters'] = saved_parameters
     stored_parameters['protocol_name'] = protocol_id_obj.get_name()
