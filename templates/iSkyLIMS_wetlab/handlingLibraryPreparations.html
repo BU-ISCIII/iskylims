@@ -2,7 +2,94 @@
 {% load static %}
 {% block content %}
 {%include 'iSkyLIMS_core/jexcel_functionality.html' %}
-{% if display_lib_prep %}
+
+{% if lib_prep_protocol_parameters %}
+    <style>
+        .scrolling-wrapper {
+             overflow-x: scroll;
+             white-space: nowrap;
+        }
+    </style>
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Update the following samples with library protocol parameters.</h3></div>
+                <div class="panel-body">
+
+                   <form method="post" enctype="multipart/form-data" name="recordProtocolParamters"  id="recordProtocolParamters" class="form-horizontal well">
+                       {% csrf_token %}
+                        <div class="scrolling-wrapper">
+                            <input type="hidden" name="action" value="recordProtocolParamters"/>
+                            <input type="hidden" name= "lib_prep_ids" value="{{lib_prep_protocol_parameters.lib_prep_ids}}"/>
+                            <input type="hidden" name= "lib_prep_code_ids" value="{{lib_prep_protocol_parameters.lib_prep_code_ids}}"/>
+                            <input type="hidden" name= "protocol_id" value="{{lib_prep_protocol_parameters.protocol_id}}"/>
+                            <input type="hidden" name= "heading_in_excel" value="{{lib_prep_protocol_parameters.heading_in_excel}}"/>
+
+                           <p></p>
+
+                           <div id="spreadsheet"></div>
+                           <br><br><br><br>
+
+                           <script>
+                               var data = [{% for values in lib_prep_protocol_parameters.data %}
+                                   [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                               ];
+                               mySpreadsheet = $('#spreadsheet').jexcel({
+                                   data:data,
+                                   columns: [
+                                        {% for value in lib_prep_protocol_parameters.fix_heading %}
+                                            { type: 'text', title:'{{value}}', width:180 , readOnly:true },
+                                        {% endfor %}
+                                        {% for name, type, options in lib_prep_protocol_parameters.protocol_parameters_heading_type %}
+                                            {% if type == 'Date' %}
+                                                { type: 'calendar', title:'{{name}}', width:150 },
+                                            {% elif type == 'Option List'%}
+                                                { type: 'dropdown', title:'{{name}}', width:150 , source: [{% for value in options %}"{{value}}",{% endfor %}] },
+                                            {% else %}
+                                                { type: 'text', title:'{{name}}', width:150 },
+                                            {% endif %}
+                                        {% endfor %}
+                                   ],
+                                   allowInsertColumn:false,
+                                   allowDeleteColumn:false,
+                                   allowRenameColumn:false,
+                                   allowInsertRow:false,
+                                   allowDeleteRow:false,
+                                   tableOverflow:true,
+                                   tableHeight:'200px',
+                                   csvFileName:'library_preparation_parameters',
+
+                               });
+                           </script>
+                           <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                           <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
+                        </div> <!--  end of scrolling  -->
+                        </form>
+                        <script>
+                            $(document).ready(function () {
+                                $("#recordProtocolParamters").submit(function (e) {
+                                    //stop submitting the form to see the disabled button effect
+                                    // e.preventDefault();
+                                    //disable the submit button
+                                    var table_data = $('#spreadsheet').jexcel('getData')
+                                    var data_json = JSON.stringify(table_data)
+                                    $("<input />").attr("type", "hidden")
+                                      .attr("name", "protocol_data")
+                                      .attr("value", data_json)
+                                      .appendTo("#recordProtocolParamters");
+                                    $("#btnSubmit").attr("disabled", true);
+                                    return true;
+                                });
+                            });
+                        </script>
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+
+            </div> <!--  end of col-sm-12 -->
+        </div> <!--  end of row -->
+
+
+{% elif display_lib_prep %}
     <style>
         .scrolling-wrapper {
              overflow-x: scroll;
@@ -118,77 +205,7 @@
         </div> <!--  end of row -->
 
     {% endif %}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Update the following samples with library protocol parameters and select the Reagents Kit used for each sample.</h3></div>
-                <div class="panel-body">
 
-                   <form method="post" enctype="multipart/form-data" name="recordProtocolParamters"  id="recordProtocolParamters" class="form-horizontal well">
-                       {% csrf_token %}
-                        <div class="scrolling-wrapper">
-                            <input type="hidden" name="action" value="recordProtocolParamters"/>
-                            <input type="hidden" name= "lib_prep_ids" value="{{stored_lib_prep.lib_prep_ids}}"/>
-                            <input type="hidden" name= "lib_prep_code_ids" value="{{stored_lib_prep.lib_prep_code_ids}}"/>
-                            <input type="hidden" name= "protocol_id" value="{{stored_lib_prep.protocol_id}}"/>
-                            <input type="hidden" name= "heading_in_excel" value="{{stored_lib_prep.heading_in_excel}}"/>
-
-                           <p></p>
-
-                           <div id="spreadsheet"></div>
-                           <br><br><br><br>
-
-                           <script>
-                               var data = [{% for values in stored_lib_prep.data %}
-                                   [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
-                               ];
-                               mySpreadsheet = $('#spreadsheet').jexcel({
-                                   data:data,
-                                   columns: [
-                                        { type: 'text', title:'{{stored_lib_prep.heading.0}}', width:180 , readOnly:true },
-                                        { type: 'text', title:'{{stored_lib_prep.heading.1}}', width:180 , readOnly:true },
-                                        { type: 'dropdown', title:'{{stored_lib_prep.heading.2}}', width:200 , source :[ {% for value in stored_lib_prep.reagents_kits %} '{{value}}', {% endfor %}]},
-                                        {% for value in stored_lib_prep.param_heading %}
-                                            { type: 'text', title:'{{value}}', width:180 },
-                                        {% endfor %}
-                                   ],
-                                   allowInsertColumn:false,
-                                   allowDeleteColumn:false,
-                                   allowRenameColumn:false,
-                                   allowInsertRow:false,
-                                   allowDeleteRow:false,
-                                   tableOverflow:true,
-                                   tableHeight:'200px',
-                                   csvFileName:'library_preparation_parameters',
-
-                               });
-                           </script>
-                           <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                           <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
-                        </div> <!--  end of scrolling  -->
-                        </form>
-                        <script>
-                            $(document).ready(function () {
-                                $("#recordProtocolParamters").submit(function (e) {
-                                    //stop submitting the form to see the disabled button effect
-                                    // e.preventDefault();
-                                    //disable the submit button
-                                    var table_data = $('#spreadsheet').jexcel('getData')
-                                    var data_json = JSON.stringify(table_data)
-                                    $("<input />").attr("type", "hidden")
-                                      .attr("name", "protocol_data")
-                                      .attr("value", data_json)
-                                      .appendTo("#recordProtocolParamters");
-                                    $("#btnSubmit").attr("disabled", true);
-                                    return true;
-                                });
-                            });
-                        </script>
-                    </div> <!--  end of panel body -->
-                </div> <!--  end of panel  -->
-
-            </div> <!--  end of col-sm-12 -->
-        </div> <!--  end of row -->
 
 
 {% elif stored_params %}

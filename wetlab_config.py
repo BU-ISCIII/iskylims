@@ -188,7 +188,8 @@ HEADING_FOR_LIBRARY_PREPARATION_STATE = ['Sample extraction date', 'Sample', 'Mo
 
 #######HEADING_FOR_ADD_LIBRARY_PREPARATION = ['Molecule Code ID', 'Protocol', 'Extraction Date', 'To be included']
 HEADING_FOR_ADD_LIBRARY_PREPARATION_PARAMETERS = ['Library Preparation Code ID', 'Sample Name', 'Protocol used', 'Add Library']
-HEADING_FIX_FOR_ADDING_LIB_PARAMETERS = ['Sample Name', 'Library Preparation Code ID',  'Lot Regents Kit used']
+# HEADING_FIX_FOR_ADDING_LIB_PARAMETERS = ['Sample Name', 'Library Preparation Code ID',  'Lot Regents Kit used']
+HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS = ['Sample Name','Library Preparation Code ID']
 HEADING_FOR_CREATION_LIBRARY_PREPARATION = ['Molecule Code ID', 'Protocol used', 'Single/Paired end', 'Length read']
 
 ### Heading for display information on library Preparation definition

@@ -1187,6 +1187,9 @@ class LibraryPreparation (models.Model):
     def get_lib_prep_code (self):
         return '%s' %(self.libPrepCodeID)
 
+    def get_lib_prep_id (self):
+        return '%s' %(self.pk)
+
     def get_molecule_code_id(self):
         return '%s' %(self.molecule_id.get_molecule_code_id())
 

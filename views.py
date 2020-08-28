@@ -3569,9 +3569,13 @@ def handling_library_preparations(request):
 
     if request.method == 'POST' and request.POST['action'] == 'assignProtocol':
         samples_in_lib_prep_protocol = extract_protocol_library_preparation_form(request.POST)
-        import pdb; pdb.set_trace()
+        if len(samples_in_lib_prep_protocol) == 0 :
+            return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_lib_prep':stored_lib_prep})
         library_preparation_objs = create_library_preparation_instance(samples_in_lib_prep_protocol, request.user)
-        get_protocol_parameters_for_library_preparation(library_preparation_objs)
+        lib_prep_protocol_parameters = get_protocol_parameters_for_library_preparation(library_preparation_objs)
+        import pdb; pdb.set_trace()
+        return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'lib_prep_protocol_parameters':lib_prep_protocol_parameters})
+
     if request.method == 'POST' and request.POST['action'] == 'importsamplesheet':
 
         sample_sheet_data = extract_user_sample_sheet_data(request.FILES['uploadfile'] )

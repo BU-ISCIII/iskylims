@@ -116,9 +116,10 @@ def create_library_preparation_instance(samples_data, user):
         lib_prep_data = {}
         lib_prep_data['sample_id'] = values[0]
         lib_prep_data['molecule_id'] = values[1]
-        lib_prep_data['protocol_obj'] = Protocols.objects.get(type__protocol_type__exact ='Library Preparation', name__exact = values[2]).last()
+        lib_prep_data['protocol_obj'] = Protocols.objects.filter(type__protocol_type__exact ='Library Preparation', name__exact = values[2]).last()
         lib_prep_data['registerUser'] = user
         library_preparation_objs.append(LibraryPreparation.objects.create_lib_preparation(lib_prep_data))
+        import pdb; pdb.set_trace()
     return library_preparation_objs
 
 def extract_protocol_library_preparation_form(form_data):
@@ -145,6 +146,43 @@ def extract_protocol_library_preparation_form(form_data):
     return extraction_data
 
 
+def get_protocol_parameters_for_library_preparation(library_preparation_objs):
+    '''
+    Description:
+        The function get the protocols parameters for the list of library preparation.
+        In case that library preparations do not have the same protocol, only the
+        ones that matches with the protocol of the first library preparation are
+        considered
+    Constant:
+        HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS
+
+    Return:
+        lib_prep_same_prot_parameters
+    '''
+    protocol_considered = ''
+    lib_prep_same_prot_parameters = {}
+    lib_prep_same_prot_parameters['data'] = []
+    samples_names = []
+    lib_prep_ids = []
+    for library_preparation_obj in library_preparation_objs:
+        lib_prep_protocol = library_preparation_obj.get_protocol_used()
+        if protocol_considered == '':
+            protocol_considered = lib_prep_protocol
+            # get protocol parameters
+            lib_prep_same_prot_parameters['protocol_parameters_heading_type'] = get_protocol_parameters_and_type(library_preparation_obj.get_protocol_obj())
+            lib_prep_same_prot_parameters['protocol_used'] = protocol_considered
+            lib_prep_same_prot_parameters['fix_heading'] = HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS
+        if protocol_considered == lib_prep_protocol:
+            data = ['']* (len(lib_prep_same_prot_parameters['protocol_parameters_heading_type'])+ len(HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS))
+            sample_name = library_preparation_obj.get_sample_name()
+            data[0] = sample_name
+            data[1] = library_preparation_obj.get_lib_prep_code()
+            samples_names.append(sample_name)
+            lib_prep_ids.append(library_preparation_obj.get_lib_prep_id())
+            lib_prep_same_prot_parameters['data'].append(data)
+    lib_prep_same_prot_parameters['samples_names'] = ','.join(samples_names)
+    lib_prep_same_prot_parameters['lib_prep_ids'] = ','.join(lib_prep_ids)
+    return lib_prep_same_prot_parameters
 
 def get_samples_for_library_preparation():
     '''
@@ -163,15 +201,26 @@ def get_samples_for_library_preparation():
         samples_in_lib_prep['heading'] = HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL
         samples_objs = Samples.objects.filter(sampleState__sampleStateName__exact = 'Library preparation')
         for samples_obj in samples_objs:
-            data = ['']* len(HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL)
-            sample_name = samples_obj.get_sample_name()
-            data[0] = sample_name
-            molecule_obj = MoleculePreparation.objects.filter(sample = samples_obj, state__moleculeStateName__exact = 'Completed',usedForMassiveSequencing = True).last()
-            data[1] = molecule_obj.get_molecule_code_id()
-            samples_in_lib_prep['data'].append(data)
-            samples_id.append(samples_obj.get_sample_id())
-            samples_names.append(sample_name)
-            molecules_id.append(molecule_obj.get_molecule_id())
+            if LibraryPreparation.objects.filter(sample_id = samples_obj).exists():
+                library_preparation_obj = LibraryPreparation.objects.filter(sample_id = samples_obj).last()
+                lib_prep_obj_state = library_preparation_obj.get_state()
+                if lib_prep_obj_state == 'Defined':
+                    # get the library preparations that need to add parameters
+                    pass
+                elif lib_prep_obj_state == 'Updated parameters':
+                    # get the library preparations that need to add kits
+                    pass
+            else:
+                #import pdb; pdb.set_trace()
+                data = ['']* len(HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL)
+                sample_name = samples_obj.get_sample_name()
+                data[0] = sample_name
+                molecule_obj = MoleculePreparation.objects.filter(sample = samples_obj, state__moleculeStateName__exact = 'Completed',usedForMassiveSequencing = True).last()
+                data[1] = molecule_obj.get_molecule_code_id()
+                samples_in_lib_prep['data'].append(data)
+                samples_id.append(samples_obj.get_sample_id())
+                samples_names.append(sample_name)
+                molecules_id.append(molecule_obj.get_molecule_id())
         samples_in_lib_prep['lib_prep_protocols'] = get_protocols_for_library_preparation()
         samples_in_lib_prep['samplesID'] = ','.join(samples_id)
         samples_in_lib_prep['samplesNames'] = ','.join(samples_names)
