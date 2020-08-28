@@ -100,6 +100,52 @@ def analyze_input_param_values(form_data):
         sample_obj.set_state('Pool Preparation')
     return stored_params
 
+def create_library_preparation_instance(samples_data, user):
+    '''
+    Description:
+        The function create a new library preparation instance in database with
+        user, moleculeID, sampleID, protocolID
+        protocols.
+    Input:
+        samples_data :  Contains  moleculeID, sampleID, protocolID for each sample
+    Return:
+        library_preparation_objs
+    '''
+    library_preparation_objs = []
+    for key, values in samples_data.items():
+        lib_prep_data = {}
+        lib_prep_data['sample_id'] = values[0]
+        lib_prep_data['molecule_id'] = values[1]
+        lib_prep_data['protocol_obj'] = Protocols.objects.get(type__protocol_type__exact ='Library Preparation', name__exact = values[2]).last()
+        lib_prep_data['registerUser'] = user
+        library_preparation_objs.append(LibraryPreparation.objects.create_lib_preparation(lib_prep_data))
+    return library_preparation_objs
+
+def extract_protocol_library_preparation_form(form_data):
+    '''
+    Description:
+        The function get the user input to assign sample to library preparation
+        protocols.
+    Input:
+        form_data :     User input form
+    Return:
+        extraction_data
+    '''
+    samples_ids = form_data['samplesID'].split(',')
+    samples_names = form_data['samplesNames'].split(',')
+    molecules_ids = form_data['moleculesID'].split(',')
+    json_data = json.loads(form_data['protocol_data'])
+    extraction_data = {}
+
+    for row_index in range(len(json_data)):
+        if json_data[row_index][2] == '':
+            continue
+        right_index = samples_names.index(json_data[row_index][0])
+        extraction_data[json_data[row_index][0]] = [samples_ids[right_index],molecules_ids[right_index], json_data[row_index][2]]
+    return extraction_data
+
+
+
 def get_samples_for_library_preparation():
     '''
     Description:
@@ -109,17 +155,28 @@ def get_samples_for_library_preparation():
     '''
     samples_in_lib_prep = {}
     samples_in_lib_prep['data'] = []
+    samples_id = []
+    molecules_id = []
+    samples_names = []
     if Samples.objects.filter(sampleState__sampleStateName__exact = 'Library preparation').exists():
         data = ['']* len(HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL)
         samples_in_lib_prep['heading'] = HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL
         samples_objs = Samples.objects.filter(sampleState__sampleStateName__exact = 'Library preparation')
         for samples_obj in samples_objs:
             data = ['']* len(HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL)
-            data[0] = samples_obj.get_sample_name()
-            data[1] = MoleculePreparation.objects.filter(sample = samples_obj, state__moleculeStateName__exact = 'Completed',usedForMassiveSequencing = True).last().get_molecule_code_id()
+            sample_name = samples_obj.get_sample_name()
+            data[0] = sample_name
+            molecule_obj = MoleculePreparation.objects.filter(sample = samples_obj, state__moleculeStateName__exact = 'Completed',usedForMassiveSequencing = True).last()
+            data[1] = molecule_obj.get_molecule_code_id()
             samples_in_lib_prep['data'].append(data)
+            samples_id.append(samples_obj.get_sample_id())
+            samples_names.append(sample_name)
+            molecules_id.append(molecule_obj.get_molecule_id())
         samples_in_lib_prep['lib_prep_protocols'] = get_protocols_for_library_preparation()
-        #samples_in_lib_prep['lib_prep_defined'] = get_data_for_library_preparation_in_defined()
+        samples_in_lib_prep['samplesID'] = ','.join(samples_id)
+        samples_in_lib_prep['samplesNames'] = ','.join(samples_names)
+        samples_in_lib_prep['moleculesID'] = ','.join(molecules_id)
+
     else:
         samples_in_lib_prep ['no_samples'] = 'No samples'
     return samples_in_lib_prep

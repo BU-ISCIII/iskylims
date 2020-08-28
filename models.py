@@ -998,16 +998,20 @@ class libraryPreparationManager(models.Manager):
     def create_lib_preparation (self, lib_prep_data):
         #import pdb; pdb.set_trace()
         registerUser_obj = User.objects.get(username__exact  = lib_prep_data['registerUser'])
-        sample_obj = Samples.objects.get(sampleName__exact = lib_prep_data['sample_name'])
+        sample_obj = Samples.objects.get(pk__exact = lib_prep_data['sample_id'])
+        molecule_obj = MoleculePreparation.objects.get(pk__exact = lib_prep_data['molecule_id'])
         lib_state_obj = StatesForLibraryPreparation.objects.get(libPrepState__exact =  'Defined')
-        new_lib_prep = self.create(registerUser = registerUser_obj, molecule_id = lib_prep_data['molecule_obj'], sample_id = sample_obj,
-            protocol_id =   lib_prep_data['protocol_obj'], libPrepState = lib_state_obj, user_sample_sheet = lib_prep_data['user_sample_sheet'],
-            libPrepCodeID = lib_prep_data['lib_prep_code_id'], userSampleID = lib_prep_data['userSampleID'],
-            projectInSampleSheet = lib_prep_data['projectInSampleSheet'], samplePlate = lib_prep_data['samplePlate'],
-            sampleWell = lib_prep_data['sampleWell'],  i7IndexID = lib_prep_data['i7IndexID'],
-            i7Index = lib_prep_data['i7Index'], i5IndexID = lib_prep_data['i5IndexID'], i5Index = lib_prep_data['i5Index'],
-            singlePairedEnd = lib_prep_data['single_paired'], lengthRead = lib_prep_data['read_length'], uniqueID = lib_prep_data['uniqueID'],
-            indexPlateWell = lib_prep_data['indexPlateWell'], genomeFolder = lib_prep_data['genomeFolder'],manifest = lib_prep_data['manifest'])
+        new_lib_prep = self.create(registerUser = registerUser_obj, molecule_id = molecule_obj, sample_id = sample_obj,
+            protocol_id =   lib_prep_data['protocol_obj'], libPrepState = lib_state_obj)
+        '''
+        user_sample_sheet = lib_prep_data['user_sample_sheet'],
+        libPrepCodeID = lib_prep_data['lib_prep_code_id'], userSampleID = lib_prep_data['userSampleID'],
+        projectInSampleSheet = lib_prep_data['projectInSampleSheet'], samplePlate = lib_prep_data['samplePlate'],
+        sampleWell = lib_prep_data['sampleWell'],  i7IndexID = lib_prep_data['i7IndexID'],
+        i7Index = lib_prep_data['i7Index'], i5IndexID = lib_prep_data['i5IndexID'], i5Index = lib_prep_data['i5Index'],
+        singlePairedEnd = lib_prep_data['single_paired'], lengthRead = lib_prep_data['read_length'], uniqueID = lib_prep_data['uniqueID'],
+        indexPlateWell = lib_prep_data['indexPlateWell'], genomeFolder = lib_prep_data['genomeFolder'],manifest = lib_prep_data['manifest']
+        '''
 
         return new_lib_prep
 

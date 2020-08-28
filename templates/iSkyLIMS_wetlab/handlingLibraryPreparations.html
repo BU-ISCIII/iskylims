@@ -254,10 +254,10 @@
 
         {% endif %}
         <div class="row row-space-2 margin-b-4">
-            <div class="col-sm-10">
+            <div class="col-sm-12">
                 <h3>Library Preparation</h3>
                 <div class="tab">
-                    <button class="tablinks" onclick="summaryBin(event, 'assignProtocol')" id="defaultOpen"">Available Samples </button>
+                    <button class="tablinks" onclick="summaryBin(event, 'assigningProtocol')" id="defaultOpen">Available Samples </button>
                     {% if upload_file.lib_prep_defined %}
                         <button class="tablinks" onclick="summaryBin(event, 'pending')">Pending Library Preparations</button>
 
@@ -303,7 +303,7 @@
                         </div> <!--  end of tab pending -->
                     {% endif %}
 
-                    <div id="assignProtocol" class="tabcontent">
+                    <div id="assigningProtocol" class="tabcontent">
                         <div class="col-sm-11" >
                             <div class="panel panel-default">
                                 <div class="panel-heading"><h3>Assign Library protocol to the samples.</h3></div>
@@ -313,7 +313,9 @@
                                         {% csrf_token %}
                                         <div class="form-group required">
                                             <input type="hidden" name="action" value="assignProtocol"/>
-
+                                            <input type="hidden" name="samplesID" value="{{samples_in_lib_prep.samplesID}}">
+                                            <input type="hidden" name="samplesNames" value="{{samples_in_lib_prep.samplesNames}}">
+                                            <input type="hidden" name="moleculesID" value="{{samples_in_lib_prep.moleculesID}}">
                                             <div id="spreadsheet"></div>
                                             <br><br><br><br>
 
@@ -361,56 +363,9 @@
                                              });
                                          </script>
 
-                                            <label class="col-sm-6 control-label" for="protocol" >Select the protocol used on the samples included in Sample Sheet file </label>
-                                            <div class="col-sm-4">
-                                                <select class="form-control" name="lib_protocols" id="lib_protocols">
-                                                        <option value="">Choose a value</option>
-                                                     {% for value in upload_file.lib_prep_protocols %}
-                                                         <option value="{{value}}">{{value}}</option>
-                                                     {% endfor %}
 
-                                                </select>
-                                                <br><br>
-                                            </div>  <!-- end select input -->
-                                            <br>
-                                            {% if upload_file.index_adapter or upload_file.instrument %}
-                                                <div class="col-sm-12">
-                                                    <h5 style="text-align:center">Add the missing information in Sample Sheet</h5>
-                                                </div>
-                                            {% endif %}
-                                            {% if upload_file.index_adapter %}
-                                                <label class="col-sm-6 control-label" for="index_adapter" >Select Index adapters</label>
-                                                <div class="col-sm-4">
-                                                    <select class="form-control" name="index_adapter" id="index_adapter">
-                                                        <option value="">Choose a value</option>
-                                                        {% for value in  upload_file.index_adapter %}
-                                                            <option value="{{value}}">{{value}}</option>
-                                                        {% endfor %}
-                                                   </select>
-                                                   <br><br>
-                                                </div>  <!-- end select input -->
 
-                                            {% endif %}
-                                            {% if upload_file.instrument %}
-                                                <label class="col-sm-6 control-label" for="instrument" >Select Instrument Type</label>
-                                                <div class="col-sm-4">
-                                                    <select class="form-control" name="instrument" id="instrument">
-                                                        <option value="">Choose a value</option>
-                                                        <option value="Nextseq">NextSeq</option>
-                                                        <option value="miSeq">miSeq</option>
-                                                    </select>
-                                                    <br><br>
-                                                </div>  <!-- end select input -->
-                                            {% endif %}
-                                             <br><br>
-                                            <div class="col-sm-11">
-                                                <br>
-                                                <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
-                                            </div>
-                                        </div> <!-- End of form-group required -->
-                                    </form>
-
-                                    {% if upload_file.index_adapter or upload_file.instrument %}
+                                    {% if samples_in_lib_prep.heading %}
                                         <script>
                                             // Get the element with id="defaultOpen" and click on it
                                             document.getElementById("defaultOpen").click();

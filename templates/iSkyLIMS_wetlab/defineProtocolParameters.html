@@ -5,9 +5,9 @@
 {%include 'iSkyLIMS_core/jexcel_functionality.html' %}
 {% if recorded_prot_parameters %}
     <div class="row row-space-4 margin-b-4">
-        <div class="col-sm-6" >
+        <div class="col-sm-7 col-sm-offset-2" >
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>Sucessful store of Sample project fields on {{recorded_prot_parameters.protocol_name}}</h3></div>
+                <div class="panel-heading"><h3>Sucessful store of Protocol Parameters on {{recorded_prot_parameters.protocol_name}}</h3></div>
                 <div class="panel-body">
 
                     <div class="col-sm-5" >
@@ -56,23 +56,24 @@
                      var data1 = [[],
                      ];
 
-                     var table1 = jexcel(document.getElementById('spreadsheet1'), {
-                         data:data1,
-                         columns: [
-                             { type: 'text', title:'{{prot_parameters.heading.0}}', width:120 },
-                             { type: 'numeric', title:'{{prot_parameters.heading.1}}', width:50, mask:' #.##,00' },
-                             { type: 'checkbox', title:'{{prot_parameters.heading.2}}', width:50 },
-                             { type: 'text', title:'{{prot_parameters.heading.3}}', width:240 , wordWrap:true },
-                             { type: 'text' , title: '{{prot_parameters.heading.4}}', width:90 },
-                             { type: 'text', title:'{{prot_parameters.heading.5}}', width:90 },
-                             { type: 'text', title:'{{prot_parameters.heading.6}}', width:400 , wordWrap:true },
-                         ],
-                         allowInsertColumn:false,
-                         allowDeleteColumn:false,
-                         allowRenameColumn:false,
-                         csvFileName:'protocol_parameters',
-                         minDimensions:[6,3],
-                     });
+                    var table1 = jexcel(document.getElementById('spreadsheet1'), {
+                        data:data1,
+                        columns: [
+                            { type: 'text', title:'{{prot_parameters.heading.0}}', width:120 },
+                            { type: 'numeric', title:'{{prot_parameters.heading.1}}', width:50, mask:' #.##,00' },
+                            { type: 'checkbox', title:'{{prot_parameters.heading.2}}', width:50 },
+                            { type: 'dropdown' , title: '{{prot_parameters.heading.3}}', width:100 , source: ["string", "Date" , "Option List"] },
+                            { type: 'text' , title: '{{prot_parameters.heading.4}}',  width:240, wordWrap:true},
+                            { type: 'text' , title: '{{prot_parameters.heading.5}}', width:90 },
+                            { type: 'text', title:'{{prot_parameters.heading.6}}', width:90 },
+                            { type: 'text', title:'{{prot_parameters.heading.7}}', width:300 , wordWrap:true },
+                        ],
+                        allowInsertColumn:false,
+                        allowDeleteColumn:false,
+                        allowRenameColumn:false,
+                        csvFileName:'protocol_parameters',
+                        minDimensions:[6,3],
+                    });
 
 
                      </script>

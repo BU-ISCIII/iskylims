@@ -3566,7 +3566,12 @@ def handling_library_preparations(request):
     '''
     # get the information for returning the uploaded file in case errors in the sample sheet
     samples_in_lib_prep = get_samples_for_library_preparation()
-    
+
+    if request.method == 'POST' and request.POST['action'] == 'assignProtocol':
+        samples_in_lib_prep_protocol = extract_protocol_library_preparation_form(request.POST)
+        import pdb; pdb.set_trace()
+        library_preparation_objs = create_library_preparation_instance(samples_in_lib_prep_protocol, request.user)
+        get_protocol_parameters_for_library_preparation(library_preparation_objs)
     if request.method == 'POST' and request.POST['action'] == 'importsamplesheet':
 
         sample_sheet_data = extract_user_sample_sheet_data(request.FILES['uploadfile'] )
