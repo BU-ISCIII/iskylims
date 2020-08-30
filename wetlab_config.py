@@ -122,6 +122,9 @@ SAMPLE_SHEET_ONE_INDEX_TWO_ADAPTERS_TEMPLATE_NAME = 'sample_sheet_one_index_two_
 SAMPLE_SHEET_ONE_INDEX_ONE_ADAPTER_TEMPLATE_NAME = 'sample_sheet_one_index_one_adapter_template.csv'
 
 
+##### CONFIGURATION FOR ADDING KITS FOR LIBRARY PREPARATION ########
+HEADING_ADDING_COMMERCIAL_KITS_TO_PROTOCOL = ['Given name ', 'Order', 'Used', 'Commercial Kit Name', 'Description']
+
 ##### CONFIGURATION FOR SAMPLE SHEET CONVERSION ##############
 ######### FILE TO BASESPACE FORMAT     #######################
 # column names when sample sheet has only one index

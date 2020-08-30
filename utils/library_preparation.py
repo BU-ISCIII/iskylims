@@ -219,7 +219,7 @@ def get_samples_for_library_preparation():
                     lib_prep_data.append(library_preparation_obj.get_lib_prep_code())
                     lib_prep_data.append(library_preparation_obj.get_lib_prep_id())
                     samples_in_lib_prep['lib_prep_defined'][protocol_name].append(lib_prep_data)
-                    
+
                 elif lib_prep_obj_state == 'Updated parameters':
                     # get the library preparations that need to add kits
                     pass
@@ -242,6 +242,7 @@ def get_samples_for_library_preparation():
     else:
         samples_in_lib_prep ['no_samples'] = 'No samples'
     return samples_in_lib_prep
+
 
 
 def extract_sample_data (s_data):

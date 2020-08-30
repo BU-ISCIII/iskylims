@@ -55,7 +55,7 @@
                                    allowRenameColumn:false,
                                    allowInsertRow:false,
                                    allowDeleteRow:false,
-                                   tableOverflow:true,
+                                   tableOverflow:false,
                                    tableHeight:'200px',
                                    csvFileName:'library_preparation_parameters',
 
@@ -265,7 +265,7 @@
                                     <div class="panel-heading"><h3>Select the Library Preparation to add Protocol Parameter Information</h3></div>
                                     <div class="panel-body">
                                         {% for key, values in samples_in_lib_prep.lib_prep_defined.items %}
-                                        <h3>Library Preparation defined for using protocol {{key}}</h3>
+                                        <h4>Library Preparation defined for using protocol {{key}}</h4>
                                             <form method="post" enctype="multipart/form-data" name="libpreparationdefined"  id="libpreparationdefined" class="form-horizontal well">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="action" value="addProtocolParameter"/>

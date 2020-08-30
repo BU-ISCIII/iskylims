@@ -2,6 +2,7 @@
 {% load static %}_
 {% block content %}
 {% csrf_token %}
+
 <BR>
 <div class="row row-space-2 margin-b-4">
     <div class="col-sm-12" >
@@ -97,38 +98,93 @@
 </div> <!--// end row -->
 
 <div class="row row-space-2 margin-b-4">
-    <div class="col-sm-8" >
-        <BR> <BR> <BR>
-        <div class="panel panel-default">
-          <div class="panel-heading"><h3>Protocols already defined for Library Preparations</h3></div>
-          <div class="panel-body">
-                {% if other_protocol_list %}
-                    <table class="table table-hover">
-                       <thead>
-                          <tr>
-                            <th>Protocol Type</th>
-                            <th>Protocol Name</th>
-                            <th>Protocol Parameter</th>
-                          </tr>
-                       </thead>
-                       <tbody>
-                        {% for   prot_type, name, id, add_par in other_protocol_list %}
-                            <tr>
-                                <td>{{ prot_type }}</td>
+    <div class="col-sm-12" >
+        <h3>Protocols already defined for Library Preparations</h3>
 
-                                {% if add_par %}
-                                    <td><a href="/wetlab/displayProtocol={{id}}">{{ name }}</a></td>
-                                    <td>Parameters already defined</td>
-                                {% else %}
-                                    <td>{{ name }}</td>
-                                    <td><button onclick="window.location.href = '/wetlab/defineProtocolParameters={{id}}';">Define Library Preparation Parameters</button></td>
-                                {% endif %}
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
+            {% if other_protocol_list %}
+                    <div class="tab">
+                        <button class="tablinks" onclick="summaryBin(event, 'libPrepParameterProtocol')" id="defaultOpen">Protocol Parameters </button>
+                        {% if additional_kits %}
+                            <button class="tablinks" onclick="summaryBin(event, 'additionalKits')">Additional Lot Kit used in Protocol</button>
+
+                            <div id="additionalKits" class="tabcontent">
+                                <div class="col-sm-11" >
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading"><h3>Select the Library Preparation to add Protocol Parameter Information</h3></div>
+                                        <div class="panel-body">
+                                            <table class="table table-hover">
+                                               <thead>
+                                                  <tr>
+                                                    <th>Protocol Name</th>
+                                                    <th>Additional User Lot Kit defined</th>
+                                                  </tr>
+                                               </thead>
+                                               <tbody>
+                                                {% for name, id, add_kit in additional_kits %}
+                                                    <tr>
+                                                        {% if add_kit == "Defined" %}
+                                                            <td><a href="/wetlab/displayAdditionalKits={{id}}">{{ name }}</a></td>
+                                                            <td>Parameters already defined</td>
+                                                        {% else %}
+                                                            <td>{{ name }}</td>
+                                                            <td><input class="btn pull-center btn-default" type="submit" onclick="window.location.href = '/wetlab/defineAdditionalKits={{id}}';" value ="Define Additional Kits"/></td>
+                                                        {% endif %}
+                                                    </tr>
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div> <!--  end of panel body -->
+                                    </div> <!--  end of panel  -->
+                                </div> <!--  end of col-sm-11 -->
+                            </div> <!--  end of additionalKits -->
+                        {% endif %}
+                        <div id="libPrepParameterProtocol" class="tabcontent">
+                            <div class="col-sm-11" >
+                                <div class="panel panel-default">
+                                    <div class="panel-heading"><h3>Select the Library Preparation to add Protocol Parameter Information</h3></div>
+                                    <div class="panel-body">
+                                        <table class="table table-hover">
+                                           <thead>
+                                              <tr>
+                                                <th>Protocol Type</th>
+                                                <th>Protocol Name</th>
+                                                <th>Protocol Parameter</th>
+                                              </tr>
+                                           </thead>
+                                           <tbody>
+                                            {% for   prot_type, name, id, add_par in other_protocol_list %}
+                                                <tr>
+                                                    <td>{{ prot_type }}</td>
+
+                                                    {% if add_par %}
+                                                        <td><a href="/wetlab/displayProtocol={{id}}">{{ name }}</a></td>
+                                                        <td>Parameters already defined</td>
+                                                    {% else %}
+                                                        <td>{{ name }}</td>
+                                                        <td><input class="btn pull-center btn-default" type="submit" onclick="window.location.href = '/wetlab/defineProtocolParameters={{id}}';" value ="Define Library Preparation Parameters"/></td>
+                                                    {% endif %}
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div> <!--  end of panel body -->
+                                </div> <!--  end of panel  -->
+                            </div> <!--  end of col-sm-11 -->
+                        </div> <!--  end of libPrepParameterProtocol -->
+                    </div> <!--  end of tab -->
+                    <script>
+                        // Get the element with id="defaultOpen" and click on it
+                        document.getElementById("defaultOpen").click();
+                    </script>
                 {% else %}
-                    <p>No Protocols  have been defined so far</p>
+                    <div class="col-sm-8 col-sm-offset-2" >
+                        <div class="panel panel-default">
+                            <div class="panel-heading"><h5></h5></div>
+                            <div class="panel-body">
+                                <p>No Protocols  have been defined so far</p>
+                            </div> <!--  end of panel body -->
+                        </div> <!--  end of panel  -->
+                    </div> <!--  end of col-sm-11 -->
                 {% endif %}
             </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->

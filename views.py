@@ -32,6 +32,7 @@ from .utils.sample_functions import *
 from .utils.library_preparation import *
 from .utils.pool_preparation import *
 from .utils.run_preparation import  *
+from .utils.additional_kits import *
 #from .utils.samplesheet_checks import *
 #from .utils.wetlab_misc_utilities import normalized_data
 from iSkyLIMS_core.utils.handling_samples import *
@@ -3183,6 +3184,7 @@ def create_protocol (request):
         return redirect ('/accounts/login')
     # get the list of defined protocols
     defined_protocols, other_protocol_list = display_available_protocols (__package__)
+    additional_kits = get_additional_kits_list (__package__)
     defined_protocol_types = display_protocol_types (__package__)
 
 
@@ -3201,7 +3203,8 @@ def create_protocol (request):
                             'new_protocol_id':new_protocol_id,  'other_protocol_list' :other_protocol_list})
 
     return render(request, 'iSkyLIMS_wetlab/createProtocol.html',{'defined_protocols': defined_protocols,
-                        'defined_protocol_types':defined_protocol_types, 'other_protocol_list' :other_protocol_list})
+                        'defined_protocol_types':defined_protocol_types, 'other_protocol_list' :other_protocol_list,
+                        'additional_kits': additional_kits})
 
 
 @login_required
@@ -3233,6 +3236,34 @@ def create_sample_projects (request):
                              'new_sample_project_id': new_sample_project_id, 'new_defined_sample_project' : new_defined_sample_project})
 
     return render(request, 'iSkyLIMS_wetlab/createSampleProjects.html',{'defined_samples_projects': defined_samples_projects})
+
+def define_additional_kits(request, protocol_id):
+    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+    if request.user.is_authenticated:
+        if not is_wetlab_manager(request):
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':['You do not have enough privileges to see this page ',
+                            'Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+
+    if request.method == 'POST' and request.POST['action'] == 'define_additional_kits':
+
+        recorded_additional_kits = set_additional_kits(request)
+
+        return render(request, 'iSkyLIMS_wetlab/defineAdditionalKits.html', {'recorded_additional_kits':recorded_additional_kits})
+
+    else:
+        if not check_if_protocol_exists(protocol_id, __package__):
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',
+                        {'content':['The requested Protocol does not exist',
+                            'Create the protocol name before assigning additional kits for protocol.']})
+
+
+        additional_kits = define_table_for_additional_kits(protocol_id)
+        return render(request, 'iSkyLIMS_wetlab/defineAdditionalKits.html', {'additional_kits':additional_kits})
+
 
 @login_required
 def display_sample_project(request,sample_project_id):
@@ -3573,9 +3604,18 @@ def handling_library_preparations(request):
             return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_lib_prep':stored_lib_prep})
         library_preparation_objs = create_library_preparation_instance(samples_in_lib_prep_protocol, request.user)
         lib_prep_protocol_parameters = get_protocol_parameters_for_library_preparation(library_preparation_objs)
-        import pdb; pdb.set_trace()
         return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'lib_prep_protocol_parameters':lib_prep_protocol_parameters})
 
+    # add protocol parameters for the user selected library preparation on defined state
+    if request.method == 'POST' and request.POST['action'] == 'addProtocolParameter':
+        lib_prep_ids = request.POST.getlist('libpreparation')
+        library_preparation_objs = []
+        for lib_prep_id in lib_prep_ids:
+            library_preparation_objs.append(get_lib_prep_obj_from_id(lib_prep_id))
+        lib_prep_protocol_parameters = get_protocol_parameters_for_library_preparation(library_preparation_objs)
+        return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'lib_prep_protocol_parameters':lib_prep_protocol_parameters})
+
+    '''
     if request.method == 'POST' and request.POST['action'] == 'importsamplesheet':
 
         sample_sheet_data = extract_user_sample_sheet_data(request.FILES['uploadfile'] )
@@ -3620,6 +3660,7 @@ def handling_library_preparations(request):
         stored_lib_prep = get_library_preparation_heading_for_samples(stored_lib_prep_sample, request.POST['lib_protocols'])
 
         return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_lib_prep':stored_lib_prep})
+    '''
 
     if request.method == 'POST' and request.POST['action'] == 'libpreparationdefined':
         lib_prep_defined = request.POST.getlist('libpreparation')

@@ -9,7 +9,7 @@ from django_utils.models import Center
 from django.utils.translation import ugettext_lazy as _
 
 from .  import wetlab_config
-from iSkyLIMS_core.models import MoleculePreparation , Samples , ProtocolType, Protocols, ProtocolParameters, UserLotCommercialKits, SequencerInLab
+from iSkyLIMS_core.models import MoleculePreparation , Samples , ProtocolType, Protocols, ProtocolParameters, UserLotCommercialKits,CommercialKits, SequencerInLab
 
 class RunErrors (models.Model):
     errorCode = models.CharField(max_length=10)
@@ -1313,3 +1313,37 @@ class LibParameterValue (models.Model):
         return '%s' %(self.parameterValue)
 
     objects = LibParameterValueManager()
+
+
+class AdditionaKitsLibraryPreparation (models.Model):
+    protocol_id =  models.ForeignKey(
+                    Protocols,
+                    on_delete= models.CASCADE)
+    commercialKit_id =  models.ForeignKey(
+                    CommercialKits,
+                    on_delete= models.CASCADE)
+    kitName = models.CharField(max_length=255)
+    description = models.CharField(max_length= 400, null=True, blank=True)
+    kitOrder = models.IntegerField()
+    kitUsed = models.BooleanField()
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__ (self):
+        return '%s' %(self.kitName)
+
+
+class AdditionalUserLotKit (models.Model):
+    lib_prep_id =  models.ForeignKey(
+                    LibraryPreparation,
+                    on_delete= models.CASCADE)
+    additionalLotKits = models.ForeignKey(
+                    AdditionaKitsLibraryPreparation,
+                    on_delete= models.CASCADE)
+    userLotKit_id = models.ForeignKey(
+                    UserLotCommercialKits,
+                    on_delete= models.CASCADE)
+    lotNumber = models.CharField(max_length=255)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__ (self):
+        return '%s' %(self.lotNumber)

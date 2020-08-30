@@ -26,6 +26,7 @@ urlpatterns = [
     path('configurationEmail', views.configuration_email, name='configuration_email'),
     path('configurationSamba', views.configuration_samba, name='configuration_samba'),
     path('configurationTest/', views.configuration_test, name='configuration_test'),
+    path('defineAdditionalKits=<int:protocol_id>', views.define_additional_kits, name = 'define_additional_kits'),
     path('defineMoleculeUses', views.define_molecule_uses, name='define_molecule_uses'),
     path('defineProtocolParameters=<int:protocol_id>', views.define_protocol_parameters, name = 'define_protocol_parameters'),
     path('defineTypeOfSamples', views.define_type_of_samples, name = 'define_type_of_samples'),
