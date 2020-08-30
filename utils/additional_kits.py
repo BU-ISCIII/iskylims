@@ -1,8 +1,10 @@
+import json
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_core.models import Protocols, CommercialKits
 from django.contrib.auth.models import User
 from iSkyLIMS_core.utils.handling_protocols import get_protocol_obj_from_id
 from iSkyLIMS_wetlab.wetlab_config import *
+
 
 
 def define_table_for_additional_kits(protocol_id):
@@ -56,3 +58,31 @@ def get_additional_kits_list (app_name):
                         data_prot.append('')
                     additional_kits.append(data_prot)
     return additional_kits
+
+def set_additional_kits (form_data, user):
+    '''
+    Description:
+        The function get additional kits used in the library preparation and save
+        them in database
+    Input:
+        form_data   # user form data
+        user        # requested user
+    Return:
+        kit_names
+    '''
+    kit_names = []
+    protocol_id = form_data['protocol_id']
+    kit_heading_names = ['kitName','kitOrder', 'kitUsed', 'commercial_kit', 'description']
+    json_data = json.loads(form_data['kits_data'])
+    for row_index in range(len(json_data)):
+        if json_data[row_index][0] == '':
+            continue
+        kit_data = {}
+        for i in range(len(kit_heading_names)):
+            kit_data[kit_heading_names[i]] = json_data[row_index][i]
+        kit_data['protocol_id'] = get_protocol_obj_from_id(protocol_id)
+        kit_data['commercialKit_id'] = CommercialKits.objects.filter(name__exact = kit_data['commercial_kit']).last()
+        kit_data['user'] = user
+        new_additional_kit = AdditionaKitsLibraryPreparation.objects.create_additional_kit(kit_data)
+        kit_names.append(kit_data['kitName'])
+    return kit_names

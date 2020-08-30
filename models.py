@@ -1315,7 +1315,19 @@ class LibParameterValue (models.Model):
     objects = LibParameterValueManager()
 
 
+class AdditionaKitsLibraryPreparationManager(models.Manager):
+
+    def create_additional_kit (self, kit_data):
+        new_additional_kit = self.create(registerUser = kit_data['user'],
+                protocol_id = kit_data['protocol_id'], commercialKit_id = kit_data['commercialKit_id'],
+                kitName = kit_data['kitName'], description = kit_data['description'],
+                kitOrder = kit_data['kitOrder'], kitUsed = kit_data['kitUsed'])
+        return new_additional_kit
+
 class AdditionaKitsLibraryPreparation (models.Model):
+    registerUser = models.ForeignKey(
+                    User,
+                    on_delete=models.CASCADE)
     protocol_id =  models.ForeignKey(
                     Protocols,
                     on_delete= models.CASCADE)
@@ -1331,6 +1343,8 @@ class AdditionaKitsLibraryPreparation (models.Model):
     def __str__ (self):
         return '%s' %(self.kitName)
 
+    objects = AdditionaKitsLibraryPreparationManager()
+
 
 class AdditionalUserLotKit (models.Model):
     lib_prep_id =  models.ForeignKey(
@@ -1342,7 +1356,7 @@ class AdditionalUserLotKit (models.Model):
     userLotKit_id = models.ForeignKey(
                     UserLotCommercialKits,
                     on_delete= models.CASCADE)
-    lotNumber = models.CharField(max_length=255)
+    value = models.CharField(max_length=255)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__ (self):

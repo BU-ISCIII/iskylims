@@ -30,6 +30,11 @@ class LibraryPoolAdmin(admin.ModelAdmin):
 class libPreparationUserSampleSheetAdmin(admin.ModelAdmin):
     list_display = ['registerUser', 'collectionIndexKit_id', 'sampleSheet', 'application','instrument', 'adapter1', 'adapter2', 'assay','reads']
 
+class AdditionaKitsLibraryPreparationAdmin(admin.ModelAdmin):
+    list_display = ['kitName', 'protocol_id','commercialKit_id']
+
+class AdditionalUserLotKitAdmin(admin.ModelAdmin):
+    list_display = ['lib_prep_id', 'additionalLotKits' , 'userLotKit_id']
 
 class RunErrorsAdmin (admin.ModelAdmin):
     list_display = ('errorCode', 'errorText')
@@ -92,7 +97,6 @@ class StatsFlSummaryAdmin(admin.ModelAdmin):
 
 
 
-
 class GraphicsStatsAdmin(admin.ModelAdmin):
     list_display = ('runprocess_id', 'folderRunGraphic', 'cluserCountGraph', 'flowCellGraph', 'intensityByCycleGraph', 'heatMapGraph', 'histogramGraph', 'sampleQcGraph')
 
@@ -102,6 +106,9 @@ admin.site.register(LibParameterValue, LibParameterValueAdmin)
 
 admin.site.register(LibraryPool, LibraryPoolAdmin)
 admin.site.register(libPreparationUserSampleSheet, libPreparationUserSampleSheetAdmin)
+
+admin.site.register(AdditionaKitsLibraryPreparation, AdditionaKitsLibraryPreparationAdmin)
+admin.site.register(AdditionalUserLotKit, AdditionalUserLotKitAdmin)
 
 admin.site.register(RunningParameters , RunningParametersAdmin)
 admin.site.register(RunProcess , RunProcessAdmin)

@@ -3248,9 +3248,12 @@ def define_additional_kits(request, protocol_id):
         #redirect to login webpage
         return redirect ('/accounts/login')
 
-    if request.method == 'POST' and request.POST['action'] == 'define_additional_kits':
+    additional_kits = define_table_for_additional_kits(protocol_id)
+    if request.method == 'POST' and request.POST['action'] == 'defineAdditionalKits':
 
-        recorded_additional_kits = set_additional_kits(request)
+        recorded_additional_kits = set_additional_kits(request.POST, request.user)
+        if len(recorded_additional_kits) == 0:
+            return render(request, 'iSkyLIMS_wetlab/defineAdditionalKits.html', {'additional_kits':additional_kits})
 
         return render(request, 'iSkyLIMS_wetlab/defineAdditionalKits.html', {'recorded_additional_kits':recorded_additional_kits})
 
@@ -3260,8 +3263,6 @@ def define_additional_kits(request, protocol_id):
                         {'content':['The requested Protocol does not exist',
                             'Create the protocol name before assigning additional kits for protocol.']})
 
-
-        additional_kits = define_table_for_additional_kits(protocol_id)
         return render(request, 'iSkyLIMS_wetlab/defineAdditionalKits.html', {'additional_kits':additional_kits})
 
 

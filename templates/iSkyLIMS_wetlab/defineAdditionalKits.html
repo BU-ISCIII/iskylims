@@ -14,11 +14,11 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th> Parameter name </th>
+                                    <th> Kit name </th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for  values in recorded_additional_kits.kits %}
+                                {% for  values in recorded_additional_kits %}
                                     <tr>
                                         <td>{{ values }}</td>
                                     </tr>
@@ -41,8 +41,8 @@
                      <form method="post" enctype="multipart/form-data" name="defineAdditionalKits"  id="defineAdditionalKits" class="form-horizontal well">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="defineAdditionalKits"/>
-                        <input type="hidden" name="protocol_id" value="{{prot_parameters.protocol_id}}"/>
-                        <h4>Define the parameters used for protocol {{prot_parameters.protocol_name}}</h4>
+                        <input type="hidden" name="protocol_id" value="{{additional_kits.protocol_id}}"/>
+                        <h4>Define the parameters used for protocol {{additional_kits.protocol_name}}</h4>
                         <div id="spreadsheet1"></div>
                         <br>
                         <br>
@@ -85,7 +85,7 @@
                                 var table_data1 = table1.getData()
                                 var data1_json = JSON.stringify(table_data1)
                                 $("<input />").attr("type", "hidden")
-                                  .attr("name", "table_data1")
+                                  .attr("name", "kits_data")
                                   .attr("value", data1_json)
                                   .appendTo("#defineAdditionalKits");
                                 $("#btnSubmit").attr("disabled", true);
