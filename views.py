@@ -3286,9 +3286,10 @@ def display_protocol (request, protocol_id):
             {'content':['The protocol that you are trying to get ',
                         'DOES NOT exists .']})
     protocol_data = get_all_protocol_info (protocol_id)
+    kit_data = get_all_additional_kit_info(protocol_id)
 
 
-    return render(request, 'iSkyLIMS_wetlab/displayProtocol.html', {'protocol_data': protocol_data})
+    return render(request, 'iSkyLIMS_wetlab/displayProtocol.html', {'protocol_data': protocol_data, 'kit_data': kit_data})
 
 
 @login_required

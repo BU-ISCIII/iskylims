@@ -1343,6 +1343,17 @@ class AdditionaKitsLibraryPreparation (models.Model):
     def __str__ (self):
         return '%s' %(self.kitName)
 
+    def get_all_kit_info(self):
+        data = []
+        data.append(self.kitName)
+        data.append(self.kitOrder)
+        data.append(self.kitUsed)
+        data.append(self.commercialKit_id.get_name())
+        data.append(self.description)
+        return data
+
+
+
     objects = AdditionaKitsLibraryPreparationManager()
 
 

@@ -59,6 +59,29 @@ def get_additional_kits_list (app_name):
                     additional_kits.append(data_prot)
     return additional_kits
 
+def get_all_additional_kit_info(protocol_id):
+    '''
+    Description:
+        The function get all information of the additional kits for the protocol in
+        the input request
+    Input:
+        protocol_id   # id of the protocol
+    Constant:
+        HEADING_ADDING_COMMERCIAL_KITS_TO_PROTOCOL
+    Return:
+        kit_info
+    '''
+    kit_info = {}
+    protocol_obj = get_protocol_obj_from_id(protocol_id)
+    if AdditionaKitsLibraryPreparation.objects.filter(protocol_id = protocol_obj).exists():
+        kit_info['kit_heading'] = HEADING_ADDING_COMMERCIAL_KITS_TO_PROTOCOL
+        kit_info['kit_data'] = []
+        kits = AdditionaKitsLibraryPreparation.objects.filter(protocol_id = protocol_obj).order_by('kitOrder')
+        for kit in kits:
+            kit_info['kit_data'].append(kit.get_all_kit_info())
+
+    return kit_info
+
 def set_additional_kits (form_data, user):
     '''
     Description:

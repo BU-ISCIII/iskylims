@@ -42,7 +42,7 @@
                         {% csrf_token %}
                         <input type="hidden" name="action" value="defineAdditionalKits"/>
                         <input type="hidden" name="protocol_id" value="{{additional_kits.protocol_id}}"/>
-                        <h4>Define the parameters used for protocol {{additional_kits.protocol_name}}</h4>
+                        <h4>Type the aditional kits</h4>
                         <div id="spreadsheet1"></div>
                         <br>
                         <br>
@@ -101,9 +101,6 @@
     </div> <!--// end row -->
 {% endif %}
 
-
-
-
-<!-- End of FORM for defining protocol parameters -->
+<!-- End of FORM for defining protocol additional kits -->
 
 {% endblock %}
