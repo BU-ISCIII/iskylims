@@ -195,6 +195,12 @@ def get_protocol_obj_from_name(protocol_name):
     else:
         return None
 
+def get_protocol_obj_from_id(protocol_id):
+    if Protocols.objects.filter(pk__exact = protocol_id).exists():
+        return Protocols.objects.get(pk__exact = protocol_id)
+    else:
+        return None
+
 def get_protocol_parameters(protocol_obj):
     '''
     Description:
