@@ -2,7 +2,7 @@ import datetime, os
 from django.db import models
 from django import forms
 from django.contrib.auth.models import User
-from django.utils.encoding import python_2_unicode_compatible
+#from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel
 from mptt.fields import TreeForeignKey, TreeManyToManyField
@@ -108,7 +108,7 @@ class Pipelines(models.Model):
                 on_delete=models.CASCADE)
 	pipelineName = models.CharField(max_length = 50)
 	pipelineVersion = models.CharField(max_length = 10)
-	useRunFolder = models.NullBooleanField(default = True, null = True)
+	useRunFolder = models.BooleanField(default = True, null = True)
 	externalRequest = models.BooleanField(default = True)
 	default = models.BooleanField(default = False)
 	pipelineInUse = models.BooleanField(default = True)
