@@ -45,7 +45,7 @@
                             <label class="col-sm-5  control-label" for="USER_EMAIL" >User email </label>
                             <div class="col-sm-5"><input class="form-control" type="email" required = "required" name="USER_EMAIL" id="USER_EMAIL" value = "{{email_conf_data.USER_EMAIL}}" size="100" maxlength="100"></div>
                             <br><br>
-                            <label class="col-sm-5  control-label" for="SENT_EMAIL_ON_ERROR" >send email on crontab found error</label>
+                            <label class="col-sm-5  control-label" for="SENT_EMAIL_ON_ERROR" >send email if API REST set the service to error</label>
                             <div class="col-sm-5">
                                 {% if email_conf_data.SENT_EMAIL_ON_ERROR %}
                                     <label class="radio-inline"><input type="radio" name="SENT_EMAIL_ON_ERROR" required = "required" value="True" checked>YES</label>
