@@ -917,7 +917,7 @@ class MoleculePreparation (models.Model):
     extractionType = models.CharField(max_length=50)
     moleculeExtractionDate = models.DateTimeField(auto_now_add = False, null =True)
     numberOfReused = models.IntegerField(default=0)
-    usedForMassiveSequencing = models.NullBooleanField()
+    usedForMassiveSequencing = models.BooleanField( null = True, blank = True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__ (self):
