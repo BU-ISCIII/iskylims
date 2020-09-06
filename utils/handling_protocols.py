@@ -275,7 +275,7 @@ def set_protocol_parameters(request):
             prot_parameters['Option Values'] =','.join(clean_value_list)
         else:
             prot_parameters['Option Values'] = ''
-        import pdb; pdb.set_trace()
+
         saved_parameters.append(ProtocolParameters.objects.create_protocol_parameter(prot_parameters).get_parameter_name())
     stored_parameters['parameters'] = saved_parameters
     stored_parameters['protocol_name'] = protocol_id_obj.get_name()
