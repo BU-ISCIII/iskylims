@@ -3672,8 +3672,19 @@ def handling_library_preparations(request):
 
     # store the parameter library preparation protocol
     if request.method == 'POST' and request.POST['action'] == 'recordProtocolParamters':
-        stored_params = analyze_input_param_values (request.POST)
+
+        stored_params = analyze_and_store_input_param_values (request.POST)
         if 'ERROR' in stored_params:
+            error_message = stored_params['ERROR']
+            lib_prep_ids = request.POST['lib_prep_ids'].split(',')
+            library_preparation_objs = []
+            for lib_prep_id in lib_prep_ids:
+                library_preparation_objs.append(get_lib_prep_obj_from_id(lib_prep_id))
+            lib_prep_protocol_parameters = get_protocol_parameters_for_library_preparation(library_preparation_objs)
+            # restore the user data
+            lib_prep_protocol_parameters['data'] = json.loads(request.POST['protocol_data'])
+            return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'ERROR': error_message, 'lib_prep_protocol_parameters':lib_prep_protocol_parameters})
+            ''' old code
             protocol_name = get_project_name_by_id(request.POST['protocol_id'])
             lib_prep_ids = request.POST['lib_prep_ids'].split(',')
 
@@ -3682,10 +3693,26 @@ def handling_library_preparations(request):
             # update the data with the one already defined by user
             stored_lib_prep['data'] = json_data = json.loads(request.POST['protocol_data'])
             return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_lib_prep':stored_lib_prep})
+            '''
+
 
         return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_params':stored_params})
-
+    if request.method == 'POST' and request.POST['action'] == 'assignAdditionalKits':
+        lib_prep_ids = request.POST.getlist('libpreparation')
+        additional_kits = get_additional_kits_from_lib_prep(lib_prep_ids)
+        return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'additional_kits':additional_kits})
+    if request.method =='POST' and request.POST['action'] == 'storeAdditionalKits':
+        stored_additional_kits = analyze_and_store_input_additional_kits (request.POST)
+        if 'ERROR' in stored_additional_kits:
+            error_message = stored_additional_kits['ERROR']
+            lib_prep_ids = request.POST['lib_prep_ids'].split(',')
+            additional_kits = get_additional_kits_from_lib_prep(lib_prep_ids)
+            additional_kits['data'] = json.loads(request.POST['protocol_data'])
+            return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'ERROR': error_message,'additional_kits':additional_kits})
+            
+        return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_additional_kits':stored_additional_kits})
     else:
+        import pdb; pdb.set_trace()
         return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'samples_in_lib_prep':samples_in_lib_prep})
 
 

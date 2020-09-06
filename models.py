@@ -1003,7 +1003,7 @@ class libraryPreparationManager(models.Manager):
         lib_state_obj = StatesForLibraryPreparation.objects.get(libPrepState__exact =  'Defined')
         new_lib_prep = self.create(registerUser = registerUser_obj, molecule_id = molecule_obj, sample_id = sample_obj,
             protocol_id =   lib_prep_data['protocol_obj'], libPrepState = lib_state_obj,
-            libPrepCodeID = lib_prep_data['lib_prep_code_id'], userSampleID = lib_prep_data['userSampleID'])
+            libPrepCodeID = lib_prep_data['lib_prep_code_id'], userSampleID = lib_prep_data['user_sampleID'])
         '''
         user_sample_sheet = lib_prep_data['user_sample_sheet'],
         ,
@@ -1072,7 +1072,7 @@ class LibraryPreparation (models.Model):
 
 
     def __str__ (self):
-        return '%s' %(self.sample_id)
+        return '%s' %(self.libPrepCodeID)
 
     def get_adapters(self):
         return self.user_sample_sheet.get_adapters()
@@ -1202,6 +1202,9 @@ class LibraryPreparation (models.Model):
 
     def get_protocol_obj(self):
         return self.protocol_id
+
+    def get_protocol_id (self):
+        return '%s' %(self.protocol_id.pk)
 
     def get_reagents_kit_used(self):
         return '%s' %(self.reagent_id.get_nick_name())
@@ -1352,9 +1355,21 @@ class AdditionaKitsLibraryPreparation (models.Model):
         data.append(self.description)
         return data
 
+    def get_kit_name (self):
+        return '%s' %(self.kitName)
+
+    def get_commercial_kit_obj (self):
+        return self.commercialKit_id
 
 
     objects = AdditionaKitsLibraryPreparationManager()
+
+class AdditionalUserLotKitManager(models.Manager):
+    def create_additional_user_lot_kit(self, user_additional_kit):
+        new_user_additional_kit = self.create(lib_prep_id  = user_additional_kit['lib_prep_id'],
+                    additionalLotKits = user_additional_kit['additionalLotKits'],
+                    userLotKit_id = user_additional_kit['userLotKit_id'], value = 0)
+
 
 
 class AdditionalUserLotKit (models.Model):
@@ -1372,3 +1387,5 @@ class AdditionalUserLotKit (models.Model):
 
     def __str__ (self):
         return '%s' %(self.lotNumber)
+
+    objects = AdditionalUserLotKitManager()

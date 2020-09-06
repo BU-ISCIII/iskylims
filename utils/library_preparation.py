@@ -24,6 +24,7 @@ def check_empty_fields (data):
     for row_data in data :
         for field in row_data :
             if field == '':
+                import pdb; pdb.set_trace()
                 return True
     return False
 
@@ -45,13 +46,13 @@ def check_users_exists(user_list):
     return 'all_valid'
 
 
-def analyze_input_param_values(form_data):
+def analyze_and_store_input_param_values(form_data):
     '''
     Description:
         The function get the user input  for the library preparation parameters and store them
         in database.
     Input:
-
+        form_data   # User form 
     Constant:
         HEADING_FIX_FOR_ADDING_LIB_PARAMETERS
         ERROR_EMPTY_VALUES
@@ -76,6 +77,10 @@ def analyze_input_param_values(form_data):
         return stored_params
 
     stored_params = []
+    if AdditionaKitsLibraryPreparation.objects.filter(protocol_id__pk__exact =  lib_prep_ids[0]).exists():
+        additional_kits = True
+    else:
+        additional_kits = False
     for row_index in range(len(json_data)):
         right_id = lib_prep_ids[lib_prep_code_ids.index(json_data[row_index][1])]
 
@@ -90,14 +95,21 @@ def analyze_input_param_values(form_data):
 
             new_parameters_data = LibParameterValue.objects.create_library_parameter_value (lib_parameter_value)
 
+        '''
+        ### Moving index library data to a dedicated form
         kit_index = HEADING_FIX_FOR_ADDING_LIB_PARAMETERS.index('Lot Regents Kit used')
         library_prep_obj.set_reagent_user_kit(json_data[row_index] [kit_index])
+        '''
         stored_params.append([library_prep_obj.get_sample_name(), library_prep_obj.get_lib_prep_code()])
+        if additional_kits:
+            library_prep_obj.set_state('Updated parameters')
+        else:
+            library_prep_obj.set_state('Updated additional kits')
 
-        library_prep_obj.set_state('Completed')
-        sample_obj = library_prep_obj.get_sample_obj ()
+        #sample_obj = library_prep_obj.get_sample_obj ()
         # Update the sample state to "Create Pool"
-        sample_obj.set_state('Pool Preparation')
+        #sample_obj.set_state('Pool Preparation')
+
     return stored_params
 
 def create_library_preparation_instance(samples_data, user):
@@ -118,6 +130,7 @@ def create_library_preparation_instance(samples_data, user):
         lib_prep_data['molecule_id'] = values[1]
         lib_prep_data['protocol_obj'] = Protocols.objects.filter(type__protocol_type__exact ='Library Preparation', name__exact = values[2]).last()
         lib_prep_data['registerUser'] = user
+        lib_prep_data['user_sampleID'] = get_sample_obj_from_id(lib_prep_data['sample_id']).get_sample_code()
         lib_prep_data['lib_prep_code_id'], lib_prep_data['uniqueID'] = get_library_code_and_unique_id(lib_prep_data['sample_id'])
         library_preparation_objs.append(LibraryPreparation.objects.create_lib_preparation(lib_prep_data))
         import pdb; pdb.set_trace()
@@ -165,6 +178,7 @@ def get_protocol_parameters_for_library_preparation(library_preparation_objs):
     lib_prep_same_prot_parameters['data'] = []
     samples_names = []
     lib_prep_ids = []
+    lib_prep_code_ids = []
     for library_preparation_obj in library_preparation_objs:
         lib_prep_protocol = library_preparation_obj.get_protocol_used()
         if protocol_considered == '':
@@ -172,6 +186,7 @@ def get_protocol_parameters_for_library_preparation(library_preparation_objs):
             # get protocol parameters
             lib_prep_same_prot_parameters['protocol_parameters_heading_type'] = get_protocol_parameters_and_type(library_preparation_obj.get_protocol_obj())
             lib_prep_same_prot_parameters['protocol_used'] = protocol_considered
+            lib_prep_same_prot_parameters['protocol_id'] = library_preparation_obj.get_protocol_id()
             lib_prep_same_prot_parameters['fix_heading'] = HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS
         if protocol_considered == lib_prep_protocol:
             data = ['']* (len(lib_prep_same_prot_parameters['protocol_parameters_heading_type'])+ len(HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS))
@@ -180,33 +195,44 @@ def get_protocol_parameters_for_library_preparation(library_preparation_objs):
             data[1] = library_preparation_obj.get_lib_prep_code()
             samples_names.append(sample_name)
             lib_prep_ids.append(library_preparation_obj.get_lib_prep_id())
+            lib_prep_code_ids.append(library_preparation_obj.get_lib_prep_code())
             lib_prep_same_prot_parameters['data'].append(data)
     lib_prep_same_prot_parameters['samples_names'] = ','.join(samples_names)
     lib_prep_same_prot_parameters['lib_prep_ids'] = ','.join(lib_prep_ids)
+    lib_prep_same_prot_parameters['lib_prep_code_ids'] = ','.join(lib_prep_code_ids)
+
     return lib_prep_same_prot_parameters
 
 def get_samples_for_library_preparation():
     '''
     Description:
-        The function checks if there are samples in run was success
+        The function checks if there are samples that are in library preparation state.
+        samples are split according to the library preparation state in:
+        - Not defined.
+        - Defined.
+        - Updated parameters
+    Constant:
+        HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL
     Return:
         samples_in_lib_prep
     '''
     samples_in_lib_prep = {}
     samples_in_lib_prep['avail_samples'] = {}
     samples_in_lib_prep['avail_samples']['data'] = []
+
     samples_id = []
     molecules_id = []
     samples_names = []
 
     if Samples.objects.filter(sampleState__sampleStateName__exact = 'Library preparation').exists():
-        data = ['']* len(HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL)
+        # data = ['']* len(HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL)
         samples_in_lib_prep['avail_samples']['heading'] = HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL
         samples_objs = Samples.objects.filter(sampleState__sampleStateName__exact = 'Library preparation')
         for samples_obj in samples_objs:
             if LibraryPreparation.objects.filter(sample_id = samples_obj).exists():
                 library_preparation_obj = LibraryPreparation.objects.filter(sample_id = samples_obj).last()
                 lib_prep_obj_state = library_preparation_obj.get_state()
+
                 if lib_prep_obj_state == 'Defined':
                     # get the library preparations that need to add parameters
                     if not 'lib_prep_defined' in samples_in_lib_prep:
@@ -222,7 +248,18 @@ def get_samples_for_library_preparation():
 
                 elif lib_prep_obj_state == 'Updated parameters':
                     # get the library preparations that need to add kits
-                    pass
+                    if not 'lib_prep_updated_param' in samples_in_lib_prep:
+                        samples_in_lib_prep['lib_prep_updated_param'] = {}
+                    protocol_name = library_preparation_obj.get_protocol_used()
+                    if not protocol_name in samples_in_lib_prep['lib_prep_updated_param']:
+                        samples_in_lib_prep['lib_prep_updated_param'][protocol_name] = []
+
+                    lib_prep_param_data = []
+                    lib_prep_param_data.append(library_preparation_obj.get_sample_name())
+                    lib_prep_param_data.append(library_preparation_obj.get_lib_prep_code())
+                    lib_prep_param_data.append(library_preparation_obj.get_lib_prep_id())
+                    samples_in_lib_prep['lib_prep_updated_param'][protocol_name].append(lib_prep_param_data)
+
             else:
                 #import pdb; pdb.set_trace()
                 data = ['']* len(HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL)

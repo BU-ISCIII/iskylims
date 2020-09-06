@@ -3,11 +3,29 @@
 {% block content %}
 {%include 'iSkyLIMS_core/jexcel_functionality.html' %}
 
+{% if ERROR %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-10">
+            <div class="panel panel-danger">
+                <div class="panel-heading"><h3>Unable to record your request.</h3></div>
+                <div class="panel-body">
+                    {% for value in ERROR %}
+                        <p>{{value}}</p>
+                    {% endfor %}
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+
+        </div> <!--  end of col-sm-10 -->
+    </div> <!--  end of row -->
+
+{% endif %}
+
 {% if lib_prep_protocol_parameters %}
     <style>
         .scrolling-wrapper {
-             overflow-x: scroll;
-             white-space: nowrap;
+            overflow-x: scroll;
+            white-space: nowrap;
+            height:500px;
         }
     </style>
     <div class="row row-space-2 margin-b-4">
@@ -38,7 +56,7 @@
                                    data:data,
                                    columns: [
                                         {% for value in lib_prep_protocol_parameters.fix_heading %}
-                                            { type: 'text', title:'{{value}}', width:180 , readOnly:true },
+                                            { type: 'text', title:'{{value}}', width:220 , readOnly:true },
                                         {% endfor %}
                                         {% for name, type, options in lib_prep_protocol_parameters.protocol_parameters_heading_type %}
                                             {% if type == 'Date' %}
@@ -56,7 +74,7 @@
                                    allowInsertRow:false,
                                    allowDeleteRow:false,
                                    tableOverflow:false,
-                                   tableHeight:'200px',
+                                   tableHeight:'500px',
                                    csvFileName:'library_preparation_parameters',
 
                                });
@@ -189,22 +207,7 @@
         </div> <!--  end of row -->
 
     {% endif %}
-    {% if stored_lib_prep.ERROR %}
-        <div class="row row-space-2 margin-b-4">
-            <div class="col-sm-10">
-                <div class="panel panel-danger">
-                    <div class="panel-heading"><h3>Unable to record your request.</h3></div>
-                    <div class="panel-body">
-                        {% for value in stored_lib_prep.ERROR %}
-                            <p>{{value}}</p>
-                        {% endfor %}
-                    </div> <!--  end of panel body -->
-                </div> <!--  end of panel  -->
 
-            </div> <!--  end of col-sm-10 -->
-        </div> <!--  end of row -->
-
-    {% endif %}
 
 
 
@@ -237,6 +240,112 @@
         </div> <!--  end of col-sm-10 -->
     </div> <!--  end of row -->
 
+{% elif additional_kits %}
+    <style>
+        .scrolling-wrapper {
+            overflow-x: scroll;
+            white-space: nowrap;
+            height:500px;
+        }
+    </style>
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Define the User Lot additional kits</h3></div>
+                <div class="panel-body">
+
+                    <form method="post" enctype="multipart/form-data" name="storeAdditionalKits"  id="storeAdditionalKits" class="form-horizontal well">
+                        {% csrf_token %}
+                        <div class="scrolling-wrapper">
+                            <input type="hidden" name="action" value="storeAdditionalKits"/>
+                            <input type="hidden" name="libPrepIds" value="{{additional_kits.lib_prep_ids}}">
+                            <input type="hidden" name="libPrepCodeIds" value="{{additional_kits.lib_prep_code_ids}}">
+                            <input type="hidden" name="headings" value="{{additional_kits.full_heading}}">
+                            <div id="spreadsheet"></div>
+                            <br><br><br><br>
+
+                            <script>
+                                var data = [{% for values in additional_kits.data %}
+                                    [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                                ];
+                                mySpreadsheet = $('#spreadsheet').jexcel({
+                                    data:data,
+                                    columns: [
+                                        {% for heading in additional_kits.fix_heading %}
+                                            { type: 'text', title:'{{heading}}', width:280 , readOnly:true },
+                                        {% endfor %}
+                                        {% for heading, kit_option in additional_kits.kit_heading %}
+                                            { type: 'dropdown', title:'{{heading}}', width:200 , source :[ {% for value in kit_option %} '{{value}}', {% endfor %}]},
+                                        {% endfor %}
+                                    ],
+                                    allowInsertColumn:false,
+                                    allowDeleteColumn:false,
+                                    allowRenameColumn:false,
+                                    allowInsertRow:false,
+                                    allowDeleteRow:false,
+                                    tableOverflow:true,
+                                    tableHeight:'200px',
+                                    csvFileName:'additional_kits_library_preparation',
+
+                                });
+                            </script>
+                            <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                            <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
+                        </div> <!--  end of scrolling  -->
+                    </form>
+                    <script>
+                        $(document).ready(function () {
+                            $("#storeAdditionalKits").submit(function (e) {
+                                //stop submitting the form to see the disabled button effect
+                                // e.preventDefault();
+                                //disable the submit button
+                                var table_data = $('#spreadsheet').jexcel('getData')
+                                var data_json = JSON.stringify(table_data)
+                                $("<input />").attr("type", "hidden")
+                                .attr("name", "used_kits")
+                                .attr("value", data_json)
+                                .appendTo("#storeAdditionalKits");
+                                $("#btnSubmit").attr("disabled", true);
+                                return true;
+                            });
+                        });
+                    </script>
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-11 -->
+    </div> <!--  end of row -->
+
+{% elif stored_additional_kits %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-8 col-sm-offset-2" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>The additional kits Lot are recorded</h3></div>
+                <div class="panel-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Sample Name</th>
+                                <th>Library PreparationID</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sample, code  in stored_additional_kits.stored_lib_ids  %}
+                                <tr>
+                                    <td>{{sample}}</td>
+                                    <td>{{code}}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <br><br>
+                    <p>Click on the bottom below to continue with adding Library Preparation information </p>
+                    <br><br>
+                    <input type="button" value="Return Home" onclick="location.href ='/wetlab/handlingLibraryPreparations' ;"/>
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-11 -->
+    </div> <!--  end of row -->
+
 {% else %}
     {% if samples_in_lib_prep.no_samples %}
         <div class="row row-space-2 margin-b-4">
@@ -256,8 +365,11 @@
                 <h3>Library Preparation</h3>
                 <div class="tab">
                     <button class="tablinks" onclick="summaryBin(event, 'assigningProtocol')" id="defaultOpen">Available Samples </button>
+                    <button class="tablinks" onclick="summaryBin(event, 'defined')">Pending Protocol Parameters</button>
+                    <button class="tablinks" onclick="summaryBin(event, 'pendingKits')">Pending additional kits</button>
+                    <button class="tablinks" onclick="summaryBin(event, 'pendingIndex')">Index kit assign</button>
                     {% if samples_in_lib_prep.lib_prep_defined %}
-                        <button class="tablinks" onclick="summaryBin(event, 'defined')">Pending Protocol Parameters</button>
+
 
                         <div id="defined" class="tabcontent">
                             <div class="col-sm-11" >
@@ -295,6 +407,54 @@
                                             </form>
                                             <br><br>
                                         {% endfor %}
+                                    </div> <!--  end of panel body -->
+                                </div> <!--  end of panel  -->
+
+                            </div> <!--  end of col-sm-11  -->
+
+                        </div> <!--  end of tab pending -->
+                    {% endif %}
+
+                    {% if samples_in_lib_prep.lib_prep_updated_param %}
+
+
+                        <div id="pendingKits" class="tabcontent">
+                            <div class="col-sm-11" >
+                                <div class="panel panel-default">
+                                    <div class="panel-heading"><h3>Select the Library Preparation to include additional kits Information</h3></div>
+                                    <div class="panel-body">
+                                        {% for key, values in samples_in_lib_prep.lib_prep_updated_param.items %}
+                                        <h4>Library Preparation defined for using protocol {{key}}</h4>
+                                            <form method="post" enctype="multipart/form-data" name="assignAdditionalKits"  id="assignAdditionalKits" class="form-horizontal well">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="assignAdditionalKits"/>
+                                                <div class="form-group">
+                                                    <table class="table table-hover">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Sample Name</th>
+                                                                <th>Library PreparationID</th>
+                                                                <th>Select Library preparation</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for sample, code,  lib_id  in values  %}
+                                                                <tr>
+                                                                    <td>{{sample}}</td>
+                                                                    <td>{{code}}</td>
+                                                                    <td><input type="checkbox" name="libpreparation" value="{{lib_id}}"></td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div> <!--  end of from group -->
+                                                <br><br>
+                                                <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                                                <input class="btn pull-right btn-primary" id = "btnSubmit2" type="submit" value="Submit">
+                                            </form>
+                                            <br><br>
+                                        {% endfor %}
+
                                     </div> <!--  end of panel body -->
                                 </div> <!--  end of panel  -->
 
