@@ -544,11 +544,7 @@
                                 #select-div.{{platform|cut:" "}} #{{platform|cut:" "}}y {
                                     display:block;}
                             {% endfor %}
-                            /* #select-div.miseq #miSeq {
-                                display:block;}
 
-                            #select-div.nextseq #nextSeq {
-                                display:block;} */
                         </style>
                         <div class="col-sm-11" >
                             <div class="panel panel-default">
@@ -571,17 +567,8 @@
                                                     </p>
                                                 </div>
 
-                                                <label class="col-sm-6 control-label" for="protocol" >Select the protocol used on the samples included in Sample Sheet file </label>
-                                                <div class="col-sm-4">
-                                                    <select class="form-control" name="lib_protocols" id="lib_protocols">
-                                                            <option value="">Choose a value</option>
-                                                         {% for value in upload_file.lib_prep_protocols %}
-                                                             <option value="{{value}}">{{value}}</option>
-                                                         {% endfor %}
-
-                                                    </select>
                                                     <br><br>
-                                                </div>  <!-- end select input -->
+
                                                 <br>
                                                 {% if upload_file.index_adapter or upload_file.instrument %}
                                                     <div class="col-sm-12">
@@ -628,21 +615,6 @@
                                                                 {% endfor %}
                                                             </select>
                                                         {% endfor %}
-                                                        <!-- <select id="MiSeqy">
-                                                            <option>Hardware</option>
-                                                            <option>Networking</option>
-                                                            <option>Linux</option>
-                                                        </select>
-                                                        <select id="MiniSeqy">
-                                                            <option>English</option>
-                                                            <option>History</option>
-                                                            <option>Maths</option>
-                                                        </select>
-                                                        <select id="NextSeq550Seriesy">
-                                                            <option>English22</option>
-                                                            <option>History22</option>
-                                                            <option>Maths22</option>
-                                                        </select> -->
                                                         <br><br>
                                                     </div>  <!-- end select input -->
                                                 </div>
@@ -693,19 +665,13 @@
                                             {% for platform in samples_in_lib_prep.configuration_platform %}
                                                 var {{platform|cut:" "}}Button = document.getElementById('radio-{{platform|cut:" "}}');
                                             {% endfor %}
-                                            // var miSeqButton = document.getElementById('radio-miseq');
-                                            // var nextseqButton = document.getElementById('radio-nextseq');
+
                                             {% for platform in samples_in_lib_prep.configuration_platform %}
                                                 {{platform|cut:" "}}Button.onclick = function () {
                                                     document.getElementById('select-div').className = '{{platform|cut:" "}}';
                                                 }
                                             {% endfor %}
-                                            // miSeqButton.onclick = function () {
-                                            //     document.getElementById('select-div').className = 'miseq';
-                                            // }
-                                            // nextseqButton.onclick = function () {
-                                            //     document.getElementById('select-div').className = 'nextseq';
-                                            // }
+
 
                                         </script>
                                     {% else %}

@@ -1,5 +1,5 @@
 import json
-from iSkyLIMS_core.models import Samples, MoleculePreparation, Protocols, SequencingConfiguration
+from iSkyLIMS_core.models import Samples, MoleculePreparation, Protocols, SequencingConfiguration, SequencerInLab
 from iSkyLIMS_core.utils.handling_commercial_kits import *
 from iSkyLIMS_core.utils.handling_protocols import *
 from iSkyLIMS_core.utils.handling_samples import  get_sample_obj_from_sample_name, get_sample_obj_from_id
@@ -11,6 +11,25 @@ from ..fusioncharts.fusioncharts import FusionCharts
 from .stats_graphics import *
 from Bio.Seq import Seq
 from django.contrib.auth.models import User
+
+def get_platform_name_of_defined_sequencers ():
+    '''
+    Description:
+        The function get the list of platform names of the defined sequencers
+
+    Return:
+        platforms
+    '''
+    platforms = []
+    if SequencerInLab.objects.all().exists():
+        sequencer_objs = SequencerInLab.objects.all()
+        for sequencer_obj in sequencer_objs:
+            try:
+                platforms.append(sequencer_obj.get_sequencing_platform_name())
+            except:
+                continue
+    return platforms
+
 
 def check_empty_fields (data):
     '''
@@ -216,6 +235,8 @@ def get_samples_for_library_preparation():
         - Updated additional Index
     Constant:
         HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL
+    Functions:
+        get_platform_name_of_defined_sequencers     # located at this file
     Return:
         samples_in_lib_prep
     '''
@@ -279,7 +300,8 @@ def get_samples_for_library_preparation():
         # Get the information for sample sheet form
         if  'display_sample_sheet' in samples_in_lib_prep :
             if SequencingConfiguration.objects.all().exists():
-                seq_conf_objs = SequencingConfiguration.objects.all().order_by('platformID')
+                platforms_used  = get_platform_name_of_defined_sequencers()
+                seq_conf_objs = SequencingConfiguration.objects.filter(platformID__platformName__in = platforms_used).order_by('platformID')
                 samples_in_lib_prep['configuration_platform'] = []
                 samples_in_lib_prep['configuration_platform_option'] = []
                 conf_data = {}
