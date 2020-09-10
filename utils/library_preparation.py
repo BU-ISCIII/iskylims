@@ -1,5 +1,5 @@
 import json
-from iSkyLIMS_core.models import Samples, MoleculePreparation, Protocols
+from iSkyLIMS_core.models import Samples, MoleculePreparation, Protocols, SequencingConfiguration
 from iSkyLIMS_core.utils.handling_commercial_kits import *
 from iSkyLIMS_core.utils.handling_protocols import *
 from iSkyLIMS_core.utils.handling_samples import  get_sample_obj_from_sample_name, get_sample_obj_from_id
@@ -24,7 +24,6 @@ def check_empty_fields (data):
     for row_data in data :
         for field in row_data :
             if field == '':
-                import pdb; pdb.set_trace()
                 return True
     return False
 
@@ -52,7 +51,7 @@ def analyze_and_store_input_param_values(form_data):
         The function get the user input  for the library preparation parameters and store them
         in database.
     Input:
-        form_data   # User form 
+        form_data   # User form
     Constant:
         HEADING_FIX_FOR_ADDING_LIB_PARAMETERS
         ERROR_EMPTY_VALUES
@@ -85,14 +84,12 @@ def analyze_and_store_input_param_values(form_data):
         right_id = lib_prep_ids[lib_prep_code_ids.index(json_data[row_index][1])]
 
         library_prep_obj = get_lib_prep_obj_from_id(right_id)
-
         for p_index in range(fixed_heading_length, parameters_length):
             lib_parameter_value ={}
             lib_parameter_value['parameter_id'] = ProtocolParameters.objects.get(protocol_id__exact = form_data['protocol_id'],
                                 parameterName__exact = headings[p_index])
             lib_parameter_value['library_id'] = library_prep_obj
             lib_parameter_value['parameterValue'] = json_data[row_index][p_index]
-
             new_parameters_data = LibParameterValue.objects.create_library_parameter_value (lib_parameter_value)
 
         '''
@@ -133,7 +130,7 @@ def create_library_preparation_instance(samples_data, user):
         lib_prep_data['user_sampleID'] = get_sample_obj_from_id(lib_prep_data['sample_id']).get_sample_code()
         lib_prep_data['lib_prep_code_id'], lib_prep_data['uniqueID'] = get_library_code_and_unique_id(lib_prep_data['sample_id'])
         library_preparation_objs.append(LibraryPreparation.objects.create_lib_preparation(lib_prep_data))
-        import pdb; pdb.set_trace()
+
     return library_preparation_objs
 
 def extract_protocol_library_preparation_form(form_data):
@@ -167,6 +164,9 @@ def get_protocol_parameters_for_library_preparation(library_preparation_objs):
         In case that library preparations do not have the same protocol, only the
         ones that matches with the protocol of the first library preparation are
         considered
+    Functions:
+        get_protocol_parameters_and_type # located at iSkyLIMS_core.handling_protocols.py
+        get_protocol_parameters  # located at iSkyLIMS_core.handling_protocols.py
     Constant:
         HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS
 
@@ -184,6 +184,7 @@ def get_protocol_parameters_for_library_preparation(library_preparation_objs):
         if protocol_considered == '':
             protocol_considered = lib_prep_protocol
             # get protocol parameters
+            parameters_heading = get_protocol_parameters(library_preparation_obj.get_protocol_obj())
             lib_prep_same_prot_parameters['protocol_parameters_heading_type'] = get_protocol_parameters_and_type(library_preparation_obj.get_protocol_obj())
             lib_prep_same_prot_parameters['protocol_used'] = protocol_considered
             lib_prep_same_prot_parameters['protocol_id'] = library_preparation_obj.get_protocol_id()
@@ -200,6 +201,7 @@ def get_protocol_parameters_for_library_preparation(library_preparation_objs):
     lib_prep_same_prot_parameters['samples_names'] = ','.join(samples_names)
     lib_prep_same_prot_parameters['lib_prep_ids'] = ','.join(lib_prep_ids)
     lib_prep_same_prot_parameters['lib_prep_code_ids'] = ','.join(lib_prep_code_ids)
+    lib_prep_same_prot_parameters['heading_in_excel'] = ','.join( HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS + parameters_heading)
 
     return lib_prep_same_prot_parameters
 
@@ -209,8 +211,9 @@ def get_samples_for_library_preparation():
         The function checks if there are samples that are in library preparation state.
         samples are split according to the library preparation state in:
         - Not defined.
-        - Defined.
+        - Defined. (only Protocol was defined)
         - Updated parameters
+        - Updated additional Index
     Constant:
         HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL
     Return:
@@ -259,9 +262,11 @@ def get_samples_for_library_preparation():
                     lib_prep_param_data.append(library_preparation_obj.get_lib_prep_code())
                     lib_prep_param_data.append(library_preparation_obj.get_lib_prep_id())
                     samples_in_lib_prep['lib_prep_updated_param'][protocol_name].append(lib_prep_param_data)
+                elif lib_prep_obj_state == 'Updated additional kits':
+                    samples_in_lib_prep['display_sample_sheet'] = True
 
             else:
-                #import pdb; pdb.set_trace()
+
                 data = ['']* len(HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL)
                 sample_name = samples_obj.get_sample_name()
                 data[0] = sample_name
@@ -271,6 +276,22 @@ def get_samples_for_library_preparation():
                 samples_id.append(samples_obj.get_sample_id())
                 samples_names.append(sample_name)
                 molecules_id.append(molecule_obj.get_molecule_id())
+        # Get the information for sample sheet form
+        if  'display_sample_sheet' in samples_in_lib_prep :
+            if SequencingConfiguration.objects.all().exists():
+                seq_conf_objs = SequencingConfiguration.objects.all().order_by('platformID')
+                samples_in_lib_prep['configuration_platform'] = []
+                samples_in_lib_prep['configuration_platform_option'] = []
+                conf_data = {}
+                for seq_conf_obj in seq_conf_objs:
+                    platform_name = seq_conf_obj.get_platform_name()
+                    if platform_name not in conf_data:
+                        samples_in_lib_prep['configuration_platform'].append(platform_name)
+                        conf_data[platform_name] = []
+                    conf_data[platform_name].append(seq_conf_obj.get_configuration_name())
+                for platform in samples_in_lib_prep['configuration_platform']:
+                    samples_in_lib_prep['configuration_platform_option'].append([platform, conf_data[platform]])
+            #import pdb; pdb.set_trace()
         samples_in_lib_prep['avail_samples']['lib_prep_protocols'] = get_protocols_for_library_preparation()
         samples_in_lib_prep['avail_samples']['samplesID'] = ','.join(samples_id)
         samples_in_lib_prep['avail_samples']['samplesNames'] = ','.join(samples_names)
