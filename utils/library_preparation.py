@@ -151,7 +151,7 @@ def create_library_preparation_instance(samples_data, user):
         lib_prep_data['user_sampleID'] = get_sample_obj_from_id(lib_prep_data['sample_id']).get_sample_code()
         lib_prep_data['lib_prep_code_id'], lib_prep_data['uniqueID'] = get_library_code_and_unique_id(lib_prep_data['sample_id'])
         library_preparation_objs.append(LibraryPreparation.objects.create_lib_preparation(lib_prep_data))
-
+    
     return library_preparation_objs
 
 def extract_protocol_library_preparation_form(form_data):

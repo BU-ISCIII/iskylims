@@ -1020,7 +1020,7 @@ class libraryPreparationManager(models.Manager):
             protocol_id =   lib_prep_data['protocol_obj'], libPrepState = lib_state_obj,
             libPrepCodeID = lib_prep_data['lib_prep_code_id'], userSampleID = lib_prep_data['user_sampleID'],
             uniqueID = lib_prep_data['uniqueID'])
-
+        return new_lib_prep
 
     def create_reused_lib_preparation (self, reg_user, molecule_obj, sample_id):
         lib_state = StatesForLibraryPreparation.objects.get(libPrepState =  'Created for Reuse')

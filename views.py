@@ -3632,7 +3632,7 @@ def handling_library_preparations(request):
             # restore the user data
             lib_prep_protocol_parameters['data'] = json.loads(request.POST['protocol_data'])
             return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'ERROR': error_message, 'lib_prep_protocol_parameters':lib_prep_protocol_parameters})
-
+        return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_params':stored_params})
 
     if request.method == 'POST' and request.POST['action'] == 'importsamplesheet':
 
