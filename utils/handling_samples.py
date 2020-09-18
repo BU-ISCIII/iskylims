@@ -68,7 +68,7 @@ def display_molecule_protocol_parameters (molecule_ids, user_obj):
                 molecule_recorded['param_heading'] = parameter_list
                 #if Protocols.objects.filter(name__exact = selected_protocol).exists():
                     #protocol_obj = Protocols.objects.get(name__exact = selected_protocol)
-                molecule_recorded['lot_kit'] = get_lot_commercial_kits(user_obj, protocol_used_obj)
+                molecule_recorded['lot_kit'] = get_lot_commercial_kits(protocol_used_obj)
                 #else:
                 #     molecule_recorded['lot_kit'] = ''
         #import pdb; pdb.set_trace()
@@ -117,11 +117,12 @@ def add_molecule_protocol_parameters(form_data):
     parameters_length = len(molecule_json_data[0])
     fixed_heading_length = len(HEADING_FOR_MOLECULE_ADDING_PARAMETERS)
 
-    user_lot_commercial_kit_obj = UserLotCommercialKits.objects.get(chipLot__exact = molecule_json_data[0][1])
-    protocol_used_obj = user_lot_commercial_kit_obj.get_protocol_obj_for_kit()
+    #user_lot_commercial_kit_obj = UserLotCommercialKits.objects.get(chipLot__exact = molecule_json_data[0][1])
+    #protocol_used_obj = user_lot_commercial_kit_obj.get_protocol_obj_for_kit()
 
     #protocol_used_obj = Protocols.objects.get(name__exact = molecule_json_data[0][1])
     for row_index in range(len(molecule_json_data)) :
+        user_lot_commercial_kit_obj = UserLotCommercialKits.objects.get(chipLot__exact = molecule_json_data[row_index][1])
         # increase the number of use and updated the last use date
         user_lot_commercial_kit_obj.set_increase_use()
         user_lot_commercial_kit_obj.set_latest_use(datetime.datetime.now())
@@ -130,6 +131,7 @@ def add_molecule_protocol_parameters(form_data):
         molecule_obj = get_molecule_obj_from_id(right_id)
         molecule_obj.set_state('Completed')
         molecule_updated_list.append(molecule_obj.get_molecule_code_id())
+        protocol_used_obj = molecule_obj.get_protocol_obj()
 
         for p_index in range(fixed_heading_length, parameters_length):
             molecule_parameter_value['moleculeParameter_id'] = ProtocolParameters.objects.get(protocol_id = protocol_used_obj,
@@ -1376,6 +1378,8 @@ def record_molecules (form_data, user , app_name):
         app_name    # application name to assign the right protocol
     Functions:
         check_empty_fields  : located at this file
+    Constant:
+        HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION
     Variables:
         molecule_information # dictionary which collects all info
         molecules_code_ids
@@ -1393,7 +1397,7 @@ def record_molecules (form_data, user , app_name):
     incomplete_sample_ids = []
     incomplete_sample_code_ids = []
 
-    heading_in_excel = ['sampleID', 'molecule_type', 'type_extraction', 'extractionDate', 'protocol_used']
+    heading_in_excel = HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION
     for row_index in range(len(molecule_json_data)) :
         right_id = samples_ids[samples_code_ids.index(molecule_json_data[row_index][0])]
         if not Samples.objects.filter(pk__exact = right_id).exists():
@@ -1408,7 +1412,7 @@ def record_molecules (form_data, user , app_name):
             continue
 
         molecule_data = {}
-        protocol_used = molecule_json_data[row_index][heading_in_excel.index('protocol_used')]
+        protocol_used = molecule_json_data[row_index][heading_in_excel.index('Protocol to be used')]
         #if MoleculePreparation.objects.filter(sample = sample_obj, moleculeCodeId__icontains = protocol_used).exists():
         if MoleculePreparation.objects.filter(sample = sample_obj).exists():
             last_molecule_code = MoleculePreparation.objects.filter(sample = sample_obj).last().get_molecule_code_id()
@@ -1422,15 +1426,15 @@ def record_molecules (form_data, user , app_name):
 
 
         #protocol_used_obj = Protocols.objects.get(name__exact = protocol_used)
-        molecule_used = molecule_json_data[row_index][heading_in_excel.index('molecule_type')]
+        molecule_used = molecule_json_data[row_index][heading_in_excel.index('Molecule type')]
 
         molecule_data['protocolUsed'] =  protocol_used
         molecule_data['app_name'] = app_name
         molecule_data['sample'] = sample_obj
         molecule_data['moleculeType'] =  molecule_used
         molecule_data['moleculeCodeId'] = molecule_code_id
-        molecule_data['extractionType'] =  molecule_json_data[row_index][heading_in_excel.index('type_extraction')]
-        molecule_data['moleculeExtractionDate'] = molecule_json_data[row_index][heading_in_excel.index('extractionDate')]
+        molecule_data['extractionType'] =  molecule_json_data[row_index][heading_in_excel.index('Type of Extraction')]
+        molecule_data['moleculeExtractionDate'] = molecule_json_data[row_index][heading_in_excel.index('Extraction date')]
         molecule_data['user'] = user
         #molecule_data['usedForMassiveSequencing'] = massive
         #molecule_data['numberOfReused'] = str(number_code - 1)

@@ -71,7 +71,7 @@ def get_expired_lot_user_kit (register_user_obj):
     user_expired_kits['data'] = {}
     if UserLotCommercialKits.objects.filter(user = register_user_obj, expirationDate__lt = date.today()).exists():
 
-        user_kits = UserLotCommercialKits.objects.filter(user = register_user_obj, expirationDate__lte = date.today()).order_by('basedCommercial')
+        user_kits = UserLotCommercialKits.objects.filter(user = register_user_obj, expirationDate__lt = date.today()).order_by('basedCommercial')
         for user_kit in user_kits:
             data_kit = []
             c_kit = user_kit.get_commercial_kit()
@@ -112,13 +112,26 @@ def get_lot_user_commercial_kit_basic_data(kit_obj):
     return  lot_kit_data
 
 
-def get_lot_commercial_kits(register_user_obj, protocol_obj):
-
+def get_lot_commercial_kits(protocol_obj):
+    '''
+    Description:
+        The function get the user commercial kits that are defined for using
+        for the protocol.
+        Because of the sharing lot commercial kits between the investigators
+        the result is not longer filtered by the user whom record the kit.
+    Input:
+        protocol_obj  # protocol object
+    Return
+        user_kit_list
+    '''
     user_kit_list = []
-    if UserLotCommercialKits.objects.filter(user = register_user_obj, basedCommercial__protocol_id = protocol_obj).exists():
-        user_kits =UserLotCommercialKits.objects.filter(user = register_user_obj, basedCommercial__protocol_id = protocol_obj)
-        for user_kit in user_kits:
-            user_kit_list.append(user_kit.get_lot_number)
+
+    if CommercialKits.objects.filter(protocolKits = protocol_obj).exists():
+        commercial_kits = CommercialKits.objects.filter(protocolKits = protocol_obj)
+        if UserLotCommercialKits.objects.filter(basedCommercial__in = commercial_kits, expirationDate__gte = date.today()).exists():
+            user_kits = UserLotCommercialKits.objects.filter(basedCommercial__in = commercial_kits, expirationDate__gte = date.today())
+            for user_kit in user_kits:
+                user_kit_list.append(user_kit.get_lot_number())
     return user_kit_list
 
 
