@@ -150,11 +150,11 @@ MAP_BASESPACE_SAMPLE_SHEET_TWO_INDEX = [('SampleID','Sample_ID'),('Name','Sample
 ######### MAPPING COLUMNS IN SAMPLE SHEET FROM USER TO DATABASE   #############
 MAP_USER_SAMPLE_SHEET_TO_DATABASE_TWO_INDEX = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
             ('Sample_Well','sampleWell'),('I7_Index_ID','i7IndexID'),
-            ('index','i7Index'),('I5_Index_ID','i5IndexID'),('index2','i5Index'),('Sample_Project','projectInSampleSheet'),('Description', 'registerUser')]
+            ('index','i7Index'),('I5_Index_ID','i5IndexID'),('index2','i5Index'),('Sample_Project','projectInSampleSheet'),('Description', 'userInSampleSheet')]
 
 MAP_USER_SAMPLE_SHEET_TO_DATABASE_ONE_INDEX = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
             ('Sample_Well','sampleWell'),('I7_Index_ID','i7IndexID'),
-            ('index','i7Index'),('Sample_Project','projectInSampleSheet'),('Description', 'registerUser')]
+            ('index','i7Index'),('Sample_Project','projectInSampleSheet'),('Description', 'userInSampleSheet')]
 
 ######### MAPPING OPTIONAL COLUMNS THAT COULD BE IN SAMPLE SHEET FROM USER TO DATABASE   #############
 MAP_USER_SAMPLE_SHEET_ADDITIONAL_FIELDS_FROM_TYPE_OF_SECUENCER = [('Index_Plate_Well','indexPlateWell'), ('Manifest', 'manifest'), ('GenomeFolder', 'genomeFolder')]
@@ -196,6 +196,9 @@ HEADING_FIX_FOR_ADDING_LIB_PARAMETERS = ['Sample Name', 'Library Preparation Cod
 HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS = ['Sample Name','Library Preparation Code ID']
 HEADING_FIX_FOR_ASSING_ADDITIONAL_KITS = ['Sample Name','Library Preparation Code ID']
 HEADING_FOR_CREATION_LIBRARY_PREPARATION = ['Molecule Code ID', 'Protocol used', 'Single/Paired end', 'Length read']
+HEADING_MAIN_DATA_SAMPLE_SHEET = ['Application', 'Instrument Type', 'Assay', 'Index Adapters', 'Reads', 'Adapter', 'Adapter 2']
+HEADING_SUMMARY_DATA_SAMPLE_SHEET = ['Number of Samples', 'Projects Name', 'Users']
+
 
 ### Heading for display information on library Preparation definition
 HEADING_FOR_LIBRARY_PREPARATION_DEFINITION = ['Library CodeID','Molecule CodeID ','Lib Preparation State', 'Protocol name',
@@ -239,7 +242,7 @@ SUCCESSFUL_REUSE_LIB_PREP = ['Library Preparation has been set for reused ', 'No
 ERROR_INVALID_FILE_FORMAT = ['Invalid file format for the selected file', 'Select the valid file and submit it again']
 ERROR_UNABLE_TO_DELETE_USER_FILE = 'Unable to delete user file form iSkyLIMS'
 ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES = ['Sample sheet cannot be uploaded because there are samples', 'which are not defined yet.']
-ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION = ['Sample sheet cannot be uploaded because there are samples', ' in a state from which cannot accept data from library preparation.']
+ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION = ['Sample sheet cannot be uploaded because there are samples', ' are in a state from which cannot accept index information data.']
 ERROR_SAMPLES_INVALID_DUPLICATED_INDEXES = ['Sample sheet cannot be uploaded because there are samples', 'which have duplicated index']
 
 
@@ -254,12 +257,15 @@ ERROR_SAMPLE_SHEET_USER_IS_NOT_DEFINED = ['User in sample sheet is not defined']
 ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD = ['Sample sheet does not have Description column ']
 ERROR_SAMPLE_SHEET_WHEN_FETCHING_USERID_NAMES = ['Sample sheet does not have the rigth format on the Description column']
 
+ERROR_USER_SAMPLE_SHEET_NO_LONGER_EXISTS = ['The Sample Sheet that you are uploaded does not longer exists', 'Upload again the sample sheet']
+
 ERROR_EMPTY_VALUES = ['Your request cannot be recorded because ', 'it contains empty values']
 
 ERROR_SAMPLE_PROJECT_ALREADY_EXISTS = ['Sample Project is already defined']
 ERROR_SAMPLE_PROJECT_DOES_NOT_EXISTS = ['The Sample Project that you requested ', 'Does not exist']
 
 ERROR_LIBRARY_PREPARATION_NOT_EXISTS = ['Library preparation are not defined', '']
+ERROR_NOT_LIBRARY_PREPARATION_SELECTED = ['No Library preparation was selected','Select at least one library preparation sample to create the pool ']
 
 ERROR_POOLS_WITH_NO_LIBRARY  = ['The selected Pools have not assigned to any Library Preparation.' ]
 

@@ -17,8 +17,7 @@ class AppAdmin(admin.ModelAdmin):
 class LibraryPreparationAdmin (admin.ModelAdmin):
     list_display = ('registerUser', 'molecule_id', 'sample_id', 'protocol_id', 'libPrepState',
             'user_sample_sheet', 'libPrepCodeID', 'userSampleID', 'projectInSampleSheet','samplePlate',
-            'sampleWell', 'i7IndexID', 'i7Index', 'i5IndexID', 'i5Index', 'singlePairedEnd', 'lengthRead',
-            'numberOfReused')
+            'sampleWell', 'i7IndexID', 'i7Index', 'i5IndexID', 'i5Index', 'numberOfReused')
 
 class LibParameterValueAdmin (admin.ModelAdmin):
     list_display = ('parameter_id', 'library_id', 'parameterValue')
@@ -28,7 +27,7 @@ class LibraryPoolAdmin(admin.ModelAdmin):
     list_display = ('registerUser', 'poolState', 'poolName', 'poolCodeID', 'runProcess_id')
 
 class libPreparationUserSampleSheetAdmin(admin.ModelAdmin):
-    list_display = ['registerUser', 'collectionIndexKit_id', 'sampleSheet', 'application','instrument', 'adapter1', 'adapter2', 'assay','reads']
+    list_display = ['registerUser', 'collectionIndexKit_id', 'sequencingConfiguration', 'sampleSheet', 'application','instrument', 'adapter1', 'adapter2', 'assay','reads']
 
 class AdditionaKitsLibraryPreparationAdmin(admin.ModelAdmin):
     list_display = ['kitName', 'protocol_id','commercialKit_id']

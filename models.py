@@ -9,7 +9,7 @@ from django_utils.models import Center
 from django.utils.translation import ugettext_lazy as _
 
 from .  import wetlab_config
-from iSkyLIMS_core.models import MoleculePreparation , Samples , ProtocolType, Protocols, ProtocolParameters, UserLotCommercialKits,CommercialKits, SequencerInLab
+from iSkyLIMS_core.models import MoleculePreparation , Samples , ProtocolType, Protocols, ProtocolParameters, UserLotCommercialKits,CommercialKits, SequencerInLab, SequencingConfiguration
 
 class RunErrors (models.Model):
     errorCode = models.CharField(max_length=10)
@@ -826,11 +826,13 @@ class libPreparationUserSampleSheetManager (models.Manager):
         else:
             collection_index_kit_id = CollectionIndexKit.objects.get(collectionIndexName__exact = user_sample_sheet_data['index_adapter'])
         file_name =  os.path.basename(user_sample_sheet_data['file_name'])
+        configuration = SequencingConfiguration.objects.filter( platformID__platformName__exact = user_sample_sheet_data['platform'], configurationName__exact = user_sample_sheet_data['configuration']).last()
         new_lib_prep_user_sample_sheet = self.create(registerUser = register_user_obj,
                     collectionIndexKit_id  = collection_index_kit_id, reads = ','.join(user_sample_sheet_data['reads']),
                     sampleSheet = file_name, application = user_sample_sheet_data['application'],
                     instrument = user_sample_sheet_data ['instrument'], assay = user_sample_sheet_data['assay'],
-                    adapter1 = user_sample_sheet_data['adapter1'], adapter2 = user_sample_sheet_data['adapter2'])
+                    adapter1 = user_sample_sheet_data['adapter1'], adapter2 = user_sample_sheet_data['adapter2'],
+                    sequencingConfiguration = configuration)
         return new_lib_prep_user_sample_sheet
 
 class libPreparationUserSampleSheet (models.Model):
@@ -842,6 +844,10 @@ class libPreparationUserSampleSheet (models.Model):
                 CollectionIndexKit,
                 on_delete= models.CASCADE, null = True)
 
+    sequencingConfiguration = models.ForeignKey(
+                SequencingConfiguration,
+                on_delete= models.CASCADE, null = True)
+
     sampleSheet = models.FileField(upload_to = wetlab_config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY)
     generatedat = models.DateTimeField(auto_now_add=True, null=True)
     application = models.CharField(max_length=70, null = True, blank = True)
@@ -850,6 +856,7 @@ class libPreparationUserSampleSheet (models.Model):
     adapter2 = models.CharField(max_length=70, null = True, blank = True)
     assay = models.CharField(max_length=70, null = True, blank = True)
     reads = models.CharField(max_length=10, null = True, blank = True)
+    confirmedUsed = models.BooleanField(default = False)
 
     def __str__ (self):
         return '%s' %(self.sampleSheet)
@@ -867,6 +874,9 @@ class libPreparationUserSampleSheet (models.Model):
     def get_collection_index_kit (self):
         return '%s' %(self.collectionIndexKit_id.get_collection_index_name())
 
+    def get_user_sample_sheet_id (self):
+        return '%s' %(self.pk)
+
     def get_all_data(self):
         s_s_data = []
         s_s_data.append(self.collectionIndexKit_id.get_collection_index_name())
@@ -877,6 +887,11 @@ class libPreparationUserSampleSheet (models.Model):
         s_s_data.append(self.assay)
         s_s_data.append(self.reads.split(',')[0])
         return s_s_data
+
+    def update_confirm_used (self, confirmation):
+        self.confirmedUsed = confirmation
+        self.save()
+        return self
 
     objects = libPreparationUserSampleSheetManager()
 
@@ -1003,18 +1018,9 @@ class libraryPreparationManager(models.Manager):
         lib_state_obj = StatesForLibraryPreparation.objects.get(libPrepState__exact =  'Defined')
         new_lib_prep = self.create(registerUser = registerUser_obj, molecule_id = molecule_obj, sample_id = sample_obj,
             protocol_id =   lib_prep_data['protocol_obj'], libPrepState = lib_state_obj,
-            libPrepCodeID = lib_prep_data['lib_prep_code_id'], userSampleID = lib_prep_data['user_sampleID'])
-        '''
-        user_sample_sheet = lib_prep_data['user_sample_sheet'],
-        ,
-        projectInSampleSheet = lib_prep_data['projectInSampleSheet'], samplePlate = lib_prep_data['samplePlate'],
-        sampleWell = lib_prep_data['sampleWell'],  i7IndexID = lib_prep_data['i7IndexID'],
-        i7Index = lib_prep_data['i7Index'], i5IndexID = lib_prep_data['i5IndexID'], i5Index = lib_prep_data['i5Index'],
-        singlePairedEnd = lib_prep_data['single_paired'], lengthRead = lib_prep_data['read_length'], uniqueID = lib_prep_data['uniqueID'],
-        indexPlateWell = lib_prep_data['indexPlateWell'], genomeFolder = lib_prep_data['genomeFolder'],manifest = lib_prep_data['manifest']
-        '''
+            libPrepCodeID = lib_prep_data['lib_prep_code_id'], userSampleID = lib_prep_data['user_sampleID'],
+            uniqueID = lib_prep_data['uniqueID'])
 
-        return new_lib_prep
 
     def create_reused_lib_preparation (self, reg_user, molecule_obj, sample_id):
         lib_state = StatesForLibraryPreparation.objects.get(libPrepState =  'Created for Reuse')
@@ -1062,10 +1068,11 @@ class LibraryPreparation (models.Model):
     genomeFolder = models.CharField(max_length =80, null = True, blank = True)
     manifest = models.CharField(max_length =80, null = True, blank = True)
     ##### End Miseq fields
-    singlePairedEnd  = models.CharField(max_length =20, null = True, blank = True)
-    lengthRead = models.CharField(max_length =5, null = True, blank = True)
+    #singlePairedEnd  = models.CharField(max_length =20, null = True, blank = True)
+    #lengthRead = models.CharField(max_length =5, null = True, blank = True)
     numberOfReused = models.IntegerField(default=0)
     uniqueID = models.CharField(max_length =16, null = True, blank = True)
+    userInSampleSheet = models.CharField(max_length=255, null = True, blank = True)
 
     class Meta:
         ordering = ('libPrepCodeID',)
@@ -1094,8 +1101,6 @@ class LibraryPreparation (models.Model):
         lib_info.append(self.projectInSampleSheet)
         lib_info.append(self.i7IndexID)
         lib_info.append(self.i5IndexID)
-        lib_info.append(self.singlePairedEnd)
-        lib_info.append(self.lengthRead)
         lib_info.append(self.numberOfReused)
         return lib_info
 
@@ -1221,8 +1226,6 @@ class LibraryPreparation (models.Model):
     def get_sample_obj(self):
         return self.sample_id
 
-    def get_single_paired (self):
-        return '%s' %(self.singlePairedEnd)
 
     def get_state(self):
         return '%s' %(self.libPrepState.libPrepState)
@@ -1250,12 +1253,12 @@ class LibraryPreparation (models.Model):
         self.libPrepState = StatesForLibraryPreparation.objects.get(libPrepState__exact = state_value)
         self.save()
         return
-
+    '''
     def set_reagent_user_kit(self, kit_value):
         self.user_reagentKit_id = UserLotCommercialKits.objects.get(nickName__exact = kit_value)
         self.save()
         return
-
+    '''
     def update_i7_index(self, i7_seq_value):
         self.i7Index = i7_seq_value
         self.save()
@@ -1265,6 +1268,24 @@ class LibraryPreparation (models.Model):
         self.i5Index = i5_seq_value
         self.save()
         return
+
+    def update_library_preparation_with_indexes (self,lib_prep_data ):
+        self.user_sample_sheet = lib_prep_data['user_sample_sheet']
+        self.projectInSampleSheet = lib_prep_data['projectInSampleSheet']
+        self.samplePlate = lib_prep_data['samplePlate']
+        self.sampleWell = lib_prep_data['sampleWell']
+        self.i7IndexID = lib_prep_data['i7IndexID']
+        self.i7Index = lib_prep_data['i7Index']
+        self.i5IndexID = lib_prep_data['i5IndexID']
+        self.i5Index = lib_prep_data['i5Index']
+        self.indexPlateWell = lib_prep_data['indexPlateWell']
+        self.genomeFolder = lib_prep_data['genomeFolder']
+        self.manifest = lib_prep_data['manifest']
+        self.userInSampleSheet = lib_prep_data['userInSampleSheet']
+        self.userSampleID = lib_prep_data['userSampleID']
+        self.save()
+        return self
+
 
     def update_lib_preparation_info_in_reuse_state (self, lib_prep_data):
         # Update the instance with the sample sheet information
@@ -1282,8 +1303,6 @@ class LibraryPreparation (models.Model):
         self.i7Index = lib_prep_data['i7Index']
         self.i5IndexID = lib_prep_data['i5IndexID']
         self.i5Index = lib_prep_data['i5Index']
-        self.singlePairedEnd = lib_prep_data['single_paired']
-        self.lengthRead = lib_prep_data['read_length']
         self.uniqueID = lib_prep_data['uniqueID']
 
         self.save()

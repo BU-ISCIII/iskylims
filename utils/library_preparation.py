@@ -1,4 +1,5 @@
 import json
+from django.contrib.auth.models import User
 from iSkyLIMS_core.models import Samples, MoleculePreparation, Protocols, SequencingConfiguration, SequencerInLab
 from iSkyLIMS_core.utils.handling_commercial_kits import *
 from iSkyLIMS_core.utils.handling_protocols import *
@@ -95,7 +96,8 @@ def analyze_and_store_input_param_values(form_data):
         return stored_params
 
     stored_params = []
-    if AdditionaKitsLibraryPreparation.objects.filter(protocol_id__pk__exact =  lib_prep_ids[0]).exists():
+    protocol_id_obj = LibraryPreparation.objects.filter(pk__exact = lib_prep_ids[0]).last().get_protocol_obj()
+    if AdditionaKitsLibraryPreparation.objects.filter(protocol_id =  protocol_id_obj).exists():
         additional_kits = True
     else:
         additional_kits = False
@@ -360,13 +362,13 @@ def extract_user_sample_sheet_data(file_in):
         valid_user_iem_file    # located at utils/sample_sheet_utils.py
         get_sample_sheet_data  # located at utils/sample_sheet_utils.py
         get_userid_in_user_iem_file # located at utils/sample_sheet_utils.py
+        read_user_iem_file     # located at utils/sample_sheet_utils.py
     Constant:
-        ERROR_INVALID_FILE_FORMAT
         ERROR_UNABLE_TO_DELETE_USER_FILE
         ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD
-        ERROR_SAMPLE_SHEET_WHEN_FETCHING_USERID_NAMES
     Return
-        data with the extracted information from sample sheet or error if file is invalid
+        data with the file name and the content of the sample sheet.
+        data['Error'] if file is invalid
     '''
     data = {}
 
@@ -377,10 +379,7 @@ def extract_user_sample_sheet_data(file_in):
     else:
         data['userid_names'] =  get_userid_in_user_iem_file(file_read)
         if  'ERROR' in data['userid_names'] :
-            if 'ERROR-1' == data['userid_names'] :
-                data['ERROR'] = ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD
-            else:
-                data['ERROR'] = ERROR_SAMPLE_SHEET_WHEN_FETCHING_USERID_NAMES
+            data['ERROR'] = ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD
         else:
             data.update(get_sample_sheet_data(file_read))
     if 'ERROR' in data:
@@ -425,9 +424,9 @@ def valid_samples_for_lib_preparation(samples):
         # mark as invalid sample when it is not in Library preparation state
         if not 'Library preparation' == sample_obj.get_sample_state() :
             invalid_samples.append(sample_obj.get_sample_name())
-        # mark as invalid when library prepation object is alreade created and it is not in Created for reused state
+        # mark as invalid when library prepation object is already created and it is not in "Updated additional kits" state
         #elif  LibraryPreparation.objects.filter(sample_id = sample_obj).exists() and not LibraryPreparation.objects.filter(sample_id = sample_obj ,libPrepState__libPrepState__exact = 'Created for Reuse').exists():
-        elif  LibraryPreparation.objects.filter(sample_id = sample_obj , libPrepState__libPrepState__exact = 'Defined').exists():
+        elif  not LibraryPreparation.objects.filter(sample_id = sample_obj , libPrepState__libPrepState__exact = 'Updated additional kits').exists():
                 invalid_samples.append(sample_obj.get_sample_name())
 
     if len(invalid_samples) > 0:
@@ -735,7 +734,80 @@ def pending_samples_for_grafic(pending):
     graphic_pending_samples = FusionCharts("pie3d", "ex1" , "430", "450", "chart-1", "json", data_source)
     return graphic_pending_samples
 
-def store_library_preparation_sample_sheet(sample_sheet_data, user) :
+
+def store_library_preparation_index(form_data):
+    '''
+    Description:
+        The function will fetch the indexes defined in the confirmed sample sheet
+        and updated the library preparation sample with index information
+    Input:
+        form_data   # data included in the form
+    Constant:
+        ERROR_USER_SAMPLE_SHEET_NO_LONGER_EXISTS
+        ERROR_LIBRARY_PREPARATION_NOT_EXISTS
+    Return:
+        store_result .
+    '''
+    store_result = {}
+    unable_store_lib_prep = []
+    json_data = json.loads(form_data['index_data'])
+    heading = form_data['heading_excel'].split(',')
+    if 'I5_Index_ID' in heading :
+        single_paired = 'Paired End'
+        mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_TWO_INDEX
+    else:
+        single_paired = 'Single Reads'
+        mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_ONE_INDEX
+    sample_name_index = heading.index('Sample_Name')
+    if not libPreparationUserSampleSheet.objects.filter(pk__exact = form_data['libPrepUserSampleSheetId']).exists():
+        store_result['ERROR'] = ERROR_USER_SAMPLE_SHEET_NO_LONGER_EXISTS
+        return store_result
+    user_sample_sheet_obj = libPreparationUserSampleSheet.objects.get(pk__exact = form_data['libPrepUserSampleSheetId'])
+
+    for row_index in range(len(json_data)):
+
+        lib_prep_data = {}
+        sample_name = json_data[row_index][sample_name_index]
+
+        if LibraryPreparation.objects.filter(sample_id__sampleName__exact = sample_name, libPrepState__libPrepState__exact = 'Updated additional kits').exists():
+            lib_prep_obj = LibraryPreparation.objects.filter(sample_id__sampleName__exact = sample_name, libPrepState__libPrepState__exact = 'Updated additional kits').last()
+
+            for item in mapping :
+
+                lib_prep_data[item[1]] = json_data[row_index][heading.index(item[0])]
+            for item in MAP_USER_SAMPLE_SHEET_ADDITIONAL_FIELDS_FROM_TYPE_OF_SECUENCER :
+                try:
+                    lib_prep_data[item[1]] =  json_data[row_index][heading.index(item[0])]
+                except:
+                    lib_prep_data[item[1]] = None
+
+            # if Single reads then set the index 5 to empty
+            if not 'I5_Index_ID' in heading :
+                lib_prep_data['i5IndexID'] = ''
+                lib_prep_data['i5Index'] = ''
+            lib_prep_data['user_sample_sheet'] = user_sample_sheet_obj
+
+            lib_prep_obj.update_library_preparation_with_indexes(lib_prep_data)
+            # Update library preparation and sample state
+            lib_prep_obj.set_state('Completed')
+            lib_prep_obj.get_sample_obj().set_state('Pool Preparation')
+
+
+        else:
+            #### ERROR #####
+            unable_store_lib_prep.append(sample_name)
+            continue
+
+    if len(unable_store_lib_prep) > 0 :
+        store_result['ERROR'] = ERROR_LIBRARY_PREPARATION_NOT_EXISTS
+        store_result['ERROR'].append(unable_store_lib_prep)
+    else:
+        user_sample_sheet_obj.update_confirm_used(True)
+        store_result['Successful'] = True
+    return store_result
+
+
+def store_library_preparation_sample_sheet(sample_sheet_data, user, platform, configuration) :
     '''
     Description:
         The function will get the extracted data from sample sheet.
@@ -743,10 +815,14 @@ def store_library_preparation_sample_sheet(sample_sheet_data, user) :
     Input:
         sample_sheet_data   # extracted data from sample sheet in dictionary format
         user        # user object
+        platform    # platform used in the sample sheet
+        configuration # configuration used in the sample sheet
     Return:
         new_user_s_sheet_obj .
     '''
     sample_sheet_data['user'] = user
+    sample_sheet_data['platform'] = platform
+    sample_sheet_data['configuration'] = configuration
     new_user_s_sheet_obj = libPreparationUserSampleSheet.objects.create_lib_prep_user_sample_sheet(sample_sheet_data)
 
     return new_user_s_sheet_obj
@@ -794,6 +870,8 @@ def get_library_code_and_unique_id (sample_id):
         uniqueID = sample_obj.get_unique_sample_id() +'-1'
     return lib_prep_code_id, uniqueID
 
+#############################################
+# Posiblemente haya que borrarlo/modificarlo
 def store_library_preparation_samples(sample_sheet_data, user, protocol , user_sample_sheet_obj):
     '''
     Description:
@@ -868,7 +946,20 @@ def store_library_preparation_samples(sample_sheet_data, user, protocol , user_s
     #stored_lib_prep['lib_prep_code_id'] = ','.join(lib_prep_code_id)
     return lib_prep_id
 
-def get_library_preparation_heading_for_samples (lib_prep_ids , protocol):
+def get_user_for_sample_sheet():
+    '''
+    Descripion:
+        The function collect the user_id defined in iSkyLIMS
+    Return:
+        user_list
+    '''
+    user_list = []
+    user_objs = User.objects.all().order_by('username')
+    for user_obj in user_objs:
+        user_list.append(user_obj.username)
+    return user_list
+
+def format_sample_sheet_to_display_in_form (sample_sheet_data):
     '''
     Description:
         The function gets the information to display the library preparation to assing the protocol parameter values sample names, extracted data from sample sheet, index, .
@@ -876,18 +967,43 @@ def get_library_preparation_heading_for_samples (lib_prep_ids , protocol):
     Input:
         lib_prep_ids   # Library preparation ids
         user        # user object
-        protocol    # protocol name to get the protocol parameters
+        user_sample_sheet_obj # user_sample_sheet object for assigning to each library preparation
     Constamt:
-        HEADING_FIX_FOR_ADDING_LIB_PARAMETERS
-
-    Functions:
-        get_lib_prep_obj_from_id # located at this file
-        get_lot_commercial_kits  # located at iSkyLIMS_core/utils/handling_commercial_kits.py
-        get_protocol_parameters   # located at iSkyLIMS_core/utils/handling_protocols.py
-    Variables:
-        stored_lib_prep     # dictionary to get data to create the library preparation object
+        HEADING_MAIN_DATA_SAMPLE_SHEET
+        HEADING_SUMMARY_DATA_SAMPLE_SHEET
     Return:
-        stored_lib_prep .Including the lib_prep_code_id and lib_prep_id
+        display_data
+    '''
+    display_data = {}
+    main_data_values = []
+    main_data_heading = HEADING_MAIN_DATA_SAMPLE_SHEET.copy()
+    extract_values =['application', 'instrument', 'assay', 'index_adapter','reads', 'adapter1', 'adapter2']
+    if '' == sample_sheet_data['adapter2']:
+        extract_values.pop()
+        main_data_heading.pop()
+        display_data['adapter2'] = False
+    else:
+          display_data['adapter2'] = True
+
+    display_data['sample_data'] = sample_sheet_data['sample_data']
+    display_data['heading'] = sample_sheet_data['heading']
+    main_values = []
+    for item in extract_values:
+        main_values.append(sample_sheet_data[item])
+    summary_values = []
+    summary_values.append(len(sample_sheet_data['samples']))
+    summary_values.append(sample_sheet_data['proyects'])
+    summary_values.append(sample_sheet_data['userid_names'])
+    display_data['main_data'] = list(zip(main_data_heading, main_values))
+    display_data['summary_data'] = list(zip(HEADING_SUMMARY_DATA_SAMPLE_SHEET, summary_values))
+    display_data['heading_excel'] = ','.join(sample_sheet_data['heading'])
+    if len(sample_sheet_data['userid_names']) == 0:
+        display_data['no_user_defined'] = True
+
+    return display_data
+
+
+
     '''
     stored_lib_prep_data = {}
     stored_lib_prep_data['data'] = []
@@ -930,7 +1046,7 @@ def get_library_preparation_heading_for_samples (lib_prep_ids , protocol):
     stored_lib_prep_data['reagents_kits'] = unique_reagents_kits
 
     return stored_lib_prep_data
-
+    '''
 
 def get_lib_prep_obj_from_id (library_preparation_id):
     '''

@@ -113,6 +113,7 @@ def define_new_pool(form_data, user_obj):
         lib_prep_ids  # library preparation id list
     Constants:
         ERROR_LIBRARY_PREPARATION_NOT_EXISTS
+        ERROR_NOT_LIBRARY_PREPARATION_SELECTED
     Functions:
         check_single_paired_compatible      # located at this file
         check_if_duplicated_index      # located at this file
@@ -129,15 +130,17 @@ def define_new_pool(form_data, user_obj):
         protocol_parameter_list.
 
     '''
-
+    error ={}
     if  'lib_prep_in_list' in form_data:
         lib_prep_ids = form_data.getlist('lib_prep_id')
-        if len('lib_prep_in_list') == 0:
-            lib_prep_ids = list(form_data['lib_prep_id'])
-    else:
-        lib_prep_ids = form_data['lib_prep_id'].split(',')
+        if len(lib_prep_ids) == 0:
+            error['ERROR'] = ERROR_NOT_LIBRARY_PREPARATION_SELECTED
+            return error
+            #lib_prep_ids = list(form_data['lib_prep_id'])
+    #else:
+    #    lib_prep_ids = form_data['lib_prep_id'].split(',')
 
-    error ={}
+
     # check if index are not duplicate in the library preparation
     single_paired_compatible = check_single_paired_compatible(lib_prep_ids)
     if 'ERROR' in single_paired_compatible:

@@ -183,22 +183,25 @@
         </div> <!--  end of col-sm-12 -->
     </div> <!--  end of row -->
 
-{% elif stored_lib_prep %}
+{% elif display_sample_sheet %}
      <style>
-         .scrolling-wrapper {
-      overflow-x: scroll;
-      white-space: nowrap;
-    }
+        .scrolling-wrapper {
+            overflow-x: scroll;
+            white-space: nowrap;
+        }
      </style>
-    {% if not stored_lib_prep.reagents_kits%}
+    {% if display_sample_sheet.no_user_defined %}
         <div class="row row-space-2 margin-b-4">
             <div class="col-sm-10">
                 <div class="panel panel-danger">
-                    <div class="panel-heading"><h3>Not available Reagents Kit for the user in the sample sheet.</h3></div>
+                    <div class="panel-heading"><h3 style="text-align:center">Users are not defined on sample sheet.</h3></div>
                     <div class="panel-body">
-                        <h5 style="text-align:center"> Click on the bottom below to define new User Reagent Kit</h5>
+                        <h5 style="text-align:center">It is mandatory on iSkyLIMS to link the investigator user with the sample name</h5>
                         <br><br>
-                        <button type="button" class="btn btn-default" onclick="location.href = '/wetlab/addUserLotCommercialKit';">Define new User Reagent Kit</button>
+                        <h5 style="text-align:center">Upload again the sample sheet with the user information</h5>
+                        <h5 style="text-align:center">or</h5>
+                        <h5 style="text-align:center">Select the right user for each sample</h5>
+
 
                     </div> <!--  end of panel body -->
                 </div> <!--  end of panel  -->
@@ -207,7 +210,144 @@
         </div> <!--  end of row -->
 
     {% endif %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>The present information was collected from sample sheet file</h3></div>
+                <div class="panel-body">
+                    <h5 style="text-align:center">Check that all information is ok, then click on the "Submit" bottom</h5>
+                    <h5 style="text-align:center">If some information is wrong then modify the sample sheet and upload again the the right information.</h5>
 
+                    <div class="col-sm-7" >
+                        <div class="panel-heading"><h5 style="text-align:center">Main Information</h5></div>
+
+                        <div class="panel-body">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for param, value in display_sample_sheet.main_data %}
+                                    <tr>
+                                        <td>{{param}}</td>
+                                        {% if param == 'Reads' %}
+                                            <td>
+                                            {% for val in value %}
+                                                {{val}}<br/>
+                                            {% endfor %}
+                                            </td>
+                                        {% else %}
+                                            <td>{{value}}</td>
+                                        {% endif %}
+                                    </tr>
+                                {%endfor%}
+                            </tbody>
+                        </table>
+                        </div> <!--  end of panel  -->
+                    </div>  <!-- end class-sm-8   -->
+                    <div class="col-sm-5" >
+                        <div class="panel-heading"><h5 style="text-align:center">Summary Information</h5></div>
+                        <div class="panel-body">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Parameter</th>
+                                        <th>Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for param, value in display_sample_sheet.summary_data %}
+                                        <tr>
+                                            <td>{{param}}</td>
+                                            {% if param == 'Projects Name'  or param == 'Users' %}
+                                                <td>
+                                                {% for val in value %}
+                                                    {{val}}<br/>
+                                                {% endfor %}
+                                                </td>
+                                            {% else %}
+                                                <td>{{value}}</td>
+                                            {% endif %}
+                                        </tr>
+                                    {%endfor%}
+                                </tbody>
+                            </table>
+                            </div> <!--  end of panel  -->
+                    </div>  <!-- end class-sm-8   -->
+                    <div class="col-sm-12" >
+                        <br><br><br>
+                        <form method="post" enctype="multipart/form-data" name="storeIndexSample"  id="storeIndexSample" class="form-horizontal well">
+                            <h5>Sample Information</h5>
+
+                                <div class="scrolling-wrapper">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="storeIndexSample"/>
+                                <!-- <input type="hidden" name="libPrepIds" value="{{display_sample_sheet.lib_prep_ids}}"/>-->
+                                <input type="hidden" name="heading_excel" value="{{display_sample_sheet.heading_excel}}"/>
+                                <input type="hidden" name="libPrepUserSampleSheetId" value="{{display_sample_sheet.lib_prep_user_sample_sheet}}"/>
+
+                                <div id="spreadsheet"></div>
+                                <br><br><br>
+
+                                <script>
+                                    var data = [{% for values in display_sample_sheet.sample_data %}
+                                        [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                                    ];
+                                    mySpreadsheet = $('#spreadsheet').jexcel({
+                                        data:data,
+                                        columns: [
+                                            {% for heading in display_sample_sheet.heading %}
+                                                {% if forloop.first or forloop.counter == 2 %}
+                                                    { type: 'text', title:'{{heading}}', width:200 , readOnly:true },
+                                                {% elif forloop.last %}
+                                                    { type: 'dropdown', title:'{{heading}}', autocomplete:true, width:200 , source :[ {% for value in display_sample_sheet.user_list %} '{{value}}', {% endfor %}]},
+                                                {% else %}
+                                                    { type: 'text', title:'{{heading}}', width:100 },
+                                                {% endif %}
+                                            {% endfor %}
+                                        ],
+                                        allowInsertColumn:false,
+                                        allowDeleteColumn:false,
+                                        allowRenameColumn:false,
+                                        allowInsertRow:false,
+                                        allowDeleteRow:false,
+                                        tableOverflow:false,
+                                        tableHeight:'200px',
+                                        csvFileName:'sample_sheet',
+
+                                    });
+                                </script>
+                                <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                                <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
+
+                            </div> <!--  end of scrolling  -->
+                        </form>
+                    </div>  <!-- end class-sm-12   -->
+
+                    <script>
+                        $(document).ready(function () {
+                            $("#storeIndexSample").submit(function (e) {
+                                //stop submitting the form to see the disabled button effect
+                                // e.preventDefault();
+                                //disable the submit button
+                                var table_data = $('#spreadsheet').jexcel('getData')
+                                var data_json = JSON.stringify(table_data)
+                                $("<input />").attr("type", "hidden")
+                                .attr("name", "index_data")
+                                .attr("value", data_json)
+                                .appendTo("#storeIndexSample");
+                                $("#btnSubmit").attr("disabled", true);
+                                return true;
+                            });
+                        });
+                    </script>
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-11 -->
+    </div> <!--  end of row -->
 
 
 
@@ -340,12 +480,26 @@
                     <br><br>
                     <p>Click on the bottom below to continue with adding Library Preparation information </p>
                     <br><br>
-                    <input type="button" value="Return Home" onclick="location.href ='/wetlab/handlingLibraryPreparations' ;"/>
+                    <input type="button" value="Return Library Preparation" onclick="location.href ='/wetlab/handlingLibraryPreparations' ;"/>
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-11 -->
     </div> <!--  end of row -->
 
+{% elif stored_index %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-10">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>The Sample Sheet is stored now on iSkyLIMS.</h3></div>
+                <div class="panel-body">
+                    <h5 style="text-align:center">You can create now a pool</h5>
+                    <br><br><br>
+                    <input type="button" value="Create Pool" onclick="location.href ='/wetlab/createPool' ;"/>
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+
+        </div> <!--  end of col-sm-10 -->
+    </div> <!--  end of row -->
 {% else %}
     {% if samples_in_lib_prep.no_samples %}
         <div class="row row-space-2 margin-b-4">
@@ -367,7 +521,7 @@
                     <button class="tablinks" onclick="summaryBin(event, 'assigningProtocol')" id="defaultOpen">Available Samples </button>
                     <button class="tablinks" onclick="summaryBin(event, 'defined')">Pending Protocol Parameters</button>
                     <button class="tablinks" onclick="summaryBin(event, 'pendingKits')">Pending additional kits</button>
-                    <button class="tablinks" onclick="summaryBin(event, 'pendingIndex')">Index kit assign</button>
+                    <button class="tablinks" onclick="summaryBin(event, 'pendingIndex')">Index assignment</button>
 
                     <div id="assigningProtocol" class="tabcontent">
                         <div class="col-sm-11" >
@@ -414,18 +568,15 @@
                                              <script>
                                                  $(document).ready(function () {
                                                      $("#assignProtocol").submit(function (e) {
-                                                         //stop submitting the form to see the disabled button effect
-                                                         // e.preventDefault();
-                                                         //disable the submit button
-                                                         var table_data = $('#spreadsheet').jexcel('getData')
-                                                         var data_json = JSON.stringify(table_data)
-                                                         $("<input />").attr("type", "hidden")
+                                                        var table_data = $('#spreadsheet').jexcel('getData')
+                                                        var data_json = JSON.stringify(table_data)
+                                                        $("<input />").attr("type", "hidden")
                                                            .attr("name", "protocol_data")
                                                            .attr("value", data_json)
                                                            .appendTo("#assignProtocol");
-                                                         $("#btnSubmit").attr("disabled", true);
-                                                         return true;
-                                                     });
+                                                        $("#btnSubmit").attr("disabled", true);
+                                                        return true;
+                                                    });
                                                  });
                                              </script>
                                         {% else %}
@@ -593,9 +744,9 @@
                                                 <div class="col-sm-4">
                                                     {% for platform in samples_in_lib_prep.configuration_platform %}
                                                         {% if forloop.first %}
-                                                            <input id="radio-{{platform|cut:" "}}" type="radio" name="category" value="1"  checked="yes"/>{{platform}} Platform <br>
+                                                            <input id="radio-{{platform|cut:' '}}" type="radio" name="platform" value="{{platform}}"  checked="yes"/>{{platform}} Platform <br>
                                                         {% else %}
-                                                            <input id="radio-{{platform|cut:" "}}" type="radio" name="category" value="1"/>{{platform}} Platform <br>
+                                                            <input id="radio-{{platform|cut:' '}}" type="radio" name="platform" value="{{platform}}"/>{{platform}} Platform <br>
                                                         {% endif %}
                                                     {% endfor %}
                                                     <!-- <input id="radio-miseq" type="radio" name="category" value="1" checked="yes" />Miseq Platform <br>
@@ -607,11 +758,12 @@
 
                                                         {% for plat , conf_opt in samples_in_lib_prep.configuration_platform_option %}
                                                             {% if forloop.first %}
-                                                                <div id="select-div" class="{{plat|cut:' '}}">
+                                                                <div id="select-div"  class="{{plat|cut:' '}}">
                                                             {% endif %}
-                                                            <select id="{{plat|cut:' '}}y">
+                                                            <select name="{{plat}}"  id="{{plat|cut:' '}}y">
+                                                                <option value=""> Choose one</option>
                                                                 {% for option in conf_opt %}
-                                                                    <option>{{option}}</option>
+                                                                    <option value ="{{option}}">{{option}}</option>
                                                                 {% endfor %}
                                                             </select>
                                                         {% endfor %}
@@ -622,7 +774,7 @@
                                                 <br><br>
                                                 <div class="col-sm-11">
                                                     <br>
-                                                    <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
+                                                    <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmitFile">
                                                 </div>
                                                 <br><br><br>
                                             </div> <!-- End of form-group required -->
@@ -630,12 +782,12 @@
 
                                         <script>
                                             //$('input[type="submit"]').prop("disabled", true);
-                                            $('#btnSubmit').prop('disabled',true);
+                                            $('#btnSubmitFile').prop('disabled',true);
                                             var a=0;
                                             //binds to onchange event of your input field
                                             $('#uploadfile').bind('change', function() {
-                                                if ($('#btnSubmit').attr('disabled',false)){
-                                                    $('#btnSubmit').attr('disabled',true);
+                                                if ($('#btnSubmitFile').attr('disabled',false)){
+                                                    $('#btnSubmitFile').attr('disabled',true);
                                                 }
                                                 var ext = $('#uploadfile').val().split('.').pop().toLowerCase();
                                                 if ($.inArray(ext, ['csv']) == -1){
@@ -655,7 +807,7 @@
                                                     }
                                                     $('#error1').slideUp("slow");
                                                     if (a==1){
-                                                        $('#btnSubmit').attr('disabled',false);
+                                                        $('#btnSubmitFile').attr('disabled',false);
                                                     }
                                                 }
                                             });

@@ -22,9 +22,9 @@ def get_userid_in_user_iem_file (file_read):
         The function get if userids included in the user IEM file
     Input:
         file_read  # content of the IEM file from user
-    Constant:
-        SECTIONS_IN_IEM_SAMPLE_SHEET
     Return
+        ERROR if no Descripion column exists on file
+
         False if file cannot be read or do not have Description information
         userids with the ids found
     '''
@@ -47,12 +47,12 @@ def get_userid_in_user_iem_file (file_read):
                     description_index = line.index('Description')
                     continue
                 except:
-                    return 'ERROR-1'
+                    return 'ERROR'
             else:
                 try:
                     userid_names.append(line[description_index])
                 except:
-                    return 'ERROR-2'
+                    continue
 
     return list(set(userid_names))
 
@@ -149,6 +149,36 @@ def get_index_adapter (file_lines):
     #remove the \n or \r
     return index_adapters.rstrip()
 
+def get_projects_in_sample_sheet(file_lines):
+    '''
+    Description :
+        get the project names defined from the file_lines
+    Input:
+        file_lines  # sample sheet file converted to list of lines
+    Return:
+        project_name_list
+    '''
+    header_found = False
+    project_list = []
+    for line in file_lines:
+        line = line.rstrip()
+        if line == '':
+            continue
+        found_header=re.search('^Sample_ID,Sample_Name',line)
+        if found_header:
+            header_found = True
+            heading = line.split(',')
+            index_project_name = heading.index('Sample_Project')
+            continue
+        if header_found :
+            try:
+                project_list.append(line.split(',')[index_project_name])
+            except:
+                continue
+    project_name_list = list(set(project_list))
+    return project_name_list
+
+
 def get_reads(file_lines):
     '''
     Description :
@@ -209,7 +239,7 @@ def get_samples_in_sample_sheet(file_lines):
 def get_sample_sheet_data (file_read):
     '''
     Description:
-        The function reads the user sample sheet from IEM and extracts : samples, adaters, reads
+        The function reads the user sample sheet from IEM and extracts : samples, adapters, reads
         assay, index adapters, application and instrument
     Input:
         file_read    # content of the user IEM
@@ -249,7 +279,8 @@ def get_sample_sheet_data (file_read):
     sample_sheet_data['index_adapter'] = get_index_adapter (file_lines)
     # get reads information
     sample_sheet_data['reads'] = get_reads(file_lines)
-
+    # get proyects in sheet_data
+    sample_sheet_data['proyects'] = get_projects_in_sample_sheet(file_lines)
     # update sample sheet data
     sample_sheet_data.update(get_samples_in_sample_sheet(file_lines))
 

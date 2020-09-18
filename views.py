@@ -3523,7 +3523,7 @@ def modify_sample_project_fields(request, sample_project_id):
 
 
         sample_project_parameter = get_parameters_sample_project(sample_project_id)
-        #import pdb; pdb.set_trace()
+
         return render(request, 'iSkyLIMS_wetlab/modifySampleProjectFields.html', {'sample_project_parameter':sample_project_parameter})
 
 
@@ -3592,6 +3592,7 @@ def handling_library_preparations(request):
         extract_user_sample_sheet_data   : located at utils/library_preparation.py
         get_data_for_library_preparation_in_defined : located at iSkyLIMS_core/utils/handling_samples.py
         get_type_of_sample_information : located at iSkyLIMS_core/utils/handling_samples.py
+        get_library_preparation_heading_for_samples : located at utils/library_preparation.py
         get_protocols_for_library_preparation : located at utils/library_preparation.py
         get_samples_in_lib_prep_state :  located at utils/library_preparation.py
         validate_sample_sheet_data  :  located at utils/library_preparation.py
@@ -3634,15 +3635,16 @@ def handling_library_preparations(request):
 
 
     if request.method == 'POST' and request.POST['action'] == 'importsamplesheet':
-
+        
         sample_sheet_data = extract_user_sample_sheet_data(request.FILES['uploadfile'] )
         # Error found when extracting data from sample sheet
         if 'ERROR' in sample_sheet_data :
             upload_file['ERROR'] = sample_sheet_data['ERROR']
             upload_file['file_name'] = request.FILES['uploadfile'].name
-            return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'upload_file':upload_file})
+            return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'ERROR':sample_sheet_data['ERROR'], 'samples_in_lib_prep':samples_in_lib_prep})
         # check if all users are defined in database
-        users_check = check_users_exists(sample_sheet_data['userid_names'])
+        # users_check = check_users_exists(sample_sheet_data['userid_names'])
+        '''
         if not 'all_valid' == users_check:
             if len(users_check) == 1:
                 upload_file['ERROR'] = ERROR_SAMPLE_SHEET_USER_IS_NOT_DEFINED.copy()
@@ -3651,32 +3653,52 @@ def handling_library_preparations(request):
             upload_file['ERROR'].append(' , '.join(users_check))
             upload_file['file_name'] = request.FILES['uploadfile'].name
             return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'upload_file':upload_file})
-
+        '''
         # Add addtional data not included before on the sample sheet
+        '''
         if 'instrument' in request.POST :
             sample_sheet_data['instrument'] = request.POST['instrument']
         if 'index_adapter'in request.POST :
             sample_sheet_data['index_adapter'] = request.POST['index_adapter']
-
+        '''
         valid_data = validate_sample_sheet_data(sample_sheet_data)
 
         if 'ERROR' in valid_data:
-            upload_file['ERROR'] = valid_data['ERROR']
-            upload_file['file_name'] = request.FILES['uploadfile'].name
+            #upload_file = {}
+            #upload_file['ERROR'] = valid_data['ERROR']
+            #upload_file['file_name'] = request.FILES['uploadfile'].name
+
+            '''
             if  'detail_error' in valid_data:
                 if 'no_index' in valid_data['detail_error']:
                     upload_file['index_adapter'] = get_list_of_collection_kits()
                 if 'no_instrument' in valid_data['detail_error']:
                     upload_file['instrument'] = True
-                return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'upload_file':upload_file})
+            '''
+            return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'ERROR':valid_data['ERROR'], 'samples_in_lib_prep':samples_in_lib_prep})
+        platform = request.POST['platform']
+        configuration = request.POST[request.POST['platform']]
+        lib_prep_sample_sheet_obj = store_library_preparation_sample_sheet(sample_sheet_data, request.user, platform, configuration)
 
-        lib_prep_sample_sheet_obj = store_library_preparation_sample_sheet(sample_sheet_data, request.user)
+        #stored_lib_prep_sample = store_library_preparation_samples(sample_sheet_data,  request.user, request.POST['lib_protocols'], lib_prep_sample_sheet_obj)
 
-        stored_lib_prep_sample = store_library_preparation_samples(sample_sheet_data,  request.user, request.POST['lib_protocols'], lib_prep_sample_sheet_obj)
 
-        stored_lib_prep = get_library_preparation_heading_for_samples(stored_lib_prep_sample, request.POST['lib_protocols'])
+        display_sample_sheet = format_sample_sheet_to_display_in_form(sample_sheet_data)
+        #display_sample_sheet = sample_sheet_data
+        display_sample_sheet['user_list'] = get_user_for_sample_sheet()
+        display_sample_sheet['lib_prep_user_sample_sheet'] = lib_prep_sample_sheet_obj.get_user_sample_sheet_id()
 
-        return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_lib_prep':stored_lib_prep})
+        return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'display_sample_sheet':display_sample_sheet})
+
+
+
+    if request.method == 'POST' and request.POST['action'] == 'storeIndexSample':
+
+        store_data_result = store_library_preparation_index(request.POST)
+        if 'ERROR' in store_data_result:
+            return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'ERROR':valid_data['ERROR'], 'samples_in_lib_prep':samples_in_lib_prep})
+        stored_index = 'True'
+        return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_index':stored_index})
 
 
     if request.method == 'POST' and request.POST['action'] == 'libpreparationdefined':
@@ -3704,7 +3726,7 @@ def handling_library_preparations(request):
 
         return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_additional_kits':stored_additional_kits})
     else:
-        #import pdb; pdb.set_trace()
+
         return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'samples_in_lib_prep':samples_in_lib_prep})
 
 
