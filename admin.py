@@ -59,6 +59,9 @@ class SampleProjectsFieldsAdmin(admin.ModelAdmin):
 class SequencingPlatformAdmin(admin.ModelAdmin):
     list_display = ('platformName', 'companyName', 'sequencingTecnology')
 
+class SequencingConfigurationAdmin(admin.ModelAdmin):
+    list_display = ['platformID', 'configurationName']
+
 class SequencerInLabAdmin(admin.ModelAdmin):
     list_display = ('platformID', 'sequencerName', 'sequencerDescription', 'sequencerLocation', 'sequencerSerialNumber', 'sequencerState', 'sequencerOperationStart', 'sequencerOperationEnd','sequencerNumberLanes')
 
@@ -94,6 +97,7 @@ admin.site.register(SampleProjects,SampleProjectsAdmin)
 admin.site.register(SampleProjectsFields,SampleProjectsFieldsAdmin)
 
 admin.site.register(SequencingPlatform, SequencingPlatformAdmin)
+admin.site.register(SequencingConfiguration, SequencingConfigurationAdmin)
 admin.site.register(SequencerInLab, SequencerInLabAdmin)
 
 admin.site.register(Species, SpeciesAdmin)

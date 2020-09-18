@@ -1043,6 +1043,26 @@ class SequencingPlatform(models.Model):
         return '%s'  %(self.companyName)
 
 
+class SequencingConfiguration(models.Model):
+    platformID = models.ForeignKey(
+                SequencingPlatform ,
+                on_delete=models.CASCADE, null = True, blank = True)
+    configurationName = models.CharField(max_length=255)
+
+    
+    def __str__ (self):
+        return '%s' %(self.configurationName)
+
+    def get_configuration_name (self):
+        return '%s' %(self.configurationName)
+
+    def get_platform_name(self):
+        return '%s' %(self.platformID.get_platform_name())
+
+    def get_platform_obj (self):
+        return self.platformID
+
+
 class SequencerInLabManager(models.Manager):
     def create_sequencer_in_lab (self, sequencer_value):
         new_sequencer = self.create( platformID = sequencer_value['platformID'], sequencerName= sequencer_value['sequencerName'] ,
