@@ -614,14 +614,12 @@ def get_all_library_information(sample_id):
             lib_prep_data.append(library_item.get_sample_id())
             library_information['lib_prep_data'].append(lib_prep_data)
 
-
             if library_item.pools.all().exists() :
                 pools = library_item.pools.all()
                 lib_prep_code_id = library_item.get_lib_prep_code()
                 for pool in pools:
                     pool_name = pool.get_pool_name()
                     pool_code = pool.get_pool_code_id()
-                    import pdb; pdb.set_trace()
                     run_name= pool.get_run_name()
                     library_information['pool_information'].append([lib_prep_code_id, pool_name,pool_code, run_name, library_item.get_id()])
 
