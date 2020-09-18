@@ -3635,7 +3635,7 @@ def handling_library_preparations(request):
 
 
     if request.method == 'POST' and request.POST['action'] == 'importsamplesheet':
-        
+
         sample_sheet_data = extract_user_sample_sheet_data(request.FILES['uploadfile'] )
         # Error found when extracting data from sample sheet
         if 'ERROR' in sample_sheet_data :
@@ -3735,6 +3735,7 @@ def handling_molecules(request):
     Functions:
         get_samples_in_state : located at iSkyLIMS_core/utils/handling_samples.py
         create_table_to_select_molecules : located at iSkyLIMS_core/utils/handling_samples.py
+        display_molecule_protocol_parameters  : located at iSkyLIMS_core/utils/handling_samples.py
     '''
 
     if request.method == 'POST' and request.POST['action'] == 'selectedMolecules':

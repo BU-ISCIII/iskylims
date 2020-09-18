@@ -238,19 +238,6 @@
 
     {% else %}
 
-        {% if show_molecule_parameters.lot_kit == '' %}
-            <div class="row row-space-2 margin-b-4">
-                <div class="col-sm-12">
-                    <div class="panel panel-danger">
-                        <div class="panel-heading"><h3>Warning.</h3></div>
-                        <div class="panel-body">
-                            <h4>There is no  Lot kit available. </h4>
-                        </div> <!--  end of panel body -->
-                    </div> <!--  end of panel  -->
-                </div> <!--  end of col-sm-6 -->
-           </div> <!--  end of row -->
-
-        {% endif %}
         {% if show_molecule_parameters %}
             {% if not show_molecule_parameters.lot_kit %}
                 <div class="row row-space-2 margin-b-4">
@@ -262,7 +249,7 @@
                                <p>Click on the bottom below to define your Lot Kit first. Then return again to assign the molecule parameter</p>
 
                                <br><br>
-                               <button type="button" class="btn btn-default" onclick="location.href = '/wetlab/addUserLotCommercialKit';">Define new User Reagent Kit</button>
+                               <button type="button" class="btn btn-default" onclick="location.href = '/wetlab/addUserLotCommercialKit';">Define new User Lot Commercial Kit</button>
                             </div> <!--  end of panel body -->
                         </div> <!--  end of panel  -->
                     </div> <!--  end of col-sm-6 -->
@@ -287,7 +274,7 @@
                                {% if show_molecule_parameters.pending_id %}
                                     <input type="hidden" name= "pending" value="{{show_molecule_parameters.pending_id}}"/>
                                {% endif %}
-                               <p></p>
+                               <br><br>
 
                                    <div id="spreadsheet"></div>
                                    <br>
@@ -669,7 +656,10 @@
 
              </div> <!--// end col-sm-7  -->
             </div> <!-- // end of tab molecule_used_for -->
-
+            <script>
+                // Get the element with id="tablinksdefaultOpen" and click on it
+                document.getElementById("tablinksdefaultOpen").click();
+            </script>
          </div> <!--// end col-sm-12  -->
     </div> <!--// end row -->
 {% endif %}
