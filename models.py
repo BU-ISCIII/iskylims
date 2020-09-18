@@ -909,7 +909,7 @@ class LibraryPoolManager (models.Manager):
         new_library_pool = self.create(registerUser = pool_data['registerUser']  ,
                     poolState = StatesForPool.objects.get(poolState__exact = 'Defined'),
                     poolName = pool_data['poolName'], poolCodeID = pool_data['poolCodeID'],
-                    adapter = pool_data['adapter'], pairedEnd = pool_data['pairedEnd'],
+                    adapter = pool_data['adapter'],  pairedEnd = pool_data['pairedEnd'],
                     numberOfSamples = pool_data['n_samples'])
         return new_library_pool
 
@@ -1129,7 +1129,7 @@ class LibraryPreparation (models.Model):
         lib_info.append(self.i5IndexID)
         lib_info.append(self.i5Index)
         lib_info.append(self.projectInSampleSheet)
-        lib_info.append(self.registerUser.username)
+        lib_info.append(self.userInSampleSheet)
         #lib_info.append(self.collectionIndex_id.get_collection_index_name())
         return lib_info
 
@@ -1144,7 +1144,7 @@ class LibraryPreparation (models.Model):
         lib_info.append(self.i7IndexID)
         lib_info.append(self.i7Index)
         lib_info.append(self.projectInSampleSheet)
-        lib_info.append(self.registerUser.username)
+        lib_info.append(self.userInSampleSheet)
         #lib_info.append(self.collectionIndex_id.get_collection_index_name())
         return lib_info
 

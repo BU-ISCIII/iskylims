@@ -24,7 +24,7 @@ def get_lib_prep_adapter(lib_prep_ids):
 
 
 
-def check_single_paired_compatible(lib_prep_ids):
+    # def check_single_paired_compatible(lib_prep_ids):
     '''
     Description:
         The function check if the library preparations instance has the same index, (Single Read or Paired End).
@@ -36,7 +36,7 @@ def check_single_paired_compatible(lib_prep_ids):
         error message if library id does not exists.
         False when incompatible
         True all library preparations belong to the same index.
-    '''
+
     single_paired = ''
     not_defined_library_preparation_ids = []
 
@@ -53,7 +53,7 @@ def check_single_paired_compatible(lib_prep_ids):
         if single_paired != lib_prep_paired_end:
             return 'False'
     return 'True'
-
+    '''
 
 def check_if_duplicated_index (lib_prep_ids):
     '''
@@ -97,12 +97,22 @@ def check_if_duplicated_index (lib_prep_ids):
         incompatible_samples['incompatible_index'] =incompatible_index
         return incompatible_samples
 
-def get_single_paired(lib_prep_id):
+def get_single_paired(lib_prep_ids):
+    '''
+    Description:
+        The function checks if at least one library preparation included in the pool
+        was usin I5 index.
+    Input:
+        lib_prep_ids  # library preparation id list
 
-    lib_prep_obj =  LibraryPreparation.objects.get(pk__exact = lib_prep_id)
-    if lib_prep_obj.get_single_paired() == 'Paired End' :
-        return 'Paired End'
-    return 'Single Read'
+    Return:
+        PairedEnd or SingleRead
+    '''
+    for lib_prep_id in lib_prep_ids:
+        i5_index_value =  LibraryPreparation.objects.get(pk__exact = lib_prep_id).get_i5_index()
+        if i5_index_value != '' :
+            return 'PairedEnd'
+    return 'SingleRead'
 
 def define_new_pool(form_data, user_obj):
     '''
@@ -142,13 +152,14 @@ def define_new_pool(form_data, user_obj):
 
 
     # check if index are not duplicate in the library preparation
-    single_paired_compatible = check_single_paired_compatible(lib_prep_ids)
-    if 'ERROR' in single_paired_compatible:
-        error['ERROR'] = ERROR_LIBRARY_PREPARATION_NOT_EXISTS
-        return error
-    if 'False' == single_paired_compatible :
-        error['incompatible_s_p_end'] = True
-        return error
+
+    # single_paired_compatible = check_single_paired_compatible(lib_prep_ids)
+    # if 'ERROR' in single_paired_compatible:
+    #     error['ERROR'] = ERROR_LIBRARY_PREPARATION_NOT_EXISTS
+    #     return error
+    # if 'False' == single_paired_compatible :
+    #     error['incompatible_s_p_end'] = True
+    #     return error
     duplicated_index = check_if_duplicated_index(lib_prep_ids)
     if 'incompatible_index' in duplicated_index :
         error['duplicated_index'] = duplicated_index
@@ -164,7 +175,7 @@ def define_new_pool(form_data, user_obj):
     pool_data['poolCodeID'] = generate_pool_code_id()
     pool_data['registerUser'] = user_obj
     pool_data['adapter'] = adapters[0]
-    pool_data['pairedEnd'] = get_single_paired(lib_prep_ids[0])
+    pool_data['pairedEnd'] = get_single_paired(lib_prep_ids)
     pool_data['n_samples'] = len(lib_prep_ids)
 
     new_pool = LibraryPool.objects.create_lib_pool(pool_data)

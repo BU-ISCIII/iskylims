@@ -62,7 +62,7 @@
                                             <label class="col-sm-5 control-label">Reads</label>
                                             <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  value="{{display_sample_information.reads}}"  name="reads" size="80"></div>
                                             <br><br>
-                                            <label class="col-sm-5 control-label">Adapter-1</label>
+                                            <label class="col-sm-5 control-label">Adapter</label>
                                             <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  value="{{display_sample_information.adapter1}}"  name="adapter" size="80"></div>
                                             <br><br>
                                             {% if display_sample_information.adapter2 %}
@@ -80,7 +80,7 @@
                                             <br><br><br>
 
                                             <label class="col-sm-5 control-label">Define the ContainerID</label>
-                                            <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  name="containerID" size="80"></div>
+                                            <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  name="containerID" size="80" value = "{{display_sample_information.date}}"></div>
                                         </div> <!--  end of form-group -->
                                     </div> <!--  end of col-sm-6 -->
                                 </div> <!--  end of col-sm-12 -->

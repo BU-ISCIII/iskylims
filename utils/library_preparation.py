@@ -621,6 +621,7 @@ def get_all_library_information(sample_id):
                 for pool in pools:
                     pool_name = pool.get_pool_name()
                     pool_code = pool.get_pool_code_id()
+                    import pdb; pdb.set_trace()
                     run_name= pool.get_run_name()
                     library_information['pool_information'].append([lib_prep_code_id, pool_name,pool_code, run_name, library_item.get_id()])
 

@@ -30,14 +30,14 @@ def handle_input_samples_for_run (data_form, user):
         prepare_fields_to_create_sample_sheet_from_template
         create_sample_sheet_file
     Constants:
-    HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_PAIREDEND
-    MAPPING_BASESPACE_SAMPLE_SHEET_TWO_INDEX
-    BASESPACE_FILE_TWO_INDEX
-    HEADING_FOR_SAMPLE_SHEET_TWO_INDEX
-    HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD
-    MAPPING_BASESPACE_SAMPLE_SHEET_ONE_INDEX
-    BASESPACE_FILE_ONE_INDEX
-    HEADING_FOR_SAMPLE_SHEET_ONE_INDEX
+        HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_PAIREDEND
+        MAPPING_BASESPACE_SAMPLE_SHEET_TWO_INDEX
+        BASESPACE_FILE_TWO_INDEX
+        HEADING_FOR_SAMPLE_SHEET_TWO_INDEX
+        HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD
+        MAPPING_BASESPACE_SAMPLE_SHEET_ONE_INDEX
+        BASESPACE_FILE_ONE_INDEX
+        HEADING_FOR_SAMPLE_SHEET_ONE_INDEX
 
 
     Return:
@@ -178,7 +178,7 @@ def get_pool_adapters(pool_objs):
         adapters
     '''
     adapters = {}
-    for pool in pool_obj :
+    for pool in pool_objs :
         adapter = pool.get_adapter()
         if not adapter in adapters:
             adapters[adapter] = []
@@ -186,14 +186,14 @@ def get_pool_adapters(pool_objs):
 
     return adapters
 
-def get_pool_single_paired(pool_objs):
+#  def get_pool_single_paired(pool_objs):
     '''
     Description:
         The function get the single read and paired ened  used for each pool.
         return a dictionary with single_paired as a key and the pool name list as value
     Return:
         adapters
-    '''
+
     single_paired = {}
     for pool in pool_obj :
         s_p = pool.get_pool_single_paired()
@@ -202,6 +202,7 @@ def get_pool_single_paired(pool_objs):
         single_paired[s_p].append(pool.get_pool_name())
 
     return single_paired
+    '''
 
 def get_pool_duplicated_index(pool_objs):
     '''
@@ -217,7 +218,7 @@ def get_pool_duplicated_index(pool_objs):
     for pool in pool_objs :
         lib_prep_objs = LibraryPreparation.objects.filter(pools = pool)
         for lib_prep_obj in lib_prep_objs :
-            library_preparation_ids.append(lib_prep_obj.get_id)
+            library_preparation_ids.append(lib_prep_obj.get_id())
 
         result_index = check_if_duplicated_index(library_preparation_ids)
     if 'True' in result_index:
@@ -233,7 +234,7 @@ def check_pools_compatible(data_form):
     Functions:
         get_pool_objs_from_ids       # located at this file
         get_pool_adapters            # located at this file
-        get_single_paired            # located at this file
+
         get_pool_duplicated_index   # located at this file
     Return:
         True if all cheks are ok, or error message to display to user
@@ -248,13 +249,13 @@ def check_pools_compatible(data_form):
         error = {}
         error['ERROR'] = adapters
         return error
-    single_paired = get_single_paired (pool_objs)
-    if len(single_paired) > 1:
-        error['single_paired'] = single_paired
-        return error
+    # single_paired = get_single_paired (pool_objs)
+    # if len(single_paired) > 1:
+    #     error['single_paired'] = single_paired
+    #     return error
     duplicated_index = get_pool_duplicated_index(pool_objs)
-    if not 'False' in duplicate_index:
-        error['duplicated_index'] = duplicate_index
+    if not 'False' in duplicated_index:
+        error['duplicated_index'] = duplicated_index
         return error
     return 'True'
 
@@ -402,8 +403,8 @@ def get_library_preparation_data_in_run (lib_prep_ids, pool_ids):
         display_sample_information
     '''
     display_sample_information ={}
-    single_paired = get_type_read_sequencing(pool_ids[0])
-    if single_paired == 'Paired End':
+    single_paired = get_type_read_sequencing(pool_ids)
+    if single_paired == 'PairedEnd':
         paired = True
         display_sample_information['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_PAIREDEND
     else:
@@ -415,7 +416,7 @@ def get_library_preparation_data_in_run (lib_prep_ids, pool_ids):
     display_sample_information['lib_prep_unique_ids'] = ','.join(uniqueID_list)
     #display_sample_information['lib_prep_unique_ids'] = ','.join(get_library_preparation_unique_id(lib_prep_ids))
     display_sample_information['paired_end'] = paired
-
+    display_sample_information['date'] = today_date = datetime.datetime.today().strftime("%Y%m%d")
     return display_sample_information
 
 def get_stored_user_sample_sheet(lib_prep_id):
@@ -438,17 +439,21 @@ def get_stored_user_sample_sheet(lib_prep_id):
 
     return sample_sheet_data
 
-def get_type_read_sequencing(pool_id):
+def get_type_read_sequencing(pool_ids):
     '''
     Description:
         The function returns the value of th pool singlePaired
     Input:
-        pool_id         # pool id
+        pool_ids        # pool id list
     Return:
-        single_paired
+        PairedEnd or SingleRead
     '''
-    single_paired = LibraryPool.objects.get(pk__exact = pool_id).get_pool_single_paired()
-    return single_paired
+    for pool_id in pool_ids :
+        single_paired = LibraryPool.objects.get(pk__exact = pool_id).get_pool_single_paired()
+        if single_paired == 'PairedEnd':
+            return 'PairedEnd'
+    return 'SingleRead'
+
 
 def collect_lib_prep_data_for_new_run(lib_prep_ids, paired):
     '''
