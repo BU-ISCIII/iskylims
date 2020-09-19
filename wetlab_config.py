@@ -202,7 +202,7 @@ HEADING_SUMMARY_DATA_SAMPLE_SHEET = ['Number of Samples', 'Projects Name', 'User
 
 ### Heading for display information on library Preparation definition
 HEADING_FOR_LIBRARY_PREPARATION_DEFINITION = ['Library CodeID','Molecule CodeID ','Lib Preparation State', 'Protocol name',
-                    'Project Name', 'I7 Index', 'I5 Index', 'Single/PairedEnd', 'Read Length', 'Number of reused']
+                    'Project Name', 'I7 Index', 'I5 Index', 'Number of reused']
 
 ### Heading for display pool with the samples belongs to
 HEADING_FOR_DISPLAY_SAMPLES_IN_POOL = ['Library CodeID', 'Sample Name', 'User Name','Collection Index', 'I7 Index', 'I5 Index', 'Include in Pool']
@@ -219,6 +219,9 @@ HEADING_FOR_INCOMPLETED_SELECTION_POOLS = ['Pool Name', 'Pool Code', 'Number of 
 
 ### Heading for display pool information when showing sample information
 HEADING_FOR_DISPLAY_POOL_INFORMATION_IN_SAMPLE_INFO = ['Library Code', 'Pool Name', 'Pool Code', 'Run Name']
+
+### Heading for displying additional kits used in library prepation
+HEADING_FOR_DISPLAY_ADDITIONAL_KIT_LIBRARY_PREPARATION = ['Library Preparation Code ID', 'Additional Lot kit name', 'Commercial kit name', 'Lot number', 'Recorded Date']
 
 ### Heading for creating the pool for selected samples
 HEADING_FOR_CREATING_RUN = ['Library CodeID', 'Sample Name', 'Pool Name', 'Sample Well','I7 Index', 'I7 Sequence', 'I5 Index', 'I5 Sequence', 'BaseSpace Library','Project Name', 'User Name']

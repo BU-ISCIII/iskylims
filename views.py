@@ -3560,11 +3560,15 @@ def display_sample (request, sample_id):
     Functions:
         get_all_sample_information : located at iSkyLIMS_core/utils/handling_samples.py
         get_all_library_information  located at iSkyLIMS_wetlab/utils/library_preparation.py
+        get_additional_kits_used_in_sample   located at iSkyLIMS_wetlab/utils/additional_kits.py
     '''
     sample_information = get_all_sample_information(sample_id, True)
     run_sample_id = get_run_sample_id(sample_id)
     if not 'Error' in sample_information:
+        sample_information.update(get_molecule_lot_kit_in_sample(sample_id))
         sample_information.update(get_all_library_information(sample_id))
+        sample_information.update(get_additional_kits_used_in_sample(sample_id))
+        #import pdb; pdb.set_trace()
     else:
         sample_information = {}
     if run_sample_id != '':

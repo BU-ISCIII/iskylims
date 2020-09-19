@@ -1380,6 +1380,10 @@ class AdditionaKitsLibraryPreparation (models.Model):
     def get_commercial_kit_obj (self):
         return self.commercialKit_id
 
+    def get_commercial_kit_name(self):
+        return '%s' %(self.commercialKit_id.get_name())
+
+
 
     objects = AdditionaKitsLibraryPreparationManager()
 
@@ -1405,6 +1409,15 @@ class AdditionalUserLotKit (models.Model):
     generated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__ (self):
-        return '%s' %(self.lotNumber)
+        return '%s' %(self.userLotKit_id)
+
+    def get_additional_kit_info(self):
+        data = []
+        data.append(self.additionalLotKits.get_kit_name())
+        data.append(self.additionalLotKits.get_commercial_kit_name())
+        data.append(self.userLotKit_id.get_lot_number())
+        data.append(self.generated_at.strftime("%d %B %Y"))
+        return data
+
 
     objects = AdditionalUserLotKitManager()

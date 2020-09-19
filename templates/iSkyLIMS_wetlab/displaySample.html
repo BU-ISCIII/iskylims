@@ -63,6 +63,9 @@
                 {% if sample_information.pool_heading %}
                     <button class="tablinks" onclick="summaryBin(event, 'runData')">Run Data</button>
                 {% endif %}
+                {% if sample_information.heading_add_kits %}
+                    <button class="tablinks" onclick="summaryBin(event, 'userLotKit')">Kits Used </button>
+                {% endif %}
                 {% if sample_information.heading_samples_info %}
                     <button class="tablinks" onclick="summaryBin(event, 'sequencing')">Sequencing Quality</button>
                 {% endif %}
@@ -235,12 +238,9 @@
                         {% endfor %}
                     </div> <!-- // end of tab libary -->
                 {% endif %}
+
                 {% if sample_information.pool_heading %}
-
                     <div id="runData" class="tabcontent">
-
-
-
                         <div class="row row-space-2 margin-b-4">
                             <div class="col-sm-11">
                                 <div class="panel panel-default">
@@ -285,7 +285,79 @@
                         </div> <!--  end of row -->
                     </div> <!-- // end of tab library -->
                 {% endif %}
+                {% if sample_information.heading_add_kits %}
+                    <div id="userLotKit" class="tabcontent">
+                        <div class="row row-space-2 margin-b-4">
+                            <div class="col-sm-11">
+                                <div class="panel panel-default">
+                                    <h3>Information for User Lot kits used in Molecule Extraction for  {{ sample_information.sample_definition.0 }} </h3>
+                                    <div class="panel-heading"><h4>User Lot Kit Information</h4></div>
+                                    <div class="panel-body">
+                                        {% for key, values in sample_information.protocols_user_kits.items %}
+                                            <h5>Kits used for protocol {{key}}</h5>
+                                            <table class="table table-hover">
+                                                <thead>
+                                                  <tr>
+                                                  {% for name in sample_information.heading_lot_kits %}
+                                                    <th>{{ name }} </th>
+                                                  {%endfor%}
+                                                  </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for commercial, lotname, date , molecule in values %}
+                                                        <tr>
+                                                            <td>{{molecule}}</td>
+                                                            <td>{{lotname}} </td>
+                                                            <td>{{commercial}} </td>
+                                                            <td>{{date}} </td>
+                                                        </tr>
+                                                    {%endfor%}
+                                                </tbody>
+                                            </table>
+                                            <br><br>
+                                        {% endfor %}
+                                    </div> <!--  end of panel body -->
+                                </div> <!--  end of panel  -->
+                            </div> <!--  end of col-sm-11 -->
+                        <div class="row row-space-2 margin-b-4">
+                            <div class="col-sm-11">
+                                <div class="panel panel-default">
+                                    <h3>Information for User Lot kits used for the library preparation {{ sample_information.sample_definition.0 }} </h3>
+                                    <div class="panel-heading"><h4>User Lot Kit Information</h4></div>
+                                    <div class="panel-body">
+                                        {% for key, values in sample_information.protocols_add_kits.items %}
+                                            <h5>Kits used for protocol {{key}}</h5>
+                                            <table class="table table-hover">
+                                                <thead>
+                                                  <tr>
+                                                  {% for name in sample_information.heading_add_kits %}
+                                                    <th>{{ name }} </th>
+                                                  {%endfor%}
+                                                  </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for lotname, commercial, lot, date, libprepcode in values %}
+                                                        <tr>
+                                                            <td>{{libprepcode}}</td>
+                                                            <td>{{lotname}} </td>
+                                                            <td>{{commercial}} </td>
+                                                            <td>{{lot}}</td>
+                                                            <td>{{date}} </td>
+                                                        </tr>
 
+                                                    {%endfor%}
+
+                                                </tbody>
+                                            </table>
+                                            <br><br>
+                                        {% endfor %}
+
+                                    </div> <!--  end of panel body -->
+                                </div> <!--  end of panel  -->
+                            </div> <!--  end of col-sm-11 -->
+                        </div> <!--  end of row -->
+                    </div> <!-- // end of tab library -->
+                {% endif %}
 
                 {% if sample_information.heading_samples_info %}
                     {% include "iSkyLIMS_core/graphic_chart_functionality.html" %}

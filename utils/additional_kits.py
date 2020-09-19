@@ -61,7 +61,7 @@ def analyze_and_store_input_additional_kits(form_data):
         # update the library prepareation state
         library_prep_obj.set_state('Updated additional kits')
     stored_additional_kits['stored_lib_ids'] = list(zip(lib_prep_ids, lib_prep_code_ids))
-    
+
     return stored_additional_kits
 
 def define_table_for_additional_kits(protocol_id):
@@ -187,6 +187,38 @@ def get_all_additional_kit_info(protocol_id):
             kit_info['kit_data'].append(kit.get_all_kit_info())
 
     return kit_info
+
+
+def get_additional_kits_used_in_sample(sample_id):
+    '''
+    Description:
+        The function get the information from the additional kits used in the
+        library preparation
+    Input:
+        sample_id   # sample id
+    Constamt:
+        HEADING_FOR_DISPLAY_ADDITIONAL_KIT_LIBRARY_PREPARATION
+    Return:
+
+    '''
+    kit_data = {}
+    kit_data['protocols_add_kits'] = {}
+    if LibraryPreparation.objects.filter(sample_id__pk__exact = sample_id).exists():
+        kit_data['heading_add_kits'] = HEADING_FOR_DISPLAY_ADDITIONAL_KIT_LIBRARY_PREPARATION
+        library_preparation_items = LibraryPreparation.objects.filter(sample_id__pk__exact = sample_id).order_by('protocol_id')
+        for lib_prep in library_preparation_items:
+            protocol_name = lib_prep.get_protocol_used()
+            if protocol_name not in kit_data['protocols_add_kits']:
+                kit_data['protocols_add_kits'][protocol_name] = []
+
+            kit_used_objs = AdditionalUserLotKit.objects.filter(lib_prep_id = lib_prep)
+            for kit_used_obj in kit_used_objs:
+                data = kit_used_obj.get_additional_kit_info()
+                data.append(lib_prep.get_lib_prep_code())
+                kit_data['protocols_add_kits'][protocol_name].append(data)
+
+    return kit_data
+
 
 def set_additional_kits (form_data, user):
     '''
