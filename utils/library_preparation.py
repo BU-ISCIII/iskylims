@@ -151,7 +151,7 @@ def create_library_preparation_instance(samples_data, user):
         lib_prep_data['user_sampleID'] = get_sample_obj_from_id(lib_prep_data['sample_id']).get_sample_code()
         lib_prep_data['lib_prep_code_id'], lib_prep_data['uniqueID'] = get_library_code_and_unique_id(lib_prep_data['sample_id'])
         library_preparation_objs.append(LibraryPreparation.objects.create_lib_preparation(lib_prep_data))
-    
+
     return library_preparation_objs
 
 def extract_protocol_library_preparation_form(form_data):
@@ -679,13 +679,12 @@ def get_samples_in_lib_prep_state ():
 
     samples_in_lib_prep = {}
     lib_prep_data = []
+    states_excluded = ['Completed', 'Reused pool']
     if Samples.objects.filter(sampleState__sampleStateName__exact = 'Library preparation').exists():
         samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact =  'Library preparation').order_by('sampleUser').order_by('sampleEntryDate')
 
         for sample in samples_obj :
-            if LibraryPreparation.objects.filter(sample_id = sample, libPrepState__libPrepState__exact = 'Defined').exists():
-                continue
-            if not LibraryPreparation.objects.filter(sample_id = sample).exists() or LibraryPreparation.objects.filter(sample_id = sample, libPrepState__libPrepState__exact = 'Created for Reuse').exists() :
+            if LibraryPreparation.objects.filter(sample_id = sample).exclude(libPrepState__libPrepState__in = states_excluded).exists():
                 sample_information = sample.get_info_in_defined_state()
                 sample_information.append(sample.get_register_user())
                 molecule = MoleculePreparation.objects.filter(sample = sample,state__moleculeStateName = 'Completed').last()
