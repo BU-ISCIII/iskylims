@@ -4316,7 +4316,7 @@ def create_new_run (request):
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run})
 
 
-
+@login_required
 def pending_sample_preparations(request):
     pending = {}
     # get the samples in defined state
@@ -4326,10 +4326,10 @@ def pending_sample_preparations(request):
     #pending['lib_prep_protocols'] = get_protocol_lib()
     # get the library preparation in defined state
     pending['add_lib_prep_parameters'] = get_lib_prep_to_add_parameters()
-    import pdb; pdb.set_trace()
     pending ['graphic_pending_samples'] = pending_samples_for_grafic(pending).render()
     return render(request, 'iSkyLIMS_wetlab/pendingSamplePreparations.html',{'pending': pending})
 
+@login_required
 def user_commercial_kit_inventory(request):
     expired_kit = get_expired_lot_user_kit(request.user)
     valid_kit = get_valid_lot_user_kit(request.user)
