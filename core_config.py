@@ -70,6 +70,8 @@ HEADING_FOR_LOT_USER_COMMERCIAL_KIT_BASIC_DATA = ['Commercial Kit', 'Lot Barcode
 
 HEADING_FOR_USER_LOT_INVENTORY = ['Nick Name', 'Lot Number' , 'Expiration date', 'Percentage used']
 
+HEADING_FOR_DISPLAY_IN_SAMPLE_INFO_USER_KIT_DATA = ['Molecule Code ID','Lot number', 'Commercial kit name', 'Expiration Date']
+
 
 #########  FOLDER SETTINGS TO STORE COLLECTION KITS #######
 ## Relative path from settings.MEDIA_ROOT

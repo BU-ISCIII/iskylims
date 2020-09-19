@@ -135,6 +135,34 @@ def get_lot_commercial_kits(protocol_obj):
     return user_kit_list
 
 
+def get_molecule_lot_kit_in_sample(sample_id):
+    '''
+    Description:
+        The function get the user Lot commercial kits that used during molecule
+        extraction.
+    Input:
+        sample_id  # sample id
+    Return
+        user_kit_list
+    '''
+    extraction_kits = {}
+    extraction_kits['protocols_user_kits'] ={}
+    if MoleculePreparation.objects.filter(sample__pk__exact = sample_id).exists():
+        extraction_kits['heading_lot_kits'] = HEADING_FOR_DISPLAY_IN_SAMPLE_INFO_USER_KIT_DATA
+        molecule_objs = MoleculePreparation.objects.filter(sample__pk__exact = sample_id).order_by('protocolUsed')
+        for molecule_obj in molecule_objs:
+            protocol_name = molecule_obj.get_protocol()
+            if protocol_name not in extraction_kits['protocols_user_kits']:
+                extraction_kits['protocols_user_kits'][protocol_name] = []
+            kit_used_obj = molecule_obj.get_user_lot_kit_obj()
+            if kit_used_obj:
+                data = kit_used_obj.get_basic_data()
+                data.append(molecule_obj.get_molecule_code_id())
+                extraction_kits['protocols_user_kits'][protocol_name].append(data)
+
+    return extraction_kits
+
+
 def store_commercial_kit (kit_data):
     commercial_kit_values = {}
     #commercial_kit_values['protocol_id']= get_protocol_obj_from_name(kit_data['protocol'])

@@ -303,8 +303,9 @@ class UserLotCommercialKits (models.Model):
         lot_data = []
         lot_data.append(self.basedCommercial.get_name())
         lot_data.append(self.chipLot)
-        lot_data.append(self.expirationDate)
+        lot_data.append(self.expirationDate.strftime("%d %B %Y"))
         return lot_data
+
 
     def get_commercial_kit(self):
         return '%s' %(self.basedCommercial.get_name())
@@ -980,6 +981,8 @@ class MoleculePreparation (models.Model):
     def get_used_for_massive(self):
         return self.usedForMassiveSequencing
 
+    def get_user_lot_kit_obj(self):
+        return self.userLotKit_id
 
     def set_molecule_use ( self, use_for_molecule, app_name):
         self.moleculeUsedFor = MoleculeUsedFor.objects.get(usedFor__exact = use_for_molecule, apps_name__exact = app_name)
@@ -1049,7 +1052,7 @@ class SequencingConfiguration(models.Model):
                 on_delete=models.CASCADE, null = True, blank = True)
     configurationName = models.CharField(max_length=255)
 
-    
+
     def __str__ (self):
         return '%s' %(self.configurationName)
 
