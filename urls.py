@@ -40,6 +40,7 @@ urlpatterns = [
     path('displaySampleInRun=<int:sample_run_project_id>/', views.display_sample_in_run, name = 'display_sample_in_run'),
     path('displaySampleProject=<int:sample_project_id>/', views.display_sample_project, name = 'display_sample_project'),
     path('displayTypeOfSample=<int:sample_type_id>/', views.display_type_of_sample, name = 'display_type_of_sample'),
+    path('displayUserLotKit=<int:user_kit_id>/', views.display_user_lot_kit, name = 'display_user_lot_kit'),
     path('handlingLibraryPreparations', views.handling_library_preparations, name = 'handling_library_preparations'),
     path('handlingMolecules', views.handling_molecules, name = 'handling_molecules'),
     path('latest_run/',views.latest_run, name='latest_run'),
@@ -60,6 +61,7 @@ urlpatterns = [
     path('searchProject/', views.search_project, name ='search_project'),
     path('searchRun/', views.search_run, name='search_run'),
     path('searchSample/', views.search_sample, name = 'search_sample'),
+    path('searchUserLotKit', views.search_user_lot_kit, name = 'search_user_lot_kit'),
     path('setMoleculeValues', views.set_molecule_values, name = 'set_molecule_values'),
     # path('setLibraryPreparation', views.set_library_preparation, name = 'set_library_preparation'), Delete replaced by handlingLibraryPreparations
     path('setLibraryValues', views.set_library_values, name = 'set_library_values'),
