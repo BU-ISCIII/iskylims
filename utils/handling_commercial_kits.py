@@ -65,6 +65,39 @@ def get_commercial_kit_basic_data(kit_obj):
     kit_data['heading'] = HEADING_FOR_NEW_SAVED_COMMERCIAL_KIT
     return  kit_data
 
+
+def display_user_lot_kit_information_from_query_list(user_kits_objs):
+    '''
+    Description:
+        The function gets the user kits objects list and return a list with basic
+        information
+    Input:
+        user_kits_objs  # list of the user kit objects
+    Constant:
+        HEADING_FOR_USER_LOT_SEARCH_RESULTS
+    Return:
+        user_lot
+    '''
+    user_lot = {}
+    user_lot['kit_data'] = []
+    user_lot['heading'] = HEADING_FOR_USER_LOT_SEARCH_RESULTS
+
+    for user_kit_obj in user_kits_objs:
+        data = user_kit_obj.get_basic_data()
+
+        commercial_kit_obj = user_kit_obj.get_commercial_obj()
+        protocols = commercial_kit_obj. get_protocol_objs()
+        # protocols = commercial_kit_obj.protocolKits.all()
+        protocols_name = []
+        for protocol in protocols:
+            protocols_name.append(protocol.get_name())
+
+        data.append(protocols_name)
+        data.append(user_kit_obj.get_user_lot_kit_id())
+        user_lot['kit_data'].append(data)
+    return user_lot
+
+
 def get_expired_lot_user_kit (register_user_obj):
 
     user_expired_kits = {}
@@ -75,10 +108,9 @@ def get_expired_lot_user_kit (register_user_obj):
         for user_kit in user_kits:
             data_kit = []
             c_kit = user_kit.get_commercial_kit()
-            data_kit.append(user_kit.get_nick_name())
             data_kit.append(user_kit.get_lot_number())
             data_kit.append(user_kit.get_expiration_date())
-            data_kit.append(user_kit.get_used_percentage())
+            data_kit.append(user_kit.get_number_of_uses())
             if not c_kit in user_expired_kits['data']:
                 user_expired_kits['data'][c_kit] = []
             user_expired_kits['data'][c_kit].append(data_kit)
@@ -95,10 +127,9 @@ def get_valid_lot_user_kit (register_user_obj):
         for user_kit in user_kits:
             data_kit = []
             c_kit = user_kit.get_commercial_kit()
-            data_kit.append(user_kit.get_nick_name())
             data_kit.append(user_kit.get_lot_number())
             data_kit.append(user_kit.get_expiration_date())
-            data_kit.append(user_kit.get_used_percentage())
+            data_kit.append(user_kit.get_number_of_uses())
             if not c_kit in valid_kits['data']:
                 valid_kits['data'][c_kit] = []
             valid_kits['data'][c_kit].append(data_kit)

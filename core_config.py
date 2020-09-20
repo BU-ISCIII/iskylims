@@ -68,7 +68,9 @@ HEADING_FOR_COMMERCIAL_KIT_BASIC_DATA = ['Protocols used for Commercial Kit', 'P
 
 HEADING_FOR_LOT_USER_COMMERCIAL_KIT_BASIC_DATA = ['Commercial Kit', 'Lot Barcode', 'Expiration Date']
 
-HEADING_FOR_USER_LOT_INVENTORY = ['Nick Name', 'Lot Number' , 'Expiration date', 'Percentage used']
+HEADING_FOR_USER_LOT_INVENTORY = ['Lot Number' , 'Expiration date', 'Number of use']
+
+HEADING_FOR_USER_LOT_SEARCH_RESULTS = ['Lot Number', 'Commercial Kit', 'Expiration Date', 'Protocol']
 
 HEADING_FOR_DISPLAY_IN_SAMPLE_INFO_USER_KIT_DATA = ['Molecule Code ID','Lot number', 'Commercial kit name', 'Expiration Date']
 

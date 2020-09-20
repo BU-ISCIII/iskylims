@@ -248,11 +248,11 @@ class CommercialKits (models.Model):
     def get_maximum_uses(self):
         return '%s' %(self.maximumUses)
 
-    def get_protocol (self):
-        return '%s' %(self.protocol_id.get_name())
+    #def get_protocol (self):
+    #    return '%s' %(self.protocol_id.get_name())
 
-    def get_protocol_obj(self):
-        return self.protocol_id
+    def get_protocol_objs(self):
+        return self.protocolKits.all()
 
     def get_provider_kit_name(self):
         return '%s' %(self.provider)
@@ -310,8 +310,14 @@ class UserLotCommercialKits (models.Model):
     def get_commercial_kit(self):
         return '%s' %(self.basedCommercial.get_name())
 
+    def get_commercial_obj(self):
+        return self.basedCommercial
+
     def get_lot_number (self):
         return '%s' %(self.chipLot)
+
+    def get_number_of_uses(self):
+        return '%s' %(self.numberOfuses)
 
     def get_protocol_for_kit (self):
         return '%s' %(self.basedCommercial.get_protocol())
@@ -322,6 +328,9 @@ class UserLotCommercialKits (models.Model):
     def get_expiration_date(self):
         exp_date = self.expirationDate
         return '%s' %(exp_date.strftime("%d %B, %Y"))
+
+    def get_user_lot_kit_id(self):
+        return '%s' %(self.pk)
 
     def set_increase_use(self):
         self.numberOfuses += 1

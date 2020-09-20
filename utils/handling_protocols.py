@@ -115,6 +115,21 @@ def display_available_protocols (app_name):
 
     return molecule_protocol_list , other_protocol_list
 
+def display_protocol_list():
+    '''
+    Description:
+        The function return the protocol list defined.
+    Return:
+        protocol_list
+    '''
+    protocol_list = []
+    if Protocols.objects.all().exists():
+        protocols_objs = Protocols.objects.all().order_by('type').order_by('name')
+        for protocol_obj in protocols_objs:
+            protocol_list.append([protocol_obj.get_protocol_id(), protocol_obj.get_name()])
+    return protocol_list
+
+
 def get_defined_protocols(app_name, exclude_non_molecule):
     '''
     Description:
