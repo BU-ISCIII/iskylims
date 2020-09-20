@@ -3714,7 +3714,7 @@ def handling_library_preparations(request):
 
 
 
-        return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_params':stored_params})
+        # return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_params':stored_params})
     if request.method == 'POST' and request.POST['action'] == 'assignAdditionalKits':
         lib_prep_ids = request.POST.getlist('libpreparation')
         additional_kits = get_additional_kits_from_lib_prep(lib_prep_ids)

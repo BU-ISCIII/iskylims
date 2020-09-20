@@ -60,7 +60,7 @@ def analyze_and_store_input_additional_kits(form_data):
             user_lot_commercial_obj.set_increase_use()
         # update the library prepareation state
         library_prep_obj.set_state('Updated additional kits')
-    stored_additional_kits['stored_lib_ids'] = list(zip(lib_prep_ids, lib_prep_code_ids))
+    stored_additional_kits['stored_lib_ids'] = list(zip(library_prep_obj.get_sample_name(), lib_prep_code_ids))
 
     return stored_additional_kits
 
@@ -135,7 +135,7 @@ def get_additional_kits_from_lib_prep (lib_prep_ids):
     additional_kits['lib_prep_ids'] = ','.join(lib_prep_ids)
     additional_kits['lib_prep_code_ids'] = ','.join(lib_prep_code_ids)
     additional_kits['full_heading'] = ','.join(HEADING_FIX_FOR_ASSING_ADDITIONAL_KITS + kit_name_list)
-    import pdb; pdb.set_trace()
+
     return additional_kits
 
 def get_additional_kits_list (app_name):
