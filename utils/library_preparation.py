@@ -293,12 +293,13 @@ def get_samples_for_library_preparation():
                 data = ['']* len(HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL)
                 sample_name = samples_obj.get_sample_name()
                 data[0] = sample_name
-                molecule_obj = MoleculePreparation.objects.filter(sample = samples_obj, state__moleculeStateName__exact = 'Completed',usedForMassiveSequencing = True).last()
-                data[1] = molecule_obj.get_molecule_code_id()
-                samples_in_lib_prep['avail_samples']['data'].append(data)
-                samples_id.append(samples_obj.get_sample_id())
-                samples_names.append(sample_name)
-                molecules_id.append(molecule_obj.get_molecule_id())
+                if MoleculePreparation.objects.filter(sample = samples_obj, state__moleculeStateName__exact = 'Completed',usedForMassiveSequencing = True).exists():
+                    molecule_obj = MoleculePreparation.objects.filter(sample = samples_obj, state__moleculeStateName__exact = 'Completed',usedForMassiveSequencing = True).last()
+                    data[1] = molecule_obj.get_molecule_code_id()
+                    samples_in_lib_prep['avail_samples']['data'].append(data)
+                    samples_id.append(samples_obj.get_sample_id())
+                    samples_names.append(sample_name)
+                    molecules_id.append(molecule_obj.get_molecule_id())
         # Get the information for sample sheet form
         if  'display_sample_sheet' in samples_in_lib_prep :
             if SequencingConfiguration.objects.all().exists():
