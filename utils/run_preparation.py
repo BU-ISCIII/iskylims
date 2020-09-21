@@ -636,9 +636,6 @@ def display_available_pools():
     display_pools_for_run = {}
     pools_to_update = get_available_pools_for_run()
     if pools_to_update:
-        
-        for pool_available in pools_to_update['pools_available']:
-
         display_pools_for_run = get_pool_info(pools_to_update)
     return display_pools_for_run
 
