@@ -977,6 +977,8 @@ class LibraryPool (models.Model):
     def get_pool_single_paired(self):
         return '%s' %(self.pairedEnd)
 
+    def get_platform_name(self):
+        return '%s' %(self.platform.get_platform_name())
     def get_run_name(self):
         return '%s' %(self.runProcess_id.get_run_name())
 

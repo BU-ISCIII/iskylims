@@ -532,8 +532,14 @@ def get_available_pools_for_run():
         pools_to_update
     '''
     pools_to_update = {}
+    pools_to_update['pools_available'] = {}
     if LibraryPool.objects.filter(poolState__poolState__exact = 'Selected', runProcess_id = None).exists():
-        pools_to_update['pools_available'] = LibraryPool.objects.filter(poolState__poolState__exact = 'Selected', runProcess_id = None)
+        pool_objs = LibraryPool.objects.filter(poolState__poolState__exact = 'Selected', runProcess_id = None).order_by('platform')
+        for pool_obj in pool_objs :
+            platform = pool_obj.get_platform_name()
+            if not platform in pools_to_update['pools_available']:
+                pools_to_update['pools_available'][platform] = []
+            pools_to_update['pools_available'][platform].append(pool_obj)
     # get the pools that are associated to a run but not yet completed
     if LibraryPool.objects.filter(poolState__poolState__exact = 'Selected').exclude(runProcess_id = None).exists():
         pools_to_update['defined_runs'] = LibraryPool.objects.filter(poolState__poolState__exact = 'Selected').exclude(runProcess_id = None).order_by('runProcess_id')
@@ -545,6 +551,10 @@ def get_pool_info (pools_to_update):
     Description:
         The function get the information for pool which are not used in a run.
         And information for pools that are only defined the run name
+    Input:
+        pools_to_update     # contains the pool objects split in pools_available and defined_runs
+                        pools_available is a dictionary which contains as key the
+                        platform and value a list of the pool objects
     Constant:
         HEADING_FOR_SELECTING_POOLS
         HEADING_FOR_INCOMPLETED_SELECTION_POOLS
@@ -555,23 +565,24 @@ def get_pool_info (pools_to_update):
     if 'pools_available' in pools_to_update:
         pool_data = {}
         pool_data['heading'] = wetlab_config.HEADING_FOR_SELECTING_POOLS
-        pool_data['data'] = []
-        pool_ids = []
-        for pool in pools_to_update['pools_available']:
-            data = pool.get_info()
-            # compare the number of samples to check that no samples are deleted
-            if int(pool.get_number_of_samples()) == len(LibraryPreparation.objects.filter(pools = pool)) :
-                data.append(pool.get_id())
-                # Check if user
-                pool_data['data'].append(data)
-                pool_ids.append(pool.get_id())
-            else:
-                if not 'invalid_run_data' in pool_info :
-                    pool_info ['invalid_run_data'] = {}
-                    pool_info['invalid_run_data']['data']= []
-                pool_info['invalid_run_data']['data'].append(data)
+        pool_data['platform'] = {}
+        #pool_ids = []
+        for platform, protocol_objs in  pools_to_update['pools_available'].items():
+            pool_data['platform'][platform] = []
+            for pool in protocol_objs:
+                data = pool.get_info()
+                # compare the number of samples to check that no samples are deleted
+                if int(pool.get_number_of_samples()) == len(LibraryPreparation.objects.filter(pools = pool)) :
+                    data.append(pool.get_id())
+                    pool_data['platform'][platform].append(data)
+                    #pool_ids.append(pool.get_id())
+                else:
+                    if not 'invalid_run_data' in pool_info :
+                        pool_info ['invalid_run_data'] = {}
+                        pool_info['invalid_run_data']['data']= []
+                    pool_info['invalid_run_data']['data'].append(data)
 
-        pool_data['pool_ids'] = ','.join(pool_ids)
+        #pool_data['pool_ids'] = ','.join(pool_ids)
         pool_info['pool_data'] = pool_data
     if 'defined_runs' in pools_to_update:
         run_data = {}
@@ -698,8 +709,7 @@ def prepare_fields_to_create_sample_sheet_from_template(data_form, user):
         data_for    # information from the user form
         user        # userid
     Functions:
-        get_available_pools_for_run     # located at this file
-        get_pool_info                    # located at this file
+        get_run_obj_from_id                    # located at this file
     Return:
         fields  # dictionary having the key and values used to replace in the template
     '''
