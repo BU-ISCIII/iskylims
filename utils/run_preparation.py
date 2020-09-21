@@ -559,8 +559,10 @@ def get_pool_info (pools_to_update):
         pool_ids = []
         for pool in pools_to_update['pools_available']:
             data = pool.get_info()
+            # compare the number of samples to check that no samples are deleted
             if int(pool.get_number_of_samples()) == len(LibraryPreparation.objects.filter(pools = pool)) :
                 data.append(pool.get_id())
+                # Check if user
                 pool_data['data'].append(data)
                 pool_ids.append(pool.get_id())
             else:
@@ -568,6 +570,7 @@ def get_pool_info (pools_to_update):
                     pool_info ['invalid_run_data'] = {}
                     pool_info['invalid_run_data']['data']= []
                 pool_info['invalid_run_data']['data'].append(data)
+
         pool_data['pool_ids'] = ','.join(pool_ids)
         pool_info['pool_data'] = pool_data
     if 'defined_runs' in pools_to_update:
@@ -633,6 +636,9 @@ def display_available_pools():
     display_pools_for_run = {}
     pools_to_update = get_available_pools_for_run()
     if pools_to_update:
+        
+        for pool_available in pools_to_update['pools_available']:
+
         display_pools_for_run = get_pool_info(pools_to_update)
     return display_pools_for_run
 

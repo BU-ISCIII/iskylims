@@ -9,7 +9,7 @@ from django_utils.models import Center
 from django.utils.translation import ugettext_lazy as _
 
 from .  import wetlab_config
-from iSkyLIMS_core.models import MoleculePreparation , Samples , ProtocolType, Protocols, ProtocolParameters, UserLotCommercialKits,CommercialKits, SequencerInLab, SequencingConfiguration
+from iSkyLIMS_core.models import MoleculePreparation , Samples , ProtocolType, Protocols, ProtocolParameters, UserLotCommercialKits, CommercialKits, SequencerInLab, SequencingConfiguration, SequencingPlatform
 
 class RunErrors (models.Model):
     errorCode = models.CharField(max_length=10)
@@ -871,9 +871,12 @@ class libPreparationUserSampleSheet (models.Model):
         return adapters
 
 
+
     def get_collection_index_kit (self):
         return '%s' %(self.collectionIndexKit_id.get_collection_index_name())
 
+    def get_sequencing_configuration_platform (self):
+        return '%s'  %(self.sequencingConfiguration.get_platform_name())
     def get_user_sample_sheet_id (self):
         return '%s' %(self.pk)
 
@@ -906,11 +909,12 @@ class StatesForPool (models.Model):
 
 class LibraryPoolManager (models.Manager):
     def create_lib_pool (self, pool_data):
+        platform_obj = SequencingPlatform.objects.filter(platformName__exact = pool_data['platform']).last()
         new_library_pool = self.create(registerUser = pool_data['registerUser']  ,
                     poolState = StatesForPool.objects.get(poolState__exact = 'Defined'),
                     poolName = pool_data['poolName'], poolCodeID = pool_data['poolCodeID'],
                     adapter = pool_data['adapter'],  pairedEnd = pool_data['pairedEnd'],
-                    numberOfSamples = pool_data['n_samples'])
+                    numberOfSamples = pool_data['n_samples'], platform = platform_obj)
         return new_library_pool
 
 
@@ -925,6 +929,9 @@ class LibraryPool (models.Model):
             RunProcess,
             on_delete = models.CASCADE, null = True, blank = True)
 
+    platform = models.ForeignKey(
+            SequencingPlatform,
+            on_delete = models.CASCADE, null = True, blank = True)
     poolName = models.CharField(max_length=50)
     #sampleSheet = models.FileField(upload_to = wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY)
     #experiment_name = models.CharField(max_length=50)

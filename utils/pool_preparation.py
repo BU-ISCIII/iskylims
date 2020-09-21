@@ -141,16 +141,10 @@ def define_new_pool(form_data, user_obj):
 
     '''
     error ={}
-    if  'lib_prep_in_list' in form_data:
-        lib_prep_ids = form_data.getlist('lib_prep_id')
-        if len(lib_prep_ids) == 0:
-            error['ERROR'] = ERROR_NOT_LIBRARY_PREPARATION_SELECTED
-            return error
-            #lib_prep_ids = list(form_data['lib_prep_id'])
-    #else:
-    #    lib_prep_ids = form_data['lib_prep_id'].split(',')
-
-
+    lib_prep_ids = form_data.getlist('lib_prep_id')
+    if len(lib_prep_ids) == 0:
+        error['ERROR'] = ERROR_NOT_LIBRARY_PREPARATION_SELECTED
+        return error
     # check if index are not duplicate in the library preparation
 
     # single_paired_compatible = check_single_paired_compatible(lib_prep_ids)
@@ -172,6 +166,7 @@ def define_new_pool(form_data, user_obj):
 
     pool_data = {}
     pool_data['poolName'] = form_data['poolName']
+    pool_data['platform'] = form_data['platform']
     pool_data['poolCodeID'] = generate_pool_code_id()
     pool_data['registerUser'] = user_obj
     pool_data['adapter'] = adapters[0]
@@ -221,14 +216,18 @@ def get_lib_prep_to_select_in_pool():
         display_list
     '''
     display_list = {}
-    display_list['data'] = []
-    #import pdb; pdb.set_trace()
+    display_list['data'] = {}
+
     from django.db.models import Q
     if LibraryPreparation.objects.filter(Q (libPrepState__libPrepState__exact = 'Completed', pools = None )| Q(libPrepState__libPrepState__exact = 'Reused pool' )).exists():
         lib_preparations =  LibraryPreparation.objects.filter(Q (libPrepState__libPrepState__exact = 'Completed', pools = None )| Q(libPrepState__libPrepState__exact = 'Reused pool' )).order_by('registerUser')
         #lib_preparations =  LibraryPreparation.objects.filter(libPrepState__libPrepState = 'Completed', pools = None).order_by('registerUser')
         for lib_prep in lib_preparations :
-            display_list['data'].append( lib_prep.get_info_for_selection_in_pool())
+            user_sample_obj = lib_prep.get_user_sample_sheet_obj()
+            platform = user_sample_obj.get_sequencing_configuration_platform()
+            if platform not in display_list['data']:
+                display_list['data'][platform] = []
+            display_list['data'][platform].append( lib_prep.get_info_for_selection_in_pool())
 
         display_list['heading'] = wetlab_config.HEADING_FOR_DISPLAY_SAMPLES_IN_POOL
 
