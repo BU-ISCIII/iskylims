@@ -384,7 +384,7 @@ def get_information_for_incompleted_run():
         run_information with information collected for each run
     '''
     run_information = {}
-    today = date.today()
+    today = datetime.date.today()
     if RunProcess.objects.filter(state__runStateName = 'Recorded').exists():
         run_information['recorded'] = []
         run_objs = RunProcess.objects.filter(state__runStateName = 'Recorded').order_by('runName')

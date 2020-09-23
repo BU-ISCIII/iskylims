@@ -324,6 +324,21 @@
                                             <div class="col-sm-5"><input class="form-control" required = "required" type="text"  name="experimentName" size="80"></div>
                                             <br><br>
                                         </div>
+                                        {% load user_text %}
+                                        {% for reagent , lots in display_pools_for_run.reagents_kits|keyvalue:key %}
+                                            <div class="form-group required">
+                                                <label class="col-sm-5 control-label">{{reagent}}</label>
+                                                <div class="col-sm-5">
+                                                    <select class="form-control" name="{{reagent}}" id="{{reagent}}">
+                                                        <option value="">Choose a value</option>
+                                                        {% for lot in lots %}
+                                                            <option value="{{lot}}">{{lot}}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>  <!-- end select input -->
+                                                <br><br>
+                                            </div>
+                                        {% endfor %}
                                         <p>Select the Pools to be included in the new Run</p>
                                         <br>
                                         <table class="table">

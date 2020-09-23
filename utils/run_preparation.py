@@ -566,6 +566,7 @@ def get_pool_info (pools_to_update):
         pool_data = {}
         pool_data['heading'] = wetlab_config.HEADING_FOR_SELECTING_POOLS
         pool_data['platform'] = {}
+        reagents_kits = {}
         #pool_ids = []
         for platform, protocol_objs in  pools_to_update['pools_available'].items():
             pool_data['platform'][platform] = []
@@ -576,6 +577,9 @@ def get_pool_info (pools_to_update):
                     data.append(pool.get_id())
                     pool_data['platform'][platform].append(data)
                     #pool_ids.append(pool.get_id())
+                    # get the reagents kits used for the platform
+
+                    reagents_kits[platform] = get_lot_reagent_commercial_kits(platform)
                 else:
                     if not 'invalid_run_data' in pool_info :
                         pool_info ['invalid_run_data'] = {}
@@ -584,6 +588,7 @@ def get_pool_info (pools_to_update):
 
         #pool_data['pool_ids'] = ','.join(pool_ids)
         pool_info['pool_data'] = pool_data
+        pool_info['reagents_kits'] = reagents_kits
     if 'defined_runs' in pools_to_update:
         run_data = {}
         tmp_data = {}

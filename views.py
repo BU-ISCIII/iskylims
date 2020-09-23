@@ -36,6 +36,7 @@ from .utils.additional_kits import *
 #from .utils.samplesheet_checks import *
 #from .utils.wetlab_misc_utilities import normalized_data
 from iSkyLIMS_core.utils.handling_samples import *
+from iSkyLIMS_core.utils.handling_platforms import get_defined_platforms_and_ids
 #from iSkyLIMS_core.utils.handling_protocols import *
 #from iSkyLIMS_core.utils.handling_commercial_kits import *
 
@@ -3325,7 +3326,8 @@ def define_protocol_parameters (request, protocol_id):
 def add_commercial_kit (request):
     app_name = __package__.split('.')[0]
     defined_protocols = get_defined_protocols(app_name, False)
-    commercial_kits_data = get_data_for_commercial_kits()
+    defined_platforms = get_defined_platforms_and_ids('NGS')
+    commercial_kits_data = get_data_for_commercial_kits('NGS')
 
     if request.method == 'POST' and request.POST['action'] == 'addCommercialKit':
         if get_commercial_kit_id (request.POST['kitName']) :
@@ -3335,7 +3337,8 @@ def add_commercial_kit (request):
         new_kit_data = get_commercial_kit_basic_data(new_kit)
         return render(request, 'iSkyLIMS_wetlab/addCommercialKit.html',{'new_kit_data': new_kit_data})
     else:
-        return render(request, 'iSkyLIMS_wetlab/addCommercialKit.html',{'defined_protocols': defined_protocols, 'commercial_kits_data': commercial_kits_data})
+        return render(request, 'iSkyLIMS_wetlab/addCommercialKit.html',{'defined_protocols': defined_protocols, 'defined_platforms' : defined_platforms,
+                                'commercial_kits_data': commercial_kits_data})
 
 @login_required
 def add_user_lot_commercial_kit (request):

@@ -8,27 +8,41 @@
                 <div class="panel-heading"><h3>Successful definition for Commercial Kit </h3></div>
                 <div class="panel-body">
                     <table class="table ">
-                     <thead>
-                        <tr>
-                            {% for value in new_kit_data.heading %}
-                                <th>{{value}}</th>
-                            {% endfor %}
-                        </tr>
-                     </thead>
-                     <tbody>
-                          <tr>
-                              <td>{{new_kit_data.data.0}}</td>
-                              <td>{{new_kit_data.data.1}}</td>
-                              <td>{% for protocol in new_kit_data.data.2 %}{{protocol}}<br>{% endfor %}</td>
-                       </tr>
-                      </tbody>
-                  </table>
+                        <thead>
+                            <tr>
+                                {% for value in new_kit_data.heading %}
+                                    <th>{{value}}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                {% for value in new_kit_data.data %}
+                                    {% if forloop.last  and new_kit_data.protocol_kit %}
+                                        {% for protocol in value %}
+                                            <td>{{protocol}}<br></td>
+                                        {% endfor %}
+                                    {% else %}
+                                        <td>{{value}}</td>
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->
         </div> <!--// end col-sm-7  -->
     </div> <!--// end row -->
 
 {% else %}
+    <style>
+        .scroll-wrapper-sm-5 {
+            max-height: 500px;
+            overflow: auto;
+            display:inline-block;
+            width: 480px;
+        }
+    </style>
     {% if invalid_name %}
         <div class="row row-space-2 margin-b-4">
             <div class="col-sm-6 col-sm-offset-1">
@@ -43,85 +57,183 @@
     {% endif %}
 <div class="row row-space-2 margin-b-4">
     <div class="col-sm-6">
-        <div class="panel panel-default">
-            <div class="panel-heading"><h3>Form to add new Commercial Kit.</h3></div>
-            <div class="panel-body">
-                <form method="post" enctype="multipart/form-data" name="addCommercialKit" id="addCommercialKit" class="form-horizontal well">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="addCommercialKit"/>
-                <div class="form-group required">
-                    <label class="col-sm-5 control-label" for="protocol" >Select the Protocols used for the Kit </label>
-                    <div class="col-sm-7">
-                        <select class="form-control" required = "required" name="protocol" id="protocol" multiple>
-                            {% for value in defined_protocols %}
-                                <option value="{{value}}">{{value}}</option>
-                            {% endfor %}
-                        </select>
-                    </div>  <!-- end select input -->
-                </div>  <!-- end from-group   -->
-                <BR>
-                    <div class="form-group required">
-                         <label class="col-sm-5  control-label" for="provider" >Select the Kit Provider company </label>
-                           <div class="col-sm-5"><input class="form-control" required = "required" type="text" name="provider" id="provider" size="100" maxlength="100"></div>
-                    </div>  <!-- end from-group   -->
+        <h3>Form to add new Commercial Kit.</h3>
+        <div class="tab">
+            <button class="tablinks" onclick="summaryBin(event, 'protocolKit')" id="defaultOpen">Used in Protocols</button>
+            <button class="tablinks" onclick="summaryBin(event, 'platformKit')">Used on platforms</button>
 
-                    <br>
+            <div id="protocolKit" class="tabcontent">
+                <div class="col-sm-12" >
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h3>Commercial Kit.</h3></div>
+                        <div class="panel-body">
+                            <form method="post" enctype="multipart/form-data" name="addCommercialKit" id="addCommercialKit" class="form-horizontal well">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="addCommercialKit"/>
+                            <div class="form-group required">
+                                <label class="col-sm-5 control-label" for="protocol" >Select the Protocols used for the Kit </label>
+                                <div class="col-sm-7">
+                                    <select class="form-control" required = "required" name="protocol" id="protocol" multiple>
+                                        {% for value in defined_protocols %}
+                                            <option value="{{value}}">{{value}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>  <!-- end select input -->
+                            </div>  <!-- end from-group   -->
+                            <BR>
+                                <div class="form-group required">
+                                     <label class="col-sm-5  control-label" for="provider" >Select the Kit Provider company </label>
+                                       <div class="col-sm-5"><input class="form-control" required = "required" type="text" name="provider" id="provider" size="100" maxlength="100"></div>
+                                </div>  <!-- end from-group   -->
 
-                 <div class="form-group required">
-                      <label class="col-sm-5  control-label" for="catNo" > Cat No./ID </label>
-                        <div class="col-sm-5"><input class="form-control" required = "required" type="text" name="catNo" id="catNo"></div>
-                 </div>  <!-- end from-group   -->
-                 <br>
-                    <div class="form-group required">
-                      <label class="col-sm-5 control-label" for="kitName" >Kit Name</label>
-                      <div class="col-sm-5"><input class="form-control" required = "required" type="text" name="kitName" value="" id="kitName"></div>
-                </div>  <!-- end from-group   -->
-                <br>
-                   <div class="form-group">
-                     <label class="col-sm-5 control-label" for="description" >Description</label>
-                     <div class="col-sm-7"><textarea class="form-control" name="description" value="" id="description" rows="4" cols="60" maxlength="220"></textarea></div>
-               </div>  <!-- end from-group   -->
-               <br>
-               <br>
-                   <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
-                   <input class="btn pull-right btn-primary" type="submit" value="Submit">
-               </form>
+                                <br>
 
-            </div>  <!--  end of panel body  -->
-        </div> <!--// end panel -->
+                             <div class="form-group required">
+                                  <label class="col-sm-5  control-label" for="catNo" > Cat No./ID </label>
+                                    <div class="col-sm-5"><input class="form-control" required = "required" type="text" name="catNo" id="catNo"></div>
+                             </div>  <!-- end from-group   -->
+                             <br>
+                                <div class="form-group required">
+                                  <label class="col-sm-5 control-label" for="kitName" >Kit Name</label>
+                                  <div class="col-sm-5"><input class="form-control" required = "required" type="text" name="kitName" value="" id="kitName"></div>
+                            </div>  <!-- end from-group   -->
+                            <br>
+                               <div class="form-group">
+                                 <label class="col-sm-5 control-label" for="description" >Description</label>
+                                 <div class="col-sm-7"><textarea class="form-control" name="description" value="" id="description" rows="4" cols="60" maxlength="220"></textarea></div>
+                           </div>  <!-- end from-group   -->
+                           <br>
+                           <br>
+                               <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
+                               <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                           </form>
+
+                        </div>  <!--  end of panel body  -->
+                    </div> <!--// end panel -->
+                </div> <!--// end col-sm-12  -->
+            </div> <!--  end of tab protocolKit -->
+
+            <div id="platformKit" class="tabcontent">
+                <div class="col-sm-12" >
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h3>Reagent Commercial Kit .</h3></div>
+                        <div class="panel-body">
+                            <form method="post" enctype="multipart/form-data" name="addCommercialKit" id="addCommercialKit" class="form-horizontal well">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="addCommercialKit"/>
+                            <input type="hidden" name="typeOfKit" value="platform"/>
+                            <div class="form-group required">
+                                <label class="col-sm-5 control-label" for="protocol" >Select the Platform used for the Kit </label>
+                                <div class="col-sm-7">
+                                    <select class="form-control" required = "required" name="platform" id="platform">
+                                        {% for value, name in defined_platforms %}
+                                            <option value="{{value}}">{{name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>  <!-- end select input -->
+                            </div>  <!-- end from-group   -->
+                            <BR>
+                                <div class="form-group required">
+                                     <label class="col-sm-5  control-label" for="provider" >Select the Kit Provider company </label>
+                                       <div class="col-sm-5"><input class="form-control" required = "required" type="text" name="provider" id="provider" size="100" maxlength="100"></div>
+                                </div>  <!-- end from-group   -->
+                                <br>
+                             <div class="form-group required">
+                                  <label class="col-sm-5  control-label" for="catNo" > Cat No./ID </label>
+                                    <div class="col-sm-5"><input class="form-control" required = "required" type="text" name="catNo" id="catNo"></div>
+                             </div>  <!-- end from-group   -->
+                             <br>
+                                <div class="form-group required">
+                                  <label class="col-sm-5 control-label" for="kitName" >Kit Name</label>
+                                  <div class="col-sm-5"><input class="form-control" required = "required" type="text" name="kitName" value="" id="kitName"></div>
+                            </div>  <!-- end from-group   -->
+                            <br>
+                               <div class="form-group">
+                                 <label class="col-sm-5 control-label" for="description" >Description</label>
+                                 <div class="col-sm-7"><textarea class="form-control" name="description" value="" id="description" rows="4" cols="60" maxlength="220"></textarea></div>
+                           </div>  <!-- end from-group   -->
+                           <br>
+                           <br>
+                               <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
+                               <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                           </form>
+
+                        </div>  <!--  end of panel body  -->
+                    </div> <!--// end panel -->
+                </div> <!--// end col-sm-12  -->
+            </div> <!--  end of tab protocolKit -->
+        </div> <!--  end of tab -->
+        <script>
+            // Get the element with id="defaultOpen" and click on it
+            document.getElementById("defaultOpen").click();
+        </script>
+
     </div> <!--// end col-sm-6  -->
 
     <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-5 col-sm-offset-1">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>Defined Commercial Kit</h3></div>
-                <div class="panel-body">
-                    {% for key , values in commercial_kits_data.data.items %}
-                    <h4>{{key}} </h4>
-                        <table class="table ">
-                            <thead>
-                                <tr>
-                                    {% for value in commercial_kits_data.headings %}
-                                        <th>{{value}}</th>
-                                    {% endfor %}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {%for protocols, provider, cat_number, percent in values %}
+        <br>
+        {% if commercial_kits_data.protocol.data %}
+            <div class="col-sm-5 col-sm-offset-1">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Commercial Kits defined for protocols</h3></div>
+                    <div class="panel-body scroll-wrapper-sm-5"">
+                        {% for key , values in commercial_kits_data.protocol.data.items %}
+                        <h4>{{key}} </h4>
+                            <table class="table ">
+                                <thead>
                                     <tr>
-                                        <td>{% for protocol in protocols %}{{protocol}} <br>{% endfor %}</td>
-                                        <td>{{provider}}</td>
-                                        <td>{{cat_number}}</td>
-                                        <td>{{percent}}</td>
+                                        {% for value in commercial_kits_data.protocol.headings %}
+                                            <th>{{value}}</th>
+                                        {% endfor %}
                                     </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        <br><br>
-                    {% endfor %}
-                </div>  <!--  end of panel body  -->
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-7  -->
+                                </thead>
+                                <tbody>
+                                    {%for protocols, provider, cat_number in values %}
+                                        <tr>
+                                            <td>{% for protocol in protocols %}{{protocol}} <br>{% endfor %}</td>
+                                            <td>{{provider}}</td>
+                                            <td>{{cat_number}}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <br><br>
+                        {% endfor %}
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-7  -->
+        {% endif %}
+        {% if commercial_kits_data.platform.data %}
+            <div class="col-sm-5 col-sm-offset-1">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Commercial Kits defined for platform</h3></div>
+                    <div class="panel-body scroll-wrapper-sm-5"">
+                        {% for key , values in commercial_kits_data.platform.data.items %}
+                        <h4>{{key}} </h4>
+                            <table class="table ">
+                                <thead>
+                                    <tr>
+                                        {% for value in commercial_kits_data.platform.headings %}
+                                            <th>{{value}}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {%for platform, provider, cat_number in values %}
+                                        <tr>
+                                            <td>{{platform}}</td>
+                                            <td>{{provider}}</td>
+                                            <td>{{cat_number}}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <br><br>
+                        {% endfor %}
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-7  -->
+        {% endif %}
     </div> <!--// end row -->
 
 </div> <!--// end row -->

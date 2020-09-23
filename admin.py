@@ -24,7 +24,7 @@ class LibParameterValueAdmin (admin.ModelAdmin):
 
 
 class LibraryPoolAdmin(admin.ModelAdmin):
-    list_display = ('registerUser', 'poolState', 'poolName', 'poolCodeID', 'runProcess_id')
+    list_display = ('registerUser', 'poolState', 'poolName', 'platform' ,'poolCodeID', 'runProcess_id')
 
 class libPreparationUserSampleSheetAdmin(admin.ModelAdmin):
     list_display = ['registerUser', 'collectionIndexKit_id', 'sequencingConfiguration', 'sampleSheet', 'application','instrument', 'adapter1', 'adapter2', 'assay','reads']
