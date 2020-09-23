@@ -43,6 +43,7 @@ class RunProcess(models.Model):
     centerRequestedBy = models.ForeignKey (
                         Center,
                         on_delete=models.CASCADE, null = True, blank = True )
+    reagent_kit = models.ManyToManyField(UserLotCommercialKits)
     runName = models.CharField(max_length=45)
     sampleSheet = models.FileField(upload_to = wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY, null = True, blank = True)
     generatedat = models.DateTimeField(auto_now_add=True)

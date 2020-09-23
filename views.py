@@ -4215,6 +4215,7 @@ def create_new_run (request):
         return redirect ('/accounts/login')
 
     if request.method == 'POST' and request.POST['action'] == 'createNewRun':
+        import pdb; pdb.set_trace()
         experiment_name = request.POST['experimentName']
         display_pools_for_run = display_available_pools()
         if not 'poolID' in request.POST :
@@ -4243,13 +4244,18 @@ def create_new_run (request):
         #compatible_index = check_index_compatible(lib_prep_ids)
         display_sample_information = get_library_preparation_data_in_run(lib_prep_ids, pool_ids)
         display_sample_information.update(get_stored_user_sample_sheet(lib_prep_ids[0]))
-        display_sample_information['experiment_name'] = experiment_name
-
+        # update Reagents kits
+        reagent_kits = fetch_and_update_reagent_kits(request.POST)
+        import pdb; pdb.set_trace()
         new_run =  RunProcess(runName=experiment_name, sampleSheet= '',
                                 state = RunStates.objects.get(runStateName__exact = 'Pre-Recorded'),
                                 centerRequestedBy = center_requested_by)
         new_run.save()
+        # Add new_run with the reagents kits
+        for kit in reagent_kits :
+            new_run.reagent_kit.add(kit)
 
+        display_sample_information['experiment_name'] = experiment_name
         display_sample_information['run_process_id'] = new_run.get_run_id()
 
         for pool in pool_ids:

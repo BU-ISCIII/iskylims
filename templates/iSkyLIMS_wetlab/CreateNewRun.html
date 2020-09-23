@@ -309,7 +309,9 @@
                         </div> <!--  end of col-sm-11 -->
                     </div> <!--  end of tab -->
                 {% endif %}
+                {% load user_text %}
                 {% for key, values in display_pools_for_run.pool_data.platform.items %}
+
                     <div id="{{key}}" class="tabcontent">
                         <div class="col-sm-11" >
                             <div class="panel panel-default">
@@ -319,12 +321,13 @@
                                         {% csrf_token %}
                                         <input type="hidden" name="action" value="createNewRun"/>
                                         <input type="hidden" name="platform" value="{{key}}"/>
+                                        <input type="hidden" name="commercialKits" value="{{display_pools_for_run.commercial_kits|keyvalue:key}}"/>
                                         <div class="form-group required">
                                             <label class="col-sm-5 control-label">Define the Experiment Name for the Run</label>
                                             <div class="col-sm-5"><input class="form-control" required = "required" type="text"  name="experimentName" size="80"></div>
                                             <br><br>
                                         </div>
-                                        {% load user_text %}
+
                                         {% for reagent , lots in display_pools_for_run.reagents_kits|keyvalue:key %}
                                             <div class="form-group required">
                                                 <label class="col-sm-5 control-label">{{reagent}}</label>

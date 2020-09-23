@@ -567,7 +567,7 @@ def get_pool_info (pools_to_update):
         pool_data['heading'] = wetlab_config.HEADING_FOR_SELECTING_POOLS
         pool_data['platform'] = {}
         reagents_kits = {}
-        #pool_ids = []
+        commercial_kits = {}
         for platform, protocol_objs in  pools_to_update['pools_available'].items():
             pool_data['platform'][platform] = []
             for pool in protocol_objs:
@@ -576,10 +576,9 @@ def get_pool_info (pools_to_update):
                 if int(pool.get_number_of_samples()) == len(LibraryPreparation.objects.filter(pools = pool)) :
                     data.append(pool.get_id())
                     pool_data['platform'][platform].append(data)
-                    #pool_ids.append(pool.get_id())
-                    # get the reagents kits used for the platform
 
-                    reagents_kits[platform] = get_lot_reagent_commercial_kits(platform)
+                    # get the reagents kits used for the platform
+                    reagents_kits[platform], commercial_kits[platform] = get_lot_reagent_commercial_kits(platform)
                 else:
                     if not 'invalid_run_data' in pool_info :
                         pool_info ['invalid_run_data'] = {}
@@ -589,6 +588,7 @@ def get_pool_info (pools_to_update):
         #pool_data['pool_ids'] = ','.join(pool_ids)
         pool_info['pool_data'] = pool_data
         pool_info['reagents_kits'] = reagents_kits
+        pool_info['commercial_kits'] = commercial_kits
     if 'defined_runs' in pools_to_update:
         run_data = {}
         tmp_data = {}
@@ -785,6 +785,25 @@ def update_run_with_sample_sheet(run_process_id, sample_sheet):
     run_obj = get_run_obj_from_id(run_process_id)
     run_obj.set_run_sample_sheet(sample_sheet)
     return
+
+
+def fetch_and_update_reagent_kits (form_data):
+    '''
+    Description:
+        The function fetch the reagent kits in the form and increase the use number
+        Return an object list with the reagents user kits.
+    Input:
+        form_data    # data from the user form
+    Return:
+        user_reagents_kit_objs
+    '''
+    user_reagents_kit_objs = []
+    commercial_kit_names = form_data['commercialKits'].split(',')
+    user_reagentKit_id_kit_dict = {}
+    for kit_name in commercial_kit_names:
+        user_reagents_kit_objs.append(update_usage_user_lot_kit(form_data[kit_name], kit_name))
+
+    return user_reagents_kit_objs
 
 def prepare_lib_prep_table_new_run (index_adapters, request, extracted_data_list, file_name, assay, adapter1, adapter2):
 
