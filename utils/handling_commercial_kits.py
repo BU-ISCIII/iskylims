@@ -201,20 +201,24 @@ def get_lot_reagent_commercial_kits(platform):
     Input:
         platform  # platform name
     Return
-        user_platform_kit_list
+        user_platform_kit_list and commercial_list
     '''
     user_platform_kit_dict = {}
+    user_platform_kit_list = []
+    commercial_kit_names = []
     if CommercialKits.objects.filter(platformKits__platformName__exact = platform).exists():
         commercial_objs = CommercialKits.objects.filter(platformKits__platformName__exact = platform).order_by('name')
         for commercial_obj in commercial_objs:
             commercial_name = commercial_obj.get_name()
+            commercial_kit_names.append(commercial_name)
             user_platform_kit_dict[commercial_name] = []
             if UserLotCommercialKits.objects.filter(basedCommercial = commercial_obj, expirationDate__gte = date.today()).exists():
                 user_kits = UserLotCommercialKits.objects.filter(basedCommercial = commercial_obj, expirationDate__gte = date.today()).order_by('expirationDate')
                 for user_kit in user_kits:
                     user_platform_kit_dict[commercial_name].append(user_kit.get_lot_number())
         user_platform_kit_list =list([(k,v) for k, v in  user_platform_kit_dict.items()])
-    return user_platform_kit_list
+        commercial_list = ','.join(commercial_kit_names)
+    return user_platform_kit_list, commercial_list
 
 
 def get_molecule_lot_kit_in_sample(sample_id):
@@ -271,3 +275,23 @@ def store_lot_user_commercial_kit (kit_data, user_name):
 
     new_kit = UserLotCommercialKits.objects.create_user_lot_commercial_kit(lot_kit_values )
     return new_kit
+
+
+def update_usage_user_lot_kit (lot_number, commercial_kit):
+    '''
+    Description:
+        The function fetch the user lot kit filtering the lot number and the commercial
+        kit name (to avoid that 2 user lot kit could have the same lot number)
+        It steps in one the number of use.
+        Return the user lot kit object.
+    Input:
+        lot_number    # number of the user lot
+        commercial_kit # name of the commercial kit
+    Return:
+        user_lot_obj
+    '''
+    user_lot_obj = ''
+    if UserLotCommercialKits.objects.filter(chipLot__exact = lot_number, basedCommercial__name__exact = commercial_kit).exists():
+        user_lot_obj= UserLotCommercialKits.objects.filter(chipLot__exact = lot_number, basedCommercial__name__exact = commercial_kit).last()
+        user_lot_obj.set_increase_use()
+    return user_lot_obj

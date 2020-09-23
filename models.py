@@ -361,9 +361,11 @@ class UserLotCommercialKits (models.Model):
         return '%s' %(self.pk)
 
     def set_increase_use(self):
+        self.latestUsedDate = datetime.datetime.now()
         self.numberOfuses += 1
         self.save()
         return self
+        
     def set_latest_use(self,date):
         self.latestUsedDate = date
         self.save()
