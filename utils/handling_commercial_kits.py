@@ -30,12 +30,22 @@ def get_commercial_kit_obj_from_name(kit_name):
         return CommercialKits.objects.get(name__exact = kit_name)
     return None
 
-def get_data_for_commercial_kits():
+def get_data_for_commercial_kits(platform):
+    '''
+    Description:
+        The function get the commercial kit data. If platform is included it returns
+        the commercial kits defined for platform
+    Input:
+        platform    # platform name
+    Return:
+        data_commercial_kits
+    '''
 
     data_commercial_kits = {}
-    data_commercial_kits['data'] = {}
-    if CommercialKits.objects.exists():
-        kits = CommercialKits.objects.all().order_by('name')
+    data_commercial_kits['protocol'] = {}
+    data_commercial_kits['protocol']['data'] = {}
+    if CommercialKits.objects.all().exclude(protocolKits = None).exists():
+        kits = CommercialKits.objects.all().exclude(protocolKits = None).order_by('name')
         for kit in kits:
             data_kits = []
             commercial_kit_name = kit.get_name()
@@ -49,20 +59,38 @@ def get_data_for_commercial_kits():
             #data_kits.append(kit.get_name())
             data_kits.append(kit.get_provider_kit_name())
             data_kits.append(kit.get_cat_number())
-            data_kits.append(kit.get_maximum_uses())
-
 
             #if not protocol in data_commercial_kits['data']:
             #   data_commercial_kits['data'][protocols] = []
-            data_commercial_kits['data'][commercial_kit_name] = [data_kits]
-        data_commercial_kits['headings'] = HEADING_FOR_COMMERCIAL_KIT_BASIC_DATA
+            data_commercial_kits['protocol']['data'][commercial_kit_name] = [data_kits]
+        data_commercial_kits['protocol']['headings'] = HEADING_FOR_COMMERCIAL_PROTOCOL_KIT_BASIC_DATA
+    # get the platform CommercialKits if platorm is not empty
+    if platform != '':
+        if CommercialKits.objects.all().exclude(platformKits = None).exists():
+            kits = CommercialKits.objects.all().exclude(platformKits = None).order_by('name')
+            data_commercial_kits['platform'] = {}
+            data_commercial_kits['platform']['data'] = {}
+            for kit in kits:
+                data_kits = []
+                commercial_kit_name = kit.get_name()
+                data_kits.append(kit.get_platform_name())
+                data_kits.append(kit.get_provider_kit_name())
+                data_kits.append(kit.get_cat_number())
+                data_commercial_kits['platform']['data'][commercial_kit_name] = [data_kits]
+            data_commercial_kits['platform']['headings'] = HEADING_FOR_COMMERCIAL_PLATFORM_KIT_BASIC_DATA
 
     return data_commercial_kits
 
 def get_commercial_kit_basic_data(kit_obj):
     kit_data = {}
-    kit_data['data'] = kit_obj.get_basic_data()
-    kit_data['heading'] = HEADING_FOR_NEW_SAVED_COMMERCIAL_KIT
+    if kit_obj.platform_kit_obj():
+
+        kit_data['data'] = kit_obj.get_commercial_platform_basic_data()
+        kit_data['heading'] = HEADING_FOR_NEW_SAVED_COMMERCIAL_PLATFORM_KIT
+    else:
+        kit_data['data'] = kit_obj.get_commercial_protocol_basic_data()
+        kit_data['heading'] = HEADING_FOR_NEW_SAVED_COMMERCIAL_PROTOCOL_KIT
+        kit_data['protocol_kit'] = True
     return  kit_data
 
 
@@ -160,10 +188,33 @@ def get_lot_commercial_kits(protocol_obj):
     if CommercialKits.objects.filter(protocolKits = protocol_obj).exists():
         commercial_kits = CommercialKits.objects.filter(protocolKits = protocol_obj)
         if UserLotCommercialKits.objects.filter(basedCommercial__in = commercial_kits, expirationDate__gte = date.today()).exists():
-            user_kits = UserLotCommercialKits.objects.filter(basedCommercial__in = commercial_kits, expirationDate__gte = date.today())
+            user_kits = UserLotCommercialKits.objects.filter(basedCommercial__in = commercial_kits, expirationDate__gte = date.today()).order_by('expirationDate')
             for user_kit in user_kits:
                 user_kit_list.append(user_kit.get_lot_number())
     return user_kit_list
+
+def get_lot_reagent_commercial_kits(platform):
+    '''
+    Description:
+        The function get the user commercial kits that are defined for using
+        platform.
+    Input:
+        platform  # platform name
+    Return
+        user_platform_kit_list
+    '''
+    user_platform_kit_dict = {}
+    if CommercialKits.objects.filter(platformKits__platformName__exact = platform).exists():
+        commercial_objs = CommercialKits.objects.filter(platformKits__platformName__exact = platform).order_by('name')
+        for commercial_obj in commercial_objs:
+            commercial_name = commercial_obj.get_name()
+            user_platform_kit_dict[commercial_name] = []
+            if UserLotCommercialKits.objects.filter(basedCommercial = commercial_obj, expirationDate__gte = date.today()).exists():
+                user_kits = UserLotCommercialKits.objects.filter(basedCommercial = commercial_obj, expirationDate__gte = date.today()).order_by('expirationDate')
+                for user_kit in user_kits:
+                    user_platform_kit_dict[commercial_name].append(user_kit.get_lot_number())
+        user_platform_kit_list =list([(k,v) for k, v in  user_platform_kit_dict.items()])
+    return user_platform_kit_list
 
 
 def get_molecule_lot_kit_in_sample(sample_id):
@@ -201,12 +252,13 @@ def store_commercial_kit (kit_data):
     commercial_kit_values['provider'] = kit_data['provider']
     commercial_kit_values['cat_number'] = kit_data ['catNo']
     commercial_kit_values['description'] = kit_data['description']
-    #commercial_kit_values['maximumUses'] = kit_data['usesNumber']
-    commercial_kit_values['maximumUses'] =  0
+    if 'platform' in kit_data:
+        commercial_kit_values['platform'] = kit_data['platform']
 
     new_kit = CommercialKits.objects.create_commercial_kit(commercial_kit_values )
-    for protocol in kit_data.getlist('protocol'):
-        new_kit.protocolKits.add(get_protocol_obj_from_name(protocol))
+    if not 'platform' in kit_data:
+        for protocol in kit_data.getlist('protocol'):
+            new_kit.protocolKits.add(get_protocol_obj_from_name(protocol))
     return new_kit
 
 def store_lot_user_commercial_kit (kit_data, user_name):

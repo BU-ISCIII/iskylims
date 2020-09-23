@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 import datetime
+from datetime import date
 from iSkyLIMS_core.core_config import COLLECTION_INDEX_KITS_DIRECTORY
 
 
@@ -213,28 +214,47 @@ class Species (models.Model):
         return '%s' %(self.speciesName)
 
 
+class SequencingPlatform(models.Model):
+    platformName = models.CharField(max_length=30)
+    companyName = models.CharField(max_length=30)
+    sequencingTecnology = models.CharField(max_length=30)
+
+    def __str__ (self):
+        return '%s' %(self.platformName)
+
+    def get_platform_name(self):
+	       return '%s'  %(self.platformName)
+
+    def get_platform_id(self):
+        return '%s' %(self.pk)
+
+    def get_company_name(self):
+        return '%s'  %(self.companyName)
+
+
 class CommercialKitsManager(models.Manager):
     def create_commercial_kit (self, kit_data):
-
+        if 'platform' in kit_data:
+            platform_obj = SequencingPlatform.objects.get(pk__exact = kit_data['platform'])
+        else:
+            platform_obj = None
         new_commercial_kit = self.create(name = kit_data['name'],
                     provider  = kit_data['provider'],  cat_number = kit_data['cat_number'],
-                    description  = kit_data['description'], maximumUses = kit_data['maximumUses'] )
+                    description  = kit_data['description'], platformKits =  platform_obj)
         return new_commercial_kit
 
 
 class CommercialKits (models.Model):
-    '''
-    protocol_id = models.ForeignKey(
-                    Protocols,
-                    on_delete= models.CASCADE, null = True)
-    '''
+
     protocolKits = models.ManyToManyField(
                     Protocols, blank = True)
 
+    platformKits = models.ForeignKey(
+                    SequencingPlatform,
+                    on_delete= models.CASCADE, null = True, blank = True)
+
     name = models.CharField(max_length =150)
     provider = models.CharField(max_length =30)
-    maximumUses = models.IntegerField(null = True, default = 0)
-    #capacity = models.CharField(max_length =30, null = True, blank = True)
     cat_number = models.CharField(max_length = 40, null = True, blank = True)
     description = models.CharField(max_length = 255, null = True, blank = True)
     generatedat = models.DateTimeField(auto_now_add=True, null=True)
@@ -245,11 +265,11 @@ class CommercialKits (models.Model):
     def get_name (self):
         return '%s' %(self.name)
 
-    def get_maximum_uses(self):
-        return '%s' %(self.maximumUses)
+    def platform_kit_obj(self):
+        return self.platformKits
 
-    #def get_protocol (self):
-    #    return '%s' %(self.protocol_id.get_name())
+    def get_platform_name(self):
+        return '%s'  %(self.platformKits.get_platform_name())
 
     def get_protocol_objs(self):
         return self.protocolKits.all()
@@ -260,7 +280,14 @@ class CommercialKits (models.Model):
     def get_cat_number(self):
         return '%s' %(self.cat_number)
 
-    def get_basic_data(self):
+    def get_commercial_platform_basic_data(self):
+        kit_basic_data = []
+        kit_basic_data.append(self.name)
+        kit_basic_data.append(self.provider)
+        kit_basic_data.append(self.platformKits.get_platform_name())
+        return kit_basic_data
+
+    def get_commercial_protocol_basic_data(self):
         kit_basic_data = []
         kit_basic_data.append(self.name)
         kit_basic_data.append(self.provider)
@@ -277,9 +304,10 @@ class CommercialKits (models.Model):
 
 class UserLotCommercialKitsManager(models.Manager):
     def create_user_lot_commercial_kit (self, kit_data):
+        expiration_date = datetime.datetime.strptime(kit_data['expirationDate'], '%Y-%m-%d').date()
 
         new_user_lot_commercial_kit = self.create(user = kit_data['user'], basedCommercial = kit_data['basedCommercial'],
-                chipLot = kit_data['chipLot'], expirationDate = kit_data['expirationDate'])
+                chipLot = kit_data['chipLot'], expirationDate = expiration_date)
         return new_user_lot_commercial_kit
 
 class UserLotCommercialKits (models.Model):
@@ -1040,19 +1068,7 @@ class MoleculeParameterValue (models.Model):
 
 
 
-class SequencingPlatform(models.Model):
-    platformName = models.CharField(max_length=30)
-    companyName = models.CharField(max_length=30)
-    sequencingTecnology = models.CharField(max_length=30)
 
-    def __str__ (self):
-        return '%s' %(self.platformName)
-
-    def get_platform_name(self):
-	       return '%s'  %(self.platformName)
-
-    def get_company_name(self):
-        return '%s'  %(self.companyName)
 
 
 class SequencingConfiguration(models.Model):

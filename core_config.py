@@ -61,10 +61,13 @@ HEADING_FOR_DEFINING_PROJECT_FIELDS = ['Field name', 'Order', 'Used', 'Descripti
 ################## KITS Heading ##############################
 ##############################################################
 
-HEADING_FOR_NEW_SAVED_COMMERCIAL_KIT = ['Commercial Kit Name', 'Provider',  'Protocol used for the kit']
+HEADING_FOR_NEW_SAVED_COMMERCIAL_PROTOCOL_KIT = ['Commercial Kit Name', 'Provider',  'Protocol used for the kit']
 
-HEADING_FOR_COMMERCIAL_KIT_BASIC_DATA = ['Protocols used for Commercial Kit', 'Provider',  'Cat Number', 'Capacity']
+HEADING_FOR_NEW_SAVED_COMMERCIAL_PLATFORM_KIT = ['Commercial Kit Name', 'Provider', 'Platform used for kit']
 
+HEADING_FOR_COMMERCIAL_PROTOCOL_KIT_BASIC_DATA = ['Protocols used for Commercial Kit', 'Provider',  'Cat Number']
+
+HEADING_FOR_COMMERCIAL_PLATFORM_KIT_BASIC_DATA = ['Platform used for Commercial Kit', 'Provider',  'Cat Number']
 
 HEADING_FOR_LOT_USER_COMMERCIAL_KIT_BASIC_DATA = ['Commercial Kit', 'Lot Barcode', 'Expiration Date']
 

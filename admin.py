@@ -2,7 +2,7 @@ from django.contrib import admin
 from iSkyLIMS_core.models import *
 
 class CommercialKitsAdmin (admin.ModelAdmin):
-    list_display =( 'name','provider' ,'maximumUses','cat_number')
+    list_display =( 'name','provider' , 'platformKits' , 'cat_number')
 
 class SamplesOriginAdmin (admin.ModelAdmin):
     list_display = ['originName' , 'originNameCoding' , 'location' ]
