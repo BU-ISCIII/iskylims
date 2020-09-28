@@ -75,7 +75,7 @@ class StatesForSampleAdmin (admin.ModelAdmin):
     list_display = ('sampleStateName',)
 
 class UserLotCommercialKitsAdmin (admin.ModelAdmin):
-    list_display = ('user', 'basedCommercial', 'numberOfuses', 'chipLot', 'latestUsedDate','expirationDate')
+    list_display = ('user', 'basedCommercial', 'runOut', 'numberOfuses', 'chipLot', 'latestUsedDate','expirationDate')
 
 
 admin.site.register(CommercialKits, CommercialKitsAdmin)

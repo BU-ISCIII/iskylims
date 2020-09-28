@@ -322,6 +322,7 @@ class UserLotCommercialKits (models.Model):
     chipLot = models.CharField(max_length = 50)
     latestUsedDate = models.DateTimeField(null = True, blank = True)
     expirationDate = models.DateField(auto_now_add=False)
+    runOut = models.BooleanField(default = False)
     generatedat = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__ (self):
@@ -365,7 +366,7 @@ class UserLotCommercialKits (models.Model):
         self.numberOfuses += 1
         self.save()
         return self
-        
+
     def set_latest_use(self,date):
         self.latestUsedDate = date
         self.save()
