@@ -3,6 +3,7 @@ from iSkyLIMS_core.core_config import *
 from iSkyLIMS_core.models import *
 from iSkyLIMS_core.utils.generic_functions import get_friend_list
 from iSkyLIMS_core.utils.handling_commercial_kits import get_lot_commercial_kits
+from iSkyLIMS_core.utils.handling_protocols import *
 from django.contrib.auth.models import User
 
 def create_table_to_select_molecules (samples_list):
@@ -36,8 +37,8 @@ def display_molecule_protocol_parameters (molecule_ids, user_obj):
 
     Input:
         molecule_ids
-    Variables:
-
+    Functions:
+        get_protocol_parameters_and_type  # located at iSkyLIMS_core.handling_protocols.py
     Return:
         laboratories.
     '''
@@ -66,6 +67,7 @@ def display_molecule_protocol_parameters (molecule_ids, user_obj):
                 length_heading = len(HEADING_FOR_MOLECULE_ADDING_PARAMETERS + parameter_list)
                 molecule_recorded['fix_heading'] = HEADING_FOR_MOLECULE_ADDING_PARAMETERS
                 molecule_recorded['param_heading'] = parameter_list
+                molecule_recorded['protocol_parameters_heading_type'] = get_protocol_parameters_and_type(protocol_used_obj)
                 #if Protocols.objects.filter(name__exact = selected_protocol).exists():
                     #protocol_obj = Protocols.objects.get(name__exact = selected_protocol)
                 molecule_recorded['lot_kit'] = get_lot_commercial_kits(protocol_used_obj)
