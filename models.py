@@ -1414,7 +1414,7 @@ class AdditionalUserLotKit (models.Model):
                     on_delete= models.CASCADE)
     userLotKit_id = models.ForeignKey(
                     UserLotCommercialKits,
-                    on_delete= models.CASCADE)
+                    on_delete= models.CASCADE, null=True , blank=True)
     value = models.CharField(max_length=255)
     generated_at = models.DateTimeField(auto_now_add=True)
 
@@ -1425,7 +1425,10 @@ class AdditionalUserLotKit (models.Model):
         data = []
         data.append(self.additionalLotKits.get_kit_name())
         data.append(self.additionalLotKits.get_commercial_kit_name())
-        data.append(self.userLotKit_id.get_lot_number())
+        if self.userLotKit_id == None:
+            data.append('Not set')
+        else:
+            data.append(self.userLotKit_id.get_lot_number())
         data.append(self.generated_at.strftime("%d %B %Y"))
         return data
 

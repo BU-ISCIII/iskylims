@@ -33,34 +33,42 @@ def analyze_and_store_input_additional_kits(form_data):
     heading_in_excel = form_data['headings'].split(',')
     full_heading_length = len(heading_in_excel)
     stored_additional_kits = {}
+    sample_names = []
 
+    '''
     if check_empty_fields(json_data) :
         stored_additional_kits['ERROR'] = ERROR_EMPTY_VALUES
         return stored_additional_kits
-
+    '''
     protocol_obj = get_lib_prep_obj_from_id(lib_prep_ids[0]).get_protocol_obj()
     for row_index in range(len(json_data)):
         right_id = lib_prep_ids[lib_prep_code_ids.index(json_data[row_index][1])]
 
         library_prep_obj = get_lib_prep_obj_from_id(right_id)
-
+        sample_names.append(library_prep_obj.get_sample_name())
         for c_index in range(fixed_heading_length, full_heading_length):
 
             kit_name = heading_in_excel[c_index]
             additional_kit_lib_obj = AdditionaKitsLibraryPreparation.objects.filter(kitName__exact = kit_name,  protocol_id = protocol_obj).last()
             commercial_kit_obj = additional_kit_lib_obj.get_commercial_kit_obj()
-            user_lot_commercial_obj = UserLotCommercialKits.objects.filter(basedCommercial = commercial_kit_obj, chipLot__exact = json_data[row_index][c_index]).last()
+            if json_data[row_index][c_index] == '':
+                user_lot_commercial_obj = None
+            else:
+                user_lot_commercial_obj = UserLotCommercialKits.objects.filter(basedCommercial = commercial_kit_obj, chipLot__exact = json_data[row_index][c_index]).last()
+                # increase the user Lot Kit use
+                user_lot_commercial_obj.set_increase_use()
             user_additional_kit ={}
             user_additional_kit['lib_prep_id'] = library_prep_obj
 
             user_additional_kit['additionalLotKits'] = additional_kit_lib_obj
             user_additional_kit['userLotKit_id'] = user_lot_commercial_obj
+
             new_user_additional_kit = AdditionalUserLotKit.objects.create_additional_user_lot_kit (user_additional_kit)
-            # increase the user Lot Kit use
-            user_lot_commercial_obj.set_increase_use()
+
         # update the library prepareation state
         library_prep_obj.set_state('Updated additional kits')
-    stored_additional_kits['stored_lib_ids'] = list(zip(library_prep_obj.get_sample_name(), lib_prep_code_ids))
+        import pdb; pdb.set_trace()
+    stored_additional_kits['stored_lib_ids'] = list(zip(sample_names, lib_prep_code_ids))
 
     return stored_additional_kits
 
