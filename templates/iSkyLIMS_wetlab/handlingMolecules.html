@@ -290,9 +290,18 @@
                                                 { type: 'text', title:'{{show_molecule_parameters.fix_heading.0}}', width:180 , readOnly:true },
                                                 { type: 'dropdown', title:'{{show_molecule_parameters.fix_heading.1}}', width:180 , source:[{% for value in show_molecule_parameters.lot_kit %}'{{value}}',{% endfor %} ]},
 
-                                           {% for value in show_molecule_parameters.param_heading %}
-                                               { type: 'text', title:'{{value}}', width:180 },
-                                          {% endfor %}
+                                                {% for name, type, options in show_molecule_parameters.protocol_parameters_heading_type %}
+                                                    {% if type == 'Date' %}
+                                                        { type: 'calendar', title:'{{name}}', width:150 },
+                                                    {% elif type == 'Option List'%}
+                                                        { type: 'dropdown', title:'{{name}}', width:150 , source: [{% for value in options %}"{{value}}",{% endfor %}] },
+                                                    {% else %}
+                                                        { type: 'text', title:'{{name}}', width:150 },
+                                                    {% endif %}
+                                                {% endfor %}
+
+
+                                           
                                       ],
                                       allowInsertColumn:false,
                                       allowDeleteColumn:false,
