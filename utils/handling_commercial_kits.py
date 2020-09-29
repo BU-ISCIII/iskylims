@@ -149,9 +149,9 @@ def get_valid_lot_user_kit (register_user_obj):
 
     valid_kits = {}
     valid_kits['data'] = {}
-    if UserLotCommercialKits.objects.filter(user = register_user_obj, expirationDate__gte = date.today()).exists():
+    if UserLotCommercialKits.objects.filter(user = register_user_obj, runOut = True).exists():
 
-        user_kits = UserLotCommercialKits.objects.filter(user = register_user_obj, expirationDate__gte = date.today()).order_by('basedCommercial')
+        user_kits = UserLotCommercialKits.objects.filter(user = register_user_obj, runOut = True).order_by('basedCommercial')
         for user_kit in user_kits:
             data_kit = []
             c_kit = user_kit.get_commercial_kit()
@@ -187,8 +187,8 @@ def get_lot_commercial_kits(protocol_obj):
 
     if CommercialKits.objects.filter(protocolKits = protocol_obj).exists():
         commercial_kits = CommercialKits.objects.filter(protocolKits = protocol_obj)
-        if UserLotCommercialKits.objects.filter(basedCommercial__in = commercial_kits, expirationDate__gte = date.today()).exists():
-            user_kits = UserLotCommercialKits.objects.filter(basedCommercial__in = commercial_kits, expirationDate__gte = date.today()).order_by('expirationDate')
+        if UserLotCommercialKits.objects.filter(basedCommercial__in = commercial_kits, runOut = True).exists():
+            user_kits = UserLotCommercialKits.objects.filter(basedCommercial__in = commercial_kits, runOut = True).order_by('expirationDate')
             for user_kit in user_kits:
                 user_kit_list.append(user_kit.get_lot_number())
     return user_kit_list
@@ -212,8 +212,8 @@ def get_lot_reagent_commercial_kits(platform):
             commercial_name = commercial_obj.get_name()
             commercial_kit_names.append(commercial_name)
             user_platform_kit_dict[commercial_name] = []
-            if UserLotCommercialKits.objects.filter(basedCommercial = commercial_obj, expirationDate__gte = date.today()).exists():
-                user_kits = UserLotCommercialKits.objects.filter(basedCommercial = commercial_obj, expirationDate__gte = date.today()).order_by('expirationDate')
+            if UserLotCommercialKits.objects.filter(basedCommercial = commercial_obj, runOut = True).exists():
+                user_kits = UserLotCommercialKits.objects.filter(basedCommercial = commercial_obj, runOut = True).order_by('expirationDate')
                 for user_kit in user_kits:
                     user_platform_kit_dict[commercial_name].append(user_kit.get_lot_number())
         user_platform_kit_list =list([(k,v) for k, v in  user_platform_kit_dict.items()])
