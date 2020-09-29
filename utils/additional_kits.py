@@ -127,8 +127,8 @@ def get_additional_kits_from_lib_prep (lib_prep_ids):
             user_lot = []
             #if UserLotCommercialKits.objects.filter(basedCommercial = kit_commercial_obj, expirationDate__gte = date.today()).exists():
             #    user_lot_kit_objs = UserLotCommercialKits.objects.filter(basedCommercial = kit_commercial_obj, expirationDate__gte = date.today()).order_by('expirationDate')
-            if UserLotCommercialKits.objects.filter(basedCommercial = kit_commercial_obj, runOut = True).exists():
-                user_lot_kit_objs = UserLotCommercialKits.objects.filter(basedCommercial = kit_commercial_obj, runOut = True).order_by('expirationDate')
+            if UserLotCommercialKits.objects.filter(basedCommercial = kit_commercial_obj, runOut = False).exists():
+                user_lot_kit_objs = UserLotCommercialKits.objects.filter(basedCommercial = kit_commercial_obj, runOut = False).order_by('expirationDate')
                 for user_lot_kit_obj in user_lot_kit_objs:
                     user_lot.append(user_lot_kit_obj.get_lot_number())
             additional_kits['kit_heading'].append([kit_name,user_lot])
