@@ -241,13 +241,14 @@ class LibraryKit (models.Model):
 
 
 class Projects(models.Model):
-    runprocess_id = models.ForeignKey(
-            RunProcess,
-            on_delete=models.CASCADE, null = True) # added null for new lab process functionality
+    #runprocess_id = models.ForeignKey(
+    #        RunProcess,
+    #        on_delete=models.CASCADE, null = True) # added null for new lab process functionality
     user_id= models.ForeignKey(User,on_delete=models.CASCADE, null = True)
     LibraryKit_id = models.ForeignKey(
             LibraryKit,
             on_delete=models.CASCADE , null=True, blank = True)
+    runProcess = models.ManyToManyField(RunProcess)
     BaseSpaceLibrary = models.CharField(max_length=45, null=True, blank=True)
     projectName= models.CharField(max_length=45)
     libraryKit=models.CharField(max_length=125)

@@ -53,7 +53,7 @@ class RunProcessAdmin (admin.ModelAdmin):
     list_display = ('runName','usedSequencer','sampleSheet','generatedat','run_date','runError', 'state','index_library','samples','centerRequestedBy','useSpaceImgMb','useSpaceFastaMb','useSpaceOtherMb')
 
 class ProjectsAdmin (admin.ModelAdmin):
-    list_display= ('runprocess_id','user_id','LibraryKit_id','projectName','libraryKit','baseSpaceFile','generatedat','project_run_date')
+    list_display= ('projectName','user_id','LibraryKit_id','libraryKit','baseSpaceFile','generatedat','project_run_date')
     #list_display= ('runprocess_id','projectName','procState','libraryKit','baseSpaceFile')
 '''
 class BaseSpaceLibraryNameAdmin(admin.ModelAdmin):

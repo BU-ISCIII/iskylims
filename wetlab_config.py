@@ -26,6 +26,10 @@ RETENTION_TIME = '7' # in days
 ####
 ##############################################################
 
+##############  Define in proyect names can be the same in different Runs ######
+PROJECTS_ALLOWED_IN_MULTIPLE_RUNS = 'False' ## ('True'/'False')
+##############################################################
+
 ############## FOLDER SETTINGS ###############################
 ## Directory settings for processing the run data files ######
 ## Relative path from settings.BASE_DIR
