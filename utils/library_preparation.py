@@ -1079,3 +1079,19 @@ def update_batch_lib_prep_sample_state(lib_prep_ids,  sample_state):
         sample_obj = lib_obj.get_sample_obj().set_state(sample_state)
 
     return
+
+
+def update_library_preparation_for_reuse(sample):
+    '''
+    Description:
+        The function step the reuse of the library preparation
+    Input:
+        sample_list        # list of samples for updating the reuse value
+
+    Return:
+        None
+    '''
+    if LibraryPreparation.objects.filter(sample_id__sampleName__exact = sample).exists():
+        lib_prep_obj = LibraryPreparation.objects.filter(sample_id__sampleName__exact = sample).last()
+        lib_prep_obj.set_increase_reuse()
+    return

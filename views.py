@@ -176,7 +176,7 @@ def create_nextseq_run (request):
         ## Fetch from the Sample Sheet file the projects included in
         ## the run and the user. Error page is showed if not project/description
         ## colunms are found
-        project_list=get_projects_in_run(stored_file)
+        project_list = get_projects_in_run(stored_file)
 
         if len (project_list) == 0 :
             ## delete sample sheet file
@@ -198,28 +198,32 @@ def create_nextseq_run (request):
                     delete_project.delete()
                 else:
                     project_already_defined.append(key)
-        if (len(project_already_defined)>0):
-            if (len(project_already_defined)>1):
-                head_text='The following projects are already defined in database:'
-            else:
-                head_text='The following project is already defined in database:'
-            ## convert the list into string to display the user names on error page
-            display_project= '  '.join(project_already_defined)
-            ## delete sample sheet file before showing the error page
-            fs.delete(file_name)
-            return render (request,'iSkyLIMS_wetlab/error_page.html',
-                {'content':[ head_text,'', display_project,'',
-                    'Project names must be unique','', 'ADVICE:',
-                    'Edit the Sample Sheet file to correct this error']})
+        # Change Project behaviour allow now to add sample to exising projects
+
+        if (len(project_already_defined) >0 ):
+            if wetlab_config.PROJECTS_ALLOWED_IN_MULTIPLE_RUNS == 'False':
+                if (len(project_already_defined)>1):
+                    head_text='The following projects are already defined in database:'
+                else:
+                    head_text='The following project is already defined in database:'
+                ## convert the list into string to display the user names on error page
+                display_project= '  '.join(project_already_defined)
+                ## delete sample sheet file before showing the error page
+                fs.delete(file_name)
+                return render (request,'iSkyLIMS_wetlab/error_page.html',
+                    {'content':[ head_text,'', display_project,'',
+                        'Project names must be unique','', 'ADVICE:',
+                        'Edit the Sample Sheet file to correct this error']})
+
         ##Once the information looks good. it will be stores in runProcess and projects table
 
         ## store data in runProcess table, run is in pre-recorded state
         center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
         center_requested_by = Center.objects.get(pk = center_requested_id)
-        run_proc_data = RunProcess(runName=run_name,sampleSheet= file_name,
+        new_run_obj = RunProcess(runName=run_name,sampleSheet= file_name,
                                 state = RunStates.objects.get(runStateName__exact = 'Pre-Recorded'),
                                 centerRequestedBy = center_requested_by)
-        run_proc_data.save()
+        new_run_obj.save()
         experiment_name = '' if run_name == timestr else run_name
 
         ## create new project tables based on the project involved in the run and
@@ -233,9 +237,16 @@ def create_nextseq_run (request):
                 userid = User.objects.get(username__exact = val)
             else:
                 userid = None
+            '''
             p_data = Projects(runprocess_id=RunProcess.objects.get(runName =run_name),
                             projectName=key, user_id=userid)
             p_data.save()
+            '''
+            data = {}
+            data['user_id'] = user_id
+            data['projectName'] = key
+            new_project = Projects.objects.create_new_project(data)
+            new_project.add_run(new_run_obj)
             projects.append([key, val])
         run_info_values['projects_user'] = projects
         run_info_values['runname']= run_name
@@ -360,6 +371,9 @@ def create_nextseq_run (request):
         run_p.index_library = run_index_library_name
         run_p.save()
         run_p.set_run_state ('Recorded')
+        sample_sheet_lines = read_all_lines_in_sample_sheet(in_file)
+        sample_names_and_data = get_samples_in_sample_sheet(sample_sheet_lines)
+        samples_reused = increase_reuse_if_samples_exists(sample_names_and_data['samples'])
 
         return render (request, 'iSkyLIMS_wetlab/CreateNextSeqRun.html', {'completed_form':results})
 

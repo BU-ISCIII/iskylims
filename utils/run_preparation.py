@@ -9,7 +9,7 @@ from iSkyLIMS_wetlab.wetlab_config import *
 
 from iSkyLIMS_wetlab.utils.pool_preparation import  check_if_duplicated_index
 from iSkyLIMS_wetlab.utils.library_preparation import  get_lib_prep_obj_from_id
-
+from iSkyLIMS_core.utils.handling_samples import update_sample_reused, get_sample_obj_from_sample_name, get_molecule_objs_from_sample
 from iSkyLIMS_core.utils.handling_protocols import *
 from iSkyLIMS_core.utils.handling_commercial_kits import *
 from django.conf import settings
@@ -479,7 +479,28 @@ def collect_lib_prep_data_for_new_run(lib_prep_ids, paired):
         data.append(row_data)
     return data ,uniqueID_list
 
+def increase_reuse_if_samples_exists(sample_list):
+    '''
+    Description:
+        The function check if sample was exists (only this function is requested when
+        run is reused, by uploading the sample sheet
+    Input:
+        sample_list        # list of samples fetched from sample sheet
+    Return:
+        samples_reused
+    '''
+    samples_reused = []
+    for sample in sample_list:
+        sample_obj = get_sample_obj_from_sample_name(sample)
+        if sample_obj:
+            update_sample_reused(sample_obj.get_sample_id())
+            molecules = get_molecule_objs_from_sample(sample_obj)
+            last_molecule = molecules[-1]
+            update_molecule_reused(sample_obj.get_sample_id(), last_molecule.get_molecule_id())
+            update_library_preparation_for_reuse(samples_reused)
+            samples_reused.append(sample)
 
+    return samples_reused
 
 def update_index_in_sample_sheet(sample_sheet_data, lib_prep_ids) :
     # check in index hve been changed to adapt them to base space.

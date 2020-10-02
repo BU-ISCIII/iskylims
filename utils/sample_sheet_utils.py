@@ -286,6 +286,7 @@ def get_sample_sheet_data (file_read):
 
     return sample_sheet_data
 
+
 def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects, plate):
     data_raw=[]
     well_column={}
@@ -717,6 +718,23 @@ def store_user_input_file (user_input_file):
     ### add the document directory to the input file
     stored_path_file = os.path.join(settings.MEDIA_ROOT, file_name)
     return stored_path_file, file_name
+
+def read_all_lines_in_sample_sheet(sample_sheet):
+    '''
+    Description:
+        The function reads the input file and return the content in a variable
+    Input:
+        sample_sheet    # location of sample sheet
+    Return:
+        read_lines
+    '''
+    read_lines = []
+    if os.path.exists(sample_sheet):
+        fh = open(sample_sheet, 'r')
+        read_lines = fh.readlines()
+        fh.close()
+    return read_lines
+
 
 
 def read_user_iem_file(in_file):

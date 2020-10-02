@@ -237,7 +237,10 @@ class LibraryKit (models.Model):
         return '%s' %(self.libraryName)
 
 
-
+class ProjectsManager(models.Manager):
+    def create_new_project(self,project_data):
+        new_project = self.create(user_id = ['user_id'],projectName = project_data['projectName'])
+        return new_project
 
 
 class Projects(models.Model):
@@ -317,11 +320,16 @@ class Projects(models.Model):
     def get_project_id(self):
         return '%s' %(self.id)
 
+    def add_run(run_obj):
+        self.runProcess.add(run_obj)
+        return self
+
     def set_project_run_date(self, date):
         self.project_run_date = date
         self.save()
         return self
 
+    objects = ()
 
 class RunningParametersManager (models.Manager) :
 
