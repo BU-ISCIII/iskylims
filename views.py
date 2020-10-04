@@ -3515,6 +3515,7 @@ def define_sample_projects_fields (request, sample_project_id):
 @login_required
 def modify_sample_project_fields(request, sample_project_id):
     ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+
     if request.user.is_authenticated:
         if not is_wetlab_manager(request):
             return render (
@@ -3526,22 +3527,16 @@ def modify_sample_project_fields(request, sample_project_id):
         return redirect ('/accounts/login')
 
     if request.method == 'POST' and request.POST['action'] == 'modifySampleProjectFields':
-
-        sample_project_field_data = set_sample_project_fields(request.POST)
-
-        return render(request, 'iSkyLIMS_wetlab/modifySampleProjectFields.html', {'sample_project_field_data':sample_project_field_data})
+        sample_project_field_saved = modify_fields_in_sample_project(request.POST)
+        return render(request, 'iSkyLIMS_wetlab/modifySampleProjectFields.html', {'sample_project_field_saved':sample_project_field_saved})
 
     else:
         if not check_if_sample_project_id_exists(sample_project_id):
-
             return render ( request,'iSkyLIMS_wetlab/error_page.html',
                         {'content':['The requested Sample project does not exist',
                             'Create the sample project name before assigning custom sample project parameters.']})
-
-
-        sample_project_parameter = get_parameters_sample_project(sample_project_id)
-
-        return render(request, 'iSkyLIMS_wetlab/modifySampleProjectFields.html', {'sample_project_parameter':sample_project_parameter})
+        sample_project_field = get_parameters_sample_project(sample_project_id)
+        return render(request, 'iSkyLIMS_wetlab/modifySampleProjectFields.html', {'sample_project_field':sample_project_field})
 
 
 @login_required

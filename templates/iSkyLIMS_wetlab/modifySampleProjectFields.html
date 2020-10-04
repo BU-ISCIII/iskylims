@@ -2,33 +2,50 @@
 {% load static %}
 {% block content %}
 {% csrf_token %}
-{% if sample_project_field_data %}
+<style>
+    .scrolling-wrapper {
+        overflow-x: auto;
+        overflow-y: auto;
+        white-space: nowrap;
+        height: 400px;
+    }
+ </style>
+{% if sample_project_field_saved %}
     <div class="row row-space-4 margin-b-4">
         <div class="col-sm-12" >
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>Sucessful store of parameters on {{sample_project_field_data.sample_project_name}} Protocol</h3></div>
+                <div class="panel-heading"><h3>Sucessful store of Sample Project Fields for Sample Project {{sample_project_field_saved.sample_project_name}} </h3></div>
                 <div class="panel-body">
 
-                    <div class="col-sm-10" >
+                    <div class="scrolling-wrapper">
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    {% for value in sample_project_field_data.heading %}
+                                    {% for value in sample_project_field_saved.heading %}
                                         <th>{{value}}</th>
                                     {% endfor %}
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for  values in sample_project_field_data.fields %}
+                                {% for  values in sample_project_field_saved.fields %}
                                     <tr>
                                         {% for value in values %}
-                                            <td>{{ value }}</td>
+                                            <td>
+                                                {% if value == 'Yes' or value == True %}
+                                                    <span class="glyphicon glyphicon glyphicon-ok"></span>
+                                                {% elif value == 'No' or value == False %}
+
+                                                {% else %}
+                                                    {{ value }}
+                                                {% endif %}
+
+                                            </td>
                                         {% endfor %}
                                     </tr>
                             {% endfor %}
                             </tbody>
                         </table>
-                    </div> <!--// end col-sm-5  -->
+                    </div> <!--  end of scrolling  -->
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->
         </div> <!--// end col-sm-12  -->
@@ -41,13 +58,17 @@
         <div class="col-sm-12" >
 
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>Modify Sample Project Fields for {{sample_project_parameter.sample_project_name}}</h3></div>
+                <div class="panel-heading"><h3>Modify Sample Project Fields for {{sample_project_field.sample_project_name}}</h3></div>
                 <div class="panel-body">
                      <form method="post" enctype="multipart/form-data" name="modifySampleProjectFields"  id="modifySampleProjectFields" class="form-horizontal well">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="modifySampleProjectFields"/>
-                        <input type="hidden" name="sample_project_id" value="{{sample_project_data.sample_project_id}}"/>
-                        <div id="spreadsheet1"></div>
+                        <input type="hidden" name="sample_project_id" value="{{sample_project_field.sample_project_id}}"/>
+                        <input type="hidden" name="parameter_names" value="{{sample_project_field.parameter_names}}"/>
+                        <input type="hidden" name="parameter_ids" value="{{sample_project_field.parameter_ids}}"/>
+                        <div class="scrolling-wrapper">
+                            <div id="spreadsheet1"></div>
+                        </div> <!--  end of scrolling  -->
                         <br>
                         <br>
 
@@ -57,27 +78,27 @@
 
                      <script>
 
-                     var data1 = [{% for values in sample_project_parameter.fields %} [{% for value in values %}'{{value}}',{% endfor %}], {% endfor %}
+                     var data1 = [{% for values in sample_project_field.fields %} [{% for value in values %}'{{value}}',{% endfor %}], {% endfor %}
                      ];
 
                     var table1 = jexcel(document.getElementById('spreadsheet1'), {
                         data:data1,
                         columns: [
-                            { type: 'text', title:'{{sample_project_parameter.heading.0}}', width:160 ,readOnly:true},
-                            { type: 'text', title:'{{sample_project_parameter.heading.1}}', width:160 },
-                            { type: 'numeric', title:'{{sample_project_parameter.heading.2}}', width:50, mask:' #.##,00' },
-                            { type: 'checkbox', title:'{{sample_project_parameter.heading.3}}', width:50 },
-                            { type: 'checkbox', title:'{{sample_project_parameter.heading.4}}', width:70 },
-                            { type: 'dropdown' , title: '{{sample_project_parameter.heading.5}}', width:90 , source: ["string", "Date" , "Option List"] },
-                            { type: 'text', title:'{{sample_project_parameter.heading.6}}', width:240, wordWrap:true },
-                            { type: 'text', title:'{{sample_project_parameter.heading.7}}', width:400 , wordWrap:true },
+                            { type: 'text', title:'{{sample_project_field.heading.0}}', width:160 ,readOnly:true},
+                            { type: 'text', title:'{{sample_project_field.heading.1}}', width:160 },
+                            { type: 'numeric', title:'{{sample_project_field.heading.2}}', width:50, mask:' #.##,00' },
+                            { type: 'checkbox', title:'{{sample_project_field.heading.3}}', width:50 },
+                            { type: 'checkbox', title:'{{sample_project_field.heading.4}}', width:70 },
+                            { type: 'dropdown' , title: '{{sample_project_field.heading.5}}', width:90 , source: ["string", "Date" , "Option List"] },
+                            { type: 'text', title:'{{sample_project_field.heading.6}}', width:240, wordWrap:true },
+                            { type: 'text', title:'{{sample_project_field.heading.7}}', width:400 , wordWrap:true },
                         ],
                         allowInsertColumn:false,
                         allowDeleteColumn:false,
                         allowRenameColumn:false,
                         csvFileName:'sample_project_fields',
                         minDimensions:[8,3],
-                        tableOverflow: true,
+                        tableOverflow: false,
                         tableWidth: "1100px",
                      });
 
