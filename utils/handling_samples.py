@@ -894,12 +894,21 @@ def get_parameters_sample_project(sample_project_id):
         if SampleProjectsFields.objects.filter(sampleProjects_id = sample_project_obj).exists():
             sample_project_fields = SampleProjectsFields.objects.filter(sampleProjects_id = sample_project_obj).order_by('sampleProjectFieldOrder')
             s_project_fields_list = []
+            parameter_ids = []
+            parameter_names =[]
             for sample_project_field in sample_project_fields:
+
                 parameter_data =  sample_project_field.get_sample_project_fields_for_javascript()
+                parameter_names.append(parameter_data[0])
+                parameter_ids.append(sample_project_field.get_field_id())
                 parameter_data.insert(1,'')
                 s_project_fields_list.append(parameter_data)
             parameters_s_project['fields'] = s_project_fields_list
         parameters_s_project['heading'] = HEADING_FOR_MODIFY_SAMPLE_PROJECT_FIELDS
+        parameters_s_project['sample_project_id'] = sample_project_id
+        parameters_s_project['sample_project_name'] = sample_project_obj.get_sample_project_name()
+        parameters_s_project['parameter_names'] = ','.join(parameter_names)
+        parameters_s_project['parameter_ids'] = ','.join(parameter_ids)
     else:
         return 'ERROR'
 
@@ -1208,6 +1217,19 @@ def get_species ():
             species_names.append(species.get_name())
     return species_names
 
+def get_sample_project_field_obj_from_id(sample_project_field_id):
+    '''
+    Description:
+        The function will return the sample project field object from id number.
+    Input:
+        sample_project_field_id
+    Return:
+        sample_project_field_obj.
+    '''
+    sample_project_field_obj = False
+    if SampleProjectsFields.objects.filter(pk__exact = sample_project_field_id).exists():
+        sample_project_field_obj = SampleProjectsFields.objects.get(pk__exact = sample_project_field_id)
+    return sample_project_field_obj
 
 
 def get_modules_type ():
@@ -1670,6 +1692,67 @@ def set_molecule_use(form_data, app_name) :
         molecule_update['heading'] = HEADING_FOR_SELECTING_MOLECULE_USE
     return molecule_update
 
+def modify_fields_in_sample_project (form_data):
+    '''
+    Description:    The function get the project field value and check if there is
+        some changes. If change then replace the old values by thenew ones
+    Input:
+        form_data     # form data from user
+    Return:
+        saved_fields #
+    '''
+
+    sample_project_id = form_data['sample_project_id']
+    parameter_ids = form_data['parameter_ids'].split(',')
+    parameter_names = form_data['parameter_names'].split(',')
+    json_data = json.loads(form_data['table_data1'])
+    sample_project_obj = SampleProjects.objects.get(pk__exact = sample_project_id)
+    fields = HEADING_FOR_MODIFY_SAMPLE_PROJECT_FIELDS
+    saved_fields = {}
+    saved_fields['fields'] = []
+    saved_fields['heading'] = HEADING_FOR_SAMPLE_PROJECT_FIELDS
+    saved_fields['sample_project_name'] = sample_project_obj.get_sample_project_name()
+
+    for row_data in json_data:
+        if row_data[0] == '' and row_data[1] == '':
+            continue
+        s_p_fields = {}
+        for i in range(len(fields)):
+            s_p_fields[fields[i]] = row_data[i]
+
+        if row_data[fields.index('Field type')] == 'Option List':
+            option_list_values =  row_data[fields.index('Option Values')].split(',')
+            clean_value_list = []
+            for opt_value in option_list_values:
+                value = opt_value.strip()
+                if value != '':
+                    clean_value_list.append(value)
+
+            s_p_fields['Option Values'] =','.join(clean_value_list)
+        else:
+            s_p_fields['Option Values'] = ''
+        if row_data[0] == '' and row_data[1] != '':
+            # new field
+            s_p_fields['Field name'] = row_data[1]
+            s_p_fields['sample_project_id'] = sample_project_obj
+            saved_fields['fields'].append(SampleProjectsFields.objects.create_sample_project_fields(s_p_fields).get_sample_project_fields_name())
+            continue
+        if row_data[0] != '' and row_data[1] != '':
+            # rename field name
+            s_p_fields['Field name'] = row_data[1]
+        else:
+            s_p_fields['Field name'] = row_data[0]
+        # Update  Field
+        right_id = parameter_ids[parameter_names.index(row_data[0])]
+        sample_project_field_obj = get_sample_project_field_obj_from_id(right_id)
+        if not sample_project_field_obj:
+            # Unable to find the object class. Skipping this change
+            continue
+        sample_project_field_obj.update_sample_project_fields(s_p_fields)
+        saved_fields['fields'].append(sample_project_field_obj.get_sample_project_fields_name())
+
+    return saved_fields
+
 def set_sample_project_fields (data_form):
     sample_project_id = data_form['sample_project_id']
     json_data = json.loads(data_form['table_data1'])
@@ -1704,7 +1787,6 @@ def set_sample_project_fields (data_form):
     stored_fields['fields'] = saved_fields
     stored_fields['heading'] = HEADING_FOR_SAMPLE_PROJECT_FIELDS
     stored_fields['sample_project_name'] = sample_project_obj.get_sample_project_name()
-
     return stored_fields
 
 def update_molecule_reused(sample_id, molecule_code_id):

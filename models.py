@@ -648,6 +648,18 @@ class SampleProjectsFields (models.Model):
         field_data.append(self.sampleProjectFieldDescription)
         return field_data
 
+    def update_sample_project_fields(self, project_field_data):
+        #self.sampleProjects_id =project_field_data['sample_project_id']
+        self.sampleProjectFieldName = project_field_data['Field name']
+        self.sampleProjectFieldDescription = project_field_data['Description']
+        self.sampleProjectFieldOrder = project_field_data['Order']
+        self.sampleProjectFieldUsed = project_field_data['Used']
+        self.sampleProjectFieldType = project_field_data['Field type']
+        self.sampleProjectSearchable = project_field_data['Searchable']
+        self.sampleProjectOptionList = project_field_data['Option Values']
+        self.save()
+        return self
+
     objects = SampleProjectsFieldsManager()
 '''
 class SamplesProjectsOptionValuesManager():
