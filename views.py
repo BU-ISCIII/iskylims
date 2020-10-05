@@ -3471,7 +3471,7 @@ def record_samples(request):
         sample_recorded = analyze_input_sample_project_fields(request.POST)
 
         if request.POST['pending_pre_defined'] != '':
-            sample_recorded.update(prepare_sample_project_input_table(request.POST['pending_pre_defined']))
+            sample_recorded.update(prepare_sample_project_input_table(request.POST['pending_pre_defined'].split(',')))
             return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
         else:
             return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
@@ -3833,8 +3833,11 @@ def handling_molecules(request):
         samples_pending_use = get_samples_in_state ('Pending for use')
         if samples_pending_use:
             request_molecule_use = create_table_pending_use(samples_pending_use, __package__)
+        # check if there are defined the type
+        molecule_use_defined = check_if_molecule_use_defined(__package__)
 
-        return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'sample_availables': sample_availables, 'user_molecules': user_molecules ,'request_molecule_use':request_molecule_use})
+        return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'sample_availables': sample_availables, 'user_molecules': user_molecules ,
+                                'molecule_use_defined' : molecule_use_defined,'request_molecule_use':request_molecule_use})
 
     return
 
