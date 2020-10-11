@@ -100,6 +100,9 @@ class GraphicsStatsAdmin(admin.ModelAdmin):
     list_display = ('runprocess_id', 'folderRunGraphic', 'cluserCountGraph', 'flowCellGraph', 'intensityByCycleGraph', 'heatMapGraph', 'histogramGraph', 'sampleQcGraph')
 
 
+class FlexibleConfSettingsAdmin(admin.ModelAdmin):
+    list_display = ['confParameterName', 'confParameterValue']
+
 admin.site.register(LibraryPreparation, LibraryPreparationAdmin)
 admin.site.register(LibParameterValue, LibParameterValueAdmin)
 
@@ -127,3 +130,5 @@ admin.site.register(RawTopUnknowBarcodes, RawTopUnknowBarcodesdmin)
 admin.site.register(StatsLaneSummary, StatsLaneSummaryAdmin)
 admin.site.register(StatsFlSummary, StatsFlSummaryAdmin)
 admin.site.register(GraphicsStats, GraphicsStatsAdmin)
+
+admin.site.register(FlexibleConfSettings,FlexibleConfSettingsAdmin)

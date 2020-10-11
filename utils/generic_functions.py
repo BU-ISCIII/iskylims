@@ -41,6 +41,22 @@ def check_all_projects_exists (project_list):
     logger.debug ('End function for check_all_projects_exists')
     return True
 
+def get_conf_param_value(parameter_name):
+    '''
+    Description:
+        Function will get the parameter value defined in the configutration table
+        if not exists return 'False'
+
+    Input:
+        parameter_name    #parameter name
+    Return:
+        parameter_value
+    '''
+    parameter_value = 'False'
+    if FlexibleConfSettings.objects.filter(confParameterName__exact = parameter_name).exist():
+        parameter_obj = FlexibleConfSettings.objects.filter(confParameterName__exact = parameter_name).last()
+        parameter_value = parameter_obj.get_parameter_value()
+    return parameter_value
 
 def get_run_in_same_year_to_compare (run_object):
     '''

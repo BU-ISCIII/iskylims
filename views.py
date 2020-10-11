@@ -201,7 +201,7 @@ def create_nextseq_run (request):
         # Change Project behaviour allow now to add sample to exising projects
 
         if (len(project_already_defined) >0 ):
-            if wetlab_config.PROJECTS_ALLOWED_IN_MULTIPLE_RUNS == 'False':
+            if get_conf_param_value('PROJECTS_ALLOWED_IN_MULTIPLE_RUNS') == 'False':
                 if (len(project_already_defined)>1):
                     head_text='The following projects are already defined in database:'
                 else:
