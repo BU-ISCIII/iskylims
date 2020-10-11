@@ -95,8 +95,9 @@
                             <ul class="root">
                                 {% recursetree display_service.nodes %}
                                     <li>
-                                        {{ node }}
+                                        <input type="checkbox" name = "{{ node }}" value = "{{node}}">
                                         {% if not node.is_leaf_node %}
+
                                             <ul class="children">
                                                 {{ children }}
                                             </ul>

@@ -61,6 +61,7 @@ ERROR_UNABLE_TO_SAVE_EMAIL_CONFIGURATION_SETTINGS = ['Unable to save the email c
 ERROR_PIPELINE_ALREADY_EXISTS = ['Pipeline name and version is already defined']
 
 
+HEADING_SELECT_SAMPLE_IN_SERVICE = ['Run Name', 'Project Name', 'Sample Name', 'Run finish date', 'sample id']
 
 HEADING_ADDITIONAL_PIPELINE_PARAMETERS = ['Additional parameter name', 'Additional Parameter Value']
 

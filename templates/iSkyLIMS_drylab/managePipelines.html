@@ -35,7 +35,11 @@
                         		   data:data,
                         		   columns: [
                                         {% for value in pipelines_data.heading %}
-                        				    { type: 'text', title:'{{value}}', width:120 , readOnly:true },
+                                            {% if forloop.last %}
+                                                { type: 'hidden' },
+                                            {% else %}
+                        				        { type: 'text', title:'{{value}}', width:120 , readOnly:true },
+                                            {% endif %}
                                         {% endfor %}
                         		    ],
                         		    allowInsertColumn:false,
@@ -65,6 +69,24 @@
                                         }
                         	   });
                         	</script>
+
+                            <script>
+                                           $(document).ready(function () {
+                                               $("#requestMoleculeUse").submit(function (e) {
+                                                   //stop submitting the form to see the disabled button effect
+                                                   // e.preventDefault();
+                                                   //disable the submit button
+                                                   var table_data = $('#spreadsheet').jexcel('getData')
+                                                   var data_json = JSON.stringify(table_data)
+                                                   $("<input />").attr("type", "hidden")
+                                                     .attr("name", "molecule_used_for")
+                                                     .attr("value", data_json)
+                                                     .appendTo("#requestMoleculeUse");
+                                                   $("#btnSubmit").attr("disabled", true);
+                                                   return true;
+                                               });
+                                           });
+                                       </script>
                         </div> <!--  end of scrolling  -->
                     </div> <!--  end of panel body -->
                 </div> <!--  end of panel  -->

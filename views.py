@@ -83,7 +83,18 @@ def configuration_email(request):
         return render(request, 'iSkyLIMS_drylab/configurationEmail.html',{'succesful_settings':True})
     return render(request, 'iSkyLIMS_drylab/configurationEmail.html',{'email_conf_data': email_conf_data})
 
+@login_required
+def new_request_service(request):
 
+	service_data_information = prepare_form_data_service_internal_sequencing(request.user)
+	if wetlab_api_available :
+		user_sharing_list = get_user_sharing_lits(request.user)
+		service_data_information['samples_data'] = get_runs_projects_samples_and_dates(user_sharing_list)
+		if len(service_data_information['samples_data']) > 0:
+			service_data_information['samples_heading'] = drylab_config.HEADING_SELECT_SAMPLE_IN_SERVICE
+
+
+	return render(request,'iSkyLIMS_drylab/newRequestService.html',{'service_data_information':service_data_information})
 
 @login_required
 def service_request(request, serviceRequestType):
@@ -91,6 +102,7 @@ def service_request(request, serviceRequestType):
     if serviceRequestType == 'internal_sequencing':
         if request.method == "POST":
             if 'serviceProjects' in request.POST:
+                import pdb; pdb.set_trace()
                 from django.http import QueryDict
                 #project_list = data.pop('serviceProjects', None)
                 #data_dict = request.POST.dict()

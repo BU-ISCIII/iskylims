@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from iSkyLIMS_drylab import drylab_config
 from smb.SMBConnection import SMBConnection
 from iSkyLIMS_drylab.models import *
@@ -379,6 +379,32 @@ def get_children_available_services():
             if not service.get_children().exists():
                 children_services.append([service.pk, service.get_service_description()])
     return children_services
+
+def get_user_sharing_lits(request_user):
+    '''
+    Description:
+        The function get the primary key of the that are sharing their information
+        If the request user is a service manager, the function return all user ids
+    Input:
+        request_user      # user obj
+    Constant:
+
+    Return:
+        sharing_list
+    '''
+    # getting projects from user sharing list
+    sharing_list = []
+    user_groups = request_user.groups.values_list('name',flat=True)
+    if drylab_config.SERVICE_MANAGER in user_groups:
+        all_users = User.objects.all()
+        for user in all_users:
+            sharing_list.append(user.id)
+    else:
+        for user in user_groups :
+            if User.objects.filter(username__exact = user).exists():
+                sharing_list.append(User.objects.get(username__exact = user).id)
+        sharing_list.append(request_user.id)
+    return sharing_list
 
 def send_resolution_creation_email (email_data):
     '''
