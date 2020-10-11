@@ -567,7 +567,7 @@ def create_table_pending_use(sample_list, app_name):
         sample_list:  list of samples that are pending the use that the molecuel will have
         app_name : application name
     Return:
-        patient_obj
+        use_type
     '''
     use_type = {}
     use_type['types'] = []
@@ -1344,6 +1344,19 @@ def prepare_sample_input_table (app_name):
 
     return s_information
 
+
+def check_if_molecule_use_defined(app_name):
+    '''
+    Description:    The function check if there are defined the use for molecules
+
+    Input:
+        app_name    # application name to assign the right molecule use
+    Return:
+        True or False #
+    '''
+    if MoleculeUsedFor.objects.filter(apps_name__exact = app_name).exists():
+        return True
+    return False
 
 def display_molecule_use(app_name):
     '''

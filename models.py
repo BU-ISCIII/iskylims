@@ -372,6 +372,11 @@ class UserLotCommercialKits (models.Model):
         self.save()
         return self
 
+    def set_run_out(self):
+        self.runOut = True
+        self.save()
+        return self
+
     objects = UserLotCommercialKitsManager()
 
 class PatientProjectsManager (models.Manager):

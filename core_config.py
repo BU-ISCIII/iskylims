@@ -71,7 +71,9 @@ HEADING_FOR_COMMERCIAL_PLATFORM_KIT_BASIC_DATA = ['Platform used for Commercial 
 
 HEADING_FOR_LOT_USER_COMMERCIAL_KIT_BASIC_DATA = ['Commercial Kit', 'Lot Barcode', 'Expiration Date']
 
-HEADING_FOR_USER_LOT_INVENTORY = ['Lot Number' , 'Expiration date', 'Number of use']
+HEADING_FOR_USER_LOT_INVENTORY = ['Lot Number' , 'Expiration date', 'Number of use' , 'Run Out']
+
+HEADING_FOR_RUNOUT_USER_LOT_INVENTORY = ['Lot Number' , 'Expiration date', 'Number of use']
 
 HEADING_FOR_USER_LOT_SEARCH_RESULTS = ['Lot Number', 'Commercial Kit', 'Expiration Date', 'Protocol']
 

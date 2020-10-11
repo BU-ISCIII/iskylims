@@ -25,7 +25,28 @@ def get_lot_user_commercial_kit_id(lot_number):
     else:
         return None
 
+def get_user_lot_commercial_kit_obj_from_id(kit_id):
+    '''
+    Description:
+        The function get the user lot commercial kit object from the id.
+    Input:
+        kit_id    # kit id
+    Return:
+        commercial kit obj
+    '''
+    if UserLotCommercialKits.objects.filter(pk__exact = kit_id).exists():
+        return UserLotCommercialKits.objects.get(pk__exact = kit_id)
+    return None
+
 def get_commercial_kit_obj_from_name(kit_name):
+    '''
+    Description:
+        The function get the commercial kit object from the name.
+    Input:
+        kit_name    # kit name
+    Return:
+        commercial kit obj
+    '''
     if CommercialKits.objects.filter(name__exact = kit_name).exists():
         return CommercialKits.objects.get(name__exact = kit_name)
     return None
@@ -127,12 +148,29 @@ def display_user_lot_kit_information_from_query_list(user_kits_objs):
 
 
 def get_expired_lot_user_kit (register_user_obj):
-
+    '''
+    Description:
+        The function gets the run out user kits and return a list with basic
+        information
+        If register user is not set then all user kits information is returned
+    Input:
+        register_user_obj  # user objects or None
+    Constant:
+        HEADING_FOR_RUNOUT_USER_LOT_INVENTORY
+    Return:
+        user_expired_kits
+    '''
     user_expired_kits = {}
-    user_expired_kits['data'] = {}
-    if UserLotCommercialKits.objects.filter(user = register_user_obj, expirationDate__lt = date.today()).exists():
+    if UserLotCommercialKits.objects.filter(runOut = True).exists():
+        user_kits = UserLotCommercialKits.objects.filter(runOut = True).order_by('basedCommercial')
 
-        user_kits = UserLotCommercialKits.objects.filter(user = register_user_obj, expirationDate__lt = date.today()).order_by('basedCommercial')
+        if register_user_obj:
+            if user_kits.filter(user = register_user_obj).exists():
+                user_kits = user_kits.filter(user = register_user_obj)
+            else:
+                return user_expired_kits
+        user_expired_kits['data'] = {}
+
         for user_kit in user_kits:
             data_kit = []
             c_kit = user_kit.get_commercial_kit()
@@ -142,26 +180,44 @@ def get_expired_lot_user_kit (register_user_obj):
             if not c_kit in user_expired_kits['data']:
                 user_expired_kits['data'][c_kit] = []
             user_expired_kits['data'][c_kit].append(data_kit)
-    user_expired_kits['headings'] = HEADING_FOR_USER_LOT_INVENTORY
+    user_expired_kits['headings'] = HEADING_FOR_RUNOUT_USER_LOT_INVENTORY
     return user_expired_kits
 
 def get_valid_lot_user_kit (register_user_obj):
-
+    '''
+    Description:
+        The function gets the valid user kits and return a list with basic
+        information
+        If register user is not set then all user kits information is returned
+    Input:
+        register_user_obj  # user object or None
+    Constant:
+        HEADING_FOR_USER_LOT_INVENTORY
+    Return:
+        valid_kits
+    '''
     valid_kits = {}
-    valid_kits['data'] = {}
-    if UserLotCommercialKits.objects.filter(user = register_user_obj, runOut = False).exists():
+    if UserLotCommercialKits.objects.filter(runOut = False).exists():
+        user_kits = UserLotCommercialKits.objects.filter(runOut = False).order_by('basedCommercial')
 
-        user_kits = UserLotCommercialKits.objects.filter(user = register_user_obj, runOut = False).order_by('basedCommercial')
+        if register_user_obj:
+            if user_kits.filter(user = register_user_obj).exists():
+                user_kits = user_kits.filter(user = register_user_obj)
+            else:
+                return valid_kits
+
+        valid_kits['data'] = {}
         for user_kit in user_kits:
             data_kit = []
             c_kit = user_kit.get_commercial_kit()
             data_kit.append(user_kit.get_lot_number())
             data_kit.append(user_kit.get_expiration_date())
             data_kit.append(user_kit.get_number_of_uses())
+            data_kit.append(user_kit.get_user_lot_kit_id())
             if not c_kit in valid_kits['data']:
                 valid_kits['data'][c_kit] = []
             valid_kits['data'][c_kit].append(data_kit)
-    valid_kits['headings'] = HEADING_FOR_USER_LOT_INVENTORY
+        valid_kits['headings'] = HEADING_FOR_USER_LOT_INVENTORY
     return valid_kits
 
 def get_lot_user_commercial_kit_basic_data(kit_obj):
@@ -276,6 +332,21 @@ def store_lot_user_commercial_kit (kit_data, user_name):
     new_kit = UserLotCommercialKits.objects.create_user_lot_commercial_kit(lot_kit_values )
     return new_kit
 
+def set_user_lot_kit_to_run_out(user_lot_kits):
+    '''
+    Description:
+        The function set the user Lot Commercial kit to run out
+    Input:
+        user_lot_kits    # list of user lot commercial_kits
+    Return:
+        user_lot_list_names
+    '''
+    user_lot_list_names = []
+    for kit in user_lot_kits:
+        user_lot_obj = get_user_lot_commercial_kit_obj_from_id(kit)
+        user_lot_obj.set_run_out()
+        user_lot_list_names.append(user_lot_obj.get_lot_number())
+    return user_lot_list_names
 
 def update_usage_user_lot_kit (lot_number, commercial_kit):
     '''
