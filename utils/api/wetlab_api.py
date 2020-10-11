@@ -88,3 +88,25 @@ def get_samples_projects (project_id_list):
                 for sample_obj in samples_obj:
                     samples_projects[project_id].append([sample_obj.get_sample_id(), sample_obj.get_sample_name()])
     return samples_projects
+
+def get_runs_projects_samples_and_dates(user_names):
+    '''
+    Description:
+        The function api return a dictionnary having as keys the run and the project and
+        value a list of tupla sample_id, sample_name
+    Input:
+        user_names     # user name list to get the list of project ids
+    Return:
+        samples_data
+    '''
+    samples_data = {}
+    if RunProcess.objects.filter(state__runStateName = 'Completed').exists():
+        run_objs = RunProcess.objects.filter(state__runStateName = 'Completed')
+        for run_obj in run_objs:
+            if Projects.runProcess.all().exists():
+                project_objs = Projects.runProcess.all()
+                for project_obj in project_objs:
+                    if SamplesInProject.objects.filter(project_id = project_obj).exists():
+                        sample_objs = SamplesInProject.objects.filter(project_id = project_obj)
+
+    return samples_data

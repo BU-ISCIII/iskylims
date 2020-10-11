@@ -4227,7 +4227,7 @@ def create_new_run (request):
         return redirect ('/accounts/login')
 
     if request.method == 'POST' and request.POST['action'] == 'createNewRun':
-        import pdb; pdb.set_trace()
+
         experiment_name = request.POST['experimentName']
         display_pools_for_run = display_available_pools()
         if not 'poolID' in request.POST :
@@ -4333,7 +4333,6 @@ def create_new_run (request):
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'created_new_run': created_new_run})
     else:
         display_pools_for_run = display_available_pools()
-
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run})
 
 
@@ -4354,9 +4353,17 @@ def pending_sample_preparations(request):
 def user_commercial_kit_inventory(request):
     expired_kit = get_expired_lot_user_kit(request.user)
     valid_kit = get_valid_lot_user_kit(request.user)
+    if request.method == 'POST' and request.POST['action'] == 'runOutUserLotKit':
+        selected_user_kits = request.POST.getlist('userKit')
+        if len(selected_user_kits) == 0:
+            return render(request, 'iSkyLIMS_wetlab/userCommercialKitInventory.html',{'expired_kit': expired_kit,
+                                    'valid_kit': valid_kit, 'user_name': request.user.username})
+        run_out_kits = set_user_lot_kit_to_run_out(selected_user_kits)
+        return render(request, 'iSkyLIMS_wetlab/userCommercialKitInventory.html',{'run_out_kits': run_out_kits})
 
-    return render(request, 'iSkyLIMS_wetlab/userCommercialKitInventory.html',{'expired_kit': expired_kit,
-                            'valid_kit': valid_kit, 'user_name': request.user.username})
+    else:
+        return render(request, 'iSkyLIMS_wetlab/userCommercialKitInventory.html',{'expired_kit': expired_kit,
+                                'valid_kit': valid_kit, 'user_name': request.user.username})
 
 
 @login_required

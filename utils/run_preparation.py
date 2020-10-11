@@ -553,9 +553,9 @@ def get_available_pools_for_run():
         pools_to_update
     '''
     pools_to_update = {}
-    pools_to_update['pools_available'] = {}
     if LibraryPool.objects.filter(poolState__poolState__exact = 'Selected', runProcess_id = None).exists():
         pool_objs = LibraryPool.objects.filter(poolState__poolState__exact = 'Selected', runProcess_id = None).order_by('platform')
+        pools_to_update['pools_available'] = {}
         for pool_obj in pool_objs :
             platform = pool_obj.get_platform_name()
             if not platform in pools_to_update['pools_available']:
