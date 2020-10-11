@@ -87,6 +87,8 @@ class RunProcess(models.Model):
     def get_run_finish_date_no_format(self):
         return self.run_finish_date
 
+    def get_run_finish_date(self):
+        return self.run_finish_date.strftime("%B %d, %Y")
 
     def get_run_date (self):
         if self.run_date is None :
@@ -728,6 +730,12 @@ class SamplesInProject (models.Model):
     project_id = models.ForeignKey(
                 Projects,
                 on_delete= models.CASCADE)
+    runProcess_id = models.ForeignKey(
+                RunProcess,
+                on_delete = models.CASCADE, null = True, blank = True)
+    user_id = models.ForeignKey(
+                User,
+                on_delete=models.CASCADE, null = True, blank = True)
     sampleName = models.CharField(max_length=255)
     barcodeName = models.CharField(max_length=255)
     pfClusters = models.CharField(max_length=55)
@@ -766,6 +774,12 @@ class SamplesInProject (models.Model):
         project_name = self.project_id.get_project_name()
         #Projects.objects.prefetch_related('user_id').filter(user_id = user_id)
         return '%s' %(project_name)
+
+    def get_run_name(self):
+        return '%s' %(self.runProcess_id.get_run_name())
+
+    def get_run_obj(self):
+        return self.runProcess_id
 
     def get_quality_sample (self):
         return '%s' %(self.qualityQ30)

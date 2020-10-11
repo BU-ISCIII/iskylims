@@ -89,24 +89,32 @@ def get_samples_projects (project_id_list):
                     samples_projects[project_id].append([sample_obj.get_sample_id(), sample_obj.get_sample_name()])
     return samples_projects
 
-def get_runs_projects_samples_and_dates(user_names):
+def get_runs_projects_samples_and_dates(user_list_ids):
     '''
     Description:
         The function api return a dictionnary having as keys the run and the project and
         value a list of tupla sample_id, sample_name
     Input:
-        user_names     # user name list to get the list of project ids
+        user_list_ids     # user id list to get the list of samples
     Return:
         samples_data
     '''
-    samples_data = {}
-    if RunProcess.objects.filter(state__runStateName = 'Completed').exists():
-        run_objs = RunProcess.objects.filter(state__runStateName = 'Completed')
-        for run_obj in run_objs:
-            if Projects.runProcess.all().exists():
-                project_objs = Projects.runProcess.all()
-                for project_obj in project_objs:
-                    if SamplesInProject.objects.filter(project_id = project_obj).exists():
-                        sample_objs = SamplesInProject.objects.filter(project_id = project_obj)
+    samples_data = []
 
+    if SamplesInProject.objects.filter(user_id_id__in = user_list_ids).exists():
+        sample_objs = SamplesInProject.objects.filter(user_id_id__in = user_list_ids).order_by('generated_at').reverse()
+        for sample_obj in sample_objs:
+            run_obj = sample_obj.get_run_obj()
+            if run_obj.get_state() != 'Completed':
+                continue
+            data = []
+            data.append(sample_obj.get_run_name())
+            data.append(sample_obj.get_project_name())
+            data.append(sample_obj.get_sample_name())
+            data.append(run_obj.get_run_finish_date())
+            data.append(sample_obj.get_sample_id())
+            samples_data.append(data)
+
+
+    #import pdb; pdb.set_trace()
     return samples_data

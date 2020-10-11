@@ -64,7 +64,7 @@ class CollectionIndexKitAdmin(admin.ModelAdmin):
 
 
 class SamplesInProjectAdmin (admin.ModelAdmin):
-    list_display = ('project_id','sampleName','barcodeName','pfClusters','percentInProject','yieldMb','qualityQ30')
+    list_display = ['sampleName','project_id' ,'runProcess_id', 'user_id','barcodeName','pfClusters','percentInProject','yieldMb','qualityQ30']
 
 
 class StatesForLibraryPreparationAdmin (admin.ModelAdmin):
@@ -121,7 +121,7 @@ admin.site.register(RunErrors, RunErrorsAdmin)
 admin.site.register(RunStates, RunStatesAdmin)
 admin.site.register(StatesForLibraryPreparation, StatesForLibraryPreparationAdmin)
 admin.site.register(StatesForPool, StatesForPoolAdmin)
-
+admin.site.register(SamplesInProject,SamplesInProjectAdmin)
 
 admin.site.register(StatsRunSummary, StatsRunSummaryAdmin)
 admin.site.register(StatsRunRead, StatsRunReadAdmin)
