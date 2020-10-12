@@ -17,8 +17,8 @@ class ServiceAdmin(admin.ModelAdmin):
 	list_display=('serviceRequestNumber','serviceUserId','serviceSeqCenter','servicePlatform','serviceRunSpecs','serviceFileExt','serviceFile','serviceStatus','serviceNotes','serviceCreatedOnDate','serviceOnApprovedDate','serviceOnRejectedDate','serviceOnDeliveredDate')
 #	list_display=('serviceUserId','serviceUserId')
 
-class RequestedProjectInServicesAdmin(admin.ModelAdmin):
-	list_display = ['projectService','externalProjectKey', 'externalProjectName']
+class RequestedSamplesInServicesAdmin(admin.ModelAdmin):
+	list_display = ['samplesInService','externalSampleName', 'externalProjectName', 'externalRunName']
 
 
 class AvailableServiceAdmin(DjangoMpttAdmin):
@@ -50,8 +50,8 @@ admin.site.register(Platform,PlatformAdmin)
 admin.site.register(Machines,MachinesAdmin)
 admin.site.register(Service,ServiceAdmin)
 admin.site.register(ResolutionParameters, ResolutionParametersAdmin)
-admin.site.register(RequestedProjectInServices, RequestedProjectInServicesAdmin)
-
+#admin.site.register(RequestedProjectInServices, RequestedProjectInServicesAdmin)
+admin.site.register(RequestedSamplesInServices, RequestedSamplesInServicesAdmin)
 admin.site.register(AvailableService,AvailableServiceAdmin)
 admin.site.register(Resolution,ResolutionAdmin)
 admin.site.register(Delivery,DeliveryAdmin)

@@ -13,6 +13,9 @@
         white-space: nowrap;
         height: 500px;
     }
+    .jexcel > tbody > tr > td.readonly {
+        color:rgba(0,0,0,0.6) !important;
+    }
  </style>
 
 {% if error_message %}
@@ -48,144 +51,193 @@
     </div> <!--  end of row -->
 
 {% else %}
-
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3 style="text-align:center">Available Samples.</h3></div>
-                <div class="panel-body">
-                    {% if service_data_information.samples_heading %}
-                        <h5 style="text-align:center"> Select the samples to be included in the service</h5>
-
-                        <div  class="scrolling-wrapper">
-                            <div id="spreadsheet"></div>
-                            <br>
-                            <script>
-                                var data = [{% for values in service_data_information.samples_data %}
-                                   [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
-                                ];
-                               mySpreadsheet = $('#spreadsheet').jexcel({
-                                   data:data,
-                                   columns: [
-                                       {% for value in service_data_information.samples_heading %}
-                                           {% if forloop.last %}
-                                               { type: 'hidden' },
-                                           {% else %}
-                                               { type: 'text', title:'{{value}}', width:200 , readOnly:true },
-                                           {% endif %}
-                                       {% endfor %}
-                                       { type: 'checkbox',  title:'Select Sample', width:100 },
-                                    ],
-                                    allowInsertColumn:false,
-                                    allowDeleteColumn:false,
-                                    allowRenameColumn:false,
-                                    allowInsertRow:false,
-                                    allowDeleteRow:false,
-                                    tableOverflow:false,
-                                    search:true,
-                                    pagination:20,
-                                    csvFileName:'SamplesDefined.csv',
-
-                               });
-                            </script>
-                        </div> <!--  end of scrolling  -->
-                    </div> <!--  end of panel body -->
-                </div> <!--  end of panel  -->
-            </div> <!--  end of col-sm-12 -->
-        </div> <!--  end of row -->
-    {% else %}
-        <div class="row row-space-2 margin-b-4">
-            <div class="col-sm-8 col-sm-offset-2" >
-                <div class="panel panel-danger">
-                    <div class="panel-heading"><h3 style="text-align:center">No Samples have been defined so far</h3></div>
-                    <div class="panel-body">
-                        <h5 style="text-align:center">Check the User Guide to define new Samples</h5>
-                    </div> <!--  end of panel body -->
-                </div> <!--  end of panel  -->
-            </div> <!--  end of col-sm-12 -->
-        </div> <!--  end of row -->
-    {% endif %}
-
-    {% if service_data_information.nodes %}
+    <form method="post" enctype="multipart/form-data" name="createservice" id="createservice" class="form-horizontal well">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="createservice"/>
         <div class="row row-space-2 margin-b-4">
             <div class="col-sm-12">
                 <div class="panel panel-default">
-                    <div class="panel-heading"><h3 style="text-align:center">Requesting form Service</h3></div>
+                    <div class="panel-heading"><h3 style="text-align:center">Sequencing Data.</h3></div>
                     <div class="panel-body">
-                        <div class="scrolling-wrapper">
-                            <div class="controls {{field_class}}" {% if flat_attrs %} {{flat_attrs|safe}} {% endif %} >
-                        		{% include "bootstrap3/layout/field_errors_block.html" %}
-                        		{% for category,structure in service_data_information.nodes|tree_info %}
+                        {% if service_data_information.samples_heading %}
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label" for="center" >Sequencing center</label>
+                            <div class="col-sm-5"><input class="form-control" type="text" id="center"  name="center" size="80"><br></div>
+                        </div>  <!-- end from-group   -->
+                            <br>
+                            <h5 style="text-align:center"> Select the samples to be included in the service</h5>
 
-                                {% if structure.new_level %}<ul class="level-{{category.level}}" id="ul_{{forloop.counter}}"><li>{% else %}</li><li>{% endif %}
-                                    <label class="checkbox{% if inline_class %}-{{ inline_class }}{% endif %}" >
-                                        <input type="checkbox" {% if category.pk in value or category.pk|stringformat:"s" == value|stringformat:"s" %} checked="checked"{% endif %} class="level-{{category.level}}" name="InternalService" id="id_InternalService_{{forloop.counter}}" value="{{ category.pk }}" >
-                                            {{ category }}
-                        			 	</label>
-                        			{% for level in structure.closed_levels %}</li></ul>{% endfor %}
-                        		{% endfor %}
-                        		{% include "bootstrap3/layout/help_text.html" %}
-                    	    </div> <!--  end of scrolling wrapper -->
-                        </div> <!--  end of scrolling wrapper -->
+                            <div  class="scrolling-wrapper">
+                                <div id="spreadsheet"></div>
+                                <br>
+                                <script>
+                                    var data = [{% for values in service_data_information.samples_data %}
+                                       [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                                    ];
+                                   mySpreadsheet = $('#spreadsheet').jexcel({
+                                       data:data,
+                                       columns: [
+                                            {% for value in service_data_information.samples_heading %}
+                                                {% if forloop.counter|divisibleby:2 %}
+                                                   { type: 'hidden' },
+                                                {% else %}
+                                                   { type: 'text', title:'{{value}}', width:200 , readOnly:true },
+                                                {% endif %}
+                                           {% endfor %}
+                                           { type: 'checkbox',  title:'Select Sample', width:100 },
+                                        ],
+                                        allowInsertColumn:false,
+                                        allowDeleteColumn:false,
+                                        allowRenameColumn:false,
+                                        allowInsertRow:false,
+                                        allowDeleteRow:false,
+                                        tableOverflow:false,
+                                        search:true,
+                                        pagination:20,
+                                        csvFileName:'SamplesDefined.csv',
+
+                                   });
+                                </script>
+                            </div> <!--  end of scrolling  -->
+                            <script>
+                                $(document).ready(function () {
+                                    $("#createservice").submit(function (e) {
+                                        //stop submitting the form to see the disabled button effect
+                                        // e.preventDefault();
+                                        //disable the submit button
+                                        var table_data = $('#spreadsheet').jexcel('getData')
+                                        var data_json = JSON.stringify(table_data)
+                                        $("<input />").attr("type", "hidden")
+                                            .attr("name", "samples_requested")
+                                            .attr("value", data_json)
+                                            .appendTo("#createservice");
+                                        $("#btnSubmit").attr("disabled", true);
+                                        return true;
+                                    });
+                                });
+                           </script>
+                        {% else %}
+                            <h3 style="text-align:center">There is no Samples to select for user </h3>
+                            <h5 style="text-align:center">Check the User Guide to define new Samples</h5>
+                            <script>
+                                $(document).ready(function () {
+                                    $("#createservice").submit(function (e) {
+                                        //stop submitting the form to see the disabled button effect
+                                        // e.preventDefault();
+                                        //disable the submit button
+                                        $("input:submit").attr("disabled", true);
+                                        return true;
+                                    });
+                                });
+                            </script>
+                        {% endif %}
                     </div> <!--  end of panel body -->
                 </div> <!--  end of panel  -->
             </div> <!--  end of col-sm-12 -->
         </div> <!--  end of row -->
 
 
-        <script>
-        $(document).ready(function() {
-        	$("input:checkbox").change(function() {
-        		var ischecked= $(this).is(':checked');
-        		if (ischecked) {
-        			$(this).parents().prevAll("label.checkbox").children("input:checkbox").prop("checked",true)
-        		}else{
-        		    $(this).parents().prevAll("label.checkbox").children("input:checkbox").prop("checked",false)
-        		}
-        	});
-        });
-        </script>
-        <script>
-            $(document).ready(function () {
-                $("form").submit(function (e) {
-                    //stop submitting the form to see the disabled button effect
-                    // e.preventDefault();
-                    //disable the submit button
-                    $("input:submit").attr("disabled", true);
-                    return true;
-                });
-            });
-        </script>
-        {% else %}
-            <div class="row row-space-2 margin-b-4">
-                <div class="col-sm-8 col-sm-offset-2" >
-                    <div class="panel panel-danger">
-                        <div class="panel-heading"><h3 style="text-align:center">No Services have been defined so far</h3></div>
-                        <div class="panel-body">
-                            <h5 style="text-align:center">Check the User Guide to define new Samples</h5>
-                        </div> <!--  end of panel body -->
-                    </div> <!--  end of panel  -->
-                </div> <!--  end of col-sm-12 -->
-            </div> <!--  end of row -->
-        {% endif %}
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3 style="text-align:center">Service Selection</h3></div>
+                    <div class="panel-body">
+                        {% if service_data_information.nodes %}
+                            <div class="scrolling-wrapper">
+                                <div class="controls {{field_class}}" {% if flat_attrs %} {{flat_attrs|safe}} {% endif %} >
+                            		{% include "bootstrap3/layout/field_errors_block.html" %}
+                            		{% for category,structure in service_data_information.nodes|tree_info %}
+
+                                        {% if structure.new_level %}<ul class="level-{{category.level}}" id="ul_{{forloop.counter}}"><li>{% else %}</li><li>{% endif %}
+                                            <label class="checkbox{% if inline_class %}-{{ inline_class }}{% endif %}" >
+                                                <input type="checkbox" {% if category.pk in value or category.pk|stringformat:"s" == value|stringformat:"s" %} checked="checked"{% endif %} class="level-{{category.level}}" name="RequestedServices" id="id_RequestedServices_{{forloop.counter}}" value="{{ category.pk }}" >
+                                                    {{ category }}
+                                			 </label>
+                            			{% for level in structure.closed_levels %}</li></ul>{% endfor %}
+                            		{% endfor %}
+                            		{% include "bootstrap3/layout/help_text.html" %}
+                        	    </div> <!--  end of scrolling wrapper -->
+                            </div> <!--  end of scrolling wrapper -->
+                            <script>
+                                $(document).ready(function() {
+                                	$("input:checkbox").change(function() {
+                                		var ischecked= $(this).is(':checked');
+                                		if (ischecked) {
+                                			$(this).parents().prevAll("label.checkbox").children("input:checkbox").prop("checked",true)
+                                		}else{
+                                		    $(this).parents().prevAll("label.checkbox").children("input:checkbox").prop("checked",false)
+                                		}
+                                	});
+                                });
+                            </script>
+                        {% else %}
+                            <h3 style="text-align:center">No Services have been defined so far</h3>
+                            <h5 style="text-align:center">Check the User Guide to define new Services</h5>
+                        {% endif %}
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+            </div> <!--  end of col-sm-12 -->
+        </div> <!--  end of row -->
 
 
-        <script>
-            $(document).ready(function () {
-                $("#requestMoleculeUse").submit(function (e) {
-                    //stop submitting the form to see the disabled button effect
-                    // e.preventDefault();
-                    //disable the submit button
-                    var table_data = $('#spreadsheet').jexcel('getData')
-                    var data_json = JSON.stringify(table_data)
-                    $("<input />").attr("type", "hidden")
-                        .attr("name", "samples_requested")
-                        .attr("value", data_json)
-                        .appendTo("#requestMoleculeUse");
-                    $("#btnSubmit").attr("disabled", true);
-                    return true;
-                });
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3 style="text-align:center">Service Description</h3></div>
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label" for="filesample" >Service description file  </label>
+                            <div class="col-sm-7"><input class="form-control" type="file" id="uploadfile"  name="uploadfile" size="80"><br>
+                                <p id="error2" style="display:none; color:#FF0000;">
+                                    Maximum File Size Limit is 2.5 MB.
+                                </p>
+                            </div>
+                        </div>  <!-- end from-group   -->
+                        <br>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label" for="description" >Service Notes</label>
+                            <div class="col-sm-10"><textarea class="form-control" name="description" value="" id="description" rows="6" cols="60" maxlength="220"></textarea></div>
+                        </div>  <!-- end from-group   -->
+                        <br><br>
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+            </div> <!--  end of col-sm-12 -->
+        </div> <!--  end of row -->
+
+
+       <script>
+            //$('input[type="submit"]').prop("disabled", true);
+            //$('#btnSubmitFile').prop('disabled',true);
+            var a=0;
+            //binds to onchange event of your input field
+            $('#uploadfile').bind('change', function() {
+                //if ($('#btnSubmitFile').attr('disabled',false)){
+                //    $('#btnSubmitFile').attr('disabled',true);
+                //}
+                //var ext = $('#uploadfile').val().split('.').pop().toLowerCase();
+                //if ($.inArray(ext, ['csv']) == -1){
+                //    $('#error1').slideDown("slow");
+                //    $('#error2').slideUp("slow");
+                //    a=0;
+                //}
+                //else{
+                    var filesize = (this.files[0].size);
+                    if (filesize > 2621440){
+                        $('#error2').slideDown("slow");
+                        a=0;
+                        $('#btnSubmit').attr('disabled',true)
+                    }
+                    else{
+                        $('#btnSubmit').attr('disabled',false);
+                         $('#error2').slideUp("slow");
+                    }
+                //}
             });
-       </script>
+        </script>
+       <br><br><br>
+       <input class="btn pull-right btn-primary" type="submit" id ="btnSubmit" value="Submit your Request">
+    </form>
+
+
 {% endif %}
 {% endblock %}

@@ -14,6 +14,8 @@ SERVICE_MANAGER = 'ServiceManager'
 
 INTERNAL_SEQUENCING_UNIT = "GENOMIC_SEQ_UNIT"
 
+USER_REQUESTED_SERVICE_FILE_DIRECTORY ='drylab/servicesRequest'
+
 ## CSS file to be used for creating the PDF files
 CSS_FOR_PDF = '/documents/drylab/services_templates/css/print_services.css'
 
@@ -60,8 +62,9 @@ ERROR_UNABLE_TO_SAVE_EMAIL_CONFIGURATION_SETTINGS = ['Unable to save the email c
 '''
 ERROR_PIPELINE_ALREADY_EXISTS = ['Pipeline name and version is already defined']
 
+ERROR_NO_SERVICES_ARE_SELECTED = ['Unable to process your request', 'No services have been selected']
 
-HEADING_SELECT_SAMPLE_IN_SERVICE = ['Run Name', 'Project Name', 'Sample Name', 'Run finish date', 'sample id']
+HEADING_SELECT_SAMPLE_IN_SERVICE = ['Run Name', 'Run ID', 'Project Name',  'Project ID','Sample Name', 'sample id', 'Run finish date']
 
 HEADING_ADDITIONAL_PIPELINE_PARAMETERS = ['Additional parameter name', 'Additional Parameter Value']
 

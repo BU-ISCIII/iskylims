@@ -53,31 +53,7 @@ def get_add_resolution_data_form(form_data):
 	return resolution_data_form
 
 
-def prepare_form_data_service_internal_sequencing (request_user):
-	'''
-	Description:
-		The function get the information to display in the internal sequencing form
-	Input:
-		request_user      # user instance who request the service
-	Functions:
-		get_user_projects	# API from iSkyLIMS_wetlab located at file wetlab_api
-	Return:
-		form
-	'''
-	display_service = {}
-	# getting projects from user sharing list
-	sharing_list = []
-	user_groups = request_user.groups.values_list('name',flat=True)
-	for user in user_groups :
-		if User.objects.filter(username__exact = user).exists():
-			display_servicesharing_list.append(User.objects.get(username__exact = user).id)
-	sharing_list.append(request_user.id)
-	if wetlab_api_available :
-		display_service['serviceProjects']= get_user_projects(sharing_list)
-		display_service['serviceProjectsHeading']='User Projects'
-	display_service['nodes'] = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
-	#import pdb; pdb.set_trace()
-	return display_service
+
 
 def prepare_form_data_internal_sequencing (request_user):
 	'''

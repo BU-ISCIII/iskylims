@@ -20,6 +20,7 @@ from iSkyLIMS_drylab import drylab_config
 from iSkyLIMS_drylab.utils.testing_drylab_configuration import *
 from iSkyLIMS_drylab.utils.drylab_common_functions import *
 from iSkyLIMS_drylab.utils.handling_pipelines import *
+from iSkyLIMS_drylab.utils.handling_request_services import *
 from iSkyLIMS_drylab.utils.handling_forms import *
 from iSkyLIMS_drylab.utils.configuration_functions import *
 
@@ -85,16 +86,46 @@ def configuration_email(request):
 
 @login_required
 def new_request_service(request):
+	if request.method == 'POST' and request.POST['action'] == 'createservice':
+		# check that at some services have been requested
+		if len(request.POST.getlist('RequestedServices')) == 0 :
+			error_message = drylab_config.ERROR_NO_SERVICES_ARE_SELECTED
+			return render(request,'iSkyLIMS_drylab/newRequestService.html',{'service_data_information':service_data_information,
+									'error_message':error_message})
+		new_service = create_new_save_service_request(request)
+		sample_stored = stored_samples_for_sequencing_request_service(request.POST['samples_requested'], new_service)
+		## Send mail to user and drylab admin group
+		if drylab_config.EMAIL_USER_CONFIGURED :
+			email_data = {}
+			email_data['user_email'] = request.user.email
+			email_data['user_name'] = request.user.username
+			email_data['service_number'] = new_service.get_service_request_number()
+			send_service_creation_confirmation_email(email_data)
 
-	service_data_information = prepare_form_data_service_internal_sequencing(request.user)
-	if wetlab_api_available :
-		user_sharing_list = get_user_sharing_lits(request.user)
-		service_data_information['samples_data'] = get_runs_projects_samples_and_dates(user_sharing_list)
-		if len(service_data_information['samples_data']) > 0:
-			service_data_information['samples_heading'] = drylab_config.HEADING_SELECT_SAMPLE_IN_SERVICE
+		# PDF preparation file for confirmation of service request
+		pdf_file = create_service_pdf_file(new_service.get_service_request_number(), request.build_absolute_uri())
+		import pdb; pdb.set_trace()
+		# check if service allows to get data from external applications
+		if len(services_allow_external_data(new_service, stored_projects)) > 0:
+			if drylab_config.EMAIL_USER_CONFIGURED :
+				send_required_preparation_pipeline_email(service_request_number)
+		confirmation_result = {}
+		confirmation_result['download_file'] = pdf_file
+		confirmation_result['text'] = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), drylab_config.CONFIRMATION_TEXT_MESSAGE))
+		import pdb; pdb.set_trace()
+		return render(request,'iSkyLIMS_drylab/RequestForm.html',{'confirmation_result':confirmation_result})
 
 
-	return render(request,'iSkyLIMS_drylab/newRequestService.html',{'service_data_information':service_data_information})
+
+	else:
+		service_data_information = prepare_form_data_request_service_sequencing(request.user)
+		if wetlab_api_available :
+			user_sharing_list = get_user_sharing_lits(request.user)
+			service_data_information['samples_data'] = get_runs_projects_samples_and_dates(user_sharing_list)
+			if len(service_data_information['samples_data']) > 0:
+				service_data_information['samples_heading'] = drylab_config.HEADING_SELECT_SAMPLE_IN_SERVICE
+
+		return render(request,'iSkyLIMS_drylab/newRequestService.html',{'service_data_information':service_data_information})
 
 @login_required
 def service_request(request, serviceRequestType):

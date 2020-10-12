@@ -192,6 +192,14 @@ class Pipelines(models.Model):
 
 	objects = PipelinesManager()
 
+class ServiceManager (models.Manager):
+	def create_service(self, data):
+		new_service = self.create(serviceUserId = data['serviceUserId'], serviceSeqCenter= data['serviceSeqCenter'],
+		serviceRequestNumber = data['serviceRequestNumber'], serviceRequestInt = data['serviceRequestInt'],
+		serviceFile = data['serviceFile'], serviceStatus= data['serviceStatus'],
+		serviceNotes = data['serviceNotes'])
+		return new_service
+
 
 class Service(models.Model):
 	## User requesting service:
@@ -374,6 +382,9 @@ class Service(models.Model):
 		self.serviceOnRejectedDate = date
 		self.save()
 
+	objects = ServiceManager()
+
+'''
 class RequestedProjectInServicesManager(models.Manager):
 	def create_request_project_service(self, data):
 		new_project_request =self.create( projectService = data['projectService'], externalProjectKey = data['externalProjectKey'],
@@ -402,6 +413,16 @@ class RequestedProjectInServices (models.Model):
 
 	objects = RequestedProjectInServicesManager()
 
+'''
+
+class RequestedSamplesInServicesManager (models.Manager):
+	def create_request_sample (self, data):
+		new_req_sample_service = self.create( samplesInService= data['samplesInService'], externalRunName = data['run_name'],
+					externalRunNameKey = data['run_id'], externalProjectName = data['project_name'],  externalProjectKey = data['project_id'],
+					externalSampleName = data['sample_name'],  externalSampleKey = data['sample_id'], sample = data['sample'])
+		return new_req_sample_service
+
+
 class RequestedSamplesInServices (models.Model):
 	samplesInService = models.ForeignKey(
 					Service,
@@ -409,11 +430,25 @@ class RequestedSamplesInServices (models.Model):
 	sample = models.ForeignKey(
 					Samples,
 					null = True, blank = True, on_delete = models.CASCADE)
+	# project = models.ForeignKey(
+	# 				RequestedProjectInServices,
+	# 				null = True, blank = True, on_delete = models.CASCADE)
+	# run = models.ForeignKey(
+	# 				RequestedProjectInServices,
+	# 				null = True, blank = True, on_delete = models.CASCADE)
 	externalSampleKey = models.CharField(max_length = 5, null = True, blank = True)
 	externalSampleName = models.CharField(max_length = 50, null = True, blank = True)
-	externalSamplePath =  models.CharField(max_length = 100, null = True, blank = True)
-
+	#externalSamplePath =  models.CharField(max_length = 100, null = True, blank = True)
+	externalRunNameKey = models.CharField(max_length = 5, null = True, blank = True)
+	externalRunName = models.CharField(max_length = 50, null = True, blank = True)
+	externalProjectKey = models.CharField(max_length = 5, null = True, blank = True)
+	externalProjectName = models.CharField(max_length = 50, null = True, blank = True)
 	generated_at = models.DateField(auto_now_add = True)
+
+	def __str__ (self):
+		return '%s' %(self.sample)
+
+	objects = RequestedSamplesInServicesManager()
 
 
 class ResolutionManager(models.Manager):
