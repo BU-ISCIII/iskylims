@@ -109,10 +109,13 @@ def get_runs_projects_samples_and_dates(user_list_ids):
                 continue
             data = []
             data.append(sample_obj.get_run_name())
+            data.append(sample_obj.get_run_id())
             data.append(sample_obj.get_project_name())
+            data.append(sample_obj.get_project_id())
             data.append(sample_obj.get_sample_name())
-            data.append(run_obj.get_run_finish_date())
             data.append(sample_obj.get_sample_id())
+            data.append(run_obj.get_run_finish_date())
+
             samples_data.append(data)
 
 

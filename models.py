@@ -768,6 +768,9 @@ class SamplesInProject (models.Model):
     def get_sample_name(self):
         return '%s' %(self.sampleName)
 
+    def get_project_id (self) :
+        return '%s' %(self.project_id.pk)
+
     def get_project_name (self) :
         #p_id = self.project_id
         #project_name =Projects.objects.get(projectName=p_id).get_project_name()
@@ -780,6 +783,9 @@ class SamplesInProject (models.Model):
 
     def get_run_obj(self):
         return self.runProcess_id
+
+    def get_run_id(self):
+        return self.runProcess_id.pk
 
     def get_quality_sample (self):
         return '%s' %(self.qualityQ30)
