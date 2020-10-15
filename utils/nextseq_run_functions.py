@@ -36,7 +36,7 @@ def check_completion_success (l_run_completion):
     logger.debug ('End function for check_completion_success')
     return True
 
-def nextseq_parsing_run_information(l_run_info, l_run_parameter) :
+def nextseq_parsing_run_information(l_run_info, l_run_parameter, experiment_name) :
     '''
     Description:
         The function is called for parsing the RunInfo and RunParameter
@@ -87,6 +87,16 @@ def nextseq_parsing_run_information(l_run_info, l_run_parameter) :
     parameter_data_root=parameter_data.getroot()
     p_parameter=parameter_data_root[1]
     ## getting the common values NextSeq and MiSeq
+
+    for field in wetlab_config.FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE:
+        try:
+            running_data[field] = parameter_data_root.find(field).text
+        except:
+            running_data[field] = ''
+            string_message = experiment_name + ' : Parameter ' + field  + ' unable to fetch in RunParameter.xml'
+            logging_warnings(string_message, False)
+
+    '''
     running_data['RunID']=parameter_data_root.find('RunID').text
     running_data['ExperimentName']=parameter_data_root.find('ExperimentName').text
     running_data['RTAVersion']=parameter_data_root.find('RTAVersion').text
@@ -103,6 +113,7 @@ def nextseq_parsing_run_information(l_run_info, l_run_parameter) :
     running_data['PlannedIndex1ReadCycles']=parameter_data_root.find('PlannedIndex1ReadCycles').text
     running_data['PlannedIndex2ReadCycles']=parameter_data_root.find('PlannedIndex2ReadCycles').text
 
+     '''
     for i in run_root.iter('Name'):
         image_channel.append(i.text)
     running_data['ImageChannel']=image_channel
@@ -312,7 +323,7 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
 
         # Parsing RunParameter and Run Info
 
-        running_parameters, run_date, instrument = nextseq_parsing_run_information(l_run_info, l_run_parameter)
+        running_parameters, run_date, instrument = nextseq_parsing_run_information(l_run_info, l_run_parameter, experiment_name)
 
         run_date = run_process.set_run_date(run_date)
 

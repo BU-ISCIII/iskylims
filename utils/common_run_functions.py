@@ -158,7 +158,7 @@ def get_bcl2fastq_output_files (conn, run_folder):
 
     except:
         string_message = "cannot copy files for getting run metrics"
-        logging_errors(tring_message, True , True)
+        logging_errors(string_message, True , True)
         logger.info('Deleting temporary files')
         os.remove(l_conversion)
         logger.debug ('End function manage_run_in_processed_bcl2fast2_run with error')
@@ -323,10 +323,15 @@ def parsing_demux_and_conversion_files( demux_file, conversion_file, number_of_l
 
         for c in p_temp[sample_all_index].iter('BarcodeCount'):
             barcodeCount.append(c.text)
-
+        
         for c in p_temp[sample_all_index].iter('PerfectBarcodeCount'):
             p_b_count.append(c.text)
-
+        ## Fill with zeroes if not PerfectBarcodeCount is written in file
+        if len(barcodeCount) != len(p_b_count) :
+            for i_bar in range(len(barcodeCount)):
+                if barcodeCount[i_bar] == '0':
+                    p_b_count.insert(i_bar,'0')
+        
         # look for One mismatch barcode
         if p_temp[sample_all_index].find('OneMismatchBarcodeCount') == None:
              for  fill in range(number_of_lanes):
@@ -340,11 +345,14 @@ def parsing_demux_and_conversion_files( demux_file, conversion_file, number_of_l
         project_parsed_information['PerfectBarcodeCount'] = p_b_count
         project_parsed_information['sampleNumber'] = len(samples) -1
         project_parsed_information['OneMismatchBarcodeCount'] = one_mismatch_count
+        
         parsed_result[projects[i]] = project_parsed_information
+        
         if projects[i] != 'default' and projects[i] != 'all':
             total_samples += len(samples) -1
         logger.info('Completed parsing from demux file for project %s', projects[i])
     # overwrite the value for total samples
+    logger.info('Completed parsed information for all projects in stats files')
     parsed_result['all']['sampleNumber']=total_samples
 
     conversion_stat=ET.parse(conversion_file)
@@ -362,7 +370,7 @@ def parsing_demux_and_conversion_files( demux_file, conversion_file, number_of_l
         list_raw_yield , list_raw_yield_q30 = [] , []
         list_raw_qualityscore , list_pf_yield = [] , []
         list_pf_yield_q30, list_pf_qualityscore = [], []
-
+        
         for l_index in range(number_of_lanes):
             raw_yield_value = 0
             raw_yield_q30_value = 0
@@ -370,8 +378,9 @@ def parsing_demux_and_conversion_files( demux_file, conversion_file, number_of_l
             pf_yield_value = 0
             pf_yield_q30_value = 0
             pf_quality_value = 0
+            
             for t_index in range(tiles_index):
-
+                
                 # get the yield value for RAW and for read 1 and 2
                 for c in p_temp[sample_all_index][0][l_index][t_index][0].iter('Yield'):
                     raw_yield_value +=int(c.text)
@@ -388,13 +397,14 @@ def parsing_demux_and_conversion_files( demux_file, conversion_file, number_of_l
                     pf_yield_q30_value +=int(c.text)
                 for c in p_temp[sample_all_index][0][l_index][t_index][1].iter('QualityScoreSum'):
                     pf_quality_value +=int(c.text)
+            
             list_raw_yield.append(str(raw_yield_value))
             list_raw_yield_q30.append(str(raw_yield_q30_value))
             list_raw_qualityscore.append(str(raw_quality_value))
             list_pf_yield.append(str(pf_yield_value))
             list_pf_yield_q30.append(str(pf_yield_q30_value))
             list_pf_qualityscore.append(str(pf_quality_value))
-
+        
         parsed_result[projects[i]]['RAW_Yield']=list_raw_yield
         parsed_result[projects[i]]['RAW_YieldQ30']=list_raw_yield_q30
         parsed_result[projects[i]]['RAW_QualityScore']=list_raw_qualityscore
@@ -417,6 +427,13 @@ def parsing_demux_and_conversion_files( demux_file, conversion_file, number_of_l
 
         unknow_lanes.append(unknow_bc_count)
         counter +=1
+    
+    if len(unknow_lanes) != number_of_lanes:
+        for index_bar in range(len(barcodeCount)):
+            if barcodeCount[index_bar] == '0':
+                empty_data ={'count':'0', 'sequence':'Not Applicable'}
+                fill_data = [empty_data]*10
+                unknow_lanes.insert(index_bar,fill_data)
     parsed_result['TopUnknownBarcodes']= unknow_lanes
     logger.debug ('End function parsing_demux_and_conversion_files')
 
@@ -485,8 +502,10 @@ def parsing_demux_sample_project(demux_file, conversion_file, number_of_lanes):
 
             for bar_count in p_temp[index][0].iter('BarcodeCount'):
                 barcodeCount += int(bar_count.text)
+            
             for p_bar_count in p_temp[index][0].iter('PerfectBarcodeCount'):
                 perfectBarcodeCount += int(p_bar_count.text)
+            
             sample_stats['BarcodeCount']=barcodeCount
             sample_stats['PerfectBarcodeCount']=perfectBarcodeCount
             sample_dict[sample_name] = sample_stats
@@ -585,6 +604,7 @@ def process_fl_summary_stats (stats_projects, run_object_name):
 
         logger.info('Start processing flow Summary for project %s', project)
         flow_raw_cluster, flow_pf_cluster, flow_yield_mb = 0, 0, 0
+                
         for fl_item in range(number_of_lanes):
              # make the calculation for Flowcell
             flow_raw_cluster +=int(stats_projects[project]['BarcodeCount'][fl_item])
@@ -654,13 +674,24 @@ def process_lane_summary_stats (stats_projects, run_object_name):
             project_lane['lane'] = str(i + 1)
             pf_cluster_int=(int(stats_projects[project]['PerfectBarcodeCount'][i]))
             project_lane['pfCluster'] = '{0:,}'.format(pf_cluster_int)
-            project_lane['perfectBarcode'] = (format(int(stats_projects[project]['PerfectBarcodeCount'][i])*100/int(stats_projects[project]['BarcodeCount'][i]),'.3f'))
-            project_lane['percentLane'] = format(float(int(pf_cluster_int)/int(total_cluster_lane[i]))*100, '.3f')
+            try:
+                project_lane['perfectBarcode'] = (format(int(stats_projects[project]['PerfectBarcodeCount'][i])*100/int(stats_projects[project]['BarcodeCount'][i]),'.3f'))
+            except:
+                project_lane['perfectBarcode'] = '0'
+            try:
+                project_lane['percentLane'] = format(float(int(pf_cluster_int)/int(total_cluster_lane[i]))*100, '.3f')
+            except:
+                project_lane['percentLane'] = '0'
             project_lane['oneMismatch'] = stats_projects[project]['OneMismatchBarcodeCount'][i]
             project_lane['yieldMb'] = '{0:,}'.format(round(float(stats_projects[project]['PF_Yield'][i])* M_BASE))
-            project_lane['biggerQ30'] = format(float(stats_projects[project]['PF_YieldQ30'][i])*100/float( stats_projects[project]['PF_Yield'][i]),'.3f')
-            project_lane['meanQuality'] = format(float(stats_projects[project]['PF_QualityScore'][i])/float(stats_projects[project]['PF_Yield'][i]),'.3f')
-
+            try:
+                project_lane['biggerQ30'] = format(float(stats_projects[project]['PF_YieldQ30'][i])*100/float( stats_projects[project]['PF_Yield'][i]),'.3f')
+            except:
+                project_lane['biggerQ30'] = '0'
+            try:
+                project_lane['meanQuality'] = format(float(stats_projects[project]['PF_QualityScore'][i])/float(stats_projects[project]['PF_Yield'][i]),'.3f')
+            except:
+                project_lane['meanQuality'] = '0'
             if project == 'all' or project == 'default':
                 project_lane['project_id'] = None
                 project_lane['defaultAll'] = project
@@ -862,6 +893,7 @@ def process_unknow_barcode_stats (stats_projects, run_object_name):
                 logger.info('Processing lane %s for TopUnknownBarcodes', un_lane)
                 count_top=0
                 top_number =1
+                
                 for barcode_line in stats_projects[project][un_lane]:
                     unknow_barcode = {}
                     unknow_barcode['runprocess_id'] = run_object_name
@@ -1091,7 +1123,7 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
         try:
             l_demux , l_conversion= get_bcl2fastq_output_files (conn, run_folder)
         except:
-            string_message = 'Unable to fetch stats files for ' + experiment_name
+            string_message = 'Unables to fetch stats files for ' + experiment_name
             logging_errors(string_message, False, False)
             handling_errors_in_run(experiment_name, '11')
             logger.debug ('End function manage_run_in_processed_bcl2fast2 with error')
