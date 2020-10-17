@@ -36,11 +36,25 @@
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-7 col-sm-offset-3">
             <div class="panel panel-default">
-                <div class="panel-heading"><h3 style="text-align:center">Service Recorded</h3> </div>
+                <div class="panel-heading"><h3 style="text-align:center">Your Service Request is recorded</h3> </div>
                 <div class="panel-body">
+                    <p>The services that you have recorded are:</p>
                     {% for values in confirmation_result.text %}
                         <h5>{{values}}</h5>
                     {% endfor %}
+                    {% if confirmation_result.samples %}
+                        <h5> The samples included in the services are:</h5>
+                        <br>
+                        <p>
+                            {% for sample in confirmation_result.samples %}
+                                {% if forloop.last %}
+                                    amd {{sample}}.
+                                {% else %}
+                                    {{sample }},
+                                {% endif %}
+                            {% endfor %}
+                        </p>
+                    {% endif %}
                     {% if confirmation_result.download_file %}
                         <p><a href="{{confirmation_result.download_file}}" download>Download Confirmation file  <span class="glyphicon glyphicon-download-alt"></span></a></p>
 
@@ -187,7 +201,7 @@
                     <div class="panel-body">
                         <div class="form-group">
                             <label class="col-sm-3 control-label" for="filesample" >Service description file  </label>
-                            <div class="col-sm-7"><input class="form-control" type="file" id="uploadfile"  name="uploadfile" size="80"><br>
+                            <div class="col-sm-7"><input class="form-control" type="file" id="uploadfile"  name="uploadfile" size="80" multiple="true"><br>
                                 <p id="error2" style="display:none; color:#FF0000;">
                                     Maximum File Size Limit is 2.5 MB.
                                 </p>
@@ -196,7 +210,7 @@
                         <br>
                         <div class="form-group">
                             <label class="col-sm-3 control-label" for="description" >Service Notes</label>
-                            <div class="col-sm-10"><textarea class="form-control" name="description" value="" id="description" rows="6" cols="60" maxlength="220"></textarea></div>
+                            <div class="col-sm-10"><textarea class="form-control" name="description" value="" id="description" rows="6" cols="60" maxlength="2000"></textarea></div>
                         </div>  <!-- end from-group   -->
                         <br><br>
                     </div> <!--  end of panel body -->

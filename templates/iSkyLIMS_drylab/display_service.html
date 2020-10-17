@@ -2,7 +2,6 @@
 {% load static %}
 
 {% block content %}
-{% csrf_token %}
 {% if display_service %}
 {% load mptt_tags %}
 {% load l10n %}
@@ -55,24 +54,50 @@
         </div> <!--// end col-sm-6  general information from service  -->
         <div class="col-sm-5 col-sm-offset-1 ">  <!-- Actions  allowed-->
             <div class="panel panel-default">
-              <div class="panel-heading"><h3>Allowed actions on  {{ display_service.service_name}}</div></h3>
-              <div class="panel-body">
-                  Click on the following buttons to update the service<BR><BR>
-                  {% if display_service.add_resolution_action %}
-                    <div class="col-sm-4 ">  <!-- col-sm-4  resolution button  -->
-                         <a href="/drylab/addResolution={{ display_service.add_resolution_action }}" class="btn btn-primary" role="button">Add Resolution</a>
-                    </div> <!--// end col-sm-4   resolution button  -->
-                  {% endif%}
-                  {% if display_service.add_in_progress_action %}
-                    <div class="col-sm-3 col-sm-offset-1">  <!-- col-sm-4  in Progress  button  -->
-                         <a href="/drylab/addinProgress={{ display_service.add_in_progress_action }}" class="btn btn-primary" role="button">In Progress</a>
-                    </div> <!--// end col-sm-4   in Progress button  -->
-                  {% endif%}
-                  {% if display_service.add_delivery_action %}
-                    <div class="col-sm-3 col-sm-offset-1">  <!-- col-sm-3  delivery button  -->
-                         <a href="/drylab/addDelivery={{ display_service.add_delivery_action }}" class="btn btn-primary" role="button">Add Delivery</a>
-                    </div> <!--// end col-sm-4   delivery button  -->
-                  {% endif%}
+                <div class="panel-heading"><h3>Allowed actions on {{ display_service.service_name}}</div></h3>
+                <div class="panel-body">
+                    <h5>Click on the following buttons to update the service</h5>
+                    {% if display_service.add_resolution_action %}
+                        <form class="" action="/drylab/addResolution" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="formToaddResolutionService">
+                            <input type="hidden" name="service_id" value="{{display_service.service_id}}">
+                            {% if display_service.multiple_services %}
+                                {% if display_service.first_resolution %}
+                                    <p>Select the Service/Services for which you want to do the new resolution OR select None or all to handle all in the new resolution</p>
+                                    <input type="hidden" name="children_services_id" value="{% for id, name in display_service.children_services %}{{id}},{% endfor %}">
+
+                                    <div class="form-group">
+                                        <label class="col-sm-5 control-label" for="childrenServices" >Select services</label>
+                                        <div class="col-sm-7">
+                                           <select class="custom-select" name="childrenServices"  id="childrenServices" multiple>
+                                               {% for id, name in display_service.children_services %}
+                                                   <option value="{{id}}">{{name}}</option>
+                                               {% endfor %}
+                                           </select>
+                                        </div>
+                                    </div>  <!-- end from-group   -->
+                                {% else %}
+                                    <p>vacio</p>
+                                {% endif %}
+                            {% endif %}
+
+                            <div class="col-sm-4 ">  <!-- col-sm-4  resolution button  -->
+                                <br><br>
+                                <input class="btn pull-right btn-primary" type="submit" id ="btnSubmit" value="Add Resolution">
+                            </div> <!--// end col-sm-4   resolution button  -->
+                        </form>
+                    {% endif%}
+                    {% if display_service.add_in_progress_action %}
+                        <div class="col-sm-3 col-sm-offset-1">  <!-- col-sm-4  in Progress  button  -->
+                             <a href="/drylab/addinProgress={{ display_service.add_in_progress_action }}" class="btn btn-primary" role="button">In Progress</a>
+                        </div> <!--// end col-sm-4   in Progress button  -->
+                    {% endif%}
+                    {% if display_service.add_delivery_action %}
+                        <div class="col-sm-3 col-sm-offset-1">  <!-- col-sm-3  delivery button  -->
+                            <a href="/drylab/addDelivery={{ display_service.add_delivery_action }}" class="btn btn-primary" role="button">Add Delivery</a>
+                        </div> <!--// end col-sm-4   delivery button  -->
+                    {% endif%}
                 </div> <!--// end panel body -->
             </div> <!--// end panel -->
         </div> <!--// end col-sm-5  Actions  allowed  -->
@@ -95,9 +120,8 @@
                             <ul class="root">
                                 {% recursetree display_service.nodes %}
                                     <li>
-                                        <input type="checkbox" name = "{{ node }}" value = "{{node}}">
+                                        {{ node }}
                                         {% if not node.is_leaf_node %}
-
                                             <ul class="children">
                                                 {{ children }}
                                             </ul>
@@ -112,13 +136,13 @@
                 <div class="col-sm-5 col-sm-offset-1">
                     <div class="col-sm-12">  <!-- Projects Requested services -->
                         <div class="panel panel-default">
-                            <div class="panel-heading"><h3>Projects requested in the service</h3></div>
+                            <div class="panel-heading"><h3>Samples requested in service</h3></div>
                             <div class="panel-body">
                                 <table class="table table-hover">
                                     <tbody>
-                                        {% for key, value in display_service.projects %}
+                                        {% for key, value in display_service.samples %}
                                             <tr>
-                                                <td><a href="/wetlab/displayProject={{ key }}">{{ value }}</a> </td>
+                                                <td><a href="/wetlab/displaySampleInRun={{ key }}"  target="_blank" rel="noopener noreferrer">{{value}}</a> </td>
                                             </tr>
                                         {% endfor %}
                                     </tbody>
@@ -128,7 +152,7 @@
                     </div> <!--// end col-sm-12   Requested services  -->
                     <div class="col-sm-12">  <!-- Notes in the Requested services -->
                         <div class="panel panel-default">
-                            <div class="panel-heading"><h3>Notes included in the service request</div></h3>
+                            <div class="panel-heading"><h3>Notes included in the service request</h3></div>
                             <div class="panel-body">
                                 {{display_service.service_notes}}
                             </div> <!--// end panel body -->

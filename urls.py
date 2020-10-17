@@ -8,7 +8,7 @@ from django.views.generic import ListView, DetailView
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('addResolution=<int:service_id>/',views.add_resolution, name='add_resolution'),
+    path('addResolution',views.add_resolution, name='add_resolution'),
     path('addinProgress=<int:resolution_id>/', views.add_in_progress, name='add_in_progress'),
     path('addDelivery=<int:resolution_id>/', views.add_delivery, name= 'add_delivery'),
     path('counseling_request',views.counseling_request, name='counseling_service'),

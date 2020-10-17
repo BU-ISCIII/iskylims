@@ -19,6 +19,19 @@ except:
 	wetlab_api_available = False
 
 
+def check_service_id_exists(service_id):
+    '''
+    Description:
+        The function check if service id exists
+    Input:
+        service_id      # id of the service
+    Return:
+        True if service id exists
+    '''
+    if Service.objects.filter(pk=service_id).exists():
+        return True
+    else:
+        return False
 
 def create_new_save_service_request(request):
     '''
@@ -39,13 +52,7 @@ def create_new_save_service_request(request):
     available_service_objs = []
     for av_service in available_service_list:
         available_service_objs.append(get_available_service_obj_from_id(av_service))
-    if 'uploadfile' in request.FILES :
-        path = os.path.join(drylab_config.USER_REQUESTED_SERVICE_FILE_DIRECTORY)
 
-        file_name, full_path_file_name = store_file_from_form(request.FILES['uploadfile'], path)
-        service_data['serviceFile'] = full_path_file_name
-    else:
-        service_data['serviceFile'] = None
     if request.POST['center'] != '':
         service_data['serviceSeqCenter'] = request.POST['center']
     else:
@@ -56,20 +63,45 @@ def create_new_save_service_request(request):
     service_data ['serviceUserId'] = request.user
     service_data['serviceRequestInt'] = increment_service_number(request.user.id)
     service_data['serviceRequestNumber'] = create_service_id(service_data['serviceRequestInt'],request.user.id)
-    # Save the new service
-
+	# Save the new service
     new_service = Service.objects.create_service(service_data)
+
+	# Save files
+    if 'uploadfile' in request.FILES :
+        path = os.path.join(drylab_config.USER_REQUESTED_SERVICE_FILE_DIRECTORY)
+        files = request.FILES.getlist('uploadfile')
+        for file in files:
+            file_name, full_path_file_name = store_file_from_form(file, path)
+            new_file = RequestedServiceFile.objects.create_request_service_file(file_data)
+			# service_data['serviceFile'] = full_path_file_name
+
     # Save the many-to-many data for the form
     for av_service_obj in available_service_objs:
         new_service.serviceAvailableService.add(av_service_obj)
     return new_service
 
+def get_available_children_services_and_id(all_tree_services):
+	'''
+	Description:
+		The function get the children available services from a query of service
+	Input:
+		all_tree_services  # queryset of available service
+	Return:
+		children_service
+    '''
+	children_services = []
+	for t_services in all_tree_services:
+		if t_services.get_children():
+			continue
+		children_services.append ([t_services.id, t_services.get_service_description()])
+	return children_services
+
 def get_available_service_obj_from_id(available_service_id):
     '''
 	Description:
-		The function get the information to display in the internal sequencing form
+		The function get the available service obj  from the id
 	Input:
-		request_user      # user instance who request the service
+		available_service_id  # id of the available service
 	Return:
 		avail_service_obj
     '''
@@ -77,6 +109,113 @@ def get_available_service_obj_from_id(available_service_id):
     if AvailableService.objects.filter(pk__exact = available_service_id).exists():
         avail_service_obj = AvailableService.objects.filter(pk__exact = available_service_id).last()
     return avail_service_obj
+
+def get_service_obj_from_id(service_id):
+    '''
+	Description:
+		The function get the  service obj  from the id
+	Input:
+		service_id  # id of the  service
+	Return:
+		service_obj
+    '''
+    service_obj = None
+    if Service.objects.filter(pk__exact = service_id).exists():
+        service_obj = Service.objects.filter(pk__exact = service_id).last()
+    return service_obj
+
+def get_service_information (service_id):
+    service_obj = get_service_obj_from_id(service_id)
+    display_service_details = {}
+
+    #text_for_dates = ['Service Date Creation', 'Approval Service Date', 'Rejected Service Date']
+    service_dates = []
+    display_service_details['service_name'] = service_obj.get_service_request_number()
+    display_service_details['service_id'] = service_id
+    # get the list of projects
+    #projects_in_service = {}
+    if RequestedSamplesInServices.objects.filter(samplesInService = service_obj).exists():
+        samples_in_service = RequestedSamplesInServices.objects.filter(samplesInService = service_obj)
+        display_service_details['samples'] = []
+        for sample in samples_in_service:
+            display_service_details['samples'].append([sample.get_external_sample_id(), sample.get_external_sample_name()])
+
+    #projects_class = service.serviceProjectNames.all()
+    # for project in projects_class:
+    #     project_id = project.id
+    #     projects_in_service[project_id]=project.get_requested_project_name()
+    #display_service_details['projects'] = projects_in_service
+    display_service_details['user_name'] = service_obj.get_service_requested_user()
+    user_input_file = service_obj.get_service_file()
+    if user_input_file:
+        display_service_details['file'] = os.path.join(settings.MEDIA_URL,user_input_file)
+    display_service_details['state'] = service_obj.get_service_state()
+    display_service_details['service_notes'] = service_obj.get_service_user_notes()
+    #dates_for_services = service.get_service_dates()
+    # for i in range(len(dates_for_services)):
+    #     service_dates.append([text_for_dates[i],dates_for_services[i]])
+    display_service_details['service_dates'] = zip (drylab_config.HEADING_SERVICE_DATES, service_obj.get_service_dates() )
+    #display_service_details['service_dates'] = service_dates
+    # if display_service_details['state'] != 'approved' and display_service_details['state'] != 'recorded':
+        # get the proposal for the delivery date
+    if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
+        last_resolution = Resolution.objects.filter(resolutionServiceID = service_obj).last()
+        display_service_details['resolution_folder'] = last_resolution.get_resolution_number()
+        #display_service_details['resolution_folder'] = resolution_folder
+        resolution_estimated_date = last_resolution.get_resolution_estimated_date()
+
+
+    # get all services
+    display_service_details['nodes']= service_obj.serviceAvailableService.all()
+    display_service_details['children_services'] = get_available_children_services_and_id(display_service_details['nodes'])
+    # adding actions fields
+    if service_obj.serviceStatus != 'rejected' or service_obj.serviceStatus != 'archived':
+        display_service_details['add_resolution_action'] = service_id
+        if len(display_service_details['children_services']) > 1:
+            display_service_details['multiple_services'] = True
+            if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
+                resolutions = Resolution.objects.filter(resolutionServiceID = service_obj)
+                for resolution in resolutions:
+                    pass
+            else:
+                display_service_details['first_resolution'] = True
+    if service_obj.serviceStatus == 'queued':
+        resolution_id = Resolution.objects.filter(resolutionServiceID = service_obj).last().id
+        display_service_details['add_in_progress_action'] = resolution_id
+    if service_obj.serviceStatus == 'in_progress':
+        resolution_id = Resolution.objects.filter(resolutionServiceID = service_obj).last().id
+        display_service_details['add_delivery_action'] = resolution_id
+
+
+    if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
+        resolution_list = Resolution.objects.filter(resolutionServiceID = service_obj)
+        resolution_info =[]
+        for resolution_item in resolution_list :
+            resolution_info.append([resolution_item.get_resolution_information()])
+        display_service_details['resolutions'] = resolution_info
+
+    if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
+        resolution_list = Resolution.objects.filter(resolutionServiceID = service_obj)
+        delivery_info = []
+        for resolution_id in resolution_list :
+            if Delivery.objects.filter(deliveryResolutionID = resolution_id).exists():
+                delivery = Delivery.objects.get(deliveryResolutionID = resolution_id)
+                delivery_info.append([delivery.get_delivery_information()])
+                display_service_details['delivery'] = delivery_info
+
+    if service_obj.servicePipelines.all().exists():
+        display_service_details['pipelines'] = {}
+        display_service_details['pipelines']['heading'] = drylab_config.DISPLAY_NEW_DEFINED_PIPELINE
+        display_service_details['pipelines']['services'] = []
+        services_pipelines_objs = service_obj.servicePipelines.all()
+        for service_pipeline in services_pipelines_objs:
+            service_name = service_pipeline.get_pipleline_service()
+            display_service_details['pipelines']['services'].append(service_pipeline.get_pipeline_basic())
+
+    return display_service_details
+
+
+
 
 def prepare_form_data_request_service_sequencing (request_user):
     '''

@@ -16,41 +16,6 @@ try :
 except:
 	wetlab_api_available = False
 
-def get_add_resolution_data_form(form_data):
-	'''
-	Description:
-		The function extract the user form information and store it in a dictionary
-	Input:
-		form_data		# contains the user data form
-	Constants:
-		HEADING_ADDITIONAL_RESOLUTION_PARAMETERS
-	Functions:
-		rr
-	Return:
-		resolution_data_form
-	'''
-	resolution_data_form = {}
-
-	resolution_data_form['service_id'] = form_data['service_id']
-	resolution_data_form['resolutionEstimatedDate'] = datetime.datetime.strptime(form_data['resolutionEstimatedDate'],'%Y-%m-%d').date()
-	resolution_data_form['acronymName'] = form_data['acronymName']
-	resolution_data_form['resolutionAsignedUser'] = form_data['resolutionAsignedUser']
-	resolution_data_form['serviceAccepted'] = form_data['serviceAccepted']
-	resolution_data_form['resolutionNotes'] = form_data['resolutionNotes']
-
-	# get additional parameters
-	if 'parameters_data' in form_data:
-		json_data = json.loads(form_data['parameters_data'])
-		additional_parameters = []
-		for row_index in range(len(json_data)) :
-			if json_data[row_index][0] == '':
-				continue
-			parameter = {}
-			for i in range(len(drylab_config.HEADING_ADDITIONAL_RESOLUTION_PARAMETERS)):
-				parameter[drylab_config.HEADING_ADDITIONAL_RESOLUTION_PARAMETERS[i]] = json_data[row_index][i]
-			additional_parameters.append(parameter)
-		resolution_data_form['additional_parameters'] = additional_parameters
-	return resolution_data_form
 
 
 
@@ -82,29 +47,7 @@ def prepare_form_data_internal_sequencing (request_user):
 
 	return form
 
-def prepare_form_data_add_resolution(service_id):
-	'''
-	Description:
-		The function collect additional info and then save the form
-	Input:
-		service_id		# id of the service
-	Return:
-	 	form_data
-	'''
-	form_data = {}
-	service_obj= Service.objects.get(pk__exact = service_id)
-	form_data['service_number'] = service_obj.get_service_request_number()
 
-	if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
-		existing_resolution = Resolution.objects.filter(resolutionServiceID = service_obj).last()
-		form_data['resolutionFullNumber'] = existing_resolution.get_resolution_number()
-	users = User.objects.filter( groups__name = drylab_config.SERVICE_MANAGER)
-	form_data['assigned_user'] =[]
-	for user in users:
-		form_data['assigned_user'].append([user.pk,user.username])
-	form_data['heading'] = drylab_config.HEADING_ADDITIONAL_RESOLUTION_PARAMETERS
-	form_data['service_id'] = service_id
-	return form_data
 
 def save_service_request_form(form, user, unit):
 	'''

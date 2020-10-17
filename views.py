@@ -21,6 +21,7 @@ from iSkyLIMS_drylab.utils.testing_drylab_configuration import *
 from iSkyLIMS_drylab.utils.drylab_common_functions import *
 from iSkyLIMS_drylab.utils.handling_pipelines import *
 from iSkyLIMS_drylab.utils.handling_request_services import *
+from iSkyLIMS_drylab.utils.handling_resolutions import *
 from iSkyLIMS_drylab.utils.handling_forms import *
 from iSkyLIMS_drylab.utils.configuration_functions import *
 
@@ -88,10 +89,12 @@ def configuration_email(request):
 def new_request_service(request):
 	if request.method == 'POST' and request.POST['action'] == 'createservice':
 		# check that at some services have been requested
+
 		if len(request.POST.getlist('RequestedServices')) == 0 :
 			error_message = drylab_config.ERROR_NO_SERVICES_ARE_SELECTED
 			return render(request,'iSkyLIMS_drylab/newRequestService.html',{'service_data_information':service_data_information,
 									'error_message':error_message})
+
 		new_service = create_new_save_service_request(request)
 		sample_stored = stored_samples_for_sequencing_request_service(request.POST['samples_requested'], new_service)
 		## Send mail to user and drylab admin group
@@ -104,14 +107,17 @@ def new_request_service(request):
 
 		# PDF preparation file for confirmation of service request
 		pdf_file = create_service_pdf_file(new_service.get_service_request_number(), request.build_absolute_uri())
-		import pdb; pdb.set_trace()
+
 		# check if service allows to get data from external applications
-		if len(services_allow_external_data(new_service, stored_projects)) > 0:
-			if drylab_config.EMAIL_USER_CONFIGURED :
-				send_required_preparation_pipeline_email(service_request_number)
+		#if len(services_allow_external_data(new_service, stored_projects)) > 0:
+		#	if drylab_config.EMAIL_USER_CONFIGURED :
+		#		send_required_preparation_pipeline_email(service_request_number)
 		confirmation_result = {}
 		confirmation_result['download_file'] = pdf_file
+		service_request_number = new_service.get_service_request_number()
 		confirmation_result['text'] = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), drylab_config.CONFIRMATION_TEXT_MESSAGE))
+		if len(sample_stored) > 0 :
+			confirmation_result['samples'] = sample_stored
 		import pdb; pdb.set_trace()
 		return render(request,'iSkyLIMS_drylab/RequestForm.html',{'confirmation_result':confirmation_result})
 
@@ -480,63 +486,65 @@ def pending_services (request):
     return render (request, 'iSkyLIMS_drylab/pendingServices.html', {'pending_services': pending_services_details})
 
 @login_required
-def add_resolution (request, service_id):
+def add_resolution (request):
     if request.user.is_authenticated:
         if not is_service_manager(request):
             return render (request,'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_USER_NOT_ALLOWED })
     else:
         #redirect to login webpage
         return redirect ('/accounts/login')
+    if request.method != 'POST' or not 'service_id' in request.POST:
+        return render (request, 'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_SERVICE_ID_NOT_FOUND})
+
 
     if request.method == "POST" and request.POST['action'] == 'addResolutionService' :
+        import pdb; pdb.set_trace()
 
-        #form = AddResolutionService(data=request.POST)
-        if check_service_id_exists(request.POST['service_id']):
 
-            resolution_data_form = get_add_resolution_data_form(request.POST)
-            resolution_data_form['resolutionFullNumber'] = get_assign_resolution_full_number(resolution_data_form['service_id'], resolution_data_form['acronymName'])
-            resolution_data_form['resolutionNumber'] = create_resolution_number(request.POST['service_id'])
-            service_obj = get_service_obj_from_id(request.POST['service_id'])
-            service_request_number = service_obj.get_service_request_number()
-            if resolution_data_form['serviceAccepted'] == 'Accepted':
-                service_obj.update_service_status("queued")
-                service_obj.update_approved_date(datetime.date.today())
-            else:
-                service_obj.update_service_status("rejected")
-                service_obj.update_rejected_date(datetime.date.today())
 
-            new_resolution = Resolution.objects.create_resolution(resolution_data_form)
-
-            if 'additional_parameters' in resolution_data_form:
-                store_resolution_additional_parameter(resolution_data_form['additional_parameters'], new_resolution)
-
-            # create a new resolution to be added to the service folder including the path where file is stored
-
-            pdf_file = create_resolution_pdf_file(service_obj,new_resolution, request.build_absolute_uri())
-            new_resolution.update_resolution_file(pdf_file)
-            #pdf_name = resolution_data_form['resolutionNumber'] + ".pdf"
-            #resolution_file = create_pdf(request,information, drylab_config.RESOLUTION_TEMPLATE, pdf_name)
-
-            ## Send email
-            if drylab_config.EMAIL_USER_CONFIGURED :
-                email_data = {}
-                email_data['user_email'] = request.user.email
-                email_data['user_name'] = request.user.username
-                email_data['service_number'] = service_request_number
-                email_data['status'] = resolution_data_form['serviceAccepted']
-                email_data['date'] = resolution_data_form['resolutionEstimatedDate']
-                send_resolution_creation_email(email_data)
-            created_resolution = {}
-            created_resolution['resolution_number'] = resolution_data_form['resolutionNumber']
-            return render(request,'iSkyLIMS_drylab/addResolution.html',{'created_resolution': created_resolution})
+        resolution_data_form = get_add_resolution_data_form(request.POST)
+        resolution_data_form['resolutionFullNumber'] = get_assign_resolution_full_number(resolution_data_form['service_id'], resolution_data_form['acronymName'])
+        resolution_data_form['resolutionNumber'] = create_resolution_number(request.POST['service_id'])
+        service_obj = get_service_obj_from_id(request.POST['service_id'])
+        service_request_number = service_obj.get_service_request_number()
+        if resolution_data_form['serviceAccepted'] == 'Accepted':
+            service_obj.update_service_status("queued")
+            service_obj.update_approved_date(datetime.date.today())
         else:
-            return render (request, 'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_SERVICE_ID_NOT_FOUND})
+            service_obj.update_service_status("rejected")
+            service_obj.update_rejected_date(datetime.date.today())
+
+        new_resolution = Resolution.objects.create_resolution(resolution_data_form)
+
+        if 'additional_parameters' in resolution_data_form:
+            store_resolution_additional_parameter(resolution_data_form['additional_parameters'], new_resolution)
+
+        # create a new resolution to be added to the service folder including the path where file is stored
+
+        pdf_file = create_resolution_pdf_file(service_obj,new_resolution, request.build_absolute_uri())
+        new_resolution.update_resolution_file(pdf_file)
+        #pdf_name = resolution_data_form['resolutionNumber'] + ".pdf"
+        #resolution_file = create_pdf(request,information, drylab_config.RESOLUTION_TEMPLATE, pdf_name)
+
+        ## Send email
+        if drylab_config.EMAIL_USER_CONFIGURED :
+            email_data = {}
+            email_data['user_email'] = request.user.email
+            email_data['user_name'] = request.user.username
+            email_data['service_number'] = service_request_number
+            email_data['status'] = resolution_data_form['serviceAccepted']
+            email_data['date'] = resolution_data_form['resolutionEstimatedDate']
+            send_resolution_creation_email(email_data)
+        created_resolution = {}
+        created_resolution['resolution_number'] = resolution_data_form['resolutionNumber']
+        return render(request,'iSkyLIMS_drylab/addResolution.html',{'created_resolution': created_resolution})
+
+
+    if request.method == "POST" and request.POST['action'] == 'formToaddResolutionService':
+        resolution_form_data = prepare_form_data_add_resolution(request.POST)
+        return render(request, 'iSkyLIMS_drylab/addResolution.html' , { 'resolution_form_data' : resolution_form_data})
     else:
-        if check_service_id_exists(service_id):
-            form_data = prepare_form_data_add_resolution(service_id)
-            return render(request, 'iSkyLIMS_drylab/addResolution.html' , { 'form_data' : form_data})
-        else:
-            return render (request, 'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_SERVICE_ID_NOT_FOUND})
+        return render (request, 'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_SERVICE_ID_NOT_FOUND})
 
 
 '''

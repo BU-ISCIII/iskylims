@@ -196,8 +196,7 @@ class ServiceManager (models.Manager):
 	def create_service(self, data):
 		new_service = self.create(serviceUserId = data['serviceUserId'], serviceSeqCenter= data['serviceSeqCenter'],
 		serviceRequestNumber = data['serviceRequestNumber'], serviceRequestInt = data['serviceRequestInt'],
-		serviceFile = data['serviceFile'], serviceStatus= data['serviceStatus'],
-		serviceNotes = data['serviceNotes'])
+		serviceStatus= data['serviceStatus'], serviceNotes = data['serviceNotes'])
 		return new_service
 
 
@@ -438,7 +437,7 @@ class RequestedSamplesInServices (models.Model):
 	# 				null = True, blank = True, on_delete = models.CASCADE)
 	externalSampleKey = models.CharField(max_length = 5, null = True, blank = True)
 	externalSampleName = models.CharField(max_length = 50, null = True, blank = True)
-	#externalSamplePath =  models.CharField(max_length = 100, null = True, blank = True)
+	externalSamplePath =  models.CharField(max_length = 250, null = True, blank = True)
 	externalRunNameKey = models.CharField(max_length = 5, null = True, blank = True)
 	externalRunName = models.CharField(max_length = 50, null = True, blank = True)
 	externalProjectKey = models.CharField(max_length = 5, null = True, blank = True)
@@ -446,7 +445,13 @@ class RequestedSamplesInServices (models.Model):
 	generated_at = models.DateField(auto_now_add = True)
 
 	def __str__ (self):
-		return '%s' %(self.sample)
+		return '%s' %(self.externalSampleName)
+
+	def get_external_sample_name  (self):
+		return '%s' %(self.externalSampleName)
+
+	def get_external_sample_id(self):
+		return '%s' %(self.externalSampleKey)
 
 	objects = RequestedSamplesInServicesManager()
 
