@@ -33,6 +33,7 @@ urlpatterns = [
     path('defineSampleProjectFields=<int:sample_project_id>', views.define_sample_projects_fields, name = 'define_sample_projects_fields'),
     path('DisplayCollectionIndex=<int:collection_index_id>/', views.display_collection_index, name= 'display_collection_index'),
     path('displaySample=<int:sample_id>/', views.display_sample, name = 'display_sample'),
+    path('displaySampleInRun=<int:sample_run_id>/',views.display_sample_in_run, name = 'display_sample_in_run'),
     path('displayProject=<int:project_id>/', views.display_project, name='display_project'),
     path('displayProtocol=<int:protocol_id>', views.display_protocol, name = 'display_protocol'),
     path('displayRun=<int:run_id>/', views.display_run, name='display_run'),

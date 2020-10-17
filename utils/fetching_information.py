@@ -826,8 +826,8 @@ def get_info_sample_in_run (sample_id):
     project_id= sample_id.project_id.id
     sample_info_dict['project_id'] = project_id
     #
-    sample_info_dict['run_id'] = sample_id.project_id.runprocess_id.id
-    sample_info_dict['run_name'] = sample_id.project_id.runprocess_id.runName
+    sample_info_dict['run_id'] = sample_id.get_run_id()
+    sample_info_dict['run_name'] = sample_id.get_run_name()
     user_name_id = sample_id.project_id.user_id
     sample_info_dict['investigator_name'] = user_name_id.username
     # collect the Sample information

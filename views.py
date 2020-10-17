@@ -3591,6 +3591,20 @@ def display_sample (request, sample_id):
         return render(request, 'iSkyLIMS_wetlab/displaySample.html',{'sample_information':sample_information})
 
 @login_required
+def display_sample_in_run (request, sample_run_id):
+    '''
+    Functions:
+        get_info_sample_in_run
+    '''
+    sample_run_obj = get_sample_in_project_obj_from_id(sample_run_id)
+    if not sample_run_obj :
+        return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No Sample was found']})
+    sample_information = get_info_sample_in_run(sample_run_obj)
+    return render(request, 'iSkyLIMS_wetlab/displaySample.html',{'sample_information':sample_information})
+
+
+
+@login_required
 def display_type_of_sample(request, sample_type_id):
     '''
     Functions:

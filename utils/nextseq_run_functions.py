@@ -309,6 +309,7 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
         s_sample_sheet  # path of SampleSheet on the remote server
     Functions:
         create_new_sequencer_lab_not_defined    # located at utils/generic_functions.py
+        nextseq_parsing_run_information
     Return:
         number_of_cycles
         file_content

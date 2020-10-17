@@ -59,7 +59,7 @@ def get_run_metric_files (conn, run_folder, experiment_name):
         except:
             string_message = experiment_name + " : cannot create folder" + l_metric_folder
             logging_errors(logger,string_message, False , True)
-            logger.debug ('%s : End function manage_run_in_processed_bcl2fast2_run with error',experiment_name)
+            logger.debug ('%s : End function get_run_metric_files with error',experiment_name)
             raise
     try:
         l_run_info = fetch_remote_file (conn, run_folder, s_run_info, l_run_info)
