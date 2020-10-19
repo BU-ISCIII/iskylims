@@ -134,3 +134,6 @@ RETENTION_TIME = '7' # in days
 
 ##############################################################
 
+############### FIELD NAME TO COLLECT FROM RunParameter FILE #####################
+FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE = ['RunID','ExperimentName','RTAVersion','Chemistry','RunStartDate','RunManagementType','ApplicationVersion','NumTilesPerSwath',
+		                    'SystemSuiteVersion', 'LibraryID', 'AnalysisWorkflowType','PlannedRead1Cycles','PlannedRead2Cycles','PlannedIndex1ReadCycles','PlannedIndex2ReadCycles' ]
