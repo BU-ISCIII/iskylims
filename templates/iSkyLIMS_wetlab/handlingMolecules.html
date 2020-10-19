@@ -14,7 +14,7 @@
         max-height: 450px;
         overflow: auto;
         display:inline-block;
-        width: 1000px;
+        width: 950px;
     }
     .scrolling-wrapper {
             overflow-x: scroll;
@@ -61,10 +61,11 @@
                                 data:data,
                                 columns: [
                                     { type: 'text', title:'{{molecule_protocol.headings.0}}', width:180 , readOnly:true },
-                                    { type: 'dropdown', title:'{{molecule_protocol.headings.1}}', width:150 , source :[ {% for value in molecule_protocol.type_of_molecules %} '{{value}}', {% endfor %}]},
-                                    { type: 'dropdown', title:'{{molecule_protocol.headings.2}}', width:150 , source :['Manual', 'Automated']},
-                                    { type: 'calendar' , title: '{{molecule_protocol.headings.3}}', width:150 },
-                                    { type: 'dropdown', title: '{{molecule_protocol.headings.4}}', width:180 , source:[{% for value in molecule_protocol.protocol_list %}'{{value}}',{% endfor %} ],
+                                    { type: 'text', title:'{{molecule_protocol.headings.1}}', width:180 , readOnly:true },
+                                    { type: 'dropdown', title:'{{molecule_protocol.headings.2}}', width:150 , source :[ {% for value in molecule_protocol.type_of_molecules %} '{{value}}', {% endfor %}]},
+                                    { type: 'dropdown', title:'{{molecule_protocol.headings.3}}', width:150 , source :['Manual', 'Automated']},
+                                    { type: 'calendar' , title: '{{molecule_protocol.headings.4}}', width:150 },
+                                    { type: 'dropdown', title: '{{molecule_protocol.headings.5}}', width:180 , source:[{% for value in molecule_protocol.protocol_list %}'{{value}}',{% endfor %} ],
                                             filter:dropdownFilter },
 
                                 ],
@@ -78,8 +79,8 @@
                                 csvFileName:'Molecule_data',
                                 minDimensions:[{{molecule_protocol.table_length}},{{molecule_protocol.number_of_samples}}],
                                 onchange:function(instance, cell, c, r, value) {
-                                    if (c == 1) {
-                                        var columnName = jexcel.getColumnNameFromId([4, r]);
+                                    if (c == 2) {
+                                        var columnName = jexcel.getColumnNameFromId([5, r]);
                                         instance.jexcel.setValue(columnName, '');
                                     }
                                 }
@@ -237,19 +238,6 @@
 
     {% else %}
 
-        {% if show_molecule_parameters.lot_kit == '' %}
-            <div class="row row-space-2 margin-b-4">
-                <div class="col-sm-12">
-                    <div class="panel panel-danger">
-                        <div class="panel-heading"><h3>Warning.</h3></div>
-                        <div class="panel-body">
-                            <h4>There is no  Lot kit available. </h4>
-                        </div> <!--  end of panel body -->
-                    </div> <!--  end of panel  -->
-                </div> <!--  end of col-sm-6 -->
-           </div> <!--  end of row -->
-
-        {% endif %}
         {% if show_molecule_parameters %}
             {% if not show_molecule_parameters.lot_kit %}
                 <div class="row row-space-2 margin-b-4">
@@ -258,7 +246,10 @@
                             <div class="panel-heading"><h3>Not Available User Lot Kits.</h3></div>
                             <div class="panel-body">
                                <p>There is not User Lot Kit defined on your name.</p>
-                               <p>Please define your Lot Kit first and return again to assign the molecule parameter</p>
+                               <p>Click on the bottom below to define your Lot Kit first. Then return again to assign the molecule parameter</p>
+
+                               <br><br>
+                               <button type="button" class="btn btn-default" onclick="location.href = '/wetlab/addUserLotCommercialKit';">Define new User Lot Commercial Kit</button>
                             </div> <!--  end of panel body -->
                         </div> <!--  end of panel  -->
                     </div> <!--  end of col-sm-6 -->
@@ -283,10 +274,10 @@
                                {% if show_molecule_parameters.pending_id %}
                                     <input type="hidden" name= "pending" value="{{show_molecule_parameters.pending_id}}"/>
                                {% endif %}
-                               <p></p>
+                               <br><br>
 
                                    <div id="spreadsheet"></div>
-                                   <br>
+                                   <br><br><br>
                                </div> <!--  end of scrolling  -->
                                <script>
                                   var data = [{% for values in show_molecule_parameters.data %}
@@ -299,17 +290,26 @@
                                                 { type: 'text', title:'{{show_molecule_parameters.fix_heading.0}}', width:180 , readOnly:true },
                                                 { type: 'dropdown', title:'{{show_molecule_parameters.fix_heading.1}}', width:180 , source:[{% for value in show_molecule_parameters.lot_kit %}'{{value}}',{% endfor %} ]},
 
-                                           {% for value in show_molecule_parameters.param_heading %}
-                                               { type: 'text', title:'{{value}}', width:180 },
-                                          {% endfor %}
+                                                {% for name, type, options in show_molecule_parameters.protocol_parameters_heading_type %}
+                                                    {% if type == 'Date' %}
+                                                        { type: 'calendar', title:'{{name}}', width:150 },
+                                                    {% elif type == 'Option List'%}
+                                                        { type: 'dropdown', title:'{{name}}', width:150 , source: [{% for value in options %}"{{value}}",{% endfor %}] },
+                                                    {% else %}
+                                                        { type: 'text', title:'{{name}}', width:150 },
+                                                    {% endif %}
+                                                {% endfor %}
+
+
+
                                       ],
                                       allowInsertColumn:false,
                                       allowDeleteColumn:false,
                                       allowRenameColumn:false,
                                       allowInsertRow:false,
                                       allowDeleteRow:false,
-                                      tableOverflow:true,
-                                      tableHeight:'200px',
+                                      tableOverflow:false,
+                                      tableHeight:'600px',
                                       csvFileName:'quality_data',
 
                                   });
@@ -344,7 +344,7 @@
         {% endif %}
     {% endif %}
 
-{% elif molecule_parameters_updated %}
+{% elif molecule_parameters_updated  %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12">
             <div class="panel panel-default">
@@ -369,7 +369,7 @@
 
        </div> <!--  end of col-sm-12 -->
    </div> <!--  end of row -->
-   {% if added_molecule_protocol_parameters.show_molecule_parameters %}
+   {% if show_molecule_parameters %}
         <div class="row row-space-2 margin-b-4">
            <div class="col-sm-12">
                <div class="panel panel-default">
@@ -377,7 +377,7 @@
                    <div class="panel-body">
                        {% if show_molecule_parameters.pending_id %}
                              <p>The selected molecules contain different protocol</p>
-                             <p>After Clicking the Submit buttom the next molecules will be displayed</p>
+                             <p>After Clicking ----- the Submit buttom the next molecules will be displayed</p>
                        {% endif %}
                        <form method="post" enctype="multipart/form-data" name="addMoleculeParameters"  id="addMoleculeParameters" class="form-horizontal well">
                            {% csrf_token %}
@@ -385,13 +385,14 @@
                            <input type="hidden" name="action" value="addMoleculeParameters"/>
                            <input type="hidden" name= "molecules" value="{{show_molecule_parameters.molecule_id}}"/>
                            <input type="hidden" name= "heading_in_excel" value="{{show_molecule_parameters.heading_in_excel}}"/>
+                           <input type="hidden" name= "molecule_code_ids" value="{{show_molecule_parameters.molecule_code_ids}}"/>
                            {% if show_molecule_parameters.pending_id %}
                                 <input type="hidden" name= "pending" value="{{show_molecule_parameters.pending_id}}"/>
                            {% endif %}
-                           <p></p>
+                           <br><br>
 
-                            <div id="spreadsheet"></div>
-                            <br>
+                               <div id="spreadsheet"></div>
+                               <br><br><br>
                            </div> <!--  end of scrolling  -->
                            <script>
                               var data = [{% for values in show_molecule_parameters.data %}
@@ -402,19 +403,27 @@
                                   data:data,
                                   columns: [
                                             { type: 'text', title:'{{show_molecule_parameters.fix_heading.0}}', width:180 , readOnly:true },
-                                            { type: 'text', title:'{{show_molecule_parameters.fix_heading.1}}', width:180 , readOnly:true },
-                                            { type: 'dropdown', title:'{{show_molecule_parameters.fix_heading.2}}', width:180 , source:[{% for value in show_molecule_parameters.lot_kit %}'{{value}}',{% endfor %} ]},
+                                            { type: 'dropdown', title:'{{show_molecule_parameters.fix_heading.1}}', width:180 , source:[{% for value in show_molecule_parameters.lot_kit %}'{{value}}',{% endfor %} ]},
 
-                                       {% for value in show_molecule_parameters.param_heading %}
-                                           { type: 'text', title:'{{value}}', width:180 },
-                                      {% endfor %}
+                                            {% for name, type, options in show_molecule_parameters.protocol_parameters_heading_type %}
+                                                {% if type == 'Date' %}
+                                                    { type: 'calendar', title:'{{name}}', width:150 },
+                                                {% elif type == 'Option List'%}
+                                                    { type: 'dropdown', title:'{{name}}', width:150 , source: [{% for value in options %}"{{value}}",{% endfor %}] },
+                                                {% else %}
+                                                    { type: 'text', title:'{{name}}', width:150 },
+                                                {% endif %}
+                                            {% endfor %}
+
+
+
                                   ],
                                   allowInsertColumn:false,
                                   allowDeleteColumn:false,
                                   allowRenameColumn:false,
                                   allowInsertRow:false,
                                   allowDeleteRow:false,
-                                  tableOverflow:true,
+                                  tableOverflow:false,
                                   tableHeight:'200px',
                                   csvFileName:'quality_data',
 
@@ -542,7 +551,7 @@
                                         {% csrf_token %}
                                         <input type="hidden" name="action" value="selectedMolecules"/>
                                         <input type="hidden" name="samples_in_list" value="True"/>
-                                        <div class="table-wrapper-sm-7">
+                                        <div class="table-wrapper-sm-10">
                                             <table class="table table-hover">
                                                 <thead>
                                                     <tr>
@@ -580,7 +589,7 @@
 
             <div id="molecule_used_for" class="tabcontent">
                 <div class="col-sm-12" >
-                    {% if request_molecule_use.types %}
+                    {% if molecule_use_defined %}
                         <div class="panel panel-default">
 
                             {% if request_molecule_use.heading %}
@@ -595,7 +604,7 @@
                                         <div class="table-wrapper-sm-10">
 
                                             <div id="spreadsheet"></div>
-                                            <br>
+                                            <br><br><br>
                                            <script>
                                               var data = [{% for values in request_molecule_use.data %}
                                                   [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
@@ -663,9 +672,12 @@
                          </div> <!--// end panel -->
                     {% endif %}
 
-             </div> <!--// end col-sm-7  -->
+                </div> <!--// end col-sm-7  -->
             </div> <!-- // end of tab molecule_used_for -->
-
+            <script>
+                // Get the element with id="tablinksdefaultOpen" and click on it
+                document.getElementById("tablinksdefaultOpen").click();
+            </script>
          </div> <!--// end col-sm-12  -->
     </div> <!--// end row -->
 {% endif %}

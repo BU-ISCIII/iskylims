@@ -1,22 +1,35 @@
 {% extends 'iSkyLIMS_wetlab/base.html' %}
 {% load static %}
 {% block content %}
+{%include 'iSkyLIMS_core/jexcel_functionality.html' %}
 
-{% if display_sample_information %}
-    <script src="{% static "iSkyLIMS_wetlab/js/jquery/v3.4.1/jquery-3.4.1.min.js" %}" type="text/javascript"></script>
-    <script src="{% static "iSkyLIMS_wetlab/js/jexcel/v3/jexcel.js" %}" type="text/javascript"></script>
-    <script src="{% static "iSkyLIMS_wetlab/js/jsuites/v2/jsuites.js" %}" type="text/javascript"></script>
-
-    <link href="{% static "iSkyLIMS_wetlab/css/jexcel/v3/jexcel.css" %}" rel="stylesheet">
-    <link href="{% static "iSkyLIMS_wetlab/css/jsuites/v2/jsuites.css" %}" rel="stylesheet">
-    <style>
-        .scrolling-wrapper {
-     overflow-x: scroll;
-     white-space: nowrap;
-    }
-    </style>
+{% if Error %}
     <div class="row row-space-4 margin-b-4">
         <div class="col-sm-10 col-sm-offset-1" >
+            <div class="panel panel-danger">
+                <div class="panel-heading"><h3>Unable to accept your request</h3></div>
+                <div class="panel-body">
+                    {% for value in Error %}
+                        <p class="text-center">{{value}}</p>
+                    {% endfor %}
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+
+        </div> <!--  end of col-sm-12 -->
+    </div> <!--  end of row -->
+{% endif %}
+
+
+{% if display_sample_information %}
+
+    <style>
+        .scrolling-wrapper {
+             overflow-x: scroll;
+             white-space: nowrap;
+            }
+    </style>
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-12" >
             <div class="panel panel-default">
                 <div class="panel-heading"><h3>Library Preparation information to create the new Run</h3></div>
                     <div class="panel-body">
@@ -27,62 +40,90 @@
 
                                 <input type="hidden" name="action" value="storeDataNewRun"/>
                                 <input type="hidden" name="lib_prep_ids" value="{{display_sample_information.lib_prep_ids}}"/>
+                                <input type="hidden" name="lib_prep_unique_ids" value="{{display_sample_information.lib_prep_unique_ids}}"/>
                                 <input type="hidden" name="pairedEnd" value="{{display_sample_information.paired_end}}"/>
-
-                                <input type="hidden" name="reads" value="{{display_sample_information.reads}}"/>
-                                <input type="hidden" name="assay" value="{{display_sample_information.assay}}"/>
-                                <input type="hidden" name="collection_index" value="{{display_sample_information.collection_index}}"/>
-
-
-
                                 <input type="hidden" name="run_process_id" value="{{display_sample_information.run_process_id}}"/>
-                                <div class="form-group required">
-                                    <label class="col-sm-5 control-label">Define the Plate</label>
-                                    <div class="col-sm-5"><input class="form-control" type="text"  name="plateName" size="80"></div>
-                                    <br><br><br>
-                                </div>
-                                <div class="form-group">
-                                    <label class="col-sm-5 control-label">Define the ContainerID</label>
-                                    <div class="col-sm-5"><input class="form-control"  type="text"  name="containerID" size="80"></div>
-                                </div>
+                                <div class="col-sm-12" >
+                                    <div class="col-sm-6" >
+                                        <div class="form-group required">
+                                            <h4>Sample Sheet confirmation data</h4>
+                                            <label class="col-sm-5 control-label">Application</label>
+                                            <div class="col-sm-5"><input class="form-control" required = "required" type="text" value="{{display_sample_information.application}}" name="application" size="80"></div>
+                                            <br><br>
+                                            <label class="col-sm-5 control-label">Instrument</label>
+                                            <div class="col-sm-5"><input class="form-control"  required = "required" type="text" value="{{display_sample_information.instrument}}" name="instrument" size="80"></div>
+                                            <br><br>
+                                            <label class="col-sm-5 control-label">Assay</label>
+                                            <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  value="{{display_sample_information.assay}}"  name="assay" size="80"></div>
+                                            <br><br>
+                                            <label class="col-sm-5 control-label">Index Adapters</label>
+                                            <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  value="{{display_sample_information.collection_index}}"  name="collection_index" size="80"></div>
+                                            <br><br>
+                                            <label class="col-sm-5 control-label">Reads</label>
+                                            <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  value="{{display_sample_information.reads}}"  name="reads" size="80"></div>
+                                            <br><br>
+                                            <label class="col-sm-5 control-label">Adapter</label>
+                                            <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  value="{{display_sample_information.adapter1}}"  name="adapter" size="80"></div>
+                                            <br><br>
+                                            {% if display_sample_information.adapter2 %}
+                                                <label class="col-sm-5 control-label">Adapter-2</label>
+                                                <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  value="{{display_sample_information.adapter2}}"  name="adapter2" size="80"></div>
+                                                <br><br><br>
+                                            {% endif %}
+                                        </div> <!--  end of form-group -->
+                                    </div> <!--  end of col-sm-6 -->
+                                    <div class="col-sm-6" >
+                                        <div class="form-group required">
+                                            <h4>Base Space confirmation data</h4>
+                                            <label class="col-sm-5 control-label">Define the Plate</label>
+                                            <div class="col-sm-5"><input class="form-control" required = "required" type="text"  value="Plate96"  name="plateName" size="80"></div>
+                                            <br><br><br>
+
+                                            <label class="col-sm-5 control-label">Define the ContainerID</label>
+                                            <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  name="containerID" size="80" value = "{{display_sample_information.date}}"></div>
+                                        </div> <!--  end of form-group -->
+                                    </div> <!--  end of col-sm-6 -->
+                                </div> <!--  end of col-sm-12 -->
                                 <br><br>
-                                <div class="scrolling-wrapper">
-                                <div id="spreadsheet"></div>
+                                <div class="col-sm-12" >
+                                    <div class="scrolling-wrapper">
+                                        <div id="spreadsheet"></div>
 
 
-                                <script>
-                                    var data = [{% for values in display_sample_information.data %}
-                                        [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
-                                    ];
-                                    mySpreadsheet = $('#spreadsheet').jexcel({
-                                        data:data,
-                                        columns: [
-                                            { type: 'text', title:'{{display_sample_information.heading.0}}', width:180 , readOnly:true },
-                                            { type: 'text', title:'{{display_sample_information.heading.1}}', width:180 , readOnly:true },
-                                            { type: 'text', title:'{{display_sample_information.heading.2}}', width:80 },
-                                            { type: 'text', title:'{{display_sample_information.heading.3}}', width:80 },
-                                            { type: 'text', title:'{{display_sample_information.heading.4}}', width:100 },
-                                            { type: 'text', title:'{{display_sample_information.heading.5}}', width:80},
-                                            { type: 'text', title:'{{display_sample_information.heading.6}}', width:100  },
-                                            { type: 'text', title:'{{display_sample_information.heading.7}}', width:100 },
-                                            { type: 'text', title:'{{display_sample_information.heading.8}}', width:150 },
-                                            { type: 'text', title:'{{display_sample_information.heading.9}}', width:250 },
-                                            { type: 'text', title:'{{display_sample_information.heading.10}}', width:80 },
-                                            { type: 'text', title:'{{display_sample_information.heading.11}}', width:180 },
-                                        ],
-                                        allowInsertColumn:false,
-                                        allowDeleteColumn:false,
-                                        allowRenameColumn:false,
-                                        allowInsertRow:false,
-                                        allowDeleteRow:false,
-                                        tableOverflow:true,
-                                        tableHeight:'200px',
-                                        csvFileName:'sample_sheet',
+                                        <script>
+                                            var data = [{% for values in display_sample_information.data %}
+                                                [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                                            ];
+                                            mySpreadsheet = $('#spreadsheet').jexcel({
+                                                data:data,
+                                                columns: [
+                                                    { type: 'text', title:'{{display_sample_information.heading.0}}', width:180 , readOnly:true },
+                                                    { type: 'text', title:'{{display_sample_information.heading.1}}', width:180 , readOnly:true },
+                                                    { type: 'text', title:'{{display_sample_information.heading.2}}', width:80 },
+                                                    { type: 'text', title:'{{display_sample_information.heading.3}}', width:80 },
+                                                    { type: 'text', title:'{{display_sample_information.heading.4}}', width:100 },
+                                                    { type: 'text', title:'{{display_sample_information.heading.5}}', width:80},
+                                                    { type: 'text', title:'{{display_sample_information.heading.6}}', width:100  },
+                                                    { type: 'text', title:'{{display_sample_information.heading.7}}', width:100 },
+                                                    { type: 'text', title:'{{display_sample_information.heading.8}}', width:150 },
+                                                    { type: 'text', title:'{{display_sample_information.heading.9}}', width:250 },
+                                                    { type: 'text', title:'{{display_sample_information.heading.10}}', width:80 },
+                                                    { type: 'text', title:'{{display_sample_information.heading.11}}', width:180 },
+                                                ],
+                                                allowInsertColumn:false,
+                                                allowDeleteColumn:false,
+                                                allowRenameColumn:false,
+                                                allowInsertRow:false,
+                                                allowDeleteRow:false,
+                                                tableOverflow:true,
+                                                tableHeight:'200px',
+                                                csvFileName:'sample_sheet',
 
-                                    });
-                                </script>
-                                </div> <!--  end of scrolling  -->
-                                <br><br>
+                                            });
+                                        </script>
+                                    </div> <!--  end of scrolling  -->
+                                </div> <!--  end of col-sm-12 -->
+                                <br><br><br><br>
                                 <input type="button" value="Return to Select Sample" onclick="location.href ='/wetlab/selectSamplesForRun' ;"/>
                                 <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
 
@@ -111,12 +152,34 @@
          </div> <!--  end of row -->
 
 {% elif created_new_run %}
-<div class="row row-space-4 margin-b-4">
-    <div class="col-sm-10 col-sm-offset-1" >
-        <div class="panel panel-default">
-            <div class="panel-heading"><h3>Sucessful Run</h3></div>
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-10 col-sm-offset-1" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Successful creation of Run</h3></div>
                 <div class="panel-body">
-                    <p>{{created_new_run.exp_name}} is now created on iSkyLIMS in "Recorded" state</p>
+                    <h5 style="text-align:center">Run name {{created_new_run.exp_name}} is Recorded</h5>
+                    <p>Click on the link below to check the Run information </p>
+                    <br><br>
+                    <p><a href="/wetlab/displayRun={{created_new_run.run_process_id}}">{{created_new_run.exp_name}} </a> </p>
+                    <div class="col-sm-11" >
+                        <table class="table table-hover">
+                            <tbody>
+                                <tr>
+                                    <td>Sample Sheet</td>
+                                    <td><a href="/documents/{{ created_new_run.sample_sheet }}" download>Sample Sheet File  <span class="glyphicon glyphicon-download-alt"></span></a></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" class="text-center">Files to upload to Base Space</td>
+                                </tr>
+                                {% for  key, value in created_new_run.base_space.items %}
+                                    <tr>
+                                        <td>{{key}}</td>
+                                        <td><a href="/{{value}}" download>Base Space File  <span class="glyphicon glyphicon-download-alt"></span></a></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div> <!--// end col-sm-11  -->
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
 
@@ -139,132 +202,199 @@
         </div> <!--  end of row -->
 
     {% endif %}
-    {% if display_pools_for_run.run_data.heading %}
-
-    <div class="row row-space-4 margin-b-4">
-        <div class="col-sm-10 col-sm-offset-1" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3>The following Run have been defined, but not yet completed</h3></div>
-                <div class="panel-body">
-                    <form method="post" enctype="multipart/form-data" name="continueWithRun"  id="continueWithRun" class="form-horizontal well">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="continueWithRun"/>
-
-                        {% for r_name, p_values, r_id in display_pools_for_run.run_data.data  %}
-                            <div class="col-sm-12">
-                            <h4>Run Name {{r_name }}</h4>
-
-                            <div class="col-sm-8">
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            {% for value in display_pools_for_run.run_data.heading %}
-                                                <th>{{value}} </th>
-                                            {% endfor %}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for p_name, p_code in  p_values  %}
-                                            <tr>
-                                                <td>{{p_name}}</td>
-                                                <td>{{p_code}}</td>
-                                            </tr>
-                                        {% endfor %}
-
-                                    </tbody>
-                                </table>
-                                <br><br>
-                            </div> <!--  end of col-sm-10 -->
-                            <div class="col-sm-4">
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>Select Run</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td><input type="checkbox" name="run_ids" value="{{r_id}}"></td>
-                                        </tr>
-
-                                    </tbody>
-                                </table>
-                                <br><br>
-                            </div> <!--  end of col-sm-10 -->
-
-                        </div> <!--  end of col-sm-10 -->
-                        {% endfor %}
-
-                        <input class= "btn pull-right btn-primary" type= "submit" id = "btnSubmit" value= "Submit">
-                    </form>
-                    </div> <!--  end of panel body -->
-                </div> <!--  end of panel  -->
-
-            </div> <!--  end of col-sm-10 -->
-        </div> <!--  end of row -->
-
-    {% endif %}
-    {% if display_pools_for_run.pool_data.heading %}
+    {% if display_pools_for_run.invalid_run_data.heading %}
         <div class="row row-space-4 margin-b-4">
             <div class="col-sm-10 col-sm-offset-1" >
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h3>Fill the information to create the New Run </h3></div>
+                <div class="panel panel-danger">
+                    <div class="panel-heading"><h3>Invalid pools </h3></div>
                     <div class="panel-body">
-                        <form method="post" enctype="multipart/form-data" name="createNewRun"  id="createNewRun" class="form-horizontal well">
-                            {% csrf_token %}
-                                <input type="hidden" name="action" value="createNewRun"/>
-                                <input type="hidden" name="lib_prep_id" value="{{display_pools_for_run.pool_ids}}"/>
-                                <div class="form-group required">
-                                    <label class="col-sm-5 control-label">Define the Experiment Name for the Run</label>
-                                    <div class="col-sm-5"><input class="form-control" required = "required" type="text"  name="experimentName" size="80"></div>
-                                    <br><br>
-                                </div>
-                                <p>Select the Pools to be included in the new Run</p>
-                                <br>
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            {% for value in display_pools_for_run.pool_data.heading%}
-                                                <th>{{value}} </th>
-                                            {% endfor %}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for p_name, p_code, number, p_id in display_pools_for_run.pool_data.data  %}
-                                            <tr>
-                                                <td>{{p_name}}</td>
-                                                <td>{{p_code}}</td>
-                                                <td>{{number}}</td>
-                                                <td><input type="checkbox" name="poolID" value="{{p_id}}"></td>
-                                            </tr>
-                                        {% endfor %}
+                        <p>Some of the samples in the following pools are missing.</p>
+                        <br>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    {% for value in display_pools_for_run.invalid_run_data.heading%}
+                                        <th>{{value}} </th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p_name, p_code, number, p_id in display_pools_for_run.invalid_run_data.data  %}
+                                    <tr>
+                                        <td>{{p_name}}</td>
+                                        <td>{{p_code}}</td>
+                                        <td>{{number}}</td>
+                                    </tr>
+                                {% endfor %}
 
-                                    </tbody>
-                                </table>
-                                <br><br>
-                                <input type="button" value="Return to Home" onclick="location.href ='/wetlab' ;"/>
-                                <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
-
-                        </form>
+                            </tbody>
+                        </table>
                     </div> <!--  end of panel body -->
                 </div> <!--  end of panel  -->
 
             </div> <!--  end of col-sm-12 -->
         </div> <!--  end of row -->
-        {% endif %}
-        {% if no_pools_for_run %}
-            <div class="row row-space-4 margin-b-4">
-                <div class="col-sm-10 col-sm-offset-1" >
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><h3>Not available Pools </h3></div>
-                        <div class="panel-body">
-                            <p>There is not available pools to create a new Run</p>
-                        </div> <!--  end of panel body -->
-                    </div> <!--  end of panel  -->
+    {% endif %}
 
-                </div> <!--  end of col-sm-12 -->
-            </div> <!--  end of row -->
-        {% endif %}
+
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="tab">
+                {% if display_pools_for_run.run_data.heading %}
+                    <button class="tablinks" onclick="summaryBin(event, 'defined')" id="defaultOpen">Defined Run</button>
+                {% endif %}
+                {% for key, values in display_pools_for_run.pool_data.platform.items %}
+                    {% if forloop.first and not display_pools_for_run.run_data.heading %}
+                        <button class="tablinks" onclick="summaryBin(event, '{{key}}')" id="defaultOpen">Pool for {{key}} </button>
+                    {% else %}
+                        <button class="tablinks" onclick="summaryBin(event, '{{key}}')">Pool for {{key}} </button>
+                    {% endif %}
+                {% endfor %}
+
+
+                {% if display_pools_for_run.run_data.heading %}
+                    <div id="{{key}}" class="tabcontent">
+                        <div class="col-sm-11" >
+                            <div class="panel panel-default">
+                                <div class="panel-heading"><h3>The following Run have been defined, but not yet completed</h3></div>
+                                <div class="panel-body">
+                                    <form method="post" enctype="multipart/form-data" name="continueWithRun"  id="continueWithRun" class="form-horizontal well">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="continueWithRun"/>
+                                        {% for r_name, p_values, r_id in display_pools_for_run.run_data.data  %}
+                                            <div class="col-sm-12">
+                                                <h4>Run Name {{r_name }}</h4>
+                                                <div class="col-sm-8">
+                                                    <table class="table">
+                                                        <thead>
+                                                            <tr>
+                                                                {% for value in display_pools_for_run.run_data.heading %}
+                                                                    <th>{{value}} </th>
+                                                                {% endfor %}
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for p_name, p_code, p_number in  p_values  %}
+                                                                <tr>
+                                                                    <td>{{p_name}}</td>
+                                                                    <td>{{p_code}}</td>
+                                                                    <td>{{p_number}}</td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                    <br><br>
+                                                </div> <!--  end of col-sm-8 -->
+                                            <div class="col-sm-4">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Select Run</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td><input type="checkbox" name="run_ids" value="{{r_id}}"></td>
+                                                        </tr>
+
+                                                    </tbody>
+                                                </table>
+                                                <br><br>
+                                            </div> <!--  end of col-sm-10 -->
+                                        {% endfor %}
+                                        <input class= "btn pull-right btn-primary" type= "submit" id = "btnSubmit" value= "Submit">
+                                    </form>
+                                </div> <!--  end of panel body -->
+                            </div> <!--  end of panel  -->
+                        </div> <!--  end of col-sm-11 -->
+                    </div> <!--  end of tab -->
+                {% endif %}
+                {% load user_text %}
+                {% for key, values in display_pools_for_run.pool_data.platform.items %}
+
+                    <div id="{{key}}" class="tabcontent">
+                        <div class="col-sm-11" >
+                            <div class="panel panel-default">
+                                <div class="panel-heading"><h3>Fill the information to create the New Run </h3></div>
+                                <div class="panel-body">
+                                    <form method="post" enctype="multipart/form-data" name="createNewRun"  id="createNewRun" class="form-horizontal well">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="createNewRun"/>
+                                        <input type="hidden" name="platform" value="{{key}}"/>
+                                        <input type="hidden" name="commercialKits" value="{{display_pools_for_run.commercial_kits|keyvalue:key}}"/>
+                                        <div class="form-group required">
+                                            <label class="col-sm-5 control-label">Define the Experiment Name for the Run</label>
+                                            <div class="col-sm-5"><input class="form-control" required = "required" type="text"  name="experimentName" size="80"></div>
+                                            <br><br>
+                                        </div>
+
+                                        {% for reagent , lots in display_pools_for_run.reagents_kits|keyvalue:key %}
+                                            <div class="form-group required">
+                                                <label class="col-sm-5 control-label">{{reagent}}</label>
+                                                <div class="col-sm-5">
+                                                    <select class="form-control" name="{{reagent}}" id="{{reagent}}">
+                                                        <option value="">Choose a value</option>
+                                                        {% for lot in lots %}
+                                                            <option value="{{lot}}">{{lot}}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>  <!-- end select input -->
+                                                <br><br>
+                                            </div>
+                                        {% endfor %}
+                                        <p>Select the Pools to be included in the new Run</p>
+                                        <br>
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    {% for value in display_pools_for_run.pool_data.heading%}
+                                                        <th>{{value}} </th>
+                                                    {% endfor %}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for p_name, p_code, number, p_id in values  %}
+                                                    <tr>
+                                                        <td>{{p_name}}</td>
+                                                        <td>{{p_code}}</td>
+                                                        <td>{{number}}</td>
+                                                        <td><input type="checkbox" name="poolID" value="{{p_id}}"></td>
+                                                    </tr>
+                                                {% endfor %}
+
+                                            </tbody>
+                                        </table>
+                                        <br><br>
+                                        <input type="button" value="Return to Home" onclick="location.href ='/wetlab' ;"/>
+                                        <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
+
+                                    </form>
+                                </div> <!--  end of panel body -->
+                            </div> <!--  end of panel  -->
+                        </div> <!--  end of col-sm-11 -->
+                    </div> <!--  end of tab -->
+                {% endfor %}
+            </div> <!--  end of tab -->
+            <script>
+                // Get the element with id="defaultOpen" and click on it
+                document.getElementById("defaultOpen").click();
+            </script>
+        </div> <!--  end of col-sm-12 -->
+    </div> <!--  end of row -->
+
+    {% if not display_pools_for_run.pool_data.heading and not display_pools_for_run.run_data.heading %}
+        <div class="row row-space-4 margin-b-4">
+            <div class="col-sm-10 col-sm-offset-1" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Not available Pools </h3></div>
+                    <div class="panel-body">
+                        <p>There is not available pools to create a new Run</p>
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+
+            </div> <!--  end of col-sm-12 -->
+        </div> <!--  end of row -->
+    {% endif %}
 
 {% endif %}
 

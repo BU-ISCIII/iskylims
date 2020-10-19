@@ -12,7 +12,11 @@ from django.contrib.auth.models import Group
 from .sample_sheet_utils import get_projects_in_run
 from django.conf import settings
 from iSkyLIMS_wetlab import wetlab_config
-from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects
+from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters
+from iSkyLIMS_core.models import SequencerInLab, SequencingPlatform
+
+
+
 
 
 def check_all_projects_exists (project_list):
@@ -36,6 +40,43 @@ def check_all_projects_exists (project_list):
             return False
     logger.debug ('End function for check_all_projects_exists')
     return True
+
+def get_conf_param_value(parameter_name):
+    '''
+    Description:
+        Function will get the parameter value defined in the configutration table
+        if not exists return 'False'
+
+    Input:
+        parameter_name    #parameter name
+    Return:
+        parameter_value
+    '''
+    parameter_value = 'False'
+    if FlexibleConfSettings.objects.filter(confParameterName__exact = parameter_name).exist():
+        parameter_obj = FlexibleConfSettings.objects.filter(confParameterName__exact = parameter_name).last()
+        parameter_value = parameter_obj.get_parameter_value()
+    return parameter_value
+
+def get_run_in_same_year_to_compare (run_object):
+    '''
+    Description:
+        The function return a list with all runs that have been created on the same year and they
+        are based on the same chemistry.
+    Input:
+        run_object    # runProcess object
+    Return:
+        same_run_in_year run_object list
+    '''
+    # get the chemistry type for the run, that will be used to compare runs with the same chemistry value
+    chem_high_mid = RunningParameters.objects.get(runName_id__exact = run_object).get_run_chemistry()
+    run_different_chemistry = RunningParameters.objects.all(). exclude(Chemistry__exact = chem_high_mid)
+    run_year = run_object.get_run_year()
+
+    start_date = str(run_year) + '-1-1'
+    end_date = str(run_year) +'-12-31'
+    same_run_in_year = RunProcess.objects.filter(run_date__range=(start_date, end_date)).exclude(runName__in = run_different_chemistry)
+    return same_run_in_year
 
 def check_valid_date_format (date):
     try:
@@ -74,6 +115,207 @@ def copy_to_remote_file (conn, run_dir, remote_file, local_file) :
             raise Exception('File not copied')
     logger.debug ('End function for copy file to remote')
     return True
+    '''
+    def get_sequencer_lanes_number_from_file (input_file, experiment_name):
+    '''
+    '''
+    Description:
+        Function read the RunInfo.xml file to get the number of lanes
+    Input:
+        input_file        # input file to get the number of lanes
+        experiment_name     # experiment name used for logging
+    Return:
+        number_of_lanes
+    '''
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('%s : Starting function get_sequencer_lanes_number_from_file', experiment_name)
+    number_of_lanes = ''
+    fh = open (input_file, 'r')
+    search_line = '.*LaneCount="(\d).*'
+    for line in fh:
+        lane_found = re.search('^\s+ %s' % search_line, line)
+        if lane_found:
+            number_of_lanes = lane_found.group(1)
+            break
+    fh.close()
+    logger.info('%s : number of lanes %s' , experiment_name , number_of_lanes)
+    logger.debug ('%s : End function get_sequencer_lanes_number_from_file', experiment_name)
+    return number_of_lanes
+    '''
+
+def create_new_sequencer_lab_not_defined (sequencer_name,l_run_parameter, experiment_name):
+    '''
+    Description:
+
+        creates a new entry in database wit only the sequencer name and the lane numbers
+    Input:
+        sequencer_name    # sequencer name
+        l_run_parameter        # runParameter.xml file
+    Functions:
+        get_sequencer_lanes_number_from_file # located at this file
+    Return:
+        new_sequencer
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('%s : Starting function create_new_sequencer_lab_not_defined', experiment_name)
+
+    number_of_lanes = find_xml_tag_text (l_run_parameter, 'NumLanes')
+    #number_of_lanes = get_sequencer_lanes_number_from_file (l_run_parameter, experiment_name)
+    seq_data = {}
+    empty_fields_in_sequencer = ['platformID', 'sequencerDescription', 'sequencerDescription', 'sequencerLocation', 'sequencerSerialNumber',
+                'sequencerState' , 'sequencerOperationStart', 'sequencerOperationEnd']
+    for item in empty_fields_in_sequencer :
+        seq_data[item] = None
+    seq_data['sequencerName'] = sequencer_name
+    seq_data['sequencerNumberLanes'] = number_of_lanes
+    new_sequencer = SequencerInLab.objects.create_sequencer_in_lab(seq_data)
+    logger.info('%s : Created the new sequencer in database' , experiment_name )
+    logger.debug ('%s : End function create_new_sequencer_lab_not_defined', experiment_name)
+    return new_sequencer
+
+
+def create_email_conf_file(email_fields, application):
+    '''
+    Description:
+        create the email configuration file . If exists the old information is deleted
+    Input:
+        email_fields    # Email fields settings
+    Constants:
+        EMAIL_CONFIGURATION_FILE_HEADING
+    Functions:
+        get_type_of_data # located at this file
+    Return:
+        True if sucessful creation
+    '''
+    conf_file = os.path.join(settings.BASE_DIR, application,'wetlab_email_conf.py')
+    #if os.path.isfile(conf_file):
+    try:
+
+        with open (conf_file, 'w') as out_fh:
+            out_fh.write(wetlab_config.EMAIL_CONFIGURATION_FILE_HEADING)
+            for key in sorted(email_fields):
+                type_of_data = get_type_of_data(email_fields[key])
+                if type_of_data == 'boolean' or type_of_data == 'integer':
+                    out_fh.write(key + ' = '+ email_fields[key]+ '\n')
+                else:
+                    out_fh.write(key + ' = \''+ email_fields[key]+ '\'\n')
+            out_fh.write(wetlab_config.EMAIL_CONFIGURATION_FILE_END)
+    except:
+        return False
+
+    return True
+
+def create_samba_conf_file(samba_fields, application):
+    '''
+    Description:
+        create the samba configuration file . If exists the old information is deleted
+    Input:
+        samba_fields    # Samba fields settings
+    Constants:
+        SAMBA_CONFIGURATION_FILE_HEADING
+    Functions:
+        get_type_of_data # located at this file
+    Return:
+        True if sucessful creation
+    '''
+    conf_file = os.path.join(settings.BASE_DIR, application,'wetlab_samba_conf.py')
+    #if os.path.isfile(conf_file):
+    try:
+
+        with open (conf_file, 'w') as out_fh:
+            out_fh.write(wetlab_config.SAMBA_CONFIGURATION_FILE_HEADING)
+            for key in sorted(samba_fields):
+                type_of_data = get_type_of_data(samba_fields[key])
+                if type_of_data == 'boolean' or type_of_data == 'integer':
+                    out_fh.write(key + ' = '+ samba_fields[key]+ '\n')
+                else:
+                    out_fh.write(key + ' = \''+ samba_fields[key]+ '\'\n')
+            out_fh.write(wetlab_config.SAMBA_CONFIGURATION_FILE_END)
+    except:
+        return False
+
+    return True
+
+def get_email_data_from_file(application):
+    '''
+    Description:
+        Fetch the email configuration file
+    Inputs:
+        application     # Application name
+    Constants:
+        EMAIL_CONFIGURATION_FILE_HEADING
+        EMAIL_CONFIGURATION_FILE_END
+    Return:
+        email_data
+    '''
+    conf_file = os.path.join(settings.BASE_DIR, application,'wetlab_email_conf.py')
+    email_data = {}
+    heading_found = False
+    try:
+        with open (conf_file, 'r') as fh:
+            for line in fh.readlines():
+                if not heading_found and wetlab_config.EMAIL_CONFIGURATION_FILE_HEADING.split('\n')[-2] in line :
+                    heading_found = True
+                    continue
+                if wetlab_config.EMAIL_CONFIGURATION_FILE_END in line:
+                    break
+                if heading_found :
+                    line = line.rstrip()
+                    key , value = line.split(' = ')
+                    email_data[key] = value.replace('\'','')
+        return email_data
+    except:
+        email_data
+
+def get_samba_data_from_file(application):
+    '''
+    Description:
+        Fetch the samba configuration file
+    Inputs:
+        application     # Application name
+    Constants:
+        SAMBA_CONFIGURATION_FILE_HEADING
+        SAMBA_CONFIGURATION_FILE_END
+    Return:
+        samba_data
+    '''
+    conf_file = os.path.join(settings.BASE_DIR, application,'wetlab_samba_conf.py')
+    samba_data = {}
+    heading_found = False
+    try:
+        with open (conf_file, 'r') as fh:
+            for line in fh.readlines():
+                if not heading_found and wetlab_config.SAMBA_CONFIGURATION_FILE_HEADING.split('\n')[-2] in line :
+                    heading_found = True
+                    continue
+                if wetlab_config.SAMBA_CONFIGURATION_FILE_END in line:
+                    break
+                if heading_found :
+                    line = line.rstrip()
+                    key , value = line.split(' = ')
+                    samba_data[key] = value.replace('\'','')
+        return samba_data
+    except:
+        samba_data
+
+def get_type_of_data (data):
+    '''
+    Description:
+        The function get always as input a string class.
+        By trying to convert the input data to int or bolean it will decide the type of data
+        If not possible to conver it returns string
+    Return:
+        type_of_data
+    '''
+    boolean_values = ['True', 'False', 'None']
+    if data in boolean_values :
+        return 'boolean'
+    try:
+        integer = int(data)
+        return 'integer'
+    except:
+        return 'string'
 
 
 def fetch_remote_file (conn, run_dir, remote_file, local_file) :
@@ -97,18 +339,17 @@ def fetch_remote_file (conn, run_dir, remote_file, local_file) :
         Exception if file could not be fetched
     '''
     logger = logging.getLogger(__name__)
-    logger.debug ('Starting function for fetching remote file')
+    logger.debug ('%s : Starting function for fetching remote file', run_dir)
     with open(local_file ,'wb') as r_par_fp :
         try:
-            #import pdb; pdb.set_trace()
             conn.retrieveFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME, remote_file, r_par_fp)
             logger.info('Retrieving the remote %s file for %s/%s', local_file, run_dir,remote_file)
         except Exception as e:
-            string_message = 'Unable to fetch the ' + local_file + 'file on folder ' + run_dir
+            string_message = 'Unable to fetch the ' + local_file + 'file on folder : ' + run_dir
             logging_errors (string_message, False, True)
             os.remove(local_file)
             raise Exception('File not found')
-    logger.debug ('End function for fetching remote file')
+    logger.debug ('%s : End function for fetching remote file', run_dir)
     return local_file
 
 
@@ -169,18 +410,15 @@ def get_available_platform ():
     Description:
         The function fetch the available run states by quering
         the run_state table
-    Import:
-        platform object from iSkyLIMS_drylab
     Variable:
         available_states   # list containing the run state names
         platforms   # all platform objects
     Return:
-        available_states
+        available_platforms
     '''
-    from iSkyLIMS_drylab.models import Platform
     available_platforms =[]
 
-    platforms = Platform.objects.all()
+    platforms = SequencingPlatform.objects.all()
     for platform in platforms :
         available_platforms.append(platform.get_platform_name())
     return available_platforms
@@ -223,8 +461,8 @@ def get_new_runs_from_remote_server (processed_runs, conn, shared_folder):
     logger = logging.getLogger(__name__)
     logger.debug('Starting function get_new_runs_on_remote_server' )
     new_runs = []
-    #run_data_root_folder = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, '/')
     run_data_root_folder = os.path.join('/', wetlab_config.SAMBA_APPLICATION_FOLDER_NAME )
+    logger.debug('Shared folder  on remote server is : %s', run_data_root_folder)
     run_folder_list = conn.listPath( shared_folder, run_data_root_folder)
     for sfh in run_folder_list:
         if sfh.isDirectory:
@@ -233,7 +471,6 @@ def get_new_runs_from_remote_server (processed_runs, conn, shared_folder):
                 continue
             # if the run folder has been already process continue searching
             if folder_run in processed_runs:
-                #logger.debug('folder run  %s already processed', folder_run)
                 continue
             else:
                 logger.info ('Found a new run  %s ',folder_run)
@@ -249,6 +486,8 @@ def get_experiment_name_from_file (l_run_parameter) :
         file and it will return the experiment name value
     Input:
         l_run_parameter  # file to find the tag
+    Functions:
+        find_xml_tag_text
     Variables:
         experiment_name # name of the experiment found in runParameter file
     Return:
@@ -364,6 +603,7 @@ def logging_errors(string_text, showing_traceback , print_on_screen ):
         send_error_email_to_user # located on utils.wetlab_misc_utilities
     Constant:
         SENT_EMAIL_ON_ERROR
+        EMAIL_USER_CONFIGURED
     Variables:
         subject # text to include in the subject email
     '''
@@ -373,9 +613,10 @@ def logging_errors(string_text, showing_traceback , print_on_screen ):
     if showing_traceback :
         logger.error('Showing traceback: ',  exc_info=True)
     logger.error('-----------------    END ERROR   --------------')
-    if wetlab_config.SENT_EMAIL_ON_ERROR :
-        subject = 'Error found on wetlab'
-        send_error_email_to_user (subject, string_text, wetlab_config.FROM_EMAIL_ADDRESS,
+    if wetlab_config.EMAIL_USER_CONFIGURED:
+        if wetlab_config.SENT_EMAIL_ON_ERROR :
+            subject = 'Error found on wetlab'
+            send_error_email_to_user (subject, string_text, wetlab_config.FROM_EMAIL_ADDRESS,
                                 wetlab_config.TO_EMAIL_ADDRESS)
     if print_on_screen :
         from datetime import datetime
@@ -475,15 +716,15 @@ def open_samba_connection():
         wetlab_config.SAMBA_SHARED_FOLDER_NAME,wetlab_config.SAMBA_REMOTE_SERVER_NAME,
         use_ntlm_v2=wetlab_config.SAMBA_NTLM_USED,domain=wetlab_config.SAMBA_DOMAIN,
         is_direct_tcp=wetlab_config.IS_DIRECT_TCP )
-    try:
-        if wetlab_config.SAMBA_HOST_NAME :
-            conn.connect(socket.gethostbyname(wetlab_config.SAMBA_HOST_NAME), int(wetlab_config.SAMBA_PORT_SERVER))
-        else:
-            conn.connect(wetlab_config.SAMBA_IP_SERVER, int(wetlab_config.SAMBA_PORT_SERVER))
-    except:
-        string_message = 'Unable to connect to remote server'
-        logging_errors (string_message, True, True)
-        raise IOError ('Samba connection error')
+    #try:
+    if wetlab_config.SAMBA_HOST_NAME :
+        conn.connect(socket.gethostbyname(wetlab_config.SAMBA_HOST_NAME), int(wetlab_config.SAMBA_PORT_SERVER))
+    else:
+        conn.connect(wetlab_config.SAMBA_IP_SERVER, int(wetlab_config.SAMBA_PORT_SERVER))
+    #except:
+        #string_message = 'Unable to connect to remote server'
+        #logging_errors (string_message, True, True)
+    #    raise IOError ('Samba connection error')
 
 
     logger.debug ('End function open_samba_connection')
@@ -624,3 +865,44 @@ def send_error_email_to_user ( subject, body_message, from_user, to_user):
     Input:
     '''
     send_mail (subject, body_message, from_user, to_user)
+
+
+
+def get_project_search_fields_form():
+    project_form_data = {}
+
+    project_form_data['run_states'] = []
+    project_form_data['available_platforms'] = []
+    project_form_data['available_sequencers'] = []
+    run_states = RunStates.objects.all()
+    for r_state in run_states :
+        project_form_data['run_states'].append(r_state.get_run_state_name())
+
+    platforms = SequencingPlatform.objects.all()
+    for platform in platforms :
+        project_form_data['available_platforms'].append(platform.get_platform_name())
+    sequencers = SequencerInLab.objects.all()
+    for sequencer in sequencers :
+        project_form_data['available_sequencers'].append(sequencer.get_sequencer_name())
+
+    return project_form_data
+
+
+def get_run_search_fields_form():
+    run_form_data = {}
+
+    run_form_data['run_states'] = []
+    run_form_data['available_platforms'] = []
+    run_form_data['available_sequencers'] = []
+    run_states = RunStates.objects.all()
+    for r_state in run_states :
+        run_form_data['run_states'].append(r_state.get_run_state_name())
+
+    platforms = SequencingPlatform.objects.all()
+    for platform in platforms :
+        run_form_data['available_platforms'].append(platform.get_platform_name())
+    machines = SequencerInLab.objects.all()
+    for machine in machines :
+        run_form_data['available_sequencers'].append(machine.get_sequencer_name())
+
+    return run_form_data

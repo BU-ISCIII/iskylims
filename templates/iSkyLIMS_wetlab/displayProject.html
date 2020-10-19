@@ -1,0 +1,198 @@
+{% extends 'iSkyLIMS_wetlab/base.html' %}
+{% load static %}
+{% block content %}
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/wetlab.js" %}"></script>
+<style>
+    .table-wrapper {
+        max-height: 550px;
+        overflow: auto;
+        display:inline-block;
+        width: 950px;
+    }
+    .scroll-wrapper-sm-6 {
+        max-height: 400px;
+        overflow: auto;
+        display:inline-block;
+        width: 580px;
+    }
+</style>
+{% if display_project_data %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-6">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Project Information</h3></div>
+                <div class="panel-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th colspan="2"> {{ display_project_data.p_name }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>UserID</td>
+                                <td>{{display_project_data.user_id}}</td>
+                            </tr>
+                            {% for  field , value in display_project_data.dates %}
+                                <tr>
+                                    <td>{{ field }}</td>
+                                    <td>{{ value }}</td>
+                                </tr>
+                            {% endfor %}
+                            <tr>
+                                <td>Collection Index kit</td>
+                                <td>{{display_project_data.collection_index}}</td>
+                            </tr>
+                            <tr>
+                                <td>BaseSpace used file</td>
+                                <td><a href="/{{ display_project_data.base_space_file }}" > BaseSpace file <span class="glyphicon glyphicon-pencil"></span></a></td>
+                            </tr>
+                            <tr>
+                                <td>Run Name</td>
+                                {% if display_project_data.run_id %}
+                                    <td><a href="/wetlab/displayRun={{ display_project_data.run_id }}">{{display_project_data.run_name}}</a></td>
+                                {% else %}
+                                    <td>{{display_project_data.run_name}}</td>
+                                {% endif %}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-6 -->
+         <!-- new panel on the right to show progress state -->
+        <div class="col-sm-3 col-sm-offset-1">
+            <BR>
+            <div class="panel panel-default">
+                <div class="panel-heading">Run State : <b>{{ display_project_data.state}} </b></div>
+                <div class="panel-body">
+                    <div class="circle-progress {{ display_project_data.graphic_color }}">
+                    {% if display_project_data.graphic_value > 50 %}
+                        <span class="circle-progress-left">
+                            <span class="circle-progress-bar"></span>
+                        </span>
+                    {% endif%}
+                        <span class="circle-progress-right">
+                            <span class="circle-progress-bar"></span>
+                        </span>
+                        <div class="circle-progress-value">{{ display_project_data.graphic_value }}%</div>
+                    </div>
+            </div> <!--  end of panel body -->
+          </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-4 -->
+    </div> <!--  end of row -->
+          {% if display_project_data.fl_summary %}
+      <div class="row row-space-8 margin-b-1">
+         <div class="col-sm-8 ">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Flowcell Summary for this project.</h3></div>
+                <div class="panel-body">
+                  <table class="table">
+                      <thead>
+                        <tr>
+                        {% for values in display_project_data.fl_summary.0 %}
+                          <th>{{ values }} </th>
+                        {%endfor%}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                        {% for values in display_project_data.fl_summary.1 %}
+                          <td>{{ values }} </td>
+                        {%endfor%}
+                        </tr>
+                      </tbody>
+                  </table>
+
+                </div> <!--  end of panel body -->
+             </div> <!--  end of panel  -->
+           </div> <!--  end of col-sm-4 -->
+      </div> <!--  end of row -->
+        {% endif%}
+        {% if display_project_data.lane_summary %}
+      <div class="row row-space-10 margin-b-1">
+         <div class="col-sm-10 ">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Lane Summary for this project.</h3></div>
+                <div class="panel-body">
+                  <table class="table">
+                      <thead>
+                        <tr>
+                        {% for values in display_project_data.lane_summary.0 %}
+                          <th>{{ values }} </th>
+                        {%endfor%}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                        {% for values in display_project_data.lane_summary.1 %}
+                          <td>{{ values }} </td>
+                        {%endfor%}
+                        </tr>
+                        <tr>
+                        {% for values in display_project_data.lane_summary.2 %}
+                          <td>{{ values }} </td>
+                        {%endfor%}
+                        </tr>
+                        <tr>
+                        {% for values in display_project_data.lane_summary.3 %}
+                          <td>{{ values }} </td>
+                        {%endfor%}
+                        </tr>
+                        <tr>
+                        {% for values in display_project_data.lane_summary.4 %}
+                          <td>{{ values }} </td>
+                        {%endfor%}
+                        </tr>
+                      </tbody>
+                  </table>
+
+                </div> <!--  end of panel body -->
+             </div> <!--  end of panel  -->
+           </div> <!--  end of col-sm-4 -->
+      </div> <!--  end of row -->
+      {% endif%}
+      {% if display_project_data.sample_table %}
+      <div class="row row-space-10 margin-b-1">
+         <div class="col-sm-10 ">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Samples used for this project.</h3>
+                <button onclick="exportTableToExcel('sampleProject')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
+                <BR>
+                </div>
+                <div class="panel-body">
+                    <div class="table-wrapper">
+                      <table id="sampleProject" class="table table-hover">
+                          <thead>
+                            <tr>
+                            {% for values in display_project_data.sample_heading %}
+                              <th>{{ values }} </th>
+                            {%endfor%}
+                            </tr>
+                          </thead>
+                          <tbody>
+                              {% for key, values_sample in display_project_data.sample_table.items %}
+                                <tr>
+                                    {% for sample, barcode, pf_cluster, percent, yield, q30 ,mean in values_sample %}
+                                    <td><a href="/wetlab/displaySampleInRun={{ key }}">{{ sample }}</a> </td>
+                                    <td>{{ barcode }} </td>
+                                    <td>{{ pf_cluster }} </td>
+                                    <td>{{ percent }} </td>
+                                    <td>{{ yield }} </td>
+                                    <td>{{ q30 }} </td>
+                                    <td>{{ mean }} </td>
+                                    {%endfor%}
+                                </tr>
+                              {%endfor%}
+                          </tbody>
+                      </table>
+                    </div> <!--  end of table wrapper  -->
+                </div> <!--  end of panel body -->
+             </div> <!--  end of panel  -->
+           </div> <!--  end of col-sm-4 -->
+      </div> <!--  end of row -->
+    {% endif%}
+
+
+{% endif%}
+{% endblock %}

@@ -51,8 +51,12 @@ def looking_for_new_runs ():
     logger=open_log(config_file)
     logger.info('###########---Start Crontab-----############')
     logger.info('Start searching for new/updating runs')
-
-    new_runs_updated, run_with_error = search_update_new_runs ()
+    try:
+        new_runs_updated, run_with_error = search_update_new_runs ()
+    except:
+        print ('****** Exiting abnormal the crontab  process with errors')
+        logger.info('###########-----End Crontab--######################')
+        return
     logger.info('------- Printing summary for search_update_new_runs -----')
     if len (new_runs_updated) > 0:
         for new_run in new_runs_updated :
@@ -62,7 +66,7 @@ def looking_for_new_runs ():
 
     if len (run_with_error) > 0:
         for error_run in run_with_error :
-            logger.info('%s has been set to error state', error_run)
+            logger.info('%s found errors to prevent to be processed', error_run)
     logger.info('------- End summary for search_update_new_runs -----')
     logger.info('Exiting the proccess for  new/updating runs')
 
@@ -89,7 +93,7 @@ def looking_for_new_runs ():
         for state in run_with_error:
             if len (run_with_error[state]) > 0 :
                 for run_error in run_with_error[state]:
-                    logger.info('Run  %s was set to Error when processing run on %s state', run_error, state)
+                    logger.info('%s : Unable to process because of error found in %s state', run_error, state)
 
     logger.info('------- End summary for search_update_new_runs -----')
     time_stop= datetime.now().strftime('%Y-%m-%d %H:%M:%S')

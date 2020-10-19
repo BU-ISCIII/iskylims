@@ -2,49 +2,57 @@
 {% load static %}
 {% block content %}
 {% csrf_token %}
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script>
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script>
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/wetlab.js" %}"></script>
-
+{% include "iSkyLIMS_core/graphic_chart_functionality.html" %}
+<style>
+    .scroll-wrapper-sm-12 {
+        max-height: 350px;
+        overflow: auto;
+        display:inline-block;
+        width: 1170px;
+    }
+</style>
 {% if researcher_statistics %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
             <div class="panel panel-default">
                 <div class="panel-heading"><h2>Statistics results for Investigator {{researcher_statistics.researcher_name}} </h2></div>
-                <div class="panel-body">
                 {% for sequencer in researcher_statistics.projects_data  %}
-                    {% for sequencer_name, values_in_dict in sequencer.items %}
-                        <h3> Projects using the sequencer {{sequencer_name }} : </h3>
-                        <button onclick="exportTableToExcel('sequencer{{sequencer_name}}')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
-                        <BR>
-                        <div class="table-wrapper-scroll-y ">
-                            <table id="sequencer{{sequencer_name}}" class="table  table-hover">
-                                <thead>
-                                    <tr>
-                                        {% for values  in researcher_statistics.projects_heading %}
-                                            <th>{{ values }} </th>
-                                        {%endfor%}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for values in values_in_dict %}
-                                        <tr>
-                                            {% for value in values %}
-                                                <td>{{ value }}</td>
-                                            {% endfor %}
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                    <div class="row row-space-2 margin-b-4">
+
+                        {% for sequencer_name, values_in_dict in sequencer.items %}
+
+                            <div class="row row-space-2 margin-b-4">
+                                <div class="col-sm-12" >
+                                    <h3 style="text-align:center"> Projects using the sequencer {{sequencer_name }} : </h3>
+                                </div> <!--// end col-sm-12  -->
+                            </div>  <!--// end row -->
+                            <button onclick="exportTableToExcel('sequencer{{sequencer_name}}')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
                             <BR>
-                        </div> <!--  end of col-table-responsive -->
-                    {% endfor%}
+                            <div class="panel-body scroll-wrapper-sm-12">
+                                <table id="sequencer{{sequencer_name}}" class="table  table-hover">
+                                    <thead>
+                                        <tr>
+                                            {% for values  in researcher_statistics.projects_heading %}
+                                                <th>{{ values }} </th>
+                                            {%endfor%}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for values in values_in_dict %}
+                                            <tr>
+                                                {% for value in values %}
+                                                    <td>{{ value }}</td>
+                                                {% endfor %}
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                <BR>
+                            </div> <!--  end of col-scroll-wrapper -->
+                        {% endfor%}
+                    </div>  <!--// end row -->
                 {% endfor %}
-                </div>  <!--  end of panel body  -->
+
             </div> <!--// end panel -->
         </div> <!--// end col-sm-12  -->
     </div> <!--// end row -->
@@ -117,7 +125,7 @@
             {% csrf_token %}
             <input type="hidden" name="action" value="researcher"/>
              <div class="form-group required">
-                  <label class="col-sm-5  control-label" for="researchername" >Fill the Investigator name </label>
+                  <label class="col-sm-5  control-label" for="researchername" >Investigator UserID </label>
                   {% if request.user|has_group:"WetlabManager" %}
                   <div class="col-sm-5"><input class="form-control" type="text" required = "required" name="researchername" id="reserchername" size="100" maxlength="100"></div>
                   {% else %}
@@ -150,15 +158,15 @@
         <BR><BR>
         <div class="col-sm-3 col-sm-offset-1">
           <div class="panel panel-default">
-             <div class="panel-heading">Searching information project per Investigator</div>
+             <div class="panel-heading"><h5>Statistics information per Investigator</h5></div>
              <div class="panel-body">
-             <p>Searching information for the projects created by a Investigator<BR>
+             <p>Statistics information for the projects created by a Investigator<BR>
              <p>For extended help click on the button below.</p>
             <center><button id="myBtn"> Help </button></center>
             </div>  <!--  end of panel body  -->
         </div> <!--// end panel -->
         <!-- Insert the Help window when clicking on the button -->
-        {% include 'iSkyLIMS_wetlab/search-researcher-help.html' %}
+        {% include 'iSkyLIMS_wetlab/statistics-researcher-help.html' %}
 
     </div> <!--// end row -->
     <!-- End of FORM for searching RUN information -->

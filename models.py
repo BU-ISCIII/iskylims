@@ -3,13 +3,23 @@ import datetime, os
 from django.db import models
 from django import forms
 from django.utils import timezone
-from django.utils.encoding import python_2_unicode_compatible
+#from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
 from django_utils.models import Center
 from django.utils.translation import ugettext_lazy as _
 
 from .  import wetlab_config
-from iSkyLIMS_core.models import MoleculePreparation , Samples , ProtocolType, Protocols, ProtocolParameters, UserLotCommercialKits
+from iSkyLIMS_core.models import MoleculePreparation , Samples , ProtocolType, Protocols, ProtocolParameters, UserLotCommercialKits, CommercialKits, SequencerInLab, SequencingConfiguration, SequencingPlatform
+
+class FlexibleConfSettings(models.Model):
+    confParameterName = models.CharField(max_length=255)
+    confParameterValue = models.CharField(max_length=255)
+
+    def __str__ (self):
+        return '%s' %(self.confParameterName)
+
+    def get_parameter_value(self):
+        return '%s' %(self.confParamValue)
 
 class RunErrors (models.Model):
     errorCode = models.CharField(max_length=10)
@@ -24,7 +34,26 @@ class RunStates (models.Model):
     def __str__ (self):
         return '%s' %(self.runStateName)
 
+    def get_run_state_name(self):
+        return '%s' %(self.runStateName)
+
 class RunProcess(models.Model):
+    usedSequencer = models.ForeignKey(
+                        SequencerInLab,
+                        on_delete=models.CASCADE, blank=True, null = True)
+    runError = models.ForeignKey(
+                        RunErrors,
+                        on_delete=models.CASCADE, null = True, blank = True)
+    stateBeforeError = models.ForeignKey (
+                        RunStates,
+                        on_delete = models.CASCADE, null = True, blank = True)
+    state = models.ForeignKey (
+                        RunStates,
+                        on_delete = models.CASCADE, related_name = 'state_of_run', null = True, blank = True)
+    centerRequestedBy = models.ForeignKey (
+                        Center,
+                        on_delete=models.CASCADE, null = True, blank = True )
+    reagent_kit = models.ManyToManyField(UserLotCommercialKits)
     runName = models.CharField(max_length=45)
     sampleSheet = models.FileField(upload_to = wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY, null = True, blank = True)
     generatedat = models.DateTimeField(auto_now_add=True)
@@ -33,22 +62,33 @@ class RunProcess(models.Model):
     bcl2fastq_finish_date = models.DateTimeField(auto_now = False, null=True, blank=True)
     run_completed_date = models.DateTimeField(auto_now = False, null=True, blank=True)
     #runState = models.CharField(max_length=25)
-    state = models.ForeignKey ( RunStates, on_delete = models.CASCADE, related_name = 'state_of_run', null = True, blank = True)
+
     index_library = models.CharField(max_length=85)
     samples= models.CharField(max_length=45,blank=True)
     useSpaceImgMb=models.CharField(max_length=10, blank=True)
     useSpaceFastaMb=models.CharField(max_length=10, blank=True)
     useSpaceOtherMb=models.CharField(max_length=10, blank=True)
-    centerRequestedBy = models.ForeignKey (Center, on_delete=models.CASCADE)
+
     sequencerModel = models.ForeignKey ('iSkyLIMS_drylab.Machines', on_delete=models.CASCADE, null=True, blank=True)
-    runError = models.ForeignKey( RunErrors, on_delete=models.CASCADE, null = True, blank = True)
-    stateBeforeError = models.ForeignKey ( RunStates, on_delete = models.CASCADE, null = True, blank = True)
+
 
     def __str__(self):
         return '%s' %(self.runName)
 
     def get_run_id (self):
         return '%s' %(self.id)
+
+    def get_recorded_date_no_format(self):
+        return self.generatedat
+
+    def get_run_date_no_format(self):
+        return self.run_date
+
+    def get_run_finish_date_no_format(self):
+        return self.run_finish_date
+
+    def get_run_finish_date(self):
+        return self.run_finish_date.strftime("%B %d, %Y")
 
     def get_run_date (self):
         if self.run_date is None :
@@ -57,11 +97,14 @@ class RunProcess(models.Model):
             rundate=self.run_date.strftime("%B %d, %Y")
         return rundate
 
+    def get_run_year(self):
+        return '%s' %(self.run_date.timetuple().tm_year)
+
     def get_error_text (self):
         return '%s' %(self.runError)
 
     def get_state(self):
-        return '%s' %(self.state)
+        return '%s' %(self.state.get_run_state_name())
 
     def get_state_before_error(self):
         return '%s' %(self.stateBeforeError)
@@ -109,22 +152,30 @@ class RunProcess(models.Model):
         other_size = int(other_size_str.replace(',',''))
         total_size = image_size + data_size + other_size
         return '%s'%(total_size)
-
+    '''
     def get_run_sequencerModel (self):
         return '%s' %(self.sequencerModel)
+    '''
+    def get_run_used_sequencer (self):
+        return '%s' %(self.usedSequencer)
 
     def get_run_platform (self):
-        return '%s' %self.sequencerModel.platformID
-
+        return '%s' %(self.usedSequencer.get_sequencing_platform_name())
+    '''
     def get_machine_lanes(self):
         number_of_lanes = self.sequencerModel.get_number_of_lanes()
         return int(number_of_lanes)
+    '''
+    def get_sequencing_lanes(self):
+        number_of_lanes = self.usedSequencer.get_number_of_lanes()
+        return int(number_of_lanes)
+
 
     def get_sample_file (self):
         return '%s' %(self.sampleSheet)
 
-    def update_library (self, library_name):
-        self.index_library = library_name
+    def update_index_library (self, index_library_name):
+        self.index_library = index_library_name
         self.save()
         return True
 
@@ -178,8 +229,13 @@ class RunProcess(models.Model):
         self.save()
         return True
 
-    def set_sequencer (self, sequencer):
-        self.sequencerModel = sequencer
+    def set_run_sample_sheet(self, sample_sheet):
+        self.sampleSheet = sample_sheet
+        self.save()
+        return True
+
+    def set_used_sequencer (self, sequencer):
+        self.usedSequencer = sequencer
         self.save()
         return True
 
@@ -193,17 +249,21 @@ class LibraryKit (models.Model):
         return '%s' %(self.libraryName)
 
 
-
+class ProjectsManager(models.Manager):
+    def create_new_project(self,project_data):
+        new_project = self.create(user_id = ['user_id'],projectName = project_data['projectName'])
+        return new_project
 
 
 class Projects(models.Model):
-    runprocess_id = models.ForeignKey(
-            RunProcess,
-            on_delete=models.CASCADE, null = True) # added null for new lab process functionality
+    #runprocess_id = models.ForeignKey(
+    #        RunProcess,
+    #        on_delete=models.CASCADE, null = True) # added null for new lab process functionality
     user_id= models.ForeignKey(User,on_delete=models.CASCADE, null = True)
     LibraryKit_id = models.ForeignKey(
             LibraryKit,
-            on_delete=models.CASCADE , null=True)
+            on_delete=models.CASCADE , null=True, blank = True)
+    runProcess = models.ManyToManyField(RunProcess)
     BaseSpaceLibrary = models.CharField(max_length=45, null=True, blank=True)
     projectName= models.CharField(max_length=45)
     libraryKit=models.CharField(max_length=125)
@@ -217,17 +277,21 @@ class Projects(models.Model):
     def __str__(self):
         return '%s' %(self.projectName)
 
+    def get_base_space_file (self):
+        return '%s' %(self.baseSpaceFile)
+
     def get_state(self):
         return '%s' %(self.runprocess_id.state.runStateName)
 
-    def get_project_info (self):
-        generated_date=self.generatedat.strftime("%I:%M%p on %B %d, %Y")
+    def get_project_dates (self):
         if self.project_run_date is None:
             projectdate = 'Run NOT started'
         else :
             projectdate=self.project_run_date.strftime("%B %d, %Y")
-        return '%s;%s;%s;%s;%s' %(self.projectName, self.libraryKit,
-                        self.baseSpaceFile, generated_date, projectdate )
+        p_info = []
+        p_info.append(self.generatedat.strftime("%B %d, %Y"))
+        p_info.append(projectdate)
+        return p_info
 
     def get_p_info_change_library (self):
         run_name = self.runprocess_id.runName
@@ -239,6 +303,15 @@ class Projects(models.Model):
 
         return '%s;%s;%s;%s;%s'%(run_name, self.projectName, projectdate, user_name, self.libraryKit)
 
+    def get_run_name(self):
+        return '%s' %(self.runprocess_id.get_run_name())
+
+    def get_run_id(self):
+        return '%s' %(self.runprocess_id.get_run_id())
+
+    def get_run_obj(self):
+        return self.runprocess_id
+
     def get_user_name (self):
         user_name = self.user_id.username
         return '%s' %(user_name)
@@ -246,7 +319,7 @@ class Projects(models.Model):
     def get_project_name (self):
         return '%s' %(self.projectName)
 
-    def get_library_name (self):
+    def get_index_library_name (self):
         return '%s' %(self.libraryKit)
 
     def get_date (self):
@@ -259,6 +332,16 @@ class Projects(models.Model):
     def get_project_id(self):
         return '%s' %(self.id)
 
+    def add_run(run_obj):
+        self.runProcess.add(run_obj)
+        return self
+
+    def set_project_run_date(self, date):
+        self.project_run_date = date
+        self.save()
+        return self
+
+    objects = ()
 
 class RunningParametersManager (models.Manager) :
 
@@ -321,6 +404,9 @@ class RunningParameters (models.Model):
     def __str__(self):
         return '%s' %(self.RunID)
         #return '%s' %(self.runName_id)
+
+    def get_run_chemistry(self):
+        return '%s' %(self.Chemistry)
 
     def get_run_parameters_info (self):
         #str_run_start_date=self.RunStartDate.strftime("%I:%M%p on %B %d, %Y")
@@ -543,7 +629,7 @@ class StatsFlSummary(models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
             on_delete=models.CASCADE)
-    project_id = models.ForeignKey(Projects, on_delete=models.CASCADE, null=True)
+    project_id = models.ForeignKey(Projects, on_delete=models.CASCADE, null=True, blank=True)
     defaultAll =models.CharField(max_length=40, null=True)
     flowRawCluster = models.CharField(max_length=40)
     flowPfCluster= models.CharField(max_length=40)
@@ -572,7 +658,7 @@ class StatsLaneSummary (models.Model):
     runprocess_id = models.ForeignKey(
             RunProcess,
             on_delete=models.CASCADE)
-    project_id = models.ForeignKey(Projects, on_delete=models.CASCADE,  null=True)
+    project_id = models.ForeignKey(Projects, on_delete=models.CASCADE,  null=True, blank=True)
     defaultAll =models.CharField(max_length=40, null=True)
     lane= models.CharField(max_length=10)
     pfCluster = models.CharField(max_length=64)
@@ -597,8 +683,12 @@ class StatsLaneSummary (models.Model):
                 self.yieldMb, self.biggerQ30, self.meanQuality)
 
     def get_stats_info (self):
-
-        return'%s;%s;%s;%s' %(self.biggerQ30, self.meanQuality, self.yieldMb, self.pfCluster)
+        stats_info = []
+        stats_info.append(self.biggerQ30)
+        stats_info.append(self.meanQuality)
+        stats_info.append(self.yieldMb)
+        stats_info.append(self.pfCluster)
+        return stats_info
 
     objects = StatsLaneSummaryManager ()
 
@@ -640,6 +730,12 @@ class SamplesInProject (models.Model):
     project_id = models.ForeignKey(
                 Projects,
                 on_delete= models.CASCADE)
+    runProcess_id = models.ForeignKey(
+                RunProcess,
+                on_delete = models.CASCADE, null = True, blank = True)
+    user_id = models.ForeignKey(
+                User,
+                on_delete=models.CASCADE, null = True, blank = True)
     sampleName = models.CharField(max_length=255)
     barcodeName = models.CharField(max_length=255)
     pfClusters = models.CharField(max_length=55)
@@ -652,12 +748,28 @@ class SamplesInProject (models.Model):
     def __str__ (self):
         return '%s' %(self.sampleName)
 
+    def get_info_for_searching(self):
+        sample_info = []
+        sample_info.append(self.pk)
+        sample_info.append(self.sampleName)
+        sample_info.append(self.project_id.get_project_name())
+        sample_info.append(self.project_id.get_run_name())
+        sample_info.append(self.generated_at.strftime("%I:%M%p on %B %d, %Y"))
+        return sample_info
+
+    def get_sample_id(self):
+        return '%s' %(self.id)
+
     def get_sample_information(self):
         return '%s;%s;%s;%s;%s;%s;%s' %(self.sampleName , self.barcodeName,
                 self.pfClusters ,self.percentInProject, self.yieldMb ,
                 self.qualityQ30 , self.meanQuality )
+
     def get_sample_name(self):
         return '%s' %(self.sampleName)
+
+    def get_project_id (self) :
+        return '%s' %(self.project_id.pk)
 
     def get_project_name (self) :
         #p_id = self.project_id
@@ -665,6 +777,15 @@ class SamplesInProject (models.Model):
         project_name = self.project_id.get_project_name()
         #Projects.objects.prefetch_related('user_id').filter(user_id = user_id)
         return '%s' %(project_name)
+
+    def get_run_name(self):
+        return '%s' %(self.runProcess_id.get_run_name())
+
+    def get_run_obj(self):
+        return self.runProcess_id
+
+    def get_run_id(self):
+        return self.runProcess_id.pk
 
     def get_quality_sample (self):
         return '%s' %(self.qualityQ30)
@@ -730,6 +851,9 @@ class CollectionIndexValues (models.Model):
         return '%s;%s;%s;%s;%s' %(self.defaultWell, self.index_7, self.i_7_seq,
                         self.index_5, self.i_5_seq)
 
+    def get_collection_index_id(self):
+        return '%s' %(self.collectionIndexKit_id.get_id())
+
     def get_collection_index_name(self):
         return '%s' %(self.collectionIndexKit_id.get_collection_index_name())
 
@@ -737,12 +861,18 @@ class libPreparationUserSampleSheetManager (models.Manager):
 
     def create_lib_prep_user_sample_sheet (self, user_sample_sheet_data):
         register_user_obj = User.objects.get(username__exact = user_sample_sheet_data['user'])
-        collection_index_kit_id = CollectionIndexKit.objects.get(collectionIndexName__exact = user_sample_sheet_data['index_adapter'])
+        if user_sample_sheet_data['index_adapter'] == '':
+            collection_index_kit_id = None
+        else:
+            collection_index_kit_id = CollectionIndexKit.objects.get(collectionIndexName__exact = user_sample_sheet_data['index_adapter'])
         file_name =  os.path.basename(user_sample_sheet_data['file_name'])
+        configuration = SequencingConfiguration.objects.filter( platformID__platformName__exact = user_sample_sheet_data['platform'], configurationName__exact = user_sample_sheet_data['configuration']).last()
         new_lib_prep_user_sample_sheet = self.create(registerUser = register_user_obj,
                     collectionIndexKit_id  = collection_index_kit_id, reads = ','.join(user_sample_sheet_data['reads']),
-                    sampleSheet = file_name, assay = user_sample_sheet_data['assay'],
-                    adapter1 = user_sample_sheet_data['adapter1'], adapter2 = user_sample_sheet_data['adapter2'])
+                    sampleSheet = file_name, application = user_sample_sheet_data['application'],
+                    instrument = user_sample_sheet_data ['instrument'], assay = user_sample_sheet_data['assay'],
+                    adapter1 = user_sample_sheet_data['adapter1'], adapter2 = user_sample_sheet_data['adapter2'],
+                    sequencingConfiguration = configuration)
         return new_lib_prep_user_sample_sheet
 
 class libPreparationUserSampleSheet (models.Model):
@@ -754,12 +884,19 @@ class libPreparationUserSampleSheet (models.Model):
                 CollectionIndexKit,
                 on_delete= models.CASCADE, null = True)
 
+    sequencingConfiguration = models.ForeignKey(
+                SequencingConfiguration,
+                on_delete= models.CASCADE, null = True)
+
     sampleSheet = models.FileField(upload_to = wetlab_config.LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY)
     generatedat = models.DateTimeField(auto_now_add=True, null=True)
+    application = models.CharField(max_length=70, null = True, blank = True)
+    instrument = models.CharField(max_length=70, null = True, blank = True)
     adapter1 = models.CharField(max_length=70, null = True, blank = True)
     adapter2 = models.CharField(max_length=70, null = True, blank = True)
     assay = models.CharField(max_length=70, null = True, blank = True)
     reads = models.CharField(max_length=10, null = True, blank = True)
+    confirmedUsed = models.BooleanField(default = False)
 
     def __str__ (self):
         return '%s' %(self.sampleSheet)
@@ -773,8 +910,31 @@ class libPreparationUserSampleSheet (models.Model):
         adapters.append(self.adapter2)
         return adapters
 
+
+
     def get_collection_index_kit (self):
         return '%s' %(self.collectionIndexKit_id.get_collection_index_name())
+
+    def get_sequencing_configuration_platform (self):
+        return '%s'  %(self.sequencingConfiguration.get_platform_name())
+    def get_user_sample_sheet_id (self):
+        return '%s' %(self.pk)
+
+    def get_all_data(self):
+        s_s_data = []
+        s_s_data.append(self.collectionIndexKit_id.get_collection_index_name())
+        s_s_data.append(self.application)
+        s_s_data.append(self.instrument)
+        s_s_data.append(self.adapter1)
+        s_s_data.append(self.adapter2)
+        s_s_data.append(self.assay)
+        s_s_data.append(self.reads.split(',')[0])
+        return s_s_data
+
+    def update_confirm_used (self, confirmation):
+        self.confirmedUsed = confirmation
+        self.save()
+        return self
 
     objects = libPreparationUserSampleSheetManager()
 
@@ -789,11 +949,12 @@ class StatesForPool (models.Model):
 
 class LibraryPoolManager (models.Manager):
     def create_lib_pool (self, pool_data):
+        platform_obj = SequencingPlatform.objects.filter(platformName__exact = pool_data['platform']).last()
         new_library_pool = self.create(registerUser = pool_data['registerUser']  ,
                     poolState = StatesForPool.objects.get(poolState__exact = 'Defined'),
                     poolName = pool_data['poolName'], poolCodeID = pool_data['poolCodeID'],
-                    adapter = pool_data['adapter'], pairedEnd = pool_data['pairedEnd'],
-                    numberOfSamples = pool_data['n_samples'])
+                    adapter = pool_data['adapter'],  pairedEnd = pool_data['pairedEnd'],
+                    numberOfSamples = pool_data['n_samples'], platform = platform_obj)
         return new_library_pool
 
 
@@ -808,6 +969,9 @@ class LibraryPool (models.Model):
             RunProcess,
             on_delete = models.CASCADE, null = True, blank = True)
 
+    platform = models.ForeignKey(
+            SequencingPlatform,
+            on_delete = models.CASCADE, null = True, blank = True)
     poolName = models.CharField(max_length=50)
     #sampleSheet = models.FileField(upload_to = wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY)
     #experiment_name = models.CharField(max_length=50)
@@ -828,7 +992,8 @@ class LibraryPool (models.Model):
     def __str__ (self):
         return '%s' %(self.poolName)
 
-
+    def get_adapter(self):
+        return '%s' %(self.adapter)
 
     def get_id(self):
         return '%s' %(self.pk)
@@ -840,21 +1005,32 @@ class LibraryPool (models.Model):
         pool_info.append(self.numberOfSamples)
         return pool_info
 
+    def get_number_of_samples (self):
+        return '%s' %(self.numberOfSamples)
+
     def get_pool_name(self):
         return '%s' %(self.poolName)
 
     def get_pool_code_id(self):
         return '%s' %(self.poolCodeID)
 
-    def set_pool_state(self, state):
-        self.poolState = StatesForPool.objects.get(poolState__exact = state)
-        self.save()
+    def get_pool_single_paired(self):
+        return '%s' %(self.pairedEnd)
 
+    def get_platform_name(self):
+        return '%s' %(self.platform.get_platform_name())
     def get_run_name(self):
         return '%s' %(self.runProcess_id.get_run_name())
 
     def get_run_id(self):
         return '%s' %(self.runProcess_id.get_run_id())
+
+
+    def set_pool_state(self, state):
+        self.poolState = StatesForPool.objects.get(poolState__exact = state)
+        self.save()
+
+
 
 
     def update_number_samples(self, number_s_in_pool):
@@ -886,16 +1062,13 @@ class libraryPreparationManager(models.Manager):
     def create_lib_preparation (self, lib_prep_data):
         #import pdb; pdb.set_trace()
         registerUser_obj = User.objects.get(username__exact  = lib_prep_data['registerUser'])
-        sample_obj = Samples.objects.get(sampleName__exact = lib_prep_data['sample_name'])
+        sample_obj = Samples.objects.get(pk__exact = lib_prep_data['sample_id'])
+        molecule_obj = MoleculePreparation.objects.get(pk__exact = lib_prep_data['molecule_id'])
         lib_state_obj = StatesForLibraryPreparation.objects.get(libPrepState__exact =  'Defined')
-        new_lib_prep = self.create(registerUser = registerUser_obj, molecule_id = lib_prep_data['molecule_obj'], sample_id = sample_obj,
-            protocol_id =   lib_prep_data['protocol_obj'], libPrepState = lib_state_obj, user_sample_sheet = lib_prep_data['user_sample_sheet'],
-            libPrepCodeID = lib_prep_data['lib_prep_code_id'], userSampleID = lib_prep_data['userSampleID'],
-            projectInSampleSheet = lib_prep_data['projectInSampleSheet'], samplePlate = lib_prep_data['samplePlate'],
-            sampleWell = lib_prep_data['sampleWell'], indexPlateWell = lib_prep_data['indexPlateWell'], i7IndexID = lib_prep_data['i7IndexID'],
-            i7Index = lib_prep_data['i7Index'], i5IndexID = lib_prep_data['i5IndexID'], i5Index = lib_prep_data['i5Index'],
-            singlePairedEnd = lib_prep_data['single_paired'], lengthRead = lib_prep_data['read_length'], uniqueID = lib_prep_data['uniqueID'])
-
+        new_lib_prep = self.create(registerUser = registerUser_obj, molecule_id = molecule_obj, sample_id = sample_obj,
+            protocol_id =   lib_prep_data['protocol_obj'], libPrepState = lib_state_obj,
+            libPrepCodeID = lib_prep_data['lib_prep_code_id'], userSampleID = lib_prep_data['user_sampleID'],
+            uniqueID = lib_prep_data['uniqueID'])
         return new_lib_prep
 
     def create_reused_lib_preparation (self, reg_user, molecule_obj, sample_id):
@@ -940,18 +1113,22 @@ class LibraryPreparation (models.Model):
     i7Index = models.CharField(max_length =16, null = True, blank = True)
     i5IndexID = models.CharField(max_length =16, null = True, blank = True)
     i5Index = models.CharField(max_length =16, null = True, blank = True)
-
-    singlePairedEnd  = models.CharField(max_length =20, null = True, blank = True)
-    lengthRead = models.CharField(max_length =5, null = True, blank = True)
+    ## Miseq fields
+    genomeFolder = models.CharField(max_length =80, null = True, blank = True)
+    manifest = models.CharField(max_length =80, null = True, blank = True)
+    ##### End Miseq fields
+    #singlePairedEnd  = models.CharField(max_length =20, null = True, blank = True)
+    #lengthRead = models.CharField(max_length =5, null = True, blank = True)
     numberOfReused = models.IntegerField(default=0)
     uniqueID = models.CharField(max_length =16, null = True, blank = True)
+    userInSampleSheet = models.CharField(max_length=255, null = True, blank = True)
 
     class Meta:
         ordering = ('libPrepCodeID',)
 
 
     def __str__ (self):
-        return '%s' %(self.sample_id)
+        return '%s' %(self.libPrepCodeID)
 
     def get_adapters(self):
         return self.user_sample_sheet.get_adapters()
@@ -973,8 +1150,6 @@ class LibraryPreparation (models.Model):
         lib_info.append(self.projectInSampleSheet)
         lib_info.append(self.i7IndexID)
         lib_info.append(self.i5IndexID)
-        lib_info.append(self.singlePairedEnd)
-        lib_info.append(self.lengthRead)
         lib_info.append(self.numberOfReused)
         return lib_info
 
@@ -1003,8 +1178,8 @@ class LibraryPreparation (models.Model):
         lib_info.append(self.i5IndexID)
         lib_info.append(self.i5Index)
         lib_info.append(self.projectInSampleSheet)
-        lib_info.append(self.registerUser.username)
-        lib_info.append(self.collectionIndex_id.get_collection_index_name())
+        lib_info.append(self.userInSampleSheet)
+        #lib_info.append(self.collectionIndex_id.get_collection_index_name())
         return lib_info
 
 
@@ -1018,11 +1193,17 @@ class LibraryPreparation (models.Model):
         lib_info.append(self.i7IndexID)
         lib_info.append(self.i7Index)
         lib_info.append(self.projectInSampleSheet)
-        lib_info.append(self.registerUser.username)
-        lib_info.append(self.collectionIndex_id.get_collection_index_name())
+        lib_info.append(self.userInSampleSheet)
+        #lib_info.append(self.collectionIndex_id.get_collection_index_name())
         return lib_info
 
-
+    def get_basic_data(self):
+        lib_info = []
+        lib_info.append(self.sample_id.get_sample_name())
+        lib_info.append(self.uniqueID)
+        lib_info.append(self.protocol_id.get_name())
+        lib_info.append(self.pk)
+        return lib_info
 
     def get_info_for_display_pool (self):
         if self.registerUser.username == None:
@@ -1061,6 +1242,12 @@ class LibraryPreparation (models.Model):
     def get_lib_prep_code (self):
         return '%s' %(self.libPrepCodeID)
 
+    def get_lib_prep_id (self):
+        return '%s' %(self.pk)
+
+    def get_molecule_code_id(self):
+        return '%s' %(self.molecule_id.get_molecule_code_id())
+
     def get_molecule_obj(self):
         return self.molecule_id
 
@@ -1070,8 +1257,14 @@ class LibraryPreparation (models.Model):
     def get_protocol_obj(self):
         return self.protocol_id
 
+    def get_protocol_id (self):
+        return '%s' %(self.protocol_id.pk)
+
     def get_reagents_kit_used(self):
         return '%s' %(self.reagent_id.get_nick_name())
+
+    def get_reused_value(self):
+        return '%s' %(self.numberOfReused)
 
     def get_sample_name(self):
         return '%s' %(self.sample_id.get_sample_name())
@@ -1082,8 +1275,6 @@ class LibraryPreparation (models.Model):
     def get_sample_obj(self):
         return self.sample_id
 
-    def get_single_paired (self):
-        return '%s' %(self.singlePairedEnd)
 
     def get_state(self):
         return '%s' %(self.libPrepState.libPrepState)
@@ -1093,6 +1284,9 @@ class LibraryPreparation (models.Model):
 
     def get_user_obj(self):
         return self.registerUser
+
+    def get_user_sample_sheet_obj (self):
+        return self.user_sample_sheet
 
     def set_increase_reuse(self):
         self.numberOfReused += 1
@@ -1108,12 +1302,12 @@ class LibraryPreparation (models.Model):
         self.libPrepState = StatesForLibraryPreparation.objects.get(libPrepState__exact = state_value)
         self.save()
         return
-
+    '''
     def set_reagent_user_kit(self, kit_value):
         self.user_reagentKit_id = UserLotCommercialKits.objects.get(nickName__exact = kit_value)
         self.save()
         return
-
+    '''
     def update_i7_index(self, i7_seq_value):
         self.i7Index = i7_seq_value
         self.save()
@@ -1123,6 +1317,24 @@ class LibraryPreparation (models.Model):
         self.i5Index = i5_seq_value
         self.save()
         return
+
+    def update_library_preparation_with_indexes (self,lib_prep_data ):
+        self.user_sample_sheet = lib_prep_data['user_sample_sheet']
+        self.projectInSampleSheet = lib_prep_data['projectInSampleSheet']
+        self.samplePlate = lib_prep_data['samplePlate']
+        self.sampleWell = lib_prep_data['sampleWell']
+        self.i7IndexID = lib_prep_data['i7IndexID']
+        self.i7Index = lib_prep_data['i7Index']
+        self.i5IndexID = lib_prep_data['i5IndexID']
+        self.i5Index = lib_prep_data['i5Index']
+        self.indexPlateWell = lib_prep_data['indexPlateWell']
+        self.genomeFolder = lib_prep_data['genomeFolder']
+        self.manifest = lib_prep_data['manifest']
+        self.userInSampleSheet = lib_prep_data['userInSampleSheet']
+        self.userSampleID = lib_prep_data['userSampleID']
+        self.save()
+        return self
+
 
     def update_lib_preparation_info_in_reuse_state (self, lib_prep_data):
         # Update the instance with the sample sheet information
@@ -1140,10 +1352,6 @@ class LibraryPreparation (models.Model):
         self.i7Index = lib_prep_data['i7Index']
         self.i5IndexID = lib_prep_data['i5IndexID']
         self.i5Index = lib_prep_data['i5Index']
-        self.singlePairedEnd = lib_prep_data['single_paired']
-        self.lengthRead = lib_prep_data['read_length']
-
-
         self.uniqueID = lib_prep_data['uniqueID']
 
         self.save()
@@ -1176,3 +1384,92 @@ class LibParameterValue (models.Model):
         return '%s' %(self.parameterValue)
 
     objects = LibParameterValueManager()
+
+
+class AdditionaKitsLibraryPreparationManager(models.Manager):
+
+    def create_additional_kit (self, kit_data):
+        new_additional_kit = self.create(registerUser = kit_data['user'],
+                protocol_id = kit_data['protocol_id'], commercialKit_id = kit_data['commercialKit_id'],
+                kitName = kit_data['kitName'], description = kit_data['description'],
+                kitOrder = kit_data['kitOrder'], kitUsed = kit_data['kitUsed'])
+        return new_additional_kit
+
+class AdditionaKitsLibraryPreparation (models.Model):
+    registerUser = models.ForeignKey(
+                    User,
+                    on_delete=models.CASCADE)
+    protocol_id =  models.ForeignKey(
+                    Protocols,
+                    on_delete= models.CASCADE)
+    commercialKit_id =  models.ForeignKey(
+                    CommercialKits,
+                    on_delete= models.CASCADE)
+    kitName = models.CharField(max_length=255)
+    description = models.CharField(max_length= 400, null=True, blank=True)
+    kitOrder = models.IntegerField()
+    kitUsed = models.BooleanField()
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__ (self):
+        return '%s' %(self.kitName)
+
+    def get_all_kit_info(self):
+        data = []
+        data.append(self.kitName)
+        data.append(self.kitOrder)
+        data.append(self.kitUsed)
+        data.append(self.commercialKit_id.get_name())
+        data.append(self.description)
+        return data
+
+    def get_kit_name (self):
+        return '%s' %(self.kitName)
+
+    def get_commercial_kit_obj (self):
+        return self.commercialKit_id
+
+    def get_commercial_kit_name(self):
+        return '%s' %(self.commercialKit_id.get_name())
+
+
+
+    objects = AdditionaKitsLibraryPreparationManager()
+
+class AdditionalUserLotKitManager(models.Manager):
+    def create_additional_user_lot_kit(self, user_additional_kit):
+        new_user_additional_kit = self.create(lib_prep_id  = user_additional_kit['lib_prep_id'],
+                    additionalLotKits = user_additional_kit['additionalLotKits'],
+                    userLotKit_id = user_additional_kit['userLotKit_id'], value = 0)
+
+
+
+class AdditionalUserLotKit (models.Model):
+    lib_prep_id =  models.ForeignKey(
+                    LibraryPreparation,
+                    on_delete= models.CASCADE)
+    additionalLotKits = models.ForeignKey(
+                    AdditionaKitsLibraryPreparation,
+                    on_delete= models.CASCADE)
+    userLotKit_id = models.ForeignKey(
+                    UserLotCommercialKits,
+                    on_delete= models.CASCADE, null=True , blank=True)
+    value = models.CharField(max_length=255)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__ (self):
+        return '%s' %(self.userLotKit_id)
+
+    def get_additional_kit_info(self):
+        data = []
+        data.append(self.additionalLotKits.get_kit_name())
+        data.append(self.additionalLotKits.get_commercial_kit_name())
+        if self.userLotKit_id == None:
+            data.append('Not set')
+        else:
+            data.append(self.userLotKit_id.get_lot_number())
+        data.append(self.generated_at.strftime("%d %B %Y"))
+        return data
+
+
+    objects = AdditionalUserLotKitManager()

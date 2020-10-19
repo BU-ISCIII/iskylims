@@ -2,14 +2,10 @@
 {% load static %}
 {% block content %}
 {% csrf_token %}
+{% include "iSkyLIMS_core/graphic_chart_functionality.html" %}
 {% if display_stats_per_time.run_names %}
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.widgets.js" %}"></script>
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/fusioncharts.js" %}"></script>
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script>
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.ocean.js" %}"></script>
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.zune.js" %}"></script>
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/fusioncharts/js/themes/fusioncharts.theme.carbon.js" %}"></script>
-<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/wetlab.js" %}"></script> 
+
+<script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/wetlab.js" %}"></script>
 <style>
 .table-wrapper {
     height: 450px;
@@ -60,7 +56,7 @@
                     {% for key, values in display_stats_per_time.run_names.items %}
                      <tr>
                         {% for value, data in values %}
-                       <td><a href="/wetlab/search_run={{ key }}">{{ value }}</a> </td>
+                       <td><a href="/wetlab/displayRun={{ key }}">{{ value }}</a> </td>
                        <td> {{ data }} </td>
                         {%endfor%}
                      </tr>
@@ -74,7 +70,7 @@
         <BR>
         <!--  start the disk space utilization  -->
     <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-6">
+        <div class="col-sm-12">
             <div class="panel panel-default">
                 <div class="panel-heading"><h4>Disk space utilization per each Run  </h4></div>
                 <div class="panel-body">
@@ -84,7 +80,7 @@
                         {{ display_stats_per_time.disk_space_period_graphic |safe }}
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
-        </div> <!--  end of col-sm-6 -->
+        </div> <!--  end of col-sm-12 -->
     </div> <!--// end row -->
 
     <!--  End Run information -->
@@ -179,7 +175,7 @@
     <div class="row row-space-2 margin-b-4">
       <div class="col-sm-7" >
         <div class="panel panel-default">
-          <div class="panel-heading"><h3>Creating Run Statatistics per period of time</h3></div>
+          <div class="panel-heading"><h3>Run Statatistics for a period of time</h3></div>
           <div class="panel-body">
            <form method="post" enctype="multipart/form-data" name="statisticsPerPeriod" id="statisticsPerPeriod" class="form-horizontal">
             {% csrf_token %}
@@ -189,7 +185,7 @@
                 <br>
             </div>  <!-- end from-group   -->
             <div class="form-group required">
-                  <label class="col-sm-5 control-label" for="enddate" >End Date Search (DD-MM-YYYY) </label>
+                  <label class="col-sm-5 control-label" for="enddate" >End Date (DD-MM-YYYY) </label>
                   <div class="col-sm-5"><input class="form-control" type="date" required = "required" name="enddate" value="" id="enddate"></div>
                 <br>
             </div>  <!-- end from-group   -->

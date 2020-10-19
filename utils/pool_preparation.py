@@ -24,7 +24,7 @@ def get_lib_prep_adapter(lib_prep_ids):
 
 
 
-def check_single_paired_compatible(lib_prep_ids):
+    # def check_single_paired_compatible(lib_prep_ids):
     '''
     Description:
         The function check if the library preparations instance has the same index, (Single Read or Paired End).
@@ -36,7 +36,7 @@ def check_single_paired_compatible(lib_prep_ids):
         error message if library id does not exists.
         False when incompatible
         True all library preparations belong to the same index.
-    '''
+
     single_paired = ''
     not_defined_library_preparation_ids = []
 
@@ -53,7 +53,7 @@ def check_single_paired_compatible(lib_prep_ids):
         if single_paired != lib_prep_paired_end:
             return 'False'
     return 'True'
-
+    '''
 
 def check_if_duplicated_index (lib_prep_ids):
     '''
@@ -97,21 +97,33 @@ def check_if_duplicated_index (lib_prep_ids):
         incompatible_samples['incompatible_index'] =incompatible_index
         return incompatible_samples
 
-def get_single_paired(lib_prep_id):
+def get_single_paired(lib_prep_ids):
+    '''
+    Description:
+        The function checks if at least one library preparation included in the pool
+        was usin I5 index.
+    Input:
+        lib_prep_ids  # library preparation id list
 
-    lib_prep_obj =  LibraryPreparation.objects.get(pk__exact = lib_prep_id)
-    if lib_prep_obj.get_single_paired() == 'Paired End' :
-        return 'Paired End'
-    return 'Single Read'
+    Return:
+        PairedEnd or SingleRead
+    '''
+    for lib_prep_id in lib_prep_ids:
+        i5_index_value =  LibraryPreparation.objects.get(pk__exact = lib_prep_id).get_i5_index()
+        if i5_index_value != '' :
+            return 'PairedEnd'
+    return 'SingleRead'
 
 def define_new_pool(form_data, user_obj):
     '''
     Description:
-        The function performs some checks to verify the new pool can be created
+        The function performs some checks to verify the new pool can be created.
+
     Input:
         lib_prep_ids  # library preparation id list
     Constants:
         ERROR_LIBRARY_PREPARATION_NOT_EXISTS
+        ERROR_NOT_LIBRARY_PREPARATION_SELECTED
     Functions:
         check_single_paired_compatible      # located at this file
         check_if_duplicated_index      # located at this file
@@ -128,23 +140,20 @@ def define_new_pool(form_data, user_obj):
         protocol_parameter_list.
 
     '''
-
-    if  'lib_prep_in_list' in form_data:
-        lib_prep_ids = form_data.getlist('lib_prep_id')
-        if len('lib_prep_in_list') == 0:
-            lib_prep_ids = list(form_data['lib_prep_id'])
-    else:
-        lib_prep_ids = form_data['lib_prep_id'].split(',')
-
     error ={}
+    lib_prep_ids = form_data.getlist('lib_prep_id')
+    if len(lib_prep_ids) == 0:
+        error['ERROR'] = ERROR_NOT_LIBRARY_PREPARATION_SELECTED
+        return error
     # check if index are not duplicate in the library preparation
-    single_paired_compatible = check_single_paired_compatible(lib_prep_ids)
-    if 'ERROR' in single_paired_compatible:
-        error['ERROR'] = ERROR_LIBRARY_PREPARATION_NOT_EXISTS
-        return error
-    if 'False' == single_paired_compatible :
-        error['incompatible_s_p_end'] = True
-        return error
+
+    # single_paired_compatible = check_single_paired_compatible(lib_prep_ids)
+    # if 'ERROR' in single_paired_compatible:
+    #     error['ERROR'] = ERROR_LIBRARY_PREPARATION_NOT_EXISTS
+    #     return error
+    # if 'False' == single_paired_compatible :
+    #     error['incompatible_s_p_end'] = True
+    #     return error
     duplicated_index = check_if_duplicated_index(lib_prep_ids)
     if 'incompatible_index' in duplicated_index :
         error['duplicated_index'] = duplicated_index
@@ -157,10 +166,11 @@ def define_new_pool(form_data, user_obj):
 
     pool_data = {}
     pool_data['poolName'] = form_data['poolName']
+    pool_data['platform'] = form_data['platform']
     pool_data['poolCodeID'] = generate_pool_code_id()
     pool_data['registerUser'] = user_obj
     pool_data['adapter'] = adapters[0]
-    pool_data['pairedEnd'] = get_single_paired(lib_prep_ids[0])
+    pool_data['pairedEnd'] = get_single_paired(lib_prep_ids)
     pool_data['n_samples'] = len(lib_prep_ids)
 
     new_pool = LibraryPool.objects.create_lib_pool(pool_data)
@@ -168,6 +178,9 @@ def define_new_pool(form_data, user_obj):
     for lib_prep in lib_prep_ids:
         lib_prep_obj = LibraryPreparation.objects.get(pk__exact = lib_prep)
         lib_prep_obj.set_pool(new_pool)
+        # return back to state completed if a library prepatarion was used for reused pool
+        if lib_prep_obj.get_state() == 'Reused pool':
+            lib_prep_obj.set_state('Completed')
 
     # update the number of samples
     new_pool.set_pool_state('Selected')
@@ -203,13 +216,18 @@ def get_lib_prep_to_select_in_pool():
         display_list
     '''
     display_list = {}
-    display_list['data'] = []
+    display_list['data'] = {}
 
-    if LibraryPreparation.objects.filter(libPrepState__libPrepState = 'Completed', pools = None ).exists():
-
-        lib_preparations =  LibraryPreparation.objects.filter(libPrepState__libPrepState = 'Completed', pools = None).order_by('registerUser')
+    from django.db.models import Q
+    if LibraryPreparation.objects.filter(Q (libPrepState__libPrepState__exact = 'Completed', pools = None )| Q(libPrepState__libPrepState__exact = 'Reused pool' )).exists():
+        lib_preparations =  LibraryPreparation.objects.filter(Q (libPrepState__libPrepState__exact = 'Completed', pools = None )| Q(libPrepState__libPrepState__exact = 'Reused pool' )).order_by('registerUser')
+        #lib_preparations =  LibraryPreparation.objects.filter(libPrepState__libPrepState = 'Completed', pools = None).order_by('registerUser')
         for lib_prep in lib_preparations :
-            display_list['data'].append( lib_prep.get_info_for_selection_in_pool())
+            user_sample_obj = lib_prep.get_user_sample_sheet_obj()
+            platform = user_sample_obj.get_sequencing_configuration_platform()
+            if platform not in display_list['data']:
+                display_list['data'][platform] = []
+            display_list['data'][platform].append( lib_prep.get_info_for_selection_in_pool())
 
         display_list['heading'] = wetlab_config.HEADING_FOR_DISPLAY_SAMPLES_IN_POOL
 

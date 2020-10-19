@@ -1,14 +1,15 @@
 
 import statistics
 import os
+from datetime import datetime
 from ..fusioncharts.fusioncharts import FusionCharts
 
 from django.conf import settings
 from django.contrib.auth.models import Group
-
+from iSkyLIMS_core.models import SequencerInLab
 from iSkyLIMS_wetlab.models import *
-from iSkyLIMS_wetlab.wetlab_config import RUN_IMAGES_DIRECTORY, WETLAB_MANAGER
-from .generic_functions import normalized_data
+from iSkyLIMS_wetlab.wetlab_config import *
+from .generic_functions import normalized_data, get_run_in_same_year_to_compare
 from .stats_graphics import *
 
 
@@ -22,6 +23,7 @@ def get_boxplot_comparation_runs (run_object):
     functions:
         normalized_data # located at utils.generic_functions
         bloxplot_graphic # located at utils.
+        get_run_in_same_year_to_compare # located at utils.generic_functions
     Variables:
         categories          # category list of the data to display
         chem_high_mid       # chemistry value of the run to compare
@@ -61,13 +63,16 @@ def get_boxplot_comparation_runs (run_object):
         FusionCharts object with the graphic data
     '''
     # fetch Q>30 , mean_q and yield mb for all projects per lane to create the boxplot
+    if not StatsLaneSummary.objects.filter(runprocess_id__exact =run_object ).exclude(defaultAll__isnull = False).exists():
+        # return empty information . No information for stats stored on database
+        return
     run_lane_summary = StatsLaneSummary.objects.filter(runprocess_id__exact =run_object ).exclude(defaultAll__isnull = False)
     q_30_run_value , mean_run_value = [] , []
     q_30_run_value_float , mean_run_value_float , yield_mb_run_value_float, cluster_pf_run_value_float = [] , [], [] , []
     q_30_all_value_float , mean_all_value_float , yield_mb_all_value_float , cluster_pf_all_value_float = [] , [] , [], []
 
     for item in run_lane_summary:
-        q_30_value, mean_value , yield_mb_value , cluster_pf_value, = item.get_stats_info().split(';')
+        q_30_value, mean_value , yield_mb_value , cluster_pf_value, = item.get_stats_info()
 
         q_30_run_value_float.append(float(q_30_value))
         mean_run_value_float.append(float(mean_value))
@@ -75,6 +80,7 @@ def get_boxplot_comparation_runs (run_object):
         cluster_pf_run_value_float.append(float(cluster_pf_value.replace(',','')))
 
     # get the chemistry type for the run, that will be used to compare runs with the same chemistry value
+    '''
     chem_high_mid = RunningParameters.objects.get(runName_id__exact = run_object).Chemistry
     run_different_chemistry = RunningParameters.objects.all(). exclude(Chemistry__exact = chem_high_mid)
     run_year = run_object.run_date.timetuple().tm_year
@@ -82,7 +88,8 @@ def get_boxplot_comparation_runs (run_object):
     start_date = str(run_year) + '-1-1'
     end_date = str(run_year) +'-12-31'
     same_run_in_year = RunProcess.objects.filter(run_date__range=(start_date, end_date)).exclude(runName__in = run_different_chemistry)
-
+    '''
+    same_run_in_year = get_run_in_same_year_to_compare(run_object)
     same_runs_in_year_list = []
     for run in same_run_in_year :
         same_runs_in_year_list.append(run.get_run_id())
@@ -92,7 +99,7 @@ def get_boxplot_comparation_runs (run_object):
         # It is the first run in the year. Then include it until more than one run was stored
         all_lane_summary = StatsLaneSummary.objects.filter(runprocess_id__in = same_runs_in_year_list).exclude(defaultAll__isnull = False)
     for item in all_lane_summary:
-        q_30_value, mean_value , yield_mb_value , cluster_pf_value = item.get_stats_info().split(';')
+        q_30_value, mean_value , yield_mb_value , cluster_pf_value = item.get_stats_info()
 
         q_30_all_value_float.append(float(q_30_value))
         mean_all_value_float.append(float(mean_value))
@@ -115,6 +122,7 @@ def get_boxplot_comparation_runs (run_object):
     cluster_pf_all_str = ','.join(cluster_pf_all_normalized)
 
     # prepare the graphic
+    run_year = run_object.get_run_year()
     heading =  run_object.get_run_name() +' versus runs executed on '
     sub_caption = str( 'year ' + str(run_year))
     theme = 'fint'
@@ -173,13 +181,16 @@ def get_run_graphics (run_object) :
         run_graphics
     '''
     # prepare the graphics for the run
+    run_graphics = []
+    if not GraphicsStats.objects.filter(runprocess_id__exact = run_object).exists():
+        return run_graphics
     run_graphics_object = GraphicsStats.objects.get(runprocess_id__exact = run_object)
     folder_graphic = os.path.join( settings.MEDIA_URL, wetlab_config.RUN_IMAGES_DIRECTORY,
                             run_graphics_object.get_folder_graphic() )
     graphics = run_graphics_object.get_graphics().split(';')
 
     graphic_text= ['Data By Lane','Flow Cell Chart','Data By Cycle','QScore Heatmap','QScore Distribution','Indexing QC']
-    run_graphics = []
+
 
     for index_graph in range (len(graphics)):
         run_graphics.append([graphic_text[index_graph], os.path.join(folder_graphic, graphics[index_graph])])
@@ -360,6 +371,96 @@ def match_unkownbarcodes_with_index (unknow_dict) :
     return index_match_list
 
 
+
+def get_information_for_incompleted_run():
+    '''
+    Description:
+        The function will get the information from the runs that are incompleted.
+        It creates a 4 groups. Recorded, Error, Canceled and rest of the states.
+        Creates a pie graphic
+    Functions:
+        graphic_3D_pie      # located at iSkyLIMS_wetlab/utils/stats_graphics
+    Return:
+        run_information with information collected for each run
+    '''
+    run_information = {}
+    today = datetime.date.today()
+    if RunProcess.objects.filter(state__runStateName = 'Recorded').exists():
+        run_information['recorded'] = []
+        run_objs = RunProcess.objects.filter(state__runStateName = 'Recorded').order_by('runName')
+        for run_obj in run_objs :
+            data = []
+            data.append(run_obj.get_run_id())
+            data.append(run_obj.get_run_name())
+            recorded_date = run_obj.get_recorded_date_no_format().date()
+            data.append(recorded_date.strftime("%d %B  %Y"))
+            data.append(str((today - recorded_date).days))
+            run_information['recorded'].append(data)
+
+
+    if RunProcess.objects.filter(state__runStateName = 'Error').exists():
+        run_information['error'] = []
+        run_objs = RunProcess.objects.filter(state__runStateName = 'Error').order_by('runName')
+        for run_obj in run_objs :
+            data = []
+            data.append(run_obj.get_run_id())
+            data.append(run_obj.get_run_name())
+            run_date = run_obj.get_run_date_no_format()
+            if run_date == None:
+                # if no value stored on run date use the recorded date instead
+                run_date = run_obj.get_recorded_date_no_format().date()
+            data.append(run_date.strftime("%d %B  %Y"))
+            data.append(run_obj.get_state_before_error())
+            data.append(run_obj.get_error_text())
+            data.append(str((today - run_date).days))
+            run_information['error'].append(data)
+
+    if RunProcess.objects.filter(state__runStateName = 'Cancelled').exists():
+        run_information['cancelled'] = []
+        run_objs = RunProcess.objects.filter(state__runStateName = 'Cancelled').order_by('runName')
+        for run_obj in run_objs :
+            data = []
+            data.append(run_obj.get_run_id())
+            data.append(run_obj.get_run_name())
+            #import pdb; pdb.set_trace()
+            run_date = run_obj.get_run_date_no_format()
+            if run_date == None:
+                # if no value stored on run date use the recorded date instead
+                run_date = run_obj.get_recorded_date_no_format().date()
+            data.append(run_date.strftime("%d %B %Y"))
+
+            data.append(str((today - run_date).days))
+            run_information['cancelled'].append(data)
+
+    exclude_state = ['Recorded', 'Error', 'Cancelled', 'Completed','Pre-Recorded']
+
+    if RunProcess.objects.all().exclude(state__runStateName__in = exclude_state).exists():
+        run_information['other'] = []
+        run_objs = RunProcess.objects.all().exclude(state__runStateName__in = exclude_state).order_by('state__runStateName')
+        for run_obj in run_objs :
+            data = []
+            data.append(run_obj.get_run_id())
+            data.append(run_obj.get_run_name())
+            run_date = run_obj.get_run_date_no_format()
+            if run_date == None:
+                # if no value stored on run date use the recorded date instead
+                run_date = run_obj.get_recorded_date_no_format().date()
+            data.append(run_date.strftime("%d %B %Y"))
+            data.append(run_obj.get_state())
+            data.append(str((today - run_date).days))
+            run_information['other'].append(data)
+
+    if len(run_information) > 0:
+        runs_in_state = {}
+        for key in run_information.keys():
+            runs_in_state[key] = len(run_information[key])
+    #graphic_3D_pie (heading, sub_title, axis_x_description, axis_y_description, theme, source_data)
+    data_source = graphic_3D_pie('Incomplete Runs', '', '', '', 'fint',runs_in_state)
+
+    run_information['incompleted_graphic'] = FusionCharts("pie3d", "ex1" , "550", "400", "chart-1", "json", data_source).render()
+    return run_information
+
+
 def get_information_run(run_object):
     '''
     Description:
@@ -370,9 +471,9 @@ def get_information_run(run_object):
         run_id              # contains the run id of the run_object
     Functions:
         graphics_state      # located at this file
-        get_machine_lanes   # imported from parsing_run_info
         get_running_parameters # located at this file
         normalized_data     # imported from wetlab_misc_utilities
+        check_run_in_same_year # imported from generic_functions
     Constants:
         RUN_IMAGES_DIRECTORY
         MEDIA_URL
@@ -440,7 +541,8 @@ def get_information_run(run_object):
     if run_state == 'Error' :
         # get the state before the error to present run information
         run_state = run_object.get_state_before_error()
-        info_dict['error_run'] = [[run_object.get_run_name(), run_state, run_object.get_error_text()]]
+        info_dict['error_run'] = [run_object.get_run_name(), run_state, run_object.get_error_text(), run_object.get_run_id()]
+
 
     p_list= Projects.objects.filter(runprocess_id=run_object)
     if p_list !='':
@@ -449,7 +551,7 @@ def get_information_run(run_object):
         for p in range (len(p_list)):
             p_info.append([p_list[p].projectName,p_list[p].id])
             # get information about the library kits used for this run
-            lib_kit = p_list[p].libraryKit
+            lib_kit = p_list[p].get_index_library_name()
             if not lib_kit in p_library_kits :
                 p_library_kits.append(lib_kit)
         info_dict['projects']=p_info
@@ -464,7 +566,7 @@ def get_information_run(run_object):
     if StatsRunSummary.objects.filter(runprocess_id__exact =run_object).exists():
         run_parameters = RunningParameters.objects.get(runName_id__exact = run_object)
         num_of_reads = run_parameters.get_number_of_reads ()
-        number_of_lanes=run_object.get_machine_lanes()
+        number_of_lanes=run_object.get_sequencing_lanes()
 
         # prepare data for Run Binary summary stats
         info_dict ['runSummaryHeading'] = ['Level','Yield','Projected Yield','Aligned (%)','Error Rate (%)','Intensity Cycle 1','Quality >=30 (%)']
@@ -482,14 +584,20 @@ def get_information_run(run_object):
 
     ## get the stats information if run is completed
     if run_state == 'Completed':
-        # prepare the data for run comparations
-        info_dict ['boxplot'] = get_boxplot_comparation_runs (run_object)
-
+        # check if there are more runs in the same year to make the box comparation
+        if len(get_run_in_same_year_to_compare(run_object)) > 1 :
+            # prepare the data for run comparations
+            info_dict ['boxplot'] = get_boxplot_comparation_runs (run_object)
+        else:
+            info_dict['not_boxplot'] = "True"
         percent_projects = {}
 
         # get the demultiplexion information for projects included in the run
 
         for project_demultiplexion in p_list :
+            if not StatsLaneSummary.objects.filter(runprocess_id__exact = run_object, project_id = project_demultiplexion.id ).exists():
+                # continue with the stats for the next proyect in the run
+                continue
             lanes_for_percent_graphic = StatsLaneSummary.objects.filter(runprocess_id__exact = run_object, project_id = project_demultiplexion.id )
             percent_lane = []
             for lane in lanes_for_percent_graphic :
@@ -604,10 +712,10 @@ def get_information_project (project_id, request):
         request         # contains gjango request to be used to identify
                         the user group the run id of the run_name_found
     Functions:
-        get_machine_lanes   # imported from parsing_run_info
         normalized_data     # imported from wetlab_misc_utilities
     Constants:
         WETLAB_MANAGER  #
+        HEADING_FOR_PROJECT_DATES
     Variables:
         groups          # get the group objects to check if requested user
                         belongs to wetlab manager group
@@ -629,43 +737,28 @@ def get_information_project (project_id, request):
         project_info_dict with all information collected in the function
     '''
     project_info_dict = {}
-    p_data = []
-    project_info_dict['project_id'] = project_id.id
-    project_info_text = ['Project Name','Library Kit','File to upload to BaseSpace','Project Recorder date', 'Project date','Run name']
-    project_values = project_id.get_project_info().split(';')
+    #p_data = []
+    #project_info_dict['project_id'] = project_id.id
+    project_info_dict['p_name'] = project_id.get_project_name()
+    project_info_dict ['user_id'] = project_id.get_user_name()
+    project_info_dict['run_name'] = project_id.get_run_name()
+    project_info_dict['collection_index'] = project_id.get_index_library_name()
+    project_info_dict['base_space_file'] = project_id.get_base_space_file()
+    project_info_dict['dates'] = list(zip(HEADING_FOR_PROJECT_DATES, project_id.get_project_dates() ))
     run_name = project_id.runprocess_id.runName
     groups = Group.objects.get(name = WETLAB_MANAGER)
 
-    if groups not in request.user.groups.all():
-        project_info_dict['run_id'] = ''
-    else:
-        project_info_dict['run_id'] = project_id.runprocess_id.id
-    project_values.append(run_name )
-    for item in range(len(project_info_text)):
-        p_data.append([project_info_text[item], project_values[item]])
-    project_info_dict['p_data'] = p_data
+    if groups in request.user.groups.all():
+        project_info_dict['run_id'] = project_id.get_run_id()
 
-    project_info_dict ['user_name'] = project_id.get_user_name()
+    #for item in range(len(project_info_text)):
+    #    p_data.append([project_info_text[item], project_values[item]])
+    #project_info_dict['p_data'] = p_data
+
+
     p_state = project_id.get_state()
     project_info_dict['state'] = p_state
     project_info_dict['graphic_value'], project_info_dict['graphic_color'] = graphics_state(p_state)
-    '''
-    if p_state.startswith('ERROR'):
-        project_info_dict['graphic_value']=10
-        project_info_dict['graphic_color']='red'
-    if p_state == 'Recorded':
-        project_info_dict['graphic_value']=25
-        project_info_dict['graphic_color']='violet'
-    if p_state == 'Sample Sent':
-        project_info_dict['graphic_value']= 50
-        project_info_dict['graphic_color']='brown'
-    if p_state == 'B2FqExecuted':
-        project_info_dict['graphic_value']= 75
-        project_info_dict['graphic_color']='yellow'
-    if p_state == 'Completed':
-        project_info_dict['graphic_value']= 100
-        project_info_dict['graphic_color']='green'
-    '''
 
     if p_state == 'Completed':
 
@@ -705,7 +798,7 @@ def get_information_project (project_id, request):
 
 
 
-def get_info_sample (sample_id):
+def get_info_sample_in_run (sample_id):
     '''
     Description:
         The function will get the information from a specific sample
@@ -728,17 +821,17 @@ def get_info_sample (sample_id):
 
     sample_info_dict ={}
     #collect the general information from the Sample
-    sample_info_dict['sample_name'] = sample_id.sampleName
+    sample_info_dict['sample_name'] = sample_id.get_sample_name()
     sample_info_dict['project_name'] = sample_id.get_project_name()
     project_id= sample_id.project_id.id
     sample_info_dict['project_id'] = project_id
     #
-    sample_info_dict['run_id'] = sample_id.project_id.runprocess_id.id
-    sample_info_dict['run_name'] = sample_id.project_id.runprocess_id.runName
+    sample_info_dict['run_id'] = sample_id.get_run_id()
+    sample_info_dict['run_name'] = sample_id.get_run_name()
     user_name_id = sample_id.project_id.user_id
     sample_info_dict['investigator_name'] = user_name_id.username
     # collect the Sample information
-    sample_info_dict['heading_samples_info'] = ['Sample', 'Barcode', 'PF Cluster', '% of Project','Yield (Mbases)','>= Q30 bases','Mean Quality Score']
+    sample_info_dict['heading_samples_info'] = ['Sample', 'Index used', 'PF Cluster', '% of Project','Yield (Mbases)','>= Q30 bases','Mean Quality Score']
     sample_info_dict['data_samples_info'] = sample_id.get_sample_information().split(';')
     # Quality graphic
     quality_sample = sample_id.get_quality_sample()
@@ -759,4 +852,154 @@ def get_info_sample (sample_id):
     #
     percentage_chart = FusionCharts("column3d", 'samplesProject' , "750", "300", 'samples-chart-2', "json", data_source)
     sample_info_dict['percentage_chart'] = percentage_chart.render()
+
     return sample_info_dict
+
+def get_sequencers_run_from_time_interval(sequencer,start_date, end_date):
+    '''
+    Description:
+        The function will get the runs executed in the sequencer, during a period of time
+        divided in completed runs and not completed runs
+    Return:
+        runs_using_sequencer
+    '''
+    runs_using_sequencer = {}
+    if SequencerInLab.objects.filter(sequencerName__exact = sequencer).exists():
+        sequencer_obj = SequencerInLab.objects.get(sequencerName__exact = sequencer)
+        if RunProcess.objects.filter(usedSequencer = sequencer_obj, run_date__range=(start_date, end_date)).exists():
+            runs_using_sequencer['completed_run_objs'] = []
+            runs_using_sequencer['not_completed_run_objs'] = []
+            run_objs_found = RunProcess.objects.filter(usedSequencer = sequencer_obj, run_date__range=(start_date, end_date))
+            query_completed = run_objs_found.filter(state__runStateName__exact = 'Completed')
+            for item in query_completed :
+                runs_using_sequencer['completed_run_objs'].append(item)
+            query_not_completed = run_objs_found.exclude(state__runStateName__exact = 'Completed')
+            for item in query_not_completed :
+                runs_using_sequencer['not_completed_run_objs'].append(item)
+
+    return runs_using_sequencer
+
+
+
+def get_sequencer_installed_names():
+    '''
+    Description:
+        The function will get list names of the sequencers
+    Return:
+        sample_info_dict with all information collected in the function
+    '''
+    sequencer_list = []
+    if SequencerInLab.objects.all().exists():
+        sequencers = SequencerInLab.objects.all().order_by('platformID')
+        for sequencer in sequencers:
+            sequencer_list.append(sequencer.get_sequencer_name())
+    return sequencer_list
+
+def get_number_of_runs_per_sequencer():
+    '''
+    Description:
+        The function will get a dictionary with the sequencer name and the number
+        of runs executed in each
+    Functions:
+        get_sequencer_installed_names   # located at this file
+    Return:
+        number_of_runs
+    '''
+    number_of_runs = {}
+    sequencer_list = get_sequencer_installed_names()
+    for sequencer in sequencer_list:
+        if RunProcess.objects.filter(usedSequencer__sequencerName__exact = sequencer).exists():
+            number_of_runs[sequencer]= RunProcess.objects.filter(usedSequencer__sequencerName__exact = sequencer).count()
+    return number_of_runs
+
+
+def get_sequencer_names_from_platform(platform):
+    '''
+    Description:
+        The function will get list of the sequencers using the platform value in the input data
+    Input:
+        platform           # contains the platform name
+    Return:
+        sample_info_dict with all information collected in the function
+    '''
+    sequencer_list = []
+    if SequencerInLab.objects.filter(platformID__platformName__exact = platform).exists():
+        sequencers = SequencerInLab.objects.filter(platformID__platformName__exact = platform)
+        for sequencer in sequencers:
+            sequencer_list.append(sequencer.get_sequencer_name())
+    return sequencer_list
+def  get_stats_sequencer_data_from_selected_runs (runs_using_sequencer, sequencer,start_date, end_date):
+    '''
+    Description:
+        The function will get the sequencer statistic information from the runs selected
+        in runs_using_sequencer
+    Input:
+        runs_using_sequencer  # contains the dictionary with completed and not completed runs
+        sequencer       # sequencer name
+        start_date
+        end_date
+    Constants:
+        HEADING_FOR_STATISTICS_RUNS_BASIC_DATA
+
+    Return:
+        sequencer_data        # with all information collected in the function
+    '''
+    sequencer_data = {}
+    sequencer_data['sequencer_name'] = sequencer
+    sequencer_data['run_completed'] = []
+    sequencer_data['not_run_completed'] = []
+    sequencer_data['run_name_heading'] = HEADING_FOR_STATISTICS_RUNS_BASIC_DATA
+    # get the run completed and not completed for the sequencer
+    for run_in_seq in runs_using_sequencer['completed_run_objs']:
+        sequencer_data['run_completed'].append([run_in_seq.get_run_name(),run_in_seq.get_run_date(),run_in_seq.get_run_id()])
+    for run_in_seq in runs_using_sequencer['not_completed_run_objs'] :
+        sequencer_data['not_run_completed'].append([run_in_seq.get_run_name(),run_in_seq.get_run_date(),run_in_seq.get_run_id()])
+
+    # get the data for comparation sequencer vs all sequencers
+    sequencer_runs = get_number_of_runs_per_sequencer()
+    heading = 'Runs executed in each sequencer in (%)'
+    data_source = pie_graphic_standard (heading, '', 'ocean', sequencer_runs)
+    run_pie_graph = FusionCharts("pie3d", "run_pie_graph" , "500", "400", "run_pie_chart", "json", data_source).render()
+    sequencer_data ['run_pie_graph'] = run_pie_graph
+
+    # get data to display the time between run stats and finish
+    # mean of all data is done
+    time_diference =[]
+    for run_in_seq in runs_using_sequencer['completed_run_objs']:
+        #import pdb; pdb.set_trace()
+        time_diference.append((run_in_seq.get_run_finish_date_no_format().date()- run_in_seq.get_run_date_no_format()).days)
+    sequencer_data['mean_time_duration'] = format(statistics.mean(time_diference), '.2f')
+
+    # get the data for run executed in the sequencer per months
+    run_time_dict ={}
+    for run_in_seq in runs_using_sequencer['completed_run_objs']:
+        run_year_month = run_in_seq.get_run_date_no_format().strftime("%Y_%m")
+        if run_year_month in run_time_dict:
+            run_time_dict[run_year_month] +=1
+        else:
+            run_time_dict[run_year_month] = 1
+    run_time_tupla =[]
+    for key in sorted(run_time_dict.keys()):
+        run_time_tupla.append([key,run_time_dict[key]])
+    heading = 'Runs executed per months in the sequencer'
+    data_source = column_graphic_tupla (heading, '', '', 'Number of Runs','ocean', run_time_tupla)
+    sequencer_data ['sequencer_runs_per_month_graph'] = FusionCharts("column3d", "run_per_month_graph" , "500", "400", "chart_seq_month", "json", data_source).render()
+
+    # get the data for run executed in other sequencers per months
+    if RunProcess.objects.filter(state__runStateName__exact = 'Completed').exclude(usedSequencer__sequencerName__exact = sequencer).exists():
+        runs_in_other_sequencers = RunProcess.objects.filter(state__runStateName__exact = 'Completed').exclude(usedSequencer__sequencerName__exact = sequencer)
+        run_time_dict ={}
+        for run_in_other_seq in runs_in_other_sequencers:
+            run_year_month = run_in_other_seq.get_run_date_no_format().strftime("%Y_%m")
+            if run_year_month in run_time_dict:
+                run_time_dict[run_year_month] +=1
+            else:
+                run_time_dict[run_year_month] = 1
+        run_time_tupla =[]
+        for key in sorted(run_time_dict.keys()):
+            run_time_tupla.append([key,run_time_dict[key]])
+        heading = 'Runs executed per months in the rest of the sequencers'
+        data_source = column_graphic_tupla (heading, '', '', 'Number of Runs','fint', run_time_tupla)
+        sequencer_data ['other_sequencers_runs_per_month_graph'] = FusionCharts("column3d", "other_run_per_month_graph" , "500", "400", "chart_other_seq_month", "json", data_source).render()
+
+    return sequencer_data

@@ -36,7 +36,11 @@
                             {% for  field, requested in type_of_sample_data.optional_data %}
                                 <tr>
                                     <td>{{field}}</td>
-                                    <td>{{requested}}</td>
+                                    {% if requested == 'Mandatory' %}
+                                        <td class="text-danger"><strong>{{requested}}</strong></td>
+                                    {% else %}
+                                        <td class="text-primary">{{requested}}</td>
+                                    {% endif %}
                                 </tr>
                             {% endfor %}
                         </tbody>

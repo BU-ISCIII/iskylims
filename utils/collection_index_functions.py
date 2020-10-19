@@ -239,6 +239,23 @@ def get_index_values (input_file):
                     index_values.append([line_split[0], line_split[1], index_7[line_split[1]], '', ''])
     return index_values
 
+
+def get_list_of_collection_kits ():
+    '''
+    Description:
+        The function get the collection kit list names defined in database
+    Return:
+        collection_kit_list
+    '''
+    collection_kit_list = []
+    if CollectionIndexKit.objects.all().exists():
+        collection_objs = CollectionIndexKit.objects.all().order_by('collectionIndexName')
+        for collection in collection_objs:
+            collection_kit_list.append(collection.get_collection_index_name())
+        return collection_kit_list
+
+    return collection_kit_list
+
 def store_collection_kits_file(collection_file):
     '''
     Description:
@@ -292,15 +309,17 @@ def store_collection_kits_file(collection_file):
 
 def store_collection_settings (collection_settings, file_name) :
     # saving library settings into database
-    if len(collection_settings['adapters']) == 1:
-        adapter_2 = ''
-    else :
-        adapter_2 = collection_settings['adapters'][1]
+
+    if not 'adapters' in collection_settings:
+        collection_settings['adapters'] = ['']*2
+    elif len(collection_settings['adapters']) == 1:
+        collection_settings['adapters'].append('')
     new_collection_settings = CollectionIndexKit(collectionIndexName = collection_settings['name'],
                                 version =  collection_settings ['version'],
                                 plateExtension = collection_settings['plate_extension'] ,
                                 adapter1 = collection_settings['adapters'][0],
-                                adapter2 = adapter_2, collectionIndexFile = file_name)
+                                adapter2 = collection_settings['adapters'][1],
+                                collectionIndexFile = file_name)
     new_collection_settings.save()
     return new_collection_settings
 

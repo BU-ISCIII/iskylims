@@ -32,12 +32,14 @@ from .utils.sample_functions import *
 from .utils.library_preparation import *
 from .utils.pool_preparation import *
 from .utils.run_preparation import  *
+from .utils.additional_kits import *
 #from .utils.samplesheet_checks import *
-#from .utils.parsing_run_info import get_machine_lanes
 #from .utils.wetlab_misc_utilities import normalized_data
 from iSkyLIMS_core.utils.handling_samples import *
+from iSkyLIMS_core.utils.handling_platforms import get_defined_platforms_and_ids
 #from iSkyLIMS_core.utils.handling_protocols import *
 #from iSkyLIMS_core.utils.handling_commercial_kits import *
+
 
 def index(request):
     #
@@ -48,6 +50,49 @@ def register_wetlab(request):
     #
     return render(request, 'iSkyLIMS_wetlab/index.html')
 
+
+@login_required
+def configuration_email(request):
+    if request.user.username != 'admin':
+        return redirect('')
+    email_conf_data = get_email_data_from_file(__package__)
+    if request.method == 'POST' and (request.POST['action']=='emailconfiguration'):
+        email_user_field ={}
+        for field in EMAIL_CONFIGURATION_FIELDS:
+            email_user_field[field] = request.POST[field]
+
+        if not create_email_conf_file (email_user_field, __package__) :
+            error_message = ERROR_UNABLE_TO_SAVE_EMAIL_CONFIGURATION_SETTINGS
+            return render(request, 'iSkyLIMS_wetlab/configurationEmail.html',{'email_conf_data':email_user_field, 'error_message': error_message} )
+        import importlib
+        importlib.reload(wetlab_config)
+        return render(request, 'iSkyLIMS_wetlab/configurationEmail.html',{'succesful_settings':True})
+    return render(request, 'iSkyLIMS_wetlab/configurationEmail.html',{'email_conf_data': email_conf_data})
+
+@login_required
+def configuration_samba(request):
+    if request.user.username != 'admin':
+        return redirect('')
+    samba_conf_data = get_samba_data_from_file(__package__)
+    if request.method == 'POST' and (request.POST['action']=='sambaconfiguration'):
+        # reload configuration samba settings
+        samba_user_field ={}
+        for field in SAMBA_CONFIGURATION_FIELDS:
+            samba_user_field[field] = request.POST[field]
+        if not create_samba_conf_file (samba_user_field, __package__) :
+            error_message = ERROR_UNABLE_TO_SAVE_SAMBA_CONFIGURATION_SETTINGS
+            return render(request, 'iSkyLIMS_wetlab/configurationSamba.html',{'samba_conf_data':samba_user_field, 'error_message': error_message} )
+        import importlib
+        importlib.reload(wetlab_config)
+        try:
+            open_samba_connection()
+            return render(request, 'iSkyLIMS_wetlab/configurationSamba.html',{'succesful_settings':True})
+        except:
+            error_message = ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS
+            return render(request, 'iSkyLIMS_wetlab/configurationSamba.html',{'samba_conf_data':samba_user_field, 'error_message': error_message} )
+    else:
+        samba_conf_data = get_samba_data_from_file(__package__)
+        return render(request, 'iSkyLIMS_wetlab/configurationSamba.html',{'samba_conf_data': samba_conf_data})
 
 @login_required
 def create_nextseq_run (request):
@@ -102,8 +147,8 @@ def create_nextseq_run (request):
         stored_file = os.path.join(settings.MEDIA_ROOT, file_name)
 
         ## Fetch the experiment name and the library name from the sample sheet file
-        index_library_name = get_library_name(stored_file)
-        run_name = get_experiment_name(stored_file)
+        index_library_name = get_index_library_name(stored_file)
+        run_name = get_experiment_name_from_file(stored_file)
 
         if run_name == '':
             ## define an temporary unique value for the run name
@@ -131,7 +176,7 @@ def create_nextseq_run (request):
         ## Fetch from the Sample Sheet file the projects included in
         ## the run and the user. Error page is showed if not project/description
         ## colunms are found
-        project_list=get_projects_in_run(stored_file)
+        project_list = get_projects_in_run(stored_file)
 
         if len (project_list) == 0 :
             ## delete sample sheet file
@@ -153,28 +198,32 @@ def create_nextseq_run (request):
                     delete_project.delete()
                 else:
                     project_already_defined.append(key)
-        if (len(project_already_defined)>0):
-            if (len(project_already_defined)>1):
-                head_text='The following projects are already defined in database:'
-            else:
-                head_text='The following project is already defined in database:'
-            ## convert the list into string to display the user names on error page
-            display_project= '  '.join(project_already_defined)
-            ## delete sample sheet file before showing the error page
-            fs.delete(file_name)
-            return render (request,'iSkyLIMS_wetlab/error_page.html',
-                {'content':[ head_text,'', display_project,'',
-                    'Project names must be unique','', 'ADVICE:',
-                    'Edit the Sample Sheet file to correct this error']})
+        # Change Project behaviour allow now to add sample to exising projects
+
+        if (len(project_already_defined) >0 ):
+            if get_conf_param_value('PROJECTS_ALLOWED_IN_MULTIPLE_RUNS') == 'False':
+                if (len(project_already_defined)>1):
+                    head_text='The following projects are already defined in database:'
+                else:
+                    head_text='The following project is already defined in database:'
+                ## convert the list into string to display the user names on error page
+                display_project= '  '.join(project_already_defined)
+                ## delete sample sheet file before showing the error page
+                fs.delete(file_name)
+                return render (request,'iSkyLIMS_wetlab/error_page.html',
+                    {'content':[ head_text,'', display_project,'',
+                        'Project names must be unique','', 'ADVICE:',
+                        'Edit the Sample Sheet file to correct this error']})
+
         ##Once the information looks good. it will be stores in runProcess and projects table
 
         ## store data in runProcess table, run is in pre-recorded state
         center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
         center_requested_by = Center.objects.get(pk = center_requested_id)
-        run_proc_data = RunProcess(runName=run_name,sampleSheet= file_name,
+        new_run_obj = RunProcess(runName=run_name,sampleSheet= file_name,
                                 state = RunStates.objects.get(runStateName__exact = 'Pre-Recorded'),
                                 centerRequestedBy = center_requested_by)
-        run_proc_data.save()
+        new_run_obj.save()
         experiment_name = '' if run_name == timestr else run_name
 
         ## create new project tables based on the project involved in the run and
@@ -188,9 +237,16 @@ def create_nextseq_run (request):
                 userid = User.objects.get(username__exact = val)
             else:
                 userid = None
+            '''
             p_data = Projects(runprocess_id=RunProcess.objects.get(runName =run_name),
                             projectName=key, user_id=userid)
             p_data.save()
+            '''
+            data = {}
+            data['user_id'] = user_id
+            data['projectName'] = key
+            new_project = Projects.objects.create_new_project(data)
+            new_project.add_run(new_run_obj)
             projects.append([key, val])
         run_info_values['projects_user'] = projects
         run_info_values['runname']= run_name
@@ -235,7 +291,12 @@ def create_nextseq_run (request):
 
         in_file = os.path.join(settings.MEDIA_ROOT,s_file)
         # Set unique Sample_ID in the sample sheet
+
         index_file = os.path.join(settings.MEDIA_ROOT,'wetlab', 'index_file')
+        # if file does not exists create the file and assing the first value
+        if not os.path.isfile(index_file) :
+            with open(index_file, 'w') as index_fh:
+                index_fh.write('0000-AA')
         create_unique_sample_id_values (in_file, index_file)
         # create the projects/users to update sample sheet
         user_names_in_projects ={}
@@ -293,7 +354,8 @@ def create_nextseq_run (request):
         subfolder_name=str(run_p.id)
 
         temp_directory = os.path.join(settings.MEDIA_ROOT , wetlab_config.RUN_TEMP_DIRECTORY_RECORDED, subfolder_name)
-        os.mkdir(temp_directory)
+        os.makedirs(temp_directory)
+        # os.mkdir(temp_directory)
         # set group writing permission to the temporary directory
         os.chmod(temp_directory, 0o774)
         #os.mkdir(os.path.join(settings.MEDIA_ROOT, 'wetlab/tmp/recorded', subfolder_name ))
@@ -309,6 +371,9 @@ def create_nextseq_run (request):
         run_p.index_library = run_index_library_name
         run_p.save()
         run_p.set_run_state ('Recorded')
+        sample_sheet_lines = read_all_lines_in_sample_sheet(in_file)
+        sample_names_and_data = get_samples_in_sample_sheet(sample_sheet_lines)
+        samples_reused = increase_reuse_if_samples_exists(sample_names_and_data['samples'])
 
         return render (request, 'iSkyLIMS_wetlab/CreateNextSeqRun.html', {'completed_form':results})
 
@@ -486,6 +551,8 @@ def search_run (request):
     Imports:
         Machines and Platform are imported from iSkyLIMS_drylab.models
             for filtering runs based on the platform
+    Constants:
+    ERROR_NO_MATCHES_FOR_RUN_SEARCH
     Functions:
         get_information_run() # Collects information about one run
     Variables:
@@ -530,6 +597,8 @@ def search_run (request):
     #############################################################
     ## Search for runs that fullfil the input values
     #############################################################
+    run_form_data = get_run_search_fields_form()
+    error_message = ERROR_NO_MATCHES_FOR_RUN_SEARCH
     if request.method == 'POST' and (request.POST['action'] == 'runsearch'):
         run_name = request.POST['runname']
         start_date = request.POST['startdate']
@@ -542,19 +611,14 @@ def search_run (request):
 
         ### check the right format of start and end date
         if start_date != '':
-            try:
-                datetime.datetime.strptime(start_date, '%Y-%m-%d')
-            except:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                            {'content':['The format for the "Start Date Search" Field is incorrect ',
-                            'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
+            if not check_valid_date_format(start_date) :
+                error_message = ERROR_INVALID_FORMAT_FOR_DATES
+                return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data, 'error_message' : error_message})
         if end_date != '':
-            try:
-                datetime.datetime.strptime(end_date, '%Y-%m-%d')
-            except:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                            {'content':['The format for the "End Date Search" Field is incorrect ',
-                            'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
+            if not check_valid_date_format(start_date) :
+                error_message = ERROR_INVALID_FORMAT_FOR_DATES
+                return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data, 'error_message' : error_message})
+
         ### Get all the available runs to start the filtering
         if allowed_all_runs :
             runs_found=RunProcess.objects.all().order_by('runName')
@@ -567,67 +631,51 @@ def search_run (request):
             if RunProcess.objects.filter(pk__in = run_list).exists():
                 runs_found = RunProcess.objects.filter(pk__in = run_list)
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                                    {'content':['There are not run where ',
-                                    request.user.username , 'was involved' ]})
+                error_message = ['There are not run where ' + request.user.username + ' was involved' ]
+                return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data, 'error_message' : error_message})
 
         ### Get runs when run name is not empty
         if run_name !='':
-            if (RunProcess.objects.filter(runName__exact =run_name).exists()):
-                run_name_found=RunProcess.objects.filter(runName__exact =run_name)
-                if (len(run_name_found)>1):
-                    return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Too many matches found when searching for the run name ', run_name ,
-                                                                    'ADVICE:', 'Select additional filter to find the run that you are looking for']})
-                r_data_display= get_information_run(run_name_found[0])
-                return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_one_run': r_data_display })
+            if (RunProcess.objects.filter(runName__iexact =run_name).exists()):
+                run_name_found=RunProcess.objects.filter(runName__iexact =run_name)
+                if len(run_name_found) == 1:
+                    r_data_display= get_information_run(run_name_found[0])
+                    return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_one_run': r_data_display })
             if (runs_found.filter(runName__icontains =run_name).exists()):
                 runs_found=runs_found.filter(runName__icontains =run_name).order_by('runName')
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                                    {'content':['No matches have been found for the run name ',
-                                     run_name ]})
+                return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data, 'error_message' : error_message})
         if platform_name != '' :
-            from iSkyLIMS_drylab.models import Machines, Platform
-            if Machines.objects.filter(platformID__exact = Platform.objects.get(platformName__exact = platform_name)).exists() :
-                machine_list = Machines.objects.filter(platformID__exact = Platform.objects.get(platformName__exact = platform_name))
-                if runs_found.filter(sequencerModel__in = machine_list).exists() :
-                    runs_found = runs_found.filter(sequencerModel__in = machine_list)
-                else:
-                    return render (request,'iSkyLIMS_wetlab/error_page.html',
-                                    {'content':['No matches have been found for the platform ',
-                                     platform_name ]})
+            sequencer_list = get_sequencer_names_from_platform(platform_name)
+            if len(sequencer_list) > 0:
+                runs_found = runs_found.filter(usedSequencer__sequencerName__in = sequencer_list)
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                                {'content':['No matches have been found for the platform ', platform_name ]})
-
+                return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data, 'error_message' : error_message})
         ### Check if state is not empty
         if run_state != '':
             s_state = RunStates.objects.get(runStateName__exact = run_state)
             if runs_found.filter(state__runStateName__exact = s_state).exists():
                 runs_found = runs_found.filter(state__runStateName__exact = s_state).order_by('runName')
             else :
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the run name ', run_name ,
-                                                                    'and the state', run_state ]})
+                return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data, 'error_message' : error_message})
         ### Check if start_date is not empty
         if start_date !='' and end_date != '':
 
             if runs_found.filter(run_date__range=(start_date, end_date)).exists():
                  runs_found = runs_found.filter(run_date__range=(start_date, end_date))
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no runs containing ', run_name,
-                                        ' created between ', start_date, 'and the ', end_date]})
+                return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data, 'error_message' : error_message})
         if start_date !='' and end_date == '':
             if runs_found.filter(run_date__gte = start_date).exists():
                  runs_found = runs_found.filter(run_date__gte = start_date)
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Runs containing ', run_name,
-                                        ' starting from', start_date]})
+                return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data, 'error_message' : error_message})
         if start_date =='' and end_date != '':
             if runs_found.filter(run_date__lte = end_date).exists():
                  runs_found = runs_found.filter(run_date__lte = end_date)
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Runs containing ', run_name,
-                                        ' finish before ', end_date]})
+                return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data, 'error_message' : error_message})
+
         #If only 1 run mathes the user conditions, then get the project information
 
         if (len(runs_found)== 1) :
@@ -640,25 +688,7 @@ def search_run (request):
                 run_list.append([runs_found[i],runs_found[i].id])
             return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_run_list': run_list })
     else:
-        available_platforms = []
-        available_machines = []
-        from iSkyLIMS_drylab.models import Platform, Machines
-
-        available_states = []
-
-        run_states = RunStates.objects.all()
-        for state in run_states :
-            available_states.append(state.runStateName)
-
-        platforms = Platform.objects.all()
-        for platform in platforms :
-            available_platforms.append(platform.get_platform_name())
-        machines = Machines.objects.all()
-        for machine in machines :
-            available_machines.append(machine.get_machine_name())
-
-
-        return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'platforms': available_platforms,'machines':available_machines,'run_states':available_states})
+        return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data})
 
 @login_required
 def search_project (request):
@@ -683,8 +713,6 @@ def search_project (request):
             start_date      # filter of starting date of the project
             end_date        # filter for the end of the project
 
-
-
         available_platforms # contains the list of platform defined in
                             # iSkyLIMS.models.Platform
         machine_list        # list of machines to filter on the matches runs
@@ -706,6 +734,8 @@ def search_project (request):
             ---run_list         # in case several run matches the user conditions.
 
     '''
+    project_form_data = get_project_search_fields_form()
+    error_message = ERROR_NO_MATCHES_FOR_PROJECT_SEARCH
     if request.method=='POST' and (request.POST['action']=='searchproject'):
         project_name=request.POST['projectname']
         start_date=request.POST['startdate']
@@ -716,70 +746,53 @@ def search_project (request):
         run_process_ids = []
         # check that some values are in the request if not return the form
         if project_name == '' and start_date == '' and end_date == '' and user_name =='' and platform_name == '' and run_state == '':
-            available_platforms = get_available_platform()
-            available_states = get_available_run_state()
-            return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'platforms': available_platforms,'run_states':available_states})
+            return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data})
 
-        if user_name !=''  and len(user_name) <5 :
-             return render (request,'iSkyLIMS_wetlab/error_page.html',
-                        {'content':['The user name must contains at least 5 caracters ',
-                                    'ADVICE:', 'write the full user name to get a better match']})
+        if user_name !=''  and len(user_name) < 5 :
+            error_message = ERROR_USER_NAME_TOO_SHORT
+            return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
+
         ### check the right format of start and end date
         if start_date != '':
-            try:
-                datetime.datetime.strptime(start_date, '%Y-%m-%d')
-            except:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                        {'content':['The format for the "Start Date Search" Field is incorrect ',
-                                    'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
+            if not check_valid_date_format(start_date) :
+                error_message = ERROR_INVALID_FORMAT_FOR_DATES
+                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
+
         if end_date != '':
-            try:
-                datetime.datetime.strptime(end_date, '%Y-%m-%d')
-            except:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                        {'content':['The format for the "End Date Search" Field is incorrect ',
-                                    'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
+            if not check_valid_date_format(start_date) :
+                error_message = ERROR_INVALID_FORMAT_FOR_DATES
+                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
         ### Get projects when project name is not empty
         if project_name != '' :
-            if Projects.objects.filter(projectName__exact = project_name).exists():
-                project_id = Projects.objects.get (projectName__exact = project_name).id
-                project_found_id = Projects.objects.get(pk=project_id)
-                p_data_display  = get_information_project(project_found_id, request)
-                return render(request, 'iSkyLIMS_wetlab/SearchProject.html',
-                        {'display_one_project': p_data_display })
-            if  Projects.objects.filter (projectName__contains = project_name).exists():
-                projects_found = Projects.objects.filter (projectName__contains = project_name)
+            if Projects.objects.filter(projectName__iexact = project_name).exists():
+                projects = Projects.objects.filter (projectName__iexact = project_name)
+                if len(projects) == 1 :
+                    return redirect ('display_project', project_id = projects[0].get_project_id())
+            if  Projects.objects.filter (projectName__icontains = project_name).exists():
+                projects_found = Projects.objects.filter (projectName__icontains = project_name)
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                        {'content':['No Project found with the string , ', project_name ]})
+                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
         ### if there is no project name, then get all which will be filtered by other conditions set by user
         #
         if project_name == '':
             projects_found = Projects.objects.all()
         if platform_name != '':
-            from iSkyLIMS_drylab.models import Machines, Platform
-            if Machines.objects.filter(platformID__platformName__exact = platform_name).exists() :
-                machine_list = Machines.objects.filter(platformID__platformName__exact = platform_name)
+            sequencer_list = get_sequencer_names_from_platform(platform_name)
+            if len(sequencer_list) == 0:
+                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
 
-                if RunProcess.objects.filter(sequencerModel__in = machine_list).exists() :
-                    runs_found = RunProcess.objects.filter(sequencerModel__in = machine_list)
-                    for run in runs_found :
-                        run_process_ids.append(run.id)
-                    if projects_found.filter(runprocess_id__in = run_process_ids).exists():
-                        projects_found = projects_found.filter(runprocess_id__in = run_process_ids)
-                    else:
-                        return render (request,'iSkyLIMS_wetlab/error_page.html',
-                                    {'content':['No matches have been found for the platform ',
-                                     platform_name ]})
+            if RunProcess.objects.filter(usedSequencer__sequencerName__in = sequencer_list).exists() :
+                runs_found = RunProcess.objects.filter(usedSequencer__sequencerName__in= sequencer_list)
+                for run in runs_found :
+                    run_process_ids.append(run.get_run_id())
+                if projects_found.filter(runprocess_id__in = run_process_ids).exists():
+                    projects_found = projects_found.filter(runprocess_id__in = run_process_ids)
                 else:
-                    return render (request,'iSkyLIMS_wetlab/error_page.html',
-                                    {'content':['No matches have been found for the platform ',
-                                     platform_name ]})
+                    return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                                {'content':['No matches have been found for the platform ', platform_name ]})
+                    return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
 
-                # check if user name is not empty
+            # check if user name is not empty
         if user_name != '':
             if User.objects.filter(username__icontains = user_name).exists():
                 r_name_id = User.objects.get(username__icontains = user_name).id
@@ -788,40 +801,37 @@ def search_project (request):
                 else:
                      return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The Project found does not belong to the user, ', user_name ]})
             else:
+
+                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The Project found does not belong to the user, ', user_name ]})
         if (run_state !='' ):
             if projects_found.filter(runprocess_id__state__runStateName__exact = run_state):
                 projects_found = projects_found.filter(runprocess_id__state__runStateName__exact = run_state)
             else :
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There ane not Projects containing ', project_name,
-                                               'in state', project_state ]})
+                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
+
         if start_date !='' and end_date != '':
 
             if projects_found.filter(project_run_date__range=(start_date, end_date)).exists():
                  projects_found = projects_found.filter(project_run_date__range=(start_date, end_date))
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Projects containing ', project_name,
-                                        ' created between ', start_date, 'and the ', end_date]})
+                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
         if start_date !='' and end_date == '':
             if projects_found.filter(project_run_date__gte = start_date).exists():
                  projects_found = projects_found.filter(project_run_date__gte = start_date)
                  #
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Projects containing ', project_name,
-                                        ' starting from', start_date]})
+                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
+
         if start_date =='' and end_date != '':
             if projects_found.filter(project_run_date__lte = end_date).exists():
                  projects_found = projects_found.filter(project_run_date__lte = end_date)
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Projects containing ', project_name,
-                                        ' finish before ', end_date]})
+                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
         #If only 1 project mathes the user conditions, then get the project information
 
         if len (projects_found) == 1:
-            project_id = projects_found[0].id
-            project_found_id = Projects.objects.get(pk=project_id)
-            p_data_display  = get_information_project(project_found_id, request)
-            return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'display_one_project': p_data_display })
+            return redirect ('display_project', project_id = projects_found[0].id)
         else :
             # Display a list with all projects that matches the conditions
             project_list_dict = {}
@@ -834,172 +844,38 @@ def search_project (request):
             return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'display_project_list': project_list_dict })
 
     else:
-        available_platforms = get_available_platform()
-        available_states = get_available_run_state()
-        return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'platforms': available_platforms,'run_states':available_states})
-
-
+        return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data})
 
 
 
 @login_required
-def search_sample (request):
-    '''
-    Description:
-        The function is called from web, having 2 main parts:
-            - User form with the information to search samples
-            - Result information can be :
-                - list of the matched samples
-                - sample information in case that only 1 match is found
-    Input:
-        request     # contains the request dictionary sent by django
-    Variables:
+def retry_error_run (request):
+    # check user privileges
+    if request.user.is_authenticated:
 
-        User inputs from search options
-            sample_name     # string characters to find in the project name
-            start_date      # filter of starting date of the project
-            end_date        # filter for the end of the project
-            user_name       # name of user owner of the sample
-
-
-        sample_found        # Sample object that contains the result query
-                            # it is updated with the user form conditions
-        project_id_list     # contains the a list of projects objects
-                            owner of the enter used name for filtering
-                            the previous matched samples
-        sample_data_information # Contains all the sample information
-                            to be displayed on the web page
-        sample_list         # contains the sample list that mathches
-                            the user conditions
-    Return:
-        Return the different information depending on the execution:
-        -- Error page in case no sample is founded on the matching conditions.
-        -- SearchSample.html is returned with one of the following information :
-            -- sample_data_information   # in case that only one run is matched
-            ---sample_list         # in case several run matches the user conditions.
-
-    '''
-    if request.method=='POST' and (request.POST['action']=='searchsample'):
-        sample_name=request.POST['samplename']
-        start_date=request.POST['startdate']
-        end_date=request.POST['enddate']
-        user_name = request.POST['username']
-
-        # check that some values are in the request if not return the form
-        if user_name == '' and start_date == '' and end_date == '' and sample_name =='':
-            return render(request, 'iSkyLIMS_wetlab/SearchSample.html')
-
-        if user_name !=''  and len(user_name) <5 :
-             return render (request,'iSkyLIMS_wetlab/error_page.html',
-                    {'content':['The user name must contains at least 5 caracters ',
-                    'ADVICE:', 'write the full user name to get a better match']})
-        ### check the right format of start and end date
-        if start_date != '':
-            try:
-                datetime.datetime.strptime(start_date, '%Y-%m-%d')
-            except:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                    {'content':['The format for the "Start Date Search" Field is incorrect ',
-                    'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
-        if end_date != '':
-            try:
-                datetime.datetime.strptime(end_date, '%Y-%m-%d')
-            except:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                    {'content':['The format for the "End Date Search" Field is incorrect ',
-                     'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
-        ### Get projects when sample name is not empty
-        if sample_name != '' :
-
-            if SamplesInProject.objects.filter(sampleName__exact = sample_name).exists():
-                sample_found = SamplesInProject.objects.filter(sampleName__exact = sample_name)
-                if len(sample_found) == 1:
-                    # get information from the sample found
-                    ########################################
-                    sample_data_information = get_info_sample (sample_found[0])
-                    return render(request, 'iSkyLIMS_wetlab/SearchSample.html',{'display_one_sample': sample_data_information })
-            elif SamplesInProject.objects.filter(sampleName__contains = sample_name).exists():
-                sample_found = SamplesInProject.objects.filter(sampleName__contains = sample_name)
-                #
-            else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                    {'content':['No sample found with the string , ', sample_name ]})
-
-        ### if there is no project name, then get all which will be filtered by other conditions set by user
-        #
-        else :
-            sample_found = SamplesInProject.objects.all()
-        # Check the start and end date
-        if start_date !='' and end_date != '':
-
-            if sample_found.filter(generated_at__range=(start_date, end_date)).exists():
-                 sample_found = sample_found.filter(generated_at__range=(start_date, end_date))
-            else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                        {'content':['There are no Projects containing ', sample_name,
-                        ' created between ', start_date, 'and the ', end_date]})
-        if start_date !='' and end_date == '':
-            if sample_found.filter(generated_at__gte = start_date).exists():
-                 sample_found = sample_found.filter(generated_at__gte = start_date)
-            else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                        {'content':['There are no Projects containing ', sample_name,
-                                        ' starting from', start_date]})
-        if start_date =='' and end_date != '':
-            if sample_found.filter(generated_at__lte = end_date).exists():
-                 sample_found = sample_found.filter(generated_at__lte = end_date)
-            else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                        {'content':['There are no Projects containing ', sample_name,
-                         ' finish before ', end_date]})
-                # check if user name is not empty
-        if user_name != '':
-            #
-            if User.objects.filter(username__contains = user_name).exists():
-                users = User.objects.filter (username__contains = user_name)
-                if len(users) == 1:
-                    user_id= users[0].id
-                    project_id_list = Projects.objects.prefetch_related('user_id').filter(user_id = user_id)
-                    sample_found = sample_found.filter(project_id__in = project_id_list)
-
-                else:
-                    text_error= 'There are too many users names containing ' + sample_name  + '  which match your query'
-                    return render (request,'iSkyLIMS_wetlab/error_page.html',
-                        {'content':[text_error, 'ADVICE:',
-                        'Fill in the user name field the full name of the user' ]})
-
-                #r_name_id = User.objects.get(username__icontains = user_name).id
-
-            else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                    {'content':['The samples found did not belong to the user, ', user_name ]})
-
-        if len(sample_found) == 0:
-            text_error = 'User ' + user_name +' does not have yet any samples'
-            return render (request,'iSkyLIMS_wetlab/error_page.html',
-                        {'content':[text_error,  'ADVICE:',
-                        'Contact with your administrator to find out the reason for not matching any result' ]})
-        if len(sample_found) == 1:
-            sample_data_information = get_info_sample (sample_found[0])
-            return render(request, 'iSkyLIMS_wetlab/SearchSample.html',
-                            {'display_one_sample': sample_data_information })
-
-        else:
-            sample_list= {}
-            s_list  = {}
-            for sample in sample_found:
-                sample_project =  sample.get_project_name()
-                s_list [sample.id] = [[sample.sampleName, sample_project]]
-            sample_list ['s_list'] = s_list
-
-            #
-
-            return render (request, 'iSkyLIMS_wetlab/SearchSample.html',
-                                {'multiple_samples': sample_list})
+        try:
+            groups = Group.objects.get(name='WetlabManager')
+            if groups not in request.user.groups.all():
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+        except:
+            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
     else:
-    #
-        return render(request, 'iSkyLIMS_wetlab/SearchSample.html')
-
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+    if request.method=='POST' and (request.POST['action']=='retry_correct_error'):
+        run_id = request.POST['run_id']
+        if (RunProcess.objects.filter(pk__exact=run_id).exists()):
+            run_name_found = RunProcess.objects.get(pk__exact=run_id)
+            previous_error_state = run_name_found.get_state_before_error()
+            run_name_found.set_run_state(previous_error_state)
+            detail_description = {}
+            detail_description['information'] = SUCCESSFUL_RUN_STATE_CHANGE_FOR_RETRY
+            return render (request,'iSkyLIMS_wetlab/successful_page.html', {'detail_description': detail_description })
+        else:
+            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Run does not exist ']})
+    else:
+        #return redirect (request,'/')
+        return render(request, 'iSkyLIMS_wetlab/index.html')
 
 
 @login_required
@@ -1028,7 +904,7 @@ def display_run (request, run_id):
     if (RunProcess.objects.filter(pk=run_id).exists()):
         run_name_found = RunProcess.objects.get(pk=run_id)
         r_data_display  = get_information_run(run_name_found)
-        return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_one_run': r_data_display })
+        return render(request, 'iSkyLIMS_wetlab/displayRun.html', {'display_one_run': r_data_display })
     else:
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the run  ']})
 
@@ -1048,9 +924,9 @@ def latest_run (request) :
         return redirect ('/accounts/login')
 
     latest_run = RunProcess.objects.order_by('id').last()
-    run_id = latest_run.id
-    r_data_display  = get_information_run(latest_run)
-    return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_one_run': r_data_display })
+
+    return redirect ('display_run', run_id = latest_run.id)
+
 
 @login_required
 def incompleted_runs (request) :
@@ -1066,14 +942,16 @@ def incompleted_runs (request) :
         #redirect to login webpage
         return redirect ('/accounts/login')
     if RunProcess.objects.all().exclude(state__runStateName = 'Completed').exists() :
-        display_incomplete_run_list = {}
-        unfinished_runs = RunProcess.objects.all().exclude(state__runStateName = 'Completed').order_by('runName')
-        for run in unfinished_runs:
-            display_incomplete_run_list[run.id] = [[run.runName, run.get_state()]]
+
+        display_incompleted_run = get_information_for_incompleted_run()
+        return render (request, 'iSkyLIMS_wetlab/incompletedRuns.html',{'display_incompleted_run':display_incompleted_run})
+        #unfinished_runs = RunProcess.objects.all().exclude(state__runStateName = 'Completed').order_by('runName')
+        #for run in unfinished_runs:
+        #display_incomplete_run_list[run.id] = [[run.runName, run.get_state()]]
     else:
         return render (request,'iSkyLIMS_wetlab/info_page.html', {'content':['There is no project in incompleted state' , 'All Runs are finished']})
 
-    return render (request, 'iSkyLIMS_wetlab/incompletedRuns.html',{'display_incomplete_run_list':display_incomplete_run_list})
+
 
 
 
@@ -1105,8 +983,8 @@ def display_project (request, project_id):
             #redirect to login webpage
             return redirect ('/accounts/login')
         # Display the proyect information
-        p_data_display  = get_information_project(project_found_id, request)
-        return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'display_one_project': p_data_display })
+        display_project_data  = get_information_project(project_found_id, request)
+        return render(request, 'iSkyLIMS_wetlab/displayProject.html', {'display_project_data': display_project_data })
     else:
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the project  ' ]})
 
@@ -1115,7 +993,7 @@ def display_sample_in_run (request, sample_run_project_id):
     '''
     Description:
         The function will check if the requested sample id exists, then
-        it will call to get_info_sample function to collect all information
+        it will call to get_info_sample_in_run function to collect all information
     Input:
         request     # contains the request dictionary sent by django
         sample_id   # contains the sample id to display the information
@@ -1124,20 +1002,18 @@ def display_sample_in_run (request, sample_run_project_id):
                                 to include in the web page
         sample_found_id  # contains the object for the sample id
     Functions:
-        get_info_sample (sample_found_id)
+        get_info_sample_in_run (sample_found_id)
     Return:
         Return the different information depending on the execution:
         -- Error page in case the sample id in the request does not exists.
-        -- sample_data_information with the information collected by get_info_sample()
+        -- sample_data_information with the information collected by get_info_sample_in_run()
     '''
     if (SamplesInProject.objects.filter(pk=sample_run_project_id).exists()):
         sample_found_id = SamplesInProject.objects.get(pk=sample_run_project_id)
-        sample_data_information = get_info_sample (sample_found_id)
-        return render(request, 'iSkyLIMS_wetlab/SearchSample.html',{'display_one_sample': sample_data_information })
+        sample_data_information = get_info_sample_in_run (sample_found_id)
+        return render(request, 'iSkyLIMS_wetlab/displaySampleInRun.html',{'display_one_sample': sample_data_information })
     else:
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the sample  ' ]})
-
-
 
 
 
@@ -1159,123 +1035,94 @@ def display_collection_index (request, collection_index_id):
 
 
 @login_required
-def search_index_library (request):
+def search_collection_index_library (request):
 
-    if request.method == 'POST' and (request.POST['action'] == 'searchindexlibrary') :
-        index_library_name=request.POST['indexlibraryname']
+    if request.method == 'POST' and (request.POST['action'] == 'searchcollectionindexkit') :
+        collection_index_kit_name=request.POST['collectionindexkitname']
         adapter_1=request.POST['adapter1']
         adapter_2=request.POST['adapter2']
         index_name=request.POST['indexname']
-        index_base=request.POST['indexbase']
-        start_date=request.POST['startdate']
-        end_date=request.POST['enddate']
+        index_sequence=request.POST['indexbase']
 
         # check that some values are in the request if not return the form
-        if index_library_name == '' and start_date == '' and end_date == '' and adapter_1 =='' and adapter_2 == '' and index_name == '' and index_base == '' :
-            return render(request, 'iSkyLIMS_wetlab/searchIndexLibrary.html')
+        if collection_index_kit_name == '' and adapter_1 =='' and adapter_2 == '' and index_name == '' and index_sequence == '' :
+            return render(request, 'iSkyLIMS_wetlab/searchCollectionIndexLibrary.html')
 
-        if index_base !=''  and len(index_base) < 6 :
-             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Index Sequence must contains at leat 6  caracters ']})
-        ### check the right format of start and end date
-        if start_date != '':
-            try:
-                datetime.datetime.strptime(start_date, '%Y-%m-%d')
-            except:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The format for the "Start Date Search" Field is incorrect ',
-                                                                    'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
-        if end_date != '':
-            try:
-                datetime.datetime.strptime(end_date, '%Y-%m-%d')
-            except:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
-                                                                    'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
+        if index_sequence !='' :
+            if len(index_sequence) < 6 :
+                return render (request,'iSkyLIMS_wetlab/searchCollectionIndexLibrary.html', {'error_message':ERROR_TOO_SHORT_INDEX_BASE_SEQUENCE})
+            else:
+                valid_seq_characters = ['a','A','c','C', 'g', 'G', 't','T']
+                for letter in index_sequence:
+                    if letter not in valid_seq_characters:
+                        return render (request,'iSkyLIMS_wetlab/searchCollectionIndexLibrary.html', {'error_message':ERROR_INVALID_SEQUENCE_CHARACTERS})
 
-        index_library_found = IndexLibraryKit.objects.all()
-        if index_library_name != '':
-            if index_library_found.filter(indexLibraryName__contains = index_library_name).exists():
-                index_library_found = index_library_found.filter(indexLibraryName__contains = index_library_name)
-                if len (index_library_found) == 1:
-                    index_library_dict = index_library_information (index_library_found[0].id)
-                    if index_library_dict != False:
-                        return render (request, 'iSkyLIMS_wetlab/DisplayIndexLibrary.html', {'display_one_index_library': index_library_dict})
-                    else:
-                        return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no recorded information for the index library for ',  index_library_id]})
+
+        collection_indexes = CollectionIndexKit.objects.all()
+        if collection_index_kit_name != '':
+            if collection_indexes.filter(collectionIndexName__icontains = collection_index_kit_name).exists():
+                collection_indexes = collection_indexes.filter(collectionIndexName__icontains = collection_index_kit_name)
+                if len (collection_indexes) == 1:
+                    return redirect ('display_collection_index', collection_index_id = collection_indexes[0].get_id())
+            else:
+                error_message = ERROR_NO_COLLECTION_INDEX_FOUND
+                error_message.append(collection_index_kit_name)
+                return render (request,'iSkyLIMS_wetlab/searchCollectionIndexLibrary.html', {'error_message':error_message})
         if adapter_1 != '':
-            if index_library_found.filter(adapter1__contains =adapter_1).exists():
-                index_library_found = index_library_found.filter(adapter1__contains =adapter_1)
+            if collection_indexes.filter(adapter1__icontains =adapter_1).exists():
+                collection_indexes = collection_indexes.filter(adapter1__icontains =adapter_1)
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no libraries contaning Adapter 1 ', adapter_1]})
+                return render (request,'iSkyLIMS_wetlab/searchCollectionIndexLibrary.html', {'not_found_matchs':'not_found_matchs'})
         if adapter_2 != '':
-            if index_library_found.filter(adapter1__contains =adapter_2).exists():
-                index_library_found = index_library_found.filter(adapter2__contains =adapter_2)
+            if collection_indexes.filter(adapter1__icontains =adapter_2).exists():
+                collection_indexes = collection_indexes.filter(adapter2__icontains =adapter_2)
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no libraries contaning Adapter 2 ', adapter_2]})
+                return render (request,'iSkyLIMS_wetlab/searchCollectionIndexLibrary.html', {'not_found_matchs':'not_found_matchs'})
 
+        if index_name != '' or index_sequence != '' :
+            collection_values = CollectionIndexValues.objects.all()
+            if index_name != '':
+                if collection_values.filter(index_7_contains =index_name, collectionIndexKit_id__in = collection_indexes).exists():
+                    collection_values = collection_values.filter(index_7_contains =index_name, collectionIndexKit_id__in = collection_indexes)
+                elif collection_values.filter(index_5_contains =index_name, collectionIndexKit_id__in = collection_indexes).exists():
+                    collection_values = collection_values.filter(index_5_contains =index_name, collectionIndexKit_id__in = collection_indexes)
+                else:
+                    return render (request,'iSkyLIMS_wetlab/searchCollectionIndexLibrary.html', {'not_found_matchs':'not_found_matchs'})
 
+            if index_sequence != '':
+                index_found , sequence = find_index_sequence_collection_values_kit(index_sequence)
+                if 'I7' in index_found:
+                    collection_values = collection_values.filter(i_7_seq__icontains =sequence, collectionIndexKit_id__in = collection_indexes)
+                elif 'I5' in index_found :
+                    collection_values = collection_values.filter(i_5_seq__icontains =sequence, collectionIndexKit_id__in = collection_indexes)
+                else:
+                    return render (request,'iSkyLIMS_wetlab/searchCollectionIndexLibrary.html', {'not_found_matchs':'not_found_matchs'})
 
-        # Check the start and end date
-        if start_date !='' and end_date != '':
-
-            if index_library_found.filter(generatedat__range=(start_date, end_date)).exists():
-                 index_library_found = index_library_found.filter(generatedat__range=(start_date, end_date))
+            if len(collection_values) == 1:
+                return redirect ('display_collection_index', collection_index_id = collection_values[0].get_collection_index_id)
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no libraries ',
-                                        ' created between ', start_date, 'and the ', end_date]})
-        if start_date !='' and end_date == '':
-            if index_library_found.filter(generatedat__gte = start_date).exists():
-                 index_library_found = index_library_found.filter(generatedat__gte = start_date)
-                 #
-            else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no libraries ',
-                                        ' starting from', start_date]})
-        if start_date =='' and end_date != '':
-            if index_library_found.filter(generatedat__lte = end_date).exists():
-                 index_library_found = index_library_found.filter(generatedat__lte = end_date)
-            else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no libraries ',
-                                        ' finish before ', end_date]})
+                matched_collection_index = []
+                collection_index_id_list = []
 
-        if index_name != '':
-            if IndexLibraryValues.objects.filter(indexName__exact =index_name).exists():
-                index_name_list = IndexLibraryValues.objects.prefetch_related('indexLibraryKit_id').filter(indexName = index_name)
-                index_library_found = index_library_found.filter(indexlibraryvalues__in = index_name_list)
-
-                #index_library_found = index_library_found.filter(
-            else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no libraries contaning index_name ', index_name]})
-
-        if index_base != '':
-            if IndexLibraryValues.objects.filter(indexBase__exact =index_base).exists():
-                index_base_list = IndexLibraryValues.objects.prefetch_related('indexLibraryKit_id').filter(indexBase = index_base)
-                index_library_found = index_library_found.filter(indexlibraryvalues__in = index_base_list)
-                #index_library_found = index_library_found.filter(
-            else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no libraries contaning Base Sequence ', index_base]})
-
-        if len(index_library_found) == 1 :
-            index_library_dict = index_library_information (index_library_found[0].id)
-            if index_library_dict != False:
-                return render (request, 'iSkyLIMS_wetlab/DisplayIndexLibrary.html', {'display_one_index_library': index_library_dict})
-            else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no recorded information for the index library for ',  index_library_id]})
-
+                for collection_value in collection_values :
+                    if collection_value.get_collection_index_id() not in collection_index_id_list:
+                        collection_index_id_list.append(collection_value.get_collection_index_id())
+                        matched_collection_index.append([collection_value.get_collection_index_id(), collection_value.get_collection_index_name()])
+                if len (matched_collection_index) == 1:
+                    return redirect ('display_collection_index', collection_index_id = matched_collection_index[0][0])
+                else:
+                    return render (request,'iSkyLIMS_wetlab/searchCollectionIndexLibrary.html', {'matched_collection_index': matched_collection_index})
         else:
-            # generate the list with all library that matches conditions
-            index_library_dict = {}
-            index_values = []
-            for index_library in index_library_found:
-                values = []
-                values.append(index_library.id)
-                values.append(index_library.indexLibraryName)
-                values.append(index_library.version)
-                index_values.append(values)
-            index_library_dict['index_values'] = index_values
-
-            return render (request, 'iSkyLIMS_wetlab/searchIndexLibrary.html', {'display_list_index_library': index_library_dict})
-
+            if len(collection_indexes) == 1:
+                return redirect ('display_collection_index', collection_index_id = collection_indexes[0].get_id())
+            else:
+                matched_collection_index = []
+                for collection_index in collection_indexes:
+                    matched_collection_index.append([collection_index.get_id(), collection_index.get_collection_index_name()])
+                return render (request,'iSkyLIMS_wetlab/searchCollectionIndexLibrary.html', {'matched_collection_index': matched_collection_index})
 
     else:
-        return render (request, 'iSkyLIMS_wetlab/searchIndexLibrary.html')
+        return render (request, 'iSkyLIMS_wetlab/searchCollectionIndexLibrary.html')
 
 
 @login_required
@@ -1326,7 +1173,7 @@ def change_project_libKit (request, project_id) :
 
         if request.method == 'POST' and request.POST['action'] == 'change_project_libKit':
             new_library_name = request.POST['projectlibkit']
-            old_library_name = project.get_library_name()
+            old_library_name = project.get_index_library_name()
             if old_library_name == new_library_name :
                 return render (request, 'iSkyLIMS_wetlab/info_page.html', {'content': ['The library kit from the input text is the same to the existing defined for this project', 'No change is done']})
             # check if there is no other project in the same Run with the same Library Kit
@@ -1403,7 +1250,7 @@ def change_run_libKit (request, run_id):
             if len(new_library_kit) == 1 :
                 # Check if new library kit was set in the form
                 project = Projects.objects.get(projectName__exact = projects_name[0])
-                old_library_kit = project.get_library_name()
+                old_library_kit = project.get_index_library_name()
                 if new_library_kit[0] == old_library_kit :
                     return render (request, 'iSkyLIMS_wetlab/info_page.html', {'content': ['The library kit from the input text is the same to the existing defined for this project', 'No change is done']})
                 # change the library name
@@ -1509,73 +1356,30 @@ def stats_experiment (request):
     return render (request, 'iSkyLIMS_wetlab/StatsPerExperiment.html', {})
 
 @login_required
-def stats_per_machine (request):
+def stats_per_sequencer (request):
+    sequencer_names = get_sequencer_installed_names()
     if request.method == 'POST':
-        m_name = request.POST['machinename']
+        sequencer = request.POST['sequencer']
         start_date=request.POST['startdate']
         end_date=request.POST['enddate']
 
         if start_date != '':
-            try:
-                datetime.datetime.strptime(start_date, '%Y-%m-%d')
-            except:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The format for the "From Start Date" Field is incorrect ',
-                                                                    'ADVICE:', 'Use the format  (YYYY-MM-DD)']})
+            if not check_valid_date_format(start_date):
+                error_message = ERROR_INVALID_FORMAT_FOR_DATES
+                return render (request, 'iSkyLIMS_wetlab/StatsPerSequencer.html', {'sequencer_names':sequencer_names, 'error_message': error_message})
         if end_date !='' :
-            try:
-                datetime.datetime.strptime(end_date, '%Y-%m-%d')
-            except:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
-                                                                    'ADVICE:', 'Use the format  (YYYY-MM-DD)']})
-        if len(m_name) < 5 :
-            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['machine name is too sort fo fined a match', 'Name must be at least 6 characters long'
-                                                            'ADVICE:', 'write a longer name in the machine field ']})
-
-        if Machines.objects.filter(machineName__icontains = m_name).exists():
-            m_name = Machines.objects.get(machineName__icontains = m_name).machineName
-
-            if RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name).exists():
-                if RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name, state__runStateName = "Completed").exists():
-                    run_by_machine = RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name, state__runStateName = "Completed")
-                    run_by_machine_no_completed = RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name).exclude(state__runStateName = "Completed")
+            if not check_valid_date_format(end_date):
+                error_message = ERROR_INVALID_FORMAT_FOR_DATES
+                return render (request, 'iSkyLIMS_wetlab/StatsPerSequencer.html', {'sequencer_names':sequencer_names, 'error_message': error_message})
+        runs_using_sequencer = get_sequencers_run_from_time_interval(sequencer, start_date, end_date )
+        if len(runs_using_sequencer) == 0:
+            error_message = ERROR_NO_MATCHES_FOR_SEQUENCER_STATS
+            return render (request, 'iSkyLIMS_wetlab/StatsPerSequencer.html', {'sequencer_names':sequencer_names, 'error_message': error_message})
+        sequencer_data = get_stats_sequencer_data_from_selected_runs (runs_using_sequencer,sequencer, start_date, end_date )
 
 
-                    projects_by_machine = Projects.objects.filter(runprocess_id__sequencerModel__machineName__iexact = m_name, runprocess_id__state__runStateName = "Completed").order_by('generatedat')
 
-                # check if start and end date are present in the form
-                    if start_date != '' and end_date !='':
-
-
-                        if RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name, state__runStateName = "Completed", run_date__range=(start_date, end_date)).exists():
-                            run_by_machine = RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name, state__runStateName = "Completed", run_date__range=(start_date, end_date))
-                            projects_by_machine = Projects.objects.filter(runprocess_id__sequencerModel__machineName__iexact = m_name , runprocess_id__state__runStateName = "Completed", generatedat__range=(start_date, end_date))
-
-                            #r_project_by_researcher = r_project_by_researcher.filter(generatedat__range=(start_date, end_date))
-                        else:
-                            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Machine does not have projects associated for the period ',
-                                                    'starting date  = ', start_date, 'and with ending date = ', end_date,
-                                                                'ADVICE:', 'Contact with your administrator']})
-
-                    if start_date != '' and end_date =='':
-                        end_date = str(datetime.datetime.now().date())
-                        if RunProcess.objects.filter(sequencerModel__machineName__iexact =m_name, state__runStateName = "Completed", run_date__range=(start_date, end_date)).exists():
-                            run_by_machine = RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name, state__runStateName = "Completed", run_date__range=(start_date, end_date))
-                            projects_by_machine = Projects.objects.filter(runprocess_id__sequencerModel__machineName__iexact = m_name, runprocess_id__state__runStateName = "Completed", generatedat__range=(start_date, end_date))
-
-                        else:
-                            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Machine does not have projects associated for the period ',
-                                                    'starting date  = ', start_date,
-                                                                'ADVICE:', 'Contact with your administrator']})
-
-                    if start_date == '' and end_date !='':
-                        if RunProcess.objects.filter(sequencerModel_machineName__iexact =m_name, state__runStateName = "Completed", generatedat__lte= end_date).exists():
-                            run_by_machine =RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name, state__runStateName = "Completed", run_date__lte = end_date)
-                            projects_by_machine = Projects.objects.filter(runprocess_id__sequencerModel__machineName__iexact = m_name, runprocess_id__state__runStateName = "Completed", generatedat__lte = end_date)
-                        else:
-                            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Machine does not have projects associated for the period ',
-                                                    'ending date  = ', end_date,
-                                                                'ADVICE:', 'Contact with your administrator']})
-
+        '''
 
 
                     # Get data from researcher projects
@@ -1583,15 +1387,15 @@ def stats_per_machine (request):
 
 
 
-                    machine_statistics = {}
+                    sequencer_statistics = {}
 
-                    machine_statistics ['run_heading'] = ['Run name' , 'Run Date' , 'Sequencer Model' , 'State' , 'Space Img(Mb)' , 'Space Fasta(Mb)' , 'Space Other(Mb)']
+                    sequencer_statistics ['run_heading'] = ['Run name' , 'Run Date' , 'Sequencer Model' , 'State' , 'Space Img(Mb)' , 'Space Fasta(Mb)' , 'Space Other(Mb)']
                     runs_data = []
                     sequencer_run = {}
                     runs_data_list = []
                     runs_time_list = []
                     for run_machine in run_by_machine:
-                        ru_seq_model = run_machine.get_run_sequencerModel()
+                        ru_seq_model = run_machine.get_run_used_sequencer()
                         ru_data=run_machine.get_info_process().split(';')
                         #runName, state, requested_center, generated_date, rundate,completed_date, bcl2fastq_date, finish_date, useSpaceImgMb, useSpaceFastaMb,useSpaceOtherMb
                         runs_data_list.append([ru_data[0], ru_data[4] , ru_seq_model , ru_data[3] , ru_data[8] , ru_data[9] , ru_data[10]])
@@ -1600,10 +1404,10 @@ def stats_per_machine (request):
 
                     sequencer_run[ru_seq_model] = runs_data_list
                     runs_data.append(sequencer_run)
-                    machine_statistics['run_data'] = runs_data
+                    sequencer_statistics['run_data'] = runs_data
                     # Get data from machine projects
 
-                    machine_statistics ['projects_heading'] = ['Project name', 'Date', 'Libraty Kit','Samples', 'Cluster PF', 'Yield Mb', '% Q> 30', 'Mean','Sequencer ID']
+                    sequencer_statistics ['projects_heading'] = ['Project name', 'Date', 'Libraty Kit','Samples', 'Cluster PF', 'Yield Mb', '% Q> 30', 'Mean','Sequencer ID']
                     projects_data =[]
                     p_machine_date , p_machine_num_sample = {} , {}
                     p_machine_lib_kit, p_machine_sequencer = {}, {}
@@ -1611,30 +1415,15 @@ def stats_per_machine (request):
                     p_machine_yield_mb_dict, p_machine_cluster_pf_dict ={} , {}
                     projects_name_dict , projects_id_list = {} , {}
 
-                    # if run_by_machine_no_completed = 0 --> not pie graph
-
-                    if len(run_by_machine_no_completed) != 0 :
-                        run_num= {}
-                        run_num['Completed']= len(run_by_machine)
-                        run_num['Not Completed']= len(run_by_machine_no_completed)
-                        theme = 'ocean'
-                        heading = '%Runs Completed vs Runs Not Completed for ' + ru_seq_model
-                        sub_caption = ''
-                        data_source = pie_graphic_standard (heading, sub_caption, theme, run_num)
-                        run_pie_graph = FusionCharts("pie3d", "run_pie_graph" , "500", "400", "run_pie_chart", "json", data_source).render()
-                        machine_statistics ['run_pie_graph'] = run_pie_graph
 
 
-
-
-                    #import pdb; pdb.set_trace()
                     for project_machine in projects_by_machine:
 
                         q_30_list , mean_q_list = [] , []
                         yield_mb_list,  cluster_pf_list = [], []
                         p_name = project_machine.get_project_name()
 
-                        sequencer_in_project = project_machine.runprocess_id.get_run_sequencerModel()
+                        sequencer_in_project = project_machine.runprocess_id.get_run_used_sequencer()
                         if not sequencer_in_project in projects_name_dict :
                             p_machine_num_sample[sequencer_in_project] ={}
                             p_machine_sequencer[sequencer_in_project] ={}
@@ -1651,11 +1440,11 @@ def stats_per_machine (request):
                         projects_id_list[sequencer_in_project].append(m_project_id)
                         p_machine_num_sample[sequencer_in_project][p_name] = StatsFlSummary.objects.get(project_id__exact = m_project_id).sampleNumber
                         p_machine_date [sequencer_in_project][p_name] = project_machine.get_date()
-                        p_machine_lib_kit[sequencer_in_project][p_name]= project_machine.get_library_name()
+                        p_machine_lib_kit[sequencer_in_project][p_name]= project_machine.get_index_library_name()
                         p_machine_sequencer[sequencer_in_project][p_name] = str(project_machine.runprocess_id.sequencerModel)
                         lanes_in_project = StatsLaneSummary.objects.filter( project_id__exact = m_project_id)
                         for lane in lanes_in_project :
-                            q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane.get_stats_info().split(';')
+                            q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane.get_stats_info()
                             q_30_list.append(float(q_30_value))
                             mean_q_list.append(float(mean_q_value))
                             yield_mb_list.append(float(yield_mb_value.replace(',','')))
@@ -1728,10 +1517,10 @@ def stats_per_machine (request):
 
                         machine_graphs.append(machine_seq_graphs)
 
-                    machine_statistics ['machine_graph'] = machine_graphs
-                    machine_statistics ['machine_name'] = m_name
-                    machine_statistics['projects_data'] = projects_data
-                    #import pdb; pdb.set_trace()
+                    sequencer_statistics ['machine_graph'] = machine_graphs
+                    sequencer_statistics ['machine_name'] = m_name
+                    sequencer_statistics['projects_data'] = projects_data
+
 
                     #collecting data for comparation graphics
 
@@ -1774,14 +1563,14 @@ def stats_per_machine (request):
                     comp_graphs, comp_seq_graphs = [] , []
                     for sequencer in projects_name_dict.keys() :
                         for lane_summary in total_lanes_summary[sequencer] :
-                            q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane_summary.get_stats_info().split(';')
+                            q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane_summary.get_stats_info()
                             total_q_30_list.append(float(q_30_value))
                             total_mean_q_list.append(float(mean_q_value))
                             total_yield_mb_list.append(int(yield_mb_value.replace(',','')))
                             total_cluster_pf_list.append(int(cluster_pf_value.replace(',','')))
 
 
-                    machine_statistics ['comp_graphs'] = comp_graphs
+                    sequencer_statistics ['comp_graphs'] = comp_graphs
 
                     # Sequencer graphic utilization
                     sequencer_used = {}
@@ -1793,22 +1582,14 @@ def stats_per_machine (request):
                     sub_caption = ''
                     data_source = pie_graphic_standard (heading, sub_caption, theme, sequencer_used)
                     sequencer_pie_graph = FusionCharts("pie3d", "sequencer_pie_graph" , "500", "400", "sequencer_pie_chart", "json", data_source).render()
-                    machine_statistics ['sequencer_pie_graph'] = sequencer_pie_graph
+                    sequencer_statistics ['sequencer_pie_graph'] = sequencer_pie_graph
 
-                    return  render(request, 'iSkyLIMS_wetlab/StatsPerMachine.html', {'machine_statistics' : machine_statistics})
-                else: #if RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name, state__runStateName = "Completed").exists():
-                    return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Machine does not have projects in Completed state. ',
-                                                            'ADVICE:', 'Contact with your administrator']})
+                    return  render(request, 'iSkyLIMS_wetlab/StatsPerMachine.html', {'sequencer_statistics' : sequencer_statistics})
+        '''
+        return render (request, 'iSkyLIMS_wetlab/StatsPerSequencer.html', {'sequencer_data':sequencer_data})
 
-            else: #if RunProcess.objects.filter(sequencerModel__machineName__iexact = m_name).exists():
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Machine does not have projects associated to him ',
-                                                            'ADVICE:', 'Contact with your administrator']})
-
-        else: #if Machines.objects.filter(machineName__icontains = m_name).exists():
-            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for machine name  ',
-                                                                'ADVICE:', 'Contact with your administrator']})
-    else: #if request.method == 'POST':
-        return render (request, 'iSkyLIMS_wetlab/StatsPerMachine.html', {})
+    else:
+        return render (request, 'iSkyLIMS_wetlab/StatsPerSequencer.html', {'sequencer_names':sequencer_names})
 
 
 @login_required
@@ -1884,7 +1665,7 @@ def stats_per_researcher (request):
                         yield_mb_list,  cluster_pf_list = [], []
                         p_name = project_researcher.get_project_name()
 
-                        sequencer_in_project = project_researcher.runprocess_id.get_run_sequencerModel()
+                        sequencer_in_project = project_researcher.runprocess_id.get_run_used_sequencer()
                         if not sequencer_in_project in projects_name_dict :
                             p_researcher_num_sample[sequencer_in_project] ={}
                             p_researcher_sequencer[sequencer_in_project] ={}
@@ -1901,12 +1682,12 @@ def stats_per_researcher (request):
                         projects_id_list[sequencer_in_project].append(r_project_id)
                         p_researcher_num_sample[sequencer_in_project][p_name] = StatsFlSummary.objects.get(project_id__exact = r_project_id).sampleNumber
                         p_researcher_date [sequencer_in_project][p_name] = project_researcher.get_date()
-                        p_researcher_lib_kit[sequencer_in_project][p_name]= project_researcher.get_library_name()
+                        p_researcher_lib_kit[sequencer_in_project][p_name]= project_researcher.get_index_library_name()
                         #
                         p_researcher_sequencer[sequencer_in_project][p_name] = str(project_researcher.runprocess_id.sequencerModel)
                         lanes_in_project = StatsLaneSummary.objects.filter( project_id__exact = r_project_id)
                         for lane in lanes_in_project :
-                            q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane.get_stats_info().split(';')
+                            q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane.get_stats_info()
                             q_30_list.append(float(q_30_value))
                             mean_q_list.append(float(mean_q_value))
                             yield_mb_list.append(float(yield_mb_value.replace(',','')))
@@ -2025,7 +1806,7 @@ def stats_per_researcher (request):
                         comp_graphs, comp_seq_graphs = [] , []
                         for sequencer in projects_name_dict.keys() :
                             for lane_summary in total_lanes_summary[sequencer] :
-                                q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane_summary.get_stats_info().split(';')
+                                q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane_summary.get_stats_info()
                                 total_q_30_list.append(float(q_30_value))
                                 total_mean_q_list.append(float(mean_q_value))
                                 total_yield_mb_list.append(int(yield_mb_value.replace(',','')))
@@ -2216,7 +1997,7 @@ def stats_per_time (request):
 
                 for run in run_stats_list:
                     run_id = run.id
-                    number_of_lanes=run.get_machine_lanes()
+                    number_of_lanes=run.get_sequencing_lanes()
                     top_unbarcode_all_runs  = {}
                     for lane_number in range (1, number_of_lanes +1):
                         lane_unbarcodes = RawTopUnknowBarcodes.objects.filter(runprocess_id =run, lane_number__exact = lane_number)
@@ -2269,7 +2050,7 @@ def stats_per_time (request):
                 disk_space_period_index_graph = 'diskusage1'
 
                 data_source = researcher_project_column_graphic (heading, sub_caption, x_axis_name, y_axis_name, 'carbon', run_disk_utilization)
-                stat_per_time['disk_space_period_graphic'] = FusionCharts("column3d", disk_space_period_index_graph , "550", "350", disk_space_period_chart_number, "json", data_source).render()
+                stat_per_time['disk_space_period_graphic'] = FusionCharts("column3d", disk_space_period_index_graph , "950", "350", disk_space_period_chart_number, "json", data_source).render()
 
                 #
                 return render(request, 'iSkyLIMS_wetlab/StatsPerTime.html', {'display_stats_per_time': stat_per_time })
@@ -2286,14 +2067,14 @@ def stats_per_time (request):
 def get_list_of_libraries_values (library_found, q30_comparations, mean_comparations , n_bases_comparations) :
 
     for project_to_compare in library_found :
-        library_to_compare_name = project_to_compare.get_library_name()
+        library_to_compare_name = project_to_compare.get_index_library_name()
         project_to_compare_id = project_to_compare.id
         q30_compare_lib, mean_compare_lib, yield_mb_compare_lib = [], [] , []
         # get the number of lanes by quering the SequencerModel in the RunProcess
-        number_of_lanes = project_to_compare.runprocess_id.get_machine_lanes()
+        number_of_lanes = project_to_compare.runprocess_id.get_sequencing_lanes()
         for lane_number in range (1,number_of_lanes + 1):
             lane_in_project = StatsLaneSummary.objects.get(project_id__exact = project_to_compare_id, lane__exact = lane_number)
-            q_30_value, mean_q_value, yield_mb , cluster_pf = lane_in_project.get_stats_info().split(';')
+            q_30_value, mean_q_value, yield_mb , cluster_pf = lane_in_project.get_stats_info()
             q30_compare_lib.append(float(q_30_value))
             mean_compare_lib.append(float(mean_q_value))
             yield_mb_compare_lib.append(float(yield_mb.replace(',','')))
@@ -2321,49 +2102,48 @@ def stats_per_library (request):
         if library_kit_name == '' and start_date == '' and end_date == '' :
             return render(request, 'iSkyLIMS_wetlab/StatsPerLibrary.html')
 
-        if library_kit_name !=''  and len(library_kit_name) <3 :
-             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The user name must contains at least 4 caracters ',
-                                                                    'ADVICE:', 'write the full Library Kit name to get a better match']})
+        if library_kit_name !=''  and len(library_kit_name) < 5 :
+            error_message = ERROR_TOO_SHORT_INDEX_LIBRAY_NAME
+            return render(request, 'iSkyLIMS_wetlab/StatsPerLibrary.html', {'error_message':error_message})
+
         ### check the right format of start and end date
         if start_date != '':
-            try:
-                datetime.datetime.strptime(start_date, '%Y-%m-%d')
-            except:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The format for the "Start Date Search" Field is incorrect ',
-                                                                    'ADVICE:', 'Use the format  (YYYY-MM-DD)']})
+            if not check_valid_date_format(start_date) :
+                error_message = ERROR_INVALID_FORMAT_FOR_DATES
+                return render(request, 'iSkyLIMS_wetlab/StatsPerLibrary.html', {'error_message':error_message})
         if end_date != '':
-            try:
-                datetime.datetime.strptime(end_date, '%Y-%m-%d')
-            except:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
-                                                                    'ADVICE:', 'Use the format  (YYYY-MM-DD)']})
+            if not check_valid_date_format(end_date) :
+                error_message = ERROR_INVALID_FORMAT_FOR_DATES
+                return render(request, 'iSkyLIMS_wetlab/StatsPerLibrary.html', {'error_message':error_message})
+
         if library_kit_name != '':
             if Projects.objects.filter(libraryKit__icontains = library_kit_name, runprocess_id__state__runStateName__exact = 'Completed').exists():
                 library_found = Projects.objects.filter(libraryKit__icontains = library_kit_name, runprocess_id__state__runStateName__exact = 'Completed')
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Library containing ', library_kit_name]})
+                error_message = ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS
+                return render(request, 'iSkyLIMS_wetlab/StatsPerLibrary.html' , {'error_message':error_message})
         else:
             library_found = Projects.objects.filter(runprocess_id__state__runStateName__exact = 'Completed')
         if (start_date != '' and end_date != ''):
             if library_found.filter(project_run_date__range=(start_date, end_date)).exists():
                  library_found = library_found.filter(project_run_date__range=(start_date, end_date))
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Library containing ', library_kit_name,
-                                        ' created between ', start_date, 'and the ', end_date]})
+                error_message = ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS
+                return render(request, 'iSkyLIMS_wetlab/StatsPerLibrary.html', {'error_message':error_message})
         if start_date !='' and end_date == '':
             if library_found.filter(project_run_date__gte = start_date).exists():
                  library_found = library_found.filter(project_run_date__gte = start_date)
                  #
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Library containing ', library_kit_name,
-                                        ' starting from', start_date]})
+                error_message = ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS
+                return render(request, 'iSkyLIMS_wetlab/StatsPerLibrary.html', {'error_message':error_message})
         if start_date =='' and end_date != '':
             if library_found.filter(project_run_date__lte = end_date).exists():
                 #
                 library_found = library_found.filter(project_run_date__lte = end_date)
             else:
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['There are no Library containing ', library_kit_name,
-                                        ' finish before ', end_date]})
+                error_message = ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS
+                return render(request, 'iSkyLIMS_wetlab/StatsPerLibrary.html', {'error_message':error_message})
 
         #Collecting the statistics for the selected library
         # Get the projects which are using the library kit
@@ -2375,7 +2155,7 @@ def stats_per_library (request):
         #check if only 1 library kit matches the query
         library_names ={}
         for library in library_found :
-            library_names [library.libraryKit] = 1
+            library_names [library.get_index_library_name()] = 1
         #
         if len(library_names) == 1:
             # There is only 1 library in the query. Results displays all projects data which have this library kit
@@ -2386,11 +2166,11 @@ def stats_per_library (request):
             for lane_number in range (1,5):
                 q_30_lane , mean_q_lane , yield_mb_lane = {} , {} ,{}
                 for project in library_found :
-                    project_id = project.id
+                    project_id = project.get_project_id()
                     # Get quality information for each Lane summary of the project id
                     #
                     lane_in_project = StatsLaneSummary.objects.get(project_id__exact = project_id, lane__exact = lane_number)
-                    q_30_value, mean_q_value, yield_mb , cluster_pf = lane_in_project.get_stats_info().split(';')
+                    q_30_value, mean_q_value, yield_mb , cluster_pf = lane_in_project.get_stats_info()
                     project_name = project.get_project_name()
                     q_30_lane[project_name] = q_30_value
                     q30_in_lib.append(float(q_30_value))
@@ -2430,7 +2210,7 @@ def stats_per_library (request):
                 library_stats [mean_graphic] = mean_lane_graphic.render()
 
 
-            library_name = project.get_library_name()
+            library_name = project.get_index_library_name()
             library_stats['library_name'] = library_name
             library_stats['project_names'] = projects_name_in_library
             #
@@ -2469,13 +2249,17 @@ def stats_per_library (request):
 
             if error_in_library_to_compare == '':
                 for project_to_compare in libraries_to_compare :
-                    library_to_compare_name = project_to_compare.get_library_name()
-                    project_to_compare_id = project_to_compare.id
+                    library_to_compare_name = project_to_compare.get_index_library_name()
+                    project_to_compare_id = project_to_compare.get_project_id()
                     #q_30_lane , mean_q_lane , yield_mb_lane = {} , {} ,{}
                     q30_compare_lib, mean_compare_lib, yield_mb_compare_lib = [], [] , []
-                    for lane_number in range (1,5):
+
+                    run_obj = project_to_compare.get_run_obj()
+                    lanes_in_sequencer = int(run_obj.get_sequencing_lanes())
+                    for lane_number in range (1,lanes_in_sequencer+ 1):
+
                         lane_in_project = StatsLaneSummary.objects.get(project_id__exact = project_to_compare_id, lane__exact = lane_number)
-                        q_30_value, mean_q_value, yield_mb , cluster_pf = lane_in_project.get_stats_info().split(';')
+                        q_30_value, mean_q_value, yield_mb , cluster_pf = lane_in_project.get_stats_info()
                         q30_compare_lib.append(float(q_30_value))
                         mean_compare_lib.append(float(mean_q_value))
                         yield_mb_compare_lib.append(float(yield_mb.replace(',','')))
@@ -2516,7 +2300,7 @@ def stats_per_library (request):
             libraries_found_name =[]
             # get the library names that match with the searching criteria
             for library in library_found :
-                lib_name =library.get_library_name ()
+                lib_name =library.get_index_library_name ()
                 if not lib_name in libraries_found_name :
                     libraries_found_name.append(lib_name)
             #
@@ -2584,7 +2368,7 @@ def stats_per_library (request):
 
             count_libraries = {}
             for library_used in all_libraries :
-                lib_name = library_used.get_library_name()
+                lib_name = library_used.get_index_library_name()
                 if not lib_name in count_libraries :
                     count_libraries[lib_name] = 1
                 else:
@@ -3154,7 +2938,6 @@ def update_tables_date (request):
 def configuration_test (request):
     # check user privileges
     if request.user.is_authenticated:
-        #import pdb; pdb.set_trace()
         if not request.user.is_staff or not request.user.is_superuser:
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
     else:
@@ -3221,7 +3004,6 @@ def configuration_test (request):
                 for line in fh :
                     line = line.replace('\n', '')
                     log_trace.append(line)
-            #import pdb; pdb.set_trace()
             return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results,
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
         else:
@@ -3325,7 +3107,6 @@ def configuration_test (request):
                 for line in fh :
                     line = line.replace('\n', '')
                     log_trace.append(line)
-            #import pdb; pdb.set_trace()
             return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runMiSeq_results,
                                                     'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
         else:
@@ -3418,11 +3199,11 @@ def create_protocol (request):
         return redirect ('/accounts/login')
     # get the list of defined protocols
     defined_protocols, other_protocol_list = display_available_protocols (__package__)
+    additional_kits = get_additional_kits_list (__package__)
     defined_protocol_types = display_protocol_types (__package__)
 
 
     if request.method == 'POST' and request.POST['action'] == 'addNewProtocol':
-        #import pdb; pdb.set_trace()
         new_protocol = request.POST['newProtocolName']
         protocol_type = request.POST['protocolType']
         description = request.POST['description']
@@ -3437,7 +3218,8 @@ def create_protocol (request):
                             'new_protocol_id':new_protocol_id,  'other_protocol_list' :other_protocol_list})
 
     return render(request, 'iSkyLIMS_wetlab/createProtocol.html',{'defined_protocols': defined_protocols,
-                        'defined_protocol_types':defined_protocol_types, 'other_protocol_list' :other_protocol_list})
+                        'defined_protocol_types':defined_protocol_types, 'other_protocol_list' :other_protocol_list,
+                        'additional_kits': additional_kits})
 
 
 @login_required
@@ -3453,10 +3235,9 @@ def create_sample_projects (request):
         #redirect to login webpage
         return redirect ('/accounts/login')
     # get the information of defined sample Projects
-    defined_samples_projects = get_info_to_display_sample_projects (__package__)
+    defined_samples_projects = get_info_for_defined_sample_projects (__package__)
 
     if request.method == 'POST' and request.POST['action'] == 'addNewSampleProject':
-        #import pdb; pdb.set_trace()
         sample_project_name = request.POST['sampleProyectName']
         #description = request.POST['description']
 
@@ -3471,6 +3252,35 @@ def create_sample_projects (request):
 
     return render(request, 'iSkyLIMS_wetlab/createSampleProjects.html',{'defined_samples_projects': defined_samples_projects})
 
+def define_additional_kits(request, protocol_id):
+    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+    if request.user.is_authenticated:
+        if not is_wetlab_manager(request):
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':['You do not have enough privileges to see this page ',
+                            'Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+
+    additional_kits = define_table_for_additional_kits(protocol_id)
+    if request.method == 'POST' and request.POST['action'] == 'defineAdditionalKits':
+
+        recorded_additional_kits = set_additional_kits(request.POST, request.user)
+        if len(recorded_additional_kits) == 0:
+            return render(request, 'iSkyLIMS_wetlab/defineAdditionalKits.html', {'additional_kits':additional_kits})
+
+        return render(request, 'iSkyLIMS_wetlab/defineAdditionalKits.html', {'recorded_additional_kits':recorded_additional_kits})
+
+    else:
+        if not check_if_protocol_exists(protocol_id, __package__):
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',
+                        {'content':['The requested Protocol does not exist',
+                            'Create the protocol name before assigning additional kits for protocol.']})
+
+        return render(request, 'iSkyLIMS_wetlab/defineAdditionalKits.html', {'additional_kits':additional_kits})
+
+
 @login_required
 def display_sample_project(request,sample_project_id):
 
@@ -3478,7 +3288,6 @@ def display_sample_project(request,sample_project_id):
     if 'ERROR' in samples_project_data :
         error_message = ERROR_SAMPLE_PROJECT_DOES_NOT_EXISTS
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content': error_message })
-    import pdb; pdb.set_trace()
     return render(request, 'iSkyLIMS_wetlab/displaySampleProject.html',{'samples_project_data': samples_project_data})
 
 @login_required
@@ -3487,15 +3296,15 @@ def display_protocol (request, protocol_id):
         return render (request,'iSkyLIMS_wetlab/error_page.html',
             {'content':['You do not have enough privileges to see this page ',
                         'Contact with your administrator .']})
-    #import pdb; pdb.set_trace()
     if not check_if_protocol_exists(protocol_id, __package__):
         return render (request,'iSkyLIMS_wetlab/error_page.html',
             {'content':['The protocol that you are trying to get ',
                         'DOES NOT exists .']})
     protocol_data = get_all_protocol_info (protocol_id)
+    kit_data = get_all_additional_kit_info(protocol_id)
 
 
-    return render(request, 'iSkyLIMS_wetlab/displayProtocol.html', {'protocol_data': protocol_data})
+    return render(request, 'iSkyLIMS_wetlab/displayProtocol.html', {'protocol_data': protocol_data, 'kit_data': kit_data})
 
 
 @login_required
@@ -3531,7 +3340,8 @@ def define_protocol_parameters (request, protocol_id):
 def add_commercial_kit (request):
     app_name = __package__.split('.')[0]
     defined_protocols = get_defined_protocols(app_name, False)
-    commercial_kits_data = get_data_for_commercial_kits()
+    defined_platforms = get_defined_platforms_and_ids('NGS')
+    commercial_kits_data = get_data_for_commercial_kits('NGS')
 
     if request.method == 'POST' and request.POST['action'] == 'addCommercialKit':
         if get_commercial_kit_id (request.POST['kitName']) :
@@ -3541,19 +3351,19 @@ def add_commercial_kit (request):
         new_kit_data = get_commercial_kit_basic_data(new_kit)
         return render(request, 'iSkyLIMS_wetlab/addCommercialKit.html',{'new_kit_data': new_kit_data})
     else:
-        return render(request, 'iSkyLIMS_wetlab/addCommercialKit.html',{'defined_protocols': defined_protocols, 'commercial_kits_data': commercial_kits_data})
+        return render(request, 'iSkyLIMS_wetlab/addCommercialKit.html',{'defined_protocols': defined_protocols, 'defined_platforms' : defined_platforms,
+                                'commercial_kits_data': commercial_kits_data})
 
 @login_required
 def add_user_lot_commercial_kit (request):
+    defined_kits = get_defined_commercial_kits()
     if request.method == 'POST' and request.POST['action'] == 'addUserLotKit':
-        if get_lot_user_commercial_kit_id (request.POST['nickName']) :
-            defined_kits = get_defined_commercial_kits()
+        if get_lot_user_commercial_kit_id (request.POST['barCode']) :
             return render(request, 'iSkyLIMS_wetlab/addUserLotCommercialKit.html',{'defined_kits': defined_kits, 'invalid_name': request.POST['nickName']})
         new_lot_kit = store_lot_user_commercial_kit(request.POST, request.user)
         new_lot_kit_data = get_lot_user_commercial_kit_basic_data(new_lot_kit)
         return render(request, 'iSkyLIMS_wetlab/addUserLotCommercialKit.html',{'new_lot_kit_data':new_lot_kit_data})
     else:
-        defined_kits = get_defined_commercial_kits()
         return render(request, 'iSkyLIMS_wetlab/addUserLotCommercialKit.html',{'defined_kits':defined_kits})
 
 
@@ -3571,8 +3381,6 @@ def pending_to_update(request):
     pending['add_lib_prep_parameters'] = get_lib_prep_to_add_parameters()
     pending ['graphic_pending_samples'] = pending_samples_for_grafic(pending).render()
 
-
-    #import pdb; pdb.set_trace()
     return render(request, 'iSkyLIMS_wetlab/pendingToUpdate.html', {'pending':pending})
 
 
@@ -3603,7 +3411,6 @@ def record_samples(request):
             sample_recorded['number_of_samples'] = len(sample_recorded['incomplete_samples'])
         if 'pre_defined_samples_id' in sample_recorded:
             sample_recorded.update(prepare_sample_project_input_table(sample_recorded['pre_defined_samples_id']))
-
         return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
 
 
@@ -3625,6 +3432,7 @@ def record_samples(request):
             sample_recorded['reprocess_result'] = 'False'
         else:
             if to_be_reprocessed_ids[0] == '':
+
                 return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'all_sucessful_reprocess':True})
             else:
                 next_to_be_process_id = str(to_be_reprocessed_ids[0])
@@ -3634,7 +3442,7 @@ def record_samples(request):
                 sample_recorded['sample_id_for_action'] = next_to_be_process_id
                 sample_recorded.update(get_codeID_for_resequencing(sample_recorded))
                 sample_recorded['reprocess_result'] = 'True'
-        return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
+                return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
 
         if len(require_to_update) > 0 :
             for key, value in require_to_update.items():
@@ -3663,7 +3471,7 @@ def record_samples(request):
         sample_recorded = analyze_input_sample_project_fields(request.POST)
 
         if request.POST['pending_pre_defined'] != '':
-            sample_recorded.update(prepare_sample_project_input_table(request.POST['pending_pre_defined']))
+            sample_recorded.update(prepare_sample_project_input_table(request.POST['pending_pre_defined'].split(',')))
             return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
         else:
             return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
@@ -3703,6 +3511,34 @@ def define_sample_projects_fields (request, sample_project_id):
         sample_project_data = define_table_for_sample_project_fields(sample_project_id)
         return render(request, 'iSkyLIMS_wetlab/defineSampleProjectFields.html', {'sample_project_data':sample_project_data})
 
+
+@login_required
+def modify_sample_project_fields(request, sample_project_id):
+    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+
+    if request.user.is_authenticated:
+        if not is_wetlab_manager(request):
+            return render (
+                request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':['You do not have enough privileges to see this page ',
+                            'Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+
+    if request.method == 'POST' and request.POST['action'] == 'modifySampleProjectFields':
+        sample_project_field_saved = modify_fields_in_sample_project(request.POST)
+        return render(request, 'iSkyLIMS_wetlab/modifySampleProjectFields.html', {'sample_project_field_saved':sample_project_field_saved})
+
+    else:
+        if not check_if_sample_project_id_exists(sample_project_id):
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',
+                        {'content':['The requested Sample project does not exist',
+                            'Create the sample project name before assigning custom sample project parameters.']})
+        sample_project_field = get_parameters_sample_project(sample_project_id)
+        return render(request, 'iSkyLIMS_wetlab/modifySampleProjectFields.html', {'sample_project_field':sample_project_field})
+
+
 @login_required
 def define_molecule_uses (request):
     '''
@@ -3726,7 +3562,7 @@ def define_type_of_samples (request):
     sample_types = display_sample_types (__package__)
     if request.method == 'POST' and request.POST['action'] == 'addNewSampleType':
         sample_types.update(save_type_of_sample(request.POST, __package__))
-        import pdb; pdb.set_trace()
+
     return render(request, 'iSkyLIMS_wetlab/defineTypeOfSamples.html', {'sample_types':sample_types})
 
 
@@ -3735,14 +3571,38 @@ def display_sample (request, sample_id):
     '''
     Functions:
         get_all_sample_information : located at iSkyLIMS_core/utils/handling_samples.py
-        get_all_library_information :
+        get_all_library_information  located at iSkyLIMS_wetlab/utils/library_preparation.py
+        get_additional_kits_used_in_sample   located at iSkyLIMS_wetlab/utils/additional_kits.py
     '''
     sample_information = get_all_sample_information(sample_id, True)
-    if 'Error' in sample_information:
+    run_sample_id = get_run_sample_id(sample_id)
+    if not 'Error' in sample_information:
+        sample_information.update(get_molecule_lot_kit_in_sample(sample_id))
+        sample_information.update(get_all_library_information(sample_id))
+        sample_information.update(get_additional_kits_used_in_sample(sample_id))
+        #import pdb; pdb.set_trace()
+    else:
+        sample_information = {}
+    if run_sample_id != '':
+        sample_information.update(get_info_sample_in_run(run_sample_id))
+    if len(sample_information) == 0  :
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No Sample was found']})
-    sample_information.update(get_all_library_information(sample_id))
+    else:
+        return render(request, 'iSkyLIMS_wetlab/displaySample.html',{'sample_information':sample_information})
 
+@login_required
+def display_sample_in_run (request, sample_run_id):
+    '''
+    Functions:
+        get_info_sample_in_run
+    '''
+    sample_run_obj = get_sample_in_project_obj_from_id(sample_run_id)
+    if not sample_run_obj :
+        return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No Sample was found']})
+    sample_information = get_info_sample_in_run(sample_run_obj)
     return render(request, 'iSkyLIMS_wetlab/displaySample.html',{'sample_information':sample_information})
+
+
 
 @login_required
 def display_type_of_sample(request, sample_type_id):
@@ -3757,58 +3617,147 @@ def display_type_of_sample(request, sample_type_id):
 def handling_library_preparations(request):
     '''
     Functions:
+        get_samples_for_library_preparation : located at utils/library_preparation.py
+        check_users_exists
+        extract_user_sample_sheet_data   : located at utils/library_preparation.py
+        get_data_for_library_preparation_in_defined : located at iSkyLIMS_core/utils/handling_samples.py
         get_type_of_sample_information : located at iSkyLIMS_core/utils/handling_samples.py
+        get_library_preparation_heading_for_samples : located at utils/library_preparation.py
         get_protocols_for_library_preparation : located at utils/library_preparation.py
         get_samples_in_lib_prep_state :  located at utils/library_preparation.py
-        validate_sample_sheet_data
+        validate_sample_sheet_data  :  located at utils/library_preparation.py
+        get_list_of_collection_kits     : located at utils/collection_index_function.py
     '''
     # get the information for returning the uploaded file in case errors in the sample sheet
-    upload_file = {}
-    if check_samples_for_library_preparation():
-        upload_file['lib_prep_protocols'] = get_protocols_for_library_preparation()
-    else:
-        upload_file['no_samples'] = 'No samples'
+    samples_in_lib_prep = get_samples_for_library_preparation()
+
+    if request.method == 'POST' and request.POST['action'] == 'assignProtocol':
+        samples_in_lib_prep_protocol = extract_protocol_library_preparation_form(request.POST)
+        if len(samples_in_lib_prep_protocol) == 0 :
+            return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_lib_prep':stored_lib_prep})
+        library_preparation_objs = create_library_preparation_instance(samples_in_lib_prep_protocol, request.user)
+        lib_prep_protocol_parameters = get_protocol_parameters_for_library_preparation(library_preparation_objs)
+        return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'lib_prep_protocol_parameters':lib_prep_protocol_parameters})
+
+    # add protocol parameters for the user selected library preparation on defined state
+    if request.method == 'POST' and request.POST['action'] == 'addProtocolParameter':
+        lib_prep_ids = request.POST.getlist('libpreparation')
+        library_preparation_objs = []
+        for lib_prep_id in lib_prep_ids:
+            library_preparation_objs.append(get_lib_prep_obj_from_id(lib_prep_id))
+        lib_prep_protocol_parameters = get_protocol_parameters_for_library_preparation(library_preparation_objs)
+        return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'lib_prep_protocol_parameters':lib_prep_protocol_parameters})
+
+    # store the parameter library preparation protocol
+    if request.method == 'POST' and request.POST['action'] == 'recordProtocolParamters':
+
+        stored_params = analyze_and_store_input_param_values (request.POST)
+        if 'ERROR' in stored_params:
+            error_message = stored_params['ERROR']
+            lib_prep_ids = request.POST['lib_prep_ids'].split(',')
+            library_preparation_objs = []
+            for lib_prep_id in lib_prep_ids:
+                library_preparation_objs.append(get_lib_prep_obj_from_id(lib_prep_id))
+            lib_prep_protocol_parameters = get_protocol_parameters_for_library_preparation(library_preparation_objs)
+            # restore the user data
+            lib_prep_protocol_parameters['data'] = json.loads(request.POST['protocol_data'])
+            return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'ERROR': error_message, 'lib_prep_protocol_parameters':lib_prep_protocol_parameters})
+        return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_params':stored_params})
 
     if request.method == 'POST' and request.POST['action'] == 'importsamplesheet':
 
         sample_sheet_data = extract_user_sample_sheet_data(request.FILES['uploadfile'] )
+        # Error found when extracting data from sample sheet
         if 'ERROR' in sample_sheet_data :
             upload_file['ERROR'] = sample_sheet_data['ERROR']
             upload_file['file_name'] = request.FILES['uploadfile'].name
-            return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'upload_file':upload_file})
-
-        valid_data = validate_sample_sheet_data(sample_sheet_data)
-        import pdb; pdb.set_trace()
-        if 'ERROR' in valid_data:
-            upload_file['ERROR'] = valid_data['ERROR']
+            return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'ERROR':sample_sheet_data['ERROR'], 'samples_in_lib_prep':samples_in_lib_prep})
+        # check if all users are defined in database
+        # users_check = check_users_exists(sample_sheet_data['userid_names'])
+        '''
+        if not 'all_valid' == users_check:
+            if len(users_check) == 1:
+                upload_file['ERROR'] = ERROR_SAMPLE_SHEET_USER_IS_NOT_DEFINED.copy()
+            else:
+                upload_file['ERROR'] = ERROR_SAMPLE_SHEET_USERS_ARE_NOT_DEFINED.copy()
+            upload_file['ERROR'].append(' , '.join(users_check))
             upload_file['file_name'] = request.FILES['uploadfile'].name
             return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'upload_file':upload_file})
+        '''
+        # Add addtional data not included before on the sample sheet
+        '''
+        if 'instrument' in request.POST :
+            sample_sheet_data['instrument'] = request.POST['instrument']
+        if 'index_adapter'in request.POST :
+            sample_sheet_data['index_adapter'] = request.POST['index_adapter']
+        '''
+        valid_data = validate_sample_sheet_data(sample_sheet_data)
 
-        lib_prep_sample_sheet_obj = store_library_preparation_sample_sheet(sample_sheet_data, request.user)
+        if 'ERROR' in valid_data:
+            #upload_file = {}
+            #upload_file['ERROR'] = valid_data['ERROR']
+            #upload_file['file_name'] = request.FILES['uploadfile'].name
 
-        stored_lib_prep_sample = store_library_preparation_samples(sample_sheet_data,  request.user, request.POST['lib_protocols'], lib_prep_sample_sheet_obj)
+            '''
+            if  'detail_error' in valid_data:
+                if 'no_index' in valid_data['detail_error']:
+                    upload_file['index_adapter'] = get_list_of_collection_kits()
+                if 'no_instrument' in valid_data['detail_error']:
+                    upload_file['instrument'] = True
+            '''
+            return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'ERROR':valid_data['ERROR'], 'samples_in_lib_prep':samples_in_lib_prep})
+        platform = request.POST['platform']
+        configuration = request.POST[request.POST['platform']]
+        lib_prep_sample_sheet_obj = store_library_preparation_sample_sheet(sample_sheet_data, request.user, platform, configuration)
 
-        stored_lib_prep = get_library_preparation_heading_for_samples(stored_lib_prep_sample, request.POST['lib_protocols'])
-        import pdb; pdb.set_trace()
+        #stored_lib_prep_sample = store_library_preparation_samples(sample_sheet_data,  request.user, request.POST['lib_protocols'], lib_prep_sample_sheet_obj)
+
+
+        display_sample_sheet = format_sample_sheet_to_display_in_form(sample_sheet_data)
+        #display_sample_sheet = sample_sheet_data
+        display_sample_sheet['user_list'] = get_user_for_sample_sheet()
+        display_sample_sheet['lib_prep_user_sample_sheet'] = lib_prep_sample_sheet_obj.get_user_sample_sheet_id()
+
+        return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'display_sample_sheet':display_sample_sheet})
+
+
+
+    if request.method == 'POST' and request.POST['action'] == 'storeIndexSample':
+
+        store_data_result = store_library_preparation_index(request.POST)
+        if 'ERROR' in store_data_result:
+            return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'ERROR':valid_data['ERROR'], 'samples_in_lib_prep':samples_in_lib_prep})
+        stored_index = 'True'
+        return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_index':stored_index})
+
+
+    if request.method == 'POST' and request.POST['action'] == 'libpreparationdefined':
+        lib_prep_defined = request.POST.getlist('libpreparation')
+        lib_protocols = get_protocol_from_library_id(lib_prep_defined[0])
+        stored_lib_prep = get_library_preparation_heading_for_samples(lib_prep_defined, lib_protocols)
         return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_lib_prep':stored_lib_prep})
-    # store the parameter librarry preparation protocol
-    if request.method == 'POST' and request.POST['action'] == 'recordProtocolParamters':
-        stored_params = analyze_input_param_values (request.POST)
-        if 'ERROR' in stored_params:
-            protocol_name = get_project_name_by_id(request.POST['protocol_id'])
+
+
+
+
+        # return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_params':stored_params})
+    if request.method == 'POST' and request.POST['action'] == 'assignAdditionalKits':
+        lib_prep_ids = request.POST.getlist('libpreparation')
+        additional_kits = get_additional_kits_from_lib_prep(lib_prep_ids)
+        return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'additional_kits':additional_kits})
+    if request.method =='POST' and request.POST['action'] == 'storeAdditionalKits':
+        stored_additional_kits = analyze_and_store_input_additional_kits (request.POST)
+        if 'ERROR' in stored_additional_kits:
+            error_message = stored_additional_kits['ERROR']
             lib_prep_ids = request.POST['lib_prep_ids'].split(',')
-            import pdb; pdb.set_trace()
-            stored_lib_prep = get_library_preparation_heading_for_samples(lib_prep_ids, protocol_name)
-            stored_lib_prep['ERROR'] = stored_params['ERROR']
-            # update the data with the one already defined by user
-            import pdb; pdb.set_trace()
-            stored_lib_prep['data'] = json_data = json.loads(request.POST['protocol_data'])
-            return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_lib_prep':stored_lib_prep})
+            additional_kits = get_additional_kits_from_lib_prep(lib_prep_ids)
+            additional_kits['data'] = json.loads(request.POST['protocol_data'])
+            return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'ERROR': error_message,'additional_kits':additional_kits})
 
-        return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_params':stored_params})
-
+        return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_additional_kits':stored_additional_kits})
     else:
-        return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'upload_file':upload_file})
+
+        return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'samples_in_lib_prep':samples_in_lib_prep})
 
 
 def handling_molecules(request):
@@ -3816,6 +3765,7 @@ def handling_molecules(request):
     Functions:
         get_samples_in_state : located at iSkyLIMS_core/utils/handling_samples.py
         create_table_to_select_molecules : located at iSkyLIMS_core/utils/handling_samples.py
+        display_molecule_protocol_parameters  : located at iSkyLIMS_core/utils/handling_samples.py
     '''
 
     if request.method == 'POST' and request.POST['action'] == 'selectedMolecules':
@@ -3881,13 +3831,7 @@ def handling_molecules(request):
             return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'molecule_parameters_updated':molecule_parameters_updated})
 
     elif request.method == 'POST' and request.POST['action'] == 'requestMoleculeUse':
-
-
-
-
-
         molecule_use = set_molecule_use(request.POST, __package__)
-        import pdb; pdb.set_trace()
         return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'molecule_use':molecule_use})
 
     else:
@@ -3903,10 +3847,35 @@ def handling_molecules(request):
         samples_pending_use = get_samples_in_state ('Pending for use')
         if samples_pending_use:
             request_molecule_use = create_table_pending_use(samples_pending_use, __package__)
+        # check if there are defined the type
+        molecule_use_defined = check_if_molecule_use_defined(__package__)
 
-        return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'sample_availables': sample_availables, 'user_molecules': user_molecules ,'request_molecule_use':request_molecule_use})
+        return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'sample_availables': sample_availables, 'user_molecules': user_molecules ,
+                                'molecule_use_defined' : molecule_use_defined,'request_molecule_use':request_molecule_use})
 
     return
+
+@login_required
+def repeat_library_preparation(request):
+    '''
+    Functions:
+    analyze_reprocess_data  : located at utils/sample_functions.py
+    '''
+
+    if  request.method == 'POST' and request.POST['action'] == 'repeat_library_preparation':
+        lib_prep_id = request.POST['lib_prep_id']
+        molecule_code_id = request.POST['molecule_code_id']
+        sample_id = request.POST['sample_id']
+        result = analyze_reprocess_data([molecule_code_id, 'New Library Preparation'], sample_id, request.user)
+        detail_description = {}
+        if result == 'Invalid options':
+            detail_description['heading'] = ERROR_UNABLE_SAVE_REQUEST
+            detail_description['information'] = [ERROR_INVALID_PARAMETERS_WHEN_REUSING_LIB_PREP]
+            return render(request, 'iSkyLIMS_wetlab/error_page.html',{'detail_description':detail_description})
+        detail_description['information'] = SUCCESSFUL_REUSE_MOLECULE_EXTRACTION
+        return render(request, 'iSkyLIMS_wetlab/successful_page.html',{'detail_description':detail_description})
+    # return to the main page because the page was not requested for the right page
+    return redirect('')
 
 @login_required
 def repeat_molecule_extraction(request):
@@ -3926,15 +3895,47 @@ def repeat_molecule_extraction(request):
             #request.POST['action'] = 'selectedMolecules'
             #request.POST['samples'] = sample_id
 
-
-
-
-
             return render(request, 'iSkyLIMS_wetlab/handlingMolecules.html',{'molecule_protocol':molecule_protocol})
-    return
+    # return to the main page because the page was not requested for the right page
+    return redirect('')
+
 
 @login_required
-def search_lib_samples (request):
+def repeat_pool (request):
+    '''
+    Functions:
+    analyze_reprocess_data  : located at utils/sample_functions.py
+    '''
+    if  request.method == 'POST' and request.POST['action'] == 'repeat_pool':
+
+        lib_prep_obj = get_lib_prep_obj_from_id (request.POST['lib_prep_id'])
+        lib_prep_code_id =  lib_prep_obj.get_lib_prep_code()
+        molecule_code_id = lib_prep_obj.get_molecule_code_id()
+        sample_id = lib_prep_obj.get_sample_id()
+
+        result = analyze_reprocess_data([molecule_code_id, lib_prep_code_id, 'New Pool'], sample_id, request.user)
+        detail_description = {}
+        if result == 'Invalid options':
+            detail_description['heading'] = ERROR_UNABLE_SAVE_REQUEST
+            detail_description['information'] = [ERROR_INVALID_PARAMETERS_WHEN_REUSING_LIB_PREP]
+            return render(request, 'iSkyLIMS_wetlab/error_page.html',{'detail_description':detail_description})
+        detail_description['information'] = SUCCESSFUL_REUSE_LIB_PREP
+        return render(request, 'iSkyLIMS_wetlab/successful_page.html',{'detail_description':detail_description})
+    # return to the main page because the page was not requested for the right page
+    return redirect('')
+
+@login_required
+def search_sample (request):
+    '''
+    Functions:
+        get_sample_states  : located at iSkyLIMS_core/utils/handling_samples.py
+        check_valid_date_format : located at utils/generic_functions.py
+        search_samples          : located at iSkyLIMS_core/utils/handling_samples.py
+        search_run_samples      : located at utils/sample_functions.py
+    '''
+    search_data = {}
+    search_data['s_state'] = get_sample_states()
+
     if  request.method == 'POST' and request.POST['action'] == 'searchsample':
         sample_name=request.POST['samplename']
         start_date=request.POST['startdate']
@@ -3944,9 +3945,7 @@ def search_lib_samples (request):
 
         # check that some values are in the request if not return the form
         if user_name == '' and start_date == '' and end_date == '' and sample_name =='' and sample_state == '':
-            search_data = {}
-            search_data['s_state'] = get_sample_states()
-            return render(request, 'iSkyLIMS_wetlab/searchLibSample.html',{'search_data':search_data})
+            return render(request, 'iSkyLIMS_wetlab/searchSample.html',{'search_data':search_data})
 
         if user_name !=''  and len(user_name) <5 :
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The user name must contains at least 5 caracters ',
@@ -3961,18 +3960,30 @@ def search_lib_samples (request):
                      'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
         ### Get projects when sample name is not empty
         sample_list = search_samples(sample_name, user_name, sample_state, start_date, end_date )
-
-        if len(sample_list) == 0:
-            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No sample found with your match conditions ']})
-        elif len(sample_list) == 1:
-            return redirect ('display_sample' , sample_id = sample_list[0])
+        if sample_state == '':
+            run_sample_list = search_run_samples(sample_name, user_name, start_date, end_date)
         else:
-            return render(request, 'iSkyLIMS_wetlab/searchLibSample.html',{'sample_list':sample_list})
+            run_sample_list = ''
+
+        if len(sample_list) == 0 and len(run_sample_list) == 0:
+            return render (request,'iSkyLIMS_wetlab/searchSample.html', {'no_samples':ERROR_NO_SAMPLE_FOUND, 'sample_list':sample_list, 'search_data':search_data})
+        elif len(sample_list) == 1 and len(run_sample_list) == 0:
+            return redirect ('display_sample' , sample_id = sample_list[0])
+        elif len(sample_list) == 0 and len(run_sample_list) == 1:
+            get_info_sample_in_run (run_sample_list[0])
+            return redirect ('display_run_sample' , run_sample_id = run_sample_list[0])
+        else:
+            # get the sample information to select it , because there are also matches on run_sample
+            if len(sample_list) == 1:
+                sample_obj = get_sample_obj_from_id(sample_list[0])
+                sample_list = [sample_obj.get_info_for_searching()]
+            if len(run_sample_list) == 1:
+                run_sample_obj = get_sample_in_project_obj_from_id(run_sample_list[0])
+                run_sample_list = [run_sample_obj.get_info_for_searching()]
+            return render(request, 'iSkyLIMS_wetlab/searchSample.html',{'sample_list':sample_list , 'run_sample_list':run_sample_list})
 
     else:
-        search_data = {}
-        search_data['s_state'] = get_sample_states()
-        return render(request, 'iSkyLIMS_wetlab/searchLibSample.html',{'search_data':search_data})
+        return render(request, 'iSkyLIMS_wetlab/searchSample.html',{'search_data':search_data})
 
 @login_required
 def set_molecule_values(request):
@@ -4035,6 +4046,7 @@ def set_molecule_values(request):
         return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{'display_list': display_list})
     return render(request, 'iSkyLIMS_wetlab/setMoleculeValues.html',{})
 
+'''   Replaced by handling_library_preparations
 @login_required
 def set_library_preparation(request):
 
@@ -4074,7 +4086,7 @@ def set_library_preparation(request):
             return render ( request,'iSkyLIMS_wetlab/error_page.html',
                 {'content':['Collection Index Kit ' , index_adapters , 'is not defined' ]})
 
-        library_prep_workflow = get_library_name(stored_file)
+        library_prep_workflow = get_index_library_name(stored_file)
         adapter1, adapter2 = get_adapters(stored_file)
         assay = get_assay_from_file (stored_file)
         # store user sample sheet in database
@@ -4119,7 +4131,7 @@ def set_library_preparation(request):
             data = ['']*length_heading
             data[0] = library_preparation_obj.get_sample_name()
             data[1] = library_preparation_obj.get_lib_prep_code()
-            data[2] = library_preparation_obj.get_collection_index_kit()
+            #data[2] = library_preparation_obj.get_collection_index_kit()
 
             stored_lib_prep['data'].append(data)
         stored_lib_prep['lib_prep_id'] = ','.join(lib_prep_ids)
@@ -4159,11 +4171,12 @@ def set_library_preparation(request):
             valid_molecules.append(molecules[i])
             prot_lib_parameters = ProtocolLibraryParameters.objects.filter(protocol_id = protocol_obj)
 
+'''
 
 @login_required
 def set_library_values (request):
     fix_headings = ['DNA Code ID', 'Protocol', 'Extraction Kit']
-    import pdb; pdb.set_trace()
+
     if request.method == 'POST' and request.POST['action'] == 'continueWithDNA':
         lib_preparation_data = {}
     else:
@@ -4185,10 +4198,8 @@ def set_library_values (request):
 
         display_list['list_of_samples'] = all_sample_list
         display_list['heading'] = ['Registered date ','Sample Code ID', 'Type', 'DNA/RNA', 'Protocol', 'Library Kit']
-        #import pdb; pdb.set_trace()
-        return render(request, 'iSkyLIMS_wetlab/setLibraryValues.html',{'display_list': display_list})
-    #import pdb; pdb.set_trace()
 
+        return render(request, 'iSkyLIMS_wetlab/setLibraryValues.html',{'display_list': display_list})
 
 
 @login_required
@@ -4204,9 +4215,10 @@ def create_pool (request):
         return redirect ('/accounts/login')
     # collect the information for collecting
     display_list = get_lib_prep_to_select_in_pool()
+
     if request.method == 'POST' and request.POST['action'] == 'createPool':
         new_pool = define_new_pool(request.POST,  request.user)
-        import pdb; pdb.set_trace()
+
         if not isinstance(new_pool, LibraryPool) :
             display_list.update(new_pool)
             return  render(request, 'iSkyLIMS_wetlab/createPool.html',{'display_list': display_list})
@@ -4227,122 +4239,118 @@ def create_new_run (request):
     else:
         #redirect to login webpage
         return redirect ('/accounts/login')
+
     if request.method == 'POST' and request.POST['action'] == 'createNewRun':
 
         experiment_name = request.POST['experimentName']
-        if RunProcess.objects.filter(runName__exact = experiment_name).exists():
-            display_pools_for_run = {}
-            polls_available = get_available_pools_for_run()
-            display_pools_for_run['pool_data'] = get_pool_info(polls_available)
-            return render (request,'iSkyLIMS_wetlab/CreateNewRun.html',{'invalid_exp_name':experiment_name, 'display_pools_for_run':display_pools_for_run})
+        display_pools_for_run = display_available_pools()
+        if not 'poolID' in request.POST :
+            return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run})
         pool_ids = request.POST.getlist('poolID')
+
+        if RunProcess.objects.filter(runName__exact = experiment_name).exists():
+            return render (request,'iSkyLIMS_wetlab/CreateNewRun.html',{'invalid_exp_name':experiment_name, 'display_pools_for_run':display_pools_for_run})
+        result_compatibility = check_pools_compatible (request.POST)
+        if not 'True' in result_compatibility :
+            display_pools_for_run.update(result_compatibility)
+            return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run})
+
         lib_prep_ids = get_library_prep_in_pools (pool_ids)
         if len(lib_prep_ids) == 0:
-            return render ( request,'iSkyLIMS_wetlab/error_page.html',
-                {'content':['The selected Pools have not assigned to any Library Preparation.' ]})
-        compatible_index = check_index_compatible(lib_prep_ids)
+            display_pools_for_run['ERROR'] = wetlab_config.ERROR_POOLS_WITH_NO_LIBRARY
+            return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run})
+        # return an error message if logged user does not have assigned either Profile or Center
+        try:
+            center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
+            center_requested_by = Center.objects.get(pk = center_requested_id)
+        except:
+            display_pools_for_run['ERROR'] = wetlab_config.ERROR_NO_PROFILE_OR_CENTER_FOR_USER
+            return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run})
 
-        if not compatible_index == True:
-            detail_description = {}
-
-            detail_description ['heading'] = ['Index', 'Samples']
-            detail_description['information'] =  duplicate_index
-            return render ( request,'iSkyLIMS_wetlab/error_page.html',
-                {'content':['Found that some samples in the selected Pools, has the same index' ],
-                'detail_description': detail_description })
-        display_sample_information = {}
-        single_paired = check_type_read_sequencing(lib_prep_ids)
-        if single_paired == 'Paired End':
-            paired = True
-            display_sample_information['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_PAIREDEND
-        else:
-            paired = False
-            display_sample_information['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD
-
-        display_sample_information['data'] = collect_lib_prep_data_for_new_run(lib_prep_ids, paired)
-        display_sample_information['lib_prep_ids'] = ','.join(lib_prep_ids)
-        display_sample_information['paired_end'] = paired
-        display_sample_information['experiment_name'] = experiment_name
-        display_sample_information['reads'] = ''
-        display_sample_information['assay'] = ''
-        display_sample_information['collection_index'] = ''
-        # create the new Run in Pre-Recorded state
-        center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
-        center_requested_by = Center.objects.get(pk = center_requested_id)
+        #compatible_index = check_index_compatible(lib_prep_ids)
+        display_sample_information = get_library_preparation_data_in_run(lib_prep_ids, pool_ids)
+        display_sample_information.update(get_stored_user_sample_sheet(lib_prep_ids[0]))
+        # update Reagents kits
+        reagent_kits = fetch_and_update_reagent_kits(request.POST)
+        import pdb; pdb.set_trace()
         new_run =  RunProcess(runName=experiment_name, sampleSheet= '',
                                 state = RunStates.objects.get(runStateName__exact = 'Pre-Recorded'),
                                 centerRequestedBy = center_requested_by)
         new_run.save()
+        # Add new_run with the reagents kits
+        for kit in reagent_kits :
+            new_run.reagent_kit.add(kit)
+
+        display_sample_information['experiment_name'] = experiment_name
         display_sample_information['run_process_id'] = new_run.get_run_id()
+
         for pool in pool_ids:
             pool_obj = get_pool_instance_from_id(pool)
             pool_obj.update_run_name(new_run)
-        #import pdb; pdb.set_trace()
-        #analyze_input_pool(request.POST, request.user)
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_sample_information': display_sample_information})
 
     elif request.method == 'POST' and request.POST['action'] == 'continueWithRun':
         run_id = request.POST['run_ids']
-
-        pool_ids = LibraryPool.objects.filter(runProcess_id__exact =run_id)
-        experiment_name = pool_ids[0].get_run_name()
+        experiment_name = get_experiment_name(run_id)
+        pool_objs = LibraryPool.objects.filter(runProcess_id__exact =run_id)
+        pool_ids = []
+        for pool in pool_objs :
+            pool_ids.append(pool.get_id())
         lib_prep_ids = get_library_prep_in_pools (pool_ids)
 
-        display_sample_information = {}
-        single_paired = check_type_read_sequencing(lib_prep_ids)
-        if single_paired == 'Paired End':
-            paired = True
-            display_sample_information['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_PAIREDEND
-        else:
-            paired = False
-            display_sample_information['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD
-
-        display_sample_information['data'] = collect_lib_prep_data_for_new_run(lib_prep_ids, paired)
-        display_sample_information['lib_prep_ids'] = ','.join(lib_prep_ids)
-        display_sample_information['paired_end'] = paired
+        display_sample_information = get_library_preparation_data_in_run(lib_prep_ids, pool_ids)
+        display_sample_information.update(get_stored_user_sample_sheet(lib_prep_ids[0]))
         display_sample_information['experiment_name'] = experiment_name
         display_sample_information['run_process_id'] = run_id
+
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_sample_information': display_sample_information})
 
     elif request.method == 'POST' and request.POST['action'] ==  'storeDataNewRun':
         run_data = handle_input_samples_for_run(request.POST, request.user)
         if 'Error' in run_data:
-            return render ( request,'iSkyLIMS_wetlab/error_page.html',
-                    {'content':['Error when fetching information to create a new Run' ,
-                    run_data['Error']]})
-        ## store data in runProcess table, run is in pre-recorded state
-        center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
-        center_requested_by = Center.objects.get(pk = center_requested_id)
-        run_obj = RunProcess.objects.get(pk__exact = request.POST['run_process_id'])
-        import pdb; pdb.set_trace()
-        # stop here to debug the function update_index_in_sample_sheet
-        run_obj.update_index_in_sample_sheet(run_data['sample_sheet'])
-        run_obj.set_run_state('Recorded')
+            display_pools_for_run = display_available_pools()
+            return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run, 'Error': run_data['Error']})
 
+        ## store data in runProcess table, run is in pre-recorded state
+        #center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
+        #center_requested_by = Center.objects.get(pk = center_requested_id)
+
+        update_run_with_sample_sheet(request.POST['run_process_id'], run_data['sample_sheet'])
+
+        run_obj = get_run_obj_from_id(request.POST['run_process_id'])
+        base_space_file = {}
         for items, values in run_data['projects_in_lib'].items():
-            new_project = Projects.objects.create( runprocess_id= run_obj, user_id = request.user, projectName = items, libraryKit = 'nextera', baseSpaceFile = values)
+            try:
+                user_obj = User.objects.get(username__exact = values[2])
+            except:
+                user_obj = None
+            new_project = Projects.objects.create( runprocess_id= run_data['run_obj'], user_id = user_obj, projectName = items,
+                        libraryKit = run_data['collection_index'], baseSpaceFile = values[0], BaseSpaceLibrary = values[1])
             new_project.save()
+            if not values[1] in base_space_file :
+                base_space_file[values[1]] = values[0]
         # update the sample state for each one in the run
-        created_new_run = {}
-        created_new_run['exp_name'] = run_data['exp_name']
         update_batch_lib_prep_sample_state(run_data['lib_prep_ids'],  'Sequencing')
         pools_obj = LibraryPool.objects.filter(runProcess_id = run_obj)
+
         for pool_obj in pools_obj:
             pool_obj.set_pool_state('Used')
+        # save sample sheet on the tmp folder
+        sample_sheet = store_sample_sheet_in_tmp_folder(request.POST['run_process_id'])
+        run_obj.set_run_state('Recorded')
+        created_new_run = {}
+        created_new_run['exp_name'] = run_data['exp_name']
+        created_new_run['run_process_id'] = request.POST['run_process_id']
+        created_new_run['sample_sheet'] = sample_sheet
+        created_new_run['base_space'] = base_space_file
 
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'created_new_run': created_new_run})
     else:
-        # Selecting pools to create the Run
-        display_pools_for_run = {}
-        pools_to_update = get_available_pools_for_run()
-        if pools_to_update:
-            display_pools_for_run = get_pool_info(pools_to_update)
-            #import pdb; pdb.set_trace()
-            return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run})
-        else:
-            return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'no_pools_for_run': 'No pools'})
-    return
+        display_pools_for_run = display_available_pools()
+        return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run})
 
+
+@login_required
 def pending_sample_preparations(request):
     pending = {}
     # get the samples in defined state
@@ -4352,14 +4360,65 @@ def pending_sample_preparations(request):
     #pending['lib_prep_protocols'] = get_protocol_lib()
     # get the library preparation in defined state
     pending['add_lib_prep_parameters'] = get_lib_prep_to_add_parameters()
-
     pending ['graphic_pending_samples'] = pending_samples_for_grafic(pending).render()
     return render(request, 'iSkyLIMS_wetlab/pendingSamplePreparations.html',{'pending': pending})
 
+@login_required
 def user_commercial_kit_inventory(request):
-    import pdb; pdb.set_trace()
     expired_kit = get_expired_lot_user_kit(request.user)
     valid_kit = get_valid_lot_user_kit(request.user)
+    if request.method == 'POST' and request.POST['action'] == 'runOutUserLotKit':
+        selected_user_kits = request.POST.getlist('userKit')
+        if len(selected_user_kits) == 0:
+            return render(request, 'iSkyLIMS_wetlab/userCommercialKitInventory.html',{'expired_kit': expired_kit,
+                                    'valid_kit': valid_kit, 'user_name': request.user.username})
+        run_out_kits = set_user_lot_kit_to_run_out(selected_user_kits)
+        return render(request, 'iSkyLIMS_wetlab/userCommercialKitInventory.html',{'run_out_kits': run_out_kits})
 
-    return render(request, 'iSkyLIMS_wetlab/userCommercialKitInventory.html',{'expired_kit': expired_kit,
-                            'valid_kit': valid_kit, 'user_name': request.user.username})
+    else:
+        return render(request, 'iSkyLIMS_wetlab/userCommercialKitInventory.html',{'expired_kit': expired_kit,
+                                'valid_kit': valid_kit, 'user_name': request.user.username})
+
+
+@login_required
+def search_user_lot_kit(request):
+    protocol_list = display_protocol_list()
+    if request.method == 'POST' and request.POST['action'] ==  'searchuserkit':
+        if (request.POST['expired'] == '' and  request.POST['lotNumber'] == '' and request.POST['commercial'] == '' and request.POST['protocol'] == ''):
+            return render(request, 'iSkyLIMS_wetlab/searchUserLotKit.html',{'protocol_list': protocol_list})
+
+        if request.POST['expired'] != '' and not check_valid_date_format(request.POST['expired']):
+            error_message = ERROR_INVALID_FORMAT_FOR_DATES
+            return render (request,'iSkyLIMS_wetlab/searchUserLotKit.html', {'protocol_list': protocol_list, 'ERROR': error_message})
+
+        if UserLotCommercialKits.objects.all().exists():
+            user_kits_objs = UserLotCommercialKits.objects.all()
+            if request.POST['lotNumber'] != '':
+                user_kits_objs = user_kits_objs.filter(chipLot__icontains = request.POST['lotNumber'])
+            if request.POST['commercial'] != '':
+                user_kits_objs = user_kits_objs.filter(basedCommercial__name__icontains = request.POST['commercial'])
+            if request.POST['protocol'] != '':
+                user_kits_objs = user_kits_objs.filter(basedCommercial__protocolKits__pk__exact = request.POST['protocol'])
+            if request.POST['expired'] != '':
+                user_kits_objs = user_kits_objs.filter(expirationDate__gte = request.POST['expired'])
+
+            if len(user_kits_objs) > 1:
+                display_user_kit_list = display_user_lot_kit_information_from_query_list(user_kits_objs)
+                return render(request, 'iSkyLIMS_wetlab/searchUserLotKit.html',{'display_user_kit_list': display_user_kit_list})
+            elif len(user_kits_objs) == 0 :
+                error_message = ERROR_NO_MATCHES_FOR_USER_LOT_KIT
+                return render (request,'iSkyLIMS_wetlab/searchUserLotKit.html', {'protocol_list': protocol_list, 'ERROR': error_message})
+            else:
+                display_one_user_kit = user_kits_objs[0].get_user_lot_id()
+            return redirect ('display_one_user_kit', user_kit_id = display_one_user_kit)
+        else:
+            error_message = ERROR_NO_USER_LOT_KIT_DEFINED
+            return render (request,'iSkyLIMS_wetlab/searchUserLotKit.html', {'protocol_list': protocol_list, 'ERROR': error_message})
+    else:
+
+        return render(request, 'iSkyLIMS_wetlab/searchUserLotKit.html',{'protocol_list': protocol_list})
+
+@login_required
+def display_user_lot_kit(request, user_kit_id):
+
+    return render(request, 'iSkyLIMS_wetlab/displayUserLotKit.html',{'protocol_list': protocol_list})

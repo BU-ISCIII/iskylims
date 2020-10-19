@@ -42,9 +42,9 @@
                                     <tbody>
                                         {% for date, code,  sampletype,  s_id , user in pending.defined.sample_information  %}
                                             <tr>
-                                                    <td><a href="displaySample={{s_id}}">{{date}}</a></td>
+                                                    <td>{{date}}</td>
+                                                    <td><a href="displaySample={{s_id}}">{{sampletype}}</a></td>
                                                     <td>{{code}}</td>
-                                                    <td>{{sampletype}}</td>
                                                     <td>{{user}}</td>
                                             </tr>
                                         {% endfor %}
@@ -98,8 +98,8 @@
                                     <tbody>
                                         {% for date, sample_id, s_type, s_id, user, molecule_id, extr_date, protocol, m_id  in pending.extract_molecule.molecule_information  %}
                                             <tr>
-                                                    <td><a href="displaySample={{s_id}}">{{date}}</a></td>
-                                                    <td>{{s_type}}</td>
+                                                    <td>{{date}}</td>
+                                                    <td><a href="displaySample={{s_id}}">{{s_type}}</a></td>
                                                     <td>{{molecule_id}}</td>
                                                     <td>{{extr_date}}</td>
                                                     <td>{{protocol}}</td>
@@ -140,8 +140,8 @@
                                 <tbody>
                                     {% for date, sample_id, s_type, s_id, user, molecule_id, extr_date, protocol, m_id  in pending.create_library_preparation.library_information  %}
                                         <tr>
-                                                <td><a href="displaySample={{s_id}}">{{date}}</a></td>
-                                                <td>{{s_type}}</td>
+                                                <td>{{date}}</td>
+                                                <td><a href="displaySample={{s_id}}">{{s_type}}</a></td>
                                                 <td>{{molecule_id}}</td>
                                                 <td>{{extr_date}}</td>
                                                 <td>{{protocol}}</td>
@@ -169,7 +169,7 @@
                         <br>
                         <div class="panel-body">
                             <p>Select the samples to add the Library Preparation Information </p>
-                        <form method="post" action="/wetlab/setLibraryPreparation" enctype="multipart/form-data" name="addLibPrepParam"  id="addLibPrepParam" class="form-horizontal well">
+                        <form method="post" action="/wetlab/handlingLibraryPreparations" enctype="multipart/form-data" name="addLibPrepParam"  id="addLibPrepParam" class="form-horizontal well">
                         {% csrf_token %}
                             <input type="hidden" name="action" value="addLibPrepParam"/>
                             <input type="hidden" name="lib_prep_in_list" value="True"/>
@@ -207,7 +207,7 @@
                          {% if value in pending.add_lib_prep_parameters.heading %}
                          <div class="panel-body">
                              <p>Select the samples to add Library Preparation Quality parameters </p>
-                         <form method="post" action="/wetlab/setLibraryPreparation" enctype="multipart/form-data" name="addProtocolParamters"  id="addProtocolParamters" class="form-horizontal well">
+                         <form method="post" action="/wetlab/handlingLibraryPreparations" enctype="multipart/form-data" name="addProtocolParamters"  id="addProtocolParamters" class="form-horizontal well">
                          {% csrf_token %}
                              <input type="hidden" name="action" value="addProtocolParamters"/>
                              <input type="hidden" name="lib_prep_in_list" value="True"/>
