@@ -108,7 +108,7 @@ def update_processed_run_file (processed_run_file, processed_runs) :
     '''
     logger = logging.getLogger(__name__)
     logger.debug('Starting update_processed_run_file' )
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
     fh =open (processed_run_file,'w')
     # update the process_run_file with new runs
     for processed in processed_runs:
