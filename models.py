@@ -303,8 +303,8 @@ class Projects(models.Model):
 
         return '%s;%s;%s;%s;%s'%(run_name, self.projectName, projectdate, user_name, self.libraryKit)
 
-    def get_run_name(self):
-        return '%s' %(self.runprocess_id.get_run_name())
+    #def get_run_name(self):
+    #   return '%s' %(self.runprocess_id.get_run_name())
 
     def get_run_id(self):
         return '%s' %(self.runprocess_id.get_run_id())
@@ -753,7 +753,7 @@ class SamplesInProject (models.Model):
         sample_info.append(self.pk)
         sample_info.append(self.sampleName)
         sample_info.append(self.project_id.get_project_name())
-        sample_info.append(self.project_id.get_run_name())
+        sample_info.append(self.runProcess_id.get_run_name())
         sample_info.append(self.generated_at.strftime("%I:%M%p on %B %d, %Y"))
         return sample_info
 

@@ -122,7 +122,7 @@ def nextseq_parsing_run_information(l_run_info, l_run_parameter, experiment_name
     running_data['PlannedIndex2ReadCycles']=parameter_data_root.find('PlannedIndex2ReadCycles').text
     '''
 
-     '''
+    
     for i in run_root.iter('Name'):
         image_channel.append(i.text)
     running_data['ImageChannel']=image_channel

@@ -67,7 +67,7 @@ def analyze_and_store_input_additional_kits(form_data):
 
         # update the library prepareation state
         library_prep_obj.set_state('Updated additional kits')
-        import pdb; pdb.set_trace()
+
     stored_additional_kits['stored_lib_ids'] = list(zip(sample_names, lib_prep_code_ids))
 
     return stored_additional_kits

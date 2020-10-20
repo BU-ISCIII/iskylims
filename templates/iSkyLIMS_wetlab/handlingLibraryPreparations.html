@@ -2,7 +2,14 @@
 {% load static %}
 {% block content %}
 {%include 'iSkyLIMS_core/jexcel_functionality.html' %}
-
+<style>
+    .scrolling-wrapper-min-height {
+            overflow-x: scroll;
+            white-space: nowrap;
+            min-height:500px;
+            height: auto;
+        }
+</style>
 {% if ERROR %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-10">
@@ -21,13 +28,7 @@
 {% endif %}
 
 {% if lib_prep_protocol_parameters %}
-    <style>
-        .scrolling-wrapper {
-            overflow-x: scroll;
-            white-space: nowrap;
-            height:500px;
-        }
-    </style>
+
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12">
             <div class="panel panel-default">
@@ -36,18 +37,15 @@
 
                    <form method="post" enctype="multipart/form-data" name="recordProtocolParamters"  id="recordProtocolParamters" class="form-horizontal well">
                        {% csrf_token %}
-                        <div class="scrolling-wrapper">
+                        <div class="scrolling-wrapper-min-height">
                             <input type="hidden" name="action" value="recordProtocolParamters"/>
                             <input type="hidden" name= "lib_prep_ids" value="{{lib_prep_protocol_parameters.lib_prep_ids}}"/>
                             <input type="hidden" name= "lib_prep_code_ids" value="{{lib_prep_protocol_parameters.lib_prep_code_ids}}"/>
                             <input type="hidden" name= "protocol_id" value="{{lib_prep_protocol_parameters.protocol_id}}"/>
                             <input type="hidden" name= "heading_in_excel" value="{{lib_prep_protocol_parameters.heading_in_excel}}"/>
-
-                           <p></p>
-
-                           <div id="spreadsheet"></div>
-                           <br><br><br><br>
-
+                            <div id="spreadsheet"></div>
+                            <br>
+                        </div> <!--  end of scrolling  -->
                            <script>
                                var data = [{% for values in lib_prep_protocol_parameters.data %}
                                    [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
@@ -79,6 +77,9 @@
 
                                });
                            </script>
+
+                           <div class="col-sm-12">
+                               <br>
                            <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
                            <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
                         </div> <!--  end of scrolling  -->
@@ -381,13 +382,6 @@
     </div> <!--  end of row -->
 
 {% elif additional_kits %}
-    <style>
-        .scrolling-wrapper {
-            overflow-x: scroll;
-            white-space: nowrap;
-            height:500px;
-        }
-    </style>
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
             <div class="panel panel-default">
@@ -396,39 +390,41 @@
 
                     <form method="post" enctype="multipart/form-data" name="storeAdditionalKits"  id="storeAdditionalKits" class="form-horizontal well">
                         {% csrf_token %}
-                        <div class="scrolling-wrapper">
+                        <div class="scrolling-wrapper-min-height">
                             <input type="hidden" name="action" value="storeAdditionalKits"/>
                             <input type="hidden" name="libPrepIds" value="{{additional_kits.lib_prep_ids}}">
                             <input type="hidden" name="libPrepCodeIds" value="{{additional_kits.lib_prep_code_ids}}">
                             <input type="hidden" name="headings" value="{{additional_kits.full_heading}}">
                             <div id="spreadsheet"></div>
-                            <br><br><br><br>
+                            <br>
+                        </div> <!--  end of scrolling  -->
+                        <script>
+                            var data = [{% for values in additional_kits.data %}
+                                [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                            ];
+                            mySpreadsheet = $('#spreadsheet').jexcel({
+                                data:data,
+                                columns: [
+                                    {% for heading in additional_kits.fix_heading %}
+                                        { type: 'text', title:'{{heading}}', width:280 , readOnly:true },
+                                    {% endfor %}
+                                    {% for heading, kit_option in additional_kits.kit_heading %}
+                                        { type: 'dropdown', title:'{{heading}}', width:200 , source :[ {% for value in kit_option %} '{{value}}', {% endfor %}]},
+                                    {% endfor %}
+                                ],
+                                allowInsertColumn:false,
+                                allowDeleteColumn:false,
+                                allowRenameColumn:false,
+                                allowInsertRow:false,
+                                allowDeleteRow:false,
+                                tableOverflow:false,
+                                tableHeight:'200px',
+                                csvFileName:'additional_kits_library_preparation',
 
-                            <script>
-                                var data = [{% for values in additional_kits.data %}
-                                    [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
-                                ];
-                                mySpreadsheet = $('#spreadsheet').jexcel({
-                                    data:data,
-                                    columns: [
-                                        {% for heading in additional_kits.fix_heading %}
-                                            { type: 'text', title:'{{heading}}', width:280 , readOnly:true },
-                                        {% endfor %}
-                                        {% for heading, kit_option in additional_kits.kit_heading %}
-                                            { type: 'dropdown', title:'{{heading}}', width:200 , source :[ {% for value in kit_option %} '{{value}}', {% endfor %}]},
-                                        {% endfor %}
-                                    ],
-                                    allowInsertColumn:false,
-                                    allowDeleteColumn:false,
-                                    allowRenameColumn:false,
-                                    allowInsertRow:false,
-                                    allowDeleteRow:false,
-                                    tableOverflow:true,
-                                    tableHeight:'200px',
-                                    csvFileName:'additional_kits_library_preparation',
-
-                                });
-                            </script>
+                            });
+                        </script>
+                        <div class="<div class="col-sm-12">
+                            <br>
                             <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
                             <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
                         </div> <!--  end of scrolling  -->

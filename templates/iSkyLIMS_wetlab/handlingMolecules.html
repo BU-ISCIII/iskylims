@@ -16,10 +16,13 @@
         display:inline-block;
         width: 950px;
     }
-    .scrolling-wrapper {
+    .scrolling-wrapper-min-height {
             overflow-x: scroll;
             white-space: nowrap;
+            min-height:500px;
+            height: auto;
         }
+
 </style>
 
 
@@ -256,37 +259,37 @@
                </div> <!--  end of row -->
             {% endif %}
             <div class="row row-space-2 margin-b-4">
-               <div class="col-sm-12">
-                   <div class="panel panel-default">
-                       <div class="panel-heading"><h3>Update the following molecules with quality parameters.</h3></div>
-                       <div class="panel-body">
-                           {% if show_molecule_parameters.pending_id %}
-                                 <p>The selected molecules contain different protocol</p>
-                                 <p>After Clicking the Submit buttom the next molecules will be displayed</p>
-                           {% endif %}
-                           <form method="post" enctype="multipart/form-data" name="addMoleculeParameters"  id="addMoleculeParameters" class="form-horizontal well">
-                               {% csrf_token %}
-                               <div class="scrolling-wrapper">
-                               <input type="hidden" name="action" value="addMoleculeParameters"/>
-                               <input type="hidden" name= "molecules" value="{{show_molecule_parameters.molecule_id}}"/>
-                               <input type="hidden" name= "heading_in_excel" value="{{show_molecule_parameters.heading_in_excel}}"/>
-                               <input type="hidden" name= "molecule_code_ids" value="{{show_molecule_parameters.molecule_code_ids}}"/>
-                               {% if show_molecule_parameters.pending_id %}
-                                    <input type="hidden" name= "pending" value="{{show_molecule_parameters.pending_id}}"/>
-                               {% endif %}
-                               <br><br>
+                <div class="col-sm-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h3>Update the following molecules with quality parameters.</h3></div>
+                        <div class="panel-body">
+                            {% if show_molecule_parameters.pending_id %}
+                                <p>The selected molecules contain different protocol</p>
+                                <p>After Clicking the Submit buttom the next molecules will be displayed</p>
+                            {% endif %}
+                            <form method="post" enctype="multipart/form-data" name="addMoleculeParameters"  id="addMoleculeParameters" class="form-horizontal well">
+                                {% csrf_token %}
+                                <div class="scrolling-wrapper-min-height">
+                                    <input type="hidden" name="action" value="addMoleculeParameters"/>
+                                    <input type="hidden" name= "molecules" value="{{show_molecule_parameters.molecule_id}}"/>
+                                    <input type="hidden" name= "heading_in_excel" value="{{show_molecule_parameters.heading_in_excel}}"/>
+                                    <input type="hidden" name= "molecule_code_ids" value="{{show_molecule_parameters.molecule_code_ids}}"/>
+                                   {% if show_molecule_parameters.pending_id %}
+                                        <input type="hidden" name= "pending" value="{{show_molecule_parameters.pending_id}}"/>
+                                   {% endif %}
+                                   <br><br>
 
                                    <div id="spreadsheet"></div>
                                    <br><br><br>
-                               </div> <!--  end of scrolling  -->
-                               <script>
-                                  var data = [{% for values in show_molecule_parameters.data %}
-                                      [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
-                                  ];
+                                </div> <!--  end of scrolling  -->
+                                <script>
+                                    var data = [{% for values in show_molecule_parameters.data %}
+                                        [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                                    ];
 
-                                  mySpreadsheet = $('#spreadsheet').jexcel({
-                                      data:data,
-                                      columns: [
+                                    mySpreadsheet = $('#spreadsheet').jexcel({
+                                        data:data,
+                                        columns: [
                                                 { type: 'text', title:'{{show_molecule_parameters.fix_heading.0}}', width:180 , readOnly:true },
                                                 { type: 'dropdown', title:'{{show_molecule_parameters.fix_heading.1}}', width:180 , source:[{% for value in show_molecule_parameters.lot_kit %}'{{value}}',{% endfor %} ]},
 
@@ -299,29 +302,24 @@
                                                         { type: 'text', title:'{{name}}', width:150 },
                                                     {% endif %}
                                                 {% endfor %}
-
-
-
-                                      ],
-                                      allowInsertColumn:false,
-                                      allowDeleteColumn:false,
-                                      allowRenameColumn:false,
-                                      allowInsertRow:false,
-                                      allowDeleteRow:false,
-                                      tableOverflow:false,
-                                      tableHeight:'600px',
-                                      csvFileName:'quality_data',
-
-                                  });
-                              </script>
-                              <br><br>
-                              <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                              <input class="btn pull-right btn-primary" id = "btnSubmit" type="submit" value="Submit">
-
-                           </form>
-                           <script>
-                               $(document).ready(function () {
-                                   $("#addMoleculeParameters").submit(function (e) {
+                                        ],
+                                        allowInsertColumn:false,
+                                        allowDeleteColumn:false,
+                                        allowRenameColumn:false,
+                                        allowInsertRow:false,
+                                        allowDeleteRow:false,
+                                        tableOverflow:false,
+                                        tableHeight:'600px',
+                                        csvFileName:'quality_data',
+                                    });
+                                </script>
+                                <br><br>
+                                <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                                <input class="btn pull-right btn-primary" id = "btnSubmit" type="submit" value="Submit">
+                            </form>
+                            <script>
+                                $(document).ready(function () {
+                                    $("#addMoleculeParameters").submit(function (e) {
                                        //stop submitting the form to see the disabled button effect
                                        // e.preventDefault();
                                        //disable the submit button
