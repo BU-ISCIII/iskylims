@@ -250,8 +250,14 @@ class LibraryKit (models.Model):
 
 
 class ProjectsManager(models.Manager):
+    def create_new_empty_project(self,project_data):
+        new_project = self.create(user_id = project_data['user_id'], projectName = project_data['projectName'])
+        return new_project
+
     def create_new_project(self,project_data):
-        new_project = self.create(user_id = ['user_id'],projectName = project_data['projectName'])
+        new_project = self.create(user_id = project_data['user_id'], projectName = project_data['projectName'],
+                    libraryKit = project_data['libraryKit'], baseSpaceFile = project_data['baseSpaceFile'],
+                    BaseSpaceLibrary = project_data['BaseSpaceLibrary'])
         return new_project
 
 
@@ -341,7 +347,7 @@ class Projects(models.Model):
         self.save()
         return self
 
-    objects = ()
+    objects = ProjectsManager()
 
 class RunningParametersManager (models.Manager) :
 
@@ -638,8 +644,12 @@ class StatsFlSummary(models.Model):
     generated_at = models.DateTimeField(auto_now_add=True)
 
     def get_fl_summary(self):
-        return '%s;%s;%s;%s' %(self.flowRawCluster, self.flowPfCluster,
-            self.flowYieldMb, self.sampleNumber)
+        data = []
+        data.append(self.flowRawCluster)
+        data.append(self.flowPfCluster)
+        data.append(self.flowYieldMb)
+        data.append(self.sampleNumber)
+        return data
 
     objects = StatsFlSummaryManager ()
 
@@ -678,9 +688,16 @@ class StatsLaneSummary (models.Model):
         return '%s' %(self.runprocess_id)
 
     def get_lane_summary(self):
-        return '%s;%s;%s;%s;%s;%s;%s;%s' %(self.lane, self.pfCluster,
-                self.percentLane, self.perfectBarcode, self.oneMismatch,
-                self.yieldMb, self.biggerQ30, self.meanQuality)
+        data = []
+        data.append(self.lane)
+        data.append(self.pfCluster)
+        data.append(self.percentLane)
+        data.append(self.perfectBarcode)
+        data.append(self.oneMismatch)
+        data.append(self.yieldMb)
+        data.append(self.biggerQ30)
+        data.append(self.meanQuality)
+        return data
 
     def get_stats_info (self):
         stats_info = []
@@ -761,9 +778,15 @@ class SamplesInProject (models.Model):
         return '%s' %(self.id)
 
     def get_sample_information(self):
-        return '%s;%s;%s;%s;%s;%s;%s' %(self.sampleName , self.barcodeName,
-                self.pfClusters ,self.percentInProject, self.yieldMb ,
-                self.qualityQ30 , self.meanQuality )
+        data = []
+        data.append(self.sampleName)
+        data.append(self.barcodeName)
+        data.append(self.pfClusters)
+        data.append(self.percentInProject)
+        data.append(self.yieldMb)
+        data.append(self.qualityQ30)
+        data.append(self.meanQuality)
+        return data
 
     def get_sample_name(self):
         return '%s' %(self.sampleName)
@@ -1020,7 +1043,10 @@ class LibraryPool (models.Model):
     def get_platform_name(self):
         return '%s' %(self.platform.get_platform_name())
     def get_run_name(self):
-        return '%s' %(self.runProcess_id.get_run_name())
+        if self.runProcess_id != None :
+            return '%s' %(self.runProcess_id.get_run_name())
+        else:
+            return 'Not defined yet'
 
     def get_run_id(self):
         return '%s' %(self.runProcess_id.get_run_id())

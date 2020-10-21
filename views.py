@@ -245,7 +245,7 @@ def create_nextseq_run (request):
             data = {}
             data['user_id'] = user_id
             data['projectName'] = key
-            new_project = Projects.objects.create_new_project(data)
+            new_project = Projects.objects.create_new_empty_project(data)
             new_project.add_run(new_run_obj)
             projects.append([key, val])
         run_info_values['projects_user'] = projects
@@ -4272,7 +4272,6 @@ def create_new_run (request):
         display_sample_information.update(get_stored_user_sample_sheet(lib_prep_ids[0]))
         # update Reagents kits
         reagent_kits = fetch_and_update_reagent_kits(request.POST)
-        import pdb; pdb.set_trace()
         new_run =  RunProcess(runName=experiment_name, sampleSheet= '',
                                 state = RunStates.objects.get(runStateName__exact = 'Pre-Recorded'),
                                 centerRequestedBy = center_requested_by)
@@ -4324,9 +4323,12 @@ def create_new_run (request):
                 user_obj = User.objects.get(username__exact = values[2])
             except:
                 user_obj = None
+            create_or_add_project_to_run(run_data,user_obj,items, values)
+            '''
             new_project = Projects.objects.create( runprocess_id= run_data['run_obj'], user_id = user_obj, projectName = items,
                         libraryKit = run_data['collection_index'], baseSpaceFile = values[0], BaseSpaceLibrary = values[1])
             new_project.save()
+            '''
             if not values[1] in base_space_file :
                 base_space_file[values[1]] = values[0]
         # update the sample state for each one in the run

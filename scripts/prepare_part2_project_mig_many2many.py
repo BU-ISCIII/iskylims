@@ -1,5 +1,9 @@
 from iSkyLIMS_wetlab.models import SamplesInProject
-
+'''
+    This file is part of the migration preparation for the version 2.0.0.
+    It collect the information for the sampleInProject table for having
+    the funcitonality that Project name can be repeated in different runs
+'''
 
 def run ():
 

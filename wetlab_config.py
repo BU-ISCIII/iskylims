@@ -330,3 +330,10 @@ SAMBA_CONFIGURATION_FIELDS = ['SAMBA_USER_ID', 'SAMBA_USER_PASSWORD', 'SAMBA_SHA
 
 SAMBA_CONFIGURATION_FILE_HEADING = '############# SAMBA CONFIGURATION FILE ########\n#DO NOT MODIFY MANUALLY THIS FILE\n#VALUES WILL BE MODIFIED WHEN USING THE CONFIGURATION FORM\n'
 SAMBA_CONFIGURATION_FILE_END = '########## END SAMBA CONFIGURATION FILE'
+
+######### PROJECT HEADING  #########################################
+HEADING_SINGLE_PROJECT_FL_SUMMARY = ['Cluster (Raw)', 'Cluster (PF)', 'Yield (MBases)', 'Number of Samples']
+
+HEADING_SINGLE_PROJECT_STATS_LANE = ['Lane', 'PF Clusters', '% of the lane','% Perfect barcode', '% One mismatch barcode','Yield (Mbases)','% >= Q30 bases', 'Mean Quality Score']
+
+HEADING_SINGLE_PROJECT_SAMPLES = ['Sample','Barcode','PF Clusters','Percent of Project', 'Yield (Mbases)','% >= Q30 bases', 'Mean Quality Score']

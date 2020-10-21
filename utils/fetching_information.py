@@ -543,8 +543,7 @@ def get_information_run(run_object):
         run_state = run_object.get_state_before_error()
         info_dict['error_run'] = [run_object.get_run_name(), run_state, run_object.get_error_text(), run_object.get_run_id()]
 
-
-    p_list= Projects.objects.filter(runprocess_id=run_object)
+    p_list= Projects.objects.filter(runProcess=run_object)
     if p_list !='':
         #p_info = []
         #p_library_kit_list = []
@@ -711,89 +710,60 @@ def get_information_project (project_id, request):
         project_id      # contains the project id
         request         # contains gjango request to be used to identify
                         the user group the run id of the run_name_found
-    Functions:
-        normalized_data     # imported from wetlab_misc_utilities
     Constants:
         WETLAB_MANAGER  #
         HEADING_FOR_PROJECT_DATES
-    Variables:
-        groups          # get the group objects to check if requested user
-                        belongs to wetlab manager group
-
-        fl_data_display # contains the list of the flowcell values
-        fl_values       # Tupla containing the flowcell summary heading
-                        and their values
-        lane_values    # contains the list of the lanes values
-        lane_data_display   # Tupla containing the lanes summary heading
-                        and their values
-        p_data          # Tupla containing the project names and their
-                        index in Database
-        p_state         # project state
-        project_info_dict   # dictionary where collect all the project
-                        information that will be returned
-        project_values  # contains the information retuned by get_project_info
-        run_name        # contain the run name for the requested project
+        HEADING_SINGLE_PROJECT_FL_SUMMARY
+        HEADING_SINGLE_PROJECT_STATS_LANE
+        HEADING_SINGLE_PROJECT_SAMPLES
     Return:
         project_info_dict with all information collected in the function
     '''
     project_info_dict = {}
-    #p_data = []
+    run_names = []
     #project_info_dict['project_id'] = project_id.id
     project_info_dict['p_name'] = project_id.get_project_name()
     project_info_dict ['user_id'] = project_id.get_user_name()
-    project_info_dict['run_name'] = project_id.get_run_name()
-    project_info_dict['collection_index'] = project_id.get_index_library_name()
-    project_info_dict['base_space_file'] = project_id.get_base_space_file()
-    project_info_dict['dates'] = list(zip(HEADING_FOR_PROJECT_DATES, project_id.get_project_dates() ))
-    run_name = project_id.runprocess_id.runName
+    run_objs = project_id.runProcess.all()
+    for run_obj in run_objs:
+        run_names.append([run_obj.get_run_id(),run_obj.get_run_name()])
+    #run_name = project_id.runprocess_id.runName
     groups = Group.objects.get(name = WETLAB_MANAGER)
 
     if groups in request.user.groups.all():
-        project_info_dict['run_id'] = project_id.get_run_id()
+        project_info_dict['manager_display_runs'] = True
 
-    #for item in range(len(project_info_text)):
-    #    p_data.append([project_info_text[item], project_values[item]])
-    #project_info_dict['p_data'] = p_data
-
-
-    p_state = project_id.get_state()
-    project_info_dict['state'] = p_state
-    project_info_dict['graphic_value'], project_info_dict['graphic_color'] = graphics_state(p_state)
-
-    if p_state == 'Completed':
-
-        fl_data_display=[]
+    project_info_dict['run_name'] = run_names
+    if len(run_objs) == 1 :
+        run_obj = run_objs[0]
+        project_info_dict['collection_index'] = project_id.get_index_library_name()
+        project_info_dict['base_space_file'] = project_id.get_base_space_file()
+        project_info_dict['dates'] = list(zip(HEADING_FOR_PROJECT_DATES, project_id.get_project_dates() ))
 
         # prepare the data for Flowcell Summary
-        fl_summary_id = StatsFlSummary.objects.get(project_id__exact = project_id)
-        fl_list = ['Cluster (Raw)', 'Cluster (PF)', 'Yield (MBases)', 'Number of Samples']
-        fl_data_display.append(fl_list)
-        fl_values = fl_summary_id.get_fl_summary().split(';')
-        fl_data_display.append(fl_values)
-        project_info_dict['fl_summary']=fl_data_display
+        if StatsFlSummary.objects.filter(project_id__exact = project_id, runprocess_id = run_obj).exists():
+            fl_summary_obj = StatsFlSummary.objects.filter(project_id__exact = project_id, runprocess_id = run_obj).last()
+            project_info_dict['fl_summary_heading'] = wetlab_config.HEADING_SINGLE_PROJECT_FL_SUMMARY
+            #fl_data_display.append(fl_list)
+            project_info_dict['fl_summary_data'] = fl_summary_obj.get_fl_summary()
 
         # prepare the data for Lane Summary
         lane_data_display = []
-        lane_summary_id = StatsLaneSummary.objects.filter(project_id__exact = project_id)
-        lane_list = ['Lane', 'PF Clusters', '% of the lane','% Perfect barcode',
-                    '% One mismatch barcode','Yield (Mbases)','% >= Q30 bases',
-                    'Mean Quality Score']
-        lane_data_display.append(lane_list)
-        for lane_sum in lane_summary_id:
-            lane_values = lane_sum.get_lane_summary().split(';')
-            lane_data_display.append(lane_values)
-        project_info_dict['lane_summary'] = lane_data_display
+        if StatsLaneSummary.objects.filter(project_id__exact = project_id , runprocess_id = run_obj).exists():
+            lane_summary_obj = StatsLaneSummary.objects.filter(project_id__exact = project_id , runprocess_id = run_obj).last()
+            project_info_dict['lane_summary_heading'] = wetlab_config.HEADING_SINGLE_PROJECT_STATS_LANE
+            project_info_dict['lane_summary_data'] = []
+            for lane_sum in lane_summary_obj:
+                project_info_dict['lane_summary_data'].append(lane_sum.get_lane_summary())
 
         # prepare the data for sample information
-        sample_found_list = SamplesInProject.objects.filter(project_id__exact = project_id)
-        sample_heading_list = ['Sample','Barcode','PF Clusters','Percent of Project', 'Yield (Mbases)','% >= Q30 bases', 'Mean Quality Score']
-        project_info_dict['sample_heading'] = sample_heading_list
-        sample_list ={}
-        for sample_item in sample_found_list :
-            sample_line = sample_item.get_sample_information().split(';')
-            sample_list[sample_item.id] = [sample_line]
-
-        project_info_dict['sample_table'] = sample_list
+        if SamplesInProject.objects.filter(project_id__exact = project_id, runprocess_id = run_obj).exists():
+            sample_objs = SamplesInProject.objects.filter(project_id__exact = project_id, runprocess_id = run_obj)
+            project_info_dict['sample_heading'] = wetlab_config.HEADING_SINGLE_PROJECT_SAMPLES
+            project_info_dict['sample_data'] = []
+            for sample_obj in sample_objs :
+                project_info_dict['sample_data'].append([sample_ogj.get_sample_id(),  sample_obj.get_sample_information()])
+    import pdb; pdb.set_trace()
     return project_info_dict
 
 

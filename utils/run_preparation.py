@@ -14,6 +14,48 @@ from iSkyLIMS_core.utils.handling_protocols import *
 from iSkyLIMS_core.utils.handling_commercial_kits import *
 from django.conf import settings
 
+def create_or_add_project_to_run(run_data, user_obj, project_name, proj_data):
+    '''
+    Description:
+        Function will check if project is already defined. If proyect is new, Then
+        it is created but if already exists then run is added to the project
+    Input:
+        run_data    # data related to the run
+        user_obj    # owner of the project
+        project_name    # name of the project
+        proj_data   # data related to project
+    Functions:
+        get_project_obj_from_project_name   # located at this file
+    Return:
+        None
+    '''
+    if not Projects.objects.filter(projectName__exact = project_name).exists():
+        project_data = {}
+        project_data['user_id'] = user_obj
+        project_data['projectName'] = proj_name
+        project_data['libraryKit'] = run_data['collection_index']
+        project_data['baseSpaceFile'] = proj_data[0]
+        project_data['BaseSpaceLibrary'] = proj_data[1]
+        project_obj = Projects.objects.create_new_project(project_data)
+    else:
+        project_obj = get_project_obj_from_project_name(project_name)
+    project_obj.runProcess.add(run_data['run_obj'])
+    return
+
+def get_project_obj_from_project_name(project_name):
+    '''
+    Description:
+        The function get the project obj for the given project name
+    Input:
+        project_name    # project name
+    Return:
+        project_obj
+    '''
+    project_obj = None
+    if Projects.objects.filter(projectName__exact = project_name).exists():
+        project_obj = Projects.objects.filter(projectName__exact = project_name).last()
+    return project_obj
+
 def handle_input_samples_for_run (data_form, user):
     '''
     Description:
