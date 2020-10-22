@@ -75,20 +75,7 @@ def check_access_database ():
         return 'NOK'
 
 def check_samba_connection() :
-    '''
-    conn=SMBConnection(wetlab_config.SAMBA_USER_ID, wetlab_config.SAMBA_USER_PASSWORD,
-        wetlab_config.SAMBA_SHARED_FOLDER_NAME,wetlab_config.SAMBA_REMOTE_SERVER_NAME,
-        use_ntlm_v2=wetlab_config.SAMBA_NTLM_USED,domain=wetlab_config.SAMBA_DOMAIN,
-        is_direct_tcp=wetlab_config.IS_DIRECT_TCP )
-    try:
-        if wetlab_config.SAMBA_HOST_NAME :
-            conn.connect(socket.gethostbyname(wetlab_config.SAMBA_HOST_NAME), int(wetlab_config.SAMBA_PORT_SERVER))
-        else:
-            conn.connect(wetlab_config.SAMBA_IP_SERVER, int(wetlab_config.SAMBA_PORT_SERVER))
-    except:
-        import pdb; pdb.set_trace()
-        return 'NOK'
-    '''
+    
     try:
         open_samba_connection()
         return 'OK'

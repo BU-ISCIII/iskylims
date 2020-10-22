@@ -615,7 +615,7 @@ def search_run (request):
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data, 'error_message' : error_message})
         if end_date != '':
-            if not check_valid_date_format(start_date) :
+            if not check_valid_date_format(end_date) :
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data, 'error_message' : error_message})
 

@@ -630,7 +630,7 @@ def get_information_run(run_object):
         fl_summary_id = StatsFlSummary.objects.filter(runprocess_id__exact =run_object , project_id__isnull=True, defaultAll='all')
         fl_list = ['Cluster (Raw)', 'Cluster (PF)', 'Yield (MBases)', 'Number of Samples']
         fl_data_display.append(fl_list)
-        fl_values = fl_summary_id[0].get_fl_summary().split(';')
+        fl_values = fl_summary_id[0].get_fl_summary()
         fl_data_display.append(fl_values)
         info_dict['fl_summary']=fl_data_display
 
@@ -642,7 +642,7 @@ def get_information_run(run_object):
                     'Mean Quality Score']
         lane_data_display.append(lane_list)
         for lane_sum in lane_summary_id:
-            lane_values = lane_sum.get_lane_summary().split(';')
+            lane_values = lane_sum.get_lane_summary()
             lane_data_display.append(lane_values)
         info_dict['lane_summary'] = lane_data_display
 
@@ -651,7 +651,7 @@ def get_information_run(run_object):
 
         default_fl_summary_id = StatsFlSummary.objects.filter(runprocess_id__exact =run_object , project_id__isnull=True, defaultAll='default')
         default_fl_data_display.append(fl_list)
-        default_fl_values = default_fl_summary_id[0].get_fl_summary().split(';')
+        default_fl_values = default_fl_summary_id[0].get_fl_summary()
         default_fl_data_display.append(default_fl_values)
         info_dict['default_fl_summary']=default_fl_data_display
 
@@ -660,7 +660,7 @@ def get_information_run(run_object):
         default_lane_summary_id = StatsLaneSummary.objects.filter(runprocess_id__exact =run_object , project_id__isnull=True, defaultAll='default')
         default_lane_data_display.append(lane_list)
         for default_lane_sum in default_lane_summary_id:
-            default_lane_values = default_lane_sum.get_lane_summary().split(';')
+            default_lane_values = default_lane_sum.get_lane_summary()
             default_lane_data_display.append(default_lane_values)
         info_dict['default_lane_summary'] = default_lane_data_display
 
@@ -750,20 +750,20 @@ def get_information_project (project_id, request):
         # prepare the data for Lane Summary
         lane_data_display = []
         if StatsLaneSummary.objects.filter(project_id__exact = project_id , runprocess_id = run_obj).exists():
-            lane_summary_obj = StatsLaneSummary.objects.filter(project_id__exact = project_id , runprocess_id = run_obj).last()
+            lane_summary_obj = StatsLaneSummary.objects.filter(project_id__exact = project_id , runprocess_id = run_obj)
             project_info_dict['lane_summary_heading'] = wetlab_config.HEADING_SINGLE_PROJECT_STATS_LANE
             project_info_dict['lane_summary_data'] = []
             for lane_sum in lane_summary_obj:
                 project_info_dict['lane_summary_data'].append(lane_sum.get_lane_summary())
 
         # prepare the data for sample information
-        if SamplesInProject.objects.filter(project_id__exact = project_id, runprocess_id = run_obj).exists():
-            sample_objs = SamplesInProject.objects.filter(project_id__exact = project_id, runprocess_id = run_obj)
+        if SamplesInProject.objects.filter(project_id__exact = project_id, runProcess_id = run_obj).exists():
+            sample_objs = SamplesInProject.objects.filter(project_id__exact = project_id, runProcess_id = run_obj)
             project_info_dict['sample_heading'] = wetlab_config.HEADING_SINGLE_PROJECT_SAMPLES
             project_info_dict['sample_data'] = []
             for sample_obj in sample_objs :
-                project_info_dict['sample_data'].append([sample_ogj.get_sample_id(),  sample_obj.get_sample_information()])
-    import pdb; pdb.set_trace()
+                project_info_dict['sample_data'].append([sample_obj.get_sample_id(),  sample_obj.get_sample_information()])
+
     return project_info_dict
 
 
@@ -802,7 +802,7 @@ def get_info_sample_in_run (sample_id):
     sample_info_dict['investigator_name'] = user_name_id.username
     # collect the Sample information
     sample_info_dict['heading_samples_info'] = ['Sample', 'Index used', 'PF Cluster', '% of Project','Yield (Mbases)','>= Q30 bases','Mean Quality Score']
-    sample_info_dict['data_samples_info'] = sample_id.get_sample_information().split(';')
+    sample_info_dict['data_samples_info'] = sample_id.get_sample_information()
     # Quality graphic
     quality_sample = sample_id.get_quality_sample()
     heading_chart_quality = 'Quality for the Sample ' + sample_id.sampleName

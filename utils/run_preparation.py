@@ -194,7 +194,7 @@ def handle_input_samples_for_run (data_form, user):
         sample_sheet_data[bs_lib_name][pool_name][lib_prep_ids[row_index]] ['i7_seq'] = i7_seq
         sample_sheet_data[bs_lib_name][pool_name][lib_prep_ids[row_index]] ['i5_seq'] = i5_seq
         sample_sheet_data[bs_lib_name][pool_name][lib_prep_ids[row_index]] ['project_name']= json_data[row_index][HEADING_FOR_CREATING_POOL.index('Project Name')]
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
     sample_sheet_file = ''
     '''
     return project_bs_files

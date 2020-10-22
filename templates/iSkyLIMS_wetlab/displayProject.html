@@ -74,22 +74,24 @@
             <div class="panel panel-default">
                 <div class="panel-heading">Run State : <b>{{ display_project_data.state}} </b></div>
                 <div class="panel-body">
-                    <div class="circle-progress {{ display_project_data.graphic_color }}">
-                    {% if display_project_data.graphic_value > 50 %}
-                        <span class="circle-progress-left">
-                            <span class="circle-progress-bar"></span>
-                        </span>
-                    {% endif%}
-                        <span class="circle-progress-right">
-                            <span class="circle-progress-bar"></span>
-                        </span>
-                        <div class="circle-progress-value">{{ display_project_data.graphic_value }}%</div>
-                    </div>
+                    {% if display_project_data.graphic %}
+                        <div class="circle-progress {{ display_project_data.graphic_color }}">
+                            {% if display_project_data.graphic_value > 50 %}
+                                <span class="circle-progress-left">
+                                    <span class="circle-progress-bar"></span>
+                                </span>
+                            {% endif%}
+                            <span class="circle-progress-right">
+                                <span class="circle-progress-bar"></span>
+                            </span>
+                            <div class="circle-progress-value">{{ display_project_data.graphic_value }}%</div>
+                        </div>
+                    {% endif %}
             </div> <!--  end of panel body -->
           </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-4 -->
     </div> <!--  end of row -->
-    {% if display_project_data.fl_summary %}
+    {% if display_project_data.fl_summary_heading %}
         <div class="row row-space-8 margin-b-1">
             <div class="col-sm-8 ">
                 <div class="panel panel-default">
@@ -145,7 +147,7 @@
             </div> <!--  end of col-sm-4 -->
         </div> <!--  end of row -->
     {% endif%}
-    {% if display_project_data.sample_table %}
+    {% if display_project_data.sample_heading %}
       <div class="row row-space-10 margin-b-1">
          <div class="col-sm-10 ">
             <div class="panel panel-default">
@@ -168,7 +170,7 @@
                                 <tr>
                                     {% for value in values_sample %}
                                         {% if forloop.first %}
-                                            <td><a href="/wetlab/displaySampleInRun={{key}}">{{ value }}</a> </td>
+                                            <td><a href="/wetlab/displaySampleInRun={{s_id}}">{{ value }}</a> </td>
                                         {% else %}
                                             <td>{{ value }} </td>
                                         {% endif %}
