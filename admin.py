@@ -4,6 +4,8 @@ from django_mptt_admin.admin import DjangoMpttAdmin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 
+class ResolutionStatesAdmin(admin.ModelAdmin):
+	list_display = ['resolutionStateName']
 class FileExtAdmin(admin.ModelAdmin):
 	list_display = ('fileExt',)
 
@@ -25,7 +27,7 @@ class AvailableServiceAdmin(DjangoMpttAdmin):
 	list_display=('availServiceDescription',)
 
 class ResolutionAdmin(admin.ModelAdmin):
-	list_display=('resolutionServiceID','resolutionNumber','resolutionDate','resolutionEstimatedDate','resolutionOnQueuedDate','resolutionOnInProgressDate','resolutionFullNumber','resolutionAsignedUser','resolutionNotes')
+	list_display=('resolutionServiceID','resolutionNumber', 'resolutionState','resolutionDate','resolutionEstimatedDate','resolutionOnQueuedDate','resolutionOnInProgressDate','resolutionFullNumber','resolutionAsignedUser','resolutionNotes')
 
 class ResolutionParametersAdmin(admin.ModelAdmin):
 	list_display = ['resolution','resolutionParameter', 'resolutionParamValue','resolutionParamNotes']
@@ -45,6 +47,7 @@ class JobStatesManager(admin.ModelAdmin):
 class PipelineExternalDataJobsManager(admin.ModelAdmin):
 	list_display = ['pipeline', 'availableService', 'serviceRequestNumber', 'folderData', 'jobState', 'lastRequestedTime', 'pipelineName', 'pipelineVersion']
 
+admin.site.register(ResolutionStates,ResolutionStatesAdmin)
 admin.site.register(FileExt,FileExtAdmin)
 admin.site.register(Platform,PlatformAdmin)
 admin.site.register(Machines,MachinesAdmin)

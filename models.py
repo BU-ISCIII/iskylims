@@ -36,7 +36,12 @@ def service_files_upload(instance,filename):
 			filename_ext.lower(),
 	)
 
-# Create your models here.
+class ResolutionStates(models.Model):
+	resolutionStateName = models.CharField(max_length=50)
+
+	def __str__ (self):
+		return '%s' %(self.resolutionStateName)
+
 class FileExt(models.Model):
 	fileExt=models.CharField(_("File extension"),max_length=10)
 	def __str__ (self):
@@ -222,22 +227,24 @@ class Service(models.Model):
 	serviceProjectNames = models.ManyToManyField(
 				'iSkyLIMS_wetlab.Projects',
 				verbose_name=_("User's projects"),blank=True)
+
 	servicePipelines = models.ManyToManyField(
 				Pipelines,
 				verbose_name=_("Pipeline"),blank=True)
+
 	serviceSeqCenter=models.CharField(_("Sequencing center"),max_length=50,blank=False,null=True)
 	serviceRequestNumber=models.CharField(max_length=80, null=True)
 	serviceRequestInt=models.CharField(max_length=80, null=True)
 	serviceRunSpecs=models.CharField(_("Run specifications"),max_length=10,blank=True,null=True)
 	serviceFile=models.FileField(_("Service description file"),upload_to=service_files_upload, null=True,blank=True)
 	serviceStatus=models.CharField(_("Service status"),max_length=15,choices=STATUS_CHOICES)
-	serviceNotes=models.TextField(_("Service Notes"),max_length=2048,null=True)
+	serviceNotes=models.TextField(_("Service Notes"),max_length=2048,null=True, blank=True)
 	serviceCreatedOnDate= models.DateField(auto_now_add=True,null=True)
 
 	serviceOnApprovedDate = models.DateField(auto_now_add=False, null=True,blank=True)
 	serviceOnRejectedDate = models.DateField(auto_now_add=False, null=True,blank=True)
 
-	serviceOnDeliveredDate = models.DateField(auto_now_add=False, null=True)
+	serviceOnDeliveredDate = models.DateField(auto_now_add=False, null=True, blank=True)
 
 
 
@@ -461,10 +468,11 @@ class ResolutionManager(models.Manager):
 		today = datetime.date.today()
 		resolutionAsignedUser = User.objects.get(pk__exact = resolution_data['resolutionAsignedUser'])
 		resolutionServiceID = Service.objects.get(pk__exact = resolution_data['service_id'])
+		state = ResolutionStates.objects.get(resolutionStateName__exact = 'Recorded')
 		new_resolution = self.create(resolutionServiceID = resolutionServiceID, resolutionAsignedUser  = resolutionAsignedUser,
 					resolutionNumber = resolution_data['resolutionNumber'],  resolutionEstimatedDate= resolution_data['resolutionEstimatedDate'],
 					resolutionOnQueuedDate =  datetime.date.today(), resolutionNotes = resolution_data['resolutionNotes'],
-					resolutionFullNumber = resolution_data['resolutionFullNumber'])
+					resolutionFullNumber = resolution_data['resolutionFullNumber'], resolutionState = state)
 		return new_resolution
 
 
@@ -476,12 +484,16 @@ class Resolution(models.Model):
 				User,
 				related_name='groups+',
 				on_delete=models.CASCADE, null=True,blank=True )
+	resolutionState = models.ForeignKey(
+				ResolutionStates,
+				on_delete=models.CASCADE, null=True,blank=True )
+	availableServices = models.ManyToManyField(AvailableService)
 	resolutionNumber=models.CharField(_("Resolutions name"),max_length=255,null=True)
 	resolutionEstimatedDate=models.DateField(_(" Estimated resolution date"), null = True,blank=False)
 	resolutionDate=models.DateField(_("Resolution date"),auto_now_add=True,blank=True)
 	resolutionOnQueuedDate = models.DateField(auto_now_add=False, null=True,blank=True)
 	resolutionOnInProgressDate = models.DateField(auto_now_add=False, null=True,blank=True)
-	resolutionNotes=models.TextField(_("Resolution notes"),max_length=1000, null=True)
+	resolutionNotes=models.TextField(_("Resolution notes"),max_length=1000, null=True, blank=True)
 	resolutionFullNumber = models.CharField(_("Acronym Name"),max_length=255,null=True,blank=True)
 	resolutionPdfFile = models.FileField(upload_to = drylab_config.RESOLUTION_FILES_DIRECTORY, null=True,blank=True)
 
@@ -492,7 +504,7 @@ class Resolution(models.Model):
 		resolution_info =[]
 		resolution_info.append(self.resolutionNumber)
 		resolution_info.append(self.resolutionFullNumber)
-		resolution_info.append(self.resolutionAsignedUser)
+		resolution_info.append(self.resolutionAsignedUser.username)
 		if self.resolutionEstimatedDate is not None:
 			resolution_info.append(self.resolutionEstimatedDate.strftime("%d %B, %Y"))
 		else:
@@ -509,8 +521,12 @@ class Resolution(models.Model):
 			resolution_info.append(self.resolutionOnInProgressDate.strftime("%d %B, %Y"))
 
 		resolution_info.append(self.resolutionNotes)
-
+		resolution_info.append(self.resolutionPdfFile)
 		return resolution_info
+
+	def get_service_obj(self):
+		return self.resolutionServiceID
+
 	def get_service_request_number(self):
 		return '%s' %self.resolutionNumber
 

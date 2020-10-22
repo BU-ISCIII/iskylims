@@ -188,12 +188,13 @@ def get_service_information (service_id):
 
 
     if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
-        resolution_list = Resolution.objects.filter(resolutionServiceID = service_obj)
+        resolution_heading = drylab_config.HEADING_FOR_RESOLUTION_INFORMATION
+        resolution_list = Resolution.objects.filter(resolutionServiceID = service_obj).order_by('resolutionState')
         resolution_info =[]
         for resolution_item in resolution_list :
-            resolution_info.append([resolution_item.get_resolution_information()])
+            resolution_info.append([list(zip(resolution_heading,resolution_item.get_resolution_information()))])
         display_service_details['resolutions'] = resolution_info
-
+        #import pdb; pdb.set_trace()
     if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
         resolution_list = Resolution.objects.filter(resolutionServiceID = service_obj)
         delivery_info = []

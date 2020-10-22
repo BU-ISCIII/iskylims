@@ -496,32 +496,14 @@ def add_resolution (request):
     if request.method != 'POST' or not 'service_id' in request.POST:
         return render (request, 'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_SERVICE_ID_NOT_FOUND})
 
-
     if request.method == "POST" and request.POST['action'] == 'addResolutionService' :
-        import pdb; pdb.set_trace()
-
-
 
         resolution_data_form = get_add_resolution_data_form(request.POST)
-        resolution_data_form['resolutionFullNumber'] = get_assign_resolution_full_number(resolution_data_form['service_id'], resolution_data_form['acronymName'])
-        resolution_data_form['resolutionNumber'] = create_resolution_number(request.POST['service_id'])
-        service_obj = get_service_obj_from_id(request.POST['service_id'])
-        service_request_number = service_obj.get_service_request_number()
-        if resolution_data_form['serviceAccepted'] == 'Accepted':
-            service_obj.update_service_status("queued")
-            service_obj.update_approved_date(datetime.date.today())
-        else:
-            service_obj.update_service_status("rejected")
-            service_obj.update_rejected_date(datetime.date.today())
-
-        new_resolution = Resolution.objects.create_resolution(resolution_data_form)
-
-        if 'additional_parameters' in resolution_data_form:
-            store_resolution_additional_parameter(resolution_data_form['additional_parameters'], new_resolution)
+        new_resolution = create_new_resolution(resolution_data_form)
 
         # create a new resolution to be added to the service folder including the path where file is stored
 
-        pdf_file = create_resolution_pdf_file(service_obj,new_resolution, request.build_absolute_uri())
+        pdf_file = create_resolution_pdf_file(new_resolution, request.build_absolute_uri())
         new_resolution.update_resolution_file(pdf_file)
         #pdf_name = resolution_data_form['resolutionNumber'] + ".pdf"
         #resolution_file = create_pdf(request,information, drylab_config.RESOLUTION_TEMPLATE, pdf_name)
@@ -531,7 +513,7 @@ def add_resolution (request):
             email_data = {}
             email_data['user_email'] = request.user.email
             email_data['user_name'] = request.user.username
-            email_data['service_number'] = service_request_number
+            email_data['service_number'] = new_resolution.get_service_request_number()
             email_data['status'] = resolution_data_form['serviceAccepted']
             email_data['date'] = resolution_data_form['resolutionEstimatedDate']
             send_resolution_creation_email(email_data)

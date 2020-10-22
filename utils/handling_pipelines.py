@@ -118,6 +118,23 @@ def get_pipelines_for_manage():
 
     return pipeline_data
 
+def get_pipeline_and_versions_for_available_service(available_service):
+    '''
+    Description:
+        The function get the list of defined pipeline names and version for an
+        available service
+    Input:
+        available_service
+    Return:
+        service_name
+    '''
+    pipeline_names = []
+    if  Pipelines.objects.filter(availableService__pk__exact = available_service).exists():
+        pipelines_objs = Pipelines.objects.filter(availableService__pk__exact = available_service).order_by('generated_at').reverse()
+        for pipelines_obj in pipelines_objs:
+            pipeline_names.append([pipelines_obj.pk, pipelines_obj.get_pipleline_service(), pipelines_obj.get_pipeline_version()])
+    return pipeline_names
+
 def get_pipelines_for_service(service_id):
     '''
     Description:

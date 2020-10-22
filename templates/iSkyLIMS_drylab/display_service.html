@@ -69,7 +69,7 @@
 
                                     <div class="form-group">
                                         <label class="col-sm-5 control-label" for="childrenServices" >Select services</label>
-                                        <div class="col-sm-7">
+                                        <div class="col-sm-10">
                                            <select class="custom-select" name="childrenServices"  id="childrenServices" multiple>
                                                {% for id, name in display_service.children_services %}
                                                    <option value="{{id}}">{{name}}</option>
@@ -201,37 +201,42 @@
                         <div class="panel-body">
                             {% if display_service.resolutions %}
                                 {% for resolutions  in display_service.resolutions %}
-                                    {% for resolution_number, folder_name, assigned_to, estimate_date, queued_date, inprog_date, notes in resolutions %}
+                                    {% for resolution_number, folder_name, assigned_to, estimate_date, queued_date, inprog_date, notes, file  in resolutions %}
                                         <table class="table table-hover">
                                             <thead>
                                                 <tr>
-                                                    <th colspan= "2">Resolution information for {{ resolution_number }}</th>
+                                                    <th colspan= "2"> {{ resolution_number.0}} {{resolution_number.1}}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <tr>
-                                                    <td>Folder name:  </td>
-                                                    <td> {{ folder_name }} </td>
+                                                    <td>{{folder_name.0}}</td>
+                                                    <td>{{folder_name.1}} </td>
                                                 </tr>
                                                 <tr>
-                                                    <td>Service assigned to:  </td>
-                                                    <td> {{ assigned_to }} </td>
+                                                    <td>{{assigned_to.0}} </td>
+                                                    <td>{{assigned_to.1}} </td>
                                                 </tr>
                                                 <tr>
-                                                    <td>Estimated Delivery Date:  </td>
-                                                    <td> {{ estimate_date }} </td>
+                                                    <td>{{estimate_date.0}}</td>
+                                                    <td>{{estimate_date.1}}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td>Queued Date:  </td>
-                                                    <td> {{ queued_date }} </td>
+                                                    <td>{{queued_date.0}}</td>
+                                                    <td>{{queued_date.1}}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td>In Progress Date: </td>
-                                                    <td>{{ inprog_date }}</td>
+                                                    <td>{{inprog_date.0}}</td>
+                                                    <td>{{inprog_date.1}}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td>Notes: </td>
-                                                    <td>{{ notes }}</td>
+                                                    <td>{{notes.0}}</td>
+                                                    <td>{{notes.1}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>{{file.0}}</td>
+                                                    <td><a href="{{file.1}}" download> Download file<span class="glyphicon glyphicon-download-alt"></span></a></td>
+
                                                 </tr>
                                            </tbody>
                                         </table>

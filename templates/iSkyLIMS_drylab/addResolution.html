@@ -26,12 +26,15 @@
 		            <div class="panel-body">
 						<form method="post" enctype="multipart/form-data" name="addResolutionService" id="addResolutionService" class="form-horizontal well">
 		                    {% csrf_token %}
-							{% if resolution_form_data.selected_children_services %}
-								<h5 style="text-align:center"> The Resolution information in the form are only for the services : {% for id, name in resolution_form_data.selected_children_services %} {{name}} {% endfor %}</h5>
+							{% if resolution_form_data.selected_avail_services_data %}
+								<h5 style="text-align:center"> The Resolution information in the form are only for the services : {% for id, name in resolution_form_data.selected_avail_services_data %} {{name}},  {% endfor %}</h5>
 								<input type="hidden" name="selectedServices" value="{% for id, name in resolution_form_data.selected_children_services %}{{id}},{% endfor %}">
 							{% endif %}
 							<input type="hidden" name="action" value="addResolutionService"/>
 							<input type="hidden" name="service_id" value="{{resolution_form_data.service_id}}"/>
+							{% if resolution_form_data.selected_avail_services_data %}
+								<input type="hidden" name="select_available_services" value="{% for id, name in resolution_form_data.selected_avail_services_data %}{{id}},{% endfor %}"/>
+							{% endif %}
 							<br>
 
 				             	<div class="form-group required ">
@@ -41,20 +44,8 @@
 									<label class="col-sm-5 control-label" for="acronymName" >Acronym Service Name</label>
 				                	<div class="col-sm-5"><input class="form-control" required = "required" type="text" name="acronymName" id="acronymName"></div>
 				                	<br><br>
-									{% if resolution_form_data.pipelines %}
-										<label class="col-sm-5 control-label" for="resolutionAsignedUser" >Assign to user</label>
-				                        <div class="col-sm-5">
-											<select class="form-control"  name="pipelineService" id="pipelineService">
-												<option value="">Select one </option>
-				                                {% for id , name in resolution_form_data.pipelines %}
-				                                    <option value="{{id}}">{{name}}</option>
-				                                {% endfor %}
-				                            </select>
-				                        </div>  <!-- end select input -->
-										<br><br>
-									{% endif %}
 									<label class="col-sm-5 control-label" for="resolutionAsignedUser" >Assign to user</label>
-			                        <div class="col-sm-5">
+									<div class="col-sm-5">
 										<select class="form-control"  required = "required" name="resolutionAsignedUser" id="resolutionAsignedUser">
 			                                {% for id , name in resolution_form_data.assigned_user %}
 			                                    <option value="{{id}}">{{name}}</option>
@@ -68,9 +59,27 @@
 	                                    <label class="radio-inline"><input type="radio" name="serviceAccepted" required = "required" value="Rejected" >Rejected</label>
 	                                </div>  <!-- end  radio -->
 			                        <br><br>
+								</div>  <!-- end from-group   -->
+								<div class="form-group ">
+									{% if resolution_form_data.pipelines_data %}
+										{% for s_name , values in resolution_form_data.pipelines_data %}
+											<label class="col-sm-5 control-label" for="resolutionAsignedUser" >Pipeline for {{s_name}} </label>
+					                        <div class="col-sm-5">
+
+												<select class="form-control"  name="pipelines" id="pipeline_{{s_name}}">
+													<option value="">Select one </option>
+					                                {% for id , name , version in values %}
+					                                    <option value="{{id}}">{{name}}  {{version}}</option>
+					                                {% endfor %}
+					                            </select>
+					                        </div>  <!-- end select input -->
+											<br><br>
+										{% endfor %}
+									{% endif %}
+
 									<label class="col-sm-5 control-label" for="resolutionNotes" >User Notes</label>
 			                        <div class="col-sm-5">
-			                            <textarea class="form-control" name="resolutionNotes" required = "required" value="" id="resolutionNotes" rows="4" cols="60" maxlength="440"></textarea>
+			                            <textarea class="form-control" name="resolutionNotes" value="" id="resolutionNotes" rows="4" cols="60" maxlength="440"></textarea>
 			                        </div>  <!-- end textarea input -->
 			                        <br>
 				             	</div>  <!-- end from-group   -->

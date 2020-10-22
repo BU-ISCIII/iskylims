@@ -4,37 +4,45 @@
 {% csrf_token %}
 <script type="text/javascript" src="{% static "iSkyLIMS_drylab/js/fusioncharts/js/fusioncharts.js" %}"></script>
 <script type="text/javascript" src="{% static "iSkyLIMS_drylab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script>
-
+<style>
+    .scrolling-wrapper {
+        overflow-x: auto;
+        overflow-y: auto;
+        white-space: nowrap;
+        height: 500px;
+ </style>
     <h1><div class="color-heading">Pending Services</div></h1>
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-6">  <!-- first column with list of pending services in state Recorded and Approved -->
             <div class="col-sm-12">  <!-- Recorded  pending services -->
                 <div class="panel panel-default">
-                  <div class="panel-heading">List of Services in Recorded State</div>
-                  <div class="panel-body">
-                      {% if pending_services.recorded %}
-                          <table class="table table-hover">
-                               <thead>
-                                  <tr>
-                                    <th>Services Request ID</th>
-                                    <th>Run Specifications</th>
-                                    <th>Center</th>
-                                    <th>Platform</th>
-                                  </tr>
-                               </thead>
-                               <tbody>
-                                {% for key, values in pending_services.recorded.items %}
-                                 <tr>
-                                    {% for requestID, specification, center, platform in values %}
-                                   <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
-                                   <td> {{ specification }} </td>
-                                   <td> {{ center }} </td>
-                                   <td> {{ platform }} </td>
-                                    {%endfor%}
-                                 </tr>
-                                {%endfor%}
-                               </tbody>
-                             </table>
+                    <div class="panel-heading"><h3 style="text-align:center">List of Services in Recorded State</h3></div>
+                    <div class="panel-body">
+                        {% if pending_services.recorded %}
+                            <div class="scrolling-wrapper">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Services Request ID</th>
+                                            <th>Run Specifications</th>
+                                            <th>Center</th>
+                                            <th>Platform</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for key, values in pending_services.recorded.items %}
+                                            <tr>
+                                                {% for requestID, specification, center, platform in values %}
+                                                    <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
+                                                    <td> {{ specification }} </td>
+                                                    <td> {{ center }} </td>
+                                                    <td> {{ platform }} </td>
+                                                {% endfor %}
+                                            </tr>
+                                        {%endfor%}
+                                    </tbody>
+                                </table>
+                            </div> <!--  end of scrolling wrapper -->
                       {% else %}
                       There is not pending services in <b>RECORDED</b> state.
                       {% endif%}
@@ -76,7 +84,7 @@
                   </div> <!--// end panel body -->
                 </div> <!--// end panel -->
             </div> <!--// end col-sm-12  Approved  pending services  -->
-          </div> <!--// end col-sm-6 first column with list of pending services in state Recorded and Approved -->  
+          </div> <!--// end col-sm-6 first column with list of pending services in state Recorded and Approved -->
           <div class="col-sm-6 ">
             {% if pending_services.graphic_pending_services %}
                 <div class="col-sm-12">
@@ -90,12 +98,12 @@
                         </div> <!--  end of panel body -->
                     </div> <!--  end of panel  -->
                     </div> <!--// end col-sm-12  graphics for pending services  -->
-                {% endif %}  
+                {% endif %}
             </div> <!--  end of col-sm-6  -->
         </div> <!--// end row -->
-            
-            
-            
+
+
+
         <div class="row row-space-2 margin-b-4">
             <div class="col-sm-12">  <!-- Queued  pending services -->
                 <div class="panel panel-default">
@@ -183,6 +191,6 @@
                   </div> <!--// end panel body -->
                 </div> <!--// end panel -->
             </div> <!--// end col-sm-12  In Progress  pending services  -->
-      
+
     </div> <!--// end row -->
 {% endblock %}

@@ -1,8 +1,6 @@
-'''
-
-'''
 import sys
 sys.path.append
+
 try:
     from .drylab_email_conf import *
     EMAIL_USER_CONFIGURED = True
@@ -83,6 +81,10 @@ DISPLAY_MULTYPLE_DEFINED_PIPELINE = ['Service', 'User', 'Pipeline Name' , 'Pipel
 
 DISPLAY_DETAIL_PIPELINE_BASIC_INFO = ['Pipeline Name', 'Pipeline Version', 'Service']
 DISPLAY_DETAIL_PIPELINE_ADDITIONAL_INFO = ['User', 'Creation Date', 'String Folder', 'Default', 'In Use', 'Automatic']
+
+################ # RESOLUTION ##############################
+HEADING_FOR_RESOLUTION_INFORMATION = ['Resolution Information for : ','Folder Name', 'Service assigned_to', 'Estimated Delivery Date', 'Queued Date' , 'In Progress Date', 'Notes', 'Resolution PDF File']
+
 
 ################ EMAIL TEXT   ##################################
 SUBJECT_SERVICE_RECORDED = ['Service ', ' has been recorded']
