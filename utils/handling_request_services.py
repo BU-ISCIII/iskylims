@@ -125,6 +125,15 @@ def get_service_obj_from_id(service_id):
     return service_obj
 
 def get_service_information (service_id):
+    '''
+    Description:
+        The function get the  service information, which includes the requested services
+        resolutions, deliveries, samples and the allowed actions on the service
+    Input:
+        service_id  # id of the  service
+    Return:
+        display_service_details
+    '''
     service_obj = get_service_obj_from_id(service_id)
     display_service_details = {}
 
@@ -132,53 +141,69 @@ def get_service_information (service_id):
     service_dates = []
     display_service_details['service_name'] = service_obj.get_service_request_number()
     display_service_details['service_id'] = service_id
-    # get the list of projects
-    #projects_in_service = {}
+    # get the list of samples
     if RequestedSamplesInServices.objects.filter(samplesInService = service_obj).exists():
         samples_in_service = RequestedSamplesInServices.objects.filter(samplesInService = service_obj)
         display_service_details['samples'] = []
         for sample in samples_in_service:
             display_service_details['samples'].append([sample.get_external_sample_id(), sample.get_external_sample_name()])
 
-    #projects_class = service.serviceProjectNames.all()
-    # for project in projects_class:
-    #     project_id = project.id
-    #     projects_in_service[project_id]=project.get_requested_project_name()
-    #display_service_details['projects'] = projects_in_service
     display_service_details['user_name'] = service_obj.get_service_requested_user()
     user_input_file = service_obj.get_service_file()
     if user_input_file:
         display_service_details['file'] = os.path.join(settings.MEDIA_URL,user_input_file)
     display_service_details['state'] = service_obj.get_service_state()
     display_service_details['service_notes'] = service_obj.get_service_user_notes()
-    #dates_for_services = service.get_service_dates()
-    # for i in range(len(dates_for_services)):
-    #     service_dates.append([text_for_dates[i],dates_for_services[i]])
     display_service_details['service_dates'] = zip (drylab_config.HEADING_SERVICE_DATES, service_obj.get_service_dates() )
-    #display_service_details['service_dates'] = service_dates
-    # if display_service_details['state'] != 'approved' and display_service_details['state'] != 'recorded':
-        # get the proposal for the delivery date
+    # get the proposal for the delivery date for the last resolution
     if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
         last_resolution = Resolution.objects.filter(resolutionServiceID = service_obj).last()
         display_service_details['resolution_folder'] = last_resolution.get_resolution_number()
-        #display_service_details['resolution_folder'] = resolution_folder
         resolution_estimated_date = last_resolution.get_resolution_estimated_date()
-
 
     # get all services
     display_service_details['nodes']= service_obj.serviceAvailableService.all()
     display_service_details['children_services'] = get_available_children_services_and_id(display_service_details['nodes'])
     # adding actions fields
     if service_obj.serviceStatus != 'rejected' or service_obj.serviceStatus != 'archived':
-        display_service_details['add_resolution_action'] = service_id
-        if len(display_service_details['children_services']) > 1:
-            display_service_details['multiple_services'] = True
-            if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
-                resolutions = Resolution.objects.filter(resolutionServiceID = service_obj)
-                for resolution in resolutions:
+
+        if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
+            ## get informtaion from the defined Resolutions
+            resolution_objs = Resolution.objects.filter(resolutionServiceID = service_obj)
+            display_service_details['resolution_for_progress'] = []
+            available_services_ids = []
+            for resolution_obj in resolution_objs:
+                if resolution_obj.get_resolution_state() == 'Recorded':
+                    req_available_services = resolution_obj.get_available_services()
+                    if req_available_services != ['None']:
+                        req_available_service_ids = resolution_obj.get_available_services_ids()
+                        for req_available_service in req_available_service_ids:
+                            available_services_ids.append(req_available_service)
+                        display_service_details['resolution_for_progress'].append([ resolution_obj.get_resolution_id(),req_available_services])
+                    else:
+                        display_service_details['resolution_for_progress'].append([ resolution_obj.get_resolution_id(),['']])
+                elif resolution_obj.get_resolution_state() == 'In Progress':
                     pass
-            else:
-                display_service_details['first_resolution'] = True
+            if len(available_services_ids) > 0 and (len(available_services_ids) < len(display_service_details['children_services'])):
+                display_service_details['add_resolution_action'] = service_id
+                display_service_details['multiple_services'] = True
+                display_service_details['pending_to_add_resolution'] = []
+                for ch_service in display_service_details['children_services']:
+                    if ch_service[0] not in available_services_ids:
+                        #available_service_obj = get_available_service_obj_from_id(ch_service[0])
+                        display_service_details['pending_to_add_resolution'].append(ch_service)
+                #import pdb; pdb.set_trace()
+        else:
+	        display_service_details['add_resolution_action'] = service_id
+	        if len(display_service_details['children_services']) > 1:
+	            display_service_details['multiple_services'] = True
+	            #if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
+	            #    resolutions = Resolution.objects.filter(resolutionServiceID = service_obj)
+	            #    for resolution in resolutions:
+	            #        pass
+	            #else:
+	            display_service_details['first_resolution'] = True
+        #import pdb; pdb.set_trace()
     if service_obj.serviceStatus == 'queued':
         resolution_id = Resolution.objects.filter(resolutionServiceID = service_obj).last().id
         display_service_details['add_in_progress_action'] = resolution_id
@@ -192,7 +217,7 @@ def get_service_information (service_id):
         resolution_list = Resolution.objects.filter(resolutionServiceID = service_obj).order_by('resolutionState')
         resolution_info =[]
         for resolution_item in resolution_list :
-            resolution_info.append([list(zip(resolution_heading,resolution_item.get_resolution_information()))])
+            resolution_info.append([resolution_item.get_service_request_number(),list(zip(resolution_heading,resolution_item.get_resolution_information()))])
         display_service_details['resolutions'] = resolution_info
         #import pdb; pdb.set_trace()
     if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
@@ -241,6 +266,33 @@ def prepare_form_data_request_service_sequencing (request_user):
     display_service['nodes'] = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
 
     return display_service
+
+def send_service_creation_confirmation_email(email_data):
+    '''
+    Description:
+        The function send the service email confirmation to user.
+        Functions uses the send_email django core function to send the email
+    Input:
+        email_data      # Contains the information to include in the email
+    Constant:
+        SUBJECT_SERVICE_RECORDED
+        BODY_SERVICE_RECORDED
+        USER_EMAIL
+    Return:
+        None
+    '''
+    subject_tmp = drylab_config.SUBJECT_SERVICE_RECORDED.copy()
+    subject_tmp.insert(1, email_data['service_number'])
+    subject = ' '.join(subject_tmp)
+    body_preparation = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', email_data['service_number']), drylab_config.BODY_SERVICE_RECORDED))
+    body_preparation = list(map(lambda st: str.replace(st, 'USER_NAME', email_data['user_name']), body_preparation))
+    body_message = '\n'.join(body_preparation)
+
+    from_user = drylab_config.USER_EMAIL
+    to_users = [email_data['user_email'], drylab_config.USER_EMAIL]
+    send_mail (subject, body_message, from_user, to_users)
+    return
+
 
 def stored_samples_for_sequencing_request_service(sample_requested, new_service):
     '''

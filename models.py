@@ -42,6 +42,9 @@ class ResolutionStates(models.Model):
 	def __str__ (self):
 		return '%s' %(self.resolutionStateName)
 
+	def get_resolution_state (self):
+		return '%s' %(self.resolutionStateName)
+
 class FileExt(models.Model):
 	fileExt=models.CharField(_("File extension"),max_length=10)
 	def __str__ (self):
@@ -487,7 +490,7 @@ class Resolution(models.Model):
 	resolutionState = models.ForeignKey(
 				ResolutionStates,
 				on_delete=models.CASCADE, null=True,blank=True )
-	availableServices = models.ManyToManyField(AvailableService)
+	availableServices = models.ManyToManyField(AvailableService, blank = True)
 	resolutionNumber=models.CharField(_("Resolutions name"),max_length=255,null=True)
 	resolutionEstimatedDate=models.DateField(_(" Estimated resolution date"), null = True,blank=False)
 	resolutionDate=models.DateField(_("Resolution date"),auto_now_add=True,blank=True)
@@ -500,9 +503,38 @@ class Resolution(models.Model):
 
 	def __str__ (self):
 		return '%s' %(self.resolutionNumber)
+
+	def get_resolution_number(self):
+		return '%s' %self.resolutionNumber
+
+	def get_service_request_number(self):
+		return '%s' %self.resolutionServiceID.get_service_request_number()
+
+	def get_available_services(self):
+		if self.availableServices.all().exists():
+			avail_services = self.availableServices.all()
+			service_list = []
+			for avail_service in avail_services:
+				service_list.append(avail_service.get_service_description())
+			return service_list
+		return ['None']
+
+	def get_available_services_ids(self):
+		if self.availableServices.all().exists():
+			avail_services = self.availableServices.all()
+			service_ids_list = []
+			for avail_service in avail_services:
+				service_ids_list.append(avail_service.pk)
+			return service_ids_list
+		return ['None']
+
+	def get_resolution_id(self):
+		return '%s' %(self.pk)
+
 	def get_resolution_information (self):
 		resolution_info =[]
-		resolution_info.append(self.resolutionNumber)
+		resolution_info.append(self.get_available_services())
+		resolution_info.append(self.resolutionState.get_resolution_state())
 		resolution_info.append(self.resolutionFullNumber)
 		resolution_info.append(self.resolutionAsignedUser.username)
 		if self.resolutionEstimatedDate is not None:
@@ -527,8 +559,8 @@ class Resolution(models.Model):
 	def get_service_obj(self):
 		return self.resolutionServiceID
 
-	def get_service_request_number(self):
-		return '%s' %self.resolutionNumber
+	def get_resolution_state(self):
+		return '%s' %(self.resolutionState.get_resolution_state())
 
 	def get_resolution_number(self):
 		return '%s' %(self.resolutionFullNumber)
@@ -537,9 +569,17 @@ class Resolution(models.Model):
 			return '%s' %(self.resolutionEstimatedDate)
 		return 'Not yet defined'
 
+	def update_resolution_in_progress_date(self):
+		today = datetime.date.today()
+		self.resolutionOnInProgressDate = today
+		self.resolutionState = ResolutionStates.objects.get(resolutionStateName__exact = 'In Progress')
+		self.save()
+		return self
+
 	def update_resolution_file(self, file):
 		self.resolutionPdfFile = file
 		self.save()
+		return self
 
 	objects = ResolutionManager()
 

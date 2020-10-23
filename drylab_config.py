@@ -83,8 +83,9 @@ DISPLAY_DETAIL_PIPELINE_BASIC_INFO = ['Pipeline Name', 'Pipeline Version', 'Serv
 DISPLAY_DETAIL_PIPELINE_ADDITIONAL_INFO = ['User', 'Creation Date', 'String Folder', 'Default', 'In Use', 'Automatic']
 
 ################ # RESOLUTION ##############################
-HEADING_FOR_RESOLUTION_INFORMATION = ['Resolution Information for : ','Folder Name', 'Service assigned_to', 'Estimated Delivery Date', 'Queued Date' , 'In Progress Date', 'Notes', 'Resolution PDF File']
+HEADING_FOR_RESOLUTION_INFORMATION = ['Partial Services','Resolution State' ,'Folder Name', 'Service assigned_to', 'Estimated Delivery Date', 'Queued Date' , 'In Progress Date', 'Notes', 'Resolution PDF File']
 
+ERROR_RESOLUTION_DOES_NOT_EXISTS =['The resolution that you are trying to upadate does not exists ','Contact with your administrator .']
 
 ################ EMAIL TEXT   ##################################
 SUBJECT_SERVICE_RECORDED = ['Service ', ' has been recorded']
@@ -97,6 +98,9 @@ BODY_RESOLUTION_ACCEPTED = ['Dear  USER_NAME','A new resolution has been added f
                      'Kind regards', 'BU-ISCIII']
 BODY_RESOLUTION_REJECTED = ['Dear  USER_NAME','A new resolution has been added for your service:  SERVICE_NUMBER.', 'Your service has been STATUS',
                     'because it does not fullfil our requirements or is not in our services portfolio. If you have any question please contact us.',
+                     'Kind regards', 'BU-ISCIII']
+SUBJECT_RESOLUTION_IN_PROGRESS = ['Service ', ' has been updated']
+BODY_RESOLUTION_IN_PROGRESS = ['Dear  USER_NAME', 'Your service with resolution id:  RESOLUTION_NUMBER is now in progress.' ,
                      'Kind regards', 'BU-ISCIII']
 
 

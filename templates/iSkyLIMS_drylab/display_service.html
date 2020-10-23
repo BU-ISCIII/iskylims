@@ -52,51 +52,109 @@
                 </div> <!--// end panel body -->
             </div> <!--// end panel -->
         </div> <!--// end col-sm-6  general information from service  -->
-        <div class="col-sm-5 col-sm-offset-1 ">  <!-- Actions  allowed-->
+        <div class="col-sm-6 ">  <!-- Actions  allowed-->
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>Allowed actions on {{ display_service.service_name}}</div></h3>
+                <div class="panel-heading"><h3>Allowed actions on {{ display_service.service_name}}</h3></div>
                 <div class="panel-body">
                     <h5>Click on the following buttons to update the service</h5>
+
                     {% if display_service.add_resolution_action %}
-                        <form class="" action="/drylab/addResolution" method="post">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="formToaddResolutionService">
-                            <input type="hidden" name="service_id" value="{{display_service.service_id}}">
-                            {% if display_service.multiple_services %}
-                                {% if display_service.first_resolution %}
-                                    <p>Select the Service/Services for which you want to do the new resolution OR select None or all to handle all in the new resolution</p>
-                                    <input type="hidden" name="children_services_id" value="{% for id, name in display_service.children_services %}{{id}},{% endfor %}">
+                        <div class="row row-space-2 margin-b-4">
+                            <div class="panel panel-default">
+                                <div class="panel-heading"><h3>Select the services to add new resolution </h3></div>
+                                <div class="panel-body">
+                                    <form class="" action="/drylab/addResolution" method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="formToaddResolutionService">
+                                        <input type="hidden" name="service_id" value="{{display_service.service_id}}">
+                                        {% if display_service.multiple_services %}
+                                            {% if display_service.first_resolution %}
+                                                <p>Select the Service/Services for which you want to do the new resolution OR select None or all to handle all in the new resolution</p>
+                                                <input type="hidden" name="children_services_id" value="{% for id, name in display_service.children_services %}{{id}},{% endfor %}">
 
-                                    <div class="form-group">
-                                        <label class="col-sm-5 control-label" for="childrenServices" >Select services</label>
-                                        <div class="col-sm-10">
-                                           <select class="custom-select" name="childrenServices"  id="childrenServices" multiple>
-                                               {% for id, name in display_service.children_services %}
-                                                   <option value="{{id}}">{{name}}</option>
-                                               {% endfor %}
-                                           </select>
-                                        </div>
-                                    </div>  <!-- end from-group   -->
-                                {% else %}
-                                    <p>vacio</p>
-                                {% endif %}
-                            {% endif %}
+                                                <div class="form-group">
+                                                    <label class="col-sm-5 control-label" for="childrenServices" >Select services</label>
+                                                    <div class="col-sm-10">
+                                                       <select class="custom-select" name="childrenServices"  id="childrenServices" multiple>
+                                                           {% for id, name in display_service.children_services %}
+                                                               <option value="{{id}}">{{name}}</option>
+                                                           {% endfor %}
+                                                       </select>
+                                                    </div>
+                                                </div>  <!-- end from-group   -->
+                                            {% else %}
+                                                <input type="hidden" name="children_services_id" value="{% for id, name in display_service.pending_to_add_resolution %}{{id}},{% endfor %}">
+                                                <div class="form-group">
+                                                    <label class="col-sm-8 control-label" for="childrenServices" >Select services</label>
 
-                            <div class="col-sm-4 ">  <!-- col-sm-4  resolution button  -->
-                                <br><br>
-                                <input class="btn pull-right btn-primary" type="submit" id ="btnSubmit" value="Add Resolution">
-                            </div> <!--// end col-sm-4   resolution button  -->
-                        </form>
+                                                    <div class="col-sm-8">
+                                                        <select class="custom-select" name="childrenServices"  id="childrenServices" multiple>
+                                                           {% for id, name in display_service.pending_to_add_resolution %}
+                                                               <option value="{{id}}">{{name}}</option>
+                                                           {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                </div>  <!-- end from-group   -->
+                                            {% endif %}
+                                        {% endif %}
+                                        <div class="col-sm-4 ">  <!-- col-sm-4  resolution button  -->
+                                            <br><br>
+                                            <input class="btn pull-right btn-primary" type="submit" id ="btnSubmit" value="Add Resolution">
+                                        </div> <!--// end col-sm-4   resolution button  -->
+                                    </form>
+                                </div> <!--// end panel body -->
+                            </div> <!--// end panel -->
+                        </div> <!--// end row -->
                     {% endif%}
-                    {% if display_service.add_in_progress_action %}
+                    {% if display_service.add_in_progress_action_3 %}
                         <div class="col-sm-3 col-sm-offset-1">  <!-- col-sm-4  in Progress  button  -->
                              <a href="/drylab/addinProgress={{ display_service.add_in_progress_action }}" class="btn btn-primary" role="button">In Progress</a>
                         </div> <!--// end col-sm-4   in Progress button  -->
                     {% endif%}
-                    {% if display_service.add_delivery_action %}
-                        <div class="col-sm-3 col-sm-offset-1">  <!-- col-sm-3  delivery button  -->
-                            <a href="/drylab/addDelivery={{ display_service.add_delivery_action }}" class="btn btn-primary" role="button">Add Delivery</a>
-                        </div> <!--// end col-sm-4   delivery button  -->
+                    {% if display_service.resolution_for_progress %}
+                        <div class="row row-space-2 margin-b-4">
+                            <div class="panel panel-default">
+                                <div class="panel-heading"><h3>Resolution to update the state to "In Progress"</h3></div>
+                                <div class="panel-body">
+                                    {% for res_id , services in display_service.resolution_for_progress %}
+                                        <form class="" action="/drylab/addInProgress" method="post">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="inProgressResolutionService">
+                                            <input type="hidden" name="resolution_id" value="{{res_id}}">
+                                            <div class="col-sm-8 ">  <!-- col-sm-4  In progress button  -->
+                                                {% if services.0 != '' %}
+
+                                                    <table>
+                                                        <thead>
+                                                            <th>Resolution handle services</th>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for service in services %}
+                                                                <tr>
+                                                                    <td>{{service}}</td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                {% endif %}
+                                            </div> <!--// end col-sm-8 -->
+                                            <div class="col-sm-3 col-sm-offset-1">  <!-- col-sm-3  progress button  -->
+                                                <br>
+                                                <input class="btn pull-right btn-primary" type="submit" id ="btnSubmit" value="In Progress">
+                                            </div> <!--// end col-sm-4   resolution button  -->
+                                        </form>
+                                    {% endfor %}
+                                </div> <!--// end panel body -->
+                            </div> <!--// end panel -->
+                        </div> <!--// end row -->
+                    {% endif%}
+                    {% if display_service.resolution_for_progress %}
+                        <div class="row row-space-2 margin-b-4">
+
+                            <div class="col-sm-3 col-sm-offset-1">  <!-- col-sm-3  delivery button  -->
+                                <a href="/drylab/addDelivery={{ display_service.add_delivery_action }}" class="btn btn-primary" role="button">Add Delivery</a>
+                            </div> <!--// end col-sm-4   delivery button  -->
+                        </div> <!--// end row -->
                     {% endif%}
                 </div> <!--// end panel body -->
             </div> <!--// end panel -->
@@ -195,54 +253,43 @@
         </div><!-- // end of tab pipelines -->
 
             <div id="resolutions" class="tabcontent">
-                <div class="col-sm-6">  <!-- Resolution information from service -->
+                <div class="col-sm-8">  <!-- Resolution information from service -->
                     <div class="panel panel-default">
                         <div class="panel-heading"><h3>Resolution requested information</h3></div>
                         <div class="panel-body">
                             {% if display_service.resolutions %}
-                                {% for resolutions  in display_service.resolutions %}
-                                    {% for resolution_number, folder_name, assigned_to, estimate_date, queued_date, inprog_date, notes, file  in resolutions %}
+                                    {% for resolution_number, resolution_information in display_service.resolutions %}
                                         <table class="table table-hover">
                                             <thead>
                                                 <tr>
-                                                    <th colspan= "2"> {{ resolution_number.0}} {{resolution_number.1}}</th>
+                                                    <th colspan= "2">Resolution Information for :  {{resolution_number}}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr>
-                                                    <td>{{folder_name.0}}</td>
-                                                    <td>{{folder_name.1}} </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>{{assigned_to.0}} </td>
-                                                    <td>{{assigned_to.1}} </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>{{estimate_date.0}}</td>
-                                                    <td>{{estimate_date.1}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>{{queued_date.0}}</td>
-                                                    <td>{{queued_date.1}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>{{inprog_date.0}}</td>
-                                                    <td>{{inprog_date.1}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>{{notes.0}}</td>
-                                                    <td>{{notes.1}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>{{file.0}}</td>
-                                                    <td><a href="{{file.1}}" download> Download file<span class="glyphicon glyphicon-download-alt"></span></a></td>
-
-                                                </tr>
+                                                {% for values in resolution_information %}
+                                                    <tr>
+                                                        {% if forloop.first %}
+                                                            {% if values.1.0 != 'None' %}
+                                                                <td>{{values.0}}</td>
+                                                                <td>
+                                                                    {% for item in values.1 %}
+                                                                        {{item}}<br>
+                                                                    {% endfor %}
+                                                                </td>
+                                                            {% endif %}
+                                                        {% elif forloop.last %}
+                                                            <td>{{values.0}}</td>
+                                                            <td><a href="{{values.1}}" download> Download file<span class="glyphicon glyphicon-download-alt"></span></a></td>
+                                                        {% else %}
+                                                            <td>{{values.0}}</td>
+                                                            <td>{{values.1}} </td>
+                                                        {% endif %}
+                                                    </tr>
+                                                {% endfor %}
                                            </tbody>
                                         </table>
                                     {% endfor %}
                                     <BR><BR>
-                                {% endfor %}
                             {% endif %}
                         </div> <!--// end panel body -->
                     </div> <!--// end panel -->

@@ -679,7 +679,7 @@ def create_service_structure (conn, service_request_file, service_file_uploaded,
 '''
 
 @login_required
-def add_in_progress (request, resolution_id):
+def add_in_progress (request):
     if request.user.is_authenticated:
         try:
             groups = Group.objects.get(name = drylab_config.SERVICE_MANAGER)
@@ -691,28 +691,30 @@ def add_in_progress (request, resolution_id):
         #redirect to login webpage
         return redirect ('/accounts/login')
 
-    if Resolution.objects.filter(pk = resolution_id).exists():
-        resolution = Resolution.objects.get(pk = resolution_id)
-        service_to_update = resolution.resolutionServiceID
+    if request.method == "POST" and request.POST['action'] == 'inProgressResolutionService' :
+        resolution_id = request.POST['resolution_id']
+        if  not check_if_resolution_exists(resolution_id):
+            error_message = drylab_config.ERROR_RESOLUTION_DOES_NOT_EXISTS
+            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':error_message})
+
+        resolution_obj = get_resolution_obj_from_id(resolution_id)
+        resolution_obj.update_resolution_in_progress_date()
+        resolution_number = resolution_obj.get_resolution_number()
+        service_obj = resolution_obj.get_service_obj()
         # update the service status and in_porgress date
+        service_obj.update_service_status('in_progress')
 
-        service_to_update.serviceStatus = 'in_progress'
-        service_to_update.save()
-        resolution.resolutionOnInProgressDate = datetime.date.today()
-        resolution.save()
-        service_user_mail = service_to_update.serviceUserId.email
-        ## Send email
-        subject = 'Service ' + service_to_update.serviceRequestNumber + " has been updated"
-        body_message = 'Dear ' + service_to_update.serviceUserId.username + "\n Your service with resolution id: " + resolution.resolutionNumber + " is now in progress." + "\n Kind regards \n BU-ISCIII \n bioinformatica@isciii.es"
-        from_user = 'bioinformatica@isciii.es'
-        to_user = [service_user_mail,'bioinformatica@isciii.es']
-        send_mail (subject, body_message, from_user, to_user)
-        return render (request,'django_utils/info_page.html',{'content':['Your resolution  request ', resolution.resolutionNumber,
+        if drylab_config.EMAIL_USER_CONFIGURED :
+            email_data = {}
+            email_data['user_email'] = request.user.email
+            email_data['user_name'] = request.user.username
+            email_data['resolution_number'] = resolution_number
+            send_resolution_in_progress_email(email_data)
+        return render (request,'iSkyLIMS_drylab/info_page.html',{'content':['Your resolution  request ', resolution_number,
                                 'has been successfully upated to In Progress state']})
-    else:
 
-        return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The resolution that you are trying to upadate does not exists ','Contact with your administrator .']})
-    return
+    error_message = drylab_config.ERROR_RESOLUTION_DOES_NOT_EXISTS
+    return render (request,'iSkyLIMS_drylab/error_page.html', {'content':error_message})
 
 @login_required
 def add_delivery (request , resolution_id):

@@ -206,32 +206,6 @@ def get_user_sharing_lits(request_user):
         sharing_list.append(request_user.id)
     return sharing_list
 
-def send_service_creation_confirmation_email(email_data):
-    '''
-    Description:
-        The function send the service email confirmation to user.
-        Functions uses the send_email django core function to send the email
-    Input:
-        email_data      # Contains the information to include in the email
-    Constant:
-        SUBJECT_SERVICE_RECORDED
-        BODY_SERVICE_RECORDED
-        USER_EMAIL
-    Return:
-        None
-    '''
-    subject = drylab_config.SUBJECT_SERVICE_RECORDED.copy()
-    subject.insert(1, email_data['service_number'])
-
-    body_preparation = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', email_data['service_number']), drylab_config.BODY_SERVICE_RECORDED))
-    body_preparation = list(map(lambda st: str.replace(st, 'USER_NAME', email_data['user_name']), body_preparation))
-    body_message = '\n'.join(body_preparation)
-
-    from_user = drylab_config.USER_EMAIL
-    to_users = [email_data['user_email'], drylab_config.USER_EMAIL]
-    send_mail (subject, body_message, from_user, to_users)
-    return
-
 
 def store_file_from_form(file , path):
     '''

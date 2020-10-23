@@ -124,6 +124,19 @@ def get_add_resolution_data_form(form_data):
         resolution_data_form['additional_parameters'] = additional_parameters
     return resolution_data_form
 
+def check_if_resolution_exists(resolution_id):
+    '''
+    Description:
+    	The function check if the resolution id exists
+    Input:
+        resolution_id   # resolution id
+    Return:
+        True or False
+    '''
+    if Resolution.objects.filter(pk__exact = resolution_id).exists():
+        return True
+    return False
+
 def create_new_resolution(resolution_data_form):
     '''
     Description:
@@ -188,6 +201,20 @@ def create_resolution_pdf_file (new_resolution, absolute_url):
     full_path_pdf_file = create_pdf(absolute_url, information_to_include, drylab_config.RESOLUTION_TEMPLATE, pdf_file_name, drylab_config.OUTPUT_DIR_RESOLUTION_PDF)
     pdf_file = full_path_pdf_file.replace(settings.BASE_DIR,'')
     return pdf_file
+
+def get_resolution_obj_from_id(resolution_id):
+    '''
+    Description:
+    	The function get the resolution obj from its id
+    Input:
+    	resolution_id		# resolution id
+    Return:
+     	resolution_obj
+    '''
+    resolution_obj = None
+    if Resolution.objects.filter(pk__exact = resolution_id).exists():
+        resolution_obj = Resolution.objects.filter(pk__exact = resolution_id).last()
+    return resolution_obj
 
 def prepare_form_data_add_resolution(form_data):
     '''
@@ -258,8 +285,9 @@ def send_resolution_creation_email (email_data):
     Return:
         None
     '''
-    subject = drylab_config.SUBJECT_RESOLUTION_RECORDED.copy()
-    subject.insert(1, email_data['service_number'])
+    subject_tmp = drylab_config.SUBJECT_RESOLUTION_RECORDED.copy()
+    subject_tmp.insert(1, email_data['service_number'])
+    subject = ' '.join(subject_tmp)
     if email_data['status'] == 'Accepted':
         date = email_data['date'].strftime("%d %B, %Y")
         body_preparation = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', email_data['service_number']), drylab_config.BODY_RESOLUTION_ACCEPTED))
@@ -277,6 +305,32 @@ def send_resolution_creation_email (email_data):
     send_mail (subject, body_message, from_user, to_users)
     return
 
+
+
+def send_resolution_in_progress_email (email_data):
+    '''
+    Description:
+        The function send the service email for resolution in progress to user.
+        Functions uses the send_email django core function to send the email
+    Input:
+        email_data      # Contains the information to include in the email
+    Constant:
+        SUBJECT_RESOLUTION_RECORDED
+        BODY_RESOLUTION_IN_PROGRESS
+        USER_EMAIL
+    Return:
+        None
+    '''
+    subject_tmp = drylab_config.SUBJECT_RESOLUTION_IN_PROGRESS.copy()
+    subject_tmp.insert(1, email_data['resolution_number'])
+    subject = ' '.join(subject_tmp)
+    body_preparation = list(map(lambda st: str.replace(st, 'RESOLUTION_NUMBER', email_data['resolution_number']), drylab_config.BODY_RESOLUTION_IN_PROGRESS))
+    body_preparation = list(map(lambda st: str.replace(st, 'USER_NAME', email_data['user_name']), body_preparation))
+    body_message = '\n'.join(body_preparation)
+    from_user = drylab_config.USER_EMAIL
+    to_users = [email_data['user_email'], drylab_config.USER_EMAIL]
+    send_mail (subject, body_message, from_user, to_users)
+    return
 
 def store_resolution_additional_parameter(additional_parameters, resolution_obj):
     '''
