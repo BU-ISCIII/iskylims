@@ -82,6 +82,10 @@ DISPLAY_MULTYPLE_DEFINED_PIPELINE = ['Service', 'User', 'Pipeline Name' , 'Pipel
 DISPLAY_DETAIL_PIPELINE_BASIC_INFO = ['Pipeline Name', 'Pipeline Version', 'Service']
 DISPLAY_DETAIL_PIPELINE_ADDITIONAL_INFO = ['User', 'Creation Date', 'String Folder', 'Default', 'In Use', 'Automatic']
 
+####################### SERVICES #####################
+HEADING_PENDING_SERVICE_QUEUED =['Services', 'Resolution', 'Acronym name', 'Assigned to', 'On queued date', 'Estimated date']
+
+
 ################ # RESOLUTION ##############################
 HEADING_FOR_RESOLUTION_INFORMATION = ['Partial Services','Resolution State' ,'Folder Name', 'Service assigned_to', 'Estimated Delivery Date', 'Queued Date' , 'In Progress Date', 'Notes', 'Resolution PDF File']
 

@@ -2,7 +2,7 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from .models import *
 from .forms import *
-from .graphics import *
+from .utils.graphics import *
 import os, re
 
 from django.contrib.auth.decorators import login_required
@@ -25,7 +25,7 @@ from iSkyLIMS_drylab.utils.handling_resolutions import *
 from iSkyLIMS_drylab.utils.handling_forms import *
 from iSkyLIMS_drylab.utils.configuration_functions import *
 
-from smb.SMBConnection import SMBConnection
+#from smb.SMBConnection import SMBConnection
 # from iSkyLIMS_drylab.models import RunProcess, Projects
 
 ####### Import libraries for static files
@@ -455,33 +455,7 @@ def pending_services (request):
         #redirect to login webpage
         return redirect ('/accounts/login')
 
-    pending_services_details = {}
-    recorded, queued, in_progress = {}, {}, {}
-    if Service.objects.filter(serviceStatus__exact = 'recorded').exists():
-        services_in_request = Service.objects.filter(serviceStatus__exact = 'recorded').order_by('-serviceCreatedOnDate')
-        for services in services_in_request:
-            recorded[services.id]= [services.get_service_information().split(';')]
-        pending_services_details['recorded'] = recorded
-    if Service.objects.filter(serviceStatus__exact = 'queued').exists():
-        services_in_queued = Service.objects.filter(serviceStatus__exact = 'queued').order_by('-serviceCreatedOnDate')
-        for services in services_in_queued:
-            queued[services.id]= [services.get_service_information_with_service_name().split(';')]
-        pending_services_details['queued'] = queued
-    if Service.objects.filter(serviceStatus__exact = 'in_progress').exists():
-        services_in_progress = Service.objects.filter(serviceStatus__exact = 'in_progress').order_by('-serviceCreatedOnDate')
-        for services in services_in_progress:
-            in_progress[services.id]= [services.get_service_information_with_service_name().split(';')]
-        pending_services_details['in_progress'] = in_progress
-
-    number_of_services = {}
-    number_of_services ['RECORDED'] = len (recorded)
-    number_of_services ['QUEUED'] = len (queued)
-    number_of_services ['IN PROGRESS'] = len (in_progress)
-    data_source = graphic_3D_pie('Number of Pending Services', '', '', '','fint',number_of_services)
-    graphic_pending_services = FusionCharts("pie3d", "ex1" , "425", "350", "chart-1", "json", data_source)
-    pending_services_details ['graphic_pending_services'] = graphic_pending_services.render()
-
-
+    pending_services_details = get_pending_services_information()
 
     return render (request, 'iSkyLIMS_drylab/pendingServices.html', {'pending_services': pending_services_details})
 

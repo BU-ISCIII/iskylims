@@ -6,10 +6,11 @@ from django.contrib.auth.models import User
 
 from iSkyLIMS_drylab import drylab_config
 from iSkyLIMS_drylab.models import *
+from iSkyLIMS_drylab.utils.graphics import *
 from iSkyLIMS_core.models import Samples
 
 from iSkyLIMS_drylab.utils.drylab_common_functions import *
-
+from django_utils.fusioncharts.fusioncharts import FusionCharts
 
 #### API from Wetlab ######
 try :
@@ -110,6 +111,44 @@ def get_available_service_obj_from_id(available_service_id):
         avail_service_obj = AvailableService.objects.filter(pk__exact = available_service_id).last()
     return avail_service_obj
 
+
+def get_pending_services_information():
+    '''
+    Description:
+        The function get the pending service information
+
+    Return:
+        pending_services_details
+    '''
+    pending_services_details = {}
+    recorded, queued, in_progress = {}, [], {}
+    if Service.objects.filter(serviceStatus__exact = 'recorded').exists():
+        services_in_request = Service.objects.filter(serviceStatus__exact = 'recorded').order_by('-serviceCreatedOnDate')
+        for services in services_in_request:
+            recorded[services.id]= [services.get_service_information().split(';')]
+        pending_services_details['recorded'] = recorded
+    # services in queued state
+    if Resolution.objects.filter(resolutionState__resolutionStateName__exact = 'Recorded').exists():
+        resolution_recorded_objs = Resolution.objects.filter(resolutionState__resolutionStateName__exact = 'Recorded').order_by('-resolutionServiceID')
+        for resolution_recorded_obj in resolution_recorded_objs :
+            queued.append(resolution_recorded_obj.get_information_for_pending_resolutions())
+        pending_services_details['queued'] = queued
+        pending_services_details['heading_queued'] = drylab_config.HEADING_PENDING_SERVICE_QUEUED
+    #if Service.objects.filter(serviceStatus__exact = 'in_progress').exists():
+    #    services_in_progress = Service.objects.filter(serviceStatus__exact = 'in_progress').order_by('-serviceCreatedOnDate')
+    #        for services in services_in_progress:
+    #        in_progress[services.id]= [services.get_service_information_with_service_name().split(';')]
+        pending_services_details['in_progress'] = in_progress
+
+    number_of_services = {}
+    number_of_services ['RECORDED'] = len (recorded)
+    number_of_services ['QUEUED'] = len (queued)
+    number_of_services ['IN PROGRESS'] = len (in_progress)
+    data_source = graphic_3D_pie('Number of Pending Services', '', '', '','fint',number_of_services)
+    graphic_pending_services = FusionCharts("pie3d", "ex1" , "425", "350", "chart-1", "json", data_source)
+    pending_services_details ['graphic_pending_services'] = graphic_pending_services.render()
+    return pending_services_details
+
 def get_service_obj_from_id(service_id):
     '''
 	Description:
@@ -158,7 +197,7 @@ def get_service_information (service_id):
     # get the proposal for the delivery date for the last resolution
     if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
         last_resolution = Resolution.objects.filter(resolutionServiceID = service_obj).last()
-        display_service_details['resolution_folder'] = last_resolution.get_resolution_number()
+        display_service_details['resolution_folder'] = last_resolution.get_resolution_full_number()
         resolution_estimated_date = last_resolution.get_resolution_estimated_date()
 
     # get all services
@@ -171,6 +210,7 @@ def get_service_information (service_id):
             ## get informtaion from the defined Resolutions
             resolution_objs = Resolution.objects.filter(resolutionServiceID = service_obj)
             display_service_details['resolution_for_progress'] = []
+            display_service_details['resolution_for_delivery'] = []
             available_services_ids = []
             for resolution_obj in resolution_objs:
                 if resolution_obj.get_resolution_state() == 'Recorded':
@@ -179,11 +219,20 @@ def get_service_information (service_id):
                         req_available_service_ids = resolution_obj.get_available_services_ids()
                         for req_available_service in req_available_service_ids:
                             available_services_ids.append(req_available_service)
-                        display_service_details['resolution_for_progress'].append([ resolution_obj.get_resolution_id(),req_available_services])
+                        display_service_details['resolution_for_progress'].append([ resolution_obj.get_resolution_id(),resolution_obj.get_resolution_number() , req_available_services])
                     else:
-                        display_service_details['resolution_for_progress'].append([ resolution_obj.get_resolution_id(),['']])
+                        display_service_details['resolution_for_progress'].append([ resolution_obj.get_resolution_id(), resolution_obj.get_resolution_number() , ['']])
                 elif resolution_obj.get_resolution_state() == 'In Progress':
-                    pass
+                    req_available_services = resolution_obj.get_available_services()
+                    if req_available_services != ['None']:
+                        req_available_service_ids = resolution_obj.get_available_services_ids()
+                        for req_available_service in req_available_service_ids:
+                            available_services_ids.append(req_available_service)
+                        display_service_details['resolution_for_delivery'].append([ resolution_obj.get_resolution_id(),resolution_obj.get_resolution_number() , req_available_services])
+                    else:
+                        display_service_details['resolution_for_delivery'].append([ resolution_obj.get_resolution_id(), resolution_obj.get_resolution_number() , ['']])
+
+            import pdb; pdb.set_trace()
             if len(available_services_ids) > 0 and (len(available_services_ids) < len(display_service_details['children_services'])):
                 display_service_details['add_resolution_action'] = service_id
                 display_service_details['multiple_services'] = True
@@ -217,7 +266,7 @@ def get_service_information (service_id):
         resolution_list = Resolution.objects.filter(resolutionServiceID = service_obj).order_by('resolutionState')
         resolution_info =[]
         for resolution_item in resolution_list :
-            resolution_info.append([resolution_item.get_service_request_number(),list(zip(resolution_heading,resolution_item.get_resolution_information()))])
+            resolution_info.append([resolution_item.get_resolution_number(),list(zip(resolution_heading,resolution_item.get_resolution_information()))])
         display_service_details['resolutions'] = resolution_info
         #import pdb; pdb.set_trace()
     if Resolution.objects.filter(resolutionServiceID = service_obj).exists():

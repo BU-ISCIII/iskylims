@@ -106,24 +106,19 @@
                             </div> <!--// end panel -->
                         </div> <!--// end row -->
                     {% endif%}
-                    {% if display_service.add_in_progress_action_3 %}
-                        <div class="col-sm-3 col-sm-offset-1">  <!-- col-sm-4  in Progress  button  -->
-                             <a href="/drylab/addinProgress={{ display_service.add_in_progress_action }}" class="btn btn-primary" role="button">In Progress</a>
-                        </div> <!--// end col-sm-4   in Progress button  -->
-                    {% endif%}
                     {% if display_service.resolution_for_progress %}
                         <div class="row row-space-2 margin-b-4">
                             <div class="panel panel-default">
                                 <div class="panel-heading"><h3>Resolution to update the state to "In Progress"</h3></div>
                                 <div class="panel-body">
-                                    {% for res_id , services in display_service.resolution_for_progress %}
+                                    {% for res_id , res_name, services in display_service.resolution_for_progress %}
                                         <form class="" action="/drylab/addInProgress" method="post">
                                             {% csrf_token %}
                                             <input type="hidden" name="action" value="inProgressResolutionService">
                                             <input type="hidden" name="resolution_id" value="{{res_id}}">
                                             <div class="col-sm-8 ">  <!-- col-sm-4  In progress button  -->
+                                                <h5 style="text-align:center">{{res_name}}</h5>
                                                 {% if services.0 != '' %}
-
                                                     <table>
                                                         <thead>
                                                             <th>Resolution handle services</th>
@@ -148,12 +143,41 @@
                             </div> <!--// end panel -->
                         </div> <!--// end row -->
                     {% endif%}
-                    {% if display_service.resolution_for_progress %}
+                    {% if display_service.resolution_for_delivery %}
                         <div class="row row-space-2 margin-b-4">
-
-                            <div class="col-sm-3 col-sm-offset-1">  <!-- col-sm-3  delivery button  -->
-                                <a href="/drylab/addDelivery={{ display_service.add_delivery_action }}" class="btn btn-primary" role="button">Add Delivery</a>
-                            </div> <!--// end col-sm-4   delivery button  -->
+                            <div class="panel panel-default">
+                                <div class="panel-heading"><h3>Delivery resolutions</h3></div>
+                                <div class="panel-body">
+                                    {% for res_id , res_name, services in display_service.resolution_for_delivery %}
+                                        <form class="" action="/drylab/addDelivery" method="post">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="deliveryResolutionService">
+                                            <input type="hidden" name="resolution_id" value="{{res_id}}">
+                                            <div class="col-sm-8 ">  <!-- col-sm-4  In progress button  -->
+                                                <h5 style="text-align:center">{{res_name}}</h5>
+                                                {% if services.0 != '' %}
+                                                    <table>
+                                                        <thead>
+                                                            <th>Resolution handle services</th>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for service in services %}
+                                                                <tr>
+                                                                    <td>{{service}}</td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                {% endif %}
+                                            </div> <!--// end col-sm-8 -->
+                                            <div class="col-sm-3 col-sm-offset-1">  <!-- col-sm-3  progress button  -->
+                                                <br>
+                                                <input class="btn pull-right btn-primary" type="submit" id ="btnSubmit" value="Delivery">
+                                            </div> <!--// end col-sm-4   resolution button  -->
+                                        </form>
+                                    {% endfor %}
+                                </div> <!--// end panel body -->
+                            </div> <!--// end panel -->
                         </div> <!--// end row -->
                     {% endif%}
                 </div> <!--// end panel body -->

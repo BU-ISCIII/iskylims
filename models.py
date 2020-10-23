@@ -260,36 +260,7 @@ class Service(models.Model):
 		return '%s;%s;%s;%s'  %(self.serviceRequestNumber ,self.serviceRunSpecs, self.serviceSeqCenter, platform)
 
 	def get_service_id (self):
-		return '%s' %self.serviceUserId.pk
-
-	def get_service_information_with_service_name (self):
-		platform = str(self.servicePlatform)
-		if Resolution.objects.filter(resolutionServiceID__exact = self).exists():
-			resolutions = Resolution.objects.filter(resolutionServiceID__exact = self).last()
-			folder_name = resolutions.resolutionFullNumber
-			if folder_name is None:
-				resolution_for_service = ''
-			else:
-				folder_name_split= folder_name.split('_')
-				resolution_for_service= '_'.join( folder_name_split[2:-1])
-			assigned_to = resolutions.resolutionAsignedUser
-			if assigned_to is None:
-				assigned_to = ''
-		else:
-			resolutions_for_service = ''
-			assigned_to = ''
-		if self.serviceOnApprovedDate is None:
-			approved_date = 'Not defined'
-		else:
-			approved_date = self.serviceOnApprovedDate.strftime("%d %B, %Y")
-
-		if resolutions.resolutionEstimatedDate is None:
-			estimated_date = 'Not defined'
-		else:
-			estimated_date = resolutions.resolutionEstimatedDate.strftime("%d %B, %Y")
-
-		return '%s;%s;%s;%s;%s;%s;%s;%s'  %(self.serviceRequestNumber ,resolution_for_service , assigned_to, approved_date,
-										estimated_date, self.serviceRunSpecs, self.serviceSeqCenter, platform)
+		return '%s' %self.pk
 
 	def get_service_dates (self):
 		service_dates =[]
@@ -556,14 +527,35 @@ class Resolution(models.Model):
 		resolution_info.append(self.resolutionPdfFile)
 		return resolution_info
 
+	def get_information_for_pending_resolutions (self):
+		if self.resolutionOnQueuedDate is None:
+			on_queued_date = 'Not defined'
+		else:
+			on_queued_date = self.resolutionOnQueuedDate.strftime("%d %B, %Y")
+		if self.resolutionEstimatedDate is None:
+			on_estimated_date = 'Not defined'
+		else:
+			on_estimated_date = self.resolutionEstimatedDate.strftime("%d %B, %Y")
+		data = []
+		data.append(self.resolutionServiceID.get_service_id())
+		data.append(self.resolutionServiceID.get_service_request_number())
+		data.append(self.resolutionNumber)
+		data.append(self.resolutionFullNumber)
+		data.append(self.resolutionAsignedUser.username)
+		data.append(on_queued_date)
+		data.append(on_estimated_date)
+		return data
+
+
 	def get_service_obj(self):
 		return self.resolutionServiceID
 
 	def get_resolution_state(self):
 		return '%s' %(self.resolutionState.get_resolution_state())
 
-	def get_resolution_number(self):
+	def get_resolution_full_number(self):
 		return '%s' %(self.resolutionFullNumber)
+
 	def get_resolution_estimated_date(self):
 		if self.resolutionEstimatedDate != None:
 			return '%s' %(self.resolutionEstimatedDate)

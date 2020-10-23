@@ -73,14 +73,14 @@ def get_data_for_resolution(service_obj, resolution_obj ):
     user['phone'] = Profile.objects.get(profileUserID = user_id).profileExtension
     user['email'] = service_obj.get_user_email()
     information['user'] = user
-    resolution_info_split = resolution_info[1].split('_')
+    resolution_info_split = resolution_info[2].split('_')
     resolution_data['acronym'] = resolution_info_split[2]
-    resolution_data['estimated_date'] = resolution_info[3]
-    resolution_data['notes'] = resolution_info[6]
+    resolution_data['estimated_date'] = resolution_info[4]
+    resolution_data['notes'] = resolution_info[7]
     resolution_data['decission'] = service_obj.get_service_state()
     information['service_data'] = service_obj.get_service_user_notes()
 
-    resolution_data['folder'] = resolution_info[1]
+    resolution_data['folder'] = resolution_info[2]
     information['resolution_data'] = resolution_data
 
     return information
@@ -149,16 +149,18 @@ def create_new_resolution(resolution_data_form):
         create_resolution_number  # located at this file
         get_service_obj_from_id  # located at iSkyLIMS_drylab.utils.handling_request_services
         store_resolution_additional_parameter  # located at this file
+        get_available_service_obj_from_id # located at iSkyLIMS_drylab.utils.handling_request_services
     Return:
      	new_resolution
     '''
-    resolution_data_form['resolutionFullNumber'] = get_assign_resolution_full_number(resolution_data_form['service_id'], resolution_data_form['acronymName'])
-    resolution_data_form['resolutionNumber'] = create_resolution_number(resolution_data_form['service_id'])
     service_obj = get_service_obj_from_id(resolution_data_form['service_id'])
-    service_request_number = service_obj.get_service_request_number()
-    import pdb; pdb.set_trace()
+    if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
+        resolution_data_form['resolutionFullNumber'] = Resolution.objects.filter(resolutionServiceID = service_obj).last().get_resolution_full_number()
+    else:
+        resolution_data_form['resolutionFullNumber'] = get_assign_resolution_full_number(resolution_data_form['service_id'], resolution_data_form['acronymName'])
+    resolution_data_form['resolutionNumber'] = create_resolution_number(resolution_data_form['service_id'])
 
-
+    #service_request_number = service_obj.get_service_request_number()
 
     new_resolution = Resolution.objects.create_resolution(resolution_data_form)
     if 'select_available_services' in resolution_data_form :
@@ -166,7 +168,7 @@ def create_new_resolution(resolution_data_form):
         for avail_sarvice in resolution_data_form['select_available_services'] :
             avail_service_obj = get_available_service_obj_from_id(avail_sarvice)
             new_resolution.availableServices.add(avail_service_obj)
-    import pdb; pdb.set_trace()
+
     if 'additional_parameters' in resolution_data_form:
         store_resolution_additional_parameter(resolution_data_form['additional_parameters'], new_resolution)
 
@@ -246,7 +248,7 @@ def prepare_form_data_add_resolution(form_data):
 
     if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
         existing_resolution = Resolution.objects.filter(resolutionServiceID = service_obj).last()
-        resolution_form_data['resolutionFullNumber'] = existing_resolution.get_resolution_number()
+        resolution_form_data['resolutionFullNumber'] = existing_resolution.get_resolution_full_number()
     users = User.objects.filter( groups__name = drylab_config.SERVICE_MANAGER)
     resolution_form_data['assigned_user'] =[]
     for user in users:
