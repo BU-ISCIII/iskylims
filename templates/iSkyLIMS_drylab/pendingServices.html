@@ -144,36 +144,27 @@
                   <div class="panel-heading">List of Services in In Progress State</div>
                   <div class="panel-body">
                       {% if pending_services.in_progress %}
-                         <table class="table table-hover">
-                               <thead>
-                                  <tr>
-                                    <th>Services ID</th>
-                                    <th>Acronym name</th>
-                                    <th>Assigned to</th>
-                                    <th>Approved date</th>
-                                    <th>Estimated date</th>
-                                    <th>Run Specifications</th>
-                                    <th>Center</th>
-                                    <th>Platform</th>
-                                  </tr>
-                               </thead>
-                               <tbody>
-                                {% for key, values in pending_services.in_progress.items %}
-                                 <tr>
-                                    {% for requestID, serviceNemonic, assigned, approved_date, estimated_date, specification, center, platform in values %}
-                                   <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
-                                   <td> {{ serviceNemonic }}</td>
-                                   <td> {{ assigned }}</td>
-                                   <td> {{ approved_date }}</td>
-                                   <td> {{ estimated_date }}</td>
-                                   <td> {{ specification }} </td>
-                                   <td> {{ center }} </td>
-                                   <td> {{ platform }} </td>
-                                    {%endfor%}
+                      <table class="table table-hover">
+                             <thead>
+                                <tr>
+                                     {% for column in pending_services.heading_queued %}
+                                         <th>{{column}}</th>
+                                     {% endfor %}
                                  </tr>
-                                {%endfor%}
-                               </tbody>
-                             </table>
+                             </thead>
+                             <tbody>
+                                 {% for s_id, s_name, res_name , s_acronym, assigned, queued_date, estimated_date in pending_services.in_progress %}
+                                     <tr>
+                                         <td><a href="/drylab/display_service={{ s_id }}">{{ s_name }}</a> </td>
+                                         <td> {{ res_name }}</td>
+                                         <td> {{ s_acronym }}</td>
+                                         <td> {{ assigned }}</td>
+                                         <td> {{ queued_date }}</td>
+                                         <td> {{ estimated_date }} </td>
+                                     </tr>
+                                 {%endfor%}
+                             </tbody>
+                          </table>
 
                       {% else %}
 

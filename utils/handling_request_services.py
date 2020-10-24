@@ -121,24 +121,27 @@ def get_pending_services_information():
         pending_services_details
     '''
     pending_services_details = {}
-    recorded, queued, in_progress = {}, [], {}
+    recorded, queued, in_progress = {}, [], []
     if Service.objects.filter(serviceStatus__exact = 'recorded').exists():
         services_in_request = Service.objects.filter(serviceStatus__exact = 'recorded').order_by('-serviceCreatedOnDate')
         for services in services_in_request:
             recorded[services.id]= [services.get_service_information().split(';')]
         pending_services_details['recorded'] = recorded
-    # services in queued state
+    # Resolution  in queued state
     if Resolution.objects.filter(resolutionState__resolutionStateName__exact = 'Recorded').exists():
         resolution_recorded_objs = Resolution.objects.filter(resolutionState__resolutionStateName__exact = 'Recorded').order_by('-resolutionServiceID')
         for resolution_recorded_obj in resolution_recorded_objs :
             queued.append(resolution_recorded_obj.get_information_for_pending_resolutions())
         pending_services_details['queued'] = queued
         pending_services_details['heading_queued'] = drylab_config.HEADING_PENDING_SERVICE_QUEUED
-    #if Service.objects.filter(serviceStatus__exact = 'in_progress').exists():
-    #    services_in_progress = Service.objects.filter(serviceStatus__exact = 'in_progress').order_by('-serviceCreatedOnDate')
-    #        for services in services_in_progress:
-    #        in_progress[services.id]= [services.get_service_information_with_service_name().split(';')]
-        pending_services_details['in_progress'] = in_progress
+    # Resolution in progress
+    if Resolution.objects.filter(resolutionState__resolutionStateName__exact = 'In Progress').exists():
+        resolution_recorded_objs = Resolution.objects.filter(resolutionState__resolutionStateName__exact = 'In Progress').order_by('-resolutionServiceID')
+        for resolution_recorded_obj in resolution_recorded_objs :
+            in_progress.append(resolution_recorded_obj.get_information_for_pending_resolutions())
+    pending_services_details['queued'] = queued
+    pending_services_details['heading_queued'] = drylab_config.HEADING_PENDING_SERVICE_QUEUED
+    pending_services_details['in_progress'] = in_progress
 
     number_of_services = {}
     number_of_services ['RECORDED'] = len (recorded)
