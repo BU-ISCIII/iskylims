@@ -10,7 +10,7 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('addResolution',views.add_resolution, name='add_resolution'),
     path('addInProgress', views.add_in_progress, name='add_in_progress'),
-    path('addDelivery=<int:resolution_id>/', views.add_delivery, name= 'add_delivery'),
+    path('addDelivery', views.add_delivery, name= 'add_delivery'),
     path('counseling_request',views.counseling_request, name='counseling_service'),
     path('configurationEmail', views.configuration_email, name='configuration_email'),
     path('configurationTest',views.configuration_test, name='configuration_test'),

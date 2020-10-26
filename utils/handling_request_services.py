@@ -235,7 +235,7 @@ def get_service_information (service_id):
                     else:
                         display_service_details['resolution_for_delivery'].append([ resolution_obj.get_resolution_id(), resolution_obj.get_resolution_number() , ['']])
 
-            import pdb; pdb.set_trace()
+
             if len(available_services_ids) > 0 and (len(available_services_ids) < len(display_service_details['children_services'])):
                 display_service_details['add_resolution_action'] = service_id
                 display_service_details['multiple_services'] = True
@@ -266,29 +266,31 @@ def get_service_information (service_id):
 
     if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
         resolution_heading = drylab_config.HEADING_FOR_RESOLUTION_INFORMATION
-        resolution_list = Resolution.objects.filter(resolutionServiceID = service_obj).order_by('resolutionState')
+        resolution_objs = Resolution.objects.filter(resolutionServiceID = service_obj).order_by('resolutionState')
         resolution_info =[]
-        for resolution_item in resolution_list :
-            resolution_info.append([resolution_item.get_resolution_number(),list(zip(resolution_heading,resolution_item.get_resolution_information()))])
+        for resolution_obj in resolution_objs :
+            resolution_info.append([resolution_obj.get_resolution_number(),list(zip(resolution_heading,resolution_obj.get_resolution_information()))])
         display_service_details['resolutions'] = resolution_info
-        #import pdb; pdb.set_trace()
-    if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
-        resolution_list = Resolution.objects.filter(resolutionServiceID = service_obj)
+
         delivery_info = []
-        for resolution_id in resolution_list :
-            if Delivery.objects.filter(deliveryResolutionID = resolution_id).exists():
-                delivery = Delivery.objects.get(deliveryResolutionID = resolution_id)
+        for resolution_obj in resolution_objs :
+            if Delivery.objects.filter(deliveryResolutionID = resolution_obj).exists():
+                delivery = Delivery.objects.get(deliveryResolutionID = resolution_obj)
                 delivery_info.append([delivery.get_delivery_information()])
                 display_service_details['delivery'] = delivery_info
 
-    if service_obj.servicePipelines.all().exists():
-        display_service_details['pipelines'] = {}
-        display_service_details['pipelines']['heading'] = drylab_config.DISPLAY_NEW_DEFINED_PIPELINE
-        display_service_details['pipelines']['services'] = []
-        services_pipelines_objs = service_obj.servicePipelines.all()
-        for service_pipeline in services_pipelines_objs:
-            service_name = service_pipeline.get_pipleline_service()
-            display_service_details['pipelines']['services'].append(service_pipeline.get_pipeline_basic())
+        display_service_details['piplelines_data'] = {}
+        for resolution_obj in resolution_objs:
+            pipelines_objs = resolution_obj.servicePipelines.all()
+            if pipelines_objs:
+                for pipelines_obj in pipelines_objs:
+                    pipeline_name = pipelines_obj.get_pipeline_name()
+                    if not pipeline_name in display_service_details['piplelines_data']:
+                        display_service_details['piplelines_data'] [pipeline_name] = []
+                    display_service_details['piplelines_data'] [pipeline_name].append([pipeline_name, pipelines_obj.get_pipeline_version(),resolution_obj.get_resolution_number() ])
+
+        if len(display_service_details['piplelines_data']) > 0:
+            display_service_details['pipelines_heading'] = drylab_config.HEADING_PIPELINES_USED_IN_RESOLUTIONS
 
     return display_service_details
 

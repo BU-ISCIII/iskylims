@@ -22,6 +22,7 @@ from iSkyLIMS_drylab.utils.drylab_common_functions import *
 from iSkyLIMS_drylab.utils.handling_pipelines import *
 from iSkyLIMS_drylab.utils.handling_request_services import *
 from iSkyLIMS_drylab.utils.handling_resolutions import *
+from iSkyLIMS_drylab.utils.handling_deliveries import *
 from iSkyLIMS_drylab.utils.handling_forms import *
 from iSkyLIMS_drylab.utils.configuration_functions import *
 
@@ -684,14 +685,15 @@ def add_in_progress (request):
             email_data['user_name'] = request.user.username
             email_data['resolution_number'] = resolution_number
             send_resolution_in_progress_email(email_data)
-        return render (request,'iSkyLIMS_drylab/info_page.html',{'content':['Your resolution  request ', resolution_number,
-                                'has been successfully upated to In Progress state']})
+        in_progress_resolution = {}
+        in_progress_resolution['resolution_number'] = resolution_number
+        return render (request,'iSkyLIMS_drylab/addInProgress.html',{'in_progress_resolution':in_progress_resolution})
 
     error_message = drylab_config.ERROR_RESOLUTION_DOES_NOT_EXISTS
     return render (request,'iSkyLIMS_drylab/error_page.html', {'content':error_message})
 
 @login_required
-def add_delivery (request , resolution_id):
+def add_delivery (request ):
     if request.user.is_authenticated:
         try:
             groups = Group.objects.get(name = drylab_config.SERVICE_MANAGER)
@@ -702,10 +704,11 @@ def add_delivery (request , resolution_id):
     else:
         #redirect to login webpage
         return redirect ('/accounts/login')
-    if request.method == 'POST' :
-        form = AddDeliveryService(data=request.POST)
-        if form.is_valid():
+    if request.method == 'POST' and request.POST['action'] == 'deliveryResolutionService':
+        delivery_data = prepare_delivery_form (request.POST['resolution_id'])
 
+        return render (request, 'iSkyLIMS_drylab/addDelivery.html', {'delivery_data':delivery_data})
+        '''
             resolution_id = Resolution.objects.get(pk = resolution_id)
             new_delivery = form.save(commit=False)
             new_delivery.deliveryDate = datetime.date.today()
@@ -725,16 +728,22 @@ def add_delivery (request , resolution_id):
             to_user = [service_user_mail,'bioinformatica@isciii.es']
             send_mail (subject, body_message, from_user, to_user)
             return render(request,'django_utils/info_page.html',{'content':['The service is now on Delivery status ']})
-    else:
+        '''
+    if request.method == POST and request.POST['action'] == 'addDeliveryResolution':
+
+        if (request.POST['startdate'] != '' and not check_valid_date_format(request.POST['startdate'])) or  request.POST['enddate'] != '' and not check_valid_date_format(request.POST['enddate']):
+            delivery_data = prepare_delivery_form (request.POST['resolution_id'])
+            error_message = drylab_config.ERROR_INCORRECT_FORMAT_DATE
+            return render (request, 'iSkyLIMS_drylab/addDelivery.html', {'delivery_data':delivery_data, 'error': error_message})
+
+        delivery_recorded = store_resolution_delivery (request.POST)
         if Resolution.objects.filter(pk = resolution_id).exists():
 
-            form = AddDeliveryService()
-            delivery_info = {}
-            return render (request, 'iSkyLIMS_drylab/addDelivery.html', {'form':form, 'delivery_info': delivery_info})
-        else:
 
-            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The resolution that you are trying to upadate does not exists ','Contact with your administrator .']})
-    return
+            return render (request, 'iSkyLIMS_drylab/addDelivery.html', {'form':form, 'delivery_recorded': delivery_recorded})
+
+    return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The resolution that you are trying to upadate does not exists ','Contact with your administrator .']})
+
 
 
 @login_required

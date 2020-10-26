@@ -24,7 +24,7 @@ class RequestedSamplesInServicesAdmin(admin.ModelAdmin):
 
 
 class AvailableServiceAdmin(DjangoMpttAdmin):
-	list_display=('availServiceDescription',)
+	list_display=['availServiceDescription']
 
 class ResolutionAdmin(admin.ModelAdmin):
 	list_display=('resolutionServiceID','resolutionNumber', 'resolutionState','resolutionDate','resolutionEstimatedDate','resolutionOnQueuedDate','resolutionOnInProgressDate','resolutionFullNumber','resolutionAsignedUser','resolutionNotes')
@@ -33,7 +33,7 @@ class ResolutionParametersAdmin(admin.ModelAdmin):
 	list_display = ['resolution','resolutionParameter', 'resolutionParamValue','resolutionParamNotes']
 
 class DeliveryAdmin(admin.ModelAdmin):
-	list_display=('deliveryResolutionID','deliveryDate','deliveryNotes')
+	list_display=['deliveryResolutionID','deliveryDate', 'executionStartDate', 'executionEndDate', 'executionTime', 'permanentUsedSpace', 'temporaryUsedSpace','deliveryNotes']
 
 class PipelinesManager(admin.ModelAdmin):
 	list_display = ['availableService', 'userName','pipelineName','pipelineVersion','pipelineInUse', 'externalRequest', 'useRunFolder','default']

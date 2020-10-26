@@ -53,6 +53,8 @@ ERROR_UNABLE_TO_RECORD_YOUR_SERVICE = ['Your service request cannot be recorded.
                                 'If problem persist, contact your administrator']
 
 ERROR_SERVICE_ID_NOT_FOUND = ['Service ID not found']
+
+ERROR_INCORRECT_FORMAT_DATE = ['Invalid date format. Use the format  (DD-MM-YYYY)']
 '''
 ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS = ['Unsuccessful configuration settings for Samba connection']
 ERROR_UNABLE_TO_SAVE_SAMBA_CONFIGURATION_SETTINGS = ['Unable to save the Samba configuration file ', 'check if folder iSkyLIMS_wetlab has write permision for apache user']
@@ -76,11 +78,15 @@ MAPPING_ADDITIONAL_RESOLUTION_PARAMETERS = [('resolutionParameter', 'Parameter n
 
 DATE_NOT_YET_DEFINED = 'Not Yet Defined'
 
+################### PIPELINES ######################
 DISPLAY_NEW_DEFINED_PIPELINE = ['Service', 'Pipeline Name' , 'Pipeline Version']
 DISPLAY_MULTYPLE_DEFINED_PIPELINE = ['Service', 'User', 'Pipeline Name' , 'Pipeline Version', 'Date', 'Default', 'In Use']
 
 DISPLAY_DETAIL_PIPELINE_BASIC_INFO = ['Pipeline Name', 'Pipeline Version', 'Service']
 DISPLAY_DETAIL_PIPELINE_ADDITIONAL_INFO = ['User', 'Creation Date', 'String Folder', 'Default', 'In Use', 'Automatic']
+
+
+HEADING_PIPELINES_USED_IN_RESOLUTIONS = ['Pipeline name', 'Pipeline version', 'Used in Resolution']
 
 ####################### SERVICES #####################
 HEADING_PENDING_SERVICE_QUEUED =['Services', 'Resolution', 'Acronym name', 'Assigned to', 'On queued date', 'Estimated date']

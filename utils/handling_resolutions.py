@@ -1,7 +1,7 @@
 from datetime import datetime
 from iSkyLIMS_drylab.models import *
 from iSkyLIMS_drylab.utils.handling_request_services import *
-from iSkyLIMS_drylab.utils.handling_pipelines import get_pipeline_and_versions_for_available_service
+from iSkyLIMS_drylab.utils.handling_pipelines import get_pipeline_and_versions_for_available_service, get_pipeline_obj_from_id
 
 
 from iSkyLIMS_drylab.utils.drylab_common_functions import create_pdf
@@ -63,7 +63,10 @@ def get_data_for_resolution(service_obj, resolution_obj ):
     information['resolution_number'] = resolution_obj.get_resolution_number()
     information['requested_date'] = service_obj.get_service_creation_time()
     information['resolution_date'] = resolution_info[4]
-    information['nodes']= service_obj.serviceAvailableService.all()
+    if resolution_obj.availableServices.all() == ['None']:
+        information['nodes']= service_obj.serviceAvailableService.all()
+    else:
+        information['nodes']= resolution_obj.availableServices.all()
     user['name'] = service_obj.serviceUserId.first_name
     user['surname'] = service_obj.serviceUserId.last_name
 
@@ -122,6 +125,7 @@ def get_add_resolution_data_form(form_data):
                 parameter[drylab_config.HEADING_ADDITIONAL_RESOLUTION_PARAMETERS[i]] = json_data[row_index][i]
             additional_parameters.append(parameter)
         resolution_data_form['additional_parameters'] = additional_parameters
+
     return resolution_data_form
 
 def check_if_resolution_exists(resolution_id):
@@ -161,13 +165,18 @@ def create_new_resolution(resolution_data_form):
     resolution_data_form['resolutionNumber'] = create_resolution_number(resolution_data_form['service_id'])
 
     #service_request_number = service_obj.get_service_request_number()
-
+    
     new_resolution = Resolution.objects.create_resolution(resolution_data_form)
     if 'select_available_services' in resolution_data_form :
         # Add selected available services to the new resolution
         for avail_sarvice in resolution_data_form['select_available_services'] :
             avail_service_obj = get_available_service_obj_from_id(avail_sarvice)
             new_resolution.availableServices.add(avail_service_obj)
+
+    if 'pipelines' in resolution_data_form:
+        for pipeline in resolution_data_form['pipelines']:
+            pipeline_obj = get_pipeline_obj_from_id(pipeline)
+            new_resolution.servicePipelines.add(pipeline_obj)
 
     if 'additional_parameters' in resolution_data_form:
         store_resolution_additional_parameter(resolution_data_form['additional_parameters'], new_resolution)

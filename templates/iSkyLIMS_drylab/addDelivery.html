@@ -1,13 +1,91 @@
 {% extends 'iSkyLIMS_drylab/base.html' %}
-{% load crispy_forms_tags %}
+
 {% block content %}
 
-{% if delivery_info %}
-esto es una prueba {{ prueba }}
+
+{% if created_delivery %}
+	<div class="row row-space-4 margin-b-4">
+		<div class="col-sm-10 col-sm-offset-1" >
+			<div class="panel panel-default">
+				<div class="panel-heading"><h3 style="text-align:center">Resolution has been created</h3></div>
+                <div class="panel-body">
+					<h5>Your resolution proposal has been successfully recorded with Resolution Number {{created_resolution.resolution_number}}</h5>
+					<br><br>
+					<input type="button" value="Return Home" onclick="location.href ='/drylab' ;"/>
+					<input class="btn pull-right btn-primary" type="button" value="Return Pending Services" onclick="location.href ='/drylab/pendingServices' ;"/>
+				</div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-10 -->
+    </div> <!--  end of row -->
+{% else %}
+	<div class="row row-space-4 margin-b-1">
+		<div class="col-sm-12 ">
+			<div class="panel panel-default">
+				<div class="panel-heading"><h3 style="text-align:center">Add Delivery for Resolution {{delivery_data.resolution_number}}</h3></div>
+				<div class="panel-body">
+					<h5 style="text-align:center">Resolutions services </h5>
+					<form method="post" enctype="multipart/form-data" name="addDeliveryResolution" id="addDeliveryResolution" class="form-horizontal well">
+						{% csrf_token %}
+						<input type="hidden" name="action" value="addDeliveryResolution"/>
+						<input type="hidden" name="resolution_id" value="{{delivery_data.resolution_id}}"/>
+						<div class="form-group">
+							<label class="col-sm-5 control-label" for="startdate" >Execution start date (DD-MM-YYYY)</label>
+							<div class="col-sm-7">
+								<div class="col-sm-5"><input class="form-control" type="date" name="startdate" id="startdate" size="100" maxlength="100"></div>
+							</div>
+							<br><br>
+							<label class="col-sm-5 control-label" for="enddate" >Execution ending date (DD-MM-YYYY)</label>
+							<div class="col-sm-7">
+								<div class="col-sm-5"><input class="form-control" type="date" name="enddate" id="enddate" size="100" maxlength="100"></div>
+							</div>
+							<br><br>
+							<div class="form-group">
+				                  <label class="col-sm-5  control-label" for="time" >Execution time in hours</label>
+				                    <div class="col-sm-5"><input class="form-control" type="text" name="time" id="time" size="100" maxlength="100"></div>
+				             </div>  <!-- end from-group   -->
+							 <div class="form-group">
+ 				                  <label class="col-sm-5  control-label" for="pspace" >Space disk used in the execution in (GB)</label>
+ 				                    <div class="col-sm-5"><input class="form-control" type="text" name="pspace" id="pspace" size="100" maxlength="100"></div>
+ 				             </div>  <!-- end from-group   -->
+							 <div class="form-group">
+ 				                  <label class="col-sm-5  control-label" for="tspace" >Temporal space disk used during execution in (GB)</label>
+ 				                    <div class="col-sm-5"><input class="form-control" type="text" name="tspace" id="tspace" size="100" maxlength="100"></div>
+ 				             </div>  <!-- end from-group   -->
+							{% if delivery_data.pipelines_data %}
+								{% for p_name , values in delivery_data.pipelines_data %}
+									<label class="col-sm-5 control-label" for="resolutionAsignedUser" >Pipeline for {{p_name}} </label>
+									<div class="col-sm-5">
+										<select class="form-control"  name="pipelines" id="pipeline_{{p_name}}">
+											<option value="">Select one </option>
+											{% for id , name , version in values %}
+												<option value="{{id}}">{{name}}  {{version}}</option>
+											{% endfor %}
+										</select>
+									</div>  <!-- end select input -->
+									<br><br>
+								{% endfor %}
+							{% endif %}
+						</div>  <!-- end from-group   -->
+
+						<div class="form-group required ">
+							<label class="col-sm-5 control-label" for="deliveryNotes" >Notes</label>
+							<div class="col-sm-7">
+								<textarea class="form-control" required name="deliveryNotes" value="" id="delliveryNotes" rows="8" cols="60" maxlength="800"></textarea>
+							</div>
+							<br><br>
+						</div>  <!-- end from-group   -->
+						<br>
+
+	                    <input class="btn btn-primary" type="reset" value="Reset Fields">
+	                    <input class="btn pull-right btn-primary" type="submit" value="Submit">
+					</form>
+	                <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
+				</div>  <!--  end of panel body  -->
+			</div> <!--// end panel -->
+		</div><!-- // end of col-sm-8 -->
+	</div><!-- // end of row -->
 {% endif %}
-<div class="container-fluid margin-t-40">
-	{% crispy form %}
-</div>
+
 <script>
     $(document).ready(function () {
         $("form").submit(function (e) {

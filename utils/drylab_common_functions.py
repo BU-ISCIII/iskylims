@@ -13,6 +13,13 @@ from django.core.files.storage import FileSystemStorage
 #from iSkyLIMS_drylab.utils.handling_request_services import *
 #from iSkyLIMS_drylab.utils.handling_resolutions import *
 
+def check_valid_date_format (date):
+    try:
+        datetime.strptime(date, '%Y-%m-%d')
+        return True
+    except:
+        return False
+
 def create_pdf(absolute_url,information, template_file, pdf_file_name , out_dir):
     from weasyprint import HTML, CSS
     from django.template.loader import get_template

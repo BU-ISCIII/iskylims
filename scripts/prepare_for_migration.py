@@ -3,6 +3,8 @@ from iSkyLIMS_drylab.models import Service
 
 
 def run():
+    ## migrate the servicefile that it was in the service request for allowing
+    ## to add multiple files.
     if Service.objects.all().exclude(serviceFile = None).exists():
 
         services = Service.objects.all().exclude(serviceFile = None)

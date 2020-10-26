@@ -231,10 +231,6 @@ class Service(models.Model):
 				'iSkyLIMS_wetlab.Projects',
 				verbose_name=_("User's projects"),blank=True)
 
-	servicePipelines = models.ManyToManyField(
-				Pipelines,
-				verbose_name=_("Pipeline"),blank=True)
-
 	serviceSeqCenter=models.CharField(_("Sequencing center"),max_length=50,blank=False,null=True)
 	serviceRequestNumber=models.CharField(max_length=80, null=True)
 	serviceRequestInt=models.CharField(max_length=80, null=True)
@@ -461,6 +457,10 @@ class Resolution(models.Model):
 	resolutionState = models.ForeignKey(
 				ResolutionStates,
 				on_delete=models.CASCADE, null=True,blank=True )
+
+
+	servicePipelines = models.ManyToManyField(Pipelines, blank = True)
+
 	availableServices = models.ManyToManyField(AvailableService, blank = True)
 	resolutionNumber=models.CharField(_("Resolutions name"),max_length=255,null=True)
 	resolutionEstimatedDate=models.DateField(_(" Estimated resolution date"), null = True,blank=False)
@@ -599,22 +599,40 @@ class ResolutionParameters (models.Model):
 
 	objects = ResolutionParametersManager()
 
+
+class DeliveryManager(models.Manager):
+	def create_delivery (self, delivery_data):
+		new_delivery = self.create( deliveryResolutionID = delivery_data['deliveryResolutionID'], deliveryNotes= delivery_data['deliveryNotes'],
+				executionStartDate = delivery_data['executionStartDate'], executionEndDate = delivery_data['executionEndDate'],
+				executionTime = delivery_data['executionTime'], permanentUsedSpace = delivery_data['permanentUsedSpace'],
+				temporaryUsedSpace = delivery_data['temporaryUsedSpace'])
+
 class Delivery(models.Model):
-	deliveryResolutionID=models.ForeignKey(Resolution ,on_delete=models.CASCADE )
-	#deliveryResolutionID=models.OneToOneField(Resolution ,on_delete=models.CASCADE )
-	#deliveryNumber=models.IntegerField(_("Number of deliveries"))
-	#deliveryEstimatedDate=models.DateField(_("Delivery estimated date"))
-	deliveryDate=models.DateField(_("Delivery date"),auto_now_add=True,null=True,blank=True)
-	#deliveryDate=models.DateField(_("Delivery date"),auto_now_add=False,null=True,blank=True)
-	deliveryNotes=models.TextField(_("Delivery notes"),max_length=1000, null=True)
+	deliveryResolutionID = models.ForeignKey(
+						Resolution ,
+						on_delete=models.CASCADE )
+	pipelinesInDelivery = models.ManyToManyField(Pipelines, blank = True)
+
+	deliveryDate = models.DateField(auto_now_add=True,null=True,blank=True)
+
+	deliveryNotes = models.TextField(max_length=1000, null=True, blank =True)
+	executionStartDate = models.DateField(null=True,blank=True)
+	executionEndDate = models.DateField(null=True,blank=True)
+	executionTime = models.DateField(null=True,blank=True)
+	permanentUsedSpace = models.CharField(max_length = 80, null = True, blank = True)
+	temporaryUsedSpace = models.CharField(max_length = 80, null = True, blank = True)
+
 	def __str__ (self):
 		return '%s' %(self.deliveryResolutionID)
+
 	def get_delivery_information (self):
 		delivery_info = []
 		delivery_info.append(self.deliveryResolutionID.resolutionNumber)
 		delivery_info.append(self.deliveryDate.strftime("%d %B, %Y"))
 		delivery_info.append(self.deliveryNotes)
 		return delivery_info
+
+	objects = DeliveryManager()
 
 class RunIDFolder (models.Model):
 	servicerequest = models.ForeignKey(
