@@ -3,7 +3,7 @@ from datetime import datetime
 import os
 from django.conf import settings
 from django.contrib.auth.models import User
-
+from django.core.mail import send_mail
 from iSkyLIMS_drylab import drylab_config
 from iSkyLIMS_drylab.models import *
 from iSkyLIMS_drylab.utils.graphics import *
@@ -275,7 +275,7 @@ def get_service_information (service_id):
         delivery_info = []
         for resolution_obj in resolution_objs :
             if Delivery.objects.filter(deliveryResolutionID = resolution_obj).exists():
-                delivery = Delivery.objects.get(deliveryResolutionID = resolution_obj)
+                delivery = Delivery.objects.filter(deliveryResolutionID = resolution_obj).last()
                 delivery_info.append([delivery.get_delivery_information()])
                 display_service_details['delivery'] = delivery_info
 

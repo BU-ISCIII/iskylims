@@ -708,39 +708,22 @@ def add_delivery (request ):
         delivery_data = prepare_delivery_form (request.POST['resolution_id'])
 
         return render (request, 'iSkyLIMS_drylab/addDelivery.html', {'delivery_data':delivery_data})
-        '''
-            resolution_id = Resolution.objects.get(pk = resolution_id)
-            new_delivery = form.save(commit=False)
-            new_delivery.deliveryDate = datetime.date.today()
-            new_delivery.deliveryResolutionID = resolution_id
-            new_delivery.save()
-            form.save_m2m()
-            # Update the status service to delivery
-            service_id = resolution_id.resolutionServiceID
-            service_id.serviceStatus = 'delivered'
-            service_id.serviceOnDeliveredDate = datetime.date.today()
-            service_id.save()
-            service_user_mail = service_id.serviceUserId.email
-            ## Send email
-            subject = 'Service ' + service_id.serviceRequestNumber + " has been updated"
-            body_message = 'Dear ' + service_id.serviceUserId.username + "\n. Your service with resolution id: " + resolution_id.resolutionNumber + " is finished. A mail with instructions for downloading the results will be shortly sent to you." + "\n Kind regards \n BU-ISCIII \n bioinformatica@isciii.es"
-            from_user = 'bioinformatica@isciii.es'
-            to_user = [service_user_mail,'bioinformatica@isciii.es']
-            send_mail (subject, body_message, from_user, to_user)
-            return render(request,'django_utils/info_page.html',{'content':['The service is now on Delivery status ']})
-        '''
-    if request.method == POST and request.POST['action'] == 'addDeliveryResolution':
 
-        if (request.POST['startdate'] != '' and not check_valid_date_format(request.POST['startdate'])) or  request.POST['enddate'] != '' and not check_valid_date_format(request.POST['enddate']):
+    if request.method == 'POST' and request.POST['action'] == 'addDeliveryResolution':
+
+        if (request.POST['startdate'] != '' and not check_valid_date_format(request.POST['startdate'])) or  (request.POST['enddate'] != '' and not check_valid_date_format(request.POST['enddate'])):
             delivery_data = prepare_delivery_form (request.POST['resolution_id'])
             error_message = drylab_config.ERROR_INCORRECT_FORMAT_DATE
             return render (request, 'iSkyLIMS_drylab/addDelivery.html', {'delivery_data':delivery_data, 'error': error_message})
 
         delivery_recorded = store_resolution_delivery (request.POST)
-        if Resolution.objects.filter(pk = resolution_id).exists():
-
-
-            return render (request, 'iSkyLIMS_drylab/addDelivery.html', {'form':form, 'delivery_recorded': delivery_recorded})
+        if delivery_recorded != None :
+            email_data = {}
+            email_data['user_email'] = request.user.email
+            email_data['user_name'] = request.user.username
+            email_data['resolution_number'] = delivery_recorded['resolution_number']
+            send_delivery_service_email(email_data)
+            return render (request, 'iSkyLIMS_drylab/addDelivery.html', {'delivery_recorded': delivery_recorded})
 
     return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The resolution that you are trying to upadate does not exists ','Contact with your administrator .']})
 

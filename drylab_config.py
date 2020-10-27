@@ -113,6 +113,10 @@ SUBJECT_RESOLUTION_IN_PROGRESS = ['Service ', ' has been updated']
 BODY_RESOLUTION_IN_PROGRESS = ['Dear  USER_NAME', 'Your service with resolution id:  RESOLUTION_NUMBER is now in progress.' ,
                      'Kind regards', 'BU-ISCIII']
 
+SUBJECT_RESOLUTION_DELIVERED = ['Service ', ' has been updated']
+BODY_RESOLUTION_DELIVERED = ['Dear  USER_NAME', 'Your service with resolution id:  RESOLUTION_NUMBER is finished.' ,
+                    'A mail with instructions for downloading the results will be shortly sent to you.',
+                    'Kind regards', 'BU-ISCIII']
 
 SUBJECT_SERVICE_ON_QUEUED = ['Service ', 'sent to preparation pipelines Jobs']
 BODY_SERVICE_ON_QUEUED = ['Service  SERVICE_NUMBER is on queued ']

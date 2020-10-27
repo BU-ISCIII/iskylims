@@ -1,4 +1,5 @@
 from datetime import datetime
+from django.core.mail import send_mail
 from iSkyLIMS_drylab.models import *
 from iSkyLIMS_drylab.utils.handling_request_services import *
 from iSkyLIMS_drylab.utils.handling_pipelines import get_pipeline_and_versions_for_available_service, get_pipeline_obj_from_id
@@ -165,7 +166,7 @@ def create_new_resolution(resolution_data_form):
     resolution_data_form['resolutionNumber'] = create_resolution_number(resolution_data_form['service_id'])
 
     #service_request_number = service_obj.get_service_request_number()
-    
+
     new_resolution = Resolution.objects.create_resolution(resolution_data_form)
     if 'select_available_services' in resolution_data_form :
         # Add selected available services to the new resolution

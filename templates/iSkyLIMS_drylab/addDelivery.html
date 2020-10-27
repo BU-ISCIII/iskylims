@@ -3,13 +3,26 @@
 {% block content %}
 
 
-{% if created_delivery %}
+{% if delivery_recorded %}
+	{% if delivery_recorded_pending_resolution %}
+		<div class="row row-space-4 margin-b-4">
+			<div class="col-sm-10 col-sm-offset-1" >
+				<div class="panel panel-warning">
+					<div class="panel-heading"><h3 style="text-align:center">Pending Resolution on this request service</h3></div>
+					<div class="panel-body">
+						<h5>The requested service has another resolution {{delivery_recorded.pending_resolution}} that requires your attention.</h5>
+						<br><br>
+					</div> <!--  end of panel body -->
+				</div> <!--  end of panel  -->
+			</div> <!--  end of col-sm-10 -->
+		</div> <!--  end of row -->
+	{% endif %}
 	<div class="row row-space-4 margin-b-4">
 		<div class="col-sm-10 col-sm-offset-1" >
 			<div class="panel panel-default">
-				<div class="panel-heading"><h3 style="text-align:center">Resolution has been created</h3></div>
+				<div class="panel-heading"><h3 style="text-align:center">Resolution has been delivered</h3></div>
                 <div class="panel-body">
-					<h5>Your resolution proposal has been successfully recorded with Resolution Number {{created_resolution.resolution_number}}</h5>
+					<h5>The resolution  has been successfully recorded with Resolution Number {{delivery_recorded.resolution_number}}</h5>
 					<br><br>
 					<input type="button" value="Return Home" onclick="location.href ='/drylab' ;"/>
 					<input class="btn pull-right btn-primary" type="button" value="Return Pending Services" onclick="location.href ='/drylab/pendingServices' ;"/>
@@ -17,6 +30,7 @@
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-10 -->
     </div> <!--  end of row -->
+
 {% else %}
 	<div class="row row-space-4 margin-b-1">
 		<div class="col-sm-12 ">

@@ -467,6 +467,7 @@ class Resolution(models.Model):
 	resolutionDate=models.DateField(_("Resolution date"),auto_now_add=True,blank=True)
 	resolutionOnQueuedDate = models.DateField(auto_now_add=False, null=True,blank=True)
 	resolutionOnInProgressDate = models.DateField(auto_now_add=False, null=True,blank=True)
+	resolutionDeliveryDate = models.DateField(auto_now_add=False, null=True,blank=True)
 	resolutionNotes=models.TextField(_("Resolution notes"),max_length=1000, null=True, blank=True)
 	resolutionFullNumber = models.CharField(_("Acronym Name"),max_length=255,null=True,blank=True)
 	resolutionPdfFile = models.FileField(upload_to = drylab_config.RESOLUTION_FILES_DIRECTORY, null=True,blank=True)
@@ -568,6 +569,13 @@ class Resolution(models.Model):
 		self.save()
 		return self
 
+	def update_resolution_in_delivered(self):
+		today = datetime.date.today()
+		self.resolutionDeliveryDate = today
+		self.resolutionState = ResolutionStates.objects.get(resolutionStateName__exact = 'Delivery')
+		self.save()
+		return self
+
 	def update_resolution_file(self, file):
 		self.resolutionPdfFile = file
 		self.save()
@@ -606,6 +614,7 @@ class DeliveryManager(models.Manager):
 				executionStartDate = delivery_data['executionStartDate'], executionEndDate = delivery_data['executionEndDate'],
 				executionTime = delivery_data['executionTime'], permanentUsedSpace = delivery_data['permanentUsedSpace'],
 				temporaryUsedSpace = delivery_data['temporaryUsedSpace'])
+		return new_delivery
 
 class Delivery(models.Model):
 	deliveryResolutionID = models.ForeignKey(
@@ -618,7 +627,7 @@ class Delivery(models.Model):
 	deliveryNotes = models.TextField(max_length=1000, null=True, blank =True)
 	executionStartDate = models.DateField(null=True,blank=True)
 	executionEndDate = models.DateField(null=True,blank=True)
-	executionTime = models.DateField(null=True,blank=True)
+	executionTime = models.CharField(max_length = 80,null=True,blank=True)
 	permanentUsedSpace = models.CharField(max_length = 80, null = True, blank = True)
 	temporaryUsedSpace = models.CharField(max_length = 80, null = True, blank = True)
 
