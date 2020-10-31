@@ -30,6 +30,8 @@ urlpatterns = [
     path('userLogin', views.user_login, name = 'user_login'),
     path('newRequestService', views.new_request_service, name = 'new_request_service'),
 
+    path('multiple_files', views.multiple_files, name='multiple_files'),
+
 ]
 
 if settings.DEBUG:

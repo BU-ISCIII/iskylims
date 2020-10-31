@@ -104,7 +104,8 @@ class PipelinesManager (models.Manager):
 		new_pipeline = self.create(availableService = availableService, userName = data['userName'],
 				pipelineName = data['pipelineName'], pipelineInUse = True,
 				pipelineVersion	= data['pipelineVersion'],
-				externalRequest = data['externalRequest'], useRunFolder = data['useRunFolder'])
+				#externalRequest = data['externalRequest'], useRunFolder = data['useRunFolder']
+				)
 		return new_pipeline
 
 class Pipelines(models.Model):
@@ -116,12 +117,12 @@ class Pipelines(models.Model):
                 on_delete=models.CASCADE)
 	pipelineName = models.CharField(max_length = 50)
 	pipelineVersion = models.CharField(max_length = 10)
-	useRunFolder = models.BooleanField(default = True, null = True)
-	externalRequest = models.BooleanField(default = True)
-	default = models.BooleanField(default = False)
+	#useRunFolder = models.BooleanField(default = True, null = True)
+	#externalRequest = models.BooleanField(default = True)
+	#default = models.BooleanField(default = False)
 	pipelineInUse = models.BooleanField(default = True)
 	generated_at = models.DateTimeField(auto_now_add = True)
-	automatic = models.BooleanField(default = True)
+	#automatic = models.BooleanField(default = True)
 
 	def __str__ (self):
 		return '%s_%s' %(self.pipelineName, self.pipelineVersion)
@@ -326,6 +327,9 @@ class Service(models.Model):
 			number_days, time = str(self.serviceOnDeliveredDate - self.serviceCreatedOnDate).split(',')
 			number, string_value = number_days.split(' ')
 		return number
+
+	def get_username(self):
+		return '%s' %(self.serviceUserId.username)
 
 	def get_user_email(self):
 		return '%s' %(self.serviceUserId.email)
@@ -552,7 +556,10 @@ class Resolution(models.Model):
 		return self.resolutionServiceID
 
 	def get_resolution_state(self):
-		return '%s' %(self.resolutionState.get_resolution_state())
+		if self.resolutionState != None:
+			return '%s' %(self.resolutionState.get_resolution_state())
+		else:
+			return 'Not assigned'
 
 	def get_resolution_full_number(self):
 		return '%s' %(self.resolutionFullNumber)

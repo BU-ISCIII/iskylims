@@ -65,6 +65,8 @@
     </div> <!--  end of row -->
 
 {% else %}
+
+
     <form method="post" enctype="multipart/form-data" name="createservice" id="createservice" class="form-horizontal well">
         {% csrf_token %}
         <input type="hidden" name="action" value="createservice"/>
@@ -201,14 +203,46 @@
                     <div class="panel-body">
                         <div class="form-group">
                             <label class="col-sm-3 control-label" for="filesample" >Service description file  </label>
-                            <div class="col-sm-7"><input class="form-control" type="file" id="uploadfile"  name="uploadfile" size="80" multiple="true"><br>
+                            <div class="col-sm-7"><input class="form-control" type="file" name="file" id="file" size="80" multiple="true" onchange="javascript:updateList()"><br>
+
+                                <p>Selected files:</p>
+
+                                <div id="fileList"></div>
                                 <p id="error2" style="display:none; color:#FF0000;">
                                     Maximum File Size Limit is 2.5 MB.
                                 </p>
                             </div>
                         </div>  <!-- end from-group   -->
                         <br>
+                        <script>
+                            updateList = function() {
+                                var input = document.getElementById('file');
+                                var output = document.getElementById('fileList');
+                                var children = "";
+                                for (var i = 0; i < input.files.length; ++i) {
+                                     var filesize = (input.files.item(i).size);
+                                     if (filesize > 2621440){
+                                         $('#error2').slideDown("slow");
+                                         a=0;
+                                         $('#btnSubmit').attr('disabled',true)
+                                    //
+                                     }
+                                     else{
+                                         $('#btnSubmit').attr('disabled',false);
+                                         $('#error2').slideUp("slow");
+                                        children += '<li>' + input.files.item(i).name + '</li>';
+                                    }
+                                }
+                            output.innerHTML = '<ul>'+children+'</ul>';
+                            }
+                        </script>
+
+<!-- #########################################################333  -->
+
+
+
                         <div class="form-group">
+
                             <label class="col-sm-3 control-label" for="description" >Service Notes</label>
                             <div class="col-sm-10"><textarea class="form-control" name="description" value="" id="description" rows="6" cols="60" maxlength="2000"></textarea></div>
                         </div>  <!-- end from-group   -->

@@ -681,8 +681,8 @@ def add_in_progress (request):
 
         if drylab_config.EMAIL_USER_CONFIGURED :
             email_data = {}
-            email_data['user_email'] = request.user.email
-            email_data['user_name'] = request.user.username
+            email_data['user_email'] = service_obj.get_user_email()
+            email_data['user_name'] = service_obj.get_username()
             email_data['resolution_number'] = resolution_number
             send_resolution_in_progress_email(email_data)
         in_progress_resolution = {}
@@ -1344,3 +1344,50 @@ def detail_pipeline(request,pipeline_id):
         return redirect ('/accounts/login')
     detail_pipelines_data = get_detail_pipeline_data(pipeline_id)
     return render(request,'iSkyLIMS_drylab/detailPipeline.html', {'detail_pipelines_data': detail_pipelines_data})
+
+
+###################### Multiple files  Pruebas   ###########################
+
+def multiple_files(request):
+	return render(request,'iSkyLIMS_drylab/multiple_files.html')
+
+from django.db import models
+
+
+class Picture(models.Model):
+    """This is a small demo using just two fields. The slug field is really not
+    necessary, but makes the code simpler. ImageField depends on PIL or
+    pillow (where Pillow is easily installable in a virtualenv. If you have
+    problems installing pillow, use a more generic FileField instead.
+
+    """
+    file = models.ImageField(upload_to="pictures")
+    slug = models.SlugField(max_length=50, blank=True)
+
+    def __str__(self):
+        return self.file.name
+
+    #@models.permalink
+    def get_absolute_url(self):
+        return ('upload-new', )
+
+    def save(self, *args, **kwargs):
+        self.slug = self.file.name
+        super(Picture, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        """delete -- Remove to leave file."""
+        self.file.delete(False)
+        super(Picture, self).delete(*args, **kwargs)
+
+
+from django.views.generic import ListView
+class PictureListView(ListView):
+    model = Picture
+
+    def render_to_response(self, context, **response_kwargs):
+        files = [ serialize(p) for p in self.get_queryset() ]
+        data = {'files': files}
+        response = JSONResponse(data, mimetype=response_mimetype(self.request))
+        response['Content-Disposition'] = 'inline; filename=files.json'
+        return response

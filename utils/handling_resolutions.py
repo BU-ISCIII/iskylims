@@ -1,6 +1,7 @@
 from datetime import datetime
 from django.core.mail import send_mail
 from iSkyLIMS_drylab.models import *
+from iSkyLIMS_drylab import drylab_config
 from iSkyLIMS_drylab.utils.handling_request_services import *
 from iSkyLIMS_drylab.utils.handling_pipelines import get_pipeline_and_versions_for_available_service, get_pipeline_obj_from_id
 
