@@ -55,6 +55,8 @@ ERROR_UNABLE_TO_RECORD_YOUR_SERVICE = ['Your service request cannot be recorded.
 ERROR_SERVICE_ID_NOT_FOUND = ['Service ID not found']
 
 ERROR_INCORRECT_FORMAT_DATE = ['Invalid date format. Use the format  (DD-MM-YYYY)']
+
+ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH =['There is not any Service that matches your input conditions']
 '''
 ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS = ['Unsuccessful configuration settings for Samba connection']
 ERROR_UNABLE_TO_SAVE_SAMBA_CONFIGURATION_SETTINGS = ['Unable to save the Samba configuration file ', 'check if folder iSkyLIMS_wetlab has write permision for apache user']

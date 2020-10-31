@@ -15,7 +15,7 @@ from django.core.files.storage import FileSystemStorage
 
 def check_valid_date_format (date):
     try:
-        datetime.strptime(date, '%Y-%m-%d')
+        datetime.datetime.strptime(date, '%Y-%m-%d')
         return True
     except:
         return False

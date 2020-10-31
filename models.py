@@ -434,6 +434,9 @@ class RequestedSamplesInServices (models.Model):
 	def get_external_sample_id(self):
 		return '%s' %(self.externalSampleKey)
 
+	def get_external_project_name(self):
+		return '%s' %(self.externalProjectName)
+
 	objects = RequestedSamplesInServicesManager()
 
 

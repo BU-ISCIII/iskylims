@@ -310,28 +310,38 @@ def infrastructure_request(request):
 
 @login_required
 def display_service (request, service_id):
-    if request.user.is_authenticated:
-        if not is_service_manager(request):
-            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_USER_NOT_ALLOWED })
-    else:
+    if not request.user.is_authenticated:
         #redirect to login webpage
         return redirect ('/accounts/login')
     if Service.objects.filter(pk=service_id).exists():
-        # displays the service information with the latest changes done using the forms
-        display_service_details = get_service_information(service_id)
-        return render (request,'iSkyLIMS_drylab/display_service.html',{'display_service': display_service_details})
+        if  is_service_manager(request):
+            # display limit information of the service
+            display_service_for_user = get_service_for_user_information(service_id)
+            return render (request,'iSkyLIMS_drylab/display_service.html',{'display_service_for_user': display_service_for_user})
+        else:
+            # displays the service information and the actions to be done for the service
+	        display_service_details = get_service_information(service_id)
+	        return render (request,'iSkyLIMS_drylab/display_service.html',{'display_service': display_service_details})
     else:
-        return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The service that you are trying to get does not exist ','Contact with your administrator .']})
+	    return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The service that you are trying to get does not exist ','Contact with your administrator .']})
 
 
 @login_required
 def search_service (request):
-    if request.user.is_authenticated:
-        if not is_service_manager(request):
-            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_USER_NOT_ALLOWED })
-    else:
+    if  not request.user.is_authenticated:
         #redirect to login webpage
         return redirect ('/accounts/login')
+    services_search_list = {}
+
+    center_list_abbr = []
+    center_availables = Center.objects.all().order_by ('centerAbbr')
+    for center in center_availables:
+        center_list_abbr.append (center.centerAbbr)
+    services_search_list ['centers'] = center_list_abbr
+    services_search_list ['status'] = STATUS_CHOICES
+    if not is_service_manager(request):
+        services_search_list['username'] = request.user.username
+
     if request.method == 'POST' and request.POST['action'] == 'searchservice':
 
         service_number_request = request.POST['servicenumber']
@@ -341,31 +351,12 @@ def search_service (request):
         center = request.POST['center']
         user_name = request.POST['username']
         if service_number_request == '' and service_state == '' and start_date == '' and end_date == '' and center == '' and user_name =='':
-            services_search_list = {}
-            center_list_abbr = []
-            center_availables = Center.objects.all().order_by ('centerAbbr')
-            for center in center_availables:
-                center_list_abbr.append (center.centerAbbr)
-            services_search_list ['centers'] = center_list_abbr
-            services_search_list ['status'] = STATUS_CHOICES
-
             return render( request,'iSkyLIMS_drylab/searchService.html',{'services_search_list': services_search_list })
 
         ### check the right format of start and end date
-        if start_date != '':
-            try:
-                datetime.datetime.strptime(start_date, '%Y-%m-%d')
-            except:
-                return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The format for the "Start Date Search" Field is incorrect ',
-                                                                            'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
-        if end_date != '':
-            try:
-                datetime.datetime.strptime(end_date, '%Y-%m-%d')
-            except:
-                return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
-                                                                            'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
-        if service_number_request == '' and service_state == '':
-            services_found = Service.objects.all()
+        if (request.POST['startdate'] != '' and not check_valid_date_format(request.POST['startdate'])) or  (request.POST['enddate'] != '' and not check_valid_date_format(request.POST['enddate'])):
+            error_message = drylab_config.ERROR_INCORRECT_FORMAT_DATE
+            return render( request,'iSkyLIMS_drylab/searchService.html',{'services_search_list': services_search_list , 'ERROR':error_message})
 
         if service_number_request != '':
             # check if the requested service in the form matches exactly with the existing service in DB
@@ -378,48 +369,23 @@ def search_service (request):
                 services_found = Service.objects.filter(serviceRequestNumber__icontains = service_number_request)
             else:
                 return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['No matches have been found for the service number ', service_number_request ]})
-
+        else:
+            services_found = Service.objects.all()
         if service_state != '':
-            if service_number_request =='':
-                services_found = Service.objects.all()
-            if services_found.filter(serviceStatus__exact = service_state).exists():
-                services_found = services_found.filter(serviceStatus__exact = service_state)
-            else:
-                return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['No matches have been found for the service number in state', service_state ]})
+            services_found = services_found.filter(serviceStatus__exact = service_state)
         if start_date !='' and end_date != '':
-            if services_found.filter(serviceCreatedOnDate__range=(start_date, end_date)).exists():
-                services_found = services_found.filter(serviceCreatedOnDate__range=(start_date, end_date))
-            else:
-                return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['There are no services containing ', service_number_request,
-                                                        ' created between ', start_date, 'and the ', end_date]})
+            services_found = services_found.filter(serviceCreatedOnDate__range=(start_date, end_date))
         if start_date !='' and end_date == '':
-            if services_found.filter(serviceCreatedOnDate__gte = start_date).exists():
-                services_found = services_found.filter(serviceCreatedOnDate__gte = start_date)
-            else:
-                return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['There are no services containing ', service_number_request,
-                                                        ' created before ', start_date]})
+            services_found = services_found.filter(serviceCreatedOnDate__gte = start_date)
         if start_date =='' and end_date != '':
-            if services_found.filter(serviceCreatedOnDate__lte = end_date).exists():
-                services_found = services_found.filter(serviceCreatedOnDate__lte = end_date)
-            else:
-                return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['There are no services containing ', service_number_request,
-                                                        ' finish before ', end_date]})
+            services_found = services_found.filter(serviceCreatedOnDate__lte = end_date)
         if center != '':
-            if services_found.filter(serviceRequestNumber__icontains = center).exists():
-                services_found = services_found.filter(serviceRequestNumber__icontains  = center)
-            else:
-                return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['There are no services related to the requested center', center]})
-
+            services_found = services_found.filter(serviceRequestNumber__icontains  = center)
         if  user_name != '':
-            if User.objects.filter (username__icontains = user_name).exists():
-                user_id = User.objects.get (username__icontains = user_name).id
-            else:
-                return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The user name  ', user_name, 'is not defined in iSkyLIMS']})
-            if services_found.filter(serviceUserId = user_id).exists():
-                services_found = services_found.filter(serviceUserId  = user_id)
-            else:
-                return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['There are no services requested by the user', center]})
-
+            services_found = services_found.filter(serviceUserId  = user_name)
+        if len(services_found) == 0 :
+            error_message = drylab_config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
+            return render( request,'iSkyLIMS_drylab/searchService.html',{'services_search_list': services_search_list , 'ERROR':error_message})
         #If only 1 service mathes the user conditions, then get the user information
         if len(services_found) == 1 :
             redirect_page = '/drylab/display_service=' + str(services_found[0].id)
@@ -435,14 +401,6 @@ def search_service (request):
                 s_list [service_id]=[[service_number, service_status, service_center]]
             display_multiple_services['s_list'] = s_list
             return render (request,'iSkyLIMS_drylab/searchService.html', {'display_multiple_services': display_multiple_services})
-    services_search_list = {}
-
-    center_list_abbr = []
-    center_availables = Center.objects.all().order_by ('centerAbbr')
-    for center in center_availables:
-        center_list_abbr.append (center.centerAbbr)
-    services_search_list ['centers'] = center_list_abbr
-    services_search_list ['status'] = STATUS_CHOICES
 
     return render( request,'iSkyLIMS_drylab/searchService.html',{'services_search_list': services_search_list })
 
@@ -714,7 +672,7 @@ def add_delivery (request ):
         if (request.POST['startdate'] != '' and not check_valid_date_format(request.POST['startdate'])) or  (request.POST['enddate'] != '' and not check_valid_date_format(request.POST['enddate'])):
             delivery_data = prepare_delivery_form (request.POST['resolution_id'])
             error_message = drylab_config.ERROR_INCORRECT_FORMAT_DATE
-            return render (request, 'iSkyLIMS_drylab/addDelivery.html', {'delivery_data':delivery_data, 'error': error_message})
+            return render (request, 'iSkyLIMS_drylab/addDelivery.html', {'delivery_data':delivery_data, 'ERROR': error_message})
 
         delivery_recorded = store_resolution_delivery (request.POST)
         if delivery_recorded != None :

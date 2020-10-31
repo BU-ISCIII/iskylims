@@ -295,6 +295,32 @@ def get_service_information (service_id):
     return display_service_details
 
 
+def get_service_for_user_information (service_id):
+    '''
+    Description:
+        The function get the limit service information, to display to the user
+    Input:
+        service_id  # id of the  service
+    Return:
+        display_service_user_details
+    '''
+    service_obj = get_service_obj_from_id(service_id)
+    display_service_user_details = {}
+    display_service_user_details['service_name'] = service_obj.get_service_request_number()
+    if RequestedSamplesInServices.objects.filter(samplesInService = service_obj).exists():
+        samples_in_service = RequestedSamplesInServices.objects.filter(samplesInService = service_obj)
+        display_service_user_details['samples'] = []
+        for sample in samples_in_service:
+            display_service_user_details['samples'].append([sample.get_external_sample_id(), sample.get_external_sample_name(), sample.get_external_project_name()])
+
+    display_service_user_details['user_name'] = service_obj.get_service_requested_user()
+    display_service_user_details['state'] = service_obj.get_service_state()
+    display_service_user_details['service_notes'] = service_obj.get_service_user_notes()
+    display_service_user_details['service_dates'] = zip (drylab_config.HEADING_SERVICE_DATES, service_obj.get_service_dates() )
+	# get all services
+    display_service_user_details['nodes']= service_obj.serviceAvailableService.all()
+    return display_service_user_details
+
 
 
 def prepare_form_data_request_service_sequencing (request_user):

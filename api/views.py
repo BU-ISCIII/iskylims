@@ -10,6 +10,7 @@ from .serializers import *
 
 from iSkyLIMS_drylab.utils.handling_resolutions import send_resolution_in_progress_email
 
+'''
 try:
    from iSkyLIMS_wetlab.utils.api.wetlab_api  import *
    wetlab_api_available = True
@@ -24,8 +25,8 @@ def get_projectsid(service):
    for project in project_list:
        projects_id.append(str(project.get_requested_external_project_id()))
    return projects_id
-
-@api_view(['GET',])
+'''
+@api_view(['GET'])
 def service_list(request ):
 
     if 'state' in request.GET:
@@ -41,18 +42,18 @@ def service_list(request ):
             return Response(status = status.HTTP_204_NO_CONTENT)
 
     services_serializer = ServiceSerializer(service_objs, many=True)
-
-    for item in range(len(services_serializer.data)):
-        if Resolution.objects.filter(resolutionServiceID__pk__exact = services_serializer.data[item]['pk']).exists():
-            resolution_objs = Resolution.objects.filter(resolutionServiceID__pk__exact = services_serializer.data[item]['pk'])
-            resolution_list = []
-            for resolution_obj in resolution_objs:
-                resolution_data = {}
-                resolution_data['id'] = resolution_obj.get_resolution_id()
-                resolution_data['number'] = resolution_obj.get_resolution_number()
-                resolution_data['state'] = resolution_obj.get_resolution_state()
-                resolution_list.append(resolution_data)
-            services_serializer.data[item]['resolutions'] = resolution_list
+    if not 'resolutionData' in request.GET or request.GET['resolutionData'] == 'False':
+        for item in range(len(services_serializer.data)):
+            if Resolution.objects.filter(resolutionServiceID__pk__exact = services_serializer.data[item]['pk']).exists():
+                resolution_objs = Resolution.objects.filter(resolutionServiceID__pk__exact = services_serializer.data[item]['pk'])
+                resolution_list = []
+                for resolution_obj in resolution_objs:
+                    resolution_data = {}
+                    resolution_data['id'] = resolution_obj.get_resolution_id()
+                    resolution_data['number'] = resolution_obj.get_resolution_number()
+                    resolution_data['state'] = resolution_obj.get_resolution_state()
+                    resolution_list.append(resolution_data)
+                services_serializer.data[item]['resolutions'] = resolution_list
 
     return Response(services_serializer.data, status = status.HTTP_200_OK)
 
@@ -62,6 +63,13 @@ def resolution_data(request):
         if Resolution.objects.filter(resolutionNumber__exact = request.GET['resolution']).exists():
             resolution_obj = Resolution.objects.filter(resolutionNumber__exact =request.GET['resolution']).last()
             resolution_serializer = ResolutionSerializer(resolution_obj, many=False)
+            return Response(resolution_serializer.data, status = status.HTTP_200_OK)
+        else:
+            return Response(status = status.HTTP_204_NO_CONTENT)
+    elif 'state' in request.GET:
+        if Resolution.objects.filter(resolutionState__resolutionStateName__exact = request.GET['state']).exists():
+            resolution_objs =  Resolution.objects.filter(resolutionState__resolutionStateName__exact = request.GET['state'])
+            resolution_serializer = ResolutionSerializer(resolution_objs, many=True)
             return Response(resolution_serializer.data, status = status.HTTP_200_OK)
         else:
             return Response(status = status.HTTP_204_NO_CONTENT)
@@ -132,7 +140,7 @@ def jobs_list_state(request,state):
    #jobsstate = get_object_or_404(jobs, jobState=state).last()
    serializer = PipelineExternalDataJobsSerializer(jobs,many=True)
    return Response(serializer.data)
-'''
+
 
 @api_view(['GET'],)
 def get_pipeline(request,pipeline):
@@ -161,3 +169,4 @@ def api_update_state(request, service):
        pipejob_serializer.save()
        return Response(pipejob_serializer.data)
    return Response(pipejob_serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+'''
