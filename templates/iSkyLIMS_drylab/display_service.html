@@ -61,25 +61,30 @@
             </div> <!--// end panel -->
         </div> <!--// end col-sm-6  general information from service  -->
         <div class="col-sm-5 col-sm-offset-1">
-            <div class="col-sm-12">  <!-- Samples Requested services -->
+            <div class="col-sm-12">  <!-- calculation dates -->
                 <div class="panel panel-default">
                     <div class="panel-heading"><h3>Calculation dates</h3></div>
                     <div class="panel-body">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Concept</th>
-                                    <th>Number of days</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for date, value in display_service_for_user.calculation_dates %}
+                        {% if display_service_for_user.calculation_dates %}
+                            <table class="table table-hover">
+                                <thead>
                                     <tr>
-                                        <td> </td>
+                                        <th>Time period</th>
+                                        <th>Number of days</th>
                                     </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {% for date, value in display_service_for_user.calculation_dates %}
+                                        <tr>
+                                            <td>{{date}} </td>
+                                            <td>{{value}} days</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <h5 style="text-align:center"> Service does not handle yet </h5>
+                        {% endif %}
                     </div> <!--// end panel body -->
                 </div> <!--// end panel -->
             </div> <!--// end col-sm-12    -->
@@ -168,7 +173,34 @@
                     </table>
                 </div> <!--// end panel body -->
             </div> <!--// end panel -->
-        </div> <!--// end col-sm-6  general information from service  -->
+            <br>
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Calculation dates</h3></div>
+                <div class="panel-body">
+                    {% if display_service.calculation_dates %}
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Time period</th>
+                                    <th>Number of days</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for date, value in display_service.calculation_dates %}
+                                    <tr>
+                                        <td>{{date}} </td>
+                                        <td>{{value}} days</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <h5 style="text-align:center"> Service does not handle yet </h5>
+                    {% endif %}
+                </div> <!--// end panel body -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-6    -->
+
         <div class="col-sm-6 ">  <!-- Actions  allowed-->
             <div class="panel panel-default">
                 <div class="panel-heading"><h3>Allowed actions on {{ display_service.service_name}}</h3></div>
@@ -336,16 +368,23 @@
                         </div> <!--// end panel body -->
                     </div> <!--// end panel -->
                 </div> <!--// end col-sm-6 -->
-                <div class="col-sm-5 col-sm-offset-1">
+                <div class="col-sm-6">
                     <div class="col-sm-12">  <!-- Samples Requested services -->
                         <div class="panel panel-default">
                             <div class="panel-heading"><h3>Samples requested in service</h3></div>
                             <div class="panel-body">
                                 <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Sample Name</th>
+                                            <th>Project Name</th>
+                                        </tr>
+                                    </thead>
                                     <tbody>
-                                        {% for key, value in display_service.samples %}
+                                        {% for key, sample, project in display_service.samples %}
                                             <tr>
-                                                <td><a href="/wetlab/displaySampleInRun={{ key }}"  target="_blank" rel="noopener noreferrer">{{value}}</a> </td>
+                                                <td><a href="/wetlab/displaySampleInRun={{ key }}"  target="_blank" rel="noopener noreferrer">{{sample}}</a> </td>
+                                                <td>{{project}}</td>
                                             </tr>
                                         {% endfor %}
                                     </tbody>
@@ -353,15 +392,16 @@
                             </div> <!--// end panel body -->
                         </div> <!--// end panel -->
                     </div> <!--// end col-sm-12   samples Requested services  -->
-                    <div class="col-sm-12">  <!-- Notes in the Requested services -->
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><h3>Notes included in the service request</h3></div>
-                            <div class="panel-body">
-                                {{display_service.service_notes}}
-                            </div> <!--// end panel body -->
-                        </div> <!--// end panel -->
-                    </div> <!--// end col-sm-12  Projects Requested services  -->
+
                 </div> <!--// end col-sm-5 -->
+                <div class="col-sm-12">  <!-- Notes in the Requested services -->
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h3>Notes included in the service request</h3></div>
+                        <div class="panel-body">
+                            {{display_service.service_notes}}
+                        </div> <!--// end panel body -->
+                    </div> <!--// end panel -->
+                </div> <!--// end col-sm-12  notes  -->
             </div><!-- // end of tab request_services -->
 
             <div id="pipelines" class="tabcontent">

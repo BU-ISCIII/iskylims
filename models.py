@@ -259,6 +259,7 @@ class Service(models.Model):
 	def get_service_id (self):
 		return '%s' %self.pk
 
+
 	def get_service_dates (self):
 		service_dates =[]
 		service_dates.append(self.serviceCreatedOnDate.strftime("%d %B, %Y"))
@@ -304,6 +305,12 @@ class Service(models.Model):
 	def get_service_creation_time (self):
 		return self.serviceCreatedOnDate.strftime("%d %B, %Y")
 
+	def get_service_creation_time_no_format (self):
+		return self.serviceCreatedOnDate
+
+	def get_service_delivery_time_no_format (self):
+		return self.serviceOnDeliveredDate
+
 	def get_service_file(self):
 		if self.serviceFile != None :
 			return '%s' %(self.serviceFile)
@@ -316,6 +323,9 @@ class Service(models.Model):
 
 	def get_service_state(self):
 		return '%s' %(self.serviceStatus)
+
+	def get_service_request_center(self):
+		return '%s' %(self.serviceSeqCenter)
 
 	def get_service_user_notes(self):
 		return '%s' %(self.serviceNotes)
@@ -571,6 +581,9 @@ class Resolution(models.Model):
 		if self.resolutionEstimatedDate != None:
 			return '%s' %(self.resolutionEstimatedDate)
 		return 'Not yet defined'
+
+	def get_resolution_in_progress_date_no_format(self):
+		return self.resolutionOnInProgressDate
 
 	def update_resolution_in_progress_date(self):
 		today = datetime.date.today()

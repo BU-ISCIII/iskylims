@@ -188,7 +188,7 @@ def get_service_information (service_id):
         samples_in_service = RequestedSamplesInServices.objects.filter(samplesInService = service_obj)
         display_service_details['samples'] = []
         for sample in samples_in_service:
-            display_service_details['samples'].append([sample.get_external_sample_id(), sample.get_external_sample_name()])
+            display_service_details['samples'].append([sample.get_external_sample_id(), sample.get_external_sample_name(), sample.get_external_project_name()])
 
     display_service_details['user_name'] = service_obj.get_service_requested_user()
     user_input_file = service_obj.get_service_file()
@@ -291,6 +291,19 @@ def get_service_information (service_id):
 
         if len(display_service_details['piplelines_data']) > 0:
             display_service_details['pipelines_heading'] = drylab_config.HEADING_PIPELINES_USED_IN_RESOLUTIONS
+    created_date = service_obj.get_service_creation_time_no_format()
+    delivery_date = service_obj.get_service_delivery_time_no_format()
+    dates = []
+    if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
+        resolution_obj = Resolution.objects.filter(resolutionServiceID = service_obj).first()
+        in_progress_date = resolution_obj.get_resolution_in_progress_date_no_format()
+        if in_progress_date != None :
+            time_in_queue = (in_progress_date - created_date).days
+            dates.append(['Time in Queue', time_in_queue])
+        if delivery_date != None:
+                execution_time = (delivery_date - in_progress_date).days
+                dates.append(['Execution time', execution_time])
+    display_service_details['calculation_dates'] = dates
 
     return display_service_details
 
@@ -319,6 +332,19 @@ def get_service_for_user_information (service_id):
     display_service_user_details['service_dates'] = zip (drylab_config.HEADING_SERVICE_DATES, service_obj.get_service_dates() )
 	# get all services
     display_service_user_details['nodes']= service_obj.serviceAvailableService.all()
+    created_date = service_obj.get_service_creation_time_no_format()
+    delivery_date = service_obj.get_service_delivery_time_no_format()
+    dates = []
+    if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
+        resolution_obj = Resolution.objects.filter(resolutionServiceID = service_obj).first()
+        in_progress_date = resolution_obj.get_resolution_in_progress_date_no_format()
+        if in_progress_date != None :
+            time_in_queue = (in_progress_date - created_date).days
+            dates.append(['Time in Queue', time_in_queue])
+        if delivery_date != None:
+                execution_time = (delivery_date - in_progress_date).days
+                dates.append(['Execution time', execution_time])
+    display_service_user_details['calculation_dates'] = dates
     return display_service_user_details
 
 

@@ -314,7 +314,7 @@ def display_service (request, service_id):
         #redirect to login webpage
         return redirect ('/accounts/login')
     if Service.objects.filter(pk=service_id).exists():
-        if  is_service_manager(request):
+        if not is_service_manager(request):
             # display limit information of the service
             display_service_for_user = get_service_for_user_information(service_id)
             return render (request,'iSkyLIMS_drylab/display_service.html',{'display_service_for_user': display_service_for_user})
@@ -349,8 +349,9 @@ def search_service (request):
         start_date=request.POST['startdate']
         end_date=request.POST['enddate']
         center = request.POST['center']
+        sample_name = request.POST['samplename']
         user_name = request.POST['username']
-        if service_number_request == '' and service_state == '' and start_date == '' and end_date == '' and center == '' and user_name =='':
+        if service_number_request == '' and service_state == '' and start_date == '' and end_date == '' and center == '' and sample_name == ''  and user_name =='':
             return render( request,'iSkyLIMS_drylab/searchService.html',{'services_search_list': services_search_list })
 
         ### check the right format of start and end date
@@ -371,6 +372,7 @@ def search_service (request):
                 return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['No matches have been found for the service number ', service_number_request ]})
         else:
             services_found = Service.objects.all()
+
         if service_state != '':
             services_found = services_found.filter(serviceStatus__exact = service_state)
         if start_date !='' and end_date != '':
@@ -381,6 +383,12 @@ def search_service (request):
             services_found = services_found.filter(serviceCreatedOnDate__lte = end_date)
         if center != '':
             services_found = services_found.filter(serviceRequestNumber__icontains  = center)
+        if sample_name != '':
+            sample_in_services = RequestedSamplesInServices.objects.filter(externalSampleName__icontains = sample_name)
+            service_list = []
+            for sample_in_service in sample_in_services:
+                service_list.append(sample_in_service.pk)
+            services_found = services_found.filter(pk__in = service_list)
         if  user_name != '':
             services_found = services_found.filter(serviceUserId  = user_name)
         if len(services_found) == 0 :
@@ -388,16 +396,16 @@ def search_service (request):
             return render( request,'iSkyLIMS_drylab/searchService.html',{'services_search_list': services_search_list , 'ERROR':error_message})
         #If only 1 service mathes the user conditions, then get the user information
         if len(services_found) == 1 :
-            redirect_page = '/drylab/display_service=' + str(services_found[0].id)
+            redirect_page = '/drylab/display_service=' + str(services_found[0].get_service_id())
             return redirect (redirect_page)
         else:
             display_multiple_services ={}
             s_list  = {}
             for service_item in services_found:
-                service_id = service_item.id
-                service_number = service_item.serviceRequestNumber
-                service_status = service_item.serviceStatus
-                service_center = service_item.serviceSeqCenter
+                service_id = service_item.get_service_id()
+                service_number = service_item.get_service_request_number()
+                service_status = service_item.get_service_state()
+                service_center = service_item.get_service_request_center()
                 s_list [service_id]=[[service_number, service_status, service_center]]
             display_multiple_services['s_list'] = s_list
             return render (request,'iSkyLIMS_drylab/searchService.html', {'display_multiple_services': display_multiple_services})
