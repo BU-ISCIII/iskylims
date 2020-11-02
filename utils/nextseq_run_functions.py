@@ -4,7 +4,7 @@ import os
 import shutil
 from .generic_functions import *
 from iSkyLIMS_wetlab.models import *
-from iSkyLIMS_drylab.models import Machines, Platform
+#from iSkyLIMS_drylab.models import Machines, Platform
 from iSkyLIMS_wetlab.wetlab_config import *
 
 from django_utils.models import Center
@@ -122,7 +122,7 @@ def nextseq_parsing_run_information(l_run_info, l_run_parameter, experiment_name
     running_data['PlannedIndex2ReadCycles']=parameter_data_root.find('PlannedIndex2ReadCycles').text
     '''
 
-    
+
     for i in run_root.iter('Name'):
         image_channel.append(i.text)
     running_data['ImageChannel']=image_channel

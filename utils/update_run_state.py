@@ -11,7 +11,7 @@ import logging
 
 
 from iSkyLIMS_wetlab import wetlab_config
-from iSkyLIMS_drylab.models import Machines, Platform
+#from iSkyLIMS_drylab.models import Machines, Platform
 
 from .generic_functions import *
 from .miseq_run_functions import  handle_miseq_run , manage_miseq_in_samplesent,  manage_miseq_in_processing_run

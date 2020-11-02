@@ -295,10 +295,10 @@ ERROR_NO_COLLECTION_INDEX_FOUND = ['There are no recorded information for the Co
 ERROR_INVALID_SEQUENCE_CHARACTERS = ['Invalid characters in Index sequene', '']
 
 ###### ERROR TEXT FOR SEACHING #############################################
-ERROR_NO_MATCHES_FOR_RUN_SEARCH = ['There is not any run that mathes your input conditions']
+ERROR_NO_MATCHES_FOR_RUN_SEARCH = ['There is not any run that matches your input conditions']
 ERROR_NO_MATCHES_FOR_PROJECT_SEARCH = ['There is not any project that mathes your input conditions']
 ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS = ['There is not any Index Library Kit  that mathes your input conditions']
-ERROR_NO_MATCHES_FOR_USER_LOT_KIT = ['There is not any User Lot Kit  that mathes your input conditions']
+ERROR_NO_MATCHES_FOR_USER_LOT_KIT = ['There is not any User Lot Kit  that matches your input conditions']
 ERROR_NO_USER_LOT_KIT_DEFINED =['No User Lot Kit are defined']
 ERROR_INVALID_FORMAT_FOR_DATES = ['Invalid date format. Use the format  (DD-MM-YYYY)']
 ERROR_USER_NAME_TOO_SHORT = ['User name must contains at least 5 characters']

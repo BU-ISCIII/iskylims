@@ -3,7 +3,7 @@ from datetime import datetime
 
 from .generic_functions import *
 from iSkyLIMS_wetlab.models import *
-from iSkyLIMS_drylab.models import Machines, Platform
+#from iSkyLIMS_drylab.models import Machines, Platform
 
 from django_utils.models import Center
 from .sample_sheet_utils import get_index_library_name, get_projects_in_run
