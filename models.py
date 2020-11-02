@@ -69,7 +69,7 @@ class RunProcess(models.Model):
     useSpaceFastaMb=models.CharField(max_length=10, blank=True)
     useSpaceOtherMb=models.CharField(max_length=10, blank=True)
 
-    sequencerModel = models.ForeignKey ('iSkyLIMS_drylab.Machines', on_delete=models.CASCADE, null=True, blank=True)
+    # sequencerModel = models.ForeignKey ('iSkyLIMS_drylab.Machines', on_delete=models.CASCADE, null=True, blank=True)
 
 
     def __str__(self):

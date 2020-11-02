@@ -1792,7 +1792,7 @@ def stats_per_researcher (request):
                     total_lanes_summary = {}
 
                     for sequencer in projects_name_dict.keys() :
-                        runs_sequencer = RunProcess.objects.filter(sequencerModel__machineName__exact = sequencer)
+                        runs_sequencer = RunProcess.objects.filter(usedSequencer__sequencerName__exact = sequencer)
                         run_sequencer_id_list = []
                         for run in runs_sequencer :
                             run_sequencer_id_list.append(run.pk)
