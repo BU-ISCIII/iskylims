@@ -68,6 +68,8 @@ ERROR_NO_SERVICES_ARE_SELECTED = ['Unable to process your request', 'No services
 
 HEADING_SELECT_SAMPLE_IN_SERVICE = ['Run Name', 'Run ID', 'Project Name',  'Project ID','Sample Name', 'sample id', 'Run finish date']
 
+HEADING_SELECT_EXTERNAL_SAMPLE_IN_SERVICE = ['Sample Name', 'Related to project']
+
 HEADING_ADDITIONAL_PIPELINE_PARAMETERS = ['Additional parameter name', 'Additional Parameter Value']
 
 HEADING_SERVICE_DATES = ['Service Date Creation', 'Approval Service Date', 'Rejected Service Date']

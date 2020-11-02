@@ -50,6 +50,12 @@ class FileExt(models.Model):
 	def __str__ (self):
 		return '%s' %(self.fileExt)
 
+	def get_file_extension(self):
+		return '%s' %(self.fileExt)
+
+	def get_file_extension_id(self):
+		return '%s' %(self.pk)
+
 class Platform(models.Model):
 	platformName=models.CharField(_("Sequencing platform"),max_length=20)
 

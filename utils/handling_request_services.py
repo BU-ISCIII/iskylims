@@ -7,7 +7,7 @@ from django.core.mail import send_mail
 from iSkyLIMS_drylab import drylab_config
 from iSkyLIMS_drylab.models import *
 from iSkyLIMS_drylab.utils.graphics import *
-from iSkyLIMS_core.models import Samples
+from iSkyLIMS_core.models import Samples, SequencingPlatform
 
 from iSkyLIMS_drylab.utils.drylab_common_functions import *
 from django_utils.fusioncharts.fusioncharts import FusionCharts
@@ -358,20 +358,38 @@ def prepare_form_data_request_service_sequencing (request_user):
     Return:
     	display_service
     '''
-    display_service = {}
-    # getting projects from user sharing list
-    sharing_list = []
-    user_groups = request_user.groups.values_list('name',flat=True)
-    for user in user_groups :
-        if User.objects.filter(username__exact = user).exists():
-            display_servicesharing_list.append(User.objects.get(username__exact = user).id)
-    sharing_list.append(request_user.id)
-    if wetlab_api_available :
-        display_service['serviceProjects']= get_user_projects(sharing_list)
-        display_service['serviceProjectsHeading']='User Projects'
-    display_service['nodes'] = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
+    service_data_information = {}
+	# get requestiong sequencing data
+    if SequencingPlatform.objects.all().exists():
+        service_data_information['platform'] = []
+        platform_objs = SequencingPlatform.objects.all()
+        for platform_obj in platform_objs:
+            service_data_information['platform'].append([platform_obj.get_platform_id(), platform_obj.get_platform_name()])
+    if FileExt.objects.all().exists():
+        service_data_information['file_extension'] =[]
+        file_ext_objs = FileExt.objects.all()
+        for file_ext_obj in file_ext_objs:
+            service_data_information['file_extension'].append([file_ext_obj.get_file_extension_id(),file_ext_obj.get_file_extension()])
+    service_data_information['nodes'] = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
 
-    return display_service
+    # getting samples from user sharing list
+    #sharing_list = []
+    #user_groups = request_user.groups.values_list('name',flat=True)
+    #for user in user_groups :
+    #    if User.objects.filter(username__exact = user).exists():
+    #        display_servicesharing_list.append(User.objects.get(username__exact = user).id)
+    #sharing_list.append(request_user.id)
+    #if wetlab_api_available :
+    #    display_service['serviceProjects']= get_user_projects(sharing_list)
+    #    display_service['serviceProjectsHeading']='User Projects'
+
+    if wetlab_api_available :
+        user_sharing_list = get_user_sharing_lits(request_user)
+        service_data_information['samples_data'] = get_runs_projects_samples_and_dates(user_sharing_list)
+        if len(service_data_information['samples_data']) > 0:
+            service_data_information['samples_heading'] = drylab_config.HEADING_SELECT_SAMPLE_IN_SERVICE
+        service_data_information['external_sample_heading'] = drylab_config.HEADING_SELECT_EXTERNAL_SAMPLE_IN_SERVICE
+    return service_data_information
 
 def send_service_creation_confirmation_email(email_data):
     '''
