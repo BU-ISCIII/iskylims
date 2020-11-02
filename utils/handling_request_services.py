@@ -59,8 +59,7 @@ def create_new_save_service_request(request):
     else:
         service_data['serviceSeqCenter'] = drylab_config.INTERNAL_SEQUENCING_UNIT
     service_data['serviceNotes'] = request.POST['description']
-    #new_service = form.save(commit=False)
-    service_data['serviceStatus'] = "recorded"
+    service_data['serviceRunSpecs'] = request.POST['runSpecification']
     service_data ['serviceUserId'] = request.user
     service_data['serviceRequestInt'] = increment_service_number(request.user.id)
     service_data['serviceRequestNumber'] = create_service_id(service_data['serviceRequestInt'],request.user.id)
@@ -188,7 +187,7 @@ def get_service_information (service_id):
         samples_in_service = RequestedSamplesInServices.objects.filter(samplesInService = service_obj)
         display_service_details['samples'] = []
         for sample in samples_in_service:
-            display_service_details['samples'].append([sample.get_external_sample_id(), sample.get_external_sample_name(), sample.get_external_project_name()])
+            display_service_details['samples'].append([sample.get_sample_id(), sample.get_sample_name(), sample.get_project_name()])
 
     display_service_details['user_name'] = service_obj.get_service_requested_user()
     user_input_file = service_obj.get_service_file()
@@ -324,7 +323,7 @@ def get_service_for_user_information (service_id):
         samples_in_service = RequestedSamplesInServices.objects.filter(samplesInService = service_obj)
         display_service_user_details['samples'] = []
         for sample in samples_in_service:
-            display_service_user_details['samples'].append([sample.get_external_sample_id(), sample.get_external_sample_name(), sample.get_external_project_name()])
+            display_service_user_details['samples'].append([sample.get_sample_id(), sample.get_sample_name(), sample.get_project_name()])
 
     display_service_user_details['user_name'] = service_obj.get_service_requested_user()
     display_service_user_details['state'] = service_obj.get_service_state()
@@ -440,11 +439,7 @@ def stored_samples_for_sequencing_request_service(sample_requested, new_service)
             for i in range(len(heading)):
                 data[heading[i]] = row[i]
             data['samplesInService'] = new_service
-            if Samples.objects.filter(sampleName__exact = data['sample_name']).exists():
-                data['sample'] = Samples.objects.filter(sampleName__exact = data['sample']).last()
-            else:
-                data['sample'] = None
-
+            data['external'] = False
             req_samp_obj = RequestedSamplesInServices.objects.create_request_sample(data)
             requested_sample_list.append(data['sample_name'])
 

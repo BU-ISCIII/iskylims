@@ -11,16 +11,17 @@ class FileExtAdmin(admin.ModelAdmin):
 
 class PlatformAdmin(admin.ModelAdmin):
 	list_display=('platformName',)
-
+'''
 class MachinesAdmin (admin.ModelAdmin) :
 	list_display=('machineName', 'platformID','machineDescription', 'machineLocation','machineProvider','machineSerialNumber', 'machineState','machineOperationStart','machineOperationEnd','machineNumberLanes')
+'''
 # 'serviceUsername' refactored to 'serviceUserid' which shows better its real nature
 class ServiceAdmin(admin.ModelAdmin):
-	list_display=('serviceRequestNumber','serviceUserId','serviceSeqCenter','servicePlatform','serviceRunSpecs','serviceFileExt','serviceFile','serviceStatus','serviceNotes','serviceCreatedOnDate','serviceOnApprovedDate','serviceOnRejectedDate','serviceOnDeliveredDate')
+	list_display=('serviceRequestNumber','serviceUserId','serviceSeqCenter','serviceSequencingPlatform','serviceRunSpecs','serviceFileExt','serviceFile','serviceStatus','serviceNotes','serviceCreatedOnDate','serviceOnApprovedDate','serviceOnRejectedDate','serviceOnDeliveredDate')
 #	list_display=('serviceUserId','serviceUserId')
 
 class RequestedSamplesInServicesAdmin(admin.ModelAdmin):
-	list_display = ['samplesInService','externalSampleName', 'externalProjectName', 'externalRunName']
+	list_display = ['samplesInService','sampleName', 'projectName', 'runName']
 
 
 class AvailableServiceAdmin(DjangoMpttAdmin):
@@ -50,7 +51,7 @@ class PipelineExternalDataJobsManager(admin.ModelAdmin):
 admin.site.register(ResolutionStates,ResolutionStatesAdmin)
 admin.site.register(FileExt,FileExtAdmin)
 admin.site.register(Platform,PlatformAdmin)
-admin.site.register(Machines,MachinesAdmin)
+# admin.site.register(Machines,MachinesAdmin)
 admin.site.register(Service,ServiceAdmin)
 admin.site.register(ResolutionParameters, ResolutionParametersAdmin)
 #admin.site.register(RequestedProjectInServices, RequestedProjectInServicesAdmin)

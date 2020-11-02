@@ -19,7 +19,7 @@ class ServiceRequestFormInternalSequencing(forms.ModelForm ):
         # implementation of drop down menu to choose a project name of a list of projects
         # belonging to the logged-in user in the service request form
         exclude = ['serviceProjectNames', 'serviceProjects']
-        fields = ['servicePlatform','serviceRunSpecs','serviceFileExt','serviceAvailableService','serviceFile','serviceNotes']
+        fields = ['serviceSequencingPlatform','serviceRunSpecs','serviceFileExt','serviceAvailableService','serviceFile','serviceNotes']
         #fields = ['serviceProjectNames','servicePlatform','serviceRunSpecs','serviceFileExt','serviceAvailableService','serviceFile','serviceNotes']
         field_classes = {
 			'serviceAvailableService': TreeNodeMultipleChoiceField,
@@ -48,7 +48,7 @@ class ServiceRequestFormInternalSequencing(forms.ModelForm ):
                     layout.Div(
                     	layout.Field('serviceRunSpecs'),
                     	layout.Field('serviceFileExt'),
-                        layout.Field('servicePlatform'),
+                        layout.Field('serviceSequencingPlatform'),
             			css_class="col-md-6",
             		),
             		css_class="row panel-body"
@@ -86,7 +86,7 @@ class ServiceRequestFormInternalSequencing(forms.ModelForm ):
 class ServiceRequestFormExternalSequencing(forms.ModelForm):
  	class Meta:
  		model = Service
- 		fields = ['serviceSeqCenter','servicePlatform','serviceRunSpecs','serviceFileExt','serviceAvailableService','serviceFile','serviceNotes']
+ 		fields = ['serviceSeqCenter','serviceSequencingPlatform','serviceRunSpecs','serviceFileExt','serviceAvailableService','serviceFile','serviceNotes']
  		field_classes = {
 				'serviceAvailableService': TreeNodeMultipleChoiceField,
 				}
@@ -102,7 +102,7 @@ class ServiceRequestFormExternalSequencing(forms.ModelForm):
  					layout.Div(
  						layout.Div(
  							layout.Field('serviceSeqCenter'),
- 							layout.Field('servicePlatform'),
+ 							layout.Field('serviceSequencingPlatform'),
  							css_class="col-md-6",
  						),
  						layout.Div(
@@ -156,7 +156,7 @@ class ServiceRequestForm_extended(ServiceRequestFormExternalSequencing):
 				'serviceUserId',
 				'serviceRequestNumber',
 				'serviceRequestInt',
-				'servicePlatform',
+				'serviceSequencingPlatform',
 				'serviceRunSpecs',
 				'serviceFileExt',
 				'serviceStatus',

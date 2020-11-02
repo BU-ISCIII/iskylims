@@ -90,14 +90,8 @@ def configuration_email(request):
 def new_request_service(request):
 	if request.method == 'POST' and request.POST['action'] == 'createservice':
 		# check that at some services have been requested
-		import pdb; pdb.set_trace()
 		if len(request.POST.getlist('RequestedServices')) == 0 :
 			service_data_information = prepare_form_data_request_service_sequencing(request.user)
-			if wetlab_api_available :
-				user_sharing_list = get_user_sharing_lits(request.user)
-				service_data_information['samples_data'] = get_runs_projects_samples_and_dates(user_sharing_list)
-				if len(service_data_information['samples_data']) > 0:
-					service_data_information['samples_heading'] = drylab_config.HEADING_SELECT_SAMPLE_IN_SERVICE
 			error_message = drylab_config.ERROR_NO_SERVICES_ARE_SELECTED
 			return render(request,'iSkyLIMS_drylab/newRequestService.html',{'service_data_information':service_data_information,
 									'error_message':error_message})
@@ -132,7 +126,7 @@ def new_request_service(request):
 
 	else:
 		service_data_information = prepare_form_data_request_service_sequencing(request.user)
-		
+
 		return render(request,'iSkyLIMS_drylab/newRequestService.html',{'service_data_information':service_data_information})
 
 @login_required

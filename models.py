@@ -13,7 +13,7 @@ from django.utils.timezone import now as timezone_now
 from django_utils.models import Profile,Center
 from django.contrib.auth.models import User
 
-from iSkyLIMS_core.models import Samples
+from iSkyLIMS_core.models import Samples, SequencingPlatform
 from iSkyLIMS_drylab import drylab_config
 
 
@@ -64,7 +64,7 @@ class Platform(models.Model):
 
 	def get_platform_name(self):
 		return '%s'  %(self.platformName)
-
+'''
 class Machines (models.Model) :
 	platformID = models.ForeignKey(Platform ,on_delete=models.CASCADE)
 	machineName = models.CharField(_("Machine Name"),max_length=255)
@@ -86,7 +86,7 @@ class Machines (models.Model) :
 
 	def get_number_of_lanes(self):
 		return '%s' %(self.machineNumberLanes)
-
+'''
 class AvailableService(MPTTModel):
 	availServiceDescription=models.CharField(_("Available services"),max_length=100)
 	parent=TreeForeignKey('self',models.SET_NULL,null=True,blank=True)
@@ -123,29 +123,12 @@ class Pipelines(models.Model):
                 on_delete=models.CASCADE)
 	pipelineName = models.CharField(max_length = 50)
 	pipelineVersion = models.CharField(max_length = 10)
-	#useRunFolder = models.BooleanField(default = True, null = True)
-	#externalRequest = models.BooleanField(default = True)
-	#default = models.BooleanField(default = False)
 	pipelineInUse = models.BooleanField(default = True)
 	generated_at = models.DateTimeField(auto_now_add = True)
-	#automatic = models.BooleanField(default = True)
+
 
 	def __str__ (self):
 		return '%s_%s' %(self.pipelineName, self.pipelineVersion)
-
-	'''
-	def get_all_pipeline_data(self):
-		data = []
-		data.append(self.availableService.get_service_description())
-		data.append(self.userName.username)
-		data.append(self.pipelineName)
-		data.append(self.pipelineVersion)
-		data.append(self.generated_at.strftime("%B %d, %Y"))
-		data.append(self.default)
-		data.append(self.pipelineInUse)
-		return data
-	'''
-
 
 	def get_pipeline_name (self):
 		return '%s' %(self.pipelineName)
@@ -191,27 +174,14 @@ class Pipelines(models.Model):
 		data.append(self.pk)
 		return data
 
-	def get_used_run_folder (self):
-		return '%s' %(self.useRunFolder)
-
-	def remove_default_pipeline(self):
-		self.default = False
-		self.save()
-		return self
-
-	def set_default_pipeline(self):
-		self.default = True
-		self.save()
-		return self
-
-
 	objects = PipelinesManager()
 
 class ServiceManager (models.Manager):
 	def create_service(self, data):
-		new_service = self.create(serviceUserId = data['serviceUserId'], serviceSeqCenter= data['serviceSeqCenter'],
+		new_service = self.create(serviceUserId = data['serviceUserId'], serviceFileExt = data['serviceFileExt'],
+				serviceRunSpecs = data['serviceRunSpecs'], serviceSeqCenter= data['serviceSeqCenter'],
 		serviceRequestNumber = data['serviceRequestNumber'], serviceRequestInt = data['serviceRequestInt'],
-		serviceStatus= data['serviceStatus'], serviceNotes = data['serviceNotes'])
+		serviceStatus= 'Recorded', serviceNotes = data['serviceNotes'])
 		return new_service
 
 
@@ -222,14 +192,17 @@ class Service(models.Model):
 	serviceUserId = models.ForeignKey(
 				User ,
 				on_delete=models.CASCADE, null=True)
-	servicePlatform = models.ForeignKey(
-				Platform ,
-				on_delete=models.CASCADE ,
-				verbose_name=_("Sequencing platform"),blank=True,null=True)
+	#servicePlatform = models.ForeignKey(
+	#			Platform ,
+	#			on_delete=models.CASCADE ,
+	#			verbose_name=_("Sequencing platform"),blank=True,null=True)
 	serviceFileExt = models.ForeignKey(
 				FileExt ,
 				on_delete=models.CASCADE ,
 				verbose_name=_("File extension"),blank=True,null=True)
+	serviceSequencingPlatform  = models.ForeignKey(
+				SequencingPlatform,
+                on_delete=models.CASCADE, null = True, blank = True)
 	serviceAvailableService = TreeManyToManyField(
 				AvailableService,
 				verbose_name=_("AvailableServices"))
@@ -252,8 +225,6 @@ class Service(models.Model):
 
 	serviceOnDeliveredDate = models.DateField(auto_now_add=False, null=True, blank=True)
 
-
-
 	def __str__ (self):
 		return '%s' %(self.serviceRequestNumber)
 
@@ -264,7 +235,6 @@ class Service(models.Model):
 
 	def get_service_id (self):
 		return '%s' %self.pk
-
 
 	def get_service_dates (self):
 		service_dates =[]
@@ -380,42 +350,12 @@ class Service(models.Model):
 
 	objects = ServiceManager()
 
-'''
-class RequestedProjectInServicesManager(models.Manager):
-	def create_request_project_service(self, data):
-		new_project_request =self.create( projectService = data['projectService'], externalProjectKey = data['externalProjectKey'],
-					externalProjectName = data['externalProjectName'])
-		return new_project_request
-
-class RequestedProjectInServices (models.Model):
-	projectService = models.ForeignKey(
-					Service,
-					on_delete = models.CASCADE)
-	externalProjectKey = models.CharField(max_length = 5, null = True, blank = True)
-	externalProjectName = models.CharField(max_length = 70, null = True, blank = True)
-	generated_at = models.DateField(auto_now_add = True)
-
-	def __str__ (self):
-		return '%s' %(self.externalProjectName)
-
-	def get_requested_project_name (self):
-		return '%s' %(self.externalProjectName)
-
-	def get_requested_external_project_id (self):
-		return '%s' %(self.externalProjectKey)
-
-	def get_requested_project_id (self):
-		return '%s' %(self.pk)
-
-	objects = RequestedProjectInServicesManager()
-
-'''
 
 class RequestedSamplesInServicesManager (models.Manager):
 	def create_request_sample (self, data):
-		new_req_sample_service = self.create( samplesInService= data['samplesInService'], externalRunName = data['run_name'],
-					externalRunNameKey = data['run_id'], externalProjectName = data['project_name'],  externalProjectKey = data['project_id'],
-					externalSampleName = data['sample_name'],  externalSampleKey = data['sample_id'], sample = data['sample'])
+		new_req_sample_service = self.create( samplesInService= data['samplesInService'], runName = data['run_name'],
+					runNameKey = data['run_id'], projectName = data['project_name'],  projectKey = data['project_id'],
+					sampleName = data['sample_name'],  sampleKey = data['sample_id'], externalSample = data['external'])
 		return new_req_sample_service
 
 
@@ -423,35 +363,28 @@ class RequestedSamplesInServices (models.Model):
 	samplesInService = models.ForeignKey(
 					Service,
 					on_delete = models.CASCADE)
-	sample = models.ForeignKey(
-					Samples,
-					null = True, blank = True, on_delete = models.CASCADE)
-	# project = models.ForeignKey(
-	# 				RequestedProjectInServices,
-	# 				null = True, blank = True, on_delete = models.CASCADE)
-	# run = models.ForeignKey(
-	# 				RequestedProjectInServices,
-	# 				null = True, blank = True, on_delete = models.CASCADE)
-	externalSampleKey = models.CharField(max_length = 5, null = True, blank = True)
-	externalSampleName = models.CharField(max_length = 50, null = True, blank = True)
-	externalSamplePath =  models.CharField(max_length = 250, null = True, blank = True)
-	externalRunNameKey = models.CharField(max_length = 5, null = True, blank = True)
-	externalRunName = models.CharField(max_length = 50, null = True, blank = True)
-	externalProjectKey = models.CharField(max_length = 5, null = True, blank = True)
-	externalProjectName = models.CharField(max_length = 50, null = True, blank = True)
+
+	sampleKey = models.CharField(max_length = 5, null = True, blank = True)
+	sampleName = models.CharField(max_length = 50, null = True, blank = True)
+	samplePath =  models.CharField(max_length = 250, null = True, blank = True)
+	runNameKey = models.CharField(max_length = 5, null = True, blank = True)
+	runName = models.CharField(max_length = 50, null = True, blank = True)
+	projectKey = models.CharField(max_length = 5, null = True, blank = True)
+	projectName = models.CharField(max_length = 50, null = True, blank = True)
+	externalSample = models.BooleanField(default = False)
 	generated_at = models.DateField(auto_now_add = True)
 
 	def __str__ (self):
-		return '%s' %(self.externalSampleName)
+		return '%s' %(self.sampleName)
 
-	def get_external_sample_name  (self):
-		return '%s' %(self.externalSampleName)
+	def get_sample_name  (self):
+		return '%s' %(self.sampleName)
 
-	def get_external_sample_id(self):
-		return '%s' %(self.externalSampleKey)
+	def get_sample_id(self):
+		return '%s' %(self.sampleKey)
 
-	def get_external_project_name(self):
-		return '%s' %(self.externalProjectName)
+	def get_project_name(self):
+		return '%s' %(self.projectName)
 
 	objects = RequestedSamplesInServicesManager()
 
