@@ -60,7 +60,10 @@ def create_new_save_service_request(request):
         service_data['serviceSeqCenter'] = drylab_config.INTERNAL_SEQUENCING_UNIT
     service_data['serviceNotes'] = request.POST['description']
     service_data['serviceRunSpecs'] = request.POST['runSpecification']
-    service_data ['serviceUserId'] = request.user
+    service_data['serviceSequencingPlatform'] = request.POST['sequencingPlatform']
+    service_data['serviceFileExt'] = request.POST['fileExtension']
+    service_data['serviceRunSpecs'] = request.POST['runSpecification']
+    service_data['serviceUserId'] = request.user
     service_data['serviceRequestInt'] = increment_service_number(request.user.id)
     service_data['serviceRequestNumber'] = create_service_id(service_data['serviceRequestInt'],request.user.id)
 	# Save the new service

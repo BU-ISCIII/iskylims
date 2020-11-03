@@ -178,10 +178,18 @@ class Pipelines(models.Model):
 
 class ServiceManager (models.Manager):
 	def create_service(self, data):
-		new_service = self.create(serviceUserId = data['serviceUserId'], serviceFileExt = data['serviceFileExt'],
-				serviceRunSpecs = data['serviceRunSpecs'], serviceSeqCenter= data['serviceSeqCenter'],
-		serviceRequestNumber = data['serviceRequestNumber'], serviceRequestInt = data['serviceRequestInt'],
-		serviceStatus= 'Recorded', serviceNotes = data['serviceNotes'])
+		if data['serviceFileExt'] == '':
+			serviceFileExt = None
+		else:
+			serviceFileExt = FileExt.objects.get(pk__exact = data['serviceFileExt'])
+		if data['serviceSequencingPlatform'] == '':
+			serviceSequencingPlatform = None
+		else:
+			serviceSequencingPlatform = SequencingPlatform.objects.get(pk__exact = data['serviceSequencingPlatform'])
+		new_service = self.create(serviceUserId = data['serviceUserId'], serviceFileExt = serviceFileExt,
+				serviceSequencingPlatform = serviceSequencingPlatform, serviceRunSpecs = data['serviceRunSpecs'],
+				serviceSeqCenter= data['serviceSeqCenter'], serviceRequestNumber = data['serviceRequestNumber'],
+				serviceRequestInt = data['serviceRequestInt'], serviceStatus= 'Recorded', serviceNotes = data['serviceNotes'])
 		return new_service
 
 
@@ -229,7 +237,10 @@ class Service(models.Model):
 		return '%s' %(self.serviceRequestNumber)
 
 	def get_service_information (self):
-		platform = str(self.servicePlatform)
+		if self.serviceSequencingPlatform == None :
+			platform = "Not Provided"
+		else:
+			platform = self.serviceSequencingPlatform.get_platform_name()
 
 		return '%s;%s;%s;%s'  %(self.serviceRequestNumber ,self.serviceRunSpecs, self.serviceSeqCenter, platform)
 
@@ -331,22 +342,32 @@ class Service(models.Model):
 	def update_approved_date(self, date):
 		self.serviceOnApprovedDate = date
 		self.save()
+		return self
 
 	def update_service_status(self, status):
 		self.serviceStatus = status
 		self.save()
+		return self
 
 	def update_service_approved_date(self, date):
 		self.serviceOnApprovedDate = date
 		self.save()
+		return self
 
 	def update_service_delivered_date(self, date):
 		self.serviceOnDeliveredDate = date
 		self.save()
+		return self
 
 	def update_service_rejected_date(self, date):
 		self.serviceOnRejectedDate = date
 		self.save()
+		return self
+
+	def update_sequencing_platform(self, data):
+		self.serviceSequencingPlatform = data
+		self.save()
+		return self
 
 	objects = ServiceManager()
 

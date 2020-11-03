@@ -119,7 +119,7 @@ def new_request_service(request):
 		confirmation_result['text'] = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), drylab_config.CONFIRMATION_TEXT_MESSAGE))
 		if len(sample_stored) > 0 :
 			confirmation_result['samples'] = sample_stored
-		import pdb; pdb.set_trace()
+		
 		return render(request,'iSkyLIMS_drylab/RequestForm.html',{'confirmation_result':confirmation_result})
 
 
