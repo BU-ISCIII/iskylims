@@ -133,13 +133,13 @@ class Pipelines(models.Model):
 	def get_pipeline_name (self):
 		return '%s' %(self.pipelineName)
 
-	def get_external_request(self):
-		return '%s' %(self.externalRequest)
+	def get_pipeline_id (self):
+		return '%s' %(self.pk)
 
-	def get_pipleline_service(self):
+	def get_pipleline_avail_service(self):
 		return  '%s' %(self.availableService.get_service_description())
 
-	def get_pipleline_service_obj(self):
+	def get_pipleline_avail_service_obj(self):
 		return self.availableService
 
 	def get_pipeline_version(self):
@@ -149,10 +149,7 @@ class Pipelines(models.Model):
 		data = []
 		data.append(self.userName.username)
 		data.append(self.generated_at.strftime("%B %d, %Y"))
-
-		data.append(self.default)
 		data.append(self.pipelineInUse)
-		data.append(self.externalRequest)
 		return data
 
 	def get_pipeline_basic (self):
@@ -169,12 +166,43 @@ class Pipelines(models.Model):
 		data.append(self.pipelineName)
 		data.append(self.pipelineVersion)
 		data.append(self.generated_at.strftime("%B %d, %Y"))
-		data.append(self.default)
 		data.append(self.pipelineInUse)
 		data.append(self.pk)
 		return data
 
 	objects = PipelinesManager()
+
+
+
+class ParameterPipelineManager(models.Manager):
+	def create_pipeline_parameters(self, pipeline_parameters):
+		new_parameter_action_pipeline = self.create(parameterPipeline = pipeline_parameters['parameterPipeline'],
+					parameterName = pipeline_parameters['parameterName'], parameterValue = pipeline_parameters['parameterValue'])
+		return new_parameter_action_pipeline
+
+class ParameterPipeline (models.Model):
+	parameterPipeline = models.ForeignKey(
+				Pipelines,
+				on_delete = models.CASCADE)
+	parameterName = models.CharField(max_length = 80)
+	parameterValue = models.CharField(max_length = 200)
+
+	def __str__ (self):
+		return '%s' %(self.parameterName)
+
+	def get_pipeline_parameter_name (self):
+		return '%s' %(self.parameterName)
+
+	def get_pipeline_parameter_value (self):
+		return '%s' %(self.parameterValue)
+
+	def get_pipeline_parameters(self):
+		data = []
+		data.append(self.parameterName)
+		data.append(self.parameterValue)
+		return data
+
+	objects = ParameterPipelineManager()
 
 class ServiceManager (models.Manager):
 	def create_service(self, data):
@@ -625,7 +653,7 @@ class Delivery(models.Model):
 		return delivery_info
 
 	objects = DeliveryManager()
-
+'''
 class RunIDFolder (models.Model):
 	servicerequest = models.ForeignKey(
 				Service,
@@ -634,39 +662,9 @@ class RunIDFolder (models.Model):
 
 	def __str__ (self):
 		return '%s' %(self.run_id_Folder)
+'''
 
-
-
-class ParameterPipelineManager(models.Manager):
-	def create_pipeline_parameters(self, pipeline_parameters):
-		new_parameter_action_pipeline = self.create(parameterPipeline = pipeline_parameters['parameterPipeline'],
-					parameterName = pipeline_parameters['parameterName'], parameterValue = pipeline_parameters['parameterValue'])
-		return new_parameter_action_pipeline
-
-class ParameterPipeline (models.Model):
-	parameterPipeline = models.ForeignKey(
-				Pipelines,
-				on_delete = models.CASCADE)
-	parameterName = models.CharField(max_length = 80)
-	parameterValue = models.CharField(max_length = 80)
-
-	def __str__ (self):
-		return '%s' %(self.parameterName)
-
-	def get_pipeline_parameter_name (self):
-		return '%s' %(self.parameterName)
-
-	def get_pipeline_parameter_value (self):
-		return '%s' %(self.parameterValue)
-
-	def get_pipeline_parameters(self):
-		data = []
-		data.append(self.parameterName)
-		data.append(self.parameterValue)
-		return data
-
-	objects = ParameterPipelineManager()
-
+'''
 class JobStates (models.Model):
 	jobStateName = models.CharField(max_length = 20)
 
@@ -675,8 +673,8 @@ class JobStates (models.Model):
 
 	def get_job_state (self):
 		return '%s' %(self.jobStateName)
-
-
+'''
+'''
 class PipelineExternalDataJobsManager(models.Manager):
 	def create_pipeline_external_data_job (self, preparation_data):
 		jobState = JobStates.objects.get(jobStateName__exact = 'Queued')
@@ -715,7 +713,8 @@ class PipelineExternalDataJobs (models.Model):
 		return self
 
 	objects = PipelineExternalDataJobsManager()
-
+'''
+'''
 class ExternalParameterData (models.Model):
 	serviceRequest = models.ForeignKey(
 					Service,
@@ -731,3 +730,4 @@ class ExternalParameterData (models.Model):
 
 	def get_service_request(self):
 		return '%s' %(self.serviceRequest)
+'''

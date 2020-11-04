@@ -34,8 +34,28 @@
                         </tbody>
                     </table>
                     <br><br>
-                     <input type="button" value="Return Home" onclick="location.href ='/drylab' ;"/>
-                      <input class="btn pull-right" type="button" value="Create New Service Pipeline" onclick="location.href ='/drylab/definePipelineService' ;"/>
+                    {% if defined_service_pipeline.heading_parameter_pipeline %}
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    {% for value in defined_service_pipeline.heading_parameter_pipeline %}
+                                        <th>{{value}}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for name, value in defined_service_pipeline.parameters %}
+                                    <tr>
+                                        <td>{{name}}</td>
+                                        <td>{{value}}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <br><br>
+                    {% endif %}
+                    <input type="button" value="Return Home" onclick="location.href ='/drylab' ;"/>
+                    <input class="btn pull-right" type="button" value="Create New Service Pipeline" onclick="location.href ='/drylab/definePipelineService' ;"/>
                 </div> <!--  end of panel body -->
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-12 -->
@@ -88,7 +108,7 @@
                                             {% endfor %}
                                             </select>
                                         </div>
-        							</div> <!--  end of col-sm-6 -->
+                                    </div> <!--  end of col-sm-6 -->
         							<div class="col-sm-7">
                                         <label class="col-sm-5  control-label" for="pipelineName" >Pipeline Name </label>
                                         <div class="col-sm-6"><input class="form-control" type="text" required = "required" name="pipelineName" id="pipelineName" value ="{{data_pipeline.pipelineName}}" size="100" maxlength="100"></div>
@@ -96,17 +116,7 @@
                                         <label class="col-sm-5  control-label" for="pipelineVersion" >Pipeline Version </label>
                                         <div class="col-sm-6"><input class="form-control" type="text" required = "required" name="pipelineVersion" id="pipelineVersion" value ="{{data_pipeline.pipelineVersion}}"  size="20" maxlength="100"></div>
                                         <BR><br>
-                                        <label class="col-sm-5 control-label" for="useRunFolder" >Use files from Run folder</label>
-        	                            <div class="col-sm-5">
-        									<label class="radio-inline"><input type="radio" name="useRunFolder" required = "required" value="True" checked>YES</label>
-        		                            <label class="radio-inline"><input type="radio" name="useRunFolder" required = "required" value="False" >NO</label>
-        								</div>  <!-- end  radio -->
-                                        <br><br>
-                                        <label class="col-sm-5 control-label" for="automaticAction" >Allow data for external request</label>
-        	                            <div class="col-sm-5">
-        									<label class="radio-inline"><input type="radio" name="externalRequest" required = "required" value="True" checked>YES</label>
-        		                            <label class="radio-inline"><input type="radio" name="externalRequest" required = "required" value="False" >NO</label>
-        								</div>  <!-- end  radio -->
+
         							</div> <!--  end of col-sm-6-->
                                 </div>  <!-- end from-group   -->
         						<br><br>

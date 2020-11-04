@@ -21,6 +21,7 @@ urlpatterns = [
     path('managePipelines', views.manage_pipelines, name = 'manage_pipelines'),
     path('openSessions', views.open_sessions, name='open_sessions'),
     path('pendingServices', views.pending_services, name ='peding_services'),
+    path('requestSequencingService', views.request_sequencing_service, name = 'request_sequencing_service'),
     path('searchService', views.search_service, name='search_service'),
     path('service_request_<str:serviceRequestType>',views.service_request, name='service_request'),
     path('statsByDateUser',views.stats_by_date_user, name = 'stats_by_date_user'),
@@ -28,9 +29,9 @@ urlpatterns = [
     path('statsBySamplesProcessed',views.stats_by_samples_processed, name = 'stats_by_samples_processed'),
     path('statsTimeDelivery', views.stats_time_delivery, name = 'stats_time_delivery'),
     path('userLogin', views.user_login, name = 'user_login'),
-    path('newRequestService', views.new_request_service, name = 'new_request_service'),
 
-    path('multiple_files', views.multiple_files, name='multiple_files'),
+
+    path('multipleFiles', views.multiple_files, name='multiple_files'),
 
 ]
 

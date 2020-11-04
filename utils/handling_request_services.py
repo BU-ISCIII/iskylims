@@ -289,7 +289,7 @@ def get_service_information (service_id):
                     pipeline_name = pipelines_obj.get_pipeline_name()
                     if not pipeline_name in display_service_details['piplelines_data']:
                         display_service_details['piplelines_data'] [pipeline_name] = []
-                    display_service_details['piplelines_data'] [pipeline_name].append([pipeline_name, pipelines_obj.get_pipeline_version(),resolution_obj.get_resolution_number() ])
+                    display_service_details['piplelines_data'] [pipeline_name].append([pipelines_obj.get_pipeline_id(), pipeline_name, pipelines_obj.get_pipeline_version(),resolution_obj.get_resolution_number() ])
 
         if len(display_service_details['piplelines_data']) > 0:
             display_service_details['pipelines_heading'] = drylab_config.HEADING_PIPELINES_USED_IN_RESOLUTIONS
@@ -343,7 +343,7 @@ def get_service_for_user_information (service_id):
         if in_progress_date != None :
             time_in_queue = (in_progress_date - created_date).days
             dates.append(['Time in Queue', time_in_queue])
-        if delivery_date != None:
+            if delivery_date != None:
                 execution_time = (delivery_date - in_progress_date).days
                 dates.append(['Execution time', execution_time])
     display_service_user_details['calculation_dates'] = dates
@@ -420,12 +420,12 @@ def send_service_creation_confirmation_email(email_data):
     return
 
 
-def stored_samples_for_sequencing_request_service(sample_requested, new_service):
+def stored_samples_for_sequencing_request_service(form_data, new_service):
     '''
 	Description:
 		The function get the samples that were selected and store them on database
 	Input:
-		sample_requested      # table with all samples
+		form_data      # form with the internal and external samples
         new_service     # service obj
 	Functions:
 		get_user_projects	# API from iSkyLIMS_wetlab located at file wetlab_api
@@ -433,10 +433,10 @@ def stored_samples_for_sequencing_request_service(sample_requested, new_service)
 		display_service
 	'''
     requested_sample_list = []
-    requested_services_table = json.loads(sample_requested)
+	# get the internals samples
+    requested_services_table = json.loads(form_data['samples_requested'])
     heading = ['run_name', 'run_id', 'project_name', 'project_id','sample_name', 'sample_id']
     for row in requested_services_table:
-
         if row[-1] :
             data = {}
             for i in range(len(heading)):
@@ -445,5 +445,19 @@ def stored_samples_for_sequencing_request_service(sample_requested, new_service)
             data['external'] = False
             req_samp_obj = RequestedSamplesInServices.objects.create_request_sample(data)
             requested_sample_list.append(data['sample_name'])
+    # get external samples
+    external_samples_service = json.loads(form_data['external_samples'])
+    for row in external_samples_service:
+        if row[0] == '':
+            continue
+        data = {}
+        for item in heading:
+            data[item] = None
+        data['sample_name'] = row[0]
+        data['project_name'] = row[1]
+        data['samplesInService'] = new_service
+        data['external'] = True
+        ext_samp_obj = RequestedSamplesInServices.objects.create_request_sample(data)
+        requested_sample_list.append(data['sample_name'])
 
     return requested_sample_list

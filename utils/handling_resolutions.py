@@ -8,6 +8,28 @@ from iSkyLIMS_drylab.utils.handling_pipelines import get_pipeline_and_versions_f
 
 from iSkyLIMS_drylab.utils.drylab_common_functions import create_pdf
 
+def allow_to_service_update_in_progress_state (resolution_obj):
+    '''
+    Description:
+        The function check if all partial resolutions are handled all requested
+        services
+    Input:
+        resolution_obj  # resoution obj
+    Return:
+        True or False
+    '''
+    service_obj = resolution_obj.get_service_obj()
+    if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
+        resolution_objs = Resolution.objects.filter(resolutionServiceID = service_obj)
+        avail_services_handled = []
+        for resolution_obj in resolution_objs:
+            resolution_handle_list = resolution_obj.get_available_services()
+            for item in resolution_handle_list:
+                avail_services_handled.append(item)
+        if len(set(avail_services_handled)) == len(service_obj.get_child_services()):
+            return True
+    return False
+
 def get_assign_resolution_full_number(service_id, acronymName):
     '''
     Description:
@@ -184,12 +206,22 @@ def create_new_resolution(resolution_data_form):
         store_resolution_additional_parameter(resolution_data_form['additional_parameters'], new_resolution)
 
     if resolution_data_form['serviceAccepted'] == 'Accepted':
-        service_obj.update_service_status("queued")
+        if len(resolution_data_form['select_available_services']) == len(service_obj.get_child_services()):
+            service_obj.update_service_status("queued")
+        elif Resolution.objects.filter(resolutionServiceID = service_obj).exists():
+            resolution_objs = Resolution.objects.filter(resolutionServiceID = service_obj)
+            avail_services_handled = []
+            for resolution_obj in resolution_objs:
+                resolution_handle_list = resolution_obj.get_available_services()
+                for item in resolution_handle_list:
+                    avail_services_handled.append(item)
+            if len(set(avail_services_handled)) == len(service_obj.get_child_services()):
+                service_obj.update_service_status("queued")
         service_obj.update_approved_date(datetime.date.today())
     else:
         service_obj.update_service_status("rejected")
         service_obj.update_rejected_date(datetime.date.today())
-    import pdb; pdb.set_trace()
+
     return new_resolution
 
 

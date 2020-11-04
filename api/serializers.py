@@ -1,10 +1,10 @@
 
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from iSkyLIMS_drylab.models import PipelineExternalDataJobs
+#from iSkyLIMS_drylab.models import PipelineExternalDataJobs
 #from iSkyLIMS_drylab.models import ParameterPipeline
 from iSkyLIMS_drylab.models import Service , Resolution, RequestedSamplesInServices
-from iSkyLIMS_wetlab.models import SamplesInProject
+#from iSkyLIMS_wetlab.models import SamplesInProject
 
 '''
 class ParameterPipelineSerializer (serializers.ModelSerializer):
@@ -67,4 +67,4 @@ class RequestedSamplesInServicesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model  = RequestedSamplesInServices
-        fields = ['externalRunName', 'externalProjectName', 'externalSampleName' , 'externalSamplePath']
+        fields = ['runName', 'projectName', 'sampleName' , 'samplePath']

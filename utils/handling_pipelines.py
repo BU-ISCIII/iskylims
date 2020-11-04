@@ -17,11 +17,9 @@ def analyze_input_pipelines(request):
     pipeline_data['userName'] = request.user
     pipeline_data['pipelineName'] =request.POST['pipelineName']
     pipeline_data['pipelineVersion'] = request.POST['pipelineVersion']
-    pipeline_data['externalRequest'] = request.POST['externalRequest']
-    pipeline_data['useRunFolder'] = request.POST['useRunFolder']
     pipeline_json_data = json.loads(request.POST['pipeline_data'])
 
-    action_length = len(drylab_config.HEADING_ADDITIONAL_PIPELINE_PARAMETERS)
+    action_length = len(drylab_config.HEADING_PIPELINE_PARAMETERS)
 
     additional_param_dict = {}
     for row in pipeline_json_data :
@@ -55,7 +53,7 @@ def get_data_form_pipeline():
     '''
     additional_data = {}
     additional_data ['available_services']= get_children_available_services ()
-    additional_data['heading']= drylab_config.HEADING_ADDITIONAL_PIPELINE_PARAMETERS
+    additional_data['heading']= drylab_config.HEADING_PIPELINE_PARAMETERS
 
     return additional_data
 
@@ -79,7 +77,7 @@ def get_detail_pipeline_data(pipeline_id):
         #pipeline_obj = get_pipeline_obj_from_id (pipeline_id)
         if ParameterPipeline.objects.filter(parameterPipeline = pipeline_obj).exists():
             parameter_objs = ParameterPipeline.objects.filter(parameterPipeline = pipeline_obj)
-            detail_pipelines_data['parameter_heading'] = drylab_config.HEADING_ADDITIONAL_PIPELINE_PARAMETERS
+            detail_pipelines_data['parameter_heading'] = drylab_config.HEADING_PARAMETER_PIPELINE
             detail_pipelines_data['parameters'] = []
             for parameter_obj in parameter_objs :
 
@@ -87,18 +85,23 @@ def get_detail_pipeline_data(pipeline_id):
 
     return detail_pipelines_data
 
-def get_pipeline_data_to_display(pipeline_information):
+def get_defined_pipeline_data_to_display(pipeline_obj):
     '''
     Description:
         The function collect data to display information for a new defined pipeline
-
+    Input:
+        pipeline_obj    # pipeline obj to get the information
     Return:
         pipeline_data
     '''
     pipeline_data = {}
-    service_name = get_service_name_from_id (pipeline_information['availableService_id'])
-    pipeline_data['pipeline_data'] = [service_name, pipeline_information['pipelineName'],pipeline_information['pipelineVersion']]
+
+    service_name = pipeline_obj.get_pipleline_avail_service()
+    pipeline_data['pipeline_data'] = [service_name, pipeline_obj.get_pipeline_name(), pipeline_obj.get_pipeline_version()]
     pipeline_data['heading_pipeline']= drylab_config.DISPLAY_NEW_DEFINED_PIPELINE
+    pipeline_data['parameters'] = get_pipeline_parameters(pipeline_obj)
+    if len(pipeline_data['parameters']) > 0:
+        pipeline_data['heading_parameter_pipeline'] = drylab_config.HEADING_PARAMETER_PIPELINE
     return pipeline_data
 
 def get_pipelines_for_manage():
@@ -132,7 +135,7 @@ def get_pipeline_and_versions_for_available_service(available_service):
     if  Pipelines.objects.filter(availableService__pk__exact = available_service).exists():
         pipelines_objs = Pipelines.objects.filter(availableService__pk__exact = available_service).order_by('generated_at').reverse()
         for pipelines_obj in pipelines_objs:
-            pipeline_names.append([pipelines_obj.pk, pipelines_obj.get_pipleline_service(), pipelines_obj.get_pipeline_version()])
+            pipeline_names.append([pipelines_obj.pk, pipelines_obj.get_pipleline_avail_service(), pipelines_obj.get_pipeline_version()])
     return pipeline_names
 
 def get_pipelines_for_service(service_id):
@@ -159,7 +162,7 @@ def get_pipeline_obj_from_id (pipeline_id):
     '''
     return Pipelines.objects.get(pk__exact = pipeline_id)
 
-def get_service_name_from_id(service_id):
+def get_avail_service_name_from_id(service_id):
     '''
     Description:
         The function get the service name from service id
@@ -178,109 +181,38 @@ def pipeline_version_exists(pipeline_name, pipeline_version):
     if Pipelines.objects.filter(pipelineName__iexact = pipeline_name, pipelineVersion__iexact = pipeline_version).exists():
         return True
     return False
-
-def send_required_preparation_pipeline_email(service_request_number):
+def get_pipeline_parameters(pipeline_obj):
     '''
     Description:
-        The function sends an email to defined user in configuration with the service number.
-
+        The function return the parameters defined for the pipeline
     Input:
-        service_request_number     # service number
-    Constant:
-        SUBJECT_SERVICE_ON_QUEUED
+        pipeline_obj    # pipeline instance
+    Return:
+        pipeline_parameters
+    '''
+    pipeline_parameters = []
+    if ParameterPipeline.objects.filter(parameterPipeline = pipeline_obj ).exists():
+        parameter_objs = ParameterPipeline.objects.filter(parameterPipeline = pipeline_obj)
+        for parameter_obj in parameter_objs:
+            pipeline_parameters.append(parameter_obj.get_pipeline_parameters())
+    return pipeline_parameters
+
+def store_parameters_pipeline(pipeline_obj, parameters):
+    '''
+    Description:
+        The function store the parameters pipeline
+    Input:
+        pipeline_obj    # pipeline instance
+        paremeters      # dict paramters names and values
     Return:
         None
     '''
-    subject = drylab_config.SUBJECT_SERVICE_ON_QUEUED.copy()
-    subject.insert(1, service_request_number)
+    import pdb; pdb.set_trace()
+    for item, value in parameters.items():
+        parameter_pipeline = {}
+        parameter_pipeline['parameterPipeline'] = pipeline_obj
+        parameter_pipeline['parameterName'] = item
+        parameter_pipeline['parameterValue'] = value
+        ParameterPipeline.objects.create_pipeline_parameters(parameter_pipeline)
 
-    body_preparation = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), drylab_config.BODY_SERVICE_ON_QUEUED))
-    body_message = '\n'.join(body_preparation)
-
-    from_user = drylab_config.USER_EMAIL
-    to_users = [drylab_config.USER_EMAIL]
-
-    send_mail (subject, body_message, from_user, to_users)
-    return
-
-def services_allow_external_data(service_obj, project_requested_objs):
-    '''
-    Description:
-        The function check if services requires to populate in the  starting the pipeline.
-        Then adds the service into the actionJobs table.
-    Input:
-        service_obj     # service instance to check if requires preparation
-    Functions:
-        get_run_folder_from_user_project  # API from iSkyLIMS_wetlab located at file wetlab_api
-    Return:
-        services_added
-    '''
-    services_added = []
-
-    all_services = service_obj.get_child_services()
-    for service_id, service_name in all_services:
-        if Pipelines.objects.filter(availableService__pk__exact = service_id, default = True).exists():
-            pipeline_obj = Pipelines.objects.filter(availableService__pk__exact = service_id, default = True).last()
-            # add
-            service_obj.servicePipelines.add(pipeline_obj)
-            if pipeline_obj.get_external_request() == 'True':
-                preparation_data = {}
-                preparation_data['pipeline'] = pipeline_obj
-                preparation_data['serviceRequestNumber']=  service_obj.get_service_request_number()
-                preparation_data['pipelineName'] = pipeline_obj.get_pipeline_name()
-                preparation_data['pipelineVersion'] = pipeline_obj.get_pipeline_version()
-                preparation_data['availableService'] = AvailableService.objects.get(pk__exact = service_id)
-                if pipeline_obj.get_used_run_folder() == 'True':
-                    runID_folders = []
-                    for project_request in project_requested_objs:
-                        run_folder = get_run_folder_from_user_project(project_request.get_requested_project_id())
-                        if run_folder :
-                            if not run_folder in runID_folders :
-                                runID_folders.append(run_folder)
-                                preparation_data['pendingToSetFolder'] = False
-                                preparation_data['folderData'] = run_folder
-                                services_added.append(PipelineExternalDataJobs.objects.create_pipeline_external_data_job(preparation_data))
-                        else:
-                            preparation_data['pendingToSetFolder'] = True
-                            preparation_data['folderData'] = None
-                            services_added.append(PipelineExternalDataJobs.objects.create_pipeline_external_data_job(preparation_data))
-                else:
-                    preparation_data['pendingToSetFolder'] = False
-                    preparation_data['folderData'] = ''
-                    services_added.append(PreparationPipelineJobs.objects.create_preparation_pipeline_job(preparation_data))
-
-    return services_added
-
-def set_default_service_pipeline(new_pipeline):
-    '''
-    Description:
-        The function check if an older version of the service pipeline exist .
-        If true the old version is set unchecked for default uses
-    Input:
-        new_pipeline    # pipeline instance
-    Return:
-        None
-    '''
-
-    service_pipeline_obj = new_pipeline.get_pipleline_service_obj()
-    if Pipelines.objects.filter(availableService = service_pipeline_obj, default__exact = True).exists():
-        old_version_pipeline = Pipelines.objects.filter(availableService = service_pipeline_obj, default__exact = True).last()
-        old_version_pipeline.remove_default_pipeline()
-    new_pipeline.set_default_pipeline()
-    return
-
-def store_pipeline_actions(pipeline_obj, pipeline_parameters):
-    '''
-    Description:
-        The function store in database the additional parameters for the pipeline
-
-    Return:
-        None
-    '''
-    for item, value in pipeline_parameters.items():
-        param_pipeline = {}
-        param_pipeline['parameterPipeline'] = pipeline_obj
-        param_pipeline['parameterName'] = item
-        param_pipeline['parameterValue'] = value
-        new_pipeline_parameters = ParameterPipeline.objects.create_pipeline_parameters(param_pipeline)
-    return
+    return None

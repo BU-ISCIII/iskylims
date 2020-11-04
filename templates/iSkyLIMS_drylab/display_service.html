@@ -104,7 +104,13 @@
                             <tbody>
                                 {% for key, sample, project in display_service_for_user.samples %}
                                     <tr>
-                                        <td><a href="/wetlab/displaySampleInRun={{ key }}"  target="_blank" rel="noopener noreferrer">{{sample}}</a> </td>
+                                        <td>
+                                            {% if key == 'None' %}
+                                                {{sample}}
+                                            {% else %}
+                                                <a href="/wetlab/displaySampleInRun={{ key }}"  target="_blank" rel="noopener noreferrer">{{sample}}</a>
+                                            {% endif %}
+                                        </td>
                                         <td>{{project}}</td>
                                     </tr>
                                 {% endfor %}
@@ -383,7 +389,13 @@
                                     <tbody>
                                         {% for key, sample, project in display_service.samples %}
                                             <tr>
-                                                <td><a href="/wetlab/displaySampleInRun={{ key }}"  target="_blank" rel="noopener noreferrer">{{sample}}</a> </td>
+                                                <td>
+                                                    {% if key  == 'None' %}
+                                                        {{sample}}
+                                                    {% else %}
+                                                        <a href="/wetlab/displaySampleInRun={{ key }}"  target="_blank" rel="noopener noreferrer">{{sample}}</a>
+                                                    {% endif %}
+                                                </td>
                                                 <td>{{project}}</td>
                                             </tr>
                                         {% endfor %}
@@ -420,10 +432,10 @@
                                            </tr>
                                         </thead>
                                         <tbody>
-                                            {% for name, version, res_num in values %}
+                                            {% for id, name, version, res_num in values %}
                                                 <tr>
 
-                                                    <td>{{name}}</td>
+                                                    <td><a href="/drylab/detailPipeline={{id}}">{{name}}</a></td>
                                                     <td>{{version}}</td>
                                                     <td>{{res_num}}</td>
                                                 </tr>

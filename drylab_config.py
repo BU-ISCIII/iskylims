@@ -57,28 +57,10 @@ ERROR_SERVICE_ID_NOT_FOUND = ['Service ID not found']
 ERROR_INCORRECT_FORMAT_DATE = ['Invalid date format. Use the format  (DD-MM-YYYY)']
 
 ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH =['There is not any Service that matches your input conditions']
-'''
-ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS = ['Unsuccessful configuration settings for Samba connection']
-ERROR_UNABLE_TO_SAVE_SAMBA_CONFIGURATION_SETTINGS = ['Unable to save the Samba configuration file ', 'check if folder iSkyLIMS_wetlab has write permision for apache user']
-ERROR_UNABLE_TO_SAVE_EMAIL_CONFIGURATION_SETTINGS = ['Unable to save the email configuration file ', 'check if folder iSkyLIMS_wetlab has write permision for apache user']
-'''
+
 ERROR_PIPELINE_ALREADY_EXISTS = ['Pipeline name and version is already defined']
 
 ERROR_NO_SERVICES_ARE_SELECTED = ['Unable to process your request', 'No services have been selected']
-
-HEADING_SELECT_SAMPLE_IN_SERVICE = ['Run Name', 'Run ID', 'Project Name',  'Project ID','Sample Name', 'sample id', 'Run finish date']
-
-HEADING_SELECT_EXTERNAL_SAMPLE_IN_SERVICE = ['Sample Name', 'Related to project']
-
-HEADING_ADDITIONAL_PIPELINE_PARAMETERS = ['Additional parameter name', 'Additional Parameter Value']
-
-HEADING_SERVICE_DATES = ['Service Date Creation', 'Approval Service Date', 'Rejected Service Date']
-
-HEADING_MANAGE_PIPELINES = ['Service', 'User' ,'Pipeline Name', 'Pipeline Version', 'Date', 'Default', 'In use', 'id']
-
-HEADING_ADDITIONAL_RESOLUTION_PARAMETERS = ['Parameter name', 'Parameter value', 'Notes']
-
-MAPPING_ADDITIONAL_RESOLUTION_PARAMETERS = [('resolutionParameter', 'Parameter name'),('resolutionParamValue', 'Parameter value'),('resolutionParamNotes', 'Notes')]
 
 DATE_NOT_YET_DEFINED = 'Not Yet Defined'
 
@@ -90,16 +72,29 @@ DISPLAY_DETAIL_PIPELINE_BASIC_INFO = ['Pipeline Name', 'Pipeline Version', 'Serv
 DISPLAY_DETAIL_PIPELINE_ADDITIONAL_INFO = ['User', 'Creation Date', 'String Folder', 'Default', 'In Use', 'Automatic']
 
 
+HEADING_MANAGE_PIPELINES = ['Service', 'User' ,'Pipeline Name', 'Pipeline Version', 'Date', 'In use', 'id']
+
 HEADING_PIPELINES_USED_IN_RESOLUTIONS = ['Pipeline name', 'Pipeline version', 'Used in Resolution']
+
+HEADING_PARAMETER_PIPELINE = ['Parameter Name' , 'Parameter value']
 
 ####################### SERVICES #####################
 HEADING_PENDING_SERVICE_QUEUED =['Services', 'Resolution', 'Acronym name', 'Assigned to', 'On queued date', 'Estimated date']
 
+HEADING_SERVICE_DATES = ['Service Date Creation', 'Approval Service Date', 'Rejected Service Date']
+
+HEADING_SELECT_SAMPLE_IN_SERVICE = ['Run Name', 'Run ID', 'Project Name',  'Project ID','Sample Name', 'sample id', 'Run finish date']
+
+HEADING_SELECT_EXTERNAL_SAMPLE_IN_SERVICE = ['Sample Name', 'Related to project']
 
 ################ # RESOLUTION ##############################
 HEADING_FOR_RESOLUTION_INFORMATION = ['Partial Services','Resolution State' ,'Folder Name', 'Service assigned_to', 'Estimated Delivery Date', 'Queued Date' , 'In Progress Date', 'Notes', 'Resolution PDF File']
 
 ERROR_RESOLUTION_DOES_NOT_EXISTS =['The resolution that you are trying to upadate does not exists ','Contact with your administrator .']
+
+HEADING_ADDITIONAL_RESOLUTION_PARAMETERS = ['Parameter name', 'Parameter value', 'Notes']
+
+MAPPING_ADDITIONAL_RESOLUTION_PARAMETERS = [('resolutionParameter', 'Parameter name'),('resolutionParamValue', 'Parameter value'),('resolutionParamNotes', 'Notes')]
 
 ################ EMAIL TEXT   ##################################
 SUBJECT_SERVICE_RECORDED = ['Service ', ' has been recorded']

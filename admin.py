@@ -41,13 +41,13 @@ class PipelinesManager(admin.ModelAdmin):
 
 class ParameterPipelineManager(admin.ModelAdmin):
 	list_display = ['parameterPipeline', 'parameterName', 'parameterValue']
-
+'''
 class JobStatesManager(admin.ModelAdmin):
 	list_display = ['jobStateName']
 
 class PipelineExternalDataJobsManager(admin.ModelAdmin):
 	list_display = ['pipeline', 'availableService', 'serviceRequestNumber', 'folderData', 'jobState', 'lastRequestedTime', 'pipelineName', 'pipelineVersion']
-
+'''
 admin.site.register(ResolutionStates,ResolutionStatesAdmin)
 admin.site.register(FileExt,FileExtAdmin)
 admin.site.register(Platform,PlatformAdmin)
@@ -63,5 +63,5 @@ admin.site.register(Delivery,DeliveryAdmin)
 admin.site.register(Pipelines,PipelinesManager)
 admin.site.register(ParameterPipeline,ParameterPipelineManager)
 
-admin.site.register(JobStates,JobStatesManager)
-admin.site.register(PipelineExternalDataJobs, PipelineExternalDataJobsManager)
+#admin.site.register(JobStates,JobStatesManager)
+#admin.site.register(PipelineExternalDataJobs, PipelineExternalDataJobsManager)

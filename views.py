@@ -87,17 +87,17 @@ def configuration_email(request):
     return render(request, 'iSkyLIMS_drylab/configurationEmail.html',{'email_conf_data': email_conf_data})
 
 @login_required
-def new_request_service(request):
+def request_sequencing_service(request):
 	if request.method == 'POST' and request.POST['action'] == 'createservice':
 		# check that at some services have been requested
 		if len(request.POST.getlist('RequestedServices')) == 0 :
 			service_data_information = prepare_form_data_request_service_sequencing(request.user)
 			error_message = drylab_config.ERROR_NO_SERVICES_ARE_SELECTED
-			return render(request,'iSkyLIMS_drylab/newRequestService.html',{'service_data_information':service_data_information,
+			return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'service_data_information':service_data_information,
 									'error_message':error_message})
 
 		new_service = create_new_save_service_request(request)
-		sample_stored = stored_samples_for_sequencing_request_service(request.POST['samples_requested'], new_service)
+		sample_stored = stored_samples_for_sequencing_request_service(request.POST, new_service)
 		## Send mail to user and drylab admin group
 		if drylab_config.EMAIL_USER_CONFIGURED :
 			email_data = {}
@@ -119,15 +119,15 @@ def new_request_service(request):
 		confirmation_result['text'] = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), drylab_config.CONFIRMATION_TEXT_MESSAGE))
 		if len(sample_stored) > 0 :
 			confirmation_result['samples'] = sample_stored
-		
-		return render(request,'iSkyLIMS_drylab/RequestForm.html',{'confirmation_result':confirmation_result})
+
+		return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'confirmation_result':confirmation_result})
 
 
 
 	else:
 		service_data_information = prepare_form_data_request_service_sequencing(request.user)
 
-		return render(request,'iSkyLIMS_drylab/newRequestService.html',{'service_data_information':service_data_information})
+		return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'service_data_information':service_data_information})
 
 @login_required
 def service_request(request, serviceRequestType):
@@ -385,7 +385,7 @@ def search_service (request):
                 service_list.append(sample_in_service.pk)
             services_found = services_found.filter(pk__in = service_list)
         if  user_name != '':
-            services_found = services_found.filter(serviceUserId  = user_name)
+            services_found = services_found.filter(serviceUserId__username__iexact  = user_name)
         if len(services_found) == 0 :
             error_message = drylab_config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
             return render( request,'iSkyLIMS_drylab/searchService.html',{'services_search_list': services_search_list , 'ERROR':error_message})
@@ -637,8 +637,10 @@ def add_in_progress (request):
         resolution_obj.update_resolution_in_progress_date()
         resolution_number = resolution_obj.get_resolution_number()
         service_obj = resolution_obj.get_service_obj()
-        # update the service status and in_porgress date
-        service_obj.update_service_status('in_progress')
+        # check if services can change to "in progress"
+        if allow_to_service_update_in_progress_state (resolution_obj):
+            # update the service status and in_porgress date
+            service_obj.update_service_status('in_progress')
 
         if drylab_config.EMAIL_USER_CONFIGURED :
             email_data = {}
@@ -1273,13 +1275,13 @@ def define_pipeline_service(request):
             error_message = drylab_config.ERROR_PIPELINE_ALREADY_EXISTS
             data_pipeline.update(pipeline_data_form)
             return render(request,'iSkyLIMS_drylab/definePipelineService.html', {'data_pipeline': data_pipeline,'error_message': error_message})
-        pipeline_data_form = analyze_input_pipelines(request)
+        #pipeline_data_form = analyze_input_pipelines(request)
         new_pipeline = Pipelines.objects.create_pipeline(pipeline_data_form)
         if 'additional_parameters' in  pipeline_data_form :
-            store_pipeline_actions(new_pipeline, pipeline_data_form['additional_parameters'])
-        defined_service_pipeline = get_pipeline_data_to_display(pipeline_data_form)
+            store_parameters_pipeline(new_pipeline, pipeline_data_form['additional_parameters'])
+        defined_service_pipeline = get_defined_pipeline_data_to_display(new_pipeline)
 
-        set_default_service_pipeline(new_pipeline)
+        #set_default_service_pipeline(new_pipeline)
         return render(request,'iSkyLIMS_drylab/definePipelineService.html', {'defined_service_pipeline': defined_service_pipeline})
 
     return render(request,'iSkyLIMS_drylab/definePipelineService.html', {'data_pipeline': data_pipeline})
@@ -1310,9 +1312,42 @@ def detail_pipeline(request,pipeline_id):
 ###################### Multiple files  Pruebas   ###########################
 
 def multiple_files(request):
-	return render(request,'iSkyLIMS_drylab/multiple_files.html')
 
-from django.db import models
+    if request.method == 'POST':
+        from .utils.response import JSONResponse
+        files = [{'url': '/media/pictures/justificante_provision_fondos.png',
+        'name': 'justifican...dos.png',
+        'type': 'image/png',
+        'thumbnailUrl': '/media/pictures/justificante_provision_fondos.png',
+        'size': 39583,
+        'deleteUrl': '/upload/delete/10',
+        'deleteType': 'DELETE'}]
+        data = {'files':files}
+        import pdb; pdb.set_trace()
+
+        response = JSONResponse(data, mimetype='application/json')
+        response['Content-Disposition'] = 'inline; filename=files.json'
+        return response
+    return render(request,'iSkyLIMS_drylab/multiple_files.html')
+
+'''
+	files = [serialize(self.object)]
+	El contenido de files
+	[{'url': '/media/pictures/justificante_provision_fondos.png',
+	'name': 'justifican...dos.png',
+	'type': 'image/png',
+	'thumbnailUrl': '/media/pictures/justificante_provision_fondos.png',
+	'size': 39583,
+	'deleteUrl': '/upload/delete/10',
+	'deleteType': 'DELETE'}]
+	El contenido de self.request
+	self.request
+<WSGIRequest: POST '/upload/new/'>
+
+	self.request.META['HTTP_ACCEPT']
+'application/json, text/javascript, */*; q=0.01'
+
+'''
 
 
 class Picture(models.Model):
