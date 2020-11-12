@@ -78,6 +78,8 @@ HEADING_PIPELINES_USED_IN_RESOLUTIONS = ['Pipeline name', 'Pipeline version', 'U
 
 HEADING_PARAMETER_PIPELINE = ['Parameter Name' , 'Parameter value']
 
+HEADING_SERVICES_IN_PIPELINE = ['Service Name', 'Creation Time', 'Requested by', 'State']
+
 ####################### SERVICES #####################
 HEADING_PENDING_SERVICE_QUEUED =['Services', 'Resolution', 'Acronym name', 'Assigned to', 'On queued date', 'Estimated date']
 

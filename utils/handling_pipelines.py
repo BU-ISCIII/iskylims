@@ -2,8 +2,8 @@ import json
 from .drylab_common_functions import *
 from iSkyLIMS_drylab import drylab_config
 from iSkyLIMS_drylab.models import *
-from iSkyLIMS_wetlab.utils.api.wetlab_api import get_run_folder_from_user_project
-
+#from iSkyLIMS_wetlab.utils.api.wetlab_api import get_run_folder_from_user_project
+from iSkyLIMS_drylab.utils.handling_request_services import get_requested_services_obj_from_available_service
 
 def analyze_input_pipelines(request):
     '''
@@ -53,7 +53,7 @@ def get_data_form_pipeline():
     '''
     additional_data = {}
     additional_data ['available_services']= get_children_available_services ()
-    additional_data['heading']= drylab_config.HEADING_PIPELINE_PARAMETERS
+    additional_data['heading']= drylab_config.HEADING_PARAMETER_PIPELINE
 
     return additional_data
 
@@ -63,6 +63,11 @@ def get_detail_pipeline_data(pipeline_id):
         The function collect the all information for the pipeline
     Input:
         pipeline_id     # id of the pipeline
+    Constants:
+        HEADING_SERVICES_IN_PIPELINE
+        DISPLAY_DETAIL_PIPELINE_BASIC_INFO
+        DISPLAY_DETAIL_PIPELINE_ADDITIONAL_INFO
+        HEADING_PARAMETER_PIPELINE
     Return:
         detail_pipelines_data
     '''
@@ -82,6 +87,14 @@ def get_detail_pipeline_data(pipeline_id):
             for parameter_obj in parameter_objs :
 
                 detail_pipelines_data['parameters'].append([parameter_obj.get_pipeline_parameter_name(), parameter_obj.get_pipeline_parameter_value()])
+        # get the services where the pipeline was used
+        req_serv_objs = get_requested_services_obj_from_available_service(pipeline_obj.get_pipleline_avail_service_obj())
+        if req_serv_objs != None :
+            detail_pipelines_data['services_using_pipeline'] = []
+            detail_pipelines_data['services_using_pipeline_heading'] = drylab_config.HEADING_SERVICES_IN_PIPELINE
+            for req_serv_obj in req_serv_objs:
+                detail_pipelines_data['services_using_pipeline'].append([req_serv_obj.get_service_id() ,req_serv_obj.get_service_request_number(),
+                req_serv_obj.get_service_creation_time(), req_serv_obj.get_service_requested_user(), req_serv_obj.get_service_state()])
 
     return detail_pipelines_data
 

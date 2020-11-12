@@ -17,8 +17,8 @@
 
 
     var isOnGitHub = window.location.hostname === 'blueimp.github.io',
-        url = '/upload/angular/',
-        urlview = '/upload/view/';
+        url = '/pp2upload/angular/',
+        urlview = '/pp1upload/view/';
 
     angular.module('demo', [
         'blueimp.fileupload'

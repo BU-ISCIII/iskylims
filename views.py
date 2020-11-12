@@ -26,21 +26,7 @@ from iSkyLIMS_drylab.utils.handling_deliveries import *
 from iSkyLIMS_drylab.utils.handling_forms import *
 from iSkyLIMS_drylab.utils.configuration_functions import *
 
-#from smb.SMBConnection import SMBConnection
-# from iSkyLIMS_drylab.models import RunProcess, Projects
 
-####### Import libraries for static files
-#from django.shortcuts import render_to_response
-#from django.shortcuts import RequestContext
-###### api to wetlab ############
-try :
-	from iSkyLIMS_wetlab.utils.api.wetlab_api import *
-	wetlab_api_available = True
-except:
-	wetlab_api_available = False
-
-
-#PNL
 @login_required
 def index(request):
     if Service.objects.all().exclude(serviceStatus = 'delivered').exclude(serviceStatus = 'rejected').exclude(serviceStatus = 'approved').exists():
@@ -128,7 +114,7 @@ def request_sequencing_service(request):
 		service_data_information = prepare_form_data_request_service_sequencing(request.user)
 
 		return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'service_data_information':service_data_information})
-
+'''
 @login_required
 def service_request(request, serviceRequestType):
     request_type = {}
@@ -216,7 +202,7 @@ def service_request(request, serviceRequestType):
             form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
             request_type['type'] = 'External Sequencing'
             return render(request, 'iSkyLIMS_drylab/RequestForm.html' , { 'form' : form ,  'request_external': 'request_external','request_type': request_type })
-
+'''
 
 @login_required
 def counseling_request(request):
@@ -527,7 +513,7 @@ def test (request):
     return response
 
 '''
-
+'''
 def add_new_resolution_file (conn, full_service_path,resolution_file,year):
 
     temp_file=resolution_file.split('/')
@@ -539,77 +525,6 @@ def add_new_resolution_file (conn, full_service_path,resolution_file,year):
             conn.storeFile(drylab_config.SAMBA_SHARED_FOLDER_NAME, resolution_remote_file, res_samba_fp)
     except:
         return ( 'Unable to copy the resolution file ',resolution_remote_file,resolution_name_file)
-
-    return True
-
-'''
-def create_service_structure (conn, service_request_file, service_file_uploaded, full_service_path, resolution_file):
-    ## service_request_file and resolution_file contains the full path where these files
-    ## are stored on iSkyLIMS. It means that OUTPUT_DIR_TEMPLATE value is added to thes variable
-    ## to store the files on the remote system we need to have the full pathe where these files
-    ## are located, but also the file name without including the path, in order to add only
-    ## the file name to the remote path. To get only the file name we split the variable (containing
-    ## path and file name ) to fetch only the file name
-
-
-    # get the information for creating the subfolders
-    time_now = datetime.datetime.now()
-    year = str(time_now.year)
-    # check if year directory already exists on remote server
-    file_list = conn.listPath( drylab_config.SAMBA_SHARED_FOLDER_NAME, drylab_config.SAMBA_SERVICE_FOLDER)
-    year_folder_exists = False
-    for sh_file in file_list:
-        if sh_file.filename == year:
-            year_folder_exists = True
-    year_folder = os.path.join(drylab_config.SAMBA_SERVICE_FOLDER, year)
-    if not year_folder_exists :
-        conn.createDirectory (drylab_config.SAMBA_SHARED_FOLDER_NAME, year_folder)
-
-    service_path = os.path.join(year_folder, full_service_path)
-    #create the directory for the new service
-    conn.createDirectory (drylab_config.SAMBA_SHARED_FOLDER_NAME, service_path)
-    for sub_folder in drylab_config.FOLDERS_FOR_SERVICES:
-        sub_folder_path = os.path.join(service_path,sub_folder)
-        conn.createDirectory(drylab_config.SAMBA_SHARED_FOLDER_NAME, sub_folder_path)
-
-    #copy service confirmation file into request folder
-    temp_file=resolution_file.split('/')
-    resolution_name_file = temp_file[-1]
-    resolution_remote_file = os.path.join(service_path,drylab_config.FOLDERS_FOR_SERVICES[1],resolution_name_file)
-
-    try:
-        with open(resolution_file ,'rb') as  res_samba_fp:
-            conn.storeFile(drylab_config.SAMBA_SHARED_FOLDER_NAME, resolution_remote_file, res_samba_fp)
-    except:
-        return 'ERROR:: Unable to copy resolution file'
-    temp_file=service_request_file.split('/')
-
-    request_name_file = temp_file[-1]
-    request_remote_file = os.path.join(service_path,drylab_config.FOLDERS_FOR_SERVICES[0],request_name_file)
-
-    try:
-        with open(service_request_file ,'rb') as  req_samba_fp:
-            conn.storeFile(drylab_config.SAMBA_SHARED_FOLDER_NAME, request_remote_file, req_samba_fp)
-
-    except:
-            return 'ERROR:: Unable to copy service requested file '
-    if service_file_uploaded != '':
-        temp_file_name = service_file_uploaded.split('/')
-        uploaded_name_file = temp_file_name [-1]
-        uploaded_remote_file = os.path.join(service_path, drylab_config.FOLDERS_FOR_SERVICES[0],uploaded_name_file)
-
-        try:
-            with open(service_file_uploaded ,'rb') as  upload_samba_fp:
-                conn.storeFile(drylab_config.SAMBA_SHARED_FOLDER_NAME, uploaded_remote_file, upload_samba_fp)
-        except:
-            return 'ERROR:: Unable to copy file uploaded by the investigator'
-
-    # deleting the service_request_file and resolution_file from iSkyLIMS
-    try:
-        os.remove(service_request_file)
-        os.remove(resolution_file)
-    except:
-        return 'ERROR:: Unable to delete the service_requested_file/ resolution_file'
 
     return True
 '''
@@ -1060,10 +975,6 @@ def stats_by_services_request (request):
                 graphic_req_l3_services = FusionCharts("column3d", "ex8" , "800", "375", "chart-8", "json", data_source)
                 services_stats_info ['graphic_req_l3_services'] = graphic_req_l3_services.render()
 
-
-
-
-
                 return render (request, 'iSkyLIMS_drylab/statsByServicesRequest.html', {'services_stats_info':services_stats_info})
 
             else:
@@ -1314,12 +1225,14 @@ def detail_pipeline(request,pipeline_id):
 def multiple_files(request):
 
     if request.method == 'POST':
+
         from .utils.response import JSONResponse
         files = [{'url': '/media/pictures/justificante_provision_fondos.png',
         'name': 'justifican...dos.png',
         'type': 'image/png',
-        'thumbnailUrl': '/media/pictures/justificante_provision_fondos.png',
+        #'thumbnailUrl': '/media/pictures/justificante_provision_fondos.png',
         'size': 39583,
+        'file_id': '5',
         'deleteUrl': '/upload/delete/10',
         'deleteType': 'DELETE'}]
         data = {'files':files}

@@ -57,21 +57,22 @@ $(function () {
             });
         }
     } else {
+        // Luis Remove getting existing files
         // Load existing files:
-        $('#fileupload').addClass('fileupload-processing');
-        $.ajax({
-            // Uncomment the following to send cross-domain cookies:
-            //xhrFields: {withCredentials: true},
-            //url: $('#fileupload').fileupload('option', 'url'),
-            url: '/upload/view/',
-            dataType: 'json',
-            context: $('#fileupload')[0]
-        }).always(function () {
-            $(this).removeClass('fileupload-processing');
-        }).done(function (result) {
-            $(this).fileupload('option', 'done')
-                .call(this, null, {result: result});
-        });
+        // $('#fileupload').addClass('fileupload-processing');
+        // $.ajax({
+        //     // Uncomment the following to send cross-domain cookies:
+        //     //xhrFields: {withCredentials: true},
+        //     //url: $('#fileupload').fileupload('option', 'url'),
+        //     url: '/upload/view/',
+        //     dataType: 'json',
+        //     context: $('#fileupload')[0]
+        // }).always(function () {
+        //     $(this).removeClass('fileupload-processing');
+        // }).done(function (result) {
+        //     $(this).fileupload('option', 'done')
+        //         .call(this, null, {result: result});
+        // });
     }
 
 });

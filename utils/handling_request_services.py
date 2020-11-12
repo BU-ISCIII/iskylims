@@ -45,6 +45,7 @@ def create_new_save_service_request(request):
     Functions:
     	increment_service_number	# located at utils/drylab_common_functions
     	create_service_id			# located at utils/drylab_common_functions
+		store_file_from_form		# 
     Return:
 	new_service		# recorded instance of the form
     '''
@@ -167,6 +168,21 @@ def get_service_obj_from_id(service_id):
     if Service.objects.filter(pk__exact = service_id).exists():
         service_obj = Service.objects.filter(pk__exact = service_id).last()
     return service_obj
+
+def get_requested_services_obj_from_available_service(avail_service_obj):
+    '''
+    Description:
+        The function get the requested service instances from the avilable
+        service object
+    Input:
+        avail_service_obj  # instance of the  available service
+    Return:
+        request_service_objs
+    '''
+    request_service_objs = None
+    if Service.objects.filter(serviceAvailableService = avail_service_obj).exists():
+        request_service_objs = Service.objects.filter(serviceAvailableService = avail_service_obj)
+    return request_service_objs
 
 def get_service_information (service_id):
     '''
@@ -302,7 +318,7 @@ def get_service_information (service_id):
         if in_progress_date != None :
             time_in_queue = (in_progress_date - created_date).days
             dates.append(['Time in Queue', time_in_queue])
-        if delivery_date != None:
+            if delivery_date != None:
                 execution_time = (delivery_date - in_progress_date).days
                 dates.append(['Execution time', execution_time])
     display_service_details['calculation_dates'] = dates

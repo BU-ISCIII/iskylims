@@ -511,9 +511,15 @@ class Resolution(models.Model):
 	def get_resolution_information (self):
 		resolution_info =[]
 		resolution_info.append(self.get_available_services())
-		resolution_info.append(self.resolutionState.get_resolution_state())
+		if self.resolutionState != None:
+			resolution_info.append(self.resolutionState.get_resolution_state())
+		else:
+			resolution_info.append('Not assigned')
 		resolution_info.append(self.resolutionFullNumber)
-		resolution_info.append(self.resolutionAsignedUser.username)
+		if self.resolutionAsignedUser != None:
+			resolution_info.append(self.resolutionAsignedUser.username)
+		else:
+			resolution_info.append('Not assigned')
 		if self.resolutionEstimatedDate is not None:
 			resolution_info.append(self.resolutionEstimatedDate.strftime("%d %B, %Y"))
 		else:

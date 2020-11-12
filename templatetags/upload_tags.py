@@ -9,12 +9,14 @@ def upload_js():
 <!-- The template to display files available for upload -->
 <script id="template-upload" type="text/x-tmpl">
 {% for (var i=0, file; file=o.files[i]; i++) { %}
+
     <tr class="template-upload fade">
         <td>
             <span class="preview"></span>
         </td>
         <td>
             <p class="name">{%=file.name%}</p>
+
             {% if (file.error) { %}
                 <div><span class="label label-important">{%=locale.fileupload.error%}</span> {%=file.error%}</div>
             {% } %}
@@ -55,6 +57,7 @@ def upload_js():
         </td>
         <td>
             <p class="name">
+            <input type="hidden" name="files" value="{%=file.file_id%}"/>
                 <a href="{%=file.url%}" title="{%=file.name%}" download="{%=file.name%}" {%=file.thumbnailUrl?'data-gallery':''%}>{%=file.name%}</a>
             </p>
             {% if (file.error) { %}
@@ -75,9 +78,3 @@ def upload_js():
 {% } %}
 </script>
 """)
-
-
-
-
-
-
