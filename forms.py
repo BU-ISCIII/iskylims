@@ -19,7 +19,7 @@ class ServiceRequestFormInternalSequencing(forms.ModelForm ):
         # implementation of drop down menu to choose a project name of a list of projects
         # belonging to the logged-in user in the service request form
         exclude = ['serviceProjectNames', 'serviceProjects']
-        fields = ['serviceSequencingPlatform','serviceRunSpecs','serviceFileExt','serviceAvailableService','serviceFile','serviceNotes']
+        fields = ['serviceSequencingPlatform','serviceRunSpecs','serviceFileExt','serviceAvailableService','serviceNotes']
         #fields = ['serviceProjectNames','servicePlatform','serviceRunSpecs','serviceFileExt','serviceAvailableService','serviceFile','serviceNotes']
         field_classes = {
 			'serviceAvailableService': TreeNodeMultipleChoiceField,
@@ -70,7 +70,7 @@ class ServiceRequestFormInternalSequencing(forms.ModelForm ):
 					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Service Description</h3></div>"""),
 					layout.Div(
 						layout.Div(
-							layout.Field('serviceFile'),
+							#layout.Field('serviceFile'),
 							layout.Field('serviceNotes'),
 							css_class="col-md-12"
 							),
@@ -86,7 +86,7 @@ class ServiceRequestFormInternalSequencing(forms.ModelForm ):
 class ServiceRequestFormExternalSequencing(forms.ModelForm):
  	class Meta:
  		model = Service
- 		fields = ['serviceSeqCenter','serviceSequencingPlatform','serviceRunSpecs','serviceFileExt','serviceAvailableService','serviceFile','serviceNotes']
+ 		fields = ['serviceSeqCenter','serviceSequencingPlatform','serviceRunSpecs','serviceFileExt','serviceAvailableService','serviceNotes']
  		field_classes = {
 				'serviceAvailableService': TreeNodeMultipleChoiceField,
 				}
@@ -129,7 +129,7 @@ class ServiceRequestFormExternalSequencing(forms.ModelForm):
 					layout.HTML(u"""<div class="panel-heading"><h3 class="panel-title">Service Description</h3></div>"""),
 					layout.Div(
 						layout.Div(
-							layout.Field('serviceFile'),
+							#layout.Field('serviceFile'),
 							layout.Field('serviceNotes'),
 							css_class="col-md-12"
 							),

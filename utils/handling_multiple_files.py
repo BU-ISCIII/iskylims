@@ -1,0 +1,94 @@
+# encoding: utf-8
+from django.http import HttpResponse
+import json
+
+from iSkyLIMS_drylab.models import UploadServiceFile
+from iSkyLIMS_drylab import drylab_config
+
+
+
+#def response_mimetype(request):
+"""response_mimetype -- Return a proper response mimetype, accordingly to
+what the client accepts, as available in the `HTTP_ACCEPT` header.
+
+request -- a HttpRequest instance.
+
+"""
+#    can_json = MIMEJSON in request.META['HTTP_ACCEPT']
+#    can_json |= MIMEANY in request.META['HTTP_ACCEPT']
+#    return MIMEJSON if can_json else MIMETEXT
+
+
+class JSONResponse(HttpResponse):
+    """JSONResponse -- Extends HTTPResponse to handle JSON format response.
+
+    This response can be used in any view that should return a json stream of
+    data.
+
+    Usage:
+
+        def a_iew(request):
+            content = {'key': 'value'}
+            return JSONResponse(content, mimetype=response_mimetype(request))
+
+    """
+    def __init__(self, obj='', json_opts=None, mimetype='application/json', *args, **kwargs):
+        json_opts = json_opts if isinstance(json_opts, dict) else {}
+        content = json.dumps(obj, **json_opts)
+        super(JSONResponse, self).__init__(content, mimetype, *args, **kwargs)
+
+def get_and_safe_service_file(request):
+    '''
+    Description:
+        The function get the sevice files and stored in database
+    Input:
+        request      user request with the files
+    Return:
+        data having the information of the uploaded file
+    '''
+    up_file = request.FILES['file']
+    files = [{'name': up_file.name,
+        'type': up_file.content_type,
+        'size': up_file.size,
+        'deleteType': 'DELETE'}]
+    if up_file.size > drylab_config.MAX_UPLOAD_SIZE :
+        files[0]['errors']= 'maxFileSize'
+        files[0]['error_detail']= drylab_config.ERROR_FILE_TOO_BIG
+    else:
+        #store the file
+
+        new_upload_file_obj = UploadServiceFile.objects.create_upload_file(up_file)
+        files[0]['file_id'] = new_upload_file_obj.get_uploadFile_id()
+        files[0]['deleteUrl'] = str('/uploadServiceFileDelete=' + new_upload_file_obj.get_uploadFile_id())
+
+    data = {'files':files}
+    return data
+
+def get_uploaded_files_for_service(service_obj):
+    '''
+    Description:
+        The function return the user uploaded files in a list
+    Input:
+        service_obj      # service instance
+    Return:
+        file_list
+    '''
+    file_list = []
+    if UploadServiceFile.objects.filter(uploadService = service_obj).exists():
+        files_objs = UploadServiceFile.objects.filter(uploadService = service_obj)
+        for file_obj in file_objs:
+            file_list.append(file_obj.get_uploadFile_name())
+    return file_list
+
+def update_upload_file_with_service(file_id, service_obj):
+    '''
+    Description:
+        The function check if service id exists
+    Input:
+        service_id      # id of the service
+    Return:
+        True if service id exists
+    '''
+    if UploadServiceFile.objects.filter(pk__exact = file_id).exists():
+        UploadServiceFile.objects.get(pk__exact = file_id).update_service_id(service_obj)
+    return

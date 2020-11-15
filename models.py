@@ -204,6 +204,7 @@ class ParameterPipeline (models.Model):
 
 	objects = ParameterPipelineManager()
 
+
 class ServiceManager (models.Manager):
 	def create_service(self, data):
 		if data['serviceFileExt'] == '':
@@ -251,7 +252,7 @@ class Service(models.Model):
 	serviceRequestNumber=models.CharField(max_length=80, null=True)
 	serviceRequestInt=models.CharField(max_length=80, null=True)
 	serviceRunSpecs=models.CharField(_("Run specifications"),max_length=10,blank=True,null=True)
-	serviceFile=models.FileField(_("Service description file"),upload_to=service_files_upload, null=True,blank=True)
+	#serviceFile=models.FileField(_("Service description file"),upload_to=service_files_upload, null=True,blank=True)
 	serviceStatus=models.CharField(_("Service status"),max_length=15,choices=STATUS_CHOICES)
 	serviceNotes=models.TextField(_("Service Notes"),max_length=2048,null=True, blank=True)
 	serviceCreatedOnDate= models.DateField(auto_now_add=True,null=True)
@@ -437,6 +438,39 @@ class RequestedSamplesInServices (models.Model):
 
 	objects = RequestedSamplesInServicesManager()
 
+class UploadServiceFileManager(models.Manager):
+	def create_upload_file(self,data):
+		new_upload_file = self.create(uploadFile = data)
+		return new_upload_file
+
+
+
+class UploadServiceFile (models.Model):
+	uploadService =  models.ForeignKey(
+				Service ,
+				on_delete=models.CASCADE, null = True, blank = True)
+	uploadFile = models.FileField(upload_to=drylab_config.USER_REQUESTED_SERVICE_FILE_DIRECTORY)
+	uploaded_at = models.DateTimeField(auto_now_add=True)
+
+	def __str__ (self):
+		return '%s' %(self.uploadFile)
+
+	def get_uploadFile_full_path_and_name(self):
+		return '%s' %(self.uploadFile)
+
+	def get_uploadFile_name(self):
+		return '%s' %(self.uploadFile.split('/')[-1])
+
+
+	def get_uploadFile_id(self):
+		return '%s' %(self.pk)
+
+	def update_service_id(self,service_obj):
+		self.uploadService = service_obj
+		self.save()
+		return self
+
+	objects = UploadServiceFileManager()
 
 class ResolutionManager(models.Manager):
 	def create_resolution (self, resolution_data):
@@ -595,6 +629,11 @@ class Resolution(models.Model):
 
 	def update_resolution_file(self, file):
 		self.resolutionPdfFile = file
+		self.save()
+		return self
+
+	def update_resolution_state(self, state):
+		self.resolutionState = ResolutionStates.objects.get(resolutionStateName__exact = state)
 		self.save()
 		return self
 

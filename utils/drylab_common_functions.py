@@ -59,70 +59,6 @@ def create_service_id (service_number,user_name):
 
 
 
-def get_data_for_service_confirmation (service_requested):
-    information = {}
-    user = {}
-    service_data ={}
-    service = Service.objects.get(serviceRequestNumber = service_requested)
-    service_number ,run_specs, center, platform = service.get_service_information().split(';')
-    information['service_number'] = service_number
-    information['requested_date'] = service.get_service_creation_time()
-    information['nodes']= service.serviceAvailableService.all()
-    user['name'] = service.serviceUserId.first_name
-    user['surname'] = service.serviceUserId.last_name
-
-    user_id = service.serviceUserId.id
-    user['area'] = Profile.objects.get(profileUserID = user_id).profileArea
-    user['center'] = Profile.objects.get(profileUserID = user_id).profileCenter
-    user['phone'] = Profile.objects.get(profileUserID = user_id).profileExtension
-    user['position'] = Profile.objects.get(profileUserID = user_id).profilePosition
-    user['email'] = service.serviceUserId.email
-    information['user'] = user
-    projects_in_service = []
-    projects_class = service.serviceProjectNames.all()
-    for project in projects_class:
-        projects_in_service.append(project.get_requested_project_name())
-    service_data['projects'] = projects_in_service
-    service_data['platform'] = platform
-    service_data['run_specifications'] = run_specs
-    service_data['center'] = center
-    service_data['notes'] = service.serviceNotes
-    if str(service.serviceFile) != '':
-        full_path_file = str(service.serviceFile).split('/')
-        stored_file = full_path_file[-1]
-        temp_string_file = re.search('^\d+_(.*)', stored_file)
-        service_data['file'] = temp_string_file.group(1)
-    else:
-        service_data['file'] = 'Not provided'
-    information['service_data'] = service_data
-
-    return information
-
-
-
-def create_service_pdf_file (service_request_number, absolute_url):
-    '''
-    Description:
-        The function collect the information to create the pdf file
-    Input:
-        request # contains the session information
-    Functions:
-        get_data_for_service_confirmation   # located at this file
-        create_pdf                          # located at this file
-    Constants:
-        OUTPUT_DIR_SERVICE_REQUEST_PDF
-    Return:
-        pdf_file which contains the full path and name of the pdf file
-    '''
-
-    information_to_include = get_data_for_service_confirmation(service_request_number)
-    pdf_file_name = service_request_number + '.pdf'
-    full_path_pdf_file = create_pdf(absolute_url, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name,  drylab_config.OUTPUT_DIR_SERVICE_REQUEST_PDF)
-    pdf_file = full_path_pdf_file.replace(settings.BASE_DIR,'')
-    return pdf_file
-
-
-
 def is_service_manager (request):
     '''
     Description:
@@ -162,9 +98,11 @@ def increment_service_number ( user_name):
         user_center = drylab_config.USER_CENTER_USED_WHEN_NOT_PROVIDED
     # get latest service used for user's center
     if Service.objects.filter(serviceUserId__profile__profileCenter__centerAbbr=user_center).exists():
-
         number_request = Service.objects.filter(serviceUserId__profile__profileCenter__centerAbbr=user_center).last().serviceRequestInt
-        service_number = str(int(number_request) + 1).zfill(3)
+        if number_request == None:
+            service_number = '001'
+        else:
+            service_number = str(int(number_request) + 1).zfill(3)
     else:
         service_number = '001'
     return service_number

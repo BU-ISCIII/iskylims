@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import get_object_or_404, render, redirect
 from .models import *
-from .forms import *
+#from .forms import *
 from .utils.graphics import *
 import os, re
 
@@ -24,6 +24,7 @@ from iSkyLIMS_drylab.utils.handling_request_services import *
 from iSkyLIMS_drylab.utils.handling_resolutions import *
 from iSkyLIMS_drylab.utils.handling_deliveries import *
 from iSkyLIMS_drylab.utils.handling_forms import *
+from iSkyLIMS_drylab.utils.handling_multiple_files import *
 from iSkyLIMS_drylab.utils.configuration_functions import *
 
 
@@ -74,7 +75,19 @@ def configuration_email(request):
 
 @login_required
 def request_sequencing_service(request):
-	if request.method == 'POST' and request.POST['action'] == 'createservice':
+
+	if request.POST and request.FILES :
+		if 'file' in request.FILES:
+			import pdb; pdb.set_trace()
+			data = get_and_safe_service_file(request)
+			response = JSONResponse(data, mimetype='application/json')
+			response['Content-Disposition'] = 'inline; filename=files.json'
+			return response
+		else:
+			service_data_information = prepare_form_data_request_service_sequencing(request.user)
+			return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'service_data_information':service_data_information})
+
+	if request.method == 'POST' and request.POST['subAction'] == 'createservice':
 		# check that at some services have been requested
 		if len(request.POST.getlist('RequestedServices')) == 0 :
 			service_data_information = prepare_form_data_request_service_sequencing(request.user)
@@ -84,6 +97,8 @@ def request_sequencing_service(request):
 
 		new_service = create_new_save_service_request(request)
 		sample_stored = stored_samples_for_sequencing_request_service(request.POST, new_service)
+		if 'files' in request.POST:
+			add_files_to_service(request.POST.getlist('files'), new_service)
 		## Send mail to user and drylab admin group
 		if drylab_config.EMAIL_USER_CONFIGURED :
 			email_data = {}

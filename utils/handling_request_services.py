@@ -10,6 +10,7 @@ from iSkyLIMS_drylab.utils.graphics import *
 from iSkyLIMS_core.models import Samples, SequencingPlatform
 
 from iSkyLIMS_drylab.utils.drylab_common_functions import *
+from iSkyLIMS_drylab.utils.handling_multiple_files import get_uploaded_files_for_service, update_upload_file_with_service
 from django_utils.fusioncharts.fusioncharts import FusionCharts
 
 #### API from Wetlab ######
@@ -19,6 +20,22 @@ try :
 except:
 	wetlab_api_available = False
 
+
+def add_files_to_service(file_ids, service_obj):
+    '''
+    Description:
+        The function update the upload service file with the service instance
+    Input:
+        file_ids 		# id of the files
+        service_obj      # service instance
+    Functions:
+        update_upload_file_with_service   # located at iSkyLIMS_drylab/utils/handling_multiple_files
+    Return:
+        True if service id exists
+    '''
+    for file_id in file_ids:
+        update_upload_file_with_service(file_id, service_obj)
+    return
 
 def check_service_id_exists(service_id):
     '''
@@ -45,7 +62,7 @@ def create_new_save_service_request(request):
     Functions:
     	increment_service_number	# located at utils/drylab_common_functions
     	create_service_id			# located at utils/drylab_common_functions
-		store_file_from_form		# 
+		store_file_from_form		#
     Return:
 	new_service		# recorded instance of the form
     '''
@@ -114,6 +131,73 @@ def get_available_service_obj_from_id(available_service_id):
         avail_service_obj = AvailableService.objects.filter(pk__exact = available_service_id).last()
     return avail_service_obj
 
+def get_data_for_service_confirmation (service_requested):
+    '''
+    Description:
+        The function get the data to confirm that service was created
+	Input:
+        service_requested # service instance
+    Functions:
+        get_uploaded_files_for_service   # located at iSkyLIMS_drylab.utils.handling_multiple_files
+        get_projects_in_requested_samples # located at this file
+    Return:
+        information
+    '''
+    information = {}
+    user = {}
+    service_data ={}
+    service = Service.objects.filter(serviceRequestNumber__exact = service_requested).last()
+    service_number ,run_specs, center, platform = service.get_service_information().split(';')
+    information['service_number'] = service_number
+    information['requested_date'] = service.get_service_creation_time()
+    information['nodes']= service.serviceAvailableService.all()
+    user['name'] = service.serviceUserId.first_name
+    user['surname'] = service.serviceUserId.last_name
+
+    user_id = service.serviceUserId.id
+    user['area'] = Profile.objects.get(profileUserID = user_id).profileArea
+    user['center'] = Profile.objects.get(profileUserID = user_id).profileCenter
+    user['phone'] = Profile.objects.get(profileUserID = user_id).profileExtension
+    user['position'] = Profile.objects.get(profileUserID = user_id).profilePosition
+    user['email'] = service.serviceUserId.email
+    information['user'] = user
+    service_data['projects'] = get_projects_in_requested_samples(service)
+    service_data['platform'] = platform
+    service_data['run_specifications'] = run_specs
+    service_data['center'] = center
+    service_data['notes'] = service.get_service_user_notes()
+    files = get_uploaded_files_for_service(service)
+    if len(files) > 0 :
+        service_data['file'] = files
+    else:
+        service_data['file'] = ['Not provided']
+    information['service_data'] = service_data
+
+    return information
+
+
+
+def create_service_pdf_file (service_request_number, absolute_url):
+    '''
+    Description:
+        The function collect the information to create the pdf file
+    Input:
+        request # contains the session information
+    Functions:
+        get_data_for_service_confirmation   # located at this file
+        create_pdf                          # located at iSkyLIMS_drylab.utils.drylab_common_functions
+    Constants:
+        OUTPUT_DIR_SERVICE_REQUEST_PDF
+    Return:
+        pdf_file which contains the full path and name of the pdf file
+    '''
+
+    information_to_include = get_data_for_service_confirmation(service_request_number)
+    pdf_file_name = service_request_number + '.pdf'
+    full_path_pdf_file = create_pdf(absolute_url, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name,  drylab_config.OUTPUT_DIR_SERVICE_REQUEST_PDF)
+    pdf_file = full_path_pdf_file.replace(settings.BASE_DIR,'')
+    return pdf_file
+
 
 def get_pending_services_information():
     '''
@@ -154,6 +238,26 @@ def get_pending_services_information():
     graphic_pending_services = FusionCharts("pie3d", "ex1" , "425", "350", "chart-1", "json", data_source)
     pending_services_details ['graphic_pending_services'] = graphic_pending_services.render()
     return pending_services_details
+
+
+def get_projects_in_requested_samples(service_obj):
+    '''
+	Description:
+		The function get the different projects that are involved in the requested samples
+	Input:
+		service_obj  # service instance
+	Return:
+		project_unique_list
+    '''
+    project_unique_list = []
+    if RequestedSamplesInServices.objects.filter(samplesInService = service_obj).exists():
+        project_list = []
+        req_sample_objs = RequestedSamplesInServices.objects.filter(samplesInService = service_obj)
+        for req_sample_obj in req_sample_objs:
+            project_list.append(req_sample_obj.get_project_name())
+        project_unique_list = list(set(project_list))
+    return project_unique_list
+
 
 def get_service_obj_from_id(service_id):
     '''

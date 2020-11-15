@@ -31,13 +31,13 @@ def upload_js():
             {% if (!o.files.error && !i && !o.options.autoUpload) { %}
                 <button class="btn btn-primary start">
                     <i class="glyphicon glyphicon-upload"></i>
-                    <span>{%=locale.fileupload.start%}</span>
+                    <span class="text-color-black">{%=locale.fileupload.start%}</span>
                 </button>
             {% } %}
             {% if (!i) { %}
                 <button class="btn btn-warning cancel">
                     <i class="glyphicon glyphicon-ban-circle"></i>
-                    <span>{%=locale.fileupload.cancel%}</span>
+                    <span class="text-color-black">{%=locale.fileupload.cancel%}</span>
                 </button>
             {% } %}
         </td>
@@ -58,7 +58,7 @@ def upload_js():
         <td>
             <p class="name">
             <input type="hidden" name="files" value="{%=file.file_id%}"/>
-                <a href="{%=file.url%}" title="{%=file.name%}" download="{%=file.name%}" {%=file.thumbnailUrl?'data-gallery':''%}>{%=file.name%}</a>
+                <span>{%=file.name%}</span>
             </p>
             {% if (file.error) { %}
                 <div><span class="label label-important">{%=locale.fileupload.error%}</span> {%=file.error%}</div>
@@ -68,11 +68,16 @@ def upload_js():
             <span class="size">{%=o.formatFileSize(file.size)%}</span>
         </td>
         <td>
-            <button class="btn btn-danger delete" data-type="{%=file.deleteType%}" data-url="{%=file.deleteUrl%}"{% if (file.deleteWithCredentials) { %} data-xhr-fields='{"withCredentials":true}'{% } %}>
+            {% if (file.error) { %}
+                <div><span class="label label-important">{%=locale.fileupload.error%}</span> {%=file.error_detail%}</div>
+
+            {% } else { %}
+                <button class="btn btn-danger delete" data-type="{%=file.deleteType%}" data-url="{%=file.deleteUrl%}"{% if (file.deleteWithCredentials) { %} data-xhr-fields='{"withCredentials":true}'{% } %}>
                 <i class="glyphicon glyphicon-trash"></i>
-                <span>{%=locale.fileupload.destroy%}</span>
-            </button>
-            <input type="checkbox" name="delete" value="1" class="toggle">
+                <span class="text-color-black">{%=locale.fileupload.destroy%}</span>
+                </button>
+                <input type="checkbox" name="delete" value="1" class="toggle">
+            {% } %}
         </td>
     </tr>
 {% } %}

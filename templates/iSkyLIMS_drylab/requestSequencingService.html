@@ -14,6 +14,33 @@
     .jexcel > tbody > tr > td.readonly {
         color:rgba(0,0,0,0.6) !important;
     }
+    .btn-primary {
+        background-color :#87cada  !important;
+    }
+    .btn-primary:hover{
+        background-color :#67cada !important;
+    }
+    .btn-warning {
+        background-color :#ffdfb2 !important;
+    }
+    .btn-warning:hover{
+        background-color :#ffcfa2 !important;
+    }
+    .btn-danger {
+        background-color :#e57e5f  !important;
+    }
+    .btn-danger:hover{
+        background-color :#e55e3f !important;
+    }
+    span.text-color-white {
+        color:#ffffff !important;
+    }
+    span.text-color-black {
+        color:#000000 !important;
+    }
+    span.text-color-grey {
+        color:  #474747    !important;
+    }
  </style>
 
 {% if error_message %}
@@ -68,7 +95,7 @@
             <div class="panel panel-default">
                 <div class="panel-heading"><h3 style="text-align:center">Request Service form for Sequencing Data.</h3></div>
                 <div class="panel-body">
-                    <form id="fileupload" method="post" action="/drylab/multipleFiles"  name="fileupload"  enctype="multipart/form-data">
+                    <form id="fileupload" method="post" action="/drylab/requestSequencingService"  name="fileupload"  enctype="multipart/form-data" class="form-horizontal well">
                     <!-- <form id="fileupload" method="post" action="/drylab/multipleFiles"  name="fileupload"  enctype="multipart/form-data" class="form-horizontal well"> -->
                         {% csrf_token %}
                         <input type="hidden" name="subAction" value="createservice"/>
@@ -265,20 +292,20 @@
                                                 <!-- The fileinput-button span is used to style the file input field as button -->
                                                 <span class="btn btn-default fileinput-button">
                                                     <i class="glyphicon glyphicon-plus"></i>
-                                                    <span>Add files...</span>
+                                                    <span class="text-color-black">Add files...</span>
                                                     <input type="file" name="file" multiple>
                                                 </span>
                                                 <button type="submit" class="btn btn-primary start">
                                                     <i class="glyphicon glyphicon-upload"></i>
-                                                    <span>Start upload</span>
+                                                    <span class="text-color-black">Start upload</span>
                                                 </button>
-                                                <button type="reset" class="btn btn-warning cancel">
+                                                <button type="reset" class=" btn btn-warning cancel">
                                                     <i class="glyphicon glyphicon-ban-circle"></i>
-                                                    <span>Cancel upload</span>
+                                                    <span class="text-color-black">Cancel upload</span>
                                                 </button>
                                                 <button type="button" class="btn btn-danger delete">
                                                     <i class="glyphicon glyphicon-trash"></i>
-                                                    <span>Delete</span>
+                                                    <span class="text-color-grey">Delete</span>
                                                 </button>
                                                 <input type="checkbox" class="toggle">
                                                 <!-- The loading indicator is shown during file processing -->
@@ -297,7 +324,8 @@
                                         <div class="panel panel-default">
                                             <div class="panel-heading"><h3 class="panel-title">Upload Files</h3></div>
                                             <div class="panel-body">
-                                                <h5>You can <strong>drag &amp; drop</strong> files from your desktop on this webpage (see Browser support).</h5>
+                                                <h5>You can <strong>drag &amp; drop</strong> files from your desktop on this webpage (if Browser support).</h5>
+                                                <h5>The Maximun file size to upload is <strong>5MB</strong>. For including files bigger than 5MB contact Bioinformatic Unit Responsible</h5>
                                                 <table role="presentation" class="table table-striped"><tbody class="files"></tbody></table>
 
                                             </div>
@@ -316,79 +344,35 @@
                         <br>
                         <input class="btn pull-right btn-primary" type="submit" id ="btnSubmit" value="Submit your Request">
                     </form>
-                                <br>
 
-                    <!-- The blueimp Gallery widget -->
-                    <div id="blueimp-gallery" class="blueimp-gallery blueimp-gallery-controls" data-filter=":even">
-                    <div class="slides"></div>
-                    <h3 class="title"></h3>
-                    <a class="prev">‹</a>
-                    <a class="next">›</a>
-                    <a class="close">×</a>
-                    <a class="play-pause"></a>
-                    <ol class="indicator"></ol>
-                    </div>
                     {% upload_js %}
                 <!-- ######################################################### -->
-
-
-                       <script>
-                            //$('input[type="submit"]').prop("disabled", true);
-                            //$('#btnSubmitFile').prop('disabled',true);
-                            // var a=0;
-                            // //binds to onchange event of your input field
-                            // $('#uploadfile').bind('change', function() {
-                            //     //if ($('#btnSubmitFile').attr('disabled',false)){
-                            //     //    $('#btnSubmitFile').attr('disabled',true);
-                            //     //}
-                            //     //var ext = $('#uploadfile').val().split('.').pop().toLowerCase();
-                            //     //if ($.inArray(ext, ['csv']) == -1){
-                            //     //    $('#error1').slideDown("slow");
-                            //     //    $('#error2').slideUp("slow");
-                            //     //    a=0;
-                            //     //}
-                            //     //else{
-                            //         var filesize = (this.files[0].size);
-                            //         if (filesize > 2621440){
-                            //             $('#error2').slideDown("slow");
-                            //             a=0;
-                            //             $('#btnSubmit').attr('disabled',true)
-                            //         }
-                            //         else{
-                            //             $('#btnSubmit').attr('disabled',false);
-                            //              $('#error2').slideUp("slow");
-                            //         }
-                            //     //}
-                            // });
-                        </script
-                       <br><br>
-
-                       <script>
-                           $(document).ready(function () {
-                               $("#fileupload").submit(function (e) {
-                                   //stop submitting the form to see the disabled button effect
-                                   //e.preventDefault();
-                                   //disable the submit button
-                                   //var table_data = $('#spreadsheet').jexcel('getData')
-                                   {% if service_data_information.samples_heading %}
-                                       var table_data1 = table1.getData()
-                                       var data_json = JSON.stringify(table_data1)
-                                       $("<input />").attr("type", "hidden")
-                                           .attr("name", "samples_requested")
-                                           .attr("value", data_json)
-                                           .appendTo("#fileupload");
-                                   {% endif %}
-                                   var table_data2 = table2.getData()
-                                   var data_json = JSON.stringify(table_data2)
+                    <script>
+                       $(document).ready(function () {
+                           $("#fileupload").submit(function (e) {
+                               //stop submitting the form to see the disabled button effect
+                               //e.preventDefault();
+                               //disable the submit button
+                               //var table_data = $('#spreadsheet').jexcel('getData')
+                               {% if service_data_information.samples_heading %}
+                                   var table_data1 = table1.getData()
+                                   var data_json = JSON.stringify(table_data1)
                                    $("<input />").attr("type", "hidden")
-                                       .attr("name", "external_samples")
+                                       .attr("name", "samples_requested")
                                        .attr("value", data_json)
                                        .appendTo("#fileupload");
-                                   $("#btnSubmit").attr("disabled", true);
-                                   return true;
-                               });
+                               {% endif %}
+                               var table_data2 = table2.getData()
+                               var data_json = JSON.stringify(table_data2)
+                               $("<input />").attr("type", "hidden")
+                                   .attr("name", "external_samples")
+                                   .attr("value", data_json)
+                                   .appendTo("#fileupload");
+                               $("#btnSubmit").attr("disabled", true);
+                               return true;
                            });
-                      </script>
+                       });
+                    </script>
 
 
                     <script>

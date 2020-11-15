@@ -64,6 +64,8 @@ ERROR_NO_SERVICES_ARE_SELECTED = ['Unable to process your request', 'No services
 
 DATE_NOT_YET_DEFINED = 'Not Yet Defined'
 
+ERROR_FILE_TOO_BIG = 'Unable to upload your file. It exceeds the maximum size'
+
 ################### PIPELINES ######################
 DISPLAY_NEW_DEFINED_PIPELINE = ['Service', 'Pipeline Name' , 'Pipeline Version']
 DISPLAY_MULTYPLE_DEFINED_PIPELINE = ['Service', 'User', 'Pipeline Name' , 'Pipeline Version', 'Date', 'Default', 'In Use']
@@ -81,6 +83,8 @@ HEADING_PARAMETER_PIPELINE = ['Parameter Name' , 'Parameter value']
 HEADING_SERVICES_IN_PIPELINE = ['Service Name', 'Creation Time', 'Requested by', 'State']
 
 ####################### SERVICES #####################
+MAX_UPLOAD_SIZE = 5242880
+
 HEADING_PENDING_SERVICE_QUEUED =['Services', 'Resolution', 'Acronym name', 'Assigned to', 'On queued date', 'Estimated date']
 
 HEADING_SERVICE_DATES = ['Service Date Creation', 'Approval Service Date', 'Rejected Service Date']
