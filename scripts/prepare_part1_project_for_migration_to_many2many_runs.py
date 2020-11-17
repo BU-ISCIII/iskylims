@@ -1,6 +1,10 @@
 from iSkyLIMS_wetlab.models import Projects
 
-
+'''
+    This file is part of the migration preparation for the version 2.0.0.
+    It collect the information for the projects table for having the
+    functionality that Project name can be repeated in different runs
+'''
 def run ():
 
     projects_to_update = Projects.objects.all()

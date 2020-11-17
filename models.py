@@ -54,6 +54,8 @@ class RunProcess(models.Model):
                         Center,
                         on_delete=models.CASCADE, null = True, blank = True )
     reagent_kit = models.ManyToManyField(UserLotCommercialKits)
+    #projects = models.ManyToManyField(Projects)
+
     runName = models.CharField(max_length=45)
     sampleSheet = models.FileField(upload_to = wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY, null = True, blank = True)
     generatedat = models.DateTimeField(auto_now_add=True)
@@ -270,6 +272,7 @@ class Projects(models.Model):
             LibraryKit,
             on_delete=models.CASCADE , null=True, blank = True)
     runProcess = models.ManyToManyField(RunProcess)
+    
     BaseSpaceLibrary = models.CharField(max_length=45, null=True, blank=True)
     projectName= models.CharField(max_length=45)
     libraryKit=models.CharField(max_length=125)

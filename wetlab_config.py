@@ -299,11 +299,12 @@ ERROR_NO_MATCHES_FOR_RUN_SEARCH = ['There is not any run that matches your input
 ERROR_NO_MATCHES_FOR_PROJECT_SEARCH = ['There is not any project that mathes your input conditions']
 ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS = ['There is not any Index Library Kit  that mathes your input conditions']
 ERROR_NO_MATCHES_FOR_USER_LOT_KIT = ['There is not any User Lot Kit  that matches your input conditions']
+ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS =['There is not any match for your input conditions ']
 ERROR_NO_USER_LOT_KIT_DEFINED =['No User Lot Kit are defined']
 ERROR_INVALID_FORMAT_FOR_DATES = ['Invalid date format. Use the format  (DD-MM-YYYY)']
 ERROR_USER_NAME_TOO_SHORT = ['User name must contains at least 5 characters']
 ERROR_NO_MATCHES_FOR_SEQUENCER_STATS = ['There is not any run that where using the sequencer']
-
+ERROR_MANY_USER_MATCHES_FOR_INPUT_CONDITIONS =['There are many user names that matches your request']
 ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS = ['Unsuccessful configuration settings for Samba connection']
 ERROR_UNABLE_TO_SAVE_SAMBA_CONFIGURATION_SETTINGS = ['Unable to save the Samba configuration file ', 'check if folder iSkyLIMS_wetlab has write permision for apache user']
 ERROR_UNABLE_TO_SAVE_EMAIL_CONFIGURATION_SETTINGS = ['Unable to save the email configuration file ', 'check if folder iSkyLIMS_wetlab has write permision for apache user']
