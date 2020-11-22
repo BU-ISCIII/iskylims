@@ -46,8 +46,8 @@
                                 <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">SERVICES REQUEST<span class="caret"></span></a>
                                     <ul class="dropdown-menu">
                                         <li><a href="/drylab/requestSequencingService">SEQUENCING REQUEST</a></li>
-                                        <li><a href="/drylab/counseling_request">COUNSELING REQUEST</a></li>
-                                        <li><a href="/drylab/infrastructure_request">INFRASTRUCTURE REQUEST</a></li>
+                                        <li><a href="/drylab/counselingRequest">COUNSELING REQUEST</a></li>
+                                        <li><a href="/drylab/infrastructureRequest">INFRASTRUCTURE REQUEST</a></li>
                                     </ul>
                                 </li>
                                 {% if user.is_authenticated and request.user|has_group:"ServiceManager" %}

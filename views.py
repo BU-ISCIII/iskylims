@@ -95,7 +95,7 @@ def request_sequencing_service(request):
 			return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'service_data_information':service_data_information,
 									'error_message':error_message})
 
-		new_service = create_new_save_service_request(request)
+		new_service = create_new_save_sequencing_service_request(request)
 		sample_stored = stored_samples_for_sequencing_request_service(request.POST, new_service)
 		if 'files' in request.POST:
 			add_files_to_service(request.POST.getlist('files'), new_service)
@@ -108,200 +108,81 @@ def request_sequencing_service(request):
 			send_service_creation_confirmation_email(email_data)
 
 		# PDF preparation file for confirmation of service request
-		pdf_file = create_service_pdf_file(new_service.get_service_request_number(), request.build_absolute_uri())
-
-		# check if service allows to get data from external applications
-		#if len(services_allow_external_data(new_service, stored_projects)) > 0:
-		#	if drylab_config.EMAIL_USER_CONFIGURED :
-		#		send_required_preparation_pipeline_email(service_request_number)
 		confirmation_result = {}
-		confirmation_result['download_file'] = pdf_file
+		confirmation_result['download_file'] = create_service_pdf_file(new_service.get_service_request_number(), request.build_absolute_uri())
+
 		service_request_number = new_service.get_service_request_number()
 		confirmation_result['text'] = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), drylab_config.CONFIRMATION_TEXT_MESSAGE))
 		if len(sample_stored) > 0 :
 			confirmation_result['samples'] = sample_stored
 
 		return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'confirmation_result':confirmation_result})
-
-
-
 	else:
 		service_data_information = prepare_form_data_request_service_sequencing(request.user)
-
 		return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'service_data_information':service_data_information})
-'''
-@login_required
-def service_request(request, serviceRequestType):
-    request_type = {}
-    if serviceRequestType == 'internal_sequencing':
-        if request.method == "POST":
-            if 'serviceProjects' in request.POST:
-                import pdb; pdb.set_trace()
-                from django.http import QueryDict
-                #project_list = data.pop('serviceProjects', None)
-                #data_dict = request.POST.dict()
-                data = QueryDict('', mutable=True)
-                data.update(request.POST)
-                project_list = request.POST.getlist('serviceProjects')
-                #data_dict['serviceAvailableService'] = request.POST.getlist('serviceAvailableService')
-                dummy_value = data.pop('serviceProjects', None)
-            else:
-                data=request.POST
 
-            form = ServiceRequestFormInternalSequencing(data = data, files = request.FILES)
-            if form.is_valid():
-                new_service = save_service_request_form(form, request.user, drylab_config.INTERNAL_SEQUENCING_UNIT)
-
-                service_request_number = new_service.get_service_request_number()
-                if 'serviceProjects' in request.POST:
-                    stored_projects = store_projects_from_form(project_list, new_service)
-                else:
-                    stored_projects = ''
-
-                ## Send mail to user and drylab admin group
-                if drylab_config.EMAIL_USER_CONFIGURED :
-                    email_data = {}
-                    email_data['user_email'] = request.user.email
-                    email_data['user_name'] = request.user.username
-                    email_data['service_number'] = service_request_number
-                    send_service_creation_confirmation_email(email_data)
-
-                # PDF preparation file for confirmation of service request
-                pdf_file = create_service_pdf_file(service_request_number, request.build_absolute_uri())
-
-                # check if service allows to get data from external applications
-                if len(services_allow_external_data(new_service, stored_projects)) > 0:
-                    if drylab_config.EMAIL_USER_CONFIGURED :
-                        send_required_preparation_pipeline_email(service_request_number)
-                confirmation_result = {}
-                confirmation_result['download_file'] = pdf_file
-                confirmation_result['text'] = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), drylab_config.CONFIRMATION_TEXT_MESSAGE))
-                return render(request,'iSkyLIMS_drylab/RequestForm.html',{'confirmation_result':confirmation_result})
-            else:
-                error_message = drylab_config.ERROR_UNABLE_TO_RECORD_YOUR_SERVICE
-                request_type['type'] = 'Internal Sequencing'
-                form = prepare_form_data_internal_sequencing(request.user)
-                return render(request, 'iSkyLIMS_drylab/RequestForm.html',{'form': form, 'error_message': error_message , 'request_type': request_type})
-        else:
-            form = prepare_form_data_internal_sequencing(request.user)
-            request_type['type'] = 'Internal Sequencing'
-            return render(request, 'iSkyLIMS_drylab/RequestForm.html' , { 'form' : form , 'request_type': request_type})
-
-
-    if serviceRequestType == 'external_sequencing':
-        if request.method == "POST":
-            form = ServiceRequestFormExternalSequencing(data=request.POST,files=request.FILES)
-            if form.is_valid():
-                new_service = save_service_request_form(form, request.user, request.POST['serviceSeqCenter'])
-                service_request_number = new_service.get_service_request_number()
-
-                ## Send email
-                ## Send mail to user and drylab admin group
-                if drylab_config.EMAIL_USER_CONFIGURED :
-                    email_data = {}
-                    email_data['user_email'] = request.user.email
-                    email_data['user_name'] = request.user.username
-                    email_data['service_number'] = service_request_number
-                    send_service_creation_confirmation_email(email_data)
-
-                # PDF preparation file for confirmation of service request
-                #absolute_url = request.build_absolute_uri()
-                pdf_file = create_service_pdf_file(service_request_number, request.build_absolute_uri())
-                confirmation_result = {}
-                confirmation_result['download_file'] = pdf_file
-                confirmation_result['text'] = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), drylab_config.CONFIRMATION_TEXT_MESSAGE))
-                return render(request,'iSkyLIMS_drylab/RequestForm.html',{'confirmation_result':confirmation_result})
-
-        else:
-            form = ServiceRequestFormExternalSequencing()
-            form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
-            request_type['type'] = 'External Sequencing'
-            return render(request, 'iSkyLIMS_drylab/RequestForm.html' , { 'form' : form ,  'request_external': 'request_external','request_type': request_type })
-'''
 
 @login_required
 def counseling_request(request):
-    if request.method == "POST":
-        form = ServiceRequestForm_extended(data=request.POST,files=request.FILES)
 
-        if form.is_valid():
-            new_service = form.save(commit=False)
-            new_service.serviceStatus = "recorded"
-            new_service.serviceUserId = User.objects.get(id=request.user.id)
-            new_service.serviceRequestInt = increment_service_number(request.user)
-            new_service.serviceRequestNumber = create_service_id(new_service.serviceRequestInt,request.user)
-            new_service.save()
-            form.save_m2m()
-            ## Send email
-            subject = 'Service ' + new_service.serviceRequestNumber + " has been recorded"
-            body_message = 'Dear ' + request.user.username + "\n Your service " + new_service.serviceRequestNumber + " has been recorded. You will recieved the resolution of the request as soon as possible.\n Kind regards \n BU-ISCIII \n bioinformatica@isciii.es"
-            from_user = 'bioinformatica@isciii.es'
-            to_user = [request.user.email,'bioinformatica@isciii.es']
-            send_mail (subject, body_message, from_user, to_user)
-            # PDF preparation file for confirmation of service request
-            information_to_include = get_data_for_service_confirmation(str(new_service.serviceRequestNumber))
-            pdf_file_name = str(new_service.serviceRequestNumber) + '.pdf'
-            pdf_file = create_pdf(request, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name)
+    if request.method == 'POST' and request.POST['action'] == 'createService':
+        # check that at some services have been requested
+        if len(request.POST.getlist('RequestedServices')) == 0 :
+            service_data_information = prepare_form_data_request_counseling_service()
+            error_message = drylab_config.ERROR_NO_SERVICES_ARE_SELECTED
+            return render(request,'iSkyLIMS_drylab/requestCounselingService.html',{'service_data_information':service_data_information,
+                           'error_message':error_message})
 
-            pdf_url = pdf_file.replace(settings.BASE_DIR,'')
-            download_file = '<a href="'+ pdf_url + '">Download the service request confirmation file</a>'
-            return render(request,'django_utils/info_page.html',{'content':['Your service request has been successfully recorded.',
-                                'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
-                                'Keep this number safe for refering your request', download_file ,
-                                'You will be contacted shortly.']})
+        new_service = create_new_save_counseling_service_request(request)
+        if drylab_config.EMAIL_USER_CONFIGURED :
+            email_data = {}
+            email_data['user_email'] = request.user.email
+            email_data['user_name'] = request.user.username
+            email_data['service_number'] = new_service.get_service_request_number()
+            send_service_creation_confirmation_email(email_data)
+        confirmation_result = {}
+        confirmation_result['download_file'] = create_service_pdf_file(new_service.get_service_request_number(), request.build_absolute_uri())
 
-        else:
+        service_request_number = new_service.get_service_request_number()
+        confirmation_result['text'] = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), drylab_config.CONFIRMATION_TEXT_MESSAGE))
 
-            return render(request,'iSkyLIMS_drylab/error_page.html',{'content':['Your service request cannot be recorded.',
-                                                'Check that all information is provided correctly.']})
+        return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'confirmation_result':confirmation_result})
+
     else:
-        form = ServiceRequestForm_extended()
-
-    form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="Bioinformatics consulting and training").get_descendants(include_self=True)
-    return render(request, 'iSkyLIMS_drylab/RequestForm.html' , { 'form' : form ,  'consulting_request': 'consulting_request'})
+        service_data_information = prepare_form_data_request_counseling_service()
+        return render(request,'iSkyLIMS_drylab/requestCounselingService.html',{'service_data_information':service_data_information})
 
 
 @login_required
 def infrastructure_request(request):
-    if request.method == "POST":
-        form = ServiceRequestForm_extended(data=request.POST or None,files=request.FILES)
 
-        if form.is_valid():
-            new_service = form.save(commit=False)
-            new_service.serviceStatus = "recorded"
-            new_service.serviceUserId = User.objects.get(id=request.user.id)
-            new_service.serviceRequestInt = increment_service_number(request.user)
-            new_service.serviceRequestNumber = create_service_id(new_service.serviceRequestInt,request.user)
+    if request.method == 'POST' and request.POST['action'] == 'createService':
+        # check that at some services have been requested
+        if len(request.POST.getlist('RequestedServices')) == 0 :
+            service_data_information = prepare_form_data_request_infrastructure_service()
+            error_message = drylab_config.ERROR_NO_SERVICES_ARE_SELECTED
+            return render(request,'iSkyLIMS_drylab/requestInfrastructureService.html',{'service_data_information':service_data_information,
+                           'error_message':error_message})
 
-            new_service.save()
-            form.save_m2m()
-            ## Send email
-            subject = 'Service ' + new_service.serviceRequestNumber + " has been recorded"
-            body_message = 'Dear ' + request.user.username + "\n Your service " + new_service.serviceRequestNumber + " has been recorded. You will received the resolution of the request as soon as possible.\n Kind regards \n BU-ISCIII \n bioinformatica@isciii.es"
-            from_user = 'bioinformatica@isciii.es'
-            to_user = [request.user.email,'bioinformatica@isciii.es']
-            send_mail (subject, body_message, from_user, to_user)
+        new_service = create_new_save_infrastructure_service_request(request)
+        if drylab_config.EMAIL_USER_CONFIGURED :
+            email_data = {}
+            email_data['user_email'] = request.user.email
+            email_data['user_name'] = request.user.username
+            email_data['service_number'] = new_service.get_service_request_number()
+            send_service_creation_confirmation_email(email_data)
+        confirmation_result = {}
+        confirmation_result['download_file'] = create_service_pdf_file(new_service.get_service_request_number(), request.build_absolute_uri())
 
-            information_to_include = get_data_for_service_confirmation(str(new_service.serviceRequestNumber))
-            pdf_file_name = str(new_service.serviceRequestNumber) + '.pdf'
-            pdf_file = create_pdf(request, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name)
+        service_request_number = new_service.get_service_request_number()
+        confirmation_result['text'] = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), drylab_config.CONFIRMATION_TEXT_MESSAGE))
 
-            pdf_url = pdf_file.replace(settings.BASE_DIR,'')
-            download_file = '<a href="'+ pdf_url + '">Download the service request confirmation file</a>'
-            return render(request,'django_utils/info_page.html',{'content':['Your service request has been successfully recorded.',
-                                'The sequence number assigned for your request is: ', new_service.serviceRequestNumber,
-                                'Keep this number safe for refering your request',download_file,'You will be contacted shortly.']})
-        else:
+        return render(request,'iSkyLIMS_drylab/requestInfrastructureService.html',{'confirmation_result':confirmation_result})
 
-            return render(request,'iSkyLIMS_drylab/error_page.html',{'content':['Your service request cannot be recorded.',
-                                                'Check that all information is provided correctly.']})
     else:
-        form = ServiceRequestForm_extended()
+        service_data_information = prepare_form_data_request_counseling_service()
+        return render(request,'iSkyLIMS_drylab/requestInfrastructureService.html',{'service_data_information':service_data_information})
 
-    form.fields['serviceAvailableService'].queryset = AvailableService.objects.filter(availServiceDescription__exact="User support").get_descendants(include_self=True)
-
-    #form.helper[1].update_atrributes(hidden="true")
-    return render(request, 'iSkyLIMS_drylab/RequestForm.html' , { 'form' : form , 'infrastructure_request': 'infrastructure_request'})
 
 
 @login_required
@@ -347,7 +228,8 @@ def search_service (request):
         center = request.POST['center']
         sample_name = request.POST['samplename']
         user_name = request.POST['username']
-        if service_number_request == '' and service_state == '' and start_date == '' and end_date == '' and center == '' and sample_name == ''  and user_name =='':
+        project_name = request.POST['projectName']
+        if service_number_request == '' and service_state == '' and start_date == '' and end_date == '' and center == '' and sample_name == ''  and user_name =='' and project_name == '':
             return render( request,'iSkyLIMS_drylab/searchService.html',{'services_search_list': services_search_list })
 
         ### check the right format of start and end date
@@ -379,11 +261,17 @@ def search_service (request):
             services_found = services_found.filter(serviceCreatedOnDate__lte = end_date)
         if center != '':
             services_found = services_found.filter(serviceRequestNumber__icontains  = center)
+        if project_name != '':
+            project_in_services = RequestedSamplesInServices.objects.filter(projectName__icontains = project_name)
+            service_list = []
+            for project_in_service in project_in_services:
+                service_list.append(project_in_service.samplesInService.pk)
+            services_found = services_found.filter(pk__in = service_list)
         if sample_name != '':
-            sample_in_services = RequestedSamplesInServices.objects.filter(externalSampleName__icontains = sample_name)
+            sample_in_services = RequestedSamplesInServices.objects.filter(sampleName__icontains = sample_name)
             service_list = []
             for sample_in_service in sample_in_services:
-                service_list.append(sample_in_service.pk)
+                service_list.append(sample_in_service.samplesInService.pk)
             services_found = services_found.filter(pk__in = service_list)
         if  user_name != '':
             services_found = services_found.filter(serviceUserId__username__iexact  = user_name)
@@ -398,11 +286,15 @@ def search_service (request):
             display_multiple_services ={}
             s_list  = {}
             for service_item in services_found:
+                data = []
                 service_id = service_item.get_service_id()
-                service_number = service_item.get_service_request_number()
-                service_status = service_item.get_service_state()
-                service_center = service_item.get_service_request_center()
-                s_list [service_id]=[[service_number, service_status, service_center]]
+                data.append(service_item.get_service_request_number())
+                data.append(service_item.get_service_state())
+                data.append(service_item.get_service_dates())
+                data.append(service_item.get_service_request_center())
+                data.append(get_projects_in_requested_samples(service_item))
+                data.append(get_run_in_requested_samples(service_item))
+                s_list [service_id]=[data]
             display_multiple_services['s_list'] = s_list
             return render (request,'iSkyLIMS_drylab/searchService.html', {'display_multiple_services': display_multiple_services})
 

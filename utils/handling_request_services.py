@@ -51,20 +51,15 @@ def check_service_id_exists(service_id):
     else:
         return False
 
-def create_new_save_service_request(request):
+def create_new_save_sequencing_service_request(request):
     '''
     Description:
-    	The function collect additional info and then save the form
+    	The function collect  the data in the user form and create a new instance
+		for sequencing request
     Input:
-    	form      # form instance
-    	user		# request user
-    	unit 		# department who request the service
-    Functions:
-    	increment_service_number	# located at utils/drylab_common_functions
-    	create_service_id			# located at utils/drylab_common_functions
-		store_file_from_form		#
+    	request      # user data form
     Return:
-	new_service		# recorded instance of the form
+        new_service		# recorded instance of the form
     '''
     service_data = {}
     available_service_list = request.POST.getlist('RequestedServices')
@@ -99,6 +94,39 @@ def create_new_save_service_request(request):
     # Save the many-to-many data for the form
     for av_service_obj in available_service_objs:
         new_service.serviceAvailableService.add(av_service_obj)
+    return new_service
+
+
+def create_new_save_counseling_service_request(request):
+    '''
+    Description:
+    	The function collect  the data in the user form and create a new instance
+		for sequencing request
+    Input:
+    	request      # user data form
+    Return:
+        new_service		# recorded instance of the form
+    '''
+    service_data = {}
+    available_service_list = request.POST.getlist('RequestedServices')
+    available_service_objs = []
+    for av_service in available_service_list:
+        available_service_objs.append(get_available_service_obj_from_id(av_service))
+    service_data['serviceSeqCenter'] = drylab_config.INTERNAL_SEQUENCING_UNIT
+    service_data['serviceNotes'] = request.POST['description']
+    service_data['serviceRunSpecs'] = ''
+    service_data['serviceSequencingPlatform'] = ''
+    service_data['serviceFileExt'] = ''
+    service_data['serviceRunSpecs'] = ''
+    service_data['serviceUserId'] = request.user
+    service_data['serviceRequestInt'] = increment_service_number(request.user.id)
+    service_data['serviceRequestNumber'] = create_service_id(service_data['serviceRequestInt'],request.user.id)
+    # Save the new service
+    new_service = Service.objects.create_service(service_data)
+    # Save the many-to-many data for the form
+    for av_service_obj in available_service_objs:
+        new_service.serviceAvailableService.add(av_service_obj)
+
     return new_service
 
 def get_available_children_services_and_id(all_tree_services):
@@ -258,6 +286,23 @@ def get_projects_in_requested_samples(service_obj):
         project_unique_list = list(set(project_list))
     return project_unique_list
 
+def get_run_in_requested_samples(service_obj):
+    '''
+    Description:
+        The function get the different projects that are involved in the requested samples
+    Input:
+        service_obj  # service instance
+    Return:
+        run_unique_list
+    '''
+    run_unique_list = []
+    if RequestedSamplesInServices.objects.filter(samplesInService = service_obj).exists():
+        run_list = []
+        req_sample_objs = RequestedSamplesInServices.objects.filter(samplesInService = service_obj)
+        for req_sample_obj in req_sample_objs:
+            run_list.append(req_sample_obj.get_run_name())
+        run_unique_list = list(set(run_list))
+    return run_unique_list
 
 def get_service_obj_from_id(service_id):
     '''
@@ -313,9 +358,11 @@ def get_service_information (service_id):
             display_service_details['samples'].append([sample.get_sample_id(), sample.get_sample_name(), sample.get_project_name()])
 
     display_service_details['user_name'] = service_obj.get_service_requested_user()
-    user_input_file = service_obj.get_service_file()
-    if user_input_file:
-        display_service_details['file'] = os.path.join(settings.MEDIA_URL,user_input_file)
+    user_input_files = get_uploaded_files_for_service(service_obj)
+    if user_input_files:
+        display_service_details['file'] = []
+        for input_file in user_input_files:
+            display_service_details['file'].append(os.path.join(settings.MEDIA_URL,input_file))
     display_service_details['state'] = service_obj.get_service_state()
     display_service_details['service_notes'] = service_obj.get_service_user_notes()
     display_service_details['service_dates'] = zip (drylab_config.HEADING_SERVICE_DATES, service_obj.get_service_dates() )
@@ -474,11 +521,11 @@ def get_service_for_user_information (service_id):
 def prepare_form_data_request_service_sequencing (request_user):
     '''
     Description:
-    	The function get the information to display in the internal sequencing form
+    	The function get the information to display in the request sequencing service form
     Input:
     	request_user      # user instance who request the service
     Return:
-    	display_service
+    	service_data_information
     '''
     service_data_information = {}
 	# get requestiong sequencing data
@@ -511,6 +558,33 @@ def prepare_form_data_request_service_sequencing (request_user):
         if len(service_data_information['samples_data']) > 0:
             service_data_information['samples_heading'] = drylab_config.HEADING_SELECT_SAMPLE_IN_SERVICE
         service_data_information['external_sample_heading'] = drylab_config.HEADING_SELECT_EXTERNAL_SAMPLE_IN_SERVICE
+    return service_data_information
+
+
+def prepare_form_data_request_counseling_service():
+    '''
+    Description:
+        The function get the information to display in the counseling service form
+    Input:
+    	request_user      # user instance who request the service
+    Return:
+    	service_data_information
+    '''
+    service_data_information = {}
+    service_data_information['nodes'] = AvailableService.objects.filter(availServiceDescription__exact="Bioinformatics consulting and training").get_descendants(include_self=True)
+    return service_data_information
+
+def prepare_form_data_request_infrastructure_service():
+    '''
+    Description:
+        The function get the information to display in the infrastructure service form
+    Input:
+    	request_user      # user instance who request the service
+    Return:
+    	service_data_information
+    '''
+    service_data_information = {}
+    service_data_information['nodes'] = AvailableService.objects.filter(availServiceDescription__exact='User support').get_descendants(include_self=True)
     return service_data_information
 
 def send_service_creation_confirmation_email(email_data):

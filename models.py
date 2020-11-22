@@ -327,10 +327,6 @@ class Service(models.Model):
 	def get_service_delivery_time_no_format (self):
 		return self.serviceOnDeliveredDate
 
-	def get_service_file(self):
-		if self.serviceFile != None :
-			return '%s' %(self.serviceFile)
-		return None
 	def get_service_request_number(self):
 		return '%s' %(self.serviceRequestNumber)
 
@@ -435,6 +431,9 @@ class RequestedSamplesInServices (models.Model):
 
 	def get_project_name(self):
 		return '%s' %(self.projectName)
+
+	def get_run_name(self):
+		return '%s' %(self.runName)
 
 	objects = RequestedSamplesInServicesManager()
 
@@ -587,7 +586,10 @@ class Resolution(models.Model):
 		data.append(self.resolutionServiceID.get_service_request_number())
 		data.append(self.resolutionNumber)
 		data.append(self.resolutionFullNumber)
-		data.append(self.resolutionAsignedUser.username)
+		if self.resolutionAsignedUser is None:
+			data.append('Not assigned yet')
+		else:
+			data.append(self.resolutionAsignedUser.username)
 		data.append(on_queued_date)
 		data.append(on_estimated_date)
 		return data
