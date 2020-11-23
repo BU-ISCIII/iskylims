@@ -10,7 +10,7 @@ from iSkyLIMS_drylab.utils.graphics import *
 from iSkyLIMS_core.models import Samples, SequencingPlatform
 
 from iSkyLIMS_drylab.utils.drylab_common_functions import *
-from iSkyLIMS_drylab.utils.handling_multiple_files import get_uploaded_files_for_service, update_upload_file_with_service
+from iSkyLIMS_drylab.utils.handling_multiple_files import get_uploaded_files_for_service, update_upload_file_with_service, get_uploaded_files_and_file_name_for_service
 from django_utils.fusioncharts.fusioncharts import FusionCharts
 
 #### API from Wetlab ######
@@ -358,11 +358,11 @@ def get_service_information (service_id):
             display_service_details['samples'].append([sample.get_sample_id(), sample.get_sample_name(), sample.get_project_name()])
 
     display_service_details['user_name'] = service_obj.get_service_requested_user()
-    user_input_files = get_uploaded_files_for_service(service_obj)
+    user_input_files = get_uploaded_files_and_file_name_for_service(service_obj)
     if user_input_files:
         display_service_details['file'] = []
         for input_file in user_input_files:
-            display_service_details['file'].append(os.path.join(settings.MEDIA_URL,input_file))
+            display_service_details['file'].append([os.path.join(settings.MEDIA_URL,input_file[0]),input_file[1]])
     display_service_details['state'] = service_obj.get_service_state()
     display_service_details['service_notes'] = service_obj.get_service_user_notes()
     display_service_details['service_dates'] = zip (drylab_config.HEADING_SERVICE_DATES, service_obj.get_service_dates() )

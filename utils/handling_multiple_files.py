@@ -46,18 +46,20 @@ def get_and_safe_service_file(request):
     Return:
         data having the information of the uploaded file
     '''
-    up_file = request.FILES['file']
-    files = [{'name': up_file.name,
-        'type': up_file.content_type,
-        'size': up_file.size,
+    file_data = {}
+    file_data['file'] = request.FILES['file']
+    file_data['file_name'] = file_data['file'].name
+    files = [{'name': file_data['file'].name,
+        'type': file_data['file'].content_type,
+        'size': file_data['file'].size,
         'deleteType': 'DELETE'}]
-    if up_file.size > drylab_config.MAX_UPLOAD_SIZE :
+    if request.FILES['file'].size > drylab_config.MAX_UPLOAD_SIZE :
         files[0]['errors']= 'maxFileSize'
         files[0]['error_detail']= drylab_config.ERROR_FILE_TOO_BIG
     else:
         #store the file
 
-        new_upload_file_obj = UploadServiceFile.objects.create_upload_file(up_file)
+        new_upload_file_obj = UploadServiceFile.objects.create_upload_file(file_data)
         files[0]['file_id'] = new_upload_file_obj.get_uploadFile_id()
         files[0]['deleteUrl'] = str('/uploadServiceFileDelete=' + new_upload_file_obj.get_uploadFile_id())
 
@@ -71,13 +73,29 @@ def get_uploaded_files_for_service(service_obj):
     Input:
         service_obj      # service instance
     Return:
-        file_list
+        file_list with file stored on database
     '''
     file_list = []
     if UploadServiceFile.objects.filter(uploadService = service_obj).exists():
-        files_objs = UploadServiceFile.objects.filter(uploadService = service_obj)
+        file_objs = UploadServiceFile.objects.filter(uploadService = service_obj)
         for file_obj in file_objs:
-            file_list.append(file_obj.get_uploadFile_name())
+            file_list.append(file_obj.get_uploadFile_full_path_and_name())
+    return file_list
+
+def get_uploaded_files_and_file_name_for_service(service_obj):
+    '''
+    Description:
+        The function return the user uploaded files in a list
+    Input:
+        service_obj      # service instance
+    Return:
+        with file and file name stored  on database
+    '''
+    file_list = []
+    if UploadServiceFile.objects.filter(uploadService = service_obj).exists():
+        file_objs = UploadServiceFile.objects.filter(uploadService = service_obj)
+        for file_obj in file_objs:
+            file_list.append([file_obj.get_uploadFile_full_path_and_name(), file_obj.get_uploadFile_name()])
     return file_list
 
 def update_upload_file_with_service(file_id, service_obj):

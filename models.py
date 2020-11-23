@@ -439,9 +439,8 @@ class RequestedSamplesInServices (models.Model):
 
 class UploadServiceFileManager(models.Manager):
 	def create_upload_file(self,data):
-		new_upload_file = self.create(uploadFile = data)
+		new_upload_file = self.create(uploadFile = data['file'], uploadFileName = data['file_name'] )
 		return new_upload_file
-
 
 
 class UploadServiceFile (models.Model):
@@ -449,6 +448,7 @@ class UploadServiceFile (models.Model):
 				Service ,
 				on_delete=models.CASCADE, null = True, blank = True)
 	uploadFile = models.FileField(upload_to=drylab_config.USER_REQUESTED_SERVICE_FILE_DIRECTORY)
+	uploadFileName = models.CharField(null = True, blank = True, max_length = 255)
 	uploaded_at = models.DateTimeField(auto_now_add=True)
 
 	def __str__ (self):
@@ -458,8 +458,7 @@ class UploadServiceFile (models.Model):
 		return '%s' %(self.uploadFile)
 
 	def get_uploadFile_name(self):
-		return '%s' %(self.uploadFile.split('/')[-1])
-
+		return '%s' %(self.uploadFileName)
 
 	def get_uploadFile_id(self):
 		return '%s' %(self.pk)

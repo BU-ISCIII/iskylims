@@ -23,7 +23,7 @@ from iSkyLIMS_drylab.utils.handling_pipelines import *
 from iSkyLIMS_drylab.utils.handling_request_services import *
 from iSkyLIMS_drylab.utils.handling_resolutions import *
 from iSkyLIMS_drylab.utils.handling_deliveries import *
-from iSkyLIMS_drylab.utils.handling_forms import *
+#from iSkyLIMS_drylab.utils.handling_forms import *
 from iSkyLIMS_drylab.utils.handling_multiple_files import *
 from iSkyLIMS_drylab.utils.configuration_functions import *
 
@@ -78,7 +78,6 @@ def request_sequencing_service(request):
 
 	if request.POST and request.FILES :
 		if 'file' in request.FILES:
-			import pdb; pdb.set_trace()
 			data = get_and_safe_service_file(request)
 			response = JSONResponse(data, mimetype='application/json')
 			response['Content-Disposition'] = 'inline; filename=files.json'
