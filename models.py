@@ -64,29 +64,7 @@ class Platform(models.Model):
 
 	def get_platform_name(self):
 		return '%s'  %(self.platformName)
-'''
-class Machines (models.Model) :
-	platformID = models.ForeignKey(Platform ,on_delete=models.CASCADE)
-	machineName = models.CharField(_("Machine Name"),max_length=255)
-	machineDescription = models.CharField(_("Description"),max_length=255,null=True,blank=True)
-	machineLocation = models.CharField(_("Location"),max_length=255,null=True,blank=True)
-	machineProvider = models.CharField(_("Machine owner brand"),max_length=255,null=True,blank=True)
-	machineSerialNumber = models.CharField(_("Serial Number"),max_length=255,null=True,blank=True)
-	machineState =  models.CharField(_("Machine State"),max_length=50,null=True,blank=True)
-	machineOperationStart = models.DateField(auto_now_add=False, null=True,blank=True)
-	machineOperationEnd = models.DateField(auto_now_add=False, null=True,blank=True)
-	machineNumberLanes = models.CharField("Number of Lanes", max_length= 5)
 
-	def __str__ (self) :
-		return '%s' %(self.machineName)
-
-
-	def get_machine_name(self):
-		return '%s'  %(self.machineName)
-
-	def get_number_of_lanes(self):
-		return '%s' %(self.machineNumberLanes)
-'''
 class AvailableService(MPTTModel):
 	availServiceDescription=models.CharField(_("Available services"),max_length=100)
 	parent=TreeForeignKey('self',models.SET_NULL,null=True,blank=True)
@@ -125,7 +103,6 @@ class Pipelines(models.Model):
 	pipelineVersion = models.CharField(max_length = 10)
 	pipelineInUse = models.BooleanField(default = True)
 	generated_at = models.DateTimeField(auto_now_add = True)
-
 
 	def __str__ (self):
 		return '%s_%s' %(self.pipelineName, self.pipelineVersion)
@@ -535,6 +512,15 @@ class Resolution(models.Model):
 			for avail_service in avail_services:
 				service_ids_list.append(avail_service.pk)
 			return service_ids_list
+		return ['None']
+
+	def get_available_services_and_ids(self):
+		if self.availableServices.all().exists():
+			avail_services = self.availableServices.all()
+			service_list = []
+			for avail_service in avail_services:
+				service_list.append([ avail_service.pk, avail_service.get_service_description()])
+			return service_list
 		return ['None']
 
 	def get_resolution_id(self):

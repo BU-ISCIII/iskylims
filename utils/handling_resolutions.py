@@ -19,8 +19,8 @@ def allow_to_service_update_in_progress_state (resolution_obj):
         True or False
     '''
     service_obj = resolution_obj.get_service_obj()
-    if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
-        resolution_objs = Resolution.objects.filter(resolutionServiceID = service_obj)
+    if Resolution.objects.filter(resolutionServiceID = service_obj).exclude(resolutionState__resolutionStateName__exact = 'Recorded').exists():
+        resolution_objs = Resolution.objects.filter(resolutionServiceID = service_obj).exclude(resolutionState__resolutionStateName__exact = 'Recorded')
         avail_services_handled = []
         for resolution_obj in resolution_objs:
             resolution_handle_list = resolution_obj.get_available_services()

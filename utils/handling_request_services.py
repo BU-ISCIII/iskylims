@@ -377,12 +377,12 @@ def get_service_information (service_id):
     display_service_details['children_services'] = get_available_children_services_and_id(display_service_details['nodes'])
     # adding actions fields
     if service_obj.serviceStatus != 'rejected' or service_obj.serviceStatus != 'archived':
-
         if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
-            ## get informtaion from the defined Resolutions
+        ## get informtaion from the defined Resolutions
             resolution_objs = Resolution.objects.filter(resolutionServiceID = service_obj)
             display_service_details['resolution_for_progress'] = []
             display_service_details['resolution_for_delivery'] = []
+            display_service_details['resolution_delivered'] = []
             available_services_ids = []
             for resolution_obj in resolution_objs:
                 if resolution_obj.get_resolution_state() == 'Recorded':
@@ -403,17 +403,21 @@ def get_service_information (service_id):
                         display_service_details['resolution_for_delivery'].append([ resolution_obj.get_resolution_id(),resolution_obj.get_resolution_number() , req_available_services])
                     else:
                         display_service_details['resolution_for_delivery'].append([ resolution_obj.get_resolution_id(), resolution_obj.get_resolution_number() , ['']])
-
-
+                elif resolution_obj.get_resolution_state() == 'Delivery':
+                    display_service_details['resolution_delivered'].append([resolution_obj.get_resolution_id(),resolution_obj.get_resolution_number()])
+                    delivered_services = resolution_obj.get_available_services_and_ids()
+                    for delivered_service in delivered_services:
+                        display_service_details['children_services'].remove(delivered_service)
             if len(available_services_ids) > 0 and (len(available_services_ids) < len(display_service_details['children_services'])):
                 display_service_details['add_resolution_action'] = service_id
                 display_service_details['multiple_services'] = True
                 display_service_details['pending_to_add_resolution'] = []
                 for ch_service in display_service_details['children_services']:
                     if ch_service[0] not in available_services_ids:
-                        #available_service_obj = get_available_service_obj_from_id(ch_service[0])
+                    #available_service_obj = get_available_service_obj_from_id(ch_service[0])
                         display_service_details['pending_to_add_resolution'].append(ch_service)
-                #import pdb; pdb.set_trace()
+            #import pdb; pdb.set_trace()
+
         else:
 	        display_service_details['add_resolution_action'] = service_id
 	        if len(display_service_details['children_services']) > 1:
@@ -425,10 +429,10 @@ def get_service_information (service_id):
 	            #else:
 	            display_service_details['first_resolution'] = True
         #import pdb; pdb.set_trace()
-    if service_obj.serviceStatus == 'queued':
+    if service_obj.get_service_state() == 'queued':
         resolution_id = Resolution.objects.filter(resolutionServiceID = service_obj).last().id
         display_service_details['add_in_progress_action'] = resolution_id
-    if service_obj.serviceStatus == 'in_progress':
+    if service_obj.get_service_state() == 'in_progress':
         resolution_id = Resolution.objects.filter(resolutionServiceID = service_obj).last().id
         display_service_details['add_delivery_action'] = resolution_id
 
