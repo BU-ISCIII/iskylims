@@ -1,39 +1,40 @@
 {% load static %}
 <!--========== FOOTER ==========-->
+<style>
+	.footer .footer-power-by-logo {
+		width: 250px !important;
+		height: auto;
+	}
+</style>
 <footer class="footer">
 	<div class="content container">
 		<div class="row">
 			<div class="col-md-3">
-			<h4>Logos</h4>
-				<img class="footer-logo" src="{% static "iSkyLIMS_core/img/logo_bu_isciii.png" %}" alt="ISCiii_Bio_Informatic_Logo">
+			<h4>Logo</h4>
 				<a href="http://www.isciii.es" target="_blank"><img class="footer-logo" src="{% static "iSkyLIMS_core/img/isciii_logo.jpg" %}" alt="ISCiii_Logo"></a>
 			</div>
-			<div class="col-md-3">
-			<h4>Connect</h4>
-			<!--<a href="mailto:#">bioinformatica@isciii.es</a>-->
-			<div>
-				<ul class="social-icons icon-round list-unstyled list-inline">
-					<li> <a href="mailto:bioinformatica@isciii.es" ><i class="fas fa-envelope fa-3x"></i></a></li>
-					<li> <a href="https://twitter.com/BUISCIII" target="_blank"><i class="fab fa-twitter fa-3x"></i></a></li>
-					<li> <a href="https://github.com/BU-ISCIII" target="_blank"><i class="fab fa-github fa-3x"></i></a></li>
-				</ul>
+			<div class="col-md-4">
+				<h4>Find us in:</h4>
+				<div>
+					<ul class="list-unstyled list-inline">
+						<li> <a href="mailto:bioinformatica@isciii.es" ><i class="fas fa-envelope fa-3x"></i></a></li>
+						<li> <a href="https://twitter.com/BUISCIII" target="_blank"><i class="fab fa-twitter fa-3x"></i></a></li>
+						<li> <a href="https://github.com/BU-ISCIII" target="_blank"><i class="fab fa-github fa-3x"></i></a></li>
+					</ul>
+				</div>
 			</div>
+			<div class="col-md-5">
+				<div class="col-md-5">
+					<h4>Power by :</h4>
+				</div>
+				<div class="col-md-7">
+					<img class="footer-power-by-logo" src="{% static "iSkyLIMS_core/img/logo_bu_isciii.png" %}" alt="ISCiii_Bio_Informatic_Logo">
+				</div>
 			</div>
-			<div class="col-md-3">
-			<h4>Links</h4>
-			<ul>
-				<li><a href="/contact">Contact</a></li>
-				<li><a href="/tutorials">Getting started</a></li>
-				<li><a href="/faqs">FAQs</a></li>
-			</ul>
-			</div>
-			<div class="col-md-3">
-			<h4>Sitemap</h4>
-			<ul>
-				<li><a href="/">iSkyLIMS core</a></li>
-				<li><a href="/drylab">Drylab page</a></li>
-				<li><a href="/wetlab">Wetlab page</a></li>
-			</ul>
+		</div>
+		<div class="row">
+			<div class="col-md-2 col-md-offset-5">
+				<p >Version 2.0.0</p>
 			</div>
 		</div>
 		<!--// end row -->
