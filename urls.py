@@ -30,7 +30,8 @@ urlpatterns = [
     path('statsTimeDelivery', views.stats_time_delivery, name = 'stats_time_delivery'),
     path('userLogin', views.user_login, name = 'user_login'),
 
-    path('multipleFiles', views.multiple_files, name='multiple_files'),
+    #path('multipleFiles', views.multiple_files, name='multiple_files'),
+    path('uploadServiceFileDelete=<int:file_id>', views.upload_service_file_delete, name='upload_service_file_delete'),
 
 ]
 

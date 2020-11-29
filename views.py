@@ -78,7 +78,7 @@ def request_sequencing_service(request):
 
 	if request.POST and request.FILES :
 		if 'file' in request.FILES:
-			data = get_and_safe_service_file(request)
+			data = get_and_save_service_file(request)
 			response = JSONResponse(data, mimetype='application/json')
 			response['Content-Disposition'] = 'inline; filename=files.json'
 			return response
@@ -353,6 +353,9 @@ def add_resolution (request):
     if request.method == "POST" and request.POST['action'] == 'formToaddResolutionService':
         resolution_form_data = prepare_form_data_add_resolution(request.POST)
         return render(request, 'iSkyLIMS_drylab/addResolution.html' , { 'resolution_form_data' : resolution_form_data})
+    if request.method == "POST" and request.POST['action'] == 'reopenResolutionService' :
+        resolution_form_data = prepare_form_data_add_resolution(request.POST)
+        return render(request, 'iSkyLIMS_drylab/addResolution.html' , { 'resolution_form_data' : resolution_form_data})
     else:
         return render (request, 'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_SERVICE_ID_NOT_FOUND})
 
@@ -459,9 +462,9 @@ def add_in_progress (request):
         resolution_number = resolution_obj.get_resolution_number()
         service_obj = resolution_obj.get_service_obj()
         # check if services can change to "in progress"
-        if allow_to_service_update_in_progress_state (resolution_obj):
+        if allow_to_service_update_state (resolution_obj):
             # update the service status and in_porgress date
-            service_obj.update_service_status('in_progress')
+            service_obj.update_service_status('In progress')
 
         if drylab_config.EMAIL_USER_CONFIGURED :
             email_data = {}
@@ -507,6 +510,8 @@ def add_delivery (request ):
             email_data['user_name'] = request.user.username
             email_data['resolution_number'] = delivery_recorded['resolution_number']
             send_delivery_service_email(email_data)
+            if allow_to_service_update_state (resolution_obj):
+                service_obj.update_service_status('Delivered')
             return render (request, 'iSkyLIMS_drylab/addDelivery.html', {'delivery_recorded': delivery_recorded})
 
     return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The resolution that you are trying to upadate does not exists ','Contact with your administrator .']})
@@ -1126,83 +1131,15 @@ def detail_pipeline(request,pipeline_id):
     return render(request,'iSkyLIMS_drylab/detailPipeline.html', {'detail_pipelines_data': detail_pipelines_data})
 
 
-###################### Multiple files  Pruebas   ###########################
 
-def multiple_files(request):
+###################### Delete upload service file  #########################
+def upload_service_file_delete(request,file_id):
+    if request.method == 'DELETE':
+        if not check_if_file_is_linked_to_service(file_id):
+            delete_service_file(file_id)
+            response = JSONResponse(True, mimetype='application/json')
+            response['Content-Disposition'] = 'inline; filename=files.json'
 
-    if request.method == 'POST':
-
-        from .utils.response import JSONResponse
-        files = [{'url': '/media/pictures/justificante_provision_fondos.png',
-        'name': 'justifican...dos.png',
-        'type': 'image/png',
-        #'thumbnailUrl': '/media/pictures/justificante_provision_fondos.png',
-        'size': 39583,
-        'file_id': '5',
-        'deleteUrl': '/upload/delete/10',
-        'deleteType': 'DELETE'}]
-        data = {'files':files}
-        import pdb; pdb.set_trace()
-
-        response = JSONResponse(data, mimetype='application/json')
-        response['Content-Disposition'] = 'inline; filename=files.json'
-        return response
-    return render(request,'iSkyLIMS_drylab/multiple_files.html')
-
-'''
-	files = [serialize(self.object)]
-	El contenido de files
-	[{'url': '/media/pictures/justificante_provision_fondos.png',
-	'name': 'justifican...dos.png',
-	'type': 'image/png',
-	'thumbnailUrl': '/media/pictures/justificante_provision_fondos.png',
-	'size': 39583,
-	'deleteUrl': '/upload/delete/10',
-	'deleteType': 'DELETE'}]
-	El contenido de self.request
-	self.request
-<WSGIRequest: POST '/upload/new/'>
-
-	self.request.META['HTTP_ACCEPT']
-'application/json, text/javascript, */*; q=0.01'
-
-'''
-
-
-class Picture(models.Model):
-    """This is a small demo using just two fields. The slug field is really not
-    necessary, but makes the code simpler. ImageField depends on PIL or
-    pillow (where Pillow is easily installable in a virtualenv. If you have
-    problems installing pillow, use a more generic FileField instead.
-
-    """
-    file = models.ImageField(upload_to="pictures")
-    slug = models.SlugField(max_length=50, blank=True)
-
-    def __str__(self):
-        return self.file.name
-
-    #@models.permalink
-    def get_absolute_url(self):
-        return ('upload-new', )
-
-    def save(self, *args, **kwargs):
-        self.slug = self.file.name
-        super(Picture, self).save(*args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        """delete -- Remove to leave file."""
-        self.file.delete(False)
-        super(Picture, self).delete(*args, **kwargs)
-
-
-from django.views.generic import ListView
-class PictureListView(ListView):
-    model = Picture
-
-    def render_to_response(self, context, **response_kwargs):
-        files = [ serialize(p) for p in self.get_queryset() ]
-        data = {'files': files}
-        response = JSONResponse(data, mimetype=response_mimetype(self.request))
-        response['Content-Disposition'] = 'inline; filename=files.json'
-        return response
+            return response
+        return HttpResponse(content='Not allowed', status=403, content_type='application/json')
+    return HttpResponse(content='data not found', status=410, content_type='application/json')

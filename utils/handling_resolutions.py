@@ -8,7 +8,7 @@ from iSkyLIMS_drylab.utils.handling_pipelines import get_pipeline_and_versions_f
 
 from iSkyLIMS_drylab.utils.drylab_common_functions import create_pdf
 
-def allow_to_service_update_in_progress_state (resolution_obj):
+def allow_to_service_update_state (resolution_obj):
     '''
     Description:
         The function check if all partial resolutions are handled all requested

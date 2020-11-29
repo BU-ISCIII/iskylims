@@ -74,28 +74,7 @@ def store_resolution_delivery(form_data):
                 new_delivery.pipelinesInDelivery.add(get_pipeline_obj_from_id(pipeline_id))
         resolution_obj.update_resolution_in_delivered()
         service_obj = resolution_obj.get_service_obj()
-        import pdb; pdb.set_trace()
-        if service_obj.get_service_state() == 'In progress':
-            service_obj.update_service_status('Delivered')
-        '''
-        if Resolution.objects.filter(resolutionServiceID = service_obj).exclude(resolutionState__resolutionStateName__exact = 'Delivery').exists():
-            if Resolution.objects.filter(resolutionServiceID = service_obj, resolutionState__resolutionStateName__exact = 'In progress').exists():
-                pending_resolution_obj = resolutionResolution.objects.filter(resolutionServiceID = service_obj, resolutionState__resolutionStateName__exact = 'In Progress').last()
-                delivery_data['pending_resolution'] = pending_resolution_obj.get_resolution_number()
-                service_obj.update_service_status('In progress')
-            elif Resolution.objects.filter(resolutionServiceID = service_obj, resolutionState__resolutionStateName__exact = 'Recorded').exists():
-                pending_resolution_obj = resolutionResolution.objects.filter(resolutionServiceID = service_obj, resolutionState__resolutionStateName__exact = 'Recorded').last()
-                service_obj.update_service_status('Queued')
 
-                delivery_data['pending_resolution'] = pending_resolution_obj.get_resolution_number()
-            else:
-                service_obj.update_service_status('Delivered')
-        else:
-            import pdb; pdb.set_trace()
-            if service_obj.get_service_state() != 'Recorded' :
-                service_obj.update_service_status('Delivered')
-        '''
-        
         delivery_data['resolution_number'] = resolution_obj.get_resolution_number()
     return delivery_data
 

@@ -37,7 +37,7 @@ class JSONResponse(HttpResponse):
         content = json.dumps(obj, **json_opts)
         super(JSONResponse, self).__init__(content, mimetype, *args, **kwargs)
 
-def get_and_safe_service_file(request):
+def get_and_save_service_file(request):
     '''
     Description:
         The function get the sevice files and stored in database
@@ -61,7 +61,7 @@ def get_and_safe_service_file(request):
 
         new_upload_file_obj = UploadServiceFile.objects.create_upload_file(file_data)
         files[0]['file_id'] = new_upload_file_obj.get_uploadFile_id()
-        files[0]['deleteUrl'] = str('/uploadServiceFileDelete=' + new_upload_file_obj.get_uploadFile_id())
+        files[0]['deleteUrl'] = str('uploadServiceFileDelete=' + new_upload_file_obj.get_uploadFile_id())
 
     data = {'files':files}
     return data
@@ -105,8 +105,34 @@ def update_upload_file_with_service(file_id, service_obj):
     Input:
         service_id      # id of the service
     Return:
-        True if service id exists
+        None
     '''
     if UploadServiceFile.objects.filter(pk__exact = file_id).exists():
         UploadServiceFile.objects.get(pk__exact = file_id).update_service_id(service_obj)
     return
+
+def check_if_file_is_linked_to_service(file_id):
+    '''
+    Description:
+        The function check if file is used in a defined service
+    Input:
+        file_id      # id of the file
+    Return:
+        True if file is used by a service
+    '''
+    if UploadServiceFile.objects.filter(pk__exact = file_id).exclude(uploadService = None).exists():
+        return True
+    return False
+
+def delete_service_file(file_id):
+    '''
+    Description:
+        The function delete the file from database
+    Input:
+        file_id      # id of the file
+    Return:
+        None
+    '''
+    if UploadServiceFile.objects.filter(pk__exact = file_id).exists():
+        UploadServiceFile.objects.filter(pk__exact = file_id).delete()
+    return None
