@@ -510,6 +510,7 @@ def add_delivery (request ):
             email_data['user_name'] = request.user.username
             email_data['resolution_number'] = delivery_recorded['resolution_number']
             send_delivery_service_email(email_data)
+            resolution_obj = delivery_recorded['deliveryResolutionID']
             if allow_to_service_update_state (resolution_obj):
                 service_obj.update_service_status('Delivered')
             return render (request, 'iSkyLIMS_drylab/addDelivery.html', {'delivery_recorded': delivery_recorded})

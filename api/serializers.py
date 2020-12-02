@@ -30,6 +30,8 @@ class ServiceSerializer (serializers.ModelSerializer):
         fields = ['pk', 'serviceRequestNumber','serviceStatus', 'serviceUserId','serviceCreatedOnDate',
             'serviceSeqCenter', 'serviceAvailableService', 'serviceFileExt' , 'serviceNotes']
 
+
+
 class UpdateResolutionSerializer(serializers.ModelSerializer):
     resolutionState = serializers.StringRelatedField(many = False)
     class Meta:

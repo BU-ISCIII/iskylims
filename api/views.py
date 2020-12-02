@@ -84,12 +84,34 @@ def samples_in_service(request):
         if RequestedSamplesInServices.objects.filter(samplesInService__serviceRequestNumber__iexact = request.GET['service']).exists():
             sample_objs = RequestedSamplesInServices.objects.filter(samplesInService__serviceRequestNumber__iexact = request.GET['service'])
             sample_serializers = RequestedSamplesInServicesSerializer(sample_objs, many = True)
-
             return Response(sample_serializers.data, status = status.HTTP_200_OK)
         else:
             return Response(status = status.HTTP_204_NO_CONTENT)
     else:
         return Response(status = status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def service_full_data(request):
+    if 'service' in request.GET:
+        if Service.objects.filter(serviceRequestNumber__iexact = request.GET['service']).exists():
+            service_full_data = {}
+            service_obj = Service.objects.filter(serviceRequestNumber__iexact = request.GET['service']).last()
+            service_full_data['Service']= ServiceSerializer(service_obj, many = False).data
+            if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
+                resolution_objs =  Resolution.objects.filter(resolutionServiceID = service_obj)
+                service_full_data['Resolutions'] = ResolutionSerializer(resolution_objs, many=True).data
+            if RequestedSamplesInServices.objects.filter(samplesInService__serviceRequestNumber__iexact = request.GET['service']).exists():
+                sample_objs = RequestedSamplesInServices.objects.filter(samplesInService__serviceRequestNumber__iexact = request.GET['service'])
+                service_full_data['Samples'] = RequestedSamplesInServicesSerializer(sample_objs, many = True).data
+
+            return Response(service_full_data, status = status.HTTP_200_OK)
+        else:
+            return Response(status = status.HTTP_204_NO_CONTENT)
+    else:
+        return Response(status = status.HTTP_400_BAD_REQUEST)
+
+
 
 @api_view(['PUT'])
 def update_resolution_to_in_progress(request):

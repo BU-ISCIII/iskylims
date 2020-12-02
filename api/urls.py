@@ -17,9 +17,11 @@ urlpatterns = [
 
 
     path('services/', views.service_list,  name='service_list'),
+    path('serviceFullData', views.service_full_data, name = 'service_full_data'),
     path('resolution', views.resolution_data, name='resolution_data'),
     path('samplesInService', views.samples_in_service, name = 'samples_in_service'),
     path('updateResolution',views.update_resolution_to_in_progress, name = 'update_resolution_to_in_progress'),
+
 
 
     #path('runfolder/<int:project>', views.get_runfolder,  name='get_runfolder'),

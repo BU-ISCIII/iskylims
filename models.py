@@ -555,6 +555,7 @@ class Resolution(models.Model):
 
 		resolution_info.append(self.resolutionNotes)
 		resolution_info.append(self.resolutionPdfFile)
+
 		return resolution_info
 
 	def get_information_for_pending_resolutions (self):
