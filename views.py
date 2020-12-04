@@ -190,14 +190,9 @@ def display_service (request, service_id):
         #redirect to login webpage
         return redirect ('/accounts/login')
     if Service.objects.filter(pk=service_id).exists():
-        if not is_service_manager(request):
-            # display limit information of the service
-            display_service_for_user = get_service_for_user_information(service_id)
-            return render (request,'iSkyLIMS_drylab/display_service.html',{'display_service_for_user': display_service_for_user})
-        else:
-            # displays the service information and the actions to be done for the service
-	        display_service_details = get_service_information(service_id)
-	        return render (request,'iSkyLIMS_drylab/display_service.html',{'display_service': display_service_details})
+        service_manager = is_service_manager(request)
+        display_service_details = get_service_information(service_id, service_manager)
+        return render (request,'iSkyLIMS_drylab/display_service.html',{'display_service': display_service_details})
     else:
 	    return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The service that you are trying to get does not exist ','Contact with your administrator .']})
 
