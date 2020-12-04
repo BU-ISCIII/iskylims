@@ -348,9 +348,6 @@ def add_resolution (request):
     if request.method == "POST" and request.POST['action'] == 'formToaddResolutionService':
         resolution_form_data = prepare_form_data_add_resolution(request.POST)
         return render(request, 'iSkyLIMS_drylab/addResolution.html' , { 'resolution_form_data' : resolution_form_data})
-    if request.method == "POST" and request.POST['action'] == 'reopenResolutionService' :
-        resolution_form_data = prepare_form_data_add_resolution(request.POST)
-        return render(request, 'iSkyLIMS_drylab/addResolution.html' , { 'resolution_form_data' : resolution_form_data})
     else:
         return render (request, 'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_SERVICE_ID_NOT_FOUND})
 
