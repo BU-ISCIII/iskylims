@@ -352,32 +352,31 @@
                                 <div class="panel panel-default">
                                     <div class="panel-heading"><h3>Resolution already delivered</h3></div>
                                     <div class="panel-body">
-                                        {% for res_id , res_name in display_service.resolution_delivered %}
-                                            <form class="" action="/drylab/addResolution" method="post">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="action" value="reopenResolutionService">
-                                                <input type="hidden" name="service_id" value="{{display_service.service_id}}">
-                                                <input type="hidden" name="resolution_id" value="{{res_id}}">
-                                                <div class="col-sm-8 ">  <!-- col-sm-4  In progress button  -->
-                                                    <table>
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Resolution Name</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td><h5 style="text-align:center">{{res_name}}</h5></td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </div> <!--// end col-sm-8 -->
-                                                <div class="col-sm-3 col-sm-offset-1">  <!-- col-sm-3  progress button  -->
-                                                    <br>
-                                                    <input class="btn pull-right btn-primary" type="submit" id ="btnSubmit" value="Reopen Resolution">
-                                                </div> <!--// end col-sm-4   resolution button  -->
-                                            </form>
-                                        {% endfor %}
+                                        <form class="" action="/drylab/addResolution" method="post">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="formToaddResolutionService">
+                                            <input type="hidden" name="service_id" value="{{display_service.service_id}}">
+                                            <div class="col-sm-8 ">  <!-- col-sm-8  Re Open resolutions  -->
+                                                {% if display_service.all_requested_services %}
+                                                    <input type="hidden" name="children_services_id" value="{% for id, name in display_service.all_requested_services %}{{id}},{% endfor %}">
+                                                    <div class="form-group">
+                                                        <label class="col-sm-8 control-label" for="childrenServices" >Select services</label>
+
+                                                        <div class="col-sm-8">
+                                                            <select class="custom-select" name="childrenServices"  id="childrenServices" multiple>
+                                                               {% for id, name in display_service.all_requested_services %}
+                                                                   <option value="{{id}}">{{name}}</option>
+                                                               {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>  <!-- end from-group   -->
+                                                {% endif %}
+                                            </div> <!--// end col-sm-8 -->
+                                            <div class="col-sm-3 col-sm-offset-1">  <!-- col-sm-3  progress button  -->
+                                                <br>
+                                                <input class="btn pull-right btn-primary" type="submit" id ="btnSubmit" value="Reopen Resolution">
+                                            </div> <!--// end col-sm-4   resolution button  -->
+                                        </form>
                                     </div> <!--// end panel body -->
                                 </div> <!--// end panel -->
                             </div> <!--// end row -->

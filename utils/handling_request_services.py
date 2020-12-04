@@ -386,7 +386,7 @@ def get_service_information (service_id, service_manager):
                 resolution_objs = Resolution.objects.filter(resolutionServiceID = service_obj)
                 display_service_details['resolution_for_progress'] = []
                 display_service_details['resolution_for_delivery'] = []
-                display_service_details['resolution_delivered'] = []
+                # display_service_details['resolution_delivered'] = []
                 available_services_ids = []
                 for resolution_obj in resolution_objs:
                     if resolution_obj.get_resolution_state() == 'Recorded':
@@ -408,11 +408,11 @@ def get_service_information (service_id, service_manager):
                         else:
                             display_service_details['resolution_for_delivery'].append([ resolution_obj.get_resolution_id(), resolution_obj.get_resolution_number() , ['']])
                     elif resolution_obj.get_resolution_state() == 'Delivery':
-                        display_service_details['resolution_delivered'].append([resolution_obj.get_resolution_id(),resolution_obj.get_resolution_number()])
+                        display_service_details['resolution_delivered'] = True
                         delivered_services = resolution_obj.get_available_services_and_ids()
                         for delivered_service in delivered_services:
                             display_service_details['children_services'].remove(delivered_service)
-                        display_service_details['all_requested_services'] = get_available_children_services_and_id(display_service_details['nodes'])
+
                 if (len(available_services_ids) < len(display_service_details['children_services'])):
                 # if len(available_services_ids) > 0 and (len(available_services_ids) < len(display_service_details['children_services'])):
                     display_service_details['add_resolution_action'] = service_id
@@ -422,8 +422,8 @@ def get_service_information (service_id, service_manager):
                         if ch_service[0] not in available_services_ids:
                         #available_service_obj = get_available_service_obj_from_id(ch_service[0])
                             display_service_details['pending_to_add_resolution'].append(ch_service)
-                #import pdb; pdb.set_trace()
-
+                if 'resolution_delivered' in display_service_details:
+                    display_service_details['all_requested_services'] = get_available_children_services_and_id(display_service_details['nodes'])
             else:
     	        display_service_details['add_resolution_action'] = service_id
     	        if len(display_service_details['children_services']) > 1:
