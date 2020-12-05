@@ -706,26 +706,6 @@ def search_project (request):
     Imports:
         Machines and Platform are imported from iSkyLIMS_drylab.models
             for filtering runs based on the platform
-    Variables:
-
-        User inputs from search options
-            project_name    # string characters to find in the project name
-            platform_name   # platform name filter
-            start_date      # filter of starting date of the project
-            end_date        # filter for the end of the project
-
-        available_platforms # contains the list of platform defined in
-                            # iSkyLIMS.models.Platform
-        machine_list        # list of machines to filter on the matches runs
-        platforms           # contain the object from iSkyLIMS.models.Platform
-        platform_name       # has the platform get from user form
-
-        project_found       # Projects object that contains the result query
-                            # it is updated with the user form conditions
-        r_data_display      # contains the information to display about the project
-        run_list            # contains the project list that mathches te user conditions
-        run_process_ids     # contains the runs ids which have the platflorm
-                              value enter by user
 
     Return:
         Return the different information depending on the execution:
@@ -742,7 +722,7 @@ def search_project (request):
         start_date=request.POST['startdate']
         end_date=request.POST['enddate']
         user_name = request.POST['username']
-        platform_name = request.POST['platform']
+        sequencer_name = request.POST['sequencer']
         run_state = request.POST['runstate']
         run_process_ids = []
         # check that some values are in the request if not return the form
@@ -763,73 +743,28 @@ def search_project (request):
             if not check_valid_date_format(start_date) :
                 error_message = ERROR_INVALID_FORMAT_FOR_DATES
                 return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
-        ### Get projects when project name is not empty
-        if project_name != '' :
-            if Projects.objects.filter(projectName__iexact = project_name).exists():
-                projects = Projects.objects.filter (projectName__iexact = project_name)
-                if len(projects) == 1 :
-                    return redirect ('display_project', project_id = projects[0].get_project_id())
-            if  Projects.objects.filter (projectName__icontains = project_name).exists():
-                projects_found = Projects.objects.filter (projectName__icontains = project_name)
-            else:
-                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
-        ### if there is no project name, then get all which will be filtered by other conditions set by user
-        #
-        if project_name == '':
-            projects_found = Projects.objects.all()
-        if platform_name != '':
-            sequencer_list = get_sequencer_names_from_platform(platform_name)
-            if len(sequencer_list) == 0:
-                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
 
-            if RunProcess.objects.filter(usedSequencer__sequencerName__in = sequencer_list).exists() :
-                runs_found = RunProcess.objects.filter(usedSequencer__sequencerName__in= sequencer_list)
-                for run in runs_found :
-                    run_process_ids.append(run.get_run_id())
-                if projects_found.filter(runprocess_id__in = run_process_ids).exists():
-                    projects_found = projects_found.filter(runprocess_id__in = run_process_ids)
-                else:
-                    return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
-            else:
-                    return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
+        projects_found = Projects.objects.all()
 
-            # check if user name is not empty
-        if user_name != '':
-            if User.objects.filter(username__icontains = user_name).exists():
-                r_name_id = User.objects.get(username__icontains = user_name).id
-                if projects_found.filter(user_id__exact =r_name_id).exists():
-                    projects_found = projects_found.filter(user_id__exact =r_name_id)
-                else:
-                     return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The Project found does not belong to the user, ', user_name ]})
-            else:
-
-                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
-                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['The Project found does not belong to the user, ', user_name ]})
+        if project_name != '':
+            projects_found = projects_found.filter(projectName__icontains = project_name)
+        if sequencer_name != '':
+            run_objs = RunProcess.objects.filter(usedSequencer__sequencerName__exact = sequencer_name)
+            projects_found = projects_found.filter(runProcess__in = run_objs)
         if (run_state !='' ):
-            if projects_found.filter(runprocess_id__state__runStateName__exact = run_state):
-                projects_found = projects_found.filter(runprocess_id__state__runStateName__exact = run_state)
-            else :
-                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
-
+            run_objs = RunProcess.objects.filter(state__runStateName__exact = run_state)
+            projects_found = projects_found.filter(runProcess__in = run_objs)
+        if user_name != '':
+            projects_found = projects_found.filter(user_id__username__icontains = user_name)
         if start_date !='' and end_date != '':
-
-            if projects_found.filter(project_run_date__range=(start_date, end_date)).exists():
-                 projects_found = projects_found.filter(project_run_date__range=(start_date, end_date))
-            else:
-                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
+            projects_found = projects_found.filter(generatedat__range=(start_date, end_date))
         if start_date !='' and end_date == '':
-            if projects_found.filter(project_run_date__gte = start_date).exists():
-                 projects_found = projects_found.filter(project_run_date__gte = start_date)
-                 #
-            else:
-                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
-
+            projects_found = projects_found.filter(generatedat__gte = start_date)
         if start_date =='' and end_date != '':
-            if projects_found.filter(project_run_date__lte = end_date).exists():
-                 projects_found = projects_found.filter(project_run_date__lte = end_date)
-            else:
-                return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
-        #If only 1 project mathes the user conditions, then get the project information
+            projects_found = projects_found.filter(generatedat__lte = end_date)
+        if len(projects_found) == 0:
+            error_message = ERROR_NO_MATCHES_FOR_PROJECT_SEARCH
+            return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data,'error_message':error_message})
 
         if len (projects_found) == 1:
             return redirect ('display_project', project_id = projects_found[0].id)
@@ -4149,5 +4084,5 @@ def search_user_lot_kit(request):
 
 @login_required
 def display_user_lot_kit(request, user_kit_id):
-
+    protocol_list = {}
     return render(request, 'iSkyLIMS_wetlab/displayUserLotKit.html',{'protocol_list': protocol_list})

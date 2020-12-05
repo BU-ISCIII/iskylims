@@ -70,10 +70,10 @@
              </div>  <!-- end from-group   -->
             <BR>
             <div class="form-group">
-                <label class="col-sm-5 control-label" for="platform" >Platform</label>
-                <div class="col-sm-4"><select class="form-control" name="platform" id="platform">
+                <label class="col-sm-5 control-label" for="sequencer" >Sequencer Machine</label>
+                <div class="col-sm-4"><select class="form-control" name="sequencer" id="sequencer">
                                				<option value="">Choose a value</option>
-                                            {% for value in project_form_data.available_platforms %}
+                                            {% for value in project_form_data.available_sequencers %}
                                                 <option value="{{value}}">{{value}}</option>
                                             {% endfor %}
 
