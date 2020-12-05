@@ -685,7 +685,7 @@ def get_samples_in_lib_prep_state ():
         samples_obj = Samples.objects.filter(sampleState__sampleStateName__exact =  'Library preparation').order_by('sampleUser').order_by('sampleEntryDate')
 
         for sample in samples_obj :
-            if LibraryPreparation.objects.filter(sample_id = sample).exclude(libPrepState__libPrepState__in = states_excluded).exists():
+            if (not LibraryPreparation.objects.filter(sample_id = sample).exists()) or (LibraryPreparation.objects.filter(sample_id = sample).exclude(libPrepState__libPrepState__in = states_excluded).exists()):
                 sample_information = sample.get_info_in_defined_state()
                 sample_information.append(sample.get_register_user())
                 molecule = MoleculePreparation.objects.filter(sample = sample,state__moleculeStateName = 'Completed').last()
@@ -720,18 +720,6 @@ def find_index_sequence_collection_values_kit(sequence):
     if CollectionIndexValues.objects.filter(i_5_seq__icontains =rev_sequence).exists():
         return ['I5', rev_sequence]
     return 'None', sequence
-
-
-
-def pending_samples_for_grafic(pending):
-    number_of_pending = {}
-    number_of_pending ['DEFINED'] = pending['defined']['length']
-    number_of_pending ['EXTRACTED MOLECULE'] = pending['extract_molecule']['length']
-    number_of_pending ['LIBRARY PREPARATION'] = pending['create_library_preparation']['length']
-
-    data_source = graphic_3D_pie('Number of Pending Samples', '', '', '', 'fint',number_of_pending)
-    graphic_pending_samples = FusionCharts("pie3d", "ex1" , "430", "450", "chart-1", "json", data_source)
-    return graphic_pending_samples
 
 
 def store_library_preparation_index(form_data):

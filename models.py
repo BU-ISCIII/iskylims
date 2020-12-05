@@ -823,8 +823,7 @@ class SamplesInProject (models.Model):
 
 ################################################
 ################################################
-
-# New objets for handling library preparation
+# New objets for version 2.0.0
 ################################################
 
 

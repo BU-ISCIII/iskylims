@@ -3037,10 +3037,6 @@ def pending_to_update(request):
 
     pending['defined'] = get_samples_in_defined_state('')
     pending['extract_molecule'] = get_samples_in_extracted_molecule_state(request.user)
-    pending['create_library_preparation'] = get_samples_in_lib_prep_state()
-    pending['lib_prep_protocols'] = get_protocols_for_library_preparation()
-    # get the library preparation in defined state
-    pending['add_lib_prep_parameters'] = get_lib_prep_to_add_parameters()
     pending ['graphic_pending_samples'] = pending_samples_for_grafic(pending).render()
 
     return render(request, 'iSkyLIMS_wetlab/pendingToUpdate.html', {'pending':pending})
