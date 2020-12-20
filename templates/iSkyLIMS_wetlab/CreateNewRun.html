@@ -97,18 +97,13 @@
                                             mySpreadsheet = $('#spreadsheet').jexcel({
                                                 data:data,
                                                 columns: [
-                                                    { type: 'text', title:'{{display_sample_information.heading.0}}', width:180 , readOnly:true },
-                                                    { type: 'text', title:'{{display_sample_information.heading.1}}', width:180 , readOnly:true },
-                                                    { type: 'text', title:'{{display_sample_information.heading.2}}', width:80 },
-                                                    { type: 'text', title:'{{display_sample_information.heading.3}}', width:80 },
-                                                    { type: 'text', title:'{{display_sample_information.heading.4}}', width:100 },
-                                                    { type: 'text', title:'{{display_sample_information.heading.5}}', width:80},
-                                                    { type: 'text', title:'{{display_sample_information.heading.6}}', width:100  },
-                                                    { type: 'text', title:'{{display_sample_information.heading.7}}', width:100 },
-                                                    { type: 'text', title:'{{display_sample_information.heading.8}}', width:150 },
-                                                    { type: 'text', title:'{{display_sample_information.heading.9}}', width:250 },
-                                                    { type: 'text', title:'{{display_sample_information.heading.10}}', width:80 },
-                                                    { type: 'text', title:'{{display_sample_information.heading.11}}', width:180 },
+                                                    {% for item in display_sample_information.heading %}
+                                                        {% if forloop.counter == 1 or forloop.counter == 2 %}
+                                                            { type: 'text', title:'{{item}}', width:180 , readOnly:true },
+                                                        {% else %}
+                                                            { type: 'text', title:'{{item}}', width:180 },
+                                                        {% endif %}
+                                                    {% endfor %}
                                                 ],
                                                 allowInsertColumn:false,
                                                 allowDeleteColumn:false,
@@ -168,15 +163,7 @@
                                     <td>Sample Sheet</td>
                                     <td><a href="/documents/{{ created_new_run.sample_sheet }}" download>Sample Sheet File  <span class="glyphicon glyphicon-download-alt"></span></a></td>
                                 </tr>
-                                <tr>
-                                    <td colspan="2" class="text-center">Files to upload to Base Space</td>
-                                </tr>
-                                {% for  key, value in created_new_run.base_space.items %}
-                                    <tr>
-                                        <td>{{key}}</td>
-                                        <td><a href="/{{value}}" download>Base Space File  <span class="glyphicon glyphicon-download-alt"></span></a></td>
-                                    </tr>
-                                {% endfor %}
+                                
                             </tbody>
                         </table>
                     </div> <!--// end col-sm-11  -->
@@ -251,9 +238,8 @@
                     {% endif %}
                 {% endfor %}
 
-
                 {% if display_pools_for_run.run_data.heading %}
-                    <div id="{{key}}" class="tabcontent">
+                    <div id="defined" class="tabcontent">
                         <div class="col-sm-11" >
                             <div class="panel panel-default">
                                 <div class="panel-heading"><h3>The following Run have been defined, but not yet completed</h3></div>

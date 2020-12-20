@@ -66,19 +66,14 @@ def handle_input_samples_for_run (data_form, user):
         project_list    #list of the project to check
     Functions:
         parsing_data_for_bs_file    # located at this file
-        create_base_space_file
         update_index_in_sample_sheet
         parsing_data_for_sample_sheet_file
         prepare_fields_to_create_sample_sheet_from_template
         create_sample_sheet_file
     Constants:
         HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_PAIREDEND
-        MAPPING_BASESPACE_SAMPLE_SHEET_TWO_INDEX
-        BASESPACE_FILE_TWO_INDEX
         HEADING_FOR_SAMPLE_SHEET_TWO_INDEX
         HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD
-        MAPPING_BASESPACE_SAMPLE_SHEET_ONE_INDEX
-        BASESPACE_FILE_ONE_INDEX
         HEADING_FOR_SAMPLE_SHEET_ONE_INDEX
 
 
@@ -114,19 +109,18 @@ def handle_input_samples_for_run (data_form, user):
 
     if paired == 'True':
         heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_PAIREDEND
-        mapping = MAPPING_BASESPACE_SAMPLE_SHEET_TWO_INDEX
-        heading_base_space = BASESPACE_FILE_TWO_INDEX
+        #mapping = MAPPING_BASESPACE_SAMPLE_SHEET_TWO_INDEX
+        #heading_base_space = BASESPACE_FILE_TWO_INDEX
         heading_sample_sheet = HEADING_FOR_SAMPLE_SHEET_TWO_INDEX
     else:
         heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD
-        mapping = MAPPING_BASESPACE_SAMPLE_SHEET_ONE_INDEX
-        heading_base_space = BASESPACE_FILE_ONE_INDEX
+        #mapping = MAPPING_BASESPACE_SAMPLE_SHEET_ONE_INDEX
+        #heading_base_space = BASESPACE_FILE_ONE_INDEX
         heading_sample_sheet = HEADING_FOR_SAMPLE_SHEET_ONE_INDEX
     sample_sheet_data = {}
     # collect the data to prepare the sample Sheet
     right_id_list = []
     for row_index in range(len(json_data)) :
-
         right_id = lib_prep_ids[lib_prep_unique_ids.index(json_data[row_index][0])]
         right_id_list.append(right_id)
         sample_sheet_data[right_id] = {}
@@ -135,6 +129,7 @@ def handle_input_samples_for_run (data_form, user):
             sample_sheet_data[right_id][heading[column_index]] = json_data[row_index][column_index]
 
     #parsing data for Base Space
+    '''
     base_space_lib = parsing_data_for_bs_file(sample_sheet_data, mapping, paired, heading_base_space )
     # Collect the information to prepare and save the file for Base Space
     project_bs_files = {}
@@ -147,13 +142,13 @@ def handle_input_samples_for_run (data_form, user):
         project_bs_files.update(create_base_space_file(base_space_lib[bs_lib], bs_lib, plate_name, container_id , exp_name, paired))
 
         #import pdb; pdb.set_trace()
-
+    '''
     # Handle the input information to create the sample sheet file
 
     #sample_sheet_file = handle_sample_sheet(sample_sheet_data)
     new_sample_sheet_data = update_index_in_sample_sheet(sample_sheet_data, right_id_list)
 
-    data_for_sample_sheet_file = parsing_data_for_sample_sheet_file(new_sample_sheet_data, mapping, heading_sample_sheet)
+    data_for_sample_sheet_file = parsing_data_for_sample_sheet_file(new_sample_sheet_data, heading_sample_sheet)
     # sample_sheet_file_name = create_sample_sheet_file(data_for_sample_sheet_file, user,reads, adapter, exp_name,
 
 
@@ -169,7 +164,7 @@ def handle_input_samples_for_run (data_form, user):
     record_data['sample_sheet'] = sample_sheet_file_name
     record_data['exp_name'] = exp_name
     record_data['lib_prep_ids'] = right_id_list
-    record_data['projects_in_lib']= project_bs_files
+    #record_data['projects_in_lib']= project_bs_files
     return record_data
     '''
 
@@ -589,7 +584,7 @@ def get_library_prep_in_pools (pool_ids):
 def get_available_pools_for_run():
     '''
     Description:
-        The function get the pool which are not used in a run. It split in 2 keys. Pool which are not assigned
+        The function get the pool which are not used in a run. It splits in 2 keys. Pool which are not assigned
         yet to a run and the pools that are associated but there is information missing to be filled.
     Return:
         pools_to_update
@@ -685,7 +680,6 @@ def get_pool_info (pools_to_update):
             pool_info['run_data'] = run_data
         if 'invalid_run_data' in pool_info :
             pool_info['invalid_run_data']['heading'] = wetlab_config.HEADING_FOR_INCOMPLETED_SELECTION_POOLS
-
     return pool_info
 
 def get_run_obj_from_id(run_id):
@@ -755,7 +749,7 @@ def parsing_data_for_bs_file(sample_sheet_data, mapping, paired, heading_base_sp
         base_space_lib[lib_name][project_name]['data'].append(string_row_data)
     return base_space_lib
 
-def parsing_data_for_sample_sheet_file(new_sample_sheet_data, mapping, heading_sample_sheet):
+def parsing_data_for_sample_sheet_file(new_sample_sheet_data, heading_sample_sheet):
     data = []
 
     for key, values in new_sample_sheet_data.items():

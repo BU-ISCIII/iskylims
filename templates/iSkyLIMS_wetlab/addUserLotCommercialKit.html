@@ -8,21 +8,24 @@
                 <div class="panel-heading"><h3>Successful definition for User Lot Kit </h3></div>
                 <div class="panel-body">
                     <table class="table ">
-                     <thead>
-                        <tr>
-                            {% for value in new_lot_kit_data.heading %}
-                                <th>{{value}}</th>
-                            {% endfor %}
-                        </tr>
-                     </thead>
-                     <tbody>
-                          <tr>
-                              {% for value in new_lot_kit_data.data %}
-                                  <td>{{value}}</td>
-                              {% endfor %}
-                       </tr>
-                      </tbody>
-                  </table>
+                         <thead>
+                            <tr>
+                                {% for value in new_lot_kit_data.heading %}
+                                    <th>{{value}}</th>
+                                {% endfor %}
+                            </tr>
+                         </thead>
+                         <tbody>
+                            <tr>
+                                {% for value in new_lot_kit_data.data %}
+                                    <td>{{value}}</td>
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+                    <br><br>
+                    <input type="button" value="Add new User Lot kit" onclick="location.href ='/wetlab/addUserLotCommercialKit' ;"/>
+                    <br>
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->
         </div> <!--// end col-sm-7  -->

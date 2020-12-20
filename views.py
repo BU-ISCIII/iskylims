@@ -3959,7 +3959,6 @@ def create_new_run (request):
         display_sample_information.update(get_stored_user_sample_sheet(lib_prep_ids[0]))
         display_sample_information['experiment_name'] = experiment_name
         display_sample_information['run_process_id'] = run_id
-
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_sample_information': display_sample_information})
 
     elif request.method == 'POST' and request.POST['action'] ==  'storeDataNewRun':
@@ -3975,6 +3974,7 @@ def create_new_run (request):
         update_run_with_sample_sheet(request.POST['run_process_id'], run_data['sample_sheet'])
 
         run_obj = get_run_obj_from_id(request.POST['run_process_id'])
+        '''
         base_space_file = {}
         for items, values in run_data['projects_in_lib'].items():
             try:
@@ -3982,13 +3982,10 @@ def create_new_run (request):
             except:
                 user_obj = None
             create_or_add_project_to_run(run_data,user_obj,items, values)
-            '''
-            new_project = Projects.objects.create( runprocess_id= run_data['run_obj'], user_id = user_obj, projectName = items,
-                        libraryKit = run_data['collection_index'], baseSpaceFile = values[0], BaseSpaceLibrary = values[1])
-            new_project.save()
-            '''
+
             if not values[1] in base_space_file :
                 base_space_file[values[1]] = values[0]
+        '''
         # update the sample state for each one in the run
         update_batch_lib_prep_sample_state(run_data['lib_prep_ids'],  'Sequencing')
         pools_obj = LibraryPool.objects.filter(runProcess_id = run_obj)
@@ -4002,7 +3999,7 @@ def create_new_run (request):
         created_new_run['exp_name'] = run_data['exp_name']
         created_new_run['run_process_id'] = request.POST['run_process_id']
         created_new_run['sample_sheet'] = sample_sheet
-        created_new_run['base_space'] = base_space_file
+        #created_new_run['base_space'] = base_space_file
 
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'created_new_run': created_new_run})
     else:
