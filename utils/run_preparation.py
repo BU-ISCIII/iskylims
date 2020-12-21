@@ -91,17 +91,13 @@ def handle_input_samples_for_run (data_form, user):
     json_data = json.loads(data_form['s_sheet_data'])
     # check if run exists
 
-    run_obj = RunProcess.objects.get(pk__exact = run_id)
+    run_obj = get_run_obj_from_id(run_id)
     exp_name = run_obj.get_run_name()
     record_data = {}
     if run_obj.get_state() != 'Pre-Recorded':
         record_data['Error'] = ERROR_RUN_IN_WRONG_STATE
         record_data['Error'].append(run_obj.get_state())
         return record_data
-
-
-    #run_data['plateName'] = data_form['plateName']
-    #run_data['containerID'] = data_form['containerID']
 
     run_data= {}
     #exp_name = 'mi experimento'
@@ -540,10 +536,19 @@ def increase_reuse_if_samples_exists(sample_list):
     return samples_reused
 
 def update_index_in_sample_sheet(sample_sheet_data, lib_prep_ids) :
-    # check in index hve been changed to adapt them to base space.
-    # if changes were made the reverte the changes in the sample sheet but
-    # keep the changes in the sequencing in case the number of the adapter
-    # is intencianality shorter to get increase te length reads
+    '''
+    Description:
+        The function check if in index have been changed.
+        The function does not change the original values recorded at the time that
+        sample sheet was uploaded.
+    Input:
+        sample_sheet_data        # Data inside sample sheet
+        lib_prep_ids        #
+    Return:
+        samples_reused
+    '''
+    # check in index hve been changed
+    #
     for  index_lib in range(len(lib_prep_ids)):
 
         lib_prep_obj = LibraryPreparation.objects.get(pk__exact = lib_prep_ids[index_lib])
@@ -564,7 +569,6 @@ def get_library_prep_in_pools (pool_ids):
     '''
     Description:
         The function get the pool id list and returns the the ids for the LibraryPreparation
-
     Return:
         lib_prep_ids
     '''
