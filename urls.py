@@ -44,6 +44,7 @@ urlpatterns = [
     path('displayUserLotKit=<int:user_kit_id>/', views.display_user_lot_kit, name = 'display_user_lot_kit'),
     path('handlingLibraryPreparations', views.handling_library_preparations, name = 'handling_library_preparations'),
     path('handlingMolecules', views.handling_molecules, name = 'handling_molecules'),
+    path('initialSettings',views.initial_settings, name = 'initial_settings'),
     path('latest_run/',views.latest_run, name='latest_run'),
     path('incompletedRuns', views.incompleted_runs, name = 'incompleted_runs'),
     path('modifySampleProjectFields=<int:sample_project_id>/', views.modify_sample_project_fields, name = 'modify_sample_project_fields'),

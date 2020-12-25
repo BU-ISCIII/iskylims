@@ -246,6 +246,8 @@ SUCCESSFUL_REUSE_MOLECULE_EXTRACTION = ['Molecule Extraction has been set for re
 SUCCESSFUL_REUSE_LIB_PREP = ['Library Preparation has been set for reused ', 'Now is ready to be assigned to a new pool']
 
 ########## ERROR MESSAGES  #########################
+
+ERROR_USER_NOT_WETLAB_MANAGER =['You do not have enough privileges to see this page ', 'Contact with your administrator .']
 ERROR_INVALID_FILE_FORMAT = ['Invalid file format for the selected file', 'Select the valid file and submit it again']
 ERROR_UNABLE_TO_DELETE_USER_FILE = 'Unable to delete user file form iSkyLIMS'
 ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES = ['Sample sheet cannot be uploaded because there are samples', 'which are not defined yet.']

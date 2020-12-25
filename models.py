@@ -1061,8 +1061,6 @@ class LibraryPool (models.Model):
         self.save()
 
 
-
-
     def update_number_samples(self, number_s_in_pool):
         self.numberOfSamples = number_s_in_pool
         self.save()

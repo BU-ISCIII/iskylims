@@ -38,6 +38,7 @@ from .utils.handling_statistics import *
 #from .utils.wetlab_misc_utilities import normalized_data
 from iSkyLIMS_core.utils.handling_samples import *
 from iSkyLIMS_core.utils.handling_platforms import get_defined_platforms_and_ids
+from iSkyLIMS_core.utils.generic_functions import get_inital_sample_settings_values, save_inital_sample_setting_value
 #from iSkyLIMS_core.utils.handling_protocols import *
 #from iSkyLIMS_core.utils.handling_commercial_kits import *
 
@@ -96,18 +97,41 @@ def configuration_samba(request):
         return render(request, 'iSkyLIMS_wetlab/configurationSamba.html',{'samba_conf_data': samba_conf_data})
 
 @login_required
-def create_nextseq_run (request):
-    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
-    if request.user.is_authenticated:
-        if not is_wetlab_manager(request):
-            return render (
-                request,'iSkyLIMS_wetlab/error_page.html',
-                {'content':['You do not have enough privileges to see this page ',
-                            'Contact with your administrator .']})
-    else:
+def initial_settings(request):
+    if not request.user.is_authenticated:
         #redirect to login webpage
         return redirect ('/accounts/login')
 
+    if not is_wetlab_manager(request):
+        return render (request,'iSkyLIMS_wetlab/error_page.html', {'content': ERROR_USER_NOT_WETLAB_MANAGER})
+    initial_data = get_inital_sample_settings_values(__package__)
+    form_data = {}
+    if request.method == 'POST' and request.POST['action']=='defineNewSpecie':
+        form_data['species'] = request.POST['specieName']
+    if request.method == 'POST' and request.POST['action']=='defineNewSampleOrigin':
+        form_data['samples_origin'] = [request.POST['originName'], request.POST['originCoding'], request.POST['originLocation']]
+    if request.method == 'POST' and request.POST['action']=='defineMoleculeType':
+        form_data['molecule_type'] = request.POST['moleculeName']
+    if request.method == 'POST' and request.POST['action']=='defineProtocolType':
+        form_data['protocol_type'] = [request.POST['protocolName'], request.POST['moleculeType']]
+
+    if form_data:
+        new_inital_data = save_inital_sample_setting_value(__package__, form_data)
+        if 'ERROR' in new_inital_data:
+            return render(request,'iSkyLIMS_wetlab/initialSettings.html',{'initial_data': initial_data, 'ERROR': new_inital_data['ERROR']})
+        return render(request,'iSkyLIMS_wetlab/initialSettings.html',{'initial_data': initial_data, 'new_setting_defined': new_inital_data})
+    else:
+        return render(request,'iSkyLIMS_wetlab/initialSettings.html',{'initial_data': initial_data})
+
+
+@login_required
+def create_nextseq_run (request):
+    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+    if not request.user.is_authenticated:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+    if not is_wetlab_manager(request):
+        return render (request,'iSkyLIMS_wetlab/error_page.html', {'content': ERROR_USER_NOT_WETLAB_MANAGER})
 
     ## FIRST STEP in collecting data from the NextSeq run. Sample Sheet and experiment name are required
     if request.method == 'POST' and (request.POST['action']=='uploadFile'):
