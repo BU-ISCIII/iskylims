@@ -42,10 +42,18 @@ class LabEquipment (models.Model) :
         return '%s' %(self.equipmentNumberLanes)
 
 
+class SamplesOriginManager(models.Manager):
+    def create_samples_origin (self, data):
+        new_samples_origin = self.create(originName = data['originName'],
+            originNameCoding = data['originNameCoding'], location = data['location'],
+            apps_name = data['apps_name'])
+        return new_samples_origin
+
 class SamplesOrigin (models.Model):
     originName = models.CharField(max_length=50)
-    originNameCoding = models.CharField(max_length=10)
+    originNameCoding = models.CharField(max_length=50)
     location = models.CharField(max_length=255)
+    apps_name = models.CharField(max_length = 40, null=True)
 
     def __str__ (self):
         return '%s' %(self.originName)
@@ -53,11 +61,23 @@ class SamplesOrigin (models.Model):
     def get_name(self):
         return '%s' %(self.originName)
 
+    def get_id(self):
+        return '%s' %(self.pk)
+
     def get_sample_origin_code (self):
         return '%s' %(self.originNameCoding)
 
+    objects = SamplesOriginManager()
+
+class MoleculeTypeManager(models.Manager):
+    def create_molecule_type(self, data):
+        new_molecule_type = self.create(moleculeType = data['moleculeType'],
+            apps_name = data['apps_name'])
+        return new_molecule_type
+
 class MoleculeType (models.Model):
     moleculeType = models.CharField(max_length = 30)
+    apps_name = models.CharField(max_length = 40, null=True)
 
     def __str__ (self):
         return '%s' %(self.moleculeType)
@@ -65,6 +85,22 @@ class MoleculeType (models.Model):
     def get_name (self):
         return '%s' %(self.moleculeType)
 
+    def get_id(self):
+        return '%s' %(self.pk)
+
+    objects = MoleculeTypeManager()
+
+class ProtocolTypeManager(models.Manager):
+    def create_protocol_type(self, data):
+        if data['molecule'] != None:
+            try:
+                molecule_obj = MoleculeType.objects.filter(moleculeType__iexact = data['molecule'], apps_name__exact = data['apps_name']).last()
+            except:
+                molecule_obj = None
+        else:
+            molecule_obj = None
+        new_protocol_type = self.create(molecule = molecule_obj, protocol_type = data['protocol_type'], apps_name = data['apps_name'])
+        return new_protocol_type
 
 class ProtocolType (models.Model):
     molecule = models.ForeignKey(
@@ -77,10 +113,18 @@ class ProtocolType (models.Model):
         return '%s' %(self.protocol_type)
 
     def get_molecule_type (self):
-        return '%s' %(self.molecule.get_name())
+        if self.molecule == None:
+            return ''
+        else:
+            return '%s' %(self.molecule.get_name())
 
     def get_name (self):
         return '%s' %(self.protocol_type)
+
+    def get_id(self):
+        return '%s' %(self.pk)
+
+    objects = ProtocolTypeManager()
 
 class Protocols (models.Model):
     type =  models.ForeignKey(
@@ -200,11 +244,17 @@ class SampleType (models.Model):
 
     objects = SampleTypeManager()
 
+class SpeciesManager(models.Manager):
+    def create_new_specie(self, data):
+        new_specie = self.create( speciesName = data['name'],apps_name = data['apps_name'] )
+        return new_specie
+
 class Species (models.Model):
     speciesName = models.CharField(max_length=50)
-    refGenomeName = models.CharField(max_length=255)
-    refGenomeSize = models.CharField(max_length=100)
-    refGenomeID = models.CharField(max_length=255)
+    refGenomeName = models.CharField(max_length=255, null = True, blank = True)
+    refGenomeSize = models.CharField(max_length=100, null = True, blank = True)
+    refGenomeID = models.CharField(max_length=255, null = True, blank = True)
+    apps_name = models.CharField(max_length = 50, null = True)
     generatedat = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__ (self):
@@ -212,6 +262,10 @@ class Species (models.Model):
 
     def get_name(self):
         return '%s' %(self.speciesName)
+    def get_id(self):
+        return '%s' %(self.pk)
+
+    objects = SpeciesManager()
 
 
 class SequencingPlatform(models.Model):

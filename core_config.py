@@ -104,3 +104,8 @@ VALUE_NOT_PROVIDED = 'Not Provided'
 ERROR_TYPE_OF_SAMPLE_EXISTS = ['Type of sample is already recorded',]
 ERROR_TYPE_OF_SAMPLE_ID_DOES_NOT_EXISTS = ['The type of sample that you request does not exist']
 ERROR_MOLECULE_USE_FOR_EXISTS = ['Molecule use has been already recorded']
+
+ERROR_SPECIES_ALREADY_DEFINED = ['Species name is already defined']
+ERROR_SAMPLES_ORIGIN_ALREADY_DEFINED = ['Samples Origin is already defined']
+ERROR_MOLECULE_TYPE_ALREADY_DEFINED = ['Molecule Type is already defined']
+ERROR_PROTOCOL_TYPE_ALREADY_DEFINED = ['Protocol Type is already defined']
