@@ -75,17 +75,20 @@ def configuration_email(request):
 def configuration_samba(request):
     if request.user.username != 'admin':
         return redirect('')
-    samba_conf_data = get_samba_data_from_file(__package__)
+    samba_conf_data = get_samba_connection_data()
     if request.method == 'POST' and (request.POST['action']=='sambaconfiguration'):
         # reload configuration samba settings
         samba_user_field ={}
         for field in SAMBA_CONFIGURATION_FIELDS:
             samba_user_field[field] = request.POST[field]
+        '''
         if not create_samba_conf_file (samba_user_field, __package__) :
             error_message = ERROR_UNABLE_TO_SAVE_SAMBA_CONFIGURATION_SETTINGS
             return render(request, 'iSkyLIMS_wetlab/configurationSamba.html',{'samba_conf_data':samba_user_field, 'error_message': error_message} )
         import importlib
         importlib.reload(wetlab_config)
+        '''
+        save_samba_connection_data(samba_user_field)
         try:
             open_samba_connection()
             return render(request, 'iSkyLIMS_wetlab/configurationSamba.html',{'succesful_settings':True})
@@ -93,7 +96,6 @@ def configuration_samba(request):
             error_message = ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS
             return render(request, 'iSkyLIMS_wetlab/configurationSamba.html',{'samba_conf_data':samba_user_field, 'error_message': error_message} )
     else:
-        samba_conf_data = get_samba_data_from_file(__package__)
         return render(request, 'iSkyLIMS_wetlab/configurationSamba.html',{'samba_conf_data': samba_conf_data})
 
 @login_required
@@ -2909,7 +2911,7 @@ def create_protocol (request):
 
 
 @login_required
-def create_sample_projects (request):
+def define_sample_projects (request):
     ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
         if not is_wetlab_manager(request):

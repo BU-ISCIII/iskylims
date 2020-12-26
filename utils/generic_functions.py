@@ -12,7 +12,7 @@ from django.contrib.auth.models import Group
 from .sample_sheet_utils import get_projects_in_run
 from django.conf import settings
 from iSkyLIMS_wetlab import wetlab_config
-from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters
+from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters, SambaConnectionData
 from iSkyLIMS_core.models import SequencerInLab, SequencingPlatform
 
 
@@ -268,17 +268,19 @@ def get_email_data_from_file(application):
     except:
         email_data
 
-def get_samba_data_from_file(application):
+def get_samba_connection_data():
     '''
     Description:
-        Fetch the samba configuration file
-    Inputs:
-        application     # Application name
-    Constants:
-        SAMBA_CONFIGURATION_FILE_HEADING
-        SAMBA_CONFIGURATION_FILE_END
+        Fetch the samba configuration from database
     Return:
         samba_data
+    '''
+    samba_data = {}
+    if SambaConnectionData.objects.all().exists():
+        samba_connection_obj = SambaConnectionData.objects.all().last()
+        samba_data = samba_connection_obj.get_samba_data()
+    return samba_data
+
     '''
     conf_file = os.path.join(settings.BASE_DIR, application,'wetlab_samba_conf.py')
     samba_data = {}
@@ -298,6 +300,22 @@ def get_samba_data_from_file(application):
         return samba_data
     except:
         samba_data
+    '''
+def save_samba_connection_data(data):
+    '''
+    Description:
+        store the information in database. If it is the first attempt to store data
+        the instance is create if not the table is updated with the new data
+    Return:
+        samba_connection_obj
+    '''
+    if not SambaConnectionData.objects.all().exists():
+        samba_connection_obj = SambaConnectionData.objects.create()
+    else:
+        samba_connection_obj = SambaConnectionData.objects.all().last()
+    samba_connection_obj.update_data(data)
+    return samba_connection_obj
+
 
 def get_type_of_data (data):
     '''
@@ -712,15 +730,19 @@ def open_samba_connection():
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function open_samba_connection')
-    conn=SMBConnection(wetlab_config.SAMBA_USER_ID, wetlab_config.SAMBA_USER_PASSWORD,
-        wetlab_config.SAMBA_SHARED_FOLDER_NAME,wetlab_config.SAMBA_REMOTE_SERVER_NAME,
-        use_ntlm_v2=wetlab_config.SAMBA_NTLM_USED,domain=wetlab_config.SAMBA_DOMAIN,
-        is_direct_tcp=wetlab_config.IS_DIRECT_TCP )
+    samba_data = get_samba_connection_data()
+    if not samba_data :
+        string_message = 'Samba connection data on database is empty'
+        logging_errors (string_message, False, False)
+    conn=SMBConnection(samba_data['SAMBA_USER_ID'], samba_data['SAMBA_USER_PASSWORD'],
+        samba_data['SAMBA_SHARED_FOLDER_NAME'],samba_data['SAMBA_REMOTE_SERVER_NAME'],
+        use_ntlm_v2=samba_data['SAMBA_NTLM_USED'], domain=samba_data['SAMBA_DOMAIN'],
+        is_direct_tcp=samba_data['IS_DIRECT_TCP'] )
     #try:
-    if wetlab_config.SAMBA_HOST_NAME :
-        conn.connect(socket.gethostbyname(wetlab_config.SAMBA_HOST_NAME), int(wetlab_config.SAMBA_PORT_SERVER))
+    if samba_data['SAMBA_HOST_NAME'] :
+        conn.connect(socket.gethostbyname(samba_data['SAMBA_HOST_NAME']), int(samba_data['SAMBA_PORT_SERVER']))
     else:
-        conn.connect(wetlab_config.SAMBA_IP_SERVER, int(wetlab_config.SAMBA_PORT_SERVER))
+        conn.connect(samba_data['SAMBA_IP_SERVER'], int(samba_data['SAMBA_PORT_SERVER']))
     #except:
         #string_message = 'Unable to connect to remote server'
         #logging_errors (string_message, True, True)

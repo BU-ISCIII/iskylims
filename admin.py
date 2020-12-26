@@ -103,6 +103,9 @@ class GraphicsStatsAdmin(admin.ModelAdmin):
 class FlexibleConfSettingsAdmin(admin.ModelAdmin):
     list_display = ['confParameterName', 'confParameterValue']
 
+class SambaConnectionDataAdmin(admin.ModelAdmin):
+    list_display = ['SAMBA_IP_SERVER','SAMBA_HOST_NAME', 'SAMBA_PORT_SERVER', 'SAMBA_USER_ID', 'SAMBA_USER_PASSWORD']
+
 admin.site.register(LibraryPreparation, LibraryPreparationAdmin)
 admin.site.register(LibParameterValue, LibParameterValueAdmin)
 
@@ -132,3 +135,5 @@ admin.site.register(StatsFlSummary, StatsFlSummaryAdmin)
 admin.site.register(GraphicsStats, GraphicsStatsAdmin)
 
 admin.site.register(FlexibleConfSettings,FlexibleConfSettingsAdmin)
+
+admin.site.register(SambaConnectionData,SambaConnectionDataAdmin)

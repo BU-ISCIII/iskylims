@@ -3,6 +3,7 @@ from django.conf import settings
 ##### Allow to import the configuration samba files from configuration folder
 import sys
 sys.path.append
+'''
 try:
     from .wetlab_samba_conf import *
     SAMBA_USER_CONFIGURED = True
@@ -13,7 +14,7 @@ try:
     EMAIL_USER_CONFIGURED = True
 except:
     EMAIL_USER_CONFIGURED = False
-
+'''
 ##############################################################
 ####
 WETLAB_MANAGER = 'WetlabManager'
@@ -330,9 +331,6 @@ EMAIL_CONFIGURATION_FILE_END = '########## END EMAIL CONFIGURATION FILE'
 ################ SAMBA CONFIGURATION FIELDS ###############################
 SAMBA_CONFIGURATION_FIELDS = ['SAMBA_USER_ID', 'SAMBA_USER_PASSWORD', 'SAMBA_SHARED_FOLDER_NAME', 'SAMBA_APPLICATION_FOLDER_NAME', 'SAMBA_REMOTE_SERVER_NAME',
                 'SAMBA_NTLM_USED', 'SAMBA_IP_SERVER', 'SAMBA_HOST_NAME', 'SAMBA_PORT_SERVER', 'IS_DIRECT_TCP', 'SAMBA_DOMAIN']
-
-SAMBA_CONFIGURATION_FILE_HEADING = '############# SAMBA CONFIGURATION FILE ########\n#DO NOT MODIFY MANUALLY THIS FILE\n#VALUES WILL BE MODIFIED WHEN USING THE CONFIGURATION FORM\n'
-SAMBA_CONFIGURATION_FILE_END = '########## END SAMBA CONFIGURATION FILE'
 
 ######### PROJECT HEADING  #########################################
 HEADING_SINGLE_PROJECT_FL_SUMMARY = ['Cluster (Raw)', 'Cluster (PF)', 'Yield (MBases)', 'Number of Samples']

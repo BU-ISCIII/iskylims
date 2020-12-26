@@ -1,25 +1,16 @@
 <!DOCTYPE html>
 <html>
   <head>
-
     {% include "iSkyLIMS_core/header.html" %}
     {% load static %}
-
     <link href= "https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css"/>
-
-
     <!-- PAGE LEVEL PLUGIN STYLES -->
 
 	<link href="{% static "iSkyLIMS_wetlab/css/wetlab.css" %}" rel="stylesheet" type="text/css"/>
-
-
     <!-- Place favicon.ico in the root directory -->
-
     {% load user_groups %}
-
   </head>
   <!-- END HEAD -->
-
   <!-- BODY -->
   <body id="body" data-spy="scroll" data-target=".header">
               <!--========== HEADER ==========-->
@@ -60,13 +51,13 @@
                                             <ul class="dropdown-menu">
                                                 {% if request.user|has_group:"WetlabManager" %}
                                                     <li><a href="/wetlab/initialSettings">Initial Settings</a></li>
+                                                    <li><a href="/wetlab/createProtocol">Create New Protocol</a></li>
+                                                    <li><a href="/wetlab/defineTypeOfSamples">Define Type of Samples</a></li>
+                                                    <li><a href="/wetlab/defineSampleProjects">Define Sample Projects</a></li>
+                                                    <li><a href="/wetlab/defineMoleculeUses">Define Molecule Uses</a></li>
                                                     <li><a href="/wetlab/addCollectionIndexKit">Add Collection Index Kit</a></li>
                                                     <li><a href="/wetlab/addCommercialKit">Add Commercial Kit</a></li>
                                                     <li><a href="/wetlab/addUserLotCommercialKit">Add User Lot Commercial Kit</a></li>
-                                                    <li><a href="/wetlab/createProtocol">Create New Protocol</a></li>
-                                                    <li><a href="/wetlab/createSampleProjects">Create New Sample Projects</a></li>
-                                                    <li><a href="/wetlab/defineTypeOfSamples">Define Type of Samples</a></li>
-                                                    <li><a href="/wetlab/defineMoleculeUses">Define Molecule Uses</a></li>
                                                 {% else %}
                                                     <li><a href="/wetlab/addUserLotCommercialKit">Add User Lot Commercial Kit</a></li>
                                                 {% endif %}

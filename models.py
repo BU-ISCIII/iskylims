@@ -1501,3 +1501,33 @@ class AdditionalUserLotKit (models.Model):
 
 
     objects = AdditionalUserLotKitManager()
+
+
+
+class SambaConnectionData (models.Model):
+    SAMBA_APPLICATION_FOLDER_NAME = models.CharField(max_length=80, null=True , blank=True)
+    SAMBA_DOMAIN = models.CharField(max_length=80, null=True , blank=True)
+    SAMBA_HOST_NAME = models.CharField(max_length=80, null=True , blank=True)
+    SAMBA_IP_SERVER = models.CharField(max_length=20, null=True , blank=True)
+    SAMBA_PORT_SERVER = models.CharField(max_length=10,  null=True , blank=True)
+    SAMBA_REMOTE_SERVER_NAME = models.CharField(max_length=80, null=True , blank=True)
+    SAMBA_SHARED_FOLDER_NAME =models.CharField(max_length=80, null=True , blank=True)
+    SAMBA_USER_ID = models.CharField(max_length=20, null=True , blank=True)
+    SAMBA_USER_PASSWORD = models.CharField(max_length=20, null=True , blank=True)
+    IS_DIRECT_TCP = models.BooleanField(default = True)
+    SAMBA_NTLM_USED = models.BooleanField(default = True)
+
+    def __str__ (self):
+        return '%s' %(self.SAMBA_REMOTE_SERVER_NAME)
+
+    def get_samba_data(self):
+        samba_data = {}
+        for field in wetlab_config.SAMBA_CONFIGURATION_FIELDS:
+            samba_data[field] = getattr(self, field)
+        return samba_data
+
+    def update_data(self, data):
+        for field in wetlab_config.SAMBA_CONFIGURATION_FIELDS:
+            setattr(self, field , data[field])
+        self.save()
+        return self
