@@ -12,11 +12,8 @@ from django.contrib.auth.models import Group
 from .sample_sheet_utils import get_projects_in_run
 from django.conf import settings
 from iSkyLIMS_wetlab import wetlab_config
-from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters, SambaConnectionData
+from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters, SambaConnectionData, EmailData
 from iSkyLIMS_core.models import SequencerInLab, SequencingPlatform
-
-
-
 
 
 def check_all_projects_exists (project_list):
@@ -175,98 +172,35 @@ def create_new_sequencer_lab_not_defined (sequencer_name,l_run_parameter, experi
     return new_sequencer
 
 
-def create_email_conf_file(email_fields, application):
+def save_email_data(email_fields):
     '''
     Description:
         create the email configuration file . If exists the old information is deleted
     Input:
         email_fields    # Email fields settings
-    Constants:
-        EMAIL_CONFIGURATION_FILE_HEADING
-    Functions:
-        get_type_of_data # located at this file
     Return:
-        True if sucessful creation
+        email_data_obj
     '''
-    conf_file = os.path.join(settings.BASE_DIR, application,'wetlab_email_conf.py')
-    #if os.path.isfile(conf_file):
-    try:
+    if EmailData.objects.all().exists():
+        email_data_obj = EmailData.objects.last().updatae_data(email_fields)
+    else:
+        email_data_obj = EmailData.objects.create_email_data(email_fields)
+    return email_data_obj
 
-        with open (conf_file, 'w') as out_fh:
-            out_fh.write(wetlab_config.EMAIL_CONFIGURATION_FILE_HEADING)
-            for key in sorted(email_fields):
-                type_of_data = get_type_of_data(email_fields[key])
-                if type_of_data == 'boolean' or type_of_data == 'integer':
-                    out_fh.write(key + ' = '+ email_fields[key]+ '\n')
-                else:
-                    out_fh.write(key + ' = \''+ email_fields[key]+ '\'\n')
-            out_fh.write(wetlab_config.EMAIL_CONFIGURATION_FILE_END)
-    except:
-        return False
 
-    return True
-
-def create_samba_conf_file(samba_fields, application):
-    '''
-    Description:
-        create the samba configuration file . If exists the old information is deleted
-    Input:
-        samba_fields    # Samba fields settings
-    Constants:
-        SAMBA_CONFIGURATION_FILE_HEADING
-    Functions:
-        get_type_of_data # located at this file
-    Return:
-        True if sucessful creation
-    '''
-    conf_file = os.path.join(settings.BASE_DIR, application,'wetlab_samba_conf.py')
-    #if os.path.isfile(conf_file):
-    try:
-
-        with open (conf_file, 'w') as out_fh:
-            out_fh.write(wetlab_config.SAMBA_CONFIGURATION_FILE_HEADING)
-            for key in sorted(samba_fields):
-                type_of_data = get_type_of_data(samba_fields[key])
-                if type_of_data == 'boolean' or type_of_data == 'integer':
-                    out_fh.write(key + ' = '+ samba_fields[key]+ '\n')
-                else:
-                    out_fh.write(key + ' = \''+ samba_fields[key]+ '\'\n')
-            out_fh.write(wetlab_config.SAMBA_CONFIGURATION_FILE_END)
-    except:
-        return False
-
-    return True
-
-def get_email_data_from_file(application):
+def get_email_data():
     '''
     Description:
         Fetch the email configuration file
-    Inputs:
-        application     # Application name
-    Constants:
-        EMAIL_CONFIGURATION_FILE_HEADING
-        EMAIL_CONFIGURATION_FILE_END
     Return:
         email_data
     '''
-    conf_file = os.path.join(settings.BASE_DIR, application,'wetlab_email_conf.py')
     email_data = {}
-    heading_found = False
-    try:
-        with open (conf_file, 'r') as fh:
-            for line in fh.readlines():
-                if not heading_found and wetlab_config.EMAIL_CONFIGURATION_FILE_HEADING.split('\n')[-2] in line :
-                    heading_found = True
-                    continue
-                if wetlab_config.EMAIL_CONFIGURATION_FILE_END in line:
-                    break
-                if heading_found :
-                    line = line.rstrip()
-                    key , value = line.split(' = ')
-                    email_data[key] = value.replace('\'','')
-        return email_data
-    except:
-        email_data
+    if EmailData.objects.all().exists():
+        email_data_obj = EmailData.objects.last()
+        email_data = email_data_obj.get_email_data()
+    return email_data
+
 
 def get_samba_connection_data():
     '''
@@ -281,31 +215,13 @@ def get_samba_connection_data():
         samba_data = samba_connection_obj.get_samba_data()
     return samba_data
 
-    '''
-    conf_file = os.path.join(settings.BASE_DIR, application,'wetlab_samba_conf.py')
-    samba_data = {}
-    heading_found = False
-    try:
-        with open (conf_file, 'r') as fh:
-            for line in fh.readlines():
-                if not heading_found and wetlab_config.SAMBA_CONFIGURATION_FILE_HEADING.split('\n')[-2] in line :
-                    heading_found = True
-                    continue
-                if wetlab_config.SAMBA_CONFIGURATION_FILE_END in line:
-                    break
-                if heading_found :
-                    line = line.rstrip()
-                    key , value = line.split(' = ')
-                    samba_data[key] = value.replace('\'','')
-        return samba_data
-    except:
-        samba_data
-    '''
 def save_samba_connection_data(data):
     '''
     Description:
         store the information in database. If it is the first attempt to store data
         the instance is create if not the table is updated with the new data
+    Input:
+        data    # Dictionary having samba connection data
     Return:
         samba_connection_obj
     '''
@@ -595,8 +511,6 @@ def is_wetlab_manager (request):
         manager group
     Input:
         request # contains the session information
-    Variables:
-        groups # wetlab manager object group
     Return:
         Return True if the user belongs to Wetlab Manager, False if not
     '''
@@ -680,10 +594,6 @@ def need_to_wait_more (experiment_name, waiting_time):
     Import:
         RunProccess     # from iSkyLIMS_wetlab.models
         datetime
-    Variable:
-        run_date  # date when the run was create on the sequencer
-        number_of_days # difference of days between run_date and present
-        today  # present day
     Return:
         True if the number of days is less that the maximum number of days
         to wait

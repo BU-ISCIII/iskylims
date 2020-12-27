@@ -106,6 +106,9 @@ class FlexibleConfSettingsAdmin(admin.ModelAdmin):
 class SambaConnectionDataAdmin(admin.ModelAdmin):
     list_display = ['SAMBA_IP_SERVER','SAMBA_HOST_NAME', 'SAMBA_PORT_SERVER', 'SAMBA_USER_ID', 'SAMBA_USER_PASSWORD']
 
+class EmailDataAdmin(admin.ModelAdmin):
+    list_display =['hostName','emailPort','userEmail','userName','emailOnError']
+
 admin.site.register(LibraryPreparation, LibraryPreparationAdmin)
 admin.site.register(LibParameterValue, LibParameterValueAdmin)
 
@@ -137,3 +140,4 @@ admin.site.register(GraphicsStats, GraphicsStatsAdmin)
 admin.site.register(FlexibleConfSettings,FlexibleConfSettingsAdmin)
 
 admin.site.register(SambaConnectionData,SambaConnectionDataAdmin)
+admin.site.register(EmailData, EmailDataAdmin)

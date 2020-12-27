@@ -39,11 +39,22 @@
                         {% csrf_token %}
                         <input type="hidden" name="action" value="emailconfiguration"/>
                         <div class="form-group required">
+                            <label class="col-sm-5  control-label" for="EMAIL_HOST" >Email host</label>
+                            <div class="col-sm-5"><input class="form-control" type="text" required = "required" name="EMAIL_HOST" id="EMAIL_HOST" value = "{{email_conf_data.EMAIL_HOST}}" size="100" maxlength="100" ></div>
+                            <br><br>
+
+                            <label class="col-sm-5  control-label" for="EMAIL_PORT" >Email Port</label>
+                            <div class="col-sm-5"><input class="form-control" type="text" required = "required" name="EMAIL_PORT" id="EMAIL_PORT" value = "{{email_conf_data.EMAIL_PORT}}" size="100" maxlength="100" ></div>
+                            <br><br>
+
+                            <label class="col-sm-5  control-label" for="USER_EMAIL" >User email </label>
+                            <div class="col-sm-5"><input class="form-control" type="text" required = "required" name="USER_EMAIL" id="USER_EMAIL" value = "{{email_conf_data.USER_EMAIL}}" size="100" maxlength="100" ></div>
+                            <br><br>
                             <label class="col-sm-5  control-label" for="USER_NAME" >User name </label>
                             <div class="col-sm-5"><input class="form-control" type="text" required = "required" name="USER_NAME" id="USER_NAME" value = "{{email_conf_data.USER_NAME}}" size="100" maxlength="100" ></div>
                             <br><br>
-                            <label class="col-sm-5  control-label" for="USER_EMAIL" >User email </label>
-                            <div class="col-sm-5"><input class="form-control" type="email" required = "required" name="USER_EMAIL" id="USER_EMAIL" value = "{{email_conf_data.USER_EMAIL}}" size="100" maxlength="100"></div>
+                            <label class="col-sm-5  control-label" for="USER_PASSWORD" >User password </label>
+                            <div class="col-sm-5"><input class="form-control" type="email" required = "required" name="USER_PASSWORD" id="USER_PASSWORD" value = "{{email_conf_data.USER_PASSWORD}}" size="100" maxlength="100"></div>
                             <br><br>
                             <label class="col-sm-5  control-label" for="SENT_EMAIL_ON_ERROR" >send email on crontab found error</label>
                             <div class="col-sm-5">
@@ -56,6 +67,16 @@
                                 {% endif %}
                             </div>  <!-- end  radio -->
                             <br><br>
+                            <label class="col-sm-5  control-label" for="USE_TLS" >Use TLS</label>
+                            <div class="col-sm-5">
+                                {% if email_conf_data.USE_TLS %}
+                                    <label class="radio-inline"><input type="radio" name="USE_TLS" required = "required" value="True" checked>YES</label>
+                                    <label class="radio-inline"><input type="radio" name="USE_TLS" required = "required" value="False" >NO</label>
+                                {% else %}
+                                    <label class="radio-inline"><input type="radio" name="USE_TLS" required = "required" value="True" >YES</label>
+                                    <label class="radio-inline"><input type="radio" name="USE_TLS" required = "required" value="False" checked >NO</label>
+                                {% endif %}
+                            </div>  <!-- end  radio -->
                         </div>
                         <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
                         <input class="btn pull-right btn-primary" type="submit" value="Submit">
