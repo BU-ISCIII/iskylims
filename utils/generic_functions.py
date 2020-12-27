@@ -213,6 +213,7 @@ def get_samba_connection_data():
     if SambaConnectionData.objects.all().exists():
         samba_connection_obj = SambaConnectionData.objects.all().last()
         samba_data = samba_connection_obj.get_samba_data()
+
     return samba_data
 
 def save_samba_connection_data(data):

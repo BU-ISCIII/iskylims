@@ -323,9 +323,8 @@ FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE = ['RunID','ExperimentName','RTAVersion','C
                     'SystemSuiteVersion', 'LibraryID', 'AnalysisWorkflowType','PlannedRead1Cycles','PlannedRead2Cycles','PlannedIndex1ReadCycles','PlannedIndex2ReadCycles' ]
 
 ################ EMAIL CONFIGURATION FIELDS ###############################
-EMAIL_CONFIGURATION_FIELDS = ['USER_NAME', 'USER_EMAIL', 'SENT_EMAIL_ON_ERROR']
-EMAIL_CONFIGURATION_FILE_HEADING = '############# EMAIL CONFIGURATION FILE ########\n#DO NOT MODIFY MANUALLY THIS FILE\n#VALUES WILL BE MODIFIED WHEN USING THE CONFIGURATION FORM\n'
-EMAIL_CONFIGURATION_FILE_END = '########## END EMAIL CONFIGURATION FILE'
+EMAIL_CONFIGURATION_FIELDS = ['EMAIL_HOST','EMAIL_PORT','USER_PASSWORD', 'USER_NAME', 'USER_EMAIL', 'SENT_EMAIL_ON_ERROR', 'USE_TLS']
+
 
 
 ################ SAMBA CONFIGURATION FIELDS ###############################

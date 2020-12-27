@@ -1561,7 +1561,8 @@ class EmailData (models.Model):
         email_data['USER_EMAIL'] = self.userEmail
         email_data['USER_NAME'] = self.userName
         email_data['USER_PASSWORD'] = self.userPassword
-
+        return email_data
+        
     def update_data(self, data):
         self.hostName = data['EMAIL_HOST']
         self.emailPort = data['EMAIL_PORT']
