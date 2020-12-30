@@ -53,7 +53,7 @@ class RunProcess(models.Model):
     centerRequestedBy = models.ForeignKey (
                         Center,
                         on_delete=models.CASCADE, null = True, blank = True )
-    reagent_kit = models.ManyToManyField(UserLotCommercialKits)
+    reagent_kit = models.ManyToManyField(UserLotCommercialKits, blank = True)
 
 
     runName = models.CharField(max_length=45)
@@ -1562,7 +1562,7 @@ class EmailData (models.Model):
         email_data['USER_NAME'] = self.userName
         email_data['USER_PASSWORD'] = self.userPassword
         return email_data
-        
+
     def update_data(self, data):
         self.hostName = data['EMAIL_HOST']
         self.emailPort = data['EMAIL_PORT']

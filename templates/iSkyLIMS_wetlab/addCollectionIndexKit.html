@@ -2,7 +2,16 @@
 {% load static %}_
 {% block content %}
 {% csrf_token %}
+<style>
+    .table-wrapper-sm-5 {
+        max-height: 450px;
+        overflow: auto;
+        display:inline-block;
+        width: 460px;
+    }
+</style>
 {% if collection_index_information %}
+
     <BR>
         <div class="row row-space-2 margin-b-4">
             <div class="col-sm-6" >
@@ -32,6 +41,7 @@
           <div class="panel-heading"><h3>Collection Index kits defined</h3></div>
           <div class="panel-body">
           {% if collection_index_information.collection_index %}
+
                 <table class="table table-hover">
                    <thead>
                       <tr>
@@ -46,6 +56,7 @@
                     {% endfor %}
                     </tbody>
                 </table>
+
           {% else %}
                 No Collection Index Kit has been defined so far
           {% endif %}
@@ -57,67 +68,67 @@
     <BR>
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-6" >
-        <div class="panel panel-default">
-          <div class="panel-heading"><h3>Form to add a new collection index kit</h3> </div>
-          <div class="panel-body">
-            <form method="post" enctype="multipart/form-data" name="addCollectionIndexKit" id="addCollectionIndexKit" class="form-horizontal">
-            {% csrf_token %}
-                <div class="form-group required">
-                  <input type="hidden" name="action" value="addCollectionIndexKit"/>
-                  <label class="col-sm-4 control-label">Upload Collection Index kit file</label>
-                  <div class="col-sm-8"><input class="form-control" required = "required" type="file" id="upfile" name="newCollectionIndexFile" size="80"></div>
-                  <BR> <BR> <BR>
-                </div>
-                <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
-            </form>
-
-         </div>  <!--  end of panel body  -->
-         <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
-         <SCRIPT>
-             //gets the element by its id
-             var myFile = document.getElementById('upfile');
-
-             //binds to onchange event of the input field
-             myFile.addEventListener('change', function() {
-                 var max_size = 20480 // 20 KB
-               //this.files[0].size gets the size of your file.
-               if (this.files[0].size > max_size) {
-                 alert("Maximun size of the file is 20 KB ");
-                 document.getElementById("btnSubmit").disabled = true;
-                 }
-               else {
-                   document.getElementById("btnSubmit").disabled = false;}
-               });
-
-             </SCRIPT>
-        </div> <!--// end panel -->
-        </div> <!--// end col-sm-7  -->
-
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Form to add a new collection index kit</h3> </div>
+                <div class="panel-body">
+                    <form method="post" enctype="multipart/form-data" name="addCollectionIndexKit" id="addCollectionIndexKit" class="form-horizontal">
+                        {% csrf_token %}
+                        <div class="form-group required">
+                            <input type="hidden" name="action" value="addCollectionIndexKit"/>
+                            <label class="col-sm-4 control-label">Upload Collection Index kit file</label>
+                            <div class="col-sm-8"><input class="form-control" required = "required" type="file" id="upfile" name="newCollectionIndexFile" size="80"></div>
+                            <BR> <BR> <BR>
+                        </div>
+                        <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
+                    </form>
+                </div>  <!--  end of panel body  -->
+                <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
+                <SCRIPT>
+                    //gets the element by its id
+                    var myFile = document.getElementById('upfile');
+                    //binds to onchange event of the input field
+                    myFile.addEventListener('change', function() {
+                        var max_size = 20480 // 20 KB
+                        //this.files[0].size gets the size of your file.
+                        if (this.files[0].size > max_size) {
+                            alert("Maximun size of the file is 20 KB ");
+                            document.getElementById("btnSubmit").disabled = true;
+                        }
+                        else {
+                            document.getElementById("btnSubmit").disabled = false;
+                        }
+                    });
+                </SCRIPT>
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-6  -->
 
         <div class="col-sm-5 col-sm-offset-1" >
             <BR> <BR> <BR>
-        <div class="panel panel-default">
-          <div class="panel-heading"><h3>Collection Index Kit defined</h3></div>
-          <div class="panel-body">
-          {% if list_of_collection_index.collection_index %}
-                <table class="table table-hover">
-                   <thead>
-                      <tr>
-                        <th>Collection Index  Name</th>
-                      </tr>
-                   </thead>
-                   <tbody>
-                    {% for  key, value in list_of_collection_index.collection_index %}
-                        <tr>
-                       <td><a href="/wetlab/DisplayCollectionIndex={{ key }}">{{ value }}</a></td>
-                    {% endfor %}
-                    </tbody>
-                </table>
-          {% else %}
-                No Collection Index kit has been defined so far
-          {% endif %}
-          </div>  <!--  end of panel body  -->
-        </div> <!--// end panel -->
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Collection Index Kit defined</h3></div>
+                <div class="panel-body">
+                {% if list_of_collection_index.collection_index %}
+                    <div class="table-wrapper-sm-5">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Collection Index  Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for  key, value in list_of_collection_index.collection_index %}
+                                    <tr>
+                                        <td><a href="/wetlab/DisplayCollectionIndex={{ key }}">{{ value }}</a></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div> <!--  end table wrapper -->
+                {% else %}
+                    No Collection Index kit has been defined so far
+                {% endif %}
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
         </div> <!--// end col-sm-4  -->
     </div> <!--// end row -->
 {% endif %}

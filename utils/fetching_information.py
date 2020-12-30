@@ -737,7 +737,7 @@ def get_information_project (project_id, request):
     if len(run_objs) == 1 :
         run_obj = run_objs[0]
         project_info_dict['collection_index'] = project_id.get_index_library_name()
-        project_info_dict['base_space_file'] = project_id.get_base_space_file()
+        # project_info_dict['base_space_file'] = project_id.get_base_space_file()
         project_info_dict['dates'] = list(zip(HEADING_FOR_PROJECT_DATES, project_id.get_project_dates() ))
 
         # prepare the data for Flowcell Summary

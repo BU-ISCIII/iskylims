@@ -754,7 +754,7 @@ def search_project (request):
         run_state = request.POST['runstate']
         run_process_ids = []
         # check that some values are in the request if not return the form
-        if project_name == '' and start_date == '' and end_date == '' and user_name =='' and platform_name == '' and run_state == '':
+        if project_name == '' and start_date == '' and end_date == '' and user_name =='' and sequencer_name == '' and run_state == '':
             return render(request, 'iSkyLIMS_wetlab/SearchProject.html', {'project_form_data': project_form_data})
 
         if user_name !=''  and len(user_name) < 5 :
