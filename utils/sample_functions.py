@@ -161,12 +161,15 @@ def search_run_samples(sample_name, user_name, start_date, end_date):
     else:
         return sample_list
     if user_name != '':
-        user_name_obj = User.objects.get(username__exact = user_name)
-        user_friend_list = get_friend_list(user_name_obj)
-        if not run_sample_founds.filter(sampleUser__in = user_friend_list).exists():
+        if User.objects.filter(username__exact = user_name).exists():
+            user_name_obj = User.objects.filter(username__exact = user_name).last()
+            user_friend_list = get_friend_list(user_name_obj)
+            if not run_sample_founds.filter(user_id__in = user_friend_list).exists():
+                return run_sample_list
+            else :
+                run_sample_founds = run_sample_founds.filter(user_id__in = user_friend_list)
+        else:
             return run_sample_list
-        else :
-            run_sample_founds = run_sample_founds.filter(sampleUser__in = user_friend_list)
     if sample_name != '' :
         if run_sample_founds.filter(sampleName__exact = sample_name).exists():
             run_sample_founds = run_sample_founds.filter(sampleName__exact = sample_name)
@@ -179,7 +182,7 @@ def search_run_samples(sample_name, user_name, start_date, end_date):
         else:
             return run_sample_list
     if start_date !='' and end_date != '':
-        run_sample_founds = run_sample_founds.filter(generated_at___range=(start_date, end_date ))
+        run_sample_founds = run_sample_founds.filter(generated_at__range=(start_date, end_date ))
 
     if start_date !='' and end_date  == '':
         run_sample_founds = run_sample_founds.filter(generated_at__gte = start_date)

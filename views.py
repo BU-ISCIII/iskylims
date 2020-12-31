@@ -951,10 +951,11 @@ def display_project (request, project_id):
         return render(request, 'iSkyLIMS_wetlab/displayProject.html', {'display_project_data': display_project_data })
     else:
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the project  ' ]})
-
+'''
 @login_required
 def display_sample_in_run (request, sample_run_project_id):
-    '''
+'''
+'''
     Description:
         The function will check if the requested sample id exists, then
         it will call to get_info_sample_in_run function to collect all information
@@ -971,14 +972,15 @@ def display_sample_in_run (request, sample_run_project_id):
         Return the different information depending on the execution:
         -- Error page in case the sample id in the request does not exists.
         -- sample_data_information with the information collected by get_info_sample_in_run()
-    '''
+'''
+'''
     if (SamplesInProject.objects.filter(pk=sample_run_project_id).exists()):
-        sample_found_id = SamplesInProject.objects.get(pk=sample_run_project_id)
-        sample_data_information = get_info_sample_in_run (sample_found_id)
+        sample_found_obj = SamplesInProject.objects.get(pk=sample_run_project_id)
+        sample_data_information = get_info_sample_in_run (sample_found_obj)
         return render(request, 'iSkyLIMS_wetlab/displaySampleInRun.html',{'display_one_sample': sample_data_information })
     else:
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the sample  ' ]})
-
+'''
 
 
 
@@ -3261,7 +3263,7 @@ def display_sample (request, sample_id):
         get_additional_kits_used_in_sample   located at iSkyLIMS_wetlab/utils/additional_kits.py
     '''
     sample_information = get_all_sample_information(sample_id, True)
-    run_sample_id = get_run_sample_id(sample_id)
+    run_sample_obj = get_sample_in_project_obj_from_id(sample_id)
     if not 'Error' in sample_information:
         sample_information.update(get_molecule_lot_kit_in_sample(sample_id))
         sample_information.update(get_all_library_information(sample_id))
@@ -3269,8 +3271,8 @@ def display_sample (request, sample_id):
         #import pdb; pdb.set_trace()
     else:
         sample_information = {}
-    if run_sample_id != '':
-        sample_information.update(get_info_sample_in_run(run_sample_id))
+    if run_sample_obj != '':
+        sample_information.update(get_info_sample_in_run(run_sample_obj))
     if len(sample_information) == 0  :
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No Sample was found']})
     else:
@@ -3656,8 +3658,8 @@ def search_sample (request):
         elif len(sample_list) == 1 and len(run_sample_list) == 0:
             return redirect ('display_sample' , sample_id = sample_list[0])
         elif len(sample_list) == 0 and len(run_sample_list) == 1:
-            get_info_sample_in_run (run_sample_list[0])
-            return redirect ('display_run_sample' , run_sample_id = run_sample_list[0])
+            #get_info_sample_in_run (run_sample_obj)
+            return redirect ('display_sample_in_run' , sample_run_id = run_sample_list[0])
         else:
             # get the sample information to select it , because there are also matches on run_sample
             if len(sample_list) == 1:

@@ -10,6 +10,7 @@ from iSkyLIMS_core.models import SequencerInLab
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
 from .generic_functions import normalized_data, get_run_in_same_year_to_compare
+from iSkyLIMS_wetlab.utils.sample_functions import get_sample_in_project_obj_from_id
 from .stats_graphics import *
 
 
@@ -768,13 +769,13 @@ def get_information_project (project_id, request):
 
 
 
-def get_info_sample_in_run (sample_id):
+def get_info_sample_in_run (sample_run_obj):
     '''
     Description:
         The function will get the information from a specific sample
         requested on the input parameter.
     Input:
-        sample_id           # contains the sample id of the requested sample
+        sample_run_obj           # contains the sample obj of the requested sample
     Variables:
         data_source # reused variable to have the json data format for
                         displaying the graphics
@@ -791,21 +792,21 @@ def get_info_sample_in_run (sample_id):
 
     sample_info_dict ={}
     #collect the general information from the Sample
-    sample_info_dict['sample_name'] = sample_id.get_sample_name()
-    sample_info_dict['project_name'] = sample_id.get_project_name()
-    project_id= sample_id.project_id.id
+    sample_info_dict['sample_name'] = sample_run_obj.get_sample_name()
+    sample_info_dict['project_name'] = sample_run_obj.get_project_name()
+    project_id= sample_run_obj.project_id.id
     sample_info_dict['project_id'] = project_id
     #
-    sample_info_dict['run_id'] = sample_id.get_run_id()
-    sample_info_dict['run_name'] = sample_id.get_run_name()
-    user_name_id = sample_id.project_id.user_id
+    sample_info_dict['run_id'] = sample_run_obj.get_run_id()
+    sample_info_dict['run_name'] = sample_run_obj.get_run_name()
+    user_name_id = sample_run_obj.project_id.user_id
     sample_info_dict['investigator_name'] = user_name_id.username
     # collect the Sample information
     sample_info_dict['heading_samples_info'] = ['Sample', 'Index used', 'PF Cluster', '% of Project','Yield (Mbases)','>= Q30 bases','Mean Quality Score']
-    sample_info_dict['data_samples_info'] = sample_id.get_sample_information()
+    sample_info_dict['data_samples_info'] = sample_run_obj.get_sample_information()
     # Quality graphic
-    quality_sample = sample_id.get_quality_sample()
-    heading_chart_quality = 'Quality for the Sample ' + sample_id.sampleName
+    quality_sample = sample_run_obj.get_quality_sample()
+    heading_chart_quality = 'Quality for the Sample ' + sample_run_obj.sampleName
     data_source = graphic_for_quality_angular(heading_chart_quality, quality_sample)
     quality_sample_angular = FusionCharts("angulargauge", "ex1" , "350", "200", "chart-1", "json", data_source)
     sample_info_dict['quality_chart1'] = quality_sample_angular.render()
@@ -815,10 +816,10 @@ def get_info_sample_in_run (sample_id):
         percentage_in_project[sample.sampleName] = sample.percentInProject
     heading_samples_in_project = 'Samples belonging to the same project'
     sub_caption = ''
-    x_axis_name = 'Samples in project ' + sample_id.get_project_name()
+    x_axis_name = 'Samples in project ' + sample_run_obj.get_project_name()
     y_axis_name = '% of Project '
     theme = 'fint'
-    data_source = column_graphic_one_column_highligthed (heading_samples_in_project, sub_caption, x_axis_name, y_axis_name, theme, percentage_in_project, sample_id.sampleName)
+    data_source = column_graphic_one_column_highligthed (heading_samples_in_project, sub_caption, x_axis_name, y_axis_name, theme, percentage_in_project, sample_run_obj.sampleName)
     #
     percentage_chart = FusionCharts("column3d", 'samplesProject' , "750", "300", 'samples-chart-2', "json", data_source)
     sample_info_dict['percentage_chart'] = percentage_chart.render()
