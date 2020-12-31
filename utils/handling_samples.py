@@ -1630,12 +1630,15 @@ def search_samples(sample_name, user_name, sample_state, start_date, end_date ):
     else:
         return sample_list
     if user_name != '':
-        user_name_obj = User.objects.get(username__exact = user_name)
-        user_friend_list = get_friend_list(user_name_obj)
-        if not sample_founds.filter(sampleUser__in = user_friend_list).exists():
+        if User.objects.filter(username__exact = user_name).exists():
+            user_name_obj = User.objects.filter(username__exact = user_name).last()
+            user_friend_list = get_friend_list(user_name_obj)
+            if not sample_founds.filter(sampleUser__in = user_friend_list).exists():
+                return sample_list
+            else :
+                sample_founds = sample_founds.filter(sampleUser__in = user_friend_list)
+        else:
             return sample_list
-        else :
-            sample_founds = sample_founds.filter(sampleUser__in = user_friend_list)
     if sample_name != '' :
         if sample_founds.filter(sampleName__exact = sample_name).exists():
             sample_founds = sample_founds.filter(sampleName__exact = sample_name)
@@ -1651,7 +1654,7 @@ def search_samples(sample_name, user_name, sample_state, start_date, end_date ):
         sample_founds = sample_founds.filter(sampleState__sampleStateName__exact = sample_state)
 
     if start_date !='' and end_date != '':
-        sample_founds = sample_founds.filter(generated_at___range=(start_date, end_date ))
+        sample_founds = sample_founds.filter(generated_at__range=(start_date, end_date ))
 
     if start_date !='' and end_date  == '':
         sample_founds = sample_founds.filter(generated_at__gte = start_date)
