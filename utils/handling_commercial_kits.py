@@ -142,6 +142,7 @@ def display_user_lot_kit_information_from_query_list(user_kits_objs):
             protocols_name.append(protocol.get_name())
 
         data.append(protocols_name)
+        data.append(commercial_kit_obj.get_platform_name())
         data.append(user_kit_obj.get_user_lot_kit_id())
         user_lot['kit_data'].append(data)
     return user_lot
@@ -305,6 +306,28 @@ def get_molecule_lot_kit_in_sample(sample_id):
     return extraction_kits
 
 
+def get_user_lot_kit_data_to_display(user_lot_kit_obj):
+    '''
+    Description:
+        The function get the information from user Lot commercial kit to display
+        in the page
+    Input:
+        user_lot_kit_obj  # user lot kit object
+    Return
+        display_data
+    '''
+    display_data = {}
+    display_data['lot_kit_data'] = user_lot_kit_obj.get_basic_data()
+    display_data['lot_kit_heading'] = HEADING_FOR_LOT_USER_COMMERCIAL_KIT_BASIC_DATA
+    commercial_obj = user_lot_kit_obj.get_commercial_obj()
+    commercial_data = commercial_obj.get_commercial_protocol_basic_data()
+    commercial_data.append(commercial_obj.get_platform_name())
+    commercial_data.append(commercial_obj.get_cat_number())
+    display_data['commercial_data'] = [commercial_data]
+    display_data['commercial_heading'] = HEADING_FOR_COMMERCIAL_KIT_BASIC_DATA
+
+    return display_data
+
 def store_commercial_kit (kit_data):
     commercial_kit_values = {}
     #commercial_kit_values['protocol_id']= get_protocol_obj_from_name(kit_data['protocol'])
@@ -366,3 +389,31 @@ def update_usage_user_lot_kit (lot_number, commercial_kit):
         user_lot_obj= UserLotCommercialKits.objects.filter(chipLot__exact = lot_number, basedCommercial__name__exact = commercial_kit).last()
         user_lot_obj.set_increase_use()
     return user_lot_obj
+
+
+def search_user_lot_kit_from_user_form(form_data):
+    '''
+    Description:
+        The function search the user lot kit from the user form data
+    Input:
+        form_data    #  user input form
+    Return:
+        user_kits_objs
+    '''
+    user_kits_objs = 'No defined'
+    if UserLotCommercialKits.objects.all().exists():
+        user_kits_objs = UserLotCommercialKits.objects.all()
+        if 'exclude_runout' in form_data:
+            user_kits_objs = user_kits_objs.filter(runOut = True)
+        if form_data['lotNumber'] != '':
+            user_kits_objs = user_kits_objs.filter(chipLot__icontains = form_data['lotNumber'])
+        if form_data['commercial'] != '':
+            user_kits_objs = user_kits_objs.filter(basedCommercial__name__icontains = form_data['commercial'])
+        if form_data['protocol'] != '':
+            user_kits_objs = user_kits_objs.filter(basedCommercial__protocolKits__pk__exact = form_data['protocol'])
+        if form_data['platform'] != '':
+            user_kits_objs = user_kits_objs.filter(basedCommercial__platformKits__pk__exact = form_data['platform'])
+        if form_data['expired'] != '':
+            user_kits_objs = user_kits_objs.filter(expirationDate__lte = form_data['expired']).order_by('expirationDate')
+
+    return user_kits_objs

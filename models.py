@@ -323,7 +323,10 @@ class CommercialKits (models.Model):
         return self.platformKits
 
     def get_platform_name(self):
-        return '%s'  %(self.platformKits.get_platform_name())
+        if self.platformKits != None:
+            return '%s'  %(self.platformKits.get_platform_name())
+        else:
+            return ''
 
     def get_protocol_objs(self):
         return self.protocolKits.all()
