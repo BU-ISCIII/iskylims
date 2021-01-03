@@ -39,6 +39,7 @@ from .utils.handling_statistics import *
 from iSkyLIMS_core.utils.handling_samples import *
 from iSkyLIMS_core.utils.handling_platforms import get_defined_platforms_and_ids
 from iSkyLIMS_core.utils.generic_functions import get_inital_sample_settings_values, save_inital_sample_setting_value
+from iSkyLIMS_core.utils.handling_protocols import display_protocol_list
 #from iSkyLIMS_core.utils.handling_protocols import *
 #from iSkyLIMS_core.utils.handling_commercial_kits import *
 
@@ -4070,42 +4071,35 @@ def user_commercial_kit_inventory(request):
 @login_required
 def search_user_lot_kit(request):
     protocol_list = display_protocol_list()
+    platform_list = get_defined_platforms_and_ids('NGS')
     if request.method == 'POST' and request.POST['action'] ==  'searchuserkit':
-        if (request.POST['expired'] == '' and  request.POST['lotNumber'] == '' and request.POST['commercial'] == '' and request.POST['protocol'] == ''):
-            return render(request, 'iSkyLIMS_wetlab/searchUserLotKit.html',{'protocol_list': protocol_list})
+        if (request.POST['expired'] == '' and  request.POST['lotNumber'] == '' and request.POST['commercial'] == '' and request.POST['protocol'] == ''  and request.POST['platform'] == '') and 'exclude_runout' not in request.POST:
+            return render(request, 'iSkyLIMS_wetlab/searchUserLotKit.html',{'protocol_list': protocol_list, 'platform_list' :platform_list, })
 
         if request.POST['expired'] != '' and not check_valid_date_format(request.POST['expired']):
             error_message = ERROR_INVALID_FORMAT_FOR_DATES
-            return render (request,'iSkyLIMS_wetlab/searchUserLotKit.html', {'protocol_list': protocol_list, 'ERROR': error_message})
+            return render (request,'iSkyLIMS_wetlab/searchUserLotKit.html', {'protocol_list': protocol_list, 'platform_list' :platform_list, 'ERROR': error_message})
 
-        if UserLotCommercialKits.objects.all().exists():
-            user_kits_objs = UserLotCommercialKits.objects.all()
-            if request.POST['lotNumber'] != '':
-                user_kits_objs = user_kits_objs.filter(chipLot__icontains = request.POST['lotNumber'])
-            if request.POST['commercial'] != '':
-                user_kits_objs = user_kits_objs.filter(basedCommercial__name__icontains = request.POST['commercial'])
-            if request.POST['protocol'] != '':
-                user_kits_objs = user_kits_objs.filter(basedCommercial__protocolKits__pk__exact = request.POST['protocol'])
-            if request.POST['expired'] != '':
-                user_kits_objs = user_kits_objs.filter(expirationDate__gte = request.POST['expired'])
-
-            if len(user_kits_objs) > 1:
-                display_user_kit_list = display_user_lot_kit_information_from_query_list(user_kits_objs)
-                return render(request, 'iSkyLIMS_wetlab/searchUserLotKit.html',{'display_user_kit_list': display_user_kit_list})
-            elif len(user_kits_objs) == 0 :
-                error_message = ERROR_NO_MATCHES_FOR_USER_LOT_KIT
-                return render (request,'iSkyLIMS_wetlab/searchUserLotKit.html', {'protocol_list': protocol_list, 'ERROR': error_message})
-            else:
-                display_one_user_kit = user_kits_objs[0].get_user_lot_id()
-            return redirect ('display_one_user_kit', user_kit_id = display_one_user_kit)
-        else:
+        user_kits_objs = search_user_lot_kit_from_user_form(request.POST)
+        if user_kits_objs == 'No defined':
             error_message = ERROR_NO_USER_LOT_KIT_DEFINED
-            return render (request,'iSkyLIMS_wetlab/searchUserLotKit.html', {'protocol_list': protocol_list, 'ERROR': error_message})
+            return render (request,'iSkyLIMS_wetlab/searchUserLotKit.html', {'protocol_list': protocol_list, 'platform_list' :platform_list, 'ERROR': error_message})
+        if len(user_kits_objs) > 1:
+            display_user_kit_list = display_user_lot_kit_information_from_query_list(user_kits_objs)
+            return render(request, 'iSkyLIMS_wetlab/searchUserLotKit.html',{'display_user_kit_list': display_user_kit_list})
+        elif len(user_kits_objs) == 0 :
+            error_message = ERROR_NO_MATCHES_FOR_USER_LOT_KIT
+            return render (request,'iSkyLIMS_wetlab/searchUserLotKit.html', {'protocol_list': protocol_list, 'platform_list' :platform_list, 'ERROR': error_message})
+        else:
+            display_one_user_kit = user_kits_objs[0].get_user_lot_kit_id()
+        return redirect ('display_user_lot_kit', user_kit_id = display_one_user_kit)
     else:
-
-        return render(request, 'iSkyLIMS_wetlab/searchUserLotKit.html',{'protocol_list': protocol_list})
+        return render(request, 'iSkyLIMS_wetlab/searchUserLotKit.html',{'protocol_list': protocol_list , 'platform_list' :platform_list})
 
 @login_required
 def display_user_lot_kit(request, user_kit_id):
-    protocol_list = {}
-    return render(request, 'iSkyLIMS_wetlab/displayUserLotKit.html',{'protocol_list': protocol_list})
+    user_kit_obj = get_user_lot_commercial_kit_obj_from_id(user_kit_id)
+    if user_kit_obj == None:
+        return render(request, 'iSkyLIMS_wetlab/error_page.html',{'content': ['Invalid User Lot Commercial Kit']})
+    user_lot_kit_data = get_user_lot_kit_data_to_display(user_kit_obj)
+    return render(request, 'iSkyLIMS_wetlab/displayUserLotKit.html',{'user_lot_kit_data': user_lot_kit_data})

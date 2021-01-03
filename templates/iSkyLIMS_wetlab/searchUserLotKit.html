@@ -19,9 +19,9 @@
             <div class="panel panel-warning">
                 <div class="panel-heading"><h3> Result of your request</h3></div>
                 <div class="panel-body">
-
-                        <p>{{ERROR}}</p>
-
+                    {% for line in ERROR %}
+                        <p>{{line}}</p>
+                    {% endfor %}
                 </div> <!--  end of panel body -->
            </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-6 -->
@@ -44,12 +44,13 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for comm_name ,kit_name , exp_date, protocols, id in display_user_kit_list.kit_data %}
+                                {% for comm_name ,kit_name , exp_date, protocols, platform, id in display_user_kit_list.kit_data %}
                                     <tr>
                                         <td><a href="/wetlab/displayUserLotKit={{id}}">{{ kit_name }}</a> </td>
                                         <td> {{ comm_name }} </td>
                                         <td> {{ exp_date }} </td>
                                         <td>{% for protocol in protocols %}  {{protocol}} <br>{% endfor %}</td>
+                                        <td>{{platform}}</td>
                                     </tr>
                                 {%endfor%}
                             </tbody>
@@ -88,9 +89,27 @@
                             </div>  <!-- end select input -->
                         </div>  <!-- end from-group   -->
                         <br>
+                        <div class="form-group">
+                            <label class="col-sm-5 control-label" for="platform" >Platform used by User Kit</label>
+                            <div class="col-sm-4">
+                                <select class="form-control" name="platform" id="platform">
+                       				<option value="">Choose a value</option>
+                                    {% for id, value in platform_list %}
+                                        <option value="{{id}}">{{value}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>  <!-- end select input -->
+                        </div>  <!-- end from-group   -->
+                        <br>
                          <div class="form-group">
                             <label class="col-sm-5 control-label" for="expired" >End date to be expired (DD-MM-YYYY)</label>
                             <div class="col-sm-5"><input class="form-control" type="date" name="expired" id="expired" size="100" maxlength="100"></div>
+                            <br>
+                         </div>  <!-- end from-group   -->
+                         <br>
+                        <div class="form-group">
+                            <label class="col-sm-5 control-label" for="exclude_runout" >Exclude Run Out Kit</label>
+                            <div class="col-sm-5"><input class="form-control" type="checkbox" name="exclude_runout" id="exclude_runout"></div>
                             <br>
                          </div>  <!-- end from-group   -->
                          <br><br><br>

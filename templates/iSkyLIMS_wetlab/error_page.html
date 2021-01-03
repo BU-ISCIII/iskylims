@@ -10,30 +10,30 @@ function goBack() {
 <div class="alert alert-danger">
   <strong>ERROR!</strong> Your last action request was unsuccessful.
 </div>
-<div class="row row-space-2 margin-b-4">
-        <div class="col-sm-4 col-sm-offset-4">
-        <div class="panel panel-danger">
-          <div class="panel-heading">ERROR</div>
-          <div class="panel-body">
-              <img class="promo-block-img  img-responsive img-center" src="{% static "iSkyLIMS_common_static/img/icons/error-icon.jpg" %}">
-              <p></p>
-              <p>You are geting this error page because:</p><BR>
+{% if content %}
+    <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-4 col-sm-offset-4">
+            <div class="panel panel-danger">
+              <div class="panel-heading">ERROR</div>
+              <div class="panel-body">
+                  <img class="promo-block-img  img-responsive img-center" src="{% static "iSkyLIMS_common_static/img/icons/error-icon.jpg" %}">
+                  <p></p>
+                  <p>You are geting this error page because:</p><BR>
 
-              <p>
-                 {% for c in content %}
-                    {{c}}<BR>
-                 {% endfor%}
-              </p>
-            </div> <!--// end panel body -->
-        </div> <!--// end panel -->
-      </div> <!--// end col-sm-4 -->
-</div> <!-- end row  -->
+                  <p>
+                     {% for c in content %}
+                        {{c}}<BR>
+                     {% endfor%}
+                  </p>
+                </div> <!--// end panel body -->
+            </div> <!--// end panel -->
+          </div> <!--// end col-sm-4 -->
+    </div> <!-- end row  -->
+{% endif %}
 {% if detail_description %}
-
-
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-6 col-sm-offset-3">
-            <div class="panel panel-default">
+            <div class="panel panel-danger">
                 <div class="panel-body">
                     <table class="table table-hover">
                         <thead>
