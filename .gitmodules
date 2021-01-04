@@ -13,3 +13,6 @@
 [submodule "iSkyLIMS_core"]
 	path = iSkyLIMS_core
 	url = git@github.com:BU-ISCIII/iSkyLIMS_core.git
+[submodule "iSkylims_core"]
+	path = iSkylims_core
+	url = git@github.com:BU-ISCIII/iSkylims_core.git
