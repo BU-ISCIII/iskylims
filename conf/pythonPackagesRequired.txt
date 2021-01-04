@@ -14,7 +14,7 @@ django-js-asset
 django-mptt
 django-mptt-admin
 interop
-mysqlclient
+mysqlclient==2.0.1
 paramiko
 pysmb
 weasyPrint
