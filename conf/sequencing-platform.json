@@ -1,0 +1,119 @@
+[
+{
+    "model": "iSkyLIMS_core.sequencingplatform",
+    "pk": 1,
+    "fields": {
+        "platformName": "Ion GeneStudio S5 System",
+        "companyName": "Ion Torrent (ThermoFisher)",
+        "sequencingTecnology": "NGS"
+    }
+},
+{
+    "model": "iSkyLIMS_core.sequencingplatform",
+    "pk": 2,
+    "fields": {
+        "platformName": "Ion Torrent Genexus System",
+        "companyName": "Ion Torrent (ThermoFisher)",
+        "sequencingTecnology": "NGS"
+    }
+},
+{
+    "model": "iSkyLIMS_core.sequencingplatform",
+    "pk": 3,
+    "fields": {
+        "platformName": "Ion PGM System",
+        "companyName": "Ion Torrent (ThermoFisher)",
+        "sequencingTecnology": "NGS"
+    }
+},
+{
+    "model": "iSkyLIMS_core.sequencingplatform",
+    "pk": 4,
+    "fields": {
+        "platformName": "Ion Proton System",
+        "companyName": "Ion Torrent (ThermoFisher)",
+        "sequencingTecnology": "NGS"
+    }
+},
+{
+    "model": "iSkyLIMS_core.sequencingplatform",
+    "pk": 5,
+    "fields": {
+        "platformName": "Sequel System",
+        "companyName": "Pacific Biosciences (PacBio)",
+        "sequencingTecnology": "NGS"
+    }
+},
+{
+    "model": "iSkyLIMS_core.sequencingplatform",
+    "pk": 6,
+    "fields": {
+        "platformName": "Sequel II System",
+        "companyName": "Pacific Biosciences (PacBio)",
+        "sequencingTecnology": "NGS"
+    }
+},
+{
+    "model": "iSkyLIMS_core.sequencingplatform",
+    "pk": 7,
+    "fields": {
+        "platformName": "iSeq 100",
+        "companyName": "illumina",
+        "sequencingTecnology": "NGS"
+    }
+},
+{
+    "model": "iSkyLIMS_core.sequencingplatform",
+    "pk": 8,
+    "fields": {
+        "platformName": "MiniSeq",
+        "companyName": "illumina",
+        "sequencingTecnology": "NGS"
+    }
+},
+{
+    "model": "iSkyLIMS_core.sequencingplatform",
+    "pk": 9,
+    "fields": {
+        "platformName": "MiSeq",
+        "companyName": "illumina",
+        "sequencingTecnology": "NGS"
+    }
+},
+{
+    "model": "iSkyLIMS_core.sequencingplatform",
+    "pk": 10,
+    "fields": {
+        "platformName": "NextSeq 550 Series",
+        "companyName": "illumina",
+        "sequencingTecnology": "NGS"
+    }
+},
+{
+    "model": "iSkyLIMS_core.sequencingplatform",
+    "pk": 11,
+    "fields": {
+        "platformName": "NexSeq 2000",
+        "companyName": "illumina",
+        "sequencingTecnology": "NGS"
+    }
+},
+{
+    "model": "iSkyLIMS_core.sequencingplatform",
+    "pk": 12,
+    "fields": {
+        "platformName": "NovaSeq 6000",
+        "companyName": "illumina",
+        "sequencingTecnology": "NGS"
+    }
+},
+{
+    "model": "iSkyLIMS_core.sequencingplatform",
+    "pk": 13,
+    "fields": {
+        "platformName": "HiSeq",
+        "companyName": "illumina",
+        "sequencingTecnology": "NGS"
+    }
+}
+]
