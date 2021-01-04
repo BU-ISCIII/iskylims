@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 def run ():
     invalids = 0
 
-    with open ('part1_sampleInProject_migration_data.csv', 'r') as fh:
+    with open ('project_migration_data.csv', 'r') as fh:
         for line in fh.readlines():
             split_line = line.split(',')
             if len(split_line )!= 2:
@@ -24,7 +24,7 @@ def run ():
                 print('Run id ' , r_id, 'does not longer exists in database\n')
                 invalids += 1
                 continue
-            p_obj.projects.add(r_obj)
+            p_obj.runProcess.add(r_obj)
 
 
     if invalids == 0:
