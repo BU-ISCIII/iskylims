@@ -18,6 +18,5 @@ mysqlclient
 paramiko
 pysmb
 weasyPrint
-zinnia-wysiwyg-wymeditor
 django_extensions
-
+djangorestframework
