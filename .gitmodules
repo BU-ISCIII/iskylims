@@ -10,6 +10,6 @@
 [submodule "iSkyLIMS_clinic"]
 	path = iSkyLIMS_clinic
 	url = git@github.com:BU-ISCIII/iSkyLIMS_clinic.git
-[submodule "iSkylims_core"]
-	path = iSkylims_core
-	url = git@github.com:BU-ISCIII/iSkylims_core.git
+[submodule "iSkyLIMS_core"]
+	path = iSkyLIMS_core
+	url = git@github.com:BU-ISCIII/iSkyLIMS_core.git
