@@ -21,6 +21,8 @@ Port : 50122
 user: iskylims
 Password: 3skyL3MS_2018
 ```
+You can also download the virtual machine from this [Google drive link](https://drive.google.com/open?id=1IIWjYSflTnj3L6mVAuRya0UsK-4lEig3)
+
 ### Run VM image on VirtualBox 
 After successful loging transfer the file demo_iSkyLIMS.ova which it is inside the iSkyLIMS folder.
 
