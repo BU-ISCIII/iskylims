@@ -1,4 +1,4 @@
-from iSkyLIMS_wetlab.models import SamplesInProject, RunProcess
+from iSkyLIMS_wetlab.models import SamplesInProject, RunProcess, Projects
 from django.contrib.auth.models import User
 
 def run ():
