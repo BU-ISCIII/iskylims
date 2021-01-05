@@ -1,4 +1,4 @@
-from iSkyLIMS_wetlab.models import SamplesInProject, RunProcess
+from iSkyLIMS_wetlab.models import SamplesInProject, RunProcess, Projects
 from django.contrib.auth.models import User
 
 def run ():
@@ -24,7 +24,7 @@ def run ():
                 print('Run id ' , r_id, 'does not longer exists in database\n')
                 invalids += 1
                 continue
-            p_obj.projects.add(r_obj)
+            p_obj.runProcess.add(r_obj)
 
 
     if invalids == 0:
