@@ -8,85 +8,94 @@
         max-height: 350px;
         overflow: auto;
         display:inline-block;
-        width: 1170px;
+        width: 1070px;
     }
 </style>
 {% if researcher_statistics %}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-12" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h2>Statistics results for Investigator {{researcher_statistics.researcher_name}} </h2></div>
-                {% for sequencer in researcher_statistics.projects_data  %}
-                    <div class="row row-space-2 margin-b-4">
+    {% if 'ERROR' in researcher_statistics %}
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h2>Statistics results for Investigator {{researcher_statistics.ERROR.1}} </h2></div>
+                    <div class="panel-body">
+                        <h3>{{researcher_statistics.ERROR.0}}</h3>
+                    </div> <!--  end of panel body -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-12  -->
+        </div> <!--// end row -->
 
-                        {% for sequencer_name, values_in_dict in sequencer.items %}
+    {% else %}
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h2>Statistics results for Investigator {{researcher_statistics.researcher_name}} </h2></div>
+                    <div class="panel-body">
+                        <div class="col-sm-12">
+                            <div class="tab">
+                                {% for sequencer, samples_data in researcher_statistics.researcher_sample_data.items  %}
+                                    <button class="tablinks" onclick="summaryBin(event, '{{sequencer}}')" >{{sequencer}} </button>
+                                {% endfor %}
+                                {% for sequencer, samples_data in researcher_statistics.researcher_sample_data.items  %}
+                                    <div id="{{sequencer}}" class="tabcontent">
+                                        <div class="col-sm-12" >
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading"><h3>Investigator samples run in sequencer {{sequencer}}</h3></div>
+                                                {% if samples_data %}
+                                                    <button onclick="exportTableToExcel('sequencer{{sequencer}}')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
+                                                    <BR>
+                                                    <div class="panel-body scroll-wrapper-sm-12">
 
-                            <div class="row row-space-2 margin-b-4">
-                                <div class="col-sm-12" >
-                                    <h3 style="text-align:center"> Projects using the sequencer {{sequencer_name }} : </h3>
-                                </div> <!--// end col-sm-12  -->
-                            </div>  <!--// end row -->
-                            <button onclick="exportTableToExcel('sequencer{{sequencer_name}}')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
-                            <BR>
-                            <div class="panel-body scroll-wrapper-sm-12">
-                                <table id="sequencer{{sequencer_name}}" class="table  table-hover">
-                                    <thead>
-                                        <tr>
-                                            {% for values  in researcher_statistics.projects_heading %}
-                                                <th>{{ values }} </th>
-                                            {%endfor%}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for values in values_in_dict %}
-                                            <tr>
-                                                {% for value in values %}
-                                                    <td>{{ value }}</td>
-                                                {% endfor %}
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                                <BR>
-                            </div> <!--  end of col-scroll-wrapper -->
-                        {% endfor%}
-                    </div>  <!--// end row -->
-                {% endfor %}
+                                                        <div class="table-responsive">
+                                                            <table id="sequencer{{sequencer}}" class="table  table-hover">
+                                                                <thead>
+                                                                    <tr>
+                                                                        {% for values  in researcher_statistics.sample_researcher_heading %}
+                                                                            <th>{{ values }} </th>
+                                                                        {% endfor %}
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for values in samples_data %}
+                                                                        <tr>
+                                                                            {% for value in values %}
+                                                                                <td>{{ value }}</td>
+                                                                            {% endfor %}
+                                                                        </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                            <BR>
+                                                        </div> <!--  end of table-responsiver -->
+                                                    </div> <!--  end of col-scroll-wrapper -->
 
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-12  -->
-    </div> <!--// end row -->
-
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-12" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3><center>Graphic Statistics for Investigator {{researcher_statistics.researcher_name}} </center></h3></div>
-                <div class="panel-body">
-                    {% for seq_researcher_graph in researcher_statistics.researcher_graph %}
-                        {% for id_graph, chart in seq_researcher_graph %}
-                            <div class="col-sm-6" >
-                                <!-- Showing graph-->
-                                <div id="{{id_graph}}"> </div>
-                                    {{ chart|safe }}
-                            </div> <!--// end col-sm-6  -->
-                        {% endfor %}
-                    {% endfor %}
-                </div> <!--  end of panel body -->
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-8  -->
-    </div> <!--// end row -->
+                                                {% else %}
+                                                    <div class="panel-body">
+                                                        <h5> There are no Samples runs on this sequencer </h5>
+                                                    </div> <!--// end panel -->
+                                                {% endif %}
+                                            </div> <!--// end panel -->
+                                        </div> <!--// end col-sm-12  -->
+                                    </div> <!--// end  tab {{sequencer}} -->
+                                {% endfor %}
+                            </div> <!--// end tabs -->
+                        </div> <!--// end col-sm-12  -->
+                    </div> <!--// end panel body-->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-12  -->
+        </div> <!--// end row -->
 
 
 
-    {% if researcher_statistics.comp_graphs %}
+
+
+
         <div class="row row-space-2 margin-b-4">
             <div class="col-sm-12" >
                 <div class="panel panel-default">
-                    <div class="panel-heading"><h3><center> {{researcher_statistics.researcher_name}} projects comparison </center></h3></div>
+                    <div class="panel-heading"><h3><center>Graphic Statistics for Investigator {{researcher_statistics.researcher_name}} </center></h3></div>
                     <div class="panel-body">
-                    <!-- comparations chart starts here-->
-                        {% for seq_comp_graph in researcher_statistics.comp_graphs %}
-                            {% for id_graph, chart in seq_comp_graph %}
+                        {% for seq_researcher_graph in researcher_statistics.researcher_graph %}
+                            {% for id_graph, chart in seq_researcher_graph %}
                                 <div class="col-sm-6" >
                                     <!-- Showing graph-->
                                     <div id="{{id_graph}}"> </div>
@@ -98,20 +107,43 @@
                 </div> <!--// end panel -->
             </div> <!--// end col-sm-8  -->
         </div> <!--// end row -->
-    {% endif %}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-8" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><h3><center>Statistics Sequencer utilization for  {{researcher_statistics.researcher_name}} </center></h3></div>
-                <div class="panel-body">
-                    <!-- Sequencer pie Chart starts here-->
-                        <div id="sequencer_pie_chart"> </div>
-                        {{ researcher_statistics.sequencer_pie_graph |safe }}
-                </div> <!--  end of panel body -->
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-8  -->
-    </div> <!--// end row -->
 
+
+
+        {% if researcher_statistics.comp_graphs %}
+            <div class="row row-space-2 margin-b-4">
+                <div class="col-sm-12" >
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h3><center> {{researcher_statistics.researcher_name}} projects comparison </center></h3></div>
+                        <div class="panel-body">
+                        <!-- comparations chart starts here-->
+                            {% for seq_comp_graph in researcher_statistics.comp_graphs %}
+                                {% for id_graph, chart in seq_comp_graph %}
+                                    <div class="col-sm-6" >
+                                        <!-- Showing graph-->
+                                        <div id="{{id_graph}}"> </div>
+                                            {{ chart|safe }}
+                                    </div> <!--// end col-sm-6  -->
+                                {% endfor %}
+                            {% endfor %}
+                        </div> <!--  end of panel body -->
+                    </div> <!--// end panel -->
+                </div> <!--// end col-sm-8  -->
+            </div> <!--// end row -->
+        {% endif %}
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-8" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3><center>Statistics Sequencer utilization for  {{researcher_statistics.researcher_name}} </center></h3></div>
+                    <div class="panel-body">
+                        <!-- Sequencer pie Chart starts here-->
+                            <div id="sequencer_pie_chart"> </div>
+                            {{ researcher_statistics.sequencer_pie_graph |safe }}
+                    </div> <!--  end of panel body -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-8  -->
+        </div> <!--// end row -->
+    {% endif %}
 
 {% else %}
     {% load user_groups %}

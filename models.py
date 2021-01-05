@@ -154,10 +154,10 @@ class RunProcess(models.Model):
         other_size = int(other_size_str.replace(',',''))
         total_size = image_size + data_size + other_size
         return '%s'%(total_size)
-    '''
-    def get_run_sequencerModel (self):
-        return '%s' %(self.sequencerModel)
-    '''
+
+    def get_run_used_sequencer_name (self):
+        return '%s' %(self.usedSequencer.get_sequencer_name())
+
     def get_run_used_sequencer (self):
         return '%s' %(self.usedSequencer)
 
@@ -793,6 +793,19 @@ class SamplesInProject (models.Model):
         data.append(self.meanQuality)
         return data
 
+    def get_sample_information_with_project_run(self):
+        data = []
+        data.append(self.sampleName)
+        data.append(self.project_id.get_project_name())
+        data.append(self.runProcess_id.get_run_name())
+        data.append(self.barcodeName)
+        data.append(self.pfClusters)
+        data.append(self.percentInProject)
+        data.append(self.yieldMb)
+        data.append(self.qualityQ30)
+        data.append(self.meanQuality)
+        return data
+
     def get_sample_name(self):
         return '%s' %(self.sampleName)
 
@@ -808,6 +821,9 @@ class SamplesInProject (models.Model):
 
     def get_run_name(self):
         return '%s' %(self.runProcess_id.get_run_name())
+
+    def get_sequencer_used(self):
+        return '%s' %(self.runProcess_id.get_run_used_sequencer_name())
 
     def get_run_obj(self):
         return self.runProcess_id

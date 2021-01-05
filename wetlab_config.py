@@ -240,6 +240,8 @@ HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD = ['Unique_Sample_ID','Samp
 
 HEADING_FOR_STATISTICS_RUNS_BASIC_DATA = ['Run Name', 'Date sequencer start']
 
+RESEARCHER_SAMPLE_HEADING_STATISTICS = ['Samples','Project name','Run name' , 'Date', 'Libraty Kit', 'Cluster PF', 'Yield Mb', '% Q> 30', 'Mean']
+
 ############### SUCCESSFUL_MESSAGES #######################################
 SUCCESSFUL_RUN_STATE_CHANGE_FOR_RETRY = ['State of the Run has changed back to the state previous to error', 'Now the run is again in the process for updating information',
                 'Check the run from time to time this run to verify that run is moving forward.']
@@ -311,6 +313,8 @@ ERROR_MANY_USER_MATCHES_FOR_INPUT_CONDITIONS =['There are many user names that m
 ERROR_WRONG_SAMBA_CONFIGURATION_SETTINGS = ['Unsuccessful configuration settings for Samba connection']
 ERROR_UNABLE_TO_SAVE_SAMBA_CONFIGURATION_SETTINGS = ['Unable to save the Samba configuration file ', 'check if folder iSkyLIMS_wetlab has write permision for apache user']
 ERROR_UNABLE_TO_SAVE_EMAIL_CONFIGURATION_SETTINGS = ['Unable to save the email configuration file ', 'check if folder iSkyLIMS_wetlab has write permision for apache user']
+
+ERROR_USER_DOES_NOT_HAVE_ANY_SAMPLE = ['User does not have any sample to perform statistics']
 
 ############### HEADING FOR PROJECT DATA VISUALIZATION #####################
 HEADING_FOR_PROJECT_DATES = ['Project Recorder date', 'Project date']

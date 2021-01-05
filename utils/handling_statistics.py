@@ -1,5 +1,7 @@
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
+from iSkyLIMS_wetlab.utils.fetching_information import get_sequencer_installed_names
+from iSkyLIMS_wetlab.utils.stats_graphics import column_graphic_simple
 
 def get_researcher_statistics(researcher_name, start_date, end_date):
     '''
@@ -21,9 +23,18 @@ def get_researcher_statistics(researcher_name, start_date, end_date):
     if len(user_objs) > 1:
         researcher_statistics['ERROR'] = wetlab_config.ERROR_MANY_USER_MATCHES_FOR_INPUT_CONDITIONS
         return researcher_statistics
+    # over write the user name with the full user id
+    researcher_name = user_objs[0].username
+    
+    if start_date != '' and not check_valid_date_format(start_date):
+        errror_message = wetlab_config.ERROR_INVALID_FORMAT_FOR_DATES
+        return researcher_statistics
+    if end_date != '' and not check_valid_date_format(start_date):
+        errror_message = wetlab_config.ERROR_INVALID_FORMAT_FOR_DATES
+        return researcher_statistics
 
-    if SamplesInProject.objects.filter(user_id = name_objs[0], runprocess_id__state__runStateName__exact = 'Completed').exists():
-        sample_objs = SamplesInProject.objects.filter(user_id = name_objs[0], runprocess_id__state__runStateName__exact = 'Completed').order_by('runProcess_id')
+    if SamplesInProject.objects.filter(user_id = user_objs[0]).exists():
+        sample_objs = SamplesInProject.objects.filter(user_id = user_objs[0]).order_by('runProcess_id')
         # check if start and end date are present in the form
         if start_date != '' and end_date !='':
             sample_objs= sample_objs.filter(runprocess_id__state__runStateName__range=(start_date, end_date))
@@ -36,16 +47,39 @@ def get_researcher_statistics(researcher_name, start_date, end_date):
             return researcher_statistics
 
         # Get data from researcher projects
+        researcher_statistics ['sample_researcher_heading'] = wetlab_config.RESEARCHER_SAMPLE_HEADING_STATISTICS
 
-        researcher_statistics ['projects_heading'] = ['Project name', 'Date', 'Libraty Kit','Samples', 'Cluster PF', 'Yield Mb', '% Q> 30', 'Mean','Sequencer ID']
-        projects_data =[]
-        p_researcher_date , p_researcher_num_sample = {} , {}
-        p_researcher_lib_kit, p_researcher_sequencer = {}, {}
-        p_researcher_q30_dict, p_researcher_mean_dict = {} , {}
-        p_researcher_yield_mb_dict, p_researcher_cluster_pf_dict ={} , {}
-        projects_name_dict , projects_id_list = {} , {}
+        installed_sequencers = get_sequencer_installed_names()
+        researcher_sample_data = {}
+        for installed_sequencer in installed_sequencers:
+            researcher_sample_data[installed_sequencer] = []
+        for sample_obj in sample_objs:
+            sample_data = sample_obj.get_sample_information_with_project_run()
+            researcher_sample_data[sample_obj.get_sequencer_used()].append(sample_data)
+        researcher_statistics['researcher_sample_data'] = researcher_sample_data
+        return researcher_statistics
 
+        #collect Q> 30 data for each sequencer used
 
+        # create the graphic for q30 quality
+
+        theme = 'ocean'
+        heading = 'Graphics for Q > 30 for investigator ' + r_name
+        sub_caption = 'Sequencer ' + sequencer
+        x_axis_name = 'Projects'
+        y_axis_name = 'Q 30 (in %)'
+
+        data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_q30_dict[sequencer])
+        seq_chart = sequencer + 'q30_chart'
+        seq_graph = sequencer + 'q30_graph'
+        q30_researcher_seq_graph = FusionCharts("column3d", seq_graph , "500", "350",seq_chart , "json", data_source).render()
+
+        researcher_seq_graphs.append([seq_chart, q30_researcher_seq_graph])
+    else:
+        researcher_statistics['ERROR'] = wetlab_config.ERROR_USER_DOES_NOT_HAVE_ANY_SAMPLE
+        researcher_statistics['ERROR'].append(researcher_name)
+        return researcher_statistics
+        '''
         for project_researcher in r_project_by_researcher:
             q_30_list , mean_q_list = [] , []
             yield_mb_list,  cluster_pf_list = [], []
@@ -262,3 +296,4 @@ def get_researcher_statistics(researcher_name, start_date, end_date):
         data_source = pie_graphic_standard (heading, sub_caption, theme, sequencer_used)
         sequencer_pie_graph = FusionCharts("pie3d", "sequencer_pie_graph" , "500", "400", "sequencer_pie_chart", "json", data_source).render()
         researcher_statistics ['sequencer_pie_graph'] = sequencer_pie_graph
+        '''

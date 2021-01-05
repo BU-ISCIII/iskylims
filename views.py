@@ -1565,25 +1565,12 @@ def stats_per_researcher (request):
         r_name = request.POST['researchername']
         start_date=request.POST['startdate']
         end_date=request.POST['enddate']
-
-        if start_date != '' and not check_valid_date_format(start_date):
-            errror_message = wetlab_config.ERROR_INVALID_FORMAT_FOR_DATES
-            return render (request,'iSkyLIMS_wetlab/StatsPerResearcher.html', {'ERROR':error_message})
-        if end_date != '' and not check_valid_date_format(start_date):
-            errror_message = wetlab_config.ERROR_INVALID_FORMAT_FOR_DATES
-            return render (request,'iSkyLIMS_wetlab/StatsPerResearcher.html', {'ERROR':error_message})
-        if len(r_name) < 5 :
-            errror_message = wetlab_config.ERROR_USER_NAME_TOO_SHORT
-            return render (request,'iSkyLIMS_wetlab/StatsPerResearcher.html', {'ERROR':error_message})
-
-        if not User.objects.filter(username__icontains = r_name).exists():
-            errror_message = wetlab_config.ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS
-            return render (request,'iSkyLIMS_wetlab/StatsPerResearcher.html', {'ERROR':error_message})
-
+        
         researcher_statistics = get_researcher_statistics(r_name, start_date, end_date)
         if 'ERROR' in researcher_statistics:
-            errror_message = researcher_statistics['ERROR']
-            return render (request,'iSkyLIMS_wetlab/StatsPerResearcher.html', {'ERROR':error_message})
+            error_message = researcher_statistics
+            return render (request,'iSkyLIMS_wetlab/StatsPerResearcher.html', {'researcher_statistics':error_message})
+
         return  render(request, 'iSkyLIMS_wetlab/StatsPerResearcher.html', {'researcher_statistics' : researcher_statistics})
 
     else:
