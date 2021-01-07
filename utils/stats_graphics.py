@@ -42,47 +42,16 @@ def json_2_column_graphic(heading, q_30_project_lane,q_30_media_lane):
         "legendItemFontColor": "#666666",
         "exportEnabled": "1"
     }
-    #TBD
-    '''
-    data_source["categories"] = [
-        {"category": [
-                { "label": "Lane 1"},
-                { "label": "Lane 2"},
-                { "label": "Lane 3"},
-                { "label": "Lane 4"}
-            ]
-        }
-    ]
-    '''
+
     data_source["categories"] = [
         {"category": [
                 { "label": "Lane 1"}
             ]
         }
     ]
-    #EndTBD
 
-    #TBD
-    '''
-    data_source ["dataset"] = [
-        {"seriesname": "Researcher Project",
-            "data": [
-                    {"value": q_30_project_lane[0] },
-                    {"value": q_30_project_lane[1] },
-                    {"value": q_30_project_lane[2] },
-                    {"value": q_30_project_lane[3] }
-            ]
-        },
-        {"seriesname": "Average for all Projects",
-            "data": [
-                    {"value": q_30_media_lane[0]},
-                    {"value": q_30_media_lane[1]},
-                    {"value": q_30_media_lane[2]},
-                    {"value": q_30_media_lane[3]}
-            ]
-        }
-    ]
-    '''
+
+
 
     data_source ["dataset"] = [
         {"seriesname": "Researcher Project",
@@ -447,36 +416,7 @@ def researcher_project_mean_column_graphic(heading,  x_axis_name, y_axis_name, u
         "legendItemFontColor": "#666666",
         "exportEnabled": "1"
     }
-    #TBD
-    '''
-    data_source["categories"] = [
-        {"category": [
-                { "label": "Lane 1"},
-                { "label": "Lane 2"},
-                { "label": "Lane 3"},
-                { "label": "Lane 4"}
-            ]
-        }
-    ]
-    data_source ["dataset"] = [
-        {"seriesname": investigator +  '  Projects',
-            "data": [
-                    {"value": user_project_lane[0] },
-                    {"value": user_project_lane[1] },
-                    {"value": user_project_lane[2] },
-                    {"value": user_project_lane[3] }
-            ]
-        },
-        {"seriesname": "Average for all Projects",
-            "data": [
-                    {"value": q_30_media_lane[0]},
-                    {"value": q_30_media_lane[1]},
-                    {"value": q_30_media_lane[2]},
-                    {"value": q_30_media_lane[3]}
-            ]
-        }
-    ]
-    '''
+
     data_source["categories"] = [
         {"category": [
                 { "label": "Lane 1"}
@@ -495,7 +435,6 @@ def researcher_project_mean_column_graphic(heading,  x_axis_name, y_axis_name, u
             ]
         }
     ]
-    #EndTBD
 
 
     data_source["trendlines"] = [
@@ -724,27 +663,6 @@ def column_graphic_with_categories(heading, sub_caption, x_axis_name, y_axis_nam
         dataset.append(dataset_dict)
     data_source['dataset'] = dataset
 
-    '''
-    data_source ["dataset"] = [
-        {"seriesname": "Researcher Project",
-            "data": [
-                    {"value": q_30_project_lane[0] },
-                    {"value": q_30_project_lane[1] },
-                    {"value": q_30_project_lane[2] },
-                    {"value": q_30_project_lane[3] }
-            ]
-        },
-        {"seriesname": "Average for all Projects",
-            "data": [
-                    {"value": q_30_media_lane[0]},
-                    {"value": q_30_media_lane[1]},
-                    {"value": q_30_media_lane[2]},
-                    {"value": q_30_media_lane[3]}
-            ]
-        }
-    ]
-    '''
-
     return data_source
 
 def column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, input_data) :
@@ -784,7 +702,7 @@ def column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme
     data_source['data'] = data
     return data_source
 
-def column_graphic_tupla (heading, sub_caption, x_axis_name, y_axis_name, theme, source_data) :
+def column_graphic_tupla (heading, sub_caption, x_axis_name, y_axis_name, theme, source_data, highlight_value) :
     data_source = {}
     data_source['chart'] = {
                 "caption": heading,
@@ -815,7 +733,11 @@ def column_graphic_tupla (heading, sub_caption, x_axis_name, y_axis_name, theme,
     for key , values in source_data :
         data_dict = {}
         data_dict['label'] = key
-        data_dict['value'] = int(values)
+        data_dict['value'] = float(values)
+        #data_dict['value'] = int(values)
+        if key == highlight_value :
+            data_dict['dashed'] = "1"
+            data_dict['color']= 'ff0000'
         data.append(data_dict)
     data_source['data'] = data
 

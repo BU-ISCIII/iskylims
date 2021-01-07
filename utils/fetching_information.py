@@ -953,7 +953,7 @@ def  get_stats_sequencer_data_from_selected_runs (runs_using_sequencer, sequence
     for key in sorted(run_time_dict.keys()):
         run_time_tupla.append([key,run_time_dict[key]])
     heading = 'Runs executed per months in the sequencer'
-    data_source = column_graphic_tupla (heading, '', '', 'Number of Runs','ocean', run_time_tupla)
+    data_source = column_graphic_tupla (heading, '', '', 'Number of Runs','ocean', run_time_tupla, None)
     sequencer_data ['sequencer_runs_per_month_graph'] = FusionCharts("column3d", "run_per_month_graph" , "500", "400", "chart_seq_month", "json", data_source).render()
 
     # get the data for run executed in other sequencers per months
@@ -970,7 +970,7 @@ def  get_stats_sequencer_data_from_selected_runs (runs_using_sequencer, sequence
         for key in sorted(run_time_dict.keys()):
             run_time_tupla.append([key,run_time_dict[key]])
         heading = 'Runs executed per months in the rest of the sequencers'
-        data_source = column_graphic_tupla (heading, '', '', 'Number of Runs','fint', run_time_tupla)
+        data_source = column_graphic_tupla (heading, '', '', 'Number of Runs','fint', run_time_tupla, None)
         sequencer_data ['other_sequencers_runs_per_month_graph'] = FusionCharts("column3d", "other_run_per_month_graph" , "500", "400", "chart_other_seq_month", "json", data_source).render()
 
     return sequencer_data

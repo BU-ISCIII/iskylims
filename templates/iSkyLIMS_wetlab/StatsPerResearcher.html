@@ -33,7 +33,11 @@
                         <div class="col-sm-12">
                             <div class="tab">
                                 {% for sequencer, samples_data in researcher_statistics.researcher_sample_data.items  %}
-                                    <button class="tablinks" onclick="summaryBin(event, '{{sequencer}}')" >{{sequencer}} </button>
+                                    {% if forloop.first %}
+                                        <button class="tablinks" onclick="summaryBin(event, '{{sequencer}}')" id="tablinksdefaultOpen" >{{sequencer}} </button>
+                                    {% else %}
+                                        <button class="tablinks" onclick="summaryBin(event, '{{sequencer}}')" >{{sequencer}} </button>
+                                    {% endif %}
                                 {% endfor %}
                                 {% for sequencer, samples_data in researcher_statistics.researcher_sample_data.items  %}
                                     <div id="{{sequencer}}" class="tabcontent">
@@ -84,7 +88,25 @@
             </div> <!--// end col-sm-12  -->
         </div> <!--// end row -->
 
-
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-12" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3><center>Graphic Statistics for Investigator {{researcher_statistics.researcher_name}} </center></h3></div>
+                    <div class="panel-body">
+                        <div class="col-sm-6" >
+                            <!-- Showing graph-->
+                            <div id="run_chart"> </div>
+                                {{ researcher_statistics.run_graphic|safe }}
+                        </div> <!--// end col-sm-6  -->
+                        <div class="col-sm-6" >
+                            <!-- Showing graph-->
+                            <div id="project_chart"> </div>
+                                {{ researcher_statistics.project_graphic|safe }}
+                        </div> <!--// end col-sm-6  -->
+                    </div> <!--  end of panel body -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-8  -->
+        </div> <!--// end row -->
 
 
 
@@ -92,23 +114,22 @@
         <div class="row row-space-2 margin-b-4">
             <div class="col-sm-12" >
                 <div class="panel panel-default">
-                    <div class="panel-heading"><h3><center>Graphic Statistics for Investigator {{researcher_statistics.researcher_name}} </center></h3></div>
+                    <div class="panel-heading"><h3><center>Quality Statistics for Samples handled by  {{researcher_statistics.researcher_name}} </center></h3></div>
                     <div class="panel-body">
-                        {% for seq_researcher_graph in researcher_statistics.researcher_graph %}
-                            {% for id_graph, chart in seq_researcher_graph %}
-                                <div class="col-sm-6" >
-                                    <!-- Showing graph-->
-                                    <div id="{{id_graph}}"> </div>
-                                        {{ chart|safe }}
-                                </div> <!--// end col-sm-6  -->
-                            {% endfor %}
-                        {% endfor %}
+                        <div class="col-sm-6" >
+                            <!-- Showing graph-->
+                            <div id="q30_chart"> </div>
+                                {{ researcher_statistics.q30_graphic|safe }}
+                        </div> <!--// end col-sm-6  -->
+                        <div class="col-sm-6" >
+                            <!-- Showing graph-->
+                            <div id="mean_chart"> </div>
+                                {{ researcher_statistics.mean_graphic|safe }}
+                        </div> <!--// end col-sm-6  -->
                     </div> <!--  end of panel body -->
                 </div> <!--// end panel -->
             </div> <!--// end col-sm-8  -->
         </div> <!--// end row -->
-
-
 
         {% if researcher_statistics.comp_graphs %}
             <div class="row row-space-2 margin-b-4">
@@ -117,32 +138,16 @@
                         <div class="panel-heading"><h3><center> {{researcher_statistics.researcher_name}} projects comparison </center></h3></div>
                         <div class="panel-body">
                         <!-- comparations chart starts here-->
-                            {% for seq_comp_graph in researcher_statistics.comp_graphs %}
-                                {% for id_graph, chart in seq_comp_graph %}
-                                    <div class="col-sm-6" >
-                                        <!-- Showing graph-->
-                                        <div id="{{id_graph}}"> </div>
-                                            {{ chart|safe }}
-                                    </div> <!--// end col-sm-6  -->
-                                {% endfor %}
-                            {% endfor %}
+
                         </div> <!--  end of panel body -->
                     </div> <!--// end panel -->
                 </div> <!--// end col-sm-8  -->
             </div> <!--// end row -->
         {% endif %}
-        <div class="row row-space-2 margin-b-4">
-            <div class="col-sm-8" >
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h3><center>Statistics Sequencer utilization for  {{researcher_statistics.researcher_name}} </center></h3></div>
-                    <div class="panel-body">
-                        <!-- Sequencer pie Chart starts here-->
-                            <div id="sequencer_pie_chart"> </div>
-                            {{ researcher_statistics.sequencer_pie_graph |safe }}
-                    </div> <!--  end of panel body -->
-                </div> <!--// end panel -->
-            </div> <!--// end col-sm-8  -->
-        </div> <!--// end row -->
+    <script>
+        // Get the element with id="tablinksdefaultOpen" and click on it
+        document.getElementById("tablinksdefaultOpen").click();
+    </script>
     {% endif %}
 
 {% else %}
@@ -202,5 +207,6 @@
 
     </div> <!--// end row -->
     <!-- End of FORM for searching RUN information -->
+
 {% endif %}
 {% endblock %}

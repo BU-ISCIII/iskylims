@@ -917,11 +917,6 @@ def incompleted_runs (request) :
         return render (request,'iSkyLIMS_wetlab/info_page.html', {'content':['There is no project in incompleted state' , 'All Runs are finished']})
 
 
-
-
-
-
-
 def check_user_access (request, project_found_id ) :
 
     groups = Group.objects.get(name = wetlab_config.WETLAB_MANAGER)
@@ -1565,7 +1560,7 @@ def stats_per_researcher (request):
         r_name = request.POST['researchername']
         start_date=request.POST['startdate']
         end_date=request.POST['enddate']
-        
+
         researcher_statistics = get_researcher_statistics(r_name, start_date, end_date)
         if 'ERROR' in researcher_statistics:
             error_message = researcher_statistics

@@ -240,7 +240,10 @@ HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD = ['Unique_Sample_ID','Samp
 
 HEADING_FOR_STATISTICS_RUNS_BASIC_DATA = ['Run Name', 'Date sequencer start']
 
-RESEARCHER_SAMPLE_HEADING_STATISTICS = ['Samples','Project name','Run name' , 'Date', 'Libraty Kit', 'Cluster PF', 'Yield Mb', '% Q> 30', 'Mean']
+RESEARCHER_SAMPLE_HEADING_STATISTICS = ['Samples','Project name','Run name' , 'Date', 'Cluster PF', 'Yield Mb', '% Q> 30', 'Mean']
+
+
+NUMBER_OF_VALUES_TO_FETCH_FROM_RESEARCHER = 5
 
 ############### SUCCESSFUL_MESSAGES #######################################
 SUCCESSFUL_RUN_STATE_CHANGE_FOR_RETRY = ['State of the Run has changed back to the state previous to error', 'Now the run is again in the process for updating information',

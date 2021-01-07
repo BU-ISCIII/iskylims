@@ -1,7 +1,49 @@
+import statistics
+from iSkyLIMS_wetlab.fusioncharts.fusioncharts import FusionCharts
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
 from iSkyLIMS_wetlab.utils.fetching_information import get_sequencer_installed_names
-from iSkyLIMS_wetlab.utils.stats_graphics import column_graphic_simple
+from iSkyLIMS_wetlab.utils.stats_graphics import column_graphic_simple, column_graphic_tupla
+
+def get_min_mean_and_max_values(values_data, reference_data, number_to_split):
+    '''
+    Description:
+        The function get the lower and the higher values that are inside the "values "
+        variable. but only the number of items defined in the "number_to_split"
+        are considered. The middle values are join into and a mean value is returned
+        In case that number of items is smaller than 2 times the number_to_split
+        they are sorted and no mean value is calculated .
+    Input:
+        values_data          # list of values to extract the information
+        reference_data  # list of data to get the releated value (run_name)
+        number_to_split  # number of items to get
+    Return:
+        reference_query_values a tupla list with te reference name and value
+    '''
+    reference_query_values = []
+    value_sort = values_data.copy()
+    value_sort.sort()
+    index_used_in_reference = []
+    if len(values_data) <= 2*number_to_split:
+        list_of_values = value_sort
+    else:
+        list_of_values = value_sort[0:number_to_split] + value_sort[-number_to_split:]
+    for val in list_of_values:
+        tmp_run_list_index = [index for index, value in enumerate(values_data) if value == val]
+
+        for tmp_index in tmp_run_list_index:
+            if tmp_index in index_used_in_reference:
+                continue
+            else:
+                break
+        reference_query_values.append([reference_data[tmp_index], val])
+        index_used_in_reference.append(tmp_index)
+    if len(values_data)  > 2*number_to_split:
+        # Add the median value
+        reference_query_values.insert(number_to_split + 1,['Median values',round(statistics.median(value_sort[number_to_split:-number_to_split]),2)])
+    return reference_query_values
+
+
 
 def get_researcher_statistics(researcher_name, start_date, end_date):
     '''
@@ -24,8 +66,8 @@ def get_researcher_statistics(researcher_name, start_date, end_date):
         researcher_statistics['ERROR'] = wetlab_config.ERROR_MANY_USER_MATCHES_FOR_INPUT_CONDITIONS
         return researcher_statistics
     # over write the user name with the full user id
-    researcher_name = user_objs[0].username
-    
+    researcher_statistics['researcher_name'] = user_objs[0].username
+
     if start_date != '' and not check_valid_date_format(start_date):
         errror_message = wetlab_config.ERROR_INVALID_FORMAT_FOR_DATES
         return researcher_statistics
@@ -46,6 +88,7 @@ def get_researcher_statistics(researcher_name, start_date, end_date):
             researcher_statistics['ERROR'] = wetlab_config.ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS
             return researcher_statistics
 
+
         # Get data from researcher projects
         researcher_statistics ['sample_researcher_heading'] = wetlab_config.RESEARCHER_SAMPLE_HEADING_STATISTICS
 
@@ -57,65 +100,62 @@ def get_researcher_statistics(researcher_name, start_date, end_date):
             sample_data = sample_obj.get_sample_information_with_project_run()
             researcher_sample_data[sample_obj.get_sequencer_used()].append(sample_data)
         researcher_statistics['researcher_sample_data'] = researcher_sample_data
-        return researcher_statistics
+        # return researcher_statistics
 
-        #collect Q> 30 data for each sequencer used
+        # collect number of saples for run and for projects
+        nun_sample_in_run = {}
+        num_sample_in_project = {}
+        for sequencer, sample_in_sequencer in researcher_statistics['researcher_sample_data'].items():
+            if len(sample_in_sequencer) == 0:
+                continue
+            for sample_values in sample_in_sequencer:
+                run_name = sample_values[2]
+                project_name = sample_values[1]
+                if run_name not in nun_sample_in_run:
+                    nun_sample_in_run[run_name] = 0
+                nun_sample_in_run[run_name] += 1
+                if project_name not in num_sample_in_project :
+                    num_sample_in_project[project_name] = 0
+                num_sample_in_project[project_name] += 1
 
+        # Create run grapic
+        heading = 'Graphics for number of samples in runs'
+        data_source = column_graphic_simple (heading, '', 'Runs',  'Number of Samples', 'ocean', nun_sample_in_run)
+        researcher_statistics['run_graphic'] = FusionCharts("column3d", 'run_graph' , "500", "350",'run_chart' , "json", data_source).render()
+        # Create projert grapic
+        heading = 'Graphics for number of samples in projects'
+        data_source = column_graphic_simple (heading, '', 'Projects',  'Number of Samples', 'ocean', num_sample_in_project)
+        researcher_statistics['project_graphic'] = FusionCharts("column3d", 'project_graph' , "500", "350",'project_chart' , "json", data_source).render()
+
+        # collect Q> 30  and mean data for each sequencer used
+        runs_index_sample = []
+        q30_sample_value = []
+        mean_sample_value =[]
+        for sequencer, sample_in_sequencer in researcher_statistics['researcher_sample_data'].items():
+            if len(sample_in_sequencer) == 0:
+                continue
+            for sample_values in sample_in_sequencer:
+                runs_index_sample.append(sample_values[2])
+                q30_sample_value.append(float(sample_values[6]))
+                mean_sample_value.append(float(sample_values[7]))
+
+        q30_data_in_run = get_min_mean_and_max_values(q30_sample_value,runs_index_sample, wetlab_config.NUMBER_OF_VALUES_TO_FETCH_FROM_RESEARCHER)
+        mean_data_in_run = get_min_mean_and_max_values(mean_sample_value,runs_index_sample, wetlab_config.NUMBER_OF_VALUES_TO_FETCH_FROM_RESEARCHER)
         # create the graphic for q30 quality
-
-        theme = 'ocean'
-        heading = 'Graphics for Q > 30 for investigator ' + r_name
-        sub_caption = 'Sequencer ' + sequencer
-        x_axis_name = 'Projects'
-        y_axis_name = 'Q 30 (in %)'
-
-        data_source = column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, p_researcher_q30_dict[sequencer])
-        seq_chart = sequencer + 'q30_chart'
-        seq_graph = sequencer + 'q30_graph'
-        q30_researcher_seq_graph = FusionCharts("column3d", seq_graph , "500", "350",seq_chart , "json", data_source).render()
-
-        researcher_seq_graphs.append([seq_chart, q30_researcher_seq_graph])
+        heading = 'Graphics for Q > 30'
+        data_source = column_graphic_tupla (heading, '', 'Runs',  'Q > 30 value', 'ocean', q30_data_in_run, 'Median values')
+        researcher_statistics['q30_graphic'] = FusionCharts("column3d", 'q30_graph' , "550", "350",'q30_chart' , "json", data_source).render()
+        # create the graphic for mean quality
+        heading = 'Graphics for Mean Quality'
+        data_source = column_graphic_tupla (heading, '', 'Runs',  'Mean value', 'ocean', mean_data_in_run, 'Median values')
+        researcher_statistics['mean_graphic'] = FusionCharts("column3d", 'mean_graph' , "550", "350",'mean_chart' , "json", data_source).render()
+        return researcher_statistics
     else:
         researcher_statistics['ERROR'] = wetlab_config.ERROR_USER_DOES_NOT_HAVE_ANY_SAMPLE
         researcher_statistics['ERROR'].append(researcher_name)
         return researcher_statistics
         '''
-        for project_researcher in r_project_by_researcher:
-            q_30_list , mean_q_list = [] , []
-            yield_mb_list,  cluster_pf_list = [], []
-            p_name = project_researcher.get_project_name()
 
-            sequencer_in_project = project_researcher.runprocess_id.get_run_used_sequencer()
-            if not sequencer_in_project in projects_name_dict :
-                p_researcher_num_sample[sequencer_in_project] ={}
-                p_researcher_sequencer[sequencer_in_project] ={}
-                p_researcher_date[sequencer_in_project] ={}
-                p_researcher_lib_kit[sequencer_in_project] ={}
-                p_researcher_q30_dict[sequencer_in_project] ={}
-                p_researcher_mean_dict[sequencer_in_project] ={}
-                p_researcher_yield_mb_dict[sequencer_in_project] ={}
-                p_researcher_cluster_pf_dict[sequencer_in_project] ={}
-                projects_name_dict[sequencer_in_project] = []
-                projects_id_list[sequencer_in_project] =  []
-            projects_name_dict[sequencer_in_project].append(p_name)
-            r_project_id = project_researcher.id
-            projects_id_list[sequencer_in_project].append(r_project_id)
-            p_researcher_num_sample[sequencer_in_project][p_name] = StatsFlSummary.objects.get(project_id__exact = r_project_id).sampleNumber
-            p_researcher_date [sequencer_in_project][p_name] = project_researcher.get_date()
-            p_researcher_lib_kit[sequencer_in_project][p_name]= project_researcher.get_index_library_name()
-            #
-            p_researcher_sequencer[sequencer_in_project][p_name] = str(project_researcher.runprocess_id.sequencerModel)
-            lanes_in_project = StatsLaneSummary.objects.filter( project_id__exact = r_project_id)
-            for lane in lanes_in_project :
-                q_30_value, mean_q_value , yield_mb_value , cluster_pf_value = lane.get_stats_info()
-                q_30_list.append(float(q_30_value))
-                mean_q_list.append(float(mean_q_value))
-                yield_mb_list.append(float(yield_mb_value.replace(',','')))
-                cluster_pf_list.append(float(cluster_pf_value.replace(',','')))
-            p_researcher_q30_dict[sequencer_in_project] [p_name]= format(statistics.mean(q_30_list), '.2f')
-            p_researcher_mean_dict[sequencer_in_project][p_name] = format(statistics.mean(mean_q_list), '.2f')
-            p_researcher_yield_mb_dict[sequencer_in_project][p_name] = round(sum(yield_mb_list))
-            p_researcher_cluster_pf_dict[sequencer_in_project][p_name] = round(sum(cluster_pf_list))
 
         # Create the table with projects executed by the researcher
         researcher_seq_graphs, researcher_graphs = [], []
