@@ -74,12 +74,11 @@ def display_molecule_protocol_parameters (molecule_ids, user_obj):
                 molecule_recorded['lot_kit'] = get_lot_commercial_kits(protocol_used_obj)
                 #else:
                 #     molecule_recorded['lot_kit'] = ''
-        #import pdb; pdb.set_trace()
         if protocol_used == selected_protocol :
             showed_molecule.append(molecule)
             data = ['']*length_heading
             data[0] = molecule_obj.get_molecule_code_id()
-            data[1] = protocol_used
+            # data[1] = protocol_used
             molecule_recorded['data'].append(data)
             molecule_code_ids.append(molecule_obj.get_molecule_code_id())
         else:
@@ -250,7 +249,6 @@ def analyze_input_samples (request, app_name):
                 else:
                     sample_data['sampleState'] = 'Defined'
 
-            #import pdb; pdb.set_trace()
             new_sample = Samples.objects.create_sample(sample_data)
             if sample_data['sampleState'] == 'Defined':
                 defined_samples.append(new_sample.get_sample_definition_information())
@@ -259,7 +257,6 @@ def analyze_input_samples (request, app_name):
                 # select the samples that requires to add additional Information
                 pre_defined_samples.append(new_sample.get_sample_name())
                 pre_defined_samples_id.append(new_sample.get_sample_id())
-            #import pdb; pdb.set_trace()
         else: # get the invalid sample to displays information to user
             sample_recorded['all_samples_defined'] = False
             sample_id = Samples.objects.get(sampleName__exact = sample_name).get_sample_id()
@@ -336,12 +333,10 @@ def analyze_input_molecules (request):
         if not Samples.objects.filter(pk = int(samples[row_index])).exists():
             continue
         sample_obj = Samples.objects.get(pk = int(samples[row_index]))
-        #import pdb; pdb.set_trace()
         # check_empty_fields does not consider if the optional values are empty
         if check_empty_fields(molecule_json_data[row_index],['']):
             incomplete_samples.append(molecule_json_data[row_index])
             incomplete_molecules_ids.append(int(samples[row_index]))
-            #import pdb; pdb.set_trace()
             continue
         if MoleculePreparation.objects.filter(sample = sample_obj).exists():
             last_molecule_code = MoleculePreparation.objects.filter(sample = sample_obj).last().get_molecule_code_id()
@@ -386,11 +381,10 @@ def analyze_input_molecules (request):
             molecule_recorded['data'].append(data)
         else:
             pending_molecule.append(new_molecule.get_id())
-        #import pdb; pdb.set_trace()
     molecule_recorded['molecule_id'] = ','.join(showed_molecule)
     molecule_recorded['pending_id'] = ','.join(pending_molecule)
     molecule_recorded['heading_in_excel'] = ','.join(parameter_list)
-    #import pdb; pdb.set_trace()
+
     return molecule_recorded
 
 
@@ -711,7 +705,7 @@ def save_type_of_sample(form_data, app_name):
     data['sampleType'] = form_data['sampleTypeName']
     data['apps_name'] = app_name
     data['optional_fields'] = ','.join(index_field_list)
-    #import pdb; pdb.set_trace()
+
     sample_type = SampleType.objects.create_sample_type(data)
 
     save_s_type['new_defined_sample_type'] = form_data['sampleTypeName']
@@ -874,7 +868,7 @@ def get_info_to_display_sample_project (sample_project_id):
         info_s_project['heading'] = HEADING_FOR_SAMPLE_PROJECT_FIELDS
     else:
         return 'ERROR'
-    #import pdb; pdb.set_trace()
+
     return info_s_project
 
 
@@ -1534,7 +1528,7 @@ def prepare_sample_project_input_table (pre_defined_samples_id):
                 sample_project_field_heading.append(heading_item)
                 only_field_heading_name.append(s_project_field.get_field_name())
             heading_length = len(sample_project_field_heading)
-        #import pdb; pdb.set_trace()
+
         if selected_sample_project == s_project_obj.get_sample_project_name():
             updated_pre_defined_samples_id.append(sample_id)
             data = ['']*(heading_length +1)
