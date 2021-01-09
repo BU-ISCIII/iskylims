@@ -323,14 +323,27 @@
                                        //stop submitting the form to see the disabled button effect
                                        // e.preventDefault();
                                        //disable the submit button
-                                       var table_data = $('#spreadsheet').jexcel('getData')
-                                       var data_json = JSON.stringify(table_data)
-                                       $("<input />").attr("type", "hidden")
-                                         .attr("name", "parameters_data")
-                                         .attr("value", data_json)
-                                         .appendTo("#addMoleculeParameters");
-                                       $("#btnSubmit").attr("disabled", true);
-                                       return true;
+                                        var empty_value = 0
+                                        var table_data = $('#spreadsheet').jexcel('getData')
+                                        table_data.forEach((row, index)=>{
+                                            if (row[1] == ''){
+                                               empty_value +=1
+                                            }
+                                        });
+                                       if (empty_value > 0){
+                                           window.alert("Please fill the empty Lot Kit ");
+                                           return false;
+                                        }
+                                        else{
+                                           var data_json = JSON.stringify(table_data)
+
+                                           $("<input />").attr("type", "hidden")
+                                             .attr("name", "parameters_data")
+                                             .attr("value", data_json)
+                                             .appendTo("#addMoleculeParameters");
+                                           $("#btnSubmit").attr("disabled", true);
+                                           return true;
+                                       }
                                    });
                                });
                            </script>
