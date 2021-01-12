@@ -1144,7 +1144,15 @@ class MoleculeParameterValue (models.Model):
     objects = MoleculeParameterValueManager()
 
 
-
+class SequencingConfigurationManager(models.Manager):
+    def create_new_configuration (self, data):
+        try:
+            platform_obj = SequencingPlatform.objects.get(pk__exact = data['platformID'])
+        except:
+            platform_obj = None
+        new_sequencer_configuration = self.create(platformID = platform_obj,
+                configurationName = data['configurationName'])
+        return new_sequencer_configuration
 
 
 
@@ -1167,13 +1175,19 @@ class SequencingConfiguration(models.Model):
     def get_platform_obj (self):
         return self.platformID
 
+    objects = SequencingConfigurationManager()
+
 
 class SequencerInLabManager(models.Manager):
     def create_sequencer_in_lab (self, sequencer_value):
-        new_sequencer = self.create( platformID = sequencer_value['platformID'], sequencerName= sequencer_value['sequencerName'] ,
+        try:
+            platform_obj = SequencingPlatform.objects.get(pk__exact = sequencer_value['platformID'])
+        except:
+            platform_obj = None
+        new_sequencer = self.create( platformID = platform_obj, sequencerName= sequencer_value['sequencerName'] ,
                     sequencerDescription = sequencer_value['sequencerDescription'],  sequencerLocation = sequencer_value['sequencerLocation'],
-                    sequencerSerialNumber = sequencer_value['sequencerSerialNumber'], sequencerState = sequencer_value['sequencerState'],
-                    sequencerOperationStart = sequencer_value['sequencerOperationStart'], sequencerOperationEnd= sequencer_value['sequencerOperationEnd'] ,
+                    sequencerSerialNumber = sequencer_value['sequencerSerialNumber'], sequencerState = 'In Use',
+                    sequencerOperationStart = sequencer_value['sequencerOperationStart'],
                     sequencerNumberLanes = sequencer_value['sequencerNumberLanes'])
 
         return new_sequencer
@@ -1202,6 +1216,15 @@ class SequencerInLab (models.Model) :
 	    return '%s' %(self.sequencerNumberLanes)
 
     def get_sequencing_platform_name(self):
-        return '%s' %(self.platformID.get_platform_name())
+        if self.platformID == None:
+            return ''
+        else:
+            return '%s' %(self.platformID.get_platform_name())
+
+    def get_sequencing_platform_id(self):
+        if self.platformID == None:
+            return ''
+        else:
+            return '%s' %(self.platformID.get_platform_id())
 
     objects = SequencerInLabManager()
