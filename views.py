@@ -34,6 +34,7 @@ from .utils.pool_preparation import *
 from .utils.run_preparation import  *
 from .utils.additional_kits import *
 from .utils.handling_statistics import *
+from .utils.handling_sequencers import *
 #from .utils.samplesheet_checks import *
 #from .utils.wetlab_misc_utilities import normalized_data
 from iSkyLIMS_core.utils.handling_samples import *
@@ -3288,6 +3289,7 @@ def display_type_of_sample(request, sample_type_id):
 def handling_library_preparations(request):
     '''
     Functions:
+        analyze_and_store_input_additional_kits : located at utils/additional_kits.py
         get_samples_for_library_preparation : located at utils/library_preparation.py
         check_users_exists
         extract_user_sample_sheet_data   : located at utils/library_preparation.py
@@ -4085,3 +4087,34 @@ def display_user_lot_kit(request, user_kit_id):
         return render(request, 'iSkyLIMS_wetlab/error_page.html',{'content': ['Invalid User Lot Commercial Kit']})
     user_lot_kit_data = get_user_lot_kit_data_to_display(user_kit_obj)
     return render(request, 'iSkyLIMS_wetlab/displayUserLotKit.html',{'user_lot_kit_data': user_lot_kit_data})
+
+
+@login_required
+def sequencer_configuration(request):
+    if not request.user.is_authenticated:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+
+    if not is_wetlab_manager(request):
+        return render (request,'iSkyLIMS_wetlab/error_page.html', {'content': ERROR_USER_NOT_WETLAB_MANAGER})
+    sequencer_info = get_list_sequencer_configuration()
+    sequencer_info['platforms'] = get_platform_data()
+    sequencer_info['sequencer_names']= get_defined_sequencers()
+
+    if request.method =='POST' and request.POST['action'] == 'addNewSequencer':
+        new_sequencer = define_new_sequencer(request.POST)
+        if 'ERROR' in new_sequencer :
+            return render(request, 'iSkyLIMS_wetlab/sequencerConfiguration.html', {'sequencer_info': sequencer_info, 'ERROR': new_sequencer})
+        return render(request, 'iSkyLIMS_wetlab/sequencerConfiguration.html', {'sequencer_info': sequencer_info, 'new_defined_sequencer': new_sequencer})
+    if request.method =='POST' and request.POST['action'] == 'addNewConfiguration':
+        new_defined_configuration = define_new_seq_configuration(request.POST)
+        if 'ERROR' in new_defined_configuration :
+            return render(request, 'iSkyLIMS_wetlab/sequencerConfiguration.html', {'sequencer_info': sequencer_info, 'ERROR': new_defined_configuration})
+        return render(request, 'iSkyLIMS_wetlab/sequencerConfiguration.html', {'sequencer_info': sequencer_info, 'new_defined_configuration': new_defined_configuration})
+    else:
+        return render(request, 'iSkyLIMS_wetlab/sequencerConfiguration.html', {'sequencer_info':sequencer_info} )
+
+@login_required
+def sequencer_inventory(request):
+
+    return

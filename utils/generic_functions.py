@@ -156,16 +156,16 @@ def create_new_sequencer_lab_not_defined (sequencer_name,l_run_parameter, experi
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('%s : Starting function create_new_sequencer_lab_not_defined', experiment_name)
-
-    number_of_lanes = find_xml_tag_text (l_run_parameter, 'NumLanes')
-    #number_of_lanes = get_sequencer_lanes_number_from_file (l_run_parameter, experiment_name)
     seq_data = {}
-    empty_fields_in_sequencer = ['platformID', 'sequencerDescription', 'sequencerDescription', 'sequencerLocation', 'sequencerSerialNumber',
-                'sequencerState' , 'sequencerOperationStart', 'sequencerOperationEnd']
+
+    #number_of_lanes = get_sequencer_lanes_number_from_file (l_run_parameter, experiment_name)
+
+    empty_fields_in_sequencer = ['platformID', 'sequencerDescription', 'sequencerLocation', 'sequencerSerialNumber',
+                'sequencerOperationStart']
     for item in empty_fields_in_sequencer :
         seq_data[item] = None
+    seq_data['sequencerNumberLanes'] = find_xml_tag_text (l_run_parameter, 'NumLanes')
     seq_data['sequencerName'] = sequencer_name
-    seq_data['sequencerNumberLanes'] = number_of_lanes
     new_sequencer = SequencerInLab.objects.create_sequencer_in_lab(seq_data)
     logger.info('%s : Created the new sequencer in database' , experiment_name )
     logger.debug ('%s : End function create_new_sequencer_lab_not_defined', experiment_name)

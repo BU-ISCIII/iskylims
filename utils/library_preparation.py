@@ -1,6 +1,6 @@
 import json
 from django.contrib.auth.models import User
-from iSkyLIMS_core.models import Samples, MoleculePreparation, Protocols, SequencingConfiguration, SequencerInLab
+from iSkyLIMS_core.models import Samples, MoleculePreparation, Protocols
 from iSkyLIMS_core.utils.handling_commercial_kits import *
 from iSkyLIMS_core.utils.handling_protocols import *
 from iSkyLIMS_core.utils.handling_samples import  get_sample_obj_from_sample_name, get_sample_obj_from_id
@@ -8,28 +8,13 @@ from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
 from iSkyLIMS_wetlab.utils.sample_sheet_utils import *
 from iSkyLIMS_wetlab.utils.collection_index_functions import check_collection_index_exists , get_list_of_collection_kits
+from iSkyLIMS_wetlab.utils.handling_sequencers import *
 from ..fusioncharts.fusioncharts import FusionCharts
 from .stats_graphics import *
 from Bio.Seq import Seq
 from django.contrib.auth.models import User
 
-def get_platform_name_of_defined_sequencers ():
-    '''
-    Description:
-        The function get the list of platform names of the defined sequencers
 
-    Return:
-        platforms
-    '''
-    platforms = []
-    if SequencerInLab.objects.all().exists():
-        sequencer_objs = SequencerInLab.objects.all()
-        for sequencer_obj in sequencer_objs:
-            try:
-                platforms.append(sequencer_obj.get_sequencing_platform_name())
-            except:
-                continue
-    return platforms
 
 
 def check_empty_fields (data):
@@ -186,8 +171,8 @@ def get_protocol_parameters_for_library_preparation(library_preparation_objs):
         ones that matches with the protocol of the first library preparation are
         considered
     Functions:
-        get_protocol_parameters_and_type # located at iSkyLIMS_core.handling_protocols.py
-        get_protocol_parameters  # located at iSkyLIMS_core.handling_protocols.py
+        get_protocol_parameters_and_type # located at iSkyLIMS_core.utils.handling_protocols.py
+        get_protocol_parameters  # located at iSkyLIMS_core.utils.handling_protocols.py
     Constant:
         HEADING_FIX_FOR_ADDING_LIB_PROT_PARAMETERS
 
@@ -238,7 +223,8 @@ def get_samples_for_library_preparation():
     Constant:
         HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL
     Functions:
-        get_platform_name_of_defined_sequencers     # located at this file
+        configuration_sequencer_exists     # located at iSkyLIMS_wetlab.utils.handling_sequencers
+        get_configuration_sequencers       # located at iSkyLIMS_wetlab.utils.handling_sequencers
     Return:
         samples_in_lib_prep
     '''
@@ -302,6 +288,9 @@ def get_samples_for_library_preparation():
                     molecules_id.append(molecule_obj.get_molecule_id())
         # Get the information for sample sheet form
         if  'display_sample_sheet' in samples_in_lib_prep :
+            if configuration_sequencer_exists():
+                import pdb; pdb.set_trace()
+                samples_in_lib_prep['configuration_platform'], samples_in_lib_prep['configuration_platform_option'] = get_configuration_sequencers()
             if SequencingConfiguration.objects.all().exists():
                 platforms_used  = get_platform_name_of_defined_sequencers()
                 seq_conf_objs = SequencingConfiguration.objects.filter(platformID__platformName__in = platforms_used).order_by('platformID')

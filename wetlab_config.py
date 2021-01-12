@@ -319,6 +319,10 @@ ERROR_UNABLE_TO_SAVE_EMAIL_CONFIGURATION_SETTINGS = ['Unable to save the email c
 
 ERROR_USER_DOES_NOT_HAVE_ANY_SAMPLE = ['User does not have any sample to perform statistics']
 
+#########################  Sequencer errors #####################################
+ERROR_SEQUENCER_ALREADY_DEFINED = ['Unable to save the Sequencer, because it already exists']
+
+ERROR_SEQUENCER_CONFIGURATION_ALREADY_DEFINED = ['Unable to save the Sequencer configuration, because it already exists']
 ############### HEADING FOR PROJECT DATA VISUALIZATION #####################
 HEADING_FOR_PROJECT_DATES = ['Project Recorder date', 'Project date']
 
