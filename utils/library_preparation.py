@@ -700,7 +700,8 @@ def store_library_preparation_index(form_data):
     '''
     Description:
         The function will fetch the indexes defined in the confirmed sample sheet
-        and updated the library preparation sample with index information
+        and updated the library preparation sample with index information.
+        It updated also the userid field.
     Input:
         form_data   # data included in the form
     Constant:
