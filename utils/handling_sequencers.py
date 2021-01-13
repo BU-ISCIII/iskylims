@@ -1,6 +1,6 @@
 from iSkyLIMS_core.utils.handling_platforms import *
 from iSkyLIMS_core.models import  SequencingConfiguration, SequencerInLab
-from iSkyLIMS_wetlab.wetlab_config import ERROR_SEQUENCER_ALREADY_DEFINED
+from iSkyLIMS_wetlab.wetlab_config import ERROR_SEQUENCER_ALREADY_DEFINED, ERROR_SEQUENCER_CONFIGURATION_ALREADY_DEFINED
 
 
 def configuration_sequencer_exists():
@@ -27,6 +27,7 @@ def define_new_sequencer(form_data):
     '''
     seq_data = {}
     if SequencerInLab.objects.filter(sequencerName__iexact = form_data['sequencerName']).exists():
+        error = {}
         error ['ERROR'] = ERROR_SEQUENCER_ALREADY_DEFINED
         return  error
     fields_in_sequencer = ['platformID', 'sequencerName', 'sequencerDescription', 'sequencerLocation', 'sequencerSerialNumber',
@@ -52,6 +53,7 @@ def define_new_seq_configuration(form_data):
     seq_configuration_data['platformID'] = form_data['platformID']
     seq_configuration_data['configurationName'] = form_data['sequencerConfiguration']
     if SequencingConfiguration.objects.filter(configurationName__iexact = seq_configuration_data['configurationName']).exists():
+        error = {}
         error ['ERROR'] = ERROR_SEQUENCER_CONFIGURATION_ALREADY_DEFINED
         return  error
     new_seq_configuration = SequencingConfiguration.objects.create_new_configuration(seq_configuration_data)
@@ -59,10 +61,36 @@ def define_new_seq_configuration(form_data):
     import pdb; pdb.set_trace()
     return new_configuration_data
 
+def get_configuration_sequencers_data():
+    '''
+    Description:
+        The function get sequencers defined per platform. Returns a dictionary with
+        platform as key and the values as a list of sequencers
+    Return:
+        sequencer_configuration
+    '''
+    sequencer_configuration = {}
+    sequencer_configuration['configuration_platform'] = []
+    sequencer_configuration['configuration_platform_option'] = []
+    def_platforms = get_platform_name_of_defined_sequencers()
+
+    if len(def_platforms) == 0:
+        return sequencer_configuration
+    for platform_name , platform_id in def_platforms.items():
+        seq_conf_objs = SequencingConfiguration.objects.filter(platformID__exact = platform_id).order_by('configurationName')
+        sequencer_configuration['configuration_platform'].append(platform_name)
+        conf_data =[]
+        for seq_conf_obj in seq_conf_objs:
+            conf_data.append(seq_conf_obj.get_configuration_name())
+        sequencer_configuration['configuration_platform_option'].append([platform_name, conf_data])
+
+    return sequencer_configuration
+
 def get_defined_sequencers():
     '''
     Description:
-        The function get sequencers defined and the configuration platform and their options
+        The function get sequencers defined per platform. Returns a dictionary with
+        platform as key and the values as a list of sequencers
     Return:
         sequencer_names
     '''
@@ -81,7 +109,6 @@ def get_platform_name_of_defined_sequencers ():
     '''
     Description:
         The function get a dictionary with the platform names of the defined sequencers
-
     Return:
         platforms
     '''

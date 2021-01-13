@@ -289,23 +289,7 @@ def get_samples_for_library_preparation():
         # Get the information for sample sheet form
         if  'display_sample_sheet' in samples_in_lib_prep :
             if configuration_sequencer_exists():
-                import pdb; pdb.set_trace()
-                samples_in_lib_prep['configuration_platform'], samples_in_lib_prep['configuration_platform_option'] = get_configuration_sequencers()
-            if SequencingConfiguration.objects.all().exists():
-                platforms_used  = get_platform_name_of_defined_sequencers()
-                seq_conf_objs = SequencingConfiguration.objects.filter(platformID__platformName__in = platforms_used).order_by('platformID')
-                samples_in_lib_prep['configuration_platform'] = []
-                samples_in_lib_prep['configuration_platform_option'] = []
-                conf_data = {}
-                for seq_conf_obj in seq_conf_objs:
-                    platform_name = seq_conf_obj.get_platform_name()
-                    if platform_name not in conf_data:
-                        samples_in_lib_prep['configuration_platform'].append(platform_name)
-                        conf_data[platform_name] = []
-                    conf_data[platform_name].append(seq_conf_obj.get_configuration_name())
-                for platform in samples_in_lib_prep['configuration_platform']:
-                    samples_in_lib_prep['configuration_platform_option'].append([platform, conf_data[platform]])
-            #import pdb; pdb.set_trace()
+                samples_in_lib_prep.update(get_configuration_sequencers_data())
         samples_in_lib_prep['avail_samples']['lib_prep_protocols'] = get_protocols_for_library_preparation()
         samples_in_lib_prep['avail_samples']['samplesID'] = ','.join(samples_id)
         samples_in_lib_prep['avail_samples']['samplesNames'] = ','.join(samples_names)
