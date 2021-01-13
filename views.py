@@ -3293,6 +3293,7 @@ def handling_library_preparations(request):
         get_samples_for_library_preparation : located at utils/library_preparation.py
         check_users_exists
         extract_user_sample_sheet_data   : located at utils/library_preparation.py
+        get_additional_kits_from_lib_prep   : located at utils/additional_kits.py
         get_data_for_library_preparation_in_defined : located at iSkyLIMS_core/utils/handling_samples.py
         get_type_of_sample_information : located at iSkyLIMS_core/utils/handling_samples.py
         get_library_preparation_heading_for_samples : located at utils/library_preparation.py
@@ -3418,6 +3419,7 @@ def handling_library_preparations(request):
         lib_prep_ids = request.POST.getlist('libpreparation')
         additional_kits = get_additional_kits_from_lib_prep(lib_prep_ids)
         return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'additional_kits':additional_kits})
+
     if request.method =='POST' and request.POST['action'] == 'storeAdditionalKits':
         stored_additional_kits = analyze_and_store_input_additional_kits (request.POST)
         if 'ERROR' in stored_additional_kits:

@@ -21,7 +21,7 @@ def analyze_and_store_input_additional_kits(form_data):
     Functions:
         check_empty_fields  # located at utils.library_preparation file
     Return:
-        ERROR message if some of the data are missing, or a list of recorded library prepartion obj
+        ERROR message if some of the data are missing, or a list of recorded library preparation obj
     '''
 
     lib_prep_ids = form_data['libPrepIds'].split(',')

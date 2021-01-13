@@ -328,7 +328,7 @@ def extract_sample_data (s_data):
 def extract_user_sample_sheet_data(file_in):
     '''
     Description:
-        The function checks if the run was success
+        The function extract userID and checks if userIDs are defined in database
     Input:
         file_in    # csv file from IEM
     Functions:
@@ -365,7 +365,7 @@ def extract_user_sample_sheet_data(file_in):
 def valid_samples_for_lib_preparation(samples):
     '''
     Description:
-        The function checks if samples are defined are they are in Library Preparation state ,
+        The function checks if samples are defined and they are in Updated additional kits ,
     Input:
         samples  # contain a list with sample names
     Functions:
@@ -409,6 +409,7 @@ def valid_samples_for_lib_preparation(samples):
         error_message.insert(1,' , '.join(invalid_samples))
         error['ERROR'] = error_message
         return error
+
     return sample_objs
 
 def validate_sample_sheet_data (input_data ):

@@ -228,12 +228,22 @@ def get_samples_in_sample_sheet(file_lines):
             ## found the index for projects
         if header_found :
             ### ignore the empty lines separated by commas
-            valid_line = re.search('^\w+',line)
-            if not valid_line :
+            #line = line.strip()
+            #valid_line = re.search('^\w+',line)
+            #if not valid_line :
+            #    continue
+            line_split = line.split(',')
+            try:
+                sample_name = line_split[index_sample_name].strip()
+            except:
                 continue
-
-            samples_dict['sample_data'].append(line.split(','))
-            samples_dict['samples'].append(line.split(',')[index_sample_name])
+            if sample_name == '':
+                continue
+            data = []
+            for item in line_split:
+                data.append(item.strip())
+            samples_dict['sample_data'].append(data)
+            samples_dict['samples'].append(sample_name)
     return samples_dict
 
 def get_sample_sheet_data (file_read):
