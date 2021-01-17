@@ -307,6 +307,11 @@ class CommercialKits (models.Model):
                     SequencingPlatform,
                     on_delete= models.CASCADE, null = True, blank = True)
 
+    ''' Add if finally we use another type of for reagentsKits
+    reagentsKits = models.ForeignKey(
+                    SequencingPlatform, related_name = 'reagentsKits',
+                    on_delete= models.CASCADE, null = True, blank = True)
+    '''
     name = models.CharField(max_length =150)
     provider = models.CharField(max_length =30)
     cat_number = models.CharField(max_length = 40, null = True, blank = True)

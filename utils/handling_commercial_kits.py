@@ -272,7 +272,7 @@ def get_lot_reagent_commercial_kits(platform):
             if UserLotCommercialKits.objects.filter(basedCommercial = commercial_obj, runOut = False).exists():
                 user_kits = UserLotCommercialKits.objects.filter(basedCommercial = commercial_obj, runOut = False).order_by('expirationDate')
                 for user_kit in user_kits:
-                    user_platform_kit_dict[commercial_name].append(user_kit.get_lot_number())
+                    user_platform_kit_dict[commercial_name].append([user_kit.get_user_lot_kit_id(), user_kit.get_lot_number()])
         user_platform_kit_list =list([(k,v) for k, v in  user_platform_kit_dict.items()])
         commercial_list = ','.join(commercial_kit_names)
     return user_platform_kit_list, commercial_list
