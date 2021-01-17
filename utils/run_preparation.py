@@ -620,8 +620,10 @@ def get_pool_info (pools_to_update):
     Constant:
         HEADING_FOR_SELECTING_POOLS
         HEADING_FOR_INCOMPLETED_SELECTION_POOLS
+    Functions:
+        get_lot_reagent_commercial_kits # located at iSkyLIMS_core/utils/handling_commercial_kits
     Return:
-        pools_to_update
+        pool_info
     '''
     pool_info = {}
     if 'pools_available' in pools_to_update:

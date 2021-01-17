@@ -163,7 +163,7 @@
                                     <td>Sample Sheet</td>
                                     <td><a href="/documents/{{ created_new_run.sample_sheet }}" download>Sample Sheet File  <span class="glyphicon glyphicon-download-alt"></span></a></td>
                                 </tr>
-                                
+
                             </tbody>
                         </table>
                     </div> <!--// end col-sm-11  -->
@@ -320,8 +320,8 @@
                                                 <div class="col-sm-5">
                                                     <select class="form-control" name="{{reagent}}" id="{{reagent}}">
                                                         <option value="">Choose a value</option>
-                                                        {% for lot in lots %}
-                                                            <option value="{{lot}}">{{lot}}</option>
+                                                        {% for id, lot in lots %}
+                                                            <option value="{{id}}">{{lot}}</option>
                                                         {% endfor %}
                                                     </select>
                                                 </div>  <!-- end select input -->
