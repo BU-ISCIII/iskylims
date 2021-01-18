@@ -371,22 +371,20 @@ def set_user_lot_kit_to_run_out(user_lot_kits):
         user_lot_list_names.append(user_lot_obj.get_lot_number())
     return user_lot_list_names
 
-def update_usage_user_lot_kit (lot_number, commercial_kit):
+def update_usage_user_lot_kit (lot_id):
     '''
     Description:
-        The function fetch the user lot kit filtering the lot number and the commercial
-        kit name (to avoid that 2 user lot kit could have the same lot number)
+        The function fetch the user lot kit filtering the lot id
         It steps in one the number of use.
         Return the user lot kit object.
     Input:
-        lot_number    # number of the user lot
-        commercial_kit # name of the commercial kit
+        lot_id    # ID number of the user lot
     Return:
         user_lot_obj
     '''
     user_lot_obj = ''
-    if UserLotCommercialKits.objects.filter(chipLot__exact = lot_number, basedCommercial__name__exact = commercial_kit).exists():
-        user_lot_obj= UserLotCommercialKits.objects.filter(chipLot__exact = lot_number, basedCommercial__name__exact = commercial_kit).last()
+    if UserLotCommercialKits.objects.filter(pk__exact = lot_id).exists():
+        user_lot_obj= UserLotCommercialKits.objects.filter(pk__exact = lot_id).last()
         user_lot_obj.set_increase_use()
     return user_lot_obj
 
