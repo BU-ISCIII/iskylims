@@ -13,6 +13,93 @@ from iSkyLIMS_core.utils.handling_samples import update_sample_reused, get_sampl
 from iSkyLIMS_core.utils.handling_protocols import *
 from iSkyLIMS_core.utils.handling_commercial_kits import *
 from django.conf import settings
+from django_utils.models import Profile, Center
+
+
+def check_valid_data_for_creation_run(form_data,user_obj):
+    '''
+    Description:
+        Function checks if polls are compatible and if run name is not defined
+    Input:
+        form_data    # user form
+        user_obj    # user who is requesting the creation run
+    Functions:
+        check_pools_compatible   # located at this file
+        get_library_prep_in_pools    # located at this file
+    Return:
+        True if all ckecks are ok, ERROR and error message if not
+    '''
+    error = {}
+    pool_ids = form_data.getlist('poolID')
+    experiment_name = form_data['experimentName']
+    if RunProcess.objects.filter(runName__exact = experiment_name).exists():
+        error_message = ERROR_RUN_NAME_ALREADY_DEFINED.copy()
+        error_message[0]  = error_message[0] + experiment_name
+        error['ERROR'] = error_message
+        return error
+        #return render (request,'iSkyLIMS_wetlab/CreateNewRun.html',{'invalid_exp_name':experiment_name, 'display_pools_for_run':display_pools_for_run})
+    result_compatibility = check_pools_compatible (form_data)
+    if 'ERROR' in result_compatibility :
+        error['ERROR'] = result_compatibility
+        return error
+        #display_pools_for_run.update(result_compatibility)
+        #return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run})
+
+    lib_prep_ids = get_library_prep_in_pools (pool_ids)
+    if len(lib_prep_ids) == 0:
+        error['ERROR'] = wetlab_config.ERROR_POOLS_WITH_NO_LIBRARY
+        #return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run})
+    # return an error message if logged user does not have assigned either Profile or Center
+    try:
+        center_requested_id = Profile.objects.filter(profileUserID = user_obj).last().profileCenter.id
+        center_requested_by = Center.objects.get(pk__exact = center_requested_id)
+    except:
+        error['ERROR'] = wetlab_config.ERROR_NO_PROFILE_OR_CENTER_FOR_USER
+        return  error
+    return 'OK'
+
+def create_run_in_pre_recorded_and_get_data_for_confirmation (form_data, user_obj):
+    '''
+    Description:
+        Function get the user data and create a new run instance. Function also gets
+        the pool information to confirm the data
+    Input:
+        form_data    # user form
+        user_obj    # user who is requesting the creation run
+    Functions:
+        get_library_preparation_data_in_run    # located at this file
+        get_stored_user_sample_sheet   # located at this file
+        fetch_reagent_kits_used_in_run    # located at this file
+    Return:
+        display_sample_information
+    '''
+    display_sample_information ={}
+    pool_ids = form_data.getlist('poolID')
+    lib_prep_ids = get_library_prep_in_pools (pool_ids)
+
+    center_requested_id = Profile.objects.filter(profileUserID = user_obj).last().profileCenter.id
+    center_requested_by = Center.objects.get(pk__exact = center_requested_id)
+    reagent_kit_objs = fetch_reagent_kits_used_in_run(form_data)
+
+    display_sample_information = get_library_preparation_data_in_run(lib_prep_ids, pool_ids)
+    display_sample_information.update(get_stored_user_sample_sheet(lib_prep_ids[0]))
+
+    # update Reagents kits
+    new_run_obj =  RunProcess(runName=form_data['experimentName'], sampleSheet= '',
+                            state = RunStates.objects.get(runStateName__exact = 'Pre-Recorded'),
+                            centerRequestedBy = center_requested_by)
+    new_run_obj.save()
+    for reagent_kit_obj in reagent_kit_objs :
+        new_run_obj.reagent_kit.add(reagent_kit_obj)
+
+    for pool in pool_ids:
+        pool_obj = get_pool_instance_from_id(pool)
+        pool_obj.update_run_name(new_run_obj)
+
+    display_sample_information['experiment_name'] = form_data['experimentName']
+    display_sample_information['run_process_id'] = new_run_obj.get_run_id()
+    return display_sample_information
+
 
 def create_or_add_project_to_run(run_data, user_obj, project_name, proj_data):
     '''
@@ -270,8 +357,9 @@ def check_pools_compatible(data_form):
 
         get_pool_duplicated_index   # located at this file
     Return:
-        True if all cheks are ok, or error message to display to user
+        True if all cheks are ok, or error message
     '''
+    error = {}
     pool_ids = data_form.getlist('poolID')
     if len(pool_ids) == 1 :
         return 'True'
@@ -279,8 +367,8 @@ def check_pools_compatible(data_form):
     # get adapters used in the pools
     adapters = get_pool_adapters(pool_objs)
     if len(adapters) > 1:
-        error = {}
-        error['ERROR'] = adapters
+        error_message = ERROR_DIFFERENT_ADAPTERS_USED_IN_POOL.copy()
+        error['ERROR'] = error_message.insert(1, ','.join(adapters))
         return error
     # single_paired = get_single_paired (pool_objs)
     # if len(single_paired) > 1:
@@ -288,7 +376,8 @@ def check_pools_compatible(data_form):
     #     return error
     duplicated_index = get_pool_duplicated_index(pool_objs)
     if not 'False' in duplicated_index:
-        error['duplicated_index'] = duplicated_index
+        error_message = ERROR_DUPLICATED_INDEXES_FOUND_IN_DIFFERENT_POOLS.copy()
+        error['ERROR'] = error_message.insert(1, ','.join(duplicated_index))
         return error
     return 'True'
 
@@ -436,20 +525,27 @@ def get_library_preparation_data_in_run (lib_prep_ids, pool_ids):
         display_sample_information
     '''
     display_sample_information ={}
-    single_paired = get_type_read_sequencing(pool_ids)
-    if single_paired == 'PairedEnd':
-        paired = True
-        display_sample_information['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_PAIREDEND
-    else:
-        paired = False
-        display_sample_information['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD
 
-    display_sample_information['data'] , uniqueID_list = collect_lib_prep_data_for_new_run(lib_prep_ids, paired)
+    pool_objs = get_pool_objs_from_ids(pool_ids)
+    sequencers_platform = []
+    for pool_obj in pool_objs:
+        sequencers_platform.append(pool_obj.get_platform_name())
+    single_paired = get_type_read_sequencing(pool_ids)
+
+    if 'MiSeq' in sequencers_platform:
+        display_sample_information['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ
+        platform_in_pool = 'MiSeq'
+    else:
+        display_sample_information['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ
+        platform_in_pool = ''
+
+    display_sample_information['data'] , uniqueID_list = collect_lib_prep_data_for_new_run(lib_prep_ids, platform_in_pool)
     display_sample_information['lib_prep_ids'] = ','.join(lib_prep_ids)
     display_sample_information['lib_prep_unique_ids'] = ','.join(uniqueID_list)
     #display_sample_information['lib_prep_unique_ids'] = ','.join(get_library_preparation_unique_id(lib_prep_ids))
-    display_sample_information['paired_end'] = paired
+    display_sample_information['platform_type'] = platform_in_pool
     display_sample_information['date'] = today_date = datetime.datetime.today().strftime("%Y%m%d")
+
     return display_sample_information
 
 def get_stored_user_sample_sheet(lib_prep_id):
@@ -488,14 +584,14 @@ def get_type_read_sequencing(pool_ids):
     return 'SingleRead'
 
 
-def collect_lib_prep_data_for_new_run(lib_prep_ids, paired):
+def collect_lib_prep_data_for_new_run(lib_prep_ids, platform_in_pool):
     '''
     Description:
         The function returns the library preparation data for each one in the lib_prep_ids.
         Sample_uniqueID is modified by adding '-' and the number of reused for the library preparation
     Input:
         lib_prep_ids        # list of library preparations
-        pairedEnd           # Boolean variable of True is "paired end" False is "single read"
+        platform_in_pool    # platfrom used to add new fields if needed
     Return:
         data
     '''
@@ -503,13 +599,15 @@ def collect_lib_prep_data_for_new_run(lib_prep_ids, paired):
     uniqueID_list = []
     for lib_prep_id in lib_prep_ids:
         lib_prep_obj =LibraryPreparation.objects.get(pk__exact = lib_prep_id)
-        if paired:
-            row_data = lib_prep_obj.get_info_for_run_paired_end()
-        else:
-            row_data = lib_prep_obj.get_info_for_run_single_read()
+        row_data = lib_prep_obj.get_info_for_run_paired_end()
+        if platform_in_pool == 'MiSeq':
+            row_data.insert(8,lib_prep_obj.get_manifest())
+            row_data.insert(9,lib_prep_obj.get_genome_folder())
+
         row_data[0] = row_data[0] + '-' + lib_prep_obj.get_reused_value()
         uniqueID_list.append(row_data[0])
         data.append(row_data)
+
     return data ,uniqueID_list
 
 def increase_reuse_if_samples_exists(sample_list):
@@ -850,10 +948,10 @@ def update_run_with_sample_sheet(run_process_id, sample_sheet):
     return
 
 
-def fetch_and_update_reagent_kits (form_data):
+def fetch_reagent_kits_used_in_run (form_data):
     '''
     Description:
-        The function fetch the reagent kits in the form and increase the use number
+        The function fetch the reagent kits in the form
         Return an object list with the reagents user kits.
     Input:
         form_data    # data from the user form
@@ -864,9 +962,10 @@ def fetch_and_update_reagent_kits (form_data):
     commercial_kit_names = form_data['commercialKits'].split(',')
     user_reagentKit_id_kit_dict = {}
     for kit_name in commercial_kit_names:
-        user_reagents_kit_objs.append(update_usage_user_lot_kit(form_data[kit_name], kit_name))
+        user_reagents_kit_objs.append(update_usage_user_lot_kit(form_data[kit_name]))
 
     return user_reagents_kit_objs
+
 
 def prepare_lib_prep_table_new_run (index_adapters, request, extracted_data_list, file_name, assay, adapter1, adapter2):
 

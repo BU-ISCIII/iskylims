@@ -233,9 +233,12 @@ HEADING_FOR_CREATING_RUN = ['Library CodeID', 'Sample Name', 'Pool Name', 'Sampl
 
 
 ### Heading for getting information when creating a new Run
-HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_PAIREDEND = ['Unique_Sample_ID','Sample_Name','Sample_Plate','Sample_Well','Index_Plate_Well','I7_Index_ID','index','I5_Index_ID','index2','Sample_Project','Description']
+HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ = ['Unique_Sample_ID','Sample_Name','Sample_Plate','Sample_Well','Index_Plate_Well','I7_Index_ID','index','I5_Index_ID','index2','Sample_Project','Description']
 
-HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD = ['Unique_Sample_ID','Sample_Name','Sample_Plate','Sample_Well','Index_Plate_Well','I7_Index_ID','index','Sample_Project','Description']
+HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ = ['Unique_Sample_ID','Sample_Name','Sample_Plate','Sample_Well','Index_Plate_Well','I7_Index_ID','index','I5_Index_ID','index2', 'Manifest','GenomeFolder','Sample_Project','Description']
+
+
+#HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD = ['Unique_Sample_ID','Sample_Name','Sample_Plate','Sample_Well','Index_Plate_Well','I7_Index_ID','index','Sample_Project','Description']
 
 
 HEADING_FOR_STATISTICS_RUNS_BASIC_DATA = ['Run Name', 'Date sequencer start']
@@ -302,6 +305,14 @@ ERROR_NO_COLLECTION_INDEX_FOUND = ['There are no recorded information for the Co
 
 ERROR_INVALID_SEQUENCE_CHARACTERS = ['Invalid characters in Index sequene', '']
 
+ERROR_NO_POOL_WAS_SELECTED_IN_FORM = ['There was not selected any pool to create the new Run']
+
+ERROR_RUN_NAME_ALREADY_DEFINED = ['Run name ', 'is already defined' ,'Write other Run Name on the field bellow']
+
+ERROR_DIFFERENT_ADAPTERS_USED_IN_POOL = ['Different Adapters ', 'Were used in the pools']
+
+ERROR_DUPLICATED_INDEXES_FOUND_IN_DIFFERENT_POOLS = ['Found duplicated index', 'in the pools']
+
 ###### ERROR TEXT FOR SEACHING #############################################
 ERROR_NO_MATCHES_FOR_RUN_SEARCH = ['There is not any run that matches your input conditions']
 ERROR_NO_MATCHES_FOR_PROJECT_SEARCH = ['There is not any project that mathes your input conditions']
@@ -323,6 +334,9 @@ ERROR_USER_DOES_NOT_HAVE_ANY_SAMPLE = ['User does not have any sample to perform
 ERROR_SEQUENCER_ALREADY_DEFINED = ['Unable to save the Sequencer, because it already exists']
 
 ERROR_SEQUENCER_CONFIGURATION_ALREADY_DEFINED = ['Unable to save the Sequencer configuration, because it already exists']
+
+
+
 ############### HEADING FOR PROJECT DATA VISUALIZATION #####################
 HEADING_FOR_PROJECT_DATES = ['Project Recorder date', 'Project date']
 

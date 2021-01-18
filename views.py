@@ -3916,13 +3916,16 @@ def create_new_run (request):
         return redirect ('/accounts/login')
 
     if request.method == 'POST' and request.POST['action'] == 'createNewRun':
-
-        experiment_name = request.POST['experimentName']
         display_pools_for_run = display_available_pools()
         if not 'poolID' in request.POST :
-            return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run})
+            error_message = wetlab_config.ERROR_NO_POOL_WAS_SELECTED_IN_FORM
+            return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run, 'ERROR': error_message})
+        compatibility = check_valid_data_for_creation_run (request.POST, request.user)
+        if 'ERROR' in compatibility :
+            return render (request,'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run':display_pools_for_run, 'ERROR': compatibility['ERROR']})
+        '''
         pool_ids = request.POST.getlist('poolID')
-
+        experiment_name = request.POST['experimentName']
         if RunProcess.objects.filter(runName__exact = experiment_name).exists():
             return render (request,'iSkyLIMS_wetlab/CreateNewRun.html',{'invalid_exp_name':experiment_name, 'display_pools_for_run':display_pools_for_run})
         result_compatibility = check_pools_compatible (request.POST)
@@ -3941,16 +3944,22 @@ def create_new_run (request):
         except:
             display_pools_for_run['ERROR'] = wetlab_config.ERROR_NO_PROFILE_OR_CENTER_FOR_USER
             return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run})
-
+        '''
         #compatible_index = check_index_compatible(lib_prep_ids)
+        display_sample_information = create_run_in_pre_recorded_and_get_data_for_confirmation(request.POST, request.user)
+
+        '''
         display_sample_information = get_library_preparation_data_in_run(lib_prep_ids, pool_ids)
         display_sample_information.update(get_stored_user_sample_sheet(lib_prep_ids[0]))
         # update Reagents kits
+        import pdb; pdb.set_trace()
         reagent_kits = fetch_and_update_reagent_kits(request.POST)
         new_run =  RunProcess(runName=experiment_name, sampleSheet= '',
                                 state = RunStates.objects.get(runStateName__exact = 'Pre-Recorded'),
                                 centerRequestedBy = center_requested_by)
         new_run.save()
+
+
         # Add new_run with the reagents kits
         for kit in reagent_kits :
             new_run.reagent_kit.add(kit)
@@ -3961,6 +3970,7 @@ def create_new_run (request):
         for pool in pool_ids:
             pool_obj = get_pool_instance_from_id(pool)
             pool_obj.update_run_name(new_run)
+        '''
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_sample_information': display_sample_information})
 
     elif request.method == 'POST' and request.POST['action'] == 'continueWithRun':

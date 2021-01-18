@@ -1057,7 +1057,11 @@ class LibraryPool (models.Model):
         return '%s' %(self.pairedEnd)
 
     def get_platform_name(self):
-        return '%s' %(self.platform.get_platform_name())
+        if self.platform != None:
+            return '%s' %(self.platform.get_platform_name())
+        else:
+            return 'Not defined'
+
     def get_run_name(self):
         if self.runProcess_id != None :
             return '%s' %(self.runProcess_id.get_run_name())
@@ -1285,6 +1289,18 @@ class LibraryPreparation (models.Model):
     def get_lib_prep_id (self):
         return '%s' %(self.pk)
 
+    def get_manifest(self):
+        if self.manifest != None:
+            return '%s' %(self.manifest)
+        else:
+            return ''
+
+    def get_genome_folder(self):
+        if self.genomeFolder != None:
+            return '%s' %(self.genomeFolder)
+        else:
+            return ''
+
     def get_molecule_code_id(self):
         return '%s' %(self.molecule_id.get_molecule_code_id())
 
@@ -1299,10 +1315,10 @@ class LibraryPreparation (models.Model):
 
     def get_protocol_id (self):
         return '%s' %(self.protocol_id.pk)
-
+    '''
     def get_reagents_kit_used(self):
         return '%s' %(self.reagent_id.get_nick_name())
-
+    '''
     def get_reused_value(self):
         return '%s' %(self.numberOfReused)
 
