@@ -42,6 +42,8 @@
                                 <input type="hidden" name="lib_prep_unique_ids" value="{{display_sample_information.lib_prep_unique_ids}}"/>
                                 <input type="hidden" name="platform_type" value="{{display_sample_information.platform_type}}"/>
                                 <input type="hidden" name="run_process_id" value="{{display_sample_information.run_process_id}}"/>
+                                <input type="hidden" name="single_read" value="{{display_sample_information.single_read}}"/>
+
                                 <div class="col-sm-12" >
                                     <div class="col-sm-6" >
                                         <div class="form-group required">
@@ -72,15 +74,7 @@
                                         </div> <!--  end of form-group -->
                                     </div> <!--  end of col-sm-6 -->
                                     <div class="col-sm-6" >
-                                        <div class="form-group required">
-                                            <h4>Base Space confirmation data</h4>
-                                            <label class="col-sm-5 control-label">Define the Plate</label>
-                                            <div class="col-sm-5"><input class="form-control" required = "required" type="text"  value="Plate96"  name="plateName" size="80"></div>
-                                            <br><br><br>
-
-                                            <label class="col-sm-5 control-label">Define the ContainerID</label>
-                                            <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  name="containerID" size="80" value = "{{display_sample_information.date}}"></div>
-                                        </div> <!--  end of form-group -->
+                                        
                                     </div> <!--  end of col-sm-6 -->
                                 </div> <!--  end of col-sm-12 -->
                                 <br><br>
@@ -256,22 +250,23 @@
                                                     </table>
                                                     <br><br>
                                                 </div> <!--  end of col-sm-8 -->
-                                            <div class="col-sm-4">
-                                                <table class="table">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Select Run</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td><input type="checkbox" name="run_ids" value="{{r_id}}"></td>
-                                                        </tr>
+                                                <div class="col-sm-4">
+                                                    <table class="table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Select Run</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td><input type="checkbox" name="run_ids" value="{{r_id}}"></td>
+                                                            </tr>
 
-                                                    </tbody>
-                                                </table>
-                                                <br><br>
-                                            </div> <!--  end of col-sm-10 -->
+                                                        </tbody>
+                                                    </table>
+                                                    <br><br>
+                                                </div> <!--  end of col-sm-4 -->
+                                            </div> <!--  end of col-sm-12 -->
                                         {% endfor %}
                                         <input class= "btn pull-right btn-primary" type= "submit" id = "btnSubmit" value= "Submit">
                                     </form>

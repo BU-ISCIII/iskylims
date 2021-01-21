@@ -3,18 +3,7 @@ from django.conf import settings
 ##### Allow to import the configuration samba files from configuration folder
 import sys
 sys.path.append
-'''
-try:
-    from .wetlab_samba_conf import *
-    SAMBA_USER_CONFIGURED = True
-except:
-    SAMBA_USER_CONFIGURED = False
-try:
-    from .wetlab_email_conf import *
-    EMAIL_USER_CONFIGURED = True
-except:
-    EMAIL_USER_CONFIGURED = False
-'''
+
 ##############################################################
 ####
 WETLAB_MANAGER = 'WetlabManager'
@@ -28,7 +17,7 @@ RETENTION_TIME = '7' # in days
 ##############################################################
 
 ##############  Define in proyect names can be the same in different Runs ######
-PROJECTS_ALLOWED_IN_MULTIPLE_RUNS = 'False' ## ('True'/'False')
+# PROJECTS_ALLOWED_IN_MULTIPLE_RUNS = 'False' ## ('True'/'False')
 ##############################################################
 
 ############## FOLDER SETTINGS ###############################
@@ -119,13 +108,8 @@ COLLECTION_INDEX_HEADING = ['[Version]','[Name]', '[PlateExtension]','[Settings]
 MIGRATION_DIRECTORY_FILES = 'wetlab/BaseSpaceMigrationFiles/'
 
 ##############################################################
-BASE_SPACE_TWO_INDEX_TEMPLATE_NAME = 'base_space_two_index_template.csv'
-BASE_SPACE_ONE_INDEX_TEMPLATE_NAME = 'base_space_one_index_template.csv'
-SAMPLE_SHEET_TWO_INDEX_TWO_ADAPTERS_TEMPLATE_NAME = 'sample_sheet_two_index_two_adapters_template.csv'
-SAMPLE_SHEET_TWO_INDEX_ONE_ADAPTER_TEMPLATE_NAME = 'sample_sheet_two_index_one_adapter_template.csv'
-SAMPLE_SHEET_ONE_INDEX_TWO_ADAPTERS_TEMPLATE_NAME = 'sample_sheet_one_index_two_adapters_template.csv'
-SAMPLE_SHEET_ONE_INDEX_ONE_ADAPTER_TEMPLATE_NAME = 'sample_sheet_one_index_one_adapter_template.csv'
-
+SAMPLE_SHEET_TWO_ADAPTERS_TEMPLATE_NAME = 'sample_sheet_two_adapters_template.csv'
+SAMPLE_SHEET_ONE_ADAPTER_TEMPLATE_NAME = 'sample_sheet_one_adapter_template.csv'
 
 ##### CONFIGURATION FOR ADDING KITS FOR LIBRARY PREPARATION ########
 HEADING_ADDING_COMMERCIAL_KITS_TO_PROTOCOL = ['Given name ', 'Order', 'Used', 'Commercial Kit Name', 'Description']
@@ -146,23 +130,31 @@ HEADING_FOR_SAMPLE_SHEET_TWO_INDEX = ['Unique_Sample_ID','Sample_Name','Sample_P
 
 
 # mapping structure when sample sheet contains only one index
-MAP_BASESPACE_SAMPLE_SHEET_ONE_INDEX = [('SampleID','Sample_ID'),('Name','Sample_Name'), ('Project','Sample_Project'),
-                ('Index1Name','I7_Index_ID'), ('Index1Sequence','index' ) ]
+#MAP_BASESPACE_SAMPLE_SHEET_ONE_INDEX = [('SampleID','Sample_ID'),('Name','Sample_Name'), ('Project','Sample_Project'),
+#                ('Index1Name','I7_Index_ID'), ('Index1Sequence','index' ) ]
 # mapping structure when sample sheet contains two index
-MAP_BASESPACE_SAMPLE_SHEET_TWO_INDEX = [('SampleID','Sample_ID'),('Name','Sample_Name'), ('Project','Sample_Project'),
-                ('Index1Name','I7_Index_ID'), ('Index1Sequence','index' ),('Index2Name','I5_Index_ID'),('Index2Sequence','index2') ]
+#MAP_BASESPACE_SAMPLE_SHEET_TWO_INDEX = [('SampleID','Sample_ID'),('Name','Sample_Name'), ('Project','Sample_Project'),
+#                ('Index1Name','I7_Index_ID'), ('Index1Sequence','index' ),('Index2Name','I5_Index_ID'),('Index2Sequence','index2') ]
 
 ######### MAPPING COLUMNS IN SAMPLE SHEET FROM USER TO DATABASE   #############
-MAP_USER_SAMPLE_SHEET_TO_DATABASE_TWO_INDEX = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
-            ('Sample_Well','sampleWell'),('I7_Index_ID','i7IndexID'),
-            ('index','i7Index'),('I5_Index_ID','i5IndexID'),('index2','i5Index'),('Sample_Project','projectInSampleSheet'),('Description', 'userInSampleSheet')]
-
-MAP_USER_SAMPLE_SHEET_TO_DATABASE_ONE_INDEX = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
+MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_SINGLE_READ = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
             ('Sample_Well','sampleWell'),('I7_Index_ID','i7IndexID'),
             ('index','i7Index'),('Sample_Project','projectInSampleSheet'),('Description', 'userInSampleSheet')]
 
+MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_PAIRED_END = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
+            ('Sample_Well','sampleWell'),('I7_Index_ID','i7IndexID'),
+            ('index','i7Index'),('I5_Index_ID','i5IndexID'),('index2','i5Index'),('Sample_Project','projectInSampleSheet'),('Description', 'userInSampleSheet')]
+
+MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
+            ('Sample_Well','sampleWell'),('I7_Index_ID','i7IndexID'), ('index','i7Index'),
+            ('Manifest', 'manifest'),('GenomeFolder', ' genomeFolder') , ('Sample_Project','projectInSampleSheet'),('Description', 'userInSampleSheet')]
+
+MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
+            ('Sample_Well','sampleWell'),('I7_Index_ID','i7IndexID'), ('index','i7Index'),('I5_Index_ID','i5IndexID'),('index2','i5Index'),
+            ('Manifest', 'manifest'),('GenomeFolder', ' genomeFolder') , ('Sample_Project','projectInSampleSheet'),('Description', 'userInSampleSheet')]
+
 ######### MAPPING OPTIONAL COLUMNS THAT COULD BE IN SAMPLE SHEET FROM USER TO DATABASE   #############
-MAP_USER_SAMPLE_SHEET_ADDITIONAL_FIELDS_FROM_TYPE_OF_SECUENCER = [('Index_Plate_Well','indexPlateWell'), ('Manifest', 'manifest'), ('GenomeFolder', 'genomeFolder')]
+#MAP_USER_SAMPLE_SHEET_ADDITIONAL_FIELDS_FROM_TYPE_OF_SECUENCER = [('Index_Plate_Well','indexPlateWell'), ('Manifest', 'manifest'), ('GenomeFolder', 'genomeFolder')]
 
 
 MAP_USER_SAMPLE_SHEET_TO_DATABASE_TWO_INDEX_WITH_WELL = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
@@ -175,16 +167,14 @@ MAP_USER_NEXTSEQ_SAMPLE_SHEET_TO_DATABASE_TWO_INDEX_WITH_WELL = [('Sample_ID','u
 
 
 # mapping structure when sample sheet contains only one index
-MAPPING_BASESPACE_SAMPLE_SHEET_ONE_INDEX = [('SampleID','Unique_Sample_ID'),('Name','Sample_Name'), ('Project','Sample_Project'),('Well', 'Sample_Well'),
-                ('Index1Name','I7_Index_ID'), ('Index1Sequence','index' ) ]
+#MAPPING_BASESPACE_SAMPLE_SHEET_ONE_INDEX = [('SampleID','Unique_Sample_ID'),('Name','Sample_Name'), ('Project','Sample_Project'),('Well', 'Sample_Well'),
+#                ('Index1Name','I7_Index_ID'), ('Index1Sequence','index' ) ]
 # mapping structure when sample sheet contains two index
-MAPPING_BASESPACE_SAMPLE_SHEET_TWO_INDEX = [('SampleID','Unique_Sample_ID'),('Name','Sample_Name'), ('Project','Sample_Project'),('Well', 'Sample_Well'),
-                ('Index1Name','I7_Index_ID'), ('Index1Sequence','index' ),('Index2Name','I5_Index_ID'),('Index2Sequence','index2') ]
+#MAPPING_BASESPACE_SAMPLE_SHEET_TWO_INDEX = [('SampleID','Unique_Sample_ID'),('Name','Sample_Name'), ('Project','Sample_Project'),('Well', 'Sample_Well'),
+#                ('Index1Name','I7_Index_ID'), ('Index1Sequence','index' ),('Index2Name','I5_Index_ID'),('Index2Sequence','index2') ]
 
 # Sections to check in the IEM file created by user
 SECTIONS_IN_IEM_SAMPLE_SHEET = ['[Header]', '[Reads]', '[Settings]', '[Data]']
-
-
 
 ##### HEADINGS VALUES
 
@@ -233,10 +223,12 @@ HEADING_FOR_CREATING_RUN = ['Library CodeID', 'Sample Name', 'Pool Name', 'Sampl
 
 
 ### Heading for getting information when creating a new Run
-HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ = ['Unique_Sample_ID','Sample_Name','Sample_Plate','Sample_Well','Index_Plate_Well','I7_Index_ID','index','I5_Index_ID','index2','Sample_Project','Description']
+HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_PAIRED_END = ['Sample_ID','Sample_Name','Sample_Plate','Sample_Well','Index_Plate_Well','I7_Index_ID','index','I5_Index_ID','index2','Sample_Project','Description']
+HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_SINGLE_READ = ['Sample_ID','Sample_Name','Sample_Plate','Sample_Well','Index_Plate_Well','I7_Index_ID','index','Sample_Project','Description']
 
-HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ = ['Unique_Sample_ID','Sample_Name','Sample_Plate','Sample_Well','Index_Plate_Well','I7_Index_ID','index','I5_Index_ID','index2', 'Manifest','GenomeFolder','Sample_Project','Description']
 
+HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END = ['Sample_ID','Sample_Name','Sample_Plate','Sample_Well','I7_Index_ID','index','I5_Index_ID','index2', 'Manifest','GenomeFolder','Sample_Project','Description']
+HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ = ['Sample_ID','Sample_Name','Sample_Plate','Sample_Well','I7_Index_ID','index', 'Manifest','GenomeFolder','Sample_Project','Description']
 
 #HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD = ['Unique_Sample_ID','Sample_Name','Sample_Plate','Sample_Well','Index_Plate_Well','I7_Index_ID','index','Sample_Project','Description']
 
@@ -289,7 +281,7 @@ ERROR_POOLS_WITH_NO_LIBRARY  = ['The selected Pools have not assigned to any Lib
 
 ERROR_NO_PROFILE_OR_CENTER_FOR_USER = ['Unable to save your request.', 'Update your Profile/ Center first']
 
-ERROR_RUN_IN_WRONG_STATE = ['Unable to accept your Run definition', 'Because your Run is in state']
+ERROR_RUN_IN_WRONG_STATE = ['Unable to accept your Run definition', 'Because the Run is in state']
 
 ERROR_UNABLE_SAVE_REQUEST = ['Unable to save your request.']
 
@@ -308,6 +300,8 @@ ERROR_INVALID_SEQUENCE_CHARACTERS = ['Invalid characters in Index sequene', '']
 ERROR_NO_POOL_WAS_SELECTED_IN_FORM = ['There was not selected any pool to create the new Run']
 
 ERROR_RUN_NAME_ALREADY_DEFINED = ['Run name ', 'is already defined' ,'Write other Run Name on the field bellow']
+
+ERROR_RUN_NAME_CREATED_ALREADY = ['Run name ', 'was already created']
 
 ERROR_DIFFERENT_ADAPTERS_USED_IN_POOL = ['Different Adapters ', 'Were used in the pools']
 
@@ -335,12 +329,10 @@ ERROR_SEQUENCER_ALREADY_DEFINED = ['Unable to save the Sequencer, because it alr
 
 ERROR_SEQUENCER_CONFIGURATION_ALREADY_DEFINED = ['Unable to save the Sequencer configuration, because it already exists']
 
-
+ERROR_NOT_ALLOWED_REPEATED_PROJECTS = ['Configuration settigs are set do not allow that a project can be in 2 different runs','The following project is already defined']
 
 ############### HEADING FOR PROJECT DATA VISUALIZATION #####################
 HEADING_FOR_PROJECT_DATES = ['Project Recorder date', 'Project date']
-
-
 
 
 ############### FIELD NAME TO COLLECT FROM RunParameter FILE #####################
@@ -349,7 +341,6 @@ FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE = ['RunID','ExperimentName','RTAVersion','C
 
 ################ EMAIL CONFIGURATION FIELDS ###############################
 EMAIL_CONFIGURATION_FIELDS = ['EMAIL_HOST','EMAIL_PORT','USER_PASSWORD', 'USER_NAME', 'USER_EMAIL', 'SENT_EMAIL_ON_ERROR', 'USE_TLS']
-
 
 
 ################ SAMBA CONFIGURATION FIELDS ###############################

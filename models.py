@@ -1170,7 +1170,6 @@ class LibraryPreparation (models.Model):
     class Meta:
         ordering = ('libPrepCodeID',)
 
-
     def __str__ (self):
         return '%s' %(self.libPrepCodeID)
 
@@ -1216,7 +1215,7 @@ class LibraryPreparation (models.Model):
         lib_info.append(self.sample_id.get_sample_name())
         lib_info.append(self.samplePlate)
         lib_info.append(self.sampleWell)
-        lib_info.append(self.indexPlateWell)
+        #lib_info.append(self.indexPlateWell)
         lib_info.append(self.i7IndexID)
         lib_info.append(self.i7Index)
         lib_info.append(self.i5IndexID)
@@ -1233,7 +1232,7 @@ class LibraryPreparation (models.Model):
         lib_info.append(self.sample_id.get_sample_name())
         lib_info.append(self.samplePlate)
         lib_info.append(self.sampleWell)
-        lib_info.append(self.indexPlateWell)
+        #lib_info.append(self.indexPlateWell)
         lib_info.append(self.i7IndexID)
         lib_info.append(self.i7Index)
         lib_info.append(self.projectInSampleSheet)
@@ -1266,10 +1265,16 @@ class LibraryPreparation (models.Model):
         return '%s' %(self.collectionIndex_id.get_collection_index_name())
 
     def get_i7_index(self):
-        return '%s' %(self.i7IndexID)
+        if self.i7IndexID != None:
+            return '%s' %(self.i7IndexID)
+        else:
+            return ''
 
     def get_i5_index(self):
-        return '%s' %(self.i5IndexID)
+        if self.i5IndexID != None:
+            return '%s' %(self.i5IndexID)
+        else:
+            return ''
 
     def get_indexes (self):
         index = {}
@@ -1381,11 +1386,16 @@ class LibraryPreparation (models.Model):
         self.sampleWell = lib_prep_data['sampleWell']
         self.i7IndexID = lib_prep_data['i7IndexID']
         self.i7Index = lib_prep_data['i7Index']
-        self.i5IndexID = lib_prep_data['i5IndexID']
-        self.i5Index = lib_prep_data['i5Index']
-        self.indexPlateWell = lib_prep_data['indexPlateWell']
-        self.genomeFolder = lib_prep_data['genomeFolder']
-        self.manifest = lib_prep_data['manifest']
+        if 'i5IndexID' in lib_prep_data:
+            self.i5IndexID = lib_prep_data['i5IndexID']
+        if 'i5Index' in lib_prep_data:
+            self.i5Index = lib_prep_data['i5Index']
+        if 'indexPlateWell' in lib_prep_data:
+            self.indexPlateWell = lib_prep_data['indexPlateWell']
+        if  'genomeFolder' in lib_prep_data:
+            self.genomeFolder = lib_prep_data['genomeFolder']
+        if  'manifest' in lib_prep_data:
+            self.manifest = lib_prep_data['manifest']
         self.userInSampleSheet = lib_prep_data['userInSampleSheet']
         self.userSampleID = lib_prep_data['userSampleID']
         self.save()
@@ -1603,3 +1613,15 @@ class EmailData (models.Model):
         return self
 
     objects = EmailDataMamager()
+
+
+class configSetting (models.Model):
+    configurationName = models.CharField(max_length = 80)
+    configurationValue = models.CharField(max_length = 255, null=True, blank =True)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__ (self):
+        return '%s' %(self.configurationName)
+
+    def get_configuration_value(self):
+        return '%s' %(self.configurationValue)

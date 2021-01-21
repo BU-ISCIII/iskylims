@@ -143,139 +143,130 @@ def get_project_obj_from_project_name(project_name):
         project_obj = Projects.objects.filter(projectName__exact = project_name).last()
     return project_obj
 
-def handle_input_samples_for_run (data_form, user):
+def collect_data_and_update_library_preparation_samples_for_run (data_form, user):
     '''
     Description:
-        Function will check the information to create the new run.
-        Based on the selected pool
-        Return True if all are in , False if not
+        Function collect the information in the form and update the library preparation
+        data with the value confirmed bu user.
+        Return a dictionary with the user form
     Input:
-        project_list    #list of the project to check
+        data_form    # user data form
     Functions:
-        parsing_data_for_bs_file    # located at this file
-        update_index_in_sample_sheet
-        parsing_data_for_sample_sheet_file
         prepare_fields_to_create_sample_sheet_from_template
-        create_sample_sheet_file
+
     Constants:
-        HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_PAIREDEND
-        HEADING_FOR_SAMPLE_SHEET_TWO_INDEX
-        HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD
-        HEADING_FOR_SAMPLE_SHEET_ONE_INDEX
-
-
+        HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ
+        HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END
+        HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_SINGLE_READ
+        HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_PAIRED_END
+        MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ
+        MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAIRED_END
+        MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_SINGLE_READ
+        MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_PAIRED_END
     Return:
-        Error if experiment name already exists
-        dictionary wit the information to display as response
+        record_data with the information collected from the user form
     '''
+    record_data = {}
     lib_prep_ids = data_form['lib_prep_ids'].split(',')
     lib_prep_unique_ids = data_form['lib_prep_unique_ids'].split(',')
     run_id = data_form['run_process_id']
-
-    plate_name = data_form['plateName']
-    container_id = data_form['containerID']
-    paired = data_form['pairedEnd']
     json_data = json.loads(data_form['s_sheet_data'])
-    # check if run exists
-
-    run_obj = get_run_obj_from_id(run_id)
-    exp_name = run_obj.get_run_name()
-    record_data = {}
-    if run_obj.get_state() != 'Pre-Recorded':
-        record_data['Error'] = ERROR_RUN_IN_WRONG_STATE
-        record_data['Error'].append(run_obj.get_state())
-        return record_data
-
-    run_data= {}
-    #exp_name = 'mi experimento'
-    #run_data['experiment_name'] = exp_name
-
-    if paired == 'True':
-        heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_PAIREDEND
-        #mapping = MAPPING_BASESPACE_SAMPLE_SHEET_TWO_INDEX
-        #heading_base_space = BASESPACE_FILE_TWO_INDEX
-        heading_sample_sheet = HEADING_FOR_SAMPLE_SHEET_TWO_INDEX
+    single_read = data_form['single_read']
+    projects = []
+    if data_form['platform_type'] == 'MiSeq':
+        if single_read == 'TRUE':
+            heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ
+            mapping_fields = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ
+        else:
+            heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END
+            mapping_fields = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAIRED_END
     else:
-        heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_SINGLEREAD
-        #mapping = MAPPING_BASESPACE_SAMPLE_SHEET_ONE_INDEX
-        #heading_base_space = BASESPACE_FILE_ONE_INDEX
-        heading_sample_sheet = HEADING_FOR_SAMPLE_SHEET_ONE_INDEX
-    sample_sheet_data = {}
-    # collect the data to prepare the sample Sheet
-    right_id_list = []
+        if single_read == 'TRUE':
+            heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_SINGLE_READ
+            mapping_fields = MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_SINGLE_READ
+        else:
+            heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_PAIRED_END
+            mapping_fields = MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_PAIRED_END
+
+    #sample_sheet_data = {}
+    sample_sheet_data_field = []
+    # Store the confirmation information form user form
     for row_index in range(len(json_data)) :
+        confirmation_data = {}
         right_id = lib_prep_ids[lib_prep_unique_ids.index(json_data[row_index][0])]
-        right_id_list.append(right_id)
-        sample_sheet_data[right_id] = {}
+        lib_prep_obj = get_lib_prep_obj_from_id(right_id)
 
-        for column_index in range(len(heading)):
-            sample_sheet_data[right_id][heading[column_index]] = json_data[row_index][column_index]
+        for mapping_index in range(len(mapping_fields)):
+            confirmation_data[mapping_fields[mapping_index][1]] = json_data[row_index][heading.index(mapping_fields[mapping_index][0])]
+        projects.append(json_data[row_index][heading.index('Sample_Project')])
+        # keep the old value of the user sample sheet and update the library prepation
+        confirmation_data['user_sample_sheet'] = lib_prep_obj.get_user_sample_sheet_obj()
+        lib_prep_obj.update_library_preparation_with_indexes(confirmation_data)
+        sample_sheet_data_field.append(json_data[row_index])
+    record_data['sample_sheet_data_field'] = sample_sheet_data_field
+    record_data['sample_sheet_data_heading'] = heading
+    record_data['run_obj'] = get_run_obj_from_id(data_form['run_process_id'])
+    # get data for sample Sheet
 
-    #parsing data for Base Space
-    '''
-    base_space_lib = parsing_data_for_bs_file(sample_sheet_data, mapping, paired, heading_base_space )
-    # Collect the information to prepare and save the file for Base Space
-    project_bs_files = {}
-
-    for bs_lib  in base_space_lib.keys():
-        #import pdb; pdb.set_trace()
-        #for project in base_space_lib[bs_lib].keys():
-        #    import pdb; pdb.set_trace()
-        #project_bs_files.update(create_base_space_file(base_space_lib[bs_lib][project]['data'], bs_lib, plate_name, container_id , exp_name, paired, base_space_lib[bs_lib][project]['project_user']))
-        project_bs_files.update(create_base_space_file(base_space_lib[bs_lib], bs_lib, plate_name, container_id , exp_name, paired))
-
-        #import pdb; pdb.set_trace()
-    '''
-    # Handle the input information to create the sample sheet file
-
-    #sample_sheet_file = handle_sample_sheet(sample_sheet_data)
-    new_sample_sheet_data = update_index_in_sample_sheet(sample_sheet_data, right_id_list)
-
-    data_for_sample_sheet_file = parsing_data_for_sample_sheet_file(new_sample_sheet_data, heading_sample_sheet)
-    # sample_sheet_file_name = create_sample_sheet_file(data_for_sample_sheet_file, user,reads, adapter, exp_name,
-
-
-    fields = prepare_fields_to_create_sample_sheet_from_template(data_form, user)
-
-    #user_sample_sheet_obj = LibraryPreparation.objects.get(pk=right_id_list[0]).user_sample_sheet
-
-    sample_sheet_file_name = create_sample_sheet_file(fields)
-
-    record_data['run_obj'] = run_obj
+    record_data['investigator'] = user.username
+    record_data['application'] = data_form['application']
+    record_data['instrument'] = data_form['instrument']
+    record_data['assay'] = data_form['assay']
     record_data['collection_index'] = data_form['collection_index']
+    record_data['reads'] = data_form['reads']
+    record_data['adapter'] = data_form['adapter']
+    if 'adapter2' in data_form:
+            record_data['adapter2'] = data_form['adapter2']
 
-    record_data['sample_sheet'] = sample_sheet_file_name
-    record_data['exp_name'] = exp_name
-    record_data['lib_prep_ids'] = right_id_list
-    #record_data['projects_in_lib']= project_bs_files
+    record_data['exp_name'] = record_data['run_obj'].get_run_name()
+    record_data['lib_prep_ids'] = lib_prep_ids
+    record_data['projects'] = list(set(projects))
+
     return record_data
+
+def create_new_projects_added_to_run(project_list, run_obj, user_obj):
     '''
-
-        pool_name = json_data[row_index][HEADING_FOR_CREATING_POOL.index('Pool Name')]
-        bs_lib_name = json_data[row_index][HEADING_FOR_CREATING_POOL.index('BaseSpace Library')]
-        if bs_lib_name == '':
-            bs_lib_name = 'default'
-        if not bs_lib_name in sample_sheet_data:
-            sample_sheet_data[bs_lib_name] = {}
-        if not pool_name in sample_sheet_data[bs_lib_name]:
-            sample_sheet_data[bs_lib_name][pool_name] = {}
-
-        sample_sheet_data[bs_lib_name][pool_name][lib_prep_ids[row_index]] = {}
-
-        # collect the index sequence information to allow to set values different that created by IEM
-        i7_index_id = json_data[row_index][HEADING_FOR_CREATING_POOL.index('I7 Index')]
-        i7_seq = json_data[row_index][HEADING_FOR_CREATING_POOL.index('I7 Sequence')]
-
-        i5_index = json_data[row_index][HEADING_FOR_CREATING_POOL.index('I5 Index')]
-        i5_seq = json_data[row_index][HEADING_FOR_CREATING_POOL.index('I5 Sequence')]
-
-        sample_sheet_data[bs_lib_name][pool_name][lib_prep_ids[row_index]] ['i7_seq'] = i7_seq
-        sample_sheet_data[bs_lib_name][pool_name][lib_prep_ids[row_index]] ['i5_seq'] = i5_seq
-        sample_sheet_data[bs_lib_name][pool_name][lib_prep_ids[row_index]] ['project_name']= json_data[row_index][HEADING_FOR_CREATING_POOL.index('Project Name')]
-        #import pdb; pdb.set_trace()
-    sample_sheet_file = ''
+    Description:
+        The function create the project instance and join them to the run obj
+    Input:
+        project_list    # List of project to create
+        run_obj     # run object
+        user_obj    # user object
+    Ouput:
+        project_objs
     '''
-    return project_bs_files
+    projects_objs = []
+    duplicated_projects = []
+    if configSetting.objects.filter(configurationName__exact = 'PROJECTS_ALLOWED_IN_MULTIPLE_RUNS').exists():
+        allow_projects_in_multi_run = configSetting.objects.filter(configurationName__exact = 'PROJECTS_ALLOWED_IN_MULTIPLE_RUNS').last().get_configuration_value()
+    else:
+        allow_projects_in_multi_run = 'TRUE'
+    for project in project_list :
+        if Projects.objects.filter(projectName__iexact = project).exists():
+            if allow_projects_in_multi_run == 'FALSE':
+                duplicated_projects.append(project)
+                continue
+            project_obj = Projects.objects.filter(projectName__iexact = project).last()
+            projects_objs.append(project_obj)
+        else:
+            project_data = {}
+            project_data['user_id'] = user_obj
+            project_data['projectName'] = project
+            project_obj = Projects.objects.create_new_empty_project(project_data)
+            projects_objs.append(project_obj)
+    if len(duplicated_projects) > 0 :
+        # delete defined projects
+        for project_obj in projects_objs:
+            project_obj.delete()
+        error_message = ERROR_NOT_ALLOWED_REPEATED_PROJECTS.copy()
+        error_message.append(', '.join(duplicated_projects))
+        error = {'ERROR':error_message}
+        return error
+    # join project wirh run
+    for project_obj in projects_objs:
+        project_obj.runProcess.add(run_obj)
+
+    return projects_objs
 
 def get_pool_objs_from_ids (pool_ids):
     '''
@@ -415,7 +406,7 @@ def create_base_space_file(projects, bs_lib, plate, container_id, experiment_nam
     return project_dict
 
 
-def create_sample_sheet_file(fields):
+def store_confirmation_sample_sheet(fields):
     '''
     Description:
         The function store the sample sheet for the run, using the template and returning the file name including the relative path
@@ -430,39 +421,30 @@ def create_sample_sheet_file(fields):
         RUN_SAMPLE_SHEET_DIRECTORY
         MEDIA_ROOT
         TEMPLATE_FILES_DIRECTORY
-        SAMPLE_SHEET_TWO_INDEX_TWO_ADAPTERS_TEMPLATE_NAME
-        SAMPLE_SHEET_TWO_INDEX_ONE_ADAPTER_TEMPLATE_NAME
-        SAMPLE_SHEET_ONE_INDEX_TWO_ADAPTERS_TEMPLATE_NAME
-        SAMPLE_SHEET_ONE_INDEX_ONE_ADAPTER_TEMPLATE_NAME
+        SAMPLE_SHEET_TWO_ADAPTERS_TEMPLATE_NAME
+        SAMPLE_SHEET_ONE_ADAPTER_TEMPLATE_NAME
     Return:
-        True sample sheet name including the relative path
+        sample sheet name including the relative path
     '''
-
+    exp_name_in_file = fields['exp_name'].replace(' ', '̣_')
     today_date = datetime.datetime.today().strftime("%Y%m%d_%H%M%S")
-    file_name = str(fields['exp_name'] + today_date + SAMPLE_SHEET)
+    file_name = str(exp_name_in_file + '_'+ today_date + '_' + SAMPLE_SHEET)
     ss_file_relative_path = os.path.join( RUN_SAMPLE_SHEET_DIRECTORY, file_name)
     ss_file_full_path = os.path.join(settings.MEDIA_ROOT, ss_file_relative_path)
 
     today_date = datetime.datetime.today().strftime("%d/%m/%Y")
 
-    d = {'user':fields['user'],'exp_name': fields['exp_name'] , 'date': today_date, 'application': fields['application'],
+    d = {'investigator':fields['investigator'],'exp_name': fields['exp_name'] , 'date': today_date, 'application': fields['application'],
         'instrument':fields['instrument'], 'assay':fields['assay'] , 'collection_index': fields['collection_index'], 'reads': fields['reads'],
-        'adapter':fields['adapter'], 'sample_data': fields['data']}
+        'adapter':fields['adapter']}
 
-    if fields['pairedEnd'] == 'True':
-        if 'adapter2' in fields:
-            d['adapter2'] = fields['adapter2']
-            template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_TWO_INDEX_TWO_ADAPTERS_TEMPLATE_NAME)
-
-        else:
-
-            template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_TWO_INDEX_ONE_ADAPTER_TEMPLATE_NAME)
+    if 'adapter2' in fields:
+        d['adapter2'] = fields['adapter2']
+        template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_TWO_ADAPTERS_TEMPLATE_NAME)
     else:
-        if 'adapter2' in fields:
-            d['adapter2'] = fields['adapter2']
-            template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_ONE_INDEX_TWO_ADAPTERS_TEMPLATE_NAME)
-        else:
-            template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_ONE_INDEX_ONE_ADAPTER_TEMPLATE_NAME)
+
+        template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_ONE_ADAPTER_TEMPLATE_NAME)
+
     #sample_data = '\n'.join(data)
 
     with open (template_file, 'r') as filein:
@@ -471,11 +453,16 @@ def create_sample_sheet_file(fields):
 
 
     updated_info = ss_template.substitute(d)
-
     fh = open(ss_file_full_path, 'w')
-    fh.write(updated_info)
-    fh.close()
 
+    fh.write(updated_info)
+    fh.write(','.join(fields['sample_sheet_data_heading']) + '\n')
+    for sample in fields['sample_sheet_data_field']:
+        import pdb; pdb.set_trace()
+        fh.write(','.join(sample) + '\n')
+    fh.close()
+    # store sample sheet in database
+    fields['run_obj'].update_sample_sheet()
     return ss_file_relative_path
 
 def get_experiment_name (run_id):
@@ -530,21 +517,23 @@ def get_library_preparation_data_in_run (lib_prep_ids, pool_ids):
     sequencers_platform = []
     for pool_obj in pool_objs:
         sequencers_platform.append(pool_obj.get_platform_name())
-    single_paired = get_type_read_sequencing(pool_ids)
-
     if 'MiSeq' in sequencers_platform:
-        display_sample_information['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ
         platform_in_pool = 'MiSeq'
     else:
-        display_sample_information['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ
         platform_in_pool = ''
-
-    display_sample_information['data'] , uniqueID_list = collect_lib_prep_data_for_new_run(lib_prep_ids, platform_in_pool)
+    #single_paired = get_type_read_sequencing(pool_ids)
+    lib_prep_data  = collect_lib_prep_data_for_new_run(lib_prep_ids, platform_in_pool)
+    display_sample_information['data'] = lib_prep_data['data']
+    display_sample_information['heading'] = lib_prep_data['heading']
     display_sample_information['lib_prep_ids'] = ','.join(lib_prep_ids)
-    display_sample_information['lib_prep_unique_ids'] = ','.join(uniqueID_list)
+    display_sample_information['lib_prep_unique_ids'] = ','.join(lib_prep_data['uniqueID_list'])
+
     #display_sample_information['lib_prep_unique_ids'] = ','.join(get_library_preparation_unique_id(lib_prep_ids))
-    display_sample_information['platform_type'] = platform_in_pool
+
     display_sample_information['date'] = today_date = datetime.datetime.today().strftime("%Y%m%d")
+    display_sample_information['single_read'] = lib_prep_data['single_read']
+
+    display_sample_information['platform_type'] = platform_in_pool
 
     return display_sample_information
 
@@ -568,7 +557,7 @@ def get_stored_user_sample_sheet(lib_prep_id):
 
     return sample_sheet_data
 
-def get_type_read_sequencing(pool_ids):
+# def get_type_read_sequencing(pool_ids):
     '''
     Description:
         The function returns the value of th pool singlePaired
@@ -577,12 +566,13 @@ def get_type_read_sequencing(pool_ids):
     Return:
         PairedEnd or SingleRead
     '''
+    '''
     for pool_id in pool_ids :
         single_paired = LibraryPool.objects.get(pk__exact = pool_id).get_pool_single_paired()
         if single_paired == 'PairedEnd':
             return 'PairedEnd'
     return 'SingleRead'
-
+    '''
 
 def collect_lib_prep_data_for_new_run(lib_prep_ids, platform_in_pool):
     '''
@@ -595,11 +585,17 @@ def collect_lib_prep_data_for_new_run(lib_prep_ids, platform_in_pool):
     Return:
         data
     '''
+    lib_data = {}
     data = []
+    single_read = True
     uniqueID_list = []
     for lib_prep_id in lib_prep_ids:
         lib_prep_obj =LibraryPreparation.objects.get(pk__exact = lib_prep_id)
+        # get index 7 and index 5. then index 5 is deleted if all samples are single end
         row_data = lib_prep_obj.get_info_for_run_paired_end()
+        if single_read:
+            if lib_prep_obj.get_i5_index() != '':
+                single_read = False
         if platform_in_pool == 'MiSeq':
             row_data.insert(8,lib_prep_obj.get_manifest())
             row_data.insert(9,lib_prep_obj.get_genome_folder())
@@ -607,8 +603,26 @@ def collect_lib_prep_data_for_new_run(lib_prep_ids, platform_in_pool):
         row_data[0] = row_data[0] + '-' + lib_prep_obj.get_reused_value()
         uniqueID_list.append(row_data[0])
         data.append(row_data)
+    lib_data['data'] = data
+    lib_data['uniqueID_list'] = uniqueID_list
+    lib_data['single_read'] = 'TRUE' if single_read else 'FALSE'
 
-    return data ,uniqueID_list
+    # if there is not index 5 in any of the samples. Then delete the I5 index colunm for all samples
+    if single_read:
+        for item in data:
+            del item[7]
+            del item[6]
+    if platform_in_pool == 'MiSeq':
+        if single_read:
+            lib_data['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ
+        else:
+            lib_data['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END
+    else:
+        if single_read:
+            lib_data['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_SINGLE_READ
+        else:
+            lib_data['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_PAIRED_END
+    return lib_data
 
 def increase_reuse_if_samples_exists(sample_list):
     '''
@@ -633,7 +647,7 @@ def increase_reuse_if_samples_exists(sample_list):
 
     return samples_reused
 
-def update_index_in_sample_sheet(sample_sheet_data, lib_prep_ids) :
+#def update_index_in_sample_sheet(sample_sheet_data, lib_prep_ids) :
     '''
     Description:
         The function check if in index have been changed.
@@ -645,6 +659,8 @@ def update_index_in_sample_sheet(sample_sheet_data, lib_prep_ids) :
     Return:
         samples_reused
     '''
+    '''
+    Borrar
     # check in index hve been changed
     #
     for  index_lib in range(len(lib_prep_ids)):
@@ -657,7 +673,7 @@ def update_index_in_sample_sheet(sample_sheet_data, lib_prep_ids) :
             lib_prep_obj.update_i5_index(sample_sheet_data[lib_prep_ids[index_lib]]['index2'])
 
     return sample_sheet_data
-
+    '''
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
@@ -852,7 +868,7 @@ def parsing_data_for_bs_file(sample_sheet_data, mapping, paired, heading_base_sp
         string_row_data = ','.join(bs_row_data)
         base_space_lib[lib_name][project_name]['data'].append(string_row_data)
     return base_space_lib
-
+'''
 def parsing_data_for_sample_sheet_file(new_sample_sheet_data, heading_sample_sheet):
     data = []
 
@@ -865,7 +881,7 @@ def parsing_data_for_sample_sheet_file(new_sample_sheet_data, heading_sample_she
             row_data.append(values[item])
         data.append(','.join(row_data))
     return data
-
+'''
 
 def prepare_fields_to_create_sample_sheet_from_template(data_form, user):
     '''
@@ -903,7 +919,7 @@ def prepare_fields_to_create_sample_sheet_from_template(data_form, user):
     return fields
 
 
-def store_sample_sheet_in_tmp_folder(run_process_id):
+#def store_sample_sheet_in_tmp_folder(run_process_id):
     '''
     Description:
         The function get the orignal sample sheet and copy it into the tmp/run_process_id folder
@@ -914,6 +930,7 @@ def store_sample_sheet_in_tmp_folder(run_process_id):
         RUN_TEMP_DIRECTORY_RECORDED
     Return:
         sample_sheet_relative
+    '''
     '''
     run_obj = get_run_obj_from_id(run_process_id)
     sample_sheet_relative = run_obj.get_sample_file()
@@ -930,23 +947,7 @@ def store_sample_sheet_in_tmp_folder(run_process_id):
     os.chmod(sample_sheet_copy, 0o664)
 
     return sample_sheet_relative
-
-def update_run_with_sample_sheet(run_process_id, sample_sheet):
     '''
-    Description:
-        The function update the runProcess instance with the sample sheet name
-    Input:
-        run_process_id    # run process id
-        sample_sheet        # sample sheet file name
-    Functions:
-
-    Return:
-        None
-    '''
-    run_obj = get_run_obj_from_id(run_process_id)
-    run_obj.set_run_sample_sheet(sample_sheet)
-    return
-
 
 def fetch_reagent_kits_used_in_run (form_data):
     '''
