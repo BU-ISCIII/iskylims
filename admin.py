@@ -3,7 +3,7 @@ from iSkyLIMS_wetlab.models import *
 
 
 
-
+'''
 class AppAdmin(admin.ModelAdmin):
     list_display = ('run_name','description','csv_file','name')
     def file_link(self, obj):
@@ -13,11 +13,13 @@ class AppAdmin(admin.ModelAdmin):
             return "No attachment"
     file_link.allow_tags = True
     file_link.short_description = 'File Download'
+'''
 
 class LibraryPreparationAdmin (admin.ModelAdmin):
     list_display = ( 'libPrepCodeID','registerUser', 'molecule_id', 'sample_id', 'protocol_id', 'libPrepState',
             'user_sample_sheet', 'userSampleID', 'projectInSampleSheet','samplePlate',
             'sampleWell', 'i7IndexID', 'i7Index', 'i5IndexID', 'i5Index', 'numberOfReused')
+
 
 class LibParameterValueAdmin (admin.ModelAdmin):
     list_display = ('parameter_id', 'library_id', 'parameterValue')
@@ -41,24 +43,21 @@ class RunErrorsAdmin (admin.ModelAdmin):
 
 class RunStatesAdmin (admin.ModelAdmin):
     list_display = ('runStateName',)
-'''
-class StatesForSampleAdmin (admin.ModelAdmin):
-    list_display = ('sampleStateName',)
-'''
+
 class RunningParametersAdmin(admin.ModelAdmin):
     list_display = ('runName_id','RunID','ExperimentName','RunStartDate')
-    #import pdb; pdb.set_trace()
+
 
 class RunProcessAdmin (admin.ModelAdmin):
     list_display = ('runName','usedSequencer','sampleSheet','generatedat','run_date','runError', 'state','index_library','samples','centerRequestedBy','useSpaceImgMb','useSpaceFastaMb','useSpaceOtherMb')
+    list_filter= ('generatedat',)
+    search_fields = ("runName__startswith", )
+
 
 class ProjectsAdmin (admin.ModelAdmin):
     list_display= ('projectName','user_id','LibraryKit_id','libraryKit','baseSpaceFile','generatedat','project_run_date')
     #list_display= ('runprocess_id','projectName','procState','libraryKit','baseSpaceFile')
-'''
-class BaseSpaceLibraryNameAdmin(admin.ModelAdmin):
-    list_display = ('libraryName','generatedat')
-'''
+
 class CollectionIndexKitAdmin(admin.ModelAdmin):
     list_display = ('collectionIndexName', 'version', 'plateExtension', 'adapter1', 'adapter2', 'collectionIndexFile','generatedat')
 

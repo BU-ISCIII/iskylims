@@ -191,11 +191,12 @@ def create_nextseq_run (request):
         if (RunProcess.objects.filter(runName = run_name)).exists():
             if RunProcess.objects.filter(runName = run_name, state__runStateName__exact ='Pre-Recorded'):
                 ## Delete the Sample Sheet file and the row in database
-                delete_run = RunProcess.objects.get(runName = run_name, state__runStateName__exact ='Pre-Recorded')
-                sample_sheet_file = delete_run.get_sample_file()
-                full_path_sample_sheet_file = os.path.join(settings.MEDIA_ROOT, sample_sheet_file)
-                os.remove(full_path_sample_sheet_file)
-                delete_run.delete()
+                delete_run_objs = RunProcess.objects.filter(runName = run_name, state__runStateName__exact ='Pre-Recorded')
+                for delete_run in delete_run_objs:
+                    sample_sheet_file = delete_run.get_sample_file()
+                    full_path_sample_sheet_file = os.path.join(settings.MEDIA_ROOT, sample_sheet_file)
+                    os.remove(full_path_sample_sheet_file)
+                    delete_run.delete()
             else:
                 # delete sample sheet file
                 os.remove(stored_file)
@@ -225,8 +226,9 @@ def create_nextseq_run (request):
             # if found delete the projects, because the previous attempt to complete the run was unsuccessful
             if ( Projects.objects.filter(projectName__icontains = key).exists()):
                 if ( Projects.objects.filter(projectName__icontains = key, runprocess_id__state__runStateName = 'Pre-Recorded').exists()):
-                    delete_project = Projects.objects.get(projectName__icontains = key , runprocess_id__state__runStateName = 'Pre-Recorded')
-                    delete_project.delete()
+                    delete_project_objs = Projects.objects.filter(projectName__icontains = key , runprocess_id__state__runStateName = 'Pre-Recorded')
+                    for delete_project in delete_project_objs:
+                        delete_project.delete()
                 else:
                     project_already_defined.append(key)
         # Change Project behaviour allow now to add sample to exising projects
@@ -373,7 +375,7 @@ def create_nextseq_run (request):
             my_project = projects [p]
             my_name = user_name[p]
             my_libkit = library_kit[p]
-            library_kit_id = LibraryKit.objects.get(libraryName__exact = library_kit[p])
+            library_kit_id = LibraryKit.objects.filter(libraryName__exact = library_kit[p]).last()
             update_info_proj=Projects.objects.get(projectName = my_project)
             update_info_proj.libraryKit=project_index_kit[p]
             update_info_proj.baseSpaceFile=bs_file[project_index_kit[p]]
