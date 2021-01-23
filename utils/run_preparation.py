@@ -8,8 +8,8 @@ from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
 
 from iSkyLIMS_wetlab.utils.pool_preparation import  check_if_duplicated_index
-from iSkyLIMS_wetlab.utils.library_preparation import  get_lib_prep_obj_from_id
-from iSkyLIMS_core.utils.handling_samples import update_sample_reused, get_sample_obj_from_sample_name, get_molecule_objs_from_sample
+from iSkyLIMS_wetlab.utils.library_preparation import  get_lib_prep_obj_from_id, update_library_preparation_for_reuse
+from iSkyLIMS_core.utils.handling_samples import update_sample_reused, get_sample_obj_from_sample_name, get_molecule_objs_from_sample, update_molecule_reused
 from iSkyLIMS_core.utils.handling_protocols import *
 from iSkyLIMS_core.utils.handling_commercial_kits import *
 from django.conf import settings
@@ -640,8 +640,9 @@ def increase_reuse_if_samples_exists(sample_list):
         if sample_obj:
             update_sample_reused(sample_obj.get_sample_id())
             molecules = get_molecule_objs_from_sample(sample_obj)
-            last_molecule = molecules[-1]
-            update_molecule_reused(sample_obj.get_sample_id(), last_molecule.get_molecule_id())
+            import pdb; pdb.set_trace()
+            last_molecule_obj = molecules.reverse()[0]
+            update_molecule_reused(sample_obj.get_sample_id(), last_molecule_obj.get_molecule_code_id())
             update_library_preparation_for_reuse(samples_reused)
             samples_reused.append(sample)
 

@@ -398,7 +398,8 @@ def create_nextseq_run (request):
         subfolder_name=str(run_p.id)
 
         temp_directory = os.path.join(settings.MEDIA_ROOT , wetlab_config.RUN_TEMP_DIRECTORY_RECORDED, subfolder_name)
-        os.makedirs(temp_directory)
+        if not os.path.isdir(temp_directory):
+            os.makedirs(temp_directory)
         # os.mkdir(temp_directory)
         # set group writing permission to the temporary directory
         os.chmod(temp_directory, 0o774)
