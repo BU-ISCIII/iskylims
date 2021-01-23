@@ -12,7 +12,7 @@ from django.contrib.auth.models import Group
 from .sample_sheet_utils import get_projects_in_run
 from django.conf import settings
 from iSkyLIMS_wetlab import wetlab_config
-from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters, SambaConnectionData, EmailData
+from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters, SambaConnectionData, EmailData, ConfigSetting
 from iSkyLIMS_core.models import SequencerInLab, SequencingPlatform
 
 
@@ -38,7 +38,7 @@ def check_all_projects_exists (project_list):
     logger.debug ('End function for check_all_projects_exists')
     return True
 
-def get_conf_param_value(parameter_name):
+def get_configuration_value(parameter_name):
     '''
     Description:
         Function will get the parameter value defined in the configutration table
@@ -50,9 +50,9 @@ def get_conf_param_value(parameter_name):
         parameter_value
     '''
     parameter_value = 'False'
-    if FlexibleConfSettings.objects.filter(confParameterName__exact = parameter_name).exist():
-        parameter_obj = FlexibleConfSettings.objects.filter(confParameterName__exact = parameter_name).last()
-        parameter_value = parameter_obj.get_parameter_value()
+    if ConfigSetting.objects.filter(configurationName__exact = parameter_name).exists():
+        parameter_obj = ConfigSetting.objects.filter(configurationName__exact = parameter_name).last()
+        parameter_value = parameter_obj.get_configuration_value()
     return parameter_value
 
 def get_run_in_same_year_to_compare (run_object):

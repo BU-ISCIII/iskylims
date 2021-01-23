@@ -149,7 +149,7 @@ def create_nextseq_run (request):
         ## CHECK if file contains the extension.
         ## Error page is showed if file does not contain any extension
         split_filename=re.search('(.*)(\.\w+$)',myfile.name)
-        if None==split_filename:
+        if None == split_filename:
             return render (
                 request,'iSkyLIMS_wetlab/error_page.html',
                 {'content':['Uploaded file does not containt extension',
@@ -170,7 +170,7 @@ def create_nextseq_run (request):
         # do not need to include the absolute path because django uses
         # the MEDIA_ROOT variable defined on settings to upload the file
         file_name=str(wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY
-                     + split_filename.group(1)  + timestr + ext_file)
+                     + split_filename.group(1) + '_' + timestr + ext_file)
         filename = fs.save(file_name,  myfile)
         uploaded_file_url = fs.url(filename)
 
@@ -186,17 +186,27 @@ def create_nextseq_run (request):
             #until the real value is get from user FORM
             run_name = timestr
 
+
         ## Check that runName is not already used in the database.
         ## Error page is showed if runName is already  defined
-        if (RunProcess.objects.filter(runName = run_name)).exists():
-            if RunProcess.objects.filter(runName = run_name, state__runStateName__exact ='Pre-Recorded'):
+        if (RunProcess.objects.filter(runName__iexact = run_name)).exists():
+            if RunProcess.objects.filter(runName__iexact = run_name, state__runStateName__exact ='Pre-Recorded').exists():
                 ## Delete the Sample Sheet file and the row in database
-                delete_run_objs = RunProcess.objects.filter(runName = run_name, state__runStateName__exact ='Pre-Recorded')
+                delete_run_objs = RunProcess.objects.filter(runName__iexact = run_name, state__runStateName__exact ='Pre-Recorded')
                 for delete_run in delete_run_objs:
-                    sample_sheet_file = delete_run.get_sample_file()
-                    full_path_sample_sheet_file = os.path.join(settings.MEDIA_ROOT, sample_sheet_file)
-                    os.remove(full_path_sample_sheet_file)
+                    #sample_sheet_file = delete_run.get_sample_file()
+                    ##full_path_sample_sheet_file = os.path.join(settings.MEDIA_ROOT, sample_sheet_file)
+                    #os.remove(full_path_sample_sheet_file)
+                    import pdb; pdb.set_trace()
+                    if Projects.objects.filter(runProcess = delete_run).exists():
+                        project_objs = Projects.objects.filter(runProcess = delete_run)
+                        for project_obj in project_objs:
+                            project_obj.runProcess.remove(delete_run)
+                            import pdb; pdb.set_trace()
+                            if project_obj.runProcess.all().count() == 0 :
+                                project_obj.delete()
                     delete_run.delete()
+                    import pdb; pdb.set_trace()
             else:
                 # delete sample sheet file
                 os.remove(stored_file)
@@ -208,6 +218,7 @@ def create_nextseq_run (request):
         ## Fetch from the Sample Sheet file the projects included in
         ## the run and the user. Error page is showed if not project/description
         ## colunms are found
+
         project_list = get_projects_in_run(stored_file)
 
         if len (project_list) == 0 :
@@ -221,35 +232,30 @@ def create_nextseq_run (request):
         ## Error page is showed if projects are already defined on database
 
         project_already_defined=[]
-        for key, val  in project_list.items():
+        project_in_several_runs = get_configuration_value('PROJECTS_ALLOWED_IN_MULTIPLE_RUNS')
+        for key  in project_list.keys():
             # check if project was already saved in database in Not Started State.
             # if found delete the projects, because the previous attempt to complete the run was unsuccessful
             if ( Projects.objects.filter(projectName__icontains = key).exists()):
-                if ( Projects.objects.filter(projectName__icontains = key, runprocess_id__state__runStateName = 'Pre-Recorded').exists()):
-                    delete_project_objs = Projects.objects.filter(projectName__icontains = key , runprocess_id__state__runStateName = 'Pre-Recorded')
-                    for delete_project in delete_project_objs:
-                        delete_project.delete()
-                else:
+                if project_in_several_runs != 'TRUE':
                     project_already_defined.append(key)
-        # Change Project behaviour allow now to add sample to exising projects
 
         if (len(project_already_defined) >0 ):
-            if get_conf_param_value('PROJECTS_ALLOWED_IN_MULTIPLE_RUNS') == 'False':
-                if (len(project_already_defined)>1):
-                    head_text='The following projects are already defined in database:'
-                else:
-                    head_text='The following project is already defined in database:'
-                ## convert the list into string to display the user names on error page
-                display_project= '  '.join(project_already_defined)
-                ## delete sample sheet file before showing the error page
-                fs.delete(file_name)
-                return render (request,'iSkyLIMS_wetlab/error_page.html',
-                    {'content':[ head_text,'', display_project,'',
-                        'Project names must be unique','', 'ADVICE:',
-                        'Edit the Sample Sheet file to correct this error']})
+            if (len(project_already_defined)>1):
+                head_text='The following projects are already defined in database:'
+            else:
+                head_text='The following project is already defined in database:'
+            ## convert the list into string to display the user names on error page
+            display_project= '  '.join(project_already_defined)
+            ## delete sample sheet file before showing the error page
+            fs.delete(file_name)
+            return render (request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':[ head_text,'', display_project,'',
+                    'Project names must be unique','', 'ADVICE:',
+                    'Edit the Sample Sheet file to correct this error']})
 
         ##Once the information looks good. it will be stores in runProcess and projects table
-
+        import pdb; pdb.set_trace()
         ## store data in runProcess table, run is in pre-recorded state
         center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
         center_requested_by = Center.objects.get(pk = center_requested_id)
@@ -267,20 +273,25 @@ def create_nextseq_run (request):
         run_info_values['index_library_name'] = index_library_name
         for key, val  in project_list.items():
             if User.objects.filter(username__exact = val).exists():
-                userid = User.objects.get(username__exact = val)
+                user_id = User.objects.get(username__exact = val)
             else:
-                userid = None
+                user_id = None
             '''
             p_data = Projects(runprocess_id=RunProcess.objects.get(runName =run_name),
                             projectName=key, user_id=userid)
             p_data.save()
             '''
-            data = {}
-            data['user_id'] = user_id
-            data['projectName'] = key
-            new_project = Projects.objects.create_new_empty_project(data)
-            new_project.add_run(new_run_obj)
+            if not Projects.objects.filter(projectName__iexact = key).exists():
+                data = {}
+                data['user_id'] = user_id
+                data['projectName'] = key
+                project_obj = Projects.objects.create_new_empty_project(data)
+            else:
+                project_obj = Projects.objects.filter(projectName__iexact = key).last()
+
+            project_obj.add_run(new_run_obj)
             projects.append([key, val])
+            import pdb; pdb.set_trace()
         run_info_values['projects_user'] = projects
         run_info_values['runname']= run_name
         ## Get the list of the library kit used (libraryKit)

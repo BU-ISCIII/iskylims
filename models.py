@@ -340,7 +340,7 @@ class Projects(models.Model):
     def get_project_id(self):
         return '%s' %(self.id)
 
-    def add_run(run_obj):
+    def add_run(self, run_obj):
         self.runProcess.add(run_obj)
         return self
 
@@ -1615,7 +1615,7 @@ class EmailData (models.Model):
     objects = EmailDataMamager()
 
 
-class configSetting (models.Model):
+class ConfigSetting (models.Model):
     configurationName = models.CharField(max_length = 80)
     configurationValue = models.CharField(max_length = 255, null=True, blank =True)
     generated_at = models.DateTimeField(auto_now_add=True)

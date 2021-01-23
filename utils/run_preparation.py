@@ -237,8 +237,8 @@ def create_new_projects_added_to_run(project_list, run_obj, user_obj):
     '''
     projects_objs = []
     duplicated_projects = []
-    if configSetting.objects.filter(configurationName__exact = 'PROJECTS_ALLOWED_IN_MULTIPLE_RUNS').exists():
-        allow_projects_in_multi_run = configSetting.objects.filter(configurationName__exact = 'PROJECTS_ALLOWED_IN_MULTIPLE_RUNS').last().get_configuration_value()
+    if ConfigSetting.objects.filter(configurationName__exact = 'PROJECTS_ALLOWED_IN_MULTIPLE_RUNS').exists():
+        allow_projects_in_multi_run = ConfigSetting.objects.filter(configurationName__exact = 'PROJECTS_ALLOWED_IN_MULTIPLE_RUNS').last().get_configuration_value()
     else:
         allow_projects_in_multi_run = 'TRUE'
     for project in project_list :
