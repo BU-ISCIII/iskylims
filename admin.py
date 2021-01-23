@@ -35,13 +35,17 @@ class ProtocolTypeAdmin( admin.ModelAdmin):
 
 class ProtocolParametersAdmin (admin.ModelAdmin):
     list_display = ('protocol_id', 'parameterName', 'parameterOrder', 'parameterUsed', 'parameterMinValue', 'parameterMaxValue', 'parameterDescription')
+    list_filter = ('protocol_id',)
+    search_fields = ('parameterName__startswith',)
 
 class MoleculeParameterValueAdmin (admin.ModelAdmin):
     list_display = ('moleculeParameter_id', 'molecule_id','parameterValue')
 
 class SamplesAdmin(admin.ModelAdmin):
-    list_display = ('sampleCodeID', 'sampleState', 'samplesOrigin', 'sampleType', 'sampleUser', 'species','sampleProject', 'sampleName',
+    list_display = ('sampleCodeID', 'sampleName', 'sampleState', 'samplesOrigin', 'sampleType', 'sampleUser', 'species','sampleProject',
                     'sampleEntryDate', 'uniqueSampleID',  'numberOfReused','sequencingDate' )
+    list_filter = ('generated_at',)
+    search_fields = ('sampleName__startswith',)
 
 class SampleTypeAdmin(admin.ModelAdmin):
     list_display = ('sampleType',)
