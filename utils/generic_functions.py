@@ -3,7 +3,7 @@ import os, re
 from datetime import datetime
 from logging.config import fileConfig
 from logging.handlers import RotatingFileHandler
-
+from smb.SMBConnection import SMBConnection
 
 
 from django.core.mail import send_mail
@@ -234,6 +234,42 @@ def save_samba_connection_data(data):
     return samba_connection_obj
 
 
+def open_samba_connection():
+    '''
+    Description:
+        The function open a samba connection with the parameter settings
+        defined in wetlab configuration file
+    Functions:
+        get_samba_connection_data   # located at this file
+    Return:
+        conn object for the samba connection
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('Starting function open_samba_connection')
+    samba_data = get_samba_connection_data()
+    if not samba_data :
+        string_message = 'Samba connection data on database is empty'
+        logging_errors (string_message, True, False)
+    if samba_data['SAMBA_APPLICATION_FOLDER_NAME'] != '':
+        samba_data['SAMBA_SHARED_FOLDER_NAME'] = os.path.join(samba_data['SAMBA_SHARED_FOLDER_NAME'] , samba_data['SAMBA_APPLICATION_FOLDER_NAME'])
+    conn = SMBConnection(samba_data['SAMBA_USER_ID'], samba_data['SAMBA_USER_PASSWORD'],
+        samba_data['SAMBA_SHARED_FOLDER_NAME'],samba_data['SAMBA_REMOTE_SERVER_NAME'],
+        use_ntlm_v2=samba_data['SAMBA_NTLM_USED'], domain=samba_data['SAMBA_DOMAIN'],
+        is_direct_tcp=samba_data['IS_DIRECT_TCP'] )
+    #try:
+    if samba_data['SAMBA_HOST_NAME'] :
+        conn.connect(socket.gethostbyname(samba_data['SAMBA_HOST_NAME']), int(samba_data['SAMBA_PORT_SERVER']))
+    else:
+        conn.connect(samba_data['SAMBA_IP_SERVER'], int(samba_data['SAMBA_PORT_SERVER']))
+    #except:
+        #string_message = 'Unable to connect to remote server'
+        #logging_errors (string_message, True, True)
+    #    raise IOError ('Samba connection error')
+
+
+    logger.debug ('End function open_samba_connection')
+    return conn
+
 def get_type_of_data (data):
     '''
     Description:
@@ -253,51 +289,15 @@ def get_type_of_data (data):
         return 'string'
 
 
-def fetch_remote_file (conn, run_dir, remote_file, local_file) :
-    '''
-    Description:
-        Function will fetch the file from remote server and copy on local
-        directory
-    Input:
-        conn    # Samba connection object
-        run_dir # run folder to fetch the file
-        remote_file # file name to fetch on remote server
-        local_file # local copy of the file fetched
-    Constants:
-        SAMBA_SHARED_FOLDER_NAME
-    Import:
-        datetime
-    variables:
-        logger # logging object to write in the log file
-    Return:
-        local_file if the file was successfuly copy.
-        Exception if file could not be fetched
-    '''
-    logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function for fetching remote file', run_dir)
-    with open(local_file ,'wb') as r_par_fp :
-        try:
-            conn.retrieveFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME, remote_file, r_par_fp)
-            logger.info('Retrieving the remote %s file for %s/%s', local_file, run_dir,remote_file)
-        except Exception as e:
-            string_message = 'Unable to fetch the ' + local_file + 'file on folder : ' + run_dir
-            logging_errors (string_message, False, True)
-            os.remove(local_file)
-            raise Exception('File not found')
-    logger.debug ('%s : End function for fetching remote file', run_dir)
-    return local_file
-
-
 def find_xml_tag_text (input_file, search_tag):
     '''
     Description:
-        The function will look for the xml element tag in the
-        file and it will return the text value
+        The function will look for the xml element tag in the file and it will return the text value
     Input:
         input_file  # file to find the tag
         search_tag  # xml tag to be found in the input_file
-    Variables:
-        found_tag   # line containing the tag
+    Return:
+        tag value
     '''
     fh = open (input_file, 'r')
     search_line = '<' + search_tag+ '>(.*)</' + search_tag+'>'
@@ -307,7 +307,7 @@ def find_xml_tag_text (input_file, search_tag):
             fh.close()
             return found_tag.group(1)
     fh.close()
-    return ''
+    return 'NOT FOUND'
 
 
 def get_attributes_remote_file (conn, run_dir, remote_file) :
@@ -433,39 +433,7 @@ def get_run_platform_from_file (l_run_parameter) :
     return platform
 
 
-def handling_errors_in_run (experiment_name, error_code):
-    '''
-    Description:
-        Function will manage the error situation where the run must be
-        set to run state ERROR
-    Input:
-        experiment_name # name of the run to be updated
-        error_code      # Error code
-        state_when_error # Run state when error was found
-    Constants:
-        SAMBA_SHARED_FOLDER_NAME
-    Import:
-        datetime
-        Projects
-        RunProcess
-    variables:
-        logger  # logging object to write in the log file
-        run_process     # RunProcess object to be updated
-        project_name_list # list of all project related to the run
-    Return:
-        True
-    '''
-    logger = logging.getLogger(__name__)
-    logger.debug ('Starting function handling_errors_in_run')
-    logger.info('Set run to ERROR state')
-    run_process = RunProcess.objects.get(runName__exact = experiment_name)
-    run_process.set_run_error_code(error_code)
-    project_name_list = Projects.objects.filter(runprocess_id__exact = run_process)
-    logger.info('Set projects to ERROR state')
-    for project in project_name_list:
-        project.set_project_state('Error')
-    logger.debug ('End function handling_errors_in_run')
-    return True
+
 
 
 def is_wetlab_manager (request):

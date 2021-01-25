@@ -78,6 +78,8 @@ def looking_for_new_runs ():
     logger.info('------- End summary for search_update_new_runs -----')
     logger.info('Exiting the proccess for  new/updating runs')
 
+
+    '''
     # looking in database for the runs that are not completed
     logger.info('----------------------------------')
     logger.info('----------------------------------')
@@ -108,6 +110,7 @@ def looking_for_new_runs ():
     print(time_stop)
     print ('****** Exiting the process for searching not completed runs')
     logger.info('###########-----End Crontab--######################')
+    '''
     return
 
 

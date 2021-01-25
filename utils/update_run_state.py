@@ -13,6 +13,8 @@ from iSkyLIMS_wetlab import wetlab_config
 
 
 from .handling_crontab_common_functions import *
+from .generic_functions import *
+
 from .miseq_run_functions import  handle_miseq_run , manage_miseq_in_samplesent,  manage_miseq_in_processing_run
 from .nextseq_run_functions import handle_nextseq_recorded_run, manage_nextseq_in_samplesent, manage_nextseq_in_processing_run
 from .common_run_functions import manage_run_in_processed_run, manage_run_in_processing_bcl2fastq, manage_run_in_processed_bcl2fastq
@@ -119,12 +121,15 @@ def search_update_new_runs ():
         Get the runParameter file to identify if run is NextSeq or miSeq
         to execute its dedicate handler process.
     Functions:
-        open_samba_connection # located in utils.handling_crontab_common_functions.py
-        get_list_processed_runs # located at this file
-        get_new_runs_on_remote_server # located at utils.generic_functions.py
-        get_experiment_name_from_file # located at utils.generic_functions.py
-        validate_sample_sheet   # located at this file
-        save_new_miseq_run # located at this file
+        fetch_remote_file                    # located at utils.handling_crontab_common_functions
+        open_samba_connection                # located in utils.generic_functions.py
+        get_list_processed_runs              # located at this file
+        get_new_runs_on_remote_server        # located at utils.generic_functions.py
+        get_experiment_name_from_file        # located at utils.generic_functions.py
+        get_samba_application_shared_folder  # located at utils.handling_crontab_common_functions.py
+        handle_nextseq_recorded_run          # located at utils.nextseq_run_functions.py
+        validate_sample_sheet                # located at this file
+        save_new_miseq_run                   # located at this file
     Constants:
         PROCESSED_RUN_FILE
         RUN_TEMP_DIRECTORY
@@ -142,6 +147,7 @@ def search_update_new_runs ():
     new_processed_runs = []
     run_with_error = []
     try:
+
         conn=open_samba_connection()
         logger.info('Sucessfully  SAMBA connection for search_update_new_runs')
     except Exception as e:
@@ -149,46 +155,53 @@ def search_update_new_runs ():
         # raising the exception to stop crontab
         logging_errors(string_message, True, True)
         raise
-    
+
     new_runs = get_new_runs_from_remote_server (processed_runs, conn, get_samba_shared_folder())
 
     if len (new_runs) > 0 :
         for new_run in new_runs :
-            l_run_parameter = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_PARAMETER_NEXTSEQ)
-            s_run_parameter = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, new_run,wetlab_config.RUN_PARAMETER_NEXTSEQ)
+            l_run_parameter_path = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_PARAMETER_NEXTSEQ)
+            s_run_parameter_path = os.path.join(get_samba_application_shared_folder(), new_run, wetlab_config.RUN_PARAMETER_NEXTSEQ)
             try:
-               l_run_parameter = fetch_remote_file (conn, new_run, s_run_parameter, l_run_parameter)
-               logger.info('Sucessfully fetch of RunParameter file')
+               l_run_parameter = fetch_remote_file (conn, new_run, s_run_parameter_path, l_run_parameter_path)
+               logger.info('%s : Sucessfully fetch of RunParameter file', new_run)
             except Exception as e:
                 error_message = 'Unable to fetch RunParameter file for folder :' +  new_run
-                logging_errors(error_message,'showTraceback', True)
+                logging_errors(error_message, True, True)
                 continue
 
             experiment_name = get_experiment_name_from_file (l_run_parameter)
 
-            if experiment_name == '' :
-                string_message = 'Experiment name for ' + new_run + ' is empty'
+            if experiment_name == ''  or experiment_name == 'NOT FOUND':
+                if experiment_name == '':
+                    string_message = new_run + ' : Experiment name is empty'
+                else:
+                    string_message = new_run + ' : Experiment name field was not found in file'
                 logging_errors(string_message, False, True)
                 os.remove(l_run_parameter)
-                logger.info('Deleted temporary run parameter file')
+                logger.info(' %s  : Deleted temporary run parameter file', new_run)
                 continue
-            logger.debug('Found the experiment name called : %s', experiment_name)
+            logger.debug('%s : Found the experiment name called : %s', new_run , experiment_name)
             if RunProcess.objects.filter(runName__exact = experiment_name).exclude(state__runStateName ='Recorded').exists():
                 # This situation should not occurr. The run_processed file should
                 # have this value. To avoid new iterations with this run
                 # we update the run process file with this run and continue
                 # with the next item
                 run_state = RunProcess.objects.get(runName__exact = experiment_name).get_state()
-                string_message = experiment_name + ' : is in state ' + run_state + '. Should be in Recorded'
-                logging_errors( string_message, False, False)
+                string_message = new_run  + ' :  experiment name  state ' + experiment_name + 'in incorrect state. Run state is ' + run_state
+                logging_errors( string_message, False, True)
                 logger.info('%s : Deleting temporary runParameter file' , experiment_name)
                 os.remove(l_run_parameter)
-                logger.info('RunParameter file. Local copy deleted')
+                logger.info('%s : RunParameter file. Local copy deleted',experiment_name)
                 continue
             # Run is new or it is in Recorded state.
             # Finding out the platform to continue the run processing
             run_platform =  get_run_platform_from_file (l_run_parameter)
             logger.debug('%s : Found platform name  , %s', experiment_name, run_platform)
+            if run_platform == 'NOT FOUND':
+                string_message = new_run + ': Not found Platform field in RunParameter file'
+                logging_errors (string_message, False, True)
+                continue
             if 'MiSeq' in run_platform :
                 logger.debug('%s  : MiSeq run found. Executing miseq handler ', experiment_name)
                 try:
@@ -216,14 +229,11 @@ def search_update_new_runs ():
                 '''
             elif 'NextSeq' in run_platform :
 
-                logger.debug('Executing NextSeq handler ')
+                logger.debug('%s  : Executing NextSeq handler ', experiment_name)
 
                 try:
                     update_nextseq_process_run =  handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name)
                     if update_nextseq_process_run != '' :
-                        #process_run_file_update = True
-                        #processed_runs.append(new_run)
-                        #new_processed_runs.append(new_run)
                         new_processed_runs.append(experiment_name)
                         logger.info('Run %s was successfully processed ', experiment_name)
                         logger.debug('Finished miSeq handling process')

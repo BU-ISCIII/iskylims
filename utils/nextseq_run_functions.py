@@ -3,6 +3,7 @@ from datetime import datetime
 import os
 import shutil
 from .generic_functions import *
+from .handling_crontab_common_functions import *
 from iSkyLIMS_wetlab.models import *
 #from iSkyLIMS_drylab.models import Machines, Platform
 from iSkyLIMS_wetlab.wetlab_config import *
@@ -157,6 +158,7 @@ def manage_nextseq_in_samplesent(conn, run_object_name) :
         copy_to_remote_file   # located at utils.generic_functions
         handling_errors_in_run # located at utils.generic_functions
         nextseq_parsing_run_information # located as this file
+        get_samba_application_shared_folder     # located at utils.handling_crontab_common_functions.py
     Variable:
         l_run_completion    # completion file name in the local temporary folder
         run_object_name     # RunProcess object
@@ -173,7 +175,7 @@ def manage_nextseq_in_samplesent(conn, run_object_name) :
     logger.info('%s : Start handling in Sample Sent state ', experiment_name)
     run_folder = RunningParameters.objects.get(runName_id = run_object_name).get_run_folder()
     l_run_completion = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_COMPLETION)
-    s_run_completion = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME , run_folder, wetlab_config.RUN_COMPLETION)
+    s_run_completion = os.path.join(get_samba_application_shared_folder() , run_folder, wetlab_config.RUN_COMPLETION)
 
     try:
         l_run_completion = fetch_remote_file (conn, run_folder, s_run_completion, l_run_completion)
@@ -283,33 +285,15 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
         experiment_name  # name used on miseq run
     Functions:
         copy_to_remote_file   # located at utils.generic_functions
-        handling_errors_in_run # located at utils.generic_functions
+        fetch_remote_file               # loacted at handling_crontab_common_functions.py
+        handling_errors_in_run          # located at utils.generic_functions
         nextseq_parsing_run_information # located as this file
-    Import:
-        os
-        shutil
-        RunningParameters
-        RunProcess
+        create_new_sequencer_lab_not_defined    # located at utils/generic_functions.py
+        nextseq_parsing_run_information
     Constant:
         RUN_TEMP_DIRECTORY
         RUN_INFO
         SAMPLE_SHEET
-    Variables:
-        instrument  # name of the sequencer used in the run
-        l_run_info  # local temporary copy of RunInfo
-        l_sample_sheet  # local temporary copy of sample sheet
-        new_run_parameters # new RunningParameters object created for this run
-        run_process  # RunProcess object related to this run
-
-        run_date        # date of starting run
-        run_folder      # run foloder on remote server
-        running_parameters  # dictionary with parsing information from
-                            RunParameter and RunInfo
-        s_run_info  # path of RunInfo on the remote server
-        s_sample_sheet  # path of SampleSheet on the remote server
-    Functions:
-        create_new_sequencer_lab_not_defined    # located at utils/generic_functions.py
-        nextseq_parsing_run_information
     Return:
         number_of_cycles
         file_content
@@ -318,20 +302,20 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
     logger.debug ('%s : Starting function handle_nextseq_recorded_run',experiment_name)
     if RunProcess.objects.filter(runName__exact = experiment_name , state__runStateName ='Recorded').exists():
         logger.info('%s : Processing on Recorded state', experiment_name)
-        run_process = RunProcess.objects.get(runName__exact = experiment_name )
-        run_folder = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME , new_run)
+        run_process_obj = RunProcess.objects.filter(runName__exact = experiment_name ).last()
+        #run_folder = os.path.join(get_samba_application_shared_folder() , new_run)
         # Fetch run info
-        l_run_info = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_INFO)
-        s_run_info = os.path.join(run_folder, wetlab_config.RUN_INFO)
+        l_run_info_path = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_INFO)
+        s_run_info_path = os.path.join(get_samba_application_shared_folder() , new_run, wetlab_config.RUN_INFO)
         try:
-            l_run_info = fetch_remote_file (conn, new_run, s_run_info, l_run_info)
+            l_run_info = fetch_remote_file (conn, new_run, s_run_info_path, l_run_info_path)
             logger.info('%s : Sucessfully fetch of RunInfo file', experiment_name)
         except Exception as e:
-            string_message = experiment_name + ' : Unable to fetch the RunInfo file'
+            string_message = experiment_name + ' : Unable to fetch the RunInfo file on folder ' + new_run
             logging_errors(string_message, True, True)
             handling_errors_in_run(experiment_name, '20')
-
             # cleaning up the RunParameter in local temporaty file
+            logger.debug ('%s : Deleting RunParameter file', experiment_name)
             os.remove(l_run_parameter)
             logger.debug ('%s : End function for handling NextSeq run with exception', experiment_name)
             raise ValueError ('Unable to fetch RunInfo')  # returning to handle next run folder

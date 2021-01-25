@@ -85,13 +85,6 @@ def configuration_samba(request):
         samba_user_field ={}
         for field in SAMBA_CONFIGURATION_FIELDS:
             samba_user_field[field] = request.POST[field]
-        '''
-        if not create_samba_conf_file (samba_user_field, __package__) :
-            error_message = ERROR_UNABLE_TO_SAVE_SAMBA_CONFIGURATION_SETTINGS
-            return render(request, 'iSkyLIMS_wetlab/configurationSamba.html',{'samba_conf_data':samba_user_field, 'error_message': error_message} )
-        import importlib
-        importlib.reload(wetlab_config)
-        '''
         save_samba_connection_data(samba_user_field)
         try:
             open_samba_connection()
@@ -291,7 +284,7 @@ def create_nextseq_run (request):
 
             project_obj.add_run(new_run_obj)
             projects.append([key, val])
-            
+
         run_info_values['projects_user'] = projects
         run_info_values['runname']= run_name
         ## Get the list of the library kit used (libraryKit)

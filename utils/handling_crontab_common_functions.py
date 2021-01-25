@@ -10,6 +10,36 @@ import traceback
 from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters, SambaConnectionData, EmailData, ConfigSetting
 from .generic_functions import get_samba_connection_data, get_email_data, send_error_email_to_user
 
+def fetch_remote_file (conn, run_dir, remote_file, local_file) :
+    '''
+    Description:
+        Function will fetch the file from remote server and copy on local
+        directory
+    Input:
+        conn    # Samba connection object
+        run_dir # run folder to fetch the file
+        remote_file # file name to fetch on remote server
+        local_file # local copy of the file fetched
+    Return:
+        local_file if the file was successfuly copy.
+        Exception if file could not be fetched
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('%s : Starting function for fetching remote file', run_dir)
+    with open(local_file ,'wb') as r_par_fp :
+        try:
+            samba_folder = get_samba_shared_folder()
+            conn.retrieveFile(samba_folder, remote_file, r_par_fp)
+            logger.info('%s : Retrieving the remote %s file for %s ', run_dir, remote_file, local_file)
+        except Exception as e:
+            string_message = 'Unable to fetch the ' + local_file + ' file on folder : ' + run_dir
+            logging_errors (string_message, False, True)
+            os.remove(local_file)
+            logger.debug ('%s : End function for fetching remote file', run_dir)
+            raise Exception('File not found')
+    logger.debug ('%s : End function for fetching remote file', run_dir)
+    return local_file
+
 
 def get_new_runs_from_remote_server (processed_runs, conn, shared_folder):
     '''
@@ -30,7 +60,6 @@ def get_new_runs_from_remote_server (processed_runs, conn, shared_folder):
     new_runs = []
     run_data_root_folder = os.path.join('/', get_samba_application_shared_folder() )
     logger.debug('Shared folder  on remote server is : %s', run_data_root_folder)
-    import pdb; pdb.set_trace()
     run_folder_list = conn.listPath( shared_folder, run_data_root_folder)
     for sfh in run_folder_list:
         if sfh.isDirectory:
@@ -41,7 +70,7 @@ def get_new_runs_from_remote_server (processed_runs, conn, shared_folder):
             if folder_run in processed_runs:
                 continue
             else:
-                logger.info ('Found a new run  %s ',folder_run)
+                logger.info (' %s  : Found new folder run ',folder_run)
                 new_runs.append(folder_run)
     logger.debug('End function get_new_runs_on_remote_server' )
     return new_runs
@@ -65,6 +94,29 @@ def get_samba_shared_folder():
         samba_folder_name
     '''
     return SambaConnectionData.objects.last().get_samba_folder_name()
+
+
+def handling_errors_in_run (experiment_name, error_code):
+    '''
+    Description:
+        Function will manage the error situation where the run must be
+        set to run state ERROR
+    Input:
+        experiment_name # name of the run to be updated
+        error_code      # Error code
+        state_when_error # Run state when error was found
+    Constants:
+        SAMBA_SHARED_FOLDER_NAME
+    Return:
+        True
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('%s : Starting function handling_errors_in_run' , experiment_name)
+    logger.info('%s : Set run to ERROR state',  experiment_name)
+    run_process_obj = RunProcess.objects.filter(runName__exact = experiment_name).last()
+    run_process_obj.set_run_error_code(error_code)
+    logger.debug ('%s : End function handling_errors_in_run' , experiment_name)
+    return True
 
 
 def logging_errors(string_text, showing_traceback , print_on_screen ):
@@ -94,7 +146,6 @@ def logging_errors(string_text, showing_traceback , print_on_screen ):
     email_data = get_email_data()
     if email_data['SENT_EMAIL_ON_ERROR'] :
         subject = 'Error found on wetlab when running crontab'
-        import pdb; pdb.set_trace()
         send_error_email_to_user (subject, string_text, email_data['USER_EMAIL'],
                             [email_data['USER_EMAIL']])
     if print_on_screen :
@@ -146,39 +197,3 @@ def open_log(config_file):
     fileConfig(config_file)
     logger = logging.getLogger(__name__)
     return logger
-
-
-def open_samba_connection():
-    '''
-    Description:
-        The function open a samba connection with the parameter settings
-        defined in wetlab configuration file
-    Functions:
-        get_samba_connection_data   # located at this file
-    Return:
-        conn object for the samba connection
-    '''
-    logger = logging.getLogger(__name__)
-    logger.debug ('Starting function open_samba_connection')
-    samba_data = get_samba_connection_data()
-    if not samba_data :
-        string_message = 'Samba connection data on database is empty'
-        logging_errors (string_message, True, False)
-
-    conn = SMBConnection(samba_data['SAMBA_USER_ID'], samba_data['SAMBA_USER_PASSWORD'],
-        samba_data['SAMBA_SHARED_FOLDER_NAME'],samba_data['SAMBA_REMOTE_SERVER_NAME'],
-        use_ntlm_v2=samba_data['SAMBA_NTLM_USED'], domain=samba_data['SAMBA_DOMAIN'],
-        is_direct_tcp=samba_data['IS_DIRECT_TCP'] )
-    #try:
-    if samba_data['SAMBA_HOST_NAME'] :
-        conn.connect(socket.gethostbyname(samba_data['SAMBA_HOST_NAME']), int(samba_data['SAMBA_PORT_SERVER']))
-    else:
-        conn.connect(samba_data['SAMBA_IP_SERVER'], int(samba_data['SAMBA_PORT_SERVER']))
-    #except:
-        #string_message = 'Unable to connect to remote server'
-        #logging_errors (string_message, True, True)
-    #    raise IOError ('Samba connection error')
-
-
-    logger.debug ('End function open_samba_connection')
-    return conn
