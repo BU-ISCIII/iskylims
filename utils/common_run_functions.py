@@ -1,7 +1,7 @@
 import os
 from iSkyLIMS_wetlab import wetlab_config
 from iSkyLIMS_wetlab.models import *
-from .generic_functions import *
+from .handling_crontab_common_functions import *
 from .run_metric_functions import *
 import xml.etree.ElementTree as ET
 

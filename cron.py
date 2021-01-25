@@ -1,13 +1,13 @@
 from datetime import datetime
 from django.conf import settings
 #from django.contrib.auth.models import User
-
+import sys
 from iSkyLIMS_wetlab import wetlab_config
 from .utils.update_run_state import search_update_new_runs, search_not_completed_run
 
-from .utils.generic_functions import  open_log
+from .utils.handling_crontab_common_functions import  open_log
 
-import os , sys, traceback,errno
+import os , sys, traceback
 
 
 def looking_for_new_runs ():
@@ -53,9 +53,17 @@ def looking_for_new_runs ():
     logger.info('Start searching for new/updating runs')
     try:
         new_runs_updated, run_with_error = search_update_new_runs ()
-    except:
+    except Exception as e:
         print ('****** Exiting abnormal the crontab  process with errors')
+        print (e)
+        logger.debug('*************** ERROR *********************')
+        logger.debug(e)
+        logger.debug('################################')
+        logger.debug(traceback.format_exc())
+        logger.debug('################################')
+        logger.debug('*************** ERROR *********************')
         logger.info('###########-----End Crontab--######################')
+        print(traceback.print_exc())
         return
     logger.info('------- Printing summary for search_update_new_runs -----')
     if len (new_runs_updated) > 0:

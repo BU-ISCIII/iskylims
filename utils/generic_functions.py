@@ -3,8 +3,8 @@ import os, re
 from datetime import datetime
 from logging.config import fileConfig
 from logging.handlers import RotatingFileHandler
-from smb.SMBConnection import SMBConnection
-import socket
+
+
 
 from django.core.mail import send_mail
 from django.contrib.auth.models import Group
@@ -375,43 +375,6 @@ def get_available_run_state ():
     return available_states
 
 
-def get_new_runs_from_remote_server (processed_runs, conn, shared_folder):
-    '''
-    Description:
-        The function fetch the folder names from the remote server and
-        returns a list containing the folder names that have not been
-        processed yet.
-    Input:
-        processed_runs  # full path and name of the file
-        conn # samba connection object
-        shared_folder   # shared folder in the remote server
-        logger          # log object
-    Variable:
-        new_runs        # list containing the new folder run names
-        run_data_root_folder # main folder where all directory runs are
-        run_folder_list  # list of the folder names on remote server
-    Return:
-        new runs
-    '''
-    logger = logging.getLogger(__name__)
-    logger.debug('Starting function get_new_runs_on_remote_server' )
-    new_runs = []
-    run_data_root_folder = os.path.join('/', wetlab_config.SAMBA_APPLICATION_FOLDER_NAME )
-    logger.debug('Shared folder  on remote server is : %s', run_data_root_folder)
-    run_folder_list = conn.listPath( shared_folder, run_data_root_folder)
-    for sfh in run_folder_list:
-        if sfh.isDirectory:
-            folder_run = sfh.filename
-            if (folder_run == '.' or folder_run == '..'):
-                continue
-            # if the run folder has been already process continue searching
-            if folder_run in processed_runs:
-                continue
-            else:
-                logger.info ('Found a new run  %s ',folder_run)
-                new_runs.append(folder_run)
-    logger.debug('End function get_new_runs_on_remote_server' )
-    return new_runs
 
 
 def get_experiment_name_from_file (l_run_parameter) :
@@ -422,7 +385,7 @@ def get_experiment_name_from_file (l_run_parameter) :
     Input:
         l_run_parameter  # file to find the tag
     Functions:
-        find_xml_tag_text
+        find_xml_tag_text # located at this file
     Variables:
         experiment_name # name of the experiment found in runParameter file
     Return:
@@ -524,63 +487,6 @@ def is_wetlab_manager (request):
 
     return True
 
-def logging_errors(string_text, showing_traceback , print_on_screen ):
-    '''
-    Description:
-        The function will log the error information to file.
-        Optional can send an email to inform about the issue
-    Input:
-        logger # contains the logger object
-        string_text # information text to include in the log
-    Functions:
-        send_error_email_to_user # located on utils.wetlab_misc_utilities
-    Constant:
-        SENT_EMAIL_ON_ERROR
-        EMAIL_USER_CONFIGURED
-    Variables:
-        subject # text to include in the subject email
-    '''
-    logger = logging.getLogger(__name__)
-    logger.error('-----------------    ERROR   ------------------')
-    logger.error(string_text )
-    if showing_traceback :
-        logger.error('Showing traceback: ',  exc_info=True)
-    logger.error('-----------------    END ERROR   --------------')
-    if wetlab_config.EMAIL_USER_CONFIGURED:
-        if wetlab_config.SENT_EMAIL_ON_ERROR :
-            subject = 'Error found on wetlab'
-            send_error_email_to_user (subject, string_text, wetlab_config.FROM_EMAIL_ADDRESS,
-                                wetlab_config.TO_EMAIL_ADDRESS)
-    if print_on_screen :
-        from datetime import datetime
-        print('********* ERROR **********')
-        print(string_text)
-        print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        print('When processing run . Check log for detail information')
-        print('******* END ERROR ********')
-    return ''
-
-def logging_warnings(string_text, print_on_screen ):
-    '''
-    Description:
-        The function will log the error information to file.
-        Optional can send an email to inform about the issue
-    Input:
-        logger # contains the logger object
-        string_text # information text to include in the log
-    '''
-    logger = logging.getLogger(__name__)
-    logger.warning('-----------------    WARNING   ------------------')
-    logger.warning(string_text )
-    logger.warning('-----------------    END WARNING   --------------')
-    if print_on_screen :
-        from datetime import datetime
-        print('******* WARNING ********')
-        print(string_text)
-        print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        print('When processing run . Check log for detail information')
-        print('**** END WARNING *******')
-    return ''
 
 
 def need_to_wait_more (experiment_name, waiting_time):
@@ -614,54 +520,6 @@ def need_to_wait_more (experiment_name, waiting_time):
         logger.debug ('End function need_to_wait_sample_sheet')
         return True
 
-def open_log(config_file):
-    '''
-    Description:
-        The function will create the log object to write all logging information
-    Input:
-        logger_name    # contains the logger name that will be included
-                        in the log file
-    Constant:
-        LOGGING_CONFIG_FILE
-    Return:
-        logger object
-    '''
-    fileConfig(config_file)
-    logger = logging.getLogger(__name__)
-    return logger
-
-
-def open_samba_connection():
-    '''
-    Description:
-        The function open a samba connection with the parameter settings
-        defined in wetlab configuration file
-    Return:
-        conn object for the samba connection
-    '''
-    logger = logging.getLogger(__name__)
-    logger.debug ('Starting function open_samba_connection')
-    samba_data = get_samba_connection_data()
-    if not samba_data :
-        string_message = 'Samba connection data on database is empty'
-        logging_errors (string_message, False, False)
-    conn=SMBConnection(samba_data['SAMBA_USER_ID'], samba_data['SAMBA_USER_PASSWORD'],
-        samba_data['SAMBA_SHARED_FOLDER_NAME'],samba_data['SAMBA_REMOTE_SERVER_NAME'],
-        use_ntlm_v2=samba_data['SAMBA_NTLM_USED'], domain=samba_data['SAMBA_DOMAIN'],
-        is_direct_tcp=samba_data['IS_DIRECT_TCP'] )
-    #try:
-    if samba_data['SAMBA_HOST_NAME'] :
-        conn.connect(socket.gethostbyname(samba_data['SAMBA_HOST_NAME']), int(samba_data['SAMBA_PORT_SERVER']))
-    else:
-        conn.connect(samba_data['SAMBA_IP_SERVER'], int(samba_data['SAMBA_PORT_SERVER']))
-    #except:
-        #string_message = 'Unable to connect to remote server'
-        #logging_errors (string_message, True, True)
-    #    raise IOError ('Samba connection error')
-
-
-    logger.debug ('End function open_samba_connection')
-    return conn
 
 
 def get_run_disk_utilization (conn, run_folder):

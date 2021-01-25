@@ -255,7 +255,7 @@ def create_nextseq_run (request):
                     'Edit the Sample Sheet file to correct this error']})
 
         ##Once the information looks good. it will be stores in runProcess and projects table
-        import pdb; pdb.set_trace()
+
         ## store data in runProcess table, run is in pre-recorded state
         center_requested_id = Profile.objects.get(profileUserID = request.user).profileCenter.id
         center_requested_by = Center.objects.get(pk = center_requested_id)
@@ -291,7 +291,7 @@ def create_nextseq_run (request):
 
             project_obj.add_run(new_run_obj)
             projects.append([key, val])
-            import pdb; pdb.set_trace()
+            
         run_info_values['projects_user'] = projects
         run_info_values['runname']= run_name
         ## Get the list of the library kit used (libraryKit)

@@ -6,18 +6,17 @@ import sys, os, re
 #import locale
 #import datetime, time
 from iSkyLIMS_wetlab.models import RunProcess, RunStates, RunningParameters
-#from .interop_statistics import *
+
 import logging
 
-
 from iSkyLIMS_wetlab import wetlab_config
-#from iSkyLIMS_drylab.models import Machines, Platform
 
-from .generic_functions import *
+
+from .handling_crontab_common_functions import *
 from .miseq_run_functions import  handle_miseq_run , manage_miseq_in_samplesent,  manage_miseq_in_processing_run
 from .nextseq_run_functions import handle_nextseq_recorded_run, manage_nextseq_in_samplesent, manage_nextseq_in_processing_run
 from .common_run_functions import manage_run_in_processed_run, manage_run_in_processing_bcl2fastq, manage_run_in_processed_bcl2fastq
-#from .sample_sheet_utils import get_experiment_library_name, get_projects_in_run
+
 
 from django.conf import settings
 from django_utils.models import Center
@@ -52,7 +51,6 @@ def read_processed_runs_file (processed_run_file) :
         except Exception as e:
             string_message = 'Unable to open the processed run file. '
             logging_errors(string_message, True, True)
-
             raise
         fh.close()
         logger.info('run processed file have been read')
@@ -69,8 +67,6 @@ def get_list_processed_runs () :
         The function get the run folder id from the Running Parameter
         table. This list will be used to compare agains the folder on
         remote server.
-    Variable:
-        processed_runs  # list of the folder names get from database
     Return:
         raise exception when not access to database
         processed_runs
@@ -78,12 +74,7 @@ def get_list_processed_runs () :
     logger = logging.getLogger(__name__)
     logger.debug('Starting function get_list_processed_runs' )
     processed_runs = []
-    try:
-        r_parameters_objects = RunningParameters.objects.all().exclude(runName_id__state__runStateName = "Recorded")
-    except Exception as e :
-        string_message = 'Unable to open the processed run file. '
-        logging_errors(string_message, True, True)
-        raise
+    r_parameters_objects = RunningParameters.objects.all().exclude(runName_id__state__runStateName = "Recorded")
 
     for r_parameter in r_parameters_objects :
         processed_runs.append(r_parameter.get_run_folder())
@@ -128,7 +119,7 @@ def search_update_new_runs ():
         Get the runParameter file to identify if run is NextSeq or miSeq
         to execute its dedicate handler process.
     Functions:
-        open_samba_connection # located in utils.wetlab_misc_utilities.py
+        open_samba_connection # located in utils.handling_crontab_common_functions.py
         get_list_processed_runs # located at this file
         get_new_runs_on_remote_server # located at utils.generic_functions.py
         get_experiment_name_from_file # located at utils.generic_functions.py
@@ -139,14 +130,6 @@ def search_update_new_runs ():
         RUN_TEMP_DIRECTORY
         SAMBA_SHARED_FOLDER_NAME
         SAMPLE_SHEET
-    Variables:
-        handle_new_miseq_run # list with all new miseq runs
-        l_sample_sheet  # full path for storing sample sheet file on
-                        tempary local folder
-        new_processed_runs # list with the new folder run processed
-        s_sample_sheet  # full path for remote sample sheet file
-        processed_run_file # path
-        processed_runs  # list of run that are moved to Sample Sent state
     Return:
         new_processed_runs # List with all run successfully processed
     '''
@@ -155,7 +138,7 @@ def search_update_new_runs ():
     #processed_run_file = os.path.join( wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.PROCESSED_RUN_FILE)
     #processed_runs = read_processed_runs_file (processed_run_file)
     processed_runs = get_list_processed_runs()
-    process_run_file_update = False
+    #process_run_file_update = False
     new_processed_runs = []
     run_with_error = []
     try:
@@ -164,8 +147,10 @@ def search_update_new_runs ():
     except Exception as e:
         string_message = 'Unable to open SAMBA connection for the process search update runs'
         # raising the exception to stop crontab
-        raise logging_errors(string_message, True, True)
-    new_runs = get_new_runs_from_remote_server (processed_runs, conn, wetlab_config.SAMBA_SHARED_FOLDER_NAME)
+        logging_errors(string_message, True, True)
+        raise
+    
+    new_runs = get_new_runs_from_remote_server (processed_runs, conn, get_samba_shared_folder())
 
     if len (new_runs) > 0 :
         for new_run in new_runs :
@@ -174,8 +159,9 @@ def search_update_new_runs ():
             try:
                l_run_parameter = fetch_remote_file (conn, new_run, s_run_parameter, l_run_parameter)
                logger.info('Sucessfully fetch of RunParameter file')
-            except:
-                logger.info('Continue with the next run folder')
+            except Exception as e:
+                error_message = 'Unable to fetch RunParameter file for folder :' +  new_run
+                logging_errors(error_message,'showTraceback', True)
                 continue
 
             experiment_name = get_experiment_name_from_file (l_run_parameter)
@@ -185,9 +171,8 @@ def search_update_new_runs ():
                 logging_errors(string_message, False, True)
                 os.remove(l_run_parameter)
                 logger.info('Deleted temporary run parameter file')
-                logger.info('Exceptional condition reported on log. Continue with the next run')
                 continue
-            logger.debug('%s  : found the experiment name ', experiment_name)
+            logger.debug('Found the experiment name called : %s', experiment_name)
             if RunProcess.objects.filter(runName__exact = experiment_name).exclude(state__runStateName ='Recorded').exists():
                 # This situation should not occurr. The run_processed file should
                 # have this value. To avoid new iterations with this run
@@ -198,6 +183,7 @@ def search_update_new_runs ():
                 logging_errors( string_message, False, False)
                 logger.info('%s : Deleting temporary runParameter file' , experiment_name)
                 os.remove(l_run_parameter)
+                logger.info('RunParameter file. Local copy deleted')
                 continue
             # Run is new or it is in Recorded state.
             # Finding out the platform to continue the run processing
@@ -292,7 +278,7 @@ def search_not_completed_run ():
     Input:
         logger # log object for logging
     Functions:
-        open_samba_connection # located in utils.wetlab_misc_utilities.py
+        open_samba_connection # located in utils.generic_functions.py
 
         save_new_miseq_run # located at this file
     Constants:
@@ -300,24 +286,6 @@ def search_not_completed_run ():
         RUN_TEMP_DIRECTORY
         SAMBA_SHARED_FOLDER_NAME
         SAMPLE_SHEET
-
-    Variables:
-
-        runs_to_handle # dictionary contains the run state as key and
-                        run objects in a value list
-        run_platform  # platform used on the run in sample sent state
-
-        state_list_be_processed # list contains the string state that have
-                                to be handle to move to complete state
-
-        handle_new_miseq_run # list with all new miseq runs
-        l_sample_sheet  # full path for storing sample sheet file on
-                        tempary local folder
-        runs_with_error # dictionary contains the run state as key and
-                        run names that failed during the process
-        s_sample_sheet  # full path for remote sample sheet file
-        processed_run # dictionary having state as key and the runs
-                        processed as value list
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function for search_not_completed_run')

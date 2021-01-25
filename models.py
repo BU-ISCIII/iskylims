@@ -1564,11 +1564,25 @@ class SambaConnectionData (models.Model):
             samba_data[field] = getattr(self, field)
         return samba_data
 
+    def get_samba_application_folder_name(self):
+        if self.SAMBA_APPLICATION_FOLDER_NAME != None:
+            return '%s' %(self.SAMBA_APPLICATION_FOLDER_NAME)
+        else:
+            return ''
+
+    def get_samba_folder_name(self):
+        if self.SAMBA_SHARED_FOLDER_NAME != None:
+            return '%s' %(self.SAMBA_SHARED_FOLDER_NAME)
+        else:
+            return ''
+
     def update_data(self, data):
         for field in wetlab_config.SAMBA_CONFIGURATION_FIELDS:
             setattr(self, field , data[field])
         self.save()
         return self
+
+
 
 class EmailDataMamager(models.Manager):
     def create_email_data(self, data):

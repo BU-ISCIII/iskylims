@@ -5,7 +5,8 @@ from  iSkyLIMS_wetlab.models import RunProcess, RunningParameters, StatsRunSumma
 
 from django.conf import settings
 from iSkyLIMS_wetlab import wetlab_config
-from .generic_functions import fetch_remote_file, logging_errors
+from .generic_functions import fetch_remote_file
+from .handling_crontab_common_functions import logging_errors
 
 def get_run_metric_files (conn, run_folder, experiment_name):
     '''
