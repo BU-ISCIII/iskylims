@@ -194,12 +194,31 @@ def search_update_new_runs ():
                 os.remove(l_run_parameter)
                 logger.info('%s : RunParameter file. Local copy deleted',experiment_name)
                 continue
-            # Run is new or it is in Recorded state.
+
+
+            # Fetch run info
+            l_run_info_path = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_INFO)
+            s_run_info_path = os.path.join(get_samba_application_shared_folder() , new_run, wetlab_config.RUN_INFO)
+            try:
+                l_run_info = fetch_remote_file (conn, new_run, s_run_info_path, l_run_info_path)
+                logger.info('%s : Sucessfully fetch of RunInfo file', experiment_name)
+            except Exception as e:
+                string_message = experiment_name + ' : Unable to fetch the RunInfo file on folder ' + new_run
+                logging_errors(string_message, True, True)
+                handling_errors_in_run(experiment_name, '20')
+                # cleaning up the RunParameter in local temporaty file
+                logger.debug ('%s : Deleting RunParameter file', experiment_name)
+                os.remove(l_run_parameter)
+                logger.debug ('%s : End function for handling NextSeq run with exception', experiment_name)
+                raise Exception   # returning to handle next run folder
+
             # Finding out the platform to continue the run processing
             run_platform =  get_run_platform_from_file (l_run_parameter)
+            # branch according platform to continue the run processing
+
             logger.debug('%s : Found platform name  , %s', experiment_name, run_platform)
             if run_platform == 'NOT FOUND':
-                string_message = new_run + ': Not found Platform field in RunParameter file'
+                string_message = new_run + ': Exting this run becuase Platform tag  was not found RunParameter file'
                 logging_errors (string_message, False, True)
                 continue
             if 'MiSeq' in run_platform :
@@ -228,27 +247,22 @@ def search_update_new_runs ():
                     continue
                 '''
             elif 'NextSeq' in run_platform :
-
                 logger.debug('%s  : Executing NextSeq handler ', experiment_name)
-
                 try:
-                    update_nextseq_process_run =  handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name)
+                    update_nextseq_process_run =  handle_nextseq_recorded_run (conn, new_run, l_run_parameter, l_run_info, experiment_name)
+                except Exception as e:
+                    string_message = experiment_name +  ' : Error when processing the handle_nextseq_recorded_run function'
+                    logging_errors(string_message, True, True)
+                    logger.debug('%s :  Finished NextSeq handling process', experiment_name)
+                    continue
+                else:
+                    import pdb; pdb.set_trace()
                     if update_nextseq_process_run != '' :
                         new_processed_runs.append(experiment_name)
-                        logger.info('Run %s was successfully processed ', experiment_name)
-                        logger.debug('Finished miSeq handling process')
+                        logger.info('%s : was successfully processed ', experiment_name)
+                        logger.debug('%s : Finished miSeq handling process', experiment_name)
                     continue
-                except ValueError as e :
-                    string_message = 'Error found when processing NextSeq run ' + str(e)
-                    logging_warnings(string_message, False)
-                    run_with_error.append(experiment_name)
-                    continue
-                except :
-                    logger.warning('NextSeq run is waiting for sequencer to have all files')
-                    logger.info('Continue processing next item ')
-
-                    continue
-                logger.debug('Finished miSeq handling process')
+                logger.debug('%s :  Finished NextSeq handling process', experiment_name)
             else:
                 string_message = 'Platform for this run is not supported'
                 logging_errors(string_message, False , True)

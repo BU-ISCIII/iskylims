@@ -7,8 +7,8 @@ from iSkyLIMS_wetlab.models import *
 
 from django_utils.models import Center
 from .sample_sheet_utils import get_index_library_name, get_projects_in_run
-from .generic_functions import create_new_sequencer_lab_not_defined
-from .handling_crontab_common_functions import logging_warnings
+
+from .handling_crontab_common_functions import *
 from iSkyLIMS_core.models import SequencerInLab
 
 def check_miseq_completion_run (conn, experiment_name, log_folder):

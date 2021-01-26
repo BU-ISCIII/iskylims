@@ -39,108 +39,7 @@ def check_completion_success (l_run_completion, experiment_name):
     logger.debug ('%s : End function for check_completion_success', experiment_name)
     return True
 
-def nextseq_parsing_run_information(l_run_info, l_run_parameter, experiment_name) :
-    '''
-    Description:
-        The function is called for parsing the RunInfo and RunParameter
-        files.
-        After parsing the RunningParameters database table will be
-        updated with a new row having the parsed data
-        Empty values will be set for MiSeq runs that exist on NextSeq
-        but not in MiSeq runs
-    Input:
-        run_info    # contains the path for RunInfo.xml file
-        run_parameter # contains the path for RunParameter.xml file
-        experiment_name      # contains the experiment name
-    CONSTANTS:
-        FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE
-    Variables:
-        image_channel   # list containing the image channel values
-        logger          # contains the logger object to write information
-                        on log file
-        p_parameter     # element tree object for run parameter
-        p_run           # element tree for run info
-        projects_to_update # list of projects that belong to the same run
-        running_data    # dictionary with  the  information parsed
-        running_parameters # new RunningParameter object to store parsed data
-        sequencer       # sequencer index of the machine
-     Return:
-        running_data
-    '''
-    logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function nextseq_parsing_run_information', experiment_name)
-    running_data={}
-    image_channel=[]
 
-    #################################################
-    ## parsing RunInfo.xml file
-    #################################################
-    run_data=ET.parse(l_run_info)
-    run_root=run_data.getroot()
-    logger.info('%s : parsing the runInfo.xml file ', experiment_name)
-    p_run=run_root[0]
-    ## getting the common values NextSeq and MiSeq
-
-
-    running_data['Flowcell']=p_run.find('Flowcell').text
-    running_data['FlowcellLayout']=p_run.find('FlowcellLayout').attrib
-    #################################################
-    ## parsing RunParameter.xml file
-    #################################################
-    logger.info('%s : Parsing the runParameter.xml file  ',experiment_name )
-    parameter_data=ET.parse(l_run_parameter)
-    parameter_data_root=parameter_data.getroot()
-    p_parameter=parameter_data_root[1]
-    ## getting the common values NextSeq and MiSeq
-    for field in wetlab_config.FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE:
-        try:
-            running_data[field] = parameter_data_root.find(field).text
-        except:
-            running_data[field] = ''
-            string_message = experiment_name + ' : Parameter ' + field  + ' unable to fetch in RunParameter.xml'
-            logging_warnings(string_message, False)
-
-    '''
-    running_data['RunID']=parameter_data_root.find('RunID').text
-    running_data['ExperimentName']=parameter_data_root.find('ExperimentName').text
-    running_data['RTAVersion']=parameter_data_root.find('RTAVersion').text
-    running_data['Chemistry']=parameter_data_root.find('Chemistry').text
-    running_data['RunStartDate']=parameter_data_root.find('RunStartDate').text
-    ###
-    try:
-        running_data['RunManagementType']=parameter_data_root.find('RunManagementType').text
-    except:
-        running_data['RunManagementType']=''
-    running_data['ApplicationVersion']=p_parameter.find('ApplicationVersion').text
-    running_data['NumTilesPerSwath']=p_parameter.find('NumTilesPerSwath').text
-    running_data['SystemSuiteVersion']=parameter_data_root.find('SystemSuiteVersion').text
-    ##
-    running_data['LibraryID']=parameter_data_root.find('LibraryID').text
-    running_data['AnalysisWorkflowType']=parameter_data_root.find('AnalysisWorkflowType').text
-    running_data['PlannedRead1Cycles']=parameter_data_root.find('PlannedRead1Cycles').text
-    running_data['PlannedRead2Cycles']=parameter_data_root.find('PlannedRead2Cycles').text
-    running_data['PlannedIndex1ReadCycles']=parameter_data_root.find('PlannedIndex1ReadCycles').text
-    running_data['PlannedIndex2ReadCycles']=parameter_data_root.find('PlannedIndex2ReadCycles').text
-    '''
-
-
-    for i in run_root.iter('Name'):
-        image_channel.append(i.text)
-    running_data['ImageChannel']=image_channel
-    running_data['ImageDimensions']=p_run.find('ImageDimensions').attrib
-
-    ## get the instrument for NextSeq run
-    instrument = parameter_data_root.find('InstrumentID').text
-
-    ##############################################
-    ## updating the date fetched from the Date tag for run and project
-    ##############################################
-    date = p_run.find('Date').text
-    logger.debug('%s : Found date that was recorded the Run %s', experiment_name , date)
-    run_date = datetime.datetime.strptime(date, '%y%m%d')
-
-    logger.debug('%s : End function nextseq_parsing_run_information', experiment_name)
-    return running_data, run_date, instrument
 
 
 def manage_nextseq_in_samplesent(conn, run_object_name) :
@@ -274,7 +173,7 @@ def manage_nextseq_in_processing_run(conn, run_object_name) :
 
 
 
-def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name):
+def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, l_run_info, experiment_name):
     '''
     Description:
         The function will copy the sample sheet to the remote run folder
@@ -282,6 +181,7 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
         conn        # samba connection object
         new_run     # folder remote directory for miseq run
         l_run_parameter  # local path for the run parameter file
+        l_run_info      # local path for run info file
         experiment_name  # name used on miseq run
     Functions:
         copy_to_remote_file   # located at utils.generic_functions
@@ -289,7 +189,7 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
         handling_errors_in_run          # located at utils.generic_functions
         nextseq_parsing_run_information # located as this file
         create_new_sequencer_lab_not_defined    # located at utils/generic_functions.py
-        nextseq_parsing_run_information
+
     Constant:
         RUN_TEMP_DIRECTORY
         RUN_INFO
@@ -303,56 +203,33 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
     if RunProcess.objects.filter(runName__exact = experiment_name , state__runStateName ='Recorded').exists():
         logger.info('%s : Processing on Recorded state', experiment_name)
         run_process_obj = RunProcess.objects.filter(runName__exact = experiment_name ).last()
-        #run_folder = os.path.join(get_samba_application_shared_folder() , new_run)
-        # Fetch run info
-        l_run_info_path = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_INFO)
-        s_run_info_path = os.path.join(get_samba_application_shared_folder() , new_run, wetlab_config.RUN_INFO)
-        try:
-            l_run_info = fetch_remote_file (conn, new_run, s_run_info_path, l_run_info_path)
-            logger.info('%s : Sucessfully fetch of RunInfo file', experiment_name)
-        except Exception as e:
-            string_message = experiment_name + ' : Unable to fetch the RunInfo file on folder ' + new_run
-            logging_errors(string_message, True, True)
-            handling_errors_in_run(experiment_name, '20')
-            # cleaning up the RunParameter in local temporaty file
-            logger.debug ('%s : Deleting RunParameter file', experiment_name)
-            os.remove(l_run_parameter)
-            logger.debug ('%s : End function for handling NextSeq run with exception', experiment_name)
-            raise ValueError ('Unable to fetch RunInfo')  # returning to handle next run folder
 
-        # Parsing RunParameter and Run Info
+        running_parameters = nextseq_parsing_run_info_and_parameter_information(l_run_info, l_run_parameter, experiment_name)
+        logger.info('%s  : Deleting runParameter file', experiment_name)
+        os.remove(l_run_parameter)
+        logger.info('%s  : Deleting runInfo file', experiment_name)
+        os.remove(l_run_info)
 
-        running_parameters, run_date, instrument = nextseq_parsing_run_information(l_run_info, l_run_parameter, experiment_name)
+        if RunningParameters.objects.filter(runName_id = run_process_obj).exists():
+            run_parameter_objs = RunningParameters.objects.filter(runName_id = run_process_obj)
+            for run_parameter_obj in run_parameter_objs:
+                logger.info('%s  : Deleting RunParameters object from database', experiment_name)
+                run_parameter_obj.delete()
+        run_parameters = RunningParameters.objects.create_running_parameters(running_parameters['running_data'], run_process_obj)
+        logger.info( '%s  : Created RunParameters object on database', experiment_name)
 
-        if  Projects.objects.filter(runprocess_id = run_process).exists():
-            project_objs = Projects.objects.filter(runprocess_id = run_process)
-            for project_obj in project_objs :
-                project_obj.set_project_run_date(run_date)
-
-        if not RunningParameters.objects.filter(runName_id = run_process).exists():
-            run_parameters = RunningParameters.objects.create_running_parameters(running_parameters, run_process)
-        else:
-            string_message = experiment_name + " : RunParameters already in database for " + run_process.get_run_name()
-            logging_warnings(string_message,False)
-
-        if SequencerInLab.objects.filter(sequencerName__exact = instrument).exists():
-            sequencer = SequencerInLab.objects.filter(sequencerName__exact = instrument)
+        if SequencerInLab.objects.filter(sequencerName__exact = running_parameters['instrument']).exists():
+            sequencer_obj = SequencerInLab.objects.filter(sequencerName__exact = running_parameters['instrument']).last()
 
         else:
             string_message = experiment_name + ' : ' + instrument + ' no sequencer defined '
             logging_errors(string_message, False, True)
-            sequencer = create_new_sequencer_lab_not_defined (instrument,l_run_info, experiment_name)
+            sequencer_obj = create_new_sequencer_lab_not_defined ( running_parameters['instrument'],  running_parameters['NumLanes'], experiment_name)
             logger.info('%s : Continue the proccess after creating the new sequencer' ,experiment_name)
-        run_process.set_used_sequencer(sequencer)
+        run_process_obj.set_used_sequencer(sequencer_obj)
         logger.info('%s : Sequencer  stored on database', experiment_name)
 
-        # deleting RunParameter and RunInfo
-        logger.info('%s : Deleting RunParameter and RunInfo',experiment_name)
-        os.remove(l_run_parameter)
-        os.remove(l_run_info)
-        # Handling Sample Sheet file
-        #exp_name_id = RunProcess.objects.get(runName__exact = experiment_name).id
-        sample_sheet_tmp_dir = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY_RECORDED,run_process.get_run_id())
+        sample_sheet_tmp_dir = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY_RECORDED,run_process_obj.get_run_id())
         l_sample = os.path.join(sample_sheet_tmp_dir, wetlab_config.SAMPLE_SHEET)
 
         if os.path.exists(l_sample):
@@ -368,10 +245,10 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
                     logging_errors (string_message, True, False)
                     handling_errors_in_run (experiment_name, '23')
                     logger.debug ('%s : End function for handling NextSeq run with exception', experiment_name)
-                    raise ValueError ('Unable to copy Sample Sheet on remote server')
+                    raise Exception
             # Update run to Sample Sent
 
-            run_process.set_run_state('Sample Sent')
+            run_process_obj.set_run_state('Sample Sent')
             # Cleaning up the temporary folder with the sample sheet
             try:
                 shutil.rmtree(sample_sheet_tmp_dir)
@@ -380,17 +257,17 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, experiment_name
                 string_message = experiment_name +' : Unable to delete temporary folder with the sample sheet ' + sample_sheet_tmp_dir
                 logging_errors (string_message, True, True)
                 logger.debug ('%s : End function for handling NextSeq run with exception', experiment_name)
-                raise ValueError ('Unable to delete local Sample Sheet')
+                raise Exception
 
         else:
             string_message = experiment_name + ' : sample sheet not found on local Directory ' + sample_sheet_tmp_dir
             logging_errors (string_message, False, True)
             handling_errors_in_run (experiment_name, '22')
             logger.debug ('%s : End function for handling NextSeq run with exception', experiment_name)
-            raise ValueError ('Sample Sheet not found in local folder')
+            raise Exception
 
         logger.debug ('%s : End function for handling NextSeq run ', experiment_name)
-        return run_process
+        return run_process_obj
     else:
         if not RunProcess.objects.filter(runName__exact = experiment_name).exists():
             string_message =  experiment_name + ' : is not yet defined on database'

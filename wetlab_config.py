@@ -76,6 +76,15 @@ COMPLETION_TAG = 'CompletionStatus'
 COMPLETION_SUCCESS = 'CompletedAsPlanned'
 EXPERIMENT_NAME_TAG = 'ExperimentName'
 APPLICATION_NAME_TAG = 'ApplicationName'
+
+############### FIELD TAG NAMES TO COLLECT FROM RunParameter FILE #####################
+FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE = ['RunID','ExperimentName','RTAVersion','Chemistry','RunStartDate','RunManagementType', 'SystemSuiteVersion',
+                    'LibraryID', 'AnalysisWorkflowType','PlannedRead1Cycles','PlannedRead2Cycles','PlannedIndex1ReadCycles','PlannedIndex2ReadCycles' ]
+SETUP_TAG = 'Setup'
+FIELDS_TO_FETCH_FROM_SETUP_TAG = ['NumLanes', 'ApplicationName' , 'ApplicationVersion', 'NumTilesPerSwath']
+
+MI_SEQ_INSTRUMENT_ID = 'ScannerID'
+
 ##############################################################
 
 ############ DEFAULT VALUES FOR MISEQ SAMPLE SHEET  ##########
@@ -335,10 +344,6 @@ ERROR_NOT_ALLOWED_REPEATED_PROJECTS = ['Configuration settigs are set do not all
 HEADING_FOR_PROJECT_DATES = ['Project Recorder date', 'Project date']
 
 
-############### FIELD NAME TO COLLECT FROM RunParameter FILE #####################
-FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE = ['RunID','ExperimentName','RTAVersion','Chemistry','RunStartDate','RunManagementType','ApplicationVersion','NumTilesPerSwath',
-                    'SystemSuiteVersion', 'LibraryID', 'AnalysisWorkflowType','PlannedRead1Cycles','PlannedRead2Cycles','PlannedIndex1ReadCycles','PlannedIndex2ReadCycles' ]
-
 ################ EMAIL CONFIGURATION FIELDS ###############################
 EMAIL_CONFIGURATION_FIELDS = ['EMAIL_HOST','EMAIL_PORT','USER_PASSWORD', 'USER_NAME', 'USER_EMAIL', 'SENT_EMAIL_ON_ERROR', 'USE_TLS']
 
@@ -353,3 +358,7 @@ HEADING_SINGLE_PROJECT_FL_SUMMARY = ['Cluster (Raw)', 'Cluster (PF)', 'Yield (MB
 HEADING_SINGLE_PROJECT_STATS_LANE = ['Lane', 'PF Clusters', '% of the lane','% Perfect barcode', '% One mismatch barcode','Yield (Mbases)','% >= Q30 bases', 'Mean Quality Score']
 
 HEADING_SINGLE_PROJECT_SAMPLES = ['Sample','Barcode','PF Clusters','Percent of Project', 'Yield (Mbases)','% >= Q30 bases', 'Mean Quality Score']
+
+
+########   Sequencer data   #########################
+EMPTY_FIELDS_IN_SEQUENCER = ['platformID', 'sequencerDescription', 'sequencerLocation', 'sequencerSerialNumber','sequencerOperationStart']

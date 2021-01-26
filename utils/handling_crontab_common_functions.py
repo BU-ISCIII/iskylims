@@ -6,9 +6,41 @@ import os
 from smb.SMBConnection import SMBConnection
 import socket
 import traceback
+import xml.etree.ElementTree as ET
+from datetime import datetime
 
 from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters, SambaConnectionData, EmailData, ConfigSetting
-from .generic_functions import get_samba_connection_data, get_email_data, send_error_email_to_user
+from .generic_functions import get_samba_connection_data, get_email_data, send_error_email_to_user, find_xml_tag_text
+from iSkyLIMS_wetlab.wetlab_config import *
+
+def create_new_sequencer_lab_not_defined (sequencer_name,num_of_lanes, experiment_name):
+    '''
+    Description:
+
+        creates a new entry in database wit only the sequencer name and the lane numbers
+    Input:
+        sequencer_name    # sequencer name
+        num_of_lanes        # number of lanes
+        experiment_name     # experiment name
+    Functions:
+        get_sequencer_lanes_number_from_file # located at this file
+    Constants:
+        EMPTY_FIELDS_IN_SEQUENCER
+    Return:
+        new_sequencer_obj
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('%s : Starting function create_new_sequencer_lab_not_defined', experiment_name)
+    seq_data = {}
+    for item in EMPTY_FIELDS_IN_SEQUENCER :
+        seq_data[item] = None
+    seq_data['sequencerNumberLanes'] = num_of_lanes
+    seq_data['sequencerName'] = sequencer_name
+    new_sequencer_obj = SequencerInLab.objects.create_sequencer_in_lab(seq_data)
+    logger.info('%s : Created the new sequencer in database' , experiment_name )
+    logger.debug ('%s : End function create_new_sequencer_lab_not_defined', experiment_name)
+    return new_sequencer_obj
+
 
 def fetch_remote_file (conn, run_dir, remote_file, local_file) :
     '''
@@ -74,6 +106,24 @@ def get_new_runs_from_remote_server (processed_runs, conn, shared_folder):
                 new_runs.append(folder_run)
     logger.debug('End function get_new_runs_on_remote_server' )
     return new_runs
+
+def get_run_platform_from_file (l_run_parameter) :
+    '''
+    Description:
+        The function will get the run platform for the xml element tag in the
+        file and it will return the platform used
+    Input:
+        l_run_parameter  # file to find the tag
+    Variables:
+        platform # name of the experiment found in runParameter file
+    Return:
+        platform
+    '''
+    platform = find_xml_tag_text (l_run_parameter, APPLICATION_NAME_TAG)
+
+    return platform
+
+
 
 def get_samba_application_shared_folder():
     '''
@@ -197,3 +247,98 @@ def open_log(config_file):
     fileConfig(config_file)
     logger = logging.getLogger(__name__)
     return logger
+
+
+def nextseq_parsing_run_info_and_parameter_information(l_run_info, l_run_parameter, experiment_name) :
+    '''
+    Description:
+        The function is called for parsing the RunInfo and RunParameter  files.
+        After parsing the RunningParameters database table will be
+        updated with a new row having the parsed data
+        Empty values will be set for MiSeq runs that exist on NextSeq
+        but not in MiSeq runs
+    Input:
+        run_info    # contains the path for RunInfo.xml file
+        run_parameter # contains the path for RunParameter.xml file
+        experiment_name      # contains the experiment name
+    CONSTANTS:
+        FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE
+        SETUP_TAG
+        NUMBER_OF_LANES_TAG
+        APPLICATION_NAME_TAG
+     Return:
+        parsing_data
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('%s : Starting function parsing_run_information', experiment_name)
+    running_data={}
+    parsing_data = {}
+    image_channel=[]
+
+    #################################################
+    ## parsing RunInfo.xml file
+    #################################################
+    run_data=ET.parse(l_run_info)
+    run_root=run_data.getroot()
+    logger.info('%s : parsing the runInfo.xml file ', experiment_name)
+    p_run=run_root[0]
+    ## getting the common values NextSeq and MiSeq
+    logger.info('%s  : Fetching Flowcell and FlowcellLayout data ', experiment_name)
+    running_data['Flowcell']=p_run.find('Flowcell').text
+    running_data['FlowcellLayout']=p_run.find('FlowcellLayout').attrib
+
+    #################################################
+    ## parsing RunParameter.xml file
+    #################################################
+    logger.info('%s : Parsing the runParameter.xml file  ',experiment_name )
+    parameter_data=ET.parse(l_run_parameter)
+    parameter_data_root=parameter_data.getroot()
+    p_parameter=parameter_data_root[1]
+    ## getting the common values NextSeq and MiSeq
+    for field in FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE:
+        try:
+            running_data[field] = parameter_data_root.find(field).text
+        except:
+            running_data[field] = ''
+            string_message = experiment_name + ' : Parameter ' + field  + ' unable to fetch in RunParameter.xml'
+            logging_warnings(string_message, False)
+
+    for i in run_root.iter('Name'):
+        image_channel.append(i.text)
+    running_data['ImageChannel']=image_channel
+    running_data['ImageDimensions']=p_run.find('ImageDimensions').attrib
+
+    ## get the instrument for NextSeq run
+    parsing_data['instrument'] = parameter_data_root.find('InstrumentID').text
+    ## get the nuber of lanes in case sequencer lab is not defined
+
+    param_in_setup = ['ApplicationVersion', 'NumTilesPerSwath']
+    for i in range(len(param_in_setup)):
+        try:
+            running_data[param_in_setup[i]] = parameter_data_root.find('Setup').find(param_in_setup[i]).text
+        except:
+            string_message = experiment_name + ' : Parameter ' + param_in_setup[i] + ' not found in RunParameter.xml'
+            logging_warnings(string_message, False)
+            continue
+    for setup_field in FIELDS_TO_FETCH_FROM_SETUP_TAG:
+
+        try:
+            running_data[setup_field] = parameter_data_root.find(SETUP_TAG).find(setup_field).text
+
+        except:
+            running_data[setup_field] = ''
+            string_message = experiment_name + ' : Parameter in Setup -- ' + setup_field + ' unable to fetch in RunParameter.xml'
+            logging_errors(string_message, False, True)
+
+    import pdb; pdb.set_trace()
+    ##############################################
+    ## updating the date fetched from the Date tag for run and project
+    ##############################################
+    date = p_run.find('Date').text
+    logger.debug('%s : Found date that was recorded the Run %s', experiment_name , date)
+    run_date = datetime.strptime(date, '%y%m%d')
+    parsing_data['running_data'] = running_data
+    parsing_data['run_date'] = run_date
+    import pdb; pdb.set_trace()
+    logger.debug('%s : End function nextseq_parsing_run_information', experiment_name)
+    return parsing_data

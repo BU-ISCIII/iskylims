@@ -141,36 +141,6 @@ def copy_to_remote_file (conn, run_dir, remote_file, local_file) :
     return number_of_lanes
     '''
 
-def create_new_sequencer_lab_not_defined (sequencer_name,l_run_parameter, experiment_name):
-    '''
-    Description:
-
-        creates a new entry in database wit only the sequencer name and the lane numbers
-    Input:
-        sequencer_name    # sequencer name
-        l_run_parameter        # runParameter.xml file
-    Functions:
-        get_sequencer_lanes_number_from_file # located at this file
-    Return:
-        new_sequencer
-    '''
-    logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function create_new_sequencer_lab_not_defined', experiment_name)
-    seq_data = {}
-
-    #number_of_lanes = get_sequencer_lanes_number_from_file (l_run_parameter, experiment_name)
-
-    empty_fields_in_sequencer = ['platformID', 'sequencerDescription', 'sequencerLocation', 'sequencerSerialNumber',
-                'sequencerOperationStart']
-    for item in empty_fields_in_sequencer :
-        seq_data[item] = None
-    seq_data['sequencerNumberLanes'] = find_xml_tag_text (l_run_parameter, 'NumLanes')
-    seq_data['sequencerName'] = sequencer_name
-    new_sequencer = SequencerInLab.objects.create_sequencer_in_lab(seq_data)
-    logger.info('%s : Created the new sequencer in database' , experiment_name )
-    logger.debug ('%s : End function create_new_sequencer_lab_not_defined', experiment_name)
-    return new_sequencer
-
 
 def save_email_data(email_fields):
     '''
@@ -182,7 +152,7 @@ def save_email_data(email_fields):
         email_data_obj
     '''
     if EmailData.objects.all().exists():
-        email_data_obj = EmailData.objects.last().updatae_data(email_fields)
+        email_data_obj = EmailData.objects.last().update_data(email_fields)
     else:
         email_data_obj = EmailData.objects.create_email_data(email_fields)
     return email_data_obj
@@ -416,21 +386,6 @@ def get_log_file_name(config_log_file) :
     return log_file_name
 
 
-def get_run_platform_from_file (l_run_parameter) :
-    '''
-    Description:
-        The function will get the run platform for the xml element tag in the
-        file and it will return the platform used
-    Input:
-        l_run_parameter  # file to find the tag
-    Variables:
-        platform # name of the experiment found in runParameter file
-    Return:
-        platform
-    '''
-    platform = find_xml_tag_text (l_run_parameter, wetlab_config.APPLICATION_NAME_TAG)
-
-    return platform
 
 
 
