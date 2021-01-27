@@ -76,12 +76,16 @@ COMPLETION_TAG = 'CompletionStatus'
 COMPLETION_SUCCESS = 'CompletedAsPlanned'
 EXPERIMENT_NAME_TAG = 'ExperimentName'
 APPLICATION_NAME_TAG = 'ApplicationName'
+NUMBER_CYCLES_TAG = 'NumCycles'
+RUN_INFO_READ_TAG = 'RunInfoRead'
+NUMBER_TAG  = 'Number'
 
 ############### FIELD TAG NAMES TO COLLECT FROM RunParameter FILE #####################
 FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE = ['RunID','ExperimentName','RTAVersion','Chemistry','RunStartDate','RunManagementType', 'SystemSuiteVersion',
                     'LibraryID', 'AnalysisWorkflowType','PlannedRead1Cycles','PlannedRead2Cycles','PlannedIndex1ReadCycles','PlannedIndex2ReadCycles' ]
 SETUP_TAG = 'Setup'
 FIELDS_TO_FETCH_FROM_SETUP_TAG = ['NumLanes', 'ApplicationName' , 'ApplicationVersion', 'NumTilesPerSwath']
+READ_NUMBER_OF_CYCLES = ['PlannedRead1Cycles','PlannedIndex1ReadCycles' ,'PlannedIndex2ReadCycles','PlannedRead2Cycles']
 
 MI_SEQ_INSTRUMENT_ID = 'ScannerID'
 

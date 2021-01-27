@@ -615,7 +615,7 @@ def manage_miseq_in_samplesent(conn, run_name) :
         raise
 
 
-def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
+def handle_miseq_run (conn, new_run, l_run_parameter, l_run_info, experiment_name) :
     '''
     Description:
         The function will find the latest log file for the input folder
@@ -623,6 +623,7 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
         conn        # samba connection object
         new_run     # folder remote directory for miseq run
         l_run_parameter  # local path for the run parameter file
+        l_run_info          # local path to run info file
         experiment_name  # name used on miseq run
     Functions:
         get_projects_in_run # located at utils.sample_sheet_utils
@@ -635,27 +636,11 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
         save_new_miseq_run      # located as this file
         store_sample_sheet_in_run # located as this file
         validate_sample_sheet   # located as this file
-    Import:
-        os
-        RunningParameters
-        RunProcess
     Constant:
         RUN_TEMP_DIRECTORY
         RUN_INFO
         SAMPLE_SHEET
         MAXIMUM_TIME_WAIT_SAMPLE_SHEET
-    Variables:
-        instrument  # name of the sequencer used in the run
-        l_run_info  # local temporary copy of RunInfo
-        l_sample_sheet  # local temporary copy of sample sheet
-        new_run_parameters # new RunningParameters object created for this run
-        new_run_process_obj  # new RunProcess object created for this run
-
-        run_date        # date of starting run
-        running_parameters  # dictionary with parsing information from
-                            RunParameter and RunInfo
-        s_run_info  # path of RunInfo on the remote server
-        s_sample_sheet  # path of SampleSheet on the remote server
     Return:
         number_of_cycles
         file_content
@@ -663,23 +648,9 @@ def handle_miseq_run (conn, new_run, l_run_parameter, experiment_name) :
     logger = logging.getLogger(__name__)
     logger.debug ('%s : Starting function for handling miSeq run', experiment_name)
     logger.info(' %s : Fetching info from Folder name %s', experiment_name, new_run)
-    # Fetch run info from remote server
-    l_run_info = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_INFO)
-    s_run_info = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, new_run,wetlab_config.RUN_INFO)
-    try:
-        l_run_info = fetch_remote_file (conn, new_run, s_run_info, l_run_info)
-        logger.info('%s : Sucessfully fetch of RunInfo file', experiment_name)
-    except Exception as e:
-        string_message = experiment_name + ' : ' + new_run + ' : Unable to fetch the RunInfo file '
-        logging_errors(string_message, True, False)
-
-        # cleaning up the RunParameter in local temporaty file
-        os.remove(l_run_parameter)
-        logger.info('%s : Removed RunParameter.xml file', new_run)
-        raise  ValueError ('RunInfo.xml file not found on run folder') # returning to handle next run folder
 
     # Parsing RunParameter and RunInfo
-    running_parameters, run_date, instrument = miseq_parsing_run_information(l_run_info, l_run_parameter, experiment_name)
+    running_parameters, run_date, instrument = nextseq_parsing_run_info_and_parameter_information(l_run_info, l_run_parameter, experiment_name)
     if not RunProcess.objects.filter(runName__exact = experiment_name).exists():
         # Save run data and set run to "Recorded" state
         try:

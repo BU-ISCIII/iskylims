@@ -210,13 +210,8 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, l_run_info, exp
         logger.info('%s  : Deleting runInfo file', experiment_name)
         os.remove(l_run_info)
 
-        if RunningParameters.objects.filter(runName_id = run_process_obj).exists():
-            run_parameter_objs = RunningParameters.objects.filter(runName_id = run_process_obj)
-            for run_parameter_obj in run_parameter_objs:
-                logger.info('%s  : Deleting RunParameters object from database', experiment_name)
-                run_parameter_obj.delete()
-        run_parameters = RunningParameters.objects.create_running_parameters(running_parameters['running_data'], run_process_obj)
-        logger.info( '%s  : Created RunParameters object on database', experiment_name)
+        # store the run parameters in database
+        run_parameter_obj = save_run_parameters_data_to_database(running_parameters['running_data'], run_process_obj)
 
         if SequencerInLab.objects.filter(sequencerName__exact = running_parameters['instrument']).exists():
             sequencer_obj = SequencerInLab.objects.filter(sequencerName__exact = running_parameters['instrument']).last()
@@ -238,7 +233,7 @@ def handle_nextseq_recorded_run (conn, new_run, l_run_parameter, l_run_info, exp
                 logger.info('%s : Copy sample sheet to remote folder %s', experiment_name, new_run)
                 s_sample= os.path.join(new_run, wetlab_config.SAMPLE_SHEET)
                 try:
-                    sample_sheet_copied = copy_to_remote_file  (conn, run_folder, s_sample, l_sample)
+                    sample_sheet_copied =  1    <S  (conn, run_folder, s_sample, l_sample)
                     logger.info('%s : Sucessfully copy Sample sheet to remote folder', experiment_name)
                 except Exception as e:
                     string_message = experiment_name + ': Unable to copy the Sample Sheet to remote folder ' + new_run

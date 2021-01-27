@@ -13,6 +13,9 @@ from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParam
 from .generic_functions import get_samba_connection_data, get_email_data, send_error_email_to_user, find_xml_tag_text
 from iSkyLIMS_wetlab.wetlab_config import *
 
+
+
+
 def create_new_sequencer_lab_not_defined (sequencer_name,num_of_lanes, experiment_name):
     '''
     Description:
@@ -123,7 +126,56 @@ def get_run_platform_from_file (l_run_parameter) :
 
     return platform
 
+def get_run_process_obj_or_create_if_not_exists(running_parameters, experiment_name):
+    '''
+    Description:
+        The function get the run_proces obj or it is created if does not exists
+    Input:
+        running_parameters  # dictionary to collect information to create the new run process
+        experiment_name     # experiment name
+    Functions:
+        create_new_sequencer_lab_not_defined    # located at this file
+    Return:
+        run_process_obj
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug('Starting function get_run_process_obj_or_create_if_not_exists' )
+    if RunProcess.objects.filter(runName__exact = experiment_name).exists():
+        run_process_obj = RunProcess.objects.filter(runName__exact = experiment_name).last()
+    else:
+        run_data = {}
+        run_data['experiment_name'] = experiment_name
+        run_data['run_date'] = running_parameters['run_date']
+        run_data['used_sequencer'] = sequencer_obj
+        run_process_obj = RunProcess.objects.create_new_run_from_crontab(run_data)
+        logger.info('%s  : New RunProcess instance created')
+    logger.debug('End function get_run_process_obj_or_create_if_not_exists' )
+    return run_process_obj
 
+def get_sequencer_obj_or_create_if_no_exists(instrument, experiment_name):
+    '''
+    Description:
+        The function get the sequencer obj or it is created if does not exists
+    Input:
+        instrument      # Instrument name
+    Functions:
+        create_new_sequencer_lab_not_defined    # located at this file
+    Return:
+        sequencer_obj
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug('Starting function get_sequencer_obj_or_create_if_no_exists' )
+    if SequencerInLab.objects.filter(sequencerName__exact = instrument).exists():
+        sequencer_obj = SequencerInLab.objects.filter(sequencerName__exact = instrument).last()
+
+    else:
+        string_message = experiment_name + ' : ' + instrument + ' no sequencer defined '
+        logging_errors(string_message, False, True)
+        sequencer_obj = create_new_sequencer_lab_not_defined ( running_parameters['instrument'],  running_parameters['NumLanes'], experiment_name)
+        logger.info('%s : Continue the proccess after creating the new sequencer' ,experiment_name)
+
+    logger.debug('End function get_sequencer_obj_or_create_if_no_exists' )
+    return sequencer_obj
 
 def get_samba_application_shared_folder():
     '''
@@ -249,7 +301,7 @@ def open_log(config_file):
     return logger
 
 
-def nextseq_parsing_run_info_and_parameter_information(l_run_info, l_run_parameter, experiment_name) :
+def parsing_run_info_and_parameter_information(l_run_info, l_run_parameter, experiment_name) :
     '''
     Description:
         The function is called for parsing the RunInfo and RunParameter  files.
@@ -285,7 +337,24 @@ def nextseq_parsing_run_info_and_parameter_information(l_run_info, l_run_paramet
     ## getting the common values NextSeq and MiSeq
     logger.info('%s  : Fetching Flowcell and FlowcellLayout data ', experiment_name)
     running_data['Flowcell']=p_run.find('Flowcell').text
-    running_data['FlowcellLayout']=p_run.find('FlowcellLayout').attrib
+    try:
+        running_data['FlowcellLayout']=p_run.find('FlowcellLayout').attrib
+    except:
+        running_data['FlowcellLayout'] = ''
+        string_message = experiment_name + ' : Parameter  FlowcellLayout  not found in RunParameter.xml'
+        logging_warnings(string_message, False)
+
+    for i in run_root.iter('Name'):
+        image_channel.append(i.text)
+
+    running_data['ImageChannel'] = image_channel
+    try:
+        running_data['ImageDimensions'] = p_run.find('ImageDimensions').attrib
+    except:
+        running_data['ImageDimensions'] = ''
+        logger.debug('%s : There is no image dimesions on runInfo file', experiment_name)
+    ## get the instrument for NextSeq run
+    parsing_data['instrument'] = p_run.find('Instrument').text
 
     #################################################
     ## parsing RunParameter.xml file
@@ -303,13 +372,6 @@ def nextseq_parsing_run_info_and_parameter_information(l_run_info, l_run_paramet
             string_message = experiment_name + ' : Parameter ' + field  + ' unable to fetch in RunParameter.xml'
             logging_warnings(string_message, False)
 
-    for i in run_root.iter('Name'):
-        image_channel.append(i.text)
-    running_data['ImageChannel']=image_channel
-    running_data['ImageDimensions']=p_run.find('ImageDimensions').attrib
-
-    ## get the instrument for NextSeq run
-    parsing_data['instrument'] = parameter_data_root.find('InstrumentID').text
     ## get the nuber of lanes in case sequencer lab is not defined
 
     param_in_setup = ['ApplicationVersion', 'NumTilesPerSwath']
@@ -330,7 +392,19 @@ def nextseq_parsing_run_info_and_parameter_information(l_run_info, l_run_paramet
             string_message = experiment_name + ' : Parameter in Setup -- ' + setup_field + ' unable to fetch in RunParameter.xml'
             logging_errors(string_message, False, True)
 
-    import pdb; pdb.set_trace()
+    if 'MiSeq' in running_data[APPLICATION_NAME_TAG] :
+        # initialize paramters in case there are not exists on runParameter file
+        for i in range(len(READ_NUMBER_OF_CYCLES)):
+            running_data[READ_NUMBER_OF_CYCLES[i]] = ''
+        # get the length index number for reads and indexes for MiSeq Runs
+        for run_info_read in parameter_data_root.iter(RUN_INFO_READ_TAG):
+            try:
+                index_number = int(run_info_read.attrib[NUMBER_TAG]) -1
+                running_data[READ_NUMBER_OF_CYCLES[index_number]] = run_info_read.attrib[NUMBER_CYCLES_TAG]
+            except:
+                string_message = experiment_name + ' : Parameter RunInfoRead: Read Number not found in RunParameter.xml'
+                logging_warnings(string_message, False)
+                continue
     ##############################################
     ## updating the date fetched from the Date tag for run and project
     ##############################################
@@ -342,3 +416,19 @@ def nextseq_parsing_run_info_and_parameter_information(l_run_info, l_run_paramet
     import pdb; pdb.set_trace()
     logger.debug('%s : End function nextseq_parsing_run_information', experiment_name)
     return parsing_data
+
+
+def save_run_parameters_data_to_database(run_parameters, run_process_obj):
+
+    logger = logging.getLogger(__name__)
+    logger.debug ('%s : Starting function save_run_parameters_data_to_database', experiment_name)
+
+    if RunningParameters.objects.filter(runName_id = run_process_obj).exists():
+        run_parameter_objs = RunningParameters.objects.filter(runName_id = run_process_obj)
+        for run_parameter_obj in run_parameter_objs:
+            logger.info('%s  : Deleting RunParameters object from database', experiment_name)
+            run_parameter_obj.delete()
+    run_parameters = RunningParameters.objects.create_running_parameters(run_parameters, run_process_obj)
+    logger.info( '%s  : Created RunParameters object on database', experiment_name)
+    logger.debug ('%s : End function save_run_parameters_data_to_database', experiment_name)
+    return run_parameter_obj

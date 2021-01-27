@@ -195,7 +195,6 @@ def search_update_new_runs ():
                 logger.info('%s : RunParameter file. Local copy deleted',experiment_name)
                 continue
 
-
             # Fetch run info
             l_run_info_path = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_INFO)
             s_run_info_path = os.path.join(get_samba_application_shared_folder() , new_run, wetlab_config.RUN_INFO)
@@ -212,6 +211,17 @@ def search_update_new_runs ():
                 logger.debug ('%s : End function for handling NextSeq run with exception', experiment_name)
                 raise Exception   # returning to handle next run folder
 
+            running_parameters = parsing_run_info_and_parameter_information(l_run_info, l_run_parameter, experiment_name)
+            logger.info('%s  : Deleting runParameter file', experiment_name)
+            os.remove(l_run_parameter)
+            logger.info('%s  : Deleting runInfo file', experiment_name)
+            os.remove(l_run_info)
+
+            sequencer_obj = get_sequencer_obj_or_create_if_no_exists(running_parameters['running_data'], experiment_name)
+            run_process_obj = get_run_process_obj_or_create_if_not_exists(running_parameters, experiment_name)
+            run_process_obj.set_used_sequencer(sequencer_obj)
+            logger.info('%s : Sequencer  stored on database', experiment_name)
+            '''
             # Finding out the platform to continue the run processing
             run_platform =  get_run_platform_from_file (l_run_parameter)
             # branch according platform to continue the run processing
@@ -221,10 +231,11 @@ def search_update_new_runs ():
                 string_message = new_run + ': Exting this run becuase Platform tag  was not found RunParameter file'
                 logging_errors (string_message, False, True)
                 continue
-            if 'MiSeq' in run_platform :
+            '''
+            if 'MiSeq' in running_parameters[wetlab_config.APPLICATION_NAME_TAG] :
                 logger.debug('%s  : MiSeq run found. Executing miseq handler ', experiment_name)
                 try:
-                    update_miseq_process_run =  handle_miseq_run (conn, new_run, l_run_parameter, experiment_name)
+                    update_miseq_process_run =  handle_miseq_run (conn, new_run, l_run_parameter, l_run_info, experiment_name)
                     if update_miseq_process_run != '' :
                         new_processed_runs.append(experiment_name)
                         logger.info('%s : was successfully processed ', experiment_name)
@@ -246,7 +257,7 @@ def search_update_new_runs ():
                     logger.debug('Finished miSeq handling process with error')
                     continue
                 '''
-            elif 'NextSeq' in run_platform :
+            elif 'NextSeq' in running_parameters[wetlab_config.APPLICATION_NAME_TAG] :
                 logger.debug('%s  : Executing NextSeq handler ', experiment_name)
                 try:
                     update_nextseq_process_run =  handle_nextseq_recorded_run (conn, new_run, l_run_parameter, l_run_info, experiment_name)

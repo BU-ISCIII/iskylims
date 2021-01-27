@@ -37,6 +37,13 @@ class RunStates (models.Model):
     def get_run_state_name(self):
         return '%s' %(self.runStateName)
 
+class RunProcessManager (models.Mamager):
+    def create_new_run_from_crontab(self,run_data):
+        run_state = RunStates.objects.get(runStateName__exact = 'Recorded')
+        new_run = self.create( state = run_state , runName = run_data['experiment_name'],
+                    run_date = run_data['run_date'])
+        return new_run
+
 class RunProcess(models.Model):
     usedSequencer = models.ForeignKey(
                         SequencerInLab,
