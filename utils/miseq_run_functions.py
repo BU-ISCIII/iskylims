@@ -384,51 +384,6 @@ def save_miseq_projects_found (projects_users , experiment_name, index_library_n
     return ''
 
 
-def store_sample_sheet_in_run (l_sample_sheet, experiment_name ) :
-    '''
-    Description:
-        The function will move the sample sheet from the local temporary
-        folder to the folder destination defined in RUN_SAMPLE_SHEET_DIRECTORY
-        It will update the field sampleSheet in database
-    Input:
-        l_sample_sheet  # local copy of sample sheet file
-        experiment_name  # name of the run
-    Import:
-        datetime
-        os
-    Variable:
-        run_updated     # RunProcess object
-        new_sample_sheet_name  # renamed sample sheet including time to have
-                                a unique file name
-        now     # Present time of the server
-        run_updated # RunProcess object for miseq run
-        sample_sheet_on_database # sample sheet path used in database
-        timestr     # Present time including 3 digits for miliseconds
-    Return:
-        sample_sheet_on_database
-    '''
-    logger = logging.getLogger(__name__)
-    logger.debug('%s : Starting the function store_sample_sheet_in_run', experiment_name)
-    # Get the present time in miliseconds to add to have an unique file name
-    now = datetime.datetime.now()
-    timestr = now.strftime("%Y%m%d-%H%M%S.%f")[:-3]
-    new_sample_sheet_name = 'SampleSheet' + timestr + '.csv'
-
-    new_sample_sheet_file = os.path.join (settings.MEDIA_ROOT, wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY, new_sample_sheet_name)
-    logger.debug('%s : new sample sheet name %s', experiment_name, new_sample_sheet_file)
-    # Path to be included in database
-    sample_sheet_on_database = os.path.join(wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY, new_sample_sheet_name)
-    ## Move sample sheet to final folder
-    os.rename(l_sample_sheet, new_sample_sheet_file)
-    # Update the run with the sample sheet information
-    run_updated = RunProcess.objects.get(runName__exact = experiment_name)
-    run_updated.sampleSheet = sample_sheet_on_database
-    run_updated.save()
-
-    logger.info('%s : Updated runProccess table with the sample sheet', experiment_name)
-    logger.debug('%s : End function store_sample_sheet_in_run', experiment_name)
-    return sample_sheet_on_database
-
 
 def update_library_name_in_run (experiment_name, index_library_name) :
     '''

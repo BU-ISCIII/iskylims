@@ -13,54 +13,17 @@ from iSkyLIMS_wetlab import wetlab_config
 
 
 from .handling_crontab_common_functions import *
+from .handling_crontab_manage_run_states import manage_run_in_recorded_state
 from .generic_functions import *
 
-from .miseq_run_functions import  handle_miseq_run , manage_miseq_in_samplesent,  manage_miseq_in_processing_run
-from .nextseq_run_functions import handle_nextseq_recorded_run, manage_nextseq_in_samplesent, manage_nextseq_in_processing_run
+
+#from .miseq_run_functions import  handle_miseq_run , manage_miseq_in_samplesent,  manage_miseq_in_processing_run
+#from .nextseq_run_functions import handle_nextseq_recorded_run, manage_nextseq_in_samplesent, manage_nextseq_in_processing_run
 from .common_run_functions import manage_run_in_processed_run, manage_run_in_processing_bcl2fastq, manage_run_in_processed_bcl2fastq
 
 
 from django.conf import settings
 from django_utils.models import Center
-
-
-
-def read_processed_runs_file (processed_run_file) :
-    '''
-    Description:
-        The function reads the file that contains all the processed runs
-        and return a list with the run folder names
-    Input:
-        processed_run_file # full path and name of the file
-    Variable:
-        processed_runs  # list of the folder names read from file
-    Return:
-        Error when file can not be readed
-        processed_runs variable for successful file read
-    '''
-    logger = logging.getLogger(__name__)
-    logger.debug('Starting for reading processed run file' )
-    w_dir = os.getcwd()
-    logger.debug('Folder for fetching the proccess run file is %s', w_dir)
-    logger.debug('processed_run_file is %s', processed_run_file)
-    processed_runs = []
-    if os.path.exists(processed_run_file):
-        try:
-            fh = open (processed_run_file,'r')
-            for line in fh:
-                line=line.rstrip()
-                processed_runs.append(line)
-        except Exception as e:
-            string_message = 'Unable to open the processed run file. '
-            logging_errors(string_message, True, True)
-            raise
-        fh.close()
-        logger.info('run processed file have been read')
-        logger.debug('Exiting sucessfully the function read_processed_runs_file' )
-        return processed_runs
-    else:
-        logger.debug('No found processed run file. Exiting the function' )
-        return 'Error'
 
 
 def get_list_processed_runs () :
@@ -76,7 +39,7 @@ def get_list_processed_runs () :
     logger = logging.getLogger(__name__)
     logger.debug('Starting function get_list_processed_runs' )
     processed_runs = []
-    r_parameters_objects = RunningParameters.objects.all().exclude(runName_id__state__runStateName = "Recorded")
+    r_parameters_objects = RunningParameters.objects.all()
 
     for r_parameter in r_parameters_objects :
         processed_runs.append(r_parameter.get_run_folder())
@@ -85,33 +48,6 @@ def get_list_processed_runs () :
     logger.debug('End function get_list_processed_runs' )
     return processed_runs
 
-
-def update_processed_run_file (processed_run_file, processed_runs) :
-    '''
-    Description:
-        The function write the file that contains all the processed runs
-        return True if the file was sucessfully write
-    Input:
-        processed_run_file # full path and name of the file
-    Variable:
-        processed_runs  # list of the folder names to write in the file
-    Return:
-        Error when file can not be create
-        True if sucessfully
-    '''
-    logger = logging.getLogger(__name__)
-    logger.debug('Starting update_processed_run_file' )
-    #import pdb; pdb.set_trace()
-    fh =open (processed_run_file,'w')
-    # update the process_run_file with new runs
-    for processed in processed_runs:
-        fh.write(processed)
-        fh.write('\n')
-    fh.close()
-
-
-    logger.debug('Exit update_processed_run_file' )
-    return True
 
 def search_update_new_runs ():
     '''
@@ -171,7 +107,6 @@ def search_update_new_runs ():
                 continue
 
             experiment_name = get_experiment_name_from_file (l_run_parameter)
-
             if experiment_name == ''  or experiment_name == 'NOT FOUND':
                 if experiment_name == '':
                     string_message = new_run + ' : Experiment name is empty'
@@ -182,11 +117,10 @@ def search_update_new_runs ():
                 logger.info(' %s  : Deleted temporary run parameter file', new_run)
                 continue
             logger.debug('%s : Found the experiment name called : %s', new_run , experiment_name)
+
             if RunProcess.objects.filter(runName__exact = experiment_name).exclude(state__runStateName ='Recorded').exists():
-                # This situation should not occurr. The run_processed file should
-                # have this value. To avoid new iterations with this run
-                # we update the run process file with this run and continue
-                # with the next item
+                # This situation should not occurr. The run_processed file should  have this value. To avoid new iterations with this run
+                # we update the run process file with this run and continue  with the next item
                 run_state = RunProcess.objects.get(runName__exact = experiment_name).get_state()
                 string_message = new_run  + ' :  experiment name  state ' + experiment_name + 'in incorrect state. Run state is ' + run_state
                 logging_errors( string_message, False, True)
@@ -208,7 +142,7 @@ def search_update_new_runs ():
                 # cleaning up the RunParameter in local temporaty file
                 logger.debug ('%s : Deleting RunParameter file', experiment_name)
                 os.remove(l_run_parameter)
-                logger.debug ('%s : End function for handling NextSeq run with exception', experiment_name)
+                logger.debug ('%s : Aborting the process. Exiting with exception', experiment_name)
                 raise Exception   # returning to handle next run folder
 
             running_parameters = parsing_run_info_and_parameter_information(l_run_info, l_run_parameter, experiment_name)
@@ -217,87 +151,34 @@ def search_update_new_runs ():
             logger.info('%s  : Deleting runInfo file', experiment_name)
             os.remove(l_run_info)
 
-            sequencer_obj = get_sequencer_obj_or_create_if_no_exists(running_parameters['running_data'], experiment_name)
             run_process_obj = get_run_process_obj_or_create_if_not_exists(running_parameters, experiment_name)
+            sequencer_obj = get_sequencer_obj_or_create_if_no_exists(running_parameters, experiment_name)
             run_process_obj.set_used_sequencer(sequencer_obj)
             logger.info('%s : Sequencer  stored on database', experiment_name)
-            '''
-            # Finding out the platform to continue the run processing
-            run_platform =  get_run_platform_from_file (l_run_parameter)
-            # branch according platform to continue the run processing
-
-            logger.debug('%s : Found platform name  , %s', experiment_name, run_platform)
-            if run_platform == 'NOT FOUND':
-                string_message = new_run + ': Exting this run becuase Platform tag  was not found RunParameter file'
-                logging_errors (string_message, False, True)
-                continue
-            '''
-            if 'MiSeq' in running_parameters[wetlab_config.APPLICATION_NAME_TAG] :
-                logger.debug('%s  : MiSeq run found. Executing miseq handler ', experiment_name)
-                try:
-                    update_miseq_process_run =  handle_miseq_run (conn, new_run, l_run_parameter, l_run_info, experiment_name)
-                    if update_miseq_process_run != '' :
-                        new_processed_runs.append(experiment_name)
-                        logger.info('%s : was successfully processed ', experiment_name)
-                        logger.debug('%s : Finished miSeq handling process', experiment_name)
+            run_parameter_obj = save_run_parameters_data_to_database(running_parameters['running_data'], run_process_obj, experiment_name)
+            logger.info('%s : RunParameters information  stored on database', experiment_name)
+            if run_process_obj.get_sample_file() == '' :
+                # Fetch sample Sheet from remote server
+                l_sample_sheet_path = get_remote_sample_sheet(conn, new_run ,experiment_name)
+                import pdb; pdb.set_trace()
+                if not l_sample_sheet_path :
+                    logger.debug ('%s : End the process. Waiting more time to get Sample Sheet file', experiment_name)
                     continue
-                except ValueError as e :
-                    logger.warning(' %s : Error found when processing miSeq run %s ', experiment_name, e)
-                    run_with_error.append(experiment_name)
-                    logger.debug('%s : Finished miSeq handling process with error', experiment_name)
-                    continue
-                except Exception as e:
-                    string_message = experiment_name + " : Unexpected Error " + str (e)
-                    logging_errors(string_message, True, True)
-                    continue
-                '''
-                except :
-                    logger.warning('miSeq run  %s does not have all required files. Giving more time for the sequencer to write them.', experiment_name )
-                    logger.info('Continue processing next item ')
-                    logger.debug('Finished miSeq handling process with error')
-                    continue
-                '''
-            elif 'NextSeq' in running_parameters[wetlab_config.APPLICATION_NAME_TAG] :
-                logger.debug('%s  : Executing NextSeq handler ', experiment_name)
-                try:
-                    update_nextseq_process_run =  handle_nextseq_recorded_run (conn, new_run, l_run_parameter, l_run_info, experiment_name)
-                except Exception as e:
-                    string_message = experiment_name +  ' : Error when processing the handle_nextseq_recorded_run function'
-                    logging_errors(string_message, True, True)
-                    logger.debug('%s :  Finished NextSeq handling process', experiment_name)
-                    continue
-                else:
-                    import pdb; pdb.set_trace()
-                    if update_nextseq_process_run != '' :
-                        new_processed_runs.append(experiment_name)
-                        logger.info('%s : was successfully processed ', experiment_name)
-                        logger.debug('%s : Finished miSeq handling process', experiment_name)
-                    continue
-                logger.debug('%s :  Finished NextSeq handling process', experiment_name)
+                store_sample_sheet_if_not_defined_in_run (run_process_obj,l_sample_sheet_path, experiment_name )
+            sample_sheet_file = run_process_obj.get_sample_file()
+            sample_sheet_path = os.path.join(wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY, sample_sheet_file)
+            import pdb; pdb.set_trace()
+            assign_projects_to_run(run_process_obj, sample_sheet_path, experiment_name)
+            assign_used_library_in_run (run_process_obj,sample_sheet_path, experiment_name )
+            if wetlab_config.COPY_SAMPLE_SHEET_TO_REMOTE and  'NextSeq' in running_parameters[wetlab_config.APPLICATION_NAME_TAG]:
+                pass
             else:
-                string_message = 'Platform for this run is not supported'
-                logging_errors(string_message, False , True)
-                # Set run to error state
-                os.remove(l_run_parameter)
+                run_process_obj.set_run_state('Sample Sent')
 
-    else:
-        logger.info('No found new run folders on the remote server')
-
-    '''
-    if process_run_file_update :
-        logger.info('Updating the process_run_file with the new runs')
-        try:
-            update_processed_run_file (processed_run_file, processed_runs)
-            logger.info('File for processed runs was updted ')
-        except:
-            string_message = 'Unable to write the processed runs file'
-            logging_errors(string_message, True, True)
-    '''
     logger.info ('Clossing SAMBA connection')
     conn.close()
     logger.debug ('End function searching new runs. Returning handle runs ' )
-    return new_processed_runs , run_with_error
-
+    return
 
 
 def search_not_completed_run ():
@@ -325,31 +206,38 @@ def search_not_completed_run ():
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function for search_not_completed_run')
     try:
-        conn=open_samba_connection()
+        conn = open_samba_connection()
         logger.info('Sucessfully  SAMBA connection for the process_run_in_recorded_state')
     except Exception as e:
         string_message = 'Unable to open SAMBA connection for the process search update runs'
         # raising the exception to stop crontab
-        raise logging_errors(string_message, True, False)
+        logging_errors(string_message, True, False)
+        logger.debug ('End function for search_not_completed_run')
+        raise Exception
 
     runs_to_handle = {}
     updated_run={}
     runs_with_error = {}
-    state_list_be_processed = ['Sample Sent','Processing Run','Processed Run', 'Processing Bcl2fastq',
-                                'Processed Bcl2fastq']
+    #state_list_be_processed = ['Sample Sent','Processing Run','Processed Run', 'Processing Bcl2fastq',
+    #                                'Processed Bcl2fastq', 'Recorded']
+    state_list_be_processed = ['Recorded']
     # get the list for all runs that are not completed
     for state in state_list_be_processed:
-        run_state = RunStates.objects.get(runStateName__exact = state)
+        #run_state_obj = RunStates.objects.filter(runStateName__exact = state).last()
         #import pdb; pdb.set_trace()
-        if RunProcess.objects.filter(state__exact = run_state).exists():
-            runs_found_in_state = RunProcess.objects.filter(state__exact = run_state)
+        if RunProcess.objects.filter(state__runStateName__exact = state).exists():
             runs_to_handle[state] = []
-            for run_found_in_state in runs_found_in_state :
-                runs_to_handle[state].append(run_found_in_state)
+            runs_in_state_objs = RunProcess.objects.filter(state__runStateName__exact = state)
+            for run_in_state_obj in runs_in_state_objs :
+                runs_to_handle[state].append(run_in_state_obj)
 
-    for state in runs_to_handle:
+    for state in runs_to_handle.keys():
+
         logger.info ('Start processing the run found for state %s', state)
+        if state == 'Recorded':
 
+            manage_run_in_recorded_state(conn, runs_to_handle[state])
+        '''
         if state == 'Sample Sent':
             updated_run['Sample Sent'] = []
             runs_with_error['Sample Sent'] = []
@@ -453,5 +341,6 @@ def search_not_completed_run ():
             string_message = 'Run in unexpected state. ' + state
             logging_errors (string_message , False, False)
             continue
+        '''
     logger.debug ('End function for search_not_completed_run')
     return updated_run, runs_with_error

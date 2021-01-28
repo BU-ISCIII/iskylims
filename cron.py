@@ -45,6 +45,8 @@ def looking_for_new_runs ():
     Return:
         None
     '''
+    time_start= datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(time_start)
     working_path = settings.MEDIA_ROOT
     os.chdir(working_path)
     config_file = os.path.join(settings.BASE_DIR,'iSkyLIMS_wetlab',  wetlab_config.LOGGING_CONFIG_FILE )
@@ -52,7 +54,30 @@ def looking_for_new_runs ():
     logger.info('###########---Start Crontab-----############')
     logger.info('Start searching for new/updating runs')
     try:
-        new_runs_updated, run_with_error = search_update_new_runs ()
+        search_update_new_runs ()
+    except Exception as e:
+        print ('****** Exiting abnormal the crontab  process with errors')
+        print (e)
+        logger.debug('*************** ERROR *********************')
+        logger.debug(e)
+        logger.debug('################################')
+        logger.debug(traceback.format_exc())
+        logger.debug('################################')
+        logger.debug('*************** ERROR *********************')
+        logger.info('###########-----End Crontab--######################')
+        print(traceback.print_exc())
+    logger.info('Exiting the proccess for  new/updating runs')
+
+
+
+    # looking in database for the runs that are not completed
+    logger.info('----------------------------------')
+    logger.info('----------------------------------')
+    logger.info('Start looking for uncompleted runs')
+    working_path = settings.MEDIA_ROOT
+    os.chdir(working_path)
+    try:
+        search_not_completed_run()
     except Exception as e:
         print ('****** Exiting abnormal the crontab  process with errors')
         print (e)
@@ -65,52 +90,12 @@ def looking_for_new_runs ():
         logger.info('###########-----End Crontab--######################')
         print(traceback.print_exc())
         return
-    logger.info('------- Printing summary for search_update_new_runs -----')
-    if len (new_runs_updated) > 0:
-        for new_run in new_runs_updated :
-            logger.info('%s has been updated in database', new_run)
-    else:
-        logger.info('No Run has been updated ')
 
-    if len (run_with_error) > 0:
-        for error_run in run_with_error :
-            logger.info('%s found errors to prevent to be processed', error_run)
-    logger.info('------- End summary for search_update_new_runs -----')
-    logger.info('Exiting the proccess for  new/updating runs')
-
-
-    '''
-    # looking in database for the runs that are not completed
-    logger.info('----------------------------------')
-    logger.info('----------------------------------')
-    logger.info('Start looking for uncompleted runs')
-    working_path = settings.MEDIA_ROOT
-    os.chdir(working_path)
-
-    updated_runs, run_with_error = search_not_completed_run()
-    logger.info('------ Printing the summary result for the manage runs -----')
-    if len (updated_runs) > 0 :
-        for state in updated_runs:
-            if len (updated_runs[state]) > 0 :
-                for run_changed in updated_runs[state]:
-                    logger.info('Run  %s was  processed on  %s  state', run_changed, state)
-            else:
-                logger.info('There is no updated run for %s ', state)
-    else:
-        logger.info('There are no updated runs ')
-
-    if len (run_with_error) > 0 :
-        for state in run_with_error:
-            if len (run_with_error[state]) > 0 :
-                for run_error in run_with_error[state]:
-                    logger.info('%s : Unable to process because of error found in %s state', run_error, state)
-
-    logger.info('------- End summary for search_update_new_runs -----')
     time_stop= datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(time_stop)
     print ('****** Exiting the process for searching not completed runs')
     logger.info('###########-----End Crontab--######################')
-    '''
+
     return
 
 

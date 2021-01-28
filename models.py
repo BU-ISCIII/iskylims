@@ -37,7 +37,7 @@ class RunStates (models.Model):
     def get_run_state_name(self):
         return '%s' %(self.runStateName)
 
-class RunProcessManager (models.Mamager):
+class RunProcessManager (models.Manager):
     def create_new_run_from_crontab(self,run_data):
         run_state = RunStates.objects.get(runStateName__exact = 'Recorded')
         new_run = self.create( state = run_state , runName = run_data['experiment_name'],
@@ -106,6 +106,9 @@ class RunProcess(models.Model):
     def get_run_year(self):
         return '%s' %(self.run_date.timetuple().tm_year)
 
+    def get_run_generated_date_no_format(self):
+        return self.generatedat
+
     def get_error_text (self):
         return '%s' %(self.runError)
 
@@ -114,6 +117,9 @@ class RunProcess(models.Model):
 
     def get_state_before_error(self):
         return '%s' %(self.stateBeforeError)
+
+    def get_index_library(self):
+        return '%s' %(self.index_library)
 
     def get_info_process (self):
         generated_date=self.generatedat.strftime("%I:%M%p on %B %d, %Y")
@@ -205,6 +211,7 @@ class RunProcess(models.Model):
             return False
         return True
 
+
     def set_run_date (self, run_date):
         self.run_date = run_date
         self.save()
@@ -244,6 +251,8 @@ class RunProcess(models.Model):
         self.usedSequencer = sequencer
         self.save()
         return True
+
+    objects = RunProcessManager()
 
 class LibraryKit (models.Model):
     libraryName = models.CharField(max_length=125)
@@ -393,9 +402,7 @@ class RunningParametersManager (models.Manager) :
 class RunningParameters (models.Model):
     runName_id = models.OneToOneField(
             RunProcess,
-            on_delete=models.CASCADE,
-            primary_key=True,
-            )
+            on_delete=models.CASCADE, primary_key=True )
     RunID= models.CharField(max_length=255)
     ExperimentName= models.CharField(max_length=255)
     RTAVersion= models.CharField(max_length=255)

@@ -412,39 +412,6 @@ def is_wetlab_manager (request):
 
 
 
-def need_to_wait_more (experiment_name, waiting_time):
-    '''
-    Description:
-        The function get the time run was recorded to compare
-        with the present time. If the value is less that the allowed time
-        to wait  will return True.
-        False is returned if the time is bigger
-    Input:
-        experiment_name  # experiment name to be checked
-    Import:
-        RunProccess     # from iSkyLIMS_wetlab.models
-        datetime
-    Return:
-        True if the number of days is less that the maximum number of days
-        to wait
-    '''
-    logger = logging.getLogger(__name__)
-    logger.debug ('Starting function need_to_wait_sample_sheet')
-    run_date = RunProcess.objects.get(runName__exact = experiment_name).get_run_date()
-    run_date =  datetime.strptime(run_date,"%B %d, %Y").date()
-    today = datetime.now().date()
-    number_of_days = abs((today - run_date).days)
-    if number_of_days > int (waiting_time):
-        logger.info('Waiting time already exceeded')
-        logger.debug ('End function need_to_wait_sample_sheet')
-        return False
-    else:
-        logger.info('It is allowed to waiting more time')
-        logger.debug ('End function need_to_wait_sample_sheet')
-        return True
-
-
-
 def get_run_disk_utilization (conn, run_folder):
     '''
     Description:

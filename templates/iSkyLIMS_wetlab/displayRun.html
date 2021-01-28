@@ -87,7 +87,13 @@
                         {% endfor %}
                         {%if display_one_run.Sample_Sheet %}
                             <div class="col-sm-6">{{ display_one_run.Sample_Sheet.0.0 }}</div>
-                            <div class="col-sm-6"><a href="/documents/{{ display_one_run.Sample_Sheet.0.1 }}" download>Sample Sheet File  <span class="glyphicon glyphicon-download-alt"></span></a></div>
+                            <div class="col-sm-6">
+                                {% if display_one_run.Sample_Sheet.0.1 == '' %}
+                                    <p>No Sample Sheet available</p>
+                                {% else %}
+                                    <a href="/documents/{{ display_one_run.Sample_Sheet.0.1 }}" download>Sample Sheet File  <span class="glyphicon glyphicon-download-alt"></span></a>
+                                {% endif %}
+                            </div>
                         {% endif %}
                    </div> <!--  end of panel body -->
                 </div> <!--  end of panel  -->

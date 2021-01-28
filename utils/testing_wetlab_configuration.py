@@ -7,7 +7,6 @@ import logging
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
 from iSkyLIMS_wetlab.utils.generic_functions import *
-from iSkyLIMS_wetlab.utils.update_run_state import handle_miseq_run
 from iSkyLIMS_wetlab.utils.miseq_run_functions import *
 from iSkyLIMS_wetlab.utils.nextseq_run_functions import *
 from iSkyLIMS_wetlab.utils.common_run_functions import manage_run_in_processed_run, manage_run_in_processing_bcl2fastq, manage_run_in_processed_bcl2fastq
@@ -75,7 +74,7 @@ def check_access_database ():
         return 'NOK'
 
 def check_samba_connection() :
-    
+
     try:
         open_samba_connection()
         return 'OK'

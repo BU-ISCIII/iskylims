@@ -87,8 +87,6 @@ SETUP_TAG = 'Setup'
 FIELDS_TO_FETCH_FROM_SETUP_TAG = ['NumLanes', 'ApplicationName' , 'ApplicationVersion', 'NumTilesPerSwath']
 READ_NUMBER_OF_CYCLES = ['PlannedRead1Cycles','PlannedIndex1ReadCycles' ,'PlannedIndex2ReadCycles','PlannedRead2Cycles']
 
-MI_SEQ_INSTRUMENT_ID = 'ScannerID'
-
 ##############################################################
 
 ############ DEFAULT VALUES FOR MISEQ SAMPLE SHEET  ##########
@@ -97,8 +95,8 @@ DEFAULT_CENTER = 'CNM'
 ##############################################################
 
 ############ MAXIMUM TIME TO WAIT BEFORE MOVING TO ERROR #####
-MAXIMUM_TIME_WAIT_SAMPLE_SHEET = '2' # in days
-MAXIMUM_TIME_WAIT_RUN_COMPLETION = '2' # in days
+#MAXIMUM_TIME_WAIT_SAMPLE_SHEET = '2' # in days
+#MAXIMUM_TIME_WAIT_RUN_COMPLETION = '3' # in days
 ##############################################################
 
 ############ RUN METRIC FOLDERS AND FILES ####################
