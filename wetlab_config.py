@@ -58,7 +58,7 @@ RUN_INFO = 'RunInfo.xml'
 RUN_COMPLETION = 'RunCompletionStatus.xml'
 SAMPLE_SHEET = 'samplesheet.csv'
 ## sample sheet to be copied on the remote folder
-COPY_SAMPLE_SHEET_TO_REMOTE = False # boolean constant True if NextSeq
+COPY_SAMPLE_SHEET_TO_REMOTE = True # boolean constant True if NextSeq
                                 # sample sheet needs to be copied to remote server
 RUN_LOG_FOLDER = 'Logs'
 

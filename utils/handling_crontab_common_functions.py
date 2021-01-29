@@ -9,6 +9,8 @@ import traceback
 import xml.etree.ElementTree as ET
 from datetime import datetime
 
+from django.contrib.auth.models import User
+
 from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters, SambaConnectionData, EmailData, ConfigSetting
 from .generic_functions import get_samba_connection_data, get_email_data, send_error_email_to_user, find_xml_tag_text
 from iSkyLIMS_wetlab.wetlab_config import *
@@ -32,7 +34,7 @@ def assign_used_library_in_run (run_process_obj, l_sample_sheet_path, experiment
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('%s : Starting function assign_used_library_in_run', experiment_name)
-    if not run_process_obj.get_index_library() == '':
+    if run_process_obj.get_index_library() == 'None':
         index_library_name = get_index_library_name(l_sample_sheet_path)
         run_process_obj.update_index_library(index_library_name)
         logger.info('%s : Defined index library name', experiment_name)
@@ -64,20 +66,23 @@ def assign_projects_to_run(run_process_obj, sample_sheet_file , experiment_name)
     # fetch the project from sample sheet
     projects_objs = []
     project_with_users = get_projects_in_run(sample_sheet_file)
-    for project in projects_with_users:
-        if not Project.objects.filter(projectName__exact = project[0]).exists():
+    for project, user in project_with_users.items():
+        if not Projects.objects.filter(projectName__exact = project).exists():
             project_data = {}
-            project_data['projectName'] = project[0]
-            project_data['user_id'] = project[1]
-            project_obj = Project.objects.create_new_empty_project(project_data)
+            project_data['projectName'] = project
+            if User.objects.filter(username__iexact = user).exists():
+                project_data['user_id'] = User.objects.filter(username__iexact = user).last()
+            else:
+                project_data['user_id'] = None
+            project_obj = Projects.objects.create_new_empty_project(project_data)
             projects_objs.append(project_obj)
             # assign project to runº
             project_obj.runProcess.add(run_process_obj)
-            logger.info('%s : Project name  added ')
+            logger.info('%s : Project name  %s added ', experiment_name, project)
         else:
-            p_obj = Project.objects.filter(projectName__exact = project[0])
-            if not p_obj in projects_objs:
-                projects_objs.append(p_obj)
+            project_obj = Projects.objects.filter(projectName__exact = project).last()
+            if not project_obj in projects_objs:
+                projects_objs.append(project_obj)
                 project_obj.runProcess.add(run_process_obj)
                 logger.info('%s : Project name  added ', experiment_name)
     logger.debug ('%s : End function assign_projects_to_run', experiment_name)
@@ -132,19 +137,49 @@ def copy_sample_sheet_to_remote_folder(conn, sample_sheet_path, run_folder ,expe
     logger = logging.getLogger(__name__)
     logger.debug ('%s : Starting function copy_sample_sheet_to_remote_folder', experiment_name)
 
-    logger.info('%s : Copy sample sheet to remote folder %s', experiment_name, new_run)
-    s_sample= os.path.join(get_samba_application_shared_folder(), new_run, wetlab_config.SAMPLE_SHEET)
+    logger.info('%s : Copy sample sheet to remote folder %s', experiment_name, run_folder)
+    s_sample= os.path.join(get_samba_application_shared_folder(), run_folder, SAMPLE_SHEET)
 
     try:
         sample_sheet_copied = copy_to_remote_file  (conn, run_folder, s_sample, sample_sheet_path)
         logger.info('%s : Sucessfully copy Sample sheet to remote folder', experiment_name)
-        logger.debug ('%s : End function copy_sample_sheet_to_remote_folder', experiment_name)
     except Exception as e:
-        string_message = experiment_name + ': Unable to copy the Sample Sheet to remote folder ' + new_run
+        string_message = experiment_name + ': Unable to copy the Sample Sheet to remote folder ' + run_folder
         logging_errors (string_message, True, False)
         handling_errors_in_run (experiment_name, '23')
         logger.debug ('%s : End function for copy_sample_sheet_to_remote_folder with exception', experiment_name)
         raise Exception
+    logger.debug ('%s : End function copy_sample_sheet_to_remote_folder', experiment_name)
+    return
+
+def copy_to_remote_file (conn, run_dir, remote_file, local_file) :
+    '''
+    Description:
+        Function will fetch the file from remote server and copy on local  directory
+    Input:
+        conn    # Samba connection object
+        run_dir # run folder to fetch the file
+        remote_file # file name to fetch on remote server
+        local_file # local copy of the file fetched
+    Constants:
+        SAMBA_SHARED_FOLDER_NAME
+    Return:
+        True if file was successfuly copy.
+        Exception if file could not be fetched
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('Starting function for copy file to remote')
+    with open(local_file ,'rb') as r_par_fp :
+        try:
+            samba_folder = get_samba_shared_folder()
+            conn.storeFile(samba_folder, remote_file, r_par_fp)
+            logger.info('Saving the file %s to remote server', local_file)
+        except Exception as e:
+            string_message = 'Unable to copy the ' + local_file + 'file on folder ' + run_dir
+            logging_errors (string_message, True, True)
+            raise Exception('File not copied')
+    logger.debug ('End function for copy file to remote')
+    return True
 
 
 def fetch_remote_file (conn, run_dir, remote_file, local_file) :
@@ -553,7 +588,6 @@ def parsing_run_info_and_parameter_information(l_run_info, l_run_parameter, expe
     run_date = datetime.strptime(date, '%y%m%d')
     parsing_data['running_data'] = running_data
     parsing_data['run_date'] = run_date
-    import pdb; pdb.set_trace()
     logger.debug('%s : End function nextseq_parsing_run_information', experiment_name)
     return parsing_data
 
@@ -585,7 +619,7 @@ def save_run_parameters_data_to_database(run_parameters, run_process_obj, experi
 
 
 
-def store_sample_sheet_if_not_defined_in_run (l_sample_sheet_path, experiment_name ) :
+def store_sample_sheet_if_not_defined_in_run (run_process_obj, l_sample_sheet_path, experiment_name ) :
     '''
     Description:
         The function will move the sample sheet from the local temporary
@@ -611,20 +645,18 @@ def store_sample_sheet_if_not_defined_in_run (l_sample_sheet_path, experiment_na
     logger = logging.getLogger(__name__)
     logger.debug('%s : Starting the function store_sample_sheet_in_run', experiment_name)
     # Get the present time in miliseconds to add to have an unique file name
-    now = datetime.datetime.now()
+    now = datetime.now()
     timestr = now.strftime("%Y%m%d-%H%M%S.%f")[:-3]
     new_sample_sheet_name = 'SampleSheet' + timestr + '.csv'
 
-    new_sample_sheet_file = os.path.join (settings.MEDIA_ROOT, wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY, new_sample_sheet_name)
-    logger.debug('%s : new sample sheet name %s', experiment_name, new_sample_sheet_file)
+    new_sample_sheet_file = os.path.join (settings.MEDIA_ROOT, RUN_SAMPLE_SHEET_DIRECTORY, new_sample_sheet_name)
+    logger.info('%s : new sample sheet name %s', experiment_name, new_sample_sheet_file)
     # Path to be included in database
-    sample_sheet_on_database = os.path.join(wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY, new_sample_sheet_name)
+    sample_sheet_on_database = os.path.join(RUN_SAMPLE_SHEET_DIRECTORY, new_sample_sheet_name)
     ## Move sample sheet to final folder
-    os.rename(l_sample_sheet, new_sample_sheet_file)
+    os.rename(l_sample_sheet_path, new_sample_sheet_file)
     # Update the run with the sample sheet information
-    run_updated = RunProcess.objects.get(runName__exact = experiment_name)
-    run_updated.sampleSheet = sample_sheet_on_database
-    run_updated.save()
+    run_process_obj.update_sample_sheet(sample_sheet_on_database)
 
     logger.info('%s : Updated runProccess table with the sample sheet', experiment_name)
     logger.debug('%s : End function store_sample_sheet_in_run', experiment_name)
@@ -648,9 +680,7 @@ def waiting_time_expired(run_process_obj, maximun_time , experiment_name):
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function waiting_time_expired', experiment_name)
-    run_date = run_process_obj.get_run_generated_date_no_format()
-    import pdb; pdb.set_trace()
-    run_date =  datetime.strptime(run_date,"%B %d, %Y").date()
+    run_date = run_process_obj.get_run_generated_date_no_format().date()
     today = datetime.now().date()
     number_of_days = abs((today - run_date).days)
     if number_of_days > int (maximun_time):

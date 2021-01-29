@@ -160,20 +160,23 @@ def search_update_new_runs ():
             if run_process_obj.get_sample_file() == '' :
                 # Fetch sample Sheet from remote server
                 l_sample_sheet_path = get_remote_sample_sheet(conn, new_run ,experiment_name)
-                import pdb; pdb.set_trace()
+
                 if not l_sample_sheet_path :
                     logger.debug ('%s : End the process. Waiting more time to get Sample Sheet file', experiment_name)
                     continue
-                store_sample_sheet_if_not_defined_in_run (run_process_obj,l_sample_sheet_path, experiment_name )
-            sample_sheet_file = run_process_obj.get_sample_file()
-            sample_sheet_path = os.path.join(wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY, sample_sheet_file)
-            import pdb; pdb.set_trace()
-            assign_projects_to_run(run_process_obj, sample_sheet_path, experiment_name)
-            assign_used_library_in_run (run_process_obj,sample_sheet_path, experiment_name )
+
+                assign_projects_to_run(run_process_obj, l_sample_sheet_path, experiment_name)
+                assign_used_library_in_run (run_process_obj,l_sample_sheet_path, experiment_name )
+                store_sample_sheet_if_not_defined_in_run (run_process_obj,l_sample_sheet_path, experiment_name)
+
             if wetlab_config.COPY_SAMPLE_SHEET_TO_REMOTE and  'NextSeq' in running_parameters[wetlab_config.APPLICATION_NAME_TAG]:
-                pass
-            else:
-                run_process_obj.set_run_state('Sample Sent')
+                try:
+                    copy_sample_sheet_to_remote_folder(conn, sample_sheet_path, run_folder ,experiment_name)
+                except:
+                    logger.info('%s : Aborting process, Unable to copy sammple sheet to remote server')
+                    continue
+
+            run_process_obj.set_run_state('Sample Sent')
 
     logger.info ('Clossing SAMBA connection')
     conn.close()
@@ -224,7 +227,7 @@ def search_not_completed_run ():
     # get the list for all runs that are not completed
     for state in state_list_be_processed:
         #run_state_obj = RunStates.objects.filter(runStateName__exact = state).last()
-        #import pdb; pdb.set_trace()
+
         if RunProcess.objects.filter(state__runStateName__exact = state).exists():
             runs_to_handle[state] = []
             runs_in_state_objs = RunProcess.objects.filter(state__runStateName__exact = state)

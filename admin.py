@@ -56,7 +56,8 @@ class RunProcessAdmin (admin.ModelAdmin):
 
 class ProjectsAdmin (admin.ModelAdmin):
     list_display= ('projectName','user_id','LibraryKit_id','libraryKit','baseSpaceFile','generatedat','project_run_date')
-    #list_display= ('runprocess_id','projectName','procState','libraryKit','baseSpaceFile')
+    list_filter= ('generatedat',)
+    search_fields = ("projectName__startswith", )
 
 class CollectionIndexKitAdmin(admin.ModelAdmin):
     list_display = ('collectionIndexName', 'version', 'plateExtension', 'adapter1', 'adapter2', 'collectionIndexFile','generatedat')

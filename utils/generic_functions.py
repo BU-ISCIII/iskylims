@@ -82,36 +82,7 @@ def check_valid_date_format (date):
     except:
         return False
 
-def copy_to_remote_file (conn, run_dir, remote_file, local_file) :
-    '''
-    Description:
-        Function will fetch the file from remote server and copy on local
-        directory
-    Input:
-        conn    # Samba connection object
-        run_dir # run folder to fetch the file
-        remote_file # file name to fetch on remote server
-        local_file # local copy of the file fetched
-    Constants:
-        SAMBA_SHARED_FOLDER_NAME
-    variables:
-        logger # logging object to write in the log file
-    Return:
-        True if file was successfuly copy.
-        Exception if file could not be fetched
-    '''
-    logger = logging.getLogger(__name__)
-    logger.debug ('Starting function for copy file to remote')
-    with open(local_file ,'rb') as r_par_fp :
-        try:
-            conn.storeFile(wetlab_config.SAMBA_SHARED_FOLDER_NAME, remote_file, r_par_fp)
-            logger.info('Saving the file %s to remote server', local_file)
-        except Exception as e:
-            string_message = 'Unable to copy the ' + local_file + 'file on folder ' + run_dir
-            logging_errors (string_message, True, True)
-            raise Exception('File not copied')
-    logger.debug ('End function for copy file to remote')
-    return True
+
     '''
     def get_sequencer_lanes_number_from_file (input_file, experiment_name):
     '''

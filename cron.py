@@ -72,6 +72,7 @@ def looking_for_new_runs ():
 
     # looking in database for the runs that are not completed
     logger.info('----------------------------------')
+    logger.info(' ***** LOOKING FOR RUNS ALREADY DEFINED ON DATABASE*****')
     logger.info('----------------------------------')
     logger.info('Start looking for uncompleted runs')
     working_path = settings.MEDIA_ROOT

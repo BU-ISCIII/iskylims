@@ -265,7 +265,7 @@ class LibraryKit (models.Model):
 
 
 class ProjectsManager(models.Manager):
-    def create_new_empty_project(self,project_data):
+    def create_new_empty_project(self, project_data):
         new_project = self.create(user_id = project_data['user_id'], projectName = project_data['projectName'])
         return new_project
 
@@ -282,7 +282,7 @@ class Projects(models.Model):
     #        on_delete=models.CASCADE, null = True) # added null for new lab process functionality
     user_id= models.ForeignKey(
                     User,
-                    on_delete = models.CASCADE, null = True)
+                    on_delete = models.CASCADE, null = True, blank = True)
     LibraryKit_id = models.ForeignKey(
                     LibraryKit,
                     on_delete=models.CASCADE , null=True, blank = True)
@@ -290,10 +290,10 @@ class Projects(models.Model):
 
     BaseSpaceLibrary = models.CharField(max_length=45, null=True, blank=True)
     projectName= models.CharField(max_length=45)
-    libraryKit=models.CharField(max_length=125)
-    baseSpaceFile = models.CharField(max_length=255)
+    libraryKit=models.CharField(max_length=125, null = True, blank = True)
+    baseSpaceFile = models.CharField(max_length=255, null = True, blank = True)
     generatedat = models.DateTimeField(auto_now_add=True)
-    project_run_date = models.DateField(auto_now = False, null=True)
+    project_run_date = models.DateField(auto_now = False, null=True, blank = True)
     #sampleSheet = models.FileField(upload_to = wetlab_config.SAMPLE_SHEET_CREATED_ON_LAB, null = True) # added null for new lab process functionality
     #pairedEnd  = models.BooleanField(null = True, blank = True)
     #read_length = models.CharField(max_length = 10)
