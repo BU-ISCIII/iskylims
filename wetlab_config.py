@@ -96,11 +96,6 @@ DEFAULT_LIBRARY_KIT = 'Unknown'
 DEFAULT_CENTER = 'CNM'
 ##############################################################
 
-############ MAXIMUM TIME TO WAIT BEFORE MOVING TO ERROR #####
-#MAXIMUM_TIME_WAIT_SAMPLE_SHEET = '2' # in days
-#MAXIMUM_TIME_WAIT_RUN_COMPLETION = '3' # in days
-##############################################################
-
 ############ RUN METRIC FOLDERS AND FILES ####################
 INTEROP_PATH = '/opt/interop/bin/'
 RUN_METRIC_FOLDER = 'InterOp'

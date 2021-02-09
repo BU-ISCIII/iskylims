@@ -843,7 +843,7 @@ def retry_error_run (request):
             run_name_found.set_run_state(previous_error_state)
             detail_description = {}
             detail_description['information'] = SUCCESSFUL_RUN_STATE_CHANGE_FOR_RETRY
-            return render (request,'iSkyLIMS_wetlab/successful_page.html', {'detail_description': detail_description })
+            return render (request,'iSkyLIMS_wetlab/successful_page.html', {'detail_description': detail_description , 'return_main_menu': True})
         else:
             return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Run does not exist ']})
     else:

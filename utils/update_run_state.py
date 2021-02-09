@@ -230,7 +230,7 @@ def handle_not_completed_run ():
     runs_with_error = {}
     #state_list_be_processed = ['Sample Sent','Processing Run','Processed Run', 'Processing Bcl2fastq',
     #                                'Processed Bcl2fastq', 'Recorded']
-    state_list_be_processed = ['Recorded','Sample Sent']
+    state_list_be_processed = ['Recorded','Sample Sent', 'Processing Run','Processed Run']
     # get the list for all runs that are not completed
     for state in state_list_be_processed:
         #run_state_obj = RunStates.objects.filter(runStateName__exact = state).last()
@@ -242,7 +242,6 @@ def handle_not_completed_run ():
                 runs_to_handle[state].append(run_in_state_obj)
 
     for state in runs_to_handle.keys():
-
         logger.info ('Start processing the run found for state %s', state)
         if state == 'Recorded':
             manage_run_in_recorded_state(conn, runs_to_handle[state])
@@ -250,6 +249,7 @@ def handle_not_completed_run ():
         elif state == 'Sample Sent':
             manage_run_in_sample_sent_processing_state(conn, runs_to_handle[state])
         elif state == 'Processing Run':
+            import pdb; pdb.set_trace()
             manage_run_in_sample_sent_processing_state(conn, runs_to_handle[state])
 
         '''

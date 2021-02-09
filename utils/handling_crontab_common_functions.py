@@ -143,6 +143,7 @@ def check_sequencer_status_from_completion_file(l_run_completion, experiment_nam
     logger.debug ('%s : Starting function for check_sequencer_status_from_completion_file', experiment_name)
     # check if NextSEq run have been successful completed
     status_run = find_xml_tag_text (l_run_completion, COMPLETION_TAG )
+    import pdb; pdb.set_trace()
     if  status_run != COMPLETION_SUCCESS:
         logger.info('%s : Run in sequencer was not completed but %s', experiment_name, stats_run)
         string_message = experiment_name + ' : Sequencer Run was not completed. Reason was ' + status_run
@@ -150,7 +151,7 @@ def check_sequencer_status_from_completion_file(l_run_completion, experiment_nam
         logger.debug ('%s : End function for check_sequencer_status_from_completion_file', experiment_name)
         return False
     else:
-        logger.info ('%s : Run successfuly completed ', experiment_name)
+        logger.info ('%s : Sequencer Run successfuly completed ', experiment_name)
         logger.debug ('%s : End function for check_sequencer_status_from_completion_file', experiment_name)
         return True
 
@@ -194,12 +195,11 @@ def check_sequencer_run_is_completed(conn, run_folder , platform ,number_of_cycl
         except :
             string_message = experiment_name + ' : Unable to fetch the log files on run folder ' +  run_folder + '/' + log_folder
             logging_errors( string_message, True, True)
-            logger.debug ('%s : End function check_log_for_run_completions with exeception', experiment_name)
-            return {'ERROR':24}, ''
+            logger.debug ('%s : End function check_sequencer_run_is_completed with exeception', experiment_name)
+            return {'ERROR':18}, ''
         status , run_completion_date = check_sequencer_status_from_log_file(log_file_content ,log_cycles,number_of_cycles, experiment_name)
         logger.debug ('%s : End function check_sequencer_run_is_completed', experiment_name)
         return status , run_completion_date
-
 
     elif way_to_check == 'xml_file':
         l_run_completion = os.path.join(RUN_TEMP_DIRECTORY, RUN_COMPLETION_FILE)
@@ -222,6 +222,8 @@ def check_sequencer_run_is_completed(conn, run_folder , platform ,number_of_cycl
         logger.debug ('%s : End function check_sequencer_run_is_completed with exception', experiment_name)
         return 'cancelled', ''
     else:
+        string_message = experiment_name + ' : way to check the completion run is not defined for  ' +  platform
+        logging_errors( string_message, False, True)
         logger.debug ('%s : End function check_sequencer_run_is_completed with exeception', experiment_name)
         return {'ERROR':25}, ''
 
@@ -368,7 +370,7 @@ def get_latest_run_procesing_log(conn, log_folder, experiment_name) :
     logger.debug ('%s : Starting function get_latest_run_procesing_log',  experiment_name)
     shared_folder = get_samba_shared_folder()
     folder_logs = os.path.join('/', get_samba_application_shared_folder(),log_folder )
-    import pdb; pdb.set_trace()
+
     remote_file_list = conn.listPath( shared_folder, folder_logs)
     max_cycle = -1
     logger.info('%s : Succesful connection to fetch logs files', experiment_name)
@@ -387,7 +389,6 @@ def get_latest_run_procesing_log(conn, log_folder, experiment_name) :
     temporary_log = os.path.join(RUN_TEMP_DIRECTORY,'miseq_cycle.log')
     s_latest_log = os.path.join(log_folder,latest_log)
 
-    import pdb; pdb.set_trace()
     temporary_log = fetch_remote_file (conn, log_folder, s_latest_log, temporary_log)
     logger.info('%s : copied to tmp folder the log is : %s',  experiment_name, s_latest_log)
     with open (temporary_log, 'r', encoding='utf8') as fh :

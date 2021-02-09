@@ -86,6 +86,7 @@ def manage_run_in_sample_sent_processing_state(conn, run_process_objs):
         run_process_objs    # list of runProcess objects that are in recorded
     Functions:
         check_log_for_run_completions           # located in utils.handling_crontab_common_functions.py
+        waiting_time_expired                    # located in utils.handling_crontab_common_functions.py
     Return:
         None
     '''
@@ -98,7 +99,7 @@ def manage_run_in_sample_sent_processing_state(conn, run_process_objs):
         if platform == 'None':
             string_message = experiment_name + ' : Used sequencer or the platform is not defined'
             logging_errors(string_message, False, True)
-            handling_errors_in_run (experiment_name, 18)
+            handling_errors_in_run (experiment_name, 24)
             logger.info('%s ERROR in manage_run_in_sample_sent_processing_state function', experiment_name)
             logger.debug('%s End manage_run_in_sample_sent_processing_state function', experiment_name)
             continue
@@ -118,18 +119,26 @@ def manage_run_in_sample_sent_processing_state(conn, run_process_objs):
             logging_warnings(string_message, True)
             logger.debug('%s End manage_run_in_sample_sent_processing_state function', experiment_name)
         elif 'ERROR' in run_status:
-            if run_status['ERROR'] == 24:
+            if run_status['ERROR'] == 18:
                 string_message = experiment_name + ' : Unable to fetch logs files for checking run completion status ' + run_folder
             else :
                 string_message = experiment_name + ' : platform ' + platform + ' is not defined in wetlab_config.py file (on PLATFORM_WAY_TO_CHECK_RUN_COMPLETION variable) '
             import pdb; pdb.set_trace()
             logging_errors(string_message, False, True)
-            #handling_errors_in_run (experiment_name, run_status['ERROR'])
-            logger.info('%s ERROR in manage_run_in_sample_sent_processing_state function', experiment_name)
-            logger.debug('%s End manage_run_in_sample_sent_processing_state function', experiment_name)
+            handling_errors_in_run (experiment_name, run_status['ERROR'])
+            logger.debug('%s : End manage_run_in_sample_sent_processing_state function', experiment_name)
         else:
-            run_process_obj.set_run_state('Processing Run')
-            logger.info('%s changed to Processing Run state', experiment_name)
-        logger.info('%s End handling in manage_run_in_sample_sent_processing_state function', experiment_name)
+            maximun_time = ConfigSetting.objects.filter(configurationName__exact = 'MAXIMUM_TIME_WAIT_RUN_COMPLETION').last().get_configuration_value()
+            if not waiting_time_expired(run_process_obj, maximun_time ,experiment_name):
+                logger.info ('%s : Waiting more time to get Sequencer completion', experiment_name)
+                run_process_obj.set_run_state('Processing Run')
+                logger.info('%s : changed to Processing Run state', experiment_name)
+                logger.debug('%s  : End manage_run_in_sample_sent_processing_state function', experiment_name)
+            else:
+                string_message = experiment_name + ' : Expired time for waiting for Sequencer completion file on folder ' + run_folder
+                logging_errors(string_message, False, True)
+                handling_errors_in_run (experiment_name, 9)
+                logger.debug('%s  : End manage_run_in_sample_sent_processing_state function', experiment_name)
+
     logger.debug (' End function manage_run_in_sample_sent_processing_state')
     return

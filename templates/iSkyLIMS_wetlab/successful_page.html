@@ -36,8 +36,13 @@ function goBack() {
       </div> <!--// end col-sm-4 -->
 </div> <!-- end row  -->
 <div class="row row-space-2 margin-b-4">
-  <div class="col-sm-4 col-sm-offset-4">
-    <button type="button" class="btn btn-default" onclick="goBack()">Go Back</button>
+    <div class="col-sm-4 col-sm-offset-4">
+        {% if  return_main_menu %}
+            <a href="/wetlab"><button type="button" class="btn btn-default">Return to main menu</button> </a>
+
+        {% else %}
+            <button type="button" class="btn btn-default" onclick="goBack()">Go Back</button>
+        {% endif %}
   </div> <!--// end col-sm-4 -->
 </div> <!-- end row  -->
 {% endblock %}
