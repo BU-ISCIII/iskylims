@@ -3,7 +3,7 @@ from django.conf import settings
 #from django.contrib.auth.models import User
 import sys
 from iSkyLIMS_wetlab import wetlab_config
-from .utils.update_run_state import search_update_new_runs, search_not_completed_run
+from .utils.update_run_state import search_update_new_runs, handle_not_completed_run
 
 from .utils.handling_crontab_common_functions import  open_log
 
@@ -78,7 +78,7 @@ def looking_for_new_runs ():
     working_path = settings.MEDIA_ROOT
     os.chdir(working_path)
     try:
-        search_not_completed_run()
+        handle_not_completed_run()
     except Exception as e:
         print ('****** Exiting abnormal the crontab  process with errors')
         print (e)

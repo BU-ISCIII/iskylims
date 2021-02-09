@@ -2,7 +2,7 @@ import logging
 from logging.config import fileConfig
 from logging.handlers import RotatingFileHandler
 
-import os
+import os, re
 from smb.SMBConnection import SMBConnection
 import socket
 import traceback
@@ -84,38 +84,147 @@ def assign_projects_to_run(run_process_obj, sample_sheet_file , experiment_name)
             if not project_obj in projects_objs:
                 projects_objs.append(project_obj)
                 project_obj.runProcess.add(run_process_obj)
-                logger.info('%s : Project name  added ', experiment_name)
+                logger.info('%s : Project name  %s added ', experiment_name, project)
     logger.debug ('%s : End function assign_projects_to_run', experiment_name)
     return
 
+def check_sequencer_status_from_log_file(log_file_content, log_cycles, number_of_cycles, experiment_name):
+    '''
+    Description:
+        The function checks in the logs if run was canceled. If not canceled, then check
+        the number of created log files are the same as they expected to have when
+        run processing is completed
+    Input:
+        log_file_content    # content of the log file
+        log_cycles          # number of cycles executed on sequencer
+        number_of_cycles    # number of cycle to check in logs
+        experiment_name     # experiment name
+    Return:
+        completed and run_completion_date in case the sequencer ends sucessfully.
+        If not return status of the run (cancelled/still_running)
+        ERROR returns if not able to fecth log files
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('%s : Starting function check_sequencer_status_from_log_file', experiment_name)
+    run_completion_date = ''
+    if 'Cancel' in log_file_content :
+        logger.warning ('%s : Sequencer execution was canceled', experiment_name)
+        status = 'Cancelled'
+    elif log_cycles != number_of_cycles :
+        logger.info('%s : run sequencer is still running', experiment_name)
+        status = 'still_running'
+    else:
+        # Fetch the run completcion time
+        status = 'completed'
+        logger.info('%s : run in sequencer is completed', experiment_name)
+        last_line_in_file = log_file_content.split('\n')[-2]
+        last_log_time = last_line_in_file.split(' ')[0:2]
+        last_log_time[0] = str('20'+ last_log_time[0])
+        string_completion_date = ' '.join(last_log_time)
+        run_completion_date = datetime.strptime(string_completion_date, '%Y-%m-%d %H:%M:%S.%f')
+    logger.debug ('%s : End function check_sequencer_status_from_log_file', experiment_name)
+    return status, run_completion_date
 
-def create_new_sequencer_lab_not_defined (sequencer_name,num_of_lanes, experiment_name):
+def check_sequencer_status_from_completion_file(l_run_completion, experiment_name):
+    '''
+    Description:
+        The function will check if the run in sequencer was successful
+    Input:
+        l_run_completion  # local path for the run completion file
+        experiment_name   # Contains the experiment name
+    Functions:
+        find_xml_tag_text # located at utils.generic_functions
+    Constant:
+        COMPLETION_TAG
+    Return
+        True if successfuly completed
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('%s : Starting function for check_sequencer_status_from_completion_file', experiment_name)
+    # check if NextSEq run have been successful completed
+    status_run = find_xml_tag_text (l_run_completion, COMPLETION_TAG )
+    if  status_run != COMPLETION_SUCCESS:
+        logger.info('%s : Run in sequencer was not completed but %s', experiment_name, stats_run)
+        string_message = experiment_name + ' : Sequencer Run was not completed. Reason was ' + status_run
+        logging_warnings (string_message, False)
+        logger.debug ('%s : End function for check_sequencer_status_from_completion_file', experiment_name)
+        return False
+    else:
+        logger.info ('%s : Run successfuly completed ', experiment_name)
+        logger.debug ('%s : End function for check_sequencer_status_from_completion_file', experiment_name)
+        return True
+
+
+def check_sequencer_run_is_completed(conn, run_folder , platform ,number_of_cycles, experiment_name):
     '''
     Description:
 
-        creates a new entry in database wit only the sequencer name and the lane numbers
     Input:
-        sequencer_name    # sequencer name
-        num_of_lanes        # number of lanes
+        conn                # Connection Samba object
+        run_folder          # run folder on the remote server
+        platform            # platform name
+        number_of_cycles    # number of cycle to check in logs
         experiment_name     # experiment name
     Functions:
-        get_sequencer_lanes_number_from_file # located at this file
+        get_samba_application_shared_folder     # located at this file
+        get_latest_run_procesing_log            # located at this file
+        check_sequencer_status_from_log_file    # located at this file
     Constants:
-        EMPTY_FIELDS_IN_SEQUENCER
+        PLATFORM_WAY_TO_CHECK_RUN_COMPLETION
+        RUN_LOG_FOLDER
+        RUN_COMPLETION_FILE
     Return:
-        new_sequencer_obj
+        status and run_completion_date
+        ERROR returns if not able to fecth log files or not defined the way to
+        check the termination of the run in sequencer
     '''
     logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function create_new_sequencer_lab_not_defined', experiment_name)
-    seq_data = {}
-    for item in EMPTY_FIELDS_IN_SEQUENCER :
-        seq_data[item] = None
-    seq_data['sequencerNumberLanes'] = num_of_lanes
-    seq_data['sequencerName'] = sequencer_name
-    new_sequencer_obj = SequencerInLab.objects.create_sequencer_in_lab(seq_data)
-    logger.info('%s : Created the new sequencer in database' , experiment_name )
-    logger.debug ('%s : End function create_new_sequencer_lab_not_defined', experiment_name)
-    return new_sequencer_obj
+    logger.debug ('%s : Starting function check_sequencer_run_is_completed', experiment_name)
+    way_to_check =''
+    for method in PLATFORM_WAY_TO_CHECK_RUN_COMPLETION:
+        if method[0] not in platform:
+            continue
+        way_to_check = method[1]
+
+    if way_to_check == 'logs':
+
+        log_folder = os.path.join(run_folder, RUN_LOG_FOLDER)
+        try:
+            log_cycles, log_file_content = get_latest_run_procesing_log(conn, log_folder ,  experiment_name)
+        except :
+            string_message = experiment_name + ' : Unable to fetch the log files on run folder ' +  run_folder + '/' + log_folder
+            logging_errors( string_message, True, True)
+            logger.debug ('%s : End function check_log_for_run_completions with exeception', experiment_name)
+            return {'ERROR':24}, ''
+        status , run_completion_date = check_sequencer_status_from_log_file(log_file_content ,log_cycles,number_of_cycles, experiment_name)
+        logger.debug ('%s : End function check_sequencer_run_is_completed', experiment_name)
+        return status , run_completion_date
+
+
+    elif way_to_check == 'xml_file':
+        l_run_completion = os.path.join(RUN_TEMP_DIRECTORY, RUN_COMPLETION_FILE)
+        s_run_completion = os.path.join(get_samba_application_shared_folder() , run_folder, RUN_COMPLETION_FILE)
+
+        try:
+            l_run_completion = fetch_remote_file (conn, run_folder, s_run_completion, l_run_completion)
+            logger.info('%s : Sucessfully fetch of Completion status file',experiment_name)
+        except Exception as e:
+            logger.warning ('%s : Completion status file is not present on the run folder %s', experiment_name, run_folder)
+            logger.debug ('%s : End function check_sequencer_run_is_completed', experiment_name)
+            return 'still_running', ''
+
+        if check_sequencer_status_from_completion_file (l_run_completion, experiment_name):
+            shared_folder = get_samba_shared_folder()
+            conversion_attributes = conn.getAttributes( shared_folder, s_run_completion)
+            run_completion_date = datetime.fromtimestamp(int(conversion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
+            logger.debug ('%s : End function for handling NextSeq run with exception', experiment_name)
+            return 'completed' , run_completion_date
+        logger.debug ('%s : End function check_sequencer_run_is_completed with exception', experiment_name)
+        return 'cancelled', ''
+    else:
+        logger.debug ('%s : End function check_sequencer_run_is_completed with exeception', experiment_name)
+        return {'ERROR':25}, ''
+
 
 def copy_sample_sheet_to_remote_folder(conn, sample_sheet_path, run_folder ,experiment_name):
     '''
@@ -182,6 +291,34 @@ def copy_to_remote_file (conn, run_dir, remote_file, local_file) :
     return True
 
 
+def create_new_sequencer_lab_not_defined (sequencer_name,num_of_lanes, experiment_name):
+    '''
+    Description:
+
+        creates a new entry in database wit only the sequencer name and the lane numbers
+    Input:
+        sequencer_name    # sequencer name
+        num_of_lanes        # number of lanes
+        experiment_name     # experiment name
+    Functions:
+        get_sequencer_lanes_number_from_file # located at this file
+    Constants:
+        EMPTY_FIELDS_IN_SEQUENCER
+    Return:
+        new_sequencer_obj
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('%s : Starting function create_new_sequencer_lab_not_defined', experiment_name)
+    seq_data = {}
+    for item in EMPTY_FIELDS_IN_SEQUENCER :
+        seq_data[item] = None
+    seq_data['sequencerNumberLanes'] = num_of_lanes
+    seq_data['sequencerName'] = sequencer_name
+    new_sequencer_obj = SequencerInLab.objects.create_sequencer_in_lab(seq_data)
+    logger.info('%s : Created the new sequencer in database' , experiment_name )
+    logger.debug ('%s : End function create_new_sequencer_lab_not_defined', experiment_name)
+    return new_sequencer_obj
+
 def fetch_remote_file (conn, run_dir, remote_file, local_file) :
     '''
     Description:
@@ -212,6 +349,53 @@ def fetch_remote_file (conn, run_dir, remote_file, local_file) :
     logger.debug ('%s : End function for fetching remote file', run_dir)
     return local_file
 
+
+def get_latest_run_procesing_log(conn, log_folder, experiment_name) :
+    '''
+    Description:
+        The function will find the latest log file for the input folder
+    Input:
+        conn        # samba connection object
+        log_folder  # folder name
+        experiment_name     # experiment name
+    Constant:
+        RUN_TEMP_DIRECTORY
+    Return:
+        number_of_cycles
+        file_content
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('%s : Starting function get_latest_run_procesing_log',  experiment_name)
+    shared_folder = get_samba_shared_folder()
+    folder_logs = os.path.join('/', get_samba_application_shared_folder(),log_folder )
+    import pdb; pdb.set_trace()
+    remote_file_list = conn.listPath( shared_folder, folder_logs)
+    max_cycle = -1
+    logger.info('%s : Succesful connection to fetch logs files', experiment_name)
+    for sfh in remote_file_list:
+        if sfh.isDirectory:
+            continue
+        file_remote = sfh.filename
+        if file_remote.endswith('.log') :
+            log_file = re.search('.*_Cycle(\d+)_.*',file_remote)
+
+            cycle_number = int(log_file.group(1))
+            if cycle_number > max_cycle :
+                max_cycle = cycle_number
+                latest_log = file_remote
+    logger.info('%s : Fetching the latest log file  %s  ', experiment_name, latest_log)
+    temporary_log = os.path.join(RUN_TEMP_DIRECTORY,'miseq_cycle.log')
+    s_latest_log = os.path.join(log_folder,latest_log)
+
+    import pdb; pdb.set_trace()
+    temporary_log = fetch_remote_file (conn, log_folder, s_latest_log, temporary_log)
+    logger.info('%s : copied to tmp folder the log is : %s',  experiment_name, s_latest_log)
+    with open (temporary_log, 'r', encoding='utf8') as fh :
+        log_file_content = fh.read()
+
+    os.remove(temporary_log)
+    logger.debug ('%s : End function get_latest_run_procesing_log',  experiment_name)
+    return max_cycle, log_file_content
 
 def get_new_runs_from_remote_server (processed_runs, conn, shared_folder):
     '''
@@ -307,8 +491,6 @@ def get_run_process_obj_or_create_if_not_exists(running_parameters, experiment_n
     Input:
         running_parameters  # dictionary to collect information to create the new run process
         experiment_name     # experiment name
-    Functions:
-        create_new_sequencer_lab_not_defined    # located at this file
     Return:
         run_process_obj
     '''

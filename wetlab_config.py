@@ -55,7 +55,7 @@ PROCESSED_RUN_FILE='processed_run_file'
 RUN_PARAMETER_NEXTSEQ = 'RunParameters.xml'
 #RUN_PARAMETER_MISEQ = 'runParameters.xml'
 RUN_INFO = 'RunInfo.xml'
-RUN_COMPLETION = 'RunCompletionStatus.xml'
+RUN_COMPLETION_FILE = 'RunCompletionStatus.xml'
 SAMPLE_SHEET = 'samplesheet.csv'
 ## sample sheet to be copied on the remote folder
 COPY_SAMPLE_SHEET_TO_REMOTE = True # boolean constant True if NextSeq
@@ -70,6 +70,8 @@ STATS_FOLDER = 'Stats'
 CONVERSION_STATS_FILE = 'ConversionStats.xml'
 DEMULTIPLEXION_STATS_FILE = 'DemultiplexingStats.xml'
 ##############################################################
+
+PLATFORM_WAY_TO_CHECK_RUN_COMPLETION = [['NextSeq', 'xml_file'],['MiSeq', 'logs'], ['NovaSeq','xml_file']]
 
 ############ VALUE TAG FOR XML FILES #########################
 COMPLETION_TAG = 'CompletionStatus'

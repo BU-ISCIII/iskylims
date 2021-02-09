@@ -13,7 +13,7 @@ from iSkyLIMS_wetlab import wetlab_config
 
 
 from .handling_crontab_common_functions import *
-from .handling_crontab_manage_run_states import manage_run_in_recorded_state
+from .handling_crontab_manage_run_states import *
 from .generic_functions import *
 
 
@@ -57,15 +57,23 @@ def search_update_new_runs ():
         Get the runParameter file to identify if run is NextSeq or miSeq
         to execute its dedicate handler process.
     Functions:
+        assign_projects_to_run              # located at utils.handling_crontab_common_functions
+        assign_used_library_in_run          # located at utils.handling_crontab_common_functions
+        copy_sample_sheet_to_remote_folder  # located at utils.handling_crontab_common_functions
         fetch_remote_file                    # located at utils.handling_crontab_common_functions
         open_samba_connection                # located in utils.generic_functions.py
         get_list_processed_runs              # located at this file
         get_new_runs_on_remote_server        # located at utils.generic_functions.py
+        get_new_runs_from_remote_server      # located at utils.handling_crontab_common_functions
         get_experiment_name_from_file        # located at utils.generic_functions.py
+        get_remote_sample_sheet              # located at utils.handling_crontab_common_functions
         get_samba_application_shared_folder  # located at utils.handling_crontab_common_functions.py
-        handle_nextseq_recorded_run          # located at utils.nextseq_run_functions.py
-        validate_sample_sheet                # located at this file
-        save_new_miseq_run                   # located at this file
+        get_samba_shared_folder              # located at utils.handling_crontab_common_functions.py
+        fetch_remote_file                    # located at utils.handling_crontab_common_functions
+        parsing_run_info_and_parameter_information  #  located at utils.handling_crontab_common_functions
+        store_sample_sheet_if_not_defined_in_run     #  located at utils.handling_crontab_common_functions
+
+
     Constants:
         PROCESSED_RUN_FILE
         RUN_TEMP_DIRECTORY
@@ -160,7 +168,6 @@ def search_update_new_runs ():
             if run_process_obj.get_sample_file() == '' :
                 # Fetch sample Sheet from remote server
                 l_sample_sheet_path = get_remote_sample_sheet(conn, new_run ,experiment_name)
-
                 if not l_sample_sheet_path :
                     logger.debug ('%s : End the process. Waiting more time to get Sample Sheet file', experiment_name)
                     continue
@@ -184,7 +191,7 @@ def search_update_new_runs ():
     return
 
 
-def search_not_completed_run ():
+def handle_not_completed_run ():
     '''
     Description:
         The function will search for run that are not completed yet.
@@ -223,7 +230,7 @@ def search_not_completed_run ():
     runs_with_error = {}
     #state_list_be_processed = ['Sample Sent','Processing Run','Processed Run', 'Processing Bcl2fastq',
     #                                'Processed Bcl2fastq', 'Recorded']
-    state_list_be_processed = ['Recorded']
+    state_list_be_processed = ['Recorded','Sample Sent']
     # get the list for all runs that are not completed
     for state in state_list_be_processed:
         #run_state_obj = RunStates.objects.filter(runStateName__exact = state).last()
@@ -238,8 +245,13 @@ def search_not_completed_run ():
 
         logger.info ('Start processing the run found for state %s', state)
         if state == 'Recorded':
-
             manage_run_in_recorded_state(conn, runs_to_handle[state])
+
+        elif state == 'Sample Sent':
+            manage_run_in_sample_sent_processing_state(conn, runs_to_handle[state])
+        elif state == 'Processing Run':
+            manage_run_in_sample_sent_processing_state(conn, runs_to_handle[state])
+
         '''
         if state == 'Sample Sent':
             updated_run['Sample Sent'] = []

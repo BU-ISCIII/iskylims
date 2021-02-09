@@ -11,16 +11,6 @@ from django.utils.translation import ugettext_lazy as _
 from .  import wetlab_config
 from iSkyLIMS_core.models import MoleculePreparation , Samples , ProtocolType, Protocols, ProtocolParameters, UserLotCommercialKits, CommercialKits, SequencerInLab, SequencingConfiguration, SequencingPlatform
 
-class FlexibleConfSettings(models.Model):
-    confParameterName = models.CharField(max_length=255)
-    confParameterValue = models.CharField(max_length=255)
-
-    def __str__ (self):
-        return '%s' %(self.confParameterName)
-
-    def get_parameter_value(self):
-        return '%s' %(self.confParamValue)
-
 class RunErrors (models.Model):
     errorCode = models.CharField(max_length=10)
     errorText = models.CharField(max_length=255)
@@ -172,7 +162,10 @@ class RunProcess(models.Model):
         return '%s' %(self.usedSequencer)
 
     def get_run_platform (self):
-        return '%s' %(self.usedSequencer.get_sequencing_platform_name())
+        if self.usedSequencer != None:
+            return '%s' %(self.usedSequencer.get_sequencing_platform_name())
+        else:
+            return 'None'
     '''
     def get_machine_lanes(self):
         number_of_lanes = self.sequencerModel.get_number_of_lanes()

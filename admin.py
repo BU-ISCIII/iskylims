@@ -51,13 +51,13 @@ class RunningParametersAdmin(admin.ModelAdmin):
 class RunProcessAdmin (admin.ModelAdmin):
     list_display = ('runName','usedSequencer','sampleSheet','generatedat','run_date','runError', 'state','index_library','samples','centerRequestedBy','useSpaceImgMb','useSpaceFastaMb','useSpaceOtherMb')
     list_filter= ('generatedat',)
-    search_fields = ("runName__startswith", )
+    search_fields = ("runName__icontains", )
 
 
 class ProjectsAdmin (admin.ModelAdmin):
     list_display= ('projectName','user_id','LibraryKit_id','libraryKit','baseSpaceFile','generatedat','project_run_date')
     list_filter= ('generatedat',)
-    search_fields = ("projectName__startswith", )
+    search_fields = ("projectName__icontains", )
 
 class CollectionIndexKitAdmin(admin.ModelAdmin):
     list_display = ('collectionIndexName', 'version', 'plateExtension', 'adapter1', 'adapter2', 'collectionIndexFile','generatedat')
@@ -100,8 +100,7 @@ class GraphicsStatsAdmin(admin.ModelAdmin):
     list_display = ('runprocess_id', 'folderRunGraphic', 'cluserCountGraph', 'flowCellGraph', 'intensityByCycleGraph', 'heatMapGraph', 'histogramGraph', 'sampleQcGraph')
 
 
-class FlexibleConfSettingsAdmin(admin.ModelAdmin):
-    list_display = ['confParameterName', 'confParameterValue']
+
 
 class SambaConnectionDataAdmin(admin.ModelAdmin):
     list_display = ['SAMBA_IP_SERVER','SAMBA_HOST_NAME', 'SAMBA_PORT_SERVER', 'SAMBA_USER_ID', 'SAMBA_USER_PASSWORD']
@@ -140,7 +139,7 @@ admin.site.register(StatsLaneSummary, StatsLaneSummaryAdmin)
 admin.site.register(StatsFlSummary, StatsFlSummaryAdmin)
 admin.site.register(GraphicsStats, GraphicsStatsAdmin)
 
-admin.site.register(FlexibleConfSettings,FlexibleConfSettingsAdmin)
+
 
 admin.site.register(SambaConnectionData,SambaConnectionDataAdmin)
 admin.site.register(EmailData, EmailDataAdmin)
