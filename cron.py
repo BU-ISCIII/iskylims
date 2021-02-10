@@ -51,7 +51,9 @@ def looking_for_new_runs ():
     os.chdir(working_path)
     config_file = os.path.join(settings.BASE_DIR,'iSkyLIMS_wetlab',  wetlab_config.LOGGING_CONFIG_FILE )
     logger=open_log(config_file)
+    logger.info('----------------------------------')
     logger.info('###########---Start Crontab-----############')
+    logger.info('----------------------------------')
     logger.info('Start searching for new/updating runs')
     try:
         search_update_new_runs ()
@@ -72,7 +74,7 @@ def looking_for_new_runs ():
 
     # looking in database for the runs that are not completed
     logger.info('----------------------------------')
-    logger.info(' ***** LOOKING FOR RUNS ALREADY DEFINED ON DATABASE*****')
+    logger.info(' ***** LOOKING FOR RUNS ALREADY DEFINED ON DATABASE *****')
     logger.info('----------------------------------')
     logger.info('Start looking for uncompleted runs')
     working_path = settings.MEDIA_ROOT
@@ -88,9 +90,7 @@ def looking_for_new_runs ():
         logger.debug(traceback.format_exc())
         logger.debug('################################')
         logger.debug('*************** ERROR *********************')
-        logger.info('###########-----End Crontab--######################')
         print(traceback.print_exc())
-        return
 
     time_stop= datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print(time_stop)

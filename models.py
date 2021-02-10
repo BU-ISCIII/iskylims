@@ -172,8 +172,11 @@ class RunProcess(models.Model):
         return int(number_of_lanes)
     '''
     def get_sequencing_lanes(self):
-        number_of_lanes = self.usedSequencer.get_number_of_lanes()
-        return int(number_of_lanes)
+        if self.usedSequencer :
+            number_of_lanes = self.usedSequencer.get_number_of_lanes()
+            return int(number_of_lanes)
+        else:
+            return 0
 
 
     def get_sample_file (self):
@@ -477,14 +480,13 @@ class RunningParameters (models.Model):
 
 class StatsRunSummaryManager (models.Manager):
 
-    def create_stats_run_summary (self, stats_run_summary , experiment_name) :
-        run_process = RunProcess.objects.get(runName__exact = experiment_name)
-        s_run_summary = self.create(runprocess_id = run_process,
+    def create_stats_run_summary (self, stats_run_summary , run_process_obj) :
+        s_run_summary = self.create(runprocess_id = run_process_obj,
                                 level=stats_run_summary['level'], yieldTotal = stats_run_summary['yieldTotal'],
                                 projectedTotalYield= stats_run_summary['projectedTotalYield'],
                                 aligned= stats_run_summary['aligned'], errorRate= stats_run_summary['errorRate'],
                                 intensityCycle= stats_run_summary['intensityCycle'], biggerQ30= stats_run_summary['biggerQ30'],
-                                stats_summary_run_date = run_process.run_date)
+                                stats_summary_run_date = run_process_obj.run_date)
         return s_run_summary
 
 class StatsRunSummary (models.Model):
@@ -718,6 +720,14 @@ class StatsLaneSummary (models.Model):
 
     objects = StatsLaneSummaryManager ()
 
+class GraphicsStatsManager(models.Manager):
+    def create_graphic_run_metrics (self, run_process_obj, run_folder) :
+        graphic_metric = self.create ( runprocess_id = run_process_obj, folderRunGraphic= run_folder,
+                    cluserCountGraph = 'ClusterCount-by-lane.png', flowCellGraph= 'flowcell-Intensity.png',
+                    intensityByCycleGraph = 'Intensity-by-cycle.png', heatMapGraph= 'q-heat-map.png',
+                    histogramGraph= 'q-histogram.png', sampleQcGraph= 'sample-qc.png')
+
+        return graphic_metric
 
 class GraphicsStats (models.Model):
     runprocess_id = models.ForeignKey(
@@ -744,6 +754,8 @@ class GraphicsStats (models.Model):
 
     def get_folder_graphic(self):
         return '%s' %(self.folderRunGraphic)
+
+    objects = GraphicsStatsManager ()
 
 class SamplesInProjectManager (models.Manager):
     def create_sample_project (self, s_project):

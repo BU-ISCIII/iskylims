@@ -52,7 +52,7 @@ PROCESSED_RUN_FILE='processed_run_file'
 ##############################################################
 
 ############# ILLUMINA OUTPUT FILES ##########################
-RUN_PARAMETER_NEXTSEQ = 'RunParameters.xml'
+RUN_PARAMETER_FILE = 'RunParameters.xml'
 #RUN_PARAMETER_MISEQ = 'runParameters.xml'
 RUN_INFO = 'RunInfo.xml'
 RUN_COMPLETION_FILE = 'RunCompletionStatus.xml'
@@ -81,6 +81,11 @@ APPLICATION_NAME_TAG = 'ApplicationName'
 NUMBER_CYCLES_TAG = 'NumCycles'
 RUN_INFO_READ_TAG = 'RunInfoRead'
 NUMBER_TAG  = 'Number'
+
+##############################################################
+RUN_METRIC_GRAPHIC_COMMANDS = ['plot_by_cycle  ', 'plot_by_lane  ', 'plot_flowcell  ', 'plot_qscore_histogram  ',
+                    'plot_qscore_heatmap  ', 'plot_sample_qc  ']
+##############################################################
 
 ############### FIELD TAG NAMES TO COLLECT FROM RunParameter FILE #####################
 FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE = ['RunID','ExperimentName','RTAVersion','Chemistry','RunStartDate','RunManagementType', 'SystemSuiteVersion',

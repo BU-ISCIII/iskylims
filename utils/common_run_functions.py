@@ -2,7 +2,7 @@ import os
 from iSkyLIMS_wetlab import wetlab_config
 from iSkyLIMS_wetlab.models import *
 from .handling_crontab_common_functions import *
-from .run_metric_functions import *
+from .handling_crontab_run_metric import *
 import xml.etree.ElementTree as ET
 
 
@@ -65,28 +65,9 @@ def get_bcl2fastq_output_files (conn, run_folder):
     return  l_demux, l_conversion
 
 
-def check_run_metrics_processed (run_object_name) :
-    '''
-    Description:
-        The function will check if exists the data stored on StatsRunSummary
-        for this run
-        If exists returns True.
-    Input:
-        run_object_name   # runProcess object
-    Variables:
-        run_metric_processed # True or False if there are some rows in
-                            StatsRunSummary for this run
-    Return:
-        experiment_name if the run is updated. Empty if not
-    '''
-    logger = logging.getLogger(__name__)
-    logger.debug ('Starting function check_run_metrics_processed')
-    run_metric_processed = StatsRunSummary.objects.filter(runprocess_id = run_object_name).exists()
-    logger.info('Run metrics processed is %s', run_metric_processed)
-    logger.debug('End function check_run_metrics_processed')
-    return run_metric_processed
 
-def cleanup_demux_tables_if_error (run_object_name):
+
+def cleanup_demux_tables_if_error (run_process_obj):
     '''
     Description:
         The function will check if exists information stored on database
@@ -96,22 +77,22 @@ def cleanup_demux_tables_if_error (run_object_name):
         If they exist, they will be deleted to have a clean and valid
         information in database
     Input:
-        run_object_name   # runProcess object
+        run_process_obj   # runProcess object
     Variables:
 
     Return:
         True .
     '''
     logger = logging.getLogger(__name__)
-    experiment_name = run_object_name.get_run_name()
+    experiment_name = run_process_obj.get_run_name()
     logger.debug ('%s : Starting function cleanup_demux_tables_if_error', experiment_name)
 
-    if RawDemuxStats.objects.filter(runprocess_id__exact = run_object_name).exists():
-        raw_stats_to_delete = RawDemuxStats.objects.filter(runprocess_id__exact = run_object_name)
+    if RawDemuxStats.objects.filter(runprocess_id__exact = run_process_obj).exists():
+        raw_stats_to_delete = RawDemuxStats.objects.filter(runprocess_id__exact = run_process_obj)
         logger.info('%s : Deleting RawDemuxStats rows', experiment_name)
         for raw_stats in raw_stats_to_delete :
             raw_stats.delete()
-    projects = Projects.objects.filter(runprocess_id = run_object_name)
+    projects = Projects.objects.filter(runprocess_id = run_process_obj)
     for project in projects:
         if SamplesInProject.objects.filter(project_id = project).exists():
             samples_to_delete = SamplesInProject.objects.filter(project_id = project)
@@ -119,14 +100,14 @@ def cleanup_demux_tables_if_error (run_object_name):
             for sample in samples_to_delete:
                 sample.delete()
 
-    if StatsFlSummary.objects.filter(runprocess_id = run_object_name).exists():
-        fl_summary_to_delete = StatsFlSummary.objects.filter(runprocess_id = run_object_name)
+    if StatsFlSummary.objects.filter(runprocess_id = run_process_obj).exists():
+        fl_summary_to_delete = StatsFlSummary.objects.filter(runprocess_id = run_process_obj)
         logger.info('%s : Deleting StatsFlSummary rows', experiment_name)
         for fl_summary in fl_summary_to_delete:
             fl_summary.delete()
 
-    if StatsLaneSummary.objects.filter(runprocess_id = run_object_name).exists():
-        lane_summary_to_delete = StatsLaneSummary.objects.filter(runprocess_id = run_object_name)
+    if StatsLaneSummary.objects.filter(runprocess_id = run_process_obj).exists():
+        lane_summary_to_delete = StatsLaneSummary.objects.filter(runprocess_id = run_process_obj)
         logger.info('%s : Deleting StatsFlSummary rows', experiment_name)
         for lane_summary in lane_summary_to_delete:
             lane_summary.delete()
@@ -134,7 +115,7 @@ def cleanup_demux_tables_if_error (run_object_name):
     logger.debug ('%s : End function cleanup_demux_tables_if_error', experiment_name)
     return True
 
-def cleanup_run_metrics_tables_if_error (run_object_name):
+def cleanup_run_metrics_tables_if_error (run_process_obj):
     '''
     Description:
         The function will check if exists information stored on database
@@ -144,22 +125,22 @@ def cleanup_run_metrics_tables_if_error (run_object_name):
         If they exist, they will be deleted to have a clean and valid
         information in database
     Input:
-        run_object_name   # runProcess object
+        run_process_obj   # runProcess object
     Variables:
 
     Return:
         True .
     '''
     logger = logging.getLogger(__name__)
-    experiment_name = run_object_name.get_run_name()
+    experiment_name = run_process_obj.get_run_name()
     logger.debug ('%s : Starting function cleanup_run_metrics_tables_if_error', experiment_name)
-    if StatsRunSummary.objects.filter(runprocess_id__exact = run_object_name).exists():
-        run_summary_to_delete = RawDemuxStats.objects.filter(runprocess_id__exact = run_object_name)
+    if StatsRunSummary.objects.filter(runprocess_id__exact = run_process_obj).exists():
+        run_summary_to_delete = RawDemuxStats.objects.filter(runprocess_id__exact = run_process_obj)
         logger.info('%s : Deleting StatsRunSummary rows', experiment_name)
         for run_summary in run_summary_to_delete :
             run_summary.delete()
-    if StatsRunRead.objects.filter(runprocess_id__exact = run_object_name).exists():
-        run_read_to_delete = StatsRunRead.objects.filter(runprocess_id__exact = run_object_name)
+    if StatsRunRead.objects.filter(runprocess_id__exact = run_process_obj).exists():
+        run_read_to_delete = StatsRunRead.objects.filter(runprocess_id__exact = run_process_obj)
         logger.info('%s : Deleting StatsRunRead rows', experiment_name)
         for run_read in run_read_to_delete :
             run_read.delete()
@@ -470,14 +451,14 @@ def parsing_demux_sample_project(demux_file, conversion_file, number_of_lanes):
     return parsed_result
 
 
-def process_fl_summary_stats (stats_projects, run_object_name):
+def process_fl_summary_stats (stats_projects, run_process_obj):
     '''
     Description:
         The function will process the parsed data, to prepare the
         Flowcell summary information to store in database
     Input:
         stats_projects     # dictionnary with parsed data to be processed
-        run_object_name   # runProcess object
+        run_process_obj   # runProcess object
     Constants:
         M_BASE      # to have values in MB
     Variables:
@@ -490,12 +471,12 @@ def process_fl_summary_stats (stats_projects, run_object_name):
         processed_fl_summary_data.
     '''
     logger = logging.getLogger(__name__)
-    experiment_name = run_object_name.get_run_name()
+    experiment_name = run_process_obj.get_run_name()
     logger.debug ('%s : Starting function process_fl_summary_stats', experiment_name)
     M_BASE=1.004361/1000000
     total_cluster_lane=(stats_projects['all']['PerfectBarcodeCount'])
     processed_fl_summary_data = []
-    number_of_lanes = run_object_name.get_sequencing_lanes()
+    number_of_lanes = run_process_obj.get_sequencing_lanes()
     for project in stats_projects:
         project_flowcell = {}
         if project == 'TopUnknownBarcodes':
@@ -522,7 +503,7 @@ def process_fl_summary_stats (stats_projects, run_object_name):
         else:
             project_flowcell['project_id'] = Projects.objects.get(projectName__exact = project)
             project_flowcell['defaultAll'] = None
-        project_flowcell['runprocess_id'] = run_object_name
+        project_flowcell['runprocess_id'] = run_process_obj
         #store in database
         logger.info('%s : End processing flow Summary for project %s',experiment_name, project)
         '''
@@ -539,14 +520,14 @@ def process_fl_summary_stats (stats_projects, run_object_name):
     logger.debug ('%s : End function process_fl_summary_stats', experiment_name)
     return processed_fl_summary_data
 
-def process_lane_summary_stats (stats_projects, run_object_name):
+def process_lane_summary_stats (stats_projects, run_process_obj):
     '''
     Description:
         The function will process the parsed data, to prepare the
         Flowcell summary information to store in database
     Input:
         stats_projects     # dictionnary with parsed data to be processed
-        run_object_name   # runProcess object
+        run_process_obj   # runProcess object
     Constants:
         M_BASE      # to have values in MB
     Variables:
@@ -559,11 +540,11 @@ def process_lane_summary_stats (stats_projects, run_object_name):
         processed_lane_summary_data.
     '''
     logger = logging.getLogger(__name__)
-    experiment_name = run_object_name.get_run_name()
+    experiment_name = run_process_obj.get_run_name()
     logger.debug ('%s : Starting function process_lane_summary_stats',experiment_name)
     M_BASE=1.004361/1000000
     processed_lane_summary_data = []
-    number_of_lanes = run_object_name.get_sequencing_lanes()
+    number_of_lanes = run_process_obj.get_sequencing_lanes()
     total_cluster_lane=(stats_projects['all']['PerfectBarcodeCount'])
     for project in stats_projects:
         if project == 'TopUnknownBarcodes':
@@ -601,7 +582,7 @@ def process_lane_summary_stats (stats_projects, run_object_name):
                 project_lane['project_id'] = Projects.objects.get(projectName__exact = project)
                 project_lane['defaultAll'] =  None
 
-            project_lane['runprocess_id'] = run_object_name
+            project_lane['runprocess_id'] = run_process_obj
 
             processed_lane_summary_data.append(project_lane)
         logger.info('%s : Processed information for project %s',experiment_name, project)
@@ -610,7 +591,7 @@ def process_lane_summary_stats (stats_projects, run_object_name):
     return processed_lane_summary_data
 
 
-def process_raw_demux_stats(stats_projects, run_object_name):
+def process_raw_demux_stats(stats_projects, run_process_obj):
     '''
     Description:
         The function will process the parsed data, fetched previously and
@@ -622,7 +603,7 @@ def process_raw_demux_stats(stats_projects, run_object_name):
         An exeception is raised in case of error while processing
     Input:
         stats_projects     # dictionnary with parsed data to be processed
-        run_object_name   # runProcess object
+        run_process_obj   # runProcess object
     Variables:
         processed_raw_data # dictionary list that contains all processed
                             information.
@@ -636,7 +617,7 @@ def process_raw_demux_stats(stats_projects, run_object_name):
         An exception is raise if any project is not defined on database
     '''
     logger = logging.getLogger(__name__)
-    experiment_name = run_object_name.get_run_name()
+    experiment_name = run_process_obj.get_run_name()
     logger.debug ('%s : Starting function store_raw_xml_stats', experiment_name)
     processed_raw_data = []
     #error_found = False
@@ -692,14 +673,14 @@ def process_raw_demux_stats(stats_projects, run_object_name):
     return processed_raw_data
 
 
-def process_samples_projects(stats_projects, run_object_name ):
+def process_samples_projects(stats_projects, run_process_obj ):
     '''
     Description:
         The function will parse demultiplexing and the conversion files
         that are created during the bcl2fastq process
     Input:
         stats_projects     # dictionnary with parsed data to be processed
-        run_object_name   # runProcess object
+        run_process_obj   # runProcess object
     Variables:
         processed_sample_data # dictionary list that contains all processed
                             information.
@@ -713,7 +694,7 @@ def process_samples_projects(stats_projects, run_object_name ):
         An exception is raise if any project is not defined on database
     '''
     logger = logging.getLogger(__name__)
-    experiment_name = run_object_name.get_run_name()
+    experiment_name = run_process_obj.get_run_name()
     logger.debug ('%s : Starting function process_samples_projects', experiment_name)
     # get the total number of read per lane
     M_BASE=1.004361/1000000
@@ -763,14 +744,14 @@ def process_samples_projects(stats_projects, run_object_name ):
     return processed_sample_data
 
 
-def process_unknow_barcode_stats (stats_projects, run_object_name):
+def process_unknow_barcode_stats (stats_projects, run_process_obj):
     '''
     Description:
         The function will process the parsed data, to prepare the
         Flowcell summary information to store in database
     Input:
         stats_projects     # dictionnary with parsed data to be processed
-        run_object_name   # runProcess object
+        run_process_obj   # runProcess object
     Constants:
         M_BASE      # to have values in MB
     Variables:
@@ -783,9 +764,9 @@ def process_unknow_barcode_stats (stats_projects, run_object_name):
         processed_barcode_data.
     '''
     logger = logging.getLogger(__name__)
-    experiment_name = run_object_name.get_run_name()
+    experiment_name = run_process_obj.get_run_name()
     logger.debug ('%s : Starting function process_unknow_barcode_stats', experiment_name)
-    number_of_lanes = run_object_name.get_sequencing_lanes()
+    number_of_lanes = run_process_obj.get_sequencing_lanes()
     processed_barcode_data = []
     for project in stats_projects:
         if project == 'TopUnknownBarcodes':
@@ -797,7 +778,7 @@ def process_unknow_barcode_stats (stats_projects, run_object_name):
 
                 for barcode_line in stats_projects[project][un_lane]:
                     unknow_barcode = {}
-                    unknow_barcode['runprocess_id'] = run_object_name
+                    unknow_barcode['runprocess_id'] = run_process_obj
                     unknow_barcode['lane_number'] = lane_number=str(un_lane + 1)
                     unknow_barcode['top_number'] = str(top_number)
                     unknow_barcode['count'] =  '{0:,}'.format(int(barcode_line['count']))
@@ -809,7 +790,7 @@ def process_unknow_barcode_stats (stats_projects, run_object_name):
     logger.debug ('%s : End function process_unknow_barcode_stats', experiment_name)
     return processed_barcode_data
 
-def manage_run_in_processed_run (conn, run_object_name):
+def manage_run_in_processed_run (conn, run_process_obj):
     '''
     Description:
         The function will check if exists the folder that are created
@@ -817,7 +798,7 @@ def manage_run_in_processed_run (conn, run_object_name):
         If exists the run state will move to Processing Bcl2fastq
     Input:
         conn # Connectio samba object
-        run_object_name   # runProcess object
+        run_process_obj   # runProcess object
     Functions:
         check_run_metrics_processed # Located in this file
         create_graphics         # Located at utils.run_metrics_functions
@@ -835,21 +816,21 @@ def manage_run_in_processed_run (conn, run_object_name):
         experiment_name if the run is updated. Empty if not
     '''
     logger = logging.getLogger(__name__)
-    experiment_name = run_object_name.get_run_name()
+    experiment_name = run_process_obj.get_run_name()
     logger.debug ('%s : Starting function manage_run_in_processed_run', experiment_name)
-    experiment_name = run_object_name.get_run_name()
-    run_folder = RunningParameters.objects.get(runName_id = run_object_name).get_run_folder()
+    experiment_name = run_process_obj.get_run_name()
+    run_folder = RunningParameters.objects.get(runName_id = run_process_obj).get_run_folder()
     statistics_folder = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, run_folder, wetlab_config.DEMULTIPLEXION_BCL2FASTQ_FOLDER)
-    if 'Processed Run' == run_object_name.get_state() :
-        if not check_run_metrics_processed (run_object_name) :
-            run_state = run_object_name.set_run_state('Processing Metrics')
-            run_id = run_object_name.get_run_id()
+    if 'Processed Run' == run_process_obj.get_state() :
+        if not check_run_metrics_processed (run_process_obj) :
+            run_state = run_process_obj.set_run_state('Processing Metrics')
+            run_id = run_process_obj.get_run_id()
             try:
                 logger.info ('%s : Starts collecting the run metrics data', experiment_name)
                 # connect to statistics folder to fetch the run metrics files
                 run_metric_files = get_run_metric_files (conn, run_folder, experiment_name)
 
-                parsed_run_stats_summary, parsed_run_stats_read = parsing_run_metrics(wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING, run_object_name)
+                parsed_run_stats_summary, parsed_run_stats_read = parsing_run_metrics(wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING, run_process_obj)
             except Exception as e:
                 string_message = experiment_name + ' : Run metrics data cannot be saved'
                 logging_errors(string_message, True, True)
@@ -868,7 +849,7 @@ def manage_run_in_processed_run (conn, run_object_name):
                 string_message = experiment_name + ' : Run metrics data cannot be saved'
                 logging_errors(string_message, True, True)
                 # delete run metrics tables
-                cleanup_run_metrics_tables_if_error (run_object_name)
+                cleanup_run_metrics_tables_if_error (run_process_obj)
                 delete_run_metric_files (run_metric_files, experiment_name)
                 logger.info('%s : Deleted run metrics tables',experiment_name)
                 handling_errors_in_run(experiment_name)
@@ -876,12 +857,12 @@ def manage_run_in_processed_run (conn, run_object_name):
                 raise
 
             # create run graphics
-            run_graphics = create_graphics (wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING, run_object_name)
+            run_graphics = create_graphics (wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING, run_process_obj)
             logger.info('%s : run metrics graphics processed and copied to plot image folder',experiment_name)
             # deleting temporary run metrics files
             delete_run_metric_files (run_metric_files, experiment_name)
             # return the state to Processed Run
-            run_state = run_object_name.set_run_state('Processed Run')
+            run_state = run_process_obj.set_run_state('Processed Run')
 
             #set_state_in_all_projects(experiment_name, 'Processed Run')
         # Check if Bcl2fastq has started
@@ -892,7 +873,7 @@ def manage_run_in_processed_run (conn, run_object_name):
             logger.debug ('%s : End function manage_run_in_processed_run',experiment_name)
             return experiment_name
 
-        run_state = run_object_name.set_run_state('Processing Bcl2fastq')
+        run_state = run_process_obj.set_run_state('Processing Bcl2fastq')
         # Do not update the projects state. They will keep in Processed Run
 
     else:
@@ -904,7 +885,7 @@ def manage_run_in_processed_run (conn, run_object_name):
     return experiment_name
 
 
-def manage_run_in_processing_bcl2fastq (conn, run_object_name):
+def manage_run_in_processing_bcl2fastq (conn, run_process_obj):
     '''
     Description:
         The function will check if report folder exists. Then the bcl2fastq
@@ -912,7 +893,7 @@ def manage_run_in_processing_bcl2fastq (conn, run_object_name):
         If exists the run state will move to Processed Bcl2fastq
     Input:
         conn # Connectio samba object
-        run_object_name   # runProcess object
+        run_process_obj   # runProcess object
     Constant:
         REPORT_FOLDER
         SAMBA_APPLICATION_FOLDER_NAME
@@ -926,13 +907,13 @@ def manage_run_in_processing_bcl2fastq (conn, run_object_name):
         experiment_name if the run is updated. Empty if not
     '''
     logger = logging.getLogger(__name__)
-    experiment_name = run_object_name.get_run_name()
+    experiment_name = run_process_obj.get_run_name()
     logger.debug ('%s : Starting function manage_run_in_processing_bcl2fast2_run', experiment_name)
     logger.info('%s : Start handling in Processing_Bcl2fastq state', experiment_name)
-    run_folder = RunningParameters.objects.get(runName_id = run_object_name).get_run_folder()
+    run_folder = RunningParameters.objects.get(runName_id = run_process_obj).get_run_folder()
     statistics_folder = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, run_folder, wetlab_config.DEMULTIPLEXION_BCL2FASTQ_FOLDER)
 
-    if 'Processing Bcl2fastq' == run_object_name.get_state() :
+    if 'Processing Bcl2fastq' == run_process_obj.get_state() :
         # connect to report folder to check if bcl2fastq process is ended
         try:
             file_list = conn.listPath( wetlab_config.SAMBA_SHARED_FOLDER_NAME, statistics_folder)
@@ -949,8 +930,8 @@ def manage_run_in_processing_bcl2fastq (conn, run_object_name):
                 s_conversion_stats = os.path.join (statistics_folder, wetlab_config.STATS_FOLDER, wetlab_config.CONVERSION_STATS_FILE)
                 conversion_attributes = conn.getAttributes(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,s_conversion_stats)
                 bcl2fastq_finish_date = datetime.fromtimestamp(int(conversion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
-                bcl2fastq_finish_date = run_object_name.set_run_bcl2fastq_finished_date(bcl2fastq_finish_date)
-                run_object_name.set_run_state('Processed Bcl2fastq')
+                bcl2fastq_finish_date = run_process_obj.set_run_bcl2fastq_finished_date(bcl2fastq_finish_date)
+                run_process_obj.set_run_state('Processed Bcl2fastq')
                 # Do not update the projects state. They will keep in Processed Run
 
                 logger.info ('%s : Updated the Bcl2Fastq time in the run ', experiment_name)
@@ -966,7 +947,7 @@ def manage_run_in_processing_bcl2fastq (conn, run_object_name):
     return experiment_name
 
 
-def manage_run_in_processed_bcl2fastq (conn, run_object_name):
+def manage_run_in_processed_bcl2fastq (conn, run_process_obj):
     '''
     Description:
         The function will collect files created by bcl2fastq process.
@@ -978,7 +959,7 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
         to completed state
     Input:
         conn # Connection samba object
-        run_object_name   # runProcess object
+        run_process_obj   # runProcess object
     Constant:
         REPORT_FOLDER
     Functions:
@@ -1017,14 +998,14 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
         Exception if any error occurs
     '''
     logger = logging.getLogger(__name__)
-    experiment_name = run_object_name.get_run_name()
+    experiment_name = run_process_obj.get_run_name()
     logger.debug ('%s : Starting function manage_run_in_processed_bcl2fast2_run',experiment_name)
 
-    run_folder = RunningParameters.objects.get(runName_id = run_object_name).get_run_folder()
-    number_of_lanes = run_object_name.get_sequencing_lanes()
+    run_folder = RunningParameters.objects.get(runName_id = run_process_obj).get_run_folder()
+    number_of_lanes = run_process_obj.get_sequencing_lanes()
 
-    if 'Processed Bcl2fastq' == run_object_name.get_state() :
-        run_state = run_object_name.set_run_state('Processing Demultiplexing')
+    if 'Processed Bcl2fastq' == run_process_obj.get_state() :
+        run_state = run_process_obj.set_run_state('Processing Demultiplexing')
         #projects_state = set_state_in_all_projects(experiment_name, 'Processing Demultiplexing')
 
         try:
@@ -1047,20 +1028,20 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
         os.remove(l_demux)
         logger.info ('%s : Deleted temporary demultiplexing and conversion files', experiment_name)
 
-        processed_raw_stats = process_raw_demux_stats(parsed_result, run_object_name)
+        processed_raw_stats = process_raw_demux_stats(parsed_result, run_process_obj)
         try:
             for raw_stats in processed_raw_stats :
-                new_raw_stats = RawDemuxStats.objects.create_stats_run_read(raw_stats, run_object_name)
+                new_raw_stats = RawDemuxStats.objects.create_stats_run_read(raw_stats, run_process_obj)
             logger.info('%s : Saved information to RawDemuxStats', experiment_name)
         except:
             string_message = 'Unable to save raw stats for ' + experiment_name
             logging_errors(string_message, False, False)
             handling_errors_in_run (experiment_name, '11' )
-            cleanup_demux_tables_if_error(run_object_name)
+            cleanup_demux_tables_if_error(run_process_obj)
             logger.debug('%s : End function manage_run_in_processed_bcl2fast2_run with error', experiment_name)
             raise
 
-        processed_samples_stats = process_samples_projects(sample_parsed_result, run_object_name)
+        processed_samples_stats = process_samples_projects(sample_parsed_result, run_process_obj)
         try:
             for sample_stats in processed_samples_stats :
                 new_sample_stats = SamplesInProject.objects.create_sample_project(sample_stats)
@@ -1069,10 +1050,10 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
             string_message = experiment_name + ' : Unable to save sample stats'
             logging_errors(string_message, False, False)
             handling_errors_in_run (experiment_name, '13' )
-            cleanup_demux_tables_if_error(run_object_name)
+            cleanup_demux_tables_if_error(run_process_obj)
             logger.debug('%s : End function manage_run_in_processed_bcl2fast2_run with error', experiment_name)
             raise
-        processed_fl_summary = process_fl_summary_stats(parsed_result, run_object_name)
+        processed_fl_summary = process_fl_summary_stats(parsed_result, run_process_obj)
         try:
             for fl_summary in processed_fl_summary :
                 new_fl_summary = StatsFlSummary.objects.create_fl_summary(fl_summary)
@@ -1081,11 +1062,11 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
             string_message = experiment_name + ' : Unable to save FL Summary stats'
             logging_errors(string_message, False, False)
             handling_errors_in_run (experiment_name, '14' )
-            cleanup_demux_tables_if_error(run_object_name)
+            cleanup_demux_tables_if_error(run_process_obj)
             logger.debug('%s : End function manage_run_in_processed_bcl2fast2_run with error', experiment_name)
             raise
 
-        processed_lane_summary = process_lane_summary_stats(parsed_result, run_object_name)
+        processed_lane_summary = process_lane_summary_stats(parsed_result, run_process_obj)
         try:
             for lane_summary in processed_lane_summary :
                 new_lane_summary = StatsLaneSummary.objects.create_lane_summary(lane_summary)
@@ -1094,11 +1075,11 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
             string_message = experiment_name + ' : Unable to save Lane Summary stats'
             logging_errors(string_message, False, False)
             handling_errors_in_run (experiment_name, '15' )
-            cleanup_demux_tables_if_error(run_object_name)
+            cleanup_demux_tables_if_error(run_process_obj)
             logger.debug('%s :End function manage_run_in_processed_bcl2fast2_run with error', experiment_name)
             raise
 
-        processed_unknow_barcode = process_unknow_barcode_stats(parsed_result, run_object_name)
+        processed_unknow_barcode = process_unknow_barcode_stats(parsed_result, run_process_obj)
         try:
             for unknow_barcode in processed_unknow_barcode :
                 new_unknow_barcode = RawTopUnknowBarcodes.objects.create_unknow_barcode(unknow_barcode)
@@ -1107,7 +1088,7 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
             string_message = experiment_name + ' : Unable to Unknow Barcode stats'
             logging_errors(string_message, False, False)
             handling_errors_in_run (experiment_name, '16' )
-            cleanup_demux_tables_if_error(run_object_name)
+            cleanup_demux_tables_if_error(run_process_obj)
             logger.debug('%s : End function manage_run_in_processed_bcl2fast2_run with error', experiment_name)
             raise
 
@@ -1118,15 +1099,15 @@ def manage_run_in_processed_bcl2fastq (conn, run_object_name):
             string_message = experiment_name + ' : Error when fetching the disk utilizaton'
             logging_errors (string_message, False, False)
             handling_errors_in_run (experiment_name, '17' )
-            cleanup_demux_tables_if_error(run_object_name)
+            cleanup_demux_tables_if_error(run_process_obj)
             logger.debug('%s : End function manage_run_in_processed_bcl2fast2_run with error', experiment_name)
             raise
 
-        result_store_usage = run_object_name.set_used_space (disk_utilization)
+        result_store_usage = run_process_obj.set_used_space (disk_utilization)
         finish_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        result_set_finish_date = run_object_name.set_run_finish_date(finish_date)
+        result_set_finish_date = run_process_obj.set_run_finish_date(finish_date)
         # Update the run state to completed
-        run_state = run_object_name.set_run_state('Completed')
+        run_state = run_process_obj.set_run_state('Completed')
         logger.info('%s : is Completed',experiment_name)
 
 

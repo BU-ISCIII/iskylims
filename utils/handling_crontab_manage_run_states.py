@@ -8,6 +8,7 @@ from iSkyLIMS_wetlab.wetlab_config import *
 
 from .sample_sheet_utils import get_projects_in_run, get_index_library_name
 from .handling_crontab_common_functions import *
+from .handling_crontab_run_metric import *
 
 
 def manage_run_in_recorded_state(conn, run_process_objs):
@@ -123,7 +124,6 @@ def manage_run_in_sample_sent_processing_state(conn, run_process_objs):
                 string_message = experiment_name + ' : Unable to fetch logs files for checking run completion status ' + run_folder
             else :
                 string_message = experiment_name + ' : platform ' + platform + ' is not defined in wetlab_config.py file (on PLATFORM_WAY_TO_CHECK_RUN_COMPLETION variable) '
-            import pdb; pdb.set_trace()
             logging_errors(string_message, False, True)
             handling_errors_in_run (experiment_name, run_status['ERROR'])
             logger.debug('%s : End manage_run_in_sample_sent_processing_state function', experiment_name)
@@ -141,4 +141,66 @@ def manage_run_in_sample_sent_processing_state(conn, run_process_objs):
                 logger.debug('%s  : End manage_run_in_sample_sent_processing_state function', experiment_name)
 
     logger.debug (' End function manage_run_in_sample_sent_processing_state')
+    return
+
+
+def manage_run_in_processed_run_state(conn, run_process_objs):
+    '''
+    Description:
+        The funtion get the runs in processed run state. In this state it will collect run Metrics
+        files and store in StatsRunSummary table
+    Input:
+        conn                # samba connection instance
+        run_process_objs    # list of runProcess objects that are in recorded
+    Constants:
+        RUN_TEMP_DIRECTORY_PROCESSING
+    Functions:
+        check_run_metrics_processed             # located in utils.handling_crontab_run_metric.py
+        waiting_time_expired                    # located in utils.handling_crontab_common_functions.py
+    Return:
+        None
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug (' Starting function manage_run_in_processed_run_state')
+    for run_process_obj in run_process_objs:
+        experiment_name = run_process_obj.get_run_name()
+        logger.info('%s : Start handling in manage_run_in_processed_run_state function', experiment_name)
+        run_folder = RunningParameters.objects.filter(runName_id = run_process_obj).last().get_run_folder()
+        # delete existing information to avoid having duplicated tables
+        delete_existing_run_metrics_table_processed(run_process_obj, experiment_name)
+        run_metric_files = get_run_metric_files (conn, run_folder, experiment_name)
+
+        if 'ERROR'in run_metric_files :
+            string_message = experiment_name + ' : Unable to collect all files for run metrics'
+            logging_errors(string_message, False, True)
+            handling_errors_in_run (experiment_name, run_metric_files['ERROR'])
+            delete_run_metric_files (experiment_name)
+            logger.debug('%s : End manage_run_in_processed_run_state function', experiment_name)
+            continue
+        parsed_run_stats_summary, parsed_run_stats_read = parsing_run_metrics_files(RUN_TEMP_DIRECTORY_PROCESSING, run_process_obj, experiment_name)
+
+        for run_stat_summary in parsed_run_stats_summary :
+            saved_run_stat_summary = StatsRunSummary.objects.create_stats_run_summary(run_stat_summary, run_process_obj)
+        logger.info('%s : run metrics summary data saved to database', experiment_name)
+        for run_stat_read in parsed_run_stats_read :
+            saved_run_stat_read = StatsRunRead.objects.create_stats_run_read(run_stat_read, run_process_obj)
+        logger.info('%s :run metrics read data saved to database',experiment_name)
+
+        # create run graphics
+        run_graphics = create_run_metric_graphics (RUN_TEMP_DIRECTORY_PROCESSING, run_process_obj, run_folder, experiment_name)
+        if 'ERROR' in run_graphics:
+            string_message = experiment_name + ' : Unable to save graphics for run metrics'
+            logging_errors(string_message, False, True)
+            handling_errors_in_run (experiment_name, run_graphics['ERROR'])
+            delete_existing_run_metrics_table_processed(run_process_obj, experiment_name)
+            delete_run_metric_files (experiment_name)
+            logger.debug('%s : End manage_run_in_processed_run_state function', experiment_name)
+            continue
+        logger.info('%s : run metrics graphics processed and copied to plot image folder',experiment_name)
+        # deleting temporary run metrics files
+        delete_run_metric_files ( experiment_name)
+        # return the state to Processed Run
+        run_state = run_process_obj.set_run_state('Processed Run')
+
+    logger.debug (' End function manage_run_in_processed_run_state')
     return

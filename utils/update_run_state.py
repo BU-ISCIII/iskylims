@@ -104,8 +104,8 @@ def search_update_new_runs ():
 
     if len (new_runs) > 0 :
         for new_run in new_runs :
-            l_run_parameter_path = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_PARAMETER_NEXTSEQ)
-            s_run_parameter_path = os.path.join(get_samba_application_shared_folder(), new_run, wetlab_config.RUN_PARAMETER_NEXTSEQ)
+            l_run_parameter_path = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_PARAMETER_FILE)
+            s_run_parameter_path = os.path.join(get_samba_application_shared_folder(), new_run, wetlab_config.RUN_PARAMETER_FILE)
             try:
                l_run_parameter = fetch_remote_file (conn, new_run, s_run_parameter_path, l_run_parameter_path)
                logger.info('%s : Sucessfully fetch of RunParameter file', new_run)
@@ -249,71 +249,12 @@ def handle_not_completed_run ():
         elif state == 'Sample Sent':
             manage_run_in_sample_sent_processing_state(conn, runs_to_handle[state])
         elif state == 'Processing Run':
-            import pdb; pdb.set_trace()
             manage_run_in_sample_sent_processing_state(conn, runs_to_handle[state])
+        elif state == 'Processed Run':
+            manage_run_in_processed_run_state(conn, runs_to_handle[state])
 
         '''
-        if state == 'Sample Sent':
-            updated_run['Sample Sent'] = []
-            runs_with_error['Sample Sent'] = []
-            logger.debug('--------Start handling the runs in Sample Sent state--------')
-            for run_in_sample_sent in runs_to_handle[state] :
-                experiment_name = run_in_sample_sent.get_run_name()
-                # get platform
-                try:
-                    run_platform = run_in_sample_sent.get_run_platform()
-                except:
-                    string_message = experiment_name + ' : Platform not defined'
-                    logging_errors (string_message , False, True)
-                    continue
-                experiment_name = run_in_sample_sent.runName
-                logger.info(' %s : Start handling in Sample Sent state', experiment_name)
-                try:
-                    if 'NextSeq' in run_platform :
-                        logger.info(' %s : Handle on NextSeq branch', experiment_name)
-                        updated_run['Sample Sent'].append(manage_nextseq_in_samplesent(conn, run_in_sample_sent))
-                    elif 'MiSeq' in run_platform :
-                        logger.info(' %s : Handle on MiSeq branch', experiment_name)
-                        updated_run['Sample Sent'].append(manage_miseq_in_samplesent(conn, run_in_sample_sent))
-                    else:
-                        string_message = experiment_name + ' : Platform ' + run_platform +' is not supported '
-                        logging_errors (string_message , False, True)
-                        continue
-                except :
-                    runs_with_error[state].append(run_in_sample_sent.get_run_name())
-                    logger.info('%s : Handling the exception to continue with the next item', experiment_name)
-                    continue
-            logger.debug('--------End runs in Sample Sent state--------')
 
-        elif state == 'Processing Run':
-            updated_run[state] = []
-            runs_with_error[state] = []
-            logger.debug('--------Start handling the runs in  Processing Run state------')
-            for run_in_processing_run in runs_to_handle[state] :
-                experiment_name = run_in_processing_run.get_run_name()
-                try:
-                    run_platform = run_in_processing_run.get_run_platform()
-                except:
-                    string_message = experiment_name + ' : Platform not defined'
-                    logging_errors (string_message , False, True)
-                    continue
-                experiment_name = run_in_processing_run.get_run_name()
-                logger.info(' %s : Start handling in Processing run state', experiment_name)
-
-                try:
-                    if 'NextSeq' in run_platform :
-                        updated_run[state].append(manage_nextseq_in_processing_run(conn, run_in_processing_run))
-                    elif 'MiSeq' in run_platform :
-                        updated_run[state].append(manage_miseq_in_processing_run(conn, run_in_processing_run))
-                    else:
-                        string_message = 'Platform ' + run_platform +' is not supported '
-                        logging_errors (string_message , False, False)
-                        continue
-                except :
-                    runs_with_error[state].append(run_in_processing_run.get_run_name())
-                    logger.info('%s : Handling the exception to continue with the next item', experiment_name)
-                    continue
-            logger.debug('--------End runs in Processing Run state--------')
 
         elif state == 'Processed Run':
             updated_run[state] = []

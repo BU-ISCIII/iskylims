@@ -189,7 +189,7 @@ def check_sequencer_run_is_completed(conn, run_folder , platform ,number_of_cycl
 
     if way_to_check == 'logs':
 
-        log_folder = os.path.join(run_folder, RUN_LOG_FOLDER)
+        log_folder = os.path.join(get_samba_application_shared_folder(), run_folder , RUN_LOG_FOLDER)
         try:
             log_cycles, log_file_content = get_latest_run_procesing_log(conn, log_folder ,  experiment_name)
         except :
@@ -214,11 +214,15 @@ def check_sequencer_run_is_completed(conn, run_folder , platform ,number_of_cycl
             return 'still_running', ''
 
         if check_sequencer_status_from_completion_file (l_run_completion, experiment_name):
+            os.remove(l_run_completion)
+            logger.info('%s : Deleted Run Completion file', experiment_name)
             shared_folder = get_samba_shared_folder()
             conversion_attributes = conn.getAttributes( shared_folder, s_run_completion)
             run_completion_date = datetime.fromtimestamp(int(conversion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
             logger.debug ('%s : End function for handling NextSeq run with exception', experiment_name)
             return 'completed' , run_completion_date
+        os.remove(l_run_completion)
+        logger.info('%s : Deleted Run Completion file', experiment_name)
         logger.debug ('%s : End function check_sequencer_run_is_completed with exception', experiment_name)
         return 'cancelled', ''
     else:
@@ -613,7 +617,7 @@ def logging_errors(string_text, showing_traceback , print_on_screen ):
         print('********* ERROR **********')
         print(string_text)
         print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        print('When processing run . Check log for detail information')
+        print('Check log for detail information')
         print('******* END ERROR ********')
     return ''
 
@@ -635,7 +639,7 @@ def logging_warnings(string_text, print_on_screen ):
         print('******* WARNING ********')
         print(string_text)
         print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        print('When processing run . Check log for detail information')
+        print('Check log for detail information')
         print('**** END WARNING *******')
     return ''
 

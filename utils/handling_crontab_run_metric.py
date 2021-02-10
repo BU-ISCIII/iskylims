@@ -4,15 +4,153 @@ import logging
 from  iSkyLIMS_wetlab.models import RunProcess, RunningParameters, StatsRunSummary, StatsRunRead, GraphicsStats
 
 from django.conf import settings
-from iSkyLIMS_wetlab import wetlab_config
+from iSkyLIMS_wetlab.wetlab_config import *
 
-from .handling_crontab_common_functions import logging_errors, fetch_remote_file
+from .handling_crontab_common_functions import *
+
+
+def create_run_metric_graphics(run_metric_folder,run_process_obj, run_folder,experiment_name):
+    '''
+    Description:
+        The function create an entry on database with the run graphics
+        by using the run metrics files
+    Input:
+        run_metric_folder   # local folder with the run metric files
+        run_process_obj     # RunProcess object for this run
+        run_folder          # run folder to store the figures
+        experiment_name     # Exepriment name
+    Constants:
+        RUN_METRIC_GRAPHIC_COMMANDS
+        INTEROP_PATH
+        RUN_IMAGES_DIRECTORY
+        MEDIA_ROOT
+    Return:
+        graphic_stats_obj
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('%s : Starting create_run_metric_graphics', experiment_name)
+    present_working_dir = os.getcwd()
+    run_graphic_dir=os.path.join(settings.MEDIA_ROOT,RUN_IMAGES_DIRECTORY, run_folder)
+    try:
+        if os.path.exists(run_graphic_dir):
+            shutil.rmtree(run_graphic_dir)
+        os.mkdir(run_graphic_dir)
+        logger.info('%s : created new directory %s',experiment_name, run_graphic_dir)
+    except:
+        string_message = experiment_name + ' : Unable to create folder to store graphics on ' + run_graphic_dir
+        logging_errors(string_message, True, True)
+        logger.debug ('%s : End create_run_metric_graphics with exception', experiment_name)
+        return {'ERROR':28}
+    os.chdir(run_graphic_dir)
+    logger.info('%s : Changed working direcory to copy run metric graphics', experiment_name)
+    # create the graphics
+    logger.info('%s : Creating plot graphics for run id ',experiment_name)
+
+    full_path_run_processing_tmp = os.path.join(present_working_dir, RUN_TEMP_DIRECTORY_PROCESSING)
+    for graphic in RUN_METRIC_GRAPHIC_COMMANDS:
+        graphic_command = os.path.join(INTEROP_PATH, graphic )
+        plot_command= graphic_command + full_path_run_processing_tmp + '  | gnuplot'
+        logger.debug('%s : command used to create graphic is : %s',experiment_name, plot_command)
+        os.system(plot_command)
+
+    os.chdir(present_working_dir)
+    logger.info('%s : Returning back the working directory', experiment_name)
+
+    #removing the processing_ character in the file names
+    graphic_files = os.listdir(run_graphic_dir)
+    logger.info('%s : Renaming the graphic files',experiment_name)
+
+    for graphic_file in graphic_files :
+        old_file_name = os.path.join(run_graphic_dir, graphic_file)
+        split_file_name = graphic_file.split('_')
+        if not split_file_name[1].endswith(PLOT_EXTENSION):
+            split_file_name[1] = split_file_name[1] + PLOT_EXTENSION
+        new_file_name = os.path.join(run_graphic_dir, split_file_name[1])
+        os.rename(old_file_name , new_file_name)
+        logger.debug('%s : Renamed file from %s to %s', experiment_name, old_file_name, new_file_name)
+
+    # saving the graphic location in database
+    graphic_stats_obj= GraphicsStats.objects.create_graphic_run_metrics(run_process_obj,run_folder )
+
+    logger.info('%s : Store Graphic plots in database',experiment_name)
+    logger.debug ('%s : End function create_graphics',experiment_name)
+    return {'graph_stats_obj':graphic_stats_obj}
+
+def delete_existing_run_metrics_table_processed (run_process_obj, experiment_name) :
+    '''
+    Description:
+        The function will check if exists data stored on StatsRunSummary  and/or
+        StatsRunRead for the run
+    Input:
+        run_process_obj     # runProcess object
+        experiment_name     # experiment name
+    Return:
+        None
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('%s : Starting function check_run_metrics_processed', experiment_name)
+    if StatsRunSummary.objects.filter(runprocess_id = run_process_obj).exists():
+        run_summary_objs = StatsRunSummary.objects.filter(runprocess_id = run_process_obj)
+        for run_summary_obj in run_summary_objs:
+            run_summary_obj.delete()
+        logger.info('%s : Deleted rows on StatsRunSummary table', experiment_name )
+
+    if StatsRunRead.objects.filter(runprocess_id = run_process_obj).exists():
+        run_read_objs = StatsRunRead.objects.filter(runprocess_id = run_process_obj)
+        for run_read_obj in run_read_objs:
+            run_read_obj.delete()
+        logger.info('%s : Deleted rows on StatsRunSummary table', experiment_name )
+
+    if GraphicsStats.objects.filter(runprocess_id = run_process_obj).exists():
+        graph_stats_objs = GraphicsStats.objects.filter(runprocess_id = run_process_obj)
+        for graph_stats_obj in graph_stats_objs:
+            graph_stats_obj.delete()
+        logger.info('%s : Deleted rows on GraphicsStats table', experiment_name )
+    logger.debug('%s : End function check_run_metrics_processed', experiment_name)
+    return None
+
+
+def delete_run_metric_files (experiment_name):
+    '''
+    Description:
+        The function delete the files used for collecting the run metrics
+    Input:
+        experiment_name     # experiment name
+    Return:
+        None
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('%s : Starting function delete_run_metric_files', experiment_name)
+    local_metric_folder = os.path.join(RUN_TEMP_DIRECTORY_PROCESSING, RUN_METRIC_FOLDER)
+    l_run_parameter = os.path.join(RUN_TEMP_DIRECTORY_PROCESSING, RUN_PARAMETER_FILE)
+    l_run_info = os.path.join(RUN_TEMP_DIRECTORY_PROCESSING, RUN_INFO)
+    local_files = [l_run_parameter, l_run_info]
+    for local_file in local_files:
+        if os.path.exists(local_file):
+            try:
+                os.remove(local_file)
+            except:
+                import pdb; pdb.set_trace()
+                string_message = experiment_name + ' : Unable to delete ' + local_file
+                logging_errors(string_message, True, True)
+                continue
+    logger.info('%s : Deleted temporary files',experiment_name)
+    if os.path.exists(local_metric_folder):
+        try:
+            shutil.rmtree(local_metric_folder)
+            logger.info('%s : Deleted Folder %s',experiment_name, local_metric_folder)
+        except:
+            string_message = experiment_name + ' : Unable to delete  folder ' + local_metric_folder
+            logging_errors(string_message, True, True)
+
+    logger.debug ('%s : End function delete_run_metric_files',experiment_name)
+    return
+
 
 def get_run_metric_files (conn, run_folder, experiment_name):
     '''
     Description:
-        The function will collect the run metric files created by
-        sequencer as part of the run process.
+        The function will collect the run metric files created by sequencer as part of the run process.
     Input:
         conn # Connection samba object
         run_folder   # folder run to fetch the remote files
@@ -21,63 +159,69 @@ def get_run_metric_files (conn, run_folder, experiment_name):
         RUN_INFO
         RUN_METRIC_FOLDER
         RUN_TEMP_DIRECTORY
-        RUN_PARAMETER_NEXTSEQ
+        RUN_PARAMETER_FILE
         STATISTICS_FOLDER
     Functions:
-        fetch_remote_file   # Located at utils.generic_functions
-    Variables:
-        l_metric_folder # local folder to copy the run metrics files
-        l_run_info  # local copy of runInfo file
-        l_run_parameter # local copy of runParamenter file
-        copied_files # dictionnary of the temporary files that are copied
-        run_folder      # run folder on the remote server
-        run_metrics_file_name # name of the run metric file. The value
-                            is updated for each of the run metric files
-                            in the folder
-        s_interop_folder # local temporary folder to store the metric files
-        s_metric_folder # path of the run metrics files at remote server
-        s_run_info  # path of the runInfo file
-        s_run_parameter # path of the runParamenter file
-        statistics_folder # statistics folder on the remote server
+        get_samba_application_shared_folder     # Located at utils/handling_crontab_common_functions.py
+        fetch_remote_file                       # Located at utils.handling_crontab_common_functions.py
     Return:
         copied_files
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('%s : Starting function get_run_metric_files', experiment_name)
+
     # runInfo needed for run metrics stats
-    l_run_info = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING, wetlab_config.RUN_INFO)
-    s_run_info = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, run_folder,wetlab_config.RUN_INFO)
+    l_run_info = os.path.join(RUN_TEMP_DIRECTORY_PROCESSING, RUN_INFO)
+    s_run_info = os.path.join(get_samba_application_shared_folder(), run_folder, RUN_INFO)
     # runParameters needed for run metrics stats
-    l_run_parameter = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING, wetlab_config.RUN_PARAMETER_NEXTSEQ)
-    s_run_parameter = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, run_folder,wetlab_config.RUN_PARAMETER_NEXTSEQ)
-    l_metric_folder = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING, wetlab_config.RUN_METRIC_FOLDER)
-    s_metric_folder = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, run_folder, wetlab_config.RUN_METRIC_FOLDER)
+    l_run_parameter = os.path.join(RUN_TEMP_DIRECTORY_PROCESSING, RUN_PARAMETER_FILE)
+    s_run_parameter = os.path.join(get_samba_application_shared_folder(), run_folder,RUN_PARAMETER_FILE)
+    l_metric_folder = os.path.join(RUN_TEMP_DIRECTORY_PROCESSING, RUN_METRIC_FOLDER)
+    s_metric_folder = os.path.join(get_samba_application_shared_folder(), run_folder, RUN_METRIC_FOLDER)
     copied_files = {}
+
     if not os.path.exists(l_metric_folder) :
         try:
             os.makedirs(l_metric_folder)
-            logger.info ('%s Created folder %s' , experiment_name, l_metric_folder)
+            logger.info ('%s : Created folder %s' , experiment_name, l_metric_folder)
         except:
-            string_message = experiment_name + " : cannot create folder" + l_metric_folder
-            logging_errors(logger,string_message, False , True)
+            string_message = experiment_name + " : cannot create folder on " + l_metric_folder
+            logging_errors(string_message, True , True)
             logger.debug ('%s : End function get_run_metric_files with error',experiment_name)
-            raise
+            return {'ERROR':26}
+
     try:
         l_run_info = fetch_remote_file (conn, run_folder, s_run_info, l_run_info)
         logger.info('%s : Sucessfully fetch of RunInfo file',experiment_name)
+    except:
+        string_message = experiment_name + ' : Unable to fetch ' + s_run_info
+        logging_errors(string_message, True , True)
+        logger.debug ('%s : End function get_run_metric_files with error',experiment_name)
+        return {'ERROR':20}
+    copied_files[RUN_INFO] = l_run_info
 
-        copied_files[wetlab_config.RUN_INFO] = l_run_info
-
+    try:
         l_run_parameter = fetch_remote_file (conn, run_folder, s_run_parameter, l_run_parameter)
         logger.info('%s : Sucessfully fetch of RunParameter file',experiment_name)
-        copied_files[wetlab_config.RUN_PARAMETER_NEXTSEQ] = l_run_parameter
+    except:
+        string_message = experiment_name + ' : Unable to fetch ' + s_run_parameter
+        logging_errors(string_message, True , True)
+        logger.debug ('%s : End function get_run_metric_files with error',experiment_name)
+        return {'ERROR':21}
+    copied_files[RUN_PARAMETER_FILE] = l_run_parameter
 
-
-        file_list = conn.listPath( wetlab_config.SAMBA_SHARED_FOLDER_NAME, s_metric_folder)
-        logger.info('%s : InterOp folder found at  %s',experiment_name, run_folder)
-
-        # copy all binary files in interop folder to local  documents/wetlab/tmp/processing/interop
-        copied_files[wetlab_config.RUN_METRIC_FOLDER] = []
+    try:
+        file_list = conn.listPath( get_samba_shared_folder(), s_metric_folder)
+        logger.info('%s : InterOp folder found at  %s', experiment_name, s_metric_folder)
+    except:
+        string_message = experiment_name + ' : Unable to fetch ' + s_run_parameter
+        logging_errors(string_message, True , True)
+        shutil.rmtree(l_metric_folder)
+        logger.debug ('%s : End function get_run_metric_files with error',experiment_name)
+        return {'ERROR':27}
+    # copy all binary files in interop folder to local  documents/wetlab/tmp/processing/interop
+    copied_files[RUN_METRIC_FOLDER] = []
+    try:
         for sh in file_list:
             if sh.isDirectory:
                 continue
@@ -86,56 +230,26 @@ def get_run_metric_files (conn, run_folder, experiment_name):
                 s_run_metric_file = os.path.join(s_metric_folder, run_metrics_file_name)
                 l_run_metric_file = os.path.join(l_metric_folder, run_metrics_file_name)
                 l_run_metric_file = fetch_remote_file (conn, run_folder, s_run_metric_file, l_run_metric_file)
-                copied_files[wetlab_config.RUN_METRIC_FOLDER].append(l_run_metric_file)
+                # copied_files[RUN_METRIC_FOLDER].append(l_run_metric_file)
     except:
-            string_message = experiment_name + " : cannot copy files for getting run metrics"
-            logging_errors(logger,string_message, False , True)
-            logger.info('%s :Deleting temporary files',experiment_name)
-            for key in copied_files.keys():
-                if key == wetlab_config.RUN_METRIC_FOLDER :
-                    for metric_file in copied_files[key]:
-                        os.remove(metric_file)
-                else:
-                    os.remove(copied_files[key])
-            logger.debug ('%s : End function manage_run_in_processed_bcl2fast2_run with error',experiment_name)
-            raise
+        string_message = experiment_name + ' : Unable to fetch ' + s_run_metric_file
+        logging_errors(string_message, True , True)
+        shutil.rmtree(l_metric_folder)
+        logger.debug ('%s : End function get_run_metric_files with error',experiment_name)
+        return {'ERROR':27}
 
     logger.debug ('%s : End function get_run_metric_files', experiment_name)
     return copied_files
 
-def delete_run_metric_files (run_metric_files, experiment_name):
-    '''
-    Description:
-        The function delete the files used for collecting the run metrics
-    Input:
-        run_metric_files   # contains the file list to be deleted
-        experiment_name     # experiment name
-    Return:
-        True
-    '''
-    logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function delete_run_metric_files', experiment_name)
 
-    logger.info('%s : Start deleting temporary files',experiment_name)
-    for key in run_metric_files.keys():
-        if key == wetlab_config.RUN_METRIC_FOLDER :
-            for metric_file in run_metric_files[key]:
-                os.remove(metric_file)
-        else:
-            os.remove(run_metric_files[key])
-    logger.info('%s : Deleted temporary files',experiment_name)
-    logger.debug ('%s : End function delete_run_metric_files',experiment_name)
-    return True
-
-
-
-def parsing_run_metrics(run_metric_folder, run_object_name):
+def parsing_run_metrics_files(local_run_metric_folder, run_process_obj, experiment_name):
     '''
     Description:
         The function parse the information from the run metric files
     Input:
-        run_metric_folder   # local folder with the run metric files
-        run_object_name     RunProcess object for this run
+        local_run_metric_folder   # local folder with the run metric files
+        run_process_obj           # RunProcess object for this run
+        experiment_name           # experiment name
     Import:
         py_interop_run
         py_interop_run_metrics
@@ -147,26 +261,24 @@ def parsing_run_metrics(run_metric_folder, run_object_name):
         bin_run_stats_summary_list, run_stats_read_list
     '''
     logger = logging.getLogger(__name__)
-    experiment_name = run_object_name.get_run_name()
     logger.debug ('%s : Starting function parsing_run_metrics',experiment_name)
     # get the number of lanes for the sequencer
-    number_of_lanes = run_object_name.get_sequencing_lanes()
-    # get run folder
-    run_folder = RunningParameters.objects.get(runName_id = run_object_name).get_run_folder()
+    number_of_lanes = run_process_obj.get_sequencing_lanes()
     # get number of reads for the run
-    num_of_reads = RunningParameters.objects.get(runName_id = run_object_name).get_number_of_reads()
+    num_of_reads = RunningParameters.objects.get(runName_id = run_process_obj).get_number_of_reads()
     logger.info('%s : Fetched run information  needed for running metrics',experiment_name)
 
     run_metrics = py_interop_run_metrics.run_metrics()
     valid_to_load = py_interop_run.uchar_vector(py_interop_run.MetricCount, 0)
     py_interop_run_metrics.list_summary_metrics_to_load(valid_to_load)
-    run_metric_folder = run_metrics.read(run_metric_folder)
+    run_metric_folder = run_metrics.read(local_run_metric_folder)
 
     summary = py_interop_summary.run_summary()
 
     py_interop_summary.summarize_run_metrics(run_metrics, summary)
 
     bin_run_stats_summary_list = []
+    logger.info('%s : Starts collecting data for run metric ', experiment_name)
     # get the Run Summary for each Read
     for read_level in range(num_of_reads):
         run_summary_stats_level = {}
@@ -174,7 +286,7 @@ def parsing_run_metrics(run_metric_folder, run_object_name):
         run_summary_stats_level['yieldTotal'] = format(summary.at(read_level).summary().yield_g(),'.3f')
         # summary projected total yield
         run_summary_stats_level['projectedTotalYield'] = format(summary.at(read_level).summary().projected_yield_g(),'.3f')
-        #
+
         # percent yield
         run_summary_stats_level['aligned'] = format(summary.at(read_level).summary().percent_aligned(),'.3f')
         # Error rate
@@ -205,6 +317,7 @@ def parsing_run_metrics(run_metric_folder, run_object_name):
     run_summary_stats_level['biggerQ30'] = format(summary.total_summary().percent_gt_q30(),'.3f')
 
     run_summary_stats_level['level'] = 'Total'
+
     logger.info('%s : Parsed run Metrics on Total lane',experiment_name)
 
     bin_run_stats_summary_list.append(run_summary_stats_level)
@@ -297,76 +410,6 @@ def parsing_run_metrics(run_metric_folder, run_object_name):
             run_read_stats_level['lane'] = str(lane_number+1)
             # append run_read_stats_level information to run_stats_read_list
             run_stats_read_list.append(run_read_stats_level)
-    logger.info ('%s : End function parsing_run_metrics',experiment_name)
+
+    logger.debug ('%s : End function parsing_run_metrics',experiment_name)
     return bin_run_stats_summary_list, run_stats_read_list
-
-def create_graphics(run_metric_folder,run_object_name):
-    '''
-    Description:
-        The function create an entry on database with the run graphics
-        by using the run metrics files
-    Input:
-        run_metric_folder   # local folder with the run metric files
-        run_object_name     RunProcess object for this run
-    Import:
-        py_interop_run
-        py_interop_run_metrics
-    Variables:
-
-    Return:
-        True
-    '''
-    logger = logging.getLogger(__name__)
-    experiment_name = run_object_name.get_run_name()
-    logger.debug ('%s : Starting function create_graphics', experiment_name)
-
-    run_folder = RunningParameters.objects.get(runName_id = run_object_name).get_run_folder()
-
-    graphic_list=['plot_by_cycle  ', 'plot_by_lane  ', 'plot_flowcell  ',
-                    'plot_qscore_histogram  ', 'plot_qscore_heatmap  ', 'plot_sample_qc  ' ]
-    # create the graphics
-    logger.info('%s : Creating plot graphics for run id ',experiment_name)
-
-    for graphic in graphic_list:
-        graphic_command = os.path.join(wetlab_config.INTEROP_PATH, graphic )
-        plot_command= graphic_command + wetlab_config.RUN_TEMP_DIRECTORY_PROCESSING + '  | gnuplot'
-        logger.debug('%s : command used to create graphic is : %s',experiment_name, plot_command)
-        os.system(plot_command)
-    run_graphic_dir=os.path.join(settings.MEDIA_ROOT,wetlab_config.RUN_IMAGES_DIRECTORY, run_folder)
-    if os.path.exists(run_graphic_dir):
-        shutil.rmtree(run_graphic_dir)
-    os.mkdir(run_graphic_dir)
-    logger.info('%s : created new directory %s',experiment_name, run_graphic_dir)
-
-    #move the graphic files to wetlab directory
-    source = os.listdir()
-    for files in source:
-        if files.endswith(wetlab_config.PLOT_EXTENSION):
-            logger.debug('moving file %s', files)
-            shutil.move(files,run_graphic_dir)
-
-    #removing the processing_ character in the file names
-    graphic_files = os.listdir(run_graphic_dir)
-    logger.info('%s : Renaming the graphic files',experiment_name)
-
-    for graphic_file in graphic_files :
-        old_file_name = os.path.join(run_graphic_dir, graphic_file)
-        split_file_name = graphic_file.split('_')
-        if not split_file_name[1].endswith(wetlab_config.PLOT_EXTENSION):
-            split_file_name[1] = split_file_name[1] + wetlab_config.PLOT_EXTENSION
-        new_file_name = os.path.join(run_graphic_dir, split_file_name[1])
-        os.rename(old_file_name , new_file_name)
-        logger.debug('%s : Renamed file from %s to %s', experiment_name, old_file_name, new_file_name)
-
-
-    # saving the graphic location in database
-    ns_graphic_stats= GraphicsStats (runprocess_id = RunProcess.objects.get(runName__exact = experiment_name),
-                                            folderRunGraphic= run_folder, cluserCountGraph = 'ClusterCount-by-lane.png',
-                                            flowCellGraph= 'flowcell-Intensity.png', intensityByCycleGraph = 'Intensity-by-cycle.png',
-                                            heatMapGraph= 'q-heat-map.png', histogramGraph= 'q-histogram.png',
-                                            sampleQcGraph= 'sample-qc.png')
-    ns_graphic_stats.save()
-
-    logger.info('%s : Store Graphic plots in database',experiment_name)
-    logger.debug ('%s : End function create_graphics',experiment_name)
-    return True
