@@ -850,7 +850,7 @@ def store_sample_sheet_if_not_defined_in_run (run_process_obj, l_sample_sheet_pa
     return sample_sheet_on_database
 
 
-def waiting_time_expired(run_process_obj, maximun_time , experiment_name):
+def waiting_time_expired(run_process_obj,time_to_check, maximun_time , experiment_name):
     '''
     Description:
         The function get the time run was recorded to compare  with the present time.
@@ -858,18 +858,16 @@ def waiting_time_expired(run_process_obj, maximun_time , experiment_name):
         True is returned if the time is bigger
     Input:
         run_process_obj     # run process object
+        time_to_check       # reference time to be checked
         maximun_time        # maximm number of days to wait
         experiment_name     # experiment name to be checked
-
     Return:
-        True if the number of days is less that the maximum number of days
-        to wait
+        True if the number of days is bigger that the maximum number of days to wait
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function waiting_time_expired', experiment_name)
-    run_date = run_process_obj.get_run_generated_date_no_format().date()
     today = datetime.now().date()
-    number_of_days = abs((today - run_date).days)
+    number_of_days = abs((today - time_to_check).days)
     if number_of_days > int (maximun_time):
         logger.info('%s  : Waiting time already exceeded', experiment_name)
         logger.debug ('%s  : End function waiting_time_expired', experiment_name)

@@ -44,7 +44,6 @@ LOG_NAME_FIND_UPDATE_RUNS = 'update_run'
 ################# CONFIG FILE LOG NAME ###############################
 LOGGING_CONFIG_FILE = 'logging_config.ini'
 
-
 ##############################################################
 
 ## FILE NAME CONTAINING THE PROCESSED RUNS ###################

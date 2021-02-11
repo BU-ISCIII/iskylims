@@ -80,11 +80,18 @@ class RunProcess(models.Model):
     def get_run_date_no_format(self):
         return self.run_date
 
+    def get_run_completion_date_no_format(self):
+        return self.run_completed_date
+        
     def get_run_finish_date_no_format(self):
         return self.run_finish_date
 
     def get_run_finish_date(self):
-        return self.run_finish_date.strftime("%B %d, %Y")
+        if self.run_finish_date != None:
+            run_finish_date = 'Run NOT finished'
+        else:
+            run_finish_date = self.run_finish_date.strftime("%B %d, %Y")
+        return run_finish_date
 
     def get_run_date (self):
         if self.run_date is None :

@@ -230,7 +230,7 @@ def handle_not_completed_run ():
     runs_with_error = {}
     #state_list_be_processed = ['Sample Sent','Processing Run','Processed Run', 'Processing Bcl2fastq',
     #                                'Processed Bcl2fastq', 'Recorded']
-    state_list_be_processed = ['Recorded','Sample Sent', 'Processing Run','Processed Run']
+    state_list_be_processed = ['Recorded','Sample Sent', 'Processing Run','Processed Run', 'Processing Bcl2fastq']
     # get the list for all runs that are not completed
     for state in state_list_be_processed:
         #run_state_obj = RunStates.objects.filter(runStateName__exact = state).last()
@@ -252,22 +252,9 @@ def handle_not_completed_run ():
             manage_run_in_sample_sent_processing_state(conn, runs_to_handle[state])
         elif state == 'Processed Run':
             manage_run_in_processed_run_state(conn, runs_to_handle[state])
-
+        elif state == 'Processing Bcl2fastq':
+            manage_run_in_processing_bcl2fastq_state(conn, runs_to_handle[state])
         '''
-
-
-        elif state == 'Processed Run':
-            updated_run[state] = []
-            runs_with_error[state] = []
-            logger.debug('--------Start handling the runs in  Processed Run state--------')
-            for run_in_processed_run in runs_to_handle[state]:
-                try:
-                    updated_run[state].append(manage_run_in_processed_run(conn, run_in_processed_run))
-                except :
-                    runs_with_error[state].append(run_in_processed_run.get_run_name())
-                    logger.info('Handling the exception to continue with the next item')
-                    continue
-            logger.debug('--------End runs in Processed Run state--------')
 
         elif state == 'Processing Bcl2fastq':
             updated_run[state] = []

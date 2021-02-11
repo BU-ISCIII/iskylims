@@ -9,7 +9,7 @@ from iSkyLIMS_wetlab.wetlab_config import *
 from .sample_sheet_utils import get_projects_in_run, get_index_library_name
 from .handling_crontab_common_functions import *
 from .handling_crontab_run_metric import *
-
+from .handling_crontab_bcl2fastq import *
 
 def manage_run_in_recorded_state(conn, run_process_objs):
     '''
@@ -50,7 +50,8 @@ def manage_run_in_recorded_state(conn, run_process_objs):
             l_sample_sheet_path = get_remote_sample_sheet(conn, run_folder ,experiment_name)
             if not l_sample_sheet_path :
                 maximun_time = ConfigSetting.objects.filter(configurationName__exact = 'MAXIMUM_TIME_WAIT_SAMPLE_SHEET').last().get_configuration_value()
-                if not waiting_time_expired(run_process_obj, maximun_time ,experiment_name):
+                time_to_check = run_process_obj.get_run_generated_date_no_format().date()
+                if not waiting_time_expired(run_process_obj,time_to_check, maximun_time ,experiment_name):
                     logger.debug ('%s : End the process. Waiting more time to get Sample Sheet file', experiment_name)
                     continue
                 else:
@@ -129,7 +130,8 @@ def manage_run_in_sample_sent_processing_state(conn, run_process_objs):
             logger.debug('%s : End manage_run_in_sample_sent_processing_state function', experiment_name)
         else:
             maximun_time = ConfigSetting.objects.filter(configurationName__exact = 'MAXIMUM_TIME_WAIT_RUN_COMPLETION').last().get_configuration_value()
-            if not waiting_time_expired(run_process_obj, maximun_time ,experiment_name):
+            time_to_check = run_process_obj.get_run_generated_date_no_format().date()
+            if not waiting_time_expired(run_process_obj, time_to_check, maximun_time ,experiment_name):
                 logger.info ('%s : Waiting more time to get Sequencer completion', experiment_name)
                 run_process_obj.set_run_state('Processing Run')
                 logger.info('%s : changed to Processing Run state', experiment_name)
@@ -151,12 +153,16 @@ def manage_run_in_processed_run_state(conn, run_process_objs):
         files and store in StatsRunSummary table
     Input:
         conn                # samba connection instance
-        run_process_objs    # list of runProcess objects that are in recorded
+        run_process_objs    # list of runProcess objects that are in processed_run
     Constants:
         RUN_TEMP_DIRECTORY_PROCESSING
     Functions:
-        check_run_metrics_processed             # located in utils.handling_crontab_run_metric.py
-        waiting_time_expired                    # located in utils.handling_crontab_common_functions.py
+        delete_existing_run_metrics_table_processed
+        get_run_metric_files          # located in utils.handling_crontab_run_metric.py
+        handling_errors_in_run        # located in utils.handling_crontab_common_functions.py
+        delete_run_metric_files       # located in utils.handling_crontab_run_metric.py
+        parsing_run_metrics_files     # located in utils.handling_crontab_run_metric.py
+        create_run_metric_graphics    # located in utils.handling_crontab_run_metric.py
     Return:
         None
     '''
@@ -200,7 +206,65 @@ def manage_run_in_processed_run_state(conn, run_process_objs):
         # deleting temporary run metrics files
         delete_run_metric_files ( experiment_name)
         # return the state to Processed Run
-        run_state = run_process_obj.set_run_state('Processed Run')
+        run_state = run_process_obj.set_run_state('Processing Bcl2fastq')
 
     logger.debug (' End function manage_run_in_processed_run_state')
+    return
+
+
+def manage_run_in_processing_bcl2fastq_state(conn, run_process_objs):
+    '''
+    Description:
+        The funtion get the runs in processed run state. In this state it will check if
+        bcl2fastq process is completed by checking if report forlder exists
+    Input:
+        conn                # samba connection instance
+        run_process_objs    # list of runProcess objects that are in processing_bcl2fastq
+    Constants:
+        RUN_TEMP_DIRECTORY_PROCESSING
+    Functions:
+        check_run_metrics_processed             # located in utils.handling_crontab_run_metric.py
+        waiting_time_expired                    # located in utils.handling_crontab_common_functions.py
+    Return:
+        None
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug (' Starting function manage_run_in_processing_bcl2fastq_state')
+    for run_process_obj in run_process_objs:
+        experiment_name = run_process_obj.get_run_name()
+        logger.info('%s : Start handling in manage_run_in_processing_bcl2fastq_state function', experiment_name)
+        run_folder = RunningParameters.objects.get(runName_id = run_process_obj).get_run_folder()
+
+        bcl2fastq_finish_date = check_demultiplexing_folder_exists(conn, run_folder, experiment_name)
+        if 'ERROR' in bcl2fastq_finish_date:
+            if bcl2fastq_finish_date['ERROR'] == 29:
+                maximun_time = ConfigSetting.objects.filter(configurationName__exact = 'MAXIMUM_TIME_WAIT_TO_RUN_BCL2FASTQ').last().get_configuration_value()
+                try:
+                    time_to_check = run_process_obj.get_run_completion_date_no_format().date()
+                except:
+                    string_message = experiment_name + ' :  No Run completion date defined '
+                    logging_errors(string_message, False, True)
+                    handling_errors_in_run (experiment_name, 30)
+                    logger.debug ('%s : Aborting the process. No Run completion date was defined', experiment_name)
+                    continue
+                if not waiting_time_expired(run_process_obj,time_to_check, maximun_time ,experiment_name):
+                    logger.debug ('%s : End the process. Waiting more time to get Sample Sheet file', experiment_name)
+                    continue
+                else:
+                    string_message = experiment_name + ' : Expired time for waiting for demultiplexing folder ' + run_folder
+                    logging_errors(string_message, False, True)
+                    handling_errors_in_run (experiment_name, 29)
+                    logger.debug ('%s : Aborting the process. Exceeded the waiting time for fetching ths Demultiplexing files', experiment_name)
+                    continue
+            else:
+                string_message = experiment_name + ' : Unable to fetch the Conversion Stats file' + run_folder
+                logging_errors(string_message, False, True)
+                handling_errors_in_run (experiment_name, 31)
+                logger.debug ('%s : Aborting the process. Unable to fetch Confersion Stats file', experiment_name)
+                continue
+        run_process_obj.set_run_bcl2fastq_finished_date(bcl2fastq_finish_date)
+        run_process_obj.set_run_state('Processed Bcl2fastq')
+        logger.info('%s : Updated to Processed Bcl2Fastq state', experiment_name)
+        logger.info('%s : End handling in manage_run_in_processing_bcl2fastq_state function', experiment_name)
+    logger.debug (' End function manage_run_in_processing_bcl2fastq_state')
     return
