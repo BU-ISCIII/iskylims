@@ -18164,6 +18164,34 @@
     }
 },
 {
+    "model": "iSkyLIMS_wetlab.statesforpool",
+    "pk": 1,
+    "fields": {
+        "poolState": "Defined"
+    }
+},
+{
+    "model": "iSkyLIMS_wetlab.statesforpool",
+    "pk": 2,
+    "fields": {
+        "poolState": "Selected"
+    }
+},
+{
+    "model": "iSkyLIMS_wetlab.statesforpool",
+    "pk": 3,
+    "fields": {
+        "poolState": "Used"
+    }
+},
+{
+    "model": "iSkyLIMS_wetlab.statesforpool",
+    "pk": 4,
+    "fields": {
+        "poolState": "ReUsed"
+    }
+},
+{
     "model": "iSkyLIMS_core.moleculetype",
     "pk": 1,
     "fields": {
