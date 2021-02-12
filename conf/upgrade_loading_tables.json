@@ -18229,6 +18229,42 @@
     }
 },
 {
+    "model": "iSkyLIMS_core.protocoltype",
+    "pk": 2,
+    "fields": {
+        "molecule": 2,
+        "protocol_type": "RNA Extraction",
+        "apps_name": "iSkyLIMS_wetlab"
+    }
+},
+{
+    "model": "iSkyLIMS_core.protocoltype",
+    "pk": 3,
+    "fields": {
+        "molecule": null,
+        "protocol_type": "Library Preparation",
+        "apps_name": "iSkyLIMS_wetlab"
+    }
+},
+{
+    "model": "iSkyLIMS_core.protocoltype",
+    "pk": 4,
+    "fields": {
+        "molecule": 1,
+        "protocol_type": "DNA extraction",
+        "apps_name": "iSkyLIMS_wetlab"
+    }
+},
+{
+    "model": "iSkyLIMS_core.protocoltype",
+    "pk": 8,
+    "fields": {
+        "molecule": null,
+        "protocol_type": "Sequencing",
+        "apps_name": "iSkyLIMS_wetlab"
+    }
+},
+{
     "model": "iSkyLIMS_core.sequencerinlab",
     "pk": 1,
     "fields": {
@@ -18536,6 +18572,30 @@
     "pk": 5,
     "fields": {
         "moleculeStateName": "Completed"
+    }
+},
+{
+    "model": "iSkyLIMS_core.species",
+    "pk": 1,
+    "fields": {
+        "speciesName": "Human",
+        "refGenomeName": "Unknown",
+        "refGenomeSize": "Unknown",
+        "refGenomeID": "Unknown",
+        "apps_name": "iSkyLIMS_wetlab",
+        "generatedat": "2020-02-03T00:34:58.515"
+    }
+},
+{
+    "model": "iSkyLIMS_core.species",
+    "pk": 2,
+    "fields": {
+        "speciesName": "Mouse",
+        "refGenomeName": "Unknown",
+        "refGenomeSize": "Unknown",
+        "refGenomeID": "Unknown",
+        "apps_name": "iSkyLIMS_wetlab",
+        "generatedat": "2020-02-03T00:34:58.515"
     }
 },
 {
