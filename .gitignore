@@ -2,6 +2,7 @@
 *.xml
 *.bin
 *.gz
+*.csv
 migrations/
 tmp/
 logs/
