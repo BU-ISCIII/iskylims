@@ -7,7 +7,11 @@ from iSkyLIMS_core.core_config import COLLECTION_INDEX_KITS_DIRECTORY
 
 
 
+'''
+    ###############################################
+    CHECK IF THIS TABLES ARE NOT LONGER REFERENCE
 
+    ###########################################
 class Platform(models.Model):
     platformName=models.CharField(max_length=20)
     generatedat = models.DateTimeField(auto_now_add=True, null=True)
@@ -40,7 +44,7 @@ class LabEquipment (models.Model) :
 
     def get_number_of_lanes(self):
         return '%s' %(self.equipmentNumberLanes)
-
+'''
 
 class SamplesOriginManager(models.Manager):
     def create_samples_origin (self, data):
@@ -1220,9 +1224,12 @@ class SequencerInLab (models.Model) :
     def get_number_of_lanes(self):
 	    return '%s' %(self.sequencerNumberLanes)
 
+    def get_sequencer_id (self):
+        return '%s' %(self.pk)
+
     def get_sequencing_platform_name(self):
         if self.platformID == None:
-            return ''
+            return 'Not Defined'
         else:
             return '%s' %(self.platformID.get_platform_name())
 
@@ -1231,5 +1238,31 @@ class SequencerInLab (models.Model) :
             return ''
         else:
             return '%s' %(self.platformID.get_platform_id())
+    def get_all_sequencer_data (self):
+
+        data = []
+        if self.platformID != None :
+            platform_name = self.platformID.get_platform_name()
+        else:
+            platform_name = 'Not Defined'
+        if self.sequencerOperationStart != None:
+            op_start= self.sequencerOperationStart.strftime("%B %d, %Y")
+        else:
+            op_start = 'Not available date'
+        if self.sequencerOperationEnd != None:
+            op_end = self.sequencerOperationEnd.strftime("%B %d, %Y")
+        else:
+            op_end = 'Not available date'
+        data.append(platform_name)
+        data.append(self.sequencerName)
+        data.append(self.sequencerDescription)
+        data.append(self.sequencerLocation)
+        data.append(self.sequencerSerialNumber)
+        data.append(self.sequencerState)
+        data.append(op_start)
+        data.append(op_end)
+        data.append(self.sequencerNumberLanes)
+        return data
+
 
     objects = SequencerInLabManager()
