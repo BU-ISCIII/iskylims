@@ -4086,5 +4086,13 @@ def sequencer_configuration(request):
 
 @login_required
 def sequencer_inventory(request):
+    if not request.user.is_authenticated:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+    if request.method =='POST' and request.POST['action'] == 'setRunOutDate':
+        pass
+    else:
+        sequencer_data = get_sequencer_inventory_data()
+        return render(request, 'iSkyLIMS_wetlab/sequencerInventory.html', {'sequencer_data':sequencer_data} )
 
     return

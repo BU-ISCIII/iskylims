@@ -116,14 +116,13 @@ def get_platform_name_of_defined_sequencers ():
     if SequencerInLab.objects.all().exists():
         sequencer_objs = SequencerInLab.objects.all()
         for sequencer_obj in sequencer_objs:
-            try:
-                platform_name = sequencer_obj.get_sequencing_platform_name()
-                if platform_name not in platforms :
-                    platforms[platform_name]= sequencer_obj.get_sequencing_platform_id()
-            except:
+            platform_name = sequencer_obj.get_sequencing_platform_name()
+            if platform_name == 'Not Defined':
                 continue
-    return platforms
+            if platform_name not in platforms :
+                platforms[platform_name]= sequencer_obj.get_sequencing_platform_id()
 
+    return platforms
 
 
 def get_list_sequencer_configuration ():
@@ -141,6 +140,9 @@ def get_list_sequencer_configuration ():
         sequencer_data = {}
         seq_conf_objs = SequencingConfiguration.objects.all().order_by('platformID')
         for seq_conf_obj in seq_conf_objs:
+            platform_name = sequencer_obj.get_sequencing_platform_name()
+            if platform_name not in platforms :
+                platforms[platform_name]= sequencer_obj.get_sequencing_platform_id()
             platform_name = seq_conf_obj.get_platform_name()
             if platform_name not in sequencer_data :
                 sequencer_data[platform_name] = []
@@ -149,6 +151,26 @@ def get_list_sequencer_configuration ():
 
     return sequencer_configuration
 
+def get_sequencer_inventory_data():
+    '''
+    Description:
+        The function get the sequencer data defined
+    Functions:
+        get_defined_platforms_and_ids  # located at iSkyLIMS_core.utils.handling_platforms
+    Return
+        sequencer_configuration
+    '''
+    sequencer_data = {}
+    if SequencerInLab.objects.all().exists():
+        sequencer_objs = SequencerInLab.objects.all().order_by('platformID')
+        for sequencer_obj in sequencer_objs:
+            platform_name = sequencer_obj.get_sequencing_platform_name()
+            if platform_name not in sequencer_data :
+                sequencer_data[platform_name] = []
+            data = sequencer_obj.get_all_sequencer_data()
+            data.append(sequencer_obj.get_sequencer_id())
+            sequencer_data[platform_name].append(data)
+    return sequencer_data
 
 
 def get_platform_data ():
