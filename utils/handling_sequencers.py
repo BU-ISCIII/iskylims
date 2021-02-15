@@ -140,9 +140,6 @@ def get_list_sequencer_configuration ():
         sequencer_data = {}
         seq_conf_objs = SequencingConfiguration.objects.all().order_by('platformID')
         for seq_conf_obj in seq_conf_objs:
-            platform_name = sequencer_obj.get_sequencing_platform_name()
-            if platform_name not in platforms :
-                platforms[platform_name]= sequencer_obj.get_sequencing_platform_id()
             platform_name = seq_conf_obj.get_platform_name()
             if platform_name not in sequencer_data :
                 sequencer_data[platform_name] = []
