@@ -688,23 +688,30 @@ def save_type_of_sample(form_data, app_name):
         form_data # information collected from the form
         app_name # application name where are sample type are defined
     Return:
-        sample_types
+        save_s_type
     '''
     save_s_type = {}
-    index_field_list = []
+    mandatory_index_field_list = []
     if SampleType.objects.filter(sampleType__exact = form_data['sampleTypeName'] , apps_name__exact = app_name).exists():
         save_s_type['ERROR'] = ERROR_TYPE_OF_SAMPLE_EXISTS
         return save_s_type
     # select the optional fields and get the indexes
+    # get the main mandatory fields when recording a new sample
+    for m_field in HEADING_FOR_RECORD_SAMPLES:
+        if m_field in HEADING_FOR_OPTIONAL_FIELD_SAMPLES:
+            continue
+        mandatory_index_field_list.append(HEADING_FOR_RECORD_SAMPLES.index(m_field))
     for field in HEADING_FOR_RECORD_SAMPLES:
         if not field in form_data :
             continue
-        index_field = HEADING_FOR_RECORD_SAMPLES.index(field)
-        index_field_list.append(str(index_field))
+        mandatory_index_field_list.append(HEADING_FOR_RECORD_SAMPLES.index(field))
+    # get the index that are optional
+    index_opt_field_list = list(map(str,list(set(list(range(0,len(HEADING_FOR_RECORD_SAMPLES),1)))- set(mandatory_index_field_list))))
+
     data = {}
     data['sampleType'] = form_data['sampleTypeName']
     data['apps_name'] = app_name
-    data['optional_fields'] = ','.join(index_field_list)
+    data['optional_fields'] = ','.join(index_opt_field_list)
 
     sample_type = SampleType.objects.create_sample_type(data)
 
@@ -1143,7 +1150,11 @@ def get_sample_obj_from_id(sample_id):
     Return:
         sample_obj.
     '''
-    sample_obj = Samples.objects.get(pk__exact = sample_id)
+
+    if Samples.objects.filter(pk__exact = sample_id).exists():
+        sample_obj = Samples.objects.get(pk__exact = sample_id)
+    else:
+        sample_obj = None
     return sample_obj
 
 def get_sample_type (app_name):
