@@ -3252,9 +3252,9 @@ def display_sample (request, sample_id):
         get_all_sample_information : located at iSkyLIMS_core/utils/handling_samples.py
         get_all_library_information  located at iSkyLIMS_wetlab/utils/library_preparation.py
         get_additional_kits_used_in_sample   located at iSkyLIMS_wetlab/utils/additional_kits.py
+        get_sample_in_project_obj_from_sample_name  # located at iSkyLIMS_wetlab/utils/sample_functions.py
     '''
     sample_information = get_all_sample_information(sample_id, True)
-    run_sample_obj = get_sample_in_project_obj_from_id(sample_id)
     if not 'Error' in sample_information:
         sample_information.update(get_molecule_lot_kit_in_sample(sample_id))
         sample_information.update(get_all_library_information(sample_id))
@@ -3262,8 +3262,13 @@ def display_sample (request, sample_id):
         #import pdb; pdb.set_trace()
     else:
         sample_information = {}
-    if run_sample_obj != '':
-        sample_information.update(get_info_sample_in_run(run_sample_obj))
+    sample_obj =get_sample_obj_from_id(sample_id)
+    if sample_obj:
+        sample_name = sample_obj.get_sample_name()
+        run_sample_obj = get_sample_in_project_obj_from_sample_name(sample_name)
+        if run_sample_obj:
+            sample_information.update(get_info_sample_in_run(run_sample_obj))
+
     if len(sample_information) == 0  :
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No Sample was found']})
     else:
@@ -3656,10 +3661,10 @@ def search_sample (request):
             return redirect ('display_sample_in_run' , sample_run_id = run_sample_list[0])
         else:
             # get the sample information to select it , because there are also matches on run_sample
-            if len(sample_list) == 1:
+            if len(sample_list) >= 1:
                 sample_obj = get_sample_obj_from_id(sample_list[0])
                 sample_list = [sample_obj.get_info_for_searching()]
-            if len(run_sample_list) == 1:
+            if len(run_sample_list) >= 1:
                 run_sample_obj = get_sample_in_project_obj_from_id(run_sample_list[0])
                 run_sample_list = [run_sample_obj.get_info_for_searching()]
             return render(request, 'iSkyLIMS_wetlab/searchSample.html',{'sample_list':sample_list , 'run_sample_list':run_sample_list})

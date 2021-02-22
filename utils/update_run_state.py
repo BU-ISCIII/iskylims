@@ -230,7 +230,7 @@ def handle_not_completed_run ():
     runs_with_error = {}
     #state_list_be_processed = ['Sample Sent','Processing Run','Processed Run', 'Processing Bcl2fastq',
     #                                'Processed Bcl2fastq', 'Recorded']
-    state_list_be_processed = ['Recorded','Sample Sent', 'Processing Run','Processed Run', 'Processing Bcl2fastq']
+    state_list_be_processed = ['Recorded','Sample Sent', 'Processing Run','Processed Run', 'Processing Bcl2fastq', 'Processed Bcl2fastq']
     # get the list for all runs that are not completed
     for state in state_list_be_processed:
         #run_state_obj = RunStates.objects.filter(runStateName__exact = state).last()
@@ -254,36 +254,13 @@ def handle_not_completed_run ():
             manage_run_in_processed_run_state(conn, runs_to_handle[state])
         elif state == 'Processing Bcl2fastq':
             manage_run_in_processing_bcl2fastq_state(conn, runs_to_handle[state])
-        '''
-
-        elif state == 'Processing Bcl2fastq':
-            updated_run[state] = []
-            runs_with_error[state] = []
-            logger.debug('--------Start handling the runs in  Processing Bcl2fastq--------')
-            for run_in_processing_bcl2fastq_run in runs_to_handle[state] :
-                try:
-                    updated_run[state].append( manage_run_in_processing_bcl2fastq (conn, run_in_processing_bcl2fastq_run))
-                except :
-                    runs_with_error[state].append(run_in_processing_bcl2fastq_run.get_run_name())
-                    logger.info('Handling the exception on Processing Bcl2fastq.  Continue with the next item')
-                    continue
-            logger.debug('--------End handling the runs in  Processing Bcl2fastq--------')
         elif state == 'Processed Bcl2fastq':
-            updated_run[state] = []
-            runs_with_error[state] = []
-            logger.debug('--------Start handling the runs in  Processed Bcl2fastq--------')
-            for run_in_processed_bcl2fastq_run in runs_to_handle[state] :
-                try:
-                    updated_run[state].append( manage_run_in_processed_bcl2fastq (conn, run_in_processed_bcl2fastq_run))
-                except :
-                    runs_with_error[state].append(run_in_processed_bcl2fastq_run.get_run_name())
-                    logger.info('Handling the exception on Processed Bcl2fastq.  Continue with the next item')
-                    continue
-            logger.debug('--------End handling the runs in  Processed Bcl2fastq--------')
+            manage_run_in_processed_bcl2fast2_state(conn, runs_to_handle[state])
         else:
-            string_message = 'Run in unexpected state. ' + state
-            logging_errors (string_message , False, False)
-            continue
-        '''
+            for run_obj in runs_to_handle[state]:
+                experiment_name = run_obj.get_run_name()
+                string_message = experiment_name + ' : Is in state not supported by crontab process'
+                logging_errors(string_message, False, True)
+
     logger.debug ('End function for search_not_completed_run')
     return updated_run, runs_with_error

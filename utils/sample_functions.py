@@ -119,6 +119,21 @@ def get_sample_in_project_obj_from_id (sample_in_project_id):
 
     return sample_in_project_obj
 
+def get_sample_in_project_obj_from_sample_name (sample_name_in_project):
+    '''
+    Description:
+        The function gets the sampleInProject id and return the object
+        Return the if of sampleInProject
+    Input:
+        sample_name     # sample name to look at
+    Return:
+        sample_in_project_obj.
+    '''
+    sample_in_project_obj = ''
+    if SamplesInProject.objects.filter(sampleName__exact = sample_name_in_project).exists():
+        sample_in_project_obj = SamplesInProject.objects.filter(pk__exact = sample_in_project_id).last()
+
+    return sample_in_project_obj
 
 def get_run_sample_id ( sample_name):
     '''

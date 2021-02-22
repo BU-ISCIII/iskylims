@@ -105,17 +105,17 @@ div.dataTables_wrapper {
 /* END of scroll horizontal table */
 
 
-.table-responsive 
-{   
+.table-responsive
+{
     width: 100%;
     margin-bottom: 15px;
-    overflow-x: auto;   
-    overflow-y: hidden;     
+    overflow-x: auto;
+    overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     -ms-overflow-style: -ms-autohiding-scrollbar;
     border: 1px solid #000000;
     white-space : nowrap;
-     
+
 }
 
 
@@ -152,7 +152,7 @@ div.dataTables_wrapper {
 
 /* Add Animation */
 @-webkit-keyframes animatetop {
-    from {top:-300px; opacity:0} 
+    from {top:-300px; opacity:0}
     to {top:0; opacity:1}
 }
 
@@ -444,7 +444,7 @@ ol.progtrckr {
         border-bottom: 4px solid yellowgreen;
     }
     ol.progtrckr li.progtrckr-todo {
-        color: silver; 
+        color: silver;
         border-bottom: 4px solid silver;
     }
 
