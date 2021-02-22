@@ -288,7 +288,7 @@
                                 <div class="scrolling-wrapper">
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="storeIndexSample"/>
-                                <!-- <input type="hidden" name="libPrepIds" value="{{display_sample_sheet.lib_prep_ids}}"/>-->
+                                <input type="hidden" name="platform" value="{{display_sample_sheet.platform}}"/>
                                 <input type="hidden" name="heading_excel" value="{{display_sample_sheet.heading_excel}}"/>
                                 <input type="hidden" name="libPrepUserSampleSheetId" value="{{display_sample_sheet.lib_prep_user_sample_sheet}}"/>
 

@@ -707,6 +707,11 @@ def store_library_preparation_index(form_data):
     Constant:
         ERROR_USER_SAMPLE_SHEET_NO_LONGER_EXISTS
         ERROR_LIBRARY_PREPARATION_NOT_EXISTS
+        MAP_USER_SAMPLE_SHEET_ADDITIONAL_FIELDS_FROM_TYPE_OF_SECUENCER
+        MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_SINGLE_READ
+        MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_PAIRED_END
+        MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ
+        MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END
     Return:
         store_result .
     '''
@@ -714,16 +719,26 @@ def store_library_preparation_index(form_data):
     unable_store_lib_prep = []
     json_data = json.loads(form_data['index_data'])
     heading = form_data['heading_excel'].split(',')
-    if 'I5_Index_ID' in heading :
-        single_paired = 'Paired End'
-        mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_TWO_INDEX
+    import pdb; pdb.set_trace()
+    if 'NextSeq' in form_data['platform']:
+        if 'I5_Index_ID' in heading :
+            single_paired = 'Paired End'
+            mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_PAIRED_END
+        else:
+            single_paired = 'Single Reads'
+            mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_SINGLE_READ
     else:
-        single_paired = 'Single Reads'
-        mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_ONE_INDEX
+        if 'I5_Index_ID' in heading :
+            single_paired = 'Paired End'
+            mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END
+        else:
+            single_paired = 'Single Reads'
+            mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ
     sample_name_index = heading.index('Sample_Name')
     if not libPreparationUserSampleSheet.objects.filter(pk__exact = form_data['libPrepUserSampleSheetId']).exists():
         store_result['ERROR'] = ERROR_USER_SAMPLE_SHEET_NO_LONGER_EXISTS
         return store_result
+
     user_sample_sheet_obj = libPreparationUserSampleSheet.objects.get(pk__exact = form_data['libPrepUserSampleSheetId'])
 
     for row_index in range(len(json_data)):
