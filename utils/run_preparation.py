@@ -39,9 +39,9 @@ def check_valid_data_for_creation_run(form_data,user_obj):
         return error
         #return render (request,'iSkyLIMS_wetlab/CreateNewRun.html',{'invalid_exp_name':experiment_name, 'display_pools_for_run':display_pools_for_run})
     result_compatibility = check_pools_compatible (form_data)
+
     if 'ERROR' in result_compatibility :
-        error['ERROR'] = result_compatibility
-        return error
+        return result_compatibility
         #display_pools_for_run.update(result_compatibility)
         #return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run})
 
@@ -361,14 +361,13 @@ def check_pools_compatible(data_form):
         error_message = ERROR_DIFFERENT_ADAPTERS_USED_IN_POOL.copy()
         error['ERROR'] = error_message.insert(1, ','.join(adapters))
         return error
-    # single_paired = get_single_paired (pool_objs)
-    # if len(single_paired) > 1:
-    #     error['single_paired'] = single_paired
-    #     return error
+
     duplicated_index = get_pool_duplicated_index(pool_objs)
     if not 'False' in duplicated_index:
         error_message = ERROR_DUPLICATED_INDEXES_FOUND_IN_DIFFERENT_POOLS.copy()
-        error['ERROR'] = error_message.insert(1, ','.join(duplicated_index))
+        for duplicated in duplicated_index['incompatible_index']:
+            error_message.insert(1, ','.join(duplicated))
+        error['ERROR'] = error_message
         return error
     return 'True'
 

@@ -719,7 +719,6 @@ def store_library_preparation_index(form_data):
     unable_store_lib_prep = []
     json_data = json.loads(form_data['index_data'])
     heading = form_data['heading_excel'].split(',')
-    import pdb; pdb.set_trace()
     if 'NextSeq' in form_data['platform']:
         if 'I5_Index_ID' in heading :
             single_paired = 'Paired End'

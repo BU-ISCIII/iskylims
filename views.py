@@ -3369,7 +3369,6 @@ def handling_library_preparations(request):
         platform = request.POST['platform']
         configuration = request.POST[request.POST['platform']]
         lib_prep_sample_sheet_obj = store_library_preparation_sample_sheet(sample_sheet_data, request.user, platform, configuration)
-        import pdb; pdb.set_trace()
         #stored_lib_prep_sample = store_library_preparation_samples(sample_sheet_data,  request.user, request.POST['lib_protocols'], lib_prep_sample_sheet_obj)
 
         display_sample_sheet = format_sample_sheet_to_display_in_form(sample_sheet_data)
