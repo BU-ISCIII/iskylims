@@ -1,16 +1,12 @@
 #!/usr/bin/env python3
 
 import sys, os, re
-#import xml.etree.ElementTree as ET
-#import shutil
-#import locale
-#import datetime, time
+
 from iSkyLIMS_wetlab.models import RunProcess, RunStates, RunningParameters
 
 import logging
 
 from iSkyLIMS_wetlab import wetlab_config
-
 
 from .handling_crontab_common_functions import *
 from .handling_crontab_manage_run_states import *
@@ -57,9 +53,9 @@ def search_update_new_runs ():
         Get the runParameter file to identify if run is NextSeq or miSeq
         to execute its dedicate handler process.
     Functions:
-        assign_projects_to_run              # located at utils.handling_crontab_common_functions
-        assign_used_library_in_run          # located at utils.handling_crontab_common_functions
-        copy_sample_sheet_to_remote_folder  # located at utils.handling_crontab_common_functions
+        assign_projects_to_run               # located at utils.handling_crontab_common_functions
+        assign_used_library_in_run           # located at utils.handling_crontab_common_functions
+        copy_sample_sheet_to_remote_folder   # located at utils.handling_crontab_common_functions
         fetch_remote_file                    # located at utils.handling_crontab_common_functions
         open_samba_connection                # located in utils.generic_functions.py
         get_list_processed_runs              # located at this file
@@ -72,8 +68,6 @@ def search_update_new_runs ():
         fetch_remote_file                    # located at utils.handling_crontab_common_functions
         parsing_run_info_and_parameter_information  #  located at utils.handling_crontab_common_functions
         store_sample_sheet_if_not_defined_in_run     #  located at utils.handling_crontab_common_functions
-
-
     Constants:
         PROCESSED_RUN_FILE
         RUN_TEMP_DIRECTORY
@@ -204,9 +198,9 @@ def handle_not_completed_run ():
     Input:
         logger # log object for logging
     Functions:
-        open_samba_connection # located in utils.generic_functions.py
+        open_samba_connection   # located in utils.generic_functions.py
 
-        save_new_miseq_run # located at this file
+        save_new_miseq_run      # located at this file
     Constants:
         PROCESSED_RUN_FILE
         RUN_TEMP_DIRECTORY
@@ -226,8 +220,7 @@ def handle_not_completed_run ():
         raise Exception
 
     runs_to_handle = {}
-    updated_run={}
-    runs_with_error = {}
+
     #state_list_be_processed = ['Sample Sent','Processing Run','Processed Run', 'Processing Bcl2fastq',
     #                                'Processed Bcl2fastq', 'Recorded']
     state_list_be_processed = ['Recorded','Sample Sent', 'Processing Run','Processed Run', 'Processing Bcl2fastq', 'Processed Bcl2fastq']
@@ -255,7 +248,7 @@ def handle_not_completed_run ():
         elif state == 'Processing Bcl2fastq':
             manage_run_in_processing_bcl2fastq_state(conn, runs_to_handle[state])
         elif state == 'Processed Bcl2fastq':
-            manage_run_in_processed_bcl2fast2_state(conn, runs_to_handle[state])
+            manage_run_in_processed_bcl2fastq_state(conn, runs_to_handle[state])
         else:
             for run_obj in runs_to_handle[state]:
                 experiment_name = run_obj.get_run_name()
@@ -263,4 +256,4 @@ def handle_not_completed_run ():
                 logging_errors(string_message, False, True)
 
     logger.debug ('End function for search_not_completed_run')
-    return updated_run, runs_with_error
+    return

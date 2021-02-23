@@ -60,7 +60,7 @@ def assign_projects_to_run(run_process_obj, sample_sheet_file , experiment_name)
     logger = logging.getLogger(__name__)
     logger.debug ('%s : Starting function assign_projects_to_run', experiment_name)
     if run_process_obj.projects_set.all().exists():
-        logger.info('%s  : Projects already defiened in the run', experiment_name)
+        logger.info('%s  : Projects already defined in the run', experiment_name)
         logger.debug ('%s : End function assign_projects_to_run', experiment_name)
         return
     # fetch the project from sample sheet

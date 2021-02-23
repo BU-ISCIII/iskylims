@@ -280,8 +280,12 @@ def manage_run_in_processed_bcl2fastq_state(conn, run_process_objs):
     Constants:
         RUN_TEMP_DIRECTORY_PROCESSING
     Functions:
-                     # located in utils.handling_crontab_run_metric.py
-                            # located in utils.handling_crontab_common_functions.py
+        delete_existing_bcl2fastq_table_processed    # located in utils.handling_crontab_run_metric.py
+        get_demultiplexing_files                     # located in utils.handling_crontab_common_functions.py
+        parsing_demux_and_conversion_files
+        parsing_demux_sample_project
+        process_and_store_raw_demux_project_data
+
     Return:
         None
     '''
@@ -307,16 +311,103 @@ def manage_run_in_processed_bcl2fastq_state(conn, run_process_objs):
                 handling_errors_in_run (experiment_name, 31)
                 logger.debug ('%s : Aborting the process. Unable to fetch Confersion Stats files', experiment_name)
                 continue
-        number_of_lanes =
+        number_of_lanes = run_process_obj.get_sequencing_lanes()
+        try:
+            int(number_of_lanes)
+        except:
+            string_message = experiment_name + ' : Sequencer used in the run has not defined the number of lanes'
+            logging_errors(string_message, False, True)
+            handling_errors_in_run (experiment_name, 32)
+            logger.debug ('%s : Aborting the process. Number of lanes not defined on the sequencer', experiment_name)
+            continue
         # parsing the files to get the xml Stats
         logger.info('%s : Start parsing  demultiplexing files',experiment_name)
+        project_parsed_data = parsing_demux_and_conversion_files(demux_files, number_of_lanes, experiment_name)
 
-        parsed_result = parsing_demux_and_conversion_files(demux_files, number_of_lanes, experiment_name)
-
-        # parsing and processing the project samples
         logger.info('%s : Start parsing  samples demultiplexing',experiment_name)
-        sample_parsed_result = parsing_demux_sample_project (l_demux, l_conversion, number_of_lanes)
-        # clean up the fetched files in the local temporary folder
-        os.remove(l_conversion)
-        os.remove(l_demux)
-        logger.info ('%s : Deleted temporary demultiplexing and conversion files', experiment_name)
+        sample_project_parsed_data = parsing_demux_sample_project (demux_files, number_of_lanes, experiment_name)
+
+        try:
+            # clean up the fetched files in the local temporary folder
+            os.remove(demux_files['demux_stats'])
+            os.remove(demux_files['conversion_stats'])
+            logger.info ('%s : Deleted temporary demultiplexing and conversion files', experiment_name)
+        except:
+            string_message = experiment_name + ' : Unable to delete the Conversion Stats file' + run_folder
+            logging_errors(string_message, False, True)
+            logger.debug ('%s : Allowing to contine the parssing process', experiment_name)
+
+        process_and_store_raw_demux_project_data(project_parsed_data, run_process_obj, experiment_name)
+        import pdb; pdb.set_trace()
+
+        process_and_store_fl_summary_data(project_parsed_data, run_process_obj,number_of_lanes, experiment_name )
+
+        process_and_store_lane_summary_data(project_parsed_data, run_process_obj,number_of_lanes, experiment_name )
+
+        process_and_store_unknown_barcode_data(project_parsed_data, run_process_obj,number_of_lanes, experiment_name )
+
+        processed_raw_stats = process_raw_demux_stats(parsed_result, run_process_obj, )
+        for raw_stats in processed_raw_stats :
+            new_raw_stats = RawDemuxStats.objects.create_stats_run_read(raw_stats, run_process_obj)
+        logger.info('%s : Saved information to RawDemuxStats', experiment_name)
+
+
+
+        '''
+        processed_fl_summary = process_fl_summary_stats(parsed_result, run_process_obj)
+        try:
+            for fl_summary in processed_fl_summary :
+                new_fl_summary = StatsFlSummary.objects.create_fl_summary(fl_summary)
+            logger.info('%s : Saved information to StatsFlSummary', experiment_name)
+
+
+        processed_lane_summary = process_lane_summary_stats(parsed_result, run_process_obj)
+        try:
+            for lane_summary in processed_lane_summary :
+                new_lane_summary = StatsLaneSummary.objects.create_lane_summary(lane_summary)
+            logger.info('%s : Saved information to StatsLaneSummary', experiment_name)
+
+
+        processed_unknow_barcode = process_unknow_barcode_stats(parsed_result, run_process_obj)
+        try:
+            for unknow_barcode in processed_unknow_barcode :
+                new_unknow_barcode = RawTopUnknowBarcodes.objects.create_unknow_barcode(unknow_barcode)
+            logger.info('%s : Saved information to RawTopUnknowBarcodes',experiment_name)
+        '''
+
+        process_and_store_samples_projects_data(sample_parsed_result, run_process_obj, experiment_name)
+
+
+        processed_samples_stats = process_samples_projects(sample_parsed_result, run_process_obj)
+        for sample_stats in processed_samples_stats :
+            new_sample_stats = SamplesInProject.objects.create_sample_project(sample_stats)
+        logger.info('%s : Saved information to SamplesInProject', experiment_name)
+
+
+        ## Get the disk space utilization for this run
+        try:
+            disk_utilization = get_run_disk_utilization (conn, run_folder)
+        except:
+            string_message = experiment_name + ' : Error when fetching the disk utilizaton'
+            logging_errors (string_message, False, False)
+            handling_errors_in_run (experiment_name, '17' )
+            cleanup_demux_tables_if_error(run_process_obj)
+            logger.debug('%s : End function manage_run_in_processed_bcl2fast2_run with error', experiment_name)
+            raise
+
+        result_store_usage = run_process_obj.set_used_space (disk_utilization)
+        finish_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        result_set_finish_date = run_process_obj.set_run_finish_date(finish_date)
+        # Update the run state to completed
+        run_state = run_process_obj.set_run_state('Completed')
+        logger.info('%s : is Completed',experiment_name)
+
+
+
+
+        string_message = 'Unable to save raw stats for ' + experiment_name
+        logging_errors(string_message, False, False)
+        handling_errors_in_run (experiment_name, '11' )
+
+        cleanup_demux_tables_if_error(run_process_obj)
+        logger.debug('%s : End function manage_run_in_processed_bcl2fast2_run with error', experiment_name)

@@ -15,9 +15,9 @@ from iSkyLIMS_wetlab import wetlab_config
 from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters, SambaConnectionData, EmailData, ConfigSetting
 from iSkyLIMS_core.models import SequencerInLab, SequencingPlatform
 
-
+'''
 def check_all_projects_exists (project_list):
-    '''
+
     Description:
         Function will check if all projects given in the project list
         are defined on database
@@ -28,7 +28,7 @@ def check_all_projects_exists (project_list):
         logger # logging object to write in the log file
     Return:
         True /False
-    '''
+    
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function for check_all_projects_exists')
     for project in project_list :
@@ -37,6 +37,7 @@ def check_all_projects_exists (project_list):
             return False
     logger.debug ('End function for check_all_projects_exists')
     return True
+'''
 
 def get_configuration_value(parameter_name):
     '''

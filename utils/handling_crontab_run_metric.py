@@ -18,7 +18,7 @@ def create_run_metric_graphics(run_metric_folder,run_process_obj, run_folder,exp
         run_metric_folder   # local folder with the run metric files
         run_process_obj     # RunProcess object for this run
         run_folder          # run folder to store the figures
-        experiment_name     # Exepriment name
+        experiment_name     # Experiment name
     Constants:
         RUN_METRIC_GRAPHIC_COMMANDS
         INTEROP_PATH
