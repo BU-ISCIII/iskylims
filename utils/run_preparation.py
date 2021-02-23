@@ -531,7 +531,6 @@ def get_library_preparation_data_in_run (lib_prep_ids, pool_ids):
 
     display_sample_information['date'] = today_date = datetime.datetime.today().strftime("%Y%m%d")
     display_sample_information['single_read'] = lib_prep_data['single_read']
-
     display_sample_information['platform_type'] = platform_in_pool
 
     return display_sample_information

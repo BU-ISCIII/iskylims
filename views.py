@@ -3632,10 +3632,10 @@ def search_sample (request):
             return redirect ('display_sample_in_run' , sample_run_id = run_sample_list[0])
         else:
             # get the sample information to select it , because there are also matches on run_sample
-            if len(sample_list) >= 1:
+            if len(sample_list) == 1:
                 sample_obj = get_sample_obj_from_id(sample_list[0])
                 sample_list = [sample_obj.get_info_for_searching()]
-            if len(run_sample_list) >= 1:
+            if len(run_sample_list) == 1:
                 run_sample_obj = get_sample_in_project_obj_from_id(run_sample_list[0])
                 run_sample_list = [run_sample_obj.get_info_for_searching()]
             return render(request, 'iSkyLIMS_wetlab/searchSample.html',{'sample_list':sample_list , 'run_sample_list':run_sample_list})
