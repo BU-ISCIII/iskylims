@@ -4,17 +4,17 @@
 
 ################# SAMPLE SETTINGS ##############################
 ### Headings used when recording information
-HEADING_FOR_RECORD_SAMPLES = [ 'Patient Code ID', 'Sample Name', 'Sample Origin', 'Type of Sample', 'Species', 'Project/Service', 'Date sample reception', 'Sample Storage Location']
+HEADING_FOR_RECORD_SAMPLES = [ 'Patient Code ID', 'Sample Name', 'Lab requested', 'Type of Sample', 'Species', 'Project/Service', 'Date sample reception', 'Sample Storage Location']
 
-HEADING_FOR_OPTIONAL_FIELD_SAMPLES = [ 'Patient Code ID', 'Sample Origin', 'Species', 'Date sample reception', 'Sample Storage Location']
+HEADING_FOR_OPTIONAL_FIELD_SAMPLES = [ 'Patient Code ID', 'Lab requested', 'Species', 'Date sample reception', 'Sample Storage Location']
 
 HEADING_FOR_DISPLAY_RECORDED_SAMPLES = ['Unique Sample ID', 'Sample CodeID', 'Sample Name', 'Date for entry in Lab', 'Type of Sample']
 
 HEADING_FOR_COMPLETION_SAMPLES_PRE_DEFINED = ['Date sample extraction' , 'Sample CodeID', 'Sample name']
 
-MAPPING_SAMPLE_FORM_TO_DDBB = [('Patient Code ID','p_code_id'), ('Sample Name', 'sampleName'), ('Sample Origin', 'samplesOrigin'),
+MAPPING_SAMPLE_FORM_TO_DDBB = [('Patient Code ID','p_code_id'), ('Sample Name', 'sampleName'), ('Lab requested', 'samplesOrigin'),
                 ('Type of Sample','sampleType'), ('Species', 'species'),('Project/Service', 'project_service'),('Date sample extraction', 'sampleEntryDate'),
-                ('Sample Storage Location', 'sampleLocation')]
+                ('Sample Storage Location', 'sampleLocation'), ()]
 
 HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION = ['Sample ID','Sample Type', 'Molecule type', 'Type of Extraction', 'Extraction date', 'Protocol to be used']
 HEADING_FOR_MOLECULE_ADDING_PARAMETERS = ['Molecule Code ID', 'Lot Commercial Kit']
