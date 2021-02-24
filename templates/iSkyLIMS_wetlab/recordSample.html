@@ -460,7 +460,7 @@
                                 columns: [
                                     { type: 'text', title:'{{sample_information.heading.0}}', width:150 },
                                     { type: 'text', title:'{{sample_information.heading.1}}', width:150 },
-                                    { type: 'dropdown', title:'{{sample_information.heading.2}}', width:150 , source: [{% for value in sample_information.sample_origin %}"{{value}}",{% endfor %}] },
+                                    { type: 'dropdown', title:'{{sample_information.heading.2}}', width:150 , source: [{% for value in sample_information.lab_requested %}"{{value}}",{% endfor %}] },
                                     { type: 'dropdown', title:'{{sample_information.heading.3}}', width:120 , source:[{% for value in sample_information.sampleType %}"{{value}}",{% endfor %}]},
                                     { type: 'dropdown', title:'{{sample_information.heading.4}}', width:120 , source : [{% for value in sample_information.species %}"{{value}}",{% endfor %}] },
                                     { type: 'dropdown', title:'{{sample_information.heading.5}}', width:120 , source : [{% for value in sample_information.sample_project %}"{{value}}",{% endfor %}] },
