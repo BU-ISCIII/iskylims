@@ -107,8 +107,8 @@ def initial_settings(request):
     form_data = {}
     if request.method == 'POST' and request.POST['action']=='defineNewSpecie':
         form_data['species'] = request.POST['specieName']
-    if request.method == 'POST' and request.POST['action']=='defineNewSampleOrigin':
-        form_data['samples_origin'] = [request.POST['originName'], request.POST['originCoding'], request.POST['originLocation']]
+    if request.method == 'POST' and request.POST['action']=='defineNewLabRequest':
+        form_data['lab_request'] = request.POST
     if request.method == 'POST' and request.POST['action']=='defineMoleculeType':
         form_data['molecule_type'] = request.POST['moleculeName']
     if request.method == 'POST' and request.POST['action']=='defineProtocolType':

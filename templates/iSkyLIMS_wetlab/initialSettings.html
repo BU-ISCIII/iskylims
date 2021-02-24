@@ -42,7 +42,7 @@
         <h3>Define the Inital Settings</h3>
         <div class="tab">
             <button class="tablinks" onclick="summaryBin(event, 'species')" id="defaultOpen">Species</button>
-            <button class="tablinks" onclick="summaryBin(event, 'samples')">Samples Origin</button>
+            <button class="tablinks" onclick="summaryBin(event, 'lab')">Laboratory Request</button>
             <button class="tablinks" onclick="summaryBin(event, 'molecule')">Molecule Type</button>
             <button class="tablinks" onclick="summaryBin(event, 'protocol')">Protocol Type</button>
 
@@ -97,61 +97,91 @@
                 </div>  <!--  end of col-sm-11 -->
             </div> <!--  end of species -->
 
-            <div id="samples" class="tabcontent">
+            <div id="lab" class="tabcontent">
                 <div class="col-sm-12">
                     <div class="col-sm-7">
                         <br><br>
                         <div class="panel panel-default">
-                            <div class="panel-heading"><h3>Define new Origin from the samples </h3></div>
+                            <div class="panel-heading"><h3>Define new Laboratoy from the samples came from</h3></div>
                             <div class="panel-body">
-                                <form method="post" enctype="multipart/form-data" name="defineNewSampleOrigin" id="defineNewSampleOrigin" class="form-horizontal">
+                                <form method="post" enctype="multipart/form-data" name="defineNewLabRequest" id="defineNewLabRequest" class="form-horizontal">
                                     {% csrf_token %}
+                                    <h5>Fill the follwing form for the Laboratory, Hospital or any institution from you could receive samples</h5>
                                     <div class="form-group required">
-                                        <input type="hidden" name="action" value="defineNewSampleOrigin"/>
-                                        <label class="col-sm-5 control-label">Define new Origin</label>
-                                        <div class="col-sm-6"><input class="form-control" required = "required" type="text"  name="originName" size="80"></div>
-                                        <BR> <BR>
-                                        <label class="col-sm-5 control-label">Define origin coding name</label>
-                                        <div class="col-sm-6"><input class="form-control" required = "required" type="text"  name="originCoding" size="80"></div>
+                                        <input type="hidden" name="action" value="defineNewLabRequest"/>
+                                        <div class="form-group">
+                                            <label class="col-sm-5 control-label">Define new Laboratory/Organization</label>
+                                            <div class="col-sm-6"><input class="form-control" required = "required" type="text"  name="labRequestName" size="80"></div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-5 control-label">Define Laboratory/organization coding name</label>
+                                            <div class="col-sm-6"><input class="form-control" required = "required" type="text"  name="labRequesCoding" size="80"></div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-5 control-label">Department Unit</label>
+                                            <div class="col-sm-6"><input class="form-control" type="text"  name="department" size="80"></div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-5 control-label">Contact Name</label>
+                                            <div class="col-sm-6"><input class="form-control" type="text"  name="contact" size="80"></div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-5 control-label">Contact Phone</label>
+                                            <div class="col-sm-6"><input class="form-control" type="text"  name="phone" size="80"></div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-5 control-label">Email Contact</label>
+                                            <div class="col-sm-6"><input class="form-control" type="email"  name="email" size="80"></div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-5 control-label">Define address</label>
+                                            <textarea class="col-sm-6" id="address" name="address" rows="6" cols="50"></textarea>
+                                        </div>
+                                        <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
                                     </div>
-                                    <div class="form-group">
-                                        <label class="col-sm-5 control-label">Define location data</label>
-                                        <div class="col-sm-6"><input class="form-control" type="text"  name="originLocation" size="80"></div>
-                                    </div>
-                                    <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
-                                </form>
+                                </form> <!--  end of from -->
                             </div> <!--  end of panel body -->
                         </div> <!--  end of panel  -->
                     </div> <!--  end of col-sm-8 -->
-                    <div class="col-sm-5">
-                        <br><br>
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><h3>Sample origin defined</h3></div>
-                            <div class="panel-body">
-                                {% if initial_data.samples_origin_data %}
-                                    <table class="table table-hover">
-                                       <thead>
-                                          <tr>
-                                            <th>Sample Origin</th>
-                                            <th>Origin code</th>
-                                          </tr>
-                                       </thead>
-                                       <tbody>
-                                        {% for name, code, id in initial_data.samples_origin_data %}
-                                            <tr>
-                                                <td>{{name}}</td>
-                                                <td>{{code}}</td>
-                                            </tr>
-                                        {% endfor %}
-                                        </tbody>
-                                    </table>
-                                {% else %}
-                                    <h5>No Samples origin have been defined yet</h5>
-                                {% endif %}
-                            </div> <!-- end of panel body -->
-                        </div> <!--  end of panel  -->
-                    </div> <!--  end of col-sm-4 -->
-                </div>  <!--  end of col-sm-11 -->
+                </div> <!--  end of col-sm-12 -->
+                <div class="col-sm-12">
+                    <br><br>
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h3>Laboratory/Hospital/Institution request defined</h3></div>
+                        <div class="panel-body">
+                            {% if initial_data.lab_request_data %}
+                                <table class="table table-hover">
+                                   <thead>
+                                      <tr>
+                                        <th>Lab Request Name</th>
+                                        <th>Lab code</th>
+                                        <th>Department</th>
+                                        <th>Contact Name</th>
+                                        <th>Contact phone</th>
+                                        <th>Email</th>
+                                        <th>Address</th>
+                                      </tr>
+                                   </thead>
+                                   <tbody>
+                                    {% for name, code, dept, contact, phone, email, addr, id in initial_data.lab_request_data %}
+                                        <tr>
+                                            <td>{{name}}</td>
+                                            <td>{{code}}</td>
+                                            <td>{{dept}}</td>
+                                            <td>{{contact}}</td>
+                                            <td>{{phone}}</td>
+                                            <td>{{email}}</td>
+                                            <td>{{addr}}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% else %}
+                                <h5>No Laboratory, Hospital or any institution have been defined yet</h5>
+                            {% endif %}
+                        </div> <!-- end of panel body -->
+                    </div> <!--  end of panel  -->
+            </div>  <!--  end of col-sm-12 -->
             </div> <!--  end of samples -->
 
             <div id="molecule" class="tabcontent">
