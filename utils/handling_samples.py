@@ -436,7 +436,7 @@ def build_record_sample_form (app_name) :
 
     Functions:
         get_species             located at this file
-        get_sample_origin       located at this file
+        get_lab_requested       located at this file
         get_sample_type         located at this file
     Variables:
         sample_information:     Dictionnary to collect the information
@@ -446,7 +446,7 @@ def build_record_sample_form (app_name) :
 
     sample_information = {}
     sample_information['species'] = get_species()
-    sample_information['sample_origin'] = get_sample_origin()
+    sample_information['lab_requested'] = get_lab_requested()
     sample_information['sampleType'] = get_sample_type(app_name)
     sample_information['sample_project'] = get_defined_sample_projects (app_name)
     sample_information['sample_project'].insert(0,'None')
@@ -835,22 +835,22 @@ def get_extraction_kits(username) :
     return
 
 
-def get_sample_origin ():
+def get_lab_requested ():
     '''
     Description:
         The function will return the Sample origin places defined in database.
     Variables:
-        sample_origin_places # list containing the place names
+        lab_requested_places # list containing the place names
     Return:
-        sample_origin_places.
+        lab_requested_places.
     '''
-    sample_origin_places = []
-    if SamplesOrigin.objects.filter().exists():
-        samples_origins = SamplesOrigin.objects.all()
+    lab_requested_places = []
+    if LabRequest.objects.filter().exists():
+        lab_requesteds = LabRequest.objects.all()
 
-        for samples_origin in samples_origins:
-            sample_origin_places.append(samples_origin.get_name())
-    return sample_origin_places
+        for lab_requested in lab_requesteds:
+            lab_requested_places.append(lab_requested.get_name())
+    return lab_requested_places
 
 def get_info_to_display_sample_project (sample_project_id):
     '''

@@ -42,11 +42,13 @@ def get_inital_sample_settings_values(apps_name):
         initial_data['species_data'] = []
         for species_obj in species_objs:
             initial_data['species_data'].append([species_obj.get_name(), species_obj.get_id()])
-    if SamplesOrigin.objects.filter(apps_name__exact = apps_name).exists():
-        samples_origin_objs = SamplesOrigin.objects.filter(apps_name__exact = apps_name)
-        initial_data['samples_origin_data'] = []
-        for samples_origin_obj in samples_origin_objs:
-            initial_data['samples_origin_data'].append([samples_origin_obj.get_name(),samples_origin_obj.get_sample_origin_code(), samples_origin_obj.get_id()])
+    if LabRequest.objects.filter(apps_name__exact = apps_name).exists():
+        lab_request_objs = LabRequest.objects.filter(apps_name__exact = apps_name)
+        initial_data['lab_request_data'] = []
+        for lab_request_obj in lab_request_objs:
+            data = lab_request_obj.get_all_data()
+            data.append(lab_request_obj.get_id())
+            initial_data['lab_request_data'].append(data)
     if MoleculeType.objects.filter(apps_name__exact = apps_name).exists():
         initial_data['molecule_type_data'] = []
         molecule_type_objs = MoleculeType.objects.filter(apps_name__exact = apps_name)
@@ -70,7 +72,7 @@ def save_inital_sample_setting_value (apps_name, data):
         data        # information to store on database
     Constants:
         ERROR_SPECIES_ALREADY_DEFINED
-        ERROR_SAMPLES_ORIGIN_ALREADY_DEFINED
+        ERROR_LABORATORY_REQUEST_ALREADY_DEFINED
         ERROR_MOLECULE_TYPE_ALREADY_DEFINED
         ERROR_PROTOCOL_TYPE_ALREADY_DEFINED
     Return:
@@ -89,18 +91,22 @@ def save_inital_sample_setting_value (apps_name, data):
         setting_defined['settings'] = 'Species'
         setting_defined['value'] = species_data['name']
 
-    if 'samples_origin' in data:
-        samples_origin_data = {}
-        samples_origin_data['apps_name'] = apps_name
-        samples_origin_data['originName'] = data['samples_origin'][0]
-        samples_origin_data['originNameCoding'] = data['samples_origin'][1]
-        samples_origin_data['location'] = data['samples_origin'][2]
-        if SamplesOrigin.objects.filter(originNameCoding__iexact = samples_origin_data['originNameCoding'],  apps_name__exact = samples_origin_data['apps_name']).exists():
-            setting_defined['ERROR'] = [ERROR_SAMPLES_ORIGIN_ALREADY_DEFINED, samples_origin_data['originNameCoding']]
+    if 'lab_request' in data:
+        lab_request_data = {}
+        lab_request_data['apps_name'] = apps_name
+        lab_request_data['labName'] = data['lab_request']['labRequestName']
+        lab_request_data['labNameCoding'] = data['lab_request']['labRequesCoding']
+        lab_request_data['labUnit'] = data['lab_request']['department']
+        lab_request_data['labContactName'] = data['lab_request']['contact']
+        lab_request_data['labPhone'] = data['lab_request']['phone']
+        lab_request_data['labEmail'] = data['lab_request']['email']
+        lab_request_data['address'] = data['lab_request']['address']
+        if LabRequest.objects.filter(labNameCoding__iexact = lab_request_data['labNameCoding'],  apps_name__exact = lab_request_data['apps_name']).exists():
+            setting_defined['ERROR'] = [ERROR_LABORATORY_REQUEST_ALREADY_DEFINED, lab_request_data['labNameCoding']]
             return setting_defined
-        new_sample_origin_obj = SamplesOrigin.objects.create_samples_origin(samples_origin_data)
-        setting_defined['settings'] = 'Samples Origin'
-        setting_defined['value'] = samples_origin_data['originName']
+        new_sample_origin_obj = LabRequest.objects.create_lab_request(lab_request_data)
+        setting_defined['settings'] = 'Lab Request'
+        setting_defined['value'] = lab_request_data['labName']
     if 'molecule_type' in data:
         molecule_type_data = {}
         molecule_type_data['apps_name'] = apps_name

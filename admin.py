@@ -4,8 +4,8 @@ from iSkyLIMS_core.models import *
 class CommercialKitsAdmin (admin.ModelAdmin):
     list_display =( 'name','provider' , 'platformKits' , 'cat_number')
 
-class SamplesOriginAdmin (admin.ModelAdmin):
-    list_display = ['originName' , 'originNameCoding' , 'location' ]
+class LabRequestAdmin (admin.ModelAdmin):
+    list_display = ['labName' , 'labNameCoding' ,'labContactName', 'labPhone', 'labEmail' ]
 
 class MoleculeTypeAdmin( admin.ModelAdmin):
     list_display = ('moleculeType',)
@@ -42,7 +42,7 @@ class MoleculeParameterValueAdmin (admin.ModelAdmin):
     list_display = ('moleculeParameter_id', 'molecule_id','parameterValue')
 
 class SamplesAdmin(admin.ModelAdmin):
-    list_display = ('sampleCodeID', 'sampleName', 'sampleState', 'samplesOrigin', 'sampleType', 'sampleUser', 'species','sampleProject',
+    list_display = ('sampleCodeID', 'sampleName', 'sampleState', 'labRequest', 'sampleType', 'sampleUser', 'species','sampleProject',
                     'sampleEntryDate', 'uniqueSampleID',  'numberOfReused','sequencingDate' )
     list_filter = ('generated_at',)
     search_fields = ('sampleName__startswith',)
@@ -83,7 +83,7 @@ class UserLotCommercialKitsAdmin (admin.ModelAdmin):
 
 
 admin.site.register(CommercialKits, CommercialKitsAdmin)
-admin.site.register(SamplesOrigin, SamplesOriginAdmin)
+admin.site.register(LabRequest, LabRequestAdmin)
 
 admin.site.register(MoleculeType,MoleculeTypeAdmin)
 admin.site.register(MoleculeUsedFor,MoleculeUsedForAdmin)

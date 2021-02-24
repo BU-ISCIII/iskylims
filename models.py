@@ -6,72 +6,50 @@ from iSkyLIMS_core.core_config import COLLECTION_INDEX_KITS_DIRECTORY
 
 
 
-
-'''
-    ###############################################
-    CHECK IF THIS TABLES ARE NOT LONGER REFERENCE
-
-    ###########################################
-class Platform(models.Model):
-    platformName=models.CharField(max_length=20)
-    generatedat = models.DateTimeField(auto_now_add=True, null=True)
-
-    def __str__ (self):
- 	    return '%s' %(self.platformName)
-
-    def get_platform_name(self):
-        return '%s'  %(self.platformName)
-
-class LabEquipment (models.Model) :
-    platform = models.ForeignKey(Platform ,on_delete=models.CASCADE, null=True,blank=True)
-    equipmentName = models.CharField(max_length=255)
-    equipmentDescription = models.CharField(max_length=255,null=True,blank=True)
-    equipmentLocation = models.CharField(max_length=255,null=True,blank=True)
-    equipmentProvider = models.CharField(max_length=255,null=True,blank=True)
-    equipmentSerialNumber = models.CharField(max_length=255,null=True,blank=True)
-    equipmentState =  models.CharField(max_length=50,null=True,blank=True)
-    equipmentOperationStart = models.DateField(auto_now_add=False, null=True,blank=True)
-    equipmentOperationEnd = models.DateField(auto_now_add=False, null=True,blank=True)
-    equipmentNumberLanes = models.CharField(max_length= 5)
-    generatedat = models.DateTimeField(auto_now_add=True, null=True)
-
-    def __str__ (self) :
-        return '%s' %(self.equipmentName)
-
-
-    def get_equipment_name(self):
-        return '%s'  %(self.equipmentName)
-
-    def get_number_of_lanes(self):
-        return '%s' %(self.equipmentNumberLanes)
-'''
-
-class SamplesOriginManager(models.Manager):
-    def create_samples_origin (self, data):
-        new_samples_origin = self.create(originName = data['originName'],
-            originNameCoding = data['originNameCoding'], location = data['location'],
+class LabRequestManager(models.Manager):
+    def create_lab_request (self, data):
+        new_lab_request = self.create(labName = data['labName'],
+            labNameCoding = data['labNameCoding'], labUnit = data['labUnit'],
+            labContactName= data['labContactName'], labPhone = data['labPhone'],
+            labEmail = data['labEmail'], address = data['address'],
             apps_name = data['apps_name'])
-        return new_samples_origin
+        return new_lab_request
 
-class SamplesOrigin (models.Model):
-    originName = models.CharField(max_length=50)
-    originNameCoding = models.CharField(max_length=50)
-    location = models.CharField(max_length=255)
+class LabRequest (models.Model):
+    labName = models.CharField(max_length=80)
+    labNameCoding = models.CharField(max_length=50)
+    labUnit =  models.CharField(max_length=50)
+    labContactName =  models.CharField(max_length=50)
+    labPhone =  models.CharField(max_length=20)
+    labEmail =  models.CharField(max_length=70)
+    address = models.CharField(max_length=255)
     apps_name = models.CharField(max_length = 40, null=True)
 
     def __str__ (self):
-        return '%s' %(self.originName)
+        return '%s' %(self.labName)
 
     def get_name(self):
-        return '%s' %(self.originName)
+        return '%s' %(self.labName)
 
     def get_id(self):
         return '%s' %(self.pk)
 
-    def get_sample_origin_code (self):
-        return '%s' %(self.originNameCoding)
+    def get_lab_request_code (self):
+        return '%s' %(self.labNameCoding)
+    def get_all_data(self):
+        data = []
+        data.append(self.labName)
+        data.append(self.labNameCoding)
+        data.append(self.labUnit)
+        data.append(self.labContactName)
+        data.append(self.labPhone)
+        data.append(self.labEmail)
+        data.append(self.address)
+        return data
+        
+    objects = LabRequestManager()
 
-    objects = SamplesOriginManager()
+
 
 class MoleculeTypeManager(models.Manager):
     def create_molecule_type(self, data):
@@ -761,17 +739,17 @@ class SamplesManager (models.Manager):
     def create_sample (self, sample_data):
         ## Set to null in case that there is not samples_origin defined
 
-        if sample_data['samplesOrigin'] != '':
-            sample_data['samplesOrigin'] = SamplesOrigin.objects.get(originName__exact = sample_data['samplesOrigin'])
+        if sample_data['labRequest'] != '':
+            sample_data['labRequest'] = LabRequest.objects.get(originName__exact = sample_data['labRequest'])
         else:
-            sample_data['samplesOrigin'] = None
+            sample_data['labRequest'] = None
         if sample_data['species'] != '':
             sample_data['species'] = Species.objects.get(speciesName__exact = sample_data['species'])
         else:
             sample_data['species'] = None
         new_sample = self.create(sampleState = StatesForSample.objects.get(sampleStateName__exact = sample_data['sampleState']),
                             patientCore = sample_data['patient'],
-                            samplesOrigin = sample_data['samplesOrigin'], sampleProject = sample_data['sampleProject'],
+                            labRequest = sample_data['labRequest'], sampleProject = sample_data['sampleProject'],
                             sampleType = SampleType.objects.get(sampleType__exact = sample_data['sampleType']) ,
                             sampleUser = User.objects.get(username__exact = sample_data['user']),
                             sampleCodeID = sample_data['sample_id'] , sampleName =  sample_data['sampleName'],
@@ -791,8 +769,8 @@ class Samples (models.Model):
     patientCore = models.ForeignKey(
                 PatientCore,
                 on_delete = models.CASCADE, null = True, blank = True)
-    samplesOrigin = models.ForeignKey(
-                SamplesOrigin,
+    labRequest = models.ForeignKey(
+                LabRequest,
                 on_delete = models.CASCADE, null = True, blank = True)
 
     sampleType = models.ForeignKey(
@@ -873,7 +851,7 @@ class Samples (models.Model):
         sample_info = []
         sample_info.append(str(self.pk))
         sample_info.append(self.sampleName)
-        sample_info.append(self.samplesOrigin.get_name())
+        sample_info.append(self.labRequest.get_name())
         sample_info.append(self.sampleEntryDate.strftime("%d , %B , %Y"))
         sample_info.append(self.sampleType.get_name())
         sample_info.append(self.sampleState.get_sample_state())
@@ -883,8 +861,8 @@ class Samples (models.Model):
         recordeddate=self.sampleEntryDate.strftime("%d , %B , %Y")
         return '%s' %(recordeddate)
 
-    def get_sample_origin(self):
-        return '%s' %(self.samplesOrigin.get_name())
+    def get_lab_request(self):
+        return '%s' %(self.labRequest.get_name())
     def get_sample_code (self):
         return '%s' %(self.sampleCodeID)
 
