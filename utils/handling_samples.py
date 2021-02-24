@@ -849,7 +849,7 @@ def get_lab_requested ():
         lab_requesteds = LabRequest.objects.all()
 
         for lab_requested in lab_requesteds:
-            lab_requested_places.append(lab_requested.get_name())
+            lab_requested_places.append(lab_requested.get_lab_request_code())
     return lab_requested_places
 
 def get_info_to_display_sample_project (sample_project_id):
@@ -1326,7 +1326,7 @@ def increase_unique_value (old_unique_number):
 
 def prepare_sample_input_table (app_name):
     '''
-    Description:    The function collect the species, Sample origin place, type of samples, and heading
+    Description:    The function collect the species, Lab request, type of samples, and heading
                     used in the input table. Return a dictionary with collected information.
     Input:
     Functions:
