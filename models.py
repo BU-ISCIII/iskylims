@@ -829,6 +829,7 @@ class Samples (models.Model):
     sequencingDate = models.DateTimeField(auto_now_add=False, null = True, blank = True)
     completedDate = models.DateTimeField(auto_now_add=False, null = True, blank = True)
     generated_at = models.DateTimeField(auto_now_add=True)
+    onlyRecorded = models.BooleanField(default = False, null = True, blank= True)
 
     def __str__ (self):
         return '%s' %(self.sampleName)
