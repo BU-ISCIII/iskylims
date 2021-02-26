@@ -879,7 +879,6 @@ def get_info_to_display_sample_project (sample_project_id):
     return info_s_project
 
 
-
 def get_parameters_sample_project(sample_project_id):
     '''
     Description:
@@ -887,7 +886,7 @@ def get_parameters_sample_project(sample_project_id):
     Input:
         sample_project_id       # id of the sample project
     Return:
-        info_s_projects.
+        parameters_s_project
     '''
     parameters_s_project = {}
     if SampleProjects.objects.filter(pk__exact = sample_project_id).exists():
@@ -898,7 +897,6 @@ def get_parameters_sample_project(sample_project_id):
             parameter_ids = []
             parameter_names =[]
             for sample_project_field in sample_project_fields:
-
                 parameter_data =  sample_project_field.get_sample_project_fields_for_javascript()
                 parameter_names.append(parameter_data[0])
                 parameter_ids.append(sample_project_field.get_field_id())

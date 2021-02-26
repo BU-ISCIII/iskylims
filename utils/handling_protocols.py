@@ -201,7 +201,7 @@ def get_all_protocol_info(protocol_id):
         protocol_parameters = ProtocolParameters.objects.filter(protocol_id = protocol_obj).order_by('parameterOrder')
         for parameter in protocol_parameters:
             protocol_data['parameters'].append(parameter.get_all_parameter_info())
-
+        protocol_data['protocol_id'] = protocol_id
     return protocol_data
 
 def get_protocol_obj_from_name(protocol_name):
@@ -215,6 +215,35 @@ def get_protocol_obj_from_id(protocol_id):
         return Protocols.objects.get(pk__exact = protocol_id)
     else:
         return None
+
+
+def get_protocol_fields(protocol_id):
+    '''
+    Description:
+        The function return the parameters definded for the protocol id.
+    Input:
+        protocol_id       # id of the protocol
+    Return:
+        info_protocol
+    '''
+    parameters_protocol = {}
+    protocol_obj = Protocols.objects.get(pk__exact = protocol_id)
+    if ProtocolParameters.objects.filter(protocol_id__exact = protocol_obj).exists():
+        protocol_parameter_objs = ProtocolParameters.objects.filter(protocol_id__exact = protocol_obj).order_by('parameterOrder')
+        parameter_list = []
+        for protocol_parameter_obj in protocol_parameter_objs:
+            parameter_data = protocol_parameter_obj.get_protocol_fields_for_javascript()
+            parameter_data.insert(1,'')
+            parameter_data.append(protocol_parameter_obj.get_parameter_protocol_id())
+            parameter_list.append(parameter_data)
+
+        parameters_protocol['heading'] = HEADING_FOR_MODIFY_PROTOCOL_FIELDS
+        parameters_protocol['protocol_id'] = protocol_id
+        parameters_protocol['protocol_name'] = protocol_obj.get_name()
+        parameters_protocol['fields'] = parameter_list
+
+    return parameters_protocol
+
 
 def get_protocol_parameters(protocol_obj):
     '''
@@ -248,6 +277,20 @@ def get_protocol_parameters_and_type(protocol_obj):
             protocol_parameter_type_list.append(heading_item)
     return protocol_parameter_type_list
 
+
+def get_protocol_parameter_obj_from_id(protocol_parameter_id):
+    '''
+    Description:
+        The function return the protocol parameter obj
+    Input:
+        protocol_parameter_id       # id of the protocol parameter
+    Return:
+        protocol_parameter_obj
+    '''
+    if ProtocolParameters.objects.filter(pk__exact = protocol_parameter_id).exists():
+        return  ProtocolParameters.objects.get(pk__exact = protocol_parameter_id)
+    return None
+
 def get_project_name_by_id(protocol_id):
     '''
     Description:
@@ -260,6 +303,65 @@ def get_project_name_by_id(protocol_id):
         return protocol_name
     else:
         'None'
+
+def modify_fields_in_protocol (form_data):
+    '''
+    Description:    The function get the protocol field value and check if there is
+        some changes. If change then replace the old values by thenew ones
+    Input:
+        form_data     # form data from user
+    Return:
+        saved_fields #
+    '''
+    saved_fields = {}
+    protocol_id = form_data['protocol_id']
+    protocol_obj = get_protocol_obj_from_id(protocol_id)
+    saved_fields['fields'] = []
+    saved_fields['heading'] = HEADING_FOR_DEFINING_PROTOCOL_PARAMETERS
+    saved_fields['protocol_name'] = protocol_obj.get_name()
+
+    json_data = json.loads(form_data['table_data1'])
+    fields = HEADING_FOR_MODIFY_PROTOCOL_FIELDS
+    for row_data in json_data:
+        if row_data[0] == '' and row_data[1] == '':
+            continue
+        p_fields = {}
+
+        for i in range(len(fields)):
+            p_fields[fields[i]] = row_data[i]
+
+        if row_data[fields.index('Field type')] == 'Option List':
+            option_list_values =  row_data[fields.index('Option Values')].split(',')
+            clean_value_list = []
+            for opt_value in option_list_values:
+                value = opt_value.strip()
+                if value != '':
+                    clean_value_list.append(value)
+
+            p_fields['Option Values'] =','.join(clean_value_list)
+        else:
+            p_fields['Option Values'] = ''
+        if row_data[0] == '' and row_data[1] != '':
+            # new field
+            p_fields['Field name'] = row_data[1]
+            p_fields['sample_project_id'] = sample_project_obj
+            saved_fields['fields'].append(ProtocolParameters.objects.create_protocol_parameter(p_fields).get_parameter_name())
+            continue
+        if row_data[0] != '' and row_data[1] != '':
+            # rename field name
+            p_fields['Field name'] = row_data[1]
+        else:
+            p_fields['Field name'] = row_data[0]
+        # Update  Field
+        protocol_parameter_obj = get_protocol_parameter_obj_from_id(row_data[-1])
+        if not protocol_parameter_obj:
+            # Unable to find the object class. Skipping this change
+            continue
+        protocol_parameter_obj.update_protocol_fields(p_fields)
+        saved_fields['fields'].append(protocol_parameter_obj.get_all_parameter_info())
+    import pdb; pdb.set_trace()
+    return saved_fields
+
 
 def set_protocol_parameters(request):
     protocol_id = request.POST['protocol_id']

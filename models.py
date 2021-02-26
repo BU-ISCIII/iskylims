@@ -46,7 +46,7 @@ class LabRequest (models.Model):
         data.append(self.labEmail)
         data.append(self.address)
         return data
-        
+
     objects = LabRequestManager()
 
 
@@ -156,6 +156,9 @@ class ProtocolParameters (models.Model):
     def get_parameter_name (self):
         return "%s"  %(self.parameterName)
 
+    def get_parameter_protocol_id(self):
+        return '%s' %(self.pk)
+
     def get_parameter_option_values(self):
         return "%s"  %(self.parameterOptionValues)
 
@@ -173,6 +176,34 @@ class ProtocolParameters (models.Model):
         param_info.append(self.parameterMaxValue)
         param_info.append(self.parameterDescription)
         return param_info
+
+    def get_protocol_fields_for_javascript(self):
+        if self.parameterUsed :
+            used = 'true'
+        else:
+            used = 'false'
+        if self.parameterOptionValues == None :
+            parameterOptionValues = ''
+        else:
+            parameterOptionValues = self.parameterOptionValues
+        field_data = []
+        field_data.append(self.parameterName)
+
+        field_data.append(self.parameterOrder)
+        field_data.append(used)
+        field_data.append(self.parameterType)
+        field_data.append(parameterOptionValues)
+        field_data.append(self.parameterDescription)
+        return field_data
+
+    def update_protocol_fields(self, prot_param_data):
+        self.parameterName = prot_param_data['Field name']
+        self.parameterDescription = prot_param_data['Description']
+        self.parameterOrder = prot_param_data['Order']
+        self.parameterUsed = prot_param_data['Used']
+        self.parameterOptionValues = prot_param_data['Option Values']
+        self.parameterType = prot_param_data['Field type']
+        self.save()
 
     objects = ProtocolParametersManager()
 
@@ -740,7 +771,7 @@ class SamplesManager (models.Manager):
         ## Set to null in case that there is not samples_origin defined
 
         if sample_data['labRequest'] != '':
-            sample_data['labRequest'] = LabRequest.objects.get(originName__exact = sample_data['labRequest'])
+            sample_data['labRequest'] = LabRequest.objects.get(labNameCoding__exact = sample_data['labRequest'])
         else:
             sample_data['labRequest'] = None
         if sample_data['species'] != '':
