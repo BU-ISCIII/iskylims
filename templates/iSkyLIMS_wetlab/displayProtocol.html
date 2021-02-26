@@ -29,6 +29,7 @@
                             </tbody>
                         </table>
                     </div> <!--// end col-sm-11  -->
+                    <button onclick="window.location.href = '/wetlab/modifyProtocolFields={{protocol_data.protocol_id}}';">Modify Protocol Fields</button>
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->
 
@@ -41,7 +42,7 @@
 {% if kit_data %}
     <div class="row row-space-4 margin-b-4">
         <div class="col-sm-12" >
-            <h3>These are the additional kits defined for {{protocol_data.protocol_name}} Protocol</h3>
+            <h3>Additional kits defined for {{protocol_data.protocol_name}} Protocol</h3>
             <div class="panel panel-default">
                 <div class="panel-heading"><h4>{{protocol_data.protocol_name}}</h4></div>
                 <div class="panel-body">
@@ -65,6 +66,7 @@
                             </tbody>
                         </table>
                     </div> <!--// end col-sm-11  -->
+                    <button onclick="window.location.href = '/wetlab/modifyAdditionalKits={{protocol_data.protocol_id}}';">Modify Additional Kits</button>
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->
 

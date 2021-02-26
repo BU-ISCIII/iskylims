@@ -47,6 +47,7 @@ urlpatterns = [
     path('initialSettings',views.initial_settings, name = 'initial_settings'),
     path('latest_run/',views.latest_run, name='latest_run'),
     path('incompletedRuns', views.incompleted_runs, name = 'incompleted_runs'),
+    path('modifyProtocolFields=<int:protocol_id>/', views.modify_protocol_fields, name = 'modify_protocol_fields'),
     path('modifySampleProjectFields=<int:sample_project_id>/', views.modify_sample_project_fields, name = 'modify_sample_project_fields'),
     path('MonthlyReport/', views.monthly_report, name='montly_report'),
     path('pendingSamplePreparations', views.pending_sample_preparations, name = 'pending_sample_preparations'),

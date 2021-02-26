@@ -47,7 +47,7 @@
                                         </li>
                                     {% endif %}
                                     {% if user.is_authenticated %}
-                                        <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Configuration<span class="caret"></span></a>
+                                        <li class=" js_nav-item nav-item dropdown"><a class=" nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Parameters Configuration<span class="caret"></span></a>
                                             <ul class="dropdown-menu">
                                                 {% if request.user|has_group:"WetlabManager" %}
                                                     <li><a href="/wetlab/initialSettings">Initial Settings</a></li>

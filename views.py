@@ -3192,6 +3192,30 @@ def define_sample_projects_fields (request, sample_project_id):
 
 
 @login_required
+def modify_protocol_fields(request, protocol_id):
+    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+    if request.user.is_authenticated:
+        if not is_wetlab_manager(request):
+            return render (
+                request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':['You do not have enough privileges to see this page ',
+                            'Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+
+    if request.method == 'POST' and request.POST['action'] == 'modifyProtocolFields':
+        protocol_field_saved = modify_fields_in_protocol(request.POST)
+        return render(request, 'iSkyLIMS_wetlab/modifyProtocolFields.html', {'protocol_field_saved':protocol_field_saved})
+    else:
+        if not check_if_protocol_exists(protocol_id, __package__):
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',
+                        {'content':['The requested Protocol does not exist',
+                            'Create the protocol name before assigning custom parameters.']})
+        protocol_field = get_protocol_fields(protocol_id)
+        return render(request, 'iSkyLIMS_wetlab/modifyProtocolFields.html', {'protocol_field':protocol_field})
+
+@login_required
 def modify_sample_project_fields(request, sample_project_id):
     ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
 
