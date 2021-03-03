@@ -206,6 +206,10 @@ def analyze_input_samples (request, app_name):
         if not check_if_sample_already_defined (row[heading_in_form.index('Sample Name')], reg_user) :
             sample_type = str(row[heading_in_form.index('Type of Sample')])
 
+            if sample_type == '':
+                incomplete_samples.append(row)
+                continue
+                
             for i in range(len(heading_in_form)) :
                 sample_data[MAPPING_SAMPLE_FORM_TO_DDBB[i][1]] = row[i]
             #optional_fields = []
@@ -239,18 +243,25 @@ def analyze_input_samples (request, app_name):
 
             if sample_data['project_service'] == 'None':
                 sample_data['sampleProject'] = None
-                sample_data['sampleState'] = 'Defined'
+                if sample_data['onlyRecorded']:
+                    sample_data['sampleState'] = 'Completed'
+                else:
+                    sample_data['sampleState'] = 'Defined'
             else:
                 sample_data['sampleProject'] = SampleProjects.objects.get(sampleProjectName__exact = sample_data['project_service'] )
                 if SampleProjectsFields.objects.filter(sampleProjects_id = sample_data['sampleProject']).exists():
                     sample_recorded['all_samples_defined'] = False
                     sample_data['sampleState'] = 'Pre-Defined'
-
                 else:
                     sample_data['sampleState'] = 'Defined'
 
             new_sample = Samples.objects.create_sample(sample_data)
-            if sample_data['sampleState'] == 'Defined':
+
+
+
+
+
+            if sample_data['sampleState'] == 'Defined' or sample_data['sampleState'] == 'Completed':
                 defined_samples.append(new_sample.get_sample_definition_information())
                 samples_continue.append(new_sample.get_sample_id())
             else:
@@ -421,8 +432,11 @@ def analyze_input_sample_project_fields (form_data):
             field_value['sampleProjectFieldValue'] = field_value_json_data[i][j+1]
             new_sample_project_f_value = SampleProjectsFieldsValue.objects.create_project_field_value(field_value)
         sample_to_display.append([field_value_json_data[i][0], right_id])
-        # Update Sample state to defined
-        sample_obj.set_state('Defined')
+        if sample_obj.is_only_recorded():
+            sample_obj.set_state('Completed')
+        else:
+            # Update Sample state to defined
+            sample_obj.set_state('Defined')
     sample_recorded['display_samples'] = sample_to_display
 
     return sample_recorded

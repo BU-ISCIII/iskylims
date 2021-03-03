@@ -786,7 +786,7 @@ class SamplesManager (models.Manager):
                             sampleCodeID = sample_data['sample_id'] , sampleName =  sample_data['sampleName'],
                             uniqueSampleID = sample_data['new_unique_value'],
                             species = sample_data['species'],
-                            sampleLocation = sample_data['sampleLocation'],
+                            sampleLocation = sample_data['sampleLocation'], onlyRecorded = sample_data['onlyRecorded'],
                             #sampleEntryDate = datetime.datetime.strptime(sample_data['Date for entry in Lab'],'%Y-%m-%d %H:%M:%S'))
                             sampleEntryDate = datetime.datetime.strptime(sample_data['sampleEntryDate'],'%Y-%m-%d %H:%M:%S'))
 
@@ -939,6 +939,9 @@ class Samples (models.Model):
 
     def get_sample_project_obj (self):
         return self.sampleProject
+
+    def is_only_recorded(self):
+        return self.onlyRecorded
 
     def get_unique_sample_id(self):
         return '%s' %(self.uniqueSampleID)

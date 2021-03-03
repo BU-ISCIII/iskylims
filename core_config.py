@@ -14,7 +14,7 @@ HEADING_FOR_COMPLETION_SAMPLES_PRE_DEFINED = ['Date sample extraction' , 'Sample
 
 MAPPING_SAMPLE_FORM_TO_DDBB = [('Patient Code ID','p_code_id'), ('Sample Name', 'sampleName'), ('Lab requested', 'labRequest'),
                 ('Type of Sample','sampleType'), ('Species', 'species'),('Project/Service', 'project_service'),('Date sample extraction', 'sampleEntryDate'),
-                ('Sample Storage Location', 'sampleLocation'), ()]
+                ('Sample Storage Location', 'sampleLocation'), ('Only recorded','onlyRecorded')]
 
 HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION = ['Sample ID','Sample Type', 'Molecule type', 'Type of Extraction', 'Extraction date', 'Protocol to be used']
 HEADING_FOR_MOLECULE_ADDING_PARAMETERS = ['Molecule Code ID', 'Lot Commercial Kit']
