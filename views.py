@@ -190,16 +190,16 @@ def create_nextseq_run (request):
                     #sample_sheet_file = delete_run.get_sample_file()
                     ##full_path_sample_sheet_file = os.path.join(settings.MEDIA_ROOT, sample_sheet_file)
                     #os.remove(full_path_sample_sheet_file)
-                    import pdb; pdb.set_trace()
+
                     if Projects.objects.filter(runProcess = delete_run).exists():
                         project_objs = Projects.objects.filter(runProcess = delete_run)
                         for project_obj in project_objs:
                             project_obj.runProcess.remove(delete_run)
-                            import pdb; pdb.set_trace()
+
                             if project_obj.runProcess.all().count() == 0 :
                                 project_obj.delete()
                     delete_run.delete()
-                    import pdb; pdb.set_trace()
+
             else:
                 # delete sample sheet file
                 os.remove(stored_file)
@@ -3079,6 +3079,7 @@ def record_samples(request):
     if request.method == 'POST' and request.POST['action'] == 'recordsample':
         sample_recorded = analyze_input_samples (request, __package__)
         # if no samples are in any of the options, displays the inital page
+
         if (not 'defined_samples' in sample_recorded and not 'pre_defined_samples' in sample_recorded and not 'invalid_samples' in sample_recorded and not 'incomplete_samples' in sample_recorded) :
             sample_information = prepare_sample_input_table(__package__)
             return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
@@ -3974,7 +3975,6 @@ def create_new_run (request):
         # update the sample state for each one in the run
         pools_obj = LibraryPool.objects.filter(runProcess_id = run_obj)
         # save sample sheet on the tmp folder
-        import pdb; pdb.set_trace()
 
         run_obj.set_run_state('Recorded')
         for pool_obj in pools_obj:
