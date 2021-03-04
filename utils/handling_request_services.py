@@ -8,6 +8,7 @@ from iSkyLIMS_drylab import drylab_config
 from iSkyLIMS_drylab.models import *
 from iSkyLIMS_drylab.utils.graphics import *
 from iSkyLIMS_core.models import Samples, SequencingPlatform
+from iSkyLIMS_core.utils.handling_samples import get_only_recorded_samples_and_dates
 
 from iSkyLIMS_drylab.utils.drylab_common_functions import *
 from iSkyLIMS_drylab.utils.handling_multiple_files import get_uploaded_files_for_service, update_upload_file_with_service, get_uploaded_files_and_file_name_for_service
@@ -352,11 +353,16 @@ def get_service_information (service_id, service_manager):
     display_service_details['service_name'] = service_obj.get_service_request_number()
     display_service_details['service_id'] = service_id
     # get the list of samples
-    if RequestedSamplesInServices.objects.filter(samplesInService = service_obj).exists():
-        samples_in_service = RequestedSamplesInServices.objects.filter(samplesInService = service_obj)
-        display_service_details['samples'] = []
+    if RequestedSamplesInServices.objects.filter(samplesInService = service_obj, onlyRecordedSample__exact = False).exists():
+        samples_in_service = RequestedSamplesInServices.objects.filter(samplesInService = service_obj, onlyRecordedSample__exact = False)
+        display_service_details['samples_sequenced'] = []
         for sample in samples_in_service:
-            display_service_details['samples'].append([sample.get_sample_id(), sample.get_sample_name(), sample.get_project_name()])
+            display_service_details['samples_sequenced'].append([sample.get_sample_id(), sample.get_sample_name(), sample.get_project_name(), sample.get_run_name()])
+    if RequestedSamplesInServices.objects.filter(samplesInService = service_obj, onlyRecordedSample__exact = True).exists():
+        samples_in_service = RequestedSamplesInServices.objects.filter(samplesInService = service_obj, onlyRecordedSample__exact = True)
+        display_service_details['only_recorded_samples'] = []
+        for sample in samples_in_service:
+            display_service_details['only_recorded_samples'].append([sample.get_sample_id(), sample.get_sample_name(), sample.get_project_name()])
 
     display_service_details['user_name'] = service_obj.get_service_requested_user()
     user_input_files = get_uploaded_files_and_file_name_for_service(service_obj)
@@ -510,23 +516,19 @@ def prepare_form_data_request_service_sequencing (request_user):
             service_data_information['file_extension'].append([file_ext_obj.get_file_extension_id(),file_ext_obj.get_file_extension()])
     service_data_information['nodes'] = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
 
-    # getting samples from user sharing list
-    #sharing_list = []
-    #user_groups = request_user.groups.values_list('name',flat=True)
-    #for user in user_groups :
-    #    if User.objects.filter(username__exact = user).exists():
-    #        display_servicesharing_list.append(User.objects.get(username__exact = user).id)
-    #sharing_list.append(request_user.id)
-    #if wetlab_api_available :
-    #    display_service['serviceProjects']= get_user_projects(sharing_list)
-    #    display_service['serviceProjectsHeading']='User Projects'
-
     if wetlab_api_available :
+		## get samples which have sequencing data in iSkyLIMS
         user_sharing_list = get_user_sharing_lits(request_user)
         service_data_information['samples_data'] = get_runs_projects_samples_and_dates(user_sharing_list)
         if len(service_data_information['samples_data']) > 0:
             service_data_information['samples_heading'] = drylab_config.HEADING_SELECT_SAMPLE_IN_SERVICE
-        service_data_information['external_sample_heading'] = drylab_config.HEADING_SELECT_EXTERNAL_SAMPLE_IN_SERVICE
+
+    ## get the samples that are only defined without sequencing data available from iSkyLIMS
+    service_data_information['sample_only_recorded'] = get_only_recorded_samples_and_dates()
+    if len(service_data_information['sample_only_recorded']) > 0 :
+        service_data_information['sample_only_recorded_heading'] = drylab_config.HEADING_SELECT_ONLY_RECORDED_SAMPLE_IN_SERVICE
+
+
     return service_data_information
 
 
@@ -605,22 +607,22 @@ def stored_samples_for_sequencing_request_service(form_data, new_service):
             for i in range(len(heading)):
                 data[heading[i]] = row[i]
             data['samplesInService'] = new_service
-            data['external'] = False
+            data['only_recorded'] = False
             req_samp_obj = RequestedSamplesInServices.objects.create_request_sample(data)
             requested_sample_list.append(data['sample_name'])
     # get external samples
-    external_samples_service = json.loads(form_data['external_samples'])
-    for row in external_samples_service:
-        if row[0] == '':
+    only_recorded_samples_service = json.loads(form_data['only_recorded_samples'])
+    for row in only_recorded_samples_service:
+        if not row[-1] :
             continue
         data = {}
         for item in heading:
             data[item] = None
         data['sample_name'] = row[0]
         data['project_name'] = row[1]
+        data['sample_id'] = row[5]
         data['samplesInService'] = new_service
-        data['external'] = True
+        data['only_recorded'] = True
         ext_samp_obj = RequestedSamplesInServices.objects.create_request_sample(data)
         requested_sample_list.append(data['sample_name'])
-
     return requested_sample_list

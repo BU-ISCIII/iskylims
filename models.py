@@ -378,7 +378,7 @@ class RequestedSamplesInServicesManager (models.Manager):
 	def create_request_sample (self, data):
 		new_req_sample_service = self.create( samplesInService= data['samplesInService'], runName = data['run_name'],
 					runNameKey = data['run_id'], projectName = data['project_name'],  projectKey = data['project_id'],
-					sampleName = data['sample_name'],  sampleKey = data['sample_id'], externalSample = data['external'])
+					sampleName = data['sample_name'],  sampleKey = data['sample_id'], onlyRecordedSample = data['only_recorded'])
 		return new_req_sample_service
 
 
@@ -387,14 +387,14 @@ class RequestedSamplesInServices (models.Model):
 					Service,
 					on_delete = models.CASCADE)
 
-	sampleKey = models.CharField(max_length = 5, null = True, blank = True)
+	sampleKey = models.CharField(max_length = 15, null = True, blank = True)
 	sampleName = models.CharField(max_length = 50, null = True, blank = True)
 	samplePath =  models.CharField(max_length = 250, null = True, blank = True)
-	runNameKey = models.CharField(max_length = 5, null = True, blank = True)
+	runNameKey = models.CharField(max_length = 15, null = True, blank = True)
 	runName = models.CharField(max_length = 50, null = True, blank = True)
-	projectKey = models.CharField(max_length = 5, null = True, blank = True)
+	projectKey = models.CharField(max_length = 15, null = True, blank = True)
 	projectName = models.CharField(max_length = 50, null = True, blank = True)
-	externalSample = models.BooleanField(default = False)
+	onlyRecordedSample = models.BooleanField(default = False)
 	generated_at = models.DateField(auto_now_add = True)
 
 	def __str__ (self):

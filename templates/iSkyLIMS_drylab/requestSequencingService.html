@@ -140,11 +140,11 @@
                                 </div> <!--  end of panel  -->
                                 <br>
                                 <div class="tab">
-                                    <button type="button" class="tablinks" onclick="summaryBin(event, 'internalSamples')"  id="defaultOpen">Internal Samples</button>
-                                    <button type="button" class="tablinks" onclick="summaryBin(event, 'externalSamples')">External samples</button>
+                                    <button type="button" class="tablinks" onclick="summaryBin(event, 'sequencingSamples')"  id="defaultOpen">Samples in iSkyLIMS with Sequencing data</button>
+                                    <button type="button" class="tablinks" onclick="summaryBin(event, 'onlyRecordedSamples')">Samples with only recorded data</button>
                                 </div> <!--  end tabs -->
                                 <div class="col-sm-12">  <!-- Resolution and Delivery Information from service -->
-                                    <div id="internalSamples" class="tabcontent">
+                                    <div id="sequencingSamples" class="tabcontent">
 
                                         <div class="panel panel-default">
                                             <div class="panel-heading"><h3 style="text-align:center">Internal Samples.</h3></div>
@@ -188,48 +188,66 @@
                                                         </script>
                                                     </div> <!--  end of scrolling  -->
                                                 {% else %}
-                                                    <h3 style="text-align:center">There is no Samples to select for user </h3>
+                                                    <h3 style="text-align:center">There are no Samples to select, for user </h3>
                                                     <h5 style="text-align:center">Check the User Guide to define new Samples</h5>
-                                                    <script>
-                                                        $(document).ready(function () {
-                                                            $("#createservice").submit(function (e) {
-                                                                //stop submitting the form to see the disabled button effect
-                                                                // e.preventDefault();
-                                                                //disable the submit button
-                                                                $("input:submit").attr("disabled", true);
-                                                                return true;
+                                                    {% if not service_data_information.sample_only_recorded_heading %}
+                                                        <script>
+                                                            $(document).ready(function () {
+                                                                $("#createservice").submit(function (e) {
+                                                                    //stop submitting the form to see the disabled button effect
+                                                                    // e.preventDefault();
+                                                                    //disable the submit button
+                                                                    $("input:submit").attr("disabled", true);
+                                                                    return true;
+                                                                });
                                                             });
-                                                        });
-                                                    </script>
+                                                        </script>
+                                                    {% endif %}
                                                 {% endif %}
                                             </div> <!--  end of panel body -->
                                         </div> <!--  end of panel  -->
                                     </div><!-- // end of tab internal_samples -->
 
-                                    <div id="externalSamples" class="tabcontent">
+                                    <div id="onlyRecordedSamples" class="tabcontent">
                                         <div class="col-sm-12">
                                             <div class="panel panel-default">
-                                                <div class="panel-heading"><h3 style="text-align:center">External Samples </h3></div>
+                                                <div class="panel-heading"><h3 style="text-align:center">Only recorded Samples </h3></div>
                                                 <div class="panel-body">
-                                                    <h5 style="text-align:center">Write the name of the sample as it is in the file delivery to Bioinformatic unit </h5>
-                                                    <p  style="text-align:center" class="text-primary">Contact with Bioinformatic unit to provide the sample files</p>
-                                                    <div id="spreadsheet2"></div>
-                                                    <script>
-                                                        var data2 = [[],];
-                                                        var table2  = jexcel(document.getElementById('spreadsheet2'), {
-                                                            data:data2,
-                                                            columns: [
-                                                                {% for item in  service_data_information.external_sample_heading %}
-                                                                    { type: 'text', title:'{{item}}', width:250 },
-                                                                {% endfor %}
-                                                            ],
-                                                            allowInsertColumn:false,
-                                                            allowDeleteColumn:false,
-                                                            allowRenameColumn:false,
-                                                            csvFileName:'external_samples',
-                                                            minDimensions:[{{service_data_information.external_sample_heading|length}},10],
-                                                        });
-                                                    </script>
+                                                    {% if service_data_information.sample_only_recorded_heading %}
+                                                        <h5 style="text-align:center">Select the samples to be included in the service.</h5>
+                                                        <p  style="text-align:center" class="text-primary">Contact with Bioinformatic unit to provide the sample files</p>
+                                                        <div id="spreadsheet2"></div>
+                                                        <script>
+                                                            var data2 = [{% for values in service_data_information.sample_only_recorded %}
+                                                               [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                                                               ];
+                                                            var table2  = jexcel(document.getElementById('spreadsheet2'), {
+                                                                data:data2,
+                                                                columns: [
+                                                                    {% for item in  service_data_information.sample_only_recorded_heading %}
+                                                                        {% if forloop.last %}
+                                                                            { type: 'hidden' },
+                                                                        {% else %}
+                                                                        { type: 'text', title:'{{item}}', width:150 },
+                                                                        {% endif %}
+                                                                    {% endfor %}
+                                                                    { type: 'checkbox',  title:'Select Sample', width:100 },
+                                                                ],
+                                                                allowInsertColumn:false,
+                                                                allowDeleteColumn:false,
+                                                                allowRenameColumn:false,
+                                                                allowInsertRow:false,
+                                                                allowDeleteRow:false,
+                                                                tableOverflow:false,
+                                                                search:true,
+                                                                pagination:20,
+                                                                csvFileName:'only_recorded_samples',
+                                                            });
+                                                        </script>
+                                                    {% else %}
+                                                        <h3 style="text-align:center">There are no Samples which are defined as only recorded </h3>
+                                                        <h5 style="text-align:center">Check the User Guide to define new Samples</h5>
+                                                    {% endif %}
                                                 </div> <!--// end panel body -->
                                             </div> <!--// end panel -->
                                         </div> <!--// end col-sm-12  Projects Requested services  -->
@@ -365,7 +383,7 @@
                                var table_data2 = table2.getData()
                                var data_json = JSON.stringify(table_data2)
                                $("<input />").attr("type", "hidden")
-                                   .attr("name", "external_samples")
+                                   .attr("name", "only_recorded_samples")
                                    .attr("value", data_json)
                                    .appendTo("#fileupload");
                                $("#btnSubmit").attr("disabled", true);

@@ -91,7 +91,7 @@ HEADING_SERVICE_DATES = ['Service Date Creation', 'Approval Service Date', 'Reje
 
 HEADING_SELECT_SAMPLE_IN_SERVICE = ['Run Name', 'Run ID', 'Project Name',  'Project ID','Sample Name', 'sample id', 'Run finish date']
 
-HEADING_SELECT_EXTERNAL_SAMPLE_IN_SERVICE = ['Sample Name', 'Related to project']
+HEADING_SELECT_ONLY_RECORDED_SAMPLE_IN_SERVICE = ['Sample Name', 'Related to project', 'Sample type' , 'Species',  'Recorded date','sample_id']
 
 ################ # RESOLUTION ##############################
 HEADING_FOR_RESOLUTION_INFORMATION = ['Partial Services','Resolution State' ,'Folder Name', 'Service assigned_to', 'Estimated Delivery Date', 'Queued Date' , 'In Progress Date', 'Notes', 'Resolution PDF File']
