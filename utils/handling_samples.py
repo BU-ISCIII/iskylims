@@ -209,7 +209,7 @@ def analyze_input_samples (request, app_name):
             if sample_type == '':
                 incomplete_samples.append(row)
                 continue
-                
+
             for i in range(len(heading_in_form)) :
                 sample_data[MAPPING_SAMPLE_FORM_TO_DDBB[i][1]] = row[i]
             #optional_fields = []
@@ -891,6 +891,28 @@ def get_info_to_display_sample_project (sample_project_id):
         return 'ERROR'
 
     return info_s_project
+
+def get_only_recorded_samples_and_dates():
+    '''
+    Description:
+        The function api return a list of list of samples which are defined as only recorded,
+        project name, sample type, species, recorded date, and sample id
+    Return:
+        samples_data
+    '''
+    samples_data = []
+    if Samples.objects.filter(onlyRecorded = True).exists():
+        sample_objs = Samples.objects.filter(onlyRecorded = True).order_by('generated_at')
+        for sample_obj in sample_objs:
+            data = [sample_obj.get_sample_name()]
+            data.append(sample_obj.get_sample_project())
+            data.append(sample_obj.get_sample_type())
+            data.append(sample_obj.get_species())
+            data.append(sample_obj.get_extraction_date())
+            data.append(sample_obj.get_sample_id())
+            samples_data.append(data)
+
+    return samples_data
 
 
 def get_parameters_sample_project(sample_project_id):

@@ -890,7 +890,7 @@ class Samples (models.Model):
         return sample_info
 
     def get_extraction_date (self):
-        recordeddate=self.sampleEntryDate.strftime("%d , %B , %Y")
+        recordeddate = self.sampleEntryDate.strftime("%d , %B , %Y")
         return '%s' %(recordeddate)
 
     def get_lab_request(self):
@@ -915,6 +915,12 @@ class Samples (models.Model):
 
     def get_sample_patient_obj(self):
         return self.patientCore
+
+    def get_sample_project(self):
+        if self.sampleProject == None:
+            return 'None'
+        else:
+            return '%s' %(self.sampleProject.get_sample_project_name())
 
 
     def get_sample_state(self):
