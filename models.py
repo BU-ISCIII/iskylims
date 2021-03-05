@@ -82,7 +82,7 @@ class RunProcess(models.Model):
 
     def get_run_completion_date_no_format(self):
         return self.run_completed_date
-        
+
     def get_run_finish_date_no_format(self):
         return self.run_finish_date
 
@@ -1506,6 +1506,12 @@ class AdditionaKitsLibraryPreparation (models.Model):
     def __str__ (self):
         return '%s' %(self.kitName)
 
+    def get_kit_name (self):
+        return '%s' %(self.kitName)
+
+    def get_add_kit_id(self):
+        return '%s' %(self.pk)
+
     def get_all_kit_info(self):
         data = []
         data.append(self.kitName)
@@ -1515,8 +1521,19 @@ class AdditionaKitsLibraryPreparation (models.Model):
         data.append(self.description)
         return data
 
-    def get_kit_name (self):
-        return '%s' %(self.kitName)
+    def get_add_kit_data_for_javascript(self):
+        if self.kitUsed:
+            used = 'true'
+        else:
+            used = 'false'
+        add_kit_data = []
+        add_kit_data.append(self.kitName)
+        add_kit_data.append(self.kitOrder)
+        add_kit_data.append(used)
+        add_kit_data.append(self.commercialKit_id.get_name())
+        add_kit_data.append(self.description)
+        return add_kit_data
+
 
     def get_commercial_kit_obj (self):
         return self.commercialKit_id
@@ -1524,7 +1541,15 @@ class AdditionaKitsLibraryPreparation (models.Model):
     def get_commercial_kit_name(self):
         return '%s' %(self.commercialKit_id.get_name())
 
-
+    def update_add_kit_fields(self, kit_data):
+        self.registerUser = kit_data['user']
+        self.commercialKit_id = kit_data['commercialKit_id']
+        self.kitName = kit_data['kitName']
+        self.description = kit_data['description']
+        self.kitOrder = kit_data['kitOrder']
+        self.kitUsed = kit_data['kitUsed']
+        self.save()
+        return self
 
     objects = AdditionaKitsLibraryPreparationManager()
 

@@ -125,7 +125,7 @@ SAMPLE_SHEET_ONE_ADAPTER_TEMPLATE_NAME = 'sample_sheet_one_adapter_template.csv'
 
 ##### CONFIGURATION FOR ADDING KITS FOR LIBRARY PREPARATION ########
 HEADING_ADDING_COMMERCIAL_KITS_TO_PROTOCOL = ['Given name ', 'Order', 'Used', 'Commercial Kit Name', 'Description']
-
+HEADING_FOR_MODIFYING_ADDITIONAL_KITS = ['Old name', 'New name', 'Order', 'Used', 'Commercial Kit Name', 'Description']
 
 ##### CONFIGURATION FOR SAMPLE SHEET CONVERSION ##############
 ######### FILE TO BASESPACE FORMAT     #######################

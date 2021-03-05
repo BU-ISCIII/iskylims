@@ -3193,6 +3193,33 @@ def define_sample_projects_fields (request, sample_project_id):
 
 
 @login_required
+def modify_additional_kits(request, protocol_id):
+    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+    if request.user.is_authenticated:
+        if not is_wetlab_manager(request):
+            return render (
+                request,'iSkyLIMS_wetlab/error_page.html',
+                {'content':['You do not have enough privileges to see this page ',
+                            'Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+
+    if request.method == 'POST' and request.POST['action'] == 'modifyAdditionalKits':
+        additional_kits_data_saved = modify_fields_in_additional_kits(request.POST, request.user)
+        return render(request, 'iSkyLIMS_wetlab/modifyAdditionalKits.html', {'additional_kits_data_saved':additional_kits_data_saved})
+    else:
+        if not check_if_protocol_exists(protocol_id, __package__):
+            return render ( request,'iSkyLIMS_wetlab/error_page.html',
+                        {'content':['The requested additional kits do not exist',
+                            'Create the addtional kits before.']})
+        additional_kits_data = get_additional_kits_data_to_modify(protocol_id)
+        return render(request, 'iSkyLIMS_wetlab/modifyAdditionalKits.html', {'additional_kits_data':additional_kits_data})
+
+
+
+
+@login_required
 def modify_protocol_fields(request, protocol_id):
     ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
