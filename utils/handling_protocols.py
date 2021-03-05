@@ -345,7 +345,7 @@ def modify_fields_in_protocol (form_data):
             # new field
             p_fields['Field name'] = row_data[1]
             p_fields['sample_project_id'] = sample_project_obj
-            saved_fields['fields'].append(ProtocolParameters.objects.create_protocol_parameter(p_fields).get_parameter_name())
+            saved_fields['fields'].append(ProtocolParameters.objects.create_protocol_parameter(p_fields).get_all_parameter_info())
             continue
         if row_data[0] != '' and row_data[1] != '':
             # rename field name
@@ -359,7 +359,6 @@ def modify_fields_in_protocol (form_data):
             continue
         protocol_parameter_obj.update_protocol_fields(p_fields)
         saved_fields['fields'].append(protocol_parameter_obj.get_all_parameter_info())
-    import pdb; pdb.set_trace()
     return saved_fields
 
 
