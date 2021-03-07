@@ -3407,12 +3407,12 @@ def handling_library_preparations(request):
         sample_sheet_data = extract_user_sample_sheet_data(request.FILES['uploadfile'] )
         # Error found when extracting data from sample sheet
         if 'ERROR' in sample_sheet_data :
-            upload_file['ERROR'] = sample_sheet_data['ERROR']
-            upload_file['file_name'] = request.FILES['uploadfile'].name
+            #upload_file['ERROR'] = sample_sheet_data['ERROR']
+            #upload_file['file_name'] = request.FILES['uploadfile'].name
             return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'ERROR':sample_sheet_data['ERROR'], 'samples_in_lib_prep':samples_in_lib_prep})
         # check if all users are defined in database
         # users_check = check_users_exists(sample_sheet_data['userid_names'])
-
+        import pdb; pdb.set_trace()
         valid_data = validate_sample_sheet_data(sample_sheet_data)
 
         if 'ERROR' in valid_data:

@@ -253,16 +253,26 @@ def get_sample_sheet_data (file_read):
         assay, index adapters, application and instrument
     Input:
         file_read    # content of the user IEM
+    Constants:
+        FIELDS_IN_SAMPLE_SHEET_HEADER_IEM_VERSION_5
     Functions:
-        get_adapters    # located at this file
-        get_reads       # located at this file
-        get_index_adapter  # located at this file
+        get_adapters                 # located at this file
+        get_reads                    # located at this file
+        get_index_adapter            # located at this file
         get_samples_in_sample_sheet  # located at this file
     Return
         sample_sheet_data dictionary with the extracted information
     '''
     sample_sheet_data = {}
+    # initialize data with empty values
+    for item in wetlab_config.FIELDS_IN_SAMPLE_SHEET_HEADER_IEM_VERSION_5:
+        sample_sheet_data[item.lower()] = ''
+
     file_lines = file_read.split('\n')
+    for line in file_lines:
+        if 'IEMFileVersion'in line:
+            sample_sheet_data['iem_version'] = line.split(',')[1]
+            break
     # get assay information
     for line in file_lines :
         if 'Assay' in line:
@@ -765,7 +775,7 @@ def read_user_iem_file(in_file):
         return False
 
 
-def valid_user_iem_file (file_read):
+def valid_user_iem_file (file_read, reject_not_user_in_description):
     '''
     Description:
         The function check if tthe user IEM file has a valid format by checking the headings and
@@ -773,7 +783,8 @@ def valid_user_iem_file (file_read):
         where username has to be defined to assing the sample to the user.
         If there is no sample function return False
     Input:
-        file_read  # content of the input file from user
+        file_read                           # content of the input file from user
+        reject_not_user_in_description      # configuration to reject or not in userid is not in description
     Constant:
         SECTIONS_IN_IEM_SAMPLE_SHEET
     Return
@@ -799,7 +810,7 @@ def valid_user_iem_file (file_read):
                 data_field_length = len(line.split(','))
                 continue
             line_split = line.split(',')
-            if len(line_split) != data_field_length or line_split[-1] == '' :
+            if len(line_split) != data_field_length or line_split[-1] == '' and reject_not_user_in_description :
                 return False
             else:
                 sample_number +=1

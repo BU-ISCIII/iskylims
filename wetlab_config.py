@@ -188,6 +188,8 @@ MAP_USER_NEXTSEQ_SAMPLE_SHEET_TO_DATABASE_TWO_INDEX_WITH_WELL = [('Sample_ID','u
 # Sections to check in the IEM file created by user
 SECTIONS_IN_IEM_SAMPLE_SHEET = ['[Header]', '[Reads]', '[Settings]', '[Data]']
 
+FIELDS_IN_SAMPLE_SHEET_HEADER_IEM_VERSION_5 = ['Date', 'Experiment Name', 'Workflow','Application','Instrument Type','Assay','Index Adapters', 'Chemistry','Description']
+
 ##### HEADINGS VALUES
 
 ## Heading for pending Library Preparation state

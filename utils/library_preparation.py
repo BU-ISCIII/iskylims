@@ -340,20 +340,34 @@ def extract_user_sample_sheet_data(file_in):
     Constant:
         ERROR_UNABLE_TO_DELETE_USER_FILE
         ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD
+        ERROR_SAMPLE_SHEET_WHEN_FETCHING_USERID_NAMES
+    Dynamic Configuration:
+        REJECT_SAMPLE_SHEET_IF_NOT_PROJECT_OR_USER
     Return
         data with the file name and the content of the sample sheet.
         data['Error'] if file is invalid
     '''
+    try:
+        configuration_obj = ConfigSetting.objects.filter(configurationName__exact = 'REJECT_SAMPLE_SHEET_IF_NOT_PROJECT_OR_USER').last()
+        configuration_value = configuratin_obj.get_configuration_value()
+        if configuration_value == 'TRUE':
+            reject_not_user_in_description = True
+        else:
+            reject_not_user_in_description = False
+    except:
+        reject_not_user_in_description = False
     data = {}
 
     data['full_path_file'], data['file_name'] = store_user_input_file (file_in)
     file_read = read_user_iem_file(data['full_path_file'])
-    if not valid_user_iem_file(file_read):
+    if not valid_user_iem_file(file_read, reject_not_user_in_description):
         data['ERROR'] = ERROR_INVALID_FILE_FORMAT
     else:
         data['userid_names'] =  get_userid_in_user_iem_file(file_read)
         if  'ERROR' in data['userid_names'] :
             data['ERROR'] = ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD
+        elif data['userid_names'] == [''] and reject_not_user_in_description:
+            data['ERROR'] = ERROR_SAMPLE_SHEET_WHEN_FETCHING_USERID_NAMES
         else:
             data.update(get_sample_sheet_data(file_read))
     if 'ERROR' in data:
@@ -373,8 +387,6 @@ def valid_samples_for_lib_preparation(samples):
     Constant:
         ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES
         ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION
-    Variables:
-        sample_objs  # list of the sample objects
     Return
         error mesage or sample_objs
     '''
@@ -422,10 +434,10 @@ def validate_sample_sheet_data (input_data ):
         input_data  # contain a dictionary with sample names, heading to match the values and
                     a list with all  information samples
     Functions:
-        valid_samples_for_lib_preparation  # located at this file
-        delete_stored_file              # located at this file
-        find_duplicate_index             # located at this file
-        check_collection_index_exists   #  located at iSkyLIMS_wetlab/utils/collection_index_functions.py
+        valid_samples_for_lib_preparation    # located at this file
+        delete_stored_file                   # located at this file
+        find_duplicate_index                 # located at this file
+        check_collection_index_exists        # located at iSkyLIMS_wetlab/utils/collection_index_functions.py
     Constant:
         ERROR_INVALID_FILE_FORMAT
         ERROR_UNABLE_TO_DELETE_USER_FILE
@@ -440,36 +452,38 @@ def validate_sample_sheet_data (input_data ):
     # check that samples are defined and in the right state
     error = {}
     # check for older IEM versions which do no have index adapter/ Instrument type in sample sheet
-    if input_data['index_adapter'] == '' and not 'instrument' in input_data:
-        error['ERROR'] = ERROR_SAMPLE_SHEET_BOTH_INSTRUMENT_AND_INDEX_NOT_INCLUDED
-        error['detail_error'] = 'no_index_no_instrument'
-    elif  input_data['index_adapter'] == '':
-        error['ERROR'] = ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_COLLECTION_INDEX
-        error['detail_error'] = 'no_index'
-    elif not 'instrument' in input_data :
-        error['ERROR'] = ERROR_SAMPLE_SHEET_BOTH_INSTRUMENT_AND_INDEX_NOT_INCLUDED
-        error['detail_error'] = 'no_instrument'
-    else:
-        valid_samples = valid_samples_for_lib_preparation (input_data['samples'])
-        if 'ERROR'in valid_samples:
+    import pdb; pdb.set_trace()
+    # check for additional header fields in IEM version 5
+    if input_data['iem_version'] == '5':
+        if input_data['index_adapter'] == '' and not 'instrument' in input_data:
+            error['ERROR'] = ERROR_SAMPLE_SHEET_BOTH_INSTRUMENT_AND_INDEX_NOT_INCLUDED
+            error['detail_error'] = 'no_index_no_instrument'
+        elif  input_data['index_adapter'] == '':
+            error['ERROR'] = ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_COLLECTION_INDEX
+            error['detail_error'] = 'no_index'
+        elif not 'instrument' in input_data :
+            error['ERROR'] = ERROR_SAMPLE_SHEET_BOTH_INSTRUMENT_AND_INDEX_NOT_INCLUDED
+            error['detail_error'] = 'no_instrument'
+        else:
+            # check if collection index kit is defined
+            if not check_collection_index_exists (input_data['index_adapter']):
+                error_message = ERROR_COLLECTION_INDEX_KIT_NOT_DEFINED.copy()
+                error_message.insert(1, input_data['index_adapter'])
+                error['ERROR'] = error_message
+        if 'ERROR' in error :
             delete_stored_file(input_data['full_path_file'])
-            return valid_samples
-        # check if sample sheet has duplicate index
-        duplicate_index = find_duplicate_index(input_data['sample_data'], input_data['heading'] )
-        if 'ERROR' in duplicate_index:
-            delete_stored_file(input_data['full_path_file'])
-            return duplicate_index
-        # check if collection index kit is defined
-        if not check_collection_index_exists (input_data['index_adapter']):
-            error_message = ERROR_COLLECTION_INDEX_KIT_NOT_DEFINED.copy()
-            error_message.insert(1, input_data['index_adapter'])
-            error['ERROR'] = error_message
+            return error
 
-    if 'ERROR' in error :
+    valid_samples = valid_samples_for_lib_preparation (input_data['samples'])
+    if 'ERROR'in valid_samples:
         delete_stored_file(input_data['full_path_file'])
-        return error
-    else:
         return valid_samples
+    # check if sample sheet has duplicate index
+    duplicate_index = find_duplicate_index(input_data['sample_data'], input_data['heading'] )
+    if 'ERROR' in duplicate_index:
+        delete_stored_file(input_data['full_path_file'])
+        return duplicate_index
+    return valid_samples
 
 def find_duplicate_index (sample_row_data, heading):
     '''

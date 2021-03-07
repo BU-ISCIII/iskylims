@@ -937,7 +937,7 @@ class libPreparationUserSampleSheetManager (models.Manager):
                     sampleSheet = file_name, application = user_sample_sheet_data['application'],
                     instrument = user_sample_sheet_data ['instrument'], assay = user_sample_sheet_data['assay'],
                     adapter1 = user_sample_sheet_data['adapter1'], adapter2 = user_sample_sheet_data['adapter2'],
-                    sequencingConfiguration = configuration)
+                    sequencingConfiguration = configuration, iemVersion = user_sample_sheet_data['iem_version'])
         return new_lib_prep_user_sample_sheet
 
 class libPreparationUserSampleSheet (models.Model):
@@ -962,6 +962,7 @@ class libPreparationUserSampleSheet (models.Model):
     assay = models.CharField(max_length=70, null = True, blank = True)
     reads = models.CharField(max_length=10, null = True, blank = True)
     confirmedUsed = models.BooleanField(default = False)
+    iemVersion = models.CharField(max_length=5, null = True, blank = True)
 
     def __str__ (self):
         return '%s' %(self.sampleSheet)
