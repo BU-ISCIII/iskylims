@@ -8,7 +8,7 @@ from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
 
 from iSkyLIMS_wetlab.utils.pool_preparation import  check_if_duplicated_index
-from iSkyLIMS_wetlab.utils.library_preparation import  get_lib_prep_obj_from_id, update_library_preparation_for_reuse
+from iSkyLIMS_wetlab.utils.library_preparation import  get_lib_prep_obj_from_id, update_library_preparation_for_reuse, get_iem_version_for_library_prep_ids
 from iSkyLIMS_core.utils.handling_samples import update_sample_reused, get_sample_obj_from_sample_name, get_molecule_objs_from_sample, update_molecule_reused
 from iSkyLIMS_core.utils.handling_protocols import *
 from iSkyLIMS_core.utils.handling_commercial_kits import *
@@ -82,7 +82,7 @@ def create_run_in_pre_recorded_and_get_data_for_confirmation (form_data, user_ob
     reagent_kit_objs = fetch_reagent_kits_used_in_run(form_data)
 
     display_sample_information = get_library_preparation_data_in_run(lib_prep_ids, pool_ids)
-    display_sample_information.update(get_stored_user_sample_sheet(lib_prep_ids[0]))
+    display_sample_information.update(get_stored_user_sample_sheet(lib_prep_ids))
 
     # update Reagents kits
     new_run_obj =  RunProcess(runName=form_data['experimentName'], sampleSheet= '',
@@ -173,13 +173,23 @@ def collect_data_and_update_library_preparation_samples_for_run (data_form, user
     json_data = json.loads(data_form['s_sheet_data'])
     single_read = data_form['single_read']
     projects = []
+    iem_version = get_iem_version_from_user_sample_sheet(lib_prep_ids)
+
     if data_form['platform_type'] == 'MiSeq':
         if single_read == 'TRUE':
-            heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ
-            mapping_fields = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ
+            if iem_version == '4':
+                heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ_VERSION_4
+                mapping_fields = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ_VERSION_4
+            else:
+                heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ_VERSION_5
+                mapping_fields = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ_VERSION_5
         else:
-            heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END
-            mapping_fields = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAIRED_END
+            if iem_version == '4':
+                heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END_VERSION_4
+                mapping_fields = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END_VERSION_4
+            else:
+                heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END_VERSION_5
+                mapping_fields = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END_VERSION_5
     else:
         if single_read == 'TRUE':
             heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_SINGLE_READ
@@ -210,9 +220,15 @@ def collect_data_and_update_library_preparation_samples_for_run (data_form, user
 
     record_data['investigator'] = user.username
     record_data['application'] = data_form['application']
-    record_data['instrument'] = data_form['instrument']
+    if 'instrument' in data_form:
+        record_data['instrument'] = data_form['instrument']
+    else:
+        record_data['instrument'] = ''
     record_data['assay'] = data_form['assay']
-    record_data['collection_index'] = data_form['collection_index']
+    if 'collection_index' in data_form:
+        record_data['collection_index'] = data_form['collection_index']
+    else:
+        record_data['collection_index'] = ''
     record_data['reads'] = data_form['reads']
     record_data['adapter'] = data_form['adapter']
     if 'adapter2' in data_form:
@@ -300,7 +316,7 @@ def get_pool_adapters(pool_objs):
 #  def get_pool_single_paired(pool_objs):
     '''
     Description:
-        The function get the single read and paired ened  used for each pool.
+        The function get the single read and paired end  used for each pool.
         return a dictionary with single_paired as a key and the pool name list as value
     Return:
         adapters
@@ -370,7 +386,7 @@ def check_pools_compatible(data_form):
         error['ERROR'] = error_message
         return error
     return 'True'
-
+'''
 def create_base_space_file(projects, bs_lib, plate, container_id, experiment_name, paired, ):
     data = []
     project_dict ={}
@@ -403,7 +419,7 @@ def create_base_space_file(projects, bs_lib, plate, container_id, experiment_nam
     fh.write(updated_info)
     fh.close()
     return project_dict
-
+'''
 
 def store_confirmation_sample_sheet(fields):
     '''
@@ -417,6 +433,7 @@ def store_confirmation_sample_sheet(fields):
         get_pool_duplicated_index   # located at this file
     Constants:
         SAMPLE_SHEET
+        RUN_TEMP_DIRECTORY
         RUN_SAMPLE_SHEET_DIRECTORY
         MEDIA_ROOT
         TEMPLATE_FILES_DIRECTORY
@@ -428,8 +445,9 @@ def store_confirmation_sample_sheet(fields):
     exp_name_in_file = fields['exp_name'].replace(' ', '̣_')
     today_date = datetime.datetime.today().strftime("%Y%m%d_%H%M%S")
     file_name = str(exp_name_in_file + '_'+ today_date + '_' + SAMPLE_SHEET)
-    ss_file_relative_path = os.path.join( RUN_SAMPLE_SHEET_DIRECTORY, file_name)
-    ss_file_full_path = os.path.join(settings.MEDIA_ROOT, ss_file_relative_path)
+    tmp_file_relative_path = os.path.join( RUN_TEMP_DIRECTORY, file_name)
+    ss_file_relative_path = os.path.join(RUN_SAMPLE_SHEET_DIRECTORY, file_name)
+    ss_file_full_path = os.path.join(settings.MEDIA_ROOT, tmp_file_relative_path)
 
     today_date = datetime.datetime.today().strftime("%d/%m/%Y")
 
@@ -457,11 +475,12 @@ def store_confirmation_sample_sheet(fields):
     fh.write(updated_info)
     fh.write(','.join(fields['sample_sheet_data_heading']) + '\n')
     for sample in fields['sample_sheet_data_field']:
-        import pdb; pdb.set_trace()
         fh.write(','.join(sample) + '\n')
     fh.close()
     # store sample sheet in database
-    fields['run_obj'].update_sample_sheet()
+    fields['run_obj'].update_sample_sheet(ss_file_full_path , ss_file_relative_path, file_name)
+    #os.remove(ss_file_full_path)
+    import pdb; pdb.set_trace()
     return ss_file_relative_path
 
 def get_experiment_name (run_id):
@@ -535,24 +554,59 @@ def get_library_preparation_data_in_run (lib_prep_ids, pool_ids):
 
     return display_sample_information
 
-def get_stored_user_sample_sheet(lib_prep_id):
+
+def get_iem_version_from_user_sample_sheet(lib_prep_id):
+    '''
+    Description:
+        The function returns the latest IEM version used for the requested library
+        preparation
+    Input:
+        lib_prep_id   # id of the library preparation
+    Return:
+        iem_version
+    '''
+    iem_versions =  get_iem_version_for_library_prep_ids(lib_prep_id)
+    if len(iem_versions) == 1:
+        iem_version = iem_versions[0]
+    else:
+        # multiple version used in IEM, select the latest version
+        latest_version = 0
+        for version in iem_versions:
+            version = int(version)
+            if version > latest_version:
+                latest_version = version
+        iem_version = str(latest_version)
+    return iem_version
+
+
+def get_stored_user_sample_sheet(lib_prep_ids):
     '''
     Description:
         The function returns the stored values of the user sample sheet
     Input:
-        lib_prep_id   # pool id
+        lib_prep_ids   # id of the library preparation
     Return:
         sample_sheet_data
     '''
     sample_sheet_data = {}
-    lib_prep_obj = get_lib_prep_obj_from_id(lib_prep_id)
-    u_sampl_sheet_obj = lib_prep_obj.get_user_sample_sheet_obj()
+    iem_version = get_iem_version_from_user_sample_sheet(lib_prep_ids)
+    if iem_version == '0':
+        lib_prep_obj = get_lib_prep_obj_from_id(lib_prep_ids[0])
+    else:
+        for lib_prep_id in lib_prep_ids:
+            lib_prep_obj = get_lib_prep_obj_from_id(lib_prep_id)
+            if lib_prep_obj.get_iem_version() == iem_version:
+                break
+    u_sample_sheet_obj = lib_prep_obj.get_user_sample_sheet_obj()
     fields = ['collection_index','application', 'instrument', 'adapter1', 'adapter2','assay','reads']
-    data = u_sampl_sheet_obj.get_all_data()
+    not_index_fields_in_version_4 = [0,2]
+    data = u_sample_sheet_obj.get_all_data()
 
     for i in range(len(fields)) :
-        sample_sheet_data[fields[i]] = data[i]
-
+        if iem_version == '4' and i in not_index_fields_in_version_4:
+            continue
+        else:
+            sample_sheet_data[fields[i]] = data[i]
     return sample_sheet_data
 
 # def get_type_read_sequencing(pool_ids):
@@ -587,6 +641,7 @@ def collect_lib_prep_data_for_new_run(lib_prep_ids, platform_in_pool):
     data = []
     single_read = True
     uniqueID_list = []
+    iem_version = get_iem_version_from_user_sample_sheet(lib_prep_ids)
     for lib_prep_id in lib_prep_ids:
         lib_prep_obj =LibraryPreparation.objects.get(pk__exact = lib_prep_id)
         # get index 7 and index 5. then index 5 is deleted if all samples are single end
@@ -595,9 +650,13 @@ def collect_lib_prep_data_for_new_run(lib_prep_ids, platform_in_pool):
             if lib_prep_obj.get_i5_index() != '':
                 single_read = False
         if platform_in_pool == 'MiSeq':
-            row_data.insert(8,lib_prep_obj.get_manifest())
-            row_data.insert(9,lib_prep_obj.get_genome_folder())
-
+            if iem_version == '5':
+                row_data.insert(8,lib_prep_obj.get_manifest())
+                row_data.insert(9,lib_prep_obj.get_genome_folder())
+            else:
+                row_data.insert(8,lib_prep_obj.get_genome_folder())
+        else:
+            row_data.insert(4,lib_prep_obj.get_index_plate_well())
         row_data[0] = row_data[0] + '-' + lib_prep_obj.get_reused_value()
         uniqueID_list.append(row_data[0])
         data.append(row_data)
@@ -608,15 +667,27 @@ def collect_lib_prep_data_for_new_run(lib_prep_ids, platform_in_pool):
     # if there is not index 5 in any of the samples. Then delete the I5 index colunm for all samples
     if single_read:
         for item in data:
-            del item[7]
-            del item[6]
+            if platform_in_pool == 'MiSeq':
+                del item[7]
+                del item[6]
+            else:
+                # sample well was inserted in position 3, so delete index for i5 are stepped in one
+                del item[8]
+                del item[7]
     if platform_in_pool == 'MiSeq':
         if single_read:
-            lib_data['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ
+            if iem_version == '4':
+                lib_data['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ_VERSION_4
+            else:
+                lib_data['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ_VERSION_5
         else:
-            lib_data['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END
+            if iem_version == '4':
+                lib_data['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END_VERSION_4
+            else:
+                lib_data['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END_VERSION_5
     else:
         if single_read:
+
             lib_data['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_SINGLE_READ
         else:
             lib_data['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_PAIRED_END
@@ -638,7 +709,6 @@ def increase_reuse_if_samples_exists(sample_list):
         if sample_obj:
             update_sample_reused(sample_obj.get_sample_id())
             molecules = get_molecule_objs_from_sample(sample_obj)
-            import pdb; pdb.set_trace()
             last_molecule_obj = molecules.reverse()[0]
             update_molecule_reused(sample_obj.get_sample_id(), last_molecule_obj.get_molecule_code_id())
             update_library_preparation_for_reuse(samples_reused)

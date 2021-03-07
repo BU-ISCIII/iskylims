@@ -617,6 +617,27 @@ def get_all_library_information(sample_id):
 
     return library_information
 
+
+
+def get_iem_version_for_library_prep_ids(lib_prep_id_list):
+    '''
+    Description:
+        The function get the list of library preparation ids and return the IEM version used
+        when user create the sample sheet .
+    Input:
+        lib_prep_id_list        # ID List of the library preparation
+    Return:
+        iem_version
+    '''
+    versions = []
+    for lib_prep_id in lib_prep_id_list:
+        lib_prep_obj = get_lib_prep_obj_from_id(lib_prep_id)
+        if lib_prep_obj :
+            version = lib_prep_obj.get_iem_version()
+            if version != 'None' and not version in versions:
+                versions.append(version)
+    return versions
+
 def get_lib_prep_to_add_parameters():
     '''
     Description:
@@ -688,6 +709,7 @@ def get_samples_in_lib_prep_state ():
     else :
         samples_in_lib_prep['length'] = 0
         return samples_in_lib_prep
+
 
 def find_index_sequence_collection_values_kit(sequence):
     '''

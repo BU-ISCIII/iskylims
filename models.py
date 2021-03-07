@@ -194,9 +194,12 @@ class RunProcess(models.Model):
         self.save()
         return True
 
-    def update_sample_sheet(self, sample_file):
-        self.sampleSheet = sample_file
-        self.save()
+    def update_sample_sheet(self,full_path, relative_path, file_name):
+        import pdb; pdb.set_trace()
+        self.sampleSheet.save(file_name, open(full_path ,"r"), save=True)
+        self.sampleSheet = relative_path
+        import pdb; pdb.set_trace()
+        #self.save()
         return True
 
     def set_used_space (self, disk_utilization):
@@ -979,7 +982,13 @@ class libPreparationUserSampleSheet (models.Model):
 
 
     def get_collection_index_kit (self):
-        return '%s' %(self.collectionIndexKit_id.get_collection_index_name())
+        if self.collectionIndexKit_id != None:
+            return '%s' %(self.collectionIndexKit_id.get_collection_index_name())
+        else:
+            return 'Not available'
+
+    def get_iem_version(self):
+        return '%s' %(self.iemVersion)
 
     def get_sequencing_configuration_platform (self):
         return '%s'  %(self.sequencingConfiguration.get_platform_name())
@@ -987,8 +996,12 @@ class libPreparationUserSampleSheet (models.Model):
         return '%s' %(self.pk)
 
     def get_all_data(self):
+        if self.collectionIndexKit_id != None:
+            collection_index = self.collectionIndexKit_id.get_collection_index_name()
+        else:
+            collection_index = ''
         s_s_data = []
-        s_s_data.append(self.collectionIndexKit_id.get_collection_index_name())
+        s_s_data.append(collection_index)
         s_s_data.append(self.application)
         s_s_data.append(self.instrument)
         s_s_data.append(self.adapter1)
@@ -1131,7 +1144,6 @@ class StatesForLibraryPreparation (models.Model):
 
 class libraryPreparationManager(models.Manager):
     def create_lib_preparation (self, lib_prep_data):
-        #import pdb; pdb.set_trace()
         registerUser_obj = User.objects.get(username__exact  = lib_prep_data['registerUser'])
         sample_obj = Samples.objects.get(pk__exact = lib_prep_data['sample_id'])
         molecule_obj = MoleculePreparation.objects.get(pk__exact = lib_prep_data['molecule_id'])
@@ -1303,6 +1315,12 @@ class LibraryPreparation (models.Model):
         else:
             return ''
 
+    def get_iem_version(self):
+        if self.user_sample_sheet != None:
+            return '%s' %(self.user_sample_sheet.get_iem_version())
+        else:
+            return 'None'
+
     def get_indexes (self):
         index = {}
         if self.i5IndexID == None:
@@ -1314,6 +1332,12 @@ class LibraryPreparation (models.Model):
         index['i7_indexID'] = self.i7IndexID
         index['i7_seq'] = self.i7Index
         return index
+
+    def get_index_plate_well(self):
+        if self.indexPlateWell != None:
+            return '%s' %(self.indexPlateWell)
+        else:
+            return ''
 
     def get_lib_prep_code (self):
         return '%s' %(self.libPrepCodeID)
@@ -1363,6 +1387,8 @@ class LibraryPreparation (models.Model):
     def get_sample_obj(self):
         return self.sample_id
 
+    def get_sample_well(self):
+        return '%s' %(self.sampleWell)
 
     def get_state(self):
         return '%s' %(self.libPrepState.libPrepState)

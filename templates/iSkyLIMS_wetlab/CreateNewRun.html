@@ -51,15 +51,19 @@
                                             <label class="col-sm-5 control-label">Application</label>
                                             <div class="col-sm-5"><input class="form-control" required = "required" type="text" value="{{display_sample_information.application}}" name="application" size="80"></div>
                                             <br><br>
-                                            <label class="col-sm-5 control-label">Instrument</label>
-                                            <div class="col-sm-5"><input class="form-control"  required = "required" type="text" value="{{display_sample_information.instrument}}" name="instrument" size="80"></div>
-                                            <br><br>
+                                            {% if display_sample_information.instrument %}
+                                                <label class="col-sm-5 control-label">Instrument</label>
+                                                <div class="col-sm-5"><input class="form-control"  required = "required" type="text" value="{{display_sample_information.instrument}}" name="instrument" size="80"></div>
+                                                <br><br>
+                                            {% endif %}
                                             <label class="col-sm-5 control-label">Assay</label>
                                             <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  value="{{display_sample_information.assay}}"  name="assay" size="80"></div>
                                             <br><br>
-                                            <label class="col-sm-5 control-label">Index Adapters</label>
-                                            <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  value="{{display_sample_information.collection_index}}"  name="collection_index" size="80"></div>
-                                            <br><br>
+                                            {% if display_sample_information.collection_index %}
+                                                <label class="col-sm-5 control-label">Index Adapters</label>
+                                                <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  value="{{display_sample_information.collection_index}}"  name="collection_index" size="80"></div>
+                                                <br><br>
+                                            {% endif %}
                                             <label class="col-sm-5 control-label">Reads</label>
                                             <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  value="{{display_sample_information.reads}}"  name="reads" size="80"></div>
                                             <br><br>
@@ -74,7 +78,7 @@
                                         </div> <!--  end of form-group -->
                                     </div> <!--  end of col-sm-6 -->
                                     <div class="col-sm-6" >
-                                        
+
                                     </div> <!--  end of col-sm-6 -->
                                 </div> <!--  end of col-sm-12 -->
                                 <br><br>
@@ -298,7 +302,7 @@
                                             <div class="form-group required">
                                                 <label class="col-sm-5 control-label">{{reagent}}</label>
                                                 <div class="col-sm-5">
-                                                    <select class="form-control" name="{{reagent}}" id="{{reagent}}">
+                                                    <select class="form-control" name="{{reagent}}" required = "required" id="{{reagent}}">
                                                         <option value="">Choose a value</option>
                                                         {% for id, lot in lots %}
                                                             <option value="{{id}}">{{lot}}</option>

@@ -3973,7 +3973,7 @@ def create_new_run (request):
         lib_prep_ids = get_library_prep_in_pools (pool_ids)
 
         display_sample_information = get_library_preparation_data_in_run(lib_prep_ids, pool_ids)
-        display_sample_information.update(get_stored_user_sample_sheet(lib_prep_ids[0]))
+        display_sample_information.update(get_stored_user_sample_sheet(lib_prep_ids))
         display_sample_information['experiment_name'] = experiment_name
         display_sample_information['run_process_id'] = run_id
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_sample_information': display_sample_information})
@@ -3987,6 +3987,7 @@ def create_new_run (request):
             display_pools_for_run = display_available_pools()
             return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run, 'ERROR': error_message})
         run_data = collect_data_and_update_library_preparation_samples_for_run(request.POST, request.user)
+
         projects_objs = create_new_projects_added_to_run(run_data['projects'], run_data['run_obj'],request.user)
         if 'ERROR' in projects_objs:
             display_pools_for_run = display_available_pools()
@@ -3998,12 +3999,16 @@ def create_new_run (request):
         #update_run_with_sample_sheet(request.POST['run_process_id'], run_data['sample_sheet'])
 
         #run_obj = run_data['run_obj']
+        import pdb; pdb.set_trace()
+        run_obj.set_run_state('Recorded')
+        import pdb; pdb.set_trace()
         sample_sheet_name = store_confirmation_sample_sheet(run_data)
         # update the sample state for each one in the run
+        import pdb; pdb.set_trace()
         pools_obj = LibraryPool.objects.filter(runProcess_id = run_obj)
         # save sample sheet on the tmp folder
 
-        run_obj.set_run_state('Recorded')
+        import pdb; pdb.set_trace()
         for pool_obj in pools_obj:
             pool_obj.set_pool_state('Used')
         update_batch_lib_prep_sample_state(run_data['lib_prep_ids'],  'Sequencing')
@@ -4011,8 +4016,7 @@ def create_new_run (request):
         created_new_run['exp_name'] = run_data['exp_name']
         created_new_run['run_process_id'] = request.POST['run_process_id']
         created_new_run['sample_sheet'] = sample_sheet_name
-        #created_new_run['base_space'] = base_space_file
-
+        import pdb; pdb.set_trace()
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'created_new_run': created_new_run})
     else:
         display_pools_for_run = display_available_pools()
