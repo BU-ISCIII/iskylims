@@ -157,18 +157,26 @@ MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_PAIRED_END = [('Sample_ID','userSample
             ('Sample_Well','sampleWell'),('I7_Index_ID','i7IndexID'),
             ('index','i7Index'),('I5_Index_ID','i5IndexID'),('index2','i5Index'),('Sample_Project','projectInSampleSheet'),('Description', 'userInSampleSheet')]
 
-MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
+MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ_VERSION_5 = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
             ('Sample_Well','sampleWell'),('I7_Index_ID','i7IndexID'), ('index','i7Index'),
             ('Manifest', 'manifest'),('GenomeFolder', ' genomeFolder') , ('Sample_Project','projectInSampleSheet'),('Description', 'userInSampleSheet')]
 
-MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
+MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END_VERSION_5 = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
             ('Sample_Well','sampleWell'),('I7_Index_ID','i7IndexID'), ('index','i7Index'),('I5_Index_ID','i5IndexID'),('index2','i5Index'),
             ('Manifest', 'manifest'),('GenomeFolder', ' genomeFolder') , ('Sample_Project','projectInSampleSheet'),('Description', 'userInSampleSheet')]
+
+MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ_VERSION_4 = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
+            ('Sample_Well','sampleWell'),('I7_Index_ID','i7IndexID'), ('index','i7Index'),
+            ('GenomeFolder', ' genomeFolder') , ('Sample_Project','projectInSampleSheet'),('Description', 'userInSampleSheet')]
+
+MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END_VERSION_4 = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
+            ('Sample_Well','sampleWell'),('I7_Index_ID','i7IndexID'), ('index','i7Index'),('I5_Index_ID','i5IndexID'),('index2','i5Index'),
+            ('GenomeFolder', ' genomeFolder') , ('Sample_Project','projectInSampleSheet'),('Description', 'userInSampleSheet')]
 
 ######### MAPPING OPTIONAL COLUMNS THAT COULD BE IN SAMPLE SHEET FROM USER TO DATABASE   #############
 MAP_USER_SAMPLE_SHEET_ADDITIONAL_FIELDS_FROM_TYPE_OF_SECUENCER = [('Index_Plate_Well','indexPlateWell'), ('Manifest', 'manifest'), ('GenomeFolder', 'genomeFolder')]
 
-
+'''
 MAP_USER_SAMPLE_SHEET_TO_DATABASE_TWO_INDEX_WITH_WELL = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
             ('Sample_Well','sampleWell'),('Index_Plate_Well','indexPlateWell'),('I7_Index_ID','i7IndexID'),
             ('index','i7Index'),('I5_Index_ID','i5IndexID'),('index2','i5Index'),('Sample_Project','projectInSampleSheet'),('Description', 'registerUser')]
@@ -176,7 +184,7 @@ MAP_USER_SAMPLE_SHEET_TO_DATABASE_TWO_INDEX_WITH_WELL = [('Sample_ID','userSampl
 MAP_USER_NEXTSEQ_SAMPLE_SHEET_TO_DATABASE_TWO_INDEX_WITH_WELL = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
             ('Sample_Well','sampleWell'),('Index_Plate_Well','indexPlateWell'),('I7_Index_ID','i7IndexID'),
             ('index','i7Index'),('Sample_Project','projectInSampleSheet'),('Description', 'registerUser')]
-
+'''
 
 # mapping structure when sample sheet contains only one index
 #MAPPING_BASESPACE_SAMPLE_SHEET_ONE_INDEX = [('SampleID','Unique_Sample_ID'),('Name','Sample_Name'), ('Project','Sample_Project'),('Well', 'Sample_Well'),

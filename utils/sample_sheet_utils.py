@@ -290,13 +290,13 @@ def get_sample_sheet_data (file_read):
             break
     # get Instrument information
     for line in file_lines :
-        if 'Instrument' in line :
-            sample_sheet_data['instrument'] = line.split(',')[1]
+        if 'Instrument Type' in line :
+            sample_sheet_data['instrument type'] = line.split(',')[1]
             break
     # get adapters information
     sample_sheet_data['adapter1'], sample_sheet_data['adapter2'] = get_adapters(file_lines)
     # get indexes adapters information
-    sample_sheet_data['index_adapter'] = get_index_adapter (file_lines)
+    sample_sheet_data['index_adapters'] = get_index_adapter (file_lines)
     # get reads information
     sample_sheet_data['reads'] = get_reads(file_lines)
     # get proyects in sheet_data

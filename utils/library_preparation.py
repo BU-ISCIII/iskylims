@@ -743,10 +743,16 @@ def store_library_preparation_index(form_data):
     else:
         if 'I5_Index_ID' in heading :
             single_paired = 'Paired End'
-            mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END
+            if form_data['iem_version'] == '4':
+                mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END_VERSION_4
+            else:
+                mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END_VERSION_5
         else:
             single_paired = 'Single Reads'
-            mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ
+            if form_data['iem_version'] == '4':
+                mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ_VERSION_4
+            else:
+                mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ_VERSION_5
     sample_name_index = heading.index('Sample_Name')
     if not libPreparationUserSampleSheet.objects.filter(pk__exact = form_data['libPrepUserSampleSheetId']).exists():
         store_result['ERROR'] = ERROR_USER_SAMPLE_SHEET_NO_LONGER_EXISTS
@@ -967,7 +973,7 @@ def format_sample_sheet_to_display_in_form (sample_sheet_data):
     display_data = {}
     main_data_values = []
     main_data_heading = HEADING_MAIN_DATA_SAMPLE_SHEET.copy()
-    extract_values =['application', 'instrument', 'assay', 'index_adapter','reads', 'adapter1', 'adapter2']
+    extract_values =['application', 'instrument type', 'assay', 'index_adapters','reads', 'adapter1', 'adapter2']
     if '' == sample_sheet_data['adapter2']:
         extract_values.pop()
         main_data_heading.pop()

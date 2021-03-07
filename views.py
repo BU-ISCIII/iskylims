@@ -3412,7 +3412,6 @@ def handling_library_preparations(request):
             return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'ERROR':sample_sheet_data['ERROR'], 'samples_in_lib_prep':samples_in_lib_prep})
         # check if all users are defined in database
         # users_check = check_users_exists(sample_sheet_data['userid_names'])
-        import pdb; pdb.set_trace()
         valid_data = validate_sample_sheet_data(sample_sheet_data)
 
         if 'ERROR' in valid_data:
@@ -3428,6 +3427,7 @@ def handling_library_preparations(request):
         display_sample_sheet['user_list'] = get_user_for_sample_sheet()
         display_sample_sheet['lib_prep_user_sample_sheet'] = lib_prep_sample_sheet_obj.get_user_sample_sheet_id()
         display_sample_sheet['platform'] = platform
+        display_sample_sheet['iem_version'] = sample_sheet_data['iem_version']
         return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'display_sample_sheet':display_sample_sheet})
 
 

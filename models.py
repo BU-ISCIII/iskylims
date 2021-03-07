@@ -926,16 +926,16 @@ class libPreparationUserSampleSheetManager (models.Manager):
 
     def create_lib_prep_user_sample_sheet (self, user_sample_sheet_data):
         register_user_obj = User.objects.get(username__exact = user_sample_sheet_data['user'])
-        if user_sample_sheet_data['index_adapter'] == '':
+        if user_sample_sheet_data['index_adapters'] == '':
             collection_index_kit_id = None
         else:
-            collection_index_kit_id = CollectionIndexKit.objects.get(collectionIndexName__exact = user_sample_sheet_data['index_adapter'])
+            collection_index_kit_id = CollectionIndexKit.objects.get(collectionIndexName__exact = user_sample_sheet_data['index_adapters'])
         file_name =  os.path.basename(user_sample_sheet_data['file_name'])
         configuration = SequencingConfiguration.objects.filter( platformID__platformName__exact = user_sample_sheet_data['platform'], configurationName__exact = user_sample_sheet_data['configuration']).last()
         new_lib_prep_user_sample_sheet = self.create(registerUser = register_user_obj,
                     collectionIndexKit_id  = collection_index_kit_id, reads = ','.join(user_sample_sheet_data['reads']),
                     sampleSheet = file_name, application = user_sample_sheet_data['application'],
-                    instrument = user_sample_sheet_data ['instrument'], assay = user_sample_sheet_data['assay'],
+                    instrument = user_sample_sheet_data ['instrument type'], assay = user_sample_sheet_data['assay'],
                     adapter1 = user_sample_sheet_data['adapter1'], adapter2 = user_sample_sheet_data['adapter2'],
                     sequencingConfiguration = configuration, iemVersion = user_sample_sheet_data['iem_version'])
         return new_lib_prep_user_sample_sheet
