@@ -1,7 +1,7 @@
 import os
 import xml.etree.ElementTree as ET
 from iSkyLIMS_wetlab.wetlab_config import *
-from iSkyLIMS_wetlab.models import Projects, RawDemuxStats, StatsFlSummary, StatsLaneSummary
+from iSkyLIMS_wetlab.models import *
 from .handling_crontab_common_functions import *
 
 
@@ -83,7 +83,11 @@ def delete_existing_bcl2fastq_table_processed(run_process_obj, experiment_name):
         for stats_lane_summary_obj in stats_lane_summary_objs:
             stats_lane_summary_obj.delete()
         logger.info('%s : Deleted StatsLaneSummary tables ', experiment_name)
-
+    if SamplesInProject.objects.filter(runProcess_id = run_process_obj).exists():
+        sample_in_project_objs = SamplesInProject.objects.filter(runProcess_id = run_process_obj)
+        for sample_in_project_obj in sample_in_project_objs:
+            sample_in_project_obj.delete()
+        logger.info('%s : Deleted SamplesInProject tables ', experiment_name)
     logger.debug ('%s : End function delete_existing_bcl2fastq_table_processed', experiment_name)
     return True
 
@@ -116,7 +120,7 @@ def get_demultiplexing_files(conn, run_folder, experiment_name):
     except:
         string_message = experiment_name + ' : Unable to fetch folder demultiplexing at  ' + statistics_folder
         logging_errors(string_message, True, True)
-        logger.debug ('%s : End function get_demultiplexing_files with error', experiment_name)
+        logger.debug ('%s : End function get_demultiplexing_files with exception', experiment_name)
         return {'ERROR':29}
     # conversion stats file
     l_conversion_stats = os.path.join(RUN_TEMP_DIRECTORY, CONVERSION_STATS_FILE)
@@ -147,6 +151,94 @@ def get_demultiplexing_files(conn, run_folder, experiment_name):
     return demux_files
 
 
+
+def get_run_disk_utilization (conn, run_folder, experiment_name):
+    '''
+    Description:
+        Function to get the size of the run directory on the  remote server.
+        It will use the function get_size_dir to get the size utilization
+        for each subfolder
+    Input:
+        conn                # Connection samba object
+        run_folder          # root folder to start the checking file size
+        experiment_name     # Experiment name
+    Functions:
+        get_samba_application_shared_folder  # located at utils.handling_crontab_common_functions.py
+        get_size_dir                         # Located on this file
+    Return:
+        disk_utilization    # in the last iteraction will return the total size of the folder
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('%s : Starting function get_run_disk_utilization', experiment_name)
+    shared_folder = get_samba_shared_folder()
+    application_folder = get_samba_application_shared_folder()
+    full_path_run = os.path.join(application_folder, run_folder)
+
+    try:
+        get_full_list = conn.listPath(shared_folder ,run_folder)
+    except:
+        string_message = experiment_name + ' : Unable to get the folder ' + run_folder
+        logging_errors (string_message, True, True)
+        logger.debug ('%s : End function get_run_disk_utilization with Exception', experiment_name)
+        raise
+
+    rest_of_dir_size = 0
+    data_dir_size = 0
+    images_dir_size = 0
+    MEGA_BYTES = 1024*1024
+    disk_utilization = {}
+    logger.info('Start folder iteration ')
+    for item_list in get_full_list:
+        if item_list.filename == '.' or item_list.filename == '..':
+            continue
+        if item_list.filename == 'Data':
+            logger.info('%s : Starting getting disk space utilization for Data Folder', experiment_name)
+            dir_data = os.path.join(run_folder,'Data')
+            data_dir_size = get_size_dir(dir_data , conn, shared_folder)
+
+        elif item_list.filename == 'Images':
+            logger.info('%s : Starting getting disk space utilization for Images Folder', experiment_name)
+            dir_images = os.path.join(full_path_run, 'Images')
+            images_dir_size = get_size_dir(dir_images , conn, shared_folder)
+
+        if item_list.isDirectory:
+            item_dir = os.path.join(full_path_run, item_list.filename)
+            rest_of_dir_size += get_size_dir(item_dir, conn, shared_folder)
+        else:
+            rest_of_dir_size += item_list.file_size
+
+    disk_utilization ['useSpaceFastaMb'] = '{0:,}'.format(round(data_dir_size/MEGA_BYTES))
+    disk_utilization ['useSpaceImgMb'] = '{0:,}'.format(round(images_dir_size/MEGA_BYTES))
+    disk_utilization ['useSpaceOtherMb'] = '{0:,}'.format(round(rest_of_dir_size/MEGA_BYTES))
+
+    logger.info('%s : End  disk space utilization for runID  %s', experiment_name ,run_folder)
+    logger.debug ('%s : End function get_run_disk_utilization', experiment_name)
+    return disk_utilization
+
+
+def get_size_dir (directory, conn, shared_folder):
+    '''
+    Description:
+        Recursive function to get the size of the run directory on the remote server.
+    Input:
+        conn            # Connection samba object
+        directory       # root folder to start the checking file size
+        shared_folder   # shared remote folder
+    Return:
+        count_file_size # in the last iteraction will return the total folder size
+    '''
+    count_file_size = 0
+    file_list = conn.listPath(shared_folder, directory)
+    for sh_file in file_list:
+        if sh_file.isDirectory:
+            if (sh_file.filename == '.' or sh_file.filename == '..'):
+                continue
+            sub_directory = os.path.join (directory,sh_file.filename)
+            count_file_size += get_size_dir (sub_directory, conn, shared_folder)
+        else:
+            count_file_size += sh_file.file_size
+
+    return count_file_size
 
 def parsing_demux_and_conversion_files(demux_files, number_of_lanes, experiment_name):
     '''
@@ -315,7 +407,7 @@ def parsing_demux_sample_project(demux_files, number_of_lanes, experiment_name):
         parsed_result
     '''
     logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function parsing_demux_and_conversion_files', experiment_name)
+    logger.debug ('%s : Starting function parsing_demux_sample_project', experiment_name)
 
     total_p_b_count=[0,0,0,0]
     parsed_result = {}
@@ -421,6 +513,7 @@ def process_and_store_fl_summary_data(parsed_data, run_process_obj, number_of_la
     Input:
         parsed_data         # dictionnary with parsed data
         run_process_obj     # runProcess object
+        number_of_lanes     # number of lanes handled by Sequencer
         experiment_name     # Experiment name
     Return:
         None
@@ -429,9 +522,9 @@ def process_and_store_fl_summary_data(parsed_data, run_process_obj, number_of_la
     logger.debug ('%s : Starting function process_and_store_fl_summary_data', experiment_name)
     M_BASE=1.004361/1000000
     total_cluster_lane=(parsed_data['all']['PerfectBarcodeCount'])
-    processed_fl_summary_data = []
+
     number_of_lanes = run_process_obj.get_sequencing_lanes()
-    for project in parsed_data:
+    for project in parsed_data.keys():
         project_flowcell = {}
         if project == 'TopUnknownBarcodes':
             continue
@@ -459,22 +552,74 @@ def process_and_store_fl_summary_data(parsed_data, run_process_obj, number_of_la
             project_flowcell['defaultAll'] = None
         project_flowcell['runprocess_id'] = run_process_obj
         #store in database
+
         logger.info('%s : End processing flow Summary for project %s',experiment_name, project)
-        '''
-        ns_fl_summary = StatsFlSummary(runprocess_id=RunProcess.objects.get(pk=run_id),
-                                project_id=project_id, defaultAll=default_all, flowRawCluster=flow_raw_cluster,
-                                flowPfCluster=flow_pf_cluster, flowYieldMb= flow_yield_mb,
-                                sampleNumber= sample_number)
+        new_fl_summary = StatsFlSummary.objects.create_fl_summary(project_flowcell)
+
+    logger.debug ('%s : End function process_and_store_fl_summary_data', experiment_name)
+    return
+
+def process_and_store_lane_summary_data (parsed_data, run_process_obj, number_of_lanes,  experiment_name ):
+    '''
+    Description:
+        The function manages the parsed data to save them in StatsLaneSummary
+    Input:
+        parsed_data         # dictionnary with parsed data
+        run_process_obj     # runProcess object
+        number_of_lanes     # number of lanes handled by Sequencer
+        experiment_name     # Experiment name
+    Return:
+        None
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('%s : Starting function process_and_store_lane_summary_data', experiment_name)
+
+    M_BASE=1.004361/1000000
+    total_cluster_lane=(parsed_data['all']['PerfectBarcodeCount'])
+    for project in parsed_data.keys():
+        if project == 'TopUnknownBarcodes':
+            continue
+        logger.info('%s : Start processing Lane Summary for project %s',experiment_name, project)
+        for i in range (number_of_lanes):
+            # get the lane information
+            project_lane = {}
+            project_lane['lane'] = str(i + 1)
+            pf_cluster_int=(int(parsed_data[project]['PerfectBarcodeCount'][i]))
+
+            project_lane['pfCluster'] = '{0:,}'.format(pf_cluster_int)
+            try:
+                project_lane['perfectBarcode'] = (format(int(parsed_data[project]['PerfectBarcodeCount'][i])*100/int(parsed_data[project]['BarcodeCount'][i]),'.3f'))
+            except:
+                project_lane['perfectBarcode'] = '0'
+            try:
+                project_lane['percentLane'] = format(float(int(pf_cluster_int)/int(total_cluster_lane[i]))*100, '.3f')
+            except:
+                project_lane['percentLane'] = '0'
+            project_lane['oneMismatch'] = parsed_data[project]['OneMismatchBarcodeCount'][i]
+            project_lane['yieldMb'] = '{0:,}'.format(round(float(parsed_data[project]['PF_Yield'][i])* M_BASE))
+            try:
+                project_lane['biggerQ30'] = format(float(parsed_data[project]['PF_YieldQ30'][i])*100/float( parsed_data[project]['PF_Yield'][i]),'.3f')
+            except:
+                project_lane['biggerQ30'] = '0'
+            try:
+                project_lane['meanQuality'] = format(float(parsed_data[project]['PF_QualityScore'][i])/float(parsed_data[project]['PF_Yield'][i]),'.3f')
+            except:
+                project_lane['meanQuality'] = '0'
+            if project == 'all' or project == 'default':
+                project_lane['project_id'] = None
+                project_lane['defaultAll'] = project
+            else:
+                project_lane['project_id'] = Projects.objects.get(projectName__exact = project)
+                project_lane['defaultAll'] =  None
+
+            project_lane['runprocess_id'] = run_process_obj
 
 
-        ns_fl_summary.save()
-        '''
-        processed_fl_summary_data.append(project_flowcell)
-
-    logger.debug ('%s : End function process_fl_summary_stats', experiment_name)
-    return processed_fl_summary_data
-
-
+        logger.info('%s : Processed information for project %s',experiment_name, project)
+        new_lane_summary = StatsLaneSummary.objects.create_lane_summary(project_lane)
+        logger.info('%s : Saved information to StatsLaneSummary for project %s ', experiment_name, project)
+    logger.debug ('%s : End function process_and_store_lane_summary_data', experiment_name)
+    return
 
 
 def process_and_store_raw_demux_project_data(parsed_data, run_process_obj, experiment_name):
@@ -491,7 +636,7 @@ def process_and_store_raw_demux_project_data(parsed_data, run_process_obj, exper
         None
     '''
     logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function store_raw_xml_stats', experiment_name)
+    logger.debug ('%s : Starting function process_and_store_raw_demux_project_data', experiment_name)
     processed_raw_data = []
     project_list = []
     # check first if all project found in the parsing are already defined.
@@ -531,11 +676,10 @@ def process_and_store_raw_demux_project_data(parsed_data, run_process_obj, exper
         project_raw_data['PF_YieldQ30'] = parsed_data[project]['PF_YieldQ30']
         project_raw_data['PF_QualityScore'] = parsed_data[project]['PF_QualityScore']
 
-        import pdb; pdb.set_trace()
         new_raw_obj = RawDemuxStats.objects.create_stats_run_read(project_raw_data, run_process_obj)
         logger.info('%s : End processing project %s for raw parsed data', experiment_name, project)
     logger.info('%s : Completed processing demultiplexing raw project data', experiment_name)
-    logger.debug('%s : End function store_raw_xml_stats', experiment_name)
+    logger.debug('%s : End function process_and_store_raw_demux_project_data', experiment_name)
     return
 
 
@@ -545,7 +689,7 @@ def process_and_store_samples_projects_data(parsed_data, run_process_obj, experi
         The function will parse demultiplexing and the conversion files
         that are created during the bcl2fastq process
     Input:
-        parsed_data      # dictionnary with parsed data
+        parsed_data         # dictionnary with parsed data
         run_process_obj     # runProcess object
         experiment_name     # Experiment name
     Return:
@@ -585,19 +729,48 @@ def process_and_store_samples_projects_data(parsed_data, run_process_obj, experi
             project_sample_data['qualityQ30'] = bigger_q30
             project_sample_data['meanQuality'] = mean_quality
             project_sample_data['project_id'] = Projects.objects.get(projectName__exact = project)
-            # p_name_id=Projects.objects.get(projectName__exact = project).id
-            # project_id= Projects.objects.get(pk=p_name_id)
-            '''
-            sample_to_store = SamplesInProject (project_id = project_id, sampleName = sample_name,
-                            barcodeName = barcode_name, pfClusters = perfect_barcode,
-                            percentInProject = percent_in_project , yieldMb = yield_mb,
-                            qualityQ30 = bigger_q30, meanQuality = mean_quality)
+            project_sample_data['runProcess_id'] = run_process_obj
 
-            sample_to_store.save()
-            '''
-            new_sample_stats = SamplesInProject.objects.create_sample_project(sample_stats)
+            new_sample_stats = SamplesInProject.objects.create_sample_project(project_sample_data)
 
-            processed_sample_data.append(project_sample_data)
         logger.info('%s : Collected  sample data for the project %s',experiment_name, project)
-    logger.debug('%s : End function process_samples_projects', experiment_name)
-    return processed_sample_data
+    logger.debug('%s : End function process_and_store_samples_projects_data', experiment_name)
+    return
+
+
+def process_and_store_unknown_barcode_data(parsed_data, run_process_obj, number_of_lanes, experiment_name ):
+    '''
+    Description:
+        The function manages the parsed data to save them in RawTopUnknowBarcodes
+    Input:
+        parsed_data         # dictionnary with parsed data
+        run_process_obj     # runProcess object
+        number_of_lanes     # number of lanes handled by Sequencer
+        experiment_name     # Experiment name
+    Return:
+        None
+    '''
+    logger = logging.getLogger(__name__)
+    logger.debug ('%s : Starting function process_and_store_unknown_barcode_data', experiment_name)
+    processed_barcode_data = []
+    for project in parsed_data:
+        if project == 'TopUnknownBarcodes':
+            logger.info ('%s : Collecting TopUnknownBarcodes data ', experiment_name)
+            for un_lane in range(number_of_lanes) :
+                logger.info('Processing lane %s for TopUnknownBarcodes', un_lane)
+                count_top=0
+                top_number =1
+
+                for barcode_line in parsed_data[project][un_lane]:
+                    unknow_barcode = {}
+                    unknow_barcode['runprocess_id'] = run_process_obj
+                    unknow_barcode['lane_number'] = lane_number=str(un_lane + 1)
+                    unknow_barcode['top_number'] = str(top_number)
+                    unknow_barcode['count'] =  '{0:,}'.format(int(barcode_line['count']))
+                    unknow_barcode['sequence'] =  barcode_line['sequence']
+                    top_number +=1
+
+                new_unknow_barcode = RawTopUnknowBarcodes.objects.create_unknow_barcode(unknow_barcode)
+
+    logger.debug ('%s : End function process_and_store_unknown_barcode_data', experiment_name)
+    return processed_barcode_data

@@ -28,7 +28,7 @@ def check_all_projects_exists (project_list):
         logger # logging object to write in the log file
     Return:
         True /False
-    
+
     logger = logging.getLogger(__name__)
     logger.debug ('Starting function for check_all_projects_exists')
     for project in project_list :
@@ -381,109 +381,6 @@ def is_wetlab_manager (request):
         return False
 
     return True
-
-
-
-def get_run_disk_utilization (conn, run_folder):
-    '''
-    Description:
-        Function to get the size of the run directory on the
-        remote server.
-        It will use the function get_size_dir to get the size utilization
-        for each subfolder
-    Input:
-        conn # Connection samba object
-        run_folder   # root folder to start the checking file size
-        run_processing_id #
-    Functions:
-        get_size_dir    # Located on this file
-    Variables:
-        file_list # contains the list of file and subfolders
-        count_file_size # partial size for the subfolder
-        disk_utilization # dictionnary used to keep the disk space used
-                        in the run
-    Return:
-        disk_utilization # in the last iteraction will return the total
-                    size of the folder
-    '''
-    logger = logging.getLogger(__name__)
-    logger.debug ('Starting function get_run_disk_utilization')
-    full_path_run = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, run_folder)
-    try:
-        get_full_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME ,full_path_run)
-    except:
-        string_message = 'Unable to get the folder ' + run_folder
-        logging_errors (string_message, True, False)
-        logger.debug ('End function get_run_disk_utilization with error')
-        raise
-    rest_of_dir_size = 0
-    data_dir_size = 0
-    images_dir_size = 0
-    MEGA_BYTES = 1024*1024
-    disk_utilization = {}
-    logger.info('Start folder iteration ')
-    for item_list in get_full_list:
-        if item_list.filename == '.' or item_list.filename == '..':
-            continue
-        if item_list.filename == 'Data':
-            logger.info('Starting getting disk space utilization for Data Folder')
-            dir_data = os.path.join(full_path_run,'Data')
-            data_dir_size = get_size_dir(dir_data , conn)
-
-        elif item_list.filename == 'Images':
-            logger.info('Starting getting disk space utilization for Images Folder')
-            dir_images = os.path.join(full_path_run, 'Images')
-            images_dir_size = get_size_dir(dir_images , conn)
-
-        if item_list.isDirectory:
-            item_dir = os.path.join(full_path_run, item_list.filename)
-            rest_of_dir_size += get_size_dir(item_dir, conn)
-        else:
-            rest_of_dir_size += item_list.file_size
-
-    disk_utilization ['useSpaceFastaMb'] = '{0:,}'.format(round(data_dir_size/MEGA_BYTES))
-    disk_utilization ['useSpaceImgMb'] = '{0:,}'.format(round(images_dir_size/MEGA_BYTES))
-    disk_utilization ['useSpaceOtherMb'] = '{0:,}'.format(round(rest_of_dir_size/MEGA_BYTES))
-    '''
-        run_be_updated.useSpaceImgMb= images_dir_size_formated
-        run_be_updated.useSpaceFastaMb= data_dir_size_formated
-        run_be_updated.useSpaceOtherMb= rest_of_dir_size_formated
-        run_be_updated.save()
-    '''
-    logger.info('End  disk space utilization for runID  %s', run_folder)
-    logger.debug ('End function get_run_disk_utilization')
-    return disk_utilization
-
-
-def get_size_dir (directory, conn):
-    '''
-    Description:
-        Recursive function to get the size of the run directory on the
-        remote server.
-        Optional can send an email to inform about the issue
-    Input:
-        conn # Connection samba object
-        directory   # root folder to start the checking file size
-    Variables:
-        file_list # contains the list of file and subfolders
-        count_file_size # partial size for the subfolder
-    Return:
-        count_file_size # in the last iteraction will return the total
-                    size of the folder
-    '''
-    count_file_size = 0
-    file_list = conn.listPath(wetlab_config.SAMBA_SHARED_FOLDER_NAME, directory)
-    for sh_file in file_list:
-        if sh_file.isDirectory:
-            if (sh_file.filename == '.' or sh_file.filename == '..'):
-                continue
-            sub_directory = os.path.join (directory,sh_file.filename)
-            count_file_size += get_size_dir (sub_directory, conn)
-        else:
-            count_file_size += sh_file.file_size
-
-    return count_file_size
-
 
 def normalized_data (set_data, all_data) :
     '''

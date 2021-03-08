@@ -325,6 +325,9 @@ def create_new_sequencer_lab_not_defined (sequencer_name,num_of_lanes, experimen
     logger.debug ('%s : End function create_new_sequencer_lab_not_defined', experiment_name)
     return new_sequencer_obj
 
+
+
+
 def fetch_remote_file (conn, run_dir, remote_file, local_file) :
     '''
     Description:

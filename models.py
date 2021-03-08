@@ -768,11 +768,12 @@ class GraphicsStats (models.Model):
     objects = GraphicsStatsManager ()
 
 class SamplesInProjectManager (models.Manager):
-    def create_sample_project (self, s_project):
-        sample_project = self.create( project_id = s_project['project_id'] , sampleName =  s_project['sampleName'],
-                            barcodeName =  s_project['barcodeName'], pfClusters =  s_project['pfClusters'],
-                            percentInProject =  s_project['percentInProject'], yieldMb =  s_project['yieldMb'],
-                            qualityQ30 =  s_project['qualityQ30'], meanQuality =  s_project['meanQuality'] )
+    def create_sample_project (self, sample_p_data):
+        sample_project = self.create( project_id = sample_p_data['project_id'] , sampleName =  sample_p_data['sampleName'],
+                            barcodeName =  sample_p_data['barcodeName'], pfClusters =  sample_p_data['pfClusters'],
+                            percentInProject =  sample_p_data['percentInProject'], yieldMb =  sample_p_data['yieldMb'],
+                            qualityQ30 =  sample_p_data['qualityQ30'], meanQuality =  sample_p_data['meanQuality'],
+                            runProcess_id = sample_p_data['runProcess_id'] )
 
 class SamplesInProject (models.Model):
     project_id = models.ForeignKey(
