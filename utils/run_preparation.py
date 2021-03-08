@@ -479,8 +479,7 @@ def store_confirmation_sample_sheet(fields):
     fh.close()
     # store sample sheet in database
     fields['run_obj'].update_sample_sheet(ss_file_full_path , ss_file_relative_path, file_name)
-    #os.remove(ss_file_full_path)
-    import pdb; pdb.set_trace()
+    os.remove(ss_file_full_path)
     return ss_file_relative_path
 
 def get_experiment_name (run_id):

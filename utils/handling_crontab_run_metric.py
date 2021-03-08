@@ -130,7 +130,6 @@ def delete_run_metric_files (experiment_name):
             try:
                 os.remove(local_file)
             except:
-                import pdb; pdb.set_trace()
                 string_message = experiment_name + ' : Unable to delete ' + local_file
                 logging_errors(string_message, True, True)
                 continue

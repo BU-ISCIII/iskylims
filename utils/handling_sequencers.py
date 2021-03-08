@@ -58,7 +58,6 @@ def define_new_seq_configuration(form_data):
         return  error
     new_seq_configuration = SequencingConfiguration.objects.create_new_configuration(seq_configuration_data)
     new_configuration_data = [seq_configuration_data['configurationName'],new_seq_configuration.get_platform_name()]
-    import pdb; pdb.set_trace()
     return new_configuration_data
 
 def get_configuration_sequencers_data():

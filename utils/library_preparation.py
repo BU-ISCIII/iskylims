@@ -452,7 +452,6 @@ def validate_sample_sheet_data (input_data ):
     # check that samples are defined and in the right state
     error = {}
     # check for older IEM versions which do no have index adapter/ Instrument type in sample sheet
-    import pdb; pdb.set_trace()
     # check for additional header fields in IEM version 5
     if input_data['iem_version'] == '5':
         if input_data['index_adapter'] == '' and not 'instrument' in input_data:
