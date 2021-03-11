@@ -499,6 +499,8 @@ def prepare_form_data_request_service_sequencing (request_user):
     	The function get the information to display in the request sequencing service form
     Input:
     	request_user      # user instance who request the service
+	Functions:
+		get_only_recorded_samples_and_dates		# located at iSkyLIMS_core.utils.handling_samples
     Return:
     	service_data_information
     '''
@@ -625,4 +627,5 @@ def stored_samples_for_sequencing_request_service(form_data, new_service):
         data['only_recorded'] = True
         ext_samp_obj = RequestedSamplesInServices.objects.create_request_sample(data)
         requested_sample_list.append(data['sample_name'])
+
     return requested_sample_list
