@@ -388,6 +388,9 @@ def create_nextseq_run (request):
             update_info_proj.save()
         results.append(['runname', experiment_name])
         ## save the sample sheet file under tmp/recorded to be processed when run folder was created
+        '''
+        ########
+        ## Remove the folder creation to include the sample sheet from iSkyLIMS version 2
         subfolder_name=str(run_p.id)
 
         temp_directory = os.path.join(settings.MEDIA_ROOT , wetlab_config.RUN_TEMP_DIRECTORY_RECORDED, subfolder_name)
@@ -408,6 +411,8 @@ def create_nextseq_run (request):
         run_p.runName = experiment_name
         run_p.index_library = run_index_library_name
         run_p.save()
+        #######################
+        '''
         run_p.set_run_state ('Recorded')
         sample_sheet_lines = read_all_lines_in_sample_sheet(in_file)
         sample_names_and_data = get_samples_in_sample_sheet(sample_sheet_lines)
