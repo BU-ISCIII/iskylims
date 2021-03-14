@@ -120,8 +120,15 @@ COLLECTION_INDEX_HEADING = ['[Version]','[Name]', '[PlateExtension]','[Settings]
 MIGRATION_DIRECTORY_FILES = 'wetlab/BaseSpaceMigrationFiles/'
 
 ##############################################################
-SAMPLE_SHEET_TWO_ADAPTERS_TEMPLATE_NAME = 'sample_sheet_two_adapters_template.csv'
-SAMPLE_SHEET_ONE_ADAPTER_TEMPLATE_NAME = 'sample_sheet_one_adapter_template.csv'
+SAMPLE_SHEET_MISEQ_VERSION_4_TWO_INDEX_TEMPLATE_NAME = 'miseq_version_5_sample_sheet_two_adapters_template.csv'
+SAMPLE_SHEET_MISEQ_VERSION_5_TWO_INDEX_TEMPLATE_NAME = 'miseq_version_5_sample_sheet_two_adapters_template.csv'
+SAMPLE_SHEET_NEXTSEQ_VERSION_5_TWO_INDEX_WITH_WELPLATE_TEMPLATE_NAME ='nextseq_version_5_sample_sheet_two_adapters_with_wellplate_template.csv'
+SAMPLE_SHEET_NEXTSEQ_VERSION_5_TWO_INDEX_TEMPLATE_NAME  = 'nextseq_version_5_sample_sheet_two_adapters_template.csv'
+
+SAMPLE_SHEET_MISEQ_VERSION_4_ONE_INDEX_TEMPLATE_NAME = 'miseq_version_5_sample_sheet_one_adapters_template.csv'
+SAMPLE_SHEET_MISEQ_VERSION_5_ONE_INDEX_TEMPLATE_NAME = 'miseq_version_5_sample_sheet_one_adapters_template.csv'
+SAMPLE_SHEET_NEXTSEQ_VERSION_5_ONE_INDEX_WITH_WELPLATE_TEMPLATE_NAME ='nextseq_version_5_sample_sheet_one_index_with_wellplate_template.csv'
+SAMPLE_SHEET_NEXTSEQ_VERSION_5_ONE_INDEX_TEMPLATE_NAME  = 'nextseq_version_5_sample_sheet_one_adapters_template.csv'
 
 ##### CONFIGURATION FOR ADDING KITS FOR LIBRARY PREPARATION ########
 HEADING_ADDING_COMMERCIAL_KITS_TO_PROTOCOL = ['Given name ', 'Order', 'Used', 'Commercial Kit Name', 'Description']
@@ -130,24 +137,26 @@ HEADING_FOR_MODIFYING_ADDITIONAL_KITS = ['Old name', 'New name', 'Order', 'Used'
 ##### CONFIGURATION FOR SAMPLE SHEET CONVERSION ##############
 ######### FILE TO BASESPACE FORMAT     #######################
 # column names when sample sheet has only one index
+'''
 BASESPACE_FILE_ONE_INDEX = ['SampleID','Name','Species','Project','NucleicAcid',
                'Well','Index1Name','Index1Sequence']
 # colum names when sample sheet has two index
 BASESPACE_FILE_TWO_INDEX = ['SampleID','Name','Species','Project','NucleicAcid',
                'Well','Index1Name','Index1Sequence','Index2Name','Index2Sequence']
-
+'''
 HEADING_FOR_SAMPLE_SHEET_ONE_INDEX = ['Unique_Sample_ID','Sample_Name','Sample_Plate','Sample_Well','Index_Plate_Well','I7_Index_ID','index','Sample_Project','Description']
 
 HEADING_FOR_SAMPLE_SHEET_TWO_INDEX = ['Unique_Sample_ID','Sample_Name','Sample_Plate','Sample_Well','Index_Plate_Well','I7_Index_ID','index','I5_Index_ID','index2','Sample_Project','Description']
 
 
 # mapping structure when sample sheet contains only one index
+'''
 MAP_BASESPACE_SAMPLE_SHEET_ONE_INDEX = [('SampleID','Sample_ID'),('Name','Sample_Name'), ('Project','Sample_Project'),
                 ('Index1Name','I7_Index_ID'), ('Index1Sequence','index' ) ]
 # mapping structure when sample sheet contains two index
 MAP_BASESPACE_SAMPLE_SHEET_TWO_INDEX = [('SampleID','Sample_ID'),('Name','Sample_Name'), ('Project','Sample_Project'),
                 ('Index1Name','I7_Index_ID'), ('Index1Sequence','index' ),('Index2Name','I5_Index_ID'),('Index2Sequence','index2') ]
-
+'''
 ######### MAPPING COLUMNS IN SAMPLE SHEET FROM USER TO DATABASE   #############
 MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_SINGLE_READ = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
             ('Sample_Well','sampleWell'),('I7_Index_ID','i7IndexID'),

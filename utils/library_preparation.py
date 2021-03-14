@@ -696,8 +696,11 @@ def get_samples_in_lib_prep_state ():
             if (not LibraryPreparation.objects.filter(sample_id = sample).exists()) or (LibraryPreparation.objects.filter(sample_id = sample).exclude(libPrepState__libPrepState__in = states_excluded).exists()):
                 sample_information = sample.get_info_in_defined_state()
                 sample_information.append(sample.get_register_user())
-                molecule = MoleculePreparation.objects.filter(sample = sample,state__moleculeStateName = 'Completed').last()
-                molecule_data = molecule.get_molecule_information()
+                molecule_obj = MoleculePreparation.objects.filter(sample = sample,state__moleculeStateName = 'Completed').last()
+                if molecule_obj:
+                    molecule_data = molecule_obj.get_molecule_information()
+                else:
+                    molecule_data = ['']*4
                 lib_prep_data.append(sample_information + molecule_data)
 
         samples_in_lib_prep['library_information'] = lib_prep_data

@@ -171,27 +171,29 @@ def collect_data_and_update_library_preparation_samples_for_run (data_form, user
     lib_prep_unique_ids = data_form['lib_prep_unique_ids'].split(',')
     run_id = data_form['run_process_id']
     json_data = json.loads(data_form['s_sheet_data'])
-    single_read = data_form['single_read']
+    record_data['single_read'] = data_form['single_read']
     projects = []
-    iem_version = get_iem_version_from_user_sample_sheet(lib_prep_ids)
+    record_data['version'] = get_iem_version_from_user_sample_sheet(lib_prep_ids)
 
     if data_form['platform_type'] == 'MiSeq':
-        if single_read == 'TRUE':
-            if iem_version == '4':
+        record_data['platform'] = 'MiSeq'
+        if record_data['single_read'] == 'TRUE':
+            if record_data['version'] == '4':
                 heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ_VERSION_4
                 mapping_fields = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ_VERSION_4
             else:
                 heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ_VERSION_5
                 mapping_fields = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ_VERSION_5
         else:
-            if iem_version == '4':
+            if record_data['version'] == '4':
                 heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END_VERSION_4
                 mapping_fields = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END_VERSION_4
             else:
                 heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END_VERSION_5
                 mapping_fields = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END_VERSION_5
     else:
-        if single_read == 'TRUE':
+        record_data['platform'] = 'NextSeq'
+        if record_data['single_read'] == 'TRUE':
             heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_SINGLE_READ
             mapping_fields = MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_SINGLE_READ
         else:
@@ -213,6 +215,17 @@ def collect_data_and_update_library_preparation_samples_for_run (data_form, user
         confirmation_data['user_sample_sheet'] = lib_prep_obj.get_user_sample_sheet_obj()
         lib_prep_obj.update_library_preparation_with_indexes(confirmation_data)
         sample_sheet_data_field.append(json_data[row_index])
+    if record_data['platform'] == 'NextSeq':
+        record_data['index_well'] = False
+        index = heading.index('Index_Plate_Well')
+        for data_line in sample_sheet_data_field :
+            if data_line[index] != '':
+                record_data['index_well'] = True
+                break
+        if not record_data['index_well']:
+            # remove the index well column
+            for data_line in sample_sheet_data_field :
+                data_line.drop(index)
     record_data['sample_sheet_data_field'] = sample_sheet_data_field
     record_data['sample_sheet_data_heading'] = heading
     record_data['run_obj'] = get_run_obj_from_id(data_form['run_process_id'])
@@ -451,27 +464,42 @@ def store_confirmation_sample_sheet(fields):
 
     today_date = datetime.datetime.today().strftime("%d/%m/%Y")
 
+    if 'adapter2' in fields:
+        fields['adapter'] = str(fields['adapter'] + '\nAdapterRead2,'+ fields['adapter2'] )
     d = {'investigator':fields['investigator'],'exp_name': fields['exp_name'] , 'date': today_date, 'application': fields['application'],
         'instrument':fields['instrument'], 'assay':fields['assay'] , 'collection_index': fields['collection_index'], 'reads': fields['reads'],
         'adapter':fields['adapter']}
 
-    if 'adapter2' in fields:
-        d['adapter2'] = fields['adapter2']
-        template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_TWO_ADAPTERS_TEMPLATE_NAME)
+    if fields['single_read']:
+        if fields['platform'] == 'MiSeq':
+            if fields['version'] == '4':
+                template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_MISEQ_VERSION_4_ONE_INDEX_TEMPLATE_NAME)
+            else:
+                template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_MISEQ_VERSION_5_ONE_INDEX_TEMPLATE_NAME)
+        else:
+            if fields['index_well'] :
+                template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_NEXTSEQ_VERSION_5_ONE_INDEX_WITH_WELLPLATE_TEMPLATE_NAME)
+            else:
+                template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_NEXTSEQ_VERSION_5_ONE_INDEX_TEMPLATE_NAME)
     else:
-
-        template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_ONE_ADAPTER_TEMPLATE_NAME)
-
+        if fields['platform'] == 'MiSeq':
+            if fields['version'] == '4':
+                template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_MISEQ_VERSION_4_TWO_INDEX_TEMPLATE_NAME)
+            else:
+                template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_MISEQ_VERSION_5_TWO_INDEX_TEMPLATE_NAME)
+        else:
+            if fields['index_well'] :
+                template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_NEXTSEQ_VERSION_5_TWO_INDEX_WITH_WELPLATE_TEMPLATE_NAME)
+            else:
+                template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_NEXTSEQ_VERSION_5_TWO_INDEX_TEMPLATE_NAME)
     #sample_data = '\n'.join(data)
 
     with open (template_file, 'r') as filein:
         #filein = open(template_file, 'r')
         ss_template = string.Template (filein.read())
 
-
     updated_info = ss_template.substitute(d)
     fh = open(ss_file_full_path, 'w')
-
     fh.write(updated_info)
     fh.write(','.join(fields['sample_sheet_data_heading']) + '\n')
     for sample in fields['sample_sheet_data_field']:
