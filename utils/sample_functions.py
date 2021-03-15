@@ -3,6 +3,7 @@ from iSkyLIMS_core.utils.handling_samples import *
 from iSkyLIMS_core.utils.generic_functions import get_friend_list
 from ..fusioncharts.fusioncharts import FusionCharts
 from .stats_graphics import *
+from iSkyLIMS_wetlab.wetlab_config import *
 
 
 def get_codeID_for_resequencing(sample_recorded):
@@ -97,10 +98,85 @@ def analyze_reprocess_data(json_data, reprocess_id, reg_user):
         molecule_obj = update_molecule_reused(reprocess_id, molecule_code_id)
         lib_prep_obj.set_state('Reused pool')
         reused = lib_prep_obj.set_increase_reuse()
-
-
     else:
         return 'Invalid options'
+
+
+def analyze_compare_samples_form(form_data):
+    '''
+    Description:
+        The function get the selected samples and return the sample objs.
+    Input:
+        form_data               # data collected from the user
+    Functions:
+        get_sample_obj_from_id  # located at this file.
+    Return:
+        sample_objs
+    '''
+    sample_objs = []
+    cs_json_data = json.loads(form_data)
+    for row_data in cs_json_data:
+        if row_data[-1] == False:
+            continue
+        sample_objs.append(get_sample_in_project_obj_from_id(row_data[-2]))
+    return sample_objs
+
+def get_comparation_sample_information(sample_objs):
+    '''
+    Description:
+        The function get sample information to build the comparation data.
+    Input:
+        sample_objs       # samples objs
+    Functions:
+        get_sample_obj_from_id : located at iSkyLIMS_core/utils/handling_samples.
+    Return:
+        compared_data
+    '''
+    compared_data = {}
+    compared_data['table_data'] = []
+    for sample_obj in sample_objs:
+        compared_data['table_data'].append(sample_obj.get_sample_information())
+    compared_data['table_heading'] = HEADING_COMPARATION_SAMPLE_INFORMATION
+    return compared_data
+
+def get_list_of_samples_in_projects(user, wetlab_manager):
+    '''
+    Description:
+        The function gets the list of the sampleInProject an returns sample_name, project, run and sample id
+    Input:
+        user                # user to filter the samples
+        wetlab_manager      # boolean if user is wetlab_manager or not
+    Constants:
+        HEADING_COMPARATION_SAMPLE_LIST
+    Functions:
+        get_friend_list     # Located at iSkyLIMS_core.utils.generic_functions
+    Return:
+        samples_data.
+    '''
+    samples_data = {}
+    sample_objs = ''
+    if wetlab_manager:
+        if SamplesInProject.objects.all().exists():
+            sample_objs = SamplesInProject.objects.all().order_by('generated_at').reverse()
+    else:
+        user_list_ids = get_friend_list(user)
+        if SamplesInProject.objects.filter(user_id_id__in = user_list_ids).exists():
+            sample_objs = SamplesInProject.objects.filter(user_id_id__in = user_list_ids).order_by('generated_at').reverse()
+    if sample_objs != '':
+        samples_data['data'] = []
+        for sample_obj in sample_objs:
+            run_obj = sample_obj.get_run_obj()
+            if run_obj.get_state() != 'Completed':
+                continue
+            data = []
+            data.append(sample_obj.get_sample_name())
+            data.append(sample_obj.get_project_name())
+            data.append(sample_obj.get_run_name())
+            data.append(run_obj.get_run_finish_date())
+            data.append(sample_obj.get_sample_id())
+            samples_data['data'].append(data)
+        samples_data['heading'] = HEADING_COMPARATION_SAMPLE_LIST
+    return samples_data
 
 
 def get_sample_in_project_obj_from_id (sample_in_project_id):

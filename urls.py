@@ -18,6 +18,7 @@ urlpatterns = [
     path('change_project_libKit=<int:project_id>',views.change_project_libKit, name ='change_project_libKit'),
     path('change_run_libKit=<int:run_id>',views.change_run_libKit, name ='change_run_libKit'),
     path('ChangeRunName=<int:run_id>',views.change_run_name, name='change_run_name'),
+    path('compareSamples', views.compare_samples, name = 'compare_samples'),
     path('createNewRun/', views.create_new_run, name='create_new_run'),
     path('createNextSeqRun/', views.create_nextseq_run, name='create_nextseq_run'),
     path('createPool/', views.create_pool, name='create_pool'),

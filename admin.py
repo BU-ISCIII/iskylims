@@ -19,6 +19,7 @@ class LibraryPreparationAdmin (admin.ModelAdmin):
     list_display = ( 'libPrepCodeID','registerUser', 'molecule_id', 'sample_id', 'protocol_id', 'libPrepState',
             'user_sample_sheet', 'userSampleID', 'projectInSampleSheet','samplePlate',
             'sampleWell', 'i7IndexID', 'i7Index', 'i5IndexID', 'i5Index', 'numberOfReused')
+    search_fields = ("libPrepCodeID__icontains", )
 
 
 class LibParameterValueAdmin (admin.ModelAdmin):
@@ -65,7 +66,8 @@ class CollectionIndexKitAdmin(admin.ModelAdmin):
 
 class SamplesInProjectAdmin (admin.ModelAdmin):
     list_display = ['sampleName','project_id' ,'runProcess_id', 'user_id','barcodeName','pfClusters','percentInProject','yieldMb','qualityQ30']
-
+    list_filter= ('generated_at',)
+    search_fields = ("sampleName__icontains", )
 
 class StatesForLibraryPreparationAdmin (admin.ModelAdmin):
     list_display = ('libPrepState',)

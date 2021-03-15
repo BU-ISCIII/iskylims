@@ -357,6 +357,8 @@ ERROR_UNABLE_TO_SAVE_EMAIL_CONFIGURATION_SETTINGS = ['Unable to save the email c
 
 ERROR_USER_DOES_NOT_HAVE_ANY_SAMPLE = ['User does not have any sample to perform statistics']
 
+ERROR_NO_SAMPLES_SELECTED = ['They were not selected any Sample on your request']
+
 #########################  Sequencer errors #####################################
 ERROR_SEQUENCER_ALREADY_DEFINED = ['Unable to save the Sequencer, because it already exists']
 
@@ -386,3 +388,8 @@ HEADING_SINGLE_PROJECT_SAMPLES = ['Sample','Barcode','PF Clusters','Percent of P
 
 ########   Sequencer data   #########################
 EMPTY_FIELDS_IN_SEQUENCER = ['platformID', 'sequencerDescription', 'sequencerLocation', 'sequencerSerialNumber','sequencerOperationStart']
+
+
+######## Sample comparation #########################
+HEADING_COMPARATION_SAMPLE_LIST = ['Sample Nane', 'Project', 'Run Name', 'Completed', 'Select Sample']
+HEADING_COMPARATION_SAMPLE_INFORMATION = ['Sample Name', 'Barcode Name', 'pfClusters', '% in Project', 'yielddMB', 'Quality >Q30', 'Mean Quality']

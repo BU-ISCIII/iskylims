@@ -4042,6 +4042,22 @@ def pending_sample_preparations(request):
     return render(request, 'iSkyLIMS_wetlab/pendingSamplePreparations.html',{'pending': pending})
 
 @login_required
+def compare_samples(request):
+    user_is_wetlab_manager = is_wetlab_manager(request)
+    samples_data = get_list_of_samples_in_projects(request.user, user_is_wetlab_manager)
+    samples_data['user'] = request.user.username
+    if request.method == 'POST' and request.POST['action'] == 'compareSamples':
+        selected_sample_objs = analyze_compare_samples_form(request.POST['table_data'])
+        if len(selected_sample_objs) == 0:
+            error_message = ERROR_NO_SAMPLES_SELECTED
+            return render(request, 'iSkyLIMS_wetlab/compareSamples.html',{'ERROR':error_message, 'samples_data': samples_data})
+        compared_data = get_comparation_sample_information(selected_sample_objs)
+        import pdb; pdb.set_trace()
+        return render(request, 'iSkyLIMS_wetlab/compareSamples.html',{'compared_data': compared_data})
+    else:
+        return render(request, 'iSkyLIMS_wetlab/compareSamples.html',{'samples_data': samples_data})
+
+@login_required
 def user_commercial_kit_inventory(request):
     expired_kit = get_expired_lot_user_kit(request.user)
     valid_kit = get_valid_lot_user_kit(request.user)
