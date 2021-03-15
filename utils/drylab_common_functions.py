@@ -125,7 +125,7 @@ def get_children_available_services():
                 children_services.append([service.pk, service.get_service_description()])
     return children_services
 
-def get_user_sharing_lits(request_user):
+def get_user_sharing_list(request_user):
     '''
     Description:
         The function get the primary key of the that are sharing their information
@@ -133,7 +133,7 @@ def get_user_sharing_lits(request_user):
     Input:
         request_user      # user obj
     Constant:
-
+        SERVICE_MANAGER
     Return:
         sharing_list
     '''

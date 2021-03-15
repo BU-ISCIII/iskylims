@@ -501,6 +501,7 @@ def prepare_form_data_request_service_sequencing (request_user):
     	request_user      # user instance who request the service
 	Functions:
 		get_only_recorded_samples_and_dates		# located at iSkyLIMS_core.utils.handling_samples
+		get_user_sharing_list					# located at
     Return:
     	service_data_information
     '''
@@ -520,7 +521,7 @@ def prepare_form_data_request_service_sequencing (request_user):
 
     if wetlab_api_available :
 		## get samples which have sequencing data in iSkyLIMS
-        user_sharing_list = get_user_sharing_lits(request_user)
+        user_sharing_list = get_user_sharing_list(request_user)
         service_data_information['samples_data'] = get_runs_projects_samples_and_dates(user_sharing_list)
         if len(service_data_information['samples_data']) > 0:
             service_data_information['samples_heading'] = drylab_config.HEADING_SELECT_SAMPLE_IN_SERVICE
