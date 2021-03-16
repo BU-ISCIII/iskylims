@@ -4052,7 +4052,7 @@ def compare_samples(request):
             error_message = ERROR_NO_SAMPLES_SELECTED
             return render(request, 'iSkyLIMS_wetlab/compareSamples.html',{'ERROR':error_message, 'samples_data': samples_data})
         compared_data = get_comparation_sample_information(selected_sample_objs)
-        import pdb; pdb.set_trace()
+
         return render(request, 'iSkyLIMS_wetlab/compareSamples.html',{'compared_data': compared_data})
     else:
         return render(request, 'iSkyLIMS_wetlab/compareSamples.html',{'samples_data': samples_data})

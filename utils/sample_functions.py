@@ -135,7 +135,12 @@ def get_comparation_sample_information(sample_objs):
     compared_data = {}
     compared_data['table_data'] = []
     for sample_obj in sample_objs:
-        compared_data['table_data'].append(sample_obj.get_sample_information())
+        run_obj = sample_obj.get_run_obj()
+        stats_fl_obj = StatsFlSummary.objects.filter(runprocess_id = run_obj).last()
+        data = sample_obj.get_sample_information()
+        data.insert(2, sample_obj.get_run_name())
+        data.insert(3,stats_fl_obj.get_sample_number())
+        compared_data['table_data'].append(data)
     compared_data['table_heading'] = HEADING_COMPARATION_SAMPLE_INFORMATION
     return compared_data
 

@@ -185,6 +185,8 @@ class RunProcess(models.Model):
         else:
             return 0
 
+    def get_number_of_samples_in_run(self):
+        return '%s' %(self.samples)
 
     def get_sample_file (self):
         return '%s' %(self.sampleSheet)
@@ -672,6 +674,9 @@ class StatsFlSummary(models.Model):
         data.append(self.sampleNumber)
         return data
 
+    def get_sample_number(self):
+        return '%s' %(self.sampleNumber)
+
     objects = StatsFlSummaryManager ()
 
 class StatsLaneSummaryManager (models.Manager) :
@@ -859,6 +864,9 @@ class SamplesInProject (models.Model):
 
     def get_quality_sample (self):
         return '%s' %(self.qualityQ30)
+
+    def get_number_of_samples_in_run(self):
+        return '%s' %(self.runProcess_id.get_number_of_samples_in_run())
 
     objects = SamplesInProjectManager()
 

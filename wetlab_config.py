@@ -392,4 +392,4 @@ EMPTY_FIELDS_IN_SEQUENCER = ['platformID', 'sequencerDescription', 'sequencerLoc
 
 ######## Sample comparation #########################
 HEADING_COMPARATION_SAMPLE_LIST = ['Sample Nane', 'Project', 'Run Name', 'Completed', 'Select Sample']
-HEADING_COMPARATION_SAMPLE_INFORMATION = ['Sample Name', 'Barcode Name', 'pfClusters', '% in Project', 'yielddMB', 'Quality >Q30', 'Mean Quality']
+HEADING_COMPARATION_SAMPLE_INFORMATION = ['Sample Name', 'Barcode Name', 'Run Name', 'Number of samples', 'pfClusters', '% in Project', 'yielddMB', 'Quality >Q30', 'Mean Quality']
