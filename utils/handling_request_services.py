@@ -601,10 +601,10 @@ def stored_samples_for_sequencing_request_service(form_data, new_service):
 		display_service
 	'''
     requested_sample_list = []
+    heading = ['run_name', 'run_id', 'project_name', 'project_id','sample_name', 'sample_id']
 	# get the internals samples
     if 'samples_requested' in form_data:
         requested_services_table = json.loads(form_data['samples_requested'])
-        heading = ['run_name', 'run_id', 'project_name', 'project_id','sample_name', 'sample_id']
         for row in requested_services_table:
             if row[-1] :
                 data = {}
