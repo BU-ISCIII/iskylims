@@ -19,7 +19,7 @@ def analyze_input_pipelines(request):
     pipeline_data['pipelineVersion'] = request.POST['pipelineVersion']
     pipeline_json_data = json.loads(request.POST['pipeline_data'])
 
-    action_length = len(drylab_config.HEADING_PIPELINE_PARAMETERS)
+    action_length = len(drylab_config.HEADING_MANAGE_PIPELINES)
 
     additional_param_dict = {}
     for row in pipeline_json_data :
@@ -220,7 +220,7 @@ def store_parameters_pipeline(pipeline_obj, parameters):
     Return:
         None
     '''
-    import pdb; pdb.set_trace()
+
     for item, value in parameters.items():
         parameter_pipeline = {}
         parameter_pipeline['parameterPipeline'] = pipeline_obj
