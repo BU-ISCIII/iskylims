@@ -58,7 +58,7 @@ def index(request):
 @login_required
 def configuration_email(request):
     if request.user.username != 'admin':
-        return redirect('')
+        return redirect('/drylab')
     email_conf_data = get_email_data_from_file(__package__)
     if request.method == 'POST' and (request.POST['action']=='emailconfiguration'):
         email_user_field ={}
