@@ -602,31 +602,33 @@ def stored_samples_for_sequencing_request_service(form_data, new_service):
 	'''
     requested_sample_list = []
 	# get the internals samples
-    requested_services_table = json.loads(form_data['samples_requested'])
-    heading = ['run_name', 'run_id', 'project_name', 'project_id','sample_name', 'sample_id']
-    for row in requested_services_table:
-        if row[-1] :
-            data = {}
-            for i in range(len(heading)):
-                data[heading[i]] = row[i]
-            data['samplesInService'] = new_service
-            data['only_recorded'] = False
-            req_samp_obj = RequestedSamplesInServices.objects.create_request_sample(data)
-            requested_sample_list.append(data['sample_name'])
+    if 'samples_requested' in form_data:
+        requested_services_table = json.loads(form_data['samples_requested'])
+        heading = ['run_name', 'run_id', 'project_name', 'project_id','sample_name', 'sample_id']
+        for row in requested_services_table:
+            if row[-1] :
+                data = {}
+                for i in range(len(heading)):
+                    data[heading[i]] = row[i]
+                data['samplesInService'] = new_service
+                data['only_recorded'] = False
+                req_samp_obj = RequestedSamplesInServices.objects.create_request_sample(data)
+                requested_sample_list.append(data['sample_name'])
     # get external samples
-    only_recorded_samples_service = json.loads(form_data['only_recorded_samples'])
-    for row in only_recorded_samples_service:
-        if not row[-1] :
-            continue
-        data = {}
-        for item in heading:
-            data[item] = None
-        data['sample_name'] = row[0]
-        data['project_name'] = row[1]
-        data['sample_id'] = row[5]
-        data['samplesInService'] = new_service
-        data['only_recorded'] = True
-        ext_samp_obj = RequestedSamplesInServices.objects.create_request_sample(data)
-        requested_sample_list.append(data['sample_name'])
+    if 'only_recorded_samples' in form_data:
+    	only_recorded_samples_service = json.loads(form_data['only_recorded_samples'])
+    	for row in only_recorded_samples_service:
+            if not row[-1] :
+                continue
+            data = {}
+            for item in heading:
+                data[item] = None
+            data['sample_name'] = row[0]
+            data['project_name'] = row[1]
+            data['sample_id'] = row[5]
+            data['samplesInService'] = new_service
+            data['only_recorded'] = True
+            ext_samp_obj = RequestedSamplesInServices.objects.create_request_sample(data)
+            requested_sample_list.append(data['sample_name'])
 
     return requested_sample_list
