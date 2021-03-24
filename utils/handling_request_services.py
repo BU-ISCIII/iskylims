@@ -35,7 +35,8 @@ def add_files_to_service(file_ids, service_obj):
         True if service id exists
     '''
     for file_id in file_ids:
-        update_upload_file_with_service(file_id, service_obj)
+        if file_id != 'undefined':
+            update_upload_file_with_service(file_id, service_obj)
     return
 
 def check_service_id_exists(service_id):
