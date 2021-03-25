@@ -8,7 +8,7 @@ from iSkyLIMS_drylab.models import *
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from django.core.files.storage import FileSystemStorage
-
+from django.contrib.auth.models import User
 
 #from iSkyLIMS_drylab.utils.handling_request_services import *
 #from iSkyLIMS_drylab.utils.handling_resolutions import *
@@ -150,6 +150,21 @@ def get_user_sharing_list(request_user):
                 sharing_list.append(User.objects.get(username__exact = user).id)
         sharing_list.append(request_user.id)
     return sharing_list
+
+
+def get_defined_username_and_ids ():
+    '''
+    Description:
+        The function get the userid for all users defined in iSkyLIMS
+    Return:
+        userids_list
+    '''
+    userids_list = []
+    if User.objects.all().exists():
+        user_objs = User.objects.all().order_by('username')
+        for user_obj in user_objs:
+            userids_list.append([user_obj.username, user_obj.pk])
+    return userids_list
 
 
 def store_file_from_form(file , path):

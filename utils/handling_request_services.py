@@ -60,6 +60,9 @@ def create_new_save_sequencing_service_request(request):
 		for sequencing request
     Input:
     	request      # user data form
+	Functions:
+		create_service_id			# located at iSkyLIMS_drylab.utils.drylab_common_functions
+		increment_service_number	# located at iSkyLIMS_drylab.utils.drylab_common_functions
     Return:
         new_service		# recorded instance of the form
     '''
@@ -69,18 +72,28 @@ def create_new_save_sequencing_service_request(request):
     for av_service in available_service_list:
         available_service_objs.append(get_available_service_obj_from_id(av_service))
 
-    if request.POST['center'] != '':
-        service_data['serviceSeqCenter'] = request.POST['center']
+    if 'requestedForUserid' in request.POST:
+        if request.POST['requestedForUserid'] == '':
+            request_user_id = request.user.id
+        else:
+            request_user_id = User.objects.get(pk__exact = request.POST['requestedForUserid']).pk
     else:
-        service_data['serviceSeqCenter'] = drylab_config.INTERNAL_SEQUENCING_UNIT
+        request_user_id = request.user.id
+    if Profile.objects.filter(profileUserID = request.user).exists():
+        try:
+            service_data['serviceSeqCenter'] = Profile.objects.filter(profileUserID = request.user).last().profileCenter
+        except:
+            service_data['serviceSeqCenter'] = drylab_config.INTERNAL_SEQUENCING_UNIT
+
     service_data['serviceNotes'] = request.POST['description']
-    service_data['serviceRunSpecs'] = request.POST['runSpecification']
-    service_data['serviceSequencingPlatform'] = request.POST['sequencingPlatform']
-    service_data['serviceFileExt'] = request.POST['fileExtension']
-    service_data['serviceRunSpecs'] = request.POST['runSpecification']
+    #service_data['serviceRunSpecs'] = request.POST['runSpecification']
+    #service_data['serviceSequencingPlatform'] = request.POST['sequencingPlatform']
+    #service_data['serviceFileExt'] = request.POST['fileExtension']
+    #service_data['serviceRunSpecs'] = request.POST['runSpecification']
     service_data['serviceUserId'] = request.user
-    service_data['serviceRequestInt'] = increment_service_number(request.user.id)
-    service_data['serviceRequestNumber'] = create_service_id(service_data['serviceRequestInt'],request.user.id)
+    service_data['serviceRequestInt'] = increment_service_number(request_user_id)
+    service_data['serviceRequestNumber'] = create_service_id(service_data['serviceRequestInt'],request_user_id)
+
 	# Save the new service
     new_service = Service.objects.create_service(service_data)
 
@@ -494,20 +507,22 @@ def get_service_information (service_id, service_manager):
     return display_service_details
 
 
-def prepare_form_data_request_service_sequencing (request_user):
+def prepare_form_data_request_service_sequencing (request):
     '''
     Description:
     	The function get the information to display in the request sequencing service form
     Input:
-    	request_user      # user instance who request the service
+    	request      # user instance who request the service
 	Functions:
 		get_only_recorded_samples_and_dates		# located at iSkyLIMS_core.utils.handling_samples
-		get_user_sharing_list					# located at
+		get_user_sharing_list					# located at iSkyLIMS_drylab.utils.drylab_common_functions
+		get_defined_username_and_ids   			# located at iSkyLIMS_drylab.utils.drylab_common_functions
     Return:
     	service_data_information
     '''
     service_data_information = {}
 	# get requestiong sequencing data
+    '''
     if SequencingPlatform.objects.all().exists():
         service_data_information['platform'] = []
         platform_objs = SequencingPlatform.objects.all()
@@ -518,11 +533,15 @@ def prepare_form_data_request_service_sequencing (request_user):
         file_ext_objs = FileExt.objects.all()
         for file_ext_obj in file_ext_objs:
             service_data_information['file_extension'].append([file_ext_obj.get_file_extension_id(),file_ext_obj.get_file_extension()])
+    '''
+
+    if is_service_manager(request):
+        service_data_information['users'] = get_defined_username_and_ids()
     service_data_information['nodes'] = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
 
     if wetlab_api_available :
 		## get samples which have sequencing data in iSkyLIMS
-        user_sharing_list = get_user_sharing_list(request_user)
+        user_sharing_list = get_user_sharing_list(request.user)
         service_data_information['samples_data'] = get_runs_projects_samples_and_dates(user_sharing_list)
         if len(service_data_information['samples_data']) > 0:
             service_data_information['samples_heading'] = drylab_config.HEADING_SELECT_SAMPLE_IN_SERVICE

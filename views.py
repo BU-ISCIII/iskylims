@@ -25,8 +25,6 @@ from iSkyLIMS_drylab.utils.handling_resolutions import *
 from iSkyLIMS_drylab.utils.handling_deliveries import *
 #from iSkyLIMS_drylab.utils.handling_forms import *
 from iSkyLIMS_drylab.utils.handling_multiple_files import *
-from iSkyLIMS_drylab.utils.configuration_functions import *
-
 
 @login_required
 def index(request):
@@ -83,13 +81,13 @@ def request_sequencing_service(request):
 			response['Content-Disposition'] = 'inline; filename=files.json'
 			return response
 		else:
-			service_data_information = prepare_form_data_request_service_sequencing(request.user)
+			service_data_information = prepare_form_data_request_service_sequencing(request)
 			return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'service_data_information':service_data_information})
 
 	if request.method == 'POST' and request.POST['subAction'] == 'createservice':
 		# check that at some services have been requested
 		if len(request.POST.getlist('RequestedServices')) == 0 :
-			service_data_information = prepare_form_data_request_service_sequencing(request.user)
+			service_data_information = prepare_form_data_request_service_sequencing(request)
 			error_message = drylab_config.ERROR_NO_SERVICES_ARE_SELECTED
 			return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'service_data_information':service_data_information,
 									'error_message':error_message})
@@ -117,7 +115,7 @@ def request_sequencing_service(request):
 
 		return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'confirmation_result':confirmation_result})
 	else:
-		service_data_information = prepare_form_data_request_service_sequencing(request.user)
+		service_data_information = prepare_form_data_request_service_sequencing(request)
 		return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'service_data_information':service_data_information})
 
 

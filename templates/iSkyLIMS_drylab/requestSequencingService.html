@@ -99,45 +99,29 @@
                     <!-- <form id="fileupload" method="post" action="/drylab/multipleFiles"  name="fileupload"  enctype="multipart/form-data" class="form-horizontal well"> -->
                         {% csrf_token %}
                         <input type="hidden" name="subAction" value="createservice"/>
+
                         <div class="row row-space-2 margin-b-4">
                             <div class="col-sm-12">
-                                <div class="panel panel-default">
-                                    <div class="panel-heading"><h3 style="text-align:center">Sequencing Data specifications.</h3></div>
-                                    <div class="panel-body">
-                                        <div class="form-group">
-                                            <div class="col-sm-6">
-                                                <label class="col-sm-6 control-label" for="center" >Sequencing center</label>
-                                                <div class="col-sm-10"><input class="form-control" type="text" id="center"  name="center" size="80"><br></div>
-                                            </div>  <!-- end col-sm-6   -->
-                                            <div class="col-sm-6">
-                                                <label class="col-sm-6 control-label" for="runSpecification" >Run Specification</label>
-                                                <div class="col-sm-10"><input class="form-control" type="text" id="runSpecification"  name="runSpecification" size="80"><br></div>
-                                            </div>  <!-- end col-sm-6   -->
-                                            <div class="col-sm-6">
-                                                <label class="col-sm-6 control-label" for="sequencingPlatform" >Sequencing Platform</label>
-                                                <div class="col-sm-10">
-                                                    <select class="form-control" name="sequencingPlatform" id="sequencingPlatform">
-                                                        <option value="">Choose a value</option>
-                                                        {% for id, name in service_data_information.platform %}
-                                                            <option value="{{id}}">{{name}}</option>
-                                                        {% endfor %}
-                                                    </select>
-                                                </div> <!--  end of select -->
-                                            </div>  <!-- end col-sm-6   -->
-                                            <div class="col-sm-6">
-                                                <label class="col-sm-6 control-label" for="fileExtension" >File extension</label>
-                                                <div class="col-sm-10">
-                                                    <select class="form-control" name="fileExtension" id="fileExtension">
-                                                        <option value="">Choose a value</option>
-                                                        {% for id, value in service_data_information.file_extension %}
-                                                            <option value="{{id}}">{{value}}</option>
-                                                        {% endfor %}
-                                                    </select>
-                                                </div> <!--  end of select -->
-                                            </div>  <!-- end col-sm-6-group   -->
-                                        </div>  <!-- end from-group   -->
-                                    </div> <!--  end of panel body -->
-                                </div> <!--  end of panel  -->
+                                {% if service_data_information.users %}
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading"><h3 style="text-align:center">User assigned to service </h3></div>
+                                        <div class="panel-body">
+                                            <div class="form-group">
+                                                <div class="col-sm-6">
+                                                    <label class="col-sm-6 control-label" for="fileExtension" >Select the userid for this service</label>
+                                                    <div class="col-sm-4">
+                                                        <select class="form-control" name="requestedForUserid" id="requestedForUserid">
+                                                            <option value="">Choose a value</option>
+                                                            {% for value , id  in service_data_information.users %}
+                                                                <option value="{{id}}">{{value}}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div> <!--  end of select -->
+                                                </div>  <!-- end col-sm-6-group   -->
+                                            </div>  <!-- end from-group   -->
+                                        </div> <!--  end of panel body -->
+                                    </div> <!--  end of panel  -->
+                                {% endif %}
                                 <br>
                                 <div class="tab">
                                     <button type="button" class="tablinks" onclick="summaryBin(event, 'sequencingSamples')"  id="defaultOpen">Samples in iSkyLIMS with Sequencing data</button>

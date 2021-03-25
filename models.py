@@ -184,16 +184,11 @@ class ParameterPipeline (models.Model):
 
 class ServiceManager (models.Manager):
 	def create_service(self, data):
-		if data['serviceFileExt'] == '':
-			serviceFileExt = None
-		else:
-			serviceFileExt = FileExt.objects.get(pk__exact = data['serviceFileExt'])
-		if data['serviceSequencingPlatform'] == '':
-			serviceSequencingPlatform = None
-		else:
-			serviceSequencingPlatform = SequencingPlatform.objects.get(pk__exact = data['serviceSequencingPlatform'])
+		serviceFileExt = None
+		serviceSequencingPlatform = None
+		serviceRunSpecs = ''
 		new_service = self.create(serviceUserId = data['serviceUserId'], serviceFileExt = serviceFileExt,
-				serviceSequencingPlatform = serviceSequencingPlatform, serviceRunSpecs = data['serviceRunSpecs'],
+				serviceSequencingPlatform = serviceSequencingPlatform, serviceRunSpecs = serviceRunSpecs,
 				serviceSeqCenter= data['serviceSeqCenter'], serviceRequestNumber = data['serviceRequestNumber'],
 				serviceRequestInt = data['serviceRequestInt'], serviceStatus= 'Recorded', serviceNotes = data['serviceNotes'])
 		return new_service
@@ -372,7 +367,6 @@ class Service(models.Model):
 		return self
 
 	objects = ServiceManager()
-
 
 class RequestedSamplesInServicesManager (models.Manager):
 	def create_request_sample (self, data):
