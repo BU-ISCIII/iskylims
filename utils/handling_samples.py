@@ -779,6 +779,7 @@ def get_all_sample_information (sample_id , massive):
                 for p_name in parameter_names:
                     molecule_param_heading.append(p_name.get_parameter_name())
                     if MoleculeParameterValue.objects.filter(molecule_id = molecule).exists():
+                        import pdb; pdb.set_trace()
                         mol_param_value.append(MoleculeParameterValue.objects.get(molecule_id = molecule, moleculeParameter_id = p_name).get_param_value())
                 #parameter_heading_values.append([molecule_param_heading, mol_param_value ])
                 molecule_definition_data.append(molecule_param_heading)
