@@ -168,11 +168,11 @@ MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_PAIRED_END = [('Sample_ID','userSample
 
 MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ_VERSION_5 = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
             ('Sample_Well','sampleWell'),('I7_Index_ID','i7IndexID'), ('index','i7Index'),
-            ('Manifest', 'manifest'),('GenomeFolder', ' genomeFolder') , ('Sample_Project','projectInSampleSheet'),('Description', 'userInSampleSheet')]
+            ('GenomeFolder', ' genomeFolder') , ('Sample_Project','projectInSampleSheet'),('Description', 'userInSampleSheet')]
 
 MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END_VERSION_5 = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
             ('Sample_Well','sampleWell'),('I7_Index_ID','i7IndexID'), ('index','i7Index'),('I5_Index_ID','i5IndexID'),('index2','i5Index'),
-            ('Manifest', 'manifest'),('GenomeFolder', ' genomeFolder') , ('Sample_Project','projectInSampleSheet'),('Description', 'userInSampleSheet')]
+            ('GenomeFolder', ' genomeFolder') , ('Sample_Project','projectInSampleSheet'),('Description', 'userInSampleSheet')]
 
 MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ_VERSION_4 = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
             ('Sample_Well','sampleWell'),('I7_Index_ID','i7IndexID'), ('index','i7Index'),
