@@ -457,7 +457,7 @@ def validate_sample_sheet_data (input_data ):
         if input_data['index_adapters'] == '' and not 'instrument' in input_data:
             error['ERROR'] = ERROR_SAMPLE_SHEET_BOTH_INSTRUMENT_AND_INDEX_NOT_INCLUDED
             error['detail_error'] = 'no_index_no_instrument'
-        elif  input_data['index_adapter'] == '':
+        elif  input_data['index_adapters'] == '':
             error['ERROR'] = ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_COLLECTION_INDEX
             error['detail_error'] = 'no_index'
         elif not 'instrument' in input_data :
@@ -465,9 +465,9 @@ def validate_sample_sheet_data (input_data ):
             error['detail_error'] = 'no_instrument'
         else:
             # check if collection index kit is defined
-            if not check_collection_index_exists (input_data['index_adapter']):
+            if not check_collection_index_exists (input_data['index_adapters']):
                 error_message = ERROR_COLLECTION_INDEX_KIT_NOT_DEFINED.copy()
-                error_message.insert(1, input_data['index_adapter'])
+                error_message.insert(1, input_data['index_adapters'])
                 error['ERROR'] = error_message
         if 'ERROR' in error :
             delete_stored_file(input_data['full_path_file'])
