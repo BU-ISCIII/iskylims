@@ -43,7 +43,7 @@ def add_new_contacts (request):
     apps_installed['apps_names'] = get_installed_apps ()
 
     if request.method == 'POST' and request.POST['action'] == 'addNewContacts':
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         pass
 
     return render(request, "iSkyLIMS_core/addNewContacts.html",{'apps_installed':apps_installed})
