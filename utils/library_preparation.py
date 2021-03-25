@@ -454,14 +454,13 @@ def validate_sample_sheet_data (input_data ):
     # check for older IEM versions which do no have index adapter/ Instrument type in sample sheet
     # check for additional header fields in IEM version 5
     if input_data['iem_version'] == '5':
-        import pdb; pdb.set_trace()
-        if input_data['index_adapters'] == '' and not 'instrument' in input_data:
+        if input_data['index_adapters'] == '' and not 'instrument type' in input_data:
             error['ERROR'] = ERROR_SAMPLE_SHEET_BOTH_INSTRUMENT_AND_INDEX_NOT_INCLUDED
             error['detail_error'] = 'no_index_no_instrument'
         elif  input_data['index_adapters'] == '':
             error['ERROR'] = ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_COLLECTION_INDEX
             error['detail_error'] = 'no_index'
-        elif not 'instrument' in input_data :
+        elif not 'instrument type' in input_data :
             error['ERROR'] = ERROR_SAMPLE_SHEET_BOTH_INSTRUMENT_AND_INDEX_NOT_INCLUDED
             error['detail_error'] = 'no_instrument'
         else:
