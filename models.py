@@ -1141,7 +1141,12 @@ class MoleculePreparation (models.Model):
         self.save()
 
     def set_user_lot_kit (self, lot_kit_name):
-        self.userLotKit_id = UserLotCommercialKits.objects.get(chipLot__exact = lot_kit_name,)
+        self.userLotKit_id = UserLotCommercialKits.objects.get(chipLot__exact = lot_kit_name)
+        self.save()
+
+    def set_user_lot_kit_obj(self, lot_kit_obj):
+        self.userLotKit_id = lot_kit_obj
+        self.save()
 
     objects = MoleculePreparationManager()
 
