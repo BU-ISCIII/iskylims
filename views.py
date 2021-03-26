@@ -3316,7 +3316,6 @@ def display_sample (request, sample_id):
         sample_information.update(get_molecule_lot_kit_in_sample(sample_id))
         sample_information.update(get_all_library_information(sample_id))
         sample_information.update(get_additional_kits_used_in_sample(sample_id))
-        #import pdb; pdb.set_trace()
     else:
         sample_information = {}
     sample_obj =get_sample_obj_from_id(sample_id)

@@ -1196,8 +1196,8 @@ class LibraryPreparation (models.Model):
     pools = models.ManyToManyField(LibraryPool, blank = True)
 
     libPrepCodeID = models.CharField(max_length=255, null = True, blank = True)
-    userSampleID = models.CharField(max_length =20 , null = True, blank = True)
-    projectInSampleSheet = models.CharField(max_length =50, null = True, blank = True)
+    userSampleID = models.CharField(max_length =100 , null = True, blank = True)
+    projectInSampleSheet = models.CharField(max_length =80, null = True, blank = True)
     samplePlate = models.CharField(max_length =50, null = True, blank = True)
     sampleWell = models.CharField(max_length =20, null = True, blank = True)
     indexPlateWell = models.CharField(max_length =20, null = True, blank = True)
@@ -1206,7 +1206,7 @@ class LibraryPreparation (models.Model):
     i5IndexID = models.CharField(max_length =16, null = True, blank = True)
     i5Index = models.CharField(max_length =16, null = True, blank = True)
     ## Miseq fields
-    genomeFolder = models.CharField(max_length =80, null = True, blank = True)
+    genomeFolder = models.CharField(max_length =180, null = True, blank = True)
     manifest = models.CharField(max_length =80, null = True, blank = True)
     ##### End Miseq fields
     #singlePairedEnd  = models.CharField(max_length =20, null = True, blank = True)
