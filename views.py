@@ -4008,9 +4008,7 @@ def create_new_run (request):
         #import pdb; pdb.set_trace()
         sample_sheet_name = store_confirmation_sample_sheet(run_data)
         # update the sample state for each one in the run
-        #import pdb; pdb.set_trace()
         pools_obj = LibraryPool.objects.filter(runProcess_id = run_obj)
-        # save sample sheet on the tmp folder
 
         #import pdb; pdb.set_trace()
         for pool_obj in pools_obj:
