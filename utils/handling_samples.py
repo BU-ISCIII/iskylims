@@ -131,7 +131,6 @@ def add_molecule_protocol_parameters(form_data):
         right_id = molecule_ids[molecule_code_ids.index(molecule_json_data[row_index][0])]
 
         molecule_obj = get_molecule_obj_from_id(right_id)
-        import pdb; pdb.set_trace()
         molecule_obj.set_user_lot_kit_obj(user_lot_commercial_kit_obj)
         molecule_obj.set_state('Completed')
         molecule_updated_list.append(molecule_obj.get_molecule_code_id())

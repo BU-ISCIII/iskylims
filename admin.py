@@ -13,6 +13,8 @@ class MoleculeTypeAdmin( admin.ModelAdmin):
 class MoleculePreparationAdmin(admin.ModelAdmin):
     list_display = ('moleculeCodeId', 'state','sample', 'moleculeType', 'extractionType', 'protocolUsed',
                     'moleculeExtractionDate', 'moleculeUsedFor','numberOfReused')
+    list_filter = ('generated_at',)
+    search_fields = ('sample__startswith',)
 
 class MoleculeUsedForAdmin(admin.ModelAdmin):
     list_display = ['usedFor' ,'apps_name', 'massiveUse']
