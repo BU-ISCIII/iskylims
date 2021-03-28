@@ -120,15 +120,15 @@ COLLECTION_INDEX_HEADING = ['[Version]','[Name]', '[PlateExtension]','[Settings]
 MIGRATION_DIRECTORY_FILES = 'wetlab/BaseSpaceMigrationFiles/'
 
 ##############################################################
-SAMPLE_SHEET_MISEQ_VERSION_4_TWO_INDEX_TEMPLATE_NAME = 'miseq_version_5_sample_sheet_two_adapters_template.csv'
-SAMPLE_SHEET_MISEQ_VERSION_5_TWO_INDEX_TEMPLATE_NAME = 'miseq_version_5_sample_sheet_two_adapters_template.csv'
-SAMPLE_SHEET_NEXTSEQ_VERSION_5_TWO_INDEX_WITH_WELPLATE_TEMPLATE_NAME ='nextseq_version_5_sample_sheet_two_adapters_with_wellplate_template.csv'
-SAMPLE_SHEET_NEXTSEQ_VERSION_5_TWO_INDEX_TEMPLATE_NAME  = 'nextseq_version_5_sample_sheet_two_adapters_template.csv'
+#SAMPLE_SHEET_MISEQ_VERSION_4_TWO_INDEX_TEMPLATE_NAME = 'miseq_version_5_sample_sheet_two_adapters_template.csv'
+#SAMPLE_SHEET_MISEQ_VERSION_5_TWO_INDEX_TEMPLATE_NAME = 'miseq_version_5_sample_sheet_two_adapters_template.csv'
+#SAMPLE_SHEET_NEXTSEQ_VERSION_5_TWO_INDEX_WITH_WELPLATE_TEMPLATE_NAME ='nextseq_version_5_sample_sheet_two_adapters_with_wellplate_template.csv'
+#SAMPLE_SHEET_NEXTSEQ_VERSION_5_TWO_INDEX_TEMPLATE_NAME  = 'nextseq_version_5_sample_sheet_two_adapters_template.csv'
 
-SAMPLE_SHEET_MISEQ_VERSION_4_ONE_ADAPTER_TEMPLATE_NAME = 'miseq_version_4_sample_sheet_one_adapters_template.csv'
-SAMPLE_SHEET_MISEQ_VERSION_5_ONE_INDEX_TEMPLATE_NAME = 'miseq_version_5_sample_sheet_one_adapters_template.csv'
-SAMPLE_SHEET_NEXTSEQ_VERSION_5_ONE_INDEX_WITH_WELPLATE_TEMPLATE_NAME ='nextseq_version_5_sample_sheet_one_index_with_wellplate_template.csv'
-SAMPLE_SHEET_NEXTSEQ_VERSION_5_ONE_INDEX_TEMPLATE_NAME  = 'nextseq_version_5_sample_sheet_one_adapters_template.csv'
+SAMPLE_SHEET_MISEQ_VERSION_4_TEMPLATE_NAME = 'miseq_version_4_sample_sheet_one_adapters_template.csv'
+SAMPLE_SHEET_MISEQ_VERSION_5_TEMPLATE_NAME = 'miseq_version_5_sample_sheet_one_adapters_template.csv'
+#SAMPLE_SHEET_NEXTSEQ_VERSION_5_WITH_WELLPLATE_TEMPLATE_NAME ='nextseq_version_5_sample_sheet_one_index_with_wellplate_template.csv'
+SAMPLE_SHEET_NEXTSEQ_VERSION_5_TEMPLATE_NAME  = 'nextseq_version_5_sample_sheet_template.csv'
 
 ##### CONFIGURATION FOR ADDING KITS FOR LIBRARY PREPARATION ########
 HEADING_ADDING_COMMERCIAL_KITS_TO_PROTOCOL = ['Given name ', 'Order', 'Used', 'Commercial Kit Name', 'Description']

@@ -440,11 +440,6 @@ def store_confirmation_sample_sheet(fields):
         The function store the sample sheet for the run, using the template and returning the file name including the relative path
     Input:
         fields              # dictionary having all information for creating the sample sheet
-    Functions:
-        get_pool_objs_from_ids       # located at this file
-        get_pool_adapters            # located at this file
-        get_single_paired            # located at this file
-        get_pool_duplicated_index   # located at this file
     Constants:
         SAMPLE_SHEET
         RUN_TEMP_DIRECTORY
@@ -470,7 +465,8 @@ def store_confirmation_sample_sheet(fields):
     d = {'investigator':fields['investigator'],'exp_name': fields['exp_name'] , 'date': today_date, 'application': fields['application'],
         'instrument':fields['instrument'], 'assay':fields['assay'] , 'collection_index': fields['collection_index'], 'reads': fields['reads'],
         'adapter':fields['adapter']}
-    
+    import pdb; pdb.set_trace()
+    '''
     if fields['single_read']:
         if fields['platform'] == 'MiSeq':
             if fields['version'] == '4':
@@ -479,9 +475,9 @@ def store_confirmation_sample_sheet(fields):
                 template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_MISEQ_VERSION_5_ONE_INDEX_TEMPLATE_NAME)
         else:
             if fields['index_well'] :
-                template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_NEXTSEQ_VERSION_5_ONE_INDEX_WITH_WELLPLATE_TEMPLATE_NAME)
+                template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_NEXTSEQ_VERSION_5_WITH_WELLPLATE_TEMPLATE_NAME)
             else:
-                template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_NEXTSEQ_VERSION_5_ONE_INDEX_TEMPLATE_NAME)
+                template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_NEXTSEQ_VERSION_5_TEMPLATE_NAME)
     else:
         if fields['platform'] == 'MiSeq':
             if fields['version'] == '4':
@@ -494,7 +490,14 @@ def store_confirmation_sample_sheet(fields):
             else:
                 template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_NEXTSEQ_VERSION_5_TWO_INDEX_TEMPLATE_NAME)
     #sample_data = '\n'.join(data)
-
+    '''
+    if fields['platform'] == 'MiSeq':
+        if fields['version'] == '4':
+            template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_MISEQ_VERSION_4_TEMPLATE_NAME)
+        else:
+            template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_MISEQ_VERSION_5_TEMPLATE_NAME)
+    else:
+        template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,SAMPLE_SHEET_NEXTSEQ_VERSION_5_TEMPLATE_NAME)
     with open (template_file, 'r') as filein:
         #filein = open(template_file, 'r')
         ss_template = string.Template (filein.read())
