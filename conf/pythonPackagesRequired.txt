@@ -1,12 +1,11 @@
 ## 30/05/2018
 ## encoding (1.0.0) --deprecated
-## mod-wsgi (4.5.17): package to be installed manually if Apache needed later
 
 asn1crypto
 bcrypt
 biopython
 cryptography
-Django==2.0
+Django==3.1
 django-crispy-forms
 django-crontab
 django-js-asset
@@ -14,6 +13,7 @@ django-mptt
 django-mptt-admin
 django-cleanup
 interop
+mod_wsgi
 mysqlclient==2.0.1
 paramiko
 pysmb
