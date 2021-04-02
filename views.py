@@ -486,7 +486,7 @@ def display_sample_project(request,sample_project_id):
     if 'ERROR' in samples_project_data :
         error_message = ERROR_SAMPLE_PROJECT_DOES_NOT_EXISTS
         return render (request,'iSkyLIMS_clinic/error_page.html', {'content': error_message })
-    import pdb; pdb.set_trace()
+    
     return render(request, 'iSkyLIMS_clinic/displaySampleProject.html',{'samples_project_data': samples_project_data})
 
 def pending_to_update(request):
