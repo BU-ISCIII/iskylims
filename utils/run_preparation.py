@@ -501,7 +501,7 @@ def store_confirmation_sample_sheet(fields):
     with open (template_file, 'r') as filein:
         #filein = open(template_file, 'r')
         ss_template = string.Template (filein.read())
-
+ 
     updated_info = ss_template.substitute(d)
     fh = open(ss_file_full_path, 'w')
     fh.write(updated_info)
