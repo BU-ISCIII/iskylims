@@ -106,9 +106,9 @@ def get_runs_projects_samples_and_dates(user_list_ids):
         sample_objs = SamplesInProject.objects.filter(user_id_id__in = user_list_ids).order_by('generated_at').reverse()
         import pdb; pdb.set_trace()
         for sample_obj in sample_objs:
-            run_obj = sample_obj.get_run_obj()
-            if run_obj.get_state() != 'Completed':
-                continue
+            #run_obj = sample_obj.get_run_obj()
+            #if run_obj.get_state() != 'Completed':
+            #    continue
             data = []
             data.append(sample_obj.get_run_name())
             data.append(sample_obj.get_run_id())
