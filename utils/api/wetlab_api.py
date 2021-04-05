@@ -108,19 +108,19 @@ def get_runs_projects_samples_and_dates(user_list_ids):
             run_obj = sample_obj.get_run_obj()
             #if run_obj.get_state() != 'Completed':
             #    continue
-            data = []
-            data.append('run')
-            data.append('3')
-            data.append('project')
-            data.append('56')
+            data = ['1','2','3','4','5','6','7']
+            #data.append('run')
+            #data.append('3')
+            #data.append('project')
+            #data.append('56')
             #data.append(sample_obj.get_run_name())
             #data.append(sample_obj.get_run_id())
             #data.append(sample_obj.get_project_name())
             #data.append(sample_obj.get_project_id())
-            data.append(sample_obj.get_sample_name())
-            data.append(sample_obj.get_sample_id())
+            #data.append(sample_obj.get_sample_name())
+            #data.append(sample_obj.get_sample_id())
             #data.append(run_obj.get_run_finish_date())
-            data.append('fecha')
+            #data.append('fecha')
             samples_data.append(data)
 
 
