@@ -102,13 +102,28 @@ def get_runs_projects_samples_and_dates(user_list_ids):
     samples_data = []
 
     if SamplesInProject.objects.filter(user_id_id__in = user_list_ids).exists():
-        sample_objs = SamplesInProject.objects.filter(user_id_id__in = user_list_ids).order_by('generated_at').reverse()
         import pdb; pdb.set_trace()
-        for sample_obj in sample_objs:
-            run_obj = sample_obj.get_run_obj()
+        #sample_objs = SamplesInProject.objects.filter(user_id_id__in = user_list_ids).order_by('generated_at').reverse().values_list('runProcess_id', 'runProcess_id', 'project_id','project_id','runProcess_id','sampleName','pk')
+        sample_objs = SamplesInProject.objects.filter(user_id_id__in = user_list_ids).order_by('generated_at').reverse()
+        samples_data = [[sample_obj.get_run_name(),sample_obj.get_project_name(), sample_obj.get_project_name(),sample_obj.get_project_id()]  for sample_obj in sample_objs]
+        #samples_data = list(sample_objs)
+        #import pdb; pdb.set_trace()
+        #for pipo in SamplesInProject.objects.raw('select * from iSkyLIMS_wetlab_samplesinproject'):
+        #    print (pipo.project_id.projectName)
+        import pdb; pdb.set_trace()
+        query_mine =  SamplesInProject.objects.raw('select  iSkyLIMS_wetlab_samplesinproject.id , iSkyLIMS_wetlab_samplesinproject.sampleName , iSkyLIMS_wetlab_projects.projectName from iSkyLIMS_wetlab_samplesinproject inner join iSkyLIMS_wetlab_projects ON iSkyLIMS_wetlab_samplesinproject.project_id_id = iSkyLIMS_wetlab_projects.id')
+        from django.db import connection
+        cursor = connection.cursor()
+        cursor.execute('select  iSkyLIMS_wetlab_samplesinproject.id , iSkyLIMS_wetlab_samplesinproject.sampleName , iSkyLIMS_wetlab_projects.projectName from iSkyLIMS_wetlab_samplesinproject inner join iSkyLIMS_wetlab_projects ON iSkyLIMS_wetlab_samplesinproject.project_id_id = iSkyLIMS_wetlab_projects.id')
+        samples_data = cursor.fetchall()
+        import pdb; pdb.set_trace()
+
+        #data = ['1','2','3','4','5','6','7']
+        #samples_data = [data for sample_obj in sample_objs]
+            #run_obj = sample_obj.get_run_obj()
             #if run_obj.get_state() != 'Completed':
             #    continue
-            data = ['1','2','3','4','5','6','7']
+            #data = ['1','2','3','4','5','6','7']
             #data.append('run')
             #data.append('3')
             #data.append('project')
@@ -121,8 +136,8 @@ def get_runs_projects_samples_and_dates(user_list_ids):
             #data.append(sample_obj.get_sample_id())
             #data.append(run_obj.get_run_finish_date())
             #data.append('fecha')
-            samples_data.append(data)
+            #samples_data.append(data)
 
 
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
     return samples_data
