@@ -105,16 +105,18 @@ def get_runs_projects_samples_and_dates(user_list_ids):
         import pdb; pdb.set_trace()
         #sample_objs = SamplesInProject.objects.filter(user_id_id__in = user_list_ids).order_by('generated_at').reverse().values_list('runProcess_id', 'runProcess_id', 'project_id','project_id','runProcess_id','sampleName','pk')
         sample_objs = SamplesInProject.objects.filter(user_id_id__in = user_list_ids).order_by('generated_at').reverse()
-        samples_data = [[sample_obj.get_run_name(),sample_obj.get_project_name(), sample_obj.get_project_name(),sample_obj.get_project_id()]  for sample_obj in sample_objs]
+        #samples_data = [[sample_obj.get_run_name(),sample_obj.get_project_name(), sample_obj.get_project_name(),sample_obj.get_project_id()]  for sample_obj in sample_objs]
         #samples_data = list(sample_objs)
         #import pdb; pdb.set_trace()
         #for pipo in SamplesInProject.objects.raw('select * from iSkyLIMS_wetlab_samplesinproject'):
         #    print (pipo.project_id.projectName)
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         query_mine =  SamplesInProject.objects.raw('select  iSkyLIMS_wetlab_samplesinproject.id , iSkyLIMS_wetlab_samplesinproject.sampleName , iSkyLIMS_wetlab_projects.projectName from iSkyLIMS_wetlab_samplesinproject inner join iSkyLIMS_wetlab_projects ON iSkyLIMS_wetlab_samplesinproject.project_id_id = iSkyLIMS_wetlab_projects.id')
         from django.db import connection
         cursor = connection.cursor()
-        cursor.execute('select  iSkyLIMS_wetlab_samplesinproject.id , iSkyLIMS_wetlab_samplesinproject.sampleName , iSkyLIMS_wetlab_projects.projectName from iSkyLIMS_wetlab_samplesinproject inner join iSkyLIMS_wetlab_projects ON iSkyLIMS_wetlab_samplesinproject.project_id_id = iSkyLIMS_wetlab_projects.id')
+        #cursor.execute('select  iSkyLIMS_wetlab_samplesinproject.id , iSkyLIMS_wetlab_runprocess.runName ,iSkyLIMS_wetlab_samplesinproject.sampleName , iSkyLIMS_wetlab_projects.projectName from iSkyLIMS_wetlab_samplesinproject inner join iSkyLIMS_wetlab_projects ON iSkyLIMS_wetlab_samplesinproject.project_id_id = iSkyLIMS_wetlab_projects.id inner join iSkyLIMS_wetlab_projects ON iSkyLIMS_wetlab_samplesinproject.runProcess_id = iSkyLIMS_wetlab_runprocess.id')
+        cursor.execute('select   iSkyLIMS_wetlab_runprocess.runName, iSkyLIMS_wetlab_runprocess.id ,iSkyLIMS_wetlab_projects.projectName , iSkyLIMS_wetlab_projects.id ,  iSkyLIMS_wetlab_samplesinproject.sampleName, iSkyLIMS_wetlab_samplesinproject.id from iSkyLIMS_wetlab_samplesinproject inner join iSkyLIMS_wetlab_projects ON iSkyLIMS_wetlab_samplesinproject.project_id_id = iSkyLIMS_wetlab_projects.id inner join iSkyLIMS_wetlab_runprocess ON iSkyLIMS_wetlab_samplesinproject.runProcess_id_id = iSkyLIMS_wetlab_runprocess.id')
+
         samples_data = cursor.fetchall()
         import pdb; pdb.set_trace()
 
