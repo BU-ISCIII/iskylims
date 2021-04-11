@@ -102,7 +102,6 @@ def get_runs_projects_samples_and_dates(user_list_ids):
     samples_data = []
 
     if SamplesInProject.objects.filter(user_id_id__in = user_list_ids).exists():
-        import pdb; pdb.set_trace()
         #sample_objs = SamplesInProject.objects.filter(user_id_id__in = user_list_ids).order_by('generated_at').reverse().values_list('runProcess_id', 'runProcess_id', 'project_id','project_id','runProcess_id','sampleName','pk')
         sample_objs = SamplesInProject.objects.filter(user_id_id__in = user_list_ids).order_by('generated_at').reverse()
         #samples_data = [[sample_obj.get_run_name(),sample_obj.get_project_name(), sample_obj.get_project_name(),sample_obj.get_project_id()]  for sample_obj in sample_objs]
@@ -119,10 +118,17 @@ def get_runs_projects_samples_and_dates(user_list_ids):
 
         #cursor.execute('select  iSkyLIMS_wetlab_samplesinproject.id , iSkyLIMS_wetlab_runprocess.runName ,iSkyLIMS_wetlab_samplesinproject.sampleName , iSkyLIMS_wetlab_projects.projectName from iSkyLIMS_wetlab_samplesinproject inner join iSkyLIMS_wetlab_projects ON iSkyLIMS_wetlab_samplesinproject.project_id_id = iSkyLIMS_wetlab_projects.id inner join iSkyLIMS_wetlab_projects ON iSkyLIMS_wetlab_samplesinproject.runProcess_id = iSkyLIMS_wetlab_runprocess.id')
         #cursor.execute('select   iSkyLIMS_wetlab_runprocess.runName, iSkyLIMS_wetlab_runprocess.id ,iSkyLIMS_wetlab_projects.projectName , iSkyLIMS_wetlab_projects.id ,  iSkyLIMS_wetlab_samplesinproject.sampleName, iSkyLIMS_wetlab_samplesinproject.id from iSkyLIMS_wetlab_samplesinproject inner join iSkyLIMS_wetlab_projects ON iSkyLIMS_wetlab_samplesinproject.project_id_id = iSkyLIMS_wetlab_projects.id inner join iSkyLIMS_wetlab_runprocess ON iSkyLIMS_wetlab_samplesinproject.runProcess_id_id = iSkyLIMS_wetlab_runprocess.id')
-        cursor.execute("select   iSkyLIMS_wetlab_runprocess.runName, iSkyLIMS_wetlab_runprocess.id ,iSkyLIMS_wetlab_projects.projectName , iSkyLIMS_wetlab_projects.id ,  iSkyLIMS_wetlab_samplesinproject.sampleName, iSkyLIMS_wetlab_samplesinproject.id, DATE_FORMAT(iSkyLIMS_wetlab_runprocess.run_completed_date,'%d/%m/%Y') AS niceDate from iSkyLIMS_wetlab_samplesinproject inner join iSkyLIMS_wetlab_projects ON iSkyLIMS_wetlab_samplesinproject.project_id_id = iSkyLIMS_wetlab_projects.id inner join iSkyLIMS_wetlab_runprocess ON iSkyLIMS_wetlab_samplesinproject.runProcess_id_id = iSkyLIMS_wetlab_runprocess.id WHERE iSkyLIMS_wetlab_samplesinproject.user_id_id IN (1,2,3,7,8,9,16)")
+        user_list_str = [str(id_str) for id_str in user_list_ids]
+        user_list = '( ' + ','.join(user_list_str) + ' )'
+        fetch_fields = " iSkyLIMS_wetlab_runprocess.runName, iSkyLIMS_wetlab_runprocess.id ,iSkyLIMS_wetlab_projects.projectName , iSkyLIMS_wetlab_projects.id ,  iSkyLIMS_wetlab_samplesinproject.sampleName, iSkyLIMS_wetlab_samplesinproject.id, DATE_FORMAT(iSkyLIMS_wetlab_runprocess.run_completed_date,'%d/%m/%Y') AS niceDate "
+        q_tables = ' FROM iSkyLIMS_wetlab_samplesinproject inner join iSkyLIMS_wetlab_projects ON iSkyLIMS_wetlab_samplesinproject.project_id_id = iSkyLIMS_wetlab_projects.id inner join iSkyLIMS_wetlab_runprocess ON iSkyLIMS_wetlab_samplesinproject.runProcess_id_id = iSkyLIMS_wetlab_runprocess.id '
+        restrict_results = 'WHERE iSkyLIMS_wetlab_samplesinproject.user_id_id IN ' + user_list
+        query = "SELECT " + fetch_fields + q_tables + restrict_results
+        cursor.execute(query)
+        #cursor.execute("select   iSkyLIMS_wetlab_runprocess.runName, iSkyLIMS_wetlab_runprocess.id ,iSkyLIMS_wetlab_projects.projectName , iSkyLIMS_wetlab_projects.id ,  iSkyLIMS_wetlab_samplesinproject.sampleName, iSkyLIMS_wetlab_samplesinproject.id, DATE_FORMAT(iSkyLIMS_wetlab_runprocess.run_completed_date,'%d/%m/%Y') AS niceDate from iSkyLIMS_wetlab_samplesinproject inner join iSkyLIMS_wetlab_projects ON iSkyLIMS_wetlab_samplesinproject.project_id_id = iSkyLIMS_wetlab_projects.id inner join iSkyLIMS_wetlab_runprocess ON iSkyLIMS_wetlab_samplesinproject.runProcess_id_id = iSkyLIMS_wetlab_runprocess.id WHERE iSkyLIMS_wetlab_samplesinproject.user_id_id IN ('1','2','3','7','8','9','16')")
 
         samples_data = cursor.fetchall()
-        import pdb; pdb.set_trace()
+
 
         #data = ['1','2','3','4','5','6','7']
         #samples_data = [data for sample_obj in sample_objs]
