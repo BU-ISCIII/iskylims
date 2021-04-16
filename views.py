@@ -682,11 +682,11 @@ def stats_by_services_request (request):
         if end_date != '':
             if not check_valid_date_format(end_date):
                 return render(request, 'iSkyLIMS_drylab/statsByServicesRequest.html')
-            end_date_format = datetime.datetime.strptime(end_date, '%Y-%m-%d')
         else:
-            end_date_format  = date.today().strftime('%Y-%m-%d')
+            end_date  = date.today().strftime('%Y-%m-%d')
 
         start_date_format = datetime.datetime.strptime(start_date, '%Y-%m-%d')
+        end_date_format = datetime.datetime.strptime(end_date, '%Y-%m-%d')
 
         '''
         #form = ByServicesRequest(data=request.POST)
