@@ -539,7 +539,7 @@ def prepare_form_data_request_service_sequencing (request):
     if is_service_manager(request):
         service_data_information['users'] = get_defined_username_and_ids()
     service_data_information['nodes'] = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
-    
+    import pdb; pdb.set_trace()
     if wetlab_api_available :
 		## get samples which have sequencing data in iSkyLIMS
         user_sharing_list = get_user_sharing_list(request.user)
@@ -550,11 +550,10 @@ def prepare_form_data_request_service_sequencing (request):
             service_data_information['samples_heading'] = drylab_config.HEADING_SELECT_SAMPLE_IN_SERVICE
 
     ## get the samples that are only defined without sequencing data available from iSkyLIMS
-    import pdb; pdb.set_trace()
+
     service_data_information['sample_only_recorded'] = get_only_recorded_samples_and_dates()
     if len(service_data_information['sample_only_recorded']) > 0 :
         service_data_information['sample_only_recorded_heading'] = drylab_config.HEADING_SELECT_ONLY_RECORDED_SAMPLE_IN_SERVICE
-    import pdb; pdb.set_trace()
 
     return service_data_information
 
