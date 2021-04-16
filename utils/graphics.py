@@ -138,8 +138,7 @@ def column_graphic_per_time (heading, sub_caption, x_axis_name, y_axis_name, tim
     for key  in time_values :
         category_list.append({ "label": key, "stepSkipped": 'false',"appliedSmartLabel": 'true'})
     data_source["categories"] = [{"category": category_list}]
-    #index_color = ["005476", "0054dc","a1fddc", "a1c74a", "9966ff", "ffcc66","cc8800","ccff66", "0086b3" , "5c5c8a", "cc6699", "006699"]
-    index_color = ["005476", "0054dc","a1fddc", "a1c74a", "9966ff", "ffcc66","cc8800","ccff66", "0086b3"  , "5c5c8a"]
+    index_color = ["005476", "0054dc","a1fddc", "a1c74a", "9966ff", "ffcc66","cc8800","ccff66", "0086b3" , "5c5c8a", "cc6699", "006699"]
     data_set_list =[]
     counter = 0
     for key ,values in service_values.items():
@@ -147,11 +146,9 @@ def column_graphic_per_time (heading, sub_caption, x_axis_name, y_axis_name, tim
         series_name_list =[]
         for date in time_values :
             series_name_list.append({"value" : service_values[key][date]})
-        if counter >= 10:
-            import pdb; pdb.set_trace()
         data_set_list.append({"seriesname": key, "color": index_color[counter],'data' : series_name_list})
         counter +=1
-        #import pdb; pdb.set_trace()
+
         if counter > len(index_color)-1:
             counter = 0
 
