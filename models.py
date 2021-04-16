@@ -1,4 +1,5 @@
-import datetime, os
+import os
+from datetime import date, datetime
 from django.db import models
 from django import forms
 from django.contrib.auth.models import User
@@ -443,13 +444,13 @@ class UploadServiceFile (models.Model):
 
 class ResolutionManager(models.Manager):
 	def create_resolution (self, resolution_data):
-		today = datetime.date.today()
+		today = date.today()
 		resolutionAsignedUser = User.objects.get(pk__exact = resolution_data['resolutionAsignedUser'])
 		resolutionServiceID = Service.objects.get(pk__exact = resolution_data['service_id'])
 		state = ResolutionStates.objects.get(resolutionStateName__exact = 'Recorded')
 		new_resolution = self.create(resolutionServiceID = resolutionServiceID, resolutionAsignedUser  = resolutionAsignedUser,
 					resolutionNumber = resolution_data['resolutionNumber'],  resolutionEstimatedDate= resolution_data['resolutionEstimatedDate'],
-					resolutionOnQueuedDate =  datetime.date.today(), resolutionNotes = resolution_data['resolutionNotes'],
+					resolutionOnQueuedDate =  date.today(), resolutionNotes = resolution_data['resolutionNotes'],
 					resolutionFullNumber = resolution_data['resolutionFullNumber'], resolutionState = state)
 		return new_resolution
 
@@ -596,14 +597,14 @@ class Resolution(models.Model):
 		return self.resolutionOnInProgressDate
 
 	def update_resolution_in_progress_date(self):
-		today = datetime.date.today()
+		today = date.today()
 		self.resolutionOnInProgressDate = today
 		self.resolutionState = ResolutionStates.objects.get(resolutionStateName__exact = 'In Progress')
 		self.save()
 		return self
 
 	def update_resolution_in_delivered(self):
-		today = datetime.date.today()
+		today = date.today()
 		self.resolutionDeliveryDate = today
 		self.resolutionState = ResolutionStates.objects.get(resolutionStateName__exact = 'Delivery')
 		self.save()

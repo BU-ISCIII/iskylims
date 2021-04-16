@@ -14,7 +14,7 @@ from django_utils.fusioncharts.fusioncharts import FusionCharts
 from django.http import HttpResponse
 from django.core.files.storage import FileSystemStorage
 
-from datetime import date
+from datetime import date, datetime
 import statistics
 from iSkyLIMS_drylab import drylab_config
 from iSkyLIMS_drylab.utils.testing_drylab_configuration import *
@@ -546,13 +546,13 @@ def stats_by_date_user (request):
 
             if start_date != '':
                 try:
-                    datetime.datetime.strptime(start_date, '%Y-%m-%d')
+                    datetime.strptime(start_date, '%Y-%m-%d')
                 except:
                     return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The format for the "Start Date Search" Field is incorrect ',
                                                                                 'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
             if end_date != '':
                 try:
-                    datetime.datetime.strptime(end_date, '%Y-%m-%d')
+                    datetime.strptime(end_date, '%Y-%m-%d')
                 except:
                     return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
                                                                                 'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
@@ -684,29 +684,10 @@ def stats_by_services_request (request):
                 return render(request, 'iSkyLIMS_drylab/statsByServicesRequest.html')
         else:
             end_date  = date.today().strftime('%Y-%m-%d')
+        start_date_format = datetime.strptime(start_date, '%Y-%m-%d')
+        end_date_format = datetime.strptime(end_date, '%Y-%m-%d')
 
-        start_date_format = datetime.datetime.strptime(start_date, '%Y-%m-%d')
-        end_date_format = datetime.datetime.strptime(end_date, '%Y-%m-%d')
 
-        '''
-        #form = ByServicesRequest(data=request.POST)
-        if form.is_valid():
-            # validate the input data in the form
-            start_date = form['start_date'].data
-            end_date = form['end_date'].data
-            if start_date != '':
-                try:
-                    start_date_format = datetime.datetime.strptime(start_date, '%Y-%m-%d')
-                except:
-                    return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The format for the "Start Date Search" Field is incorrect ',
-                                                                                'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
-            if end_date != '':
-                try:
-                    end_date_format = datetime.datetime.strptime(end_date, '%Y-%m-%d')
-                except:
-                    return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The format for the "End Date Search" Field is incorrect ',
-                                                                                'ADVICE:', 'Use the format  (DD-MM-YYYY)']})
-        '''
         if Service.objects.filter(serviceCreatedOnDate__range=(start_date,end_date)).exists():
             services_found = Service.objects.filter(serviceCreatedOnDate__range=(start_date,end_date)). order_by('-serviceCreatedOnDate')
             services_stats_info = {}

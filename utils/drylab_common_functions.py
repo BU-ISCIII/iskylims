@@ -1,4 +1,5 @@
-import datetime, time
+import time
+from datetime import datetime
 import re, os
 from django.conf import settings
 from django.contrib.auth.models import Group, User
@@ -15,7 +16,7 @@ from django.contrib.auth.models import User
 
 def check_valid_date_format (date):
     try:
-        datetime.datetime.strptime(date, '%Y-%m-%d')
+        datetime.strptime(date, '%Y-%m-%d')
         return True
     except:
         return False
