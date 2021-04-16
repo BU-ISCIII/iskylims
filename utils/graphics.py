@@ -149,7 +149,7 @@ def column_graphic_per_time (heading, sub_caption, x_axis_name, y_axis_name, tim
         data_set_list.append({"seriesname": key, "color": index_color[counter],'data' : series_name_list})
         counter +=1
 
-        if counter > len(index_color)-1:
+        if counter >= len(index_color):
             counter = 0
 
     data_source ["dataset"] =data_set_list

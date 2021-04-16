@@ -14,7 +14,7 @@ from django_utils.fusioncharts.fusioncharts import FusionCharts
 from django.http import HttpResponse
 from django.core.files.storage import FileSystemStorage
 
-import datetime
+from datetime import date
 import statistics
 from iSkyLIMS_drylab import drylab_config
 from iSkyLIMS_drylab.utils.testing_drylab_configuration import *
@@ -679,10 +679,15 @@ def stats_by_services_request (request):
         end_date=request.POST['enddate']
         if start_date != '' and not check_valid_date_format(start_date):
             return render(request, 'iSkyLIMS_drylab/statsByServicesRequest.html')
-        if end_date != '' and not check_valid_date_format(end_date):
-            return render(request, 'iSkyLIMS_drylab/statsByServicesRequest.html')
+        if end_date != '':
+            if not check_valid_date_format(end_date):
+                return render(request, 'iSkyLIMS_drylab/statsByServicesRequest.html')
+            end_date_format = datetime.datetime.strptime(end_date, '%Y-%m-%d')
+        else:
+            end_date_format  = date.today().strftime('%Y-%m-%d')
+
         start_date_format = datetime.datetime.strptime(start_date, '%Y-%m-%d')
-        end_date_format = datetime.datetime.strptime(end_date, '%Y-%m-%d')
+
         '''
         #form = ByServicesRequest(data=request.POST)
         if form.is_valid():
