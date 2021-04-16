@@ -147,7 +147,7 @@ def column_graphic_per_time (heading, sub_caption, x_axis_name, y_axis_name, tim
         series_name_list =[]
         for date in time_values :
             series_name_list.append({"value" : service_values[key][date]})
-        if counter > 10:
+        if counter >= 10:
             import pdb; pdb.set_trace()
         data_set_list.append({"seriesname": key, "color": index_color[counter],'data' : series_name_list})
         counter +=1
