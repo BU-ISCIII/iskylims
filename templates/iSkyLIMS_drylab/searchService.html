@@ -117,31 +117,44 @@
                         </div>  <!-- end from-group   -->
                         <br><br>
                         <div class="form-group">
-                            <label class="col-sm-5  control-label" for="projectName" >Search by Project name </label>
-                            <div class="col-sm-5"><input class="form-control" type="text" name="projectName" id="projectName" size="100" maxlength="100"></div>
-                        </div>  <!-- end from-group   -->
-                        <br><br>
-                        <div class="form-group">
-                            <label class="col-sm-5  control-label" for="samplename" >Search by sample name </label>
-                            <div class="col-sm-5"><input class="form-control" type="text" name="samplename" id="samplename" size="100" maxlength="100"></div>
-                        </div>  <!-- end from-group   -->
-                        <BR>
-                        <br>
-                        <div class="form-group">
                             <label class="col-sm-5  control-label" for="username" >Search from user name</label>
                             {% if services_search_list.username %}
                                 <div class="col-sm-5"><input class="form-control" type="text" name="username" id="username" size="100" maxlength="100" readonly value={{services_search_list.username}} ></div>
                             {% else %}
                                 <div class="col-sm-5"><input class="form-control" type="text" name="username" id="username" size="100" maxlength="100" ></div>
                             {% endif %}
-             </div>  <!-- end from-group   -->
-            <br>
-            <br>
-                <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
-                <input class="btn pull-right btn-primary" type="submit" value="Submit">
-            </form>
-         </div>  <!--  end of panel body  -->
-        </div> <!--// end panel -->
+                        </div>  <!-- end from-group   -->
+                        <br><br>
+                        {% if services_search_list.wetlab_app %}
+                            <div class="panel panel-default">
+                                <div class="panel-heading"><strong>Search from wetlab information</strong></div>
+                                <div class="panel-body">
+
+                                    <div class="form-group">
+                                        <label class="col-sm-5  control-label" for="runName" >Search by Run name </label>
+                                        <div class="col-sm-5"><input class="form-control" type="text" name="runName" id="runName" size="100" maxlength="100"></div>
+                                    </div>  <!-- end from-group   -->
+                                    <br><br>
+                                    <div class="form-group">
+                                        <label class="col-sm-5  control-label" for="projectName" >Search by Project name </label>
+                                        <div class="col-sm-5"><input class="form-control" type="text" name="projectName" id="projectName" size="100" maxlength="100"></div>
+                                    </div>  <!-- end from-group   -->
+                                    <br><br>
+                                    <div class="form-group">
+                                        <label class="col-sm-5  control-label" for="sampleName" >Search by sample name </label>
+                                        <div class="col-sm-5"><input class="form-control" type="text" name="sampleName" id="sampleName" size="100" maxlength="100"></div>
+                                    </div>  <!-- end from-group   -->
+                                </div>  <!--  end of panel body  -->
+                            </div> <!--// end panel -->
+                        {% endif %}
+
+                        <br>
+                        <br>
+                        <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
+                        <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                    </form>
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
         </div> <!--// end col-sm-7  -->
     </div> <!--// end row -->
     <!-- End of FORM for searching Service  -->

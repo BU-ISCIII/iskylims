@@ -208,6 +208,9 @@ def search_service (request):
         center_list_abbr.append (center.centerAbbr)
     services_search_list ['centers'] = center_list_abbr
     services_search_list ['status'] = STATUS_CHOICES
+
+    if 'iSkyLIMS_wetlab' in settings.INSTALLED_APPS:
+        services_search_list['wetlab_app'] = True
     if not is_service_manager(request):
         services_search_list['username'] = request.user.username
 
@@ -218,10 +221,13 @@ def search_service (request):
         start_date=request.POST['startdate']
         end_date=request.POST['enddate']
         center = request.POST['center']
-        sample_name = request.POST['samplename']
+
         user_name = request.POST['username']
-        project_name = request.POST['projectName']
-        if service_number_request == '' and service_state == '' and start_date == '' and end_date == '' and center == '' and sample_name == ''  and user_name =='' and project_name == '':
+        sample_name =  request.POST['sampleName'] if 'sampleName' in request.POST else ''
+        project_name = request.POST['projectName'] if 'projectName' in request.POST else ''
+        run_name = request.POST['runName'] if 'runName' in request.POST else ''
+
+        if service_number_request == '' and service_state == '' and start_date == '' and end_date == '' and center == '' and sample_name == ''  and user_name =='' and project_name == '' and run_name == '':
             return render( request,'iSkyLIMS_drylab/searchService.html',{'services_search_list': services_search_list })
 
         ### check the right format of start and end date
@@ -253,20 +259,23 @@ def search_service (request):
             services_found = services_found.filter(serviceCreatedOnDate__lte = end_date)
         if center != '':
             services_found = services_found.filter(serviceRequestNumber__icontains  = center)
-        if project_name != '':
-            project_in_services = RequestedSamplesInServices.objects.filter(projectName__icontains = project_name)
+        if  user_name != '':
+            services_found = services_found.filter(serviceUserId__username__iexact  = user_name)
+
+        if project_name != '' or run_name != '' or sample_name != '':
+            if project_name != '':
+                samples_in_services = RequestedSamplesInServices.objects.filter(projectName__icontains = project_name, samplesInService__in = service_found)
+            else:
+                samples_in_services =  RequestedSamplesInServices.objects.filter(samplesInService__in = service_found)
+            if run_name != '':
+                samples_in_services = samples_in_services.filter(runName__icontains = run_name)
+            if sample_name != '':
+                samples_in_services = samples_in_services.filter(sampleNane__icontains = sample_name)
             service_list = []
             for project_in_service in project_in_services:
                 service_list.append(project_in_service.samplesInService.pk)
             services_found = services_found.filter(pk__in = service_list)
-        if sample_name != '':
-            sample_in_services = RequestedSamplesInServices.objects.filter(sampleName__icontains = sample_name)
-            service_list = []
-            for sample_in_service in sample_in_services:
-                service_list.append(sample_in_service.samplesInService.pk)
-            services_found = services_found.filter(pk__in = service_list)
-        if  user_name != '':
-            services_found = services_found.filter(serviceUserId__username__iexact  = user_name)
+        
         if len(services_found) == 0 :
             error_message = drylab_config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
             return render( request,'iSkyLIMS_drylab/searchService.html',{'services_search_list': services_search_list , 'ERROR':error_message})
