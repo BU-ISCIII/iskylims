@@ -519,7 +519,7 @@ def add_delivery (request ):
 
 
 @login_required
-def stats_by_date_user (request):
+def stats_by_user (request):
     if request.user.is_authenticated:
         try:
             groups = Group.objects.get(name = drylab_config.SERVICE_MANAGER)
