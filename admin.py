@@ -17,14 +17,17 @@ class MachinesAdmin (admin.ModelAdmin) :
 '''
 # 'serviceUsername' refactored to 'serviceUserid' which shows better its real nature
 class ServiceAdmin(admin.ModelAdmin):
-	list_display=('serviceRequestNumber','serviceUserId','serviceSeqCenter','serviceSequencingPlatform','serviceRunSpecs','serviceFileExt','serviceStatus','serviceNotes','serviceCreatedOnDate','serviceOnApprovedDate','serviceOnRejectedDate','serviceOnDeliveredDate')
-#	list_display=('serviceUserId','serviceUserId')
+	list_display =('serviceRequestNumber','serviceUserId','serviceSeqCenter','serviceSequencingPlatform','serviceStatus','serviceNotes','serviceCreatedOnDate','serviceOnDeliveredDate')
+	list_filter = ['serviceCreatedOnDate']
+	search_fields = ['serviceRequestNumber__icontains']
 
 class RequestedSamplesInServicesAdmin(admin.ModelAdmin):
 	list_display = ['samplesInService','sampleName', 'projectName', 'runName']
 
 class UploadServiceFileAdmin(admin.ModelAdmin):
-	list_display = ['uploadService','uploadFile' ]
+	list_display = ['uploadService','uploadFile' , 'uploadFileName']
+	search_fields = ('uploadService__serviceRequestNumber__icontains','uploadFileName__icontains')
+
 
 class AvailableServiceAdmin(DjangoMpttAdmin):
 	list_display=['availServiceDescription']
@@ -43,6 +46,7 @@ class PipelinesManager(admin.ModelAdmin):
 
 class ParameterPipelineManager(admin.ModelAdmin):
 	list_display = ['parameterPipeline', 'parameterName', 'parameterValue']
+
 '''
 class JobStatesManager(admin.ModelAdmin):
 	list_display = ['jobStateName']
@@ -65,6 +69,7 @@ admin.site.register(Delivery,DeliveryAdmin)
 
 admin.site.register(Pipelines,PipelinesManager)
 admin.site.register(ParameterPipeline,ParameterPipelineManager)
+
 
 #admin.site.register(JobStates,JobStatesManager)
 #admin.site.register(PipelineExternalDataJobs, PipelineExternalDataJobsManager)

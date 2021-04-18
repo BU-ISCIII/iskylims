@@ -2,15 +2,28 @@
 {% load crispy_forms_tags %}
 {% load static %}
 {% block content %}
-<script type="text/javascript" src="{% static "iSkyLIMS_drylab/js/fusioncharts/js/fusioncharts.js" %}"></script>                   
-<script type="text/javascript" src="{% static "iSkyLIMS_drylab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script> 
-<h1><div class="color-heading">User statistics </div></h1>
+{% include "iSkyLIMS_core/graphic_chart_functionality.html" %}
+{% if ERROR %}
+    <div class="row row-space-2 margin-b-4">
+        <BR>
+        <div class="col-sm-6  col-sm-offset-3"">
+            <div class="panel panel-warning">
+                <div class="panel-heading"><h3> Result of your request</h3></div>
+                <div class="panel-body">
+                    {% for message in ERROR %}
+                        <p>{{message}}</p>
+                    {% endfor %}
+                </div> <!--  end of panel body -->
+           </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-6 -->
+    </div> <!--// end row -->
+{% endif %}
 {% if stats_info %}
 
     <div class="row row-space-2 margin-b-4">
 	<div class="col-sm-8">  <!--col-sm-8  User statatistics Information  -->
 	    <div class="panel panel-default">
-		<div class="panel-heading"><h3>Service requested statistics for the user {{stats_info.user_name}}</div></h3>
+		<div class="panel-heading"><h3>Service requested statistics for the user {{stats_info.user_name}}</h3></div>
 		<div class="panel-body">
 		    <table class="table table-hover">
 		       <thead>
@@ -37,7 +50,7 @@
             </div> <!--// end panel -->
 	</div> <!--// User statatistics Information  -->
     </div> <!-- //  end row  -->
-    
+
     <div class="row row-space-2 margin-b-4">
 	<div class="col-sm-5 ">
 	   <div class="panel panel-default">
@@ -52,11 +65,11 @@
 
 		    </div> <!--  end of panel body -->
 		</div> <!--  end of panel  -->
-	</div> <!--// end col-sm-5  Media stats for delivering services  -->   
+	</div> <!--// end col-sm-5  Media stats for delivering services  -->
 	<div class="col-sm-7 ">  <!--col-sm-7  graphics for user stats services  -->
 	    <div class="panel panel-default">
 		<div class="panel-heading"><h3>Percentage of Requested Services.</h3></div>
-		<div class="panel-body"> 
+		<div class="panel-body">
 		 {% if stats_info.graphic_by_user_date_services %}
 		    <!-- Pie chart for number of pending Services chart will start here-->
 		    <div id="chart-1"> </div>
@@ -67,14 +80,14 @@
 		{% endif %}
 		</div> <!--  end of panel body -->
 	    </div> <!--  end of panel  -->
-	</div> <!--// end col-sm-7  graphics for pending services  -->    
+	</div> <!--// end col-sm-7  graphics for pending services  -->
     </div> <!--// end row -->
-    
-    <div class="row row-space-2 margin-b-4">    
+
+    <div class="row row-space-2 margin-b-4">
 	<div class="col-sm-7 ">  <!--col-sm-7  graphics for user stats services  -->
 	    <div class="panel panel-default">
 		<div class="panel-heading"><h3>Number of Requested Services.</h3></div>
-		<div class="panel-body"> 
+		<div class="panel-body">
 		 {% if stats_info.graphic_requested_services %}
 		    <!-- Pie chart for number of pending Services chart will start here-->
 		    <div id="chart-2"> </div>
@@ -85,15 +98,15 @@
 		{% endif %}
 		</div> <!--  end of panel body -->
 	    </div> <!--  end of panel  -->
-	</div> <!--// end col-sm-7  graphics for pending services  --> 
+	</div> <!--// end col-sm-7  graphics for pending services  -->
 
     </div> <!--// end row -->
 
-    <div class="row row-space-2 margin-b-4">    
+    <div class="row row-space-2 margin-b-4">
 	<div class="col-sm-7 ">  <!--col-sm-7  graphics for user stats services  -->
 	    <div class="panel panel-default">
 		<div class="panel-heading"><h3>Requested Services per month.</h3></div>
-		<div class="panel-body"> 
+		<div class="panel-body">
 		 {% if stats_info.graphic_date_requested_services %}
 		    <!-- Pie chart for number of pending Services chart will start here-->
 		    <div id="chart-3"> </div>
@@ -104,17 +117,50 @@
 		{% endif %}
 		</div> <!--  end of panel body -->
 	    </div> <!--  end of panel  -->
-	</div> <!--// end col-sm-7  graphics for pending services  --> 
+	</div> <!--// end col-sm-7  graphics for pending services  -->
 
     </div> <!--// end row -->
 {% else %}
 
-<div class="row row-space-2 margin-b-4">
-    <div class="col-sm-8">  <!--col-sm-8  User statatistics Form  -->
-	<div class="container-fluid margin-t-40">	
-	    {% crispy form %}
-	</div>
-    </div> <!--// end col-sm-8  User statatistics Form  -->
-</div> <!-- //  end row -->
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-8" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h1>Services Request Statistics</h1></div>
+                <div class="panel-body">
+                    <form method="post" enctype="multipart/form-data" name="userStatistics" id="userStatistics" class="form-horizontal well">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="userStatistics"/>
+                        <br>
+                        <div class="form-group required">
+                            <label class="col-sm-5 control-label" for="userId" >User ID</label>
+                            <div class="col-sm-4"><select class="form-control" required = "required" name="userID" id="userID">
+                               				<option value="">Choose a value</option>
+                                            {% for id, userid in user_list %}
+                                                <option value="{{id}}">{{userid}}</option>
+                                            {% endfor %}
+
+                                      </select>
+                            </div>  <!-- end select input -->
+                        </div>  <!-- end from-group   -->
+                        <div class="form-group ">
+                            <label class="col-sm-5 control-label" for="start_date" >Start Date (DD-MM-YYYY)</label>
+                            <div class="col-sm-5"><input class="form-control"  type="date" name="start_date" value="" id="start_date"></div>
+                        </div>  <!-- end from-group   -->
+                        <br>
+
+                        <div class="form-group">
+                            <label class="col-sm-5 control-label" for="end_date" >End Date (DD-MM-YYYY)</label>
+                            <div class="col-sm-5"><input class="form-control" type="date" name="end_date" value="" id="end_date"></div>
+                        </div>  <!-- end from-group   -->
+                        <br>
+                        <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
+                        <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                    </form>
+                </div>  <!--  end of panel body  -->
+                <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-8  -->
+    </div> <!-- //  end row -->
 {% endif %}
+
 {% endblock %}

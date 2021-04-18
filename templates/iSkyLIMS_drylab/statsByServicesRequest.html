@@ -147,9 +147,9 @@
                         {% csrf_token %}
                         <input type="hidden" name="action" value="serviceStatistics"/>
                         <br>
-                        <div class="form-group">
+                        <div class="form-group required">
                             <label class="col-sm-5 control-label" for="startdate" >Start Date (DD-MM-YYYY)</label>
-                            <div class="col-sm-5"><input class="form-control" type="date" name="startdate" value="" id="startdate"></div>
+                            <div class="col-sm-5"><input class="form-control" required = "required" type="date" name="startdate" value="" id="startdate"></div>
                         </div>  <!-- end from-group   -->
                         <br>
                         <div class="form-group">

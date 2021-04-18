@@ -12,7 +12,7 @@ SERVICE_MANAGER = 'ServiceManager'
 
 INTERNAL_SEQUENCING_UNIT = "GENOMIC_SEQ_UNIT"
 
-USER_REQUESTED_SERVICE_FILE_DIRECTORY ='drylab/servicesRequest'
+USER_REQUESTED_SERVICE_FILE_DIRECTORY ='drylab/servicesRequestFiles'
 
 ## CSS file to be used for creating the PDF files
 CSS_FOR_PDF = '/documents/drylab/services_templates/css/print_services.css'
@@ -65,6 +65,10 @@ ERROR_NO_SERVICES_ARE_SELECTED = ['Unable to process your request', 'No services
 DATE_NOT_YET_DEFINED = 'Not Yet Defined'
 
 ERROR_FILE_TOO_BIG = 'Unable to upload your file. It exceeds the maximum size'
+
+ERROR_USER_NOT_DEFINED = ['User is not defined']
+
+NO_STATS_DUE_TO_NOT_DELILVERY_YET = 'No delivery any service yet'
 
 ################### PIPELINES ######################
 DISPLAY_NEW_DEFINED_PIPELINE = ['Service', 'Pipeline Name' , 'Pipeline Version']

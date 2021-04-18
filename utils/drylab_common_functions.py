@@ -168,6 +168,20 @@ def get_defined_username_and_ids ():
     return userids_list
 
 
+def get_users_requested_services():
+    '''
+    Description:
+        The function get the list of users that have requested any service.
+    Return:
+        user_list
+    '''
+    user_list = []
+    if Service.objects.all().exists():
+        user_ids = Service.objects.all().order_by('serviceUserId').values('serviceUserId').distinct()
+        for user_id in user_ids:
+            user_list.append([user_id['serviceUserId'], User.objects.filter(pk__exact = user_id['serviceUserId']).last().username])
+    return user_list
+
 def store_file_from_form(file , path):
     '''
     Description:
