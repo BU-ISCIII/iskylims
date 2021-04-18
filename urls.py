@@ -26,8 +26,6 @@ urlpatterns = [
     #path('service_request_<str:serviceRequestType>',views.service_request, name='service_request'),
     path('statsByUser',views.stats_by_user, name = 'stats_by_user'),
     path('statsByServicesRequest',views.stats_by_services_request, name = 'stats_by_services_request'),
-    path('statsBySamplesProcessed',views.stats_by_samples_processed, name = 'stats_by_samples_processed'),
-    path('statsTimeDelivery', views.stats_time_delivery, name = 'stats_time_delivery'),
     path('userLogin', views.user_login, name = 'user_login'),
 
     #path('multipleFiles', views.multiple_files, name='multiple_files'),
