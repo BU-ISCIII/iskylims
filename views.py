@@ -539,17 +539,17 @@ def stats_by_user (request):
 
         if start_date != '' and not check_valid_date_format(start_date):
             error_message = drylab_config.ERROR_INCORRECT_FORMAT_DATE
-            return render(request, 'iSkyLIMS_drylab/statsByDateUser.html' , {'user_list': user_list,'ERROR':error_message })
+            return render(request, 'iSkyLIMS_drylab/statsByUser.html' , {'user_list': user_list,'ERROR':error_message })
         if end_date != '':
             if not check_valid_date_format(end_date):
                 error_message = drylab_config.ERROR_INCORRECT_FORMAT_DATE
-                return render(request, 'iSkyLIMS_drylab/statsByDateUser.html' , {'user_list': user_list,'ERROR':error_message })
+                return render(request, 'iSkyLIMS_drylab/statsByUser.html' , {'user_list': user_list,'ERROR':error_message })
         else:
             end_date  = date.today().strftime('%Y-%m-%d')
 
         if not User.objects.filter(pk__exact = user_id).exists():
             error_message = drylab_config.ERROR_USER_NOT_DEFINED
-            return render(request, 'iSkyLIMS_drylab/statsByDateUser.html' , {'user_list': user_list,'ERROR':error_message })
+            return render(request, 'iSkyLIMS_drylab/statsByUser.html' , {'user_list': user_list,'ERROR':error_message })
 
         service_objs = Service.objects.filter(serviceUserId__exact = user_id).order_by('-serviceRequestNumber')
         if start_date != '':
@@ -558,7 +558,7 @@ def stats_by_user (request):
             service_objs = service_objs.filter(serviceCreatedOnDate__lte = end_date)
         if len(service_objs) == 0:
             error_message = drylab_config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
-            return render(request, 'iSkyLIMS_drylab/statsByDateUser.html' , {'user_list': user_list,'ERROR':error_message })
+            return render(request, 'iSkyLIMS_drylab/statsByUser.html' , {'user_list': user_list,'ERROR':error_message })
 
         stats_info = {}
         stats_info ['service_by_user'] = []
@@ -574,10 +574,6 @@ def stats_by_user (request):
                 delivery_time_in_days.append(int (service_item.get_time_to_delivery()))
 
             stats_info['time_mean_for_user']=  format(statistics.mean (delivery_time_in_days), '.2f')
-
-        else:
-            # there are not delivery services for the user in the specified period of time
-            stats_info['time_mean_for_user']= drylab_config.NO_STATS_DUE_TO_NOT_DELILVERY_YET
         # preparing graphic for status of the services
         number_of_services = {}
 
@@ -586,7 +582,7 @@ def stats_by_user (request):
         number_of_services ['IN PROGRESS'] = service_objs.filter(serviceStatus__exact = 'in_progress').count()
         number_of_services ['DELIVERED'] = service_objs.filter(serviceStatus__exact = 'delivered').count()
 
-        data_source = graphic_3D_pie('Status of Requested Services of:', stats_info ['user_name'], '', '','fint',number_of_services)
+        data_source = graphic_3D_pie('Status of Requested Services from:', stats_info ['user_name'], '', '','fint',number_of_services)
         graphic_by_user_date_services = FusionCharts("pie3d", "ex1" , "600", "350", "chart-1", "json", data_source)
         stats_info ['graphic_by_user_date_services'] = graphic_by_user_date_services.render()
 
@@ -603,7 +599,7 @@ def stats_by_user (request):
                     service_dict [service_name] = 1
         #creating the graphic for requested services
         data_source = column_graphic_dict('Requested Services by:', stats_info ['user_name'], '', '','fint',service_dict)
-        graphic_requested_services = FusionCharts("column3d", "ex2" , "600", "350", "chart-2", "json", data_source)
+        graphic_requested_services = FusionCharts("column3d", "ex2" , "550", "350", "chart-2", "json", data_source)
         stats_info ['graphic_requested_services'] = graphic_requested_services.render()
 
         # getting statistics for requested per time
@@ -620,13 +616,13 @@ def stats_by_user (request):
         for key , value in sorted(service_time_dict.items()):
             service_time_tupla.append([key,service_time_dict[key]])
         data_source = column_graphic_tupla('Requested Services by:', stats_info ['user_name'], '', '','fint',service_time_tupla)
-        graphic_date_requested_services = FusionCharts("column3d", "ex3" , "600", "350", "chart-3", "json", data_source)
+        graphic_date_requested_services = FusionCharts("column3d", "ex3" , "550", "350", "chart-3", "json", data_source)
         stats_info ['graphic_date_requested_services'] = graphic_date_requested_services.render()
 
 
-        return render (request, 'iSkyLIMS_drylab/statsByDateUser.html', {'stats_info':stats_info})
+        return render (request, 'iSkyLIMS_drylab/statsByUser.html', {'stats_info':stats_info})
     else:
-        return render(request, 'iSkyLIMS_drylab/statsByDateUser.html' , {'user_list': user_list})
+        return render(request, 'iSkyLIMS_drylab/statsByUser.html' , {'user_list': user_list})
 
 
 @login_required
@@ -653,7 +649,6 @@ def stats_by_services_request (request):
             end_date  = date.today().strftime('%Y-%m-%d')
         start_date_format = datetime.strptime(start_date, '%Y-%m-%d')
         end_date_format = datetime.strptime(end_date, '%Y-%m-%d')
-
 
         if Service.objects.filter(serviceCreatedOnDate__range=(start_date,end_date)).exists():
             services_found = Service.objects.filter(serviceCreatedOnDate__range=(start_date,end_date)). order_by('-serviceCreatedOnDate')

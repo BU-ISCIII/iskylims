@@ -68,8 +68,6 @@ ERROR_FILE_TOO_BIG = 'Unable to upload your file. It exceeds the maximum size'
 
 ERROR_USER_NOT_DEFINED = ['User is not defined']
 
-NO_STATS_DUE_TO_NOT_DELILVERY_YET = 'No delivery any service yet'
-
 ################### PIPELINES ######################
 DISPLAY_NEW_DEFINED_PIPELINE = ['Service', 'Pipeline Name' , 'Pipeline Version']
 DISPLAY_MULTYPLE_DEFINED_PIPELINE = ['Service', 'User', 'Pipeline Name' , 'Pipeline Version', 'Date', 'Default', 'In Use']
