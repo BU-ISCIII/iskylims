@@ -1,4 +1,4 @@
-from iSkyLIMS_drylab.models import Service, Resolution, UploadServiceFile
+from iSkyLIMS_drylab.models import Service, Resolution, UploadServiceFile, RequestedSamplesInServices
 from iSkyLIMS_drylab.drylab_config import *
 from iSkyLIMS_core.models import SequencingPlatform
 from iSkyLIMS_wetlab.models import Projects, SamplesInProject, RunProcess
@@ -26,7 +26,7 @@ def get_samples_info_for_migration(project_id):
         if SamplesInProject.objects.filter(project_id__exact = project_id).exists():
             sample_objs = SamplesInProject.objects.filter(project_id__exact = project_id)
             return [[sample_obj.sampleName, sample_obj.pk] for sample_obj in sample_objs]
-    return
+    return None
 
 def get_run_information(project_id):
     '''
@@ -34,8 +34,11 @@ def get_run_information(project_id):
     Not checking for project it assume that exists
     '''
     sample_objs = SamplesInProject.objects.filter(project_id__exact = project_id)
-    import pdb; pdb.set_trace()
-    return sample_objs[0].runProcess_id.runName, sample_objs[0].runProcess_id.pk
+    # import pdb; pdb.set_trace()
+    if len(sample_objs) >0 :
+        return sample_objs[0].runProcess_id.runName, sample_objs[0].runProcess_id.pk
+    else:
+        return None , None
 
 def run():
     '''
@@ -130,11 +133,11 @@ def run():
             if Service.objects.filter(pk__exact = serv_id).exists():
                 serv_obj = Service.objects.get(pk__exact = serv_id)
             else:
-                print('Service id', s_id ,' Does not longer exists\n')
+                print('Service id', serv_id ,' Does not longer exists\n')
                 invalids += 1
                 continue
             if not Projects.objects.filter(pk__exact = proj_id).exists():
-                print('Project id', s_id ,' Does not longer exists\n')
+                print('Project id', proj_id ,' Does not longer exists\n')
                 invalids += 1
                 continue
             data = {}
@@ -145,10 +148,15 @@ def run():
             data['only_recorded'] = False
             data['run_name'], data['run_id'] = get_run_information(proj_id)
             samples_data = get_samples_info_for_migration(proj_id)
+            if not samples_data:
+                print('Project id', proj_id ,' Does not have any sample\n')
+                invalids += 1
+                continue
             for sample in samples_data:
-                data['sample_name'] , data['sample_id'] = samples_data
                 import pdb; pdb.set_trace()
-                # RequestedSamplesInServices.objects.create_request_sample(data)
+                data['sample_name'] , data['sample_id'] = sample
+                #import pdb; pdb.set_trace()
+                RequestedSamplesInServices.objects.create_request_sample(data)
 
 
     return

@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class DrylabConfig(AppConfig):
-    name = 'drylab'
+    name = 'iSkyLIMS_drylab'
