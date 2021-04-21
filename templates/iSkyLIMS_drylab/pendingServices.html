@@ -2,14 +2,13 @@
 {% load static %}
 {% block content %}
 {% csrf_token %}
-<script type="text/javascript" src="{% static "iSkyLIMS_drylab/js/fusioncharts/js/fusioncharts.js" %}"></script>
-<script type="text/javascript" src="{% static "iSkyLIMS_drylab/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script>
+{% include "iSkyLIMS_core/graphic_chart_functionality.html" %}
 <style>
     .scrolling-wrapper {
         overflow-x: auto;
         overflow-y: auto;
         white-space: nowrap;
-        height: 500px;
+        height: 400px;
  </style>
     <h1><div class="color-heading">Pending Services</div></h1>
     <div class="row row-space-2 margin-b-4">
@@ -24,19 +23,15 @@
                                     <thead>
                                         <tr>
                                             <th>Services Request ID</th>
-                                            <th>Run Specifications</th>
-                                            <th>Center</th>
-                                            <th>Platform</th>
+                                            <th>Requested Center</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for key, values in pending_services.recorded.items %}
                                             <tr>
-                                                {% for requestID, specification, center, platform in values %}
+                                                {% for requestID, center in values %}
                                                     <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
-                                                    <td> {{ specification }} </td>
                                                     <td> {{ center }} </td>
-                                                    <td> {{ platform }} </td>
                                                 {% endfor %}
                                             </tr>
                                         {%endfor%}
@@ -49,7 +44,7 @@
                   </div> <!--// end panel body -->
                 </div> <!--// end panel -->
             </div> <!--// end col-sm-12  Recorded  pending services  -->
-            
+
           </div> <!--// end col-sm-6 first column with list of pending services in state Recorded and Approved -->
           <div class="col-sm-6 ">
             {% if pending_services.graphic_pending_services %}
@@ -68,75 +63,73 @@
             </div> <!--  end of col-sm-6  -->
         </div> <!--// end row -->
 
-
-
         <div class="row row-space-2 margin-b-4">
             <div class="col-sm-12">  <!-- Queued  pending services -->
                 <div class="panel panel-default">
-                  <div class="panel-heading">List of Services in Queued State</div>
-                  <div class="panel-body">
-                      {% if pending_services.heading_queued %}
-                         <table class="table table-hover">
-                                <thead>
-                                   <tr>
-                                        {% for column in pending_services.heading_queued %}
-                                            <th>{{column}}</th>
-                                        {% endfor %}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for s_id, s_name, res_name , s_acronym, assigned, queued_date, estimated_date in pending_services.queued %}
+                    <div class="panel-heading">List of Services in Queued State</div>
+                    <div class="panel-body">
+                        {% if pending_services.heading_queued %}
+                            <div class="scrolling-wrapper">
+                                <table class="table table-hover">
+                                    <thead>
                                         <tr>
-                                            <td><a href="/drylab/display_service={{ s_id }}">{{ s_name }}</a> </td>
-                                            <td> {{ res_name }}</td>
-                                            <td> {{ s_acronym }}</td>
-                                            <td> {{ assigned }}</td>
-                                            <td> {{ queued_date }}</td>
-                                            <td> {{ estimated_date }} </td>
+                                            {% for column in pending_services.heading_queued %}
+                                                <th>{{column}}</th>
+                                            {% endfor %}
                                         </tr>
-                                    {%endfor%}
-                                </tbody>
-                             </table>
-
-                      {% else %}
-
-                      There is not pending services in <b>QUEUED</b> state.
+                                    </thead>
+                                    <tbody>
+                                        {% for s_id, s_name, res_name , s_acronym, assigned, queued_date, estimated_date in pending_services.queued %}
+                                            <tr>
+                                                <td><a href="/drylab/display_service={{ s_id }}">{{ s_name }}</a> </td>
+                                                <td> {{ res_name }}</td>
+                                                <td> {{ s_acronym }}</td>
+                                                <td> {{ assigned }}</td>
+                                                <td> {{ queued_date }}</td>
+                                                <td> {{ estimated_date }} </td>
+                                            </tr>
+                                        {%endfor%}
+                                    </tbody>
+                                </table>
+                            </div> <!--  end of scrolling wrapper -->
+                        {% else %}
+                            There is not pending services in <b>QUEUED</b> state.
                       {% endif%}
-                  </div> <!--// end panel body -->
+                    </div> <!--// end panel body -->
                 </div> <!--// end panel -->
             </div> <!--// end col-sm-12  Queued  pending services  -->
             <div class="col-sm-12">  <!-- In Progress  pending services -->
                 <div class="panel panel-default">
-                  <div class="panel-heading">List of Services in In Progress State</div>
-                  <div class="panel-body">
-                      {% if pending_services.in_progress %}
-                      <table class="table table-hover">
-                             <thead>
-                                <tr>
-                                     {% for column in pending_services.heading_queued %}
-                                         <th>{{column}}</th>
-                                     {% endfor %}
-                                 </tr>
-                             </thead>
-                             <tbody>
-                                 {% for s_id, s_name, res_name , s_acronym, assigned, queued_date, estimated_date in pending_services.in_progress %}
-                                     <tr>
-                                         <td><a href="/drylab/display_service={{ s_id }}">{{ s_name }}</a> </td>
-                                         <td> {{ res_name }}</td>
-                                         <td> {{ s_acronym }}</td>
-                                         <td> {{ assigned }}</td>
-                                         <td> {{ queued_date }}</td>
-                                         <td> {{ estimated_date }} </td>
-                                     </tr>
-                                 {%endfor%}
-                             </tbody>
-                          </table>
-
-                      {% else %}
-
-                      There is not pending services in <b>IN PROGRESS</b> state.
-                      {% endif%}
-                  </div> <!--// end panel body -->
+                    <div class="panel-heading">List of Services in In Progress State</div>
+                    <div class="panel-body">
+                        {% if pending_services.in_progress %}
+                            <div class="scrolling-wrapper">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                             {% for column in pending_services.heading_queued %}
+                                                 <th>{{column}}</th>
+                                             {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for s_id, s_name, res_name , s_acronym, assigned, queued_date, estimated_date in pending_services.in_progress %}
+                                            <tr>
+                                                <td><a href="/drylab/display_service={{ s_id }}">{{ s_name }}</a> </td>
+                                                <td> {{ res_name }}</td>
+                                                <td> {{ s_acronym }}</td>
+                                                <td> {{ assigned }}</td>
+                                                <td> {{ queued_date }}</td>
+                                                <td> {{ estimated_date }} </td>
+                                            </tr>
+                                        {%endfor%}
+                                    </tbody>
+                                </table>
+                            </div> <!--  end of scrolling wrapper -->
+                        {% else %}
+                            There is not pending services in <b>IN PROGRESS</b> state.
+                        {% endif%}
+                    </div> <!--// end panel body -->
                 </div> <!--// end panel -->
             </div> <!--// end col-sm-12  In Progress  pending services  -->
 

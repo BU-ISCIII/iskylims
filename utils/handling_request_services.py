@@ -255,7 +255,7 @@ def get_pending_services_information():
     if Service.objects.filter(serviceStatus__exact = 'recorded').exists():
         services_in_request = Service.objects.filter(serviceStatus__exact = 'recorded').order_by('-serviceCreatedOnDate')
         for services in services_in_request:
-            recorded[services.id]= [services.get_service_information().split(';')]
+            recorded[services.id]= [services.get_service_information()]
         pending_services_details['recorded'] = recorded
     # Resolution  in queued state
     if Resolution.objects.filter(resolutionState__resolutionStateName__exact = 'Recorded').exists():
@@ -278,7 +278,7 @@ def get_pending_services_information():
     number_of_services ['QUEUED'] = len (queued)
     number_of_services ['IN PROGRESS'] = len (in_progress)
     data_source = graphic_3D_pie('Number of Pending Services', '', '', '','fint',number_of_services)
-    graphic_pending_services = FusionCharts("pie3d", "ex1" , "425", "350", "chart-1", "json", data_source)
+    graphic_pending_services = FusionCharts("pie3d", "ex1" , "540", "400", "chart-1", "json", data_source)
     pending_services_details ['graphic_pending_services'] = graphic_pending_services.render()
     return pending_services_details
 

@@ -204,19 +204,21 @@ def create_new_resolution(resolution_data_form):
 
     if 'additional_parameters' in resolution_data_form:
         store_resolution_additional_parameter(resolution_data_form['additional_parameters'], new_resolution)
-
     if resolution_data_form['serviceAccepted'] == 'Accepted':
-        if len(resolution_data_form['select_available_services']) == len(service_obj.get_child_services()):
-            service_obj.update_service_status("queued")
-        elif Resolution.objects.filter(resolutionServiceID = service_obj).exists():
-            resolution_objs = Resolution.objects.filter(resolutionServiceID = service_obj)
-            avail_services_handled = []
-            for resolution_obj in resolution_objs:
-                resolution_handle_list = resolution_obj.get_available_services()
-                for item in resolution_handle_list:
-                    avail_services_handled.append(item)
-            if len(set(avail_services_handled)) == len(service_obj.get_child_services()):
+        if 'select_available_services' in resolution_data_form :
+            if len(resolution_data_form['select_available_services']) == len(service_obj.get_child_services()):
                 service_obj.update_service_status("queued")
+            elif Resolution.objects.filter(resolutionServiceID = service_obj).exists():
+                resolution_objs = Resolution.objects.filter(resolutionServiceID = service_obj)
+                avail_services_handled = []
+                for resolution_obj in resolution_objs:
+                    resolution_handle_list = resolution_obj.get_available_services()
+                    for item in resolution_handle_list:
+                        avail_services_handled.append(item)
+                if len(set(avail_services_handled)) == len(service_obj.get_child_services()):
+                    service_obj.update_service_status("queued")
+        else:
+            service_obj.update_service_status("queued")
         service_obj.update_approved_date(datetime.date.today())
     else:
         service_obj.update_service_status("rejected")

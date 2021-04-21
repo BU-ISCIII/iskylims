@@ -239,12 +239,13 @@ class Service(models.Model):
 		return '%s' %(self.serviceRequestNumber)
 
 	def get_service_information (self):
+		'''
 		if self.serviceSequencingPlatform == None :
 			platform = "Not Provided"
 		else:
 			platform = self.serviceSequencingPlatform.get_platform_name()
-
-		return '%s;%s;%s;%s'  %(self.serviceRequestNumber ,self.serviceRunSpecs, self.serviceSeqCenter, platform)
+		'''
+		return [ self.serviceRequestNumber, self.serviceSeqCenter]
 
 	def get_service_id (self):
 		return '%s' %self.pk
