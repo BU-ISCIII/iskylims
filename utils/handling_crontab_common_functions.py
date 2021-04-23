@@ -844,8 +844,8 @@ def store_sample_sheet_if_not_defined_in_run (run_process_obj, l_sample_sheet_pa
     sample_sheet_on_database = os.path.join(RUN_SAMPLE_SHEET_DIRECTORY, new_sample_sheet_name)
     ## Move sample sheet to final folder
     os.rename(l_sample_sheet_path, new_sample_sheet_file)
-    # Update the run with the sample sheet information
-    run_process_obj.update_sample_sheet(sample_sheet_on_database)
+    # Update the run with the sample sheet information  (full_path, relative_path, file_name)
+    run_process_obj.update_sample_sheet(new_sample_sheet_file, sample_sheet_on_database, new_sample_sheet_name)
 
     logger.info('%s : Updated runProccess table with the sample sheet', experiment_name)
     logger.debug('%s : End function store_sample_sheet_in_run', experiment_name)
@@ -867,7 +867,7 @@ def waiting_time_expired(run_process_obj,time_to_check, maximun_time , experimen
         True if the number of days is bigger that the maximum number of days to wait
     '''
     logger = logging.getLogger(__name__)
-    logger.debug ('Starting function waiting_time_expired', experiment_name)
+    logger.debug ('%s : Starting function waiting_time_expired', experiment_name)
     today = datetime.now().date()
     number_of_days = abs((today - time_to_check).days)
     if number_of_days > int (maximun_time):

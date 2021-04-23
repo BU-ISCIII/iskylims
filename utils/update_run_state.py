@@ -11,7 +11,7 @@ from iSkyLIMS_wetlab import wetlab_config
 from .handling_crontab_common_functions import *
 from .handling_crontab_manage_run_states import *
 from .generic_functions import *
-
+from django.conf import settings
 
 #from .miseq_run_functions import  handle_miseq_run , manage_miseq_in_samplesent,  manage_miseq_in_processing_run
 #from .nextseq_run_functions import handle_nextseq_recorded_run, manage_nextseq_in_samplesent, manage_nextseq_in_processing_run
@@ -169,13 +169,19 @@ def search_update_new_runs ():
                 assign_projects_to_run(run_process_obj, l_sample_sheet_path, experiment_name)
                 assign_used_library_in_run (run_process_obj,l_sample_sheet_path, experiment_name )
                 store_sample_sheet_if_not_defined_in_run (run_process_obj,l_sample_sheet_path, experiment_name)
-
-            if wetlab_config.COPY_SAMPLE_SHEET_TO_REMOTE and  'NextSeq' in running_parameters[wetlab_config.APPLICATION_NAME_TAG]:
-                try:
-                    copy_sample_sheet_to_remote_folder(conn, sample_sheet_path, run_folder ,experiment_name)
-                except:
-                    logger.info('%s : Aborting process, Unable to copy sammple sheet to remote server')
-                    continue
+            else :
+                if wetlab_config.COPY_SAMPLE_SHEET_TO_REMOTE and  'NextSeq' in running_parameters['running_data'][wetlab_config.APPLICATION_NAME_TAG]:
+                    sample_sheet = run_process_obj.get_sample_file()
+                    sample_sheet_path = os.path.join(settings.MEDIA_ROOT, sample_sheet)
+                    run_folder = RunningParameters.objects.get( runName_id__exact = run_process_obj).get_run_folder()
+                    try:
+                        copy_sample_sheet_to_remote_folder(conn, sample_sheet_path, run_folder ,experiment_name)
+                    except Exception as e:
+                        string_message = experiment_name + ' : Unable to copy Sample Sheet to Remote folder' + new_run
+                        logging_errors(string_message, True, True)
+                        handling_errors_in_run(experiment_name, '23')
+                        logger.debug ('%s : Aborting the process. Exiting with exception', experiment_name)
+                        raise Exception   # returning to handle next run folder
 
             run_process_obj.set_run_state('Sample Sent')
 

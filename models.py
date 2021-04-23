@@ -197,12 +197,10 @@ class RunProcess(models.Model):
         return True
 
     def update_sample_sheet(self,full_path, relative_path, file_name):
-        #import pdb; pdb.set_trace()
         self.sampleSheet.save(file_name, open(full_path ,"r"), save=True)
-        self.sampleSheet = relative_path
-        #import pdb; pdb.set_trace()
+        #self.sampleSheet = relative_path
         #self.save()
-        return True
+        return self
 
     def set_used_space (self, disk_utilization):
         self.useSpaceFastaMb  = disk_utilization ['useSpaceFastaMb']

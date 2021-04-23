@@ -2,19 +2,6 @@ from django.contrib import admin
 from iSkyLIMS_wetlab.models import *
 
 
-
-'''
-class AppAdmin(admin.ModelAdmin):
-    list_display = ('run_name','description','csv_file','name')
-    def file_link(self, obj):
-        if obj.file:
-            return "<a href='%s' download>Download</a>" % (obj.file.url,)
-        else:
-            return "No attachment"
-    file_link.allow_tags = True
-    file_link.short_description = 'File Download'
-'''
-
 class LibraryPreparationAdmin (admin.ModelAdmin):
     list_display = ( 'libPrepCodeID','registerUser', 'molecule_id', 'sample_id', 'protocol_id', 'libPrepState',
             'user_sample_sheet', 'userSampleID', 'projectInSampleSheet','samplePlate',
@@ -50,7 +37,7 @@ class RunningParametersAdmin(admin.ModelAdmin):
 
 
 class RunProcessAdmin (admin.ModelAdmin):
-    list_display = ('runName','usedSequencer','sampleSheet','generatedat','run_date','runError', 'state','index_library','samples','centerRequestedBy','useSpaceImgMb','useSpaceFastaMb','useSpaceOtherMb')
+    list_display = ('runName','state','usedSequencer','sampleSheet','run_date','runError', 'index_library','samples','centerRequestedBy','useSpaceImgMb','useSpaceFastaMb','useSpaceOtherMb')
     list_filter= ('generatedat',)
     search_fields = ("runName__icontains", )
 

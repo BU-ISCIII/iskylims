@@ -347,68 +347,144 @@ def parsing_run_metrics_files(local_run_metric_folder, run_process_obj, experime
     #lan_summary= py_interop_summary.lane_summary()
     # Tiles
     for read_number in range(num_of_reads):
-        logger.info('%s : Processing run metrics stats on Read %s',experiment_name, read_number)
         for lane_number in range(number_of_lanes):
+            logger.info('%s : Processing run metrics stats on Read %s and on Lane %s',experiment_name, read_number, lane_number)
             run_read_stats_level ={}
             run_read_stats_level['tiles'] = str(int(summary.at(read_number).at(lane_number).tile_count() )*2)
             # Density (k/mm2) divide the value by 1000 to have it K/mm2
             # get the +/- with the steddev
-            read_lane_density_mean=str(round(float(summary.at(read_number).at(lane_number).density().mean())/1000))
-            read_lane_density_stddev=str(round(float(summary.at(read_number).at(lane_number).density().stddev())/1000))
+            try:
+                read_lane_density_mean=str(round(float(summary.at(read_number).at(lane_number).density().mean())/1000))
+                read_lane_density_stddev=str(round(float(summary.at(read_number).at(lane_number).density().stddev())/1000))
+            except:
+                read_lane_density_mean = 'NaN'
+                read_lane_density_stddev = 'NaN'
+                string_message = experiment_name + ' : Unable to convert to float '
+                logging_warnings (string_message, False)
             run_read_stats_level['density'] = read_lane_density_mean + '  ' + chr(177) + '  ' +read_lane_density_stddev
             # cluster _pf  in %
-            read_lane_percent_pf_mean=format(summary.at(read_number).at(lane_number).percent_pf().mean(),'.3f')
-            read_lane_percent_pf_stddev=format(summary.at(read_number).at(lane_number).percent_pf().stddev(),'.3f')
+            try:
+                read_lane_percent_pf_mean=format(summary.at(read_number).at(lane_number).percent_pf().mean(),'.3f')
+                read_lane_percent_pf_stddev=format(summary.at(read_number).at(lane_number).percent_pf().stddev(),'.3f')
+            except:
+                read_lane_percent_pf_mean = 'NaN'
+                read_lane_percent_pf_stddev = 'NaN'
+                string_message = experiment_name + ' : Unable to format to float read_lane_percent_pf'
+                logging_warnings (string_message, False)
             run_read_stats_level['cluster_PF']  = read_lane_percent_pf_mean + '  ' + chr(177) + '  ' +read_lane_percent_pf_stddev
             # phas/ prepas in %
-            read_lane_phasing_mean=format(summary.at(read_number).at(lane_number).phasing().mean(),'.3f')
-            read_lane_phasing_dev=format(summary.at(read_number).at(lane_number).phasing().stddev(),'.1f')
-            read_lane_prephasing_mean=format(summary.at(read_number).at(lane_number).prephasing().mean(),'.3f')
-            read_lane_prephasing_stddev=format(summary.at(read_number).at(lane_number).prephasing().stddev(),'.3f')
+            try:
+                read_lane_phasing_mean=format(summary.at(read_number).at(lane_number).phasing().mean(),'.3f')
+                read_lane_phasing_dev=format(summary.at(read_number).at(lane_number).phasing().stddev(),'.1f')
+                read_lane_prephasing_mean=format(summary.at(read_number).at(lane_number).prephasing().mean(),'.3f')
+                read_lane_prephasing_stddev=format(summary.at(read_number).at(lane_number).prephasing().stddev(),'.3f')
+            except:
+                read_lane_phasing_mean, read_lane_phasing_dev, read_lane_prephasing_mean, read_lane_prephasing_stddev = 'NaN', 'NaN', 'NaN', 'NaN'
+                string_message = experiment_name + ' : Unable to format to float read_lane_phasing'
+                logging_warnings (string_message, False)
             run_read_stats_level['phas_prephas']  = read_lane_phasing_mean + '  ' + chr(177) + '  ' + read_lane_phasing_dev + '  /  ' + read_lane_prephasing_mean + '  ' + chr(177) + '  ' + read_lane_prephasing_stddev
             # reads (M)
-            run_read_stats_level['reads'] = format(float(summary.at(read_number).at(lane_number).reads())/1000000,'.3f')
+            try:
+                run_read_stats_level['reads'] = format(float(summary.at(read_number).at(lane_number).reads())/1000000,'.3f')
+            except:
+                run_read_stats_level['reads'] = 'NaN'
+                string_message = experiment_name + ' : Unable to format to float run_read_stats_level[reads]'
+                logging_warnings (string_message, False)
             #reads PF (M)
-            run_read_stats_level['reads_PF'] = format(float(summary.at(read_number).at(lane_number).reads_pf())/1000000,'.3f')
+            try:
+                run_read_stats_level['reads_PF'] = format(float(summary.at(read_number).at(lane_number).reads_pf())/1000000,'.3f')
+            except:
+                run_read_stats_level['reads_PF'] = 'NaN'
+                string_message = experiment_name + ' : Unable to format to float run_read_stats_level[reads_PF]'
+                logging_warnings (string_message, False)
             # percent q30
-            run_read_stats_level['q30'] = format(summary.at(read_number).at(lane_number).percent_gt_q30(),'.3f')
+            try:
+                run_read_stats_level['q30'] = format(summary.at(read_number).at(lane_number).percent_gt_q30(),'.3f')
+            except:
+                run_read_stats_level['q30'] = 'NaN'
+                string_message = experiment_name + ' : Unable to format to float run_read_stats_level[q30]'
+                logging_warnings (string_message, False)
             # yield _g
-            run_read_stats_level['yields'] = format(summary.at(read_number).at(lane_number).yield_g(),'.3f')
+            try:
+                run_read_stats_level['yields'] = format(summary.at(read_number).at(lane_number).yield_g(),'.3f')
+            except:
+                run_read_stats_level['yields'] = 'NaN'
+                string_message = experiment_name + ' : Unable to format to float run_read_stats_level[yields]'
+                logging_warnings (string_message, False)
             # cycles err Rate
-            run_read_stats_level['cyclesErrRated'] = str(summary.at(read_number).at(lane_number).cycle_state().error_cycle_range().first_cycle())
+            try:
+                run_read_stats_level['cyclesErrRated'] = str(summary.at(read_number).at(lane_number).cycle_state().error_cycle_range().first_cycle())
+            except:
+                run_read_stats_level['cyclesErrRated'] = 'NaN'
+                string_message = experiment_name + ' : Unable to format to float run_read_stats_level[cyclesErrRated]'
+                logging_warnings (string_message, False)
             #percent_aligned
-            read_lane_percent_aligned_mean=format(summary.at(read_number).at(lane_number).percent_aligned().mean(),'.3f')
-            read_lane_percent_aligned_stddev=format(summary.at(read_number).at(lane_number).percent_aligned().stddev(),'3f')
+            try:
+                read_lane_percent_aligned_mean=format(summary.at(read_number).at(lane_number).percent_aligned().mean(),'.3f')
+                read_lane_percent_aligned_stddev=format(summary.at(read_number).at(lane_number).percent_aligned().stddev(),'3f')
+            except:
+                read_lane_percent_aligned_mean, read_lane_percent_aligned_stddev = 'NaN', 'NaN'
+                string_message = experiment_name + ' : Unable to format to float read_lane_percent_aligned_mean'
+                logging_warnings (string_message, False)
             run_read_stats_level['aligned'] = read_lane_percent_aligned_mean + '  ' + chr(177) + '  ' + read_lane_percent_aligned_stddev
             #error rate
-            read_lane_error_rate_mean=format(summary.at(read_number).at(lane_number).error_rate().mean(),'.3f')
-            read_lane_error_rate_stddev=format(summary.at(read_number).at(lane_number).error_rate().stddev(),'.3f')
+            try:
+                read_lane_error_rate_mean=format(summary.at(read_number).at(lane_number).error_rate().mean(),'.3f')
+                read_lane_error_rate_stddev=format(summary.at(read_number).at(lane_number).error_rate().stddev(),'.3f')
+            except:
+                read_lane_error_rate_mean, read_lane_error_rate_stddev  = 'NaN', 'NaN'
+                string_message = experiment_name + ' : Unable to format to float read_lane_error_rate_mean'
+                logging_warnings (string_message, False)
             run_read_stats_level['errorRate']  = read_lane_error_rate_mean+ '  ' + chr(177) + '  ' + read_lane_error_rate_stddev
             #error rate_35
-            read_lane_error_rate_35_mean=format(summary.at(read_number).at(lane_number).error_rate_35().mean(),'.3f')
-            read_lane_error_rate_35_stddev=format(summary.at(read_number).at(lane_number).error_rate_35().stddev(),'.3f')
+            try:
+                read_lane_error_rate_35_mean=format(summary.at(read_number).at(lane_number).error_rate_35().mean(),'.3f')
+                read_lane_error_rate_35_stddev=format(summary.at(read_number).at(lane_number).error_rate_35().stddev(),'.3f')
+            except:
+                read_lane_error_rate_35_mean, read_lane_error_rate_35_stddev  = 'NaN', 'NaN'
+                string_message = experiment_name + ' : Unable to format to float read_lane_error_rate_35_mean'
+                logging_warnings (string_message, False)
             run_read_stats_level['errorRate35']  = read_lane_error_rate_35_mean + '  ' + chr(177) + '  ' + read_lane_error_rate_35_stddev
             #error rate 50
-            read_lane_error_rate_50_mean=format(summary.at(read_number).at(lane_number).error_rate_50().mean(),'.3f')
-            read_lane_error_rate_50_stddev=format(summary.at(read_number).at(lane_number).error_rate_50().stddev(),'.3f')
+            try:
+                read_lane_error_rate_50_mean=format(summary.at(read_number).at(lane_number).error_rate_50().mean(),'.3f')
+                read_lane_error_rate_50_stddev=format(summary.at(read_number).at(lane_number).error_rate_50().stddev(),'.3f')
+            except:
+                read_lane_error_rate_50_mean, read_lane_error_rate_50_stddev  = 'NaN', 'NaN'
+                string_message = experiment_name + ' : Unable to format to float read_lane_error_rate_50_mean'
+                logging_warnings (string_message, False)
             run_read_stats_level['errorRate50']  = read_lane_error_rate_50_mean + '  ' + chr(177) + '  ' + read_lane_error_rate_50_stddev
             #error rate 75
-            read_lane_error_rate_75_mean=format(summary.at(read_number).at(lane_number).error_rate_75().mean(),'.3f')
-            read_lane_error_rate_75_stddev=format(summary.at(read_number).at(lane_number).error_rate_75().stddev(),'.3f')
+            try:
+                read_lane_error_rate_75_mean=format(summary.at(read_number).at(lane_number).error_rate_75().mean(),'.3f')
+                read_lane_error_rate_75_stddev=format(summary.at(read_number).at(lane_number).error_rate_75().stddev(),'.3f')
+            except:
+                read_lane_error_rate_75_mean, read_lane_error_rate_75_stddev  = 'NaN', 'NaN'
+                string_message = experiment_name + ' : Unable to format to float read_lane_error_rate_75_mean'
+                logging_warnings (string_message, False)
             run_read_stats_level['errorRate75']  = read_lane_error_rate_75_mean + '  ' + chr(177) + '  ' + read_lane_error_rate_75_stddev
             #error rate 100
-            read_lane_error_rate_100_mean=format(summary.at(read_number).at(lane_number).error_rate_100().mean(),'.3f')
-            read_lane_error_rate_100_stddev=format(summary.at(read_number).at(lane_number).error_rate_100().stddev(),'.3f')
+            try:
+                read_lane_error_rate_100_mean=format(summary.at(read_number).at(lane_number).error_rate_100().mean(),'.3f')
+                read_lane_error_rate_100_stddev=format(summary.at(read_number).at(lane_number).error_rate_100().stddev(),'.3f')
+            except:
+                read_lane_error_rate_100_mean, read_lane_error_rate_100_stddev  = 'NaN', 'NaN'
+                string_message = experiment_name + ' : Unable to format to float read_lane_error_rate_100_mean'
+                logging_warnings (string_message, False)
             run_read_stats_level['errorRate100']  = read_lane_error_rate_100_mean + '  ' + chr(177) + '  ' + read_lane_error_rate_100_stddev
             # intensity cycle 1
-            read_lane_intensity_cycle_mean=format(summary.at(read_number).at(lane_number).first_cycle_intensity().mean(),'.3f') # get tiles for read 1 and lane 1
-            read_lane_intensity_cycle_stddev=format(summary.at(read_number).at(lane_number).first_cycle_intensity().stddev(),'.3f')
+            try:
+                read_lane_intensity_cycle_mean=format(summary.at(read_number).at(lane_number).first_cycle_intensity().mean(),'.3f') # get tiles for read 1 and lane 1
+                read_lane_intensity_cycle_stddev=format(summary.at(read_number).at(lane_number).first_cycle_intensity().stddev(),'.3f')
+            except:
+                read_lane_intensity_cycle_mean, read_lane_intensity_cycle_stddev  = 'NaN', 'NaN'
+                string_message = experiment_name + ' : Unable to format to float read_lane_intensity_cycle_mean'
+                logging_warnings (string_message, False)
             run_read_stats_level['intensityCycle'] = read_lane_intensity_cycle_mean + '  ' + chr(177) + '  ' + read_lane_intensity_cycle_stddev
 
             run_read_stats_level['read'] = str(read_number+1)
             run_read_stats_level['lane'] = str(lane_number+1)
             # append run_read_stats_level information to run_stats_read_list
             run_stats_read_list.append(run_read_stats_level)
-
     logger.debug ('%s : End function parsing_run_metrics',experiment_name)
     return bin_run_stats_summary_list, run_stats_read_list
