@@ -250,7 +250,7 @@ class SampleType (models.Model):
 
     def get_optional_values(self):
         import pdb; pdb.set_trace()
-        if self.optional_fields == '':
+        if self.optional_fields == None:
             return []
         else:
             return list(map(int, self.optional_fields.split(',')))
