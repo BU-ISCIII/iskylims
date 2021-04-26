@@ -249,7 +249,6 @@ class SampleType (models.Model):
         return '%s' %(self.sampleType)
 
     def get_optional_values(self):
-        import pdb; pdb.set_trace()
         if self.optional_fields == None:
             return []
         else:
@@ -548,7 +547,10 @@ class PatientSex (models.Model):
 
 class PatientCoreManager(models.Manager):
     def create_patient (self, p_data):
-        sex = PatientSex.objects.get(sex__exact = p_data['patientSex'])
+        try:
+            sex = PatientSex.objects.get(sex__exact = p_data['patientSex'])
+        except:
+            sex = None
         new_patient = self.create(patientName = p_data['patientName'] , patientSurname = p_data['patientSurname'],
                     patientCode = p_data['patientCode'],  patientSex = sex)
         return new_patient
@@ -1022,7 +1024,7 @@ class MoleculePreparationManager (models.Manager):
     def  create_molecule (self, molecule_data) :
 
         molecule_used_obj = MoleculeType.objects.get(moleculeType__exact = molecule_data['moleculeType'])
-        #import pdb; pdb.set_trace()
+
         protocol_type_obj = ProtocolType.objects.filter(molecule = molecule_used_obj, apps_name__exact = molecule_data['app_name'])
         protocol_used_obj = Protocols.objects.get(name__exact = molecule_data['protocolUsed'], type__in = protocol_type_obj)
         new_molecule = self.create( protocolUsed = protocol_used_obj, sample =  molecule_data['sample'],
