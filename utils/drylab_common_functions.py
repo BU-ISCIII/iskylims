@@ -81,6 +81,33 @@ def is_service_manager (request):
 
     return True
 
+def get_email_data():
+    '''
+    Description:
+        Fetch the email configuration file
+    Return:
+        email_data
+    '''
+    email_data = {}
+    if EmailData.objects.all().exists():
+        email_data_obj = EmailData.objects.last()
+        email_data = email_data_obj.get_email_data()
+    return email_data
+
+def save_email_data(email_fields):
+    '''
+    Description:
+        create the email configuration file . If exists the old information is deleted
+    Input:
+        email_fields    # Email fields settings
+    Return:
+        email_data_obj
+    '''
+    if EmailData.objects.all().exists():
+        email_data_obj = EmailData.objects.last().update_data(email_fields)
+    else:
+        email_data_obj = EmailData.objects.create_email_data(email_fields)
+    return email_data_obj
 
 def increment_service_number ( request_user):
     '''
