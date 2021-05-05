@@ -78,7 +78,7 @@ def create_resolution_number(service_id):
 
 def get_data_for_resolution(service_obj, resolution_obj ):
     information, user, resolution_data = {}, {}, {}
-    service_number ,run_specs, center, platform = service_obj.get_service_information().split(';')
+    service_number ,center = service_obj.get_service_information()
 
     resolution_info = resolution_obj.get_resolution_information()
     # get profile object
