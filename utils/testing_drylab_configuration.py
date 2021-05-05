@@ -38,12 +38,12 @@ def get_iSkyLIMS_settings():
                         hide_passwd = line.split(split_separator)
                         hide_passwd[1] = 'XXXXXXXXXXXXXXXXX'
                         line = ' = '.join(hide_passwd)
-                    
+
                 line = line.replace('\n', '')
                 s_file.append(line)
     except:
         return
-    
+
     return s_file
 
 def create_service_test(service_requested):
@@ -52,14 +52,14 @@ def create_service_test(service_requested):
     if Service.objects.filter(serviceRequestNumber__exact = service_requested).exists():
         delete_service =  Service.objects.get(serviceRequestNumber__exact = service_requested)
         delete_service.delete()
-    
+
     # Check user is defined in database
     if not User.objects.filter(username__exact = 'test_userDrylab').exists():
         user = User.objects.create_user(username='test_userDrylab',
                                  email='test_userDrylab@iSkyLIMS.com',
                                  password='test_userD')
 
-                                 
+
     try:
         user_name = User.objects.get(username__exact = 'test_userDrylab')
         service_results.append(('User defined', 'OK'))
@@ -75,16 +75,16 @@ def create_service_test(service_requested):
         service_results.append(('File extension defined', 'OK'))
     except:
         service_results.append(('File extension defined', 'NOK'))
-    
+
     for i in range (len(service_results)):
         if 'NOK' in service_results[i]:
             return service_results, 'NOK'
-    try:    
+    try:
         new_test_service = Service(serviceRequestNumber = service_requested, serviceUserId = user_name,
                     servicePlatform = service_platform, serviceFileExt = service_file_ext,
                     serviceStatus = 'recorded')
         new_test_service.save()
-        
+
         service_results.append(('Service Test creation', 'OK'))
         return service_results, 'OK'
     except:
@@ -101,7 +101,7 @@ def create_resolution_test (resolution_number, service_requested):
     resolution_test = []
     # get service object
     service = Service.objects.get(serviceRequestNumber = service_requested)
-    #service_number ,run_specs, center, platform = service.get_service_information().split(';')
+    
     # Create resolution object
     try:
         test_resolution = Resolution(resolutionServiceID = service, resolutionNumber = resolution_number, resolutionFullNumber = str('Test_'+ resolution_number))
@@ -111,10 +111,10 @@ def create_resolution_test (resolution_number, service_requested):
     #test_resolution.save()
     #resolution = Resolution.objects.get(resolutionNumber = resolution_number)
     resolution_info = test_resolution.get_resolution_information()
-    
+
     # get profile object
     #user_id = service.serviceUserId.id
-    
+
     resolution_test.append(('Folder structure creation', 'OK'))
 
     '''
@@ -163,5 +163,5 @@ def delete_test_service(service_name):
         d_service.delete()
     except:
         return
-    
-    return 
+
+    return

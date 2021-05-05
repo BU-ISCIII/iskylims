@@ -190,7 +190,7 @@ def get_data_for_service_confirmation (service_requested):
     user = {}
     service_data ={}
     service = Service.objects.filter(serviceRequestNumber__exact = service_requested).last()
-    service_number ,run_specs, center, platform = service.get_service_information().split(';')
+    service_number , center = service.get_service_information()
     information['service_number'] = service_number
     information['requested_date'] = service.get_service_creation_time()
     information['nodes']= service.serviceAvailableService.all()
