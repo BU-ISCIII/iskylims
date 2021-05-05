@@ -82,24 +82,24 @@ def is_service_manager (request):
     return True
 
 
-def increment_service_number ( user_name):
+def increment_service_number ( request_user):
     '''
     Description:
         The function will check if the logged user belongs to service
         manager group
     Input:
-        user_name # contains the session information
+        request_user # request user obj
     Return:
         service_number
     '''
-    # check user center
     try:
-        user_center = Profile.objects.get(profileUserID = user_name).profileCenter.centerAbbr
+        user_center = Profile.objects.get(profileUserID = request_user).profileCenter.centerAbbr
     except:
         user_center = drylab_config.USER_CENTER_USED_WHEN_NOT_PROVIDED
     # get latest service used for user's center
-    if Service.objects.filter(serviceUserId__profile__profileCenter__centerAbbr=user_center).exists():
-        number_request = Service.objects.filter(serviceUserId__profile__profileCenter__centerAbbr=user_center).last().serviceRequestInt
+    import pdb; pdb.set_trace()
+    if Service.objects.filter(serviceUserId__profile__profileCenter__centerAbbr__exact = user_center).exists():
+        number_request = Service.objects.filter(serviceUserId__profile__profileCenter__centerAbbr__exact = user_center).last().get_service_request_integer()
         if number_request == None:
             service_number = '001'
         else:

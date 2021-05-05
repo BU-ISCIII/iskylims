@@ -74,14 +74,15 @@ def create_new_save_sequencing_service_request(request):
 
     if 'requestedForUserid' in request.POST:
         if request.POST['requestedForUserid'] == '':
-            request_user_id = request.user.id
+            request_user = request.user
         else:
-            request_user_id = User.objects.get(pk__exact = request.POST['requestedForUserid']).pk
+            request_user = User.objects.get(pk__exact = request.POST['requestedForUserid'])
     else:
-        request_user_id = request.user.id
-    if Profile.objects.filter(profileUserID = request.user).exists():
+        request_user = request.user
+    import pdb; pdb.set_trace()
+    if Profile.objects.filter(profileUserID = request_user).exists():
         try:
-            service_data['serviceSeqCenter'] = Profile.objects.filter(profileUserID = request.user).last().profileCenter
+            service_data['serviceSeqCenter'] = Profile.objects.filter(profileUserID = request_user).last().profileCenter
         except:
             service_data['serviceSeqCenter'] = drylab_config.INTERNAL_SEQUENCING_UNIT
 
@@ -91,8 +92,8 @@ def create_new_save_sequencing_service_request(request):
     #service_data['serviceFileExt'] = request.POST['fileExtension']
     #service_data['serviceRunSpecs'] = request.POST['runSpecification']
     service_data['serviceUserId'] = request.user
-    service_data['serviceRequestInt'] = increment_service_number(request_user_id)
-    service_data['serviceRequestNumber'] = create_service_id(service_data['serviceRequestInt'],request_user_id)
+    service_data['serviceRequestInt'] = increment_service_number(request_user)
+    service_data['serviceRequestNumber'] = create_service_id(service_data['serviceRequestInt'],request_user)
 
 	# Save the new service
     new_service = Service.objects.create_service(service_data)
@@ -205,8 +206,8 @@ def get_data_for_service_confirmation (service_requested):
     user['email'] = service.serviceUserId.email
     information['user'] = user
     service_data['projects'] = get_projects_in_requested_samples(service)
-    service_data['platform'] = platform
-    service_data['run_specifications'] = run_specs
+    #service_data['platform'] = platform
+    #service_data['run_specifications'] = run_specs
     service_data['center'] = center
     service_data['notes'] = service.get_service_user_notes()
     files = get_uploaded_files_for_service(service)
@@ -454,7 +455,7 @@ def get_service_information (service_id, service_manager):
     	            #    for resolution in resolutions:
     	            #        pass
     	            #else:
-    	            display_service_details['first_resolution'] = True
+    	        display_service_details['first_resolution'] = True
             #import pdb; pdb.set_trace()
         if service_obj.get_service_state() == 'queued':
             resolution_id = Resolution.objects.filter(resolutionServiceID = service_obj).last().id
@@ -463,7 +464,7 @@ def get_service_information (service_id, service_manager):
             resolution_id = Resolution.objects.filter(resolutionServiceID = service_obj).last().id
             display_service_details['add_delivery_action'] = resolution_id
 
-
+    import pdb; pdb.set_trace()
     if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
         resolution_heading = drylab_config.HEADING_FOR_RESOLUTION_INFORMATION
         resolution_objs = Resolution.objects.filter(resolutionServiceID = service_obj).order_by('resolutionState')

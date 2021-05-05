@@ -199,8 +199,9 @@ def create_new_resolution(resolution_data_form):
 
     if 'pipelines' in resolution_data_form:
         for pipeline in resolution_data_form['pipelines']:
-            pipeline_obj = get_pipeline_obj_from_id(pipeline)
-            new_resolution.servicePipelines.add(pipeline_obj)
+            if pipeline != '':
+                pipeline_obj = get_pipeline_obj_from_id(pipeline)
+                new_resolution.servicePipelines.add(pipeline_obj)
 
     if 'additional_parameters' in resolution_data_form:
         store_resolution_additional_parameter(resolution_data_form['additional_parameters'], new_resolution)

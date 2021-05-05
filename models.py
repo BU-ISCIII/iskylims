@@ -301,6 +301,9 @@ class Service(models.Model):
 	def get_service_delivery_time_no_format (self):
 		return self.serviceOnDeliveredDate
 
+	def get_service_request_integer(self):
+		return '%s' %(self.serviceRequestInt)
+
 	def get_service_request_number(self):
 		return '%s' %(self.serviceRequestNumber)
 
