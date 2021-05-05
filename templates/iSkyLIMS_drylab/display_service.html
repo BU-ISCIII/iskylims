@@ -263,219 +263,219 @@
                     <button class="tablinks" onclick="summaryBin(event, 'resolutions')">Resolutions</button>
                     <button class="tablinks" onclick="summaryBin(event, 'deliveries')">Deliveries</button>
             </div> <!--  end tabs -->
-        <div class="col-sm-12">  <!-- Resolution and Delivery Information from service -->
-            <div id="request_services" class="tabcontent">
-                <div class="col-sm-6">
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><h3>Requested Services</h3></div>
-                        <div class="panel-body">
-                            <ul class="root">
-                                {% recursetree display_service.nodes %}
-                                    <li>
-                                        {{ node }}
-                                        {% if not node.is_leaf_node %}
-                                            <ul class="children">
-                                                {{ children }}
-                                            </ul>
-                                            <BR>
-                                        {% endif %}
-                                    </li>
-                                {% endrecursetree %}
-                            </ul>
-                        </div> <!--// end panel body -->
-                    </div> <!--// end panel -->
-                </div> <!--// end col-sm-6 -->
-                <div class="col-sm-6">
-                    <div class="col-sm-12">  <!-- Samples Requested services -->
+            <div class="col-sm-12">  <!-- Resolution and Delivery Information from service -->
+                <div id="request_services" class="tabcontent">
+                    <div class="col-sm-6">
                         <div class="panel panel-default">
-                            {% if display_service.samples_sequenced %}
-                                <div class="panel-heading"><h3>Sequencing Samples requested in service</h3></div>
-                                <div class="panel-body">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Sample Name</th>
-                                                <th>Project Name</th>
-                                                <th>Run Name</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for key, sample, project, run in display_service.samples_sequenced %}
-                                                <tr>
-                                                    <td>
-                                                        {% if key == 'None' %}
-                                                            {{sample}}
-                                                        {% else %}
-                                                            <a href="/wetlab/displaySampleInRun={{ key }}"  target="_blank" rel="noopener noreferrer">{{sample}}</a>
-                                                        {% endif %}
-                                                    </td>
-                                                    <td>{{project}}</td>
-                                                    <td>{{run}}</td>
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div> <!--// end panel body -->
-                            {% endif %}
-                            {% if display_service.only_recorded_samples %}
-                                <div class="panel-heading"><h3>Just only recorded Samples requested in service</h3></div>
-                                <div class="panel-body">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Sample Name</th>
-                                                <th>Sample Project Name</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for key, sample, project in display_service.only_recorded_samples %}
-                                                <tr>
-                                                    <td>
-                                                        {% if key == 'None' %}
-                                                            {{sample}}
-                                                        {% else %}
-                                                            <a href="/wetlab/displaySample={{ key }}"  target="_blank" rel="noopener noreferrer">{{sample}}</a>
-                                                        {% endif %}
-                                                    </td>
-                                                    <td>{{project}}</td>
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div> <!--// end panel body -->
-                            {% endif %}
+                            <div class="panel-heading"><h3>Requested Services</h3></div>
+                            <div class="panel-body">
+                                <ul class="root">
+                                    {% recursetree display_service.nodes %}
+                                        <li>
+                                            {{ node }}
+                                            {% if not node.is_leaf_node %}
+                                                <ul class="children">
+                                                    {{ children }}
+                                                </ul>
+                                                <BR>
+                                            {% endif %}
+                                        </li>
+                                    {% endrecursetree %}
+                                </ul>
                             </div> <!--// end panel body -->
                         </div> <!--// end panel -->
-                    </div> <!--// end col-sm-12   samples Requested services  -->
-
-                </div> <!--// end col-sm-5 -->
-                <div class="col-sm-12">  <!-- Notes in the Requested services -->
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><h3>Notes included in the service request</h3></div>
-                        <div class="panel-body">
-                            {{display_service.service_notes}}
-                        </div> <!--// end panel body -->
-                    </div> <!--// end panel -->
-                </div> <!--// end col-sm-12  notes  -->
-            </div><!-- // end of tab request_services -->
-
-            <div id="pipelines" class="tabcontent">
-                <div class="col-sm-6">
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><h3>Pipelines used in this service </h3></div>
-                        <div class="panel-body">
-                            {% if display_service.pipelines_heading %}
-                                {% for pipe, values in display_service.piplelines_data.items %}
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                {% for column in display_service.pipelines_heading %}
-                                                    <th>{{column}}</th>
-                                                {% endfor %}
-                                           </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for id, name, version, res_num in values %}
-                                                <tr>
-
-                                                    <td><a href="/drylab/detailPipeline={{id}}">{{name}}</a></td>
-                                                    <td>{{version}}</td>
-                                                    <td>{{res_num}}</td>
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                    <br><br>
-                                {% endfor %}
-                            {% else %}
-                                <h5 style="text-align:center"> There are no pipelines used for the requested service</h5>
-                            {% endif %}
-                        </div> <!--// end panel body -->
-                    </div> <!--// end panel -->
-                </div> <!--// end col-sm-12  Projects Requested services  -->
-            </div> <!--// end col-sm-5 -->
-        </div><!-- // end of tab pipelines -->
-
-            <div id="resolutions" class="tabcontent">
-                <div class="col-sm-8">  <!-- Resolution information from service -->
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><h3>Resolution requested information</h3></div>
-                        <div class="panel-body">
-                            {% if display_service.resolutions %}
-                                    {% for resolution_number, resolution_information in display_service.resolutions %}
+                    </div> <!--// end col-sm-6 -->
+                    <div class="col-sm-6">
+                        <div class="col-sm-12">  <!-- Samples Requested services -->
+                            <div class="panel panel-default">
+                                {% if display_service.samples_sequenced %}
+                                    <div class="panel-heading"><h3>Sequencing Samples requested in service</h3></div>
+                                    <div class="panel-body">
                                         <table class="table table-hover">
                                             <thead>
                                                 <tr>
-                                                    <th colspan= "2">Resolution Information for :  {{resolution_number}}</th>
+                                                    <th>Sample Name</th>
+                                                    <th>Project Name</th>
+                                                    <th>Run Name</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {% for values in resolution_information %}
+                                                {% for key, sample, project, run in display_service.samples_sequenced %}
                                                     <tr>
-                                                        {% if forloop.first %}
-                                                            {% if values.1.0 != 'None' %}
-                                                                <td>{{values.0}}</td>
-                                                                <td>
-                                                                    {% for item in values.1 %}
-                                                                        {{item}}<br>
-                                                                    {% endfor %}
-                                                                </td>
+                                                        <td>
+                                                            {% if key == 'None' %}
+                                                                {{sample}}
+                                                            {% else %}
+                                                                <a href="/wetlab/displaySampleInRun={{ key }}"  target="_blank" rel="noopener noreferrer">{{sample}}</a>
                                                             {% endif %}
-                                                        {% elif forloop.last %}
-                                                            <td>{{values.0}}</td>
-                                                            <td><a href="{{values.1}}" download> Download file<span class="glyphicon glyphicon-download-alt"></span></a></td>
-                                                        {% else %}
-                                                            <td>{{values.0}}</td>
-                                                            <td>{{values.1}} </td>
-                                                        {% endif %}
+                                                        </td>
+                                                        <td>{{project}}</td>
+                                                        <td>{{run}}</td>
                                                     </tr>
                                                 {% endfor %}
-                                           </tbody>
+                                            </tbody>
                                         </table>
-                                    {% endfor %}
-                                    <BR><BR>
-                            {% else %}
-                                <h5 style="text-align:center"> There are no resolutions assigned yet for the requested service</h5>
-                            {% endif %}
-                        </div> <!--// end panel body -->
-                    </div> <!--// end panel -->
-                </div> <!--// end col-sm-7  Resolution information from service  -->
-            </div><!-- // end of tab resolutions -->
-            <div id="deliveries" class="tabcontent">
-                <div class="col-sm-6">  <!-- Resolution information from service -->
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><h3>Delivery information</h3></div>
-                        <div class="panel-body">
-                            {% if display_service.delivery %}
-                                {% for delivery  in display_service.delivery %}
-                                    {% for  resolution_number, delivery_date, notes in delivery %}
+                                    </div> <!--// end panel body -->
+                                {% endif %}
+                                {% if display_service.only_recorded_samples %}
+                                    <div class="panel-heading"><h3>Just only recorded Samples requested in service</h3></div>
+                                    <div class="panel-body">
                                         <table class="table table-hover">
                                             <thead>
                                                 <tr>
-                                                    <th colspan= "2">Delivery information  for Resolution {{ resolution_number }}</th>
+                                                    <th>Sample Name</th>
+                                                    <th>Sample Project Name</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr>
-                                                    <td>Delivery Date:  </td>
-                                                    <td> {{ delivery_date }} </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Notes: </td>
-                                                    <td>{{ notes }}</td>
-                                                </tr>
+                                                {% for key, sample, project in display_service.only_recorded_samples %}
+                                                    <tr>
+                                                        <td>
+                                                            {% if key == 'None' %}
+                                                                {{sample}}
+                                                            {% else %}
+                                                                <a href="/wetlab/displaySample={{ key }}"  target="_blank" rel="noopener noreferrer">{{sample}}</a>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td>{{project}}</td>
+                                                    </tr>
+                                                {% endfor %}
                                             </tbody>
                                         </table>
+                                    </div> <!--// end panel body -->
+                                {% endif %}
+                                
+                            </div> <!--// end panel -->
+                        </div> <!--// end col-sm-12   samples Requested services  -->
+
+                    </div> <!--// end col-sm-5 -->
+                    <div class="col-sm-12">  <!-- Notes in the Requested services -->
+                        <div class="panel panel-default">
+                            <div class="panel-heading"><h3>Notes included in the service request</h3></div>
+                            <div class="panel-body">
+                                {{display_service.service_notes}}
+                            </div> <!--// end panel body -->
+                        </div> <!--// end panel -->
+                    </div> <!--// end col-sm-12  notes  -->
+                </div><!-- // end of tab request_services -->
+
+                <div id="pipelines" class="tabcontent">
+                    <div class="col-sm-6">
+                        <div class="panel panel-default">
+                            <div class="panel-heading"><h3>Pipelines used in this service </h3></div>
+                            <div class="panel-body">
+                                {% if display_service.pipelines_heading %}
+                                    {% for pipe, values in display_service.piplelines_data.items %}
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    {% for column in display_service.pipelines_heading %}
+                                                        <th>{{column}}</th>
+                                                    {% endfor %}
+                                               </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for id, name, version, res_num in values %}
+                                                    <tr>
+
+                                                        <td><a href="/drylab/detailPipeline={{id}}">{{name}}</a></td>
+                                                        <td>{{version}}</td>
+                                                        <td>{{res_num}}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                        <br><br>
                                     {% endfor %}
-                                    <BR><BR>
-                                {% endfor %}
-                            {% else %}
-                                <h5 style="text-align:center"> There are no deliveries done yet for the requested service</h5>
-                            {% endif %}
-                        </div> <!--// end panel body -->
-                    </div> <!--// end panel -->
-                </div> <!--// end col-sm-6  Deliveries information from service  -->
-            </div><!-- // end of tab deliveries -->
+                                {% else %}
+                                    <h5 style="text-align:center"> There are no pipelines used for the requested service</h5>
+                                {% endif %}
+                            </div> <!--// end panel body -->
+                        </div> <!--// end panel -->
+                    </div> <!--// end col-sm062  Projects Requested services  -->
+                </div><!-- // end of tab pipelines -->
+
+                <div id="resolutions" class="tabcontent">
+                    <div class="col-sm-8">  <!-- Resolution information from service -->
+                        <div class="panel panel-default">
+                            <div class="panel-heading"><h3>Resolution requested information</h3></div>
+                            <div class="panel-body">
+                                {% if display_service.resolutions %}
+                                        {% for resolution_number, resolution_information in display_service.resolutions %}
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th colspan= "2">Resolution Information for :  {{resolution_number}}</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for values in resolution_information %}
+                                                        <tr>
+                                                            {% if forloop.first %}
+                                                                {% if values.1.0 != 'None' %}
+                                                                    <td>{{values.0}}</td>
+                                                                    <td>
+                                                                        {% for item in values.1 %}
+                                                                            {{item}}<br>
+                                                                        {% endfor %}
+                                                                    </td>
+                                                                {% endif %}
+                                                            {% elif forloop.last %}
+                                                                <td>{{values.0}}</td>
+                                                                <td><a href="{{values.1}}" download> Download file<span class="glyphicon glyphicon-download-alt"></span></a></td>
+                                                            {% else %}
+                                                                <td>{{values.0}}</td>
+                                                                <td>{{values.1}} </td>
+                                                            {% endif %}
+                                                        </tr>
+                                                    {% endfor %}
+                                               </tbody>
+                                            </table>
+                                        {% endfor %}
+                                        <BR><BR>
+                                {% else %}
+                                    <h5 style="text-align:center"> There are no resolutions assigned yet for the requested service</h5>
+                                {% endif %}
+                            </div> <!--// end panel body -->
+                        </div> <!--// end panel -->
+                    </div> <!--// end col-sm-8  Resolution information from service  -->
+                </div><!-- // end of tab resolutions -->
+                <div id="deliveries" class="tabcontent">
+                    <div class="col-sm-6">  <!-- Resolution information from service -->
+                        <div class="panel panel-default">
+                            <div class="panel-heading"><h3>Delivery information</h3></div>
+                            <div class="panel-body">
+                                {% if display_service.delivery %}
+                                    {% for delivery  in display_service.delivery %}
+                                        {% for  resolution_number, delivery_date, notes in delivery %}
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th colspan= "2">Delivery information  for Resolution {{ resolution_number }}</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>Delivery Date:  </td>
+                                                        <td> {{ delivery_date }} </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Notes: </td>
+                                                        <td>{{ notes }}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        {% endfor %}
+                                        <BR><BR>
+                                    {% endfor %}
+                                {% else %}
+                                    <h5 style="text-align:center"> There are no deliveries done yet for the requested service</h5>
+                                {% endif %}
+                            </div> <!--// end panel body -->
+                        </div> <!--// end panel -->
+                    </div> <!--// end col-sm-6  Deliveries information from service  -->
+                </div><!-- // end of tab deliveries -->
+            </div> <!--// end sm 12 -->
         </div> <!--// end sm 12 -->
     </div>   <!--// end row -->
     <script>

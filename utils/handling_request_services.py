@@ -79,7 +79,7 @@ def create_new_save_sequencing_service_request(request):
             request_user = User.objects.get(pk__exact = request.POST['requestedForUserid'])
     else:
         request_user = request.user
-    import pdb; pdb.set_trace()
+    
     if Profile.objects.filter(profileUserID = request_user).exists():
         try:
             service_data['serviceSeqCenter'] = Profile.objects.filter(profileUserID = request_user).last().profileCenter
@@ -456,7 +456,7 @@ def get_service_information (service_id, service_manager):
     	            #        pass
     	            #else:
     	        display_service_details['first_resolution'] = True
-            #import pdb; pdb.set_trace()
+
         if service_obj.get_service_state() == 'queued':
             resolution_id = Resolution.objects.filter(resolutionServiceID = service_obj).last().id
             display_service_details['add_in_progress_action'] = resolution_id
@@ -464,7 +464,7 @@ def get_service_information (service_id, service_manager):
             resolution_id = Resolution.objects.filter(resolutionServiceID = service_obj).last().id
             display_service_details['add_delivery_action'] = resolution_id
 
-    import pdb; pdb.set_trace()
+
     if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
         resolution_heading = drylab_config.HEADING_FOR_RESOLUTION_INFORMATION
         resolution_objs = Resolution.objects.filter(resolutionServiceID = service_obj).order_by('resolutionState')
@@ -505,7 +505,7 @@ def get_service_information (service_id, service_manager):
                 execution_time = (delivery_date - in_progress_date).days
                 dates.append(['Execution time', execution_time])
     display_service_details['calculation_dates'] = dates
-    #import pdb; pdb.set_trace()
+
     return display_service_details
 
 
@@ -541,13 +541,13 @@ def prepare_form_data_request_service_sequencing (request):
     if is_service_manager(request):
         service_data_information['users'] = get_defined_username_and_ids()
     service_data_information['nodes'] = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
-    #import pdb; pdb.set_trace()
+
     if wetlab_api_available :
 		## get samples which have sequencing data in iSkyLIMS
         user_sharing_list = get_user_sharing_list(request.user)
 
         service_data_information['samples_data'] = get_runs_projects_samples_and_dates(user_sharing_list)
-        # import pdb; pdb.set_trace()
+
         if len(service_data_information['samples_data']) > 0:
             service_data_information['samples_heading'] = drylab_config.HEADING_SELECT_SAMPLE_IN_SERVICE
 
