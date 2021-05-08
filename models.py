@@ -301,6 +301,12 @@ class Service(models.Model):
 	def get_service_delivery_time_no_format (self):
 		return self.serviceOnDeliveredDate
 
+	def get_delivery_date (self):
+		if self.serviceOnDeliveredDate:
+			return self.serviceOnDeliveredDate.strftime("%d %B, %Y")
+		else:
+			return 'Not yet defined'
+
 	def get_service_request_integer(self):
 		return '%s' %(self.serviceRequestInt)
 

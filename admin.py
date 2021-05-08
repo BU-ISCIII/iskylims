@@ -17,7 +17,7 @@ class MachinesAdmin (admin.ModelAdmin) :
 '''
 # 'serviceUsername' refactored to 'serviceUserid' which shows better its real nature
 class ServiceAdmin(admin.ModelAdmin):
-	list_display =('serviceRequestNumber','serviceUserId','serviceSeqCenter','serviceSequencingPlatform','serviceStatus','serviceNotes','serviceCreatedOnDate','serviceOnDeliveredDate')
+	list_display =('serviceRequestNumber', 'serviceSeqCenter', 'serviceUserId','serviceStatus','serviceCreatedOnDate','serviceOnDeliveredDate')
 	list_filter = ['serviceCreatedOnDate']
 	search_fields = ['serviceRequestNumber__icontains']
 

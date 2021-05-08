@@ -28,30 +28,25 @@ from iSkyLIMS_drylab.utils.handling_multiple_files import *
 
 @login_required
 def index(request):
-    if Service.objects.all().exclude(serviceStatus = 'delivered').exclude(serviceStatus = 'rejected').exclude(serviceStatus = 'approved').exists():
-        ongoing_services = Service.objects.all().exclude(serviceStatus = 'delivered').exclude(serviceStatus = 'rejected').exclude(serviceStatus = 'approved').order_by('serviceCreatedOnDate')
-        service_list = []
-        for service in ongoing_services:
-            service_info = []
-            service_info.append(service.serviceRequestNumber)
-            service_info.append(service.serviceStatus)
-            if service.serviceStatus == 'recorded':
-                service_delivery_date = 'Not defined yet'
-            else:
-                if Resolution.objects.filter(resolutionServiceID = service).exists():
+    service_list = {}
+    if Service.objects.filter(serviceStatus__exact = 'recorded').exists():
+        r_service_objs =  Service.objects.filter(serviceStatus__exact = 'recorded').order_by('serviceCreatedOnDate')
+        service_list['recorded'] = []
+        for r_service_obj in r_service_objs:
+            s_info = r_service_obj.get_service_information()
+            s_info.append(r_service_obj.get_service_requested_user())
+            service_list['recorded'].append(s_info)
 
-                    if Resolution.objects.filter(resolutionServiceID = service).last().resolutionEstimatedDate is not None:
-                        service_delivery_date = Resolution.objects.filter(resolutionServiceID = service).last().resolutionEstimatedDate.strftime("%d %B, %Y")
-                    else:
-                        service_delivery_date = 'Not defined yet'
-                else:
-                    service_delivery_date = 'Not defined yet'
-            service_info.append(service_delivery_date)
-            service_list.append(service_info)
+    if Service.objects.all().exclude(serviceStatus__exact = 'delivered').exclude(serviceOnApprovedDate = None).exists():
+        ongoing_services_objs = Service.objects.all().exclude(serviceStatus__exact = 'delivered').exclude(serviceOnApprovedDate = None).order_by('serviceOnApprovedDate')
+        service_list['ongoing'] = []
+        for ongoing_services_obj in ongoing_services_objs:
+            s_info = ongoing_services_obj.get_service_information()
+            s_info.append(ongoing_services_obj.get_delivery_date())
+            service_list['ongoing'].append(s_info)
 
-        return render(request, 'iSkyLIMS_drylab/index.html',{'service_list': service_list})
-    else:
-        return render(request, 'iSkyLIMS_drylab/index.html')
+    return render(request, 'iSkyLIMS_drylab/index.html',{'service_list': service_list})
+
 
 @login_required
 def configuration_email(request):
