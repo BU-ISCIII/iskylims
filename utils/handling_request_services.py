@@ -79,7 +79,7 @@ def create_new_save_sequencing_service_request(request):
             request_user = User.objects.get(pk__exact = request.POST['requestedForUserid'])
     else:
         request_user = request.user
-    
+
     if Profile.objects.filter(profileUserID = request_user).exists():
         try:
             service_data['serviceSeqCenter'] = Profile.objects.filter(profileUserID = request_user).last().profileCenter
@@ -270,9 +270,10 @@ def get_pending_services_information():
         resolution_recorded_objs = Resolution.objects.filter(resolutionState__resolutionStateName__exact = 'In Progress').order_by('-resolutionServiceID')
         for resolution_recorded_obj in resolution_recorded_objs :
             in_progress.append(resolution_recorded_obj.get_information_for_pending_resolutions())
-    pending_services_details['queued'] = queued
-    pending_services_details['heading_queued'] = drylab_config.HEADING_PENDING_SERVICE_QUEUED
-    pending_services_details['in_progress'] = in_progress
+		pending_services_details['in_progress'] = in_progress
+    #pending_services_details['queued'] = queued
+    #pending_services_details['heading_queued'] = drylab_config.HEADING_PENDING_SERVICE_QUEUED
+
 
     number_of_services = {}
     number_of_services ['RECORDED'] = len (recorded)
