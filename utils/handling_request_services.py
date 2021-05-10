@@ -91,8 +91,9 @@ def create_new_save_sequencing_service_request(request):
     #service_data['serviceSequencingPlatform'] = request.POST['sequencingPlatform']
     #service_data['serviceFileExt'] = request.POST['fileExtension']
     #service_data['serviceRunSpecs'] = request.POST['runSpecification']
-    service_data['serviceUserId'] = request.user
+    service_data['serviceUserId'] = request_user
     service_data['serviceRequestInt'] = increment_service_number(request_user)
+    
     service_data['serviceRequestNumber'] = create_service_id(service_data['serviceRequestInt'],request_user)
 
 	# Save the new service
