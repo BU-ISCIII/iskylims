@@ -57,12 +57,6 @@
                                             <li><a href="/drylab/managePipelines">MANAGE PIPELINES</a></li>
                                         </ul>
                                     </li>
-                                    <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">ANALYSIS<span class="caret"></span></a>
-                                        <ul class="dropdown-menu">
-                                            <li><a href="/drylab/">REQUEST ANALYSIS</a></li>
-                                            <li><a href="/drylab/">MANAGE ANALYSIS </a></li>
-                                        </ul>
-                                    </li>
                                 {% endif %}
                                 {% if user.is_authenticated and request.user|has_group:"ServiceManager" %}
                                     <li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">MANAGE SERVICES<span class="caret"></span></a>
