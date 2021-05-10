@@ -270,7 +270,7 @@ def get_pending_services_information():
         resolution_recorded_objs = Resolution.objects.filter(resolutionState__resolutionStateName__exact = 'In Progress').order_by('-resolutionServiceID')
         for resolution_recorded_obj in resolution_recorded_objs :
             in_progress.append(resolution_recorded_obj.get_information_for_pending_resolutions())
-		pending_services_details['in_progress'] = in_progress
+        pending_services_details['in_progress'] = in_progress
     #pending_services_details['queued'] = queued
     #pending_services_details['heading_queued'] = drylab_config.HEADING_PENDING_SERVICE_QUEUED
 
