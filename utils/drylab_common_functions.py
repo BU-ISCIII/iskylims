@@ -124,7 +124,7 @@ def increment_service_number ( request_user):
     except:
         user_center = drylab_config.USER_CENTER_USED_WHEN_NOT_PROVIDED
     # get latest service used for user's center
-    import pdb; pdb.set_trace()
+
     if Service.objects.filter(serviceUserId__profile__profileCenter__centerAbbr__exact = user_center).exists():
         number_request = Service.objects.filter(serviceUserId__profile__profileCenter__centerAbbr__exact = user_center).last().get_service_request_integer()
         if number_request == None:
