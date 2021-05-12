@@ -93,9 +93,9 @@ def create_new_save_sequencing_service_request(request):
     #service_data['serviceRunSpecs'] = request.POST['runSpecification']
     service_data['serviceUserId'] = request_user
     service_data['serviceRequestInt'] = increment_service_number(request_user)
-    
-    service_data['serviceRequestNumber'] = create_service_id(service_data['serviceRequestInt'],request_user)
 
+    service_data['serviceRequestNumber'] = create_service_id(service_data['serviceRequestInt'],request_user)
+    import pdb; pdb.set_trace()
 	# Save the new service
     new_service = Service.objects.create_service(service_data)
 
