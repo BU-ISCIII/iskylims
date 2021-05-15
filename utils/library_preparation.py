@@ -669,22 +669,21 @@ def find_index_sequence_collection_values_kit(sequence):
     return 'None', sequence
 
 
-def store_library_preparation_index(form_data):
+
+
+def store_confirmation_library_preparation_index(form_data):
     '''
     Description:
         The function will fetch the indexes defined in the confirmed sample sheet
         and updated the library preparation sample with index information.
         It updated also the userid field.
     Input:
-        form_data   # data included in the form
+        form_data               # data included in the form
+        user_sample_sheet_obj   # user sample sheet object
     Constant:
         ERROR_USER_SAMPLE_SHEET_NO_LONGER_EXISTS
         ERROR_LIBRARY_PREPARATION_NOT_EXISTS
-        MAP_USER_SAMPLE_SHEET_ADDITIONAL_FIELDS_FROM_TYPE_OF_SECUENCER
-        MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_SINGLE_READ
-        MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_PAIRED_END
-        MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ
-        MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END
+        MAP_USER_SAMPLE_SHEET_TO_DATABASE_ALL_PLATFORMS
     Return:
         store_result .
     '''
@@ -692,62 +691,34 @@ def store_library_preparation_index(form_data):
     unable_store_lib_prep = []
     json_data = json.loads(form_data['index_data'])
     heading = form_data['heading_excel'].split(',')
-    if 'NextSeq' in form_data['platform']:
-        if 'I5_Index_ID' in heading :
-            single_paired = 'Paired End'
-            mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_PAIRED_END
-        else:
-            single_paired = 'Single Reads'
-            mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_SINGLE_READ
-    else:
-        if 'I5_Index_ID' in heading :
-            single_paired = 'Paired End'
-            if form_data['iem_version'] == '4':
-                mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END_VERSION_4
-            else:
-                mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END_VERSION_5
-        else:
-            single_paired = 'Single Reads'
-            if form_data['iem_version'] == '4':
-                mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ_VERSION_4
-            else:
-                mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ_VERSION_5
-    sample_name_index = heading.index('Sample_Name')
+    store_result = {}
     if not libPreparationUserSampleSheet.objects.filter(pk__exact = form_data['libPrepUserSampleSheetId']).exists():
         store_result['ERROR'] = ERROR_USER_SAMPLE_SHEET_NO_LONGER_EXISTS
         return store_result
-
     user_sample_sheet_obj = libPreparationUserSampleSheet.objects.get(pk__exact = form_data['libPrepUserSampleSheetId'])
+    sample_name_index = heading.index('Sample_Name')
 
     for row_index in range(len(json_data)):
-
         lib_prep_data = {}
         sample_name = json_data[row_index][sample_name_index]
+        if LibraryPreparation.objects.filter(sampleNameInSampleSheet__exact = sample_name, libPrepState__libPrepState__exact = 'Updated additional kits').exists():
+            lib_prep_obj = LibraryPreparation.objects.filter(sampleNameInSampleSheet__exact = sample_name, libPrepState__libPrepState__exact = 'Updated additional kits').last()
 
-        if LibraryPreparation.objects.filter(sample_id__sampleName__exact = sample_name, libPrepState__libPrepState__exact = 'Updated additional kits').exists():
-            lib_prep_obj = LibraryPreparation.objects.filter(sample_id__sampleName__exact = sample_name, libPrepState__libPrepState__exact = 'Updated additional kits').last()
-
-            for item in mapping :
-
-                lib_prep_data[item[1]] = json_data[row_index][heading.index(item[0])]
-            for item in MAP_USER_SAMPLE_SHEET_ADDITIONAL_FIELDS_FROM_TYPE_OF_SECUENCER :
-                try:
-                    lib_prep_data[item[1]] =  json_data[row_index][heading.index(item[0])]
-                except:
-                    lib_prep_data[item[1]] = None
-
+            for item in MAP_USER_SAMPLE_SHEET_TO_DATABASE_ALL_PLATFORMS :
+                if item[0] in heading :
+                    try:
+                        lib_prep_data[item[1]] = json_data[row_index][heading.index(item[0])]
+                    except:
+                        lib_prep_data[item[1]] = None
             # if Single reads then set the index 5 to empty
             if not 'I5_Index_ID' in heading :
                 lib_prep_data['i5IndexID'] = ''
                 lib_prep_data['i5Index'] = ''
             lib_prep_data['user_sample_sheet'] = user_sample_sheet_obj
-
             lib_prep_obj.update_library_preparation_with_indexes(lib_prep_data)
             # Update library preparation and sample state
             lib_prep_obj.set_state('Completed')
             lib_prep_obj.get_sample_obj().set_state('Pool Preparation')
-
-
         else:
             #### ERROR #####
             unable_store_lib_prep.append(sample_name)

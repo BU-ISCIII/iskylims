@@ -3439,10 +3439,7 @@ def handling_library_preparations(request):
         sample_sheet_data['userid_names'] = user_id_in_s_sheet
         lib_prep_sample_sheet_obj = store_library_preparation_sample_sheet(sample_sheet_data, request.user, platform, configuration)
         #stored_lib_prep_sample = store_library_preparation_samples(sample_sheet_data,  request.user, request.POST['lib_protocols'], lib_prep_sample_sheet_obj)
-        import pdb; pdb.set_trace()
         display_sample_sheet = format_sample_sheet_to_display_in_form(sample_sheet_data)
-        #display_sample_sheet = sample_sheet_data
-        #display_sample_sheet['user_list'] = get_user_for_sample_sheet()
         display_sample_sheet['lib_prep_user_sample_sheet'] = lib_prep_sample_sheet_obj.get_user_sample_sheet_id()
         display_sample_sheet['platform'] = platform
         display_sample_sheet['iem_version'] = sample_sheet_data['iem_version']
@@ -3452,8 +3449,7 @@ def handling_library_preparations(request):
 
 
     if request.method == 'POST' and request.POST['action'] == 'storeIndexSample':
-
-        store_data_result = store_library_preparation_index(request.POST)
+        store_data_result = store_confirmation_library_preparation_index(request.POST)
         if 'ERROR' in store_data_result:
             return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'ERROR':valid_data['ERROR'], 'samples_in_lib_prep':samples_in_lib_prep})
         stored_index = 'True'
@@ -4019,14 +4015,14 @@ def create_new_run (request):
         #update_run_with_sample_sheet(request.POST['run_process_id'], run_data['sample_sheet'])
 
         #run_obj = run_data['run_obj']
-        #import pdb; pdb.set_trace()
+
         run_obj.set_run_state('Recorded')
-        #import pdb; pdb.set_trace()
+
         sample_sheet_name = store_confirmation_sample_sheet(run_data)
         # update the sample state for each one in the run
         pools_obj = LibraryPool.objects.filter(runProcess_id = run_obj)
 
-        #import pdb; pdb.set_trace()
+
         for pool_obj in pools_obj:
             pool_obj.set_pool_state('Used')
         update_batch_lib_prep_sample_state(run_data['lib_prep_ids'],  'Sequencing')
@@ -4034,7 +4030,7 @@ def create_new_run (request):
         created_new_run['exp_name'] = run_data['exp_name']
         created_new_run['run_process_id'] = request.POST['run_process_id']
         created_new_run['sample_sheet'] = sample_sheet_name
-        #import pdb; pdb.set_trace()
+
         return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'created_new_run': created_new_run})
     else:
         display_pools_for_run = display_available_pools()

@@ -182,6 +182,11 @@ MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END_VERSION_4 = [('Sample_ID','us
             ('Sample_Well','sampleWell'),('I7_Index_ID','i7IndexID'), ('index','i7Index'),('I5_Index_ID','i5IndexID'),('index2','i5Index'),
             ('Sample_Project','projectInSampleSheet'),('Description', 'userInSampleSheet')]
 
+
+MAP_USER_SAMPLE_SHEET_TO_DATABASE_ALL_PLATFORMS = [('Sample_ID','userSampleID'), ('Sample_Name','sample_name'), ('Sample_Plate','samplePlate'),
+            ('Sample_Well','sampleWell'),('I7_Index_ID','i7IndexID'), ('index','i7Index'), ('I5_Index_ID','i5IndexID'),('index2','i5Index'),
+            ('Index_Plate_Well','indexPlateWell'), ('Manifest', 'manifest'), ('GenomeFolder', 'genomeFolder'),
+            ('Sample_Project','projectInSampleSheet'), ('Description', 'userInSampleSheet')]
 ######### MAPPING OPTIONAL COLUMNS THAT COULD BE IN SAMPLE SHEET FROM USER TO DATABASE   #############
 MAP_USER_SAMPLE_SHEET_ADDITIONAL_FIELDS_FROM_TYPE_OF_SECUENCER = [('Index_Plate_Well','indexPlateWell'), ('Manifest', 'manifest'), ('GenomeFolder', 'genomeFolder')]
 
