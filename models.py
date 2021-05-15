@@ -939,7 +939,10 @@ class libPreparationUserSampleSheetManager (models.Manager):
         if user_sample_sheet_data['index_adapters'] == '':
             collection_index_kit_id = None
         else:
-            collection_index_kit_id = CollectionIndexKit.objects.get(collectionIndexName__exact = user_sample_sheet_data['index_adapters'])
+            try:
+                collection_index_kit_id = CollectionIndexKit.objects.filter(collectionIndexName__exact = user_sample_sheet_data['index_adapters']).last()
+            except:
+                collection_index_kit_id = None
         file_name =  os.path.basename(user_sample_sheet_data['file_name'])
         configuration = SequencingConfiguration.objects.filter( platformID__platformName__exact = user_sample_sheet_data['platform'], configurationName__exact = user_sample_sheet_data['configuration']).last()
         new_lib_prep_user_sample_sheet = self.create(registerUser = register_user_obj,
@@ -973,6 +976,7 @@ class libPreparationUserSampleSheet (models.Model):
     reads = models.CharField(max_length=10, null = True, blank = True)
     confirmedUsed = models.BooleanField(default = False)
     iemVersion = models.CharField(max_length=5, null = True, blank = True)
+
 
     def __str__ (self):
         return '%s' %(self.sampleSheet)
@@ -1158,7 +1162,8 @@ class libraryPreparationManager(models.Manager):
         new_lib_prep = self.create(registerUser = registerUser_obj, molecule_id = molecule_obj, sample_id = sample_obj,
             protocol_id =   lib_prep_data['protocol_obj'], libPrepState = lib_state_obj,
             libPrepCodeID = lib_prep_data['lib_prep_code_id'], userSampleID = lib_prep_data['user_sampleID'],
-            uniqueID = lib_prep_data['uniqueID'])
+            uniqueID = lib_prep_data['uniqueID'], prefixProtocol = lib_prep_data['prefixProtocol'],
+            sampleNameInSampleSheet = lib_prep_data['sampleNameInSampleSheet'])
         return new_lib_prep
 
     def create_reused_lib_preparation (self, reg_user, molecule_obj, sample_id):
@@ -1199,10 +1204,10 @@ class LibraryPreparation (models.Model):
     samplePlate = models.CharField(max_length =50, null = True, blank = True)
     sampleWell = models.CharField(max_length =20, null = True, blank = True)
     indexPlateWell = models.CharField(max_length =20, null = True, blank = True)
-    i7IndexID = models.CharField(max_length =16, null = True, blank = True)
-    i7Index = models.CharField(max_length =16, null = True, blank = True)
-    i5IndexID = models.CharField(max_length =16, null = True, blank = True)
-    i5Index = models.CharField(max_length =16, null = True, blank = True)
+    i7IndexID = models.CharField(max_length =25, null = True, blank = True)
+    i7Index = models.CharField(max_length =30, null = True, blank = True)
+    i5IndexID = models.CharField(max_length =25, null = True, blank = True)
+    i5Index = models.CharField(max_length =30, null = True, blank = True)
     ## Miseq fields
     genomeFolder = models.CharField(max_length =180, null = True, blank = True)
     manifest = models.CharField(max_length =80, null = True, blank = True)
@@ -1212,6 +1217,8 @@ class LibraryPreparation (models.Model):
     numberOfReused = models.IntegerField(default=0)
     uniqueID = models.CharField(max_length =16, null = True, blank = True)
     userInSampleSheet = models.CharField(max_length=255, null = True, blank = True)
+    sampleNameInSampleSheet = models.CharField(max_length=255, null = True, blank = True)
+    prefixProtocol = models.CharField(max_length=25, null = True, blank = True)
 
     class Meta:
         ordering = ('libPrepCodeID',)

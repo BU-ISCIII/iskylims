@@ -15,24 +15,26 @@ from django.core.files.storage import FileSystemStorage
 
 from iSkyLIMS_wetlab import wetlab_config
 from iSkyLIMS_wetlab.models import *
+# from iSkyLIMS_wetlab.utils.generic_functions import  *
 
-def get_userid_in_user_iem_file (file_read):
+def validate_userid_in_user_iem_file (file_read, user_id_list):
     '''
     Description:
         The function get if userids included in the user IEM file
     Input:
-        file_read  # content of the IEM file from user
+        file_read           # content of the IEM file from user
+        user_id_list        # UserID list
+    Constant:
+        ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD
     Return
-        ERROR if no Descripion column exists on file
-
-        False if file cannot be read or do not have Description information
+        ERROR if userid is not defined in descripion column
         userids with the ids found
     '''
-
+    users = {}
     lines = file_read.split('\n')
     data_section_found = False
     description_index = False
-    userid_names = []
+    userid_names, invalid_names = [], []
     for line in lines:
         line=line.rstrip()
         if line == '':
@@ -47,14 +49,25 @@ def get_userid_in_user_iem_file (file_read):
                     description_index = line.index('Description')
                     continue
                 except:
-                    return 'ERROR'
+                    users['ERROR'] = wetlab_config.ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD
+                    return users
             else:
                 try:
-                    userid_names.append(line[description_index])
+                    u_name = line[description_index]
                 except:
                     continue
+                if u_name in user_id_list:
+                    userid_names.append(u_name)
+                else:
+                    invalid_names.append(u_name)
 
-    return list(set(userid_names))
+    if len(invalid_names) > 0:
+        invalid_names = list(set(invalid_names))
+        invalid_names.insert(0,''.join(wetlab_config.ERROR_SAMPLE_SHEET_FOLLOWING_USER_ARE_NOT_DEFINED))
+        users['ERROR'] = invalid_names
+        return users
+    users['user_ids'] = list(set(userid_names))
+    return users
 
 
 
@@ -775,16 +788,17 @@ def read_user_iem_file(in_file):
         return False
 
 
-def valid_user_iem_file (file_read, reject_not_user_in_description):
+def valid_user_iem_file (file_read):
     '''
     Description:
-        The function check if tthe user IEM file has a valid format by checking the headings and
+        The function check if the user IEM file has a valid format by checking the headings and
         if all fields are included in the data section. in particular the description field
         where username has to be defined to assing the sample to the user.
         If there is no sample function return False
     Input:
         file_read                           # content of the input file from user
-        reject_not_user_in_description      # configuration to reject or not in userid is not in description
+    Functions:
+        get_userid_list                 # located at utils.generic_functions.py file
     Constant:
         SECTIONS_IN_IEM_SAMPLE_SHEET
     Return
@@ -810,10 +824,10 @@ def valid_user_iem_file (file_read, reject_not_user_in_description):
                 data_field_length = len(line.split(','))
                 continue
             line_split = line.split(',')
-            if len(line_split) != data_field_length or line_split[-1] == '' and reject_not_user_in_description :
+            # Allow at this step the Description field can be empth
+            if len(line_split) < data_field_length -1 or len(line_split) > data_field_length :
                 return False
-            else:
-                sample_number +=1
+            sample_number +=1
     if sample_number == 0:
         return False
     return True

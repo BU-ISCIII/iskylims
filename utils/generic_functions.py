@@ -5,11 +5,9 @@ from logging.config import fileConfig
 from logging.handlers import RotatingFileHandler
 from smb.SMBConnection import SMBConnection
 
-
 from django.core.mail import send_mail
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 
-from .sample_sheet_utils import get_projects_in_run
 from django.conf import settings
 from iSkyLIMS_wetlab import wetlab_config
 from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters, SambaConnectionData, EmailData, ConfigSetting
@@ -263,9 +261,6 @@ def get_attributes_remote_file (conn, run_dir, remote_file) :
         remote_file # file name to fetch on remote server
     Constants:
         SAMBA_SHARED_FOLDER_NAME
-    variables:
-        file_attributes # contains the file attributes
-        logger # logging object to write in the log file
     Return:
         file_attributes if sucessful .
         Exception if attributes could not be fetched
@@ -317,8 +312,6 @@ def get_available_run_state ():
     return available_states
 
 
-
-
 def get_experiment_name_from_file (l_run_parameter) :
     '''
     Description:
@@ -357,11 +350,18 @@ def get_log_file_name(config_log_file) :
                  log_file_name = line.split('\'')[1]
     return log_file_name
 
-
-
-
-
-
+def get_userid_list ():
+    '''
+    Descripion:
+        The function get the userid list defined in the system
+    Return:
+        user_id_list
+    '''
+    user_id_list = []
+    user_objs = User.objects.all()
+    for user_obj in user_objs:
+        user_id_list.append(user_obj.username)
+    return user_id_list
 
 def is_wetlab_manager (request):
     '''

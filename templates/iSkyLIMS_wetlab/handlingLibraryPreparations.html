@@ -185,34 +185,12 @@
     </div> <!--  end of row -->
 
 {% elif display_sample_sheet %}
-     <style>
+    <style>
         .scrolling-wrapper {
             overflow-x: scroll;
             white-space: nowrap;
         }
-     </style>
-    {% if display_sample_sheet.no_user_defined %}
-        <div class="row row-space-2 margin-b-4">
-            <div class="col-sm-10">
-                <div class="panel panel-danger">
-                    <div class="panel-heading"><h3 style="text-align:center">Users are not defined on sample sheet.</h3></div>
-                    <div class="panel-body">
-                        <h5 style="text-align:center">It is mandatory on iSkyLIMS to link the investigator user with the sample name</h5>
-                        <br><br>
-                        <h5 style="text-align:center">Upload again the sample sheet with the user information</h5>
-                        <h5 style="text-align:center">or</h5>
-                        <h5 style="text-align:center">Select the right user for each sample</h5>
-                        <br><br>
-                        <p>Click on the bottom below to continue with adding Library Preparation information </p>
-                        <br><br>
-                        <input type="button" value="Return Library Preparation" onclick="location.href ='/wetlab/handlingLibraryPreparations' ;"/>
-                    </div> <!--  end of panel body -->
-                </div> <!--  end of panel  -->
-
-            </div> <!--  end of col-sm-10 -->
-        </div> <!--  end of row -->
-
-    {% endif %}
+    </style>
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
             <div class="panel panel-default">
@@ -307,7 +285,11 @@
                                                 {% if forloop.first or forloop.counter == 2 %}
                                                     { type: 'text', title:'{{heading}}', width:200 , readOnly:true },
                                                 {% elif forloop.last %}
-                                                    { type: 'dropdown', title:'{{heading}}', autocomplete:true, width:200 , source :[ {% for value in display_sample_sheet.user_list %} '{{value}}', {% endfor %}]},
+                                                    {% if display_sample_sheet.user_list %}
+                                                        { type: 'dropdown', title:'{{heading}}', autocomplete:true, width:200 , source :[ {% for value in display_sample_sheet.user_list %} '{{value}}', {% endfor %}]},
+                                                    {% else %}
+                                                        { type: 'text', title:'{{heading}}', width:100 },
+                                                    {% endif %}
                                                 {% else %}
                                                     { type: 'text', title:'{{heading}}', width:100 },
                                                 {% endif %}

@@ -9,6 +9,7 @@ from iSkyLIMS_wetlab.wetlab_config import *
 from iSkyLIMS_wetlab.utils.sample_sheet_utils import *
 from iSkyLIMS_wetlab.utils.collection_index_functions import check_collection_index_exists , get_list_of_collection_kits
 from iSkyLIMS_wetlab.utils.handling_sequencers import *
+from iSkyLIMS_wetlab.utils.generic_functions import  *
 from ..fusioncharts.fusioncharts import FusionCharts
 from .stats_graphics import *
 from Bio.Seq import Seq
@@ -127,11 +128,18 @@ def create_library_preparation_instance(samples_data, user):
         library_preparation_objs
     '''
     library_preparation_objs = []
+    prot_in_samples = get_configuration_value('SAMPLE_NAMES_IN_SAMPLE_SHEET_CONTAIN_PROTOCOL_PREFIX')
+
     for key, values in samples_data.items():
         lib_prep_data = {}
         lib_prep_data['sample_id'] = values[0]
         lib_prep_data['molecule_id'] = values[1]
         lib_prep_data['protocol_obj'] = Protocols.objects.filter(type__protocol_type__exact ='Library Preparation', name__exact = values[2]).last()
+        lib_prep_data['prefixProtocol'] = values[2]
+        if prot_in_samples == 'TRUE':
+            lib_prep_data['sampleNameInSampleSheet'] = str(values[2]+ '_' + key )
+        else:
+            lib_prep_data['sampleNameInSampleSheet'] = key
         lib_prep_data['registerUser'] = user
         lib_prep_data['user_sampleID'] = get_sample_obj_from_id(lib_prep_data['sample_id']).get_sample_code()
         lib_prep_data['lib_prep_code_id'], lib_prep_data['uniqueID'] = get_library_code_and_unique_id(lib_prep_data['sample_id'])
@@ -325,164 +333,94 @@ def extract_sample_data (s_data):
     return sample_list
 
 
-def extract_user_sample_sheet_data(file_in):
+def extract_userids_from_sample_sheet_data(file_read):
     '''
     Description:
         The function extract userID and checks if userIDs are defined in database
     Input:
-        file_in    # csv file from IEM
+        file_read    # String having the file from IEM
     Functions:
-        store_user_input_file  # located at utils/sample_sheet_utils.py
-        valid_user_iem_file    # located at utils/sample_sheet_utils.py
-        get_sample_sheet_data  # located at utils/sample_sheet_utils.py
         get_userid_in_user_iem_file # located at utils/sample_sheet_utils.py
-        read_user_iem_file     # located at utils/sample_sheet_utils.py
+        delete_stored_file     # located at utils/sample_sheet_utils.py
     Constant:
         ERROR_UNABLE_TO_DELETE_USER_FILE
         ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD
         ERROR_SAMPLE_SHEET_WHEN_FETCHING_USERID_NAMES
-    Dynamic Configuration:
-        REJECT_SAMPLE_SHEET_IF_NOT_PROJECT_OR_USER
     Return
         data with the file name and the content of the sample sheet.
         data['Error'] if file is invalid
     '''
-    try:
-        configuration_obj = ConfigSetting.objects.filter(configurationName__exact = 'REJECT_SAMPLE_SHEET_IF_NOT_PROJECT_OR_USER').last()
-        configuration_value = configuratin_obj.get_configuration_value()
-        if configuration_value == 'TRUE':
-            reject_not_user_in_description = True
-        else:
-            reject_not_user_in_description = False
-    except:
-        reject_not_user_in_description = False
-    data = {}
 
-    data['full_path_file'], data['file_name'] = store_user_input_file (file_in)
-    file_read = read_user_iem_file(data['full_path_file'])
-    if not valid_user_iem_file(file_read, reject_not_user_in_description):
-        data['ERROR'] = ERROR_INVALID_FILE_FORMAT
-    else:
-        data['userid_names'] =  get_userid_in_user_iem_file(file_read)
-        if  'ERROR' in data['userid_names'] :
-            data['ERROR'] = ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_DESCRIPTION_FIELD
-        elif data['userid_names'] == [''] and reject_not_user_in_description:
-            data['ERROR'] = ERROR_SAMPLE_SHEET_WHEN_FETCHING_USERID_NAMES
-        else:
-            data.update(get_sample_sheet_data(file_read))
-    if 'ERROR' in data:
-        if not delete_stored_file(data['full_path_file']):
-            data['ERROR'].append(ERROR_UNABLE_TO_DELETE_USER_FILE)
-    return data
+    user_id_list = get_userid_list()
+
+    user_ids =  validate_userid_in_user_iem_file(file_read, user_id_list)
+    if user_ids == [''] :
+        user_ids['ERROR'] = ERROR_SAMPLE_SHEET_WHEN_FETCHING_USERID_NAMES
+    return user_ids
 
 
-def valid_samples_for_lib_preparation(samples):
+def get_library_preparation_protocols():
     '''
     Description:
-        The function checks if samples are defined and they are in Updated additional kits ,
-    Input:
-        samples  # contain a list with sample names
-    Functions:
-        get_sample_obj_from_sample_name  # located at iSkyLIMS_core/handling_samples.py
-    Constant:
-        ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES
-        ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION
-    Return
-        error mesage or sample_objs
+        The function collect the protocol names defined for library preparation
+    Return:
+        protocol_names
     '''
-    sample_objs = []
-    invalid_samples = []
-    for sample in samples:
-        s_obj = get_sample_obj_from_sample_name(sample)
-        if not s_obj :
-            invalid_samples.append(sample)
-        else:
-            sample_objs.append(s_obj)
+    protocol_names =[]
+    if Protocols.objects.filter(type__protocol_type__exact = 'Library preparation').exists():
+        protocol_objs = Protocols.objects.filter(type__protocol_type__exact = 'Library preparation')
+        for protocol_obj in protocol_objs:
+            protocol_names.append(protocol_obj.get_name())
+    return protocol_names
 
-    if len(invalid_samples) > 0:
-        error = {}
-        error_message = ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES.copy()
-        error_message.insert(1,' , '.join(invalid_samples))
-        error['ERROR'] = error_message
-        return error
-
-    for sample_obj in sample_objs:
-        # mark as invalid sample when it is not in Library preparation state
-        if not 'Library preparation' == sample_obj.get_sample_state() :
-            invalid_samples.append(sample_obj.get_sample_name())
-        # mark as invalid when library prepation object is already created and it is not in "Updated additional kits" state
-        #elif  LibraryPreparation.objects.filter(sample_id = sample_obj).exists() and not LibraryPreparation.objects.filter(sample_id = sample_obj ,libPrepState__libPrepState__exact = 'Created for Reuse').exists():
-        elif  not LibraryPreparation.objects.filter(sample_id = sample_obj , libPrepState__libPrepState__exact = 'Updated additional kits').exists():
-                invalid_samples.append(sample_obj.get_sample_name())
-
-    if len(invalid_samples) > 0:
-        error = {}
-        error_message = ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION.copy()
-        error_message.insert(1,' , '.join(invalid_samples))
-        error['ERROR'] = error_message
-        return error
-
-    return sample_objs
 
 def validate_sample_sheet_data (input_data ):
     '''
     Description:
-        The function checks if samples are defined are they are in Library Preparation state ,
-        if collection index is already defined and no duplication index exists.
-
+        The function checks if library preparation samples are defined are they are in Updated additional kits state ,
+        and no duplication index exists.
     Input:
         input_data  # contain a dictionary with sample names, heading to match the values and
                     a list with all  information samples
     Functions:
         valid_samples_for_lib_preparation    # located at this file
-        delete_stored_file                   # located at this file
         find_duplicate_index                 # located at this file
         check_collection_index_exists        # located at iSkyLIMS_wetlab/utils/collection_index_functions.py
     Constant:
-        ERROR_INVALID_FILE_FORMAT
-        ERROR_UNABLE_TO_DELETE_USER_FILE
-        ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_COLLECTION_INDEX
-        ERROR_SAMPLE_SHEET_BOTH_INSTRUMENT_AND_INDEX_NOT_INCLUDED
-        ERROR_SAMPLE_SHEET_BOTH_INSTRUMENT_AND_INDEX_NOT_INCLUDED
-        ERROR_SAMPLE_SHEET_USERS_ARE_NOT_DEFINED
-        ERROR_SAMPLE_SHEET_USER_IS_NOT_DEFINED
+        ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION
+        ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES
     Return
         sample data objects if all checks are valid or ERROR if file is invalid
     '''
     # check that samples are defined and in the right state
     error = {}
-    # check for older IEM versions which do no have index adapter/ Instrument type in sample sheet
-    # check for additional header fields in IEM version 5
-    if input_data['iem_version'] == '5':
-        if input_data['index_adapters'] == '' and not 'instrument type' in input_data:
-            error['ERROR'] = ERROR_SAMPLE_SHEET_BOTH_INSTRUMENT_AND_INDEX_NOT_INCLUDED
-            error['detail_error'] = 'no_index_no_instrument'
-        elif  input_data['index_adapters'] == '':
-            error['ERROR'] = ERROR_SAMPLE_SHEET_DOES_NOT_HAVE_COLLECTION_INDEX
-            error['detail_error'] = 'no_index'
-        elif not 'instrument type' in input_data :
-            error['ERROR'] = ERROR_SAMPLE_SHEET_BOTH_INSTRUMENT_AND_INDEX_NOT_INCLUDED
-            error['detail_error'] = 'no_instrument'
-        else:
-            # check if collection index kit is defined
-            if not check_collection_index_exists (input_data['index_adapters']):
-                error_message = ERROR_COLLECTION_INDEX_KIT_NOT_DEFINED.copy()
-                error_message.insert(1, input_data['index_adapters'])
-                error['ERROR'] = error_message
-        if 'ERROR' in error :
-            delete_stored_file(input_data['full_path_file'])
-            return error
+    not_defined_samples = []
+    invalid_state_samples = []
 
-    valid_samples = valid_samples_for_lib_preparation (input_data['samples'])
-    if 'ERROR'in valid_samples:
-        delete_stored_file(input_data['full_path_file'])
-        return valid_samples
+    for sample in input_data['samples']:
+        if not LibraryPreparation.objects.filter(sampleNameInSampleSheet__exact = sample).exists():
+            not_defined_samples.append(sample)
+            continue
+        if not LibraryPreparation.objects.filter(sampleNameInSampleSheet__exact = sample, libPrepState__libPrepState__exact = 'Updated additional kits').exists():
+            invalid_state_samples.append(sample)
+    if len(not_defined_samples) > 0:
+        error_not_defined = ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES.copy()
+        error_not_defined.insert(1,' , '.join(not_defined_samples))
+        error['ERROR'] = error_not_defined
+    if len(invalid_state_samples) > 0:
+        error_state = ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION.copy()
+        error_state.insert(1,' , '.join(error_state))
+        error['ERROR'] = error_state
+    if len(not_defined_samples) > 0 and len(invalid_state_samples) > 0 :
+        error['ERROR'] = error_not_defined + error_state
+    if 'ERROR' in error:
+        return error
+
     # check if sample sheet has duplicate index
     duplicate_index = find_duplicate_index(input_data['sample_data'], input_data['heading'] )
     if 'ERROR' in duplicate_index:
-        delete_stored_file(input_data['full_path_file'])
         return duplicate_index
-    return valid_samples
+    return 'Validated'
 
 def find_duplicate_index (sample_row_data, heading):
     '''
@@ -505,7 +443,6 @@ def find_duplicate_index (sample_row_data, heading):
         i5_index = heading.index('I5_Index_ID')
     sample_name_index = heading.index('Sample_Name')
     for sample_row in sample_row_data:
-
         if i5_index :
             indexes_in_sample = str(sample_row[i7_index] + '_' + sample_row[i5_index])
         else:
@@ -518,15 +455,13 @@ def find_duplicate_index (sample_row_data, heading):
         if not sample_row[sample_name_index] in index_values :
             index_values [sample_row[sample_name_index]] = []
         index_values [sample_row[sample_name_index]].append([indexes_in_sample])
-
-    if len(duplicated_index_sample) == 0:
-        return 'False'
-    else:
+    if len(duplicated_index_sample) > 0:
         error = {}
         error_message = ERROR_SAMPLES_INVALID_DUPLICATED_INDEXES.copy()
-        error_message.insert(1,' , '.join(duplicated_index_sample))
+        error_message.append(' , '.join(duplicated_index_sample))
         error['ERROR'] = error_message
         return error
+    return 'False'
 
 
 def get_data_for_library_preparation_in_defined():
@@ -892,8 +827,9 @@ def get_library_code_and_unique_id (sample_id):
 
 #############################################
 # Posiblemente haya que borrarlo/modificarlo
+'''
 def store_library_preparation_samples(sample_sheet_data, user, protocol , user_sample_sheet_obj):
-    '''
+
     Description:
         The function will get the sample names, extracted data from sample sheet, index, .
         Then store the libraryPreparation data for each sample and update the sample state to "library Preparation"
@@ -914,7 +850,7 @@ def store_library_preparation_samples(sample_sheet_data, user, protocol , user_s
         stored_lib_prep     # dictionary to get data to create the library preparation object
     Return:
         stored_lib_prep .Including the lib_prep_code_id and lib_prep_id
-    '''
+
     stored_lib_prep = {}
     lib_prep_id = []
     protocol_obj = Protocols.objects.get(name__exact = protocol)
@@ -965,7 +901,7 @@ def store_library_preparation_samples(sample_sheet_data, user, protocol , user_s
     #stored_lib_prep['lib_prep_id'] = ','.join(lib_prep_id)
     #stored_lib_prep['lib_prep_code_id'] = ','.join(lib_prep_code_id)
     return lib_prep_id
-
+'''
 def get_user_for_sample_sheet():
     '''
     Descripion:
@@ -1017,8 +953,8 @@ def format_sample_sheet_to_display_in_form (sample_sheet_data):
     display_data['main_data'] = list(zip(main_data_heading, main_values))
     display_data['summary_data'] = list(zip(HEADING_SUMMARY_DATA_SAMPLE_SHEET, summary_values))
     display_data['heading_excel'] = ','.join(sample_sheet_data['heading'])
-    if len(sample_sheet_data['userid_names']) == 0:
-        display_data['no_user_defined'] = True
+    #if len(sample_sheet_data['userid_names']) == 0:
+    #    display_data['no_user_defined'] = True
 
     return display_data
 

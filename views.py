@@ -3407,31 +3407,47 @@ def handling_library_preparations(request):
         return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_params':stored_params})
 
     if request.method == 'POST' and request.POST['action'] == 'importsamplesheet':
+        data = {}
+        data['full_path_file'], data['file_name'] = store_user_input_file (request.FILES['uploadfile'])
+        file_read = read_user_iem_file(data['full_path_file'])
+        if not valid_user_iem_file(file_read):
+            # Error found when extracting data from sample sheet
+            data['ERROR'] = wetlab_config.ERROR_INVALID_FILE_FORMAT
+            if not delete_stored_file(data['full_path_file']):
+                data['ERROR'].append(ERROR_UNABLE_TO_DELETE_USER_FILE)
+            return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'ERROR':data['ERROR'], 'samples_in_lib_prep':samples_in_lib_prep})
+        user_in_description = get_configuration_value('DESCRIPTION_IN_SAMPLE_SHEET_MUST_HAVE_USERNAME')
+        if user_in_description == 'TRUE':
+            user_id_in_s_sheet = extract_userids_from_sample_sheet_data(file_read)
+            if 'ERROR' in user_id_in_s_sheet:
+                if not delete_stored_file(data['full_path_file']):
+                    user_id_in_s_sheet['ERROR'].append(ERROR_UNABLE_TO_DELETE_USER_FILE)
+                return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'ERROR':user_id_list['ERROR'], 'samples_in_lib_prep':samples_in_lib_prep})
+        else:
+            user_id_in_s_sheet = []
+        sample_sheet_data = get_sample_sheet_data(file_read)
 
-        sample_sheet_data = extract_user_sample_sheet_data(request.FILES['uploadfile'] )
-        # Error found when extracting data from sample sheet
-        if 'ERROR' in sample_sheet_data :
-            #upload_file['ERROR'] = sample_sheet_data['ERROR']
-            #upload_file['file_name'] = request.FILES['uploadfile'].name
-            return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'ERROR':sample_sheet_data['ERROR'], 'samples_in_lib_prep':samples_in_lib_prep})
-        # check if all users are defined in database
-        # users_check = check_users_exists(sample_sheet_data['userid_names'])
         valid_data = validate_sample_sheet_data(sample_sheet_data)
-
         if 'ERROR' in valid_data:
+            if not delete_stored_file(data['full_path_file']):
+                valid_data['ERROR'].append(ERROR_UNABLE_TO_DELETE_USER_FILE)
             return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'ERROR':valid_data['ERROR'], 'samples_in_lib_prep':samples_in_lib_prep})
 
         platform = request.POST['platform']
         configuration = request.POST[request.POST['platform']]
+        sample_sheet_data['file_name'] = data['file_name']
+        sample_sheet_data['userid_names'] = user_id_in_s_sheet
         lib_prep_sample_sheet_obj = store_library_preparation_sample_sheet(sample_sheet_data, request.user, platform, configuration)
         #stored_lib_prep_sample = store_library_preparation_samples(sample_sheet_data,  request.user, request.POST['lib_protocols'], lib_prep_sample_sheet_obj)
-
+        import pdb; pdb.set_trace()
         display_sample_sheet = format_sample_sheet_to_display_in_form(sample_sheet_data)
         #display_sample_sheet = sample_sheet_data
-        display_sample_sheet['user_list'] = get_user_for_sample_sheet()
+        #display_sample_sheet['user_list'] = get_user_for_sample_sheet()
         display_sample_sheet['lib_prep_user_sample_sheet'] = lib_prep_sample_sheet_obj.get_user_sample_sheet_id()
         display_sample_sheet['platform'] = platform
         display_sample_sheet['iem_version'] = sample_sheet_data['iem_version']
+        if user_in_description == 'TRUE':
+            display_sample_sheet['user_list'] = get_userid_list()
         return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'display_sample_sheet':display_sample_sheet})
 
 
