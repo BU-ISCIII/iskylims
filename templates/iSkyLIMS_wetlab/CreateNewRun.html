@@ -46,10 +46,10 @@
 
                                 <div class="col-sm-12" >
                                     <div class="col-sm-6" >
-                                        <div class="form-group required">
+                                        <div class="form-group">
                                             <h4>Sample Sheet confirmation data</h4>
                                             <label class="col-sm-5 control-label">Application</label>
-                                            <div class="col-sm-5"><input class="form-control" required = "required" type="text" value="{{display_sample_information.application}}" name="application" size="80"></div>
+                                            <div class="col-sm-5"><input class="form-control" type="text" value="{{display_sample_information.application}}" name="application" size="80"></div>
                                             <br><br>
                                             {% if display_sample_information.instrument %}
                                                 <label class="col-sm-5 control-label">Instrument</label>
@@ -57,8 +57,10 @@
                                                 <br><br>
                                             {% endif %}
                                             <label class="col-sm-5 control-label">Assay</label>
-                                            <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  value="{{display_sample_information.assay}}"  name="assay" size="80"></div>
+                                            <div class="col-sm-5"><input class="form-control"   type="text"  value="{{display_sample_information.assay}}"  name="assay" size="80"></div>
                                             <br><br>
+                                        </div> <!--  end of form-group -->
+                                        <div class="form-group required">
                                             {% if display_sample_information.collection_index %}
                                                 <label class="col-sm-5 control-label">Index Adapters</label>
                                                 <div class="col-sm-5"><input class="form-control"  required = "required" type="text"  value="{{display_sample_information.collection_index}}"  name="collection_index" size="80"></div>
@@ -159,7 +161,7 @@
                             <tbody>
                                 <tr>
                                     <td>Sample Sheet</td>
-                                    <td><a href="/documents/{{created_new_run.sample_sheet}}" download>Sample Sheet File  <span class="glyphicon glyphicon-download-alt"></span></a></td>
+                                    <td><a href="/documents/{{ created_new_run.sample_sheet }}" download>Sample Sheet File  <span class="glyphicon glyphicon-download-alt"></span></a></td>
                                 </tr>
 
                             </tbody>
@@ -228,49 +230,53 @@
                             <div class="panel panel-default">
                                 <div class="panel-heading"><h3>The following Run have been defined, but not yet completed</h3></div>
                                 <div class="panel-body">
-                                    <form method="post" enctype="multipart/form-data" name="continueWithRun"  id="continueWithRun" class="form-horizontal well">
+                                    <form method="post" enctype="multipart/form-data" name="continueWithRun"  id="continueWithRun" class="form-horizontal">
                                         {% csrf_token %}
                                         <input type="hidden" name="action" value="continueWithRun"/>
                                         {% for r_name, p_values, r_id in display_pools_for_run.run_data.data  %}
                                             <div class="col-sm-12">
-                                                <h4>Run Name {{r_name }}</h4>
-                                                <div class="col-sm-8">
-                                                    <table class="table">
-                                                        <thead>
-                                                            <tr>
-                                                                {% for value in display_pools_for_run.run_data.heading %}
-                                                                    <th>{{value}} </th>
-                                                                {% endfor %}
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {% for p_name, p_code, p_number in  p_values  %}
-                                                                <tr>
-                                                                    <td>{{p_name}}</td>
-                                                                    <td>{{p_code}}</td>
-                                                                    <td>{{p_number}}</td>
-                                                                </tr>
-                                                            {% endfor %}
-                                                        </tbody>
-                                                    </table>
-                                                    <br><br>
-                                                </div> <!--  end of col-sm-8 -->
-                                                <div class="col-sm-4">
-                                                    <table class="table">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Select Run</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td><input type="checkbox" name="run_ids" value="{{r_id}}"></td>
-                                                            </tr>
+                                                <div class="panel panel-default">
+                                                    <div class="panel-heading"><h4>Run Name {{r_name }}</h4></div>
+                                                    <div class="panel-body">
+                                                        <div class="col-sm-8">
+                                                            <table class="table">
+                                                                <thead>
+                                                                    <tr>
+                                                                        {% for value in display_pools_for_run.run_data.heading %}
+                                                                            <th>{{value}} </th>
+                                                                        {% endfor %}
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for p_name, p_code, p_number in  p_values  %}
+                                                                        <tr>
+                                                                            <td>{{p_name}}</td>
+                                                                            <td>{{p_code}}</td>
+                                                                            <td>{{p_number}}</td>
+                                                                        </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                            <br>
+                                                        </div> <!--  end of col-sm-8 -->
+                                                        <div class="col-sm-4">
+                                                            <table class="table">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>Select Run</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <tr>
+                                                                        <td><input type="checkbox" name="run_ids" value="{{r_id}}"></td>
+                                                                    </tr>
 
-                                                        </tbody>
-                                                    </table>
-                                                    <br><br>
-                                                </div> <!--  end of col-sm-4 -->
+                                                                </tbody>
+                                                            </table>
+                                                            <br><br>
+                                                        </div> <!--  end of col-sm-4 -->
+                                                    </div> <!--  end of panel body -->
+                                                </div> <!--  end of panel  -->
                                             </div> <!--  end of col-sm-12 -->
                                         {% endfor %}
                                         <input class= "btn pull-right btn-primary" type= "submit" id = "btnSubmit" value= "Submit">
@@ -300,10 +306,10 @@
                                         </div>
 
                                         {% for reagent , lots in display_pools_for_run.reagents_kits|keyvalue:key %}
-                                            <div class="form-group required">
+                                            <div class="form-group">
                                                 <label class="col-sm-5 control-label">{{reagent}}</label>
                                                 <div class="col-sm-5">
-                                                    <select class="form-control" name="{{reagent}}" required = "required" id="{{reagent}}">
+                                                    <select class="form-control" name="{{reagent}}" id="{{reagent}}">
                                                         <option value="">Choose a value</option>
                                                         {% for id, lot in lots %}
                                                             <option value="{{id}}">{{lot}}</option>

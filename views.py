@@ -3455,7 +3455,6 @@ def handling_library_preparations(request):
         stored_index = 'True'
         return render (request, 'iSkyLIMS_wetlab/handlingLibraryPreparations.html', {'stored_index':stored_index})
 
-
     if request.method == 'POST' and request.POST['action'] == 'libpreparationdefined':
         lib_prep_defined = request.POST.getlist('libpreparation')
         lib_protocols = get_protocol_from_library_id(lib_prep_defined[0])

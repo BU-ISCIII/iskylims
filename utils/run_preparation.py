@@ -12,6 +12,7 @@ from iSkyLIMS_wetlab.utils.library_preparation import  get_lib_prep_obj_from_id,
 from iSkyLIMS_core.utils.handling_samples import update_sample_reused, get_sample_obj_from_sample_name, get_molecule_objs_from_sample, update_molecule_reused
 from iSkyLIMS_core.utils.handling_protocols import *
 from iSkyLIMS_core.utils.handling_commercial_kits import *
+from iSkyLIMS_core.models import SequencingConfiguration
 from django.conf import settings
 from django_utils.models import Profile, Center
 
@@ -50,35 +51,39 @@ def check_valid_data_for_creation_run(form_data,user_obj):
         error['ERROR'] = wetlab_config.ERROR_POOLS_WITH_NO_LIBRARY
         #return  render(request, 'iSkyLIMS_wetlab/CreateNewRun.html',{'display_pools_for_run': display_pools_for_run})
     # return an error message if logged user does not have assigned either Profile or Center
+    '''
     try:
         center_requested_id = Profile.objects.filter(profileUserID = user_obj).last().profileCenter.id
         center_requested_by = Center.objects.get(pk__exact = center_requested_id)
     except:
         error['ERROR'] = wetlab_config.ERROR_NO_PROFILE_OR_CENTER_FOR_USER
         return  error
+    '''
     return 'OK'
 
 def create_run_in_pre_recorded_and_get_data_for_confirmation (form_data, user_obj):
     '''
     Description:
         Function get the user data and create a new run instance. Function also gets
-        the pool information to confirm the data
+        the pool information for data confirmation
     Input:
-        form_data    # user form
+        form_data   # user form
         user_obj    # user who is requesting the creation run
     Functions:
-        get_library_preparation_data_in_run    # located at this file
-        get_stored_user_sample_sheet   # located at this file
-        fetch_reagent_kits_used_in_run    # located at this file
+        get_library_preparation_data_in_run     # located at this file
+        get_stored_user_sample_sheet            # located at this file
+        fetch_reagent_kits_used_in_run          # located at this file
     Return:
         display_sample_information
     '''
     display_sample_information ={}
     pool_ids = form_data.getlist('poolID')
     lib_prep_ids = get_library_prep_in_pools (pool_ids)
-
-    center_requested_id = Profile.objects.filter(profileUserID = user_obj).last().profileCenter.id
-    center_requested_by = Center.objects.get(pk__exact = center_requested_id)
+    try:
+        center_requested_id = Profile.objects.filter(profileUserID = user_obj).last().profileCenter.id
+        center_requested_by = Center.objects.get(pk__exact = center_requested_id)
+    except:
+        center_requested_by = None
     reagent_kit_objs = fetch_reagent_kits_used_in_run(form_data)
 
     display_sample_information = get_library_preparation_data_in_run(lib_prep_ids, pool_ids)
@@ -95,7 +100,6 @@ def create_run_in_pre_recorded_and_get_data_for_confirmation (form_data, user_ob
     for pool in pool_ids:
         pool_obj = get_pool_instance_from_id(pool)
         pool_obj.update_run_name(new_run_obj)
-
     display_sample_information['experiment_name'] = form_data['experimentName']
     display_sample_information['run_process_id'] = new_run_obj.get_run_id()
     return display_sample_information
@@ -223,9 +227,10 @@ def collect_data_and_update_library_preparation_samples_for_run (data_form, user
                 record_data['index_well'] = True
                 break
         if not record_data['index_well']:
-            # remove the index well column
+            # remove the index well column and heading
+            heading.remove('Index_Plate_Well')
             for data_line in sample_sheet_data_field :
-                data_line.drop(index)
+                del data_line[index]
     record_data['sample_sheet_data_field'] = sample_sheet_data_field
     record_data['sample_sheet_data_heading'] = heading
     record_data['run_obj'] = get_run_obj_from_id(data_form['run_process_id'])
@@ -501,7 +506,7 @@ def store_confirmation_sample_sheet(fields):
     with open (template_file, 'r') as filein:
         #filein = open(template_file, 'r')
         ss_template = string.Template (filein.read())
- 
+
     updated_info = ss_template.substitute(d)
     fh = open(ss_file_full_path, 'w')
     fh.write(updated_info)
@@ -858,14 +863,18 @@ def get_pool_info (pools_to_update):
                     pool_data['platform'][platform].append(data)
 
                     # get the reagents kits used for the platform
-                    reagents_kits[platform], commercial_kits[platform] = get_lot_reagent_commercial_kits(platform)
+                    reagents_kits[platform], commercial_kits[platform] = get_lot_reagent_commercial_kits_excluding_sequencing_configuration(platform)
+                    configutation_name = LibraryPreparation.objects.filter(pools = pool).last().get_user_sample_sheet_obj().get_sequencing_configuration_name()
+                    user_lot_configuration_kit = get_lot_reagent_from_comercial_kit(configutation_name)
+                    if len(user_lot_configuration_kit) > 0:
+                        reagents_kits[platform].append(user_lot_configuration_kit)
+                        commercial_kits[platform] = str(commercial_kits[platform] + ','+ configutation_name)
                 else:
                     if not 'invalid_run_data' in pool_info :
                         pool_info ['invalid_run_data'] = {}
                         pool_info['invalid_run_data']['data']= []
                     pool_info['invalid_run_data']['data'].append(data)
 
-        #pool_data['pool_ids'] = ','.join(pool_ids)
         pool_info['pool_data'] = pool_data
         pool_info['reagents_kits'] = reagents_kits
         pool_info['commercial_kits'] = commercial_kits
@@ -1058,13 +1067,16 @@ def fetch_reagent_kits_used_in_run (form_data):
         Return an object list with the reagents user kits.
     Input:
         form_data    # data from the user form
+    Fucntion:
+        update_usage_user_lot_kit       # located at iSkyLIMS_core.utils.handoling_commercial_kits
     Return:
         user_reagents_kit_objs
     '''
     user_reagents_kit_objs = []
     commercial_kit_names = form_data['commercialKits'].split(',')
-    user_reagentKit_id_kit_dict = {}
     for kit_name in commercial_kit_names:
+        if form_data[kit_name] == '':
+            continue
         user_reagents_kit_objs.append(update_usage_user_lot_kit(form_data[kit_name]))
 
     return user_reagents_kit_objs

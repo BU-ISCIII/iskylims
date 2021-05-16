@@ -990,8 +990,6 @@ class libPreparationUserSampleSheet (models.Model):
         adapters.append(self.adapter2)
         return adapters
 
-
-
     def get_collection_index_kit (self):
         if self.collectionIndexKit_id != None:
             return '%s' %(self.collectionIndexKit_id.get_collection_index_name())
@@ -1003,6 +1001,10 @@ class libPreparationUserSampleSheet (models.Model):
 
     def get_sequencing_configuration_platform (self):
         return '%s'  %(self.sequencingConfiguration.get_platform_name())
+
+    def get_sequencing_configuration_name(self):
+        return '%s'  %(self.sequencingConfiguration.get_configuration_name())
+
     def get_user_sample_sheet_id (self):
         return '%s' %(self.pk)
 
