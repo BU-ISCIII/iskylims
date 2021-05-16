@@ -250,6 +250,29 @@ def get_lot_commercial_kits(protocol_obj):
                 user_kit_list.append(user_kit.get_lot_number())
     return user_kit_list
 
+def get_lot_reagent_from_comercial_kit(configuration_name):
+    '''
+    Description:
+        The function get the user lot commercial kits that are defined for configuration
+        name.
+    Input:
+        configuration_name  # name of the configuration
+    Return
+        user_platform_kit_list and commercial_list
+    '''
+    user_commercial_list = []
+    user_conf_kit_list = []
+    commercial_kit_names = []
+    if CommercialKits.objects.filter(name__exact = configuration_name).exists():
+        commercial_obj = CommercialKits.objects.filter(name__exact = configuration_name).last()
+        if UserLotCommercialKits.objects.filter(basedCommercial = commercial_obj, runOut = False).exists():
+            user_kits = UserLotCommercialKits.objects.filter(basedCommercial = commercial_obj, runOut = False).order_by('expirationDate')
+            for user_kit in user_kits:
+                user_commercial_list.append([user_kit.get_user_lot_kit_id(), user_kit.get_lot_number()])
+            user_conf_kit_list =[configuration_name,user_commercial_list]
+
+    return user_conf_kit_list
+
 def get_lot_reagent_commercial_kits(platform):
     '''
     Description:
@@ -277,6 +300,38 @@ def get_lot_reagent_commercial_kits(platform):
         commercial_list = ','.join(commercial_kit_names)
     return user_platform_kit_list, commercial_list
 
+def get_lot_reagent_commercial_kits_excluding_sequencing_configuration(platform):
+    '''
+    Description:
+        The function get the user commercial kits that are defined for using
+        platform.
+    Input:
+        platform  # platform name
+    Return
+        user_platform_kit_list and commercial_list
+    '''
+    seq_conf_names = []
+    user_platform_kit_dict = {}
+    user_platform_kit_list = []
+    commercial_kit_names = []
+    seq_conf_objs = SequencingConfiguration.objects.filter(platformID__platformName__exact = platform)
+    for seq_conf_obj in seq_conf_objs:
+        seq_conf_names.append(seq_conf_obj.get_configuration_name())
+
+    if CommercialKits.objects.filter(platformKits__platformName__exact = platform).exclude(name__in = seq_conf_names).exists():
+        commercial_objs = CommercialKits.objects.filter(platformKits__platformName__exact = platform).exclude(name__in = seq_conf_names)
+
+        for commercial_obj in commercial_objs:
+            commercial_name = commercial_obj.get_name()
+            commercial_kit_names.append(commercial_name)
+            user_platform_kit_dict[commercial_name] = []
+            if UserLotCommercialKits.objects.filter(basedCommercial = commercial_obj, runOut = False).exists():
+                user_kits = UserLotCommercialKits.objects.filter(basedCommercial = commercial_obj, runOut = False).order_by('expirationDate')
+                for user_kit in user_kits:
+                    user_platform_kit_dict[commercial_name].append([user_kit.get_user_lot_kit_id(), user_kit.get_lot_number()])
+        user_platform_kit_list =list([(k,v) for k, v in  user_platform_kit_dict.items()])
+        commercial_list = ','.join(commercial_kit_names)
+    return user_platform_kit_list, commercial_list
 
 def get_molecule_lot_kit_in_sample(sample_id):
     '''
