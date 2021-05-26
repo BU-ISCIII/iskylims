@@ -958,14 +958,21 @@ def define_pipeline_service(request):
     else:
         return redirect ('/accounts/login')
     data_pipeline = get_data_form_pipeline()
-    if request.method == 'POST' and request.POST['action'] == 'servicePipeline':
+    if request.method == 'POST' and request.POST['action'] == 'definePipeline':
+
+
         pipeline_data_form = analyze_input_pipelines(request)
         if pipeline_version_exists(request.POST['pipelineName'], request.POST['pipelineVersion']):
             error_message = drylab_config.ERROR_PIPELINE_ALREADY_EXISTS
             data_pipeline.update(pipeline_data_form)
             return render(request,'iSkyLIMS_drylab/definePipelineService.html', {'data_pipeline': data_pipeline,'error_message': error_message})
         #pipeline_data_form = analyze_input_pipelines(request)
+        if request.FILES :
+            fs = FileSystemStorage(location = os.path.join(settings.MEDIA_ROOT,drylab_config.PIPELINE_FILE_DIRECTORY))
+            pipeline_data_form['filename'] = fs.save(str(pipeline_data_form['pipelineName'] + '_' + pipeline_data_form['pipelineVersion']),  request.FILES['pipelinefile'] )
+        import pdb; pdb.set_trace()
         new_pipeline = Pipelines.objects.create_pipeline(pipeline_data_form)
+        import pdb; pdb.set_trace()
         if 'additional_parameters' in  pipeline_data_form :
             store_parameters_pipeline(new_pipeline, pipeline_data_form['additional_parameters'])
         defined_service_pipeline = get_defined_pipeline_data_to_display(new_pipeline)

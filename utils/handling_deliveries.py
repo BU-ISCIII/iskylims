@@ -3,7 +3,7 @@ from django.core.mail import send_mail
 from iSkyLIMS_drylab.models import *
 from iSkyLIMS_drylab.utils.handling_request_services import get_available_service_obj_from_id
 from iSkyLIMS_drylab.utils.handling_resolutions import get_resolution_obj_from_id
-from iSkyLIMS_drylab.utils.handling_pipelines import get_pipeline_and_versions_for_available_service, get_pipeline_obj_from_id
+from iSkyLIMS_drylab.utils.handling_pipelines import get_pipelines_for_service, get_pipeline_obj_from_id
 
 def prepare_delivery_form(resolution_id):
     '''
@@ -14,7 +14,7 @@ def prepare_delivery_form(resolution_id):
         resolution_id   # resolution id
     Functions:
         get_resolution_obj_from_id # located at iSkyLIMS_drylab.utils.handling_resolutions
-        get_pipeline_and_versions_for_available_service     # located at iSkyLIMS_drylab.utils.handling_pipelines
+        get_pipelines_for_service     # located at iSkyLIMS_drylab.utils.handling_pipelines
         get_available_service_obj_from_id       # located at iSkyLIMS_drylab.utils.handling_request_services
     Return:
         delivery_data_form
@@ -28,7 +28,7 @@ def prepare_delivery_form(resolution_id):
         delivery_data_form['resolution_number'] = resolution_obj.get_resolution_number()
         req_available_services_id = resolution_obj.get_available_services_ids()
         for avail_service in req_available_services_id:
-            data = get_pipeline_and_versions_for_available_service(avail_service)
+            data = get_pipelines_for_service(avail_service)
             if data :
                 pipelines_data.append([ get_available_service_obj_from_id(avail_service).get_service_description() , data])
         delivery_data_form['pipelines_data'] = pipelines_data
@@ -44,7 +44,7 @@ def store_resolution_delivery(form_data):
         form_data   # user data form
     Functions:
         get_resolution_obj_from_id # located at iSkyLIMS_drylab.utils.handling_resolutions
-        get_pipeline_and_versions_for_available_service     # located at iSkyLIMS_drylab.utils.handling_pipelines
+        get_pipelines_for_service     # located at iSkyLIMS_drylab.utils.handling_pipelines
         get_pipeline_obj_from_id       # located at iSkyLIMS_drylab.utils.handling_pipelines
     Return:
         delivery_data

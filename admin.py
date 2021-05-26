@@ -42,7 +42,7 @@ class DeliveryAdmin(admin.ModelAdmin):
 	list_display=['deliveryResolutionID','deliveryDate', 'executionStartDate', 'executionEndDate', 'executionTime', 'permanentUsedSpace', 'temporaryUsedSpace','deliveryNotes']
 
 class PipelinesManager(admin.ModelAdmin):
-	list_display = ['availableService', 'userName','pipelineName','pipelineVersion','pipelineInUse']
+	list_display = ['pipelineName','pipelineVersion','pipelineInUse','pipelineFile']
 
 class ParameterPipelineManager(admin.ModelAdmin):
 	list_display = ['parameterPipeline', 'parameterName', 'parameterValue']

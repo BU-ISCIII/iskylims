@@ -34,26 +34,6 @@
                         </tbody>
                     </table>
                     <br><br>
-                    {% if defined_service_pipeline.heading_parameter_pipeline %}
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    {% for value in defined_service_pipeline.heading_parameter_pipeline %}
-                                        <th>{{value}}</th>
-                                    {% endfor %}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for name, value in defined_service_pipeline.parameters %}
-                                    <tr>
-                                        <td>{{name}}</td>
-                                        <td>{{value}}</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        <br><br>
-                    {% endif %}
                     <input type="button" value="Return Home" onclick="location.href ='/drylab' ;"/>
                     <input class="btn pull-right" type="button" value="Create New Service Pipeline" onclick="location.href ='/drylab/definePipelineService' ;"/>
                 </div> <!--  end of panel body -->
@@ -76,83 +56,77 @@
         </div> <!--  end of col-sm-7 -->
     </div> <!--  end of row -->
     {% endif %}
-    {% if not data_pipeline.available_services %}
-        <div class="row row-space-2 margin-b-4">
-            <div class="col-sm-8 col-sm-offset-2" >
-                <div class="panel panel-danger">
-                    <div class="panel-heading"><h3 style="text-align:center">No Services have been defined so far</h3></div>
-                    <div class="panel-body">
-                        <h5 style="text-align:center">Check in the User Guide to define services </h5>
-                    </div> <!--  end of panel body -->
-                </div> <!--  end of panel  -->
-            </div> <!--  end of col-sm-12 -->
-        </div> <!--  end of row -->
-    {% else %}
+
     	<div class="row row-space-2 margin-b-4">
     		<div class="col-sm-12">
     			<div class="panel panel-default">
-    				<div class="panel-heading"><h3>Define the pipeline and data used for the selected service.</h3></div>
+    				<div class="panel-heading"><h3>Define the pipeline for using on services.</h3></div>
     				<div class="panel-body">
-    					<form method="post" enctype="multipart/form-data" name="servicePipeline"  id="servicePipeline" class="form-horizontal well">
+    					<form method="post" enctype="multipart/form-data" name="definePipeline"  id="definePipeline" class="form-horizontal well">
     						{% csrf_token %}
-                            <input type="hidden" name="action" value="servicePipeline"/>
+                            <input type="hidden" name="action" value="definePipeline"/>
     						<div class="row row-space-2 margin-b-4">
                                 <div class="form-group required">
-        							<div class="col-sm-5">
 
-                                        <label class="col-sm-4 control-label" for="service_id" >Select a Service</label>
-                                        <div class="col-sm-8"><select class="form-control"  required = "required" name="service_id" id="service_id">
-                                            <option value="">Select one service</option>
-                                            {% for id, name in data_pipeline.available_services %}
-                                                <option value="{{id}}">{{name}}</option>
-                                            {% endfor %}
-                                            </select>
-                                        </div>
-                                    </div> <!--  end of col-sm-6 -->
-        							<div class="col-sm-7">
-                                        <label class="col-sm-5  control-label" for="pipelineName" >Pipeline Name </label>
-                                        <div class="col-sm-6"><input class="form-control" type="text" required = "required" name="pipelineName" id="pipelineName" value ="{{data_pipeline.pipelineName}}" size="100" maxlength="100"></div>
+        							<div class="col-sm-10">
+                                        <label class="col-sm-4  control-label" for="pipelineName" >Pipeline Name </label>
+                                        <div class="col-sm-8"><input class="form-control" type="text" required = "required" name="pipelineName" id="pipelineName" size="120" maxlength="100"></div>
                                         <BR><br>
-                                        <label class="col-sm-5  control-label" for="pipelineVersion" >Pipeline Version </label>
-                                        <div class="col-sm-6"><input class="form-control" type="text" required = "required" name="pipelineVersion" id="pipelineVersion" value ="{{data_pipeline.pipelineVersion}}"  size="20" maxlength="100"></div>
+                                        <label class="col-sm-4  control-label" for="pipelineVersion" >Pipeline Version </label>
+                                        <div class="col-sm-4"><input class="form-control" type="text" required = "required" name="pipelineVersion" id="pipelineVersion" size="10" maxlength="8"></div>
                                         <BR><br>
+                                    </div> <!--  end of col-sm-10-->
+                                </div>  <!-- end from-group   -->
+                                <div class="form-group">
+                                    <div class="col-sm-10">
+                                        <label class="col-sm-4  control-label" for="urlLocation" >Location Pipeline URL  </label>
+                                        <div class="col-sm-8"><input class="form-control" type="text"  name="urlLocation" id="urlLocation"  size="10" maxlength="8"></div>
+                                        <BR><br>
+                                        <label class="col-sm-4 control-label" for="pipelinefile" >Upload Pipeline script file </label>
+                                        <div class="col-sm-8"><input class="form-control" type="file" name="pipelinefile"size="80"></div>
+                                        <br><br>
+                                        <label class="col-sm-4  control-label" for="description" >Pipeline description  </label>
+                                        <div class="col-sm-8"><textarea class="form-control" name="description" value="" id="description" rows="8" cols="60" maxlength="450"></textarea></div>
+
 
         							</div> <!--  end of col-sm-6-->
                                 </div>  <!-- end from-group   -->
         						<br><br>
-        						<div  class="scrolling-wrapper">
-        							<div id="spreadsheet"></div>
-            	                    <br>
-        						    <script>
-        	                            var data = [{% for item , value in data_pipeline.additional_parameters.items %}
-        	                               ['{{item}}', '{{value}}'],{% endfor %}
-        	                            ];
-        	                           mySpreadsheet = $('#spreadsheet').jexcel({
-        	                               data:data,
-        	                               columns: [
-        	                                    { type: 'text', title:'{{data_pipeline.heading.0}}', width:400  },
-        										{ type: 'text', title:'{{data_pipeline.heading.1}}', width:450 },
-        	                               ],
-        	                               allowInsertColumn:false,
-        	                               allowDeleteColumn:false,
-        	                               allowRenameColumn:false,
-        	                               allowInsertRow:true,
-        	                               allowDeleteRow:true,
-        	                               tableOverflow:true,
-        	                               tableHeight:'200px',
-        								   minDimensions:[{{data_actions.heading|length}},3],
-        								   csvFileName:'servicePipeline',
-        	                           });
-        	                        </script>
-        	                       <input type="button" value="Return Home" onclick="location.href ='/drylab' ;"/>
-        	                       <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
-    				   		    </div> <!--  end of scrolling  -->
+                                <div class="col-sm-8 col-sm-offset-2">
+            						<div  class="scrolling-wrapper">
+            							<div id="spreadsheet"></div>
+                	                    <br>
+            						    <script>
+            	                            var data = [{% for item , value in data_pipeline.additional_parameters.items %}
+            	                               ['{{item}}', '{{value}}'],{% endfor %}
+            	                            ];
+            	                           mySpreadsheet = $('#spreadsheet').jexcel({
+            	                               data:data,
+            	                               columns: [
+            	                                    { type: 'text', title:'Parameter Name', width:400  },
+                                                    { type: 'dropdown', title:'Parameter Type',source:['Boolean','String'], width:200, },
+            	                               ],
+            	                               allowInsertColumn:false,
+            	                               allowDeleteColumn:false,
+            	                               allowRenameColumn:false,
+            	                               allowInsertRow:true,
+            	                               allowDeleteRow:true,
+            	                               tableOverflow:true,
+            	                               tableHeight:'200px',
+            								   minDimensions:[1,3],
+            								   csvFileName:'parametersPipeline',
+            	                           });
+            	                        </script>
+            	                       <input type="button" value="Return Home" onclick="location.href ='/drylab' ;"/>
+            	                       <input class="btn pull-right btn-primary" type="submit" id = "btnSubmit" value="Submit">
+        				   		    </div> <!--  end of scrolling  -->
+                                </div> <!--  end of col-sm-10-->
                             </div> <!--  end of row -->
                         </form>
                         <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
                         <script>
                             $(document).ready(function () {
-                                $("#servicePipeline").submit(function (e) {
+                                $("#definePipeline").submit(function (e) {
                                     //stop submitting the form to see the disabled button effect
                                     // e.preventDefault();
                                     //disable the submit button
@@ -161,7 +135,7 @@
                                     $("<input />").attr("type", "hidden")
                                       .attr("name", "pipeline_data")
                                       .attr("value", data_json)
-                                      .appendTo("#servicePipeline");
+                                      .appendTo("#definePipeline");
                                     $("#btnSubmit").attr("disabled", true);
                                     return true;
                                 });
@@ -171,6 +145,6 @@
                 </div> <!--  end of panel  -->
             </div> <!--  end of col-sm-12 -->
         </div> <!--  end of row -->
-    {% endif %}
+
 {% endif %}
 {% endblock %}

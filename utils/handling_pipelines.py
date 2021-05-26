@@ -1,4 +1,4 @@
-import json
+import json, os
 from .drylab_common_functions import *
 from iSkyLIMS_drylab import drylab_config
 from iSkyLIMS_drylab.models import *
@@ -13,15 +13,14 @@ def analyze_input_pipelines(request):
         pipeline_data
     '''
     pipeline_data = {}
-    pipeline_data['availableService_id'] = request.POST['service_id']
+    additional_param_dict = {}
+
     pipeline_data['userName'] = request.user
     pipeline_data['pipelineName'] =request.POST['pipelineName']
     pipeline_data['pipelineVersion'] = request.POST['pipelineVersion']
+    pipeline_data['url'] = request.POST['urlLocation']
+    pipeline_data['description'] = request.POST['description']
     pipeline_json_data = json.loads(request.POST['pipeline_data'])
-
-    action_length = len(drylab_config.HEADING_MANAGE_PIPELINES)
-
-    additional_param_dict = {}
     for row in pipeline_json_data :
         if row[0] == '' :
             continue
@@ -46,13 +45,11 @@ def get_data_form_pipeline():
     Description:
         The function collect the available services and the fields to present information
         in the form
-    Functions:
-        get_children_available_services  # located at drylab_common_functions
     Return:
         additional_data
     '''
     additional_data = {}
-    additional_data ['available_services']= get_children_available_services ()
+    #additional_data ['available_services']= get_children_available_services ()
     additional_data['heading']= drylab_config.HEADING_PARAMETER_PIPELINE
 
     return additional_data
@@ -109,12 +106,9 @@ def get_defined_pipeline_data_to_display(pipeline_obj):
     '''
     pipeline_data = {}
 
-    service_name = pipeline_obj.get_pipleline_avail_service()
-    pipeline_data['pipeline_data'] = [service_name, pipeline_obj.get_pipeline_name(), pipeline_obj.get_pipeline_version()]
+    # service_name = pipeline_obj.get_pipleline_avail_service()
+    pipeline_data['pipeline_data'] = [pipeline_obj.get_pipeline_name(), pipeline_obj.get_pipeline_version(),pipeline_obj.get_pipeline_description()]
     pipeline_data['heading_pipeline']= drylab_config.DISPLAY_NEW_DEFINED_PIPELINE
-    pipeline_data['parameters'] = get_pipeline_parameters(pipeline_obj)
-    if len(pipeline_data['parameters']) > 0:
-        pipeline_data['heading_parameter_pipeline'] = drylab_config.HEADING_PARAMETER_PIPELINE
     return pipeline_data
 
 def get_pipelines_for_manage():
@@ -126,30 +120,13 @@ def get_pipelines_for_manage():
     '''
     pipeline_data = {}
     if Pipelines.objects.all().exists():
-        pipelines_objs = Pipelines.objects.all().order_by('availableService')
+        pipelines_objs = Pipelines.objects.filter(pipelineInUse__exact = True).order_by('pipelineName')
         pipeline_data['data'] = []
         for pipeline in pipelines_objs:
             pipeline_data['data'].append(pipeline.get_pipeline_info())
         pipeline_data['heading'] = drylab_config.HEADING_MANAGE_PIPELINES
 
     return pipeline_data
-
-def get_pipeline_and_versions_for_available_service(available_service):
-    '''
-    Description:
-        The function get the list of defined pipeline names and version for an
-        available service
-    Input:
-        available_service
-    Return:
-        service_name
-    '''
-    pipeline_names = []
-    if  Pipelines.objects.filter(availableService__pk__exact = available_service).exists():
-        pipelines_objs = Pipelines.objects.filter(availableService__pk__exact = available_service).order_by('generated_at').reverse()
-        for pipelines_obj in pipelines_objs:
-            pipeline_names.append([pipelines_obj.pk, pipelines_obj.get_pipleline_avail_service(), pipelines_obj.get_pipeline_version()])
-    return pipeline_names
 
 def get_pipelines_for_service(service_id):
     '''

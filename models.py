@@ -84,25 +84,26 @@ class AvailableService(MPTTModel):
 
 class PipelinesManager (models.Manager):
 	def create_pipeline(self, data):
-		availableService = AvailableService.objects.get(pk__exact = data['availableService_id'])
-
-		new_pipeline = self.create(availableService = availableService, userName = data['userName'],
+		new_pipeline = self.create(userName = data['userName'],
 				pipelineName = data['pipelineName'], pipelineInUse = True,
 				pipelineVersion	= data['pipelineVersion'],
-				#externalRequest = data['externalRequest'], useRunFolder = data['useRunFolder']
-				)
+				pipelineFile = os.path.join(drylab_config.PIPELINE_FILE_DIRECTORY, data['filename']),
+				pipelineUrl = data['url'], pipelineDescription = data['description'])
 		return new_pipeline
 
 class Pipelines(models.Model):
-	availableService = models.ForeignKey(
-				AvailableService,
-				on_delete = models.CASCADE)
+	#availableService = models.ForeignKey(
+	#			AvailableService,
+	#			on_delete = models.CASCADE)
 	userName = models.ForeignKey(
                 User,
                 on_delete=models.CASCADE)
 	pipelineName = models.CharField(max_length = 50)
 	pipelineVersion = models.CharField(max_length = 10)
 	pipelineInUse = models.BooleanField(default = True)
+	pipelineFile = models.FileField(upload_to = drylab_config.PIPELINE_FILE_DIRECTORY, null = True, blank = True)
+	pipelineUrl = models.CharField(max_length =200, null = True, blank = True)
+	pipelineDescription = models.CharField(max_length =500, null = True, blank = True)
 	generated_at = models.DateTimeField(auto_now_add = True)
 
 	def __str__ (self):
@@ -113,12 +114,6 @@ class Pipelines(models.Model):
 
 	def get_pipeline_id (self):
 		return '%s' %(self.pk)
-
-	def get_pipleline_avail_service(self):
-		return  '%s' %(self.availableService.get_service_description())
-
-	def get_pipleline_avail_service_obj(self):
-		return self.availableService
 
 	def get_pipeline_version(self):
 		return '%s' %(self.pipelineVersion)
@@ -134,12 +129,15 @@ class Pipelines(models.Model):
 		data = []
 		data.append(self.pipelineName)
 		data.append(self.pipelineVersion)
-		data.append(self.availableService.get_service_description())
+		#data.append(self.availableService.get_service_description())
 		return data
+
+	def get_pipeline_description(self):
+		return '%s'  %(self.pipelineDescription)
 
 	def get_pipeline_info(self):
 		data = []
-		data.append(self.availableService.get_service_description())
+		#data.append(self.availableService.get_service_description())
 		data.append(self.userName.username)
 		data.append(self.pipelineName)
 		data.append(self.pipelineVersion)
@@ -164,6 +162,8 @@ class ParameterPipeline (models.Model):
 				on_delete = models.CASCADE)
 	parameterName = models.CharField(max_length = 80)
 	parameterValue = models.CharField(max_length = 200)
+	parameterType = models.CharField(max_length = 20,null = True, blank = True)
+
 
 	def __str__ (self):
 		return '%s' %(self.parameterName)

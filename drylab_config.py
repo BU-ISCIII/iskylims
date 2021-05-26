@@ -1,19 +1,22 @@
 import sys
 sys.path.append
-
+'''
 try:
     from .drylab_email_conf import *
     EMAIL_USER_CONFIGURED = True
 except:
     EMAIL_USER_CONFIGURED = False
-
+'''
 
 SERVICE_MANAGER = 'ServiceManager'
 
 INTERNAL_SEQUENCING_UNIT = "GENOMIC_SEQ_UNIT"
-
+################### DIRECTORIES ###################
 USER_REQUESTED_SERVICE_FILE_DIRECTORY ='drylab/servicesRequestFiles'
+PIPELINE_FILE_DIRECTORY = 'drylab/pipelinesFiles'
 
+
+###################################################
 ## CSS file to be used for creating the PDF files
 CSS_FOR_PDF = '/documents/drylab/services_templates/css/print_services.css'
 
@@ -37,7 +40,6 @@ USER_CENTER_USED_WHEN_NOT_PROVIDED = 'NO_CENTER'
 ## Directory settings for processing the run data files ######
 ## Relative path from settings.BASE_DIR
 LOG_DIRECTORY = 'logs/'
-
 
 ################# CONFIG FILE LOG NAME ###############################
 LOGGING_CONFIG_FILE = 'logging_config.ini'
@@ -69,7 +71,7 @@ ERROR_FILE_TOO_BIG = 'Unable to upload your file. It exceeds the maximum size'
 ERROR_USER_NOT_DEFINED = ['User is not defined']
 
 ################### PIPELINES ######################
-DISPLAY_NEW_DEFINED_PIPELINE = ['Service', 'Pipeline Name' , 'Pipeline Version']
+DISPLAY_NEW_DEFINED_PIPELINE = ['Pipeline Name' , 'Pipeline Version' , 'Description']
 DISPLAY_MULTYPLE_DEFINED_PIPELINE = ['Service', 'User', 'Pipeline Name' , 'Pipeline Version', 'Date', 'Default', 'In Use']
 
 DISPLAY_DETAIL_PIPELINE_BASIC_INFO = ['Pipeline Name', 'Pipeline Version', 'Service']
