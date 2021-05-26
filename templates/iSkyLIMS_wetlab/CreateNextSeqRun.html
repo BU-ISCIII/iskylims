@@ -79,9 +79,10 @@
                     <br>
                     <br>
                     <input id = "btnSubmit"  class="btn pull-right btn-primary" type="submit" value="Submit">
-                </div> <!--// end panel  -->
+
           </form>
-         </div> <!--// end col-sm-8  --> 
+          </div> <!--// end panel  -->
+         </div> <!--// end col-sm-8  -->
          </div> <!--// end row -->
           <div class="row row-space-2 margin-b-4">
             <div class="col-sm-8" >
@@ -92,12 +93,12 @@
                         </p>
                     </div> <!--// end panel-body  -->
                 </div> <!--// end panel  -->
-            </div> <!--// end col-sm-8  --> 
+            </div> <!--// end col-sm-8  -->
           </div> <!--// end row -->
         <!--script to validate the user name. submit button is disabled until valid input -->
        <script>
         var arr = {{ get_user_names.aval_users |safe }}
-    
+
         function checkInputs() {
           var isValid = true;
 
@@ -123,7 +124,7 @@
         checkInputs()
        </script>
          <!--script ends here-->
-         
+
         <!--script to disable the submit button -->
         <script>
             $(document).ready(function () {
