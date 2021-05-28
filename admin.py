@@ -17,7 +17,8 @@ class PatientDataAdmin(admin.ModelAdmin):
 class DoctorAdmin(admin.ModelAdmin):
     list_display = ('doctorName',)
 
-
+class ConfigSettingAdmin(admin.ModelAdmin):
+    list_display = ['configurationName', 'configurationValue']
 
 admin.site.register(ClinicSampleRequest, ClinicSampleRequestAdmin)
 admin.site.register(ClinicSampleState,ClinicSampleStateAdmin)
@@ -26,3 +27,4 @@ admin.site.register(Doctor,DoctorAdmin)
 
 admin.site.register(PatientData,PatientDataAdmin)
 admin.site.register(ServiceUnits,ServiceUnitsAdmin)
+admin.site.register(ConfigSetting,ConfigSettingAdmin)

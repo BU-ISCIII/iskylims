@@ -122,6 +122,28 @@ def display_one_patient_info (p_id, app_name):
     import pdb; pdb.set_trace()
     return patient_info
 
+def display_patient_list(p_list):
+    '''
+    Description:
+        The function collect basic information about patient to display
+    Input:
+        p_list      # list of the patient_ids
+    Return:
+        p_list_info
+    '''
+    p_list_info = {}
+    p_list_data = []
+    p_name = ConfigSetting.objects.filter(configurationName__exact = 'PATIENT_NAME').last().get_configuration_value()
+    p_surname = ConfigSetting.objects.filter(configurationName__exact = 'PATIENT_SURNAME').last().get_configuration_value()
+    p_list_info['heading'] = ['Patient Code', p_name, p_surname]
+    for p_id in p_list:
+        p_obj = get_patient_core_obj_from_id(p_id)
+        if p_obj:
+            p_list_data.append([p_obj.get_patient_code(),p_obj.get_patient_name(),p_obj.get_patient_surname(), p_id])
+    p_list_info['patient_data'] = p_list_data
+    return p_list_info
+
+
 def fields_for_new_patient (app_name):
     '''
     Description:
@@ -130,6 +152,8 @@ def fields_for_new_patient (app_name):
         patient_definition_data.
     '''
     patient_definition_data = {}
+    patient_definition_data['p_name'] = ConfigSetting.objects.filter(configurationName__exact = 'PATIENT_NAME').last().get_configuration_value()
+    patient_definition_data['p_surname'] = ConfigSetting.objects.filter(configurationName__exact = 'PATIENT_SURNAME').last().get_configuration_value()
     if PatientSex.objects.filter().exists():
         sex_objs = PatientSex.objects.filter()
         patient_definition_data['sex_values'] = []
@@ -171,3 +195,16 @@ def get_patients_in_search(data_request):
         patient_list.append(patient_found.pk)
 
     return patient_list
+
+def from_data_for_search_patient():
+    '''
+    Description:
+        The function get the information to get information to display in search patient form
+    Return:
+        s_patient_data
+    '''
+    s_patient_data = {}
+    s_patient_data['p_name'] = ConfigSetting.objects.filter(configurationName__exact = 'PATIENT_NAME').last().get_configuration_value()
+    s_patient_data['p_surname'] = ConfigSetting.objects.filter(configurationName__exact = 'PATIENT_SURNAME').last().get_configuration_value()
+
+    return s_patient_data

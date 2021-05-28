@@ -486,7 +486,7 @@ def display_sample_project(request,sample_project_id):
     if 'ERROR' in samples_project_data :
         error_message = ERROR_SAMPLE_PROJECT_DOES_NOT_EXISTS
         return render (request,'iSkyLIMS_clinic/error_page.html', {'content': error_message })
-    
+
     return render(request, 'iSkyLIMS_clinic/displaySampleProject.html',{'samples_project_data': samples_project_data})
 
 def pending_to_update(request):
@@ -585,10 +585,11 @@ def search_patient (request):
             return redirect ('display_patient_information', patient_id = patient_list[0] )
         else:
             display_patient_list_info = display_patient_list(patient_list)
-            return render(request, 'iSkyLIMS_clinic/displayPatientInformation.html', {'display_patient_list_info': display_patient_list_info })
+            return render(request, 'iSkyLIMS_clinic/searchPatient.html', {'display_patient_list_info': display_patient_list_info })
 
     else:
-        return render(request, 'iSkyLIMS_clinic/searchPatient.html')
+        s_patient_data = from_data_for_search_patient()
+        return render(request, 'iSkyLIMS_clinic/searchPatient.html',{'s_patient_data':s_patient_data})
 
 @login_required
 def set_molecule_values(request):

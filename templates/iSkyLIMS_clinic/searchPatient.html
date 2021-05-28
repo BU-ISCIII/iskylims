@@ -37,12 +37,11 @@
                         </thead>
                         <tbody>
                             <h4>The following clinic samples match with your input request</h4>
-                            {% for p_id, p_name, p_surname, p_code in display_patient_list_info.patient_data %}
+                            {% for p_code, p_name, p_surname, p_id in display_patient_list_info.patient_data %}
                                 <tr>
-                                    <td><a href="/clinic/displayPatientInfo={{s_id}}">{{ p_name }}</a> </td>
+                                    <td><a href="/clinic/displayPatientInfo={{p_id}}">{{ p_code }}</a> </td>
+                                    <td>{{ p_name }} </td>
                                     <td>{{ p_surname }} </td>
-                                    <td>{{ p_code }} </td>
-
                                 </tr>
                             {%endfor%}
                         </tbody>
@@ -63,12 +62,12 @@
                         {% csrf_token %}
                         <input type="hidden" name="action" value="searchPatient"/>
                         <div class="form-group">
-                            <label class="col-sm-5  control-label" for="patientname" >Patient Name </label>
+                            <label class="col-sm-5  control-label" for="patientname" >{{s_patient_data.p_name}}</label>
                             <div class="col-sm-5"><input class="form-control" type="text" name="patientname" id="patientname" size="80" maxlength="80"></div>
                         </div>  <!-- end from-group   -->
                         <BR>
                         <div class="form-group">
-                            <label class="col-sm-5 control-label" for="patientname" >Patient Surname</label>
+                            <label class="col-sm-5 control-label" for="patientname" >{{s_patient_data.p_surname}}</label>
                             <div class="col-sm-5"><input class="form-control" type="text" name="patientsurname" id="patientsurname" size="80" maxlength="80"></div>
                         </div>  <!-- end from-group   -->
                         <BR>

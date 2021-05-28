@@ -392,6 +392,17 @@ class Family (models.Model):
     def __str__ (self):
         return '%s' %(self.familyID)
 
+class ConfigSetting (models.Model):
+    configurationName = models.CharField(max_length = 80)
+    configurationValue = models.CharField(max_length = 255, null=True, blank =True)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__ (self):
+        return '%s' %(self.configurationName)
+
+    def get_configuration_value(self):
+        return '%s' %(self.configurationValue)
+
 '''
 class ClinicProjects (models.Model):
     patientCore_id = models.ForeignKey(
