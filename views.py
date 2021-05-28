@@ -87,7 +87,8 @@ def request_sequencing_service(request):
 		if 'files' in request.POST:
 			add_files_to_service(request.POST.getlist('files'), new_service)
 		## Send mail to user and drylab admin group
-		if drylab_config.EMAIL_USER_CONFIGURED :
+		if EmailData.objects.all().exists():
+		#if drylab_config.EMAIL_USER_CONFIGURED :
 			email_data = {}
 			email_data['user_email'] = request.user.email
 			email_data['user_name'] = request.user.username
@@ -121,7 +122,8 @@ def counseling_request(request):
                            'error_message':error_message})
 
         new_service = create_new_save_counseling_service_request(request)
-        if drylab_config.EMAIL_USER_CONFIGURED :
+        if EmailData.objects.all().exists():
+        #if drylab_config.EMAIL_USER_CONFIGURED :
             email_data = {}
             email_data['user_email'] = request.user.email
             email_data['user_name'] = request.user.username
@@ -152,7 +154,8 @@ def infrastructure_request(request):
                            'error_message':error_message})
 
         new_service = create_new_save_infrastructure_service_request(request)
-        if drylab_config.EMAIL_USER_CONFIGURED :
+        if EmailData.objects.all().exists():
+        #if drylab_config.EMAIL_USER_CONFIGURED :
             email_data = {}
             email_data['user_email'] = request.user.email
             email_data['user_name'] = request.user.username
@@ -329,7 +332,8 @@ def add_resolution (request):
         #resolution_file = create_pdf(request,information, drylab_config.RESOLUTION_TEMPLATE, pdf_name)
 
         ## Send email
-        if drylab_config.EMAIL_USER_CONFIGURED :
+        if EmailData.objects.all().exists():
+        #if drylab_config.EMAIL_USER_CONFIGURED :
             email_data = {}
             email_data['user_email'] = request.user.email
             email_data['user_name'] = request.user.username
@@ -455,7 +459,8 @@ def add_in_progress (request):
             # update the service status and in_porgress date
             service_obj.update_service_status('In progress')
 
-        if drylab_config.EMAIL_USER_CONFIGURED :
+        if EmailData.objects.all().exists():
+        #if drylab_config.EMAIL_USER_CONFIGURED :
             email_data = {}
             email_data['user_email'] = service_obj.get_user_email()
             email_data['user_name'] = service_obj.get_username()

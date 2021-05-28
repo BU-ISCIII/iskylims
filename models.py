@@ -735,6 +735,9 @@ class EmailData (models.Model):
         self.save()
         return self
 
+    def get_user_emai(self):
+        return '%s' %(self.userEmail)
+
     objects = EmailDataMamager()
 
 '''

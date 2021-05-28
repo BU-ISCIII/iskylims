@@ -53,40 +53,33 @@
                                     pagination:10,
                         		    csvFileName:'serviceActionsPipeline',
                                     onselection:function(instance, cell, r, c, value) {
-                                            //var columnName = jexcel.getColumnNameFromId([7, r]);
-                                            //var pipeline_id =
-                                            //console.log('valor de column' , columnName);
-                                            //console.log('value es  vale ', $('#spreadsheet').jexcel('getValue', columnName));
-                                            //console.log('value222 es  vale ', instance.jexcel.getValue(columnName));
-                                            if (c == 2) {
-                                                var columnName = jexcel.getColumnNameFromId([6, r]);
-                                                var pipeline_id = instance.jexcel.getValue(columnName);
-
-                                                //console.log('pipe = ',instance.jexcel.getValue(columnName) );
-                                                window.location.href = '/drylab/detailPipeline='+ pipeline_id;
-                                            }
-
+                                        if (c == 1) {
+                                            var columnName = jexcel.getColumnNameFromId([5, r]);
+                                            var pipeline_id = instance.jexcel.getValue(columnName);
+                                            window.location.href = '/drylab/detailPipeline='+ pipeline_id;
                                         }
+
+                                    }
                         	   });
                         	</script>
 
                             <script>
-                                           $(document).ready(function () {
-                                               $("#requestMoleculeUse").submit(function (e) {
-                                                   //stop submitting the form to see the disabled button effect
-                                                   // e.preventDefault();
-                                                   //disable the submit button
-                                                   var table_data = $('#spreadsheet').jexcel('getData')
-                                                   var data_json = JSON.stringify(table_data)
-                                                   $("<input />").attr("type", "hidden")
-                                                     .attr("name", "molecule_used_for")
-                                                     .attr("value", data_json)
-                                                     .appendTo("#requestMoleculeUse");
-                                                   $("#btnSubmit").attr("disabled", true);
-                                                   return true;
-                                               });
-                                           });
-                                       </script>
+                                $(document).ready(function () {
+                                    $("#requestMoleculeUse").submit(function (e) {
+                                       //stop submitting the form to see the disabled button effect
+                                       // e.preventDefault();
+                                       //disable the submit button
+                                       var table_data = $('#spreadsheet').jexcel('getData')
+                                       var data_json = JSON.stringify(table_data)
+                                       $("<input />").attr("type", "hidden")
+                                         .attr("name", "molecule_used_for")
+                                         .attr("value", data_json)
+                                         .appendTo("#requestMoleculeUse");
+                                       $("#btnSubmit").attr("disabled", true);
+                                       return true;
+                                    });
+                                });
+                            </script>
                         </div> <!--  end of scrolling  -->
                     </div> <!--  end of panel body -->
                 </div> <!--  end of panel  -->

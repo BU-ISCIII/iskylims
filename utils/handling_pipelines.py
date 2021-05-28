@@ -85,6 +85,7 @@ def get_detail_pipeline_data(pipeline_id):
 
                 detail_pipelines_data['parameters'].append([parameter_obj.get_pipeline_parameter_name(), parameter_obj.get_pipeline_parameter_value()])
         # get the services where the pipeline was used
+        '''
         req_serv_objs = get_requested_services_obj_from_available_service(pipeline_obj.get_pipleline_avail_service_obj())
         if req_serv_objs != None :
             detail_pipelines_data['services_using_pipeline'] = []
@@ -92,7 +93,7 @@ def get_detail_pipeline_data(pipeline_id):
             for req_serv_obj in req_serv_objs:
                 detail_pipelines_data['services_using_pipeline'].append([req_serv_obj.get_service_id() ,req_serv_obj.get_service_request_number(),
                 req_serv_obj.get_service_creation_time(), req_serv_obj.get_service_requested_user(), req_serv_obj.get_service_state()])
-
+        '''
     return detail_pipelines_data
 
 def get_defined_pipeline_data_to_display(pipeline_obj):
