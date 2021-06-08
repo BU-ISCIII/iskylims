@@ -732,49 +732,75 @@ def parsing_run_info_and_parameter_information(l_run_info, l_run_parameter, expe
         try:
             running_data[field] = parameter_data_root.find(field).text
         except:
-            running_data[field] = ''
-            string_message = experiment_name + ' : Parameter ' + field  + ' unable to fetch in RunParameter.xml'
-            logging_warnings(string_message, False)
+            ## get the tags item for searching when tagas are in different Caps and lower combination
+            ## because of new sintax in NovaSeq
+            try:
+                tag_found_in_case_insensitive = False
+                for element in parameter_data_root.iter():
+                    if field.lower() == element.tag.lower():
+                        running_data[field] = parameter_data_root.find(element.tag).text
+                        tag_found_in_case_insensitive = True
+                        break
+                if not tag_found_in_case_insensitive:
+                    running_data[field] = ''
+                    string_message = experiment_name + ' : Parameter ' + field  + ' not found looking for case insensitive in RunParameter.xml'
+                    logging_warnings(string_message, False)
+            except:
+                running_data[field] = ''
+                string_message = experiment_name + ' : Parameter ' + field  + ' unable to fetch in RunParameter.xml'
+                logging_warnings(string_message, False)
 
     ## get the nuber of lanes in case sequencer lab is not defined
-
-    param_in_setup = ['ApplicationVersion', 'NumTilesPerSwath']
-    for i in range(len(param_in_setup)):
-        try:
-            running_data[param_in_setup[i]] = parameter_data_root.find('Setup').find(param_in_setup[i]).text
-        except:
-            string_message = experiment_name + ' : Parameter ' + param_in_setup[i] + ' not found in RunParameter.xml'
-            logging_warnings(string_message, False)
-            continue
-    for setup_field in FIELDS_TO_FETCH_FROM_SETUP_TAG:
-
-        try:
-            running_data[setup_field] = parameter_data_root.find(SETUP_TAG).find(setup_field).text
-
-        except:
-            running_data[setup_field] = ''
-            string_message = experiment_name + ' : Parameter in Setup -- ' + setup_field + ' unable to fetch in RunParameter.xml'
-            logging_errors(string_message, False, True)
-
-    if 'MiSeq' in running_data[APPLICATION_NAME_TAG] :
-        # initialize paramters in case there are not exists on runParameter file
-        for i in range(len(READ_NUMBER_OF_CYCLES)):
-            running_data[READ_NUMBER_OF_CYCLES[i]] = ''
-        # get the length index number for reads and indexes for MiSeq Runs
-        for run_info_read in parameter_data_root.iter(RUN_INFO_READ_TAG):
+    if  parameter_data_root.find(SETUP_TAG):
+        param_in_setup = ['ApplicationVersion', 'NumTilesPerSwath']
+        for i in range(len(param_in_setup)):
             try:
-                index_number = int(run_info_read.attrib[NUMBER_TAG]) -1
-                running_data[READ_NUMBER_OF_CYCLES[index_number]] = run_info_read.attrib[NUMBER_CYCLES_TAG]
+                running_data[param_in_setup[i]] = parameter_data_root.find('Setup').find(param_in_setup[i]).text
             except:
-                string_message = experiment_name + ' : Parameter RunInfoRead: Read Number not found in RunParameter.xml'
+                string_message = experiment_name + ' : Parameter ' + param_in_setup[i] + ' not found in RunParameter.xml'
                 logging_warnings(string_message, False)
                 continue
+        # collect information for MiSeq and NextSeq
+        for setup_field in FIELDS_TO_FETCH_FROM_SETUP_TAG:
+            try:
+                running_data[setup_field] = parameter_data_root.find(SETUP_TAG).find(setup_field).text
+            except:
+                running_data[setup_field] = ''
+                string_message = experiment_name + ' : Parameter in Setup -- ' + setup_field + ' unable to fetch in RunParameter.xml'
+                logging_warnings(string_message, False)
+
+        if 'MiSeq' in running_data[APPLICATION_NAME_TAG] :
+            # initialize paramters in case there are not exists on runParameter file
+            for i in range(len(READ_NUMBER_OF_CYCLES)):
+                running_data[READ_NUMBER_OF_CYCLES[i]] = ''
+            # get the length index number for reads and indexes for MiSeq Runs
+            for run_info_read in parameter_data_root.iter(RUN_INFO_READ_TAG):
+                try:
+                    index_number = int(run_info_read.attrib[NUMBER_TAG]) -1
+                    running_data[READ_NUMBER_OF_CYCLES[index_number]] = run_info_read.attrib[NUMBER_CYCLES_TAG]
+                except:
+                    string_message = experiment_name + ' : Parameter RunInfoRead: Read Number not found in RunParameter.xml'
+                    logging_warnings(string_message, False)
+                    continue
+        # get date for miSeq and NextSeq with the format yymmdd
+        date = p_run.find('Date').text
+        run_date = datetime.strptime(date, '%y%m%d')
+    else:
+        # Collect information for NovaSeq
+        for novaseq_field in FIELDS_NOVASEQ_TO_FETCH_TAG:
+            try:
+                running_data[novaseq_field] = parameter_data_root.find(novaseq_field).text
+            except:
+                running_data[novaseq_field] = ''
+                string_message = experiment_name + ' : Parameter in Setup -- ' + novaseq_field + ' unable to fetch in RunParameter.xml'
+                logging_errors(string_message, False, True)
+        date = p_run.find('Date').text.split(' ')[0]
+        run_date = datetime.strptime(date, '%m/%d/%Y')
     ##############################################
     ## updating the date fetched from the Date tag for run and project
     ##############################################
-    date = p_run.find('Date').text
+
     logger.debug('%s : Found date that was recorded the Run %s', experiment_name , date)
-    run_date = datetime.strptime(date, '%y%m%d')
     parsing_data['running_data'] = running_data
     parsing_data['run_date'] = run_date
     logger.debug('%s : End function nextseq_parsing_run_information', experiment_name)

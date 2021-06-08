@@ -92,6 +92,9 @@ FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE = ['RunID','ExperimentName','RTAVersion','C
 SETUP_TAG = 'Setup'
 FIELDS_TO_FETCH_FROM_SETUP_TAG = ['NumLanes', 'ApplicationName' , 'ApplicationVersion', 'NumTilesPerSwath']
 READ_NUMBER_OF_CYCLES = ['PlannedRead1Cycles','PlannedIndex1ReadCycles' ,'PlannedIndex2ReadCycles','PlannedRead2Cycles']
+### NOVASEQ 6000
+FIELDS_NOVASEQ_TO_FETCH_TAG = ['NumLanes', 'Application' , 'ApplicationVersion', 'NumTilesPerSwath']
+
 
 ##############################################################
 

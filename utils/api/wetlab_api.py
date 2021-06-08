@@ -1,4 +1,4 @@
-from iSkyLIMS_wetlab.models import *
+from iSkyLIMS_wetlab.models import RunningParameters, Projects, SamplesInProject,
 
 def get_runfolder_from_run_name(run_name):
     '''
