@@ -1,4 +1,4 @@
-import datetime, os
+import datetime, os, re
 
 from django.db import models
 from django import forms
@@ -174,16 +174,13 @@ class RunProcess(models.Model):
         else:
             return 'None'
     '''
-    def get_machine_lanes(self):
-        number_of_lanes = self.sequencerModel.get_number_of_lanes()
-        return int(number_of_lanes)
-    '''
     def get_sequencing_lanes(self):
         if self.usedSequencer :
             number_of_lanes = self.usedSequencer.get_number_of_lanes()
             return int(number_of_lanes)
         else:
             return 0
+    '''
 
     def get_number_of_samples_in_run(self):
         return '%s' %(self.samples)
@@ -464,6 +461,9 @@ class RunningParameters (models.Model):
 
         return run_parameters_data
 
+    def get_number_of_lanes(self):
+        match_flowcell =  re.match(r".*LaneCount.*'(\d+)'.*",self.FlowcellLayout)
+        return match_flowcell.group(1)
 
     def get_number_of_reads (self):
         count = 0

@@ -261,10 +261,11 @@ def parsing_run_metrics_files(local_run_metric_folder, run_process_obj, experime
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('%s : Starting function parsing_run_metrics',experiment_name)
-    # get the number of lanes for the sequencer
-    number_of_lanes = run_process_obj.get_sequencing_lanes()
+    run_param_obj = RunningParameters.objects.get(runName_id = run_process_obj)
+    # get the number of lanes for the run
+    number_of_lanes = int(run_param_obj.get_number_of_lanes())
     # get number of reads for the run
-    num_of_reads = RunningParameters.objects.get(runName_id = run_process_obj).get_number_of_reads()
+    num_of_reads = run_param_obj.get_number_of_reads()
     logger.info('%s : Fetched run information  needed for running metrics',experiment_name)
 
     run_metrics = py_interop_run_metrics.run_metrics()
@@ -486,5 +487,6 @@ def parsing_run_metrics_files(local_run_metric_folder, run_process_obj, experime
             run_read_stats_level['lane'] = str(lane_number+1)
             # append run_read_stats_level information to run_stats_read_list
             run_stats_read_list.append(run_read_stats_level)
+
     logger.debug ('%s : End function parsing_run_metrics',experiment_name)
     return bin_run_stats_summary_list, run_stats_read_list

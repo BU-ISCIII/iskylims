@@ -299,7 +299,8 @@ def manage_run_in_processed_bcl2fastq_state(conn, run_process_objs):
     for run_process_obj in run_process_objs:
         experiment_name = run_process_obj.get_run_name()
         logger.info('%s : Start handling in manage_run_in_processed_bcl2fastq_state function', experiment_name)
-        run_folder = RunningParameters.objects.get(runName_id = run_process_obj).get_run_folder()
+        run_param_obj = RunningParameters.objects.get(runName_id = run_process_obj)
+        run_folder = run_param_obj.get_run_folder()
         # delete existing information to avoid having duplicated tables
         delete_existing_bcl2fastq_table_processed(run_process_obj, experiment_name)
         demux_files = get_demultiplexing_files(conn, run_folder, experiment_name)
@@ -316,9 +317,9 @@ def manage_run_in_processed_bcl2fastq_state(conn, run_process_objs):
                 handling_errors_in_run (experiment_name, 31)
                 logger.debug ('%s : Aborting the process. Unable to fetch Confersion Stats files', experiment_name)
                 continue
-        number_of_lanes = run_process_obj.get_sequencing_lanes()
+        number_of_lanes = run_param_obj.get_number_of_lanes()
         try:
-            int(number_of_lanes)
+            number_of_lanes = int(number_of_lanes)
         except:
             string_message = experiment_name + ' : Sequencer used in the run has not defined the number of lanes'
             logging_errors(string_message, False, True)

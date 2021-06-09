@@ -12,7 +12,7 @@ from datetime import datetime
 from django.contrib.auth.models import User
 
 from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters, SambaConnectionData, EmailData, ConfigSetting
-from .generic_functions import get_samba_connection_data, get_email_data, send_error_email_to_user, find_xml_tag_text
+from .generic_functions import get_samba_connection_data, get_email_data, send_error_email_to_user, find_xml_tag_text, get_attributes_remote_file
 from iSkyLIMS_wetlab.wetlab_config import *
 from .sample_sheet_utils import get_projects_in_run, get_index_library_name
 from iSkyLIMS_core.models import SequencerInLab
@@ -172,7 +172,8 @@ def check_sequencer_run_is_completed(conn, run_folder , platform ,number_of_cycl
     Constants:
         PLATFORM_WAY_TO_CHECK_RUN_COMPLETION
         RUN_LOG_FOLDER
-        RUN_COMPLETION_FILE
+        RUN_COMPLETION_XML_FILE
+        RUN_COMPLETION_TXT_FILE
     Return:
         status and run_completion_date
         ERROR returns if not able to fecth log files or not defined the way to
@@ -201,8 +202,8 @@ def check_sequencer_run_is_completed(conn, run_folder , platform ,number_of_cycl
         return status , run_completion_date
 
     elif way_to_check == 'xml_file':
-        l_run_completion = os.path.join(RUN_TEMP_DIRECTORY, RUN_COMPLETION_FILE)
-        s_run_completion = os.path.join(get_samba_application_shared_folder() , run_folder, RUN_COMPLETION_FILE)
+        l_run_completion = os.path.join(RUN_TEMP_DIRECTORY, RUN_COMPLETION_XML_FILE)
+        s_run_completion = os.path.join(get_samba_application_shared_folder() , run_folder, RUN_COMPLETION_XML_FILE)
 
         try:
             l_run_completion = fetch_remote_file (conn, run_folder, s_run_completion, l_run_completion)
@@ -224,6 +225,25 @@ def check_sequencer_run_is_completed(conn, run_folder , platform ,number_of_cycl
         logger.info('%s : Deleted Run Completion file', experiment_name)
         logger.debug ('%s : End function check_sequencer_run_is_completed with exception', experiment_name)
         return 'cancelled', ''
+    elif way_to_check == 'txt_file':
+        #l_run_completion = os.path.join(RUN_TEMP_DIRECTORY, RUN_COMPLETION_TXT_FILE)
+        s_run_completion = os.path.join(get_samba_application_shared_folder() , run_folder, RUN_COMPLETION_TXT_FILE)
+
+        try:
+            shared_folder = get_samba_shared_folder()
+            conversion_attributes = conn.getAttributes( shared_folder, s_run_completion)
+            logger.info('%s : Sucessfully fetch of Completion status file',experiment_name)
+        except Exception as e:
+            logger.warning ('%s : Completion status file is not present on the run folder %s', experiment_name, run_folder)
+            logger.debug ('%s : End function check_sequencer_run_is_completed', experiment_name)
+            return 'still_running', ''
+        try:
+            run_completion_date = datetime.fromtimestamp(int(conversion_attributes.create_time)).strftime('%Y-%m-%d %H:%M:%S')
+        except Exception as e:
+            run_completion_date = ''
+            logger.warning ('%s : Unable to collect date for completion file ', experiment_name)
+            logger.debug ('%s : End function check_sequencer_run_is_completed', experiment_name)
+        return 'completed' , run_completion_date
     else:
         string_message = experiment_name + ' : way to check the completion run is not defined for  ' +  platform
         logging_errors( string_message, False, True)
@@ -594,6 +614,7 @@ def logging_errors(string_text, showing_traceback , print_on_screen ):
         logger # contains the logger object
         string_text # information text to include in the log
     Functions:
+        get_email_data
         send_error_email_to_user # located on utils.generic_functions
     Constant:
         SENT_EMAIL_ON_ERROR
@@ -610,7 +631,7 @@ def logging_errors(string_text, showing_traceback , print_on_screen ):
         logger.error('################################')
     logger.error('-----------------    END ERROR   --------------')
     email_data = get_email_data()
-    if email_data['SENT_EMAIL_ON_ERROR'] :
+    if email_data['SENT_EMAIL_ON_ERROR'] == True:
         subject = 'Error found on wetlab when running crontab'
         send_error_email_to_user (subject, string_text, email_data['USER_EMAIL'],
                             [email_data['USER_EMAIL']])
@@ -784,8 +805,10 @@ def parsing_run_info_and_parameter_information(l_run_info, l_run_parameter, expe
                     continue
         # get date for miSeq and NextSeq with the format yymmdd
         date = p_run.find('Date').text
-        run_date = datetime.strptime(date, '%y%m%d')
-    else:
+        try:
+            run_date = datetime.strptime(date, '%y%m%d')
+        except:
+            run_date = ''
         # Collect information for NovaSeq
         for novaseq_field in FIELDS_NOVASEQ_TO_FETCH_TAG:
             try:
@@ -795,7 +818,10 @@ def parsing_run_info_and_parameter_information(l_run_info, l_run_parameter, expe
                 string_message = experiment_name + ' : Parameter in Setup -- ' + novaseq_field + ' unable to fetch in RunParameter.xml'
                 logging_errors(string_message, False, True)
         date = p_run.find('Date').text.split(' ')[0]
-        run_date = datetime.strptime(date, '%m/%d/%Y')
+        try:
+            run_date = datetime.strptime(date, '%m/%d/%Y')
+        except:
+            run_date = ''
     ##############################################
     ## updating the date fetched from the Date tag for run and project
     ##############################################

@@ -132,13 +132,32 @@ def get_email_data():
     '''
     Description:
         Fetch the email configuration file
+    Constant:
+        SENT_EMAIL_ON_CRONTAB_ERROR
     Return:
         email_data
     '''
     email_data = {}
+    email_data['EMAIL_HOST'] = settings.EMAIL_HOST
+    email_data['EMAIL_PORT'] = settings.EMAIL_PORT
+    email_data['USER_EMAIL'] = settings.EMAIL_HOST_USER
+    email_data['USER_PASSWORD'] = settings. EMAIL_HOST_PASSWORD
+    email_data['USE_TLS'] = settings.EMAIL_USE_TLS
+    email_data['SENT_EMAIL_ON_ERROR'] = False
+    if ConfigSetting.objects.filter(configurationName__exact = 'SENT_EMAIL_ON_CRONTAB_ERROR' ).exists():
+        value = ConfigSetting.objects.filter(configurationName__exact = 'SENT_EMAIL_ON_CRONTAB_ERROR' ).last().get_configuration_value()
+        if value == 'TRUE':
+            email_data['SENT_EMAIL_ON_ERROR'] = True
+
+
+    # email_data['SENT_EMAIL_ON_ERROR'] = self.emailOnError
+
+    #email_data['USER_NAME'] = self.userName
+    '''
     if EmailData.objects.all().exists():
         email_data_obj = EmailData.objects.last()
         email_data = email_data_obj.get_email_data()
+    '''
     return email_data
 
 

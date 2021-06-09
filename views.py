@@ -62,6 +62,10 @@ def configuration_email(request):
     email_conf_data = get_email_data()
     if request.method == 'POST' and (request.POST['action']=='emailconfiguration'):
         email_user_field ={}
+        #from_user = EmailData.objects.all().last().get_user_email()
+        from_user = 'iSkyLIMS@localhost'
+        to_users = [email_data['user_email'], from_user]
+        send_mail (subject, body_message, from_user, to_users)
         for field in EMAIL_CONFIGURATION_FIELDS:
             email_user_field[field] = request.POST[field]
         save_email_data(email_user_field)
@@ -1604,7 +1608,6 @@ def stats_per_time (request):
             stat_per_time ={}
             if (RunProcess.objects.filter( state__runStateName='Completed', run_date__range=(start_date, end_date)).exists()):
                 run_stats_list=RunProcess.objects.filter(state__runStateName='Completed', run_date__range=(start_date, end_date)).order_by('run_date')
-                #
 
                 run_list={}
                 run_date_name ={}
@@ -1686,7 +1689,8 @@ def stats_per_time (request):
 
                 for run in run_stats_list:
                     run_id = run.id
-                    number_of_lanes=run.get_sequencing_lanes()
+                    run_param_obj = RunningParameters.objects.get(run_id = run_obj)
+                    lanes_in_sequencer = int(run_param_obj.get_number_of_lanes())
                     top_unbarcode_all_runs  = {}
                     for lane_number in range (1, number_of_lanes +1):
                         lane_unbarcodes = RawTopUnknowBarcodes.objects.filter(runprocess_id =run, lane_number__exact = lane_number)
@@ -1759,7 +1763,9 @@ def get_list_of_libraries_values (library_found, q30_comparations, mean_comparat
         project_to_compare_id = project_to_compare.id
         q30_compare_lib, mean_compare_lib, yield_mb_compare_lib = [], [] , []
         # get the number of lanes by quering the SequencerModel in the RunProcess
-        number_of_lanes = project_to_compare.runprocess_id.get_sequencing_lanes()
+        #number_of_lanes = project_to_compare.runprocess_id.get_sequencing_lanes()
+        run_param_obj = RunningParameters.objects.get(run_id = project_to_compare.runprocess_id)
+        number_of_lanes = int(run_param_obj.get_number_of_lanes())
         for lane_number in range (1,number_of_lanes + 1):
             lane_in_project = StatsLaneSummary.objects.get(project_id__exact = project_to_compare_id, lane__exact = lane_number)
             q_30_value, mean_q_value, yield_mb , cluster_pf = lane_in_project.get_stats_info()
@@ -1943,7 +1949,8 @@ def stats_per_library (request):
                     q30_compare_lib, mean_compare_lib, yield_mb_compare_lib = [], [] , []
 
                     run_obj = project_to_compare.get_run_obj()
-                    lanes_in_sequencer = int(run_obj.get_sequencing_lanes())
+                    run_param_obj = RunningParameters.objects.get(run_id = run_obj)
+                    lanes_in_sequencer = int(run_param_obj.get_number_of_lanes())
                     for lane_number in range (1,lanes_in_sequencer+ 1):
 
                         lane_in_project = StatsLaneSummary.objects.get(project_id__exact = project_to_compare_id, lane__exact = lane_number)

@@ -522,8 +522,9 @@ def process_and_store_fl_summary_data(parsed_data, run_process_obj, number_of_la
     logger.debug ('%s : Starting function process_and_store_fl_summary_data', experiment_name)
     M_BASE=1.004361/1000000
     total_cluster_lane=(parsed_data['all']['PerfectBarcodeCount'])
+    run_param_obj = RunningParameters.objects.get(runName_id = run_process_obj)
+    number_of_lanes = int(run_param_obj.get_number_of_lanes())
 
-    number_of_lanes = run_process_obj.get_sequencing_lanes()
     for project in parsed_data.keys():
         project_flowcell = {}
         if project == 'TopUnknownBarcodes':
