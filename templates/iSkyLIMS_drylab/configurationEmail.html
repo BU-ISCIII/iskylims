@@ -56,17 +56,6 @@
                             <label class="col-sm-5  control-label" for="USER_PASSWORD" >User password </label>
                             <div class="col-sm-5"><input class="form-control" type="text" required = "required" name="USER_PASSWORD" id="USER_PASSWORD" value = "{{email_conf_data.USER_PASSWORD}}" size="100" maxlength="100"></div>
                             <br><br>
-                            <label class="col-sm-5  control-label" for="SENT_EMAIL_ON_ERROR" >send email on crontab found error</label>
-                            <div class="col-sm-5">
-                                {% if email_conf_data.SENT_EMAIL_ON_ERROR %}
-                                    <label class="radio-inline"><input type="radio" name="SENT_EMAIL_ON_ERROR" required = "required" value="True" checked>YES</label>
-                                    <label class="radio-inline"><input type="radio" name="SENT_EMAIL_ON_ERROR" required = "required" value="False" >NO</label>
-                                {% else %}
-                                    <label class="radio-inline"><input type="radio" name="SENT_EMAIL_ON_ERROR" required = "required" value="True" >YES</label>
-                                    <label class="radio-inline"><input type="radio" name="SENT_EMAIL_ON_ERROR" required = "required" value="False" checked >NO</label>
-                                {% endif %}
-                            </div>  <!-- end  radio -->
-                            <br><br>
                             <label class="col-sm-5  control-label" for="USE_TLS" >Use TLS</label>
                             <div class="col-sm-5">
                                 {% if email_conf_data.USE_TLS %}
@@ -79,7 +68,7 @@
                             </div>  <!-- end  radio -->
                         </div>
                         <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
-                        <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                        <input class="btn pull-right btn-primary" type="submit" value="Submit and check">
                     </form>
                     <p> Fields marked with <FONT COLOR= "Red">*</FONT> are mandatory</p>
                 </div>  <!--  end of panel body  -->

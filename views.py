@@ -58,6 +58,13 @@ def configuration_email(request):
         for field in drylab_config.EMAIL_CONFIGURATION_FIELDS:
             email_user_field[field] = request.POST[field]
         save_email_data(email_user_field)
+        #test_send_email()
+        subject = 'test email'
+        body_message = 'This is an email test sends by iSkyLIMS'
+        from_user = 'bioinfo@localhost'
+        to_users = ['luis.chapado@imdea.org', 'bioinfo@localhost']
+        send_mail (subject, body_message, from_user, to_users)
+        import pdb; pdb.set_trace()
         return render(request, 'iSkyLIMS_drylab/configurationEmail.html',{'succesful_settings':True})
     return render(request, 'iSkyLIMS_drylab/configurationEmail.html',{'email_conf_data': email_conf_data})
 

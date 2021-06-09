@@ -607,9 +607,8 @@ def send_service_creation_confirmation_email(email_data):
     body_preparation = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', email_data['service_number']), drylab_config.BODY_SERVICE_RECORDED))
     body_preparation = list(map(lambda st: str.replace(st, 'USER_NAME', email_data['user_name']), body_preparation))
     body_message = '\n'.join(body_preparation)
-
-    from_user = drylab_config.USER_EMAIL
-    to_users = [email_data['user_email'], drylab_config.USER_EMAIL]
+    from_user = EmailData.objects.all().last().get_user_email()
+    to_users = [email_data['user_email'], from_user]
     send_mail (subject, body_message, from_user, to_users)
     return
 

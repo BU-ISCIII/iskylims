@@ -696,7 +696,7 @@ class Delivery(models.Model):
 class EmailDataMamager(models.Manager):
     def create_email_data(self, data):
         new_email_data = self.create( hostName = data['EMAIL_HOST'], emailPort = data['EMAIL_PORT'],
-            emailOnError= data['SENT_EMAIL_ON_ERROR'], emailUseTLS = data['USE_TLS'], userEmail = data['USER_EMAIL'],
+            emailUseTLS = data['USE_TLS'], userEmail = data['USER_EMAIL'],
             userName = data['USER_NAME'],  userPassword = data['USER_PASSWORD'])
 
         return new_email_data
@@ -727,7 +727,7 @@ class EmailData (models.Model):
     def update_data(self, data):
         self.hostName = data['EMAIL_HOST']
         self.emailPort = data['EMAIL_PORT']
-        self.emailOnError= data['SENT_EMAIL_ON_ERROR']
+        #self.emailOnError= data['SENT_EMAIL_ON_ERROR']
         self.emailUseTLS = data['USE_TLS']
         self.userEmail = data['USER_EMAIL']
         self.userName = data['USER_NAME']
@@ -735,7 +735,7 @@ class EmailData (models.Model):
         self.save()
         return self
 
-    def get_user_emai(self):
+    def get_user_email(self):
         return '%s' %(self.userEmail)
 
     objects = EmailDataMamager()
