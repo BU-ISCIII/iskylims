@@ -221,6 +221,7 @@ def get_run_read_data(run_object, num_of_reads, number_of_lanes) :
 
     info_reads = {}
     info_reads_dict ={}
+
     for read_number in range (1, num_of_reads +1) :
         read_summary_values=[]
         for lane_number in range(1, number_of_lanes+1):
@@ -937,7 +938,7 @@ def  get_stats_sequencer_data_from_selected_runs (runs_using_sequencer, sequence
     # mean of all data is done
     time_diference =[]
     for run_in_seq in runs_using_sequencer['completed_run_objs']:
-        #import pdb; pdb.set_trace()
+
         time_diference.append((run_in_seq.get_run_finish_date_no_format().date()- run_in_seq.get_run_date_no_format()).days)
     sequencer_data['mean_time_duration'] = format(statistics.mean(time_diference), '.2f')
 
