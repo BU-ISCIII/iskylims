@@ -69,7 +69,7 @@ class SequencingConfigurationAdmin(admin.ModelAdmin):
     list_display = ['platformID', 'configurationName']
 
 class SequencerInLabAdmin(admin.ModelAdmin):
-    list_display = ('platformID', 'sequencerName', 'sequencerDescription', 'sequencerLocation', 'sequencerSerialNumber', 'sequencerState', 'sequencerOperationStart', 'sequencerOperationEnd','sequencerNumberLanes')
+    list_display = ('sequencerName','platformID', 'sequencerDescription', 'sequencerLocation', 'sequencerSerialNumber', 'sequencerState', 'sequencerOperationStart', 'sequencerOperationEnd','sequencerNumberLanes')
 
 class SpeciesAdmin (admin.ModelAdmin):
     list_display= ('speciesName', 'refGenomeName', 'refGenomeSize' , 'refGenomeID' )
