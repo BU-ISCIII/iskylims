@@ -61,21 +61,10 @@ def configuration_email(request):
         return redirect('')
     email_conf_data = get_email_data()
     if request.method == 'POST' and (request.POST['action']=='emailconfiguration'):
-        email_user_field ={}
-        #from_user = EmailData.objects.all().last().get_user_email()
-        from_user = 'iSkyLIMS@localhost'
-        to_users = [email_data['user_email'], from_user]
-        send_mail (subject, body_message, from_user, to_users)
-        for field in EMAIL_CONFIGURATION_FIELDS:
-            email_user_field[field] = request.POST[field]
-        save_email_data(email_user_field)
-        '''
-        if not create_email_conf_file (email_user_field, __package__) :
-            error_message = ERROR_UNABLE_TO_SAVE_EMAIL_CONFIGURATION_SETTINGS
-            return render(request, 'iSkyLIMS_wetlab/configurationEmail.html',{'email_conf_data':email_user_field, 'error_message': error_message} )
-        import importlib
-        importlib.reload(wetlab_config)
-        '''
+        result_email = send_test_email(request.POST)
+        if result_email != 'OK':
+            email_conf_data = get_email_data()
+            return render(request, 'iSkyLIMS_wetlab/configurationEmail.html',{'ERROR':result_email, 'email_conf_data': email_conf_data})
         return render(request, 'iSkyLIMS_wetlab/configurationEmail.html',{'succesful_settings':True})
     return render(request, 'iSkyLIMS_wetlab/configurationEmail.html',{'email_conf_data': email_conf_data})
 

@@ -11,7 +11,7 @@ from datetime import datetime
 
 from django.contrib.auth.models import User
 
-from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters, SambaConnectionData, EmailData, ConfigSetting
+from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters, SambaConnectionData, ConfigSetting
 from .generic_functions import get_samba_connection_data, get_email_data, send_error_email_to_user, find_xml_tag_text, get_attributes_remote_file
 from iSkyLIMS_wetlab.wetlab_config import *
 from .sample_sheet_utils import get_projects_in_run, get_index_library_name

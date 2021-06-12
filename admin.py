@@ -88,14 +88,9 @@ class StatsFlSummaryAdmin(admin.ModelAdmin):
 class GraphicsStatsAdmin(admin.ModelAdmin):
     list_display = ('runprocess_id', 'folderRunGraphic', 'cluserCountGraph', 'flowCellGraph', 'intensityByCycleGraph', 'heatMapGraph', 'histogramGraph', 'sampleQcGraph')
 
-
-
-
 class SambaConnectionDataAdmin(admin.ModelAdmin):
     list_display = ['SAMBA_IP_SERVER','SAMBA_HOST_NAME', 'SAMBA_PORT_SERVER', 'SAMBA_USER_ID', 'SAMBA_USER_PASSWORD']
 
-class EmailDataAdmin(admin.ModelAdmin):
-    list_display =['hostName','emailPort','userEmail','userName','emailOnError']
 
 class ConfigSettingAdmin(admin.ModelAdmin):
     list_display = ['configurationName', 'configurationValue']
@@ -128,9 +123,5 @@ admin.site.register(StatsLaneSummary, StatsLaneSummaryAdmin)
 admin.site.register(StatsFlSummary, StatsFlSummaryAdmin)
 admin.site.register(GraphicsStats, GraphicsStatsAdmin)
 
-
-
 admin.site.register(SambaConnectionData,SambaConnectionDataAdmin)
-admin.site.register(EmailData, EmailDataAdmin)
-
 admin.site.register(ConfigSetting, ConfigSettingAdmin)

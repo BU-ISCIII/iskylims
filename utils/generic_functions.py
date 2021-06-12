@@ -1,5 +1,6 @@
 import logging
 import os, re
+import smtplib
 from datetime import datetime
 from logging.config import fileConfig
 from logging.handlers import RotatingFileHandler
@@ -10,7 +11,7 @@ from django.contrib.auth.models import Group, User
 
 from django.conf import settings
 from iSkyLIMS_wetlab import wetlab_config
-from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters, SambaConnectionData, EmailData, ConfigSetting
+from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters, SambaConnectionData, ConfigSetting
 from iSkyLIMS_core.models import SequencerInLab, SequencingPlatform
 
 '''
@@ -112,27 +113,17 @@ def check_valid_date_format (date):
     '''
 
 
-def save_email_data(email_fields):
-    '''
-    Description:
-        create the email configuration file . If exists the old information is deleted
-    Input:
-        email_fields    # Email fields settings
-    Return:
-        email_data_obj
-    '''
-    if EmailData.objects.all().exists():
-        email_data_obj = EmailData.objects.last().update_data(email_fields)
-    else:
-        email_data_obj = EmailData.objects.create_email_data(email_fields)
-    return email_data_obj
-
 
 def get_email_data():
     '''
     Description:
         Fetch the email configuration file
     Constant:
+        EMAIL_HOST
+        EMAIL_PORT
+        EMAIL_HOST_USER
+        EMAIL_HOST_PASSWORD
+        EMAIL_USE_TLS
         SENT_EMAIL_ON_CRONTAB_ERROR
     Return:
         email_data
@@ -142,23 +133,41 @@ def get_email_data():
     email_data['EMAIL_PORT'] = settings.EMAIL_PORT
     email_data['USER_EMAIL'] = settings.EMAIL_HOST_USER
     email_data['USER_PASSWORD'] = settings. EMAIL_HOST_PASSWORD
+    email_data['EMAIL_ISKYLIMS'] = settings.EMAIL_ISKYLIMS
     email_data['USE_TLS'] = settings.EMAIL_USE_TLS
-    email_data['SENT_EMAIL_ON_ERROR'] = False
-    if ConfigSetting.objects.filter(configurationName__exact = 'SENT_EMAIL_ON_CRONTAB_ERROR' ).exists():
-        value = ConfigSetting.objects.filter(configurationName__exact = 'SENT_EMAIL_ON_CRONTAB_ERROR' ).last().get_configuration_value()
-        if value == 'TRUE':
-            email_data['SENT_EMAIL_ON_ERROR'] = True
-
-
-    # email_data['SENT_EMAIL_ON_ERROR'] = self.emailOnError
-
-    #email_data['USER_NAME'] = self.userName
-    '''
-    if EmailData.objects.all().exists():
-        email_data_obj = EmailData.objects.last()
-        email_data = email_data_obj.get_email_data()
-    '''
     return email_data
+
+def send_test_email(form_data):
+    '''
+    Description:
+        Get the configuration data from the user form and send a test email
+    Constant:
+        EMAIL_HOST
+        EMAIL_PORT
+        EMAIL_HOST_USER
+        EMAIL_HOST_PASSWORD
+        EMAIL_USE_TLS
+    Return:
+        email_data
+    '''
+    settings.EMAIL_HOST = form_data['EMAIL_HOST']
+    settings.EMAIL_PORT = form_data['EMAIL_PORT']
+    settings.EMAIL_HOST_USER = form_data['USER_EMAIL']
+    settings.EMAIL_HOST_PASSWORD = form_data['USER_PASSWORD']
+
+    settings.EMAIL_USE_TLS = True if form_data['USE_TLS'] == 'True' else False
+    settings.EMAIL_ISKYLIMS = form_data['EMAIL_ISKYLIMS']
+    from_user = form_data['EMAIL_ISKYLIMS']
+    to_users = [form_data['test_email']]
+    subject = 'testing email from iSlyLIMS'
+    body_message = 'This is a email test to verify iSkyLIMS'
+    try:
+        send_mail (subject, body_message, from_user, to_users)
+        return 'OK'
+    except smtplib.SMTPException as e:
+        return str(e)
+
+
 
 
 def get_samba_connection_data():
