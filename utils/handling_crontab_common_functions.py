@@ -10,13 +10,13 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 
 from django.contrib.auth.models import User
+from django.conf import settings
 
 from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters, SambaConnectionData, ConfigSetting
-from .generic_functions import get_samba_connection_data, get_email_data, send_error_email_to_user, find_xml_tag_text, get_attributes_remote_file
+from .generic_functions import get_samba_connection_data, find_xml_tag_text, get_attributes_remote_file
 from iSkyLIMS_wetlab.wetlab_config import *
 from .sample_sheet_utils import get_projects_in_run, get_index_library_name
 from iSkyLIMS_core.models import SequencerInLab
-
 
 def assign_used_library_in_run (run_process_obj, l_sample_sheet_path, experiment_name, ):
     '''
@@ -614,27 +614,36 @@ def logging_errors(string_text, showing_traceback , print_on_screen ):
         logger # contains the logger object
         string_text # information text to include in the log
     Functions:
-        get_email_data
-        send_error_email_to_user # located on utils.generic_functions
+
     Constant:
         SENT_EMAIL_ON_ERROR
-        EMAIL_USER_CONFIGURED
+        EMAIL_FOR_NOTIFICATIONS
+        EMAIL_ISKYLIMS
     Variables:
         subject # text to include in the subject email
     '''
     logger = logging.getLogger(__name__)
     logger.error('-----------------    ERROR   ------------------')
     logger.error(string_text )
+    if ConfigSetting.objects.filter(configurationName__exact = 'SENT_EMAIL_ON_ERROR').exists():
+        email_on_error_obj = ConfigSetting.objects.filter(configurationName__exact = 'SENT_EMAIL_ON_ERROR').last()
+        if email_on_error_obj.get_configuration_value() == 'TRUE':
+            if ConfigSetting.objects.filter(configurationName__exact = 'EMAIL_FOR_NOTIFICATIONS').exists():
+                email_on_notification_obj = ConfigSetting.objects.filter(configurationName__exact = 'EMAIL_FOR_NOTIFICATIONS').last()
+                email_notification = email_on_notification_obj.get_configuration_value()
+                if '@' in email_notification:
+                    subject = 'Error found on wetlab when running crontab'
+                    try:
+                        send_mail (subject, string_text, settings.EMAIL_ISKYLIMS,[email_notification])
+                    except:
+                        logger.error('*************UNABLE TO SEND ERROR EMAIL TO USER *****************')
+                else:
+                    logger.error('****** INVALID EMAIL FORMAT.  EMAIL IS NOT SENT ***************')
     if showing_traceback :
         logger.error('################################')
         logger.error(traceback.format_exc())
         logger.error('################################')
     logger.error('-----------------    END ERROR   --------------')
-    email_data = get_email_data()
-    if email_data['SENT_EMAIL_ON_ERROR'] == True:
-        subject = 'Error found on wetlab when running crontab'
-        send_error_email_to_user (subject, string_text, email_data['USER_EMAIL'],
-                            [email_data['USER_EMAIL']])
     if print_on_screen :
         from datetime import datetime
         print('********* ERROR **********')

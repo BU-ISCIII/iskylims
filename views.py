@@ -39,7 +39,7 @@ from .utils.handling_sequencers import *
 #from .utils.wetlab_misc_utilities import normalized_data
 from iSkyLIMS_core.utils.handling_samples import *
 from iSkyLIMS_core.utils.handling_platforms import get_defined_platforms_and_ids
-from iSkyLIMS_core.utils.generic_functions import get_inital_sample_settings_values, save_inital_sample_setting_value
+from iSkyLIMS_core.utils.generic_functions import get_inital_sample_settings_values, save_inital_sample_setting_value, send_test_email, get_email_data
 from iSkyLIMS_core.utils.handling_protocols import display_protocol_list
 #from iSkyLIMS_core.utils.handling_protocols import *
 #from iSkyLIMS_core.utils.handling_commercial_kits import *
@@ -58,13 +58,16 @@ def register_wetlab(request):
 @login_required
 def configuration_email(request):
     if request.user.username != 'admin':
-        return redirect('')
+        return redirect('/wetlab')
     email_conf_data = get_email_data()
+    email_conf_data['EMAIL_FOR_NOTIFICATIONS'] = get_configuration_from_database('EMAIL_FOR_NOTIFICATIONS')
     if request.method == 'POST' and (request.POST['action']=='emailconfiguration'):
         result_email = send_test_email(request.POST)
         if result_email != 'OK':
             email_conf_data = get_email_data()
+            email_conf_data['EMAIL_FOR_NOTIFICATIONS'] = request.POST['test_email']
             return render(request, 'iSkyLIMS_wetlab/configurationEmail.html',{'ERROR':result_email, 'email_conf_data': email_conf_data})
+        save_database_configuration_value('EMAIL_FOR_NOTIFICATIONS', request.POST['test_email'])
         return render(request, 'iSkyLIMS_wetlab/configurationEmail.html',{'succesful_settings':True})
     return render(request, 'iSkyLIMS_wetlab/configurationEmail.html',{'email_conf_data': email_conf_data})
 

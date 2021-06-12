@@ -114,61 +114,6 @@ def check_valid_date_format (date):
 
 
 
-def get_email_data():
-    '''
-    Description:
-        Fetch the email configuration file
-    Constant:
-        EMAIL_HOST
-        EMAIL_PORT
-        EMAIL_HOST_USER
-        EMAIL_HOST_PASSWORD
-        EMAIL_USE_TLS
-        SENT_EMAIL_ON_CRONTAB_ERROR
-    Return:
-        email_data
-    '''
-    email_data = {}
-    email_data['EMAIL_HOST'] = settings.EMAIL_HOST
-    email_data['EMAIL_PORT'] = settings.EMAIL_PORT
-    email_data['USER_EMAIL'] = settings.EMAIL_HOST_USER
-    email_data['USER_PASSWORD'] = settings. EMAIL_HOST_PASSWORD
-    email_data['EMAIL_ISKYLIMS'] = settings.EMAIL_ISKYLIMS
-    email_data['USE_TLS'] = settings.EMAIL_USE_TLS
-    return email_data
-
-def send_test_email(form_data):
-    '''
-    Description:
-        Get the configuration data from the user form and send a test email
-    Constant:
-        EMAIL_HOST
-        EMAIL_PORT
-        EMAIL_HOST_USER
-        EMAIL_HOST_PASSWORD
-        EMAIL_USE_TLS
-    Return:
-        email_data
-    '''
-    settings.EMAIL_HOST = form_data['EMAIL_HOST']
-    settings.EMAIL_PORT = form_data['EMAIL_PORT']
-    settings.EMAIL_HOST_USER = form_data['USER_EMAIL']
-    settings.EMAIL_HOST_PASSWORD = form_data['USER_PASSWORD']
-
-    settings.EMAIL_USE_TLS = True if form_data['USE_TLS'] == 'True' else False
-    settings.EMAIL_ISKYLIMS = form_data['EMAIL_ISKYLIMS']
-    from_user = form_data['EMAIL_ISKYLIMS']
-    to_users = [form_data['test_email']]
-    subject = 'testing email from iSlyLIMS'
-    body_message = 'This is a email test to verify iSkyLIMS'
-    try:
-        send_mail (subject, body_message, from_user, to_users)
-        return 'OK'
-    except smtplib.SMTPException as e:
-        return str(e)
-
-
-
 
 def get_samba_connection_data():
     '''
@@ -359,6 +304,19 @@ def get_experiment_name_from_file (l_run_parameter) :
     return experiment_name
 
 
+def get_configuration_from_database(configuration_name):
+    '''
+    Description:
+        The function fetch from database the configuration setting value
+    Input:
+        configuration_name      # configuration settings name
+    '''
+    configuration_value = ''
+    if ConfigSetting.objects.filter(configurationName__exact = configuration_name).exists():
+        configuration_settings_obj = ConfigSetting.objects.filter(configurationName__exact = configuration_name).last()
+        configuration_value = configuration_settings_obj.get_configuration_value()
+    return configuration_value
+
 def get_log_file_name(config_log_file) :
     '''
     Description:
@@ -436,16 +394,6 @@ def normalized_data (set_data, all_data) :
     return normalized_set_data, normalized_all_data
 
 
-def send_error_email_to_user ( subject, body_message, from_user, to_user):
-    '''
-    Description:
-        Send an email to users  defined in the user list "to_user"
-    Input:
-    '''
-    send_mail (subject, body_message, from_user, to_user)
-
-
-
 def get_project_search_fields_form():
     project_form_data = {}
 
@@ -484,3 +432,19 @@ def get_run_search_fields_form():
         run_form_data['available_sequencers'].append(machine.get_sequencer_name())
 
     return run_form_data
+
+
+def save_database_configuration_value(configuration_name, configuration_value):
+    '''
+    Description:
+        The function saves configuration setting value. If not exists function create the configuration name
+    Input:
+        configurationName       # configuration setting name
+        configuration_value     # value for this configuration settings
+    '''
+    if ConfigSetting.objects.filter(configurationName__exact = configuration_name).exists():
+        config_settings_obj = ConfigSetting.objects.filter(configurationName__exact = configuration_name).last()
+        config_settings_obj.set_configuration_value(configuration_value)
+    else:
+        config_settings_obj = ConfigSetting.objects.create_config_setting(configuration_name, configuration_value)
+    return config_settings_obj
