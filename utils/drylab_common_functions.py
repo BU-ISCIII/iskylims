@@ -59,6 +59,20 @@ def create_service_id (service_number,user_name):
     return service_id
 
 
+def get_configuration_from_database(configuration_name):
+    '''
+    Description:
+        The function fetch from database the configuration setting value
+    Input:
+        configuration_name      # configuration settings name
+    '''
+    configuration_value = ''
+    if ConfigSetting.objects.filter(configurationName__exact = configuration_name).exists():
+        configuration_settings_obj = ConfigSetting.objects.filter(configurationName__exact = configuration_name).last()
+        configuration_value = configuration_settings_obj.get_configuration_value()
+    return configuration_value
+
+
 
 def is_service_manager (request):
     '''
@@ -80,34 +94,6 @@ def is_service_manager (request):
         return False
 
     return True
-
-def get_email_data():
-    '''
-    Description:
-        Fetch the email configuration file
-    Return:
-        email_data
-    '''
-    email_data = {}
-    if EmailData.objects.all().exists():
-        email_data_obj = EmailData.objects.last()
-        email_data = email_data_obj.get_email_data()
-    return email_data
-
-def save_email_data(email_fields):
-    '''
-    Description:
-        create the email configuration file . If exists the old information is deleted
-    Input:
-        email_fields    # Email fields settings
-    Return:
-        email_data_obj
-    '''
-    if EmailData.objects.all().exists():
-        email_data_obj = EmailData.objects.last().update_data(email_fields)
-    else:
-        email_data_obj = EmailData.objects.create_email_data(email_fields)
-    return email_data_obj
 
 def increment_service_number ( request_user):
     '''
@@ -225,6 +211,21 @@ def get_current_users():
         user_id_list.append(data.get('_auth_user_id', None))
     # Query all logged in users based on id list
     return User.objects.filter(id__in=user_id_list)
+
+def save_database_configuration_value(configuration_name, configuration_value):
+    '''
+    Description:
+        The function saves configuration setting value. If not exists function create the configuration name
+    Input:
+        configurationName       # configuration setting name
+        configuration_value     # value for this configuration settings
+    '''
+    if ConfigSetting.objects.filter(configurationName__exact = configuration_name).exists():
+        config_settings_obj = ConfigSetting.objects.filter(configurationName__exact = configuration_name).last()
+        config_settings_obj.set_configuration_value(configuration_value)
+    else:
+        config_settings_obj = ConfigSetting.objects.create_config_setting(configuration_name, configuration_value)
+    return config_settings_obj
 
 
 def store_file_from_form(file , path):

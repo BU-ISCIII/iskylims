@@ -692,53 +692,30 @@ class Delivery(models.Model):
 
 	objects = DeliveryManager()
 
+class ConfigSettingManager(models.Manager):
+    def create_config_setting(self, configuration_name, configuration_value):
+        new_config_settings = self.create(configurationName = configuration_name,
+                    configurationValue = configuration_value)
+        return new_config_settings
 
-class EmailDataMamager(models.Manager):
-    def create_email_data(self, data):
-        new_email_data = self.create( hostName = data['EMAIL_HOST'], emailPort = data['EMAIL_PORT'],
-            emailUseTLS = data['USE_TLS'], userEmail = data['USER_EMAIL'],
-            userName = data['USER_NAME'],  userPassword = data['USER_PASSWORD'])
-
-        return new_email_data
-
-class EmailData (models.Model):
-    hostName =  models.CharField(max_length=80, null=True , blank=True)
-    emailPort =  models.CharField(max_length=8, null=True , blank=True)
-    emailOnError =  models.BooleanField(default = False)
-    emailUseTLS =  models.BooleanField(default = False)
-    userEmail =  models.CharField(max_length=80, null=True , blank=True)
-    userName =  models.CharField(max_length=80, null=True , blank=True)
-    userPassword = models.CharField(max_length=20, null=True , blank=True)
+class ConfigSetting (models.Model):
+    configurationName = models.CharField(max_length = 80)
+    configurationValue = models.CharField(max_length = 255, null=True, blank =True)
+    generated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__ (self):
-        return '%s' %(self.userEmail)
+        return '%s' %(self.configurationName)
 
-    def get_email_data(self):
-        email_data ={}
-        email_data['EMAIL_HOST'] = self.hostName
-        email_data['EMAIL_PORT'] = self.emailPort
-        email_data['SENT_EMAIL_ON_ERROR'] = self.emailOnError
-        email_data['USE_TLS'] = self.emailUseTLS
-        email_data['USER_EMAIL'] = self.userEmail
-        email_data['USER_NAME'] = self.userName
-        email_data['USER_PASSWORD'] = self.userPassword
-        return email_data
+    def get_configuration_value(self):
+        return '%s' %(self.configurationValue)
 
-    def update_data(self, data):
-        self.hostName = data['EMAIL_HOST']
-        self.emailPort = data['EMAIL_PORT']
-        #self.emailOnError= data['SENT_EMAIL_ON_ERROR']
-        self.emailUseTLS = data['USE_TLS']
-        self.userEmail = data['USER_EMAIL']
-        self.userName = data['USER_NAME']
-        self.userPassword = data['USER_PASSWORD']
+    def set_configuration_value(self, new_value):
+        self.configurationValue = new_value
         self.save()
         return self
 
-    def get_user_email(self):
-        return '%s' %(self.userEmail)
+    objects = ConfigSettingManager()
 
-    objects = EmailDataMamager()
 
 '''
 class RunIDFolder (models.Model):

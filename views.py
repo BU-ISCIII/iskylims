@@ -25,6 +25,7 @@ from iSkyLIMS_drylab.utils.handling_resolutions import *
 from iSkyLIMS_drylab.utils.handling_deliveries import *
 #from iSkyLIMS_drylab.utils.handling_forms import *
 from iSkyLIMS_drylab.utils.handling_multiple_files import *
+from iSkyLIMS_core.utils.generic_functions import send_test_email, get_email_data
 
 @login_required
 def index(request):
@@ -48,23 +49,20 @@ def index(request):
     return render(request, 'iSkyLIMS_drylab/index.html',{'service_list': service_list})
 
 
+
 @login_required
 def configuration_email(request):
     if request.user.username != 'admin':
-        return redirect('/drylab')
+        return redirect('/wetlab')
     email_conf_data = get_email_data()
+    email_conf_data['EMAIL_FOR_NOTIFICATIONS'] = get_configuration_from_database('EMAIL_FOR_NOTIFICATIONS')
     if request.method == 'POST' and (request.POST['action']=='emailconfiguration'):
-        email_user_field ={}
-        for field in drylab_config.EMAIL_CONFIGURATION_FIELDS:
-            email_user_field[field] = request.POST[field]
-        save_email_data(email_user_field)
-        #test_send_email()
-        subject = 'test email'
-        body_message = 'This is an email test sends by iSkyLIMS'
-        from_user = 'bioinfo@localhost'
-        to_users = ['luis.chapado@imdea.org', 'bioinfo@localhost']
-        send_mail (subject, body_message, from_user, to_users)
-        import pdb; pdb.set_trace()
+        result_email = send_test_email(request.POST)
+        if result_email != 'OK':
+            email_conf_data = get_email_data()
+            email_conf_data['EMAIL_FOR_NOTIFICATIONS'] = request.POST['test_email']
+            return render(request, 'iSkyLIMS_drylab/configurationEmail.html',{'ERROR':result_email, 'email_conf_data': email_conf_data})
+        save_database_configuration_value('EMAIL_FOR_NOTIFICATIONS', request.POST['test_email'])
         return render(request, 'iSkyLIMS_drylab/configurationEmail.html',{'succesful_settings':True})
     return render(request, 'iSkyLIMS_drylab/configurationEmail.html',{'email_conf_data': email_conf_data})
 

@@ -47,8 +47,9 @@ class PipelinesManager(admin.ModelAdmin):
 class ParameterPipelineManager(admin.ModelAdmin):
 	list_display = ['parameterPipeline', 'parameterName', 'parameterValue']
 
-class EmailDataAdmin(admin.ModelAdmin):
-    list_display =['hostName','emailPort','userEmail','userName']
+class ConfigSettingAdmin(admin.ModelAdmin):
+    list_display = ['configurationName', 'configurationValue']
+
 
 '''
 class JobStatesManager(admin.ModelAdmin):
@@ -73,7 +74,7 @@ admin.site.register(Delivery,DeliveryAdmin)
 admin.site.register(Pipelines,PipelinesManager)
 admin.site.register(ParameterPipeline,ParameterPipelineManager)
 
-admin.site.register(EmailData, EmailDataAdmin)
+admin.site.register(ConfigSetting, ConfigSettingAdmin)
 
 #admin.site.register(JobStates,JobStatesManager)
 #admin.site.register(PipelineExternalDataJobs, PipelineExternalDataJobsManager)
