@@ -1,3 +1,5 @@
+import smtplib
+from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth.models import User
 from iSkyLIMS_core.models import *
@@ -63,6 +65,66 @@ def get_inital_sample_settings_values(apps_name):
             initial_data['protocol_type_data'].append([protocol_type_obj.get_name(), protocol_type_obj.get_id(), protocol_type_obj.get_molecule_type()])
 
     return initial_data
+
+
+
+def get_email_data():
+    '''
+    Description:
+        Fetch the email configuration file
+    Constant:
+        EMAIL_HOST
+        EMAIL_PORT
+        EMAIL_HOST_USER
+        EMAIL_HOST_PASSWORD
+        EMAIL_USE_TLS
+        SENT_EMAIL_ON_CRONTAB_ERROR
+    Return:
+        email_data
+    '''
+    email_data = {}
+    email_data['EMAIL_HOST'] = settings.EMAIL_HOST
+    email_data['EMAIL_PORT'] = settings.EMAIL_PORT
+    email_data['USER_EMAIL'] = settings.EMAIL_HOST_USER
+    email_data['USER_PASSWORD'] = settings. EMAIL_HOST_PASSWORD
+    email_data['EMAIL_ISKYLIMS'] = settings.EMAIL_ISKYLIMS
+    email_data['USE_TLS'] = settings.EMAIL_USE_TLS
+    return email_data
+
+def send_test_email(form_data):
+    '''
+    Description:
+        Get the configuration data from the user form and send a test email
+    Constant:
+        EMAIL_HOST
+        EMAIL_PORT
+        EMAIL_HOST_USER
+        EMAIL_HOST_PASSWORD
+        EMAIL_USE_TLS
+    Return:
+        email_data
+    '''
+    settings.EMAIL_HOST = form_data['EMAIL_HOST']
+    settings.EMAIL_PORT = form_data['EMAIL_PORT']
+    settings.EMAIL_HOST_USER = form_data['USER_EMAIL']
+    settings.EMAIL_HOST_PASSWORD = form_data['USER_PASSWORD']
+
+    settings.EMAIL_USE_TLS = True if form_data['USE_TLS'] == 'True' else False
+    settings.EMAIL_ISKYLIMS = form_data['EMAIL_ISKYLIMS']
+    from_user = form_data['EMAIL_ISKYLIMS']
+    to_users = [form_data['test_email']]
+    subject = 'testing email from iSlyLIMS'
+    body_message = 'This is a email test to verify iSkyLIMS'
+    try:
+        send_mail (subject, body_message, from_user, to_users)
+        return 'OK'
+    except smtplib.SMTPException as e:
+        return str(e)
+
+
+
+
+
 
 def save_inital_sample_setting_value (apps_name, data):
     '''
