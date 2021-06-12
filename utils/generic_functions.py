@@ -120,6 +120,8 @@ def send_test_email(form_data):
         return 'OK'
     except smtplib.SMTPException as e:
         return str(e)
+    except Exception as e:
+        return str(e)
 
 
 
