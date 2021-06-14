@@ -16,9 +16,10 @@ def user_edit(request):
             email_address = form1.cleaned_data['email']
 
             domain = email_address.split('@')[1]
-            if not domain in settings.ALLOWED_EMAIL_DOMAINS :
-                error_description = str( 'Invalid email address . Your email domain ' + domain + ' is not allowed')
-                return render(request,'django_utils/error_page.html',{'content':[ error_description ,"Only isciii.es or externos.isciii.es  are allowed"]})
+            if len(ALLOWED_EMAIL_DOMAINS) > 0:
+                if not domain in settings.ALLOWED_EMAIL_DOMAINS :
+                    error_description = str( 'Invalid email address . Your email domain ' + domain + ' is not allowed')
+                    return render(request,'django_utils/error_page.html',{'content':[ error_description ,"Only isciii.es or externos.isciii.es  are allowed"]})
 
             user = form1.save()
             profile = form2.save(commit=False)
@@ -106,9 +107,10 @@ def user_creation(request):
         if form1.is_valid() and form2.is_valid():
             email_address = form1.cleaned_data['email']
             domain = email_address.split('@')[1]
-            if not domain in settings.ALLOWED_EMAIL_DOMAINS :
-                error_description = str( 'Invalid email address . Your email domain ' + domain + ' is not allowed')
-                return render(request,'django_utils/error_page.html',{'content':[ error_description ,"Only isciii.es or externos.isciii.es  are allowed"]})
+            if len(ALLOWED_EMAIL_DOMAINS) > 0 :
+                if not domain in settings.ALLOWED_EMAIL_DOMAINS :
+                    error_description = str( 'Invalid email address . Your email domain ' + domain + ' is not allowed')
+                    return render(request,'django_utils/error_page.html',{'content':[ error_description ,"Only isciii.es or externos.isciii.es  are allowed"]})
 
             form1.save()
             profile = form2.save(commit=False)
