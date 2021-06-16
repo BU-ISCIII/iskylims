@@ -74,15 +74,15 @@ ERROR_USER_NOT_DEFINED = ['User is not defined']
 DISPLAY_NEW_DEFINED_PIPELINE = ['Pipeline Name' , 'Pipeline Version' , 'Description']
 DISPLAY_MULTYPLE_DEFINED_PIPELINE = ['Service', 'User', 'Pipeline Name' , 'Pipeline Version', 'Date', 'Default', 'In Use']
 
-DISPLAY_DETAIL_PIPELINE_BASIC_INFO = ['Pipeline Name', 'Pipeline Version', 'Service']
-DISPLAY_DETAIL_PIPELINE_ADDITIONAL_INFO = ['User', 'Creation Date', 'String Folder', 'Default', 'In Use', 'Automatic']
+DISPLAY_DETAIL_PIPELINE_BASIC_INFO = ['Pipeline Name', 'Pipeline Version', 'Creation Date' , 'Pipeline in use']
+DISPLAY_DETAIL_PIPELINE_ADDITIONAL_INFO = ['Created by', 'Pipeline URL', 'Pipeline File', 'Descripion']
 
 
 HEADING_MANAGE_PIPELINES = ['User' ,'Pipeline Name', 'Pipeline Version', 'Date', 'In use', 'id']
 
 HEADING_PIPELINES_USED_IN_RESOLUTIONS = ['Pipeline name', 'Pipeline version', 'Used in Resolution']
 
-HEADING_PARAMETER_PIPELINE = ['Parameter Name' , 'Parameter value']
+HEADING_PARAMETER_PIPELINE = ['Parameter Name' , 'Parameter Type']
 
 HEADING_SERVICES_IN_PIPELINE = ['Service Name', 'Creation Time', 'Requested by', 'State']
 
@@ -102,7 +102,7 @@ HEADING_FOR_RESOLUTION_INFORMATION = ['Partial Services','Resolution State' ,'Fo
 
 ERROR_RESOLUTION_DOES_NOT_EXISTS =['The resolution that you are trying to upadate does not exists ','Contact with your administrator .']
 
-HEADING_ADDITIONAL_RESOLUTION_PARAMETERS = ['Parameter name', 'Parameter value', 'Notes']
+HEADING_PIPELINES_SELECTION_IN_RESOLUTION = ['Pipeline name', 'Pipeline version', 'Pipeline ID']
 
 MAPPING_ADDITIONAL_RESOLUTION_PARAMETERS = [('resolutionParameter', 'Parameter name'),('resolutionParamValue', 'Parameter value'),('resolutionParamNotes', 'Notes')]
 

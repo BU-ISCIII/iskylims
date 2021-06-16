@@ -39,6 +39,31 @@ def check_if_pipelines_exists_for_service(service_id):
         return True
     return False
 
+def get_all_defined_pipelines(only_in_used):
+    '''
+    Description:
+        The function return a list with the defined pipelines
+    Input:
+        only_in_used    # boolean varible ir True only pipelines in used are returned.
+                        # if not all defined pipelines are returned back
+    Return:
+        defined_pipelines
+    '''
+    defined_pipelines = []
+    pipeline_objs = False
+    if only_in_used:
+        if Pipelines.objects.filter(pipelineInUse = True).exists():
+            pipeline_objs = Pipelines.objects.filter(pipelineInUse = True).order_by('pipelineName').order_by('pipelineVersion')
+    else:
+        if Pipelines.objects.all().exists():
+            pipeline_objs = Pipelines.objects.all().order_by('pipelineName').order_by('pipelineVersion')
+    if pipeline_objs :
+        for pipeline_obj in pipeline_objs:
+            defined_pipelines.append([pipeline_obj.get_pipeline_name(), pipeline_obj.get_pipeline_version(), pipeline_obj.get_pipeline_id()])
+    return defined_pipelines
+
+
+
 
 def get_data_form_pipeline():
     '''
@@ -83,7 +108,7 @@ def get_detail_pipeline_data(pipeline_id):
             detail_pipelines_data['parameters'] = []
             for parameter_obj in parameter_objs :
 
-                detail_pipelines_data['parameters'].append([parameter_obj.get_pipeline_parameter_name(), parameter_obj.get_pipeline_parameter_value()])
+                detail_pipelines_data['parameters'].append([parameter_obj.get_pipeline_parameter_name(), parameter_obj.get_pipeline_parameter_type()])
         # get the services where the pipeline was used
         '''
         req_serv_objs = get_requested_services_obj_from_available_service(pipeline_obj.get_pipleline_avail_service_obj())
@@ -194,7 +219,7 @@ def store_parameters_pipeline(pipeline_obj, parameters):
         The function store the parameters pipeline
     Input:
         pipeline_obj    # pipeline instance
-        paremeters      # dict paramters names and values
+        paremeters      # dict paramters names and parameter type
     Return:
         None
     '''
@@ -203,7 +228,7 @@ def store_parameters_pipeline(pipeline_obj, parameters):
         parameter_pipeline = {}
         parameter_pipeline['parameterPipeline'] = pipeline_obj
         parameter_pipeline['parameterName'] = item
-        parameter_pipeline['parameterValue'] = value
+        parameter_pipeline['parameterType'] = value
         ParameterPipeline.objects.create_pipeline_parameters(parameter_pipeline)
 
     return None

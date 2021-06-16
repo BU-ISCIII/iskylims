@@ -1,12 +1,29 @@
 from datetime import datetime
+import json
 from django.core.mail import send_mail
 from iSkyLIMS_drylab.models import *
 from iSkyLIMS_drylab import drylab_config
 from iSkyLIMS_drylab.utils.handling_request_services import *
-from iSkyLIMS_drylab.utils.handling_pipelines import get_pipeline_obj_from_id
+from iSkyLIMS_drylab.utils.handling_pipelines import get_pipeline_obj_from_id, get_all_defined_pipelines
 
 
 from iSkyLIMS_drylab.utils.drylab_common_functions import create_pdf
+
+def add_pipelines_to_resolution(resolution_obj, pipeline_ids):
+    '''
+    Description:
+        The function add pipelines to the resolution
+    Input:
+        resolution_obj  # resoution obj
+        pipeline_ids    # ids of the pipelines
+    Return:
+        None
+    '''
+    for pipeline_id in pipeline_ids:
+        resolution_obj.resolutionPipelines.add(get_pipeline_obj_from_id(pipeline_id))
+
+    return None
+
 
 def allow_to_service_update_state (resolution_obj):
     '''
@@ -132,23 +149,16 @@ def get_add_resolution_data_form(form_data):
     resolution_data_form['resolutionAsignedUser'] = form_data['resolutionAsignedUser']
     resolution_data_form['serviceAccepted'] = form_data['serviceAccepted']
     resolution_data_form['resolutionNotes'] = form_data['resolutionNotes']
-    if 'pipelines' in form_data:
-        resolution_data_form['pipelines'] = form_data.getlist('pipelines')
+
+    if 'pipeline_data' in form_data:
+        resolution_data_form['pipeline_ids'] = []
+        selected_pipelines_table = json.loads(form_data['pipeline_data'])
+        for row in selected_pipelines_table:
+            if row[-1] :
+                resolution_data_form['pipeline_ids'].append(row[-2])
     if 'select_available_services' in form_data:
         ## remove the last 'comma' in the string
         resolution_data_form['select_available_services'] = form_data['select_available_services'][:-1].split(',')
-	# get additional parameters
-    if 'parameters_data' in form_data:
-        json_data = json.loads(form_data['parameters_data'])
-        additional_parameters = []
-        for row_index in range(len(json_data)) :
-            if json_data[row_index][0] == '':
-                continue
-            parameter = {}
-            for i in range(len(drylab_config.HEADING_ADDITIONAL_RESOLUTION_PARAMETERS)):
-                parameter[drylab_config.HEADING_ADDITIONAL_RESOLUTION_PARAMETERS[i]] = json_data[row_index][i]
-            additional_parameters.append(parameter)
-        resolution_data_form['additional_parameters'] = additional_parameters
 
     return resolution_data_form
 
@@ -299,7 +309,7 @@ def prepare_form_data_add_resolution(form_data):
     resolution_form_data['assigned_user'] =[]
     for user in users:
     	resolution_form_data['assigned_user'].append([user.pk,user.username])
-    resolution_form_data['heading'] = drylab_config.HEADING_ADDITIONAL_RESOLUTION_PARAMETERS
+
     resolution_form_data['service_id'] = form_data['service_id']
 
     ## get available pipelines for services
@@ -315,7 +325,8 @@ def prepare_form_data_add_resolution(form_data):
     #    data = get_pipeline_and_versions_for_available_service(avail_service)
     #    if data :
     #        pipelines_data.append([ get_available_service_obj_from_id(avail_service).get_service_description() , data])
-    resolution_form_data['pipelines_data'] = pipelines_data
+    resolution_form_data['pipelines_data'] = get_all_defined_pipelines(True)
+    resolution_form_data['pipelines_heading'] = drylab_config.HEADING_PIPELINES_SELECTION_IN_RESOLUTION
 
     return resolution_form_data
 
@@ -350,7 +361,10 @@ def send_resolution_creation_email (email_data):
     body_message = '\n'.join(body_preparation)
     from_user = EmailData.objects.all().last().get_user_email()
     to_users = [email_data['user_email'], from_user]
-    send_mail (subject, body_message, from_user, to_users)
+    try:
+        send_mail (subject, body_message, from_user, to_users)
+    except:
+        pass
     return
 
 

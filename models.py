@@ -3,7 +3,7 @@ from datetime import date, datetime
 from django.db import models
 from django import forms
 from django.contrib.auth.models import User
-#from django.utils.encoding import python_2_unicode_compatible
+
 from django.utils.translation import gettext_lazy as _
 from mptt.models import MPTTModel
 from mptt.fields import TreeForeignKey, TreeManyToManyField
@@ -121,14 +121,18 @@ class Pipelines(models.Model):
 	def get_pipeline_additional(self):
 		data = []
 		data.append(self.userName.username)
-		data.append(self.generated_at.strftime("%B %d, %Y"))
-		data.append(self.pipelineInUse)
+		data.append(self.pipelineUrl)
+		data.append(self.pipelineFile)
+		data.append(self.pipelineDescription)
+
 		return data
 
 	def get_pipeline_basic (self):
 		data = []
 		data.append(self.pipelineName)
 		data.append(self.pipelineVersion)
+		data.append(self.generated_at.strftime("%B %d, %Y"))
+		data.append(self.pipelineInUse)
 		#data.append(self.availableService.get_service_description())
 		return data
 
@@ -153,7 +157,7 @@ class Pipelines(models.Model):
 class ParameterPipelineManager(models.Manager):
 	def create_pipeline_parameters(self, pipeline_parameters):
 		new_parameter_action_pipeline = self.create(parameterPipeline = pipeline_parameters['parameterPipeline'],
-					parameterName = pipeline_parameters['parameterName'], parameterValue = pipeline_parameters['parameterValue'])
+					parameterName = pipeline_parameters['parameterName'], parameterType = pipeline_parameters['parameterType'])
 		return new_parameter_action_pipeline
 
 class ParameterPipeline (models.Model):
@@ -161,7 +165,7 @@ class ParameterPipeline (models.Model):
 				Pipelines,
 				on_delete = models.CASCADE)
 	parameterName = models.CharField(max_length = 80)
-	parameterValue = models.CharField(max_length = 200)
+	parameterValue = models.CharField(max_length = 200,null = True, blank = True)
 	parameterType = models.CharField(max_length = 20,null = True, blank = True)
 
 
@@ -171,8 +175,12 @@ class ParameterPipeline (models.Model):
 	def get_pipeline_parameter_name (self):
 		return '%s' %(self.parameterName)
 
+	def get_pipeline_parameter_type (self):
+		return '%s' %(self.parameterType)
+
 	def get_pipeline_parameter_value (self):
 		return '%s' %(self.parameterValue)
+
 
 	def get_pipeline_parameters(self):
 		data = []
@@ -478,7 +486,7 @@ class Resolution(models.Model):
 				on_delete=models.CASCADE, null=True,blank=True )
 
 
-	servicePipelines = models.ManyToManyField(Pipelines, blank = True)
+	resolutionPipelines = models.ManyToManyField(Pipelines, blank = True)
 
 	availableServices = models.ManyToManyField(AvailableService, blank = True)
 	resolutionNumber=models.CharField(_("Resolutions name"),max_length=255,null=True)

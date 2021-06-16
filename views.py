@@ -328,7 +328,8 @@ def add_resolution (request):
 
         resolution_data_form = get_add_resolution_data_form(request.POST)
         new_resolution = create_new_resolution(resolution_data_form)
-
+        if 'pipeline_ids' in resolution_data_form:
+            add_pipelines_to_resolution(new_resolution, resolution_data_form['pipeline_ids'])
         # create a new resolution to be added to the service folder including the path where file is stored
 
         pdf_file = create_resolution_pdf_file(new_resolution, request.build_absolute_uri())
@@ -337,17 +338,17 @@ def add_resolution (request):
         #resolution_file = create_pdf(request,information, drylab_config.RESOLUTION_TEMPLATE, pdf_name)
 
         ## Send email
-        if EmailData.objects.all().exists():
-        #if drylab_config.EMAIL_USER_CONFIGURED :
-            email_data = {}
-            email_data['user_email'] = request.user.email
-            email_data['user_name'] = request.user.username
-            email_data['service_number'] = new_resolution.get_service_request_number()
-            email_data['status'] = resolution_data_form['serviceAccepted']
-            email_data['date'] = resolution_data_form['resolutionEstimatedDate']
-            send_resolution_creation_email(email_data)
+        email_data = {}
+        email_data['user_email'] = request.user.email
+        email_data['user_name'] = request.user.username
+        email_data['service_number'] = new_resolution.get_service_request_number()
+        email_data['status'] = resolution_data_form['serviceAccepted']
+        email_data['date'] = resolution_data_form['resolutionEstimatedDate']
+        send_resolution_creation_email(email_data)
         created_resolution = {}
         created_resolution['resolution_number'] = resolution_data_form['resolutionNumber']
+        ## Display pipeline parameters
+
         return render(request,'iSkyLIMS_drylab/addResolution.html',{'created_resolution': created_resolution})
 
 
@@ -980,9 +981,7 @@ def define_pipeline_service(request):
         if request.FILES :
             fs = FileSystemStorage(location = os.path.join(settings.MEDIA_ROOT,drylab_config.PIPELINE_FILE_DIRECTORY))
             pipeline_data_form['filename'] = fs.save(str(pipeline_data_form['pipelineName'] + '_' + pipeline_data_form['pipelineVersion']),  request.FILES['pipelinefile'] )
-        import pdb; pdb.set_trace()
         new_pipeline = Pipelines.objects.create_pipeline(pipeline_data_form)
-        import pdb; pdb.set_trace()
         if 'additional_parameters' in  pipeline_data_form :
             store_parameters_pipeline(new_pipeline, pipeline_data_form['additional_parameters'])
         defined_service_pipeline = get_defined_pipeline_data_to_display(new_pipeline)

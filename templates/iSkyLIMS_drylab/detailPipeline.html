@@ -19,7 +19,13 @@
                         <tbody>
                             <tr>
                                 {% for value in detail_pipelines_data.pipeline_basic %}
-                                    <td>{{value}}</td>
+                                    {% if value == 'True' %}
+                                        <td>True</td>
+                                    {%elif value == 'False '%}
+                                        <td>False </td>
+                                    {% else %}
+                                        <td>{{value}}</td>
+                                    {% endif %}
                                 {% endfor %}
                             </tr>
                         </tbody>
@@ -70,7 +76,7 @@
                     <div class="row row-space-4 margin-b-4">
                         <div class="col-sm-10 col-sm-offset-1" >
                             <div class="panel panel-default">
-                                <div class="panel-heading"><h3 style="text-align:center">Paramters used for the Pipeline</h3></div>
+                                <div class="panel-heading"><h3 style="text-align:center">Parameters used for the Pipeline</h3></div>
                                 <div class="panel-body">
                                     {% if detail_pipelines_data.parameter_heading %}
                                         <table class="table table-hover">

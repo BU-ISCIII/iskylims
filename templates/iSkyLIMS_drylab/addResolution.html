@@ -61,22 +61,6 @@
 			                        <br><br>
 								</div>  <!-- end from-group   -->
 								<div class="form-group ">
-									{% if resolution_form_data.pipelines_data %}
-										{% for s_name , values in resolution_form_data.pipelines_data %}
-											<label class="col-sm-5 control-label" for="resolutionAsignedUser" >Pipeline for {{s_name}} </label>
-					                        <div class="col-sm-5">
-
-												<select class="form-control"  name="pipelines" id="pipeline_{{s_name}}">
-													<option value="">Select one </option>
-					                                {% for id , name , version in values %}
-					                                    <option value="{{id}}">{{name}}  {{version}}</option>
-					                                {% endfor %}
-					                            </select>
-					                        </div>  <!-- end select input -->
-											<br><br>
-										{% endfor %}
-									{% endif %}
-
 									<label class="col-sm-5 control-label" for="resolutionNotes" >User Notes</label>
 			                        <div class="col-sm-5">
 			                            <textarea class="form-control" name="resolutionNotes" value="" id="resolutionNotes" rows="4" cols="60" maxlength="440"></textarea>
@@ -84,32 +68,46 @@
 			                        <br>
 				             	</div>  <!-- end from-group   -->
 
-							<br>
-		                    <br>
-
-								<div id="spreadsheet"></div>
 								<br>
-								<script>
-									var data = [{% for item , value in data_pipeline.additional_parameters.items %}
-									   ['{{item}}', '{{value}}'],{% endfor %}
-									];
-								   mySpreadsheet = $('#spreadsheet').jexcel({
-									   data:data,
-									   columns: [{% for heading in resolution_form_data.heading %}
-													{ type: 'text', title:'{{heading}}', width:300  },
-												 {% endfor %}
-									   ],
-									   allowInsertColumn:false,
-									   allowDeleteColumn:false,
-									   allowRenameColumn:false,
-									   allowInsertRow:true,
-									   allowDeleteRow:true,
-									   tableOverflow:true,
-									   tableHeight:'200px',
-									   minDimensions:[{{resolution_form_data.heading|length}},3],
-									   csvFileName:'parametersResolution',
-								   });
-								</script>
+			                    <br>
+								{% if resolution_form_data.pipelines_data %}
+									<div class="col-sm-9 col-sm-offset-2">
+
+
+									<div id="spreadsheet"></div>
+									<br>
+									<script>
+										var data = [{% for name , version, id in resolution_form_data.pipelines_data %}
+										   				['{{name}}', '{{version}}', '{{id}}'],
+										   			{% endfor %}
+												];
+									   mySpreadsheet = $('#spreadsheet').jexcel({
+										   data:data,
+
+										   columns: [
+											   {% for item in  resolution_form_data.pipelines_heading %}
+												   {% if forloop.last %}
+													   { type: 'hidden' },
+												   {% else %}
+												   { type: 'text', title:'{{item}}', width:300 },
+												   {% endif %}
+											   {% endfor %}
+											   { type: 'checkbox',  title:'Select Pipeline', width:150 },
+										   ],
+										   allowInsertColumn:false,
+										   allowDeleteColumn:false,
+										   allowRenameColumn:false,
+										   allowInsertRow:false,
+										   allowDeleteRow:false,
+										   tableOverflow:false,
+										   tableHeight:'200px',
+										   search:true,
+										   pagination:20,
+										   csvFileName:'pipelines.csv',
+									   });
+									</script>
+									</div>
+								{% endif %}
 
 							<br>
 		                    <br>
@@ -128,7 +126,7 @@
 	                                var table_data = $('#spreadsheet').jexcel('getData')
 	                                var data_json = JSON.stringify(table_data)
 	                                $("<input />").attr("type", "hidden")
-	                                  .attr("name", "parameters_data")
+	                                  .attr("name", "pipeline_data")
 	                                  .attr("value", data_json)
 	                                  .appendTo("#addResolutionService");
 	                                $("#btnSubmit").attr("disabled", true);
