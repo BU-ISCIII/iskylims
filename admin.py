@@ -20,7 +20,8 @@ class MoleculeUsedForAdmin(admin.ModelAdmin):
     list_display = ['usedFor' ,'apps_name', 'massiveUse']
 
 class PatientCoreAdmin(admin.ModelAdmin):
-    list_display = ('patientName', 'patientSurname', 'patientCode', 'patientSex')
+    list_display = ('patientCode', 'patientName', 'patientSurname', 'patientSex')
+    search_fields = ("patientCode__icontains", )
 
 class PatientSexAdmin(admin.ModelAdmin):
     list_display = ('sex',)

@@ -123,11 +123,6 @@ def send_test_email(form_data):
     except Exception as e:
         return str(e)
 
-
-
-
-
-
 def save_inital_sample_setting_value (apps_name, data):
     '''
     Description:
