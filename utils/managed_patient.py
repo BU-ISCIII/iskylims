@@ -1,3 +1,4 @@
+import pandas as pd
 from iSkyLIMS_clinic.models import *
 from iSkyLIMS_clinic.clinic_config import *
 from iSkyLIMS_core.models import PatientCore, PatientSex, PatientProjects
@@ -51,7 +52,7 @@ def create_new_patient(form_data, app_name):
         p_opt_data[item] = form_data[item]
 
     if form_data['patientProject'] != 'None':
-        import pdb; pdb.set_trace()
+
         project_obj = get_project_obj(form_data['patientProject'], app_name)
         new_patient_core.patientProjects.add(project_obj)
         p_main_data['patient_id'] = new_patient_core.get_patient_id()
@@ -119,7 +120,7 @@ def display_one_patient_info (p_id, app_name):
             sample_obj = clinic_sample.get_core_sample_obj()
             patient_info['samples_data'].append(sample_obj.get_info_for_patient())
 
-    import pdb; pdb.set_trace()
+    
     return patient_info
 
 def display_patient_list(p_list):
@@ -223,37 +224,38 @@ def read_batch_patient_file(batch_file):
         patient_batch_data
     '''
     patient_batch_data = []
-    patient_data = {}
+    error_data = {}
     patient_batch_heading = PATIENT_BATCH_FILE_HEADING.copy()
 
-    import pandas as pd
     patient_batch_heading[1] = ConfigSetting.objects.filter(configurationName__exact = 'PATIENT_NAME').last().get_configuration_value()
     patient_batch_heading[2] = ConfigSetting.objects.filter(configurationName__exact = 'PATIENT_SURNAME').last().get_configuration_value()
     patient_batch_df = pd.read_excel(batch_file, sheet_name=0)
     num_rows, num_cols = patient_batch_df.shape
-    import pdb; pdb.set_trace()
+
     if num_cols != 5 :
-        patient_data['ERROR'] = ERROR_MESSAGE_FOR_INVALID_PATIENT_BATCH_FILE
-        return patient_data
+        error_data['ERROR'] = ERROR_MESSAGE_FOR_INVALID_PATIENT_BATCH_FILE
+        return error_data
     for field in patient_batch_heading:
         if not field in patient_batch_df.columns:
-            patient_data['ERROR'] = ERROR_MESSAGE_FOR_INVALID_PATIENT_BATCH_FILE
-            return patient_data
+            error_data['ERROR'] = ERROR_MESSAGE_FOR_INVALID_PATIENT_BATCH_FILE
+            return error_data
     if num_rows == 0 :
-        patient_data['ERROR'] = ERROR_MESSAGE_FOR_EMPTY_PATIENT_BATCH_FILE
-        return patient_data
+        error_data['ERROR'] = ERROR_MESSAGE_FOR_EMPTY_PATIENT_BATCH_FILE
+        return error_data
     p_projects = set(patient_batch_df['patientProjects'])
-    '''
     for p_project in p_projects:
+        if p_project == '' or p_project == 'None':
+            continue
         if not PatientProjects.objects.filter(projectName__exact = p_project).exists():
-            patient_data['ERROR'] = ERROR_MESSAGE_NOT_VALID_PROJECT_IN_BATCH_FILE + [p_project]
-            return patient_data
-    '''
+            error_data['ERROR'] = ERROR_MESSAGE_NOT_VALID_PROJECT_IN_BATCH_FILE + [p_project]
+            return error_data
+
     for index, row_data in patient_batch_df.iterrows():
+        patient_data = {}
         for index in range(len(PATIENT_BATCH_FILE_HEADING)):
             patient_data[PATIENT_BATCH_FILE_HEADING[index]] = row_data[patient_batch_heading[index]]
         patient_batch_data.append(patient_data)
-    import pdb; pdb.set_trace()
+
     return patient_batch_data
 
 def store_batch_patient(batch_data):
@@ -271,14 +273,16 @@ def store_batch_patient(batch_data):
     '''
     summary ={}
     not_valid_projects = []
+
     for patient_data in batch_data:
         new_patient = PatientCore.objects.create_patient(patient_data)
-        if patient_data['patientProject'] != '':
+
+        if patient_data['patientProjects'] != '' or patient_data['patientProjects'] != 'None':
             try:
-                patient_project_obj = PatientProjects.objects.get(projectName__exact = patient_data['patientProject'])
+                patient_project_obj = PatientProjects.objects.get(projectName__exact = patient_data['patientProjects'])
                 new_patient.patientProjects.add(patient_project_obj)
             except:
-                not_valid_projects.append(patient_data['patientProject'])
+                not_valid_projects.append(patient_data['patientProjects'])
     summary['patients'] = len(batch_data)
     if len(not_valid_projects) > 0:
         summary['no_valid_projects'] = list(set(not_valid_projects))

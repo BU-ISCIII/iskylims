@@ -223,7 +223,7 @@ def define_new_patient(request):
                 patient_definition_data = fields_for_new_patient(__package__)
                 return render(request, 'iSkyLIMS_clinic/defineNewPatient.html' ,{'patient_definition_data': patient_definition_data,
                                                     'error': patient_batch_data['ERROR'] })
-            defined_batch_patient = store_batch_patient(patient_definition_data)
+            defined_batch_patient = store_batch_patient(patient_batch_data)
         return render(request, 'iSkyLIMS_clinic/defineNewPatient.html' ,{'defined_batch_patient': defined_batch_patient})
     elif request.method == 'POST' and request.POST['action'] == 'addAdditionalInformation':
         add_additional_info = add_additional_information(request.POST)
