@@ -208,3 +208,78 @@ def from_data_for_search_patient():
     s_patient_data['p_surname'] = ConfigSetting.objects.filter(configurationName__exact = 'PATIENT_SURNAME').last().get_configuration_value()
 
     return s_patient_data
+
+
+def read_batch_patient_file(batch_file):
+    '''
+    Description:
+        The function read the batch file and return a list of dictionnary with
+        the extracted information
+    Constants:
+        PATIENT_BATCH_FILE_HEADING
+        PATIENT_NAME
+        PATIENT_SURNAME
+    Return:
+        patient_batch_data
+    '''
+    patient_batch_data = []
+    patient_data = {}
+    patient_batch_heading = PATIENT_BATCH_FILE_HEADING.copy()
+
+    import pandas as pd
+    patient_batch_heading[1] = ConfigSetting.objects.filter(configurationName__exact = 'PATIENT_NAME').last().get_configuration_value()
+    patient_batch_heading[2] = ConfigSetting.objects.filter(configurationName__exact = 'PATIENT_SURNAME').last().get_configuration_value()
+    patient_batch_df = pd.read_excel(batch_file, sheet_name=0)
+    num_rows, num_cols = patient_batch_df.shape
+    import pdb; pdb.set_trace()
+    if num_cols != 5 :
+        patient_data['ERROR'] = ERROR_MESSAGE_FOR_INVALID_PATIENT_BATCH_FILE
+        return patient_data
+    for field in patient_batch_heading:
+        if not field in patient_batch_df.columns:
+            patient_data['ERROR'] = ERROR_MESSAGE_FOR_INVALID_PATIENT_BATCH_FILE
+            return patient_data
+    if num_rows == 0 :
+        patient_data['ERROR'] = ERROR_MESSAGE_FOR_EMPTY_PATIENT_BATCH_FILE
+        return patient_data
+    p_projects = set(patient_batch_df['patientProjects'])
+    '''
+    for p_project in p_projects:
+        if not PatientProjects.objects.filter(projectName__exact = p_project).exists():
+            patient_data['ERROR'] = ERROR_MESSAGE_NOT_VALID_PROJECT_IN_BATCH_FILE + [p_project]
+            return patient_data
+    '''
+    for index, row_data in patient_batch_df.iterrows():
+        for index in range(len(PATIENT_BATCH_FILE_HEADING)):
+            patient_data[PATIENT_BATCH_FILE_HEADING[index]] = row_data[patient_batch_heading[index]]
+        patient_batch_data.append(patient_data)
+    import pdb; pdb.set_trace()
+    return patient_batch_data
+
+def store_batch_patient(batch_data):
+    '''
+    Description:
+        The function store the new patient, including the patient project
+    Input:
+        batch_data      # list of patient dictionnary data
+    Constants:
+        PATIENT_BATCH_FILE_HEADING
+        PATIENT_NAME
+        PATIENT_SURNAME
+    Return:
+        summary
+    '''
+    summary ={}
+    not_valid_projects = []
+    for patient_data in batch_data:
+        new_patient = PatientCore.objects.create_patient(patient_data)
+        if patient_data['patientProject'] != '':
+            try:
+                patient_project_obj = PatientProjects.objects.get(projectName__exact = patient_data['patientProject'])
+                new_patient.patientProjects.add(patient_project_obj)
+            except:
+                not_valid_projects.append(patient_data['patientProject'])
+    summary['patients'] = len(batch_data)
+    if len(not_valid_projects) > 0:
+        summary['no_valid_projects'] = list(set(not_valid_projects))
+    return summary

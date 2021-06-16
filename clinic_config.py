@@ -43,6 +43,10 @@ ERROR_MESSAGE_FOR_SORT_PATIENT_NAME = ['The Patient name must contains more than
 
 ERROR_MESSAGE_FOR_NO_MATCH_IN_SEARCH = ['Your query did not return any results']
 
+ERROR_MESSAGE_FOR_INVALID_PATIENT_BATCH_FILE = ['The patient batch file deos not have the right number of colunms']
+
+ERROR_MESSAGE_FOR_EMPTY_PATIENT_BATCH_FILE = ['Patient batch file does not have any patient data']
+ERROR_MESSAGE_NOT_VALID_PROJECT_IN_BATCH_FILE = ['The following Patient Project is not defined']
 ###################### FIELDS NAME USED IN USER FORM  ########################################
 FORM_MAIN_DATA_PATIENT_DEFINITION = ['patientName', 'patientSurname', 'patientCode', 'patientSex']
 FORM_OPT_DATA_PATIENT_DEFINITION = ['address', 'phone', 'email', 'birthday', 'smoker', 'notificationPreference' , 'comments']
@@ -58,3 +62,7 @@ HEADING_FOR_RESULT_TO_PROTOCOL = ['Clinic Sample', 'History Number', 'Priority',
 ################ MAPPING SAMPLE STATES ON CORE WITH CLINIC ######################
 MAPPING_SAMPLES_CORE_VS_CLINIC = {'Defined': 'Patient update', 'Extract molecule': 'Sequencing',  'Library preparation': 'Sequencing', 'Pool Preparation' : 'Sequencing',
                                     'Sequencing': 'Sequencing', 'Completed':'Pending protocol', 'Error':'Invalid'}
+
+
+############## PATIENT BATCH FILE  ############################################
+PATIENT_BATCH_FILE_HEADING = ['patientCode','patientName', 'patientSurname', 'patientSex', 'patientProjects']

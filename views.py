@@ -215,8 +215,16 @@ def define_new_patient(request):
             patient_definition_data = fields_for_new_patient(__package__)
             return render(request, 'iSkyLIMS_clinic/defineNewPatient.html' ,{'patient_definition_data': patient_definition_data,
                                                 'error': ERROR_MESSAGE_FOR_PATIENT_CODE_EXISTS })
-
         return render(request, 'iSkyLIMS_clinic/defineNewPatient.html' ,{'defined_patient': defined_patient})
+    elif request.method == 'POST' and request.POST['action'] == 'defineBatchPatient':
+        if 'patientExcel' in request.FILES:
+            patient_batch_data = read_batch_patient_file(request.FILES['patientExcel'])
+            if 'ERROR' in patient_batch_data:
+                patient_definition_data = fields_for_new_patient(__package__)
+                return render(request, 'iSkyLIMS_clinic/defineNewPatient.html' ,{'patient_definition_data': patient_definition_data,
+                                                    'error': patient_batch_data['ERROR'] })
+            defined_batch_patient = store_batch_patient(patient_definition_data)
+        return render(request, 'iSkyLIMS_clinic/defineNewPatient.html' ,{'defined_batch_patient': defined_batch_patient})
     elif request.method == 'POST' and request.POST['action'] == 'addAdditionalInformation':
         add_additional_info = add_additional_information(request.POST)
         return redirect ('display_patient_information', patient_id = request.POST['patient_id'] )
