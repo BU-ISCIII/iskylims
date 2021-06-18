@@ -5,9 +5,10 @@ migrations/
 tmp/
 logs/
 tests/
-wetlab_samba_conf.py
-wetlab_email_conf.py
-## Default for python projects
+
+## Cusotomized script
+
+script/private*.py
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
