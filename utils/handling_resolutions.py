@@ -43,10 +43,9 @@ def allow_to_service_update_state (resolution_obj, new_state):
         avail_services_handled = []
         for all_resolution_obj in all_resolution_objs:
             if new_state == 'delivered':
-                if all_resolution_obj.get_resolution_state() == 'Delivery' or all_resolution_obj.get_resolution_state() == 'Cancelled' or all_resolution_obj == resolution_obj:
-                    resolution_handle_list = all_resolution_obj.get_available_services()
-                else:
+                if not (all_resolution_obj.get_resolution_state() == 'Delivery' or all_resolution_obj.get_resolution_state() == 'Cancelled' or all_resolution_obj == resolution_obj):
                     continue
+            resolution_handle_list = all_resolution_obj.get_available_services()
             for item in resolution_handle_list:
                 avail_services_handled.append(item)
         if len(set(avail_services_handled)) == len(service_obj.get_child_services()):
