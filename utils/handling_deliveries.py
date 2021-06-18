@@ -1,9 +1,10 @@
 from datetime import datetime
 from django.core.mail import send_mail
+from django.conf import settings
 from iSkyLIMS_drylab.models import *
 from iSkyLIMS_drylab.utils.handling_request_services import get_available_service_obj_from_id
 from iSkyLIMS_drylab.utils.handling_resolutions import get_resolution_obj_from_id
-from iSkyLIMS_drylab.utils.handling_pipelines import get_pipelines_for_service, get_pipeline_obj_from_id
+from iSkyLIMS_drylab.utils.handling_pipelines import get_pipelines_for_resolution, get_pipeline_obj_from_id
 
 def prepare_delivery_form(resolution_id):
     '''
@@ -27,11 +28,9 @@ def prepare_delivery_form(resolution_id):
         delivery_data_form['resolution_id'] = resolution_id
         delivery_data_form['resolution_number'] = resolution_obj.get_resolution_number()
         req_available_services_id = resolution_obj.get_available_services_ids()
-        for avail_service in req_available_services_id:
-            data = get_pipelines_for_service(avail_service)
-            if data :
-                pipelines_data.append([ get_available_service_obj_from_id(avail_service).get_service_description() , data])
-        delivery_data_form['pipelines_data'] = pipelines_data
+
+        delivery_data_form['pipelines_data'] = get_pipelines_for_resolution(resolution_obj)
+
     return delivery_data_form
 
 
@@ -54,11 +53,11 @@ def store_resolution_delivery(form_data):
     if resolution_obj != None :
         delivery_data = {}
         if form_data['startdate'] != '':
-            delivery_data['executionStartDate'] = datetime.datetime.strptime(form_data['startdate'], '%Y-%m-%d')
+            delivery_data['executionStartDate'] = datetime.strptime(form_data['startdate'], '%Y-%m-%d')
         else:
             delivery_data['executionStartDate'] = None
         if form_data['startdate'] != '':
-            delivery_data['executionEndDate'] = datetime.datetime.strptime(form_data['enddate'], '%Y-%m-%d')
+            delivery_data['executionEndDate'] = datetime.strptime(form_data['enddate'], '%Y-%m-%d')
         else:
             delivery_data['executionEndDate'] = None
         delivery_data['deliveryResolutionID'] = resolution_obj
@@ -68,10 +67,12 @@ def store_resolution_delivery(form_data):
         delivery_data['deliveryNotes'] = form_data['deliveryNotes']
 
         new_delivery = Delivery.objects.create_delivery(delivery_data)
+        '''
         if 'pipelines' in form_data:
             pipelines_ids = form_data.getlist('pipelines')
             for pipeline_id in pipelines_ids:
                 new_delivery.pipelinesInDelivery.add(get_pipeline_obj_from_id(pipeline_id))
+        '''
         resolution_obj.update_resolution_in_delivered()
         service_obj = resolution_obj.get_service_obj()
 
@@ -98,9 +99,13 @@ def send_delivery_service_email (email_data):
 
     body_preparation = list(map(lambda st: str.replace(st, 'RESOLUTION_NUMBER', email_data['resolution_number']), drylab_config.BODY_RESOLUTION_DELIVERED))
     body_preparation = list(map(lambda st: str.replace(st, 'USER_NAME', email_data['user_name']), body_preparation))
-    from_user = drylab_config.USER_EMAIL
-    to_users = [email_data['user_email'], drylab_config.USER_EMAIL]
-    body_message = '\n'.join(body_preparation)
 
-    send_mail (subject, body_message, from_user, to_users)
+    body_message = '\n'.join(body_preparation)
+    from_user = settings.EMAIL_ISKYLIMS
+    notification_user = ConfigSetting.objects.filter(configurationName__exact = 'EMAIL_FOR_NOTIFICATIONS').last().get_configuration_value()
+    to_users = [email_data['user_email'], notification_user]
+    try:
+        send_mail (subject, body_message, from_user, to_users)
+    except:
+        pass
     return

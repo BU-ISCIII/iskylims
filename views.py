@@ -91,15 +91,14 @@ def request_sequencing_service(request):
 		sample_stored = stored_samples_for_sequencing_request_service(request.POST, new_service)
 		if 'files' in request.POST:
 			add_files_to_service(request.POST.getlist('files'), new_service)
-		## Send mail to user and drylab admin group
-		if EmailData.objects.all().exists():
-		#if drylab_config.EMAIL_USER_CONFIGURED :
-			email_data = {}
-			email_data['user_email'] = request.user.email
-			email_data['user_name'] = request.user.username
-			email_data['service_number'] = new_service.get_service_request_number()
-			send_service_creation_confirmation_email(email_data)
-
+		## Send mail to user and drylab notification email
+		email_data = {}
+		email_data['user_email'] = request.user.email
+		email_data['user_name'] = request.user.username
+		email_data['service_number'] = new_service.get_service_request_number()
+		email_result = send_service_creation_confirmation_email(email_data)
+		if email_result != 'OK':
+			pass
 		# PDF preparation file for confirmation of service request
 		confirmation_result = {}
 		confirmation_result['download_file'] = create_service_pdf_file(new_service.get_service_request_number(), request.build_absolute_uri())
@@ -127,13 +126,12 @@ def counseling_request(request):
                            'error_message':error_message})
 
         new_service = create_new_save_counseling_service_request(request)
-        if EmailData.objects.all().exists():
-        #if drylab_config.EMAIL_USER_CONFIGURED :
-            email_data = {}
-            email_data['user_email'] = request.user.email
-            email_data['user_name'] = request.user.username
-            email_data['service_number'] = new_service.get_service_request_number()
-            send_service_creation_confirmation_email(email_data)
+
+        email_data = {}
+        email_data['user_email'] = request.user.email
+        email_data['user_name'] = request.user.username
+        email_data['service_number'] = new_service.get_service_request_number()
+        send_service_creation_confirmation_email(email_data)
         confirmation_result = {}
         confirmation_result['download_file'] = create_service_pdf_file(new_service.get_service_request_number(), request.build_absolute_uri())
 
@@ -159,13 +157,12 @@ def infrastructure_request(request):
                            'error_message':error_message})
 
         new_service = create_new_save_infrastructure_service_request(request)
-        if EmailData.objects.all().exists():
-        #if drylab_config.EMAIL_USER_CONFIGURED :
-            email_data = {}
-            email_data['user_email'] = request.user.email
-            email_data['user_name'] = request.user.username
-            email_data['service_number'] = new_service.get_service_request_number()
-            send_service_creation_confirmation_email(email_data)
+
+        email_data = {}
+        email_data['user_email'] = request.user.email
+        email_data['user_name'] = request.user.username
+        email_data['service_number'] = new_service.get_service_request_number()
+        send_service_creation_confirmation_email(email_data)
         confirmation_result = {}
         confirmation_result['download_file'] = create_service_pdf_file(new_service.get_service_request_number(), request.build_absolute_uri())
 
@@ -461,17 +458,14 @@ def add_in_progress (request):
         resolution_number = resolution_obj.get_resolution_number()
         service_obj = resolution_obj.get_service_obj()
         # check if services can change to "in progress"
-        if allow_to_service_update_state (resolution_obj):
+        if allow_to_service_update_state (resolution_obj, 'in_progress'):
             # update the service status and in_porgress date
-            service_obj.update_service_status('In progress')
-
-        if EmailData.objects.all().exists():
-        #if drylab_config.EMAIL_USER_CONFIGURED :
-            email_data = {}
-            email_data['user_email'] = service_obj.get_user_email()
-            email_data['user_name'] = service_obj.get_username()
-            email_data['resolution_number'] = resolution_number
-            send_resolution_in_progress_email(email_data)
+            service_obj.update_service_status('in_progress')
+        email_data = {}
+        email_data['user_email'] = service_obj.get_user_email()
+        email_data['user_name'] = service_obj.get_username()
+        email_data['resolution_number'] = resolution_number
+        send_resolution_in_progress_email(email_data)
         in_progress_resolution = {}
         in_progress_resolution['resolution_number'] = resolution_number
         return render (request,'iSkyLIMS_drylab/addInProgress.html',{'in_progress_resolution':in_progress_resolution})
@@ -511,8 +505,9 @@ def add_delivery (request ):
             email_data['resolution_number'] = delivery_recorded['resolution_number']
             send_delivery_service_email(email_data)
             resolution_obj = delivery_recorded['deliveryResolutionID']
-            if allow_to_service_update_state (resolution_obj):
-                service_obj.update_service_status('Delivered')
+            if allow_to_service_update_state (resolution_obj, 'delivered'):
+                service_obj = resolution_obj.get_service_obj()
+                service_obj.update_service_status('delivered')
             return render (request, 'iSkyLIMS_drylab/addDelivery.html', {'delivery_recorded': delivery_recorded})
 
     return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The resolution that you are trying to upadate does not exists ','Contact with your administrator .']})

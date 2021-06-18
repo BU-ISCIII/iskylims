@@ -483,7 +483,7 @@ def get_service_information (service_id, service_manager):
 
         display_service_details['piplelines_data'] = {}
         for resolution_obj in resolution_objs:
-            pipelines_objs = resolution_obj.servicePipelines.all()
+            pipelines_objs = resolution_obj.resolutionPipelines.all()
             if pipelines_objs:
                 for pipelines_obj in pipelines_objs:
                     pipeline_name = pipelines_obj.get_pipeline_name()
@@ -598,6 +598,7 @@ def send_service_creation_confirmation_email(email_data):
         SUBJECT_SERVICE_RECORDED
         BODY_SERVICE_RECORDED
         USER_EMAIL
+		ERROR_UNABLE_TO_SEND_EMAIL
     Return:
         None
     '''
@@ -607,10 +608,14 @@ def send_service_creation_confirmation_email(email_data):
     body_preparation = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', email_data['service_number']), drylab_config.BODY_SERVICE_RECORDED))
     body_preparation = list(map(lambda st: str.replace(st, 'USER_NAME', email_data['user_name']), body_preparation))
     body_message = '\n'.join(body_preparation)
-    from_user = EmailData.objects.all().last().get_user_email()
-    to_users = [email_data['user_email'], from_user]
-    send_mail (subject, body_message, from_user, to_users)
-    return
+    from_user = settings.EMAIL_ISKYLIMS
+    notification_user = ConfigSetting.objects.filter(configurationName__exact = 'EMAIL_FOR_NOTIFICATIONS').last().get_configuration_value()
+    to_users = [email_data['user_email'], notification_user]
+    try:
+        send_mail (subject, body_message, from_user, to_users)
+    except:
+        return ERROR_UNABLE_TO_SEND_EMAIL
+    return 'OK'
 
 
 def stored_samples_for_sequencing_request_service(form_data, new_service):

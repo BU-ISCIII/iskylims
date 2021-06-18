@@ -145,7 +145,7 @@ class Pipelines(models.Model):
 		data.append(self.userName.username)
 		data.append(self.pipelineName)
 		data.append(self.pipelineVersion)
-		data.append(self.generated_at.strftime("%B %d, %Y"))
+		data.append(self.generated_at.strftime("%d/ %B/ %Y"))
 		data.append(self.pipelineInUse)
 		data.append(self.pk)
 		return data

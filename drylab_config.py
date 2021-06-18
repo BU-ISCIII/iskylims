@@ -70,9 +70,11 @@ ERROR_FILE_TOO_BIG = 'Unable to upload your file. It exceeds the maximum size'
 
 ERROR_USER_NOT_DEFINED = ['User is not defined']
 
+ERROR_UNABLE_TO_SEND_EMAIL = ['Unable to send the email to user']
+
 ################### PIPELINES ######################
 DISPLAY_NEW_DEFINED_PIPELINE = ['Pipeline Name' , 'Pipeline Version' , 'Description']
-DISPLAY_MULTYPLE_DEFINED_PIPELINE = ['Service', 'User', 'Pipeline Name' , 'Pipeline Version', 'Date', 'Default', 'In Use']
+DISPLAY_PIPELINES_USED_IN_RESOLUTION = ['Created by User', 'Pipeline Name' , 'Pipeline Version', 'Creation Date', 'Default']
 
 DISPLAY_DETAIL_PIPELINE_BASIC_INFO = ['Pipeline Name', 'Pipeline Version', 'Creation Date' , 'Pipeline in use']
 DISPLAY_DETAIL_PIPELINE_ADDITIONAL_INFO = ['Created by', 'Pipeline URL', 'Pipeline File', 'Descripion']

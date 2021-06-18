@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 from django.core.mail import send_mail
+from django.conf import settings
 from iSkyLIMS_drylab.models import *
 from iSkyLIMS_drylab import drylab_config
 from iSkyLIMS_drylab.utils.handling_request_services import *
@@ -25,22 +26,27 @@ def add_pipelines_to_resolution(resolution_obj, pipeline_ids):
     return None
 
 
-def allow_to_service_update_state (resolution_obj):
+def allow_to_service_update_state (resolution_obj, new_state):
     '''
     Description:
         The function check if all partial resolutions are handled all requested
         services
     Input:
         resolution_obj  # resoution obj
+        new_state       # 'in_progress' or 'delivered'
     Return:
         True or False
     '''
     service_obj = resolution_obj.get_service_obj()
     if Resolution.objects.filter(resolutionServiceID = service_obj).exclude(resolutionState__resolutionStateName__exact = 'Recorded').exists():
-        resolution_objs = Resolution.objects.filter(resolutionServiceID = service_obj).exclude(resolutionState__resolutionStateName__exact = 'Recorded')
+        all_resolution_objs = Resolution.objects.filter(resolutionServiceID = service_obj).exclude(resolutionState__resolutionStateName__exact = 'Recorded')
         avail_services_handled = []
-        for resolution_obj in resolution_objs:
-            resolution_handle_list = resolution_obj.get_available_services()
+        for all_resolution_obj in all_resolution_objs:
+            if new_state == 'delivered':
+                if all_resolution_obj.get_resolution_state() == 'Delivery' or all_resolution_obj.get_resolution_state() == 'Cancelled' or all_resolution_obj == resolution_obj:
+                    resolution_handle_list = all_resolution_obj.get_available_services()
+                else:
+                    continue
             for item in resolution_handle_list:
                 avail_services_handled.append(item)
         if len(set(avail_services_handled)) == len(service_obj.get_child_services()):
@@ -66,7 +72,7 @@ def get_assign_resolution_full_number(service_id, acronymName):
     else:
         resolution_full_number = ''
         resolution_full_number += service_obj.get_service_request_number() + '_'
-        resolution_full_number += str(datetime.date.today()).replace('-','') + '_'
+        resolution_full_number += str(date.today()).replace('-','') + '_'
         resolution_full_number += acronymName + '_'
         resolution_full_number += service_obj.get_service_requested_user() + '_S'
     return resolution_full_number
@@ -144,7 +150,7 @@ def get_add_resolution_data_form(form_data):
     resolution_data_form = {}
 
     resolution_data_form['service_id'] = form_data['service_id']
-    resolution_data_form['resolutionEstimatedDate'] = datetime.datetime.strptime(form_data['resolutionEstimatedDate'],'%Y-%m-%d').date()
+    resolution_data_form['resolutionEstimatedDate'] = datetime.strptime(form_data['resolutionEstimatedDate'],'%Y-%m-%d').date()
     resolution_data_form['acronymName'] = form_data['acronymName']
     resolution_data_form['resolutionAsignedUser'] = form_data['resolutionAsignedUser']
     resolution_data_form['serviceAccepted'] = form_data['serviceAccepted']
@@ -230,10 +236,10 @@ def create_new_resolution(resolution_data_form):
                     service_obj.update_service_status("queued")
         else:
             service_obj.update_service_status("queued")
-        service_obj.update_approved_date(datetime.date.today())
+        service_obj.update_approved_date(date.today())
     else:
         service_obj.update_service_status("rejected")
-        service_obj.update_rejected_date(datetime.date.today())
+        service_obj.update_rejected_date(date.today())
 
     return new_resolution
 
@@ -342,6 +348,9 @@ def send_resolution_creation_email (email_data):
         SUBJECT_RESOLUTION_RECORDED
         BODY_RESOLUTION_RECORDED
         USER_EMAIL
+        EMAIL_ISKYLIMS
+        EMAIL_FOR_NOTIFICATIONS
+
     Return:
         None
     '''
@@ -359,8 +368,9 @@ def send_resolution_creation_email (email_data):
         body_preparation = list(map(lambda st: str.replace(st, 'USER_NAME', email_data['user_name']), body_preparation))
         body_preparation = list(map(lambda st: str.replace(st, 'STATUS', email_data['status']), body_preparation))
     body_message = '\n'.join(body_preparation)
-    from_user = EmailData.objects.all().last().get_user_email()
-    to_users = [email_data['user_email'], from_user]
+    from_user = settings.EMAIL_ISKYLIMS
+    notification_user = ConfigSetting.objects.filter(configurationName__exact = 'EMAIL_FOR_NOTIFICATIONS').last().get_configuration_value()
+    to_users = [email_data['user_email'], notification_user]
     try:
         send_mail (subject, body_message, from_user, to_users)
     except:
@@ -389,9 +399,13 @@ def send_resolution_in_progress_email (email_data):
     body_preparation = list(map(lambda st: str.replace(st, 'RESOLUTION_NUMBER', email_data['resolution_number']), drylab_config.BODY_RESOLUTION_IN_PROGRESS))
     body_preparation = list(map(lambda st: str.replace(st, 'USER_NAME', email_data['user_name']), body_preparation))
     body_message = '\n'.join(body_preparation)
-    from_user = drylab_config.USER_EMAIL
-    to_users = [email_data['user_email'], drylab_config.USER_EMAIL]
-    send_mail (subject, body_message, from_user, to_users)
+    from_user = settings.EMAIL_ISKYLIMS
+    notification_user = ConfigSetting.objects.filter(configurationName__exact = 'EMAIL_FOR_NOTIFICATIONS').last().get_configuration_value()
+    to_users = [email_data['user_email'], notification_user]
+    try:
+        send_mail (subject, body_message, from_user, to_users)
+    except:
+        pass
     return
 
 def store_resolution_additional_parameter(additional_parameters, resolution_obj):

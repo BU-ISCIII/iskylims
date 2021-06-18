@@ -154,19 +154,22 @@ def get_pipelines_for_manage():
 
     return pipeline_data
 
-def get_pipelines_for_service(service_id):
+def get_pipelines_for_resolution(resolution_obj):
     '''
     Description:
-        The function get the list of defined pipelines for a service
+        The function get the list of defined pipelines for the resolution
+    Input:
+        resolution_obj      # resolution object
     Return:
-        service_name
+        pipeline_data
     '''
     pipeline_data = {}
-    pipeline_data['multiple_pipeline'] = []
-    pipeline_objs = Pipelines.objects.filter(availableService__pk__exact = service_id)
+    pipeline_data['pipelines'] = []
+    pipeline_objs = resolution_obj.resolutionPipelines.all()
     for pipeline_obj in pipeline_objs :
-        pipeline_data['multiple_pipeline'].append(pipeline_obj.get_pipeline_info())
-    pipeline_data['heading_multi_pipeline'] = drylab_config.DISPLAY_MULTYPLE_DEFINED_PIPELINE
+        pipeline_data['pipelines'].append(pipeline_obj.get_pipeline_info())
+    if len(pipeline_data['pipelines']) > 0:
+        pipeline_data['heading_pipelines'] = drylab_config.DISPLAY_PIPELINES_USED_IN_RESOLUTION
     return pipeline_data
 
 def get_pipeline_obj_from_id (pipeline_id):
