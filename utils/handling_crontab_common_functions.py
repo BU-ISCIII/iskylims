@@ -817,7 +817,12 @@ def parsing_run_info_and_parameter_information(l_run_info, l_run_parameter, expe
         try:
             run_date = datetime.strptime(date, '%y%m%d')
         except:
-            run_date = ''
+            # get date for novaseq sequencer
+            date = p_run.find('Date').text.split(' ')[0]
+            try:
+                run_date = datetime.strptime(date, '%m/%d/%Y')
+            except:
+                run_date = ''
         # Collect information for NovaSeq
         for novaseq_field in FIELDS_NOVASEQ_TO_FETCH_TAG:
             try:
@@ -826,11 +831,7 @@ def parsing_run_info_and_parameter_information(l_run_info, l_run_parameter, expe
                 running_data[novaseq_field] = ''
                 string_message = experiment_name + ' : Parameter in Setup -- ' + novaseq_field + ' unable to fetch in RunParameter.xml'
                 logging_errors(string_message, False, True)
-        date = p_run.find('Date').text.split(' ')[0]
-        try:
-            run_date = datetime.strptime(date, '%m/%d/%Y')
-        except:
-            run_date = ''
+
     ##############################################
     ## updating the date fetched from the Date tag for run and project
     ##############################################
