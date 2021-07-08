@@ -93,6 +93,8 @@ MAX_UPLOAD_SIZE = 5242880
 
 HEADING_PENDING_SERVICE_QUEUED =['Services', 'Resolution', 'Acronym name', 'Assigned to', 'On queued date', 'Estimated date']
 
+HEADING_USER_PENDING_SERVICE_QUEUED =['Services', 'Resolution', 'Acronym name', 'On queued date', 'Estimated date']
+
 HEADING_SERVICE_DATES = ['Service Date Creation', 'Approval Service Date', 'Rejected Service Date']
 
 HEADING_SELECT_SAMPLE_IN_SERVICE = ['Run Name', 'Run ID', 'Project Name',  'Project ID','Sample Name', 'sample id', 'Run finish date']

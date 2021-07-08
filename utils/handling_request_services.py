@@ -284,6 +284,37 @@ def get_pending_services_information():
     pending_services_details ['graphic_pending_services'] = graphic_pending_services.render()
     return pending_services_details
 
+def get_user_pending_services_information(user_name):
+    '''
+    Description:
+        The function get the services that are pending for a user
+	Input:
+		user_name 		# name of the user to fetch the service infomation
+	Constants:
+		HEADING_USER_PENDING_SERVICE_QUEUED
+    Return:
+        pending_services_details
+    '''
+    user_pending_services_details = {}
+    res_in_queued, res_in_progress = [], []
+    if Resolution.objects.filter(resolutionAsignedUser__username__exact = user_name, resolutionState__resolutionStateName__exact = 'Recorded').exists() :
+        resolution_recorded_objs = Resolution.objects.filter(resolutionAsignedUser__username__exact = user_name, resolutionState__resolutionStateName__exact = 'Recorded').order_by('-resolutionServiceID')
+        for resolution_recorded_obj in resolution_recorded_objs :
+            resolution_data = resolution_recorded_obj.get_information_for_pending_resolutions()
+            del resolution_data[4]
+            res_in_queued.append(resolution_data)
+        user_pending_services_details['queued'] = res_in_queued
+        user_pending_services_details['heading_in_queued'] = drylab_config.HEADING_USER_PENDING_SERVICE_QUEUED
+    if Resolution.objects.filter(resolutionAsignedUser__username__exact = user_name, resolutionState__resolutionStateName__exact = 'In Progress').exists() :
+        resolution_recorded_objs = Resolution.objects.filter(resolutionAsignedUser__username__exact = user_name, resolutionState__resolutionStateName__exact = 'In Progress').order_by('-resolutionServiceID')
+        for resolution_recorded_obj in resolution_recorded_objs :
+            resolution_data = resolution_recorded_obj.get_information_for_pending_resolutions()
+            del resolution_data[4]
+            res_in_progress.append(resolution_data)
+        user_pending_services_details['in_progress'] = res_in_progress
+        user_pending_services_details['heading_in_progress'] = drylab_config.HEADING_USER_PENDING_SERVICE_QUEUED
+
+    return user_pending_services_details
 
 def get_projects_in_requested_samples(service_obj):
     '''

@@ -307,8 +307,8 @@ def pending_services (request):
         return redirect ('/accounts/login')
 
     pending_services_details = get_pending_services_information()
-
-    return render (request, 'iSkyLIMS_drylab/pendingServices.html', {'pending_services': pending_services_details})
+    user_pending_services = get_user_pending_services_information(request.user.username)
+    return render (request, 'iSkyLIMS_drylab/pendingServices.html', {'pending_services': pending_services_details, 'user_pending_services':user_pending_services})
 
 @login_required
 def add_resolution (request):
