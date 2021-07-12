@@ -632,7 +632,7 @@ def process_and_store_raw_demux_project_data(parsed_data, run_process_obj, exper
         run_process_obj     # runProcess object
         experiment_name     # Experiment name
     Functions:
-
+        create_new_empty_project
     Return:
         None
     '''
@@ -651,7 +651,7 @@ def process_and_store_raw_demux_project_data(parsed_data, run_process_obj, exper
             continue
         if not project in project_list:
             # create project and link to the run
-            new_project_obj = create_new_empty_project({'user_id':None, 'projectName':project})
+            new_project_obj = Projects.objects.create_new_empty_project({'user_id':None, 'projectName':project})
             new_project_obj.runProcess.add(run_process_obj)
             string_message = experiment_name +  ' : Created  project name ' + project + 'Because it was not store'
             logging_warnings(string_message, True)
