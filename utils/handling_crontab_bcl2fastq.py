@@ -549,7 +549,7 @@ def process_and_store_fl_summary_data(parsed_data, run_process_obj, number_of_la
             project_flowcell['project_id'] = None
             project_flowcell['defaultAll'] = project
         else:
-            project_flowcell['project_id'] = Projects.objects.get(projectName__exact = project)
+            project_flowcell['project_id'] = Projects.objects.get(projectName__iexact = project)
             project_flowcell['defaultAll'] = None
         project_flowcell['runprocess_id'] = run_process_obj
         #store in database
