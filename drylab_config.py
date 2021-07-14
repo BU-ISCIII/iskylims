@@ -138,3 +138,9 @@ BODY_SERVICE_ON_QUEUED = ['Service  SERVICE_NUMBER is on queued ']
 EMAIL_CONFIGURATION_FIELDS = ['EMAIL_HOST','EMAIL_PORT','USER_PASSWORD', 'USER_NAME', 'USER_EMAIL', 'USE_TLS']
 EMAIL_CONFIGURATION_FILE_HEADING = '############# EMAIL CONFIGURATION FILE ########\n#DO NOT MODIFY MANUALLY THIS FILE\n#VALUES WILL BE MODIFIED WHEN USING THE CONFIGURATION FORM\n'
 EMAIL_CONFIGURATION_FILE_END = '########## END EMAIL CONFIGURATION FILE'
+
+
+################ GRAPHICS #############################
+COLORS_MULTI_LEVEL_PIE = ['#66ffff', '#99ff99', '#ffffcc','#ffcccc','#ffccff', '#ccccff','#66ccff']
+MULTI_LEVEL_PIE_PENDING_TEXT_IN_CHILD_SERVICE = "Service pending on <b>$label</b> are <b>$value</b>, which was $percentValue of parent Service"
+MULTI_LEVEL_PIE_PENDING_MAIN_TEXT =  "Please hover over a services requested Unit to see details"

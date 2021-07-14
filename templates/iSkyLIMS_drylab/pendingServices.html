@@ -41,7 +41,8 @@
                             <button class="tablinks2" onclick="opentabinsidetab(event, 'recorded')">Recorded Services</button>
                             <button class="tablinks2" onclick="opentabinsidetab(event, 'queued')">Services in Queued</button>
                             <button class="tablinks2" onclick="opentabinsidetab(event, 'inprogress')">Services in Progress</button>
-                            <button class="tablinks2" onclick="opentabinsidetab(event, 'graphic')" id="defaultOpen2">Services Pending Graphic</button>
+                            <button class="tablinks2" onclick="opentabinsidetab(event, 'graphicServices')" id="defaultOpen2">Services Pending Graphic</button>
+                            <button class="tablinks2" onclick="opentabinsidetab(event, 'graphicUnitServices')">Pending Services per Unit</button>
                         </div> <!--  end tabs -->
 
                         <div id="recorded" class="tabcontent2">
@@ -80,7 +81,7 @@
                             </div> <!--// end row -->
                         </div><!-- // end of tab Recorded Services -->
 
-                        <div id="graphic" class="tabcontent2">
+                        <div id="graphicServices" class="tabcontent2">
                             <div class="row row-space-2 margin-b-4">
                                 <div class="col-sm-8 col-sm-offset-2"> <!-- Graphic -->
                                     {% if pending_services.graphic_pending_services %}
@@ -91,6 +92,24 @@
                                                 <div id="chart-1"> </div>
                                                 <!-- dumping JavaScript code here -->
                                                 {{ pending_services.graphic_pending_services |safe }}
+                                            </div> <!--  end of panel body -->
+                                        </div> <!--  end of panel  -->
+                                    {% endif %}
+                                </div> <!--  end of col-sm-8  -->
+                            </div> <!--// end row -->
+                        </div><!-- // end of tab Graphic Services -->
+
+                        <div id="graphicUnitServices" class="tabcontent2">
+                            <div class="row row-space-2 margin-b-4">
+                                <div class="col-sm-8 col-sm-offset-2"> <!-- Graphic -->
+                                    {% if pending_services.graphic_pending_services %}
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading"><h3>Pending Services per Unit.</h3></div>
+                                            <div class="panel-body">
+                                            <!-- Pie chart for number of pending Services chart will start here-->
+                                                <div id="chart-2"> </div>
+                                                <!-- dumping JavaScript code here -->
+                                                {{ pending_services.graphic_pending_unit_services |safe }}
                                             </div> <!--  end of panel body -->
                                         </div> <!--  end of panel  -->
                                     {% endif %}

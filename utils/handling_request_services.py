@@ -248,17 +248,31 @@ def get_pending_services_information():
     '''
     Description:
         The function get the pending service information
-
+	Constants:
+		MULTI_LEVEL_PIE_PENDING_MAIN_TEXT
+	Functions:
+		graphic_3D_pie				# located at utils/graphics.py
+		graphic_multi_level_pie		# located at utils/graphics.py
     Return:
         pending_services_details
     '''
     pending_services_details = {}
     recorded, queued, in_progress = {}, [], []
+    pending_services_per_unit = {}
     if Service.objects.filter(serviceStatus__exact = 'recorded').exists():
         services_in_request = Service.objects.filter(serviceStatus__exact = 'recorded').order_by('-serviceCreatedOnDate')
         for services in services_in_request:
             recorded[services.id]= [services.get_service_information()]
         pending_services_details['recorded'] = recorded
+        for service_unit in services_in_request:
+            try:
+                unit_serv = service_unit.get_service_request_center_unit_abbr()
+            except:
+                continue
+            if unit_serv not in pending_services_per_unit:
+                pending_services_per_unit[unit_serv] = {'recorded' : 0}
+            pending_services_per_unit[unit_serv]['recorded'] += 1
+
     # Resolution  in queued state
     if Resolution.objects.filter(resolutionState__resolutionStateName__exact = 'Recorded').exists():
         resolution_recorded_objs = Resolution.objects.filter(resolutionState__resolutionStateName__exact = 'Recorded').order_by('-resolutionServiceID')
@@ -266,6 +280,17 @@ def get_pending_services_information():
             queued.append(resolution_recorded_obj.get_information_for_pending_resolutions())
         pending_services_details['queued'] = queued
         pending_services_details['heading_queued'] = drylab_config.HEADING_PENDING_SERVICE_QUEUED
+        for resolution_in_q_unit in resolution_recorded_objs:
+            try:
+                unit_res = resolution_in_q_unit.get_resolution_request_center_unit_abbr()
+            except:
+                continue
+            if not unit_res in pending_services_per_unit:
+                pending_services_per_unit[unit_res] = {}
+            if not 'queued' in pending_services_per_unit[unit_res]:
+                pending_services_per_unit[unit_res]['queued'] = 0
+            pending_services_per_unit[unit_res]['queued'] += 1
+
     # Resolution in progress
     if Resolution.objects.filter(resolutionState__resolutionStateName__exact = 'In Progress').exists():
         resolution_recorded_objs = Resolution.objects.filter(resolutionState__resolutionStateName__exact = 'In Progress').order_by('-resolutionServiceID')
@@ -273,15 +298,30 @@ def get_pending_services_information():
             in_progress.append(resolution_recorded_obj.get_information_for_pending_resolutions())
         pending_services_details['in_progress'] = in_progress
         pending_services_details['heading_in_progress'] = drylab_config.HEADING_PENDING_SERVICE_QUEUED
-    #pending_services_details['queued'] = queued
+        for resolution_in_q_unit in resolution_recorded_objs:
+            try:
+                unit_res = resolution_in_q_unit.get_resolution_request_center_unit_abbr()
+            except:
+                continue
+            if not unit_res in pending_services_per_unit:
+                pending_services_per_unit[unit_res] = {}
+            if not 'in_progress' in pending_services_per_unit[unit_res]:
+                pending_services_per_unit[unit_res]['in_progress'] = 0
+            pending_services_per_unit[unit_res]['in_progress'] += 1
 
     number_of_services = {}
     number_of_services ['RECORDED'] = len (recorded)
     number_of_services ['QUEUED'] = len (queued)
     number_of_services ['IN PROGRESS'] = len (in_progress)
+
     data_source = graphic_3D_pie('Number of Pending Services', '', '', '','fint',number_of_services)
     graphic_pending_services = FusionCharts("pie3d", "ex1" , "540", "400", "chart-1", "json", data_source)
     pending_services_details ['graphic_pending_services'] = graphic_pending_services.render()
+
+    data_source = graphic_multi_level_pie('Pending Services per Unit', drylab_config.MULTI_LEVEL_PIE_PENDING_TEXT_IN_CHILD_SERVICE,
+				drylab_config.MULTI_LEVEL_PIE_PENDING_MAIN_TEXT,'fint', drylab_config.COLORS_MULTI_LEVEL_PIE, pending_services_per_unit)
+    graphic_unit_pending_services = FusionCharts("multilevelpie", "ex2" , "540", "400", "chart-2", "json", data_source)
+    pending_services_details ['graphic_pending_unit_services'] = graphic_unit_pending_services.render()
     return pending_services_details
 
 def get_user_pending_services_information(user_name):

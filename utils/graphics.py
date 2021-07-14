@@ -39,6 +39,62 @@ def graphic_3D_pie (heading, sub_title, axis_x_description, axis_y_description, 
     data_source['data'] = data
     return data_source
 
+def graphic_multi_level_pie (heading, plottooltext, tooltext, theme, colors, source_data):
+    data_source = {}
+    data_source['chart'] = {
+            "caption": heading,
+            "subCaption": '',
+            "showplotborder": "1",
+            "plotfillalpha": "60",
+            "hoverfillcolor": "#CCCCCC",
+            "numberprefix": "$",
+            "plottooltext":  plottooltext ,
+            "theme": theme,
+            #Showing canvas bg to apply background color
+            "showCanvasBg": "1",
+            #Shwoing canvas base to apply base color
+            "showCanvasBase": "1",
+            #Changing canvas base depth
+            "canvasBaseDepth": "14",
+            #Changing canvas background depth
+            "canvasBgDepth": "5",
+            #Changing canvas base color
+            "canvasBaseColor": "#aaaaaa",
+            #Changing canvas background color
+            "canvasBgColor": "#eeeeee",
+            "exportEnabled": "1"
+            }
+
+    total_value = 0
+    color_index = 0
+    category_root = []
+    root_data ={}
+    for key in source_data.keys() :
+        data = []
+        value_in_cat = 0
+        category_parent = {}
+        for sub_key in source_data[key].keys():
+            sub_data = {'label': sub_key}
+            sub_data['color'] = colors[color_index]
+            value_in_cat += source_data[key][sub_key]
+            sub_data['value'] = str(source_data[key][sub_key])
+            data.append(sub_data)
+
+        total_value += value_in_cat
+        category_parent['category'] = data
+        category_parent['value'] = str(value_in_cat)
+        category_parent['color'] = colors[color_index]
+        category_parent['label'] = key
+        category_root.append(category_parent)
+        color_index += 1
+    root_data['label'] = "Pending Services"
+    root_data['tooltext'] = tooltext
+    root_data['color'] = "#ffffff"
+    root_data['value'] = total_value
+    root_data['category'] = category_root
+    data_source['category'] = [root_data]
+
+    return data_source
 
 def column_graphic_dict (heading, sub_caption, x_axis_name, y_axis_name, theme, source_data) :
     data_source = {}
