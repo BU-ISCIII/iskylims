@@ -38,13 +38,15 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>The following Runs were found for your search:</th>
+                                <th>Run Name</th>
+                                <th>Run Completion date</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for key, values in display_run_list %}
+                            {% for id, name, date in display_run_list %}
                                 <tr>
-                                    <td><a href="/wetlab/displayRun={{ values }}">{{ key }}</a> </td>
+                                    <td><a href="/wetlab/displayRun={{id}}">{{name}}</a> </td>
+                                    <td>{{date}}</td>
                                 </tr>
                             {%endfor%}
                         </tbody>

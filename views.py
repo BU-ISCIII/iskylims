@@ -660,7 +660,7 @@ def search_run (request):
 
         ### Get all the available runs to start the filtering
         if allowed_all_runs :
-            runs_found=RunProcess.objects.all().order_by('runName')
+            runs_found=RunProcess.objects.all().order_by('run_date').reverse()
         else:
 
             user_projects = Projects.objects.filter(user_id__exact = request.user.id)
@@ -723,8 +723,8 @@ def search_run (request):
         else:
             ## collect the list of run that matches the run date
             run_list=[]
-            for i in range(len(runs_found)):
-                run_list.append([runs_found[i],runs_found[i].id])
+            for run_found in runs_found:
+                run_list.append([run_found.get_run_id(),run_found.get_run_name(), run_found.get_run_date() ])
             return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_run_list': run_list })
     else:
         return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'run_form_data': run_form_data})
@@ -883,7 +883,7 @@ def display_run (request, run_id):
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the run  ']})
 
 @login_required
-def latest_run (request) :
+def last_run_by_sequencer (request) :
     # check user privileges
     if request.user.is_authenticated:
 
@@ -897,10 +897,12 @@ def latest_run (request) :
         #redirect to login webpage
         return redirect ('/accounts/login')
 
-    latest_run = RunProcess.objects.order_by('id').last()
-
-    return redirect ('display_run', run_id = latest_run.id)
-
+    last_runs = get_last_runs_by_sequencer()
+    if len(last_runs) > 1:
+        return render (request, 'iSkyLIMS_wetlab/lastRunBySequencer.html', {'last_runs': last_runs})
+    else:
+        # if only 1 sequencer is defined, then display the information of the latest run
+        return redirect ('display_run', run_id = last_runs[0][2])
 
 @login_required
 def incompleted_runs (request) :

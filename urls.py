@@ -46,7 +46,7 @@ urlpatterns = [
     path('handlingLibraryPreparations', views.handling_library_preparations, name = 'handling_library_preparations'),
     path('handlingMolecules', views.handling_molecules, name = 'handling_molecules'),
     path('initialSettings',views.initial_settings, name = 'initial_settings'),
-    path('latest_run/',views.latest_run, name='latest_run'),
+    path('lastRunBySequencer/',views.last_run_by_sequencer, name='last_run_by_sequencer'),
     path('incompletedRuns', views.incompleted_runs, name = 'incompleted_runs'),
     path('modifyAdditionalKits=<int:protocol_id>', views.modify_additional_kits, name = 'modify_additional_kits'),
     path('modifyProtocolFields=<int:protocol_id>/', views.modify_protocol_fields, name = 'modify_protocol_fields'),

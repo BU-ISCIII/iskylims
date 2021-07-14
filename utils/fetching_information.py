@@ -827,6 +827,20 @@ def get_info_sample_in_run (sample_run_obj):
 
     return sample_info_dict
 
+def get_last_runs_by_sequencer():
+    '''
+    Description:
+        The function will get the last run executed for each sequencer
+    Return:
+        runs_using_sequencer
+    '''
+    last_runs = []
+    for sequencer in get_sequencer_installed_names():
+        if RunProcess.objects.filter(usedSequencer__sequencerName__exact = sequencer).exists():
+            last_run_obj = RunProcess.objects.filter(usedSequencer__sequencerName__exact = sequencer).last()
+            last_runs.append([sequencer, last_run_obj.get_run_platform(), last_run_obj.get_run_id(),last_run_obj.get_run_name() ])
+    return last_runs
+
 def get_sequencers_run_from_time_interval(sequencer,start_date, end_date):
     '''
     Description:
@@ -900,6 +914,7 @@ def get_sequencer_names_from_platform(platform):
         for sequencer in sequencers:
             sequencer_list.append(sequencer.get_sequencer_name())
     return sequencer_list
+
 def  get_stats_sequencer_data_from_selected_runs (runs_using_sequencer, sequencer,start_date, end_date):
     '''
     Description:
