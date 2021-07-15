@@ -1,7 +1,7 @@
 import datetime, os, re
 
 from django.db import models
-from django import forms
+#from django import forms
 from django.utils import timezone
 #from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
