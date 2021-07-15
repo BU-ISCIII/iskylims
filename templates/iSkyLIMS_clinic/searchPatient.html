@@ -39,7 +39,7 @@
                             <h4>The following clinic samples match with your input request</h4>
                             {% for p_code, p_name, p_surname, p_id in display_patient_list_info.patient_data %}
                                 <tr>
-                                    <td><a href="/clinic/displayPatientInfo={{p_id}}">{{ p_code }}</a> </td>
+                                    <td><a href="/clinic/displayPatientInformation={{p_id}}">{{ p_code }}</a> </td>
                                     <td>{{ p_name }} </td>
                                     <td>{{ p_surname }} </td>
                                 </tr>
