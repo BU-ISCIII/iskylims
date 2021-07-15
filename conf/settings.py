@@ -53,7 +53,7 @@ INSTALLED_APPS = [
 APPS_NAMES = [ ['iSkyLIMS_clinic', 'Clinic'],
     ['iSkyLIMS_wetlab', 'Masive Sequencing'],
     ['iSkyLIMS_drylab','Requesting Services']
-
+    ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
