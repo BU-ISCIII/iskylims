@@ -56,7 +56,7 @@ class FileExt(models.Model):
 
 	def get_file_extension_id(self):
 		return '%s' %(self.pk)
-
+'''
 class Platform(models.Model):
 	platformName=models.CharField(_("Sequencing platform"),max_length=20)
 
@@ -65,7 +65,7 @@ class Platform(models.Model):
 
 	def get_platform_name(self):
 		return '%s'  %(self.platformName)
-
+'''
 class AvailableService(MPTTModel):
 	availServiceDescription=models.CharField(_("Available services"),max_length=100)
 	parent=TreeForeignKey('self',models.SET_NULL,null=True,blank=True)

@@ -8,10 +8,10 @@ class ResolutionStatesAdmin(admin.ModelAdmin):
 	list_display = ['resolutionStateName']
 class FileExtAdmin(admin.ModelAdmin):
 	list_display = ('fileExt',)
-
+'''
 class PlatformAdmin(admin.ModelAdmin):
 	list_display=('platformName',)
-'''
+
 class MachinesAdmin (admin.ModelAdmin) :
 	list_display=('machineName', 'platformID','machineDescription', 'machineLocation','machineProvider','machineSerialNumber', 'machineState','machineOperationStart','machineOperationEnd','machineNumberLanes')
 '''
@@ -60,7 +60,7 @@ class PipelineExternalDataJobsManager(admin.ModelAdmin):
 '''
 admin.site.register(ResolutionStates,ResolutionStatesAdmin)
 admin.site.register(FileExt,FileExtAdmin)
-admin.site.register(Platform,PlatformAdmin)
+#admin.site.register(Platform,PlatformAdmin)
 # admin.site.register(Machines,MachinesAdmin)
 admin.site.register(Service,ServiceAdmin)
 admin.site.register(UploadServiceFile, UploadServiceFileAdmin)
