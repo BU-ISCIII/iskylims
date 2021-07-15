@@ -50,10 +50,9 @@ INSTALLED_APPS = [
     'django_cleanup', # should go after your apps
 ]
 
-APPS_NAMES = { 'iSkyLIMS_clinic': 'Clinic',
-    'iSkyLIMS_wetlab': 'Masive Sequencing',
-    'iSkyLIMS_drylab':'Requesting Services'
-}
+APPS_NAMES = [ ['iSkyLIMS_clinic', 'Clinic'],
+    ['iSkyLIMS_wetlab', 'Masive Sequencing'],
+    ['iSkyLIMS_drylab','Requesting Services']
 
 
 MIDDLEWARE = [
@@ -161,7 +160,7 @@ EMAIL_HOST = 'localhost'
 EMAIL_PORT = '25'
 EMAIL_USE_TLS = False
 DEFAULT_FROM_EMAIL = "bioinfo@localhost"
-ALLOWED_EMAIL_DOMAINS = ['isciii.es', 'externos.isciii.es']
+ALLOWED_EMAIL_DOMAINS = []
 
 LOG_CRONTAB_FILE = os.path.join(BASE_DIR, 'logs', 'crontab.log')
 LOG_CLEAN_FILE = os.path.join(BASE_DIR, 'logs', 'crontab_cleanup.log')
@@ -181,5 +180,5 @@ CRONJOBS = [
 CRONTAB_COMMAND_SUFFIX = '2>&1'
 
 #SITE_ID =1
-
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
