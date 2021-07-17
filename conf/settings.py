@@ -96,6 +96,7 @@ DATABASES = {
         'PASSWORD':'djangopass',
         'PORT':'3306',
         'NAME': 'iSkyLIMS',
+        'HOST':'db1'
         'TEST': {
             'NAME': 'iSkyLIMS_test',
         },
@@ -158,8 +159,10 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # During devel
 # EMAIL settings
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = '25'
+EMAIL_HOST_USER = 'bioinfo'
+EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = False
-DEFAULT_FROM_EMAIL = "bioinfo@localhost"
+EMAIL_ISKYLIMS = "iSkyLIMS@localhost"
 ALLOWED_EMAIL_DOMAINS = []
 
 LOG_CRONTAB_FILE = os.path.join(BASE_DIR, 'logs', 'crontab.log')
