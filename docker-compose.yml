@@ -1,0 +1,46 @@
+version: '3.3'
+
+services:
+    db1:
+        image: mysql:8.0
+        container_name: db1
+        command: --default-authentication-plugin=mysql_native_password
+        environment:
+            MYSQL_DATABASE: iSkyLIMS
+            MYSQL_USER : django
+            MYSQL_PASSWORD : djangopass
+            MYSQL_ROOT_PASSWORD: root
+        healthcheck:
+            test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+            timeout: 20s
+            retries: 10
+
+        ports:
+            - 6606:3306
+        networks:
+            - developv2
+        volumes:
+            - db1:/var/lib/mysql
+            - /etc/localtime:/etc/localtime:ro
+            - /usr/share/zoneinfo:/usr/share/zoneinfo
+
+    web1:
+        build: .
+        command: python3 /opt/iSkyLIMS/manage.py runserver 0:8000
+        volumes:
+            - ./:/opt/iSkyLIMS
+        ports:
+            - "8000:8000"
+        networks:
+            - developv2
+        depends_on:
+            -db1
+                 
+        volumes:
+            - /etc/localtime:/etc/localtime:ro
+            - /usr/share/zoneinfo:/usr/share/zoneinfo
+networks:
+  developv2:
+
+volumes:
+  db1:
