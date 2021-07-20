@@ -120,7 +120,7 @@ def create_or_add_project_to_run(run_data, user_obj, project_name, proj_data):
     Return:
         None
     '''
-    if not Projects.objects.filter(projectName__exact = project_name).exists():
+    if not Projects.objects.filter(projectName__iexact = project_name).exists():
         project_data = {}
         project_data['user_id'] = user_obj
         project_data['projectName'] = proj_name
