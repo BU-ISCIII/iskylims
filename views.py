@@ -1682,11 +1682,11 @@ def stats_per_time (request):
                 count_unbarcode  = {}
 
                 for run in run_stats_list:
-                    run_id = run.id
-                    run_param_obj = RunningParameters.objects.get(run_id = run_obj)
+                    run_obj = run.get_run_id()
+                    run_param_obj = RunningParameters.objects.get(runName_id = run_obj)
                     lanes_in_sequencer = int(run_param_obj.get_number_of_lanes())
                     top_unbarcode_all_runs  = {}
-                    for lane_number in range (1, number_of_lanes +1):
+                    for lane_number in range (1, lanes_in_sequencer +1):
                         lane_unbarcodes = RawTopUnknowBarcodes.objects.filter(runprocess_id =run, lane_number__exact = lane_number)
                         for lane_unbarcode in lane_unbarcodes :
                             if not lane_number in count_unbarcode :
@@ -1705,7 +1705,7 @@ def stats_per_time (request):
                 themes = ['','ocean','fint','carbon','zune', '']
                 # prepare the column graphic for nunber of top Unknow Barcode
                 unbar_lane_chart = []
-                for lane_number in range (1, number_of_lanes +1):
+                for lane_number in range (1, lanes_in_sequencer +1):
                     heading = 'Number of undetermined barcode sequence in lane ' + str(lane_number)
                     chart_number = 'chart-' + str(lane_number)
                     render_number = 'ex'+ str(lane_number)
