@@ -1754,14 +1754,21 @@ def get_list_of_libraries_values (library_found, q30_comparations, mean_comparat
 
     for project_to_compare in library_found :
         library_to_compare_name = project_to_compare.get_index_library_name()
-        project_to_compare_id = project_to_compare.id
+        #project_to_compare_id = project_to_compare.id
         q30_compare_lib, mean_compare_lib, yield_mb_compare_lib = [], [] , []
+
+        ### This line must changed to handle project name is reused in several runs
+        run_used_in_project = project_to_compare.runProcess.all().last()
+
+        run_param_obj = RunningParameters.objects.get(runName_id = run_used_in_project)
         # get the number of lanes by quering the SequencerModel in the RunProcess
         #number_of_lanes = project_to_compare.runprocess_id.get_sequencing_lanes()
-        run_param_obj = RunningParameters.objects.get(run_id = project_to_compare.runprocess_id)
         number_of_lanes = int(run_param_obj.get_number_of_lanes())
         for lane_number in range (1,number_of_lanes + 1):
-            lane_in_project = StatsLaneSummary.objects.get(project_id__exact = project_to_compare_id, lane__exact = lane_number)
+            try:
+                lane_in_project = StatsLaneSummary.objects.get(project_id = project_to_compare, lane__exact = lane_number)
+            except:
+                continue
             q_30_value, mean_q_value, yield_mb , cluster_pf = lane_in_project.get_stats_info()
             q30_compare_lib.append(float(q_30_value))
             mean_compare_lib.append(float(mean_q_value))
@@ -1805,13 +1812,13 @@ def stats_per_library (request):
                 return render(request, 'iSkyLIMS_wetlab/StatsPerLibrary.html', {'error_message':error_message})
 
         if library_kit_name != '':
-            if Projects.objects.filter(libraryKit__icontains = library_kit_name, runprocess_id__state__runStateName__exact = 'Completed').exists():
-                library_found = Projects.objects.filter(libraryKit__icontains = library_kit_name, runprocess_id__state__runStateName__exact = 'Completed')
+            if Projects.objects.filter(libraryKit__icontains = library_kit_name, runProcess__state__runStateName__exact = 'Completed').exists():
+                library_found = Projects.objects.filter(libraryKit__icontains = library_kit_name, runProcess__state__runStateName__exact = 'Completed')
             else:
                 error_message = ERROR_NO_MATCHES_FOR_LIBRARY_STATISTICS
                 return render(request, 'iSkyLIMS_wetlab/StatsPerLibrary.html' , {'error_message':error_message})
         else:
-            library_found = Projects.objects.filter(runprocess_id__state__runStateName__exact = 'Completed')
+            library_found = Projects.objects.filter(runProcess__state__runStateName__exact = 'Completed')
         if (start_date != '' and end_date != ''):
             if library_found.filter(project_run_date__range=(start_date, end_date)).exists():
                  library_found = library_found.filter(project_run_date__range=(start_date, end_date))
@@ -2020,7 +2027,7 @@ def stats_per_library (request):
             ###
             # get the data for displaying the libraries found in the form request
             ###
-            all_libraries = Projects.objects.filter(runprocess_id__state__runStateName__exact = 'Completed')
+            all_libraries = Projects.objects.filter(runProcess__state__runStateName__exact = 'Completed')
             if (start_date != '' and end_date != ''):
                 if all_libraries.filter(generatedat__range=(start_date, end_date)).exists():
                      library_found = library_found.filter(generatedat__range=(start_date, end_date))
