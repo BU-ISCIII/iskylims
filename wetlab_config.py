@@ -369,6 +369,8 @@ ERROR_USER_DOES_NOT_HAVE_ANY_SAMPLE = ['User does not have any sample to perform
 
 ERROR_NO_SAMPLES_SELECTED = ['They were not selected any Sample on your request']
 
+ERROR_NOT_SAMPLES_FOR_USER_FOUND_BECAUSE_OF_CONFIGURATION_SETTINGS  = ['There are no results. This could because the DESCRIPTION_IN_SAMPLE_SHEET_MUST_HAVE_USERNAME setting is set fo FALSE']
+
 #########################  Sequencer errors #####################################
 ERROR_SEQUENCER_ALREADY_DEFINED = ['Unable to save the Sequencer, because it already exists']
 

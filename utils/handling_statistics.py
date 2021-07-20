@@ -2,6 +2,7 @@ import statistics
 from iSkyLIMS_wetlab.fusioncharts.fusioncharts import FusionCharts
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
+from iSkyLIMS_wetlab.utils.generic_functions import check_valid_date_format, get_configuration_value
 from iSkyLIMS_wetlab.utils.fetching_information import get_sequencer_installed_names
 from iSkyLIMS_wetlab.utils.stats_graphics import column_graphic_simple, column_graphic_tupla
 
@@ -62,6 +63,7 @@ def get_researcher_statistics(researcher_name, start_date, end_date):
         return researcher_statistics
 
     user_objs = User.objects.filter(username__icontains = researcher_name)
+
     if len(user_objs) > 1:
         researcher_statistics['ERROR'] = wetlab_config.ERROR_MANY_USER_MATCHES_FOR_INPUT_CONDITIONS
         return researcher_statistics
@@ -79,11 +81,11 @@ def get_researcher_statistics(researcher_name, start_date, end_date):
         sample_objs = SamplesInProject.objects.filter(user_id = user_objs[0]).order_by('runProcess_id')
         # check if start and end date are present in the form
         if start_date != '' and end_date !='':
-            sample_objs= sample_objs.filter(runprocess_id__state__runStateName__range=(start_date, end_date))
+            sample_objs= sample_objs.filter(runProcess_id__state__runStateName__range=(start_date, end_date))
         elif start_date != '':
-            sample_objs = sample_objs.filter(runprocess_id__state__runStateName__gte = start_date)
+            sample_objs = sample_objs.filter(runProcess_id__state__runStateName__gte = start_date)
         elif end_date != '':
-            sample_objs = sample_objs.filter(runprocess_id__state__runStateName__lte = end_date)
+            sample_objs = sample_objs.filter(runProcess_id__state__runStateName__lte = end_date)
         if len(sample_objs) == 0:
             researcher_statistics['ERROR'] = wetlab_config.ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS
             return researcher_statistics
@@ -151,7 +153,11 @@ def get_researcher_statistics(researcher_name, start_date, end_date):
         researcher_statistics['mean_graphic'] = FusionCharts("column3d", 'mean_graph' , "550", "350",'mean_chart' , "json", data_source).render()
         return researcher_statistics
     else:
-        researcher_statistics['ERROR'] = wetlab_config.ERROR_USER_DOES_NOT_HAVE_ANY_SAMPLE
+        # check the setting for having user name in the description column in sample sheet
+        if get_configuration_value('DESCRIPTION_IN_SAMPLE_SHEET_MUST_HAVE_USERNAME') :
+            researcher_statistics['ERROR'] = wetlab_config.ERROR_NOT_SAMPLES_FOR_USER_FOUND_BECAUSE_OF_CONFIGURATION_SETTINGS
+        else:
+            researcher_statistics['ERROR'] = wetlab_config.ERROR_USER_DOES_NOT_HAVE_ANY_SAMPLE
         researcher_statistics['ERROR'].append(researcher_name)
         return researcher_statistics
         '''
