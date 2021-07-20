@@ -23,8 +23,4 @@ docker exec -it iskylims_installation_web1_1 python3 manage.py createsuperuser
 chown -R $USER:$USER .
 
 
-docker-compose up -d
-echo "Deleting dockr files"
-rm DockerFile
-rm docker-compose.yml
 
