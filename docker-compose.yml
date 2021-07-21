@@ -10,10 +10,6 @@ services:
             MYSQL_USER : django
             MYSQL_PASSWORD : djangopass
             MYSQL_ROOT_PASSWORD: root
-        healthcheck:
-            test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-            timeout: 20s
-            retries: 10
 
         ports:
             - 6606:3306

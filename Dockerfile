@@ -38,7 +38,7 @@ RUN git clone https://github.com/BU-ISCIII/iSkyLIMS.git .
 RUN git submodule init
 RUN git checkout develop
 RUN git submodule init
-RUN git submodule update --recursive --checkout
+RUN git submodule update --checkout
 RUN cd iSkyLIMS_wetlab git 
 
 
@@ -56,10 +56,9 @@ RUN /bin/bash -c 'grep ^SECRET iSkyLIMS/settings.py > ~/.secret'
 
 
 # Copying config files and script
-RUN cp conf/settings.py /opt/iSkyLIMS/iSkyLIMS/.
+RUN cp conf/settings.py /opt/iSkyLIMS/iSkyLIMS/
 RUN cp conf/urls.py /opt/iSkyLIMS/iSkyLIMS/
-COPY scripts/migrations /opt/iSkyLIMS/
-RUN chmod 750 migrations
+
 RUN sed -i "/^SECRET/c\\$(cat ~/.secret)" iSkyLIMS/settings.py
 ENV PATH="usr/bin:$PATH"
 # Expose and run
