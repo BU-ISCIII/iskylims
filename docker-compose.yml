@@ -30,8 +30,8 @@ services:
         networks:
             - developv2
         depends_on:
-            -db1
-                 
+            - db1
+
         volumes:
             - /etc/localtime:/etc/localtime:ro
             - /usr/share/zoneinfo:/usr/share/zoneinfo
