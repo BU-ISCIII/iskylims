@@ -11,15 +11,15 @@ echo "Waiting 30 seconds for starting dabase and web services..."
 
 sleep 30
 echo "Creating the database structure for iSkyLIMS"
-docker exec -it iskylims_installation_web1_1 python3 manage.py migrate
-docker exec -it iskylims_installation_web1_1 python3 manage.py makemigrations django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab iSkyLIMS_clinic
-docker exec -it iskylims_installation_web1_1 python3 manage.py migrate
+docker exec -it iskylims_web1_1 python3 manage.py migrate
+docker exec -it iskylims_web1_1 python3 manage.py makemigrations django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab iSkyLIMS_clinic
+docker exec -it iskylims_web1_1 python3 manage.py migrate
 
 echo "Loading in database initial data"
-docker exec -it iskylims_installation_web1_1 python3 manage.py loaddata conf/new_installation_loading_tables.json
+docker exec -it iskylims_web1_1 python3 manage.py loaddata conf/new_installation_loading_tables.json
 
 echo "Creating super user "
-docker exec -it iskylims_installation_web1_1 python3 manage.py createsuperuser
+docker exec -it iskylims_web1_1 python3 manage.py createsuperuser
 
 
 
