@@ -6,7 +6,7 @@ wget -L https://raw.githubusercontent.com/BU-ISCIII/iSkyLIMS/develop/docker-comp
 
 docker build -t iskylimsv2 .
 
-docker-compose up -d 
+docker-compose up -d
 echo "Waiting 30 seconds for starting dabase and web services..."
 
 sleep 30
@@ -20,7 +20,6 @@ docker exec -it iskylims_installation_web1_1 python3 manage.py loaddata conf/new
 
 echo "Creating super user "
 docker exec -it iskylims_installation_web1_1 python3 manage.py createsuperuser
-chown -R $USER:$USER .
 
 
 
