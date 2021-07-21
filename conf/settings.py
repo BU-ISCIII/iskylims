@@ -96,7 +96,7 @@ DATABASES = {
         'PASSWORD':'djangopass',
         'PORT':'3306',
         'NAME': 'iSkyLIMS',
-        'HOST':'db1'
+        'HOST':'db1',
         'TEST': {
             'NAME': 'iSkyLIMS_test',
         },
