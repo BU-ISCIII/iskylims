@@ -33,7 +33,9 @@ class AvailableServiceAdmin(DjangoMpttAdmin):
 	list_display=['availServiceDescription']
 
 class ResolutionAdmin(admin.ModelAdmin):
-	list_display=('resolutionServiceID','resolutionNumber', 'resolutionState','resolutionDate','resolutionEstimatedDate','resolutionOnQueuedDate','resolutionOnInProgressDate','resolutionFullNumber','resolutionAsignedUser','resolutionNotes')
+	list_display=('resolutionServiceID','resolutionNumber', 'resolutionState','resolutionDate','resolutionEstimatedDate','resolutionFullNumber','resolutionAsignedUser')
+	list_filter = ['resolutionDate']
+	search_fields = ['resolutionNumber__icontains', 'resolutionAsignedUser__username__icontains']
 
 class ResolutionParametersAdmin(admin.ModelAdmin):
 	list_display = ['resolution','resolutionParameter', 'resolutionParamValue','resolutionParamNotes']

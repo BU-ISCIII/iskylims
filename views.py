@@ -218,11 +218,13 @@ def search_service (request):
         center = request.POST['center']
 
         user_name = request.POST['username']
+        handeld_user = request.POST['userhandled']
+        # Data related to samples,and run from wetlab application
         sample_name =  request.POST['sampleName'] if 'sampleName' in request.POST else ''
         project_name = request.POST['projectName'] if 'projectName' in request.POST else ''
         run_name = request.POST['runName'] if 'runName' in request.POST else ''
 
-        if service_number_request == '' and service_state == '' and start_date == '' and end_date == '' and center == '' and sample_name == ''  and user_name =='' and project_name == '' and run_name == '':
+        if service_number_request == '' and service_state == '' and start_date == '' and end_date == '' and center == '' and sample_name == ''  and user_name =='' and project_name == '' and run_name == '' and handeld_user == '':
             return render( request,'iSkyLIMS_drylab/searchService.html',{'services_search_list': services_search_list })
 
         ### check the right format of start and end date
@@ -256,6 +258,16 @@ def search_service (request):
             services_found = services_found.filter(serviceRequestNumber__icontains  = center)
         if  user_name != '':
             services_found = services_found.filter(serviceUserId__username__iexact  = user_name)
+        if handeld_user != '':
+
+            if not Resolution.objects.filter(resolutionAsignedUser__username__icontains = user_name).exists():
+                error_message = drylab_config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
+                return render( request,'iSkyLIMS_drylab/searchService.html',{'services_search_list': services_search_list , 'ERROR':error_message})
+            services_handled_by = []
+            services_handled_by_objs = Resolution.objects.filter(resolutionAsignedUser__username__icontains = user_name)
+            for services_handled_by_obj in services_handled_by_objs:
+                services_handled_by.append(services_handled_by_obj.get_service_name())
+            services_found = services_found.filter(serviceRequestNumber__in = services_handled_by)
 
         if project_name != '' or run_name != '' or sample_name != '':
             if project_name != '':

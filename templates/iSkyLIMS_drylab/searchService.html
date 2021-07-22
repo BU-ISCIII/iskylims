@@ -117,11 +117,20 @@
                         </div>  <!-- end from-group   -->
                         <br><br>
                         <div class="form-group">
-                            <label class="col-sm-5  control-label" for="username" >Search from user name</label>
+                            <label class="col-sm-5  control-label" for="username" >User name who request the service</label>
                             {% if services_search_list.username %}
                                 <div class="col-sm-5"><input class="form-control" type="text" name="username" id="username" size="100" maxlength="100" readonly value={{services_search_list.username}} ></div>
                             {% else %}
                                 <div class="col-sm-5"><input class="form-control" type="text" name="username" id="username" size="100" maxlength="100" ></div>
+                            {% endif %}
+                        </div>  <!-- end from-group   -->
+                        <br><br>
+                        <div class="form-group">
+                            <label class="col-sm-5  control-label" for="username" >Service handled by</label>
+                            {% if services_search_list.username %}
+                                <div class="col-sm-5"><input class="form-control" type="text" name="userhandled" id="userhandled" size="100" maxlength="100" readonly value={{services_search_list.username}} ></div>
+                            {% else %}
+                                <div class="col-sm-5"><input class="form-control" type="text" name="userhandled" id="userhandled" size="100" maxlength="100" ></div>
                             {% endif %}
                         </div>  <!-- end from-group   -->
                         <br><br>

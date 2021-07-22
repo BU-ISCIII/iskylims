@@ -331,7 +331,11 @@ class Service(models.Model):
 		return '%s' %(self.serviceStatus)
 
 	def get_service_request_center(self):
-		return '%s' %(self.serviceUserId.serviceSeqCenter)
+		try:
+			center = serviceUserId.serviceSeqCenter
+		except:
+			center = 'NA'
+		return center
 
 	def get_service_user_notes(self):
 		return '%s' %(self.serviceNotes)
@@ -599,6 +603,9 @@ class Resolution(models.Model):
 
 	def get_service_obj(self):
 		return self.resolutionServiceID
+
+	def get_service_name(self):
+		return '%s' %(self.resolutionServiceID.get_service_request_number())
 
 	def get_resolution_state(self):
 		if self.resolutionState != None:
