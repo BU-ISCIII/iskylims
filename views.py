@@ -988,6 +988,8 @@ def define_pipeline_service(request):
         if request.FILES :
             fs = FileSystemStorage(location = os.path.join(settings.MEDIA_ROOT,drylab_config.PIPELINE_FILE_DIRECTORY))
             pipeline_data_form['filename'] = fs.save(str(pipeline_data_form['pipelineName'] + '_' + pipeline_data_form['pipelineVersion']),  request.FILES['pipelinefile'] )
+        else:
+            pipeline_data_form['filename'] =''
         new_pipeline = Pipelines.objects.create_pipeline(pipeline_data_form)
         if 'additional_parameters' in  pipeline_data_form :
             store_parameters_pipeline(new_pipeline, pipeline_data_form['additional_parameters'])
