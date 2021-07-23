@@ -65,27 +65,7 @@
             </div> <!--  end of panel  -->
         </div> <!--  end of col-sm-6 -->
          <!-- new panel on the right to show progress state -->
-        <div class="col-sm-3 col-sm-offset-1">
-            <BR>
-            <div class="panel panel-default">
-                <div class="panel-heading">Run State : <b>{{ display_project_data.state}} </b></div>
-                <div class="panel-body">
-                    {% if display_project_data.graphic %}
-                        <div class="circle-progress {{ display_project_data.graphic_color }}">
-                            {% if display_project_data.graphic_value > 50 %}
-                                <span class="circle-progress-left">
-                                    <span class="circle-progress-bar"></span>
-                                </span>
-                            {% endif%}
-                            <span class="circle-progress-right">
-                                <span class="circle-progress-bar"></span>
-                            </span>
-                            <div class="circle-progress-value">{{ display_project_data.graphic_value }}%</div>
-                        </div>
-                    {% endif %}
-            </div> <!--  end of panel body -->
-          </div> <!--  end of panel  -->
-        </div> <!--  end of col-sm-4 -->
+        
     </div> <!--  end of row -->
     {% if display_project_data.fl_summary_heading %}
         <div class="row row-space-8 margin-b-1">

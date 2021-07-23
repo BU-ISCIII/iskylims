@@ -535,6 +535,7 @@ def get_information_run(run_object):
         run_info.append([d_list[i],run_data[i]])
 
     info_dict['run_name'] = run_object.get_run_name()
+    info_dict['used_sequencer'] = run_object.get_run_used_sequencer_name()
     info_dict['data']=run_info
 
     info_dict['Sample_Sheet'] = [['Sample Sheet File', run_object.get_sample_file()]]

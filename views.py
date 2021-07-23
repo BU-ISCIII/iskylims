@@ -1201,12 +1201,12 @@ def change_project_libKit (request, project_id) :
     else:
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No project has been found for changing the library Kit ' ]})
 
-
+'''
 @login_required
 def change_run_libKit (request, run_id):
     #check if run exist
     if RunProcess.objects.filter(pk = run_id).exists():
-        run = RunProcess.objects.get(pk = run_id)
+        run_obj = RunProcess.objects.get(pk = run_id)
         if not request.user.is_authenticated :
             return redirect ('/accounts/login')
         # check if user is allow to make the change
@@ -1306,8 +1306,11 @@ def change_run_libKit (request, run_id):
             project_list = []
             #library_kit_list = []
             library_kit_dict = {}
-            form_change_lib_kit['run_name'] = run.get_run_name()
-            # get the projects and the library Kits used in each project
+            form_change_lib_kit['run_name'] = run_obj.get_run_name()
+            # get the library Kits used in run
+            import pdb; pdb.set_trace()
+            run_obj.get_index_library()
+                pass
             project_list = Projects.objects.filter(runprocess_id = run_id)
             for project in project_list :
                 lib_kit = project.libraryKit
@@ -1323,6 +1326,7 @@ def change_run_libKit (request, run_id):
             return render (request, 'iSkyLIMS_wetlab/ChangeRunLibraryKit.html',{'form_change_lib_kit': form_change_lib_kit})
     else:
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No run has been found for changing the library Kit ' ]})
+'''
 
 @login_required
 def stats_experiment (request):

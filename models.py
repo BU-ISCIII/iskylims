@@ -163,7 +163,10 @@ class RunProcess(models.Model):
         return '%s'%(total_size)
 
     def get_run_used_sequencer_name (self):
-        return '%s' %(self.usedSequencer.get_sequencer_name())
+        if self.usedSequencer != None:
+            return '%s' %(self.usedSequencer.get_sequencer_name())
+        else:
+            return ""
 
     def get_run_used_sequencer (self):
         return '%s' %(self.usedSequencer)
