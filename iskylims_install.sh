@@ -7,9 +7,9 @@ wget -L https://raw.githubusercontent.com/BU-ISCIII/iSkyLIMS/develop/docker-comp
 docker build -t iskylimsv2 .
 
 docker-compose up -d
-echo "Waiting 30 seconds for starting dabase and web services..."
+echo "Waiting 20 seconds for starting dabase and web services..."
 
-sleep 30
+sleep 20
 echo "Creating the database structure for iSkyLIMS"
 docker exec -it iskylimsv2_app python3 manage.py migrate
 docker exec -it iskylimsv2_app python3 manage.py makemigrations django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab iSkyLIMS_clinic
@@ -20,6 +20,6 @@ docker exec -it iskylimsv2_app python3 manage.py loaddata conf/new_installation_
 
 echo "Creating super user "
 docker exec -it iskylimsv2_app python3 manage.py createsuperuser
-
-
+echo "Starting iSkyLIMS"
+docker exec -it iskylimsv2_app python3 manage.py runserver 0:8000 &
 

@@ -11,76 +11,20 @@ Application servers run web applications for bioinformatics analysis (GALAXY), t
 For installation and usage instructions please refer to the [wiki](https://github.com/BU-ISCIII/iSkyLIMS/wiki).
 For any problems or bug reporting please post us an [issue](https://github.com/BU-ISCIII/iSkyLIMS/issues)
 
-## iSkyLIMS Demo
-iSkyLIMS demo is available for your convenience, in a virtual machine image, running on VirtualBox and as a Singularity container.  
-Download the VM image and/or the container using with your favorite ftp client with the following information:
+### iSkyLIMS docker installation
+You can test iSkyLIMS by creating a docker container on your local machine.
 
-```
-Server: sftpbioinfo.isciii.es
-Port : 50122
-user: iskylims
-Password: 3skyL3MS_2018
-```
-You can also download the virtual machine from this [Google drive link](https://drive.google.com/open?id=1IIWjYSflTnj3L6mVAuRya0UsK-4lEig3)
-
-### Run VM image on VirtualBox 
-After successful loging transfer the file demo_iSkyLIMS.ova which it is inside the iSkyLIMS folder.
-
-On the VirtualBox Manager, import the image selecting on the menu 
-
-File --> Import.
-
-Once **import** task is completed, click on the Start icon to run the VM.
-
-For loging to the VM use the following credential:
-```
-user: django 
-Password : djangoPass
-```
-
-Open Mozilla navigator and it will automatically shows iSkyLIMS homepage located on http://localhost
-
-Log into iSkyLIMS with different roles using the following credentials:
-- As investigator role use the user **Eva_user** and password **iSkyLIMS**
-- As wetlab manager role the user is **John_manager** and password **iSkyLIMS**
-- If you need to login as django administrator type the url http://localhost/admin using user : **admin** and password : **iSkyLIMS**
-
-### Run singularity container. (BETA - this method will be improved shorty, but it works for now)
-
-1. First you need to have installed singularity. Please follow [vendor instructions](https://www.sylabs.io/guides/3.0/user-guide/installation.html#install-the-centos-rhel-package-using-yum). We recommend using epel package installation as 2.6 version of singularity is enough for our purposes.
-
-2. Shell into the container (you need to use sudo).
+Download the installation script and run it to create the docker
 
 ```Bash
-sudo singularity shell iskylims.simg
+wget https://raw.githubusercontent.com/BU-ISCIII/iSkyLIMS/develop/iskylims_install.sh
+bash iskylims_install.sh
 ```
-3. Start needed services
 
-```Bash
-service smbd start
-service mysql start
-apachectl -D FOREGROUND
-# If you want to play with the image you can execute this last command in foreground.
-apachectl -D FOREGROUND &
-```
-4. Open your preferred browser (Firefox or Chome) and type:
+Then open your navigator and type, localhost:8000
 
-```
-localhost
-```
-iSkyLIMS website will be shown!! You can explore the website using this two users:
-- bioinfoadm: user inside WetlabManager and Admin_iSkyLIMS groups with manager permissions. (**passwd:**"iskylims")
-- regular_user01 and regular_user02: regular users with regular permissions.
+## Create a local copy in your server
 
-With bioinfoadm user you can access Admin panel:
-```
-localhost/admin
-```
-There you can access User table and change regular_user01 and regular_user02 passwords.
+# iSkyLIMS documentation
+iSkyLIMS documentation is available at https://iskylims.readthedocs.io/en/latest
 
-5. Don't forguet to stop the services before exiting the container, it will prevent possible conflicts with your local installation.
-```Bash
-service smbd stop
-service mysql stop
-apachectl stop
-```
