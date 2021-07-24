@@ -1,15 +1,3 @@
-#FROM debian:buster-slim
-#FROM python:3.8-slim-buster
-#ENV TZ=Europe/Madrid
-#ARG DEBIAN_FRONTEND=noninteractive
-#RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-#RUN apt-get update && apt-get upgrade -y
-
-# Essential software
-#RUN apt-get install -y \
-#    lightdm git apt-utils libcairo2 libcairo2-dev  wget gnuplot python3-pip \
-#    default-mysql-client default-libmysqlclient-dev apache2 apache2-dev vim 
-
 FROM ubuntu:20.04
 # ENV PYTHONUNBUFFERED 1
 ENV TZ=Europe/Madrid
@@ -56,7 +44,7 @@ RUN /bin/bash -c 'grep ^SECRET iSkyLIMS/settings.py > ~/.secret'
 
 
 # Copying config files and script
-RUN cp conf/settings.py /opt/iSkyLIMS/iSkyLIMS/
+RUN cp conf/docker_settings.py /opt/iSkyLIMS/iSkyLIMS/settings.py
 RUN cp conf/urls.py /opt/iSkyLIMS/iSkyLIMS/
 
 RUN sed -i "/^SECRET/c\\$(cat ~/.secret)" iSkyLIMS/settings.py

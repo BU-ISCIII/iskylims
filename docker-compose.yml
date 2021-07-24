@@ -22,6 +22,7 @@ services:
 
     web1:
         build: .
+        container_name: iskylimsv2_app
         command: python3 /opt/iSkyLIMS/manage.py runserver 0:8000
         volumes:
             - ./:/opt/iSkyLIMS

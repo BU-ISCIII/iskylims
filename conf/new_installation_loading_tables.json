@@ -19004,5 +19004,88 @@
     "fields": {
         "resolutionStateName": "Cancelled"
     }
+},
+{
+    "model": "iSkyLIMS_clinic.configsetting",
+    "pk": 1,
+    "fields": {
+        "configurationName": "PATIENT_NAME",
+        "configurationValue": "Name",
+        "generated_at": "2021-05-28T15:35:56.859"
+    }
+},
+{
+    "model": "iSkyLIMS_clinic.configsetting",
+    "pk": 2,
+    "fields": {
+        "configurationName": "PATIENT_SURNAME",
+        "configurationValue": "Family Name",
+        "generated_at": "2021-05-28T15:36:27.742"
+    }
+},
+{
+    "model": "iSkyLIMS_clinic.clinicsamplestate",
+    "pk": 1,
+    "fields": {
+        "clinicState": "Defined"
+    }
+},
+{
+    "model": "iSkyLIMS_clinic.clinicsamplestate",
+    "pk": 2,
+    "fields": {
+        "clinicState": "Patient update"
+    }
+},
+{
+    "model": "iSkyLIMS_clinic.clinicsamplestate",
+    "pk": 3,
+    "fields": {
+        "clinicState": "Sequencing"
+    }
+},
+{
+    "model": "iSkyLIMS_clinic.clinicsamplestate",
+    "pk": 4,
+    "fields": {
+        "clinicState": "Pending protocol"
+    }
+},
+{
+    "model": "iSkyLIMS_clinic.clinicsamplestate",
+    "pk": 5,
+    "fields": {
+        "clinicState": "Pending results"
+    }
+},
+{
+    "model": "iSkyLIMS_clinic.clinicsamplestate",
+    "pk": 6,
+    "fields": {
+        "clinicState": "Completed"
+    }
+},
+{
+    "model": "iSkyLIMS_clinic.clinicsamplestate",
+    "pk": 7,
+    "fields": {
+        "clinicState": "Invalid"
+    }
+},
+{
+    "model": "auth.group",
+    "pk": 1,
+    "fields": {
+        "name": "WetlabManager",
+        "permissions": []
+    }
+},
+{
+    "model": "auth.group",
+    "pk": 2,
+    "fields": {
+        "name": "ServiceManager",
+        "permissions": []
+    }
 }
 ]
