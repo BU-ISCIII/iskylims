@@ -16,7 +16,7 @@ from iSkyLIMS_core.utils.handling_protocols import *
 from iSkyLIMS_core.utils.handling_samples import *
 from iSkyLIMS_core.utils.handling_commercial_kits import *
 from iSkyLIMS_core.utils.handling_patient_projects import *
-
+from iSkyLIMS_core.utils.handling_platforms import get_defined_platforms_and_ids
 
 def index(request):
     #
@@ -28,7 +28,9 @@ def add_commercial_kit (request):
     app_name = __package__.split('.')[0]
     # exclude the protocols that have no molecule involved
     defined_protocols = get_defined_protocols(app_name, True )
-    commercial_kits_data = get_data_for_commercial_kits()
+
+    defined_platforms = get_defined_platforms_and_ids('Non_NGS')
+    commercial_kits_data = get_data_for_commercial_kits('Non_NGS')
 
     if request.method == 'POST' and request.POST['action'] == 'addCommercialKit':
         if get_commercial_kit_id (request.POST['kitName']) :
@@ -188,7 +190,7 @@ def create_sample_projects (request):
 @login_required
 def define_extraction_molecules (request):
     extraction_molecules = {}
-    
+
     extraction_molecules['extract_molecule'] = get_samples_in_defined_state(request.user)
     if request.method == 'POST' and request.POST['action'] == 'continueWithMolecule':
         # processing the samples selected by user
