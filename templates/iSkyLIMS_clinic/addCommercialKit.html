@@ -52,7 +52,7 @@
                 <div class="form-group required">
                     <label class="col-sm-5 control-label" for="protocol" >Select the Protocol used for the Kit </label>
                     <div class="col-sm-7">
-                        <select class="form-control" name="protocol" id="protocol">
+                        <select class="form-control" required = required name="protocol" id="protocol">
               				<option value="">Choose a value</option>
                                 {% for value in defined_protocols %}
                                     <option value="{{value}}">{{value}}</option>
@@ -63,19 +63,19 @@
                 <BR>
                     <div class="form-group required">
                          <label class="col-sm-5  control-label" for="provider" >Select the Kit Provider company </label>
-                           <div class="col-sm-5"><input class="form-control" type="text" name="provider" id="provider" size="100" maxlength="100"></div>
+                           <div class="col-sm-5"><input class="form-control" type="text" required = required name="provider" id="provider" size="100" maxlength="100"></div>
                     </div>  <!-- end from-group   -->
 
                     <br>
 
                  <div class="form-group required">
                       <label class="col-sm-5  control-label" for="catNo" > Cat No./ID </label>
-                        <div class="col-sm-5"><input class="form-control" type="text" name="catNo" id="catNo"></div>
+                        <div class="col-sm-5"><input class="form-control" required = required type="text" name="catNo" id="catNo"></div>
                  </div>  <!-- end from-group   -->
                  <br>
                     <div class="form-group required">
                       <label class="col-sm-5 control-label" for="kitName" >Kit Name</label>
-                      <div class="col-sm-5"><input class="form-control" type="text" name="kitName" value="" id="kitName"></div>
+                      <div class="col-sm-5"><input class="form-control" required = required  type="text" name="kitName" value="" id="kitName"></div>
                 </div>  <!-- end from-group   -->
                 <br>
                    <div class="form-group">
