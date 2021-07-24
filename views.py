@@ -59,7 +59,7 @@ def assign_project(request):
         defined_project = {}
         defined_project['fields'] , defined_project['project_id'] = assign_project_patient( request.POST, __package__)
         defined_project['patient_id'] = request.POST['patient_id']
-        import pdb; pdb.set_trace()
+
         return render(request, 'iSkyLIMS_clinic/addPatientProject.html',{'defined_project':defined_project})
     elif request.method == 'POST' and request.POST['action'] == 'defineProjectFields':
         project_fields_added = add_project_fields(request.POST)
@@ -134,7 +134,7 @@ def create_new_patient_project(request):
             return render(request, 'iSkyLIMS_clinic/createNewProject.html' ,{'defined_projects': defined_projects ,
                                 'error' : ERROR_MESSAGE_FOR_PROJECT_NAME_EXISTS})
         return render(request, 'iSkyLIMS_clinic/createNewProject.html' ,{'new_project': new_project})
-    import pdb; pdb.set_trace()
+
     return render(request, 'iSkyLIMS_clinic/createNewProject.html' ,{'defined_projects': defined_projects})
 
 
@@ -143,7 +143,7 @@ def create_protocol (request):
     # get the list of defined protocols
     defined_protocols, other_protocol_list = display_available_protocols (__package__)
     defined_protocol_types = display_protocol_types (__package__)
-    #import pdb; pdb.set_trace()
+
 
     if request.method == 'POST' and request.POST['action'] == 'addNewProtocol':
         new_protocol = request.POST['newProtocolName']
@@ -169,7 +169,7 @@ def create_sample_projects (request):
     defined_samples_projects = get_info_for_defined_sample_projects (__package__)
 
     if request.method == 'POST' and request.POST['action'] == 'addNewSampleProject':
-        #import pdb; pdb.set_trace()
+
         sample_project_name = request.POST['sampleProyectName']
         #description = request.POST['description']
 
@@ -188,7 +188,7 @@ def create_sample_projects (request):
 @login_required
 def define_extraction_molecules (request):
     extraction_molecules = {}
-    import pdb; pdb.set_trace()
+    
     extraction_molecules['extract_molecule'] = get_samples_in_defined_state(request.user)
     if request.method == 'POST' and request.POST['action'] == 'continueWithMolecule':
         # processing the samples selected by user
@@ -288,7 +288,7 @@ def define_new_samples(request):
 
             sample_recorded.update(prepare_sample_project_input_table(sample_recorded['pre_defined_samples_id']))
 
-        import pdb; pdb.set_trace()
+
         return render(request, 'iSkyLIMS_clinic/defineNewSamples.html', {'sample_recorded':sample_recorded})
 
     ## display the form to show the samples in pre-defined state that user requested to complete
@@ -317,7 +317,7 @@ def define_new_samples(request):
 @login_required
 def define_patient_information(request):
     if request.method == 'POST' and request.POST['action'] == 'continueWithPatient':
-        #import pdb; pdb.set_trace()
+
         if 'samples_in_list' in request.POST:
             patient_information = prepare_patient_form(request.POST.getlist('c_samples'))
         else:
@@ -437,7 +437,7 @@ def display_patient_project (request, project_id):
             {'content':['The project that you are trying to get ',
                         'DOES NOT exists .']})
     project_data = get_all_project_info (project_id)
-    #import pdb; pdb.set_trace()
+
 
     return render(request, 'iSkyLIMS_clinic/displayProject.html', {'project_data': project_data})
 
@@ -448,7 +448,7 @@ def display_protocol (request, protocol_id):
             {'content':['The protocol that you are trying to get ',
                         'DOES NOT exists .']})
     protocol_data = get_all_protocol_info (protocol_id)
-    #import pdb; pdb.set_trace()
+
 
     return render(request, 'iSkyLIMS_clinic/displayProtocol.html', {'protocol_data': protocol_data})
 
@@ -478,7 +478,7 @@ def display_sample_clinic_info(request,sample_c_id):
     '''
     if check_if_sample_c_exists(sample_c_id):
         display_sample_info = display_one_sample_info (sample_c_id)
-        import pdb; pdb.set_trace()
+
         return render(request, 'iSkyLIMS_clinic/displaySampleClinicInfo.html', {'display_sample_info': display_sample_info })
     else:
         search_sample_data = collect_sample_data_for_search ()
@@ -560,7 +560,7 @@ def search_sample(request):
                 'Error': ERROR_MESSAGE_FOR_NO_MATCH_IN_SEARCH })
         if len(sample_c_list) == 1:
             display_sample_info = display_one_sample_info (sample_c_list[0])
-            import pdb; pdb.set_trace()
+
             return render(request, 'iSkyLIMS_clinic/displaySampleClinicInfo.html', {'display_sample_info': display_sample_info })
         else:
             display_sample_list_info = display_sample_list(sample_c_list)
@@ -617,7 +617,7 @@ def set_molecule_values(request):
                 {'content':['There was no valid sample selected ']})
 
         molecule_protocol['samples'] = ','.join(c_samples)
-        #import pdb; pdb.set_trace()
+
         return render(request, 'iSkyLIMS_clinic/setMoleculeValues.html',{'molecule_protocol':molecule_protocol})
 
     elif request.method == 'POST' and request.POST['action'] == 'updateMoleculeProtocol':
@@ -648,7 +648,7 @@ def set_molecule_values(request):
     elif request.method == 'POST' and request.POST['action'] == 'addMoleculeParameters':
         added_molecule_protocol_parameters , sample_updated_list = add_molecule_protocol_parameters(request)
         # Update the clinic sample request state
-        import pdb; pdb.set_trace()
+
         for sample_updated in sample_updated_list:
             get_clinic_sample_obj_from_sample_id(sample_updated).set_state('Pending results')
 
