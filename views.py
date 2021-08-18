@@ -574,6 +574,7 @@ def search_sample(request):
 
 @login_required
 def search_patient (request):
+    s_patient_data = from_data_for_search_patient()
     if request.method == 'POST' and (request.POST['action'] == 'searchPatient'):
         data_request = {}
         data_request['p_name'] = request.POST['patientname']
@@ -590,7 +591,7 @@ def search_patient (request):
         patient_list = get_patients_in_search(data_request)
 
         if len(patient_list) == 0:
-            return render(request, 'iSkyLIMS_clinic/searchPatient.html', {'Error': ERROR_MESSAGE_FOR_NO_MATCH_IN_SEARCH })
+            return render(request, 'iSkyLIMS_clinic/searchPatient.html', {'Error': ERROR_MESSAGE_FOR_NO_MATCH_IN_SEARCH, 's_patient_data':s_patient_data })
         if len(patient_list) == 1:
             return redirect ('display_patient_information', patient_id = patient_list[0] )
         else:
@@ -598,7 +599,6 @@ def search_patient (request):
             return render(request, 'iSkyLIMS_clinic/searchPatient.html', {'display_patient_list_info': display_patient_list_info })
 
     else:
-        s_patient_data = from_data_for_search_patient()
         return render(request, 'iSkyLIMS_clinic/searchPatient.html',{'s_patient_data':s_patient_data})
 
 @login_required
