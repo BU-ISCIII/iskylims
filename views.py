@@ -899,6 +899,8 @@ def last_run_by_sequencer (request) :
         return redirect ('/accounts/login')
 
     last_runs = get_last_runs_by_sequencer()
+    if len(last_runs) == 0:
+        return render (request, 'iSkyLIMS_wetlab/lastRunBySequencer.html', {'no_runs': 'no_runs'})
     if len(last_runs) > 1:
         return render (request, 'iSkyLIMS_wetlab/lastRunBySequencer.html', {'last_runs': last_runs})
     else:
