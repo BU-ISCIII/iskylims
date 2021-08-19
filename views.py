@@ -55,14 +55,15 @@ def configuration_email(request):
     if request.user.username != 'admin':
         return redirect('/wetlab')
     email_conf_data = get_email_data()
-    email_conf_data['EMAIL_FOR_NOTIFICATIONS'] = get_configuration_from_database('EMAIL_FOR_NOTIFICATIONS')
+    email_conf_data['EMAIL_ISKYLIMS'] = get_configuration_from_database('EMAIL_FOR_NOTIFICATIONS')
     if request.method == 'POST' and (request.POST['action']=='emailconfiguration'):
         result_email = send_test_email(request.POST)
         if result_email != 'OK':
             email_conf_data = get_email_data()
-            email_conf_data['EMAIL_FOR_NOTIFICATIONS'] = request.POST['test_email']
+            email_conf_data['EMAIL_ISKYLIMS'] = request.POST['EMAIL_ISKYLIMS']
+            email_conf_data['test_email'] = request.POST['test_email']
             return render(request, 'iSkyLIMS_drylab/configurationEmail.html',{'ERROR':result_email, 'email_conf_data': email_conf_data})
-        save_database_configuration_value('EMAIL_FOR_NOTIFICATIONS', request.POST['test_email'])
+        save_database_configuration_value('EMAIL_FOR_NOTIFICATIONS', request.POST['EMAIL_ISKYLIMS'])
         return render(request, 'iSkyLIMS_drylab/configurationEmail.html',{'succesful_settings':True})
     return render(request, 'iSkyLIMS_drylab/configurationEmail.html',{'email_conf_data': email_conf_data})
 
