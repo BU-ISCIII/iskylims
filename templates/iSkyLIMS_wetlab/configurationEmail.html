@@ -36,7 +36,7 @@
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-7" >
             <div class="panel panel-default">
-                <div class="panel-heading"><h3>Configuration settings for email</h3></div>
+                <div class="panel-heading"><h3 style="text-align:center">Configuration settings for email</h3></div>
                 <div class="panel-body">
                     <form method="post" enctype="multipart/form-data" name="emailconfiguration" id="emailconfiguration" class="form-horizontal well">
                         {% csrf_token %}
@@ -53,10 +53,14 @@
                             <label class="col-sm-5  control-label" for="USER_EMAIL" >Host Email User </label>
                             <div class="col-sm-5"><input class="form-control" type="text" required = "required" name="USER_EMAIL" id="USER_EMAIL" value = "{{email_conf_data.USER_EMAIL}}" size="100" maxlength="100" ></div>
                             <br><br>
+                        </div>
+                        <div class="form-group">
                             <label class="col-sm-5  control-label" for="USER_PASSWORD" >Host Email User Password </label>
                             <div class="col-sm-5"><input class="form-control" type="text" name="USER_PASSWORD" id="USER_PASSWORD" value = "{{email_conf_data.USER_PASSWORD}}" size="100" maxlength="100"></div>
                             <br><br>
-                            <label class="col-sm-5  control-label" for="EMAIL_ISKYLIMS" >Email Address for iSkyLIMS </label>
+                        </div>
+                        <div class="form-group required">
+                            <label class="col-sm-5  control-label" for="EMAIL_ISKYLIMS" >Email used for notifications</label>
                             <div class="col-sm-5"><input class="form-control" type="text" required = "required" name="EMAIL_ISKYLIMS" id="EMAIL_ISKYLIMS" value = "{{email_conf_data.EMAIL_ISKYLIMS}}" size="100" maxlength="100" ></div>
                             <br><br>
                             <label class="col-sm-5  control-label" for="USE_TLS" >Use TLS</label>
@@ -80,7 +84,25 @@
                     <p> Fields marked with <FONT COLOR= "Red">*</FONT> are mandatory</p>
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->
-        </div> <!--// end col-sm-12  -->
+        </div> <!--// end col-sm-7  -->
+        <div class="col-sm-5" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3  style="text-align:center">Configuration Email help</h3></div>
+                <div class="panel-body">
+                    <h5 style="text-align:center">This form will be used to test the email settings</h5>
+                    <br><br>
+                    <p>The data information displayed in the form is collected from the iSkyLIMS/settings.py file. </p>
+                    <br>
+                    <p>By changing these settings will not update any value in the settings.py file. The present form is only to know the right values for sending notificatin emails to users</p>
+                    <br>
+                    <p>Once you get a succesful settings you need to set in the settings.py file</p>
+                    <br>
+                    <br>
+                    <p>The only value that it is updated in database is "Email used for notifications"</p>
+
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-5  -->
     </div> <!--  end of row -->
 
 {% endif %}
