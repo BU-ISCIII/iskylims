@@ -16,6 +16,105 @@
     }
 },
 {
+    "model": "iSkyLIMS_core.moleculeusedfor",
+    "pk": 1,
+    "fields": {
+        "usedFor": "Amplicon-Seq",
+        "apps_name": "iSkyLIMS_wetlab",
+        "massiveUse": true
+    }
+},
+{
+    "model": "iSkyLIMS_core.moleculeusedfor",
+    "pk": 2,
+    "fields": {
+        "usedFor": "hiC-Seq",
+        "apps_name": "iSkyLIMS_wetlab",
+        "massiveUse": true
+    }
+},
+{
+    "model": "iSkyLIMS_core.moleculeusedfor",
+    "pk": 3,
+    "fields": {
+        "usedFor": "Methyl-Seq",
+        "apps_name": "iSkyLIMS_wetlab",
+        "massiveUse": true
+    }
+},
+{
+    "model": "iSkyLIMS_core.moleculeusedfor",
+    "pk": 4,
+    "fields": {
+        "usedFor": "miRNA-Seq",
+        "apps_name": "iSkyLIMS_wetlab",
+        "massiveUse": true
+    }
+},
+{
+    "model": "iSkyLIMS_core.moleculeusedfor",
+    "pk": 5,
+    "fields": {
+        "usedFor": "Metagenetics",
+        "apps_name": "iSkyLIMS_wetlab",
+        "massiveUse": true
+    }
+},
+{
+    "model": "iSkyLIMS_core.moleculeusedfor",
+    "pk": 6,
+    "fields": {
+        "usedFor": "Metagenomics",
+        "apps_name": "iSkyLIMS_wetlab",
+        "massiveUse": true
+    }
+},
+{
+    "model": "iSkyLIMS_core.moleculeusedfor",
+    "pk": 7,
+    "fields": {
+        "usedFor": "Exome-Seq",
+        "apps_name": "iSkyLIMS_wetlab",
+        "massiveUse": true
+    }
+},
+{
+    "model": "iSkyLIMS_core.moleculeusedfor",
+    "pk": 8,
+    "fields": {
+        "usedFor": "RNA-Seq",
+        "apps_name": "iSkyLIMS_wetlab",
+        "massiveUse": true
+    }
+},
+{
+    "model": "iSkyLIMS_core.moleculeusedfor",
+    "pk": 9,
+    "fields": {
+        "usedFor": "Whole Genome Sequencing",
+        "apps_name": "iSkyLIMS_wetlab",
+        "massiveUse": true
+    }
+},
+{
+    "model": "iSkyLIMS_core.moleculeusedfor",
+    "pk": 10,
+    "fields": {
+        "usedFor": "RT-PCR",
+        "apps_name": "iSkyLIMS_wetlab",
+        "massiveUse": false
+    }
+},
+{
+    "model": "iSkyLIMS_core.moleculeusedfor",
+    "pk": 11,
+    "fields": {
+        "usedFor": "Sanger sequencing",
+        "apps_name": "iSkyLIMS_wetlab",
+        "massiveUse": false
+    }
+},
+{
     "model": "iSkyLIMS_core.patientsex",
     "pk": 1,
     "fields": {
@@ -18554,7 +18653,7 @@
     "pk": 10,
     "fields": {
         "configurationName": "EMAIL_FOR_NOTIFICATIONS",
-        "configurationValue": "bioinfo@localhost",
+        "configurationValue": "iSkyLIMS.wetlab2@localhost",
         "generated_at": "2021-06-12T17:20:20.062"
     }
 },
@@ -18973,7 +19072,7 @@
     "pk": 1,
     "fields": {
         "configurationName": "EMAIL_FOR_NOTIFICATIONS",
-        "configurationValue": "bioinfo@localhost",
+        "configurationValue": "iSkyLIMS.services@localhost",
         "generated_at": "2021-06-12T19:44:41.771"
     }
 },
