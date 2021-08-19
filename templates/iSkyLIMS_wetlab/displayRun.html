@@ -76,6 +76,9 @@
                         {% if display_one_run.running_parameters %}
                             <button class="tablinks" onclick="summaryBin(event, 'parameters')" >Run Parameters</button>
                         {% endif %}
+                        {% if display_one_run.running_parameters %}
+                            <button class="tablinks" onclick="summaryBin(event, 'barcodes')" >Unknown Barcodes</button>
+                        {% endif %}
                             <button class="tablinks" onclick="summaryBin(event, 'projects')" >Projects</button>
                         {% if display_one_run.boxplot %}
                             <button class="tablinks" onclick="summaryBin(event, 'graphComparation')">Graphic comparations</button>
@@ -131,7 +134,7 @@
                                                     <tbody>
                                                         {% for values in display_one_run.library_kit %}
                                                             <tr>
-                                                                <td{{ values }} </td>
+                                                                <td> {{ values }} </td>
                                                             </tr>
                                                         {% endfor %}
                                                     </tbody>
@@ -181,8 +184,100 @@
                                     </div> <!--  end of col-sm-9 -->
 
                                 </div> <!--  end of col-sm-5 -->
-                            </div> <!--  end of row -->
+
+
+                            {% if display_one_run.lane_summary %}
+                                <div class="row row-space-10 margin-b-1">
+                                    <div class="col-sm-10 ">
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading">Lane Summary for all projects in the run.</div>
+                                            <div class="panel-body">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            {% for values in display_one_run.lane_summary.0 %}
+                                                                <th>{{ values }} </th>
+                                                            {% endfor %}
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            {% for values in display_one_run.lane_summary.1 %}
+                                                                <td>{{ values }} </td>
+                                                            {% endfor %}
+                                                        </tr>
+                                                        <tr>
+                                                            {% for values in display_one_run.lane_summary.2 %}
+                                                                <td>{{ values }} </td>
+                                                            {% endfor %}
+                                                        </tr>
+                                                        <tr>
+                                                            {% for values in display_one_run.lane_summary.3 %}
+                                                                <td>{{ values }} </td>
+                                                            {% endfor %}
+                                                        </tr>
+                                                        <tr>
+                                                            {% for values in display_one_run.lane_summary.4 %}
+                                                                <td>{{ values }} </td>
+                                                            {% endfor %}
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div> <!--  end of panel body -->
+                                        </div> <!--  end of panel  -->
+                                    </div> <!--  end of col-sm-10 -->
+                                </div> <!--  end of row -->
+                            {% endif%}
+
+
+
+                            {% if display_one_run.default_lane_summary %}
+                                <div class="row row-space-10 margin-b-1">
+                                    <div class="col-sm-10 ">
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading">Lane Summary for default information project in the run.</div>
+                                            <div class="panel-body">
+                                              <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            {% for values in display_one_run.default_lane_summary.0 %}
+                                                                <th>{{ values }} </th>
+                                                            {% endfor %}
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            {% for values in display_one_run.default_lane_summary.1 %}
+                                                                <td>{{ values }} </td>
+                                                            {% endfor %}
+                                                        </tr>
+                                                        <tr>
+                                                            {% for values in display_one_run.default_lane_summary.2 %}
+                                                                <td>{{ values }} </td>
+                                                            {% endfor %}
+                                                        </tr>
+                                                        <tr>
+                                                            {% for values in display_one_run.default_lane_summary.3 %}
+                                                               <td>{{ values }} </td>
+                                                            {% endfor %}
+                                                        </tr>
+                                                        <tr>
+                                                            {% for values in display_one_run.default_lane_summary.4 %}
+                                                                <td>{{ values }} </td>
+                                                            {% endfor %}
+                                                        </tr>
+                                                    </tbody>
+                                              </table>
+                                            </div> <!--  end of panel body -->
+                                        </div> <!--  end of panel  -->
+                                    </div> <!--  end of col-sm-4 -->
+                                </div> <!--  end of row -->
+                            {% endif%}
+
+
                         </div><!-- // end of tab mainData -->
+
+
                         <div id="parameters" class="tabcontent">
                             <div class="row row-space-2 margin-b-4">
                                 <div class="col-sm-9 col-sm-offset-1">
@@ -214,6 +309,151 @@
                                 </div> <!--  end of col-sm-10 -->
                             </div> <!--  end of row -->
                         </div><!-- // end of tab parameters -->
+
+                        <div id="barcodes" class="tabcontent">
+                            {% if display_one_run.unknow_bar_0 %}
+                                <div class="row row-space-4 margin-b-1">
+                                    <div class="col-sm-12 ">
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading"><h3>Top Unknow Barcodes in the Run.</h3></div>
+                                            <div class="panel-body">
+                                                <div class="col-sm-3">
+                                                    <table class="table">
+                                                        <thead>
+                                                            <tr>
+                                                              <th colspan="2">Lane 1 </th>
+                                                            </tr>
+                                                        </thead>
+
+                                                        <tr>
+                                                           <th>Count </th>
+                                                           <th>Sequence </th>
+                                                        </tr>
+                                                        {% for values in display_one_run.unknow_bar_0 %}
+                                                            <tr>
+                                                                {% for value in values %}
+                                                                    <td>{{value}}</td>
+                                                                {% endfor %}
+                                                            </tr>
+                                                        {% endfor %}
+                                                    </table>
+                                                </div> <!--  end of sm 3 -->
+                                                {% if display_one_run.unknow_bar_1 %}
+                                                    <div class="col-sm-3">
+                                                        <table class="table">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th colspan="2">Lane 2 </th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tr>
+                                                                <th>Count </th>
+                                                                <th>Sequence </th>
+                                                            </tr>
+                                                            {% for values in display_one_run.unknow_bar_1 %}
+                                                                <tr>
+                                                                    {% for value in values %}
+                                                                        <td>{{value}}</td>
+                                                                    {% endfor %}
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </table>
+                                                    </div> <!--  end of sm 3 -->
+                                                {% endif%}
+                                                {% if display_one_run.unknow_bar_2 %}
+                                                    <div class="col-sm-3">
+                                                        <table class="table">
+                                                            <thead>
+                                                                <tr>
+                                                                  <th colspan="2">Lane 3 </th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tr>
+                                                              <th>Count </th>
+                                                              <th>Sequence </th>
+                                                            </tr>
+
+                                                            {% for values in display_one_run.unknow_bar_2 %}
+                                                             <tr>
+                                                                {% for value in values %}
+                                                                    <td>{{value}}</td>
+                                                                {% endfor %}
+                                                            </tr>
+                                                            {% endfor %}
+                                                        </table>
+                                                    </div> <!--  end of sm 3 -->
+                                                {% endif%}
+                                                {% if display_one_run.unknow_bar_3 %}
+                                                    <div class="col-sm-3">
+                                                        <table class="table">
+                                                            <thead>
+                                                                <tr>
+                                                                  <th colspan="2">Lane 4 </th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tr>
+                                                              <th>Count </th>
+                                                              <th>Sequence </th>
+                                                            </tr>
+
+                                                            {% for values in display_one_run.unknow_bar_3 %}
+                                                                <tr>
+                                                                    {% for value in values %}
+                                                                        <td>{{value}}</td>
+                                                                    {% endfor %}
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </table>
+                                                    </div> <!--  end of sm 3 -->
+                                                {% endif%}
+                                            </div> <!--  end of panel body -->
+                                        </div> <!--  end of panel  -->
+                                    </div> <!--  end of col-sm-12 -->
+                                </div> <!--  end of row -->
+                            {% endif%}
+
+                            {% if display_one_run.unknow_pie3d %}
+                                <div class="row row-space-4 margin-b-1">
+                                    <div class="col-sm-7 ">
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading"><h3>Chart for the Top Unknow Barcodes in the Run.</h3></div>
+                                            <div class="panel-body">
+                                                <!-- Column 2 Chart will start here-->
+                                                <div id="chart-1"> </div>
+                                                <!-- dumping JavaScript code here -->
+                                                {{ display_one_run.unknow_pie3d |safe }}
+                                            </div> <!--  end of panel body -->
+                                        </div> <!--  end of panel  -->
+                                    </div> <!--  end of col-sm-7 -->
+
+                                     <div class="col-sm-5 ">
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading"><h3>Matching the unknowbarcodes against the indexes library.</h3></div>
+                                            <div class="panel-body">
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Unknow Sequence</th>
+                                                            <th>Index Matching</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for barcode, matching, library_info in display_one_run.match_unknows %}
+                                                            <tr>
+                                                                <td>{{ barcode }}</td>
+                                                                <td title="{% for info in library_info %}{{ info }}{% endfor %}">{{ matching }}</td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div> <!--  end of panel body -->
+                                        </div> <!--  end of panel  -->
+                                    </div> <!--  end of col-sm-5 -->
+                                </div> <!--  end of row -->
+                            {% endif %}
+                        </div><!-- // end of tab barcodes -->
+
+
                         <div id="projects" class="tabcontent">
                             <div class="row row-space-2 margin-b-4">
                                 <div class="col-sm-6 col-sm-offset-3">
@@ -248,8 +488,83 @@
                                         </div> <!--  end of panel  -->
                                     {% endif%}
                                 </div> <!--  end of col-sm-6 -->
+
                             </div> <!--  end of row -->
 
+                            <div class="row row-space-2 margin-b-4">
+                                {% if display_one_run.fl_summary %}
+                                    <div class="col-sm-6 ">
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading"><h5>Flowcell Summary for all projects in the run.</h5></div>
+                                            <div class="panel-body">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            {% for values in display_one_run.fl_summary.0 %}
+                                                                <th>{{ values }} </th>
+                                                            {% endfor %}
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            {% for values in display_one_run.fl_summary.1 %}
+                                                                <td>{{ values }} </td>
+                                                            {% endfor %}
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div> <!--  end of panel body -->
+                                        </div> <!--  end of panel  -->
+                                    </div> <!--  end of col-sm-6 -->
+
+                                {% endif%}
+                                {% if display_one_run.default_fl_summary %}
+
+                                    <div class="col-sm-6 ">
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading"><h5>Flowcell Summary for lanes that could not identified with any projects in the run.</h5></div>
+                                            <div class="panel-body">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            {% for values in display_one_run.default_fl_summary.0 %}
+                                                                <th>{{ values }} </th>
+                                                            {% endfor %}
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            {% for values in display_one_run.default_fl_summary.1 %}
+                                                                <td>{{ values }} </td>
+                                                            {% endfor %}
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div> <!--  end of panel body -->
+                                        </div> <!--  end of panel  -->
+                                   </div> <!--  end of col-sm-10 -->
+
+                                {% endif%}
+                            </div> <!--  end of row -->
+
+
+
+
+
+                                    {% if display_one_run.run_project_comparation %}
+                                        <div class="row row-space-8 margin-b-1">
+                                            <div class="col-sm-10 ">
+                                                <div class="panel panel-default">
+                                                    <div class="panel-heading">Percent of PF Cluster used for each project in the run.</div>
+                                                    <div class="panel-body">
+                                                        <div id="column_chart1"> </div>
+                                                        <!-- dumping JavaScript code -->
+                                                        {{ display_one_run.run_project_comparation |safe }}
+                                                    </div> <!--  end of panel body -->
+                                                </div> <!--  end of panel  -->
+                                            </div> <!--  end of col-sm-10 -->
+                                        </div> <!--  end of row -->
+                                    {% endif %}
                         </div><!-- // end of tab projects -->
 
                         <div id="graphComparation" class="tabcontent">
@@ -353,306 +668,10 @@
                 </div> <!--  end of col-sm-12 -->
             </div> <!--  end of row -->
         </div> <!--  end of row -->
-        <div class="row row-space-2 margin-b-4">
-            {% if display_one_run.fl_summary %}
-                <div class="col-sm-6 ">
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><h5>Flowcell Summary for all projects in the run.</h5></div>
-                        <div class="panel-body">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        {% for values in display_one_run.fl_summary.0 %}
-                                            <th>{{ values }} </th>
-                                        {% endfor %}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        {% for values in display_one_run.fl_summary.1 %}
-                                            <td>{{ values }} </td>
-                                        {% endfor %}
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div> <!--  end of panel body -->
-                    </div> <!--  end of panel  -->
-                </div> <!--  end of col-sm-6 -->
-
-            {% endif%}
-            {% if display_one_run.default_fl_summary %}
-
-                <div class="col-sm-6 ">
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><h5>Flowcell Summary for lanes that could not identified with any projects in the run.</h5></div>
-                        <div class="panel-body">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        {% for values in display_one_run.default_fl_summary.0 %}
-                                            <th>{{ values }} </th>
-                                        {% endfor %}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        {% for values in display_one_run.default_fl_summary.1 %}
-                                            <td>{{ values }} </td>
-                                        {% endfor %}
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div> <!--  end of panel body -->
-                    </div> <!--  end of panel  -->
-               </div> <!--  end of col-sm-10 -->
-
-            {% endif%}
-        </div> <!--  end of row -->
-
-        {% if display_one_run.lane_summary %}
-            <div class="row row-space-10 margin-b-1">
-                <div class="col-sm-10 ">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">Lane Summary for all projects in the run.</div>
-                        <div class="panel-body">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        {% for values in display_one_run.lane_summary.0 %}
-                                            <th>{{ values }} </th>
-                                        {% endfor %}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        {% for values in display_one_run.lane_summary.1 %}
-                                            <td>{{ values }} </td>
-                                        {% endfor %}
-                                    </tr>
-                                    <tr>
-                                        {% for values in display_one_run.lane_summary.2 %}
-                                            <td>{{ values }} </td>
-                                        {% endfor %}
-                                    </tr>
-                                    <tr>
-                                        {% for values in display_one_run.lane_summary.3 %}
-                                            <td>{{ values }} </td>
-                                        {% endfor %}
-                                    </tr>
-                                    <tr>
-                                        {% for values in display_one_run.lane_summary.4 %}
-                                            <td>{{ values }} </td>
-                                        {% endfor %}
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div> <!--  end of panel body -->
-                    </div> <!--  end of panel  -->
-                </div> <!--  end of col-sm-10 -->
-            </div> <!--  end of row -->
-        {% endif%}
 
 
 
-        {% if display_one_run.default_lane_summary %}
-            <div class="row row-space-10 margin-b-1">
-                <div class="col-sm-10 ">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">Lane Summary for default information project in the run.</div>
-                        <div class="panel-body">
-                          <table class="table">
-                                <thead>
-                                    <tr>
-                                        {% for values in display_one_run.default_lane_summary.0 %}
-                                            <th>{{ values }} </th>
-                                        {% endfor %}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        {% for values in display_one_run.default_lane_summary.1 %}
-                                            <td>{{ values }} </td>
-                                        {% endfor %}
-                                    </tr>
-                                    <tr>
-                                        {% for values in display_one_run.default_lane_summary.2 %}
-                                            <td>{{ values }} </td>
-                                        {% endfor %}
-                                    </tr>
-                                    <tr>
-                                        {% for values in display_one_run.default_lane_summary.3 %}
-                                           <td>{{ values }} </td>
-                                        {% endfor %}
-                                    </tr>
-                                    <tr>
-                                        {% for values in display_one_run.default_lane_summary.4 %}
-                                            <td>{{ values }} </td>
-                                        {% endfor %}
-                                    </tr>
-                                </tbody>
-                          </table>
-                        </div> <!--  end of panel body -->
-                    </div> <!--  end of panel  -->
-                </div> <!--  end of col-sm-4 -->
-            </div> <!--  end of row -->
-        {% endif%}
 
-        {% if display_one_run.run_project_comparation %}
-            <div class="row row-space-8 margin-b-1">
-                <div class="col-sm-10 ">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">Percent of PF Cluster used for each project in the run.</div>
-                        <div class="panel-body">
-                            <div id="column_chart1"> </div>
-                            <!-- dumping JavaScript code -->
-                            {{ display_one_run.run_project_comparation |safe }}
-                        </div> <!--  end of panel body -->
-                    </div> <!--  end of panel  -->
-                </div> <!--  end of col-sm-10 -->
-            </div> <!--  end of row -->
-        {% endif %}
-
-        {% if display_one_run.unknow_bar_0 %}
-            <div class="row row-space-4 margin-b-1">
-                <div class="col-sm-12 ">
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><h3>Top Unknow Barcodes in the Run.</h3></div>
-                        <div class="panel-body">
-                            <div class="col-sm-3">
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                          <th colspan="2">Lane 1 </th>
-                                        </tr>
-                                    </thead>
-
-                                    <tr>
-                                       <th>Count </th>
-                                       <th>Sequence </th>
-                                    </tr>
-                                    {% for values in display_one_run.unknow_bar_0 %}
-                                        <tr>
-                                            {% for value in values %}
-                                                <td>{{value}}</td>
-                                            {% endfor %}
-                                        </tr>
-                                    {% endfor %}
-                                </table>
-                            </div> <!--  end of sm 3 -->
-                            {% if display_one_run.unknow_bar_1 %}
-                                <div class="col-sm-3">
-                                    <table class="table">
-                                        <thead>
-                                            <tr>
-                                                <th colspan="2">Lane 2 </th>
-                                            </tr>
-                                        </thead>
-                                        <tr>
-                                            <th>Count </th>
-                                            <th>Sequence </th>
-                                        </tr>
-                                        {% for values in display_one_run.unknow_bar_1 %}
-                                            <tr>
-                                                {% for value in values %}
-                                                    <td>{{value}}</td>
-                                                {% endfor %}
-                                            </tr>
-                                        {% endfor %}
-                                    </table>
-                                </div> <!--  end of sm 3 -->
-                            {% endif%}
-                            {% if display_one_run.unknow_bar_2 %}
-                                <div class="col-sm-3">
-                                    <table class="table">
-                                        <thead>
-                                            <tr>
-                                              <th colspan="2">Lane 3 </th>
-                                            </tr>
-                                        </thead>
-                                        <tr>
-                                          <th>Count </th>
-                                          <th>Sequence </th>
-                                        </tr>
-
-                                        {% for values in display_one_run.unknow_bar_2 %}
-                                         <tr>
-                                            {% for value in values %}
-                                                <td>{{value}}</td>
-                                            {% endfor %}
-                                        </tr>
-                                        {% endfor %}
-                                    </table>
-                                </div> <!--  end of sm 3 -->
-                            {% endif%}
-                            {% if display_one_run.unknow_bar_3 %}
-                                <div class="col-sm-3">
-                                    <table class="table">
-                                        <thead>
-                                            <tr>
-                                              <th colspan="2">Lane 4 </th>
-                                            </tr>
-                                        </thead>
-                                        <tr>
-                                          <th>Count </th>
-                                          <th>Sequence </th>
-                                        </tr>
-
-                                        {% for values in display_one_run.unknow_bar_3 %}
-                                            <tr>
-                                                {% for value in values %}
-                                                    <td>{{value}}</td>
-                                                {% endfor %}
-                                            </tr>
-                                        {% endfor %}
-                                    </table>
-                                </div> <!--  end of sm 3 -->
-                            {% endif%}
-                        </div> <!--  end of panel body -->
-                    </div> <!--  end of panel  -->
-                </div> <!--  end of col-sm-12 -->
-            </div> <!--  end of row -->
-        {% endif%}
-
-        {% if display_one_run.unknow_pie3d %}
-            <div class="row row-space-4 margin-b-1">
-                <div class="col-sm-7 ">
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><h3>Chart for the Top Unknow Barcodes in the Run.</h3></div>
-                        <div class="panel-body">
-                            <!-- Column 2 Chart will start here-->
-                            <div id="chart-1"> </div>
-                            <!-- dumping JavaScript code here -->
-                            {{ display_one_run.unknow_pie3d |safe }}
-                        </div> <!--  end of panel body -->
-                    </div> <!--  end of panel  -->
-                </div> <!--  end of col-sm-7 -->
-
-                 <div class="col-sm-5 ">
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><h3>Matching the unknowbarcodes against the indexes library.</h3></div>
-                        <div class="panel-body">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Unknow Sequence</th>
-                                        <th>Index Matching</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for barcode, matching, library_info in display_one_run.match_unknows %}
-                                        <tr>
-                                            <td>{{ barcode }}</td>
-                                            <td title="{% for info in library_info %}{{ info }}{% endfor %}">{{ matching }}</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div> <!--  end of panel body -->
-                    </div> <!--  end of panel  -->
-                </div> <!--  end of col-sm-5 -->
-            </div> <!--  end of row -->
-
-        {% endif %}
 
         <script>
             // Get the element with id="defaultOpen" and click on it
