@@ -1242,6 +1242,23 @@ def get_samples_in_state (state):
     else:
         return False
 
+def get_selected_recorded_samples (form_data):
+    '''
+    Description:    The function get the selected recorded samples to add molecule information.
+    Input:
+        form_data     # form data from user
+    Return:
+        selected_samples
+    '''
+    selected_samples = []
+    samples_json_data = json.loads(form_data)
+    for row_index in range(len(samples_json_data)) :
+        if samples_json_data[row_index][-1] == True:
+            selected_samples.append(samples_json_data[row_index][-2])
+
+    return selected_samples
+
+
 def get_species ():
     '''
     Description:
