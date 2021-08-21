@@ -3510,15 +3510,10 @@ def handling_molecules(request):
 
     if request.method == 'POST' and request.POST['action'] == 'selectedMolecules':
         # If no samples are selected , call again this function to display again the sample list
-        if not 'samples' in request.POST :
+
+        samples = get_selected_recorded_samples (request.POST['selected_samples'])
+        if len(samples) == 0:
             return redirect ('handling_molecules')
-
-        if  'samples_in_list' in request.POST:
-            samples = request.POST.getlist('samples')
-        # keeping the possibility that samples are selected directly from sample definition
-        else:
-            samples = request.POST['samples'].split(',')
-
         molecule_protocol = get_table_record_molecule (samples, __package__)
         if 'ERROR' in molecule_protocol :
             return render (request, 'iSkyLIMS_wetlab/error_page.html',

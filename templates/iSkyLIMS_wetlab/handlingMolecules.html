@@ -576,9 +576,9 @@
                                                     columns: [{% for values in sample_availables.sample_heading  %}
                                                         {% if forloop.last %}
                                                             { type: 'hidden' },
-                                                            { type: 'checkbox',  title:'{{values}}', width:100 },
+                                                            { type: 'checkbox',  title:'{{values}}', width:120 },
                                                         {% else %}
-                                                            { type: 'text', title:'{{values}}', width:200 , readOnly:true },
+                                                            { type: 'text', title:'{{values}}', width:250 , readOnly:true },
                                                         {% endif %}
                                                     {% endfor %}
                                                     ],
@@ -613,7 +613,7 @@
                                                 });
                                             </script>
 
-                                        
+
                                         <br><br>
                                         <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
                                         <input class="btn pull-right btn-primary" type="submit" value="Submit">
@@ -680,7 +680,7 @@
                                                // e.preventDefault();
                                                //disable the submit button
                                                var table_data2 = table2.getData()
-                                               var data_json = JSON.stringify(table_data)
+                                               var data_json = JSON.stringify(table_data2)
                                                $("<input />").attr("type", "hidden")
                                                  .attr("name", "molecule_used_for")
                                                  .attr("value", data_json)
