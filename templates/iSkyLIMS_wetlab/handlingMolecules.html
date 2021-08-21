@@ -517,6 +517,7 @@
                                         {% csrf_token %}
                                         <input type="hidden" name="action" value="selectedOwnerMolecules"/>
                                         <input type="hidden" name="samples_in_list" value="True"/>
+
                                         <div class="table-wrapper-sm-10">
                                             <table class="table table-hover">
                                                 <thead>
@@ -562,27 +563,57 @@
                                         {% csrf_token %}
                                         <input type="hidden" name="action" value="selectedMolecules"/>
                                         <input type="hidden" name="samples_in_list" value="True"/>
-                                        <div class="table-wrapper-sm-10">
-                                            <table class="table table-hover">
-                                                <thead>
-                                                    <tr>
-                                                        {% for value in sample_availables.sample_heading %}
-                                                            <th> {{ value }}</th>
-                                                        {% endfor %}
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {% for date, code,  sampletype,  s_id  in sample_availables.sample_information  %}
-                                                        <tr>
-                                                                <td>{{date}}</td>
-                                                                <td>{{code}}</td>
-                                                                <td>{{sampletype}}</td>
-                                                                <td><input type="checkbox" name="samples" value="{{s_id}}"></td>
-                                                        </tr>
+
+
+
+                                            <div id="spreadsheet1"></div>
+                                            <script>
+                                                var data1 = [{% for values in sample_availables.sample_information %}
+                                                    [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                                                ];
+                                                var table1 = jexcel(document.getElementById('spreadsheet1'), {
+                                                    data:data1,
+                                                    columns: [{% for values in sample_availables.sample_heading  %}
+                                                        {% if forloop.last %}
+                                                            { type: 'hidden' },
+                                                            { type: 'checkbox',  title:'{{values}}', width:100 },
+                                                        {% else %}
+                                                            { type: 'text', title:'{{values}}', width:200 , readOnly:true },
+                                                        {% endif %}
                                                     {% endfor %}
-                                                </tbody>
-                                            </table>
-                                        </div> <!--  end of table wrapper  -->
+                                                    ],
+
+                                                    allowInsertColumn:false,
+                                                    allowDeleteColumn:false,
+                                                    allowRenameColumn:false,
+                                                    allowInsertRow:false,
+                                                    allowDeleteRow:false,
+                                                    tableOverflow:false,
+                                                    search:true,
+                                                    pagination:20,
+                                                    csvFileName:'SamplesDefined.csv',
+
+                                                });
+                                            </script>
+                                            <script>
+                                                $(document).ready(function () {
+                                                    $("#selectedMolecules").submit(function (e) {
+                                                        //stop submitting the form to see the disabled button effect
+                                                        // e.preventDefault();
+                                                        //disable the submit button
+                                                        var table_data = table1.getData()
+                                                        var data_json = JSON.stringify(table_data)
+                                                        $("<input />").attr("type", "hidden")
+                                                          .attr("name", "selected_samples")
+                                                          .attr("value", data_json)
+                                                          .appendTo("#selectedMolecules");
+                                                        $("#btnSubmit").attr("disabled", true);
+                                                        return true;
+                                                    });
+                                                });
+                                            </script>
+
+                                        
                                         <br><br>
                                         <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
                                         <input class="btn pull-right btn-primary" type="submit" value="Submit">
@@ -613,57 +644,55 @@
                                         <input type="hidden" name="molecule_ids" value="{{request_molecule_use.molecule_ids}}"/>
                                         <input type="hidden" name="molecule_code_ids" value="{{request_molecule_use.molecule_code_ids}}"/>
                                         <div class="table-wrapper-sm-10">
-
-                                            <div id="spreadsheet"></div>
+                                            <div id="spreadsheet2"></div>
                                             <br><br><br>
-                                           <script>
-                                              var data = [{% for values in request_molecule_use.data %}
-                                                  [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
-                                              ];
+                                            <script>
+                                                var data2 = [{% for values in request_molecule_use.data %}
+                                                    [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                                                ];
 
-                                              mySpreadsheet = $('#spreadsheet').jexcel({
-                                                  data:data,
-                                                  columns: [
+                                                var table2  = jexcel(document.getElementById('spreadsheet2'), {
+                                                    data:data2,
+                                                    columns: [
                                                             { type: 'text', title:'{{request_molecule_use.heading.0}}', width:220 , readOnly:true },
                                                             { type: 'text', title:'{{request_molecule_use.heading.1}}', width:280 , readOnly:true },
                                                             { type: 'dropdown', title:'{{request_molecule_use.heading.2}}', width:220 , source:[{% for value in request_molecule_use.types %}'{{value}}',{% endfor %} ]},
                                                   ],
-                                                  allowInsertColumn:false,
-                                                  allowDeleteColumn:false,
-                                                  allowRenameColumn:false,
-                                                  allowInsertRow:false,
-                                                  allowDeleteRow:false,
-                                                  tableOverflow:true,
-                                                  tableHeight:'200px',
-                                                  csvFileName:'molecule_use',
-
-                                              });
-                                          </script>
-                                          <br><br>
-                                          <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
-                                          <input class="btn pull-right btn-primary" id = "btnSubmit" type="submit" value="Submit">
-
-                                       </form>
-                                       <script>
-                                           $(document).ready(function () {
-                                               $("#requestMoleculeUse").submit(function (e) {
-                                                   //stop submitting the form to see the disabled button effect
-                                                   // e.preventDefault();
-                                                   //disable the submit button
-                                                   var table_data = $('#spreadsheet').jexcel('getData')
-                                                   var data_json = JSON.stringify(table_data)
-                                                   $("<input />").attr("type", "hidden")
-                                                     .attr("name", "molecule_used_for")
-                                                     .attr("value", data_json)
-                                                     .appendTo("#requestMoleculeUse");
-                                                   $("#btnSubmit").attr("disabled", true);
-                                                   return true;
-                                               });
+                                                    allowInsertColumn:false,
+                                                    allowDeleteColumn:false,
+                                                    allowRenameColumn:false,
+                                                    allowInsertRow:false,
+                                                    allowDeleteRow:false,
+                                                    tableOverflow:true,
+                                                    tableHeight:'200px',
+                                                    csvFileName:'molecule_use',
+                                                });
+                                            </script>
+                                            <br><br>
+                                            <input type="button" value="Return Home" onclick="location.href ='/wetlab' ;"/>
+                                            <input class="btn pull-right btn-primary" id = "btnSubmit" type="submit" value="Submit">
+                                        </div>
+                                    </form>
+                                   <script>
+                                       $(document).ready(function () {
+                                           $("#requestMoleculeUse").submit(function (e) {
+                                               //stop submitting the form to see the disabled button effect
+                                               // e.preventDefault();
+                                               //disable the submit button
+                                               var table_data2 = table2.getData()
+                                               var data_json = JSON.stringify(table_data)
+                                               $("<input />").attr("type", "hidden")
+                                                 .attr("name", "molecule_used_for")
+                                                 .attr("value", data_json)
+                                                 .appendTo("#requestMoleculeUse");
+                                               $("#btnSubmit").attr("disabled", true);
+                                               return true;
                                            });
-                                       </script>
+                                       });
+                                   </script>
 
-                                        </div> <!--  end of table wrapper  -->
-                                        <br><br>
+                                    </div> <!--  end of table wrapper  -->
+                                    <br><br>
 
                                 </div>  <!--  end of panel body  -->
 
