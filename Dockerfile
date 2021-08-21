@@ -11,6 +11,9 @@ RUN apt-get install -y \
     lightdm git apt-utils libcairo2 libcairo2-dev  wget gnuplot python3-pip \
     libmysqlclient-dev apache2 apache2-dev vim 
 
+RUN mkdir /opt/interop
+WORKDIR /opt/interop
+
 RUN wget https://github.com/Illumina/interop/releases/download/v1.1.15/InterOp-1.1.15-Linux-GNU.tar.gz
 RUN tar -xvf  InterOp-1.1.15-Linux-GNU.tar.gz
 RUN ln -s InterOp-1.1.15-Linux-GNU interop
@@ -18,7 +21,6 @@ RUN rm InterOp-1.1.15-Linux-GNU.tar.gz
 
 
 RUN mkdir /opt/iSkyLIMS
-
 WORKDIR /opt/iSkyLIMS
 
 RUN git clone https://github.com/BU-ISCIII/iSkyLIMS.git .
