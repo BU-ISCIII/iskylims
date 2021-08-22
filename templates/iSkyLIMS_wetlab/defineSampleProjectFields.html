@@ -80,6 +80,33 @@
 
 
                      </script>
+                    <center> <button type="button" class="btn btn-default" data-toggle="collapse" data-target="#help">Help</button></center>
+                    <div id="help" class="collapse">
+                        <br>
+                         <div class="row row-space-4 margin-b-4">
+                             <div class="col-sm-8 col-sm-offset-2" >
+                                 <div class="panel panel-default">
+                                     <div class="panel-heading"><h5>Field description to fill in the parameters </h5></div>
+                                     <div class="panel-body">
+                                        <p><strong>Field name.</strong> Define the name of the field that will be showed later when investigator requested to add the information</p>
+                                        <p><strong>Order.</strong> Define the order that these parameters are presented in the form</p>
+                                        <p><strong>Used.</strong> Click on the Used check box to display the parameter in the form</p>
+                                        <p><strong>Searchable.</strong>Select if the field should be used for trigger the condition for searching.<br>
+                                        Note.- This functionality will be implemted in the next iSkyLIMS release </p>
+                                        <p><strong>Field Type.</strong> There are 3 field types: String, Date, and Option List<br>
+                                        - Use string for having any kind of letter and numbers, <br>
+                                        - Date to display a calender <br>
+                                        - Option List. To select only the predefined values. </p>
+                                        <p><strong>Option Values.</strong> It is only valid when the parameter is defined as “Option List”. <br>
+                                        Set the possible values that parameter could have, when presenting to the Investigator as a selection option list. <br>
+                                        To define the values, write them <strong>separating by commas “,”</strong> and without any blank space between the option values.</p>
+                                        <p><strong>Description.</strong> field is optional and you can type some few words to explain the parameter</p>
+                                    </div>  <!--  end of panel body  -->
+                                </div> <!--// end panel -->
+                            </div> <!--// end col-sm-8  -->
+                        </div> <!--// end row -->
+                    </div>
+
                     <input class="btn pull-right btn-primary" type="submit" value="Submit">
                     </form>
                     <script>
