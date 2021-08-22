@@ -1647,7 +1647,7 @@ class SambaConnectionData (models.Model):
     SAMBA_PORT_SERVER = models.CharField(max_length=10,  null=True , blank=True)
     SAMBA_REMOTE_SERVER_NAME = models.CharField(max_length=80, null=True , blank=True)
     SAMBA_SHARED_FOLDER_NAME =models.CharField(max_length=80, null=True , blank=True)
-    SAMBA_USER_ID = models.CharField(max_length=20, null=True , blank=True)
+    SAMBA_USER_ID = models.CharField(max_length=80, null=True , blank=True)
     SAMBA_USER_PASSWORD = models.CharField(max_length=20, null=True , blank=True)
     IS_DIRECT_TCP = models.BooleanField(default = True)
     SAMBA_NTLM_USED = models.BooleanField(default = True)
