@@ -808,7 +808,7 @@ class SamplesInProject (models.Model):
     def __str__ (self):
         return '%s' %(self.sampleName)
 
-    def get_info_for_searching(self):
+    def get_basic_info(self):
         sample_info = []
         sample_info.append(self.pk)
         sample_info.append(self.sampleName)

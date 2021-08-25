@@ -3,6 +3,18 @@
 {% block content %}
 {% csrf_token %}
 {% include "iSkyLIMS_core/graphic_chart_functionality.html" %}
+<style>
+    .table-wrapper-sm-7 {
+        max-height: 450px;
+        overflow: auto;
+        display:inline-block;
+        width: 600px;
+    }
+    .scrolling-wrapper {
+            overflow-x: scroll;
+            white-space: nowrap;
+        }
+</style>
 <script>
    $( function() {
        $( document ).tooltip();
@@ -79,7 +91,11 @@
                         {% if display_one_run.unknow_bar_0 %}
                             <button class="tablinks" onclick="summaryBin(event, 'barcodes')" >Unknown Barcodes</button>
                         {% endif %}
+
                             <button class="tablinks" onclick="summaryBin(event, 'projects')" >Projects</button>
+                        {% if display_one_run.sample_run_data %}
+                            <button class="tablinks" onclick="summaryBin(event, 'samples_run')">Samples</button>
+                        {% endif %}
                         {% if display_one_run.boxplot %}
                             <button class="tablinks" onclick="summaryBin(event, 'graphComparation')">Graphic comparations</button>
                         {% endif %}
@@ -547,25 +563,52 @@
                                 {% endif%}
                             </div> <!--  end of row -->
 
-
-
-
-
-                                    {% if display_one_run.run_project_comparation %}
-                                        <div class="row row-space-8 margin-b-1">
-                                            <div class="col-sm-10 ">
-                                                <div class="panel panel-default">
-                                                    <div class="panel-heading">Percent of PF Cluster used for each project in the run.</div>
-                                                    <div class="panel-body">
-                                                        <div id="column_chart1"> </div>
-                                                        <!-- dumping JavaScript code -->
-                                                        {{ display_one_run.run_project_comparation |safe }}
-                                                    </div> <!--  end of panel body -->
-                                                </div> <!--  end of panel  -->
-                                            </div> <!--  end of col-sm-10 -->
-                                        </div> <!--  end of row -->
-                                    {% endif %}
+                                {% if display_one_run.run_project_comparation %}
+                                    <div class="row row-space-8 margin-b-1">
+                                        <div class="col-sm-10 ">
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">Percent of PF Cluster used for each project in the run.</div>
+                                                <div class="panel-body">
+                                                    <div id="column_chart1"> </div>
+                                                    <!-- dumping JavaScript code -->
+                                                    {{ display_one_run.run_project_comparation |safe }}
+                                                </div> <!--  end of panel body -->
+                                            </div> <!--  end of panel  -->
+                                        </div> <!--  end of col-sm-10 -->
+                                    </div> <!--  end of row -->
+                                {% endif %}
                         </div><!-- // end of tab projects -->
+
+                        <div id="samples_run" class="tabcontent">
+                            <div class="row row-space-2 margin-b-4">
+                                <div class="col-sm-7 col-sm-offset-2">
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading"><h3 style="text-align:center">Samples included in the Run</h3></div>
+                                        <div class="panel-body">
+                                            {%if display_one_run.sample_run_data %}
+                                                <div class="table-wrapper-sm-7">
+                                                <!-- display run parameters in run is not in recorded state -->
+                                                    <table class="table table-hover">
+                                                        <tbody>
+                                                            <thead>
+                                                                <th>Sample Name</th>
+                                                                <th>Project Name</th>
+                                                            </thead>
+                                                            {% for s_id, s_name, p_name, r_name, date in display_one_run.sample_run_data %}
+                                                                <tr>
+                                                                    <td><a href="/wetlab/displaySampleInRun={{s_id}}">{{s_name}}</a></td>
+                                                                    <td>{{p_name}}</td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div> <!--  end of table wrapper -->
+                                            {% endif %}
+                                        </div> <!--  end of panel body -->
+                                    </div> <!--  end of panel  -->
+                                </div> <!--  end of col-sm-10 -->
+                            </div> <!--  end of row -->
+                        </div><!-- // end of tab parameters -->
 
                         <div id="graphComparation" class="tabcontent">
                             <div class="row row-space-2 margin-b-4">

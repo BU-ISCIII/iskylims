@@ -700,6 +700,13 @@ def get_information_run(run_object):
 
         info_dict['match_unknows']= match_unkownbarcodes_with_index(unknow_dict)
 
+        # get te samples included in the run
+        if SamplesInProject.objects.filter(runProcess_id = run_object).exists():
+            sample_objs = SamplesInProject.objects.filter(runProcess_id = run_object).order_by('project_id')
+            sample_run_data = []
+            for sample_obj in sample_objs:
+                sample_run_data.append(sample_obj.get_basic_info())
+            info_dict['sample_run_data'] = sample_run_data
 
     return info_dict
 

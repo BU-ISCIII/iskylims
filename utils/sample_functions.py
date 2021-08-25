@@ -291,7 +291,7 @@ def search_run_samples(sample_name, user_name, start_date, end_date):
         return run_sample_list
 
     for run_sample in run_sample_founds :
-        run_sample_list.append(run_sample.get_info_for_searching())
+        run_sample_list.append(run_sample.get_basic_info())
 
     return run_sample_list
 
