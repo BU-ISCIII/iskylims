@@ -812,6 +812,15 @@ def parsing_run_info_and_parameter_information(l_run_info, l_run_parameter, expe
                     string_message = experiment_name + ' : Parameter RunInfoRead: Read Number not found in RunParameter.xml'
                     logging_warnings(string_message, False)
                     continue
+    else:
+        # Collect information for NovaSeq
+        for novaseq_field in FIELDS_NOVASEQ_TO_FETCH_TAG:
+            try:
+                running_data[novaseq_field] = parameter_data_root.find(novaseq_field).text
+            except:
+                running_data[novaseq_field] = ''
+                string_message = experiment_name + ' : Parameter in Setup -- ' + novaseq_field + ' unable to fetch in RunParameter.xml'
+                logging_errors(string_message, False, True)
         # get date for miSeq and NextSeq with the format yymmdd
         date = p_run.find('Date').text
         try:
@@ -823,19 +832,10 @@ def parsing_run_info_and_parameter_information(l_run_info, l_run_parameter, expe
                 run_date = datetime.strptime(date, '%m/%d/%Y')
             except:
                 run_date = ''
-        # Collect information for NovaSeq
-        for novaseq_field in FIELDS_NOVASEQ_TO_FETCH_TAG:
-            try:
-                running_data[novaseq_field] = parameter_data_root.find(novaseq_field).text
-            except:
-                running_data[novaseq_field] = ''
-                string_message = experiment_name + ' : Parameter in Setup -- ' + novaseq_field + ' unable to fetch in RunParameter.xml'
-                logging_errors(string_message, False, True)
 
     ##############################################
     ## updating the date fetched from the Date tag for run and project
     ##############################################
-
     logger.debug('%s : Found date that was recorded the Run %s', experiment_name , date)
     parsing_data['running_data'] = running_data
     parsing_data['run_date'] = run_date
