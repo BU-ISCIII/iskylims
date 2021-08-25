@@ -618,7 +618,6 @@ def logging_errors(string_text, showing_traceback , print_on_screen ):
     Constant:
         SENT_EMAIL_ON_ERROR
         EMAIL_FOR_NOTIFICATIONS
-        EMAIL_ISKYLIMS
     Variables:
         subject # text to include in the subject email
     '''
@@ -634,7 +633,7 @@ def logging_errors(string_text, showing_traceback , print_on_screen ):
                 if '@' in email_notification:
                     subject = 'Error found on wetlab when running crontab'
                     try:
-                        send_mail (subject, string_text, settings.EMAIL_ISKYLIMS,[email_notification])
+                        send_mail (subject, string_text, email_notification,[email_notification])
                     except:
                         logger.error('*************UNABLE TO SEND ERROR EMAIL TO USER *****************')
                 else:
