@@ -812,8 +812,14 @@ class SamplesInProject (models.Model):
         sample_info = []
         sample_info.append(self.pk)
         sample_info.append(self.sampleName)
-        sample_info.append(self.project_id.get_project_name())
-        sample_info.append(self.runProcess_id.get_run_name())
+        if self.project_id != None :
+            sample_info.append(self.project_id.get_project_name())
+        else:
+            sample_info.append('None')
+        if self.runProcess_id != None:
+            sample_info.append(self.runProcess_id.get_run_name())
+        else:
+            sample_info.append('None')
         sample_info.append(self.generated_at.strftime("%I:%M%p on %B %d, %Y"))
         return sample_info
 
@@ -834,8 +840,14 @@ class SamplesInProject (models.Model):
     def get_sample_information_with_project_run(self):
         data = []
         data.append(self.sampleName)
-        data.append(self.project_id.get_project_name())
-        data.append(self.runProcess_id.get_run_name())
+        if self.project_id != None :
+            sample_info.append(self.project_id.get_project_name())
+        else:
+            sample_info.append('None')
+        if self.runProcess_id != None:
+            sample_info.append(self.runProcess_id.get_run_name())
+        else:
+            sample_info.append('None')
         data.append(self.generated_at.strftime("%B %d, %Y"))
         data.append(self.pfClusters)
         data.append(self.yieldMb)
@@ -850,14 +862,17 @@ class SamplesInProject (models.Model):
         return '%s' %(self.project_id.pk)
 
     def get_project_name (self) :
-        #p_id = self.project_id
-        #project_name =Projects.objects.get(projectName=p_id).get_project_name()
-        project_name = self.project_id.get_project_name()
-        #Projects.objects.prefetch_related('user_id').filter(user_id = user_id)
+        if self.project_id != None :
+            project_name = self.project_id.get_project_name()
+        else:
+            project_name = 'None'
         return '%s' %(project_name)
 
     def get_run_name(self):
-        return '%s' %(self.runProcess_id.get_run_name())
+        if self.runProcess_id != None:
+            return '%s' %(self.runProcess_id.get_run_name())
+        else:
+            return 'None'
 
     def get_sequencer_used(self):
         return '%s' %(self.runProcess_id.get_run_used_sequencer_name())
