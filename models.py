@@ -874,6 +874,12 @@ class SamplesInProject (models.Model):
     def get_number_of_samples_in_run(self):
         return '%s' %(self.runProcess_id.get_number_of_samples_in_run())
 
+    def get_sample_user_name(self):
+        if self.user_id != None:
+            return '%s' %(self.user_id.username)
+        return 'None'
+
+
     objects = SamplesInProjectManager()
 
 

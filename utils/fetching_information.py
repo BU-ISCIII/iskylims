@@ -808,8 +808,8 @@ def get_info_sample_in_run (sample_run_obj):
     #
     sample_info_dict['run_id'] = sample_run_obj.get_run_id()
     sample_info_dict['run_name'] = sample_run_obj.get_run_name()
-    user_name_id = sample_run_obj.project_id.user_id
-    sample_info_dict['investigator_name'] = user_name_id.username
+
+    sample_info_dict['investigator_name'] = sample_run_obj.get_sample_user_name()
     # collect the Sample information
     sample_info_dict['heading_samples_info'] = ['Sample', 'Index used', 'PF Cluster', '% of Project','Yield (Mbases)','>= Q30 bases','Mean Quality Score']
     sample_info_dict['data_samples_info'] = sample_run_obj.get_sample_information()
