@@ -431,84 +431,129 @@
 
     {% endif %}
     <div class="row row-space-4 margin-b-4">
-        <div  class="col-sm-12" >
+        <div class="col-sm-12">
+            <div class="tab">
+                <button class="tablinks" onclick="summaryBin(event, 'newSamples')" id="defaultOpen">Record new Samples</button>
+                <button class="tablinks" onclick="summaryBin(event, 'batchSamples')">Load batch new Samples</button>
 
-            <div class="panel panel-default" >
-                <div class="panel-heading"><h3>Record new Samples</h3></div>
-                <div class="panel-body" >
+                <div id="newSamples" class="tabcontent">
+                    <div class="row row-space-4 margin-b-4">
+                        <div class="col-sm-12" >
+                            <div class="panel panel-default" >
+                                <div class="panel-heading"><h3>Record new Samples</h3></div>
+                                <div class="panel-body" >
 
-                    <br><br><br>
-                    <form method="post" enctype="multipart/form-data" name="sampledefinition"  id="sampledefinition" class="form-horizontal well" style="min-height: 500px;">
-                        {% csrf_token %}
-                        <div class="scrolling-wrapper">
-                            <input type="hidden" name="action" value="recordsample"/>
-                            <div id="spreadsheet"></div>
-                            <br>
-                        </div> <!--  end of scrolling  -->
+                                    <br><br><br>
+                                    <form method="post" enctype="multipart/form-data" name="sampledefinition"  id="sampledefinition" class="form-horizontal well" style="min-height: 500px;">
+                                        {% csrf_token %}
+                                        <div class="scrolling-wrapper">
+                                            <input type="hidden" name="action" value="recordsample"/>
+                                            <div id="spreadsheet"></div>
+                                            <br>
+                                        </div> <!--  end of scrolling  -->
+                                            <script>
+                                                {% if sample_information.data %}
+                                                    var data = [{% for values in sample_information.data %}
+                                                    [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                                                    ];
+                                                {% else %}
+                                                    var data = [[]];
+                                                {% endif %}
+                                                var table1 = jexcel(document.getElementById('spreadsheet'), {
+                                                data:data,
+                                                columns: [
+                                                    { type: 'text', title:'{{sample_information.heading.0}}', width:100 },
+                                                    { type: 'text', title:'{{sample_information.heading.1}}', width:100 },
+                                                    { type: 'dropdown', title:'{{sample_information.heading.2}}', width:130 , source: [{% for value in sample_information.lab_requested %}"{{value}}",{% endfor %}] },
+                                                    { type: 'dropdown', title:'{{sample_information.heading.3}}', width:120 , source:[{% for value in sample_information.sampleType %}"{{value}}",{% endfor %}]},
+                                                    { type: 'dropdown', title:'{{sample_information.heading.4}}', width:120 , source : [{% for value in sample_information.species %}"{{value}}",{% endfor %}] },
+                                                    { type: 'dropdown', title:'{{sample_information.heading.5}}', width:120 , source : [{% for value in sample_information.sample_project %}"{{value}}",{% endfor %}] },
+                                                    { type: 'calendar' , title: '{{sample_information.heading.6}}', width:140 },
+                                                    { type: 'text', title:'{{sample_information.heading.7}}', width:100 },
+                                                    { type: 'checkbox', title:'{{sample_information.heading.8}}', width:100 },
+                                                    ],
+                                                    allowInsertColumn:false,
+                                                    allowDeleteColumn:false,
+                                                    allowRenameColumn:false,
+                                                    csvFileName:'samples',
+                                                    minDimensions:[{{sample_information.table_size}},3],
 
-                            <script>
+                                                });
+
+                                            </script>
+                                        <br><br>
+                                        <br>
+                                        <input type="button" value="Download Spreadsheet" onclick="table1.download()"/>
+                                        <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                                    </form>
+
+                                    <script>
+                                        $(document).ready(function () {
+
+                                            $("#sampledefinition").submit(function (e) {
+                                                //stop submitting the form to see the disabled button effect
+                                                // e.preventDefault();
+                                                //disable the submit button
+                                                var table_data = table1.getData()
+                                                var data_json = JSON.stringify(table_data)
+                                                $("<input />").attr("type", "hidden")
+                                                   .attr("name", "table_data")
+                                                   .attr("value", data_json)
+                                                   .appendTo("#sampledefinition");
+                                                $("#btnSubmit").attr("disabled", true);
+                                                return true;
+                                            });
+                                        });
+                                    </script>
+
+                                </div>  <!--  end of panel body  -->
+                            </div> <!--// end panel -->
+                        </div> <!--// end col-sm-12  -->
+                    </div> <!--  end of row -->
+                </div><!-- // end of tab newPatient -->
+
+                <div id="batchSamples" class="tabcontent">
+                    <div class="row row-space-4 margin-b-4">
+                        <div class="col-sm-10 col-sm-offset-1" >
+                            <div class="panel panel-default">
+                                <div class="panel-heading"><h3 style="text-align:center">Load New Samples in batch</h3></div>
+                                <div class="panel-body">
+                                    <form method="post" enctype="multipart/form-data" name="defineBatchSamples"  id="defineBatchSamples" class="form-horizontal well" style="min-height: 700px;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="defineBatchSamples"/>
+                                        <div  class="col-sm-12" >
+                                            <div class="panel panel-default" >
+                                                <div class="panel-heading"><h3  style="text-align:center">Upload the excel file to define a batch of samples. </h3></div>
+                                                <div class="panel-body" >
+                                                    <div class="form-group required">
+                                                        <label class="col-sm-5  control-label" for="samplesExcel" ><td> Upload Samples file</td> </label>
+                                                        <div class="col-sm-5"><input class="form-control" required = "required" type="file" accept=".xls, .xlsx" name="samplesExcel" id="samplesExcel" ></div>
+                                                    </div>  <!-- end from-group   -->
+                                                    <BR>
+                                                </div> <!-- End   Panel Body   -->
+                                            </div>  <!-- End   Panel    -->
+
+                                            <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
+                                            <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                                        </div> <!-- end col-sm-8 -->
+
+                                    </form>
+                                    <br>
+                                    <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p
 
 
-                                {% if sample_information.data %}
-                                    var data = [{% for values in sample_information.data %}
-                                    [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
-                                    ];
-                                {% else %}
-                                    var data = [[]];
-                                {% endif %}
-                                var table1 = jexcel(document.getElementById('spreadsheet'), {
-                                data:data,
-                                columns: [
-                                    { type: 'text', title:'{{sample_information.heading.0}}', width:100 },
-                                    { type: 'text', title:'{{sample_information.heading.1}}', width:100 },
-                                    { type: 'dropdown', title:'{{sample_information.heading.2}}', width:130 , source: [{% for value in sample_information.lab_requested %}"{{value}}",{% endfor %}] },
-                                    { type: 'dropdown', title:'{{sample_information.heading.3}}', width:120 , source:[{% for value in sample_information.sampleType %}"{{value}}",{% endfor %}]},
-                                    { type: 'dropdown', title:'{{sample_information.heading.4}}', width:120 , source : [{% for value in sample_information.species %}"{{value}}",{% endfor %}] },
-                                    { type: 'dropdown', title:'{{sample_information.heading.5}}', width:120 , source : [{% for value in sample_information.sample_project %}"{{value}}",{% endfor %}] },
-                                    { type: 'calendar' , title: '{{sample_information.heading.6}}', width:140 },
-                                    { type: 'text', title:'{{sample_information.heading.7}}', width:100 },
-                                    { type: 'checkbox', title:'{{sample_information.heading.8}}', width:100 },
-                                    ],
-                                    allowInsertColumn:false,
-                                    allowDeleteColumn:false,
-                                    allowRenameColumn:false,
-                                    csvFileName:'samples',
-                                    minDimensions:[{{sample_information.table_size}},3],
-
-                                });
-
-                            </script>
-                        <br><br>
-                        <br>
-                        <input type="button" value="Download Spreadsheet" onclick="table1.download()"/>
-                        <input class="btn pull-right btn-primary" type="submit" value="Submit">
-                    </form>
-
-                    <script>
-                        $(document).ready(function () {
-
-                            $("#sampledefinition").submit(function (e) {
-                                //stop submitting the form to see the disabled button effect
-                                // e.preventDefault();
-                                //disable the submit button
-                                var table_data = table1.getData()
-                                var data_json = JSON.stringify(table_data)
-                                $("<input />").attr("type", "hidden")
-                                   .attr("name", "table_data")
-                                   .attr("value", data_json)
-                                   .appendTo("#sampledefinition");
-                                $("#btnSubmit").attr("disabled", true);
-                                return true;
-                            });
-                        });
-                    </script>
-
-                </div>  <!--  end of panel body  -->
-            </div> <!--// end panel -->
-
-        </div> <!--// end col-sm-7  -->
-
+                                </div> <!--  end of panel body -->
+                            </div> <!--  end of panel  -->
+                        </div> <!--// end col-sm-10  -->
+                    </div> <!--  end of row -->
+                </div><!-- // end of tab batchPatient -->
+            </div> <!--  end of Tab  -->
+        </div> <!--// end col-sm-12  -->
     </div> <!--// end row -->
+    <script>
+        // Get the element with id="defaultOpen" and click on it
+        document.getElementById("defaultOpen").click();
+    </script>
 
 {% endif %}
 {% endblock %}
