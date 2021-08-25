@@ -240,11 +240,6 @@ def get_samples_in_sample_sheet(file_lines):
             continue
             ## found the index for projects
         if header_found :
-            ### ignore the empty lines separated by commas
-            #line = line.strip()
-            #valid_line = re.search('^\w+',line)
-            #if not valid_line :
-            #    continue
             line_split = line.split(',')
             try:
                 sample_name = line_split[index_sample_name].strip()
@@ -319,6 +314,50 @@ def get_sample_sheet_data (file_read):
 
     return sample_sheet_data
 
+def get_sample_with_user_owner (sample_sheet_path):
+    '''
+    Description:
+        The function fetch the sample sheet and return a dictionnary with sample
+        name and the user ID owner of the sample
+    Input:
+        sample_sheet_path    # path of the stored sample sheet
+    Return
+        sample_user dictionary with the extracted information
+    '''
+    sample_user = {}
+    header_found = False
+    full_path = os.path.join(settings.MEDIA_ROOT, sample_sheet_path)
+    fh = open(full_path,'r')
+    for line in fh:
+        line=line.rstrip()
+        if line == '':
+            continue
+        found_header=re.search('^Sample_ID,Sample_Name',line)
+        if found_header:
+            header_found = True
+            sample_sheet_heading = line.split(',')
+            index_sample_name = sample_sheet_heading.index('Sample_Name')
+            try:
+                index_description = sample_sheet_heading.index('Description')
+            except:
+                index_description = None
+            continue
+        if header_found :
+            line_split = line.split(',')
+            try:
+                sample_name = line_split[index_sample_name].strip()
+                if index_description != None:
+                    user_id = line_split[index_description].strip()
+                else:
+                    user_id = None
+            except:
+                continue
+            if sample_name == '':
+                continue
+
+            sample_user[sample_name] = user_id
+    fh.close()
+    return sample_user
 
 def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects, plate):
     data_raw=[]

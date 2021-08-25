@@ -3,6 +3,7 @@ import xml.etree.ElementTree as ET
 from iSkyLIMS_wetlab.wetlab_config import *
 from iSkyLIMS_wetlab.models import *
 from .handling_crontab_common_functions import *
+from .sample_sheet_utils import get_sample_with_user_owner
 
 
 def check_demultiplexing_folder_exists(conn, run_folder, experiment_name):
@@ -693,11 +694,16 @@ def process_and_store_samples_projects_data(parsed_data, run_process_obj, experi
         parsed_data         # dictionnary with parsed data
         run_process_obj     # runProcess object
         experiment_name     # Experiment name
+    Functions:
+        get_sample_with_user_owner  # Located at iSkyLIMS_wetlab/utils/sample_sheet_utils.py
     Return:
         None
     '''
     logger = logging.getLogger(__name__)
     logger.debug ('%s : Starting function process_and_store_samples_projects_data', experiment_name)
+    # Read sample sheet to get the user id for each smaple
+    sample_sheet = run_process_obj.get_sample_file()
+    samples_with_user_ids = get_sample_with_user_owner(sample_sheet)
     # get the total number of read per lane
     M_BASE=1.004361/1000000
     processed_sample_data =[]
@@ -731,6 +737,7 @@ def process_and_store_samples_projects_data(parsed_data, run_process_obj, experi
             project_sample_data['meanQuality'] = mean_quality
             project_sample_data['project_id'] = Projects.objects.get(projectName__exact = project)
             project_sample_data['runProcess_id'] = run_process_obj
+            project_sample_data['user_id'] = samples_with_user_ids[sample]
 
             new_sample_stats = SamplesInProject.objects.create_sample_project(project_sample_data)
 

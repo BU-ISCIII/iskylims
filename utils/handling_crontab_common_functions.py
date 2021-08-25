@@ -820,7 +820,7 @@ def parsing_run_info_and_parameter_information(l_run_info, l_run_parameter, expe
             except:
                 running_data[novaseq_field] = ''
                 string_message = experiment_name + ' : Parameter in Setup -- ' + novaseq_field + ' unable to fetch in RunParameter.xml'
-                logging_errors(string_message, False, True)
+                logging_warnings(string_message, False)
         # get date for miSeq and NextSeq with the format yymmdd
         date = p_run.find('Date').text
         try:

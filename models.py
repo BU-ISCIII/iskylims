@@ -775,11 +775,16 @@ class GraphicsStats (models.Model):
 
 class SamplesInProjectManager (models.Manager):
     def create_sample_project (self, sample_p_data):
+        try:
+            user_obj = User.objects.get(username__exact = sample_p_data['user_id'])
+        except:
+            user_obj = None
         sample_project = self.create( project_id = sample_p_data['project_id'] , sampleName =  sample_p_data['sampleName'],
                             barcodeName =  sample_p_data['barcodeName'], pfClusters =  sample_p_data['pfClusters'],
                             percentInProject =  sample_p_data['percentInProject'], yieldMb =  sample_p_data['yieldMb'],
                             qualityQ30 =  sample_p_data['qualityQ30'], meanQuality =  sample_p_data['meanQuality'],
-                            runProcess_id = sample_p_data['runProcess_id'] )
+                            runProcess_id = sample_p_data['runProcess_id'], user_id = user_obj )
+        return sample_project
 
 class SamplesInProject (models.Model):
     project_id = models.ForeignKey(

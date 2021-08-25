@@ -100,7 +100,6 @@ def get_runs_projects_samples_and_dates(user_list_ids):
         samples_data
     '''
     samples_data = []
-    import pdb; pdb.set_trace()
     if SamplesInProject.objects.filter(user_id_id__in = user_list_ids).exists():
         #sample_objs = SamplesInProject.objects.filter(user_id_id__in = user_list_ids).order_by('generated_at').reverse().values_list('runProcess_id', 'runProcess_id', 'project_id','project_id','runProcess_id','sampleName','pk')
         #sample_objs = SamplesInProject.objects.filter(user_id_id__in = user_list_ids).order_by('generated_at').reverse()
