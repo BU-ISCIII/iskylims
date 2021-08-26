@@ -1,0 +1,132 @@
+{% extends 'iSkyLIMS_wetlab/base.html' %}
+{% load static %}
+{% block content %}
+{% csrf_token %}
+
+{%include 'iSkyLIMS_core/jexcel_functionality.html' %}
+{%include 'iSkyLIMS_core/customized_javascript.html' %}
+<style>
+    .scrolling-wrapper-sm-11 {
+        overflow-x: auto;
+        overflow-y: auto;
+        white-space: nowrap;
+        height: 400px;
+    }
+ </style>
+ {% if ERROR %}
+     <div class="row row-space-2 margin-b-4">
+         <div class="col-sm-7 col-sm-offset-3">
+             <div class="panel panel-danger">
+                 <div class="panel-heading"><h3 style="text-align:center">No Samples</h3> </div>
+                 <div class="panel-body">
+                     {% for values in ERROR %}
+                         <h4>{{values}}</h4>
+                     {% endfor %}
+                 </div> <!--  end of panel body -->
+             </div> <!--  end of panel  -->
+         </div> <!--  end of col-sm-7 -->
+     </div> <!--  end of row -->
+ {% endif %}
+{% if compared_data %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12">
+           <div class="panel panel-default">
+                <div class="panel-heading"><h3 style="text-align:center">Samples Comparations</h3></div>
+                <div class="panel-body">
+                    <div class="panel-body scrolling-wrapper-sm-11">
+
+                        <button onclick="exportTableToExcel('compareSamples')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
+                        <table id=compareSamples class="table table-hover">
+                            <thead>
+                                <tr>
+                                    {% for value in compared_data.table_heading %}
+                                        <th>{{value}}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for values in compared_data.table_data %}
+                                    <tr>
+                                        {% for value in values %}
+                                            <td>{{value}}</td>
+                                        {% endfor %}
+                                    </tr>
+                                {%endfor%}
+                            </tbody>
+                        </table>
+                    </div> <!--// end col-sm-11  -->
+                </div> <!--// end panel body -->
+           </div> <!--// end panel -->
+       </div> <!--// end col-sm-12  -->
+   </div> <!--  end of row -->
+{% else %}
+     <div class="row row-space-2 margin-b-4">
+         <div class="col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3 style="text-align:center">Available Samples for {{samples_data.user}} </h3></div>
+                <div class="panel-body">
+                    {% if samples_data.heading %}
+                        <h5 style="text-align:center">Select the samples to be included in the sample comparation.</h5>
+                            <form method="post" enctype="multipart/form-data" name="compareSamples"  id="compareSamples" class="form-horizontal well">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="compareSamples"/>
+                                <div id="spreadsheet"></div>
+                                <script>
+                                    var data = [{% for values in samples_data.data %}
+                                       [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                                       ];
+                                    mySpreadsheet = $('#spreadsheet').jexcel({
+                                        data:data,
+                                        columns: [
+                                            {% for item in  samples_data.heading %}
+                                                {% if forloop.last %}
+                                                    { type: 'hidden' },
+                                                {% else %}
+                                                { type: 'text', title:'{{item}}', width:240 },
+                                                {% endif %}
+                                            {% endfor %}
+                                            { type: 'checkbox',  title:'Select Sample', width:100 },
+                                        ],
+                                        allowInsertColumn:false,
+                                        allowDeleteColumn:false,
+                                        allowRenameColumn:false,
+                                        allowInsertRow:false,
+                                        allowDeleteRow:false,
+                                        tableOverflow:false,
+                                        search:true,
+                                        pagination:20,
+                                        csvFileName:'compare_samples',
+                                    });
+                                </script>
+                                <br>
+                                <input class="btn pull-right btn-primary" type="submit" id ="btnSubmit" value="Submit your Request">
+                            </form>
+                            <script>
+                                $(document).ready(function () {
+                                    $("#compareSamples").submit(function (e) {
+                                        //stop submitting the form to see the disabled button effect
+                                        // e.preventDefault();
+                                        //disable the submit button
+                                        var table_data = $('#spreadsheet').jexcel('getData')
+                                        var data_json = JSON.stringify(table_data)
+                                        $("<input />").attr("type", "hidden")
+                                          .attr("name", "table_data")
+                                          .attr("value", data_json)
+                                          .appendTo("#compareSamples");
+                                        $("#btnSubmit").attr("disabled", true);
+                                        return true;
+                                    });
+                                });
+                            </script>
+                    {% else %}
+                        <h3 style="text-align:center">There are no Samples belong to {{sample_data.user}} </h3>
+                    {% endif %}
+                </div> <!--// end panel body -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-12  -->
+    </div> <!--  end of row -->
+
+
+
+{% endif %}
+{% endblock %}

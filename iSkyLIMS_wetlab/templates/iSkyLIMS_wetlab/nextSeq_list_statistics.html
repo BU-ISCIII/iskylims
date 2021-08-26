@@ -1,0 +1,29 @@
+{% extends 'iSkyLIMS_wetlab/base.html' %}
+
+{% block content %}
+<div class="full_text" id="full_text">
+  <div id="right_text">
+    <h1>List of the available Statistics for NextSeq</h1>
+    <!-- <form method="post" enctype="multipart/form-data" name="formListStatistics" id="formListStatistics"> -->
+    <form method="post" name="formListStatistics" id="formListStatistics">
+        <fieldset>
+        <div class="form-group">
+        {% csrf_token %}
+        <label class="f_label" for="run_name" >Select the run name for getting statistics</label>
+        <input class="f_input" type="text" name="run_name" size="60" maxlength="100">
+		<br>
+        <input class="b_reset" type="reset">
+        <input class="b_send" type="submit">
+        </div>
+        </fieldset>
+    </form>
+    <script language="JavaScript" type="text/javascript" xml:space="preserve">//<![CDATA[
+    
+		var formValidator = new Validator ("formListStatistics");
+        formValidator.addValidation ("id_run_name","req","The Run Name cannot be blank");
+        
+    //]]></script>
+    
+    <p> <br> </p>
+    <p><a href="{% url 'home' %}">Back to home</a></p>
+  </div>  
