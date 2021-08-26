@@ -94,12 +94,15 @@ def request_sequencing_service(request):
 			add_files_to_service(request.POST.getlist('files'), new_service)
 		## Send mail to user and drylab notification email
 		email_data = {}
-		email_data['user_email'] = request.user.email
-		email_data['user_name'] = request.user.username
+		if 'requestedForUserid' in request.POST:
+			user_obj= User.objects.filter(pk__exact = request.POST['requestedForUserid']).last()
+			email_data['user_name'] = user_obj.username
+			email_data['user_email'] = user_obj.email
+		else:
+			email_data['user_email'] = request.user.email
+			email_data['user_name'] = request.user.username
 		email_data['service_number'] = new_service.get_service_request_number()
 		email_result = send_service_creation_confirmation_email(email_data)
-		if email_result != 'OK':
-			pass
 		# PDF preparation file for confirmation of service request
 		confirmation_result = {}
 		confirmation_result['download_file'] = create_service_pdf_file(new_service.get_service_request_number(), request.build_absolute_uri())
@@ -108,7 +111,8 @@ def request_sequencing_service(request):
 		confirmation_result['text'] = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), drylab_config.CONFIRMATION_TEXT_MESSAGE))
 		if len(sample_stored) > 0 :
 			confirmation_result['samples'] = sample_stored
-
+		if email_result != 'OK':
+			return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'confirmation_result':confirmation_result, 'error_message':email_result})
 		return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'confirmation_result':confirmation_result})
 	else:
 		service_data_information = prepare_form_data_request_service_sequencing(request)
