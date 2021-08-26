@@ -533,7 +533,7 @@ def get_service_information (service_id, service_manager):
             resolution_id = Resolution.objects.filter(resolutionServiceID = service_obj).last().id
             display_service_details['add_in_progress_action'] = resolution_id
         if service_obj.get_service_state() == 'in_progress':
-            if  Resolution.objects.filter(resolutionServiceID = service_obj).exits():
+            if  Resolution.objects.filter(resolutionServiceID = service_obj).exists():
                 resolution_id = Resolution.objects.filter(resolutionServiceID = service_obj).last().id
                 display_service_details['add_delivery_action'] = resolution_id
 
