@@ -1,0 +1,142 @@
+{% extends 'iSkyLIMS_wetlab/base.html' %}
+{% load static %}
+{% block content %}
+{% csrf_token %}
+{% if sample_project_field_data %}
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Sucessful store of parameters on {{sample_project_field_data.sample_project_name}} Protocol</h3></div>
+                <div class="panel-body">
+
+                    <div class="col-sm-10" >
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    {% for value in sample_project_field_data.heading %}
+                                        <th>{{value}}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for  values in sample_project_field_data.fields %}
+                                    <tr>
+                                        {% for value in values %}
+                                            <td>{{ value }}</td>
+                                        {% endfor %}
+                                    </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div> <!--// end col-sm-5  -->
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-12  -->
+    </div> <!--// end row -->
+
+{% else %}
+    {% include 'iSkyLIMS_core/jexcel_functionality.html' %}
+
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-12" >
+
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Define Sample Project Fields for {{sample_project_data.sample_project_name}}</h3></div>
+                <div class="panel-body">
+                     <form method="post" enctype="multipart/form-data" name="defineSampleProjectFields"  id="defineSampleProjectFields" class="form-horizontal well">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="defineSampleProjectFields"/>
+                        <input type="hidden" name="sample_project_id" value="{{sample_project_data.sample_project_id}}"/>
+                        <div id="spreadsheet1"></div>
+                        <br>
+                        <br>
+
+                        <input type="button" value="Download_Protocol_Parameters" onclick="table1.download()"/>
+
+                     <br>
+
+                     <script>
+
+                     var data1 = [[],
+                     ];
+
+                     var table1 = jexcel(document.getElementById('spreadsheet1'), {
+                         data:data1,
+                         columns: [
+                             { type: 'text', title:'{{sample_project_data.heading.0}}', width:160 },
+                             { type: 'numeric', title:'{{sample_project_data.heading.1}}', width:50, mask:' #.##,00' },
+                             { type: 'checkbox', title:'{{sample_project_data.heading.2}}', width:50 },
+                             { type: 'checkbox', title:'{{sample_project_data.heading.3}}', width:70 },
+                             { type: 'dropdown' , title: '{{sample_project_data.heading.4}}', width:90 , source: ["string", "Date" , "Option List"] },
+                             { type: 'text', title:'{{sample_project_data.heading.5}}', width:240, wordWrap:true },
+                             { type: 'text', title:'{{sample_project_data.heading.6}}', width:400 , wordWrap:true },
+                         ],
+                         allowInsertColumn:false,
+                         allowDeleteColumn:false,
+                         allowRenameColumn:false,
+                         csvFileName:'sample_project_fields',
+                         minDimensions:[7,3],
+                     });
+
+
+                     </script>
+                    <center> <button type="button" class="btn btn-default" data-toggle="collapse" data-target="#help">Help</button></center>
+                    <div id="help" class="collapse">
+                        <br>
+                         <div class="row row-space-4 margin-b-4">
+                             <div class="col-sm-8 col-sm-offset-2" >
+                                 <div class="panel panel-default">
+                                     <div class="panel-heading"><h5>Field description to fill in the parameters </h5></div>
+                                     <div class="panel-body">
+                                        <p><strong>Field name.</strong> Define the name of the field that will be showed later when investigator requested to add the information</p>
+                                        <p><strong>Order.</strong> Define the order that these parameters are presented in the form</p>
+                                        <p><strong>Used.</strong> Click on the Used check box to display the parameter in the form</p>
+                                        <p><strong>Searchable.</strong>Select if the field should be used for trigger the condition for searching.<br>
+                                        Note.- This functionality will be implemted in the next iSkyLIMS release </p>
+                                        <p><strong>Field Type.</strong> There are 3 field types: String, Date, and Option List<br>
+                                        - Use string for having any kind of letter and numbers, <br>
+                                        - Date to display a calender <br>
+                                        - Option List. To select only the predefined values. </p>
+                                        <p><strong>Option Values.</strong> It is only valid when the parameter is defined as “Option List”. <br>
+                                        Set the possible values that parameter could have, when presenting to the Investigator as a selection option list. <br>
+                                        To define the values, write them <strong>separating by commas “,”</strong> and without any blank space between the option values.</p>
+                                        <p><strong>Description.</strong> field is optional and you can type some few words to explain the parameter</p>
+                                    </div>  <!--  end of panel body  -->
+                                </div> <!--// end panel -->
+                            </div> <!--// end col-sm-8  -->
+                        </div> <!--// end row -->
+                    </div>
+
+                    <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                    </form>
+                    <script>
+                        $(document).ready(function () {
+                            $("#defineSampleProjectFields").submit(function (e) {
+                                //stop submitting the form to see the disabled button effect
+                                //e.preventDefault();
+                                //disable the submit button
+                                var table_data1 = table1.getData()
+                                var data1_json = JSON.stringify(table_data1)
+                                $("<input />").attr("type", "hidden")
+                                  .attr("name", "table_data1")
+                                  .attr("value", data1_json)
+                                  .appendTo("#defineSampleProjectFields");
+                                $("#btnSubmit").attr("disabled", true);
+                                return true;
+                            });
+                        });
+                    </script>
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+
+        </div> <!--// end col-sm-7  -->
+
+    </div> <!--// end row -->
+{% endif %}
+
+
+
+
+<!-- End of FORM for defining protocol parameters -->
+
+{% endblock %}

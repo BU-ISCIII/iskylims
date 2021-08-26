@@ -1,0 +1,268 @@
+{% extends 'iSkyLIMS_wetlab/base.html' %}
+
+{% load static %}
+
+{% block content %}
+{% csrf_token %}
+{% if get_user_names %}
+    <div class="row row-space-2 margin-b-4">
+      <div class="col-sm-8 col-sm-offset-2">
+          <div class="panel panel-default">
+            <div class="panel-heading">Fill the <b>user name</b> and the <b>Used Library Kit</b> for each project in the run {{ get_user_names.experiment_name }} </div>
+            <div class="panel-body"> This is the second, and the last, FORM that user need to fill down to have the information about the run<BR>
+             Once the name of the user and the libray Kit used in the run, were filled and submited, the next page will show the link to download the files
+             that can be used to import to illumina Base Space
+             </div> <!--  end of panel body -->
+          </div> <!--  end of panel  -->
+       </div> <!--  end of col-sm-8 -->
+    </div> <!--  end of row -->
+      <!--    Progress Step bar for the Form -->
+    <BR>
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-8 col-sm-offset-2" >
+            <ol class="track-progress" data-steps="3">
+                <li class="done"> <span>Upload Sample Sheet</span><i></i></li><!--
+                --><li class="active"><span>Assign Library Kit</span></li><!--
+                --><li><span>Show Results</span><i></i></li>
+            </ol>
+        </div> <!--// end col-sm-4  -->
+    </div> <!--// end row -->
+    <BR>
+      <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-8 col-sm-offset-2">
+            <p>The following information have been collected from the Sample Sheet uploaded previously.<br>
+            It contains the userid information. Correct in the user name field if this information need to be changed</p>
+            <p>Write down the Library kit used for each project</p>
+        </div> <!--// end col-sm-8  -->
+    </div> <!--// end row -->
+
+    <!-- Prepare the FORM for step 2 -->
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-8" >
+        <div class="panel panel-default">
+          <div class="panel-heading">Form to upload the Sample Sheet file. Run Parameters definition</div>
+          <div class="panel-body">
+            <form method="post" required name="getSample2" id="getSample2" class="form-horizontal">
+            {% csrf_token %}
+                <input type="hidden"name="action" value="displayResult"/>
+                    <div class="form-group required">
+                        <label class="col-sm-4 control-label" for="experimentname">Run Name : </label>
+                        <div class="col-sm-6"><input class="form-control" required = "required" type="text" name="experimentname" size="60" maxlength="50" value="{{ get_user_names.experiment_name }}"></div>
+                        <br><br>
+                        <label class="col-sm-4" for="runindexlibraryname">Index Library Name : </label>
+                        <div class="col-sm-6"><input class="form-control"  required = "required" type="text" name="runindexlibraryname" size="60" maxlength="50" value="{{ get_user_names.index_library_name }}"></div>
+                        <br><br>
+                    </div>
+                    {% for key, values in get_user_names.projects_user %}
+                         <div class="form-group required">
+                             <label class="col-sm-10" for="project">Project name : {{ key }}</label><br><br>
+                               <input type="hidden" name="project" value="{{key}}"/>
+                             <label class="col-sm-4 control-label" for="username" >User name : </label>
+                            <div class="col-sm-6"><input id ="users" class="form-control" required = "required" type="text" name="username" size="60" maxlength="50" value="{{ values }}"> </div>
+                             <br><br>
+                            <label class="col-sm-4 control-label for="libkit" >UsedLibrary Kit : </label>
+                             <div class="col-sm-6">
+                                 <select class="form-control" id="dropdown" name="libraryKit">
+                                    {% for value in get_user_names.used_libraryKit %}
+                                        <option value="{{ value }}">{{ value }}</option>
+                                    {% endfor %}
+                                 </select>
+                            </div>
+
+                            <br><br>
+                            <label class="col-sm-4" for="projectindexlibraryname">Index Library Name : </label>
+                            <div class="col-sm-6"><input class="form-control"  required = "required" type="text" name="projectindexlibraryname" size="60" maxlength="50" value="{{ get_user_names.index_library_name }}"></div>
+                            <br><br>
+                         </div>
+                    {% endfor %}
+                     <input type="hidden" name="runname" value="{{get_user_names.runname}}"/>
+                    <br>
+                    <br>
+                    <input id = "btnSubmit"  class="btn pull-right btn-primary" type="submit" value="Submit">
+
+          </form>
+          </div> <!--// end panel  -->
+         </div> <!--// end col-sm-8  -->
+         </div> <!--// end row -->
+          <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-8" >
+                <div class="panel panel-default">
+                    <div class="panel-heading">Notes for user validation</div>
+                    <div class="panel-body">
+                        <p> <strong>Submit button is disabled</strong> if any of the user names is not previoulsy defined in database or if it is set by using the autocompleted function <BR>
+                        </p>
+                    </div> <!--// end panel-body  -->
+                </div> <!--// end panel  -->
+            </div> <!--// end col-sm-8  -->
+          </div> <!--// end row -->
+        <!--script to validate the user name. submit button is disabled until valid input -->
+       <script>
+        var arr = {{ get_user_names.aval_users |safe }}
+
+        function checkInputs() {
+          var isValid = true;
+
+          var arr = {{ get_user_names.aval_users |safe }};
+          $('input').filter('[id=users]').each(function() {
+            var value = $(this).val();
+            if ( jQuery.inArray(value , arr) <0 ){
+              $('#btnSubmit').prop('disabled', true);
+              isValid = false;
+              return false;
+            }
+          });
+          if(isValid) {
+              $('#btnSubmit').prop('disabled', false) }
+          return isValid;
+        }
+
+        //Enable or disable button based on if user names are valid or not
+        $('input').filter('[id=users]').on('keyup',function() {
+        valid = checkInputs();
+        })
+
+        checkInputs()
+       </script>
+         <!--script ends here-->
+
+        <!--script to disable the submit button -->
+        <script>
+            $(document).ready(function () {
+                $("#getSample").submit(function (e) {
+                    //stop submitting the form to see the disabled button effect
+                    // e.preventDefault();
+                    //disable the submit button
+                    $("#btnSubmit").attr("disabled", true);
+                    return true;
+                });
+            });
+        </script>
+         <!--script ends here-->
+
+    {% elif completed_form %}
+        {% csrf_token %}
+        {% for key, val in completed_form%}
+          {%if key == "runname" %}
+          <BR>
+
+            <div class="row row-space-2 margin-b-4">
+                <div class="col-sm-8 col-sm-offset-2" >
+                    <ol class="track-progress" data-steps="3">
+                        <li class="done"> <span>Upload Sample Sheet</span><i></i></li><!--
+                        --><li class="done"><span>Assign Library Kit</span></li><!--
+                        --><li class="active"><span>Show Results</span><i></i></li>
+                    </ol>
+                </div> <!--// end col-sm-4  -->
+            </div> <!--// end row -->
+        <BR>
+             <div class="row row-space-2 margin-b-4">
+               <div class="col-sm-8 col-sm-offset-2">
+                 <div class="panel panel-default">
+                   <div class="panel-heading"><b>Run configuration have been sucessfully stored</b><BR>For the run name : <b>{{ val }} </b></div>
+                   <div class="panel-body"> All the required information is stored now on database. <BR>
+                    The files to be imported to Illumina Base Space that can be downloaded in the links below
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+             </div> <!--  end of col-sm-8 -->
+           </div> <!--  end of row -->
+        {%endif%}
+        {% endfor %}
+
+        {% for key, values in completed_form %}
+          {% if key != 'runname'%}
+            <div class="row row-space-2 margin-b-4">
+             <div class="col-sm-8 col-sm-offset-2">
+              <div class="panel panel-default">
+                    <div class="panel-heading">Library Kit : for the run name <b>{{ key }} </b></div>
+                    <div class="panel-body"> Download the file for Illumina Base Space :
+                        <a href="/wetlab/{{ values }}" download>{{ values|cut:"documents/wetlab/BaseSpaceMigrationFiles/" }}<span class="glyphicon glyphicon-download-alt"></span></a>
+
+                    </div> <!--  end of panel body -->
+                </div> <!--  end of panel  -->
+             </div> <!--  end of col-sm-8 -->
+           </div> <!--  end of row -->
+
+          {%endif%}
+        {% endfor %}
+
+
+    {%else %}
+<!--    Progress Step bar for the Form -->
+    <BR>
+
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-8 col-sm-offset-2" >
+            <ol class="track-progress" data-steps="3">
+                <li class="active"> <span>Upload Sample Sheet</span><i></i></li><!--
+                --><li><span>Assign Library Kit</span></li><!--
+                --><li><span>Show Results</span><i></i></li>
+            </ol>
+        </div> <!--// end col-sm-4  -->
+    </div> <!--// end row -->
+
+    <BR>
+
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-8 col-sm-offset-1">
+            <p>This FORM will be used to generated the input file that <a href="https://basespace.illumina.com/home/index">BaseSpace</a> requires to execute the run</p>
+            <BR>
+
+
+        </div> <!--// end col-sm-8  -->
+    </div> <!--// end row -->
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7" >
+        <div class="panel panel-default">
+          <div class="panel-heading">Form to upload the Sample Sheet file</div>
+          <div class="panel-body">
+            <form method="post" enctype="multipart/form-data" name="getSample" id="getSample" class="form-horizontal">
+            {% csrf_token %}
+                <div class="form-group required">
+                  <input type="hidden" name="action" value="uploadFile"/>
+                  <label class="col-sm-4 control-label" for="filecsv" >Upload Sample Sheet file </label>
+                  <div class="col-sm-8"><input class="form-control" type="file" required = "required" accept ="text/csv" name="myfile"size="80"></div>
+                <br>
+                <br>
+                </div>
+                <!--<div class="form-group">
+                  <label class="col-sm-4 control-label" for="center" >Fill the Request Center </label>
+                  <div class="col-sm-8"><input class="form-control" type="text" name="center" size="60" maxlength="100"></div>
+                </div>-->
+                <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
+            </form>
+
+         </div>  <!--  end of panel body  -->
+         <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
+        </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  -->
+
+        <div class="col-sm-4 col-sm-offset-1" >
+            <BR> <BR> <BR>
+        <div class="panel panel-default">
+          <div class="panel-heading">Form to upload the Sample Sheet file</div>
+          <div class="panel-body">This Form is used to upload the Sample Sheet generated by Illumina Experience Manager tool.
+          <BR> Guide for Sample Sheet creation and download the IEM tool can be found at illumina Web page.
+          <BR> Click <a href="https://www.illumina.com/informatics/research/experimental-design/illumina-experiment-manager.html" target="_blank"> here</a> for getting this information.
+          </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        </div> <!--// end col-sm-4  -->
+    </div> <!--// end row -->
+
+<!--script to disable the submit button -->
+
+<script>
+    $(document).ready(function () {
+        $("#getSample").submit(function (e) {
+            //stop submitting the form to see the disabled button effect
+            // e.preventDefault();
+            //disable the submit button
+            $("#btnSubmit").attr("disabled", true);
+            return true;
+        });
+    });
+</script>
+ <!--script ends here-->
+
+    {% endif %}
+
+{% endblock %}

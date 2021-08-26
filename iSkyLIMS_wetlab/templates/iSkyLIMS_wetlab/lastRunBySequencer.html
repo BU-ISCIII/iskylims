@@ -1,0 +1,45 @@
+{% extends 'iSkyLIMS_wetlab/base.html' %}
+{% load static %}
+{% block content %}
+{% if no_runs %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-8">
+            <div class="panel panel-warning">
+                <div class="panel-heading"><h3 style="text-align:center">There are not Runs yet defined on database.</h3> </div>
+                <div class="panel-body">
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-7 -->
+    </div> <!--  end of row -->
+
+{% else %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-8">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Last Run executed for each sequencer</h3> </div>
+                <div class="panel-body scroll-wrapper-sm-7">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Sequencer Name</th>
+                                <th>Platform</th>
+                                <th>Run Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sequencer, platform, id, name in last_runs %}
+                                <tr>
+                                    <td>{{sequencer}}</td>
+                                    <td>{{platform}}</td>
+                                    <td><a href="/wetlab/displayRun={{id}}">{{name}}</a> </td>
+
+                                </tr>
+                            {%endfor%}
+                        </tbody>
+                    </table>
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-7 -->
+    </div> <!--  end of row -->
+{% endif %}
+{% endblock %}

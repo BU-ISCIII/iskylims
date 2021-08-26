@@ -1,0 +1,199 @@
+{% load i18n %}
+{% load zinnia %}
+<article id="entry-{{ object.pk }}" class="hentry{% if object.featured %} featured{% endif %}" itemscope itemtype="http://schema.org/Article">
+
+ {#  Typical panel panel-default panel-heading panel-body panel-footer layout  #}
+<div class="panel panel-default">
+
+<div class="panel-heading">
+  {% block entry-header %}
+  <header class="entry-header">
+    {% block entry-title %}
+    <h2 class="entry-title" itemprop="name">
+      <a href="{{ object.get_absolute_url }}" title="{{ object.title }}" rel="bookmark" itemprop="url">
+        {{ object.title|widont }}
+      </a>
+    </h2>
+    {% endblock entry-title %}
+    {% block entry-info %}
+    <p class="entry-info">
+      {% block entry-authors %}
+      {% with authors=object.authors.all %}
+      {% if authors|length %}
+      {% trans "Written by" %}
+      {% for author in authors %}
+      <span class="vcard author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <a href="{{ author.get_absolute_url }}" class="fn url{% if not author.get_full_name %} nickname{% endif %}" rel="author"
+           title="{% blocktrans %}Show all {{ author }}'s entries{% endblocktrans %}" itemprop="url">{{ author }}</a></span>{% if not forloop.last %}, {% endif %}
+      {% endfor %}
+      {% trans "on" context "on date" %}
+      {% else %}
+      {% trans "Written on" context "on date" %}
+      {% endif %}
+      {% endwith %}
+      {% endblock entry-authors %}
+      {% block entry-published %}
+      <time class="published" datetime="{{ object.publication_date|date:"c" }}" itemprop="datePublished">{{ object.publication_date|date:"DATE_FORMAT" }}</time>
+      {% endblock entry-published %}
+      {% block entry-categories %}
+      {% with categories=object.categories.all %}
+      {% if categories|length %}
+      {% trans "in" context "in categories" %}
+      {% for category in categories %}
+      <a href="{{ category.get_absolute_url }}"
+         title="{% blocktrans %}Show all entries in {{ category }}{% endblocktrans %}"
+         rel="tag category" itemprop="articleSection">{{ category }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}.
+      {% endwith %}
+      {% endblock entry-categories %}
+    </p>
+    {% endblock entry-info %}
+    {% block entry-last-update %}
+    <p class="entry-last-update">
+      {% trans "Last update on" %} <time class="updated" datetime="{{ object.last_update|date:"c" }}" itemprop="dateModified">{{ object.last_update|date:"DATE_FORMAT" }}</time>.
+    </p>
+    {% endblock entry-last-update %}
+    {% block entry-creation-date %}
+    <meta itemprop="dateCreated" content="{{ object.creation_date|date:"c" }}" />
+    {% endblock entry-creation-date %}
+  </header>
+  {% endblock entry-header %}
+</div> {# panel-heading #}
+
+<div class="panel-body" >
+  {% block entry-body %}
+  <div class="entry-body">
+    {% block entry-word-count %}
+    <meta itemprop="wordCount" content="{{ object.word_count }}" />
+    {% endblock entry-word-count %}
+
+    {% block entry-image %}
+    {% if object.image %}
+    <div class="entry-image">
+      {% if continue_reading %}
+      <a href="{{ object.get_absolute_url }}" title="{{ object.title }}" rel="bookmark">
+        {% endif %}
+        <figure itemprop="image" itemscope itemtype="http://schema.org/ImageObject">
+          <img src="{{ object.image.url }}" alt="{{ object.image_caption|default:object.title }}" itemprop="contentUrl" />
+          {% if object.image_caption %}
+          <figcaption itemprop="caption">{{ object.image_caption }}</figcaption>
+          {% endif %}
+        </figure>
+        {% if continue_reading %}
+      </a>
+      {% endif %}
+    </div>
+    {% endif %}
+    {% endblock entry-image %}
+
+    {% block entry-lead %}
+    {% if not continue_reading and object.lead %}
+    <div class="entry-summary" itemprop="headline">
+      {{ object.html_lead|safe }}
+    </div>
+    {% endif %}
+    {% endblock entry-lead %}
+
+    {% block entry-content %}
+    <div class="entry-content testFont" itemprop="articleBody" > {# testFont for a bigger font #}
+      {{ object_content|safe }}
+    </div>
+    {% endblock entry-content %}
+
+    {% block continue-reading %}
+    {% if continue_reading and object_content.has_more %}
+    <p class="continue-reading">
+      <a href="{{ object.get_absolute_url }}"
+         title="{% blocktrans with object=object.title percent=object_content.remaining_percent|floatformat:0 %}{{ percent }}% of {{ object }} still remains to read.{% endblocktrans %}"
+         rel="bookmark" itemprop="url">
+        {% trans "Continue reading" %}
+      </a>
+    </p>
+    {% endif %}
+    {% endblock continue-reading %}
+  </div>
+  {% endblock entry-body %}
+
+</div> {# panel-body #}
+
+<div class="panel-footer">
+  {% block entry-footer %}
+  <footer class="entry-footer">
+    {% block entry-tags %}
+    <p class="entry-tags">
+      <strong>{% trans "Tags" %}</strong> :
+      <meta itemprop="keywords" content="{{ object.tags }}" />
+      {% for tag in object.tags_list %}
+      <a href="{% url 'zinnia:tag_detail' tag %}"
+         title="{% blocktrans %}Show all entries tagged by {{ tag }}{% endblocktrans %}"
+         rel="tag" itemprop="articleSection">{{ tag }}</a>
+      {% empty %}
+      <span>{% trans "No tags" %}</span>
+      {% endfor %}
+    </p>
+    {% endblock entry-tags %}
+
+    {# Disabling short urls and discussions  in entries  #}
+    {% comment %}
+    {% block entry-shorturl %}
+    <p class="entry-shorturl">
+      <strong>{% trans "Short url" %}</strong> :
+      <a href="{{ object.short_url }}"
+         title="{% blocktrans with object=object.title %}Short URL to {{ object }}{% endblocktrans %}"
+         rel="shortlink">
+        {{ object.short_url }}
+      </a>
+    </p>
+    {% endblock entry-shorturl %}
+    {% block entry-discussions %}
+    <p class="entry-discussions">
+      <strong>{% trans "Discussions" %}</strong> :
+      {% block entry-comments %}
+      {% with comment_count=object.comment_count %}
+      <meta itemprop="commentCount" content="{{ object.comment_count }}" />
+      <meta itemprop="discussionUrl" content="{{ object.get_absolute_url }}#comments" />
+      {% if comment_count %}
+      <a href="{{ object.get_absolute_url }}#comments"
+         title="{% blocktrans with object=object.title %}Comments on {{ object }}{% endblocktrans %}">
+        {% blocktrans count comment_count=comment_count %}{{ comment_count }} comment{% plural %}{{ comment_count }} comments{% endblocktrans %}
+      </a>
+      {% else %}
+      {% if object.comments_are_open %}
+      {% trans "No comments yet." %}
+      <a href="{{ object.get_absolute_url }}#comment-form"
+         title="{% blocktrans with object=object.title %}Leave a comment on {{ object }}{% endblocktrans %}">
+        {% trans "Be first to comment!" %}
+      </a>
+      {% else %}
+      {% trans "Comments are closed." %}
+      {% endif %}
+      {% endif %}
+      {% endwith %}
+      {% endblock entry-comments %}
+      {% block entry-pingbacks %}
+      {% with pingback_count=object.pingback_count %}
+      {% if pingback_count %}
+      , <a href="{{ object.get_absolute_url }}#pingbacks" title="{% blocktrans with object=object.title %}Pingbacks on {{ object }}{% endblocktrans %}">
+        {% blocktrans count pingback_count=pingback_count %}{{ pingback_count }} pingback{% plural %}{{ pingback_count }} pingbacks{% endblocktrans %}
+      </a>
+      {% endif %}
+      {% endwith %}
+      {% endblock entry-pingbacks %}
+      {% block entry-trackbacks %}
+      {% with trackback_count=object.trackback_count %}
+      {% if trackback_count %}
+      , <a href="{{ object.get_absolute_url }}#trackbacks" title="{% blocktrans with object=object.title %}Trackbacks on {{ object }}{% endblocktrans %}">
+        {% blocktrans count trackback_count=trackback_count %}{{ trackback_count }} trackback{% plural %}{{ trackback_count }} trackbacks{% endblocktrans %}
+      </a>
+      {% endif %}
+      {% endwith %}
+      {% endblock entry-trackbacks %}
+    </p>
+    {% endblock entry-discussions %}
+	{% endcomment %}
+
+  </footer>
+  {% endblock entry-footer %}
+</div> {# panel-footer #}
+
+</div> {# panel panel-default #}
+</article>

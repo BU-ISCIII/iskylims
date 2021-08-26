@@ -1,0 +1,136 @@
+{% extends 'iSkyLIMS_wetlab/base.html' %}
+{% load static %}
+{% block content %}
+{% csrf_token %}
+<style>
+    .scroll-wrapper-sm-7 {
+        max-height: 350px;
+        overflow: auto;
+        display:inline-block;
+        width: 670px;
+    }
+</style>
+
+{% if error_message %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7 col-sm-offset-3">
+            <div class="panel panel-danger">
+                <div class="panel-heading"><h3 style="text-align:center">Not matches</h3> </div>
+                <div class="panel-body">
+                    {% for values in error_message %}
+                        <h4>{{values}}</h4>
+                    {% endfor %}
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-7 -->
+    </div> <!--  end of row -->
+{% endif %}
+
+
+
+
+{% if display_run_list %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>The following list matches with yor search:</h3> </div>
+                <div class="panel-body scroll-wrapper-sm-7">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Run Name</th>
+                                <th>Run Completion date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for id, name, date in display_run_list %}
+                                <tr>
+                                    <td><a href="/wetlab/displayRun={{id}}">{{name}}</a> </td>
+                                    <td>{{date}}</td>
+                                </tr>
+                            {%endfor%}
+                        </tbody>
+                    </table>
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-7 -->
+    </div> <!--  end of row -->
+
+
+{% else %}
+    <!-- FORM for searching RUN  Information -->
+    <div class="row row-space-2 margin-b-4">
+      <div class="col-sm-7" >
+        <div class="panel panel-default">
+          <div class="panel-heading"><strong>Searching RUN</strong></div>
+          <div class="panel-body">
+            <form method="post" enctype="multipart/form-data" name="searchrun" id="searchrun" class="form-horizontal well">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="runsearch"/>
+             <div class="form-group">
+                  <label class="col-sm-5  control-label" for="runname" >Fill the RUN name </label>
+                    <div class="col-sm-5"><input class="form-control" type="text" name="runname" id="runname" size="100" maxlength="100"></div>
+             </div>  <!-- end from-group   -->
+             <BR>
+             <div class="form-group">
+               <label class="col-sm-5 control-label" for="platform" >Platform</label>
+               <div class="col-sm-4"><select class="form-control" name="platform" id="platform">
+                               				<option value="">Choose a value</option>
+                                            {% for value in run_form_data.available_platforms %}
+                                                <option value="{{value}}">{{value}}</option>
+                                            {% endfor %}
+
+                                      </select>
+               </div>  <!-- end select input -->
+            </div>  <!-- end from-group   -->
+             <BR>
+             <div class="form-group">
+               <label class="col-sm-5 control-label" for="runstate" >Run state</label>
+               <div class="col-sm-4"><select class="form-control" name="runstate" id="runstate">
+                               				<option value="">Choose a value</option>
+                                            {% for value in run_form_data.run_states %}
+                                                <option value="{{value}}">{{value}}</option>
+                                            {% endfor %}
+                                      </select>
+               </div>  <!-- end select input -->
+
+             </div>  <!-- end from-group   -->
+             <br>
+                <div class="form-group">
+                  <label class="col-sm-5 control-label" for="startdate" >From Start Date (DD-MM-YYYY)</label>
+                  <div class="col-sm-5"><input class="form-control" type="date" name="startdate" value="" id="startdate"></div>
+            </div>  <!-- end from-group   -->
+                <br>
+                <div class="form-group">
+                  <label class="col-sm-5 control-label" for="enddate" >End Date Search (DD-MM-YYYY)</label>
+                  <div class="col-sm-5"><input class="form-control" type="date" name="enddate" value="" id="enddate"></div>
+            </div>  <!-- end from-group   -->
+            <br>
+                <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
+                <input class="btn pull-right btn-primary" type="submit" value="Submit">
+            </form>
+         </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  -->
+
+        <!-- Insert the help panel -->
+        <BR><BR>
+        <div class="col-sm-3 col-sm-offset-1">
+            <div class="panel panel-default">
+                <div class="panel-heading">Searching information of the RUN</div>
+                <div class="panel-body">
+                    <p>Searching information can be done on Runs or on Projects: <BR>
+                    <p>For extended help click on the button below.</p>
+                    <center><button id="myBtn"> Help </button></center>
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--  end col-sm-3  -->
+     <!-- Insert the Help window when clicking on the button -->
+        {% include 'iSkyLIMS_wetlab/search-help.html' %}
+
+    </div> <!--// end row -->
+    <!-- End of FORM for searching RUN information -->
+
+
+{% endif %}
+{% endblock %}

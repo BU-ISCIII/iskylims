@@ -1,0 +1,304 @@
+{% extends 'iSkyLIMS_wetlab/base.html' %}
+{% load static %}_
+{% block content %}
+{% csrf_token %}
+<BR>
+{% if new_setting_defined %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12" >
+
+                <div class="col-sm-6" >
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h3>New {{new_setting_defined.settings}} , <strong>{{new_setting_defined.value}}</strong> was defined</h3> </div>
+                        <div class="panel-body">
+                            <br>
+                        </div>  <!--  end of panel body  -->
+                    </div> <!--// end panel -->
+                </div> <!--// end col-sm-6 -->
+
+        </div> <!--// end of sm-12 -->
+    </div> <!--// end row -->
+{% endif %}
+{% if ERROR %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12" >
+
+                <div class="col-sm-6" >
+                    <div class="panel panel-danger">
+                        <div class="panel-heading"><h3> {{ERROR.0.0}} </h3> </div>
+                        <div class="panel-body">
+                            <br>
+                            <p>The <strong>{{ERROR.1}}</strong> {{ERROR.0.0}}</p>
+                        </div>  <!--  end of panel body  -->
+                    </div> <!--// end panel -->
+                </div> <!--// end col-sm-6 -->
+
+        </div> <!--// end of sm-12 -->
+    </div> <!--// end row -->
+{% endif %}
+
+<div class="row row-space-2 margin-b-4">
+    <div class="col-sm-12" >
+        <h3>Define the Inital Settings</h3>
+        <div class="tab">
+            <button class="tablinks" onclick="summaryBin(event, 'species')" id="defaultOpen">Species</button>
+            <button class="tablinks" onclick="summaryBin(event, 'lab')">Laboratory Request</button>
+            <button class="tablinks" onclick="summaryBin(event, 'molecule')">Molecule Type</button>
+            <button class="tablinks" onclick="summaryBin(event, 'protocol')">Protocol Type</button>
+
+
+            <div id="species" class="tabcontent">
+                <div class="col-sm-11">
+                    <div class="col-sm-8">
+                        <br><br>
+                        <div class="panel panel-default">
+                            <div class="panel-heading"><h3>Define new Specie </h3></div>
+                            <div class="panel-body">
+                                <form method="post" enctype="multipart/form-data" name="defineNewSpecie" id="defineNewSpecie" class="form-horizontal">
+                                    {% csrf_token %}
+                                    <div class="form-group required">
+                                        <input type="hidden" name="action" value="defineNewSpecie"/>
+                                        <label class="col-sm-5 control-label">Define new Specie</label>
+                                        <div class="col-sm-6"><input class="form-control" required = "required" type="text"  name="specieName" size="80"></div>
+                                        <BR> <BR>
+                                    </div>
+                                    <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
+                                </form>
+                            </div> <!--  end of panel body -->
+                        </div> <!--  end of panel  -->
+                    </div> <!--  end of col-sm-6 -->
+                    <div class="col-sm-4">
+                        <br><br>
+                        <div class="panel panel-default">
+                            <div class="panel-heading"><h3>Species defined</h3></div>
+                            <div class="panel-body">
+                                {% if initial_data.species_data %}
+                                    <table class="table table-hover">
+                                       <thead>
+                                          <tr>
+                                            <th>Specie Name</th>
+
+                                          </tr>
+                                       </thead>
+                                       <tbody>
+                                        {% for name , id in initial_data.species_data %}
+                                            <tr>
+                                                <td>{{name}}</td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% else %}
+                                    <h5>No Species have been defined yet</h5>
+                                {% endif %}
+                            </div> <!-- end of panel body -->
+                        </div> <!--  end of panel  -->
+                    </div> <!--  end of col-sm-6 -->
+                </div>  <!--  end of col-sm-11 -->
+            </div> <!--  end of species -->
+
+            <div id="lab" class="tabcontent">
+                <div class="col-sm-12">
+                    <div class="col-sm-7">
+                        <br><br>
+                        <div class="panel panel-default">
+                            <div class="panel-heading"><h3>Define new Laboratoy from the samples came from</h3></div>
+                            <div class="panel-body">
+                                <form method="post" enctype="multipart/form-data" name="defineNewLabRequest" id="defineNewLabRequest" class="form-horizontal">
+                                    {% csrf_token %}
+                                    <h5>Fill the follwing form for the Laboratory, Hospital or any institution from you could receive samples</h5>
+                                    <div class="form-group required">
+                                        <input type="hidden" name="action" value="defineNewLabRequest"/>
+                                        <div class="form-group">
+                                            <label class="col-sm-5 control-label">Define new Laboratory/Organization</label>
+                                            <div class="col-sm-6"><input class="form-control" required = "required" type="text"  name="labRequestName" size="80"></div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-5 control-label">Define Laboratory/organization coding name</label>
+                                            <div class="col-sm-6"><input class="form-control" required = "required" type="text"  name="labRequesCoding" size="80"></div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-5 control-label">Department Unit</label>
+                                            <div class="col-sm-6"><input class="form-control" type="text"  name="department" size="80"></div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-5 control-label">Contact Name</label>
+                                            <div class="col-sm-6"><input class="form-control" type="text"  name="contact" size="80"></div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-5 control-label">Contact Phone</label>
+                                            <div class="col-sm-6"><input class="form-control" type="text"  name="phone" size="80"></div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-5 control-label">Email Contact</label>
+                                            <div class="col-sm-6"><input class="form-control" type="email"  name="email" size="80"></div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="col-sm-5 control-label">Define address</label>
+                                            <textarea class="col-sm-6" id="address" name="address" rows="6" cols="50"></textarea>
+                                        </div>
+                                        <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
+                                    </div>
+                                </form> <!--  end of from -->
+                            </div> <!--  end of panel body -->
+                        </div> <!--  end of panel  -->
+                    </div> <!--  end of col-sm-8 -->
+                </div> <!--  end of col-sm-12 -->
+                <div class="col-sm-12">
+                    <br><br>
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h3>Laboratory/Hospital/Institution request defined</h3></div>
+                        <div class="panel-body">
+                            {% if initial_data.lab_request_data %}
+                                <table class="table table-hover">
+                                   <thead>
+                                      <tr>
+                                        <th>Lab Request Name</th>
+                                        <th>Lab code</th>
+                                        <th>Department</th>
+                                        <th>Contact Name</th>
+                                        <th>Contact phone</th>
+                                        <th>Email</th>
+                                        <th>Address</th>
+                                      </tr>
+                                   </thead>
+                                   <tbody>
+                                    {% for name, code, dept, contact, phone, email, addr, id in initial_data.lab_request_data %}
+                                        <tr>
+                                            <td>{{name}}</td>
+                                            <td>{{code}}</td>
+                                            <td>{{dept}}</td>
+                                            <td>{{contact}}</td>
+                                            <td>{{phone}}</td>
+                                            <td>{{email}}</td>
+                                            <td>{{addr}}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% else %}
+                                <h5>No Laboratory, Hospital or any institution have been defined yet</h5>
+                            {% endif %}
+                        </div> <!-- end of panel body -->
+                    </div> <!--  end of panel  -->
+            </div>  <!--  end of col-sm-12 -->
+            </div> <!--  end of samples -->
+
+            <div id="molecule" class="tabcontent">
+                <div class="col-sm-11">
+                    <div class="col-sm-8">
+                        <br><br>
+                        <div class="panel panel-default">
+                            <div class="panel-heading"><h3>Define new Molecule type </h3></div>
+                            <div class="panel-body">
+                                <form method="post" enctype="multipart/form-data" name="defineMoleculeType" id="defineMoleculeType" class="form-horizontal">
+                                    {% csrf_token %}
+                                    <div class="form-group required">
+                                        <input type="hidden" name="action" value="defineMoleculeType"/>
+                                        <label class="col-sm-5 control-label">Define new Molecule type</label>
+                                        <div class="col-sm-6"><input class="form-control" required = "required" type="text"  name="moleculeName" size="80"></div>
+                                        <BR> <BR>
+                                    </div>
+                                    <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
+                                </form>
+                            </div> <!--  end of panel body -->
+                        </div> <!--  end of panel  -->
+                    </div> <!--  end of col-sm-8 -->
+                    <div class="col-sm-4">
+                        <br><br>
+                        <div class="panel panel-default">
+                            <div class="panel-heading"><h3>Molecule types defined</h3></div>
+                            <div class="panel-body">
+                                {% if initial_data.molecule_type_data %}
+                                    <table class="table table-hover">
+                                       <thead>
+                                          <tr>
+                                            <th>Molecule Type</th>
+                                          </tr>
+                                       </thead>
+                                       <tbody>
+                                        {% for name , id in initial_data.molecule_type_data %}
+                                            <tr>
+                                                <td>{{name}}</td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% else %}
+                                    <h5>No Molecule type have been defined yet</h5>
+                                {% endif %}
+                            </div> <!-- end of panel body -->
+                        </div> <!--  end of panel  -->
+                    </div> <!--  end of col-sm-4 -->
+                </div>  <!--  end of col-sm-11 -->
+            </div> <!--  end of molecule -->
+
+            <div id="protocol" class="tabcontent">
+                <div class="col-sm-11">
+                    <div class="col-sm-8">
+                        <br><br>
+                        <div class="panel panel-default">
+                            <div class="panel-heading"><h3>Define new Protocol Type</h3></div>
+                            <div class="panel-body">
+                                <form method="post" enctype="multipart/form-data" name="defineProtocolType" id="defineProtocolType" class="form-horizontal">
+                                    {% csrf_token %}
+                                    <div class="form-group required">
+                                        <input type="hidden" name="action" value="defineProtocolType"/>
+                                        <label class="col-sm-5 control-label">Define new Protocol type</label>
+                                        <div class="col-sm-6"><input class="form-control" required = "required" type="text"  name="protocolName" size="80"></div>
+                                        <BR> <BR>
+                                        <label class="col-sm-5 control-label">Select the Molecule type used for the protocol type</label>
+                                        <div class="col-sm-6">
+                                            <select class="form-control" required = "required" name="moleculeType" id="moleculeType">
+                                                <option value="">Select an option</option>
+                                                <option value="None">None</option>
+                                                {% for value , id in initial_data.molecule_type_data %}
+                                                    <option value="{{value}}">{{value}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>  <!-- end select input -->
+                                    </div>
+                                    <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
+                                </form>
+                            </div> <!--  end of panel body -->
+                        </div> <!--  end of panel  -->
+                    </div> <!--  end of col-sm-8 -->
+                    <div class="col-sm-4">
+                        <br><br>
+                        <div class="panel panel-default">
+                            <div class="panel-heading"><h3>Protocol types defined</h3></div>
+                            <div class="panel-body">
+                                {% if initial_data.protocol_type_data %}
+                                    <table class="table table-hover">
+                                       <thead>
+                                          <tr>
+                                            <th>Protocol Type</th>
+                                            <th>Molecule Type</th>
+                                          </tr>
+                                       </thead>
+                                       <tbody>
+                                        {% for name , id, molecule in initial_data.protocol_type_data %}
+                                            <tr>
+                                                <td>{{name}}</td>
+                                                <td>{{molecule}}</td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% else %}
+                                    <h5>No Protocol type have been defined yet</h5>
+                                {% endif %}
+                            </div> <!-- end of panel body -->
+                        </div> <!--  end of panel  -->
+                    </div> <!--  end of col-sm-4 -->
+                </div>  <!--  end of col-sm-11 -->
+            </div> <!--  end of molecule -->
+
+        </div> <!--  end of tab -->
+    </div> <!--// end col-sm-12  -->
+</div> <!--// end row -->
+<script>
+    // Get the element with id="defaultOpen" and click on it
+    document.getElementById("defaultOpen").click();
+</script>
+{% endblock %}

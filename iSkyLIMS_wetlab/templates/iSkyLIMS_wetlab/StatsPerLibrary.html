@@ -1,0 +1,461 @@
+{% extends 'iSkyLIMS_wetlab/base.html' %}
+{% load static %}
+{% block content %}
+{% csrf_token %}
+
+{% include "iSkyLIMS_core/graphic_chart_functionality.html" %}
+
+{% if error_message %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7 col-sm-offset-3">
+            <div class="panel panel-danger">
+                <div class="panel-heading"><h3 style="text-align:center">Not matches</h3> </div>
+                <div class="panel-body">
+                    {% for values in error_message %}
+                        <h4>{{values}}</h4>
+                    {% endfor %}
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-7 -->
+    </div> <!--  end of row -->
+{% endif %}
+
+{% if display_library_stats %}
+<div class="row row-space-2 margin-b-4">
+      <div class="col-sm-8 col-sm-offset-1" >
+        <div class="panel panel-default">
+          <div class="panel-heading"><h2>Statistics result for library <strong>{{display_library_stats.library_name}}</strong> </h2></div>
+           <div class="panel-body">
+                <h3> Project Names which are using the library {{display_library_stats.library_name}} are  : <BR>
+                    {% for value in display_library_stats.project_names %}
+                        {{ value }} <BR>
+                    {% endfor%}
+                </h3>
+
+            </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        </div> <!--// end col-sm-8  -->
+    </div> <!--// end row -->
+    <BR>
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="col-sm-6" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Yield M Bases Statistics  for Lane 1 </h3></div>
+                    <div class="panel-body">
+                        <!-- Column 2 Chart will start here-->
+                            <div id="chart-1"> </div>
+                        <!-- dumping JavaScript code here -->
+                        {{ display_library_stats.yield_mb_graphic1 |safe }}
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-6  -->
+
+            <div class="col-sm-6" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Yield M Bases Statistics  for Lane 2</h3></div>
+                    <div class="panel-body">
+                        <!-- Column 2 Chart will start here-->
+                        <div id="chart-2"> </div>
+                        <!-- dumping JavaScript code here -->
+                        {{ display_library_stats.yield_mb_graphic2 |safe }}
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-6  -->
+        </div> <!--// end col-sm 12 -->
+    </div> <!--// end row -->
+
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="col-sm-6" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Yield M Bases Statistics  for Lane 3 </h3></div>
+                    <div class="panel-body">
+                        <!-- Column 2 Chart will start here-->
+                            <div id="chart-3"> </div>
+                        <!-- dumping JavaScript code here -->
+                        {{ display_library_stats.yield_mb_graphic3 |safe }}
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-6  -->
+
+            <div class="col-sm-6" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Yield M Bases Statistics  for Lane 4</h3></div>
+                    <div class="panel-body">
+                        <!-- Column 2 Chart will start here-->
+                        <div id="chart-4"> </div>
+                        <!-- dumping JavaScript code here -->
+                        {{ display_library_stats.yield_mb_graphic4 |safe }}
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-6  -->
+        </div> <!--// end col-sm 12 -->
+    </div> <!--// end row -->
+
+    <!-- Q 30 quality stats graphics-->
+
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="col-sm-6" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Percent of >Q30 Statistics  for Lane 1 </h3></div>
+                    <div class="panel-body">
+                        <!-- Column 2 Chart will start here-->
+                            <div id="q30-chart-1"> </div>
+                        <!-- dumping JavaScript code here -->
+                        {{ display_library_stats.q30_graphic1 |safe }}
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-6  -->
+
+            <div class="col-sm-6" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Percent of >Q30 Statistics  for Lane 2</h3></div>
+                    <div class="panel-body">
+                        <!-- Column 2 Chart will start here-->
+                        <div id="q30-chart-2"> </div>
+                        <!-- dumping JavaScript code here -->
+                        {{ display_library_stats.q30_graphic2 |safe }}
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-6  -->
+        </div> <!--// end col-sm 12 -->
+    </div> <!--// end row -->
+
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="col-sm-6" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Percent of >Q30 Statistics  for Lane 3 </h3></div>
+                    <div class="panel-body">
+                        <!-- Column 2 Chart will start here-->
+                            <div id="q30-chart-3"> </div>
+                        <!-- dumping JavaScript code here -->
+                        {{ display_library_stats.q30_graphic3 |safe }}
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-6  -->
+
+            <div class="col-sm-6" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Percent of >Q30 Statistics  for Lane 4</h3></div>
+                    <div class="panel-body">
+                        <!-- Column 2 Chart will start here-->
+                        <div id="q30-chart-4"> </div>
+                        <!-- dumping JavaScript code here -->
+                        {{ display_library_stats.q30_graphic4 |safe }}
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-6  -->
+        </div> <!--// end col-sm 12 -->
+    </div> <!--// end row -->
+
+    <!-- Mean quality Score stats graphics-->
+
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="col-sm-6" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Mean Quality Score Statistics  for Lane 1 </h3></div>
+                    <div class="panel-body">
+                        <!-- Column 2 Chart will start here-->
+                            <div id="mean-chart-1"> </div>
+                        <!-- dumping JavaScript code here -->
+                        {{ display_library_stats.mean_graphic1 |safe }}
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-6  -->
+
+            <div class="col-sm-6" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Mean Quality Score Statistics  for Lane 2</h3></div>
+                    <div class="panel-body">
+                        <!-- Column 2 Chart will start here-->
+                        <div id="mean-chart-2"> </div>
+                        <!-- dumping JavaScript code here -->
+                        {{ display_library_stats.mean_graphic2 |safe }}
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-6  -->
+        </div> <!--// end col-sm 12 -->
+    </div> <!--// end row -->
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="col-sm-6" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Mean Quality Score Statistics  for Lane 3 </h3></div>
+                    <div class="panel-body">
+                        <!-- Column 2 Chart will start here-->
+                            <div id="mean-chart-3"> </div>
+                        <!-- dumping JavaScript code here -->
+                        {{ display_library_stats.mean_graphic3 |safe }}
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-6  -->
+
+            <div class="col-sm-6" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Mean Quality Score Statistics  for Lane 4</h3></div>
+                    <div class="panel-body">
+                        <!-- Column 2 Chart will start here-->
+                        <div id="mean-chart-4"> </div>
+                        <!-- dumping JavaScript code here -->
+                        {{ display_library_stats.mean_graphic4 |safe }}
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-6  -->
+        </div> <!--// end col-sm 12 -->
+    </div> <!--// end row -->
+    {% if  display_library_stats.error_library %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="panel panel-danger">
+                <div class="panel-body">
+                    <p>When looking for other libraries to compare this library with others based on the dates defined on the FORM .
+                    {{ display_library_stats.error_library }}</p>
+                    <p>For that reason only the library  {{display_library_stats.library_name}} graphics are showed</p>
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-6  -->
+    </div> <!--// end row -->
+    {% endif %}
+    <!-- Q 30 quality Library statistics graphics-->
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="col-sm-6" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Comparation of Percent of >Q30 Statistics </h3></div>
+                    <div class="panel-body">
+                        <!-- Column 2 Chart will start here-->
+                            <div id="comp-q30-chart-1"> </div>
+                        <!-- dumping JavaScript code here -->
+                        {{ display_library_stats.comp_q30_graphic |safe }}
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-6  -->
+
+            <div class="col-sm-6" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Comparation of Mean Quality Score Statistics </h3></div>
+                    <div class="panel-body">
+                        <!-- Column 2 Chart will start here-->
+                            <div id="comp-mean-chart-1"> </div>
+                        <!-- dumping JavaScript code here -->
+                        {{ display_library_stats.comp_mean_graphic |safe }}
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-6  -->
+        </div> <!--// end col-sm 12 -->
+    </div> <!--// end row -->
+
+    <div class="row row-space-2 margin-b-4">
+    <div class="col-sm-12" >
+        <div class="col-sm-6" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Comparation of Number of Bases Statistics </h3></div>
+                <div class="panel-body">
+                    <!-- Column 2 Chart will start here-->
+                        <div id="comp-n_bases-chart-1"> </div>
+                    <!-- dumping JavaScript code here -->
+                    {{ display_library_stats.comp_n_bases_graphic |safe }}
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-6  -->
+    </div> <!--// end row -->
+
+{% elif display_list_of_library_stats %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7 col-sm-offset-3" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h2>These libraries match the searching criteria </h2></div>
+                <div class="panel-body">
+
+                    {% for values in display_list_of_library_stats.library_names %}
+                        <h5>{{ values }}</h5>
+                    {% endfor%}
+                    <p>The following graphics show the information of the libraries that matches the criteria to compare them </p>
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-8  -->
+    </div> <!--// end row -->
+    <!-- Q 30 quality Library statistics graphics-->
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="col-sm-6" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Comparision of Percent of >Q30 Statistics </h3></div>
+                    <div class="panel-body">
+                        <!-- Column 2 Chart will start here-->
+                            <div id="comp-q30-chart-1"> </div>
+                        <!-- dumping JavaScript code here -->
+                        {{ display_list_of_library_stats.comp_q30_graphic |safe }}
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-6  -->
+
+            <div class="col-sm-6" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Comparision of Mean Quality Score Statistics </h3></div>
+                    <div class="panel-body">
+                        <!-- Column 2 Chart will start here-->
+                            <div id="comp-mean-chart-1"> </div>
+                        <!-- dumping JavaScript code here -->
+                        {{ display_list_of_library_stats.comp_mean_graphic |safe }}
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-6  -->
+        </div> <!--// end col-sm 12 -->
+    </div> <!--// end row -->
+
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="col-sm-6" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Comparision of Number of Bases Statistics </h3></div>
+                    <div class="panel-body">
+                        <!-- Column 2 Chart will start here-->
+                            <div id="comp-n_bases-chart-1"> </div>
+                        <!-- dumping JavaScript code here -->
+                        {{ display_list_of_library_stats.comp_n_bases_graphic |safe }}
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-6  -->
+        </div> <!--// end col-sm-12  -->
+    </div> <!--// end row -->
+
+
+
+
+    <!--   display the library kits found based on the form            -->
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7 col-sm-offset-3" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h2>Graphics of all Library Kit </h2></div>
+                <div class="panel-body">
+                    <p>The following graphics show the information all libraries that matches start/end time criteria.</p>
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-8  -->
+    </div> <!--// end row -->
+
+    <!-- Q 30 quality Library statistics graphics -->
+
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="col-sm-6" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Percent of >Q30 Statistics per Library Kit</h3></div>
+                    <div class="panel-body">
+                        <!-- Column 2 Chart will start here-->
+                            <div id="lib-q30-chart-1"> </div>
+                        <!-- dumping JavaScript code here -->
+                        {{ display_list_of_library_stats.lib_q30_graphic |safe }}
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-6  -->
+
+            <div class="col-sm-6" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Mean Quality Score Statistics per Library Kit</h3></div>
+                    <div class="panel-body">
+                        <!-- Column 2 Chart will start here-->
+                            <div id="lib-mean-chart-1"> </div>
+                        <!-- dumping JavaScript code here -->
+                        {{ display_list_of_library_stats.lib_mean_graphic |safe }}
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-6  -->
+        </div> <!--// end col-sm 12 -->
+    </div> <!--// end row -->
+
+    <div class="row row-space-2 margin-b-4">
+    <div class="col-sm-12" >
+        <div class="col-sm-6" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Number of Bases Statistics  per Library Kit </h3></div>
+                <div class="panel-body">
+                    <!-- Column 2 Chart will start here-->
+                        <div id="lib-n_bases-chart-1"> </div>
+                    <!-- dumping JavaScript code here -->
+                    {{ display_list_of_library_stats.lib_n_bases_graphic |safe }}
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-6  -->
+        </div> <!--// end col-sm-12  -->
+    </div> <!--// end row -->
+
+    <div class="row row-space-2 margin-b-4">
+    <div class="col-sm-12" >
+        <div class="col-sm-6" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Percent of Library Kits used in projects </h3></div>
+                <div class="panel-body">
+                    <!-- Column 2 Chart will start here-->
+                        <div id="lib_kit_utilization_chart-1"> </div>
+                    <!-- dumping JavaScript code here -->
+                    {{ display_list_of_library_stats.libraries_kit_utilization |safe }}
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-6  -->
+        </div> <!--// end col-sm-12  -->
+    </div> <!--// end row -->
+
+
+{% else %}
+    <!-- FORM for Lobrary Kit statistics -->
+
+<div class="row row-space-2 margin-b-4">
+  <div class="col-sm-7  col-sm-offset-1">
+    <div class="panel panel-default">
+      <div class="panel-heading"><h2>Statistics per Library Kit</h2></div>
+      <div class="panel-body">
+        <form method="post" enctype="multipart/form-data" name="statslibraryKit" id="statslibraryKit" class="form-horizontal well">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="libraryKit"/>
+         <div class="form-group">
+              <label class="col-sm-5  control-label" for="libraryKitName" >Index Library Kit name </label>
+              <div class="col-sm-5"><input class="form-control" type="text" name="libraryKitName" id="libraryKitName" size="100" maxlength="100"></div>
+         </div>  <!-- end from-group   -->
+
+            <br>
+
+            <div class="form-group">
+              <label class="col-sm-5 control-label" for="startdate" >From Start Date (DD-MM-YYYY)</label>
+              <div class="col-sm-5"><input class="form-control" type="date" name="startdate" value="" id="startdate"></div>
+            <br>
+        </div>  <!-- end from-group   -->
+            <div class="form-group">
+              <label class="col-sm-5 control-label" for="enddate" >End Date Search (DD-MM-YYYY)</label>
+              <div class="col-sm-5"><input class="form-control" type="date" name="enddate" value="" id="enddate"></div>
+            <br>
+
+        </div>  <!-- end from-group   -->
+            <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
+            <input class="btn pull-right btn-primary" type="submit" value="Submit">
+        </form>
+     </div>  <!--  end of panel body  -->
+    </div> <!--// end panel -->
+    </div> <!--// end col-sm-7  -->
+
+
+
+</div> <!--// end row -->
+
+    <!-- End of FORM for searching RUN information -->
+{% endif %}
+{% endblock %}
+
+<!-- Insert the help panel -->
+        <BR><BR>
+        <div class="col-sm-3 col-sm-offset-1">
+          <div class="panel panel-default">
+             <div class="panel-heading">Searching information project Researcher</div>
+             <div class="panel-body">
+             <p>Searching information for the projects created by a researcher<BR>
+             <p>For extended help click on the button below.</p>
+            <center><button id="myBtn"> Help </button></center>
+            </div>  <!--  end of panel body  -->
+        </div> <!--// end panel -->
+        <!-- Insert the Help window when clicking on the button -->
+        {% include 'iSkyLIMS_wetlab/search-researcher-help.html' %}

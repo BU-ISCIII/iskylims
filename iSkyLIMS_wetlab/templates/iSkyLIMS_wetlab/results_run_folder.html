@@ -1,0 +1,30 @@
+{% extends 'iSkyLIMS_wetlab/base.html' %}
+
+{% block content %}
+<h2>Data information for the run folder</h2>
+    {% load staticfiles  %}
+    {% csrf_token %}    
+        {% for field, value in r_data %}
+           {% if field == "Sample Sheet file"%}
+                
+                <p>{{ field }} <a href="/iSkyLIMS_wetlab/documents/{{ value }}" download>{{ value|cut:"documents/" }}<span class="glyphicon glyphicon-download-alt"></span></a></p>
+           {% elif field == "BaseSpace file" %}
+                <p>{{ field }} <a href="/iSkyLIMS_wetlab/documents/{{ value }}" download>{{ value|cut:"BaseSpaceMigrationFiles/" }}<span class="glyphicon glyphicon-download-alt"></span></a></p>
+            {% else %}
+              <p> {{ field }}- {{ value }}</p>
+           {% endif %}
+           <p></p>
+        {% endfor%}
+    
+    <p> <br> </p>
+    
+ 
+  
+
+	<!-- End Main Content -->
+	
+
+{% endblock %}
+
+ 
+
