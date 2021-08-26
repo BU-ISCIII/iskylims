@@ -1,0 +1,261 @@
+{% extends 'iSkyLIMS_clinic/base.html' %}
+{% load static %}
+{% block content %}
+{% csrf_token %}
+<script src="{% static "iSkyLIMS_clinic/js/jquery/v3.4.1/jquery-3.4.1.min.js" %}" type="text/javascript"></script>
+<script src="{% static "iSkyLIMS_clinic/js/jexcel/v3/jexcel.js" %}" type="text/javascript"></script>
+<script src="{% static "iSkyLIMS_clinic/js/jsuites/v2/jsuites.js" %}" type="text/javascript"></script>
+
+<link href="{% static "iSkyLIMS_clinic/css/jexcel/v3/jexcel.css" %}" rel="stylesheet">
+<link href="{% static "iSkyLIMS_clinic/css/jsuites/v2/jsuites.css" %}" rel="stylesheet">
+<style>
+    .scrolling-wrapper {
+        overflow-x: scroll;
+        white-space: nowrap;
+    }
+</style>
+
+
+{% if patient_information %}
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Set the Patient Information for the samples below</h3></div>
+
+                <div class="panel-body">
+                    <br><br><br>
+
+                    <form method="post" enctype="multipart/form-data" name="storePatientInfo"  id="storePatientInfo" class="form-horizontal well" style="min-height: 500px;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="storePatientInfo"/>
+                        <input type= "hidden" name="clinic_samples" value="{{patient_information.clinic_samples}}"/>
+                        <div class="scrolling-wrapper">
+                            <br><br><br>
+                            <div id="spreadsheet"></div>
+                            <br><br><br><br><br><br> <br><br><br><br><br>
+                        </div> <!--  end of scrolling  -->
+                            <script>
+                                {% if patient_information.data %}
+                                    var data = [{% for values in patient_information.data %}
+                                    [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                                    ];
+                                {% else %}
+                                    var data = [[]];
+                                {% endif %}
+                                mySpreadsheet = $('#spreadsheet').jexcel({
+                                data:data,
+                                columns: [
+                                    { type: 'text', title:'{{patient_information.heading.0}}', width:120 , readOnly:true},
+                                    { type: 'number', title:'{{patient_information.heading.1}}', width:150 },
+                                    { type: 'text', title:'{{patient_information.heading.2}}', width:120 },
+                                    { type: 'number', title:'{{patient_information.heading.3}}', width:120 },
+
+                                    { type: 'calendar', title:'{{patient_information.heading.4}}', width:180 },
+                                    { type: 'text' , title: '{{patient_information.heading.5}}', width:150 },
+
+                                    { type: 'dropdown' , title: '{{patient_information.heading.6}}', width:180 , source : [{% for value in patient_information.s_request_by %}'{{value}}',{% endfor %} ], autocomplete:true,},
+                                    { type: 'dropdown' , title: '{{patient_information.heading.7}}', width:180, source : [{% for value in patient_information.doctor %}'{{value}}',{% endfor %} ] , autocomplete:true,},
+                                    { type: 'text' , title: '{{patient_information.heading.8}}', width:250 ,wordWrap:true},
+                                    { type: 'text' , title: '{{patient_information.heading.9}}', width:250 , wordWrap:true},
+                                    ],
+                                    allowInsertColumn:false,
+                                    allowDeleteColumn:false,
+                                    allowRenameColumn:false,
+                                    allowInsertRow:false,
+                                    allowDeleteRow:false,
+                                    csvFileName:'patient_information',
+                                    csvHeaders:true,
+                                    minDimensions:[{{patient_information.heading_length}},{{patient_information.data_length}}],
+                                });
+                            </script>
+                        <br>
+                        <br>
+                        <input type="button" value="Download Spreadsheet" onclick="$('#spreadsheet').jexcel('download')"/>
+                        <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                    </form>
+                    <script>
+                        $(document).ready(function () {
+                            $("#storePatientInfo").submit(function (e) {
+                                //stop submitting the form to see the disabled button effect
+                                // e.preventDefault();
+                                //disable the submit button
+                                var table_data = $('#spreadsheet').jexcel('getData')
+                                var data_json = JSON.stringify(table_data)
+                                $("<input />").attr("type", "hidden")
+                                   .attr("name", "patient_data")
+                                   .attr("value", data_json)
+                                   .appendTo("#storePatientInfo");
+                                $("#btnSubmit").attr("disabled", true);
+                                return true;
+                            });
+                        });
+                    </script>
+
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+
+        </div> <!--// end col-sm-7  -->
+
+    </div> <!--// end row -->
+
+
+
+{% elif updated_information %}
+    {% if updated_information.not_match %}
+        <div class="row row-space-4 margin-b-4">
+            <div class="col-sm-12" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>The following samples have an invalid history number.</h3></div>
+
+                    <div class="panel-body">
+                        <br>
+                        <table class="table table-hover">
+                            <thead>
+                               <tr>
+                                   {% for value in updated_information.heading_not_match %}
+                                        <th>{{value}} </th>
+                                   {% endfor %}
+                               </tr>
+                            </thead>
+                            <tbody>
+                              {% for values in updated_information.not_match %}
+                                 <tr>
+                                    {% for value in values %}
+                                       <td>{{ value }} </td>
+                                    {%endfor%}
+                                  </tr>
+                              {%endfor%}
+                            </tbody>
+                        </table>
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-7  -->
+        </div> <!--// end row -->
+    {% endif %}
+    {% if updated_information.incomplete_clinic_samples_ids %}
+        <div class="row row-space-4 margin-b-4">
+            <div class="col-sm-12" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>The following samples requires to complete the information.</h3></div>
+
+                    <div class="panel-body">
+
+                        <form method="post" enctype="multipart/form-data" name="storePatientInfo"  id="storePatientInfo" class="form-horizontal well" style="min-height: 500px;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="storePatientInfo"/>
+                            <input type= "hidden" name="clinic_samples" value="{{updated_information.incomplete_clinic_samples_ids}}"/>
+                            <div class="scrolling-wrapper">
+                                <br><br><br>
+                                <div id="spreadsheet"></div>
+                                <br><br><br><br><br><br> <br><br><br><br><br>
+                            </div> <!--  end of scrolling  -->
+                                <script>
+                                    {% if updated_information.incomplete_clinic_samples %}
+                                        var data = [{% for values in updated_information.incomplete_clinic_samples %}
+                                        [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                                        ];
+                                    {% else %}
+                                        var data = [[]];
+                                    {% endif %}
+                                    mySpreadsheet = $('#spreadsheet').jexcel({
+                                    data:data,
+                                    columns: [
+                                        { type: 'text', title:'{{updated_information.heading.0}}', width:120 , readOnly:true},
+                                        { type: 'number', title:'{{updated_information.heading.1}}', width:150 },
+                                        { type: 'text', title:'{{updated_information.heading.2}}', width:120 },
+                                        { type: 'number', title:'{{updated_information.heading.3}}', width:120 },
+
+                                        { type: 'calendar', title:'{{updated_information.heading.4}}', width:180 },
+                                        { type: 'text' , title: '{{updated_information.heading.5}}', width:150 },
+
+                                        { type: 'dropdown' , title: '{{updated_information.heading.6}}', width:180 , source : [{% for value in updated_information.s_request_by %}'{{value}}',{% endfor %} ], autocomplete:true,},
+                                        { type: 'dropdown' , title: '{{updated_information.heading.7}}', width:180, source : [{% for value in updated_information.doctor %}'{{value}}',{% endfor %} ] , autocomplete:true,},
+                                        { type: 'text' , title: '{{updated_information.heading.8}}', width:250 ,wordWrap:true},
+                                        { type: 'text' , title: '{{updated_information.heading.9}}', width:250 , wordWrap:true},
+                                        ],
+                                        allowInsertColumn:false,
+                                        allowDeleteColumn:false,
+                                        allowRenameColumn:false,
+                                        allowInsertRow:false,
+                                        allowDeleteRow:false,
+                                        csvFileName:'patient_information',
+                                        csvHeaders:true,
+                                        minDimensions:[{{updated_information.heading_length}},{{updated_information.data_length}}],
+                                    });
+                                </script>
+                            <br>
+                            <br>
+                            <input type="button" value="Download Spreadsheet" onclick="$('#spreadsheet').jexcel('download')"/>
+                            <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                        </form>
+                        <script>
+                            $(document).ready(function () {
+                                $("#storePatientInfo").submit(function (e) {
+                                    //stop submitting the form to see the disabled button effect
+                                    // e.preventDefault();
+                                    //disable the submit button
+                                    var table_data = $('#spreadsheet').jexcel('getData')
+                                    var data_json = JSON.stringify(table_data)
+                                    $("<input />").attr("type", "hidden")
+                                       .attr("name", "patient_data")
+                                       .attr("value", data_json)
+                                       .appendTo("#storePatientInfo");
+                                    $("#btnSubmit").attr("disabled", true);
+                                    return true;
+                                });
+                            });
+                        </script>
+
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+
+            </div> <!--// end col-sm-7  -->
+
+        </div> <!--// end row -->
+    {% endif %}
+    {% if updated_information.stored_samples_heading %}
+        <div class="row row-space-4 margin-b-4">
+            <div class="col-sm-8 col-sm-offset-2" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>The following samples have been successfully recorded.</h3></div>
+
+                    <div class="panel-body">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    {% for value in updated_information.stored_samples_heading %}
+                                        <th> {{ value }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sample in  updated_information.stored_samples %}
+                                    <tr>
+                                        {% for values in sample %}
+                                            <td>{{ values }}</td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>  <!--  end of panel body  -->
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-7  -->
+        </div> <!--// end row -->
+    {% endif %}
+{% else %}
+    <br><br>
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-7 col-sm-offset-2"" >
+            <div class="panel panel-info">
+                <div class="panel-heading"><h3>There is not Samples for adding Patient Information</h3></div>
+                    <br><br>
+                    <p align="center">All recorded samples already have the Information related to the Patient</p>
+                <div class="panel-body">
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  -->
+    </div> <!--// end row -->
+
+{% endif %}
+{% endblock %}

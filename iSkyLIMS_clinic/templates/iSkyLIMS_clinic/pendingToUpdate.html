@@ -1,0 +1,243 @@
+{% extends 'iSkyLIMS_clinic/base.html' %}
+{% load static %}
+{% block content %}
+<script type="text/javascript" src="{% static "iSkyLIMS_clinic/js/fusioncharts/js/fusioncharts.js" %}"></script>
+<script type="text/javascript" src="{% static "iSkyLIMS_clinic/js/fusioncharts/js/themes/fusioncharts.theme.fint.js" %}"></script>
+<style >
+    .text-large {
+        font-size: 150%;
+    }
+</style>
+<style>
+.table-wrapper {
+    max-height: 450px;
+    overflow: auto;
+    display:inline-block;
+    width: 610px;
+}
+.table-wrapper-sm-4 {
+    max-height: 450px;
+    overflow: auto;
+    display:inline-block;
+    width: 370px;
+}
+</style>
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="col-sm-7" >
+                <div class="panel panel-default">
+                    {% if pending.defined.sample_heading %}
+                        <div class="panel-heading"><h3>Samples need to be updated with DNA/RNA Extraction</h3></div>
+                        <div class="panel-body">
+
+                            <form method="post" action="/clinic/setMoleculeValues" enctype="multipart/form-data" name="continueWithMolecule"  id="continueWithMolecule" class="form-horizontal well">
+                            {% csrf_token %}
+                                <input type="hidden" name="action" value="continueWithMolecule"/>
+                                <input type="hidden" name="samples_in_list" value="True"/>
+                                <div class="table-wrapper">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                {% for value in pending.defined.sample_heading %}
+                                                    <th> {{ value }}</th>
+                                                {% endfor %}
+                                                <th>To be included</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for s_name,  lab, s_type, species, date , s_id in pending.defined.sample_information  %}
+                                                <tr>
+                                                        <td>{{s_name}}</td>
+                                                        <td>{{lab}}</td>
+                                                        <td>{{s_type}}</td>
+                                                        <td>{{species}}</td>
+                                                        <td>{{date}}</td>
+                                                        <td><input type="checkbox" name="c_samples" value="{{s_id}}"></td>
+                                                </tr>
+                                            {% endfor %}
+
+                                        </tbody>
+                                    </table>
+                                </div> <!--  end of table wrapper  -->
+                                <br><br>
+                                <input type="button" value="Return Home" onclick="location.href ='/clinic' ;"/>
+                                <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                            </form>
+                    {% else %}
+                        <div class="panel-heading"><h3>Samples waiting for adding Patient information</h3></div>
+                        <div class="panel-body">
+                            <p>There are not samples waiting for adding Patient information </p>
+                    {% endif %}
+                        </div>  <!--  end of panel body  -->
+
+                </div> <!--// end panel -->
+            </div> <!--// end col-sm-7  -->
+            <div class="col-sm-5" >
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3>Sample state graphic</h3></div>
+                    <div class="panel-body">
+                        {% if pending.graphic_pending_samples %}
+
+                            <!-- Pie chart for number of pending Services chart will start here-->
+                            <div id="chart-1"> </div>
+                            <!-- dumping JavaScript code here -->
+                            {{ pending.graphic_pending_samples |safe }}
+
+                        {% endif %}
+
+
+
+
+                </div>  <!--  end of panel body  -->
+
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-5  -->
+    </div> <!--// end row -->
+{% if pending.patient_update.sample_heading %}
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Samples waiting for samples analysis start</h3></div>
+                    <div class="panel-body">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    {% for value in pending.patient_update.sample_heading %}
+                                        <th> {{ value }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for values in pending.patient_update.sample_information  %}
+                                    <tr>
+                                        {% for value in values %}
+                                            <td>{{value}}</td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <br><br>
+                    </div>  <!--  end of panel body  -->
+
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  -->
+    </div> <!--// end row -->
+{% endif %}
+{% if pending.sequencing.sample_heading  %}
+<div class="row row-space-4 margin-b-4">
+    <div class="col-sm-12" >
+        <div class="panel panel-default">
+            <div class="panel-heading"><h3>Samples waiting for sequencing analysis to be completed</h3></div>
+                <div class="panel-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                {% for value in pending.sequencing.sample_heading %}
+                                    <th> {{ value }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for values in pending.sequencing.sample_information  %}
+                                <tr>
+                                    {% for value in values %}
+                                        <td>{{value}}</td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <br><br>
+                </div>  <!--  end of panel body  -->
+
+        </div> <!--// end panel -->
+    </div> <!--// end col-sm-7  -->
+</div> <!--// end row -->
+{% endif %}
+
+{% if pending.pending_protocol.sample_heading %}
+<div class="row row-space-4 margin-b-4">
+    <div class="col-sm-12" >
+        <div class="panel panel-default">
+            <div class="panel-heading"><h3>The following Samples require to define the used protocol</h3></div>
+                        <br>
+                        <div class="panel-body">
+                            <p>Select the samples for adding the protocol used</p>
+                        <form method="post" action="/clinic/addResultData" enctype="multipart/form-data" name="updateClinicSampleProtocol"  id="updateClinicSampleProtocol" class="form-horizontal well">
+                        {% csrf_token %}
+                            <input type="hidden" name="action" value="updateClinicSampleProtocol"/>
+                            <input type="hidden" name="samples_in_list" value="True"/>
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        {% for value in pending.pending_protocol.sample_heading %}
+                                            <th> {{ value }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for s_name ,order, code, prio, history, doctor, unit, s_id in pending.pending_protocol.sample_information  %}
+                                        <tr>
+                                            <td>{{s_name}}</td>
+                                            <td>{{order}}</td>
+                                            <td>{{code}}</td>
+                                            <td>{{prio}}</td>
+                                            <td>{{history}}</td>
+                                            <td>{{doctor}}</td>
+                                            <td>{{unit}}</td>
+                                            <td><input type="checkbox" name="c_samples" value="{{s_id}}"></td>
+                                        </tr>
+                                    {% endfor %}
+
+                                </tbody>
+                            </table>
+                            <br><br>
+                            <input type="button" value="Return Home" onclick="location.href ='/clinic' ;"/>
+                            <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                         </form>
+
+{% endif %}
+{% if pending.pending_results.sample_heading %}
+<div class="row row-space-4 margin-b-4">
+    <div class="col-sm-12" >
+        <div class="panel panel-default">
+            <div class="panel-heading"><h3>The following Samples require to add the result parameters</h3></div>
+                        <br>
+                        <div class="panel-body">
+                            <p>Select the samples to add the result parameters</p>
+                        <form method="post" action="/clinic/addResultData" enctype="multipart/form-data" name="showTableResultParameters"  id="showTableResultParameters" class="form-horizontal well">
+                        {% csrf_token %}
+                            <input type="hidden" name="action" value="showTableResultParameters"/>
+                            <input type="hidden" name="samples_in_list" value="True"/>
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        {% for value in pending.pending_results.sample_heading %}
+                                            <th> {{ value }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for s_name ,order, code, prio, history, doctor, unit, s_id in pending.pending_results.sample_information  %}
+                                        <tr>
+                                            <td>{{s_name}}</td>
+                                            <td>{{order}}</td>
+                                            <td>{{code}}</td>
+                                            <td>{{prio}}</td>
+                                            <td>{{history}}</td>
+                                            <td>{{doctor}}</td>
+                                            <td>{{unit}}</td>
+                                            <td><input type="checkbox" name="c_samples" value="{{s_id}}"></td>
+                                        </tr>
+                                    {% endfor %}
+
+                                </tbody>
+                            </table>
+                            <br><br>
+                            <input type="button" value="Return Home" onclick="location.href ='/clinic' ;"/>
+                            <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                         </form>
+
+{% endif %}
+{% endblock %}
