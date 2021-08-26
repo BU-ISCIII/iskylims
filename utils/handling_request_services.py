@@ -533,8 +533,9 @@ def get_service_information (service_id, service_manager):
             resolution_id = Resolution.objects.filter(resolutionServiceID = service_obj).last().id
             display_service_details['add_in_progress_action'] = resolution_id
         if service_obj.get_service_state() == 'in_progress':
-            resolution_id = Resolution.objects.filter(resolutionServiceID = service_obj).last().id
-            display_service_details['add_delivery_action'] = resolution_id
+            if  Resolution.objects.filter(resolutionServiceID = service_obj).exits():
+                resolution_id = Resolution.objects.filter(resolutionServiceID = service_obj).last().id
+                display_service_details['add_delivery_action'] = resolution_id
 
 
     if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
@@ -685,7 +686,7 @@ def send_service_creation_confirmation_email(email_data):
     try:
         send_mail (subject, body_message, from_user, to_users)
     except:
-        return ERROR_UNABLE_TO_SEND_EMAIL
+        return drylab_config.ERROR_UNABLE_TO_SEND_EMAIL
     return 'OK'
 
 
