@@ -25,7 +25,7 @@ def create_pdf(absolute_url,information, template_file, pdf_file_name , out_dir)
     from weasyprint import HTML, CSS
     from django.template.loader import get_template
     from django.template.loader import render_to_string
-    from weasyprint.fonts import FontConfiguration
+    from weasyprint.text.fonts import FontConfiguration
 
     #font_config = FontConfiguration()
     html_string = render_to_string(template_file, {'information': information})
