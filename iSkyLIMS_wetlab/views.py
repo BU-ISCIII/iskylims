@@ -2671,8 +2671,6 @@ def configuration_test (request):
             delete_test_run ('NextSeq_Test_0001')
             return render(request,'iSkyLIMS_wetlab/ConfigurationTest.html')
 
-
-
         runNextSeq_results = {}
         log_trace = []
         working_path = settings.MEDIA_ROOT
@@ -2790,10 +2788,11 @@ def configuration_test (request):
         log_trace = []
         config_file = os.path.join(settings.BASE_DIR,'iSkyLIMS_wetlab', 'tests', 'logging_test_config.ini' )
         log_file = get_log_file_name(config_file)
+        ''' No removing log file
         if os.path.isfile (log_file):
             os.remove(log_file)
         logger=open_log(config_file)
-
+        '''
         logger.info('###########---Start Testing MiSeq Run  -----############')
         if run_exists_in_db('MiSeq_Test_0001'):
             delete_graphic_folder_if_exists ('MiSeq_Test_0001')

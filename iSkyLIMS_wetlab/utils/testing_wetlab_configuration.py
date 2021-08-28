@@ -7,20 +7,18 @@ import logging
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
 from iSkyLIMS_wetlab.utils.generic_functions import *
-from iSkyLIMS_wetlab.utils.miseq_run_functions import *
-from iSkyLIMS_wetlab.utils.nextseq_run_functions import *
-from iSkyLIMS_wetlab.utils.common_run_functions import manage_run_in_processed_run, manage_run_in_processing_bcl2fastq, manage_run_in_processed_bcl2fastq
-from iSkyLIMS_wetlab.utils.sample_sheet_utils import *
+#from iSkyLIMS_wetlab.utils.miseq_run_functions import *
+#from iSkyLIMS_wetlab.utils.nextseq_run_functions import *
+#from iSkyLIMS_wetlab.utils.common_run_functions import manage_run_in_processed_run, manage_run_in_processing_bcl2fastq, manage_run_in_processed_bcl2fastq
+#from iSkyLIMS_wetlab.utils.sample_sheet_utils import *
+from iSkyLIMS_wetlab.utils.handling_crontab_manage_run_states import *
+#from .common_run_functions import manage_run_in_processed_run, manage_run_in_processing_bcl2fastq, manage_run_in_processed_bcl2fastq
 
 def get_config_file (config_file):
     c_file = []
     try:
         with open (config_file ,'r') as fh:
             for line in fh:
-                if 'PASSWORD' in line:
-                    hide_passwd = line.split('=')
-                    hide_passwd[1] = 'XXXXXXXXXXXXXXXXX'
-                    line = ' = '.join(hide_passwd)
                 line = line.replace('\n', '')
                 c_file.append(line)
     except:
@@ -29,7 +27,6 @@ def get_config_file (config_file):
 
 def get_files_attribute (directory):
     attr_files = []
-
     try:
         for (dirpath, dirnames, filenames) in os.walk(directory, topdown=True):
             for d in dirnames:
@@ -48,6 +45,7 @@ def get_iSkyLIMS_settings():
     try:
         with open (settings_file ,'r') as fh:
             for line in fh:
+                ''' allowing saving password for file backup propose
                 if 'PASSWORD' in line or 'SECRET_KEY' in line   :
                     if  not 'AUTH_PASSWORD_VALIDATORS' in line :
                         if '=' in line :
@@ -57,7 +55,7 @@ def get_iSkyLIMS_settings():
                         hide_passwd = line.split(split_separator)
                         hide_passwd[1] = 'XXXXXXXXXXXXXXXXX'
                         line = ' = '.join(hide_passwd)
-
+                '''
                 line = line.replace('\n', '')
                 s_file.append(line)
     except:
@@ -80,8 +78,6 @@ def check_samba_connection() :
         return 'OK'
     except  :
         return 'NOK'
-
-
 
 
 def run_exists_in_db (run_name):
@@ -111,7 +107,7 @@ def delete_run_in_db (run_name):
     return True
 
 def delete_test_run (run_name) :
-    if run_exists_in_db(run_name):
+    if RunProcess.objects.filter(runName__exact = run_name).exists() :
         delete_graphic_folder_if_exists(run_name)
         delete_run_in_db(run_name)
     return True
@@ -588,3 +584,26 @@ def run_test_Processed_Bcl2fastq_to_Completed (experiment_name):
         processed_bcl2fastq_results.append(('Function returns an invalid run', 'NOK'))
         logger.debug ('End function run_test_Processed_Bcl2fastq_to_Completed with error')
         return processed_bcl2fastq_results, 'NOK'
+
+def execute_test_for_testing_run(run_test_name):
+    if RunProcess.objects.filter(runName__exact = run_test_name).exists():
+        run_obj = RunProcess.objects.filter(runName__exact = run_test_name).last()
+        state = run_obj.get_state()
+        state_list = ['Sample Sent', 'Processing Run', 'Processed Run', 'Processing Bcl2fastq' , 'Processed Bcl2fastq']
+        conn = open_samba_connection()
+
+        for state_item in state_list:
+            state = run_obj.get_state()
+            if state == 'ERROR' :
+                return 'ERROR'
+            elif state == 'Sample Sent':
+                manage_run_in_sample_sent_processing_state(conn, runs_obj)
+            elif state == 'Processing Run':
+                manage_run_in_sample_sent_processing_state(conn, runs_obj)
+            elif state == 'Processed Run':
+                manage_run_in_processed_run_state(conn, runs_obj)
+            elif state == 'Processing Bcl2fastq':
+                manage_run_in_processing_bcl2fastq_state(conn, runs_obj)
+            elif state == 'Processed Bcl2fastq':
+                manage_run_in_processed_bcl2fastq_state(conn, runs_obj)
+    return

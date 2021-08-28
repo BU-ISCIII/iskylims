@@ -3,13 +3,10 @@
 {% block content %}
     {% csrf_token %}
 
-
 <script type="text/javascript" src="{% static "iSkyLIMS_wetlab/js/wetlab.js" %}"></script>
 
-<link rel="stylesheet"  href="{% static "iSkyLIMS_wetlab/css/styles/default.css"%}">
-<script src="{% static "iSkyLIMS_wetlab/js/highlight.pack.js" %}"></script>
-<script>hljs.initHighlightingOnLoad();</script>
 
+<link rel="stylesheet"  href="{% static "iSkyLIMS_wetlab/css/styles/default.css" %}">
 
 <style>
 .table-wrapper {
@@ -23,6 +20,12 @@
     overflow: auto;
     display:inline-block;
     width: 670px;
+}
+.panel-wrapper-sm-10 {
+    max-height: 250px;
+    overflow: auto;
+    display:inline-block;
+    width: 950px;
 }
 .panel-wrapper-sm-12 {
     max-height: 450px;
@@ -44,149 +47,127 @@ p {
             </div> <!--// end panel -->
         </div> <!--// end col-sm-7  -->
     </div> <!--// end row  -->
-    
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-7 col-sm-offset-3" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><H3>iSkyLIMS configuration settings
-                {% if test_results.iSkyLIMS_settings %}
-                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
-                {% else %}
-                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
-                {% endif %}
-                </H3> </div>
-                <div class="panel-body">
-                    <div class="panel-wrapper-sm-6"> <!-- // wrapper  -->
-                        <div class="col-sm-12">
-                            {% if test_results.iSkyLIMS_settings %}
-                            
-                            <pre><code >
-{% for line in test_results.iSkyLIMS_settings %}
-    {{ line }}
-{% endfor %}
-                            </code></pre>
-                            {% else %}
-                            <h4>Unable to fetch iSkyLIMS configuration file</h4>
-                            {% endif %}
-                        </div> <!--// end col-sm-12  -->
-                    </div> <!-- //wrapper  -->
-                </div> <!--// end panel body -->
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-7  -->
-    </div> <!--// end row  -->
-    
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-7 col-sm-offset-3" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><H3>Wetlab configuration settings
-                {% if test_results.config_file %}
-                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
-                {% else %}
-                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
-                {% endif %}
-                </H3> </div>
-                <div class="panel-body">
-                    <div class="panel-wrapper-sm-6"> <!-- // wrapper  -->
-                        <div class="col-sm-12">
-                            {% if test_results.config_file %}
-                            
-                            <pre><code >
-{% for line in test_results.config_file %}
-    {{ line }}
-{% endfor %}
-                            </code></pre>
-                            {% else %}
-                            <h4>Unable to fetch the iSkyLIMS wetlab configuration file</h4>
-                            {% endif %}
-                        </div> <!--// end col-sm-12  -->
-                    </div> <!-- //wrapper  -->
-                </div> <!--// end panel body -->
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-7  -->
-    </div> <!--// end row  -->
-    
-    
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-7 col-sm-offset-3" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><H3>Wetlab folders/files permisions
-                {% if test_results.attr_files %}
-                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
-                {% else %}
-                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
-                {% endif %}
-                </H3> </div>
-                 <div class="panel-body">
-                    <div class="panel-wrapper-sm-6"> <!-- // wrapper  -->
-                        <div class="col-sm-12">
-                            {% if test_results.attr_files %}
-                                {% for line in test_results.attr_files %}
-                                    <p> {{ line }}</p>
-                                {% endfor %}
-                            {% else %}
-                                <h4>Unable to fetch the permision files</h4>
-                            {% endif %}
-                        </div> <!--// end col-sm-12  -->
-                    </div> <!-- //wrapper  -->
-                </div> <!--// end panel body -->
 
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-7  -->
-    </div> <!--// end row  -->
-    
     <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-7 col-sm-offset-3" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><H3>Database access
-                {% if test_results.database_access == 'OK' %}
-                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
-                {% else %}
-                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
-                {% endif %}
-                </H3> </div>
-                 <div class="panel-body">
-                    <div class="panel-wrapper-sm-6"> <!-- // wrapper  -->
-                        <div class="col-sm-12">
-                            {% if test_results.database_access %}
-                                <h4>Success to connect to database</h4>
-                            {% else %}
-                                <h4>Unable to connect to database</h4>
-                            {% endif %}
-                        </div> <!--// end col-sm-12  -->
-                    </div> <!-- //wrapper  -->
-                </div> <!--// end panel body -->
+        <div class="col-sm-12">
+            <div class="tab">
+                <button class="tablinks" onclick="summaryBin(event, 'configFiles')" id="defaultOpen">Configuration Files</button>
+                <button class="tablinks" onclick="summaryBin(event, 'folderPermission')">Folder Permissions</button>
+                <button class="tablinks" onclick="summaryBin(event, 'database')">Database Access</button>
+                <button class="tablinks" onclick="summaryBin(event, 'samba')">Samba Connection</button>
 
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-7  -->
-    </div> <!--// end row  -->
-    
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-7 col-sm-offset-3" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><H3>Samba connection
-                {% if test_results.samba_connection == 'OK' %}
-                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
-                {% else %}
-                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
-                {% endif %}
-                </H3> </div>
-                 <div class="panel-body">
-                    <div class="panel-wrapper-sm-6"> <!-- // wrapper  -->
-                        <div class="col-sm-12">
-                            {% if test_results.samba_connection %}
-                                <h4>Success to connect via Samba</h4>
-                            {% else %}
-                                <h4>Unable to connect via Samba</h4>
-                            {% endif %}
-                        </div> <!--// end col-sm-12  -->
-                    </div> <!-- //wrapper  -->
-                </div> <!--// end panel body -->
+            </div>
+            <div class="row row-space-2 margin-b-4">
+                <div id="configFiles" class="tabcontent">
+                    <div class="row row-space-2 margin-b-4">
+                        <div class="col-sm-7">
+                            <div class="panel panel-default">
+                                <div class="panel-heading"><H3>iSkyLIMS configuration settings</H3></div>
+                                <div class="panel-body">
+                                    <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#settings">Display iSkyLIMS.settings.py</button>
+                                    <button class="btn pull-right btn-primary" onclick="downloadInnerHtml('settings.py','settings')">Download settings.py </button>
+                                    <br><br>
+                                    <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#wetlab">Display wetlab_settings.py</button>
+                                    <button class="btn pull-right btn-primary" onclick="downloadInnerHtml('wetlab_settings.py','wetlab')">Download wetlab_config.py</button>
+                                    <div id="settings" class="collapse">
+                                        {% for line in test_results.iSkyLIMS_settings %}
+                                            {{line}}<br>
+                                        {% endfor %}
+                                    </div>
+                                    <div id="wetlab" class="collapse">
+                                        {% for line in test_results.config_file %}
+                                            {{line}}<br>
+                                        {% endfor %}
+                                    </div>
+                                </div> <!--  end of panel body -->
+                            </div> <!--  end of panel  -->
+                        </div> <!--  end of col-sm-5 -->
+                    </div> <!--  end of row -->
+                </div><!-- // end of tab configFiles -->
 
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-7  -->
+                <script type="text/javascript">
+                    function downloadInnerHtml(filename, elId, mimeType) {
+                    var elHtml = document.getElementById(elId).innerHTML;
+                    var link = document.createElement('a');
+                    mimeType = mimeType || 'text/plain';
+
+                    link.setAttribute('download', filename);
+                    link.setAttribute('href', 'data:' + mimeType  +  ';charset=utf-8,' + encodeURIComponent(elHtml));
+                    link.click();
+                }
+
+                var fileName =  'tags.html';
+                </script>
+                <div id="folderPermission" class="tabcontent">
+                    <div class="row row-space-2 margin-b-4">
+                        <div class="col-sm-10">
+                            <div class="panel panel-default">
+                                <div class="panel-heading"><H3>Files used for Massive sequencing application</H3></div>
+                                <div class="panel-body">
+                                    <button onclick="exportTableToExcel('permissions')" class="btn pull-right">Export Table To Excel <span class="glyphicon glyphicon-download-alt"></span></button>
+                                    <div class="panel-wrapper-sm-10">
+                                        <table id="permissions" class="table  table-hover">
+                                            <tbody>
+                                                {% for line in test_results.attr_files %}
+                                                    <tr>
+                                                        {% for value in line %}
+                                                            <td>{{value}}</td>
+                                                        {% endfor %}
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>  <!-- end of wrapper -->
+                                </div> <!--  end of panel body -->
+                            </div> <!--  end of panel  -->
+                        </div> <!--  end of col-sm-10 -->
+                    </div> <!--  end of row -->
+                </div><!-- // end of tab folderPermission -->
+
+                <div id="database" class="tabcontent">
+                    <div class="row row-space-2 margin-b-4">
+                        <div class="col-sm-10">
+                            <div class="panel panel-default">
+                                <div class="panel-heading"><H3>Database access</H3> </div>
+                                 <div class="panel-body">
+                                    {% if test_results.database_access  == 'OK' %}
+                                        <h4>Success to connect to database</h4>
+                                        <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
+                                    {% else %}
+                                        <h4>Unable to connect to database</h4>
+                                        <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
+                                    {% endif %}
+                                </div> <!--  end of panel body -->
+                            </div> <!--  end of panel  -->
+                        </div> <!--  end of col-sm-5 -->
+                    </div> <!--  end of row -->
+                </div><!-- // end of tab database -->
+
+                <div id="samba" class="tabcontent">
+                    <div class="row row-space-2 margin-b-4">
+                        <div class="col-sm-10">
+                            <div class="panel panel-default">
+                                <div class="panel-heading"><H3>SAMBA Connection</H3> </div>
+                                 <div class="panel-body">
+
+
+                                    {% if test_results.samba_connection  == 'OK' %}
+                                        <h4>Success to connect to database</h4>
+                                        <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
+                                    {% else %}
+                                        <h4>Unable to connect to remote server</h4>
+                                        <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
+                                    {% endif %}
+                                </div> <!--  end of panel body -->
+                            </div> <!--  end of panel  -->
+                        </div> <!--  end of col-sm-5 -->
+                    </div> <!--  end of row -->
+                </div><!-- // end of tab samba -->
+            </div> <!--  end of col-sm-12 -->
+        </div> <!--  end of row -->
     </div> <!--// end row  -->
-    
-    
+
+
     {% if test_results.basic_checks_ok == 'OK' %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
@@ -217,7 +198,7 @@ p {
             </div> <!--// end panel -->
         </div> <!--// end col-sm-12  -->
     </div> <!--// end row  -->
-    
+
     {% else %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
@@ -233,9 +214,9 @@ p {
                         <input class="btn pull-right btn-primary" type="submit" value="Re-Run Basic Test">
                     </form>
                 </div> <!--// end panel body -->
-                
+
     {% endif %}
-    
+
 {% elif runNextSeq_results %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-7 col-sm-offset-3" >
@@ -253,7 +234,7 @@ p {
             </div> <!--// end panel -->
         </div> <!--// end col-sm-7  -->
     </div> <!--// end row  -->
-    
+
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
             <div class="panel panel-default">
@@ -270,7 +251,7 @@ p {
                         </H3> </div>
                         <div class="panel-body">
                             {% for test_case, result in runNextSeq_results.CreateRun %}
-                                <p><strong> {{ test_case }} 
+                                <p><strong> {{ test_case }}
                                 {% if result == 'OK' %}
                                     <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
                                 {% else %}
@@ -280,7 +261,7 @@ p {
                             {% endfor %}
                         </div> <!--// end panel body -->
                     </div> <!--// end panel -->
-                        
+
                     {%if runNextSeq_results.Recorded %}
                     <div class="panel panel-default">
                         <div class="panel-heading"><H3>2. - Test Executed on Recorded state
@@ -292,7 +273,7 @@ p {
                         </H3> </div>
                         <div class="panel-body">
                             {% for test_case, result in runNextSeq_results.Recorded %}
-                                <p><strong> {{ test_case }} 
+                                <p><strong> {{ test_case }}
                                 {% if result == 'OK' %}
                                     <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
                                 {% else %}
@@ -304,7 +285,7 @@ p {
                     </div> <!--// end panel -->
                     {% endif %}
                     </div>  <!--// end col-sm-6  -->
-                    
+
                     <div class="col-sm-6">
                     {%if runNextSeq_results.Sample_Sent %}
                     <div class="panel panel-default">
@@ -317,7 +298,7 @@ p {
                         </H3> </div>
                         <div class="panel-body">
                             {% for test_case, result in runNextSeq_results.Sample_Sent %}
-                                <p><strong> {{ test_case }} 
+                                <p><strong> {{ test_case }}
                                 {% if result == 'OK' %}
                                     <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
                                 {% else %}
@@ -330,7 +311,7 @@ p {
                     {%endif %}
                     {% if runNextSeq_results.Processing_Run %}
                     <div class="panel panel-default">
-                        <div class="panel-heading"><H3>4. - Test Executed on Processing Run 
+                        <div class="panel-heading"><H3>4. - Test Executed on Processing Run
                          {% if runNextSeq_results.processing_run_ok %}
                             <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
                         {% else %}
@@ -339,7 +320,7 @@ p {
                         </H3> </div>
                         <div class="panel-body">
                             {% for test_case, result in runNextSeq_results.Processing_Run %}
-                                <p><strong> {{ test_case }} 
+                                <p><strong> {{ test_case }}
                                 {% if result == 'OK' %}
                                     <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
                                 {% else %}
@@ -355,8 +336,8 @@ p {
             </div> <!--// end panel -->
         </div> <!--// end col-sm-12  -->
     </div> <!--// end row  -->
-    
-    
+
+
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
             <div class="panel panel-default">
@@ -374,7 +355,7 @@ p {
                         </H3> </div>
                         <div class="panel-body">
                             {% for test_case, result in runNextSeq_results.Processed_Run %}
-                                <p><strong> {{ test_case }} 
+                                <p><strong> {{ test_case }}
                                 {% if result == 'OK' %}
                                     <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
                                 {% else %}
@@ -396,7 +377,7 @@ p {
                         </H3> </div>
                         <div class="panel-body">
                             {% for test_case, result in runNextSeq_results.Processing_Bcl2fastq %}
-                                <p><strong> {{ test_case }} 
+                                <p><strong> {{ test_case }}
                                 {% if result == 'OK' %}
                                     <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
                                 {% else %}
@@ -408,11 +389,11 @@ p {
                     </div> <!--// end panel -->
                     {% endif %}
                     </div>  <!--// end col-sm-6  -->
-                    
+
                     <div class="col-sm-6">
                     {% if runNextSeq_results.Processed_Bcl2fastq %}
                     <div class="panel panel-default">
-                        <div class="panel-heading"><H3>7. - Test Executed on Processed Bcl2fastq 
+                        <div class="panel-heading"><H3>7. - Test Executed on Processed Bcl2fastq
                          {% if runNextSeq_results.processed_bcl2fast2_ok %}
                             <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
                         {% else %}
@@ -421,7 +402,7 @@ p {
                         </H3> </div>
                         <div class="panel-body">
                             {% for test_case, result in runNextSeq_results.Processed_Bcl2fastq %}
-                                <p><strong> {{ test_case }} 
+                                <p><strong> {{ test_case }}
                                 {% if result == 'OK' %}
                                     <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
                                 {% else %}
@@ -437,7 +418,7 @@ p {
             </div> <!--// end panel -->
         </div> <!--// end col-sm-12  -->
     </div> <!--// end row  -->
-    
+
 
 
     {% if  log_trace %}
@@ -446,7 +427,7 @@ p {
                 <div class="panel panel-default">
                     <div class="panel-heading"><H3>Log file for MiSeq test</H3> </div>
                      <div class="panel-body">
-                         
+
                         <div class="panel-wrapper-sm-12"> <!-- // wrapper  -->
                                 {% if log_trace %}
                                     {% for line in log_trace %}
@@ -462,8 +443,8 @@ p {
         </div> <!--// end row  -->
 
     {% endif %}
-    
-    <div class="row row-space-2 margin-b-4">   
+
+    <div class="row row-space-2 margin-b-4">
         <div class="col-sm-8 col-sm-offset-3">
                 <div class="panel panel-default">
                 <div class="panel-heading"><H3>Test Options</H3></div>
@@ -483,17 +464,17 @@ p {
     </div> <!--// end row  -->
 
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
 {% elif runMiSeq_results %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-7 col-sm-offset-3" >
@@ -511,7 +492,7 @@ p {
             </div> <!--// end panel -->
         </div> <!--// end col-sm-7  -->
     </div> <!--// end row  -->
-    
+
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
             <div class="panel panel-default">
@@ -528,7 +509,7 @@ p {
                         </H3> </div>
                         <div class="panel-body">
                             {% for test_case, result in runMiSeq_results.Recorded %}
-                                <p><strong> {{ test_case }} 
+                                <p><strong> {{ test_case }}
                                 {% if result == 'OK' %}
                                     <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
                                 {% else %}
@@ -539,7 +520,7 @@ p {
                         </div> <!--// end panel body -->
                     </div> <!--// end panel -->
                     </div>  <!--// end col-sm-6  -->
-                    
+
                     <div class="col-sm-6">
                     <div class="panel panel-default">
                         <div class="panel-heading"><H3>2. - Test Executed on Sample Sent state
@@ -551,7 +532,7 @@ p {
                         </H3> </div>
                         <div class="panel-body">
                             {% for test_case, result in runMiSeq_results.Sample_Sent %}
-                                <p><strong> {{ test_case }} 
+                                <p><strong> {{ test_case }}
                                 {% if result == 'OK' %}
                                     <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
                                 {% else %}
@@ -561,9 +542,9 @@ p {
                             {% endfor %}
                         </div> <!--// end panel body -->
                     </div> <!--// end panel -->
-                    
+
                     <div class="panel panel-default">
-                        <div class="panel-heading"><H3>3. - Test Executed on Processing Run 
+                        <div class="panel-heading"><H3>3. - Test Executed on Processing Run
                          {% if runMiSeq_results.processing_run_ok %}
                             <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
                         {% else %}
@@ -572,7 +553,7 @@ p {
                         </H3> </div>
                         <div class="panel-body">
                             {% for test_case, result in runMiSeq_results.Processing_Run %}
-                                <p><strong> {{ test_case }} 
+                                <p><strong> {{ test_case }}
                                 {% if result == 'OK' %}
                                     <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
                                 {% else %}
@@ -587,8 +568,8 @@ p {
             </div> <!--// end panel -->
         </div> <!--// end col-sm-12  -->
     </div> <!--// end row  -->
-    
-    
+
+
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
             <div class="panel-heading"><H3>Common Test Cases for Runs</H3></div>
@@ -604,7 +585,7 @@ p {
                         </H3> </div>
                         <div class="panel-body">
                             {% for test_case, result in runMiSeq_results.Processed_Run %}
-                                <p><strong> {{ test_case }} 
+                                <p><strong> {{ test_case }}
                                 {% if result == 'OK' %}
                                     <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
                                 {% else %}
@@ -614,7 +595,7 @@ p {
                             {% endfor %}
                         </div> <!--// end panel body -->
                     </div> <!--// end panel -->
-                    
+
                     <div class="panel panel-default">
                         <div class="panel-heading"><H3>5. - Test Executed on Processing Bcl2fastq state
                          {% if runMiSeq_results.processing_bcl2fastq_ok %}
@@ -625,7 +606,7 @@ p {
                         </H3> </div>
                         <div class="panel-body">
                             {% for test_case, result in runMiSeq_results.Processing_Bcl2fastq %}
-                                <p><strong> {{ test_case }} 
+                                <p><strong> {{ test_case }}
                                 {% if result == 'OK' %}
                                     <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
                                 {% else %}
@@ -636,10 +617,10 @@ p {
                         </div> <!--// end panel body -->
                     </div> <!--// end panel -->
                     </div>  <!--// end col-sm-6  -->
-                    
+
                     <div class="col-sm-6">
                     <div class="panel panel-default">
-                        <div class="panel-heading"><H3>6. - Test Executed on Processed Bcl2fastq 
+                        <div class="panel-heading"><H3>6. - Test Executed on Processed Bcl2fastq
                          {% if runMiSeq_results.processed_bcl2fast2_ok %}
                             <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
                         {% else %}
@@ -648,7 +629,7 @@ p {
                         </H3> </div>
                         <div class="panel-body">
                             {% for test_case, result in runMiSeq_results.Processed_Bcl2fastq %}
-                                <p><strong> {{ test_case }} 
+                                <p><strong> {{ test_case }}
                                 {% if result == 'OK' %}
                                     <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
                                 {% else %}
@@ -663,7 +644,7 @@ p {
             </div> <!--// end panel -->
         </div> <!--// end col-sm-12  -->
     </div> <!--// end row  -->
-    
+
 
 
     {% if  log_trace %}
@@ -672,7 +653,7 @@ p {
                 <div class="panel panel-default">
                     <div class="panel-heading"><H3>Log file for MiSeq test</H3> </div>
                      <div class="panel-body">
-                         
+
                         <div class="panel-wrapper-sm-12"> <!-- // wrapper  -->
                                 {% if log_trace %}
                                     {% for line in log_trace %}
@@ -688,8 +669,8 @@ p {
         </div> <!--// end row  -->
 
     {% endif %}
-    
-    <div class="row row-space-2 margin-b-4">   
+
+    <div class="row row-space-2 margin-b-4">
         <div class="col-sm-8 col-sm-offset-3">
                 <div class="panel panel-default">
                 <div class="panel-heading"><H3>Test Options</H3></div>
@@ -712,7 +693,7 @@ p {
 
 {% else %}
     <!-- FORM for selecting annual Report Information -->
-  
+
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-7 col-sm-offset-3" >
             <div class="panel panel-default">
@@ -726,21 +707,21 @@ p {
                         <p>The tests are divided into several parts to cover the run life, from recorded until the run is completed.</p>
                         <ul>
                             <li>Basic test cases. Where testing:</li>
-                            <ul> 
+                            <ul>
                                 <li>Configuration files accesibility.</li>
                                 <li>Samba connection to remote server</li>
                                 <li>Database access</li>
                                 <BR>
                             </ul>
                             <li>NextSeq run. Using a predefined NestSeq test run:</li>
-                            <ul> 
+                            <ul>
                                 <li>Creation of the run in recorded state</li>
                                 <li>Updating the run from recorded until completed</li>
                                 <BR>
-                                
+
                             </ul>
                             <li>NMiSeq run. Using a predefined MiSeq test run:</li>
-                            <ul> 
+                            <ul>
                                 <li>Fetch the sample sheet to create the run in recorded state</li>
                                 <li>Updating the run from recorded until completed</li>
                             </ul>
@@ -754,5 +735,6 @@ p {
             </div> <!--// end panel -->
         </div> <!--// end col-sm-7  -->
     </div> <!--// end row  -->
+
 {% endif %}
 {% endblock %}
