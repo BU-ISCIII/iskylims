@@ -398,7 +398,8 @@ class RequestedSamplesInServicesManager (models.Manager):
 	def create_request_sample (self, data):
 		new_req_sample_service = self.create( samplesInService= data['samplesInService'], runName = data['run_name'],
 					runNameKey = data['run_id'], projectName = data['project_name'],  projectKey = data['project_id'],
-					sampleName = data['sample_name'],  sampleKey = data['sample_id'], onlyRecordedSample = data['only_recorded'])
+					sampleName = data['sample_name'],  sampleKey = data['sample_id'], onlyRecordedSample = data['only_recorded'],
+					samplePath = data['sample_path'])
 		return new_req_sample_service
 
 

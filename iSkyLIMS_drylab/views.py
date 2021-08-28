@@ -94,7 +94,8 @@ def request_sequencing_service(request):
 			add_files_to_service(request.POST.getlist('files'), new_service)
 		## Send mail to user and drylab notification email
 		email_data = {}
-		if 'requestedForUserid' in request.POST:
+
+		if request.POST['requestedForUserid'] != '':
 			user_obj= User.objects.filter(pk__exact = request.POST['requestedForUserid']).last()
 			email_data['user_name'] = user_obj.username
 			email_data['user_email'] = user_obj.email

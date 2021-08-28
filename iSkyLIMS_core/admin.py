@@ -51,7 +51,7 @@ class SamplesAdmin(admin.ModelAdmin):
     search_fields = ('sampleName__startswith',)
 
 class SampleTypeAdmin(admin.ModelAdmin):
-    list_display = ('sampleType',)
+    list_display = ('sampleType','optional_fields')
 '''
 class SampleProjectBelongsAdmin(admin.ModelAdmin):
     list_display = ('projectName', 'projectManager', 'projectDescription', 'contactEmail', 'contactPhone', 'contactComments')

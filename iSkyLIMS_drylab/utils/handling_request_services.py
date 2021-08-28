@@ -588,6 +588,9 @@ def prepare_form_data_request_service_sequencing (request):
     	The function get the information to display in the request sequencing service form
     Input:
     	request      # user instance who request the service
+	Constants:
+		HEADING_SELECT_SAMPLE_IN_SERVICE
+		HEADING_SELECT_ONLY_RECORDED_SAMPLE_IN_SERVICE
 	Functions:
 		get_only_recorded_samples_and_dates		# located at iSkyLIMS_core.utils.handling_samples
 		get_user_sharing_list					# located at iSkyLIMS_drylab.utils.drylab_common_functions
@@ -703,7 +706,7 @@ def stored_samples_for_sequencing_request_service(form_data, new_service):
 		display_service
 	'''
     requested_sample_list = []
-    heading = ['run_name', 'run_id', 'project_name', 'project_id','sample_name', 'sample_id']
+    heading = ['run_name', 'run_id', 'project_name', 'project_id','sample_name', 'sample_id', 'date','sample_path']
 	# get the internals samples
     if 'samples_requested' in form_data:
         requested_services_table = json.loads(form_data['samples_requested'])

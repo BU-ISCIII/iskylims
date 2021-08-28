@@ -119,10 +119,11 @@ def get_runs_projects_samples_and_dates(user_list_ids):
         #cursor.execute('select   iSkyLIMS_wetlab_runprocess.runName, iSkyLIMS_wetlab_runprocess.id ,iSkyLIMS_wetlab_projects.projectName , iSkyLIMS_wetlab_projects.id ,  iSkyLIMS_wetlab_samplesinproject.sampleName, iSkyLIMS_wetlab_samplesinproject.id from iSkyLIMS_wetlab_samplesinproject inner join iSkyLIMS_wetlab_projects ON iSkyLIMS_wetlab_samplesinproject.project_id_id = iSkyLIMS_wetlab_projects.id inner join iSkyLIMS_wetlab_runprocess ON iSkyLIMS_wetlab_samplesinproject.runProcess_id_id = iSkyLIMS_wetlab_runprocess.id')
         user_list_str = [str(id_str) for id_str in user_list_ids]
         user_list = '( ' + ','.join(user_list_str) + ' )'
-        fetch_fields = " iSkyLIMS_wetlab_runprocess.runName, iSkyLIMS_wetlab_runprocess.id ,iSkyLIMS_wetlab_projects.projectName , iSkyLIMS_wetlab_projects.id ,  iSkyLIMS_wetlab_samplesinproject.sampleName, iSkyLIMS_wetlab_samplesinproject.id, DATE_FORMAT(iSkyLIMS_wetlab_runprocess.run_completed_date,'%d/%m/%Y') AS niceDate "
-        q_tables = ' FROM iSkyLIMS_wetlab_samplesinproject inner join iSkyLIMS_wetlab_projects ON iSkyLIMS_wetlab_samplesinproject.project_id_id = iSkyLIMS_wetlab_projects.id inner join iSkyLIMS_wetlab_runprocess ON iSkyLIMS_wetlab_samplesinproject.runProcess_id_id = iSkyLIMS_wetlab_runprocess.id '
+        fetch_fields = " iSkyLIMS_wetlab_runprocess.runName, iSkyLIMS_wetlab_runprocess.id ,iSkyLIMS_wetlab_projects.projectName , iSkyLIMS_wetlab_projects.id ,  iSkyLIMS_wetlab_samplesinproject.sampleName, iSkyLIMS_wetlab_samplesinproject.id, DATE_FORMAT(iSkyLIMS_wetlab_runprocess.run_completed_date,'%d/%m/%Y') AS niceDate , iSkyLIMS_wetlab_runningparameters.runID "
+        q_tables = ' FROM iSkyLIMS_wetlab_samplesinproject inner join iSkyLIMS_wetlab_projects ON iSkyLIMS_wetlab_samplesinproject.project_id_id = iSkyLIMS_wetlab_projects.id inner join iSkyLIMS_wetlab_runprocess ON iSkyLIMS_wetlab_samplesinproject.runProcess_id_id = iSkyLIMS_wetlab_runprocess.id   inner join iSkyLIMS_wetlab_runningparameters ON iSkyLIMS_wetlab_runprocess.id =  iSkyLIMS_wetlab_runningparameters.runName_id_id '
         restrict_results = 'WHERE iSkyLIMS_wetlab_samplesinproject.user_id_id IN ' + user_list
         query = "SELECT " + fetch_fields + q_tables + restrict_results + 'ORDER BY (iSkyLIMS_wetlab_runprocess.run_completed_date) DESC'
+
         cursor.execute(query)
         #cursor.execute("select   iSkyLIMS_wetlab_runprocess.runName, iSkyLIMS_wetlab_runprocess.id ,iSkyLIMS_wetlab_projects.projectName , iSkyLIMS_wetlab_projects.id ,  iSkyLIMS_wetlab_samplesinproject.sampleName, iSkyLIMS_wetlab_samplesinproject.id, DATE_FORMAT(iSkyLIMS_wetlab_runprocess.run_completed_date,'%d/%m/%Y') AS niceDate from iSkyLIMS_wetlab_samplesinproject inner join iSkyLIMS_wetlab_projects ON iSkyLIMS_wetlab_samplesinproject.project_id_id = iSkyLIMS_wetlab_projects.id inner join iSkyLIMS_wetlab_runprocess ON iSkyLIMS_wetlab_samplesinproject.runProcess_id_id = iSkyLIMS_wetlab_runprocess.id WHERE iSkyLIMS_wetlab_samplesinproject.user_id_id IN ('1','2','3','7','8','9','16')")
 
@@ -150,5 +151,5 @@ def get_runs_projects_samples_and_dates(user_list_ids):
             #samples_data.append(data)
 
 
-    #import pdb; pdb.set_trace()
+
     return samples_data
