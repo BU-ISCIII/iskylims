@@ -243,7 +243,7 @@ def create_new_resolution(resolution_data_form):
     return new_resolution
 
 
-def create_resolution_pdf_file (new_resolution, absolute_url):
+# def create_resolution_pdf_file (new_resolution, absolute_url):
     '''
     Description:
         The function collect the information to create the pdf file
@@ -257,6 +257,7 @@ def create_resolution_pdf_file (new_resolution, absolute_url):
     Return:
         pdf_file which contains the full path and name of the pdf file
     '''
+    '''
     service_obj = new_resolution.get_service_obj()
     information_to_include = get_data_for_resolution(service_obj, new_resolution )
 
@@ -264,7 +265,7 @@ def create_resolution_pdf_file (new_resolution, absolute_url):
     full_path_pdf_file = create_pdf(absolute_url, information_to_include, drylab_config.RESOLUTION_TEMPLATE, pdf_file_name, drylab_config.OUTPUT_DIR_RESOLUTION_PDF)
     pdf_file = full_path_pdf_file.replace(settings.BASE_DIR,'')
     return pdf_file
-
+    '''
 def get_resolution_obj_from_id(resolution_id):
     '''
     Description:

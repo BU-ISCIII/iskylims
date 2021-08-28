@@ -222,7 +222,7 @@ def get_data_for_service_confirmation (service_requested):
 
 
 
-def create_service_pdf_file (service_request_number, absolute_url):
+# def create_service_pdf_file (service_request_number, absolute_url):
     '''
     Description:
         The function collect the information to create the pdf file
@@ -236,13 +236,13 @@ def create_service_pdf_file (service_request_number, absolute_url):
     Return:
         pdf_file which contains the full path and name of the pdf file
     '''
-
+    '''
     information_to_include = get_data_for_service_confirmation(service_request_number)
     pdf_file_name = service_request_number + '.pdf'
     full_path_pdf_file = create_pdf(absolute_url, information_to_include, drylab_config.REQUESTED_CONFIRMATION_SERVICE, pdf_file_name,  drylab_config.OUTPUT_DIR_SERVICE_REQUEST_PDF)
     pdf_file = full_path_pdf_file.replace(settings.BASE_DIR,'')
     return pdf_file
-
+    '''
 
 def get_pending_services_information():
     '''

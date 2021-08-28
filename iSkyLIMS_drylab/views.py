@@ -106,8 +106,9 @@ def request_sequencing_service(request):
 		email_result = send_service_creation_confirmation_email(email_data)
 		# PDF preparation file for confirmation of service request
 		confirmation_result = {}
+		''' removed creation of pdf file when creating a new service
 		confirmation_result['download_file'] = create_service_pdf_file(new_service.get_service_request_number(), request.build_absolute_uri())
-
+		'''
 		service_request_number = new_service.get_service_request_number()
 		confirmation_result['text'] = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), drylab_config.CONFIRMATION_TEXT_MESSAGE))
 		if len(sample_stored) > 0 :
@@ -139,7 +140,7 @@ def counseling_request(request):
         email_data['service_number'] = new_service.get_service_request_number()
         send_service_creation_confirmation_email(email_data)
         confirmation_result = {}
-        confirmation_result['download_file'] = create_service_pdf_file(new_service.get_service_request_number(), request.build_absolute_uri())
+        # confirmation_result['download_file'] = create_service_pdf_file(new_service.get_service_request_number(), request.build_absolute_uri())
 
         service_request_number = new_service.get_service_request_number()
         confirmation_result['text'] = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), drylab_config.CONFIRMATION_TEXT_MESSAGE))
@@ -170,7 +171,7 @@ def infrastructure_request(request):
         email_data['service_number'] = new_service.get_service_request_number()
         send_service_creation_confirmation_email(email_data)
         confirmation_result = {}
-        confirmation_result['download_file'] = create_service_pdf_file(new_service.get_service_request_number(), request.build_absolute_uri())
+        # confirmation_result['download_file'] = create_service_pdf_file(new_service.get_service_request_number(), request.build_absolute_uri())
 
         service_request_number = new_service.get_service_request_number()
         confirmation_result['text'] = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), drylab_config.CONFIRMATION_TEXT_MESSAGE))
@@ -346,9 +347,10 @@ def add_resolution (request):
         if 'pipeline_ids' in resolution_data_form:
             add_pipelines_to_resolution(new_resolution, resolution_data_form['pipeline_ids'])
         # create a new resolution to be added to the service folder including the path where file is stored
-
-        pdf_file = create_resolution_pdf_file(new_resolution, request.build_absolute_uri())
-        new_resolution.update_resolution_file(pdf_file)
+        ''' removed pdf creation file
+        # pdf_file = create_resolution_pdf_file(new_resolution, request.build_absolute_uri())
+        # new_resolution.update_resolution_file(pdf_file)
+        '''
         #pdf_name = resolution_data_form['resolutionNumber'] + ".pdf"
         #resolution_file = create_pdf(request,information, drylab_config.RESOLUTION_TEMPLATE, pdf_name)
 
