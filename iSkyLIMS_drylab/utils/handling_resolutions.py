@@ -369,7 +369,7 @@ def send_resolution_creation_email (email_data):
     body_message = '\n'.join(body_preparation)
     notification_user = ConfigSetting.objects.filter(configurationName__exact = 'EMAIL_FOR_NOTIFICATIONS').last().get_configuration_value()
     from_user = notification_user
-    to_users = [email_data['user_email'], notification_user]
+    to_users = [email_data['user_email'], email_data['service_owner_email'], notification_user]
     try:
         send_mail (subject, body_message, from_user, to_users)
     except:

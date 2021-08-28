@@ -629,6 +629,11 @@ class Resolution(models.Model):
 		#return '%s' %(self.resolutionServiceID.serviceUserId.profile.profileCenter.centerAbbr)
 		return '%s' %(self.resolutionServiceID.get_service_request_center_unit_abbr())
 
+	def get_service_owner_email(self):
+		if self.resolutionServiceID != None:
+			return self.resolutionServiceID.get_user_email()
+		return ''
+
 	def update_resolution_in_progress_date(self):
 		today = date.today()
 		self.resolutionOnInProgressDate = today
@@ -712,6 +717,9 @@ class Delivery(models.Model):
 		delivery_info.append(self.deliveryDate.strftime("%d %B, %Y"))
 		delivery_info.append(self.deliveryNotes)
 		return delivery_info
+
+	def get_resolution_obj (self):
+		return self.deliveryResolutionID
 
 	objects = DeliveryManager()
 
