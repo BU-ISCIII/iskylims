@@ -796,6 +796,9 @@ class SamplesInProject (models.Model):
     user_id = models.ForeignKey(
                 User,
                 on_delete=models.CASCADE, null = True, blank = True)
+    sampleInCore = models.ForeignKey(
+                Samples,
+                on_delete = models.CASCADE, null = True, blank = True)
     sampleName = models.CharField(max_length=255)
     barcodeName = models.CharField(max_length=255)
     pfClusters = models.CharField(max_length=55)
