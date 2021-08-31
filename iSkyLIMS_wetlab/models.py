@@ -844,11 +844,11 @@ class SamplesInProject (models.Model):
         data = []
         data.append(self.sampleName)
         if self.project_id != None :
-            sample_info.append(self.project_id.get_project_name())
+            data.append(self.project_id.get_project_name())
         else:
-            sample_info.append('None')
+            data.append('None')
         if self.runProcess_id != None:
-            sample_info.append(self.runProcess_id.get_run_name())
+            data.append(self.runProcess_id.get_run_name())
         else:
             sample_info.append('None')
         data.append(self.generated_at.strftime("%B %d, %Y"))
