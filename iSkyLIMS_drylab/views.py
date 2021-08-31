@@ -520,15 +520,14 @@ def add_delivery (request ):
             return render (request, 'iSkyLIMS_drylab/addDelivery.html', {'delivery_data':delivery_data, 'ERROR': error_message})
 
         delivery_recorded = store_resolution_delivery (request.POST)
-        resolution_obj = delivery_recorded.get_resolution_obj()
+        resolution_obj = delivery_recorded['deliveryResolutionID']
         if delivery_recorded != None :
             email_data = {}
             email_data['user_email'] = request.user.email
             email_data['user_name'] = request.user.username
             email_data['resolution_number'] = delivery_recorded['resolution_number']
-            email_data['service_owner_email'] = new_resolution.get_service_owner_email()
+            email_data['service_owner_email'] = resolution_obj.get_service_owner_email()
             send_delivery_service_email(email_data)
-            resolution_obj = delivery_recorded['deliveryResolutionID']
             if allow_to_service_update_state (resolution_obj, 'delivered'):
                 service_obj = resolution_obj.get_service_obj()
                 service_obj.update_service_status('delivered')
