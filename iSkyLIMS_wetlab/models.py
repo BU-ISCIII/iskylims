@@ -1732,3 +1732,19 @@ class ConfigSetting (models.Model):
         return self
 
     objects = ConfigSettingManager()
+
+class RunConfigurationTest (models.Model):
+    runTestName = models.CharField(max_length = 80)
+    runTestFolder = models.CharField(max_length = 200)
+
+    def __str__ (self):
+        return '%s' %(self.runTestName)
+
+    def get_run_test_id(self):
+        return '%s' %(self.pk)
+
+    def get_run_test_name (self):
+        return '%s' %(self.runTestName)
+
+    def get_run_test_folder(self):
+        return '%s' %(self.runTestFolder)

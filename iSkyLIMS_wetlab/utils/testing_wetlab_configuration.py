@@ -1,3 +1,4 @@
+import os
 from django.contrib.auth.models import User
 from django.conf import settings
 import pwd, stat, os, grp, shutil
@@ -12,6 +13,8 @@ from iSkyLIMS_wetlab.utils.generic_functions import *
 #from iSkyLIMS_wetlab.utils.common_run_functions import manage_run_in_processed_run, manage_run_in_processing_bcl2fastq, manage_run_in_processed_bcl2fastq
 #from iSkyLIMS_wetlab.utils.sample_sheet_utils import *
 from iSkyLIMS_wetlab.utils.handling_crontab_manage_run_states import *
+from iSkyLIMS_wetlab.utils.handling_crontab_common_functions import *
+from iSkyLIMS_wetlab.utils.update_run_state import search_update_new_runs
 #from .common_run_functions import manage_run_in_processed_run, manage_run_in_processing_bcl2fastq, manage_run_in_processed_bcl2fastq
 
 def get_config_file (config_file):
@@ -45,17 +48,6 @@ def get_iSkyLIMS_settings():
     try:
         with open (settings_file ,'r') as fh:
             for line in fh:
-                ''' allowing saving password for file backup propose
-                if 'PASSWORD' in line or 'SECRET_KEY' in line   :
-                    if  not 'AUTH_PASSWORD_VALIDATORS' in line :
-                        if '=' in line :
-                            split_separator = '='
-                        else :
-                            split_separator = ':'
-                        hide_passwd = line.split(split_separator)
-                        hide_passwd[1] = 'XXXXXXXXXXXXXXXXX'
-                        line = ' = '.join(hide_passwd)
-                '''
                 line = line.replace('\n', '')
                 s_file.append(line)
     except:
@@ -86,6 +78,34 @@ def run_exists_in_db (run_name):
         return True
     else:
         return False
+
+
+def folder_test_exists (folder_run_name):
+    '''
+    Description:
+        The funtion check if remote folder exists
+    Input:
+        folder_run_name     # folder test name in remote server
+
+    Functions:
+        open_samba_connection   # located at utils.generic_functions.py
+        get_samba_application_shared_folder
+    Return:
+        True if folder exists
+    '''
+    result = False
+    conn = open_samba_connection()
+    run_data_root_folder = os.path.join('/', get_samba_application_shared_folder() )
+    shared_folder = get_samba_shared_folder()
+    run_folder_list = conn.listPath( shared_folder, run_data_root_folder)
+    for sfh in run_folder_list:
+        if sfh.isDirectory:
+            folder_run = sfh.filename
+            if (folder_run == folder_run_name):
+                result = True
+                break
+    return result
+
 
 def delete_graphic_folder_if_exists(run_name):
     run_object = RunProcess.objects.get(runName__exact = run_name)
@@ -136,474 +156,89 @@ def create_project (p_name, run_name, bs_file):
 
     return True
 
-def create_run_test_nextseq_in_recorded (run_folder, experiment_name ) :
-    recorded_results = []
-    logger = logging.getLogger(__name__)
-    logger.debug ('Starting function create_run_test_nextseq')
 
-    # Check user is defined in database
-    if not User.objects.filter(username__exact = 'test_user1').exists():
-        user = User.objects.create_user(username='test_user1',
-                                 email='test_user1@iSkyLIMS.com',
-                                 password='test_user1')
 
-    # if run exist, then delete if before created it again
-    if RunProcess.objects.filter(runName__exact = experiment_name).exists() :
-        run_name = RunProcess.objects.get(runName__exact = experiment_name)
-        sample_sheet = run_name.get_sample_file()
-        temp_folder_sample_sheet = run_name.get_run_id()
-        try:
-            os.remove(os.path.join(wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY, sample_sheet))
-        except:
-            logger.info('unable to delete sample sheet')
-        try:
-            shutil.rmtree(os.path.join(settings.MEDIA_ROOT, wetlab_config.RUN_TEMP_DIRECTORY_RECORDED, temp_folder_sample_sheet))
-        except:
-            logger.info('unable to delete tmp forlder with the smample sheet')
+def execute_test_for_testing_run(run_test_name, run_test_folder):
+    '''
+    Description:
+        The funtion call the functions used in the crontab to collect run information
+    Input:
+        run_test_name     # folder test name in remote server
 
-        delete_test_run(experiment_name)
+    Functions:
+        open_samba_connection               # located at utils.generic_functions.py
+        get_samba_application_shared_folder # located at utils.handling_crontab_common_functions.py
+        get_samba_shared_folder             # located at utils.handling_crontab_common_functions.py
 
-    conn = open_samba_connection()
 
-    l_sample = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY,wetlab_config.SAMPLE_SHEET)
-    s_sample= os.path.join(run_folder, wetlab_config.SAMPLE_SHEET)
+    Return:
+        True if folder exists
+    '''
+    run_result = {}
 
-    try:
-        l_sample = fetch_remote_file (conn, run_folder, s_sample, l_sample)
-        logger.info('Sucessfully fetch of Sample Sheet file')
-    except Exception as ex:
-        string_message = 'Unable to fetch the Sample Sheet file'
-        logging_errors(string_message, False, True)
-        recorded_results.append((str(ex) , 'NOK'))
-        return recorded_results, 'NOK'
-    projects = get_projects_in_run(l_sample)
-    recorded_results.append(('Successful creation Run in database', 'OK'))
-
-    center_requested_by = Center.objects.get(pk = 2)
-    run_process = RunProcess(runName=experiment_name,sampleSheet= '',
-                                state = RunStates.objects.get(runStateName__exact = 'Recorded'),
-                                index_library = 'Nextera XT', centerRequestedBy = center_requested_by)
-    run_process.save()
-
-    run_process_id = run_process.get_run_id()
-    dir_to_store_sample_sheet = os.path.join(settings.MEDIA_ROOT, wetlab_config.RUN_TEMP_DIRECTORY_RECORDED, run_process_id)
-    os.makedirs(dir_to_store_sample_sheet)
-    shutil.copyfile(l_sample, os.path.join(dir_to_store_sample_sheet, 'samplesheet.csv'))
-
-    recorded_results.append(('Successful copy of Sample Sheet to temporary folder', 'OK'))
-
-    new_sample_sheet_name = store_sample_sheet_in_run (l_sample, experiment_name )
-    recorded_results.append(('Successful update of Sample Sheet in database', 'OK'))
-
-    #new_sample_sheet_file = os.path.join (settings.MEDIA_ROOT, wetlab_config.RUN_SAMPLE_SHEET_DIRECTORY, new_sample_sheet_name)
-    bs_file = new_sample_sheet_name
-    # create projects in DDBB
-    for project in projects :
-        create_project(project, experiment_name, bs_file)
-    recorded_results.append(('Successful projects creation in database', 'OK'))
-
-    return recorded_results, 'OK'
-
-
-def  run_nextseq_test_rec_to_sample_sent (run_folder, experiment_name) :
-    recorded_results = []
-    logger = logging.getLogger(__name__)
-    logger.debug ('Starting function run_nextseq_test_rec_to_sample_sent')
-
-    conn = open_samba_connection()
-    # check if test folder exists
-
-    run_data_root_folder = os.path.join('/', wetlab_config.SAMBA_APPLICATION_FOLDER_NAME , run_folder)
-    try:
-        run_folder_list = conn.listPath( wetlab_config.SAMBA_SHARED_FOLDER_NAME, run_data_root_folder)
-        recorded_results.append(('Check if test Run folder exists ', 'OK'))
-        logger.info('Test Run folder exists on remote server')
-    except Exception as ex :
-        string_message = 'Test run folder does not exists '
-        logging_errors(string_message, False, True)
-        recorded_results.append((str(ex) , 'NOK'))
-        logger.debug ('End function run_nextseq_test_rec_to_sample_sent with error')
-        return recorded_results, 'NOK'
-
-    # Fetch RunParameter.xml file from remote server
-    l_run_parameter = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_PARAMETER_NEXTSEQ)
-    s_run_parameter = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, run_folder, wetlab_config.RUN_PARAMETER_NEXTSEQ)
-    try:
-       l_run_parameter = fetch_remote_file (conn, run_folder, s_run_parameter, l_run_parameter)
-       logger.info('Sucessfully fetch of RunParameter file')
-
-       recorded_results.append(('Successful RunParameter.xml file ', 'OK'))
-    except:
-        string_message = 'Unable to fetch the RunParameter.xml file '
-        logging_errors(string_message, False, True)
-        recorded_results.append(('Successful RunParameter.xml file ', 'NOK'))
-        logger.debug ('End function create_run_test_nextseq_in_recorded with error')
-        return recorded_results, 'NOK'
-    # Test MiSeq run on recorded state
-    try:
-        update_nextseq_in_recorded_state = handle_nextseq_recorded_run (conn, run_folder, l_run_parameter, experiment_name)
-
-    except ValueError as e :
-        recorded_results.append((str(e) , 'NOK'))
-        logger.debug ('End function create_run_test_nextseq_in_recorded with error')
-        return recorded_results, 'NOK'
-    except Exception as ex :
-        recorded_results.append((str(ex) , 'NOK'))
-        logger.debug ('End function create_run_test_nextseq_in_recorded with error')
-        return recorded_results, 'NOK'
-
-    if   experiment_name == update_nextseq_in_recorded_state.get_run_name():
-        if 'Sample Sent' == RunProcess.objects.get(runName__exact = experiment_name).get_state():
-            recorded_results.append(('NextSeq Run is in Sample Sent state', 'OK'))
-            logger.debug ('End function create_run_test_nextseq_in_recorded')
-            return recorded_results, 'OK'
-        else :
-            recorded_results.append(('NextSeq Run is wrong state', 'NOK'))
-            logger.debug ('End function create_run_test_nextseq_in_recorded with error')
-            return recorded_results, 'NOK'
-    else:
-        recorded_results.append(('NextSeq function returns an invalid run ', 'NOK'))
-        logger.debug ('End function create_run_test_nextseq_in_recorded with error')
-        return recorded_results, 'NOK'
-
-    return recorded_results, 'OK'
-
-
-
-def  run_nextseq_test_sample_sent_to_Processing_Run (experiment_name) :
-    sample_sent_results = []
-    logger = logging.getLogger(__name__)
-    logger.debug ('Starting function run_nextseq_test_sample_sent_to_Processing_Run')
-    run_name = RunProcess.objects.get(runName__exact = experiment_name)
-    conn = open_samba_connection()
-
-    try:
-        update_in_sample_sent = manage_nextseq_in_samplesent (conn, run_name)
-
-    except Exception as ex :
-        sample_sent_results.append(('MiSeq Run is in Processing Run state', 'NOK'))
-        logger.debug ('End function run_nextseq_test_sample_sent_to_Processing_Run with error')
-        return sample_sent_results, 'NOK'
-
-    if update_in_sample_sent == experiment_name:
-        if 'Processing Run' == RunProcess.objects.get(runName__exact = experiment_name).get_state():
-            sample_sent_results.append(('Check log files from the sequencer', 'OK'))
-            sample_sent_results.append(('MiSeq Run is in Processing Run state', 'OK'))
-            logger.debug ('End function run_nextseq_test_sample_sent_to_Processing_Run')
-            return sample_sent_results, 'OK'
-        else :
-            sample_sent_results.append(('MiSeq Run is wrong state', 'NOK'))
-            logger.debug ('End function run_nextseq_test_sample_sent_to_Processing_Run with error')
-            return sample_sent_results, 'NOK'
-    else:
-        sample_sent_results.append(('MiSeq function returns an invalid run', 'NOK'))
-        logger.debug ('End function run_nextseq_test_sample_sent_to_Processing_Run with error')
-        return sample_sent_results, 'NOK'
-
-
-def run_nextseq_test_Processing_Run_to_Processed_Run (experiment_name):
-    processing_run_results = []
-    logger = logging.getLogger(__name__)
-    logger.debug ('Starting function run_nextseq_test_Processing_Run_to_Processed_Run')
-    run_name = RunProcess.objects.get(runName__exact = experiment_name)
-    conn = open_samba_connection()
-
-    try:
-        update_in_procesing_run = manage_nextseq_in_processing_run (conn, run_name)
-
-    except Exception as ex :
-        processing_run_results.append(('NextSeq Run is in Processing Run state', 'NOK'))
-        logger.debug ('End function run_nextseq_test_Processing_Run_to_Processed_Run with error')
-        return processing_run_results, 'NOK'
-    if update_in_procesing_run == experiment_name:
-        if 'Processed Run' == RunProcess.objects.get(runName__exact = experiment_name).get_state():
-            processing_run_results.append(('Successful completion on Sequencer for MiSeq Run', 'OK'))
-            processing_run_results.append(('NextSeq Run is in Processed Run state', 'OK'))
-            logger.debug ('End function run_nextseq_test_Processing_Run_to_Processed_Run')
-            return processing_run_results, 'OK'
-        else :
-            processing_run_results.append(('NextSeq Run is wrong state', 'NOK'))
-            logger.debug ('End function run_nextseq_test_Processing_Run_to_Processed_Run with error')
-            return processing_run_results, 'NOK'
-    else:
-        processing_run_results.append(('NextSeq function returns an invalid run', 'NOK'))
-        logger.debug ('End function run_nextseq_test_Processing_Run_to_Processed_Run with error')
-        return processing_run_results, 'NOK'
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def run_miseq_test_rec_to_sample_sent (new_run, experiment_name) :
-    recorded_results = []
-    logger = logging.getLogger(__name__)
-    logger.debug ('Starting function run_miseq_test_rec_to_sample_sent')
-    working_path = settings.MEDIA_ROOT
-    os.chdir(working_path)
-
-
-    try:
-        conn = open_samba_connection()
-        recorded_results.append(('Connection to remote server ', 'OK'))
-        logger.info('Success connection to remote server')
-    except Exception as ex :
-        string_message = 'Unable to connect to remote server '
-        logging_errors(string_message, False, True)
-        recorded_results.append((str(ex) , 'NOK'))
-        return recorded_results, 'NOK'
-
-    # check if test folder exists
-    run_data_root_folder = os.path.join('/', wetlab_config.SAMBA_APPLICATION_FOLDER_NAME , new_run)
-    try:
-        run_folder_list = conn.listPath( wetlab_config.SAMBA_SHARED_FOLDER_NAME, run_data_root_folder)
-        recorded_results.append(('Check if test Run folder exists ', 'OK'))
-        logger.info('Test Run folder exists on remote server')
-    except Exception as ex :
-        string_message = 'Test run folder does not exists '
-        logging_errors(string_message, False, True)
-        recorded_results.append((str(ex) , 'NOK'))
-        return recorded_results, 'NOK'
-
-    # Check user is defined in database
-    if not User.objects.filter(username__exact = 'test_user1').exists():
-        user = User.objects.create_user(username='test_user1',
-                                 email='test_user1@iSkyLIMS.com',
-                                 password='test_user1')
-
-    # Fetch RunParameter.xml file from remote server
-    l_run_parameter = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_PARAMETER_NEXTSEQ)
-    s_run_parameter = os.path.join(wetlab_config.SAMBA_APPLICATION_FOLDER_NAME, new_run,wetlab_config.RUN_PARAMETER_NEXTSEQ)
-    try:
-       l_run_parameter = fetch_remote_file (conn, new_run, s_run_parameter, l_run_parameter)
-       logger.info('Sucessfully fetch of RunParameter file')
-
-       recorded_results.append(('Successful RunParameter.xml file ', 'OK'))
-    except:
-        string_message = 'Unable to fetch the RunParameter.xml file '
-        logging_errors(string_message, False, True)
-        recorded_results.append(('Successful RunParameter.xml file ', 'NOK'))
-        return recorded_results, 'NOK'
-    # Test MiSeq run on recorded state
-    try:
-        update_miseq_in_recorded_state =  handle_miseq_run (conn, new_run, l_run_parameter, experiment_name)
-
-        recorded_results.append(('Valid Sample Sheet ', 'OK'))
-        recorded_results.append(('Stored Sample Sheet ', 'OK'))
-        recorded_results.append(('Updated library name ', 'OK'))
-        recorded_results.append(('Stored Projects ', 'OK'))
-    except ValueError as e :
-        recorded_results.append((str(e) , 'NOK'))
-        logger.debug ('End function run_miseq_test_rec_to_sample_sent with error')
-        return recorded_results, 'NOK'
-    except Exception as ex :
-        recorded_results.append((str(ex) , 'NOK'))
-        logger.debug ('End function run_miseq_test_rec_to_sample_sent with error')
-        return recorded_results, 'NOK'
-
-    if update_miseq_in_recorded_state == new_run :
-        if 'Sample Sent' == RunProcess.objects.get(runName__exact = experiment_name).get_state():
-            recorded_results.append(('MiSeq Run is in Sample Sent state', 'OK'))
-            logger.debug ('End function run_miseq_test_rec_to_sample_sent')
-            return recorded_results, 'OK'
-        else :
-            recorded_results.append(('MiSeq Run is wrong state', 'NOK'))
-            logger.debug ('End function run_miseq_test_rec_to_sample_sent with error')
-            return recorded_results, 'NOK'
-    else:
-        recorded_results.append(('MiSeq function returns an invalid run ', 'NOK'))
-        logger.debug ('End function run_miseq_test_rec_to_sample_sent with error')
-        return recorded_results, 'NOK'
-
-
-def run_miseq_test_sample_sent_to_Processing_Run (experiment_name):
-    sample_sent_results = []
-    logger = logging.getLogger(__name__)
-    logger.debug ('Starting function run_miseq_test_sample_sent_to_Processing_Run')
-    run_name = RunProcess.objects.get(runName__exact = experiment_name)
-    conn = open_samba_connection()
-
-    try:
-        update_in_sample_sent = manage_miseq_in_samplesent (conn, run_name)
-
-    except Exception as ex :
-        sample_sent_results.append(('MiSeq Run is in Processing Run state', 'NOK'))
-        logger.debug ('End function run_miseq_test_sample_sent_to_Processing_Run with error')
-        return sample_sent_results, 'NOK'
-
-    if update_in_sample_sent == experiment_name:
-        if 'Processing Run' == RunProcess.objects.get(runName__exact = experiment_name).get_state():
-            sample_sent_results.append(('Check log files from the sequencer', 'OK'))
-            sample_sent_results.append(('MiSeq Run is in Processing Run state', 'OK'))
-            logger.debug ('End function run_miseq_test_sample_sent_to_Processing_Run')
-            return sample_sent_results, 'OK'
-        else :
-            sample_sent_results.append(('MiSeq Run is wrong state', 'NOK'))
-            logger.debug ('End function run_miseq_test_sample_sent_to_Processing_Run with error')
-            return sample_sent_results, 'NOK'
-    else:
-        sample_sent_results.append(('MiSeq function returns an invalid run', 'NOK'))
-        logger.debug ('End function run_miseq_test_sample_sent_to_Processing_Run with error')
-        return sample_sent_results, 'NOK'
-
-def run_miseq_test_Processing_Run_to_Processed_Run (experiment_name):
-    processing_run_results = []
-    logger = logging.getLogger(__name__)
-    logger.debug ('Starting function run_miseq_test_Processing_Run_to_Processed_Run')
-    run_name = RunProcess.objects.get(runName__exact = experiment_name)
-    conn = open_samba_connection()
-
-    try:
-        update_in_procesing_run = manage_miseq_in_processing_run (conn, run_name)
-
-    except Exception as ex :
-        processing_run_results.append(('MiSeq Run is in Processing Run state', 'NOK'))
-        logger.debug ('End function run_miseq_test_Processing_Run_to_Processed_Run with error')
-        return processing_run_results, 'NOK'
-
-    if update_in_procesing_run == experiment_name:
-        if 'Processed Run' == RunProcess.objects.get(runName__exact = experiment_name).get_state():
-            processing_run_results.append(('Successful completion on Sequencer for MiSeq Run', 'OK'))
-            processing_run_results.append(('MiSeq Run is in Processed Run state', 'OK'))
-            logger.debug ('End function run_miseq_test_Processing_Run_to_Processed_Run')
-            return processing_run_results, 'OK'
-        else :
-            processing_run_results.append(('MiSeq Run is wrong state', 'NOK'))
-            logger.debug ('End function run_miseq_test_Processing_Run_to_Processed_Run with error')
-            return processing_run_results, 'NOK'
-    else:
-        processing_run_results.append(('MiSeq function returns an invalid run', 'NOK'))
-        logger.debug ('End function run_miseq_test_Processing_Run_to_Processed_Run with error')
-        return processing_run_results, 'NOK'
-
-def run_test_Processed_Run_to_Processing_Bcl2fastq (experiment_name):
-    processed_run_results = []
-    logger = logging.getLogger(__name__)
-    logger.debug ('Starting function run_test_Processed_Run_to_Processing_Bcl2fastq')
-    run_name = RunProcess.objects.get(runName__exact = experiment_name)
-    conn = open_samba_connection()
-
-    try:
-        update_in_processing_run = manage_run_in_processed_run (conn, run_name)
-
-    except Exception as ex :
-        processed_run_results.append(('Run in Processed Run state', 'NOK'))
-        logger.debug ('End function run_test_Processed_Run_to_Processing_Bcl2fastq with error')
-        return processed_run_results, 'NOK'
-
-    if update_in_processing_run == experiment_name:
-        if 'Processing Bcl2fastq' == RunProcess.objects.get(runName__exact = experiment_name).get_state():
-            processed_run_results.append(('Successful completion on Sequencer for MiSeq Run', 'OK'))
-            processed_run_results.append(('Run is in Processing Bcl2fastq state', 'OK'))
-            logger.debug ('End function run_test_Processed_Run_to_Processing_Bcl2fastq')
-            return processed_run_results, 'OK'
-        else :
-            processed_run_results.append(('Run is wrong state', 'NOK'))
-            logger.debug ('End function run_test_Processed_Run_to_Processing_Bcl2fastq with error')
-            return processed_run_results, 'NOK'
-    else:
-        processed_run_results.append(('Function returns an invalid run', 'NOK'))
-        logger.debug ('End function run_test_Processed_Run_to_Processing_Bcl2fastq with error')
-        return processed_run_results, 'NOK'
-
-def run_test_Processing_Bcl2fastq_to_Processed_Bcl2fastq (experiment_name):
-    processing_bcl2fastq_results = []
-    logger = logging.getLogger(__name__)
-    logger.debug ('Starting function run_test_Processing_Bcl2fastq_to_Processed_Bcl2fastq')
-    run_name = RunProcess.objects.get(runName__exact = experiment_name)
-    conn = open_samba_connection()
-
-    try:
-        update_in_procesing_bclfastq = manage_run_in_processing_bcl2fastq (conn, run_name)
-
-    except Exception as ex :
-        processing_bcl2fastq_results.append(('Run is in Processing Run state', 'NOK'))
-        logger.debug ('End function run_test_Processing_Bcl2fastq_to_Processed_Bcl2fastq with error')
-        return processing_bcl2fastq_results, 'NOK'
-
-    if update_in_procesing_bclfastq == experiment_name:
-        if 'Processed Bcl2fastq' == RunProcess.objects.get(runName__exact = experiment_name).get_state():
-            processing_bcl2fastq_results.append(('Successful completion of Bcl2fastq conversion', 'OK'))
-            processing_bcl2fastq_results.append(('Bcl2fastq conversion date updated', 'OK'))
-            processing_bcl2fastq_results.append(('Run is in Processed Bcl2fastq state', 'OK'))
-            logger.debug ('End function run_test_Processing_Bcl2fastq_to_Processed_Bcl2fastq')
-            return processing_bcl2fastq_results, 'OK'
-        else :
-            processing_bcl2fastq_results.append(('Run is wrong state', 'NOK'))
-            logger.debug ('End function run_test_Processing_Bcl2fastq_to_Processed_Bcl2fastq with error')
-            return processing_bcl2fastq_results, 'NOK'
-    else:
-        processing_bcl2fastq_results.append(('Function returns an invalid run', 'NOK'))
-        logger.debug ('End function run_test_Processing_Bcl2fastq_to_Processed_Bcl2fastq with error')
-        return processing_bcl2fastq_results, 'NOK'
-
-
-def run_test_Processed_Bcl2fastq_to_Completed (experiment_name):
-    processed_bcl2fastq_results = []
-    logger = logging.getLogger(__name__)
-    logger.debug ('Starting function run_test_Processed_Bcl2fastq_to_Completed')
-    run_name = RunProcess.objects.get(runName__exact = experiment_name)
-    conn = open_samba_connection()
-
-    try:
-        update_in_processed_bclfastq = manage_run_in_processed_bcl2fastq (conn, run_name)
-
-    except Exception as ex :
-        processed_bcl2fastq_results.append(('Run in Processed Bcl2fastq state', 'NOK'))
-        logger.debug ('End function run_test_Processed_Bcl2fastq_to_Completed with error')
-        return processed_bcl2fastq_results, 'NOK'
-
-    if update_in_processed_bclfastq == experiment_name:
-        if 'Completed' == RunProcess.objects.get(runName__exact = experiment_name).get_state():
-            processed_bcl2fastq_results.append(('Successful demultiplexing files', 'OK'))
-            processed_bcl2fastq_results.append(('Updated database with demultiplexion data', 'OK'))
-            processed_bcl2fastq_results.append(('Projects in the run successfuly updated', 'OK'))
-            processed_bcl2fastq_results.append(('Stored graphics ', 'OK'))
-            processed_bcl2fastq_results.append(('Run is in Processing Completed state', 'OK'))
-            logger.debug ('End function run_test_Processed_Bcl2fastq_to_Completed')
-            return processed_bcl2fastq_results, 'OK'
-        else :
-            processed_bcl2fastq_results.append(('Run is wrong state', 'NOK'))
-            logger.debug ('End function run_test_Processed_Bcl2fastq_to_Completed with error')
-            return processed_bcl2fastq_results, 'NOK'
-    else:
-        processed_bcl2fastq_results.append(('Function returns an invalid run', 'NOK'))
-        logger.debug ('End function run_test_Processed_Bcl2fastq_to_Completed with error')
-        return processed_bcl2fastq_results, 'NOK'
-
-def execute_test_for_testing_run(run_test_name):
     if RunProcess.objects.filter(runName__exact = run_test_name).exists():
         run_obj = RunProcess.objects.filter(runName__exact = run_test_name).last()
-        state = run_obj.get_state()
-        state_list = ['Sample Sent', 'Processing Run', 'Processed Run', 'Processing Bcl2fastq' , 'Processed Bcl2fastq']
-        conn = open_samba_connection()
+        run_obj.delete()
+    working_path = settings.MEDIA_ROOT
+    os.chdir(working_path)
+    config_file = os.path.join(settings.BASE_DIR,'iSkyLIMS_wetlab',  wetlab_config.LOGGING_CONFIG_FILE )
+    logger=open_log(config_file)
+    logger.info('----------------------------------')
+    logger.info('###########---Start RUN Testing  -----############')
+    logger.info('----------------------------------')
+    search_update_new_runs()
+    conn = open_samba_connection()
 
-        for state_item in state_list:
-            state = run_obj.get_state()
-            if state == 'ERROR' :
-                return 'ERROR'
-            elif state == 'Sample Sent':
-                manage_run_in_sample_sent_processing_state(conn, runs_obj)
-            elif state == 'Processing Run':
-                manage_run_in_sample_sent_processing_state(conn, runs_obj)
-            elif state == 'Processed Run':
-                manage_run_in_processed_run_state(conn, runs_obj)
-            elif state == 'Processing Bcl2fastq':
-                manage_run_in_processing_bcl2fastq_state(conn, runs_obj)
-            elif state == 'Processed Bcl2fastq':
-                manage_run_in_processed_bcl2fastq_state(conn, runs_obj)
-    return
+    # Execute 6 times to be sure it has completed all steps
+    state_run_test = ['Sample Sent', 'Processed Run', 'Processed Bcl2fastq']
+    for state_run in state_run_test:
+        run_result[state_run] = 'NOK'
+    if not RunProcess.objects.filter(runName__exact = run_test_name).exists():
+        run_result ['ERROR'] = wetlab_config.ERROR_NO_RUN_TEST_WAS_CREATED
+        return run_result
+    run_obj = RunProcess.objects.filter(runName__exact = run_test_name).last()
+    for step in range(6):
+        state = run_obj.get_state()
+        if state == 'ERROR' :
+            run_result['ERROR'] = 'error'
+            return run_result
+        elif state == 'Sample Sent':
+            manage_run_in_sample_sent_processing_state(conn, [run_obj])
+            if run_obj.get_state() == 'ERROR':
+                run_result ['ERROR'] = 'Error when processing run in Sample Sent state'
+                break
+            else:
+                run_result['Sample Sent'] = 'OK'
+        elif state == 'Processing Run':
+            manage_run_in_sample_sent_processing_state(conn, [run_obj])
+            if run_obj.get_state() == 'ERROR':
+
+                run_result ['ERROR'] = 'Error when processing run in Processing Run state'
+                break
+            else:
+                run_result['Processing Run'] = 'OK'
+        elif state == 'Processed Run':
+            manage_run_in_processed_run_state(conn, [run_obj])
+            if run_obj.get_state() == 'ERROR':
+                run_result ['ERROR'] = 'Error when processing run in Processed Run state'
+                break
+            else:
+                run_result['Processed Run'] = 'OK'
+        elif state == 'Processing Bcl2fastq':
+            manage_run_in_processing_bcl2fastq_state(conn, [run_obj])
+            if run_obj.get_state() == 'ERROR':
+                run_result ['ERROR'] = 'Error when processing run in Processing Bcl2fastq state'
+                break
+            else:
+                run_result['Processing Bcl2fastq'] = 'OK'
+        elif state == 'Processed Bcl2fastq':
+            manage_run_in_processed_bcl2fastq_state(conn, [run_obj])
+            if run_obj.get_state() == 'ERROR':
+                run_result ['ERROR'] = 'Error when processing run in Processed Bcl2fastq state'
+                break
+            else:
+                run_result['Processed Bcl2fastq'] = 'OK'
+        elif state == 'Completed':
+            run_result['Completed'] = 'OK'
+            break
+    return run_result

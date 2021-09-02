@@ -378,6 +378,10 @@ ERROR_SEQUENCER_CONFIGURATION_ALREADY_DEFINED = ['Unable to save the Sequencer c
 
 ERROR_NOT_ALLOWED_REPEATED_PROJECTS = ['Configuration settigs are set do not allow that a project can be in 2 different runs','The following project is already defined']
 
+#########################  Configuration test errors #####################################
+ERROR_NOT_FOLDER_RUN_TEST_WAS_FOUND = ['Unable to run the configuration test', 'Run test folder was found on remote server']
+ERROR_NO_RUN_TEST_WAS_CREATED = ['Unable to continue with configuration testing', 'Run test was not created during the execution']
+
 ############### HEADING FOR PROJECT DATA VISUALIZATION #####################
 HEADING_FOR_PROJECT_DATES = ['Project Recorder date', 'Project date']
 

@@ -9,12 +9,6 @@
 <link rel="stylesheet"  href="{% static "iSkyLIMS_wetlab/css/styles/default.css" %}">
 
 <style>
-.table-wrapper {
-    max-height: 450px;
-    overflow: auto;
-    display:inline-block;
-    width: 550px;
-}
 .panel-wrapper-sm-6 {
     max-height: 450px;
     overflow: auto;
@@ -39,6 +33,19 @@ p {
 }
 
 </style>
+{% if error %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7 col-sm-offset-3" >
+            <div class="panel panel-danger">
+                <div class="panel-heading"><H3>Unable to execute the configuration test</H3></div>
+                {% for value in error %}
+                    <p>{{value}}</p>
+                {% endfor %}
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  -->
+    </div> <!--// end row  -->
+
+{% endif %}
 {% if test_results %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-7 col-sm-offset-3" >
@@ -149,8 +156,6 @@ p {
                             <div class="panel panel-default">
                                 <div class="panel-heading"><H3>SAMBA Connection</H3> </div>
                                  <div class="panel-body">
-
-
                                     {% if test_results.samba_connection  == 'OK' %}
                                         <h4>Success to connect to database</h4>
                                         <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
@@ -169,36 +174,51 @@ p {
 
 
     {% if test_results.basic_checks_ok == 'OK' %}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-12" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><H3>Execute the test Run</H3> </div>
-                 <div class="col-sm-6">
-                    <div class="panel-body">
-                            <p><strong>Once the basic check test has been pass, you can execute the testing for NexSeq run</strong></p>
-                            <form method="post" enctype="multipart/form-data" name="configurationtest" id="configurationtest" class="form-horizontal well">
+        {% if available_run_test %}
+            <div class="row row-space-2 margin-b-4">
+                <div class="col-sm-12" >
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><H3>Execute the test Run</H3> </div>
+                        <div class="panel-body">
+                            <p><strong>Once the basic check test has been pass, Select the run test to complete the testing</strong></p>
+                            <form method="post" enctype="multipart/form-data" name="executeRunTest" id="executeRunTest" class="form-horizontal well">
                                 {% csrf_token %}
-                                <input type="hidden" name="action" value="runNextSeq"/>
-                                <br>
-                                <input class="btn pull-right btn-primary" type="submit" value="Run NextSeq Test">
-                            </form>
-                        </div> <!--// end panel body -->
-                </div>  <!--// end col-sm-6  -->
-                <div class="col-sm-6">
-                    <div class="panel-body">
-                            <p><strong>Once the basic check test has been pass, you can execute the testing for MiSeq run</strong></p>
-                            <form method="post" enctype="multipart/form-data" name="configurationtest" id="configurationtest" class="form-horizontal well">
-                                {% csrf_token %}
-                                <input type="hidden" name="action" value="runMiSeq"/>
-                                <br>
-                                <input class="btn pull-right btn-primary" type="submit" value="Run MiSeq Test">
-                            </form>
-                        </div> <!--// end panel body -->
-                </div>  <!--// end col-sm-6  -->
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-12  -->
-    </div> <!--// end row  -->
+                                <input type="hidden" name="action" value="executeRunTest"/>
+                                <div class="col-sm-4"><select required = "required" class="form-control" name="runTest" id="runTest">
+                                               				<option value="">Choose a value</option>
+                                                            {% for name, folder  in available_run_test %}
+                                                                <option value="{{folder}}">{{name}}</option>
+                                                            {% endfor %}
 
+                                                      </select>
+                                </div>  <!-- end select input -->
+                                <input class="btn pull-right btn-primary"  name = "btnSubmit" id = "btnSubmit" type="submit" value="Run Test">
+                                <br><br>
+                            </form>
+
+                        </div> <!--// end panel body -->
+                    </div> <!--// end panel -->
+                </div> <!--// end col-sm-12  -->
+            </div> <!--// end row  -->
+            <script>
+                $(document).ready(function () {
+                    $("#executeRunTest").submit(function (e) {
+                        $("#btnSubmit").attr("disabled", true);
+                        return true;
+                    });
+                });
+            </script>
+        {% else %}
+            <div class="row row-space-2 margin-b-4">
+                <div class="col-sm-12" >
+                    <div class="panel panel-danger">
+                        <div class="panel-heading"><H3>No defined test Run </H3> </div>
+                        <div class="panel-body">
+                            <p><strong>There are not available test run defined on database</strong></p>
+                        </div> <!--// end panel -->
+                    </div> <!--// end col-sm-12  -->
+                </div> <!--// end row  -->
+        {% endif %}
     {% else %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
@@ -217,479 +237,112 @@ p {
 
     {% endif %}
 
-{% elif runNextSeq_results %}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-7 col-sm-offset-3" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><H3>Results execution for NextSeq test Run
-                 {% if runNextSeq_results.completed_ok %}
-                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
-                {% else %}
-                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
-                {% endif %}
-                </H3> </div>
-                <div class="panel-body">
-                    <p><strong>Check below for the test performed for every state of the Run </strong></p>
-                </div> <!--// end panel body -->
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-7  -->
-    </div> <!--// end row  -->
-
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-12" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><H3>Specific Test Cases for NextSeq Run</H3></div>
-                <div class="panel-body">
-                    <div class="col-sm-6">
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><H3>1. - Test Executed to create NextSeq Run
-                         {% if runNextSeq_results.create_run_ok %}
-                            <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
-                        {% else %}
-                            <i class="pull-right glyphicon glyphicon-remove" style="font-size:30px;color:red"></i>
-                        {% endif %}
-                        </H3> </div>
-                        <div class="panel-body">
-                            {% for test_case, result in runNextSeq_results.CreateRun %}
-                                <p><strong> {{ test_case }}
-                                {% if result == 'OK' %}
-                                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
-                                {% else %}
-                                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:20px;color:red"></i>
-                                {% endif %}
-                                </strong></p>
-                            {% endfor %}
-                        </div> <!--// end panel body -->
-                    </div> <!--// end panel -->
-
-                    {%if runNextSeq_results.Recorded %}
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><H3>2. - Test Executed on Recorded state
-                         {% if runNextSeq_results.recorded_ok %}
-                            <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
-                        {% else %}
-                            <i class="pull-right glyphicon glyphicon-remove" style="font-size:30px;color:red"></i>
-                        {% endif %}
-                        </H3> </div>
-                        <div class="panel-body">
-                            {% for test_case, result in runNextSeq_results.Recorded %}
-                                <p><strong> {{ test_case }}
-                                {% if result == 'OK' %}
-                                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
-                                {% else %}
-                                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:20px;color:red"></i>
-                                {% endif %}
-                                </strong></p>
-                            {% endfor %}
-                        </div> <!--// end panel body -->
-                    </div> <!--// end panel -->
-                    {% endif %}
-                    </div>  <!--// end col-sm-6  -->
-
-                    <div class="col-sm-6">
-                    {%if runNextSeq_results.Sample_Sent %}
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><H3>3. - Test Executed on Sample Sent state
-                         {% if runNextSeq_results.sample_sent_ok %}
-                            <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
-                        {% else %}
-                            <i class="pull-right glyphicon glyphicon-remove" style="font-size:30px;color:red"></i>
-                        {% endif %}
-                        </H3> </div>
-                        <div class="panel-body">
-                            {% for test_case, result in runNextSeq_results.Sample_Sent %}
-                                <p><strong> {{ test_case }}
-                                {% if result == 'OK' %}
-                                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
-                                {% else %}
-                                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:20px;color:red"></i>
-                                {% endif %}
-                                </strong></p>
-                            {% endfor %}
-                        </div> <!--// end panel body -->
-                    </div> <!--// end panel -->
-                    {%endif %}
-                    {% if runNextSeq_results.Processing_Run %}
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><H3>4. - Test Executed on Processing Run
-                         {% if runNextSeq_results.processing_run_ok %}
-                            <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
-                        {% else %}
-                            <i class="pull-right glyphicon glyphicon-remove" style="font-size:30px;color:red"></i>
-                        {% endif %}
-                        </H3> </div>
-                        <div class="panel-body">
-                            {% for test_case, result in runNextSeq_results.Processing_Run %}
-                                <p><strong> {{ test_case }}
-                                {% if result == 'OK' %}
-                                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
-                                {% else %}
-                                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:20px;color:red"></i>
-                                {% endif %}
-                                </strong></p>
-                            {% endfor %}
-                        </div> <!--// end panel body -->
-                    </div> <!--// end panel -->
-                    {% endif %}
-                    </div>  <!--// end col-sm-6  -->
-                </div> <!--// end panel body -->
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-12  -->
-    </div> <!--// end row  -->
-
-
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-12" >
-            <div class="panel panel-default">
-            <div class="panel-heading"><H3>Common Test Cases for Runs</H3></div>
-                <div class="panel-body">
-                    <div class="col-sm-6">
-                    {% if runNextSeq_results.Processed_Run %}
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><H3>5. - Test Executed on Processed Run state
-                         {% if runNextSeq_results.processed_run_ok %}
-                            <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
-                        {% else %}
-                            <i class="pull-right glyphicon glyphicon-remove" style="font-size:30px;color:red"></i>
-                        {% endif %}
-                        </H3> </div>
-                        <div class="panel-body">
-                            {% for test_case, result in runNextSeq_results.Processed_Run %}
-                                <p><strong> {{ test_case }}
-                                {% if result == 'OK' %}
-                                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
-                                {% else %}
-                                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:20px;color:red"></i>
-                                {% endif %}
-                                </strong></p>
-                            {% endfor %}
-                        </div> <!--// end panel body -->
-                    </div> <!--// end panel -->
-                    {% endif %}
-                    {% if runNextSeq_results.Processing_Bcl2fastq %}
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><H3>6. - Test Executed on Processing Bcl2fastq state
-                         {% if runNextSeq_results.processing_bcl2fastq_ok %}
-                            <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
-                        {% else %}
-                            <i class="pull-right glyphicon glyphicon-remove" style="font-size:30px;color:red"></i>
-                        {% endif %}
-                        </H3> </div>
-                        <div class="panel-body">
-                            {% for test_case, result in runNextSeq_results.Processing_Bcl2fastq %}
-                                <p><strong> {{ test_case }}
-                                {% if result == 'OK' %}
-                                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
-                                {% else %}
-                                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:20px;color:red"></i>
-                                {% endif %}
-                                </strong></p>
-                            {% endfor %}
-                        </div> <!--// end panel body -->
-                    </div> <!--// end panel -->
-                    {% endif %}
-                    </div>  <!--// end col-sm-6  -->
-
-                    <div class="col-sm-6">
-                    {% if runNextSeq_results.Processed_Bcl2fastq %}
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><H3>7. - Test Executed on Processed Bcl2fastq
-                         {% if runNextSeq_results.processed_bcl2fast2_ok %}
-                            <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
-                        {% else %}
-                            <i class="pull-right glyphicon glyphicon-remove" style="font-size:30px;color:red"></i>
-                        {% endif %}
-                        </H3> </div>
-                        <div class="panel-body">
-                            {% for test_case, result in runNextSeq_results.Processed_Bcl2fastq %}
-                                <p><strong> {{ test_case }}
-                                {% if result == 'OK' %}
-                                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
-                                {% else %}
-                                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:20px;color:red"></i>
-                                {% endif %}
-                                </strong></p>
-                            {% endfor %}
-                        </div> <!--// end panel body -->
-                    </div> <!--// end panel -->
-                    {% endif %}
-                    </div>  <!--// end col-sm-6  -->
-                </div> <!--// end panel body -->
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-12  -->
-    </div> <!--// end row  -->
-
-
-
-    {% if  log_trace %}
-    <div class="row row-space-2 margin-b-4">
-            <div class="col-sm-12" >
-                <div class="panel panel-default">
-                    <div class="panel-heading"><H3>Log file for MiSeq test</H3> </div>
-                     <div class="panel-body">
-
-                        <div class="panel-wrapper-sm-12"> <!-- // wrapper  -->
-                                {% if log_trace %}
-                                    {% for line in log_trace %}
-                                        <p> {{ line }}</p>
-                                    {% endfor %}
-                                {% else %}
-                                    <h4>Unable to fetch the log file</h4>
-                                {% endif %}
-                        </div> <!-- //wrapper  -->
-                    </div> <!--// end panel body -->
+{% elif run_test_result %}
+    {% if run_test_result.ERROR %}
+        <div class="row row-space-2 margin-b-4">
+            <div class="col-sm-7 col-sm-offset-3" >
+                <div class="panel panel-danger">
+                    <div class="panel-heading"><H3>Test run was not successful</H3></div>
+                    {% for value in run_test_result.ERROR %}
+                        <p>{{value}}</p>
+                    {% endfor %}
                 </div> <!--// end panel -->
             </div> <!--// end col-sm-7  -->
         </div> <!--// end row  -->
 
     {% endif %}
-
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-8 col-sm-offset-3">
-                <div class="panel panel-default">
-                <div class="panel-heading"><H3>Test Options</H3></div>
-                <div class="panel-body">
-                        <p><strong>Click on the "Re-Run NextSeq test" button . if you want to repeat the test </strong></p>
-                        <form method="post" enctype="multipart/form-data" name="configurationtest" id="configurationtest" class="form-horizontal well">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="runNextSeq"/>
-                            <br>
-                            <input class="btn pull-left btn-primary" onclick="window.location.href=''" value="Back to Test Page">
-                            <input class="btn pull-center btn-primary" type="submit" value="Delete test run" name="Delete">
-                            <input class="btn pull-right btn-primary" type="submit" value="Re-Run NextSeq Test" name "RunTest">
-                        </form>
-                    </div> <!--// end panel body -->
-            </div> <!--// end panel -->
-        </div>  <!--// end col-sm-6  -->
-    </div> <!--// end row  -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-{% elif runMiSeq_results %}
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-7 col-sm-offset-3" >
-            <div class="panel panel-default">
-                <div class="panel-heading"><H3>Results execution for MiSeq test Run
-                 {% if runMiSeq_results.completed_ok %}
-                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
-                {% else %}
-                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
-                {% endif %}
-                </H3> </div>
-                <div class="panel-body">
-                    <p><strong>Check below for the test performed for every state of the Run </strong></p>
-                </div> <!--// end panel body -->
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-7  -->
-    </div> <!--// end row  -->
-
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-12" >
             <div class="panel panel-default">
-                <div class="panel-heading"><H3>Specific Test Cases for MiSeq Runs</H3></div>
+                <div class="panel-heading"><H3>Results execution for {{run_test_result.run_test_name}} test Run
+
+                    {% if run_test_result.Completed == "OK" %}
+                        <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
+                        <p>The run test is successfully completed</p>
+                    {% else %}
+                        <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
+                        <p>{{run_test_result.error}}</p>
+                    {% endif %}
+                </H3></div>
                 <div class="panel-body">
-                    <div class="col-sm-6">
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><H3>1. - Test Executed on Recorded state
-                         {% if runMiSeq_results.recorded_ok %}
-                            <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
-                        {% else %}
-                            <i class="pull-right glyphicon glyphicon-remove" style="font-size:30px;color:red"></i>
+                    <div class="tab">
+                        <button class="tablinks" onclick="summaryBin(event, 'results')" id="defaultOpen">Run test result</button>
+                        {% if  log_trace %}
+                            <button class="tablinks" onclick="summaryBin(event, 'log')">Log file information</button>
                         {% endif %}
-                        </H3> </div>
-                        <div class="panel-body">
-                            {% for test_case, result in runMiSeq_results.Recorded %}
-                                <p><strong> {{ test_case }}
-                                {% if result == 'OK' %}
-                                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
-                                {% else %}
-                                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:20px;color:red"></i>
-                                {% endif %}
-                                </strong></p>
-                            {% endfor %}
-                        </div> <!--// end panel body -->
-                    </div> <!--// end panel -->
-                    </div>  <!--// end col-sm-6  -->
+                        <button class="tablinks" onclick="summaryBin(event, 'moreOptions')">Available Options</button>
 
-                    <div class="col-sm-6">
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><H3>2. - Test Executed on Sample Sent state
-                         {% if runMiSeq_results.sample_sent_ok %}
-                            <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
-                        {% else %}
-                            <i class="pull-right glyphicon glyphicon-remove" style="font-size:30px;color:red"></i>
+                    </div>
+                    <div class="row row-space-2 margin-b-4">
+                        <div id="results" class="tabcontent">
+                            <div class="row row-space-2 margin-b-4">
+                                <div class="col-sm-7">
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading"><H3>Information per run test state</H3></div>
+                                        <div class="panel-body">
+                                            {% for key, value in run_test_result.items %}
+                                                {% if key != "run_test_name" and key != 'ERROR' %}
+                                                    <p> Result of run test for the state {{key}}
+
+                                                        {% if  value == 'OK' %}
+                                                            <i class="pull-right glyphicon glyphicon-ok" style="font-size:40px;color:green"></i>
+                                                        {% else %}
+                                                            <i class="pull-right glyphicon glyphicon-remove" style="font-size:40px;color:red"></i>
+                                                        {% endif %}
+                                                    </p>
+                                                    <br><br>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div> <!--// end panel body -->
+                                    </div> <!--// end panel -->
+                                </div> <!--// end col-sm-7  -->
+                            </div> <!--// end row  -->
+                        </div><!-- // end of tab results -->
+
+                        {% if  log_trace %}
+                            <div id="log" class="tabcontent">
+                                <div class="row row-space-2 margin-b-4">
+                                    <div class="col-sm-12">
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading"><H3>Information stored in log file for run test </H3></div>
+                                            <div class="panel-body">
+                                                <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#loginfo">Display log information</button>
+                                                <div id="loginfo" class="collapse">
+                                                    {% for line in log_trace %}
+                                                        {{line}}<br>
+                                                    {% endfor %}
+                                                </div>
+                                            </div> <!--  end of panel body -->
+                                        </div> <!--  end of panel  -->
+                                    </div> <!--  end of col-sm-5 -->
+                                </div> <!--  end of row -->
+                            </div><!-- // end of tab log -->
                         {% endif %}
-                        </H3> </div>
-                        <div class="panel-body">
-                            {% for test_case, result in runMiSeq_results.Sample_Sent %}
-                                <p><strong> {{ test_case }}
-                                {% if result == 'OK' %}
-                                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
-                                {% else %}
-                                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:20px;color:red"></i>
-                                {% endif %}
-                                </strong></p>
-                            {% endfor %}
-                        </div> <!--// end panel body -->
-                    </div> <!--// end panel -->
-
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><H3>3. - Test Executed on Processing Run
-                         {% if runMiSeq_results.processing_run_ok %}
-                            <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
-                        {% else %}
-                            <i class="pull-right glyphicon glyphicon-remove" style="font-size:30px;color:red"></i>
-                        {% endif %}
-                        </H3> </div>
-                        <div class="panel-body">
-                            {% for test_case, result in runMiSeq_results.Processing_Run %}
-                                <p><strong> {{ test_case }}
-                                {% if result == 'OK' %}
-                                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
-                                {% else %}
-                                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:20px;color:red"></i>
-                                {% endif %}
-                                </strong></p>
-                            {% endfor %}
-                        </div> <!--// end panel body -->
-                    </div> <!--// end panel -->
-                    </div>  <!--// end col-sm-6  -->
-                </div> <!--// end panel body -->
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-12  -->
-    </div> <!--// end row  -->
-
-
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-12" >
-            <div class="panel-heading"><H3>Common Test Cases for Runs</H3></div>
-                <div class="panel-body">
-                    <div class="col-sm-6">
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><H3>4. - Test Executed on Processed Run state
-                         {% if runMiSeq_results.processed_run_ok %}
-                            <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
-                        {% else %}
-                            <i class="pull-right glyphicon glyphicon-remove" style="font-size:30px;color:red"></i>
-                        {% endif %}
-                        </H3> </div>
-                        <div class="panel-body">
-                            {% for test_case, result in runMiSeq_results.Processed_Run %}
-                                <p><strong> {{ test_case }}
-                                {% if result == 'OK' %}
-                                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
-                                {% else %}
-                                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:20px;color:red"></i>
-                                {% endif %}
-                                </strong></p>
-                            {% endfor %}
-                        </div> <!--// end panel body -->
-                    </div> <!--// end panel -->
-
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><H3>5. - Test Executed on Processing Bcl2fastq state
-                         {% if runMiSeq_results.processing_bcl2fastq_ok %}
-                            <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
-                        {% else %}
-                            <i class="pull-right glyphicon glyphicon-remove" style="font-size:30px;color:red"></i>
-                        {% endif %}
-                        </H3> </div>
-                        <div class="panel-body">
-                            {% for test_case, result in runMiSeq_results.Processing_Bcl2fastq %}
-                                <p><strong> {{ test_case }}
-                                {% if result == 'OK' %}
-                                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
-                                {% else %}
-                                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:20px;color:red"></i>
-                                {% endif %}
-                                </strong></p>
-                            {% endfor %}
-                        </div> <!--// end panel body -->
-                    </div> <!--// end panel -->
-                    </div>  <!--// end col-sm-6  -->
-
-                    <div class="col-sm-6">
-                    <div class="panel panel-default">
-                        <div class="panel-heading"><H3>6. - Test Executed on Processed Bcl2fastq
-                         {% if runMiSeq_results.processed_bcl2fast2_ok %}
-                            <i class="pull-right glyphicon glyphicon-ok" style="font-size:30px;color:green"></i>
-                        {% else %}
-                            <i class="pull-right glyphicon glyphicon-remove" style="font-size:30px;color:red"></i>
-                        {% endif %}
-                        </H3> </div>
-                        <div class="panel-body">
-                            {% for test_case, result in runMiSeq_results.Processed_Bcl2fastq %}
-                                <p><strong> {{ test_case }}
-                                {% if result == 'OK' %}
-                                    <i class="pull-right glyphicon glyphicon-ok" style="font-size:20px;color:green"></i>
-                                {% else %}
-                                    <i class="pull-right glyphicon glyphicon-remove" style="font-size:20px;color:red"></i>
-                                {% endif %}
-                                </strong></p>
-                            {% endfor %}
-                        </div> <!--// end panel body -->
-                    </div> <!--// end panel -->
-                    </div>  <!--// end col-sm-6  -->
-                </div> <!--// end panel body -->
-            </div> <!--// end panel -->
-        </div> <!--// end col-sm-12  -->
-    </div> <!--// end row  -->
-
-
-
-    {% if  log_trace %}
-    <div class="row row-space-2 margin-b-4">
-            <div class="col-sm-12" >
-                <div class="panel panel-default">
-                    <div class="panel-heading"><H3>Log file for MiSeq test</H3> </div>
-                     <div class="panel-body">
-
-                        <div class="panel-wrapper-sm-12"> <!-- // wrapper  -->
-                                {% if log_trace %}
-                                    {% for line in log_trace %}
-                                        <p> {{ line }}</p>
-                                    {% endfor %}
-                                {% else %}
-                                    <h4>Unable to fetch the log file</h4>
-                                {% endif %}
-                        </div> <!-- //wrapper  -->
+                        <div id="moreOptions" class="tabcontent">
+                            <div class="row row-space-2 margin-b-4">
+                                <div class="col-sm-10">
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading"><H3>Available options</H3></div>
+                                        <div class="panel-body">
+                                                <p><strong>Click on the "Delete Run test" button . if you want to delete this test run in iSkyLIMS</strong></p>
+                                                <form method="post" enctype="multipart/form-data" name="deleteTestRun" id="deleteTestRun" class="form-horizontal well">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="deleteTestRun"/>
+                                                    <br>
+                                                    <input class="btn pull-left btn-default" onclick="window.location.href=''" value="Return to configuration Test">
+                                                    <input class="btn pull-right btn-primary" type="submit" value="Delete test run" name="Delete">
+                                                    <br><br>
+                                                </form>
+                                            </div> <!--// end panel body -->
+                                    </div> <!--// end panel -->
+                                </div>  <!--// end col-sm-10  -->
+                            </div> <!--// end row  -->
+                        </div><!-- // end of tab moreOptions -->
                     </div> <!--// end panel body -->
                 </div> <!--// end panel -->
-            </div> <!--// end col-sm-7  -->
-        </div> <!--// end row  -->
-
-    {% endif %}
-
-    <div class="row row-space-2 margin-b-4">
-        <div class="col-sm-8 col-sm-offset-3">
-                <div class="panel panel-default">
-                <div class="panel-heading"><H3>Test Options</H3></div>
-                <div class="panel-body">
-                        <p><strong>Click on the "Re-Run MiSeq test" button . if you want to repeat the test </strong></p>
-                        <form method="post" enctype="multipart/form-data" name="configurationtest" id="configurationtest" class="form-horizontal well">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="runMiSeq"/>
-                            <br>
-                            <input class="btn pull-left btn-primary" onclick="window.location.href=''" value="Back to Test Page">
-                            <input class="btn pull-center btn-primary" type="submit" value="Delete test run" name="Delete">
-                            <input class="btn pull-right btn-primary" type="submit" value="Re-Run MiSeq Test" name "RunTest">
-                        </form>
-                    </div> <!--// end panel body -->
-            </div> <!--// end panel -->
-        </div>  <!--// end col-sm-6  -->
+            </div> <!--  end of col-sm-12 -->
+        </div> <!--  end of row -->
     </div> <!--// end row  -->
-
-
 
 {% else %}
     <!-- FORM for selecting annual Report Information -->
@@ -713,14 +366,7 @@ p {
                                 <li>Database access</li>
                                 <BR>
                             </ul>
-                            <li>NextSeq run. Using a predefined NestSeq test run:</li>
-                            <ul>
-                                <li>Creation of the run in recorded state</li>
-                                <li>Updating the run from recorded until completed</li>
-                                <BR>
-
-                            </ul>
-                            <li>NMiSeq run. Using a predefined MiSeq test run:</li>
+                            <li>Test run. Using a predefined test data store on remote server</li>
                             <ul>
                                 <li>Fetch the sample sheet to create the run in recorded state</li>
                                 <li>Updating the run from recorded until completed</li>
@@ -728,13 +374,29 @@ p {
                         </ul>
                         <p><strong>Click on the "SUBMIT" button to start the testing</strong></p>
                         <br>
-
-                        <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                        <input class="btn pull-right btn-primary" name ="btnSubmit" id = "btnSubmit" type="submit" value="Submit">
+                        <br>
                     </form>
+                    <script>
+                        $(document).ready(function () {
+                            $("#configurationtest").submit(function (e) {
+                                //stop submitting the form to see the disabled button effect
+                                // e.preventDefault();
+                                //disable the submit button
+                                $("#btnSubmit").attr("disabled", true);
+                                return true;
+                            });
+                        });
+                    </script>
                 </div>  <!--  end of panel body  -->
             </div> <!--// end panel -->
         </div> <!--// end col-sm-7  -->
     </div> <!--// end row  -->
 
 {% endif %}
+<script>
+    // Get the element with id="tablinksdefaultOpen" and click on it
+    document.getElementById("defaultOpen").click();
+</script>
+
 {% endblock %}

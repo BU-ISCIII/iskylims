@@ -2661,227 +2661,37 @@ def configuration_test (request):
             if test_results[result] == 'NOK':
                 test_results['basic_checks_ok'] = 'NOK'
                 break
+        available_run_test = []
+        if RunConfigurationTest.objects.all().exists():
+            run_test_objs = RunConfigurationTest.objects.all()
+            for run_test_obj in run_test_objs:
+                available_run_test.append([run_test_obj.get_run_test_name(),run_test_obj.get_run_test_id()])
+        return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'test_results': test_results, 'available_run_test':available_run_test})
 
-        return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'test_results': test_results})
-        ##############################
-        ###### NextSeq Test ##########
-        ##############################
-    elif request.method=='POST' and request.POST['action'] == 'runNextSeq':
+    elif request.method=='POST' and request.POST['action'] == 'executeRunTest':
         if 'Delete' in request.POST :
             delete_test_run ('NextSeq_Test_0001')
             return render(request,'iSkyLIMS_wetlab/ConfigurationTest.html')
-
-        runNextSeq_results = {}
-        log_trace = []
-        working_path = settings.MEDIA_ROOT
-        os.chdir(working_path)
-        config_file = os.path.join(settings.BASE_DIR, 'conf', 'logging_test_config.ini' )
-        log_file = get_log_file_name(config_file)
-        if os.path.isfile (log_file):
-            os.remove(log_file)
-        logger=open_log(config_file)
-
-        logger.info('###########---Start Testing NextSeq Run  -----############')
-        # create run in Recorded state for testing
-        test_run_remote_folder = 'NextSeq_Test'
-        experiment_name = 'NextSeq_Test_0001'
-        runNextSeq_results['CreateRun'] , result_ok = create_run_test_nextseq_in_recorded(test_run_remote_folder, experiment_name )
-
-        if result_ok == 'NOK' :
-            with open (log_file, 'r') as fh :
+        if RunConfigurationTest.objects.filter(pk__exact = request.POST['runTest']).exists():
+            run_test_obj =  RunConfigurationTest.objects.filter(pk__exact = request.POST['runTest']).last()
+            run_test_folder = run_test_obj.get_run_test_folder()
+            run_test_name = run_test_obj.get_run_test_name()
+        if not folder_test_exists(run_test_folder):
+            return render(request,'iSkyLIMS_wetlab/ConfigurationTest.html',{'error':wetlab_config.ERROR_NOT_FOLDER_RUN_TEST_WAS_FOUND})
+        run_test_result = execute_test_for_testing_run(run_test_name,run_test_folder)
+        run_test_result['run_test_name'] = run_test_name
+        logger = logging.getLogger(__name__)
+        if 'ERROR' in run_test_result :
+            log_trace = []
+            with open (logging.getLoggerClass().root.handlers[0].baseFilename, 'r') as fh :
                 for line in fh :
-                    line = line.replace('\n', '')
-                    log_trace.append(line)
+                    if run_test_name in line:
+                        line = line.replace('\n', '')
+                        log_trace.append(line)
 
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results,
-                                                    'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
+            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'run_test_result': run_test_result, 'log_trace': log_trace})
         else:
-            runNextSeq_results['create_run_ok'] =  'OK'
-        # Start testing on recorded state
-        runNextSeq_results['Recorded'] , result_ok = run_nextseq_test_rec_to_sample_sent(test_run_remote_folder, experiment_name)
-
-        if result_ok == 'NOK' :
-            with open (log_file, 'r') as fh :
-                for line in fh :
-                    line = line.replace('\n', '')
-                    log_trace.append(line)
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results,
-                                                    'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
-        else:
-            runNextSeq_results['recorded_ok'] =  'OK'
-
-        # Processing Run
-        runNextSeq_results['Sample_Sent'] , result_ok = run_nextseq_test_sample_sent_to_Processing_Run (experiment_name)
-        if result_ok == 'NOK' :
-            with open (log_file, 'r') as fh :
-                for line in fh :
-                    line = line.replace('\n', '')
-                    log_trace.append(line)
-
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results,
-                                                    'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
-        else:
-            runNextSeq_results['sample_sent_ok'] =  'OK'
-
-        # Processing Run
-        runNextSeq_results['Processing_Run'] , result_ok = run_nextseq_test_Processing_Run_to_Processed_Run (experiment_name)
-        if result_ok == 'NOK' :
-            with open (log_file, 'r') as fh :
-                for line in fh :
-                    line = line.replace('\n', '')
-                    log_trace.append(line)
-
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results,
-                                                    'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
-        else:
-            runNextSeq_results['processing_run_ok'] =  'OK'
-
-        # Processed Run
-        runNextSeq_results['Processed_Run'] , result_ok = run_test_Processed_Run_to_Processing_Bcl2fastq (experiment_name)
-        if result_ok == 'NOK' :
-            with open (log_file, 'r') as fh :
-                for line in fh :
-                    line = line.replace('\n', '')
-                    log_trace.append(line)
-
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results,
-                                                    'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
-        else:
-            runNextSeq_results['processed_run_ok'] =  'OK'
-
-        # Processing Bcl2fastq
-        runNextSeq_results['Processing_Bcl2fastq'] , result_ok = run_test_Processing_Bcl2fastq_to_Processed_Bcl2fastq (experiment_name)
-        if result_ok == 'NOK' :
-            with open (log_file, 'r') as fh :
-                for line in fh :
-                    line = line.replace('\n', '')
-                    log_trace.append(line)
-
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results,
-                                                    'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
-        else:
-            runNextSeq_results['processing_bcl2fastq_ok'] =  'OK'
-
-        # Processed Bcl2fastq
-        runNextSeq_results['Processed_Bcl2fastq'] , result_ok = run_test_Processed_Bcl2fastq_to_Completed (experiment_name)
-        if result_ok == 'NOK' :
-            with open (log_file, 'r') as fh :
-                for line in fh :
-                    line = line.replace('\n', '')
-                    log_trace.append(line)
-
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results,
-                                                    'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
-        else:
-            runNextSeq_results['processed_bcl2fast2_ok'] =  'OK'
-            runNextSeq_results['completed_ok'] = 'ok'
-
-        return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runNextSeq_results': runNextSeq_results,
-                                                    'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
-
-    elif request.method=='POST' and request.POST['action'] == 'runMiSeq':
-        if 'Delete' in request.POST :
-            delete_test_run ('MiSeq_Test_0001')
-            return render(request,'iSkyLIMS_wetlab/ConfigurationTest.html')
-
-        runMiSeq_results = {}
-        log_trace = []
-        config_file = os.path.join(settings.BASE_DIR,'iSkyLIMS_wetlab', 'tests', 'logging_test_config.ini' )
-        log_file = get_log_file_name(config_file)
-        ''' No removing log file
-        if os.path.isfile (log_file):
-            os.remove(log_file)
-        logger=open_log(config_file)
-        '''
-        logger.info('###########---Start Testing MiSeq Run  -----############')
-        if run_exists_in_db('MiSeq_Test_0001'):
-            delete_graphic_folder_if_exists ('MiSeq_Test_0001')
-            delete_run_in_db('MiSeq_Test_0001')
-            logger.info('Deleting miSEq test run from previous test')
-
-        test_run_remote_folder = 'MiSeq_Test'
-        experiment_name = 'MiSeq_Test_0001'
-        # Start testing on recorded state
-        runMiSeq_results['Recorded'] , result_ok = run_miseq_test_rec_to_sample_sent(test_run_remote_folder, experiment_name)
-
-        if result_ok == 'NOK' :
-            with open (log_file, 'r') as fh :
-                for line in fh :
-                    line = line.replace('\n', '')
-                    log_trace.append(line)
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runMiSeq_results,
-                                                    'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
-        else:
-            runMiSeq_results['recorded_ok'] =  'OK'
-
-        # Processing Run
-        runMiSeq_results['Sample_Sent'] , result_ok = run_miseq_test_sample_sent_to_Processing_Run (experiment_name)
-        if result_ok == 'NOK' :
-            with open (log_file, 'r') as fh :
-                for line in fh :
-                    line = line.replace('\n', '')
-                    log_trace.append(line)
-
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runMiSeq_results,
-                                                    'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
-        else:
-            runMiSeq_results['sample_sent_ok'] =  'OK'
-
-        # Processing Run
-        runMiSeq_results['Processing_Run'] , result_ok = run_miseq_test_Processing_Run_to_Processed_Run (experiment_name)
-        if result_ok == 'NOK' :
-            with open (log_file, 'r') as fh :
-                for line in fh :
-                    line = line.replace('\n', '')
-                    log_trace.append(line)
-
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runMiSeq_results,
-                                                    'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
-        else:
-            runMiSeq_results['processing_run_ok'] =  'OK'
-
-        # Processed Run
-        runMiSeq_results['Processed_Run'] , result_ok = run_test_Processed_Run_to_Processing_Bcl2fastq (experiment_name)
-        if result_ok == 'NOK' :
-            with open (log_file, 'r') as fh :
-                for line in fh :
-                    line = line.replace('\n', '')
-                    log_trace.append(line)
-
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runMiSeq_results,
-                                                    'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
-        else:
-            runMiSeq_results['processed_run_ok'] =  'OK'
-
-        # Processing Bcl2fastq
-        runMiSeq_results['Processing_Bcl2fastq'] , result_ok = run_test_Processing_Bcl2fastq_to_Processed_Bcl2fastq (experiment_name)
-        if result_ok == 'NOK' :
-            with open (log_file, 'r') as fh :
-                for line in fh :
-                    line = line.replace('\n', '')
-                    log_trace.append(line)
-
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runMiSeq_results,
-                                                    'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
-        else:
-            runMiSeq_results['processing_bcl2fastq_ok'] =  'OK'
-
-        # Processed Bcl2fastq
-        runMiSeq_results['Processed_Bcl2fastq'] , result_ok = run_test_Processed_Bcl2fastq_to_Completed (experiment_name)
-        if result_ok == 'NOK' :
-            with open (log_file, 'r') as fh :
-                for line in fh :
-                    line = line.replace('\n', '')
-                    log_trace.append(line)
-
-            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runMiSeq_results,
-                                                    'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
-        else:
-            runMiSeq_results['processed_bcl2fast2_ok'] =  'OK'
-            runMiSeq_results['completed_ok'] = 'ok'
-
-        return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'runMiSeq_results': runMiSeq_results,
-                                                    'log_trace': log_trace, 'basic_checks_ok' : 'OK'})
+            return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'run_test_result': run_test_result})
 
 
     else:

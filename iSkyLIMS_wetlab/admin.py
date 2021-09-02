@@ -95,6 +95,9 @@ class SambaConnectionDataAdmin(admin.ModelAdmin):
 class ConfigSettingAdmin(admin.ModelAdmin):
     list_display = ['configurationName', 'configurationValue']
 
+class RunConfigurationTestAdmin(admin.ModelAdmin):
+    list_display = ['runTestName', 'runTestFolder']
+
 admin.site.register(LibraryPreparation, LibraryPreparationAdmin)
 admin.site.register(LibParameterValue, LibParameterValueAdmin)
 
@@ -125,3 +128,4 @@ admin.site.register(GraphicsStats, GraphicsStatsAdmin)
 
 admin.site.register(SambaConnectionData,SambaConnectionDataAdmin)
 admin.site.register(ConfigSetting, ConfigSettingAdmin)
+admin.site.register(RunConfigurationTest,RunConfigurationTestAdmin)
