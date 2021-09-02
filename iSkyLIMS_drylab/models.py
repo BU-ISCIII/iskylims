@@ -322,7 +322,12 @@ class Service(models.Model):
 		return '%s' %(self.serviceRequestNumber)
 
 	def get_service_requested_user(self):
-		return '%s' %(self.serviceUserId.username)
+		if self.serviceUserId != None:
+			return '%s' %(self.serviceUserId.username)
+		return 'Not available'
+
+	def get_user_service_obj (self):
+		return self.serviceUserId
 
 	def get_service_request_center_unit_abbr(self):
 		return '%s' %(self.serviceUserId.profile.profileCenter.centerAbbr)

@@ -675,7 +675,7 @@ def stats_by_services_request (request):
             #preparing stats for services request by users
             user_services ={}
             for service in services_found:
-                user = service.serviceUserId.username
+                user = service.get_service_requested_user()
                 if user in user_services :
                     user_services[user] +=1
                 else:
@@ -691,7 +691,7 @@ def stats_by_services_request (request):
             for service in services_found:
                 #user_id = service.serviceUserId.id
 
-                status = service.serviceStatus
+                status = service.get_service_state()
                 if status in status_services :
                     status_services[status] +=1
                 else:
@@ -704,16 +704,16 @@ def stats_by_services_request (request):
             #preparing stats for request by Area
             user_area_dict ={}
             for service in services_found:
-                user_id = service.get_service_id()
-                if Profile.objects.filter(profileUserID = user_id).exists():
-                    user_area = Profile.objects.get(profileUserID = user_id).profileArea
+                user_service_obj = service.get_user_service_obj()
+                if Profile.objects.filter(profileUserID = user_service_obj).exists():
+                    user_classification_area = Profile.objects.get(profileUserID = user_service_obj).get_clasification_area()
                 else:
-                    user_area = 'No_user_area'
+                    user_classification_area = 'No_user_area'
 
-                if user_area in user_area_dict:
-                    user_area_dict[user_area] +=1
+                if user_classification_area in user_area_dict:
+                    user_area_dict[user_classification_area] +=1
                 else:
-                    user_area_dict[user_area] = 1
+                    user_area_dict[user_classification_area] = 1
             #creating the graphic for areas
             data_source = column_graphic_dict('Services requested per Area', period_of_time_selected, 'Area ', 'Number of Services','fint',user_area_dict)
             graphic_area_services = FusionCharts("column3d", "ex3" , "600", "350", "chart-3", "json", data_source)
@@ -722,9 +722,9 @@ def stats_by_services_request (request):
             #preparing stats for services request by Center
             user_center_dict ={}
             for service in services_found:
-                user_id = service.get_service_id()
-                if Profile.objects.filter(profileUserID = user_id).exists():
-                    user_center = Profile.objects.get(profileUserID = user_id).profileCenter.centerAbbr
+                user_service_obj = service.get_user_service_obj()
+                if Profile.objects.filter(profileUserID = user_service_obj).exists():
+                    user_center = Profile.objects.get(profileUserID = user_service_obj).get_profile_center_abbr()
                 else:
                     user_center = 'Not defined'
                 if user_center in user_center_dict:
@@ -752,10 +752,10 @@ def stats_by_services_request (request):
             center_period = {}
             time_values_dict = {}
             for service in services_found:
-                user_id = service.get_service_id()
+                user_service_obj = service.get_user_service_obj()
                 date_service = service.serviceCreatedOnDate.strftime(period_year_month)
-                if Profile.objects.filter(profileUserID = user_id).exists():
-                    user_center = Profile.objects.get(profileUserID = user_id).profileCenter.centerAbbr
+                if Profile.objects.filter(profileUserID = user_service_obj).exists():
+                    user_center = Profile.objects.get(profileUserID = user_service_obj).get_profile_center_abbr()
                 else:
                     user_center = 'Not defined'
                 if not date_service in time_values_dict:
@@ -776,7 +776,6 @@ def stats_by_services_request (request):
                 for d_period in time_values:
                     if not d_period in user_services_period[center]:
                         user_services_period[center][d_period] = 0
-
             data_source = column_graphic_per_time ('Services requested by center ',period_of_time_selected,  'date', 'number of services', time_values , user_services_period)
             graphic_center_services_per_time = FusionCharts("mscolumn3d", "ex5" , "525", "350", "chart-5", "json", data_source)
             services_stats_info ['graphic_center_services_per_time'] = graphic_center_services_per_time.render()
