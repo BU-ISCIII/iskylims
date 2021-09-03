@@ -1,20 +1,24 @@
 import pandas as pd
-from iSkyLIMS_wetlab.wetlab_config import *
+from iSkyLIMS_core.core_config import *
 from iSkyLIMS_core.models import *
 
 
 def check_defined_option_values_in_samples(sample_batch_df, package):
     '''
     Description:
-        The Function checks if all values in the data frame are already defined in database.
+        The Function checks if values (related to new sample creation) inside data frame are already defined in database.
         It also checks if the mandatory parameters in the type of sample are in dataframe
     Input:
         sample_batch_df     # sample data in dataframe
-        package     # package name "iSkyLIMS_wetlab"
+        package     # name of the apps that request the checking
     Constants:
         ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_LAB_REQUESTED
+        ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_TYPE_OF_SAMPLES
+        ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_SPECIES
+        ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_SAMPLE_PROJECTS
+        ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SAMPLE_PROJECTS
     Return:
-        sample_batch_df
+        OK or error code
     '''
     # Check if option values are already defined
     unique_lab_request = sample_batch_df['Lab requested'].unique().tolist()
@@ -44,25 +48,54 @@ def check_defined_option_values_in_samples(sample_batch_df, package):
             error_cause = ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SPECIES.copy()
             error_cause.insert(1,specie)
             return error_cause
+    # check if sample projects are defined
+    if not SampleProjects.objects.filter(apps_name = package).exists():
+        return ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_SAMPLE_PROJECTS
+    sample_project_values = list(SampleProjects.objects.filter(apps_name = package).values_list('sampleProjectName', flat=True))
+    unique_sample_projects = sample_batch_df['Project/Service'].unique().tolist()
+    for sample_project in unique_sample_projects:
+        if sample_project not in sample_project_values:
+            error_cause = ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SAMPLE_PROJECTS.copy()
+            error_cause.insert(1,sample_project)
+            return error_cause
+
     # check if mandatory fields in type of sample are included
-    
+
     import pdb; pdb.set_trace()
 
-    return
+    return 'OK'
 
-def check_record_samples_optional_parameters(sample_batch_data):
+def check_defined_option_values_in_samples_projects(sample_batch_df, package):
     '''
     Description:
-        The Function check if the only one type of sample is in data and if the mandatory parameters
+        The Function checks if parameters and values (related to new sample project) inside data frame are already defined in database.
+
+    Input:
+        sample_batch_df     # sample data in dataframe
+        package     # name of the apps that request the checking
+    Constants:
+    '''
+    return
+
+def check_samples_belongs_to_same_type_and_molecule_protocol(sample_batch_data):
+    '''
+    Description:
+        The Function check if only one type of sample is in data and if the mandatory parameters
         for the type of sample are included.
         In case that are more than 1 type of sample it checks one by one the mandatory parameters
-    Constants:
-        ERROR_MESSAGE_FOR_EMPTY_SAMPLE_BATCH_FILE
-    Return:
-        sample_batch_data
-    '''
+    Input:
 
-    return
+    Return:
+        True or False
+    '''
+    sample_type = sample_batch_data['Type of Sample'].unique().tolist()
+    sample_project = sample_batch_data['Project/Service'].unique().tolist()
+    protocol = sample_batch_data['ProtocolName'].unique().tolist()
+    if len(sample_type) != 1 or len(sample_project) != 1 or len(protocol) != 1:
+        return False
+    return True
+
+
 
 def read_batch_sample_file(batch_file):
     '''
@@ -100,18 +133,24 @@ def valid_sample_batch_file (sample_batch_df, package):
     Input:
         sample_batch_df     # sample data in dataframe
         package     # package name "iSkyLIMS_wetlab"
+    Functions:
+        check_record_samples_optional_parameters # located at this file
     Constants:
         ERROR_MESSAGE_FOR_EMPTY_SAMPLE_BATCH_FILE
+        ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL
     Return:
         sample_batch_data
     '''
 
     # Check if dataframe has empty values
     if sample_batch_df.isnull().values.any() :
-        error_cause = ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_EMPTY_VALUE
-        return error_cause
+        return ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_EMPTY_VALUE
+    if not check_samples_belongs_to_same_type_and_molecule_protocol(sample_batch_df):
+        return ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL
     check_opt_values = check_defined_option_values_in_samples(sample_batch_df, package)
     if check_opt_values != 'OK':
-        return check_opt_values
-    check_record_samples_optional_parameters(sample_batch_df)
+        return ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL
+    check_opt_par = check_record_samples_optional_parameters(sample_batch_df)
+    if check_opt_par != 'OK':
+        return check_opt_par
     return

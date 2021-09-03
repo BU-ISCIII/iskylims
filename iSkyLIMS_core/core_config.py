@@ -112,3 +112,17 @@ ERROR_SPECIES_ALREADY_DEFINED = ['Species name is already defined']
 ERROR_LABORATORY_REQUEST_ALREADY_DEFINED = ['Laboratory/Institution request is already defined']
 ERROR_MOLECULE_TYPE_ALREADY_DEFINED = ['Molecule Type is already defined']
 ERROR_PROTOCOL_TYPE_ALREADY_DEFINED = ['Protocol Type is already defined']
+
+
+#######################  Batch file ###############################################
+ERROR_MESSAGE_FOR_EMPTY_SAMPLE_BATCH_FILE = ['The uploaded sample batch file does not have any sample', 'Upload a valid batch file']
+ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_LAB_REQUESTED = ['The Laboratory', 'from where the samples are received is not defined']
+ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_LAB_REQUESTED = ['No Laboratory is defined yet', 'Check documentation to define the Laboratory']
+ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_EMPTY_VALUE = ['Batch file contains empty values']
+ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_TYPE_OF_SAMPLES = ['No Type of Samples are defined yet', 'Check documentation to define them']
+ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SAMPLE_TYPE = ['The Type of sample', 'is not defined']
+ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_SPECIES =['No Species are defined yet', 'Check documentation to define them']
+ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SPECIES =['The specie', 'is not defined']
+ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_SAMPLE_PROJECTS =['No Sample Projects are defined yet', 'Check documentation to define them']
+ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SAMPLE_PROJECTS =['The Sample Project', 'is not defined']
+ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL = ['The batch file must have the same type of samples', 'Same Sample project' , 'and the same Protocol Name']

@@ -249,7 +249,7 @@ class SampleType (models.Model):
         return '%s' %(self.sampleType)
 
     def get_optional_values(self):
-        if self.optional_fields == '':
+        if self.optional_fields == '' or self.optional_fields == None:
             return []
         else:
             return list(map(int, self.optional_fields.split(',')))

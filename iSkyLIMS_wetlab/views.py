@@ -41,7 +41,7 @@ from iSkyLIMS_core.utils.handling_samples import *
 from iSkyLIMS_core.utils.handling_platforms import get_defined_platforms_and_ids
 from iSkyLIMS_core.utils.generic_functions import get_inital_sample_settings_values, save_inital_sample_setting_value, send_test_email, get_email_data
 from iSkyLIMS_core.utils.handling_protocols import display_protocol_list
-#from iSkyLIMS_core.utils.handling_protocols import *
+from iSkyLIMS_core.utils.handling_load_batch_samples import *
 #from iSkyLIMS_core.utils.handling_commercial_kits import *
 
 
@@ -2986,7 +2986,24 @@ def record_samples(request):
             return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
         else:
             return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_recorded':sample_recorded})
+    ## Load batch file
+    elif request.method == 'POST' and request.POST['action'] == 'defineBatchSamples':
+        sample_information = prepare_sample_input_table(__package__)
+        if 'samplesExcel' in request.FILES:
+            samples_batch_df = read_batch_sample_file(request.FILES['samplesExcel'])
+            if 'ERROR' in samples_batch_df:
+                return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information, 'error_message':samples_batch_df['ERROR']})
+            valid_file_result = valid_sample_batch_file(samples_batch_df,  __package__)
+            import pdb; pdb.set_trace()
+            if valid_file_result != 'OK':
+                return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information, 'error_message': valid_file_result})
 
+                for sample_data in sample_batch_df:
+                    new_sample =  create_sample_from_file(sample_data)
+                    new_molecule = create_molecule_from_file(new_sample,sample_data)
+                    create_molecule_parameter_DNA_from_file(new_molecule, sample_data,new_sample)
+                    create_sample_project_fields_value(new_sample,sample_data)
+                    return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'successfuly_load':'ok'})
     ## Form to get the new samples
     else:
         sample_information = prepare_sample_input_table(__package__)
