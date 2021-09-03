@@ -8,10 +8,6 @@ import logging
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
 from iSkyLIMS_wetlab.utils.generic_functions import *
-#from iSkyLIMS_wetlab.utils.miseq_run_functions import *
-#from iSkyLIMS_wetlab.utils.nextseq_run_functions import *
-#from iSkyLIMS_wetlab.utils.common_run_functions import manage_run_in_processed_run, manage_run_in_processing_bcl2fastq, manage_run_in_processed_bcl2fastq
-#from iSkyLIMS_wetlab.utils.sample_sheet_utils import *
 from iSkyLIMS_wetlab.utils.handling_crontab_manage_run_states import *
 from iSkyLIMS_wetlab.utils.handling_crontab_common_functions import *
 from iSkyLIMS_wetlab.utils.update_run_state import search_update_new_runs
@@ -115,48 +111,6 @@ def delete_graphic_folder_if_exists(run_name):
             shutil.rmtree(os.path.join(settings.MEDIA_ROOT,'wetlab', 'images_plot', folder_graphic))
     return True
 
-def delete_run_in_db (run_name):
-
-    if RunProcess.objects.filter(runName__exact = run_name).exists() :
-        delete_run = RunProcess.objects.get(runName = run_name)
-        sample_sheet_file = delete_run.get_sample_file()
-        if sample_sheet_file != '' :
-            full_path_sample_sheet_file = os.path.join(settings.MEDIA_ROOT, sample_sheet_file)
-            os.remove(full_path_sample_sheet_file)
-        delete_run.delete()
-    return True
-
-def delete_test_run (run_name) :
-    if RunProcess.objects.filter(runName__exact = run_name).exists() :
-        delete_graphic_folder_if_exists(run_name)
-        delete_run_in_db(run_name)
-    return True
-
-def folder_run_exists (conn, folder_run_name):
-
-    try:
-        run_folder_list = conn.listPath( wetlab_config.SAMBA_SHARED_FOLDER_NAME, run_data_root_folder)
-    except :
-         raise
-
-    return conn
-
-def create_project (p_name, run_name, bs_file):
-
-    if not LibraryKit.objects.filter(libraryName__exact = 'Nextera XT Index Kit v2 Set B').exists() :
-        new_lib_kit = LibraryKit(libraryName = 'Nextera XT Index Kit v2 Set B')
-        new_lib_kit.save()
-
-    n_project = Projects( runprocess_id = RunProcess.objects.get(runName__exact = run_name),
-                    LibraryKit_id = LibraryKit.objects.get(libraryName__exact = 'Nextera XT Index Kit v2 Set B'),
-                    projectName = p_name , libraryKit='Nextera XT V2 ', baseSpaceFile = bs_file,
-                    user_id = User.objects.get(username__exact = 'Test_user1'))
-    n_project.save()
-
-
-    return True
-
-
 
 def execute_test_for_testing_run(run_test_name, run_test_folder):
     '''
@@ -241,4 +195,7 @@ def execute_test_for_testing_run(run_test_name, run_test_folder):
         elif state == 'Completed':
             run_result['Completed'] = 'OK'
             break
+        logger.info('----------------------------------')
+        logger.info('###########---End RUN Testing  -----############')
+        logger.info('----------------------------------')
     return run_result

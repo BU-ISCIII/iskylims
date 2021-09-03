@@ -328,6 +328,7 @@ p {
                                                 <form method="post" enctype="multipart/form-data" name="deleteTestRun" id="deleteTestRun" class="form-horizontal well">
                                                     {% csrf_token %}
                                                     <input type="hidden" name="action" value="deleteTestRun"/>
+                                                    <input type="hidden" name="deleteRun" value="{{run_test_result.run_test_name}}"/>
                                                     <br>
                                                     <input class="btn pull-left btn-default" onclick="window.location.href=''" value="Return to configuration Test">
                                                     <input class="btn pull-right btn-primary" type="submit" value="Delete test run" name="Delete">

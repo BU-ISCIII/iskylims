@@ -2668,10 +2668,8 @@ def configuration_test (request):
                 available_run_test.append([run_test_obj.get_run_test_name(),run_test_obj.get_run_test_id()])
         return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'test_results': test_results, 'available_run_test':available_run_test})
 
+
     elif request.method=='POST' and request.POST['action'] == 'executeRunTest':
-        if 'Delete' in request.POST :
-            delete_test_run ('NextSeq_Test_0001')
-            return render(request,'iSkyLIMS_wetlab/ConfigurationTest.html')
         if RunConfigurationTest.objects.filter(pk__exact = request.POST['runTest']).exists():
             run_test_obj =  RunConfigurationTest.objects.filter(pk__exact = request.POST['runTest']).last()
             run_test_folder = run_test_obj.get_run_test_folder()
@@ -2692,8 +2690,12 @@ def configuration_test (request):
             return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'run_test_result': run_test_result, 'log_trace': log_trace})
         else:
             return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'run_test_result': run_test_result})
-
-
+    elif request.method=='POST' and request.POST['action'] == 'deleteTestRun':
+        if RunConfigurationTest.objects.filter(runTestName__exact = request.POST['deleteRun']).exists():
+            run_test_objs = RunConfigurationTest.objects.filter(runTestName__exact = request.POST['deleteRun'])
+            for run_test_obj in run_test_objs:
+                delete_test_run (run_test_obj)
+            return render(request,'iSkyLIMS_wetlab/ConfigurationTest.html')
     else:
         return render(request,'iSkyLIMS_wetlab/ConfigurationTest.html')
 
