@@ -2997,12 +2997,8 @@ def record_samples(request):
             import pdb; pdb.set_trace()
             if valid_file_result != 'OK':
                 return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information, 'error_message': valid_file_result})
+            resul_recorded = save_samples_in_batch_file (sample_data)
 
-                for sample_data in sample_batch_df:
-                    new_sample =  create_sample_from_file(sample_data)
-                    new_molecule = create_molecule_from_file(new_sample,sample_data)
-                    create_molecule_parameter_DNA_from_file(new_molecule, sample_data,new_sample)
-                    create_sample_project_fields_value(new_sample,sample_data)
                     return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'successfuly_load':'ok'})
     ## Form to get the new samples
     else:

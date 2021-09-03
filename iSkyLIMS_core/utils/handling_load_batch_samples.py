@@ -3,6 +3,24 @@ from iSkyLIMS_core.core_config import *
 from iSkyLIMS_core.models import *
 
 
+def check_samples_belongs_to_same_type_and_molecule_protocol(sample_batch_data):
+    '''
+    Description:
+        The Function check if only one type of sample is in data and if the mandatory parameters
+        for the type of sample are included.
+        In case that are more than 1 type of sample it checks one by one the mandatory parameters
+    Input:
+
+    Return:
+        True or False
+    '''
+    sample_type = sample_batch_data['Type of Sample'].unique().tolist()
+    sample_project = sample_batch_data['Project/Service'].unique().tolist()
+    protocol = sample_batch_data['ProtocolName'].unique().tolist()
+    if len(sample_type) != 1 or len(sample_project) != 1 or len(protocol) != 1:
+        return False
+    return True
+
 def check_defined_option_values_in_samples(sample_batch_df, package):
     '''
     Description:
@@ -17,6 +35,7 @@ def check_defined_option_values_in_samples(sample_batch_df, package):
         ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_SPECIES
         ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_SAMPLE_PROJECTS
         ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SAMPLE_PROJECTS
+        ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAMPLE_FIELD_DEFINED
     Return:
         OK or error code
     '''
@@ -59,43 +78,55 @@ def check_defined_option_values_in_samples(sample_batch_df, package):
             error_cause.insert(1,sample_project)
             return error_cause
 
-    # check if mandatory fields in type of sample are included
-
-    import pdb; pdb.set_trace()
+    # check if additional sample Project parameters are include in bathc file
+    if SampleProjectsFields.objects.filter(sampleProjects_id__sampleProjectName__exact = sample_project, sampleProjects_id__apps_name = package).exists():
+        sample_project_fields_objs = SampleProjectsFields.objects.filter(sampleProjects_id__sampleProjectName__exact = sample_project, sampleProjects_id__apps_name = package)
+        for sample_project_fields_obj in sample_project_fields_objs:
+            if not sample_project_fields_obj.get_field_name() in sample_batch_df:
+                error_cause = ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAMPLE_FIELD_DEFINED.copy()
+                error_cause.insert(1,sample_project_fields_obj.get_field_name())
+                return error_cause
 
     return 'OK'
 
-def check_defined_option_values_in_samples_projects(sample_batch_df, package):
+def check_molecule_has_same_data_type(sample_batch_df, package):
     '''
     Description:
-        The Function checks if parameters and values (related to new sample project) inside data frame are already defined in database.
-
+        The Function checks if values (related to molecule creation) inside data frame are already defined in database.
     Input:
         sample_batch_df     # sample data in dataframe
         package     # name of the apps that request the checking
     Constants:
+        ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_MOLECULE_TYPES
+
+        ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_MOLECULE_PROTOCOL_NAME
     '''
-    return
+    mandatory_fields = ['Molecule Type', 'Type of Extraction', 'Extraction date', 'ProtocolName'  ]
+    for m_field in mandatory_fields:
+        if not m_field in sample_batch_df :
+            error_cause = ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_MOLECULE_NOT_DEFINED.copy()
+            error_cause.insert(1, m_field)
+            return error_cause
+    if not  MoleculeType.objects.filter(apps_name__exact = package).exists():
+        return ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_MOLECULE_TYPES
+    molecule_values = list(MoleculeType.objects.filter(apps_name__exact = package).values_list('moleculeType', flat=True))
+    unique_molecule_types = sample_batch_df['Molecule Type'].unique().tolist()
+    for molecule_type in unique_molecule_types:
+        if molecule_type not in molecule_values:
+            error_cause = ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_MOLECULE_TYPE.copy()
+            error_cause.insert(1,molecule_type)
+            return error_cause
+    if not Protocols.objects.filter(type__molecule__moleculeType__exact = molecule_type, type__molecule__apps_name__exact = package ).exists():
+        return ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_PROTOCOL
+    protocol_values = list(Protocols.objects.filter(type__molecule__moleculeType__exact = molecule_type, type__molecule__apps_name__exact = package).values_list('name', flat=True))
+    unique_protocol_names = sample_batch_df['ProtocolName'].unique().tolist()
+    for protocol_name in unique_protocol_names:
+        if protocol_name not in protocol_values:
+            error_cause = ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_MOLECULE_PROTOCOL_NAME.copy()
+            error_cause.insert(1,protocol_name)
+            return error_cause
 
-def check_samples_belongs_to_same_type_and_molecule_protocol(sample_batch_data):
-    '''
-    Description:
-        The Function check if only one type of sample is in data and if the mandatory parameters
-        for the type of sample are included.
-        In case that are more than 1 type of sample it checks one by one the mandatory parameters
-    Input:
-
-    Return:
-        True or False
-    '''
-    sample_type = sample_batch_data['Type of Sample'].unique().tolist()
-    sample_project = sample_batch_data['Project/Service'].unique().tolist()
-    protocol = sample_batch_data['ProtocolName'].unique().tolist()
-    if len(sample_type) != 1 or len(sample_project) != 1 or len(protocol) != 1:
-        return False
-    return True
-
-
+    return 'OK'
 
 def read_batch_sample_file(batch_file):
     '''
@@ -134,7 +165,10 @@ def valid_sample_batch_file (sample_batch_df, package):
         sample_batch_df     # sample data in dataframe
         package     # package name "iSkyLIMS_wetlab"
     Functions:
+        check_samples_belongs_to_same_type_and_molecule_protocol # located at this file
+        check_defined_option_values_in_samples # located at this file
         check_record_samples_optional_parameters # located at this file
+         # located at this file
     Constants:
         ERROR_MESSAGE_FOR_EMPTY_SAMPLE_BATCH_FILE
         ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL
@@ -150,7 +184,24 @@ def valid_sample_batch_file (sample_batch_df, package):
     check_opt_values = check_defined_option_values_in_samples(sample_batch_df, package)
     if check_opt_values != 'OK':
         return ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL
-    check_opt_par = check_record_samples_optional_parameters(sample_batch_df)
-    if check_opt_par != 'OK':
-        return check_opt_par
-    return
+    # check molecule columns data
+    check_molecule_par = check_molecule_has_same_data_type(sample_batch_df, package)
+    if check_molecule_par != 'OK':
+        return check_molecule_par
+    return 'OK'
+
+
+def save_samples_in_batch_file (sample_batch_df):
+    '''
+    Description:
+        The Function save the sample and the molecule information in database
+    Input:
+        sample_batch_df     # sample data in dataframe
+
+    '''
+
+    for sample_data in sample_batch_df:
+        new_sample =  create_sample_from_file(sample_data)
+        new_molecule = create_molecule_from_file(new_sample,sample_data)
+        create_molecule_parameter_DNA_from_file(new_molecule, sample_data,new_sample)
+        create_sample_project_fields_value(new_sample,sample_data)

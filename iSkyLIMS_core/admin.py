@@ -30,7 +30,7 @@ class PatientProjectsAdmin(admin.ModelAdmin):
     list_display = ('projectName', 'projectDescription')
 
 class ProtocolsAdmin(admin.ModelAdmin):
-    list_display = ('type', 'name',  'description')
+    list_display = ('name', 'type', 'description')
 
 class ProtocolTypeAdmin( admin.ModelAdmin):
     list_display = ('protocol_type', 'molecule', 'apps_name')
