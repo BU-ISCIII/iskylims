@@ -212,7 +212,7 @@ def get_sample_in_project_obj_from_sample_name (sample_name_in_project):
     '''
     sample_in_project_obj = ''
     if SamplesInProject.objects.filter(sampleName__exact = sample_name_in_project).exists():
-        sample_in_project_obj = SamplesInProject.objects.filter(pk__exact = sample_in_project_id).last()
+        sample_in_project_obj = SamplesInProject.objects.filter(pk__exact = sample_name_in_project).last()
 
     return sample_in_project_obj
 
