@@ -2997,9 +2997,10 @@ def record_samples(request):
             import pdb; pdb.set_trace()
             if valid_file_result != 'OK':
                 return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information, 'error_message': valid_file_result})
-            resul_recorded = save_samples_in_batch_file (sample_data)
-
-                    return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'successfuly_load':'ok'})
+            result_recorded = save_samples_in_batch_file (sample_data)
+            if result_recorded != 'OK':
+                return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information, 'error_message': result_recorded})
+            return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'successfuly_load':'ok'})
     ## Form to get the new samples
     else:
         sample_information = prepare_sample_input_table(__package__)
