@@ -1,6 +1,8 @@
 import pandas as pd
+from datetime import datetime
 from iSkyLIMS_core.core_config import *
 from iSkyLIMS_core.models import *
+from iSkyLIMS_core.utils.handling_samples import *
 
 
 def check_samples_belongs_to_same_type_and_molecule_protocol(sample_batch_data):
@@ -10,7 +12,7 @@ def check_samples_belongs_to_same_type_and_molecule_protocol(sample_batch_data):
         for the type of sample are included.
         In case that are more than 1 type of sample it checks one by one the mandatory parameters
     Input:
-
+        sample_batch_data
     Return:
         True or False
     '''
@@ -128,6 +130,150 @@ def check_molecule_has_same_data_type(sample_batch_df, package):
 
     return 'OK'
 
+def create_sample_from_batch_file(sample_data, reg_user, package):
+    '''
+    Description:
+        The function create new sample
+    Inputs:
+        sample_data     # panda dataframe
+        reg_user        # user name
+        package         # name of the apps that request the checking
+    Functions:
+        check_if_sample_already_defined     # located
+    Return:
+        new_sample
+    '''
+
+    sample_new = {}
+    samples_already_recorded = []
+    ## Check if sample alredy  defined for this user
+    if not check_if_sample_already_defined (sample_data['Sample Name'], reg_user) :
+        if sample_data['Type of Sample'] == '':
+            print('Type of Sample is null for the Sample ', sample_data['Sample Name'])
+
+    sample_new['sampleType'] = sample_data['Type of Sample']
+    sample_new['sampleName'] =  sample_data['Sample Name']
+
+    ## Check if patient code  already exists on database, If not if will be created giving a sequencial dummy value
+    if sample_data['Patient Code ID'] != '' :
+        patient_obj = check_patient_code_exists(sample_data['Patient Code ID'] )
+        if patient_obj == False:
+            # Define the new patient only Patient code is defined
+            sample_new['patient'] = create_empty_patient(sample_data['Patient Code ID'])
+        else:
+            sample_new['patient'] = patient_obj
+    else :
+        sample_new['patient'] = None
+
+    sample_new['app_name'] = package
+    sample_new['onlyRecorded'] = sample_data['Only Record']
+    sample_new['labRequest'] = sample_data['Lab requested']
+    sample_new['species'] = sample_data['Species']
+    sample_new['sampleLocation'] = sample_data['Sample storage']
+    sample_new['sampleEntryDate'] = str(sample_data['Date sample reception'])
+    sample_new['sampleProject'] = SampleProjects.objects.filter(sampleProjectName__exact = sample_data['Project/Service'], apps_name = package).last()
+    sample_new['user'] = reg_user
+    sample_new['sample_id'] = str(reg_user + '_' + sample_data['Sample Name'])
+    sample_new['new_unique_value'] = increase_unique_value(Samples.objects.exclude(uniqueSampleID__isnull = True).last().get_unique_sample_id())
+    if sample_data['Only Record']:
+        sample_new['sampleState'] = 'Completed'
+    else:
+        sample_new['sampleState'] = 'Defined'
+    sample_new['onlyRecorded'] = sample_data['Only Record']
+    new_sample = Samples.objects.create_sample(sample_new)
+
+    return new_sample
+
+def create_sample_project_fields_value (sample_obj, sample_data, package):
+    '''
+    Description:
+        The function set the additional parameters described in the sampleProject
+    Inputs:
+        sample_obj      # object of the sample
+        sample_data     # panda dataframe
+        package         # name of the apps that request the checking
+    Functions:
+
+    Return:
+        None
+    '''
+    s_project_field_data = {}
+    s_project_field_data['sample_id'] = sample_obj
+    sample_project_fields_objs = SampleProjectsFields.objects.filter(sampleProjects_id__sampleProjectName__exact = sample_data['Project/Service'], sampleProjects_id__apps_name = package)
+    for sample_project_fields_obj in sample_project_fields_objs:
+        s_project_field_data['sampleProjecttField_id'] = sample_project_fields_obj
+        s_project_field_data['sampleProjectFieldValue'] = sample_data[sample_project_fields_obj.get_field_name()]
+        s_project_fild_obj = SampleProjectsFieldsValue.objects.create_project_field_value(s_project_field_data)
+    return
+
+def create_molecule_from_file(sample_obj, sample_data, reg_user, package):
+    '''
+    Description:
+        The function create new molecule from the data frame
+    Inputs:
+        sample_obj      # object of the sample
+        sample_data     # panda dataframe
+        reg_user        # user name
+        package         # name of the apps that request the checking
+    Return:
+        new_molecule
+    '''
+    molecule_data = {}
+    '''
+    if MoleculePreparation.objects.filter(sample = sample_obj).exists():
+            last_molecule_code = MoleculePreparation.objects.filter(sample = sample_obj).last().get_molecule_code_id()
+            code_split = re.search(r'(.*_E)(\d+)$', last_molecule_code)
+            number_code = int(code_split.group(2))
+            number_code +=1
+            molecule_code_id = code_split.group(1) + str(number_code)
+    else:
+            number_code = 1
+            molecule_code_id = sample_obj.get_sample_code() + '_E1'
+    '''
+    molecule_data['protocolUsed'] = sample_data['ProtocolName']
+    molecule_data['moleculeType'] = sample_data['Molecule Type']
+    molecule_data['sample'] = sample_obj
+    molecule_data['moleculeCodeId'] = sample_obj.get_sample_code() + '_E1'
+    molecule_data['extractionType'] =  sample_data['Type of Extraction']
+    molecule_data['moleculeExtractionDate'] = str(sample_data['Extraction date'])
+    molecule_data['numberOfReused'] = str(0)
+    molecule_data['app_name'] = package
+    molecule_data['user'] = reg_user
+    new_molecule = MoleculePreparation.objects.create_molecule(molecule_data)
+    return new_molecule
+
+def create_molecule_parameter_from_file(molecule_obj, sample_data):
+    '''
+    Description:
+        The function create new molecule from the data frame
+    Inputs:
+        molecule_obj    # object of the molecule
+        sample_data     # panda dataframe
+    Return:
+        None
+    '''
+    # add user commercial kit and increase usage
+    user_lot_commercial_kit_obj = UserLotCommercialKits.objects.filter(chipLot__exact = sample_data['Lot Commercial Kit']).last()
+    molecule_obj.set_user_lot_kit_obj(user_lot_commercial_kit_obj)
+    user_lot_commercial_kit_obj.set_increase_use()
+    try:
+        user_lot_commercial_kit_obj.set_latest_use(datetime.strptime(sample_data['Extraction data'], '%Y-%m-%d').date())
+    except:
+        user_lot_commercial_kit_obj.set_latest_use(datetime.datetime.now())
+
+    protocol_used_obj = molecule_obj.get_protocol_obj()
+    protocol_parameters_objs = ProtocolParameters.objects.filter(protocol_id__exact = protocol_used_obj, parameterUsed = True)
+
+    for p_parameter_obj in protocol_parameters_objs :
+        molecule_parameter_value = {}
+        molecule_parameter_value['moleculeParameter_id'] = p_parameter_obj
+        molecule_parameter_value['molecule_id'] = molecule_obj
+        molecule_parameter_value['parameterValue'] = sample_data[p_parameter_obj.get_parameter_name()]
+        new_molecule_parameter_obj = MoleculeParameterValue.objects.create_molecule_parameter_value(molecule_parameter_value)
+
+
+    return
+
 def read_batch_sample_file(batch_file):
     '''
     Description:
@@ -145,15 +291,7 @@ def read_batch_sample_file(batch_file):
         sample_data = {}
         sample_data['ERROR'] = ERROR_MESSAGE_FOR_EMPTY_SAMPLE_BATCH_FILE
         return sample_data
-    '''
-    for index, row_data in sample_batch_df.iterrows():
-        sample_data = {}
-        for index_col in range(len(sample_batch_heading)):
-            sample_data[sample_batch_heading[index_col]] = row_data[sample_batch_heading[index_col]]
-        #import pdb; pdb.set_trace()
-        sample_batch_data.append(sample_data)
-    #import pdb; pdb.set_trace()
-    '''
+
     return sample_batch_df
 
 
@@ -163,7 +301,7 @@ def valid_sample_batch_file (sample_batch_df, package):
         The Function check if all parameters required in the samples are included in file
     Input:
         sample_batch_df     # sample data in dataframe
-        package     # package name "iSkyLIMS_wetlab"
+        package             # name of the apps that request the checking
     Functions:
         check_samples_belongs_to_same_type_and_molecule_protocol # located at this file
         check_defined_option_values_in_samples # located at this file
@@ -191,17 +329,23 @@ def valid_sample_batch_file (sample_batch_df, package):
     return 'OK'
 
 
-def save_samples_in_batch_file (sample_batch_df):
+def save_samples_in_batch_file (sample_batch_df, reg_user, package):
     '''
     Description:
         The Function save the sample and the molecule information in database
     Input:
         sample_batch_df     # sample data in dataframe
-
+        reg_user            # user name
+        package             # name of the apps that request the checking
+    Functions:
+        create_sample_from_batch_file   # located at this file
+        create_molecule_from_file        # located at this file
+        create_molecule_parameter_DNA_from_file     # located at this file
     '''
 
-    for sample_data in sample_batch_df:
-        new_sample =  create_sample_from_file(sample_data)
-        new_molecule = create_molecule_from_file(new_sample,sample_data)
-        create_molecule_parameter_DNA_from_file(new_molecule, sample_data,new_sample)
-        create_sample_project_fields_value(new_sample,sample_data)
+    for index, row_data in sample_batch_df.iterrows():
+        new_sample =  create_sample_from_batch_file(row_data, reg_user, package)
+        create_sample_project_fields_value(new_sample,row_data, package)
+        new_molecule = create_molecule_from_file(new_sample,row_data, reg_user, package)
+        create_molecule_parameter_from_file(new_molecule, row_data)
+    return 'OK'

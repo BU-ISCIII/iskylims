@@ -163,6 +163,7 @@ def analyze_input_samples (request, app_name):
         it will return a dictionary which contains the processed samples.
     Input:
         request
+        app_name
     Functions:
         check_if_sample_already_defined : located at this file
         check_empty_fields :            located at this file
@@ -255,7 +256,7 @@ def analyze_input_samples (request, app_name):
                     sample_data['sampleState'] = 'Pre-Defined'
                 else:
                     sample_data['sampleState'] = 'Defined'
-
+            sample_data['app_name'] = app_name
             new_sample = Samples.objects.create_sample(sample_data)
 
 

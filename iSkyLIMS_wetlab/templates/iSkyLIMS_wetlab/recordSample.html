@@ -14,11 +14,11 @@
     }
  </style>
 
- {% if error_message %}
+{% if error_message %}
      <div class="row row-space-2 margin-b-4">
          <div class="col-sm-7 col-sm-offset-3">
              <div class="panel panel-danger">
-                 <div class="panel-heading"><h3 style="text-align:center">Unable to upload the betch file</h3> </div>
+                 <div class="panel-heading"><h3 style="text-align:center">Unable to upload the batch file</h3> </div>
                  <div class="panel-body">
                      {% for values in error_message %}
                          <h4>{{values}}</h4>
@@ -27,8 +27,19 @@
              </div> <!--  end of panel  -->
          </div> <!--  end of col-sm-7 -->
      </div> <!--  end of row -->
+{% endif %}
+{% if successfuly_batch_load %}
+     <div class="row row-space-2 margin-b-4">
+         <div class="col-sm-7 col-sm-offset-3">
+             <div class="panel panel-default">
+                 <div class="panel-heading"><h3 style="text-align:center">Successful load the batch file</h3> </div>
+                 <div class="panel-body">
+                    <h4>Your batch file was successfuly stored in iSkyLIMS database</h4>
+                 </div> <!--  end of panel body -->
+             </div> <!--  end of panel  -->
+         </div> <!--  end of col-sm-7 -->
+     </div> <!--  end of row -->
  {% endif %}
-
 
 {% if sample_recorded %}
 

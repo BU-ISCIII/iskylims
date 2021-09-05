@@ -784,7 +784,7 @@ class SamplesManager (models.Manager):
         new_sample = self.create(sampleState = StatesForSample.objects.get(sampleStateName__exact = sample_data['sampleState']),
                             patientCore = sample_data['patient'],
                             labRequest = sample_data['labRequest'], sampleProject = sample_data['sampleProject'],
-                            sampleType = SampleType.objects.get(sampleType__exact = sample_data['sampleType']) ,
+                            sampleType = SampleType.objects.get(sampleType__exact = sample_data['sampleType'], apps_name__exact = sample_data['app_name']) ,
                             sampleUser = User.objects.get(username__exact = sample_data['user']),
                             sampleCodeID = sample_data['sample_id'] , sampleName =  sample_data['sampleName'],
                             uniqueSampleID = sample_data['new_unique_value'],
@@ -1023,10 +1023,10 @@ class MoleculePreparationManager (models.Manager):
 
     def  create_molecule (self, molecule_data) :
 
-        molecule_used_obj = MoleculeType.objects.get(moleculeType__exact = molecule_data['moleculeType'])
+        molecule_used_obj = MoleculeType.objects.filter(moleculeType__exact = molecule_data['moleculeType']).last()
 
-        protocol_type_obj = ProtocolType.objects.filter(molecule = molecule_used_obj, apps_name__exact = molecule_data['app_name'])
-        protocol_used_obj = Protocols.objects.get(name__exact = molecule_data['protocolUsed'], type__in = protocol_type_obj)
+        protocol_type_obj = ProtocolType.objects.filter(molecule = molecule_used_obj, apps_name__exact = molecule_data['app_name']).last()
+        protocol_used_obj = Protocols.objects.filter(name__exact = molecule_data['protocolUsed'], type__exact = protocol_type_obj).last()
         new_molecule = self.create( protocolUsed = protocol_used_obj, sample =  molecule_data['sample'],
                     moleculeType =  molecule_used_obj, state = StatesForMolecule.objects.get(moleculeStateName__exact = 'Defined'),
                     moleculeCodeId =  molecule_data['moleculeCodeId'], moleculeExtractionDate = molecule_data['moleculeExtractionDate'],

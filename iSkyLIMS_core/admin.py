@@ -51,7 +51,7 @@ class SamplesAdmin(admin.ModelAdmin):
     search_fields = ('sampleName__startswith',)
 
 class SampleTypeAdmin(admin.ModelAdmin):
-    list_display = ('sampleType','optional_fields')
+    list_display = ('sampleType','apps_name' ,'optional_fields')
 '''
 class SampleProjectBelongsAdmin(admin.ModelAdmin):
     list_display = ('projectName', 'projectManager', 'projectDescription', 'contactEmail', 'contactPhone', 'contactComments')
@@ -61,7 +61,12 @@ class SampleProjectsAdmin(admin.ModelAdmin):
 
 
 class SampleProjectsFieldsAdmin(admin.ModelAdmin):
-    list_display  = ['sampleProjects_id', 'sampleProjectFieldName', 'sampleProjectFieldDescription', 'sampleProjectFieldOrder', 'sampleProjectFieldUsed']
+    list_display  = ['sampleProjects_id', 'sampleProjectFieldName', 'sampleProjectFieldType', 'sampleProjectOptionList', 'sampleProjectFieldOrder', 'sampleProjectFieldUsed']
+
+class SampleProjectsFieldsValueAdmin(admin.ModelAdmin):
+    list_display = ['sample_id', 'sampleProjecttField_id', 'sampleProjectFieldValue']
+    list_filter = ['sample_id']
+    search_fields = ('sampleProjecttField_id__sampleProjectFieldName', )
 
 class SequencingPlatformAdmin(admin.ModelAdmin):
     list_display = ('platformName', 'companyName', 'sequencingTecnology')
@@ -102,6 +107,7 @@ admin.site.register(SampleType, SampleTypeAdmin)
 admin.site.register(Samples, SamplesAdmin)
 admin.site.register(SampleProjects,SampleProjectsAdmin)
 admin.site.register(SampleProjectsFields,SampleProjectsFieldsAdmin)
+admin.site.register(SampleProjectsFieldsValue,SampleProjectsFieldsValueAdmin)
 
 admin.site.register(SequencingPlatform, SequencingPlatformAdmin)
 admin.site.register(SequencingConfiguration, SequencingConfigurationAdmin)
