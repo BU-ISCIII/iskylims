@@ -8,7 +8,7 @@ from iSkyLIMS_drylab.utils.handling_request_services import *
 from iSkyLIMS_drylab.utils.handling_pipelines import get_pipeline_obj_from_id, get_all_defined_pipelines
 
 
-from iSkyLIMS_drylab.utils.drylab_common_functions import create_pdf
+# from iSkyLIMS_drylab.utils.drylab_common_functions import create_pdf
 
 def add_pipelines_to_resolution(resolution_obj, pipeline_ids):
     '''

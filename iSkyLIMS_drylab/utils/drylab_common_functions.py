@@ -20,7 +20,7 @@ def check_valid_date_format (date):
         return True
     except:
         return False
-
+'''
 def create_pdf(absolute_url,information, template_file, pdf_file_name , out_dir):
     from weasyprint import HTML, CSS
     from django.template.loader import get_template
@@ -36,7 +36,7 @@ def create_pdf(absolute_url,information, template_file, pdf_file_name , out_dir)
     html = HTML(string=html_string, base_url=absolute_url).write_pdf(pdf_file,stylesheets=[CSS(settings.BASE_DIR + drylab_config.CSS_FOR_PDF)])
 
     return pdf_file
-
+'''
 
 def create_service_id (service_number,user_name):
     '''

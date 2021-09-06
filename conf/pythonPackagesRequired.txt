@@ -4,8 +4,6 @@
 asn1crypto
 bcrypt
 biopython
-cairocffi==1.2.0
-CairoSVG==2.5.2
 cryptography
 Django==3.2
 django-crispy-forms
@@ -19,7 +17,6 @@ mod_wsgi
 mysqlclient==2.0.3
 paramiko
 pysmb
-weasyPrint==52.5
 django_extensions
 djangorestframework
 xlrd
