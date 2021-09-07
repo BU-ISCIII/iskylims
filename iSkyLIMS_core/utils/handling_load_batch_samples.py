@@ -348,4 +348,5 @@ def save_samples_in_batch_file (sample_batch_df, reg_user, package):
         create_sample_project_fields_value(new_sample,row_data, package)
         new_molecule = create_molecule_from_file(new_sample,row_data, reg_user, package)
         create_molecule_parameter_from_file(new_molecule, row_data)
+        new_sample.set_state('Extract molecule')
     return 'OK'
