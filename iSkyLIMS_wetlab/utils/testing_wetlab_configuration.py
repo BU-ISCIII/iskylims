@@ -111,6 +111,16 @@ def delete_graphic_folder_if_exists(run_name):
             shutil.rmtree(os.path.join(settings.MEDIA_ROOT,'wetlab', 'images_plot', folder_graphic))
     return True
 
+def delete_test_run(run_obj):
+    '''
+    Description:
+        The funtion delete the database information of the run test
+    Input:
+        run_obj
+    '''
+    import pdb; pdb.set_trace()
+    run_obj.delete()
+    return
 
 def execute_test_for_testing_run(run_test_name, run_test_folder):
     '''

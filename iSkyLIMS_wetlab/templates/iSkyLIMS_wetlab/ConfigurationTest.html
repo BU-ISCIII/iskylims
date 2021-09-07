@@ -38,13 +38,27 @@ p {
         <div class="col-sm-7 col-sm-offset-3" >
             <div class="panel panel-danger">
                 <div class="panel-heading"><H3>Unable to execute the configuration test</H3></div>
-                {% for value in error %}
-                    <p>{{value}}</p>
-                {% endfor %}
+                <div class="panel-body">
+                    {% for value in error %}
+                        <p>{{value}}</p>
+                    {% endfor %}
+                </div> <!--  end of panel body -->
             </div> <!--// end panel -->
         </div> <!--// end col-sm-7  -->
     </div> <!--// end row  -->
 
+{% endif %}
+{% if delete_successful %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7 col-sm-offset-3" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><H3>Successful deletion</H3></div>
+                <div class="panel-body">
+                    <p>The test run {{delete_successful.run_name}} was deleted </p>
+                </div> <!--  end of panel body -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-7  -->
+    </div> <!--// end row  -->
 {% endif %}
 {% if test_results %}
     <div class="row row-space-2 margin-b-4">

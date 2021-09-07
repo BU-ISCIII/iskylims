@@ -2692,9 +2692,12 @@ def configuration_test (request):
             return render (request,'iSkyLIMS_wetlab/ConfigurationTest.html', {'run_test_result': run_test_result})
     elif request.method=='POST' and request.POST['action'] == 'deleteTestRun':
         if RunConfigurationTest.objects.filter(runTestName__exact = request.POST['deleteRun']).exists():
-            run_test_objs = RunConfigurationTest.objects.filter(runTestName__exact = request.POST['deleteRun'])
-            for run_test_obj in run_test_objs:
-                delete_test_run (run_test_obj)
+            if RunProcess.objects.filter(runName__exact =  request.POST['deleteRun']).exists():
+                run_test_objs = RunProcess.objects.filter(runName__exact = request.POST['deleteRun'])
+                for run_test_obj in run_test_objs:
+                    delete_test_run (run_test_obj)
+                    delete_successful = {'run_name':request.POST['deleteRun']}
+                return render(request,'iSkyLIMS_wetlab/ConfigurationTest.html',{'delete_successful':delete_successful})
             return render(request,'iSkyLIMS_wetlab/ConfigurationTest.html')
     else:
         return render(request,'iSkyLIMS_wetlab/ConfigurationTest.html')
