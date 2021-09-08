@@ -118,7 +118,7 @@ def search_update_new_runs ():
                     logging_errors(string_message, False, True)
                 else:
                     string_message = new_run + ' : Ignoring test folder ' + experiment_name
-                    logging_info(string_message, False)
+                    logger.info(string_message, False)
                 os.remove(l_run_parameter)
                 logger.info(' %s  : Deleted temporary run parameter file', new_run)
                 continue
