@@ -275,6 +275,7 @@ def create_molecule_parameter_from_file(molecule_obj, sample_data):
         new_molecule_parameter_obj = MoleculeParameterValue.objects.create_molecule_parameter_value(molecule_parameter_value)
 
 
+
     return
 
 def read_batch_sample_file(batch_file):
@@ -353,4 +354,6 @@ def save_samples_in_batch_file (sample_batch_df, reg_user, package):
         create_molecule_parameter_from_file(new_molecule, row_data)
         #new_sample.set_state('Extract molecule')
         new_sample.set_state('Library preparation')
+        new_molecule.set_molecule_use('SNV/CNV' , package)
+        new_molecule.set_state('Completed')
     return 'OK'
