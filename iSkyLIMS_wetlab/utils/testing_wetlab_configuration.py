@@ -118,7 +118,6 @@ def delete_test_run(run_obj):
     Input:
         run_obj
     '''
-    import pdb; pdb.set_trace()
     run_obj.delete()
     return
 
