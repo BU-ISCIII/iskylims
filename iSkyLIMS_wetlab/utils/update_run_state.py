@@ -109,12 +109,16 @@ def search_update_new_runs ():
                 continue
 
             experiment_name = get_experiment_name_from_file (l_run_parameter)
-            if experiment_name == ''  or experiment_name == 'NOT FOUND':
+            if experiment_name == ''  or experiment_name == 'NOT FOUND' or 'test' in experiment_name.lower():
                 if experiment_name == '':
                     string_message = new_run + ' : Experiment name is empty'
-                else:
+                    logging_errors(string_message, False, True)
+                elif experiment_name == 'NOT FOUND':
                     string_message = new_run + ' : Experiment name field was not found in file'
-                logging_errors(string_message, False, True)
+                    logging_errors(string_message, False, True)
+                else:
+                    string_message = new_run + ' : Ignoring test folder ' + experiment_name
+                    logging_info(string_message, False)
                 os.remove(l_run_parameter)
                 logger.info(' %s  : Deleted temporary run parameter file', new_run)
                 continue
