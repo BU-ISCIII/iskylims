@@ -127,7 +127,7 @@ def search_update_new_runs (request_reason):
                     continue
             else:
                 if experiment_name != request_reason:
-                    logger.info('ignoring test folder %s' experiment_name)
+                    logger.info('ignoring test folder %s' , experiment_name)
                     os.remove(l_run_parameter)
                     logger.info(' %s  : Deleted temporary run parameter file', new_run)
                     continue
