@@ -45,13 +45,15 @@ def get_list_processed_runs () :
     return processed_runs
 
 
-def search_update_new_runs ():
+def search_update_new_runs (request_reason):
     '''
     Description:
         The function will check if there are new run folder in the remote
         server.
         Get the runParameter file to identify if run is NextSeq or miSeq
         to execute its dedicate handler process.
+    Input:
+        request_reason      # define if crontab process request the searc or was for testing
     Functions:
         assign_projects_to_run               # located at utils.handling_crontab_common_functions
         assign_used_library_in_run           # located at utils.handling_crontab_common_functions
@@ -109,19 +111,27 @@ def search_update_new_runs ():
                 continue
 
             experiment_name = get_experiment_name_from_file (l_run_parameter)
-            if experiment_name == ''  or experiment_name == 'NOT FOUND' or 'test' in experiment_name.lower():
-                if experiment_name == '':
-                    string_message = new_run + ' : Experiment name is empty'
-                    logging_errors(string_message, False, True)
-                elif experiment_name == 'NOT FOUND':
-                    string_message = new_run + ' : Experiment name field was not found in file'
-                    logging_errors(string_message, False, True)
-                else:
-                    string_message = new_run + ' : Ignoring test folder ' + experiment_name
-                    logger.info(string_message, False)
-                os.remove(l_run_parameter)
-                logger.info(' %s  : Deleted temporary run parameter file', new_run)
-                continue
+            if request_reason == 'crontab_request':
+                if experiment_name == ''  or experiment_name == 'NOT FOUND' or 'test' in experiment_name.lower():
+                    if experiment_name == '':
+                        string_message = new_run + ' : Experiment name is empty'
+                        logging_errors(string_message, False, True)
+                    elif experiment_name == 'NOT FOUND':
+                        string_message = new_run + ' : Experiment name field was not found in file'
+                        logging_errors(string_message, False, True)
+                    else:
+                        string_message = new_run + ' : Ignoring test folder ' + experiment_name
+                        logger.info(string_message)
+                    os.remove(l_run_parameter)
+                    logger.info(' %s  : Deleted temporary run parameter file', new_run)
+                    continue
+            else:
+                if experiment_name != request_reason:
+                    logger.info('ignoring test folder %s' experiment_name)
+                    os.remove(l_run_parameter)
+                    logger.info(' %s  : Deleted temporary run parameter file', new_run)
+                    continue
+
             logger.debug('%s : Found the experiment name called : %s', new_run , experiment_name)
 
             if RunProcess.objects.filter(runName__exact = experiment_name).exclude(state__runStateName ='Recorded').exists():

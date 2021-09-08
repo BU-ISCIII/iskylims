@@ -56,7 +56,7 @@ def looking_for_new_runs ():
     logger.info('----------------------------------')
     logger.info('Start searching for new/updating runs')
     try:
-        search_update_new_runs ()
+        search_update_new_runs ('crontab_request')
     except Exception as e:
         print ('****** Exiting abnormal the crontab  process with errors')
         print (e)

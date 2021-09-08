@@ -150,7 +150,7 @@ def execute_test_for_testing_run(run_test_name, run_test_folder):
     logger.info('----------------------------------')
     logger.info('###########---Start RUN Testing  -----############')
     logger.info('----------------------------------')
-    search_update_new_runs()
+    search_update_new_runs(run_test_name)
     conn = open_samba_connection()
 
     # Execute 6 times to be sure it has completed all steps
