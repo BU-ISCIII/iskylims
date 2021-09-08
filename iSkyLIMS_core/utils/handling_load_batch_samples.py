@@ -174,7 +174,10 @@ def create_sample_from_batch_file(sample_data, reg_user, package):
     sample_new['sampleProject'] = SampleProjects.objects.filter(sampleProjectName__exact = sample_data['Project/Service'], apps_name = package).last()
     sample_new['user'] = reg_user
     sample_new['sample_id'] = str(reg_user + '_' + sample_data['Sample Name'])
-    sample_new['new_unique_value'] = increase_unique_value(Samples.objects.exclude(uniqueSampleID__isnull = True).last().get_unique_sample_id())
+    if not Samples.objects.exclude(uniqueSampleID__isnull = True).exists():
+        sample_new['new_unique_value'] = 'AAA-0001'
+    else:
+        sample_new['new_unique_value'] = increase_unique_value(Samples.objects.exclude(uniqueSampleID__isnull = True).last().get_unique_sample_id())
     if sample_data['Only Record']:
         sample_new['sampleState'] = 'Completed'
     else:
