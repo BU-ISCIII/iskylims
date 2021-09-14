@@ -1877,13 +1877,13 @@ def update_molecule_reused(sample_id, molecule_code_id):
     Return:
         sample_obj #
     '''
-    sample_obj = Samples.objects.get(pk__exact = sample_id)
+
+    sample_obj = get_sample_obj_from_id(sample_id)
     try:
         molecule_obj = MoleculePreparation.objects.get(sample = sample_obj, moleculeCodeId__exact = molecule_code_id)
     except:
-        return 'Error'
+        return None
     molecule_obj.set_increase_reuse()
-    sample_obj.set_state('Library Preparation')
     return molecule_obj
 
 def update_sample_reused(reprocess_id):

@@ -3202,6 +3202,7 @@ def handling_library_preparations(request):
         analyze_and_store_input_additional_kits : located at utils/additional_kits.py
         get_samples_for_library_preparation : located at utils/library_preparation.py
         check_users_exists
+        create_library_preparation_instance : located at utils/library_preparation.py
         extract_user_sample_sheet_data   : located at utils/library_preparation.py
         get_additional_kits_from_lib_prep   : located at utils/additional_kits.py
         get_data_for_library_preparation_in_defined : located at iSkyLIMS_core/utils/handling_samples.py
@@ -3421,7 +3422,7 @@ def handling_molecules(request):
 def repeat_library_preparation(request):
     '''
     Functions:
-    analyze_reprocess_data  : located at utils/sample_functions.py
+        analyze_reprocess_data  # located at utils/sample_functions.py
     '''
 
     if  request.method == 'POST' and request.POST['action'] == 'repeat_library_preparation':

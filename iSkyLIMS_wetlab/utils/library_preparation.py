@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from iSkyLIMS_core.models import Samples, MoleculePreparation, Protocols
 from iSkyLIMS_core.utils.handling_commercial_kits import *
 from iSkyLIMS_core.utils.handling_protocols import *
-from iSkyLIMS_core.utils.handling_samples import  get_sample_obj_from_sample_name, get_sample_obj_from_id
+from iSkyLIMS_core.utils.handling_samples import  get_sample_obj_from_sample_name, get_sample_obj_from_id, get_molecule_obj_from_id
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
 from iSkyLIMS_wetlab.utils.sample_sheet_utils import *
@@ -124,6 +124,8 @@ def create_library_preparation_instance(samples_data, user):
         protocols.
     Input:
         samples_data :  Contains  moleculeID, sampleID, protocolID for each sample
+    Functions:
+        get_library_code_and_unique_id  # located at this file
     Return:
         library_preparation_objs
     '''
@@ -142,7 +144,7 @@ def create_library_preparation_instance(samples_data, user):
             lib_prep_data['sampleNameInSampleSheet'] = key
         lib_prep_data['registerUser'] = user
         lib_prep_data['user_sampleID'] = get_sample_obj_from_id(lib_prep_data['sample_id']).get_sample_code()
-        lib_prep_data['lib_prep_code_id'], lib_prep_data['uniqueID'] = get_library_code_and_unique_id(lib_prep_data['sample_id'])
+        lib_prep_data['lib_prep_code_id'], lib_prep_data['uniqueID'] = get_library_code_and_unique_id(lib_prep_data['sample_id'],lib_prep_data['molecule_id'])
         library_preparation_objs.append(LibraryPreparation.objects.create_lib_preparation(lib_prep_data))
 
     return library_preparation_objs
@@ -249,7 +251,7 @@ def get_samples_for_library_preparation():
         samples_in_lib_prep['avail_samples']['heading'] = HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL
         samples_objs = Samples.objects.filter(sampleState__sampleStateName__exact = 'Library preparation')
         for samples_obj in samples_objs:
-            if LibraryPreparation.objects.filter(sample_id = samples_obj).exists():
+            if LibraryPreparation.objects.filter(sample_id = samples_obj).exclude(libPrepState__libPrepState__exact = 'Completed').exists():
                 library_preparation_obj = LibraryPreparation.objects.filter(sample_id = samples_obj).last()
                 lib_prep_obj_state = library_preparation_obj.get_state()
 
@@ -281,7 +283,6 @@ def get_samples_for_library_preparation():
                     samples_in_lib_prep['lib_prep_updated_param'][protocol_name].append(lib_prep_param_data)
                 elif lib_prep_obj_state == 'Updated additional kits':
                     samples_in_lib_prep['display_sample_sheet'] = True
-
             else:
 
                 data = ['']* len(HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL)
@@ -753,126 +754,36 @@ def store_library_preparation_sample_sheet(sample_sheet_data, user, platform, co
 
     return new_user_s_sheet_obj
 
-def get_library_code_and_unique_id (sample_id):
+def get_library_code_and_unique_id (sample_id, molecule_id ):
     '''
     Description:
         The function will find out the latest library preparation uniqueID", increment the value
         and will return the updated value to use
     Input:
         sample_id        # id of the sample
-    Variables:
-
+        molecule_id      # id of the molecule
     Return:
         uniqueID .
     '''
     sample_obj = get_sample_obj_from_id(sample_id)
-    if LibraryPreparation.objects.filter(sample_id = sample_obj, libPrepState__libPrepState__exact = 'Created for Reuse').exists():
-        lib_prep_obj = LibraryPreparation.objects.get(sample_id = sample_obj, libPrepState__libPrepState__exact = 'Created for Reuse')
-        molecule_obj = lib_prep_obj.get_molecule_obj()
-        last_lib_prep_for_molecule = LibraryPreparation.objects.filter(sample_id = sample_obj, molecule_id = molecule_obj).exclude(libPrepState__libPrepState__exact = 'Created for Reuse').last()
-        if last_lib_prep_for_molecule :
-            last_lib_prep_code_id = last_lib_prep_for_molecule.get_lib_prep_code()
-            split_code = re.search('(.*_)(\d+)$',last_lib_prep_code_id)
-            index_val = int(split_code.group(2))
-            new_index = str(index_val +1).zfill(2)
-            lib_prep_code_id = split_code.group(1) + new_index
-            s_uniqueID = sample_obj.get_unique_sample_id()
-            #unique_s_id_split = lib_prep_obj.get_unique_id().split('-')
-            # count the number that library preparation was used on the same sample
-            lib_prep_times = str(LibraryPreparation.objects.filter(sample_id = sample_obj).count())
-            #inc_value = int(unique_s_id_split[-1]) + 1
-            #unique_s_id_split[-1] = str(inc_value)
-            uniqueID = s_uniqueID + '-' + lib_prep_times
-        else:
-            lib_prep_code_id = molecule_obj.get_molecule_code_id() + '_LIB_01'
-            split_code = lib_prep_code_id.split('_')
-            uniqueID = sample_obj.get_unique_sample_id() +'-' + split_code[-3][1:] + '-' + split_code[-1]
+    molecule_obj = get_molecule_obj_from_id(molecule_id)
+    if LibraryPreparation.objects.filter(sample_id = sample_obj, molecule_id = molecule_obj).exists():
+        lib_prep_obj = LibraryPreparation.objects.filter(sample_id = sample_obj, molecule_id = molecule_obj).last()
+        last_lib_prep_code_id = lib_prep_obj.get_lib_prep_code()
+        split_code = re.search('(.*_)(\d+)$',last_lib_prep_code_id)
+        index_val = int(split_code.group(2))
+        new_index = str(index_val +1).zfill(2)
+        lib_prep_code_id = split_code.group(1) + new_index
+        s_uniqueID = sample_obj.get_unique_sample_id()
+        # count the number that library preparation was used on the same sample
+        lib_prep_times = str(LibraryPreparation.objects.filter(sample_id = sample_obj).count())
+        uniqueID = s_uniqueID + '-' + lib_prep_times
     else:
-        molecule_obj = MoleculePreparation.objects.filter(sample = sample_obj).last()
         lib_prep_code_id = molecule_obj.get_molecule_code_id() + '_LIB_01'
-
-        #split_code = lib_prep_code_id.split('_')
-        #uniqueID = sample_obj.get_unique_sample_id() +'-' + split_code[-3][1:] + '-' + split_code[-1]
         uniqueID = sample_obj.get_unique_sample_id() +'-1'
     return lib_prep_code_id, uniqueID
 
-#############################################
-# Posiblemente haya que borrarlo/modificarlo
-'''
-def store_library_preparation_samples(sample_sheet_data, user, protocol , user_sample_sheet_obj):
 
-    Description:
-        The function will get the sample names, extracted data from sample sheet, index, .
-        Then store the libraryPreparation data for each sample and update the sample state to "library Preparation"
-    Input:
-        sample_sheet_data   # extracted data from sample sheet in dictionary format
-        user        # user object
-        protocol    # protocol name to be used for these library preparation samples
-        user_sample_sheet_obj # user_sample_sheet object for assigning to each library preparation
-    Constamt:
-        MAP_USER_SAMPLE_SHEET_TO_DATABASE_TWO_INDEX
-        MAP_USER_SAMPLE_SHEET_TO_DATABASE_ONE_INDEX
-        MAP_USER_SAMPLE_SHEET_ADDITIONAL_FIELDS_FROM_TYPE_OF_SECUENCER
-    Functions:
-        get_library_unique_id # located at this file
-        get_sample_obj_from_sample_name  # located at iSkyLIMS_core/utils/handling_samples.py
-        get_protocol_parameters   # located at iSkyLIMS_core/utils/handling_protocols.py
-    Variables:
-        stored_lib_prep     # dictionary to get data to create the library preparation object
-    Return:
-        stored_lib_prep .Including the lib_prep_code_id and lib_prep_id
-
-    stored_lib_prep = {}
-    lib_prep_id = []
-    protocol_obj = Protocols.objects.get(name__exact = protocol)
-    if 'I5_Index_ID' in  sample_sheet_data['heading'] :
-        single_paired = 'Paired End'
-        mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_TWO_INDEX
-    else:
-        single_paired = 'Single Reads'
-        mapping = MAP_USER_SAMPLE_SHEET_TO_DATABASE_ONE_INDEX
-    for lib_prep_sample_data in sample_sheet_data['sample_data'] :
-        stored_lib_prep = {}
-        stored_lib_prep['protocol_obj'] = protocol_obj
-        stored_lib_prep['single_paired'] = single_paired
-        stored_lib_prep['read_length'] = sample_sheet_data['reads'][0]
-
-        for item in mapping :
-            stored_lib_prep[item[1]] =  lib_prep_sample_data[sample_sheet_data['heading'].index(item[0])]
-        for item in MAP_USER_SAMPLE_SHEET_ADDITIONAL_FIELDS_FROM_TYPE_OF_SECUENCER :
-            try:
-                stored_lib_prep[item[1]] =  lib_prep_sample_data[sample_sheet_data['heading'].index(item[0])]
-            except:
-                stored_lib_prep[item[1]] = None
-
-        # if Single reads then set the index 5 to empty
-        if not 'I5_Index_ID' in sample_sheet_data['heading'] :
-            stored_lib_prep['i5IndexID'] = ''
-            stored_lib_prep['i5Index'] = ''
-        stored_lib_prep['protocol_id'] = protocol_obj
-        stored_lib_prep['user_sample_sheet'] = user_sample_sheet_obj
-        sample_obj = get_sample_obj_from_sample_name(stored_lib_prep['sample_name'])
-        # get the latest molecule extraction to assing it by default to the library preparation
-        molecule_obj = MoleculePreparation.objects.filter(sample = sample_obj).last()
-        stored_lib_prep['lib_prep_code_id'], stored_lib_prep['uniqueID'] = get_library_code_and_unique_id(sample_obj)
-
-        # update the library preparation when it was already created for reuse
-        if LibraryPreparation.objects.filter(sample_id = sample_obj, libPrepState__libPrepState__exact = 'Created for Reuse').exists():
-            lib_prep_obj = LibraryPreparation.objects.get(sample_id = sample_obj, libPrepState__libPrepState__exact = 'Created for Reuse')
-            new_library_preparation = lib_prep_obj.update_lib_preparation_info_in_reuse_state(stored_lib_prep)
-        else:
-            stored_lib_prep['molecule_obj'] = molecule_obj
-            new_library_preparation = LibraryPreparation.objects.create_lib_preparation(stored_lib_prep)
-
-        lib_prep_id.append(new_library_preparation.get_id())
-        #lib_prep_code_id.append(new_library_preparation.get_lib_prep_code())
-
-
-
-    #stored_lib_prep['lib_prep_id'] = ','.join(lib_prep_id)
-    #stored_lib_prep['lib_prep_code_id'] = ','.join(lib_prep_code_id)
-    return lib_prep_id
-'''
 def get_user_for_sample_sheet():
     '''
     Descripion:

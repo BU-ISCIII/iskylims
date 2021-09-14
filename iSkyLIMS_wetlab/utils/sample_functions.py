@@ -48,54 +48,53 @@ def get_codeID_for_resequencing(sample_recorded):
     sample_recorded['lib_prep_available'] = lib_prep_available
     return sample_recorded
 
-def analyze_reprocess_data(json_data, reprocess_id, reg_user):
+def analyze_reprocess_data(reprocess_data, reprocess_sample_id, reg_user):
     '''
     Description:
         The function will get the option of reprocessing sample and it updates the sample state for reprocessing.
         In case that a new library preparation was required a new object is created.
     Input:
-        json_data       # data collected from the user
-        reprocess_id    # sample id to reprocess
-        reg_user        # register user
+        reprocess_data           # data for creating the reuse
+        reprocess_sample_id      # sample id to reprocess
+        reg_user                 # register user
     Functions:
-        update_sample_reused : located at iSkyLIMS_core/utils/handling_samples.py
-        update_molecule_reused : located at iSkyLIMS_core/utils/handling_samples.
-        get_sample_obj_from_id : located at iSkyLIMS_core/utils/handling_samples.
+        update_sample_reused    # located at iSkyLIMS_core/utils/handling_samples.py
+        update_molecule_reused  # located at iSkyLIMS_core/utils/handling_samples.
+        get_sample_obj_from_id  # located at iSkyLIMS_core/utils/handling_samples.
     Return:
         True if user request were right, or Invalid options if user requests were wrong.
     '''
-    options = json_data[-3:]
-
-    if "New Extraction" in options:
-        sample_obj =  update_sample_reused(reprocess_id)
+    #options = json_data[-1]
+    if "New Extraction" in reprocess_data:
+        sample_obj =  update_sample_reused(reprocess_sample_id)
         sample_obj.set_state('Defined')
         return True
 
-    elif 'New Library Preparation' in options:
-        molecule_code_id = options[0]
+    elif 'New Library Preparation' in reprocess_data :
+        molecule_code_id = reprocess_data[0]
         if molecule_code_id == '':
             return 'Invalid options'
         else:
-            sample_obj = get_sample_obj_from_id (reprocess_id)
+            sample_obj = get_sample_obj_from_id (reprocess_sample_id)
             if 'Library preparation' != sample_obj.get_sample_state():
-                molecule_obj = update_molecule_reused(reprocess_id, molecule_code_id)
+                molecule_obj = update_molecule_reused(reprocess_sample_id, molecule_code_id)
                 if not molecule_obj:
                     return 'Invalid options'
                 #
-                sample_obj = update_sample_reused(reprocess_id)
+                sample_obj = update_sample_reused(reprocess_sample_id)
                 sample_obj.set_state('Library preparation')
                 # create the new library preparation in "Created_for_reused" state
-                new_library_preparation = LibraryPreparation.objects.create_reused_lib_preparation(reg_user, molecule_obj, sample_obj)
+                # new_library_preparation = LibraryPreparation.objects.create_reused_lib_preparation(reg_user, molecule_obj, sample_obj)
             return True
     elif 'New Pool' in options:
         molecule_code_id = options[0]
         lib_prep_code_id = options[1]
 
-        if not LibraryPreparation.objects.filter(sample_id__pk__exact = reprocess_id, libPrepCodeID__exact = lib_prep_code_id).exists():
+        if not LibraryPreparation.objects.filter(sample_id__pk__exact = reprocess_sample_id, libPrepCodeID__exact = lib_prep_code_id).exists():
             return 'Invalid options'
-        lib_prep_obj = LibraryPreparation.objects.get(sample_id__pk__exact = reprocess_id, libPrepCodeID__exact = lib_prep_code_id)
-        sample_id = update_sample_reused(reprocess_id)
-        molecule_obj = update_molecule_reused(reprocess_id, molecule_code_id)
+        lib_prep_obj = LibraryPreparation.objects.get(sample_id__pk__exact = reprocess_sample_id, libPrepCodeID__exact = lib_prep_code_id)
+        sample_id = update_sample_reused(reprocess_sample_id)
+        molecule_obj = update_molecule_reused(reprocess_sample_id, molecule_code_id)
         lib_prep_obj.set_state('Reused pool')
         reused = lib_prep_obj.set_increase_reuse()
     else:

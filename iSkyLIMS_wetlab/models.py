@@ -1199,12 +1199,12 @@ class libraryPreparationManager(models.Manager):
             uniqueID = lib_prep_data['uniqueID'], prefixProtocol = lib_prep_data['prefixProtocol'],
             sampleNameInSampleSheet = lib_prep_data['sampleNameInSampleSheet'])
         return new_lib_prep
-
+    '''
     def create_reused_lib_preparation (self, reg_user, molecule_obj, sample_id):
         lib_state = StatesForLibraryPreparation.objects.get(libPrepState =  'Created for Reuse')
         new_library_preparation = self.create(registerUser = reg_user, molecule_id = molecule_obj, sample_id = sample_id,libPrepState = lib_state)
         return new_library_preparation
-
+    '''
 class LibraryPreparation (models.Model):
     registerUser = models.ForeignKey(
             User,
