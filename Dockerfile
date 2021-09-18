@@ -25,10 +25,10 @@ WORKDIR /opt/iSkyLIMS
 
 RUN git clone https://github.com/BU-ISCIII/iSkyLIMS.git .
 
-RUN git submodule init
+# RUN git submodule init
 RUN git checkout develop
-RUN git submodule init
-RUN git submodule update --checkout
+# RUN git submodule init
+# RUN git submodule update --checkout
 RUN cd iSkyLIMS_wetlab git 
 
 

@@ -18,7 +18,7 @@ SCRIPT_VERSION=0.1
 # END_OF_HEADER
 #================================================================
 
-ISKYLIMS_VERSION=2.0.0
+ISKYLIMS_VERSION="2.0.x"
 
 DB_USER=django
 DB_PASS=django77
@@ -102,6 +102,7 @@ if [[ $linux_distribution == "Ubuntu" ]]; then
     #apt-get install git libpango1.0 libpango1.0-dev   -y
 fi
 
+echo "Installing Interop"
 #mkdir -p /opt/interop
 #cd /opt/interop
 
@@ -112,15 +113,10 @@ fi
 
 
 echo "iSkyLIMS installation"
-mkdir -p /opt/iSkyLIMS
 cd /opt/iSkyLIMS
-git clone https://github.com/BU-ISCIII/iSkyLIMS.git .
-
-git submodule init
+git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
+cd /opt/iSkyLIMS
 git checkout develop
-git submodule init
-git submodule update --checkout
-
 
 mkdir -p /opt/iSkyLIMS/documents/wetlab/tmp
 mkdir -p /opt/iSkyLIMS/documents/drylab
@@ -144,8 +140,25 @@ grep ^SECRET iSkyLIMS/settings.py > ~/.secret
 
 
 # Copying config files and script
-cp conf/docker_settings.py /opt/iSkyLIMS/iSkyLIMS/settings.py
+cp conf/stand_alone_settings.py /opt/iSkyLIMS/iSkyLIMS/settings.py
 cp conf/urls.py /opt/iSkyLIMS/iSkyLIMS/
 
 sed -i "/^SECRET/c\\$(cat ~/.secret)" iSkyLIMS/settings.py
+sed -i "s/djangouser/${DB_USER}/g" iSkyLIMS/settings.py
+sed -i "s/djangopass/${DB_PASS}/g" iSkyLIMS/settings.py
+sed -i "s/djangohost/${DB_SERVER_IP}/g" iSkyLIMS/settings.py
+sed -i "s/djangoport/${DB_PORT}/g" iSkyLIMS/settings.py
+
+echo "Creating the database structure for iSkyLIMS"
+python3 manage.py migrate
+python3 manage.py makemigrations django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab iSkyLIMS_clinic
+python3 manage.py migrate
+
+echo "Loading in database initial data"
+python3 manage.py loaddata conf/new_installation_loading_tables.json
+
+echo "Creating super user "
+python3 manage.py createsuperuser
+
+
 

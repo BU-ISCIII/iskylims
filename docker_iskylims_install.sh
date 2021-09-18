@@ -1,8 +1,5 @@
 #!/usr/bin/bash
-#iSkyLIMS version 2.0.0 installation instruction
-
-wget -L https://raw.githubusercontent.com/BU-ISCIII/iSkyLIMS/develop/Dockerfile
-wget -L https://raw.githubusercontent.com/BU-ISCIII/iSkyLIMS/develop/docker-compose.yml
+#iSkyLIMS version 2.0.0 Docker installation
 
 docker build -t iskylimsv2 .
 
