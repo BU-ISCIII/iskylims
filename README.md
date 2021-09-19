@@ -27,21 +27,24 @@ bash docker_iskylims_install.sh
 Then open your navigator and type, localhost:8000
 
 ## Install iSkyLIMS in your server running ubuntu
+ 
 ### Pre-requesites
-
-You need to be sudo priviledges to install 
-#### Database
-
-#### email
+Before starting the installation check 
+    # sudo privileges to install the additional software packets that iSkyLIMS needs.
+    # Database running MySQL/MariaDB 
+    # Local server configured for sending emails
 
 #### Configuration settings
 
+Open with your favorite editor the configuration file to set database and emails settings.
+
 ### Run installation script
 
+Clone this repository and run the installation script
 
 ```bash
-git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
-bash install.sh
+sudo git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
+sudo bash install.sh
 ```
 
 # iSkyLIMS documentation

@@ -19,7 +19,7 @@ SCRIPT_VERSION=0.1
 #================================================================
 
 ISKYLIMS_VERSION="2.0.x"
-
+source ./install_settings.txt
 DB_USER=django
 DB_PASS=django77
 DB_SERVER_IP=localhost
@@ -149,10 +149,20 @@ sed -i "s/djangopass/${DB_PASS}/g" iSkyLIMS/settings.py
 sed -i "s/djangohost/${DB_SERVER_IP}/g" iSkyLIMS/settings.py
 sed -i "s/djangoport/${DB_PORT}/g" iSkyLIMS/settings.py
 
+sed -i "s/emailhost/${EMAIL_HOST}/g" iSkyLIMS/settings.py
+sed -i "s/emailport/${EMAIL_PORT}/g" iSkyLIMS/settings.py
+sed -i "s/emailhostuser/${EMAIL_HOST_USER}/g" iSkyLIMS/settings.py
+sed -i "s/emailhostpassword/${EMAIL_HOST_PASSWORD}/g" iSkyLIMS/settings.py
+sed -i "s/emialhosttls/${EMAIL_USE_TLS}/g" iSkyLIMS/settings.py
+
+
 echo "Creating the database structure for iSkyLIMS"
 python3 manage.py migrate
 python3 manage.py makemigrations django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab iSkyLIMS_clinic
 python3 manage.py migrate
+
+echo "Change owner of files to Apache user"
+chown -R apache:apache iSkyLIMS
 
 echo "Loading in database initial data"
 python3 manage.py loaddata conf/new_installation_loading_tables.json

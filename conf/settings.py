@@ -156,12 +156,11 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # During devel
 #EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 # EMAIL settings
-EMAIL_HOST = 'localhost'
-EMAIL_PORT = '25'
-EMAIL_HOST_USER = 'bioinfo'
-EMAIL_HOST_PASSWORD = ''
-EMAIL_USE_TLS = False
-EMAIL_ISKYLIMS = "iSkyLIMS@localhost"
+EMAIL_HOST = 'emailhost'
+EMAIL_PORT = 'emailport'
+EMAIL_HOST_USER = 'emailhostuser'
+EMAIL_HOST_PASSWORD = 'emailhostpassword'
+EMAIL_USE_TLS = emialhosttls
 ALLOWED_EMAIL_DOMAINS = []
 
 LOG_CRONTAB_FILE = os.path.join(BASE_DIR, 'logs', 'crontab.log')
