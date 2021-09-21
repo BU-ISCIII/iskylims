@@ -114,7 +114,7 @@ if [[ $linux_distribution == "Ubuntu" ]]; then
     apt-get update && apt-get upgrade -y
     apt-get install -y \
         lightdm git apt-utils libcairo2 libcairo2-dev  wget gnuplot python3-pip \
-        libmysqlclient-dev apache2 apache2-dev vim libapache2-mod-wsgi-py3
+        libmysqlclient-dev apache2-dev vim libapache2-mod-wsgi-py3
     #apt-get install build-essential  -y 
     #apt-get install libghc-zlib-dev libbz2-dev libssl1.0-dev -y
     #apt-get install git libpango1.0 libpango1.0-dev   -y

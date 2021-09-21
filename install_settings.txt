@@ -7,8 +7,8 @@ DB_PORT=3306
 
 ### Settings required for sending emails
 
-EMAIL_HOST = 'localhost'
-EMAIL_PORT = '25'
-EMAIL_HOST_USER = 'bioinfo'
-EMAIL_HOST_PASSWORD = ''
-EMAIL_USE_TLS = 'False'
+EMAIL_HOST='localhost'
+EMAIL_PORT='25'
+EMAIL_HOST_USER='bioinfo'
+EMAIL_HOST_PASSWORD=''
+EMAIL_USE_TLS='False'
