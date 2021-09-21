@@ -19,11 +19,11 @@ SCRIPT_VERSION=0.1
 #================================================================
 
 ISKYLIMS_VERSION="2.0.x"
-source ./install_settings.txt
-DB_USER=django
-DB_PASS=django77
-DB_SERVER_IP=localhost
-DB_PORT=3306
+. ./install_settings.txt
+# DB_USER=django
+# DB_PASS=django77
+# DB_SERVER_IP=localhost
+# DB_PORT=3306
 
 db_check(){
     mysqladmin -h $DB_SERVER_IP -u$DB_USER -p$DB_PASS -P$DB_PORT processlist >null ###user should have mysql permission on remote server.
@@ -38,6 +38,22 @@ db_check(){
         echo -e "${RED}ERROR : iSkyLIMS database is not defined yet ${NC}"
         echo -e "${RED}ERROR : Create iSkyLIMS database on your mysql server and run again the installation script ${NC}"
         exit 1    
+    fi
+}
+
+apache_check(){
+    if ! pidof apache2 > /dev/null ; then
+        # web server down, restart the server
+        echo "Apache Server is down... Trying to restart Apache"
+        systemctl restart apache2.service
+        sleep 10
+        if pidof apache2 > /dev/null ; then
+            echo "Apache Server is up"
+        else
+            echo -e "${RED}ERROR : Unable to start Apache ${NC}"
+            echo -e "${RED}ERROR : Solve the issue with Apache server and run again the installation script ${NC}"
+            exit 1
+        fi
     fi
 }
 
@@ -81,6 +97,8 @@ fi
 echo "Checking main requirements"
 db_check
 echo "Successful check for database"
+apache_check
+echo "Successful check for apache"
 linux_distribution=$(lsb_release -i | cut -f 2-)
 #================================================================
 
@@ -96,7 +114,7 @@ if [[ $linux_distribution == "Ubuntu" ]]; then
     apt-get update && apt-get upgrade -y
     apt-get install -y \
         lightdm git apt-utils libcairo2 libcairo2-dev  wget gnuplot python3-pip \
-        libmysqlclient-dev apache2 apache2-dev vim
+        libmysqlclient-dev apache2 apache2-dev vim libapache2-mod-wsgi-py3
     #apt-get install build-essential  -y 
     #apt-get install libghc-zlib-dev libbz2-dev libssl1.0-dev -y
     #apt-get install git libpango1.0 libpango1.0-dev   -y
@@ -114,9 +132,9 @@ echo "Installing Interop"
 
 echo "iSkyLIMS installation"
 cd /opt/iSkyLIMS
-git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
-cd /opt/iSkyLIMS
-git checkout develop
+# git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
+# cd /opt/iSkyLIMS
+# git checkout develop
 
 mkdir -p /opt/iSkyLIMS/documents/wetlab/tmp
 mkdir -p /opt/iSkyLIMS/documents/drylab
@@ -153,7 +171,8 @@ sed -i "s/emailhost/${EMAIL_HOST}/g" iSkyLIMS/settings.py
 sed -i "s/emailport/${EMAIL_PORT}/g" iSkyLIMS/settings.py
 sed -i "s/emailhostuser/${EMAIL_HOST_USER}/g" iSkyLIMS/settings.py
 sed -i "s/emailhostpassword/${EMAIL_HOST_PASSWORD}/g" iSkyLIMS/settings.py
-sed -i "s/emialhosttls/${EMAIL_USE_TLS}/g" iSkyLIMS/settings.py
+sed -i "s/emailhosttls/${EMAIL_USE_TLS}/g" iSkyLIMS/settings.py
+
 
 
 echo "Creating the database structure for iSkyLIMS"
@@ -161,14 +180,39 @@ python3 manage.py migrate
 python3 manage.py makemigrations django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab iSkyLIMS_clinic
 python3 manage.py migrate
 
+python3 manage.py collectstatic
+
 echo "Change owner of files to Apache user"
 chown -R apache:apache iSkyLIMS
 
 echo "Loading in database initial data"
 python3 manage.py loaddata conf/new_installation_loading_tables.json
 
+echo "Running crontab"
+python3 manage.py crontab run
+chown /var/spool/cron/crontabs/root apache:apache
+
 echo "Creating super user "
 python3 manage.py createsuperuser
+
+echo "Updating Apache configuration"
+cp conf/apache.conf /etc/apache2/sites-available/000-default.conf
+echo  'LoadModule wsgi_module "/opt/iSkyLIMS/virtualenv/lib/python3.8/site-packages/mod_wsgi/server/mod_wsgi-py38.cpython-38-x86_64-linux-gnu.so
+"' >/etc/apache2/mods-available/iskylims.load
+cp conf/iskylims.conf /etc/apache2/mods-available/iskylims.conf
+
+# Create needed symbolic links to enable the configurations:
+
+ln -s /etc/apache2/mods-available/iskylims.load /etc/apache2/mods-enabled/
+ln -s /etc/apache2/mods-available/iskylims.conf /etc/apache2/mods-enabled/
+
+printf "\n\n%s"
+printf "${BLUE}------------------${NC}\n"
+printf "%s"
+printf "${BLUE}Successfuly iSkyLIMS Installation version: ${ISKYLIMS_VERSION}${NC}\n"
+printf "%s"
+printf "${BLUE}------------------${NC}\n\n"
+
 
 
 

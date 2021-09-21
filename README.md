@@ -1,5 +1,6 @@
 # iSkyLIMS description
 
+
 The introduction of massive sequencing (MS) in genomics facilities has meant an exponential growth in data generation, requiring a precise tracking system, from library preparation to fastq file generation, analysis and delivery to the researcher. Software designed to handle those tasks are called Laboratory Information Management Systems (LIMS), and its software has to be adapted to their own genomics laboratory particular needs. iSkyLIMS is born with the aim of helping with the wet laboratory tasks, and implementing a workflow that guides genomics labs on their activities from library preparation to data production, reducing potential errors associated to high throughput technology, and facilitating the quality control of the sequencing. Also, iSkyLIMS connects the wet lab with dry lab facilitating data analysis by bioinformaticians.
 
 <img src="https://github.com/BU-ISCIII/iSkyLIMS/blob/master/img/iSkyLIMS_scheme.png" width="900">
@@ -29,10 +30,11 @@ Then open your navigator and type, localhost:8000
 ## Install iSkyLIMS in your server running ubuntu
  
 ### Pre-requesites
-Before starting the installation check 
-    # sudo privileges to install the additional software packets that iSkyLIMS needs.
-    # Database running MySQL/MariaDB 
-    # Local server configured for sending emails
+Before starting the installation check :
+    - You have sudo privileges to install the additional software packets that iSkyLIMS needs.
+    - Database (MySQL/MariaDB) is running  
+    - Local server configured for sending emails
+    - Apache server is running on local server
 
 #### Configuration settings
 
