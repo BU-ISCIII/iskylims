@@ -158,7 +158,7 @@ grep ^SECRET iSkyLIMS/settings.py > ~/.secret
 
 
 # Copying config files and script
-cp conf/stand_alone_settings.py /opt/iSkyLIMS/iSkyLIMS/settings.py
+cp conf/settings.py /opt/iSkyLIMS/iSkyLIMS/settings.py
 cp conf/urls.py /opt/iSkyLIMS/iSkyLIMS/
 
 sed -i "/^SECRET/c\\$(cat ~/.secret)" iSkyLIMS/settings.py
