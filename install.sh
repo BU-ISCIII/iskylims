@@ -8,10 +8,11 @@
 #CENTRE:BU-ISCIII
 #AUTHOR: Luis Chapado
 SCRIPT_VERSION=0.1
-#CREATED: 01 September 2021
+#CREATED: 21 September 2021
 #
 #
-#DESCRIPTION: 
+#DESCRIPTION: This script install on your local server the latest stable
+#   version of iSkyLIMS application 
 #
 #
 #================================================================
@@ -20,10 +21,6 @@ SCRIPT_VERSION=0.1
 
 ISKYLIMS_VERSION="2.0.x"
 . ./install_settings.txt
-# DB_USER=django
-# DB_PASS=django77
-# DB_SERVER_IP=localhost
-# DB_PORT=3306
 
 db_check(){
     mysqladmin -h $DB_SERVER_IP -u$DB_USER -p$DB_PASS -P$DB_PORT processlist >null ###user should have mysql permission on remote server.
@@ -172,39 +169,41 @@ sed -i "s/emailport/${EMAIL_PORT}/g" iSkyLIMS/settings.py
 sed -i "s/emailhostuser/${EMAIL_HOST_USER}/g" iSkyLIMS/settings.py
 sed -i "s/emailhostpassword/${EMAIL_HOST_PASSWORD}/g" iSkyLIMS/settings.py
 sed -i "s/emailhosttls/${EMAIL_USE_TLS}/g" iSkyLIMS/settings.py
-
+sed -i "s/localserverip/${LOCAL_SERVER_IP}/g" iSkyLIMS/settings.py
 
 
 echo "Creating the database structure for iSkyLIMS"
 python3 manage.py migrate
-python3 manage.py makemigrations django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab iSkyLIMS_clinic
-python3 manage.py migrate
+# python3 manage.py makemigrations django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab iSkyLIMS_clinic
+# python3 manage.py migrate
 
 python3 manage.py collectstatic
 
 echo "Change owner of files to Apache user"
-chown -R apache:apache iSkyLIMS
+chown -R www-data:www-data /opt/iSkyLIMS
 
 echo "Loading in database initial data"
 python3 manage.py loaddata conf/new_installation_loading_tables.json
 
 echo "Running crontab"
-python3 manage.py crontab run
-chown /var/spool/cron/crontabs/root apache:apache
+python3 manage.py crontab add
+mv /var/spool/cron/crontabs/root /var/spool/cron/crontabs/www-data
+chown www-data /var/spool/cron/crontabs/www-data 
 
-echo "Creating super user "
-python3 manage.py createsuperuser
+
 
 echo "Updating Apache configuration"
-cp conf/apache.conf /etc/apache2/sites-available/000-default.conf
-echo  'LoadModule wsgi_module "/opt/iSkyLIMS/virtualenv/lib/python3.8/site-packages/mod_wsgi/server/mod_wsgi-py38.cpython-38-x86_64-linux-gnu.so
-"' >/etc/apache2/mods-available/iskylims.load
+cp conf/apache2.conf /etc/apache2/sites-available/000-default.conf
+echo  'LoadModule wsgi_module "/opt/iSkyLIMS/virtualenv/lib/python3.8/site-packages/mod_wsgi/server/mod_wsgi-py38.cpython-38-x86_64-linux-gnu.so"' >/etc/apache2/mods-available/iskylims.load
 cp conf/iskylims.conf /etc/apache2/mods-available/iskylims.conf
 
 # Create needed symbolic links to enable the configurations:
 
 ln -s /etc/apache2/mods-available/iskylims.load /etc/apache2/mods-enabled/
 ln -s /etc/apache2/mods-available/iskylims.conf /etc/apache2/mods-enabled/
+
+echo "Creating super user "
+python3 manage.py createsuperuser
 
 printf "\n\n%s"
 printf "${BLUE}------------------${NC}\n"

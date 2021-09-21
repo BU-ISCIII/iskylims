@@ -12,3 +12,6 @@ EMAIL_PORT='25'
 EMAIL_HOST_USER='bioinfo'
 EMAIL_HOST_PASSWORD=''
 EMAIL_USE_TLS='False'
+
+### Settings required for accessing iSkyLIMS
+LOCAL_SERVER_IP='192.168.1.15'

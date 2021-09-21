@@ -25,7 +25,7 @@ SECRET_KEY = PLACEHOLDER
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost','127.0.0.1']
+ALLOWED_HOSTS = ['localhost','127.0.0.1', 'localserverip']
 
 # Application definition
 
@@ -160,7 +160,7 @@ EMAIL_HOST = 'emailhost'
 EMAIL_PORT = 'emailport'
 EMAIL_HOST_USER = 'emailhostuser'
 EMAIL_HOST_PASSWORD = 'emailhostpassword'
-EMAIL_USE_TLS = emialhosttls
+EMAIL_USE_TLS = emailhosttls
 ALLOWED_EMAIL_DOMAINS = []
 
 LOG_CRONTAB_FILE = os.path.join(BASE_DIR, 'logs', 'crontab.log')
