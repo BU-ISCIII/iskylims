@@ -31,24 +31,40 @@ Then open your navigator and type, localhost:8000
  
 ### Pre-requesites
 Before starting the installation check :
-    - You have sudo privileges to install the additional software packets that iSkyLIMS needs.
+    - You have **sudo privileges** to install the additional software packets that iSkyLIMS needs.
     - Database (MySQL/MariaDB) is running  
     - Local server configured for sending emails
     - Apache server is running on local server
 
+#### Clone github repository
+```bash
+
+cd /opt
+sudo git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
+``` 
 #### Configuration settings
 
-Open with your favorite editor the configuration file to set database and emails settings.
+Open with your favorite editor the configuration file to set your own values for
+database ,email settings and the local IP of the server where iSkyLIMS will run.
+```bash
+
+sudo nano install_settings.txt
+```
 
 ### Run installation script
 
-Clone this repository and run the installation script
+iSkyLIMS will be installed on the "/opt" directory. Before start the installation be sure you have sudo priveleges.
+
+Execute the following commands in a linux terminal.
 
 ```bash
-sudo git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
+
 sudo bash install.sh
 ```
 
+After installation is completed open you navigator typing "localhost" or the "server local IP".
+
 # iSkyLIMS documentation
+
 iSkyLIMS documentation is available at https://iskylims.readthedocs.io/en/latest
 
