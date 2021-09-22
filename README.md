@@ -24,17 +24,27 @@ Clone the iSkyLIMS github repository and run the docker script to create the doc
 git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
 bash docker_iskylims_install.sh
 ```
+The script creates a Docker compose container with 2 services:
 
-Then open your navigator and type, localhost:8000
+* web1. Which contains the iSkyLIMS web application
+* db1. With the mySQL database
+
+After Docker is created and services are up, database structure and initial data are loaded into database. When this step is completed you will
+prompt to define the super user which will be the one to connect to "django admin pages". You can type any name, but we recommend that you use "admin" ,
+because admin user is requested later on when defining the initial settings.
+
+Follow the prompt message to create the super user account.
+
+When script ends open your navigator typing **localhost:8000** to access to iSkyLIMS
 
 ## Install iSkyLIMS in your server running ubuntu
  
 ### Pre-requesites
 Before starting the installation check :
-    - You have **sudo privileges** to install the additional software packets that iSkyLIMS needs.
-    - Database (MySQL/MariaDB) is running  
-    - Local server configured for sending emails
-    - Apache server is running on local server
+-   You have **sudo privileges** to install the additional software packets that iSkyLIMS needs.
+-   Database (MySQL/MariaDB) is running  
+-   Local server configured for sending emails
+-   Apache server is running on local server
 
 #### Clone github repository
 ```bash
