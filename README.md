@@ -54,7 +54,7 @@ sudo git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
 ``` 
 #### Configuration settings
 
-Open with your favorite editor the configuration file to set your own values for
+Open with your favourite editor the configuration file to set your own values for
 database ,email settings and the local IP of the server where iSkyLIMS will run.
 ```bash
 

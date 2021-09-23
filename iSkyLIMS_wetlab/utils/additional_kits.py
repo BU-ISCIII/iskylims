@@ -361,7 +361,7 @@ def set_additional_kits (form_data, user):
     kit_names = []
     protocol_id = form_data['protocol_id']
     kit_heading_names = ['kitName','kitOrder', 'kitUsed', 'commercial_kit', 'description']
-    json_data = json.loads(form_data['add_kit_data'])
+    json_data = json.loads(form_data['kits_data'])
     for row_index in range(len(json_data)):
         if json_data[row_index][0] == '':
             continue
