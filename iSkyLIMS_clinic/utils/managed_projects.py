@@ -1,4 +1,4 @@
-from iSkyLIMS_core.models import PatientProjects
+from iSkyLIMS_core.models import PatientProjects, PatientProjectFieldValue
 from iSkyLIMS_core.utils.handling_patient_core import *
 from iSkyLIMS_core.utils.handling_patient_projects import *
 from iSkyLIMS_clinic.clinic_config import *
@@ -24,7 +24,7 @@ def add_project_fields (form_data):
     for item in range(len(field_ids)):
         field_value['projectField_id'] = PatientProjectsFields.objects.get(pk__exact = field_ids[item])
         field_value['projectFieldValue'] = form_data[fields[item]]
-        new_field_value = ProjectFieldValue.objects.create_project_field_value(field_value)
+        new_field_value = PatientProjectFieldValue.objects.create_project_field_value(field_value)
     p_fields['project_name'] = get_project_obj_from_id(project_id).get_project_name()
     return p_fields
 
