@@ -43,6 +43,8 @@ def create_new_patient(form_data, app_name):
     if PatientCore.objects.filter(patientCode__iexact = form_data['patientCode']).exists():
         return 'ERROR'
     p_main_data = {}
+    p_main_data['p_name'] = ConfigSetting.objects.filter(configurationName__exact = 'PATIENT_NAME').last().get_configuration_value()
+    p_main_data['p_surname'] = ConfigSetting.objects.filter(configurationName__exact = 'PATIENT_SURNAME').last().get_configuration_value()
     for item in FORM_MAIN_DATA_PATIENT_DEFINITION:
         p_main_data[item] = form_data[item]
     new_patient_core = PatientCore.objects.create_patient(p_main_data)
@@ -120,7 +122,7 @@ def display_one_patient_info (p_id, app_name):
             sample_obj = clinic_sample.get_core_sample_obj()
             patient_info['samples_data'].append(sample_obj.get_info_for_patient())
 
-    
+
     return patient_info
 
 def display_patient_list(p_list):
