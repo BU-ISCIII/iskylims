@@ -48,7 +48,7 @@ class SamplesAdmin(admin.ModelAdmin):
     list_display = ('sampleCodeID', 'sampleName', 'sampleState', 'labRequest', 'sampleType', 'sampleUser', 'species','sampleProject',
                     'sampleEntryDate', 'uniqueSampleID',  'numberOfReused','sequencingDate' )
     list_filter = ('generated_at',)
-    search_fields = ('sampleName__startswith',)
+    search_fields = ('sampleName__icontains',)
 
 class SampleTypeAdmin(admin.ModelAdmin):
     list_display = ('sampleType','apps_name' ,'optional_fields')
