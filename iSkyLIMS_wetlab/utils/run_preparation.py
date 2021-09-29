@@ -925,6 +925,43 @@ def get_run_obj_from_id(run_id):
     run_obj = RunProcess.objects.get(pk__exact = run_id)
     return run_obj
 
+
+def get_run_user_lot_kit_used_in_sample(sample_id):
+    '''
+    Description:
+        The function return the runprocess object for the run_id
+    Input:
+        sample_id   # sample id
+    Constamt:
+        HEADING_FOR_DISPLAY_ADDITIONAL_KIT_LIBRARY_PREPARATION
+    Return:
+        kit_data
+    '''
+    kit_data = {}
+    kit_data['run_kits_from_sample'] = {}
+    if LibraryPreparation.objects.filter(sample_id__pk__exact = sample_id).exists():
+        kit_data['heading_run_kits'] = HEADING_FOR_DISPLAY_KIT_IN_RUN_PREPARATION
+        library_preparation_items = LibraryPreparation.objects.filter(sample_id__pk__exact = sample_id).order_by('protocol_id')
+        for lib_prep in library_preparation_items:
+            pool_objs = lib_prep.pools.all()
+
+            for pool_obj in pool_objs:
+                run_obj = pool_obj.get_run_obj()
+                run_name = run_obj.get_run_name()
+                kit_data['run_kits_from_sample'][run_name] = []
+                run_kit_objs = run_obj.reagent_kit.all()
+                for run_kit_obj in run_kit_objs:
+
+                    data = [lib_prep.get_lib_prep_code()]
+                    data.append(run_kit_obj.get_lot_number())
+                    data.append(run_kit_obj.get_commercial_kit())
+                    data.append(run_kit_obj.get_expiration_date())
+                    data.append(run_obj.get_run_generated_date())
+
+                    kit_data['run_kits_from_sample'][run_name].append(data)
+
+    return  kit_data
+
 def display_available_pools():
     '''
     Description:

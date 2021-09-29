@@ -4,7 +4,6 @@ from .forms import *
 from django.db import transaction
 from django.contrib.auth.models import User , Group
 from django.conf import settings
-import pdb
 
 def user_edit(request):
     if request.method == "POST":
@@ -19,7 +18,8 @@ def user_edit(request):
             if len(ALLOWED_EMAIL_DOMAINS) > 0:
                 if not domain in settings.ALLOWED_EMAIL_DOMAINS :
                     error_description = str( 'Invalid email address . Your email domain ' + domain + ' is not allowed')
-                    return render(request,'django_utils/error_page.html',{'content':[ error_description ,"Only isciii.es or externos.isciii.es  are allowed"]})
+                    allowed_domains = ' or '.join(settings.ALLOWED_EMAIL_DOMAINS) 
+                    return render(request,'django_utils/error_page.html',{'content':[ error_description ,"Only " , allowed_domains, " are allowed"]})
 
             user = form1.save()
             profile = form2.save(commit=False)
@@ -110,7 +110,8 @@ def user_creation(request):
             if len(settings.ALLOWED_EMAIL_DOMAINS) > 0 :
                 if not domain in settings.ALLOWED_EMAIL_DOMAINS :
                     error_description = str( 'Invalid email address . Your email domain ' + domain + ' is not allowed')
-                    return render(request,'django_utils/error_page.html',{'content':[ error_description ,"Only isciii.es or externos.isciii.es  are allowed"]})
+                    allowed_domains = ' or '.join(settings.ALLOWED_EMAIL_DOMAINS) 
+                    return render(request,'django_utils/error_page.html',{'content':[ error_description ,"Only  ", allowed_domains, "are allowed"]})
 
             form1.save()
             profile = form2.save(commit=False)

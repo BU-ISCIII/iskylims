@@ -63,7 +63,7 @@
                     <button class="tablinks" onclick="summaryBin(event, 'library')">Library Preparation</button>
                 {% endif %}
                 {% if sample_information.pool_heading %}
-                    <button class="tablinks" onclick="summaryBin(event, 'runData')">Run Data</button>
+                    <button class="tablinks" onclick="summaryBin(event, 'runData')">Run Preparation Data</button>
                 {% endif %}
                 {% if sample_information.heading_add_kits  or sample_information.molecule_heading_lot_kits %}
                     <button class="tablinks" onclick="summaryBin(event, 'userLotKit')">Kits Used </button>
@@ -265,7 +265,6 @@
                                             <tbody>
                                                 {% for lib_prep_code_id,  pool_name, pool_code, run_name, lib_prep_id in sample_information.pool_information %}
                                                     <tr>
-
                                                         <td>{{ lib_prep_code_id }} </td>
                                                         <td>{{ pool_name }} </td>
                                                         <td>{{ pool_code }} </td>
@@ -281,10 +280,8 @@
                                                     </tr>
 
                                                 {%endfor%}
-
                                             </tbody>
                                         </table>
-
                                     </div> <!--  end of panel body -->
                                 </div> <!--  end of panel  -->
                             </div> <!--  end of col-sm-11 -->
@@ -328,7 +325,7 @@
                                 </div> <!--  end of col-sm-11 -->
                             </div> <!--end of row     -->
                         {% endif %}
-                        {% if  sample_information.heading_add_kits %}
+                        {% if  sample_information.protocols_add_kits %}
                             <div class="row row-space-2 margin-b-4">
                                 <div class="col-sm-11">
                                     <div class="panel panel-default">
@@ -353,6 +350,45 @@
                                                                 <td>{{commercial}} </td>
                                                                 <td>{{lot}}</td>
                                                                 <td>{{date}} </td>
+                                                            </tr>
+
+                                                        {%endfor%}
+
+                                                    </tbody>
+                                                </table>
+                                                <br><br>
+                                            {% endfor %}
+
+                                        </div> <!--  end of panel body -->
+                                    </div> <!--  end of panel  -->
+                                </div> <!--  end of col-sm-11 -->
+                            </div> <!--  end of row -->
+                        {% endif %}
+                        {% if  sample_information.heading_run_kits %}
+                            <div class="row row-space-2 margin-b-4">
+                                <div class="col-sm-11">
+                                    <div class="panel panel-default">
+                                        <h3>Information for User Lot kits used for the Run preparation {{ sample_information.sample_definition.0 }} </h3>
+                                        <div class="panel-heading"><h4>User Lot Kit Information</h4></div>
+                                        <div class="panel-body">
+                                            {% for key, values in sample_information.run_kits_from_sample.items %}
+                                                <h5>Kits used for protocol {{key}}</h5>
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                      <tr>
+                                                      {% for name in sample_information.heading_run_kits %}
+                                                        <th>{{ name }} </th>
+                                                      {%endfor%}
+                                                      </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for lib_id, lot, commercial, exp_date ,  gen_date in values %}
+                                                            <tr>
+                                                                <td>{{lib_id}} </td>
+                                                                <td>{{lot}} </td>
+                                                                <td>{{commercial}} </td>
+                                                                <td>{{exp_date}}</td>
+                                                                <td>{{gen_date}} </td>
                                                             </tr>
 
                                                         {%endfor%}

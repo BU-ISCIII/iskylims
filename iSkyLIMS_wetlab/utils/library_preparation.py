@@ -405,7 +405,10 @@ def validate_sample_sheet_data (input_data ):
         if not LibraryPreparation.objects.filter(sampleNameInSampleSheet__exact = sample, libPrepState__libPrepState__exact = 'Updated additional kits').exists():
             invalid_state_samples.append(sample)
     if len(not_defined_samples) > 0:
-        error_not_defined = ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES.copy()
+        if get_configuration_value('SAMPLE_NAMES_IN_SAMPLE_SHEET_CONTAIN_PROTOCOL_PREFIX') == 'TRUE':
+            error_not_defined =  ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES_WITH_PROTOCOL.copy()
+        else:
+            error_not_defined = ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES.copy()
         error_not_defined.insert(1,' , '.join(not_defined_samples))
         error['ERROR'] = error_not_defined
     if len(invalid_state_samples) > 0:

@@ -97,7 +97,7 @@ class RunProcess(models.Model):
         if self.run_date is None :
             rundate = 'Run NOT started'
         else :
-            rundate=self.run_date.strftime("%B %d, %Y")
+            rundate = self.run_date.strftime("%B %d, %Y")
         return rundate
 
     def get_run_year(self):
@@ -105,6 +105,9 @@ class RunProcess(models.Model):
 
     def get_run_generated_date_no_format(self):
         return self.generatedat
+
+    def get_run_generated_date(self):
+        return self.generatedat.strftime("%B %d, %Y")
 
     def get_error_text (self):
         return '%s' %(self.runError)
@@ -1154,7 +1157,12 @@ class LibraryPool (models.Model):
             return 'Not defined yet'
 
     def get_run_id(self):
-        return '%s' %(self.runProcess_id.get_run_id())
+        if self.runProcess_id != None :
+            return '%s' %(self.runProcess_id.get_run_id())
+        return None
+
+    def get_run_obj(self):
+        return self.runProcess_id
 
 
     def set_pool_state(self, state):
@@ -1299,7 +1307,7 @@ class LibraryPreparation (models.Model):
     def get_info_for_run_paired_end(self):
         lib_info = []
         lib_info.append(self.uniqueID)
-        lib_info.append(self.sample_id.get_sample_name())
+        lib_info.append(self.sampleNameInSampleSheet)
         lib_info.append(self.samplePlate)
         lib_info.append(self.sampleWell)
         #lib_info.append(self.indexPlateWell)

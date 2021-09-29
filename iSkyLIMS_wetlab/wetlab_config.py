@@ -258,6 +258,9 @@ HEADING_FOR_DISPLAY_POOL_INFORMATION_IN_SAMPLE_INFO = ['Library Code', 'Pool Nam
 ### Heading for displying additional kits used in library prepation
 HEADING_FOR_DISPLAY_ADDITIONAL_KIT_LIBRARY_PREPARATION = ['Library Preparation Code ID', 'Additional Lot kit name', 'Commercial kit name', 'Lot number', 'Recorded Date']
 
+### Heading for displying  kits used in run preparation
+HEADING_FOR_DISPLAY_KIT_IN_RUN_PREPARATION = ['Library Preparation Code ID', 'Lot NUMBER', 'Commercial kit name', 'Lot exp. date', 'Run recorded Date']
+
 ### Heading for creating the pool for selected samples
 HEADING_FOR_CREATING_RUN = ['Library CodeID', 'Sample Name', 'Pool Name', 'Sample Well','I7 Index', 'I7 Sequence', 'I5 Index', 'I5 Sequence', 'BaseSpace Library','Project Name', 'User Name']
 
@@ -294,6 +297,7 @@ ERROR_USER_NOT_WETLAB_MANAGER =['You do not have enough privileges to see this p
 ERROR_INVALID_FILE_FORMAT = ['Invalid file format for the selected file', 'Select the valid file and submit it again']
 ERROR_UNABLE_TO_DELETE_USER_FILE = 'Unable to delete user file form iSkyLIMS'
 ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES = ['Sample sheet cannot be uploaded because there are samples', 'which are not defined yet.']
+ERROR_SAMPLE_SHEET_CONTAINS_NOT_DEFINED_SAMPLES_WITH_PROTOCOL = ['Sample sheet cannot be uploaded because there are samples', 'which are not defined yet.', 'Check that samples contain as prefix the protocol name ']
 ERROR_SAMPLES_INVALID_STATE_FOR_LIBRARY_PREPARATION = ['Sample sheet cannot be uploaded because there are samples', ' are in a state from which cannot accept index information data.']
 ERROR_SAMPLES_INVALID_DUPLICATED_INDEXES = ['Sample sheet cannot be uploaded because there are samples', 'which have duplicated index']
 
