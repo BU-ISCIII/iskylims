@@ -124,6 +124,9 @@ def create_library_preparation_instance(samples_data, user):
         protocols.
     Input:
         samples_data :  Contains  moleculeID, sampleID, protocolID for each sample
+    Constants:
+        SAMPLE_NAMES_IN_SAMPLE_SHEET_CONTAIN_PROTOCOL_PREFIX
+        PROTOCOL_SEPARATION_IN_SAMPLE_SHEET
     Functions:
         get_library_code_and_unique_id  # located at this file
     Return:
@@ -139,7 +142,8 @@ def create_library_preparation_instance(samples_data, user):
         lib_prep_data['protocol_obj'] = Protocols.objects.filter(type__protocol_type__exact ='Library Preparation', name__exact = values[2]).last()
         lib_prep_data['prefixProtocol'] = values[2]
         if prot_in_samples == 'TRUE':
-            lib_prep_data['sampleNameInSampleSheet'] = str(values[2]+ '_' + key )
+            protocol_separation = get_configuration_value('PROTOCOL_SEPARATION_IN_SAMPLE_SHEET')
+            lib_prep_data['sampleNameInSampleSheet'] = str(values[2]+ protocol_separation + key )
         else:
             lib_prep_data['sampleNameInSampleSheet'] = key
         lib_prep_data['registerUser'] = user
