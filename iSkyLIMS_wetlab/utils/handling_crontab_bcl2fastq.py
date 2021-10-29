@@ -341,19 +341,35 @@ def parsing_demux_and_conversion_files(demux_files, number_of_lanes, experiment_
                         raw_yield_value +=int(c.text)
                 except:
                     print('sample_all_index= ', sample_all_index, 'l_index = ', l_index, 't_index', t_index)
+
                 # get the yield Q30 value for RAW  and for read 1 and 2
-                for c in p_temp[sample_all_index][0][l_index][t_index][0].iter('YieldQ30'):
-                    raw_yield_q30_value +=int(c.text)
-                for c in p_temp[sample_all_index][0][l_index][t_index][0].iter('QualityScoreSum'):
-                    raw_quality_value +=int(c.text)
+                try:
+                    for c in p_temp[sample_all_index][0][l_index][t_index][0].iter('YieldQ30'):
+                        raw_yield_q30_value +=int(c.text)
+                except:
+                    print('sample_all_index= ', sample_all_index, 'l_index = ', l_index, 't_index', t_index)
+                try:
+                    for c in p_temp[sample_all_index][0][l_index][t_index][0].iter('QualityScoreSum'):
+                        raw_quality_value +=int(c.text)
+                except:
+                    print('sample_all_index= ', sample_all_index, 'l_index = ', l_index, 't_index', t_index)
                 # get the yield value for PF and for read 1 and 2
-                for c in p_temp[sample_all_index][0][l_index][t_index][1].iter('Yield'):
-                    pf_yield_value +=int(c.text)
+                try:
+                    for c in p_temp[sample_all_index][0][l_index][t_index][1].iter('Yield'):
+                        pf_yield_value +=int(c.text)
+                except:
+                    print('sample_all_index= ', sample_all_index, 'l_index = ', l_index, 't_index', t_index)
                 # get the yield Q30 value for PF and for read 1 and 2
-                for c in p_temp[sample_all_index][0][l_index][t_index][1].iter('YieldQ30'):
-                    pf_yield_q30_value +=int(c.text)
-                for c in p_temp[sample_all_index][0][l_index][t_index][1].iter('QualityScoreSum'):
-                    pf_quality_value +=int(c.text)
+                try:
+                    for c in p_temp[sample_all_index][0][l_index][t_index][1].iter('YieldQ30'):
+                        pf_yield_q30_value +=int(c.text)
+                except:
+                    print('sample_all_index= ', sample_all_index, 'l_index = ', l_index, 't_index', t_index)
+                try:
+                    for c in p_temp[sample_all_index][0][l_index][t_index][1].iter('QualityScoreSum'):
+                        pf_quality_value +=int(c.text)
+                except:
+                    print('sample_all_index= ', sample_all_index, 'l_index = ', l_index, 't_index', t_index)
 
             list_raw_yield.append(str(raw_yield_value))
             list_raw_yield_q30.append(str(raw_yield_q30_value))
