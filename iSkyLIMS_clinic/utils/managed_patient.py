@@ -72,7 +72,9 @@ def display_one_patient_info (p_id, app_name):
         The function will return the patinent information.
     Input:
         p_id  # id of the patienteCore object
-
+    Constants:
+        HEADING_FOR_DISPLAY_PATIENT_BASIC_INFORMATION
+        HEADING_FOR_DISPLAY_PATIENT_ADDITIONAL_INFORMATION
     Return:
         patient_info.
     '''
@@ -80,6 +82,9 @@ def display_one_patient_info (p_id, app_name):
     if not PatientCore.objects.filter(pk__exact = p_id).exists():
         return 'ERROR'
     patient_info = {}
+    fields_name_in_basic_info = HEADING_FOR_DISPLAY_PATIENT_BASIC_INFORMATION.copy()
+    fields_name_in_basic_info[0] = ConfigSetting.objects.filter(configurationName__exact = 'PATIENT_NAME').last().get_configuration_value()
+    fields_name_in_basic_info[1] =ConfigSetting.objects.filter(configurationName__exact = 'PATIENT_SURNAME').last().get_configuration_value()
 
     patient_core_obj = get_patient_core_obj_from_id(p_id)
 
@@ -90,7 +95,7 @@ def display_one_patient_info (p_id, app_name):
     p_main_info.append(patient_core_obj.get_patient_code())
     p_main_info.append(patient_core_obj.get_patient_sex())
 
-    patient_info['patient_basic_info'] = list(zip(HEADING_FOR_DISPLAY_PATIENT_BASIC_INFORMATION, p_main_info))
+    patient_info['patient_basic_info'] = list(zip(fields_name_in_basic_info, p_main_info))
     patient_info['patient_id'] = p_id
     if PatientData.objects.filter(patienCore__exact = patient_core_obj).exists():
         p_data_obj = PatientData.objects.get(patienCore__exact = patient_core_obj)
