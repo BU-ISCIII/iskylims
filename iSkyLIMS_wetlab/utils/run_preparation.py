@@ -183,17 +183,17 @@ def collect_data_and_update_library_preparation_samples_for_run (data_form, user
         record_data['platform'] = 'MiSeq'
         if record_data['single_read'] == 'TRUE':
             if record_data['version'] == '4':
-                heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ_VERSION_4
+                heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ_VERSION_4.copy()
                 mapping_fields = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ_VERSION_4
             else:
-                heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ_VERSION_5
+                heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_SINGLE_READ_VERSION_5.copy()
                 mapping_fields = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_SINGLE_READ_VERSION_5
         else:
             if record_data['version'] == '4':
-                heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END_VERSION_4
+                heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END_VERSION_4.copy()
                 mapping_fields = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END_VERSION_4
             else:
-                heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END_VERSION_5
+                heading = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_MISEQ_PAIRED_END_VERSION_5.copy()
                 mapping_fields = MAP_USER_SAMPLE_SHEET_TO_DATABASE_MISEQ_PAiRED_END_VERSION_5
     else:
         record_data['platform'] = 'NextSeq'
@@ -221,13 +221,17 @@ def collect_data_and_update_library_preparation_samples_for_run (data_form, user
         sample_sheet_data_field.append(json_data[row_index])
     if record_data['platform'] == 'NextSeq':
         record_data['index_well'] = False
-        index = heading.index('Index_Plate_Well')
-        for data_line in sample_sheet_data_field :
-            if data_line[index] != '':
-                record_data['index_well'] = True
-                break
-        if not record_data['index_well']:
-            # remove the index well column and heading
+        requires_remove_index_plate_well = False
+        if 'Index_Plate_Well' in heading:
+            index = heading.index('Index_Plate_Well')
+            record_data['index_well'] = True
+            requires_remove_index_plate_well = True
+            for data_line in sample_sheet_data_field :
+                if data_line[index] != '':
+                    requires_remove_index_plate_well = False
+                    record_data['index_well'] = True
+                    break
+        if requires_remove_index_plate_well:
             heading.remove('Index_Plate_Well')
             for data_line in sample_sheet_data_field :
                 del data_line[index]
