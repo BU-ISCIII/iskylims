@@ -79,7 +79,6 @@ def get_boxplot_comparation_runs (run_object):
         mean_run_value_float.append(float(mean_value))
         yield_mb_run_value_float.append(float(yield_mb_value.replace(',','')))
         cluster_pf_run_value_float.append(float(cluster_pf_value.replace(',','')))
-
     # get the chemistry type for the run, that will be used to compare runs with the same chemistry value
     '''
     chem_high_mid = RunningParameters.objects.get(runName_id__exact = run_object).Chemistry

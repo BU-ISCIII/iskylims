@@ -93,7 +93,7 @@ def analyze_reprocess_data(reprocess_data, reprocess_sample_id, reg_user):
         if not LibraryPreparation.objects.filter(sample_id__pk__exact = reprocess_sample_id, libPrepCodeID__exact = lib_prep_code_id).exists():
             return 'Invalid options'
         lib_prep_obj = LibraryPreparation.objects.get(sample_id__pk__exact = reprocess_sample_id, libPrepCodeID__exact = lib_prep_code_id)
-        sample_id = update_sample_reused(reprocess_sample_id)
+        sample_obj = update_sample_reused(reprocess_sample_id)
         molecule_obj = update_molecule_reused(reprocess_sample_id, molecule_code_id)
         lib_prep_obj.set_state('Reused pool')
         reused = lib_prep_obj.set_increase_reuse()
