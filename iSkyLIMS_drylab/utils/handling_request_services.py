@@ -262,7 +262,10 @@ def get_pending_services_information():
     if Service.objects.filter(serviceStatus__exact = 'recorded').exists():
         services_in_request = Service.objects.filter(serviceStatus__exact = 'recorded').order_by('-serviceCreatedOnDate')
         for services in services_in_request:
-            recorded[services.id]= [services.get_service_information()]
+            service_data = services.get_service_information()
+            service_data.append(services.get_service_requested_user())
+            service_data.append(services.get_service_creation_time())
+            recorded[services.id]= [service_data]
         pending_services_details['recorded'] = recorded
         for service_unit in services_in_request:
             try:

@@ -47,7 +47,7 @@
 
                         <div id="recorded" class="tabcontent2">
                             <div class="row row-space-2 margin-b-4">
-                                <div class="col-sm-7">  <!-- first column with list of pending services in state Recorded and Approved -->
+                                <div class="col-sm-8">  <!-- first column with list of pending services in state Recorded and Approved -->
                                     <div class="panel panel-default">
                                         <div class="panel-heading"><h3 style="text-align:center">List of Services in Recorded State</h3></div>
                                         <div class="panel-body">
@@ -58,14 +58,18 @@
                                                             <tr>
                                                                 <th>Services Request ID</th>
                                                                 <th>Requested Center</th>
+                                                                <th>Created by</th>
+                                                                <th>Creation Date</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
                                                             {% for key, values in pending_services.recorded.items %}
                                                                 <tr>
-                                                                    {% for requestID, center in values %}
+                                                                    {% for requestID, center, user, date in values %}
                                                                         <td><a href="/drylab/display_service={{ key }}">{{ requestID }}</a> </td>
                                                                         <td> {{ center }} </td>
+                                                                        <td>{{user}}</td>
+                                                                        <td>{{date}}</td>
                                                                     {% endfor %}
                                                                 </tr>
                                                             {%endfor%}
