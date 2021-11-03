@@ -951,18 +951,19 @@ def get_run_user_lot_kit_used_in_sample(sample_id):
 
             for pool_obj in pool_objs:
                 run_obj = pool_obj.get_run_obj()
-                run_name = run_obj.get_run_name()
-                kit_data['run_kits_from_sample'][run_name] = []
-                run_kit_objs = run_obj.reagent_kit.all()
-                for run_kit_obj in run_kit_objs:
+                if run_obj != None:
+                    run_name = run_obj.get_run_name()
+                    kit_data['run_kits_from_sample'][run_name] = []
+                    run_kit_objs = run_obj.reagent_kit.all()
+                    for run_kit_obj in run_kit_objs:
 
-                    data = [lib_prep.get_lib_prep_code()]
-                    data.append(run_kit_obj.get_lot_number())
-                    data.append(run_kit_obj.get_commercial_kit())
-                    data.append(run_kit_obj.get_expiration_date())
-                    data.append(run_obj.get_run_generated_date())
+                        data = [lib_prep.get_lib_prep_code()]
+                        data.append(run_kit_obj.get_lot_number())
+                        data.append(run_kit_obj.get_commercial_kit())
+                        data.append(run_kit_obj.get_expiration_date())
+                        data.append(run_obj.get_run_generated_date())
 
-                    kit_data['run_kits_from_sample'][run_name].append(data)
+                        kit_data['run_kits_from_sample'][run_name].append(data)
 
     return  kit_data
 

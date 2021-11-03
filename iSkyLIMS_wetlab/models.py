@@ -153,6 +153,8 @@ class RunProcess(models.Model):
 
 
     def get_run_name (self):
+        if self.runName is None:
+            return 'Not defined'
         return '%s' %(self.runName)
 
     def get_disk_space_utilization (self):
