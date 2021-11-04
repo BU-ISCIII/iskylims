@@ -2,6 +2,7 @@
 import statistics
 import os
 from datetime import datetime
+import numpy as np
 from ..fusioncharts.fusioncharts import FusionCharts
 
 from django.conf import settings
@@ -79,6 +80,13 @@ def get_boxplot_comparation_runs (run_object):
         mean_run_value_float.append(float(mean_value))
         yield_mb_run_value_float.append(float(yield_mb_value.replace(',','')))
         cluster_pf_run_value_float.append(float(cluster_pf_value.replace(',','')))
+
+    # Repeat data to get at least 3 set of data to get the visualization
+    if len(run_lane_summary) < 3:
+        q_30_run_value_float = np.repeat(q_30_run_value_float,3)
+        mean_run_value_float = np.repeat(mean_run_value_float,3)
+        yield_mb_run_value_float = np.repeat(yield_mb_run_value_float, 3)
+        cluster_pf_run_value_float = np.repeat(cluster_pf_run_value_float,3)
     # get the chemistry type for the run, that will be used to compare runs with the same chemistry value
     '''
     chem_high_mid = RunningParameters.objects.get(runName_id__exact = run_object).Chemistry
@@ -100,7 +108,6 @@ def get_boxplot_comparation_runs (run_object):
         all_lane_summary = StatsLaneSummary.objects.filter(runprocess_id__in = same_runs_in_year_list).exclude(defaultAll__isnull = False)
     for item in all_lane_summary:
         q_30_value, mean_value , yield_mb_value , cluster_pf_value = item.get_stats_info()
-
         q_30_all_value_float.append(float(q_30_value))
         mean_all_value_float.append(float(mean_value))
         yield_mb_all_value_float.append(float(yield_mb_value.replace(',','')))
