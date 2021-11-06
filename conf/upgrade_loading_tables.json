@@ -18733,6 +18733,15 @@
     }
 },
 {
+    "model": "iSkyLIMS_wetlab.configsetting",
+    "pk": 11,
+    "fields": {
+        "configurationName": "PROTOCOL_SEPARATION_IN_SAMPLE_SHEET",
+        "configurationValue": "-",
+        "generated_at": "2021-10-02T09:58:05.242"
+    }
+},
+{
     "model": "iSkyLIMS_wetlab.statesforlibrarypreparation",
     "pk": 1,
     "fields": {
@@ -18803,6 +18812,22 @@
     }
 },
 {
+    "model": "iSkyLIMS_wetlab.runconfigurationtest",
+    "pk": 1,
+    "fields": {
+        "runTestName": "MiSeq_Test_001",
+        "runTestFolder": "MiSeq_Test"
+    }
+},
+{
+    "model": "iSkyLIMS_wetlab.runconfigurationtest",
+    "pk": 4,
+    "fields": {
+        "runTestName": "NextSeq_Test",
+        "runTestFolder": "NextSeq_Test"
+    }
+},
+{
     "model": "iSkyLIMS_drylab.configsetting",
     "pk": 1,
     "fields": {
@@ -18837,6 +18862,62 @@
     "pk": 4,
     "fields": {
         "resolutionStateName": "Cancelled"
+    }
+},
+{
+    "model": "django_utils.classificationarea",
+    "pk": 1,
+    "fields": {
+        "classificationAreaName": "Bacteriology",
+        "classificationAreaDescription": null
+    }
+},
+{
+    "model": "django_utils.classificationarea",
+    "pk": 2,
+    "fields": {
+        "classificationAreaName": "Micology",
+        "classificationAreaDescription": null
+    }
+},
+{
+    "model": "django_utils.classificationarea",
+    "pk": 3,
+    "fields": {
+        "classificationAreaName": "Parasitology",
+        "classificationAreaDescription": null
+    }
+},
+{
+    "model": "django_utils.classificationarea",
+    "pk": 4,
+    "fields": {
+        "classificationAreaName": "Virology",
+        "classificationAreaDescription": null
+    }
+},
+{
+    "model": "django_utils.classificationarea",
+    "pk": 5,
+    "fields": {
+        "classificationAreaName": "Human Genetics",
+        "classificationAreaDescription": null
+    }
+},
+{
+    "model": "django_utils.classificationarea",
+    "pk": 6,
+    "fields": {
+        "classificationAreaName": "Chronic Diseases",
+        "classificationAreaDescription": null
+    }
+},
+{
+    "model": "django_utils.classificationarea",
+    "pk": 7,
+    "fields": {
+        "classificationAreaName": "Genomics Unit",
+        "classificationAreaDescription": null
     }
 }
 ]
