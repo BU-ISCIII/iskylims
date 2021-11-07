@@ -118,20 +118,20 @@ if [[ $linux_distribution == "Ubuntu" ]]; then
 fi
 
 echo "Installing Interop"
-#mkdir -p /opt/interop
-#cd /opt/interop
+mkdir -p /opt/interop
+cd /opt/interop
 
-#wget https://github.com/Illumina/interop/releases/download/v1.1.15/InterOp-1.1.15-Linux-GNU.tar.gz
-#tar -xf  InterOp-1.1.15-Linux-GNU.tar.gz
-#ln -s InterOp-1.1.15-Linux-GNU interop
-#rm InterOp-1.1.15-Linux-GNU.tar.gz
+wget https://github.com/Illumina/interop/releases/download/v1.1.15/InterOp-1.1.15-Linux-GNU.tar.gz
+tar -xf  InterOp-1.1.15-Linux-GNU.tar.gz
+ln -s InterOp-1.1.15-Linux-GNU interop
+rm InterOp-1.1.15-Linux-GNU.tar.gz
 
 
 echo "iSkyLIMS installation"
 cd /opt/iSkyLIMS
-# git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
-# cd /opt/iSkyLIMS
-# git checkout develop
+git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
+cd /opt/iSkyLIMS
+git checkout develop
 
 mkdir -p /opt/iSkyLIMS/documents/wetlab/tmp
 mkdir -p /opt/iSkyLIMS/documents/drylab
@@ -174,8 +174,8 @@ sed -i "s/localserverip/${LOCAL_SERVER_IP}/g" iSkyLIMS/settings.py
 
 echo "Creating the database structure for iSkyLIMS"
 python3 manage.py migrate
-# python3 manage.py makemigrations django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab iSkyLIMS_clinic
-# python3 manage.py migrate
+python3 manage.py makemigrations django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab iSkyLIMS_clinic
+python3 manage.py migrate
 
 python3 manage.py collectstatic
 
