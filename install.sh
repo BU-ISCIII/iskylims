@@ -7,8 +7,8 @@
 #INSTITUTION:ISCIII
 #CENTRE:BU-ISCIII
 #AUTHOR: Luis Chapado
-SCRIPT_VERSION=0.1
-#CREATED: 21 September 2021
+SCRIPT_VERSION=0.2
+#CREATED: 08 November 2021
 #
 #
 #DESCRIPTION: This script install on your local server the latest stable
@@ -129,9 +129,7 @@ rm InterOp-1.1.15-Linux-GNU.tar.gz
 
 echo "iSkyLIMS installation"
 cd /opt/iSkyLIMS
-git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
-cd /opt/iSkyLIMS
-git checkout develop
+git checkout master
 
 mkdir -p /opt/iSkyLIMS/documents/wetlab/tmp
 mkdir -p /opt/iSkyLIMS/documents/drylab
