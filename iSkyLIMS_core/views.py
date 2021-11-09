@@ -15,8 +15,6 @@ from .utils.generic_functions import *
 def index(request):
 
     apps_in_iskylims = get_installed_apps ()
-
-    #import pdb; pdb.set_trace()
     return render(request, 'iSkyLIMS_core/index.html',{'apps_in_iskylims': apps_in_iskylims})
 
 def add_new_contacts (request):
@@ -43,7 +41,7 @@ def add_new_contacts (request):
     apps_installed['apps_names'] = get_installed_apps ()
 
     if request.method == 'POST' and request.POST['action'] == 'addNewContacts':
-        #import pdb; pdb.set_trace()
+        
         pass
 
     return render(request, "iSkyLIMS_core/addNewContacts.html",{'apps_installed':apps_installed})
