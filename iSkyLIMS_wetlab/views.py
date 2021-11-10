@@ -853,6 +853,36 @@ def retry_error_run (request):
         return render(request, 'iSkyLIMS_wetlab/index.html')
 
 
+
+@login_required
+def skip_cancel_situation (request):
+    # check user privileges
+    if request.user.is_authenticated:
+
+        try:
+            groups = Group.objects.get(name='WetlabManager')
+            if groups not in request.user.groups.all():
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+        except:
+            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+    if request.method=='POST' and (request.POST['action']=='skip_cancel_situation'):
+        run_id = request.POST['run_id']
+        if (RunProcess.objects.filter(pk__exact=run_id).exists()):
+            run_name_found = RunProcess.objects.get(pk__exact=run_id)
+            run_name_found.set_run_state('Sample Sent')
+            run_name_found.set_forced_continue_on_error()
+            detail_description = {}
+            detail_description['information'] = SUCCESSFUL_RUN_STATE_CHANGE_FOR_RETRY
+            return render (request,'iSkyLIMS_wetlab/successful_page.html', {'detail_description': detail_description , 'return_main_menu': True})
+        else:
+            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['Run does not exist ']})
+    else:
+        #return redirect (request,'/')
+        return render(request, 'iSkyLIMS_wetlab/index.html')
+
 @login_required
 def display_run (request, run_id):
     # check user privileges
@@ -1311,7 +1341,6 @@ def change_run_libKit (request, run_id):
             library_kit_dict = {}
             form_change_lib_kit['run_name'] = run_obj.get_run_name()
             # get the library Kits used in run
-            import pdb; pdb.set_trace()
             run_obj.get_index_library()
                 pass
             project_list = Projects.objects.filter(runprocess_id = run_id)

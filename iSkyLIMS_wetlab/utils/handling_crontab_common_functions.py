@@ -107,21 +107,29 @@ def check_sequencer_status_from_log_file(log_file_content, log_cycles, number_of
     logger = logging.getLogger(__name__)
     logger.debug ('%s : Starting function check_sequencer_status_from_log_file', experiment_name)
     run_completion_date = ''
+
     if 'Cancel' in log_file_content :
-        logger.warning ('%s : Sequencer execution was canceled', experiment_name)
-        status = 'Cancelled'
+        run_process_obj = RunProcess.objects.filter(runName__exact = experiment_name).last()
+        if run_process_obj.get_forced_continue_on_error() == True:
+            logger.warning ('%s : Forced to continue on execution that was canceled', experiment_name)
+        else:
+            logger.warning ('%s : Sequencer execution was canceled', experiment_name)
+            status = 'Cancelled'
+            logger.debug ('%s : End function check_sequencer_status_from_log_file', experiment_name)
+            return status, run_completion_date
     elif log_cycles != number_of_cycles :
         logger.info('%s : run sequencer is still running', experiment_name)
         status = 'still_running'
-    else:
-        # Fetch the run completcion time
-        status = 'completed'
-        logger.info('%s : run in sequencer is completed', experiment_name)
-        last_line_in_file = log_file_content.split('\n')[-2]
-        last_log_time = last_line_in_file.split(' ')[0:2]
-        last_log_time[0] = str('20'+ last_log_time[0])
-        string_completion_date = ' '.join(last_log_time)
-        run_completion_date = datetime.strptime(string_completion_date, '%Y-%m-%d %H:%M:%S.%f')
+        logger.debug ('%s : End function check_sequencer_status_from_log_file', experiment_name)
+        return status, run_completion_date
+    # Fetch the run completcion time
+    status = 'completed'
+    logger.info('%s : run in sequencer is completed', experiment_name)
+    last_line_in_file = log_file_content.split('\n')[-2]
+    last_log_time = last_line_in_file.split(' ')[0:2]
+    last_log_time[0] = str('20'+ last_log_time[0])
+    string_completion_date = ' '.join(last_log_time)
+    run_completion_date = datetime.strptime(string_completion_date, '%Y-%m-%d %H:%M:%S.%f')
     logger.debug ('%s : End function check_sequencer_status_from_log_file', experiment_name)
     return status, run_completion_date
 

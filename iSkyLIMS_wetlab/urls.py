@@ -43,6 +43,7 @@ urlpatterns = [
     path('displaySampleProject=<int:sample_project_id>/', views.display_sample_project, name = 'display_sample_project'),
     path('displayTypeOfSample=<int:sample_type_id>/', views.display_type_of_sample, name = 'display_type_of_sample'),
     path('displayUserLotKit=<int:user_kit_id>/', views.display_user_lot_kit, name = 'display_user_lot_kit'),
+    path('skipCancelSituation', views.skip_cancel_situation, name ='skip_cancel_situation'),
     path('handlingLibraryPreparations', views.handling_library_preparations, name = 'handling_library_preparations'),
     path('handlingMolecules', views.handling_molecules, name = 'handling_molecules'),
     path('initialSettings',views.initial_settings, name = 'initial_settings'),

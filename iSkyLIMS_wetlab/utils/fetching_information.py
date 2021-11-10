@@ -430,7 +430,7 @@ def get_information_for_incompleted_run():
             data = []
             data.append(run_obj.get_run_id())
             data.append(run_obj.get_run_name())
-            #import pdb; pdb.set_trace()
+
             run_date = run_obj.get_run_date_no_format()
             if run_date == None:
                 # if no value stored on run date use the recorded date instead
@@ -551,6 +551,10 @@ def get_information_run(run_object):
         # get the state before the error to present run information
         run_state = run_object.get_state_before_error()
         info_dict['error_run'] = [run_object.get_run_name(), run_state, run_object.get_error_text(), run_object.get_run_id()]
+
+    if run_state == 'Cancelled':
+        run_state ='Sample Sent'
+        info_dict['cancel_run'] = [run_object.get_run_name(), run_state, '' , run_object.get_run_id()]
 
     p_list= Projects.objects.filter(runProcess=run_object)
     if p_list !='':

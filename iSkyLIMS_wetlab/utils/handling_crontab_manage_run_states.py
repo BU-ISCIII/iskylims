@@ -89,6 +89,7 @@ def manage_run_in_sample_sent_processing_state(conn, run_process_objs):
     Functions:
         check_log_for_run_completions           # located in utils.handling_crontab_common_functions.py
         waiting_time_expired                    # located in utils.handling_crontab_common_functions.py
+        handling_errors_in_run                  # located in utils.handling_crontab_common_functions.py
     Return:
         None
     '''

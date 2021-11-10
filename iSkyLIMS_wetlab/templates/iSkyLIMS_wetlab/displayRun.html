@@ -78,6 +78,39 @@
                     </div> <!--  end of panel  -->
                 </div> <!--  end of col-sm-7 -->
             </div> <!--  end of row space -->
+        {% elif display_one_run.cancel_run %}
+            <div class="row row-space-2 margin-b-4">
+                <div class="col-sm-7 col-sm-offset-2">
+                    <div class="panel panel-danger">
+                        <div class="panel-heading"><h3>{{ display_one_run.cancel_run.0 }} is on Cancel state</h3></div>
+                        <div class="panel-body">
+                            <h4>Run was in {{display_one_run.cancel_run.1 }} state before the run was cancelled </h4>
+                            <BR>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Unknow reason for cancelling run</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td align="center">Check inside your organization for more details</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <br>
+                            <h5>Click on  "Skip fault button" to continue processing the run. </h5>
+                            <form class="" action="/wetlab/skipCancelSituation" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="skip_cancel_situation">
+                                <input type="hidden" name="run_id" value="{{display_one_run.cancel_run.3}}">
+                                <input class="btn pull-right btn-default" type="submit" value="Skip Cancel situation">
+                            </form>
+                            <br>
+                        </div> <!--  end of panel body -->
+                    </div> <!--  end of panel  -->
+                </div> <!--  end of col-sm-7 -->
+            </div> <!--  end of row space -->
         {% endif %}
         <div class="row row-space-2 margin-b-4">
             <h3 style="text-align:center">Information for Run : {{ display_one_run.run_name }} </h3>

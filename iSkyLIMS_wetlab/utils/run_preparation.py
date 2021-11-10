@@ -474,7 +474,6 @@ def store_confirmation_sample_sheet(fields):
     d = {'investigator':fields['investigator'],'exp_name': fields['exp_name'] , 'date': today_date, 'application': fields['application'],
         'instrument':fields['instrument'], 'assay':fields['assay'] , 'collection_index': fields['collection_index'], 'reads': fields['reads'],
         'adapter':fields['adapter']}
-    # import pdb; pdb.set_trace()
     '''
     if fields['single_read']:
         if fields['platform'] == 'MiSeq':

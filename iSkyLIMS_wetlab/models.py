@@ -61,7 +61,7 @@ class RunProcess(models.Model):
     bcl2fastq_finish_date = models.DateTimeField(auto_now = False, null=True, blank=True)
     run_completed_date = models.DateTimeField(auto_now = False, null=True, blank=True)
     #runState = models.CharField(max_length=25)
-
+    run_forced_continue_on_error = models.BooleanField(null = True, blank = True, default = False)
     index_library = models.CharField(max_length=85, null = True, blank = True)
     samples= models.CharField(max_length=45,blank=True)
     useSpaceImgMb=models.CharField(max_length=10, blank=True)
@@ -111,6 +111,9 @@ class RunProcess(models.Model):
 
     def get_error_text (self):
         return '%s' %(self.runError)
+
+    def get_forced_continue_on_error(self):
+        return self.run_forced_continue_on_error
 
     def get_state(self):
         return '%s' %(self.state.get_run_state_name())
@@ -260,6 +263,11 @@ class RunProcess(models.Model):
 
     def set_used_sequencer (self, sequencer):
         self.usedSequencer = sequencer
+        self.save()
+        return True
+
+    def set_forced_continue_on_error(self):
+        self.run_forced_continue_on_error = True
         self.save()
         return True
 

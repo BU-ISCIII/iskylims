@@ -158,7 +158,6 @@ def store_in_db(statistics, used_table,run_name_value):
                 PerfectBarcodeCount= xml_statistics[project]['PerfectBarcodeCount'],
                 project=project)
             #stats_db.save()
-            #import pdb; pdb.set_trace()
         return
 '''
 def get_nextSeq_stats_fromDB(run_name_value):

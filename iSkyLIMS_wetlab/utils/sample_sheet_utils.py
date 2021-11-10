@@ -374,7 +374,6 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
         line=line.rstrip()
         if line == '':
             continue
-        #import pdb; pdb.set_trace()
         date_found = re.search('^Date',line)
         if date_found :
             date_line = line.split(',')
@@ -422,7 +421,6 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
                     project_index = i
             continue
         if (data_found and header_found ):
-            #import pdb; pdb.set_trace()
             dict_value_data={}
             data_split=line.split(',')
             # get only the samples that are related to the specific project
@@ -495,7 +493,6 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
 
 
     for line in data_raw:
-        #import pdb; pdb.set_trace()
         #### reverse order for Index2
         if only_one_index == False :
             seq=Seq(line['Index2Sequence'])
@@ -603,7 +600,6 @@ def update_library_kit_field (library_file_name, library_kit_name, library_name)
     tmp= re.search('(.*)\d{8}-\d+.*\.csv',library_file_name)
     absolute_path = str(settings.BASE_DIR + '/')
     out_file = str( absolute_path +  tmp.group(1) + timestr +'_for_basespace_'+ library_kit_name + '.csv')
-    #import pdb; pdb.set_trace()
     try:
         fh_in = open (library_file_name, 'r')
         fh_out = open (out_file, 'w')
