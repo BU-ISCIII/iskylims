@@ -1,0 +1,169 @@
+{% extends 'iSkyLIMS_drylab/base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block content %}
+{% include "iSkyLIMS_core/graphic_chart_functionality.html" %}
+
+{% if services_stats_info %}
+
+    <div class="row row-space-2 margin-b-4">
+	<div class="col-sm-12">
+	    <div class="col-sm-6 ">  <!--col-sm-6  graphics for services requested -->
+		<div class="panel panel-default">
+		    <div class="panel-heading"><h3>Number of Requested Services per users.</h3></div>
+		    <div class="panel-body">
+		     {% if services_stats_info.graphic_requested_services_per_user %}
+			<div id="chart-1"> </div>
+			<!-- dumping JavaScript code here -->
+			{{ services_stats_info.graphic_requested_services_per_user |safe }}
+		    {% endif %}
+		    </div> <!--  end of panel body -->
+		</div> <!--  end of panel  -->
+	    </div> <!--// end col-sm-7  graphics for services requested  -->
+	    <div class="col-sm-6 ">  <!--col-sm-6  graphics for status services requested -->
+		<div class="panel panel-default">
+		    <div class="panel-heading"><h3>Status of the Requested Services.</h3></div>
+		    <div class="panel-body">
+		     {% if services_stats_info.graphic_status_requested_services %}
+			<div id="chart-2"> </div>
+			<!-- dumping JavaScript code here -->
+			{{ services_stats_info.graphic_status_requested_services |safe }}
+		    {% endif %}
+		    </div> <!--  end of panel body -->
+		</div> <!--  end of panel  -->
+	    </div> <!--// end col-sm-7  graphics for status services requested  -->
+
+
+	</div> <!--// end col-sm-12  -->
+    </div> <!--// end row -->
+
+
+    <div class="row row-space-2 margin-b-4">
+	<div class="col-sm-7 ">  <!--col-sm-7  graphics for Area -->
+	    <div class="panel panel-default">
+		<div class="panel-heading"><h3>Number of Requested Services per Area.</h3></div>
+		<div class="panel-body">
+		 {% if services_stats_info.graphic_area_services %}
+		    <div id="chart-3"> </div>
+		    <!-- dumping JavaScript code here -->
+		    {{ services_stats_info.graphic_area_services |safe }}
+		{% endif %}
+		</div> <!--  end of panel body -->
+	    </div> <!--  end of panel  -->
+	</div> <!--// end col-sm-7  graphics for area  -->
+
+    </div> <!--// end row -->
+
+
+    <div class="row row-space-2 margin-b-4">
+	<div class="col-sm-7 ">  <!--col-sm-7  graphics for Area -->
+	    <div class="panel panel-default">
+		<div class="panel-heading"><h3>Number of Requested Services per Center.</h3></div>
+		<div class="panel-body">
+		 {% if services_stats_info.graphic_center_services %}
+		    <div id="chart-4"> </div>
+		    <!-- dumping JavaScript code here -->
+		    {{ services_stats_info.graphic_center_services |safe }}
+		{% endif %}
+		</div> <!--  end of panel body -->
+	    </div> <!--  end of panel  -->
+	</div> <!--// end col-sm-7  graphics for area  -->
+    </div> <!--// end row -->
+
+    <div class="row row-space-2 margin-b-4">
+	<div class="col-sm-12 ">  <!--col-sm-12  Statistics per period of time -->
+	    <div class="col-sm-6 ">  <!--col-sm-6  Statistics per Center -->
+		<div class="panel panel-default">
+		    <div class="panel-heading"><h3>Requested Services Statistics per Center</h3></div>
+		    <div class="panel-body">
+			<h4> {{services_stats_info.period_time}}.</h4>
+		     {% if services_stats_info.graphic_center_services_per_time %}
+			<div id="chart-5"> </div>
+			<!-- dumping JavaScript code here -->
+			{{ services_stats_info.graphic_center_services_per_time |safe }}
+		    {% endif %}
+		    </div> <!--  end of panel body -->
+		</div> <!--  end of panel  -->
+	    </div> <!--// end col-sm-6  graphics for area  -->
+	    <div class="col-sm-6 ">  <!--col-sm-6  Statistics per Center -->
+		<div class="panel panel-default">
+		    <div class="panel-heading"><h3>Requested Services Statistics per Classification Area</h3></div>
+		    <div class="panel-body">
+			<h4> {{services_stats_info.period_time}}.</h4>
+		     {% if services_stats_info.graphic_area_services_per_time %}
+			<div id="chart-6"> </div>
+			<!-- dumping JavaScript code here -->
+			{{ services_stats_info.graphic_area_services_per_time |safe }}
+		    {% endif %}
+		    </div> <!--  end of panel body -->
+		</div> <!--  end of panel  -->
+	    </div> <!--// end col-sm-6  graphics for area  -->
+	</div> <!--// end col-sm-12  graphics for area  -->
+    </div> <!--// end row -->
+
+    <div class="row row-space-2 margin-b-4">
+	<div class="col-sm-12 ">  <!--col-sm-12  Statistics per Service request -->
+	    <div class="col-sm-10 ">  <!--col-sm-10  Services on level 2 -->
+		<div class="panel panel-default">
+		    <div class="panel-heading"><h3>Requested Level 2 Services </h3></div>
+		    <div class="panel-body">
+			<h4> {{services_stats_info.period_time}}.</h4>
+		     {% if services_stats_info.graphic_req_l2_services %}
+			<div id="chart-7"> </div>
+			<!-- dumping JavaScript code here -->
+			{{ services_stats_info.graphic_req_l2_services |safe }}
+		    {% endif %}
+		    </div> <!--  end of panel body -->
+		</div> <!--  end of panel  -->
+	    </div> <!--// end col-sm-10  graphics for area  -->
+	</div> <!--// end col-sm-12  graphics for area  -->
+    </div> <!--// end row -->
+    <div class="row row-space-2 margin-b-4">
+	<div class="col-sm-12 ">  <!--col-sm-12  Statistics per Service request -->
+	    <div class="col-sm-10 ">  <!--col-sm-10  Services on level 3-->
+		<div class="panel panel-default">
+		    <div class="panel-heading"><h3>Requested Level 3 Services </h3></div>
+		    <div class="panel-body">
+			<h4> {{services_stats_info.period_time}}.</h4>
+		     {% if services_stats_info.graphic_req_l3_services %}
+			<div id="chart-8"> </div>
+			<!-- dumping JavaScript code here -->
+			{{ services_stats_info.graphic_req_l3_services |safe }}
+		    {% endif %}
+		    </div> <!--  end of panel body -->
+		</div> <!--  end of panel  -->
+	    </div> <!--// end col-sm-10  graphics for area  -->
+	</div> <!--// end col-sm-12  graphics for area  -->
+    </div> <!--// end row -->
+
+{% else %}
+
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-8" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h1>Services Request Statistics</h1></div>
+                <div class="panel-body">
+                    <form method="post" enctype="multipart/form-data" name="serviceStatistics" id="serviceStatistics" class="form-horizontal well">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="serviceStatistics"/>
+                        <br>
+                        <div class="form-group required">
+                            <label class="col-sm-5 control-label" for="startdate" >Start Date (DD-MM-YYYY)</label>
+                            <div class="col-sm-5"><input class="form-control" required = "required" type="date" name="startdate" value="" id="startdate"></div>
+                        </div>  <!-- end from-group   -->
+                        <br>
+                        <div class="form-group">
+                            <label class="col-sm-5 control-label" for="enddate" >End Date (DD-MM-YYYY)</label>
+                            <div class="col-sm-5"><input class="form-control" type="date" name="enddate" value="" id="enddate"></div>
+                        </div>  <!-- end from-group   -->
+                        <br>
+                        <input class="btn pull-left btn-primary" type="reset" value="Reset Fields">
+                        <input class="btn pull-right btn-primary" type="submit" value="Submit">
+                    </form>
+                </div>  <!--  end of panel body  -->
+                <p> Fields marked with <FONT COLOR="Red">*</FONT> are mandatory</p>
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-8  -->
+    </div> <!-- //  end row -->
+{% endif %}
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends 'iSkyLIMS_wetlab/base.html' %}
+
+{% block content %}
+{% load static %}
+<script>
+function goBack() {
+    window.history.back();
+}
+</script>
+
+<div class="row row-space-2 margin-b-4">
+        <div class="col-sm-4 col-sm-offset-4">
+        <div class="panel panel-default">
+          <div class="panel-heading"><h3>SUCCESSFUL</h3></div>
+          <div class="panel-body">
+              {% if detail_description %}
+                {% for values  in detail_description.information %}
+                    <p>{{values}}</p>
+                {% endfor %}
+              {% endif %}
+              <p></p>
+
+            </div> <!--// end panel body -->
+        </div> <!--// end panel -->
+      </div> <!--// end col-sm-4 -->
+</div> <!-- end row  -->
+
+
+<div class="row row-space-2 margin-b-4">
+  <div class="col-sm-4 col-sm-offset-4">
+  <div class="panel panel-default">
+     <div class="panel-body">
+        <p>Click on the Go Back button to return to the previous page</p>
+            </div> <!--// end panel body -->
+        </div> <!--// end panel -->
+      </div> <!--// end col-sm-4 -->
+</div> <!-- end row  -->
+<div class="row row-space-2 margin-b-4">
+    <div class="col-sm-4 col-sm-offset-4">
+        {% if  return_main_menu %}
+            <a href="/wetlab"><button type="button" class="btn btn-default">Return to main menu</button> </a>
+
+        {% else %}
+            <button type="button" class="btn btn-default" onclick="goBack()">Go Back</button>
+        {% endif %}
+  </div> <!--// end col-sm-4 -->
+</div> <!-- end row  -->
+{% endblock %}

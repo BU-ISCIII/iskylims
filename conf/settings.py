@@ -20,24 +20,22 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = ''
+SECRET_KEY = PLACEHOLDER
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-#DEBUG = False
 
-ALLOWED_HOSTS = ['localhost','127.0.0.1']
-
+ALLOWED_HOSTS = ['localhost','127.0.0.1', 'localserverip']
 
 # Application definition
 
 INSTALLED_APPS = [
+    'iSkyLIMS_core',
+    'iSkyLIMS_clinic',
     'iSkyLIMS_wetlab',
     'iSkyLIMS_drylab',
     'django_utils',
-    'iSkyLIMS_home',
     'mptt',
-    'crispy_forms',
     'django_crontab',
     'django_mptt_admin',
     'django.contrib.admin',
@@ -46,12 +44,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.sites',
-    'django_comments',
-    'tagging',
-    'zinnia',
-    'zinnia_wymeditor',
+    'django_extensions',
+    'rest_framework',
+    'django_cleanup', # should go after your apps
 ]
+
+APPS_NAMES = [ ['iSkyLIMS_clinic', 'Clinic'],
+    ['iSkyLIMS_wetlab', 'Masive Sequencing'],
+    ['iSkyLIMS_drylab','Requesting Services']
+    ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -77,7 +78,6 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.i18n',
-                'zinnia.context_processors.version',  # Optional
             ],
         },
     },
@@ -91,12 +91,13 @@ WSGI_APPLICATION = 'iSkyLIMS.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'USER': '',
-        'PASSWORD':'',
-        'PORT':'3306',
-        'NAME': '',
+        'USER': 'djangouser',
+        'PASSWORD':'djangopass',
+        'PORT':'djangoport',
+        'NAME': 'iSkyLIMS',
+        'HOST':'djangohost',
         'TEST': {
-            'NAME': 'iSkyLIMS',
+            'NAME': 'iSkyLIMS_test',
         },
     },
 }
@@ -132,7 +133,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
@@ -151,33 +152,34 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 # Redirect to home URL after login (Default redirects to /accounts/profile/)
 LOGIN_REDIRECT_URL = '/'
 
-#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # During development only
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # During development only
+#EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 # EMAIL settings
-EMAIL_HOST = ''
-EMAIL_PORT = '25'
-#EMAIL_HOST_USER = 'ISCIII\smonzon'
-#EMAIL_HOST_PASSWORD = ''
-EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = ""
-ALLOWED_EMAIL_DOMAINS = ['isciii.es', 'externos.isciii.es']
+EMAIL_HOST = 'emailhost'
+EMAIL_PORT = 'emailport'
+EMAIL_HOST_USER = 'emailhostuser'
+EMAIL_HOST_PASSWORD = 'emailhostpassword'
+EMAIL_USE_TLS = emailhosttls
+ALLOWED_EMAIL_DOMAINS = []
 
 LOG_CRONTAB_FILE = os.path.join(BASE_DIR, 'logs', 'crontab.log')
 LOG_CLEAN_FILE = os.path.join(BASE_DIR, 'logs', 'crontab_cleanup.log')
 
+
 # Crontab settings
 CRONJOBS = [
-    ('*/30 * * * *', 'iSkyLIMS_wetlab.cron.looking_for_new_runs', '>>' + LOG_CRONTAB_FILE),
-    ('0 0 * * FRI', 'iSkyLIMS_wetlab.cron.delete_invalid_run', '>>' + LOG_CLEAN_FILE)
- ]
+    #('2-59/5 * * * *', 'iSkyLIMS_wetlab.cron.update_run_in_recorded_state',  '>>' + LOG_CRONTAB_FILE), # run every 5 min wit an offset of 2 minutes
+    #('0 0 2 * *', 'iSkyLIMS_wetlab.cron.update_run_in_recorded_state',  '>>' + LOG_CRONTAB_FILE), # At minute 0 past every 2nd hour
+    #('*/5 * * * *', 'iSkyLIMS_wetlab.cron.check_not_finish_run', '>>' + LOG_CRONTAB_FILE) # run every 5 min
+
+    #('0 */2 * * *', 'iSkyLIMS_wetlab.cron.look_for_miseq_runs', '>>' + LOG_CRONTAB_FILE) # At minute 0 past every 2nd hour
+    ('0 0 2 * *', 'iSkyLIMS_wetlab.cron.looking_for_new_runs', '>>' + LOG_CRONTAB_FILE),
+    ('0 0 1 * *', 'iSkyLIMS_wetlab.cron.delete_invalid_run', '>>' + LOG_CLEAN_FILE)
+    ]
 
 CRONTAB_COMMAND_SUFFIX = '2>&1'
 
-#
-# Zinnia blog-tutorial
-# Note: according to django doc, SITE_ID is used for multi-site confs.
-# Nevertheless, added here following zinnia doc
-# (http://docs.django-blog-zinnia.com/en/latest/getting-started/install.html)
-SITE_ID =1
+#SITE_ID =1
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 

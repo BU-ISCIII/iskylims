@@ -1,0 +1,84 @@
+{% extends 'iSkyLIMS_wetlab/base.html' %}
+{% load static %}
+{% block content %}
+    {% csrf_token %}
+
+    <h1><div class="color-heading">BU-ISCIII</div></h1>
+    <h2>iSkyLIMS: Wetlab</h2>
+
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-8">
+        <div class="panel panel-default">
+          <div class="panel-heading">Welcome</div>
+          <div class="panel-body">
+			  This section will allow you to check your sequencing activity. Available processes are: sequencing run information,<br>
+			  project, samples and user statistics.
+		  </div> <!--// end panel body -->
+        </div> <!--// end panel -->
+      </div> <!--// end col-sm-8 -->
+      <div class="col-sm-2 col-sm-offset-1">
+            <img class="promo-block-img img-responsive" src="{% static "iSkyLIMS_common_static/img/illumina/nextseqReduced.png" %}" align="Avatar">
+        </div> <!--// end img -->
+      </div> <!--// end col-sm-4 -->
+    </div> <!--// end row -->
+
+        <!--  Second paragraph -->
+<!-- Experience -->
+        <!--<div id="experience">
+            <div class="bg-color-sky-light" data-auto-height="true">
+                <div class="container content-lg">
+                    <div class="row row-space-2 margin-b-4">
+                        <div class="col-md-3 col-sm-6 md-margin-b-4">
+                            <div class="service" data-height="height">
+                                <div class="service-element">
+                                    <i class="service-icon icon-screen-tablet"></i>
+                                </div>
+                                <div class="service-info">
+                                    <h3>Services</h3>
+                                    <p class="margin-b-5">Available services</p>
+                                </div>
+                                <a href="#" class="content-wrapper-link"></a>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 md-margin-b-4">
+                            <div class="service bg-color-base wow zoomIn" data-height="height" data-wow-duration=".3" data-wow-delay=".1s">
+                                <div class="service-element">
+                                    <i class="service-icon color-white icon-graph"></i>
+                                </div>
+                                <div class="service-info">
+                                    <h3 class="color-white">Statistics Graphic</h3>
+                                    <p class="color-white margin-b-5">Get graphics</p>
+                                </div>
+                                <a href="#" class="content-wrapper-link"></a>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6 sm-margin-b-4">
+                            <div class="service" data-height="height">
+                                <div class="service-element">
+                                    <i class="service-icon icon-chemistry"></i>
+                                </div>
+                                <div class="service-info">
+                                    <h3>WET LAB</h3>
+                                    <p class="margin-b-5">Wet LAB run</p>
+                                </div>
+                                <a href="#" class="content-wrapper-link"></a>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="service" data-height="height">
+                                <div class="service-element">
+                                    <i class="service-icon icon-badge"></i>
+                                </div>
+                                <div class="service-info">
+                                    <h3>Quality</h3>
+                                    <p class="margin-b-5">Quality </p>
+                                </div>
+                                <a href="#" class="content-wrapper-link"></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>-->
+        <!-- End Experience -->
+{% endblock %}

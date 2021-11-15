@@ -1,0 +1,130 @@
+{% extends 'iSkyLIMS_wetlab/base.html' %}
+{% load static %}
+{% block content %}
+{% csrf_token %}
+<style>
+    .scrolling-wrapper {
+        overflow-x: auto;
+        overflow-y: auto;
+        white-space: nowrap;
+        height: 300px;
+    }
+ </style>
+{% if additional_kits_data_saved %}
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-12" >
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Sucessful store of Additional kits for Protocol {{additional_kits_data_saved.protocol_name}} </h3></div>
+                <div class="panel-body">
+
+                    <div class="scrolling-wrapper">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    {% for value in additional_kits_data_saved.heading %}
+                                        <th>{{value}}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for  values in additional_kits_data_saved.fields %}
+                                    <tr>
+                                        {% for value in values %}
+                                            <td>
+                                                {% if value == 'Yes' or value == True %}
+                                                    <span class="glyphicon glyphicon glyphicon-ok"></span>
+                                                {% elif value == 'No' or value == False %}
+
+                                                {% else %}
+                                                    {{ value }}
+                                                {% endif %}
+
+                                            </td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div> <!--  end of scrolling  -->
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+        </div> <!--// end col-sm-12  -->
+    </div> <!--// end row -->
+
+{% else %}
+    {% include 'iSkyLIMS_core/jexcel_functionality.html' %}
+
+    <div class="row row-space-4 margin-b-4">
+        <div class="col-sm-12" >
+
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3>Modify Additional Kits used for Protocol {{additional_kits_data.protocol_name}}</h3></div>
+                <div class="panel-body">
+                     <form method="post" enctype="multipart/form-data" name="modifyAdditionalKits"  id="modifyAdditionalKits" class="form-horizontal well">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="modifyAdditionalKits"/>
+                        <input type="hidden" name="protocol_id" value="{{additional_kits_data.protocol_id}}"/>
+                        <div class="scrolling-wrapper">
+                            <div id="spreadsheet1"></div>
+                        </div> <!--  end of scrolling  -->
+                        <br>
+                        <input type="button" value="Download_Additional_kit_data" onclick="table1.download()"/>
+
+
+                    <script>
+                         var data1 = [{% for values in additional_kits_data.add_kit_data %} [{% for value in values %}'{{value}}',{% endfor %}], {% endfor %}
+                         ];
+
+                        var table1 = jexcel(document.getElementById('spreadsheet1'), {
+                            data:data1,
+                            columns: [
+                                { type: 'text', title:'{{additional_kits_data.heading.0}}', width:160 ,readOnly:true},
+                                { type: 'text', title:'{{additional_kits_data.heading.1}}', width:160 },
+                                { type: 'numeric', title:'{{additional_kits_data.heading.2}}', width:50, mask:' #.##,00' },
+                                { type: 'checkbox', title:'{{additional_kits_data.heading.3}}', width:50 },
+                                { type: 'dropdown' , title: '{{additional_kits_data.heading.4}}', width:90 , source: [{% for kit in additional_kits_data.c_kit_names%} "{{kit}}", {% endfor %}] },
+                                { type: 'text', title:'{{additional_kits_data.heading.5}}', width:200, wordWrap:true },
+                                { type: 'hidden'}
+                            ],
+                            allowInsertColumn:false,
+                            allowDeleteColumn:false,
+                            allowRenameColumn:false,
+
+                            csvFileName:'additional_kits',
+                            tableOverflow: false,
+                            tableWidth: "900px",
+                         });
+                    </script>
+                    <input class="btn pull-right btn-primary" type="submit" value="Submit" id="btnSubmit">
+                    </form>
+                    <script>
+                        $(document).ready(function () {
+                            $("#modifyAdditionalKits").submit(function (e) {
+                                //stop submitting the form to see the disabled button effect
+                                //e.preventDefault();
+                                //disable the submit button
+                                var table_data1 = table1.getData()
+                                var data1_json = JSON.stringify(table_data1)
+                                $("<input />").attr("type", "hidden")
+                                  .attr("name", "add_kit_data")
+                                  .attr("value", data1_json)
+                                  .appendTo("#modifyAdditionalKits");
+                                $("#btnSubmit").attr("disabled", true);
+                                return true;
+                            });
+                        });
+                    </script>
+                </div>  <!--  end of panel body  -->
+            </div> <!--// end panel -->
+
+        </div> <!--// end col-sm-7  -->
+
+    </div> <!--// end row -->
+{% endif %}
+
+
+
+
+<!-- End of FORM for defining protocol parameters -->
+
+{% endblock %}

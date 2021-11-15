@@ -1,0 +1,166 @@
+{% extends 'iSkyLIMS_drylab/base.html' %}
+{% load static %}
+{% block content %}
+
+{% if detail_pipelines_data %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-8 col-sm-offset-2">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3 style="text-align:center">Service Pipelines defined.</h3></div>
+                <div class="panel-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                {% for value in detail_pipelines_data.pipeline_basic_heading %}
+                                    <th>{{value}}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                {% for value in detail_pipelines_data.pipeline_basic %}
+                                    {% if value == 'True' %}
+                                        <td>True</td>
+                                    {%elif value == 'False '%}
+                                        <td>False </td>
+                                    {% else %}
+                                        <td>{{value}}</td>
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-8 -->
+    </div> <!--  end of row -->
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12">
+            <div class="tab">
+                <button class="tablinks" onclick="summaryBin(event, 'additional')" id="defaultOpen" >Additional data</button>
+                <button class="tablinks" onclick="summaryBin(event, 'parameters')">Parameters</button>
+                <button class="tablinks" onclick="summaryBin(event, 'services')">Services</button>
+
+
+                <div id="additional" class="tabcontent">
+                    <div class="row row-space-4 margin-b-4">
+                        <div class="col-sm-10 col-sm-offset-1" >
+                            <div class="panel panel-default">
+                                <div class="panel-heading"><h3 style="text-align:center">Additional Pipeline data</h3></div>
+                                <div class="panel-body">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Parameter</th>
+                                                <th>Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for param, value in detail_pipelines_data.pipeline_additional_data %}
+                                                <tr>
+                                                    <td>{{param}}</td>
+                                                    <td>{{value}}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+
+                                </div> <!--  end of panel body -->
+                            </div> <!--  end of panel  -->
+                        </div> <!--// end col-sm-10  -->
+                    </div> <!--  end of row -->
+                </div><!-- // end of tab additional -->
+
+                <div id="parameters" class="tabcontent">
+                    <div class="row row-space-4 margin-b-4">
+                        <div class="col-sm-10 col-sm-offset-1" >
+                            <div class="panel panel-default">
+                                <div class="panel-heading"><h3 style="text-align:center">Parameters used for the Pipeline</h3></div>
+                                <div class="panel-body">
+                                    {% if detail_pipelines_data.parameter_heading %}
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    {% for value in detail_pipelines_data.parameter_heading %}
+                                                        <th>{{value}}</th>
+                                                    {% endfor %}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for name , value in detail_pipelines_data.parameters %}
+                                                    <tr>
+                                                        <td>{{name}}</td>
+                                                        <td>{{value}}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    {% else %}
+                                        <h5 style="text-align:center">There is no additional parameters defined for this pipeline</h5>
+                                    {% endif %}
+                                </div> <!--  end of panel body -->
+                            </div> <!--  end of panel  -->
+                        </div> <!--// end col-sm-10  -->
+                    </div> <!--  end of row -->
+                </div><!-- // end of tab parameters -->
+
+                <div id="services" class="tabcontent">
+                    <div class="row row-space-4 margin-b-4">
+                        <div class="col-sm-10 col-sm-offset-1" >
+                            <div class="panel panel-default">
+                                <div class="panel-heading"><h3 style="text-align:center">Services that use this pipeline</h3></div>
+                                <div class="panel-body">
+                                    {% if detail_pipelines_data.services_using_pipeline_heading %}
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    {% for value in detail_pipelines_data.services_using_pipeline_heading %}
+                                                        <th>{{value}}</th>
+                                                    {% endfor %}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for id, name, time ,user, state in detail_pipelines_data.services_using_pipeline %}
+                                                    <tr>
+                                                        <td><a href="/drylab/display_service={{id}}">{{name}}</a></td>
+                                                        <td>{{time}}</td>
+                                                        <td>{{user}}</td>
+                                                        <td>{{state}}</td>
+
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    {% else %}
+                                        <h5 style="text-align:center">There is no Services which use this pipeline</h5>
+                                    {% endif %}
+                                </div> <!--  end of panel body -->
+                            </div> <!--  end of panel  -->
+                        </div> <!--// end col-sm-10  -->
+                    </div> <!--  end of row -->
+                </div><!-- // end of tab services -->
+            </div> <!--  end of Tab  -->
+        </div> <!--  end of col-sm-12 -->
+    </div> <!--  end of row -->
+
+
+    <script>
+        // Get the element with id="defaultOpen" and click on it
+        document.getElementById("defaultOpen").click();
+    </script>
+
+{% else%}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-8 col-sm-offset-2" >
+            <div class="panel panel-danger">
+                <div class="panel-heading"><h3 style="text-align:center">The requested Pipeline Services does not exists</h3></div>
+                <div class="panel-body">
+                    <h5 style="text-align:center">Check the User Guide to define new Pipelines</h5>
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-12 -->
+    </div> <!--  end of row -->
+
+{% endif %}
+{% endblock %}

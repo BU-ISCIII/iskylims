@@ -1,0 +1,62 @@
+// Custom drylab css
+
+.gi-2x{font-size: 2em;}
+.gi-3x{font-size: 3em;}
+.gi-4x{font-size: 4em;}
+.gi-5x{font-size: 5em;}
+
+/* Custom tutorial(blog) css following
+<PACKAGE_ZINNIA_DIR>/templates/screen.css */
+ul.paginator {
+  margin: 0;
+  padding: 1.5em 0;
+  font-size: 1.2em; }
+
+ul.paginator li {
+  list-style: none;
+  display: inline-block;
+  margin-right: 0.3em; }
+
+ul.paginator li.current {
+  font-weight: bold; }
+
+ul.paginator li.current, ul.paginator li.index, ul.paginator li.ellipsis, ul.paginator li * {
+padding: 0 0.5em; }
+
+ul.paginator li.index, ul.paginator li.previous, ul.paginator li.next, ul.paginator li.ellipsis {
+  display: none; }
+
+/* Responsiveness of blog images */
+.entry-image {
+  margin-bottom: 1.5em; }
+.entry-image img {
+  width: 100%; }
+
+
+/* Responsiveness of blog images (WYMEDITOR-introduced img's from /admin 'Entries' form) */
+.entry-content {
+  text-align: justify; }
+  .entry-content p {
+    font-size: 1.2em; }
+  .entry-content img {
+    padding: 1em;
+    max-width: 100%;
+    box-sizing: border-box; }
+    .entry-content img,  .entry-content img.left {
+      margin: 0 1em 1em 0;
+      float: left; }
+    .entry-content img.right {
+      margin: 0 0 1em 1em;
+      float: right; }
+  .entry-content li {
+    list-style-image: none; }
+  .entry-content .hide {
+    display: none; }
+  .entry-content .highlight {
+    background: yellow; }
+
+
+.form-group.required .control-label:after {
+  content:"*";
+  color:red;
+}
