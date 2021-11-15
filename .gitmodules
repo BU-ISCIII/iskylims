@@ -1,9 +1,6 @@
 [submodule "iSkyLIMS_drylab"]
 	path = iSkyLIMS_drylab
 	url = https://github.com/BU-ISCIII/iSkyLIMS_drylab.git
-[submodule "iSkyLIMS_wetlab"]
-	path = iSkyLIMS_wetlab
-	url = https://github.com/BU-ISCIII/iSkyLIMS_wetlab.git
 [submodule "iSkyLIMS_home"]
 	path = iSkyLIMS_home
 	url = https://github.com/BU-ISCIII/iSkyLIMS_home.git
