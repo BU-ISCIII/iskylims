@@ -115,20 +115,20 @@ def service_full_data(request):
 
 @api_view(['PUT'])
 def update_resolution_to_in_progress(request):
-    if 'resolution' in request.data:
-        if Resolution.objects.filter(resolutionNumber__exact = request.data['resolution']).exists():
-            resolution_obj = Resolution.objects.get(resolutionNumber__exact =request.data['resolution'])
+    if 'resolution' in request.query_params:
+        if Resolution.objects.filter(resolutionNumber__exact = request.query_params['resolution']).exists():
+            resolution_obj = Resolution.objects.get(resolutionNumber__exact =request.query_params['resolution'])
             state_obj = ResolutionStates.objects.get(resolutionStateName__exact = 'In Progress')
 
             updated_resolution = UpdateResolutionSerializer.update(resolution_obj,state_obj)
             updated_resolution_serializer = UpdateResolutionSerializer(resolution_obj)
             service_obj = resolution_obj.get_service_obj()
-            if drylab_config.EMAIL_USER_CONFIGURED :
-                email_data = {}
-                email_data['user_email'] = service_obj.get_user_email()
-                email_data['user_name'] = service_obj.get_username()
-                email_data['resolution_number'] = resolution_obj.get_resolution_number()
-                send_resolution_in_progress_email(email_data)
+
+            email_data = {}
+            email_data['user_email'] = service_obj.get_user_email()
+            email_data['user_name'] = service_obj.get_username()
+            email_data['resolution_number'] = resolution_obj.get_resolution_number()
+            send_resolution_in_progress_email(email_data)
 
             return Response(updated_resolution_serializer.data, status = status.HTTP_200_OK)
 

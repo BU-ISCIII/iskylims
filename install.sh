@@ -162,7 +162,7 @@ sed -i "s/djangopass/${DB_PASS}/g" iSkyLIMS/settings.py
 sed -i "s/djangohost/${DB_SERVER_IP}/g" iSkyLIMS/settings.py
 sed -i "s/djangoport/${DB_PORT}/g" iSkyLIMS/settings.py
 
-sed -i "s/emailhost/${EMAIL_HOST}/g" iSkyLIMS/settings.py
+sed -i "s/emailhostserver/${EMAIL_HOST_SERVER}/g" iSkyLIMS/settings.py
 sed -i "s/emailport/${EMAIL_PORT}/g" iSkyLIMS/settings.py
 sed -i "s/emailhostuser/${EMAIL_HOST_USER}/g" iSkyLIMS/settings.py
 sed -i "s/emailhostpassword/${EMAIL_HOST_PASSWORD}/g" iSkyLIMS/settings.py

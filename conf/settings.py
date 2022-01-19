@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'iSkyLIMS_drylab',
     'django_utils',
     'mptt',
+    'crispy_forms',
     'django_crontab',
     'django_mptt_admin',
     'django.contrib.admin',
@@ -156,7 +157,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # During devel
 #EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 # EMAIL settings
-EMAIL_HOST = 'emailhost'
+EMAIL_HOST = 'emailhostserver'
 EMAIL_PORT = 'emailport'
 EMAIL_HOST_USER = 'emailhostuser'
 EMAIL_HOST_PASSWORD = 'emailhostpassword'

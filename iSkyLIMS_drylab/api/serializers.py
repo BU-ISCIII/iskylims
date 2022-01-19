@@ -58,12 +58,12 @@ class PipelineExternalDataJobsBSerializer (serializers.ModelSerializer):
 '''
 class ResolutionSerializer(serializers.ModelSerializer):
     resolutionServiceID = serializers.StringRelatedField(many = False)
-    servicePipelines = serializers.StringRelatedField(many = True)
+    resolutionPipelines = serializers.StringRelatedField(many = True)
     resolutionServiceID = ServiceSerializer(many = False)
     class Meta:
         model = Resolution
         fields = ['pk','resolutionNumber', 'resolutionFullNumber','resolutionServiceID' ,'resolutionDate', 'resolutionEstimatedDate' ,
-            'resolutionOnQueuedDate' , 'resolutionOnInProgressDate' , 'resolutionDeliveryDate' , 'resolutionNotes', 'servicePipelines']
+            'resolutionOnQueuedDate' , 'resolutionOnInProgressDate' , 'resolutionDeliveryDate' , 'resolutionNotes', 'resolutionPipelines']
 
 class RequestedSamplesInServicesSerializer(serializers.ModelSerializer):
 
