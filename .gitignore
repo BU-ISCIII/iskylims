@@ -10,6 +10,7 @@ static/
 #--- updates introduced for iSkyLIMS in submodules packaging ---
 virtualenv/
 iSkyLIMS/
+*iskylims/
 documents/
 manage.py
 logs/
