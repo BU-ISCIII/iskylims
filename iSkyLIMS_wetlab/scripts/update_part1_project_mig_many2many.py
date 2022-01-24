@@ -1,10 +1,16 @@
 from iSkyLIMS_wetlab.models import SamplesInProject, RunProcess, Projects
 from django.contrib.auth.models import User
 
+'''
+The script migration restore the information collected in the prepare_part1_project_for_migration_to_many_to_many .
+Fetching the run_id and the sequencer name.
+The csv file contains "project_id ,run_id"
+'''
+
 def run ():
     invalids = 0
 
-    with open ('project_migration_data.csv', 'r') as fh:
+    with open ('part_1_projectID_runID_migration.csv', 'r') as fh:
         for line in fh.readlines():
             split_line = line.split(',')
             if len(split_line )!= 2:
