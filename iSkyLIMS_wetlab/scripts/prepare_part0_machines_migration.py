@@ -8,7 +8,7 @@ def run ():
     '''
     The script migration is needed to copy the sequencer information from the table in
     drylab to core.
-
+    The csv file contains "run_id, sequencer_name"
     '''
 
     run_objs = RunProcess.objects.all()
