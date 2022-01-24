@@ -4,6 +4,7 @@ from iSkyLIMS_wetlab.models import Projects
     This file is part of the migration preparation for the version 2.0.0.
     It collect the information for the projects table for having the
     functionality that Project name can be repeated in different runs
+    The csv file contains "project_id, run_id"
 '''
 def run ():
 
@@ -13,7 +14,7 @@ def run ():
         print('There is no projects defined in iSkyLIMS\n')
         print('No upload project script is required to execute')
         return
-    with open ('project_migration_data.csv', 'w') as fh:
+    with open ('part_1_projectID_runID_migration.csv', 'w') as fh:
         for project in projects_to_update :
             fh.write(str(project.pk) + ',' + str(project.runprocess_id.pk) + '\n')
 
