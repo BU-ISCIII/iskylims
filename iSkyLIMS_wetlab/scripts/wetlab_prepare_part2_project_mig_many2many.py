@@ -16,13 +16,13 @@ def run ():
         print('There is no SamplesInProjects defined in iSkyLIMS\n')
         print('No upload SamplesInProject script is required to execute')
         return
-    with open ('part2_SamplesID_RunsID_migration.csv', 'w') as fh:
+    with open ('wetlab_part2_SamplesID_RunsID_migration.csv', 'w') as fh:
         for sample in samples_to_update :
             project_obj = sample.project_id
             run_obj =  project_obj.runprocess_id
             fh.write(str(sample.pk) + ',' + str(run_obj.pk) + '\n')
 
-    with open ('part2_SamplesID_UsersID_migration.csv', 'w') as fh:
+    with open ('wetlab_part2_SamplesID_UsersID_migration.csv', 'w') as fh:
         for sample in samples_to_update :
             project_obj = sample.project_id
             user_id =  project_obj.user_id.pk

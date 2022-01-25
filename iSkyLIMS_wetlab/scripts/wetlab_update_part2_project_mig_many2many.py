@@ -5,7 +5,7 @@ def run ():
 
     invalids = 0
 
-    with open ('part2_SamplesID_RunsID_migration.csv', 'r') as fh:
+    with open ('wetlab_part2_SamplesID_RunsID_migration.csv', 'r') as fh:
         for line in fh.readlines():
             split_line = line.split(',')
             if len(split_line )!= 2:
@@ -28,7 +28,7 @@ def run ():
             s_obj.runProcess_id = (r_obj)
             s_obj.save()
 
-    with open ('part2_SamplesID_UsersID_migration.csv', 'r') as fh:
+    with open ('wetlab_part2_SamplesID_UsersID_migration.csv', 'r') as fh:
         for line in fh.readlines():
             split_line = line.split(',')
             if len(split_line )!= 2:

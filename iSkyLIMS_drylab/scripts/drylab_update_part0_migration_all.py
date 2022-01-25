@@ -1,7 +1,7 @@
 from iSkyLIMS_drylab.models import Service, Resolution, UploadServiceFile, RequestedSamplesInServices
 from iSkyLIMS_drylab.drylab_config import *
 from iSkyLIMS_core.models import SequencingPlatform
-from iSkyLIMS_wetlab.models import Projects, SamplesInProject, RunProcess
+from iSkyLIMS_wetlab.models import Projects, SamplesInProject, RunProcess, RunningParameters
 
 from django.conf import settings
 import os
@@ -36,18 +36,19 @@ def get_run_information(project_id):
     sample_objs = SamplesInProject.objects.filter(project_id__exact = project_id)
     # import pdb; pdb.set_trace()
     if len(sample_objs) >0 :
-        return sample_objs[0].runProcess_id.runName, sample_objs[0].runProcess_id.pk
+        path = RunningParameters.objects.get(runName_id = sample_objs[0].runProcess_id).RunID
+        return sample_objs[0].runProcess_id.runName, sample_objs[0].runProcess_id.pk, path
     else:
-        return None , None
+        return None , None, None
 
 def run():
-    '''
+
     ### restore platform
     invalid = 0
     platforms = platforms_defined ()
     if platforms != None:
         if SequencingPlatform.objects.all().exists():
-            with open('drylab_platform_to_migrate.csv', 'r') as fh:
+            with open('drylab_part1_platform_to_migrate.csv', 'r') as fh:
                 for line in fh.readlines():
                     line = line.rstrip()
                     split_line = line.split(',')
@@ -75,8 +76,8 @@ def run():
 
 
     ## restore service state to apply to resolution state
-    map_state = {'recorded':'Recorded','queued':'Recorded', 'in_progress':'In Progress',  'delivered':'Delivery', 'archived':'Delivery'}
-    with open('drylab_resolution_state_to_migrate.csv', 'r') as fh:
+    map_state = {'recorded':'Recorded', 'queued':'Recorded', 'rejected':'Rejected', 'in_progress':'In Progress',  'delivered':'Delivery', 'archived':'Delivery'}
+    with open('drylab_part2_resolution_state_to_migrate.csv', 'r') as fh:
         for line in fh.readlines():
             line = line.rstrip()
             split_line = line.split(',')
@@ -97,7 +98,7 @@ def run():
     folder_files = os.path.join(settings.MEDIA_ROOT, USER_REQUESTED_SERVICE_FILE_DIRECTORY)
     if not os.path.isdir(folder_files):
         os.makedirs(folder_files)
-    with open('drylab_service_files_to_migrate.csv', 'r') as fh:
+    with open('drylab_part3_service_files_to_migrate.csv', 'r') as fh:
         for line in fh.readlines():
             line = line.rstrip()
             split_line = line.split(',')
@@ -108,21 +109,21 @@ def run():
             if Service.objects.filter(pk__exact = s_id).exists():
                 service_obj  = Service.objects.get(pk__exact = s_id)
                 data = {'file':split_line[1], 'file_name': os.path.basename(split_line[1]) }
-                import pdb; pdb.set_trace()
-                upload_file_obj = UploadServiceFile.objects.create(data)
+                #import pdb; pdb.set_trace()
+                upload_file_obj = UploadServiceFile.objects.create_upload_file(data)
                 upload_file_obj.update_service_id(service_obj)
             else:
                 print('Service id', s_id ,' Does not longer exists\n')
                 invalids += 1
         if invalids == 0:
-            print ('Sucessfully for part0 upload service files migration\n')
+            print ('Sucessfully for upload service files migration\n')
         else:
             print('Unable to migrate all service files')
 
     ### collect the wetlab proyect used in the services
-    '''
+
     invalids = 0
-    with open('drylab_project_used_in_services_to_migrate.csv', 'r') as fh:
+    with open('drylab_part4_project_used_in_services_to_migrate.csv', 'r') as fh:
         for line in fh.readlines():
             line = line.rstrip()
             split_line = line.split(',')
@@ -146,17 +147,18 @@ def run():
             data['project_id'] = proj_id
             data['samplesInService'] = serv_obj
             data['only_recorded'] = False
-            data['run_name'], data['run_id'] = get_run_information(proj_id)
+            data['run_name'], data['run_id'] , data['sample_path'] = get_run_information(proj_id)
             samples_data = get_samples_info_for_migration(proj_id)
             if not samples_data:
                 print('Project id', proj_id ,' Does not have any sample\n')
                 invalids += 1
                 continue
             for sample in samples_data:
-                import pdb; pdb.set_trace()
                 data['sample_name'] , data['sample_id'] = sample
-                #import pdb; pdb.set_trace()
                 RequestedSamplesInServices.objects.create_request_sample(data)
-
+    if invalids == 0:
+        print ('Sucessfully for samples in service migration\n')
+    else:
+        print('Unable to migrate all service files')
 
     return
