@@ -18865,6 +18865,13 @@
     }
 },
 {
+    "model": "iSkyLIMS_drylab.resolutionstates",
+    "pk": 5,
+    "fields": {
+        "resolutionStateName": "Rejected"
+    }
+},
+{
     "model": "django_utils.classificationarea",
     "pk": 1,
     "fields": {

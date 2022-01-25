@@ -19130,6 +19130,13 @@
     }
 },
 {
+    "model": "iSkyLIMS_drylab.resolutionstates",
+    "pk": 5,
+    "fields": {
+        "resolutionStateName": "Rejected"
+    }
+},
+{
     "model": "iSkyLIMS_clinic.configsetting",
     "pk": 1,
     "fields": {
