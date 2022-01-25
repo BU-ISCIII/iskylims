@@ -10,7 +10,7 @@ The csv file contains "project_id ,run_id"
 def run ():
     invalids = 0
 
-    with open ('part_1_projectID_runID_migration.csv', 'r') as fh:
+    with open ('wetlab_part_1_projectID_runID_migration.csv', 'r') as fh:
         for line in fh.readlines():
             split_line = line.split(',')
             if len(split_line )!= 2:

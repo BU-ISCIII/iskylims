@@ -23,7 +23,7 @@ def run ():
         print('Unable to restore machine migration\n', 'Define first the machine on SequencerInLab table\n')
         exit(1)
     invalids = 0
-    with open ('part_0_machines_migration.csv', 'r') as fh:
+    with open ('wetlab_part_0_machines_migration.csv', 'r') as fh:
         for line in fh.readlines():
             line = line.rstrip()
             split_line = line.split(',')
