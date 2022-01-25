@@ -14,7 +14,7 @@ def run ():
         print('There is no projects defined in iSkyLIMS\n')
         print('No upload project script is required to execute')
         return
-    with open ('part_1_projectID_runID_migration.csv', 'w') as fh:
+    with open ('wetlab_part_1_projectID_runID_migration.csv', 'w') as fh:
         for project in projects_to_update :
             fh.write(str(project.pk) + ',' + str(project.runprocess_id.pk) + '\n')
 
