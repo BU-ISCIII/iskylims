@@ -45,6 +45,18 @@ def get_iSkyLIMS_settings():
         with open (settings_file ,'r') as fh:
             for line in fh:
                 line = line.replace('\n', '')
+                if 'PASSWORD' in line or 'SECRET_KEY' in line:
+                    if not 'VALIDATORS' in line:
+                        
+                        split_line = line.split('=')
+                        if len(split_line) >1:
+                            split_line[1] = 'XXXXXXXXXXXXXXXXXX'
+                            line = ' = '.join(split_line)
+                        else:
+                            split_line = line.split(':')
+                            if len(split_line) > 1:
+                                split_line[1] = 'XXXXXXXXXXXXXXXXXX'
+                            line = ' : '.join(split_line)
                 s_file.append(line)
     except:
         return
