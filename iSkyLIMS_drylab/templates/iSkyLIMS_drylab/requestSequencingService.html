@@ -9,7 +9,7 @@
         overflow-x: auto;
         overflow-y: auto;
         white-space: nowrap;
-        height: 900px;
+        height: auto;
     }
     .jexcel > tbody > tr > td.readonly {
         color:rgba(0,0,0,0.6) !important;
@@ -132,7 +132,7 @@
                                                 {% if service_data_information.samples_heading %}
 
                                                     <br>
-                                                    <h5 style="text-align:center"> Select the samples to be included in the service</h5>
+                                                    <h4 style="text-align:center"> Select the samples to be included in the service</h4>
 
                                                     <div  class="scrolling-wrapper">
                                                         <div id="spreadsheet1"></div>
@@ -148,8 +148,10 @@
                                                                     {% for value in service_data_information.samples_heading %}
                                                                         {% if forloop.counter|divisibleby:2 %}
                                                                            { type: 'hidden' },
+                                                                        {% elif forloop.counter == 3 %}
+                                                                           { type: 'text', title:'{{value}}', width:300 , readOnly:true },
                                                                         {% else %}
-                                                                           { type: 'text', title:'{{value}}', width:200 , readOnly:true },
+                                                                            { type: 'text', title:'{{value}}', width:200 , readOnly:true },
                                                                         {% endif %}
                                                                    {% endfor %}
                                                                    { type: 'checkbox',  title:'Select Sample', width:100 },
