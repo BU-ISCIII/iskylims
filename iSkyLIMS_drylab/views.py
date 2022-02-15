@@ -131,7 +131,7 @@ def counseling_request(request):
             return render(request,'iSkyLIMS_drylab/requestCounselingService.html',{'service_data_information':service_data_information,
                            'error_message':error_message})
 
-        new_service = create_new_save_counseling_service_request(request)
+        new_service = create_new_save_counseling_infrastructure_service_request(request)
 
         email_data = {}
         email_data['user_email'] = request.user.email
@@ -162,7 +162,7 @@ def infrastructure_request(request):
             return render(request,'iSkyLIMS_drylab/requestInfrastructureService.html',{'service_data_information':service_data_information,
                            'error_message':error_message})
 
-        new_service = create_new_save_infrastructure_service_request(request)
+        new_service = create_new_save_counseling_infrastructure_service_request(request)
 
         email_data = {}
         email_data['user_email'] = request.user.email
@@ -176,7 +176,6 @@ def infrastructure_request(request):
         confirmation_result['text'] = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), drylab_config.CONFIRMATION_TEXT_MESSAGE))
 
         return render(request,'iSkyLIMS_drylab/requestInfrastructureService.html',{'confirmation_result':confirmation_result})
-        import pdb; pdb.set_trace()
     else:
         service_data_information = prepare_form_data_request_counseling_service()
         return render(request,'iSkyLIMS_drylab/requestInfrastructureService.html',{'service_data_information':service_data_information})

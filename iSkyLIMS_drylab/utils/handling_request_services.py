@@ -114,7 +114,7 @@ def create_new_save_sequencing_service_request(request):
     return new_service
 
 
-def create_new_save_counseling_service_request(request):
+def create_new_save_counseling_infrastructure_service_request(request):
     '''
     Description:
     	The function collect  the data in the user form and create a new instance
