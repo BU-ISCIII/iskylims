@@ -94,8 +94,7 @@ def request_sequencing_service(request):
 			add_files_to_service(request.POST.getlist('files'), new_service)
 		## Send mail to user and drylab notification email
 		email_data = {}
-
-		if request.POST['requestedForUserid'] != '':
+		if 'requestedForUserid' in request.POST and request.POST['requestedForUserid'] != '':
 			user_obj= User.objects.filter(pk__exact = request.POST['requestedForUserid']).last()
 			email_data['user_name'] = user_obj.username
 			email_data['user_email'] = user_obj.email
@@ -177,7 +176,7 @@ def infrastructure_request(request):
         confirmation_result['text'] = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), drylab_config.CONFIRMATION_TEXT_MESSAGE))
 
         return render(request,'iSkyLIMS_drylab/requestInfrastructureService.html',{'confirmation_result':confirmation_result})
-
+        import pdb; pdb.set_trace()
     else:
         service_data_information = prepare_form_data_request_counseling_service()
         return render(request,'iSkyLIMS_drylab/requestInfrastructureService.html',{'service_data_information':service_data_information})
