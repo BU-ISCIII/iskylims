@@ -259,6 +259,10 @@
         <div class="col-sm-12">
             <div class="tab">
                     <button class="tablinks" onclick="summaryBin(event, 'request_services')"  id="defaultOpen">Requested Services</button>
+                    <button class="tablinks" onclick="summaryBin(event, 'r_samples')">Samples in Service</button>
+                    {% if display_service.service_manager %}
+                        <button class="tablinks" onclick="summaryBin(event, 'a_samples')">Add Samples</button>
+                    {% endif %}
                     <button class="tablinks" onclick="summaryBin(event, 'pipelines')">Pipelines</button>
                     <button class="tablinks" onclick="summaryBin(event, 'resolutions')">Resolutions</button>
                     <button class="tablinks" onclick="summaryBin(event, 'deliveries')">Deliveries</button>
@@ -285,70 +289,6 @@
                             </div> <!--// end panel body -->
                         </div> <!--// end panel -->
                     </div> <!--// end col-sm-6 -->
-                    <div class="col-sm-6">
-                        <div class="col-sm-12">  <!-- Samples Requested services -->
-                            <div class="panel panel-default">
-                                {% if display_service.samples_sequenced %}
-                                    <div class="panel-heading"><h3>Sequencing Samples requested in service</h3></div>
-                                    <div class="panel-body">
-                                        <table class="table table-hover">
-                                            <thead>
-                                                <tr>
-                                                    <th>Sample Name</th>
-                                                    <th>Project Name</th>
-                                                    <th>Run Name</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for key, sample, project, run in display_service.samples_sequenced %}
-                                                    <tr>
-                                                        <td>
-                                                            {% if key == 'None' %}
-                                                                {{sample}}
-                                                            {% else %}
-                                                                <a href="/wetlab/displaySampleInRun={{ key }}"  target="_blank" rel="noopener noreferrer">{{sample}}</a>
-                                                            {% endif %}
-                                                        </td>
-                                                        <td>{{project}}</td>
-                                                        <td>{{run}}</td>
-                                                    </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div> <!--// end panel body -->
-                                {% endif %}
-                                {% if display_service.only_recorded_samples %}
-                                    <div class="panel-heading"><h3>Just only recorded Samples requested in service</h3></div>
-                                    <div class="panel-body">
-                                        <table class="table table-hover">
-                                            <thead>
-                                                <tr>
-                                                    <th>Sample Name</th>
-                                                    <th>Sample Project Name</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for key, sample, project in display_service.only_recorded_samples %}
-                                                    <tr>
-                                                        <td>
-                                                            {% if key == 'None' %}
-                                                                {{sample}}
-                                                            {% else %}
-                                                                <a href="/wetlab/displaySample={{ key }}"  target="_blank" rel="noopener noreferrer">{{sample}}</a>
-                                                            {% endif %}
-                                                        </td>
-                                                        <td>{{project}}</td>
-                                                    </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div> <!--// end panel body -->
-                                {% endif %}
-                                
-                            </div> <!--// end panel -->
-                        </div> <!--// end col-sm-12   samples Requested services  -->
-
-                    </div> <!--// end col-sm-5 -->
                     <div class="col-sm-12">  <!-- Notes in the Requested services -->
                         <div class="panel panel-default">
                             <div class="panel-heading"><h3>Notes included in the service request</h3></div>
@@ -358,7 +298,107 @@
                         </div> <!--// end panel -->
                     </div> <!--// end col-sm-12  notes  -->
                 </div><!-- // end of tab request_services -->
+                <div id="r_samples" class="tabcontent">
+                    <div class="col-sm-8">  <!-- Samples Requested services -->
+                        <div class="panel panel-default">
+                            {% if display_service.samples_sequenced %}
+                                <div class="panel-heading"><h3>Sequencing Samples requested in service</h3></div>
+                                <div class="panel-body">
 
+                                    {% if display_service.samples_sequenced|length > 0 %}
+                                        {% if display_service.service_manager %}
+                                            <form class="" action="/drylab/deleteSamplesInService" method="post">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="deleteSamplesInService">
+                                                <input type="hidden" name="service_id" value="{{display_service.service_id}}">
+                                        {% endif %}
+                                            <br>
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Sample Name</th>
+                                                        <th>Project Name</th>
+                                                        <th>Run Name</th>
+                                                        {% if display_service.service_manager %}
+                                                            <th>Select to delete</th>
+                                                        {% endif %}
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for key, sample, project, run, s_id in display_service.samples_sequenced %}
+                                                        <tr>
+                                                            <td>
+                                                                {% if key == 'None' %}
+                                                                    {{sample}}
+                                                                {% else %}
+                                                                    <a href="/wetlab/displaySampleInRun={{ key }}"  target="_blank" rel="noopener noreferrer">{{sample}}</a>
+                                                                {% endif %}
+                                                            </td>
+                                                            <td>{{project}}</td>
+                                                            <td>{{run}}</td>
+                                                            {% if display_service.service_manager %}
+                                                                <td><input type="checkbox" name="sampleId" value="{{s_id}}"></td>
+                                                            {% endif %}
+                                                        </tr>
+                                                    {% endfor %}
+
+                                                </tbody>
+                                            </table>
+                                            {% if display_service.service_manager %}
+                                                <input class="btn pull-right btn-primary" type="submit" id ="btnSubmit" value="Submit your Request">
+                                            </form>
+                                            {% endif %}
+                                    {% else %}
+                                        <h5 style="text-align:center"> There is not samples assigned to this service</h5>
+
+                                    {% endif %}
+
+                                </div> <!--// end panel body -->
+                            {% endif %}
+                            {% if display_service.only_recorded_samples %}
+                                <div class="panel-heading"><h3>Just only recorded Samples requested in service</h3></div>
+                                <div class="panel-body">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Sample Name</th>
+                                                <th>Sample Project Name</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for key, sample, project in display_service.only_recorded_samples %}
+                                                <tr>
+                                                    <td>
+                                                        {% if key == 'None' %}
+                                                            {{sample}}
+                                                        {% else %}
+                                                            <a href="/wetlab/displaySample={{ key }}"  target="_blank" rel="noopener noreferrer">{{sample}}</a>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{project}}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div> <!--// end panel body -->
+                            {% endif %}
+
+                        </div> <!--// end panel -->
+                    </div> <!--// end col-sm-8   -->
+                </div> <!-- // end of tab request_services -->
+                {% if display_service.service_manager %}
+                    <div id="a_samples" class="tabcontent">
+                        <div class="col-sm-12">  <!-- Samples Requested services -->
+                            <div class="panel panel-default">
+                                <div class="panel-heading"><h3>Add new samples to the Service</h3></div>
+                                <div class="panel-body">
+                                    <p>To be included with all samples </p>
+                                </div> <!--// end panel body -->
+                            </div> <!--// end panel -->
+                        </div> <!--// end col-sm-12   samples Requested services  -->
+
+                    </div><!-- // end of tab a_samples -->
+                {% endif %}
                 <div id="pipelines" class="tabcontent">
                     <div class="col-sm-6">
                         <div class="panel panel-default">
@@ -484,3 +524,16 @@
     </script>
 {% endif %}
 {% endblock %}
+
+jexcel(document.getElementById('spreadsheet2'), {
+    data:data2,
+    columns: [
+        { type:'text', width:300, title:'Cover' },
+        { type:'text', width:300, title:'Title' },
+    ],
+    updateTable: function (instance, cell, col, row, val, id) {
+        if (col == 0) {
+            cell.innerHTML = '<a href="' + val + '>' + val + '</a>';
+        }
+    }
+});

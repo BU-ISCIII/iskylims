@@ -447,7 +447,7 @@ def get_service_information (service_id, service_manager):
         samples_in_service = RequestedSamplesInServices.objects.filter(samplesInService = service_obj, onlyRecordedSample__exact = False)
         display_service_details['samples_sequenced'] = []
         for sample in samples_in_service:
-            display_service_details['samples_sequenced'].append([sample.get_sample_id(), sample.get_sample_name(), sample.get_project_name(), sample.get_run_name()])
+            display_service_details['samples_sequenced'].append([sample.get_sample_id(), sample.get_sample_name(), sample.get_project_name(), sample.get_run_name(), sample.get_requested_sample_id()])
     if RequestedSamplesInServices.objects.filter(samplesInService = service_obj, onlyRecordedSample__exact = True).exists():
         samples_in_service = RequestedSamplesInServices.objects.filter(samplesInService = service_obj, onlyRecordedSample__exact = True)
         display_service_details['only_recorded_samples'] = []

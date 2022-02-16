@@ -14,6 +14,7 @@ urlpatterns = [
     path('counselingRequest',views.counseling_request, name='counseling_service'),
     path('configurationEmail', views.configuration_email, name='configuration_email'),
     path('configurationTest',views.configuration_test, name='configuration_test'),
+    path('deleteSamplesInService', views.delete_samples_in_service, name= 'deleteSamplesInService'),
     path('detailPipeline=<int:pipeline_id>', views.detail_pipeline, name = 'detail_pipeline'),
     path('definePipelineService', views.define_pipeline_service, name = 'define_pipeline_service'),
     path('display_service=<int:service_id>/',views.display_service, name= 'display_service'),
