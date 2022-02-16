@@ -240,7 +240,6 @@ def search_service (request):
         if service_number_request != '':
             # check if the requested service in the form matches exactly with the existing service in DB
             if Service.objects.filter(serviceRequestNumber__exact = service_number_request).exists():
-
                 services_found = Service.objects.get(serviceRequestNumber__exact = service_number_request)
                 redirect_page = '/drylab/display_service=' + str(services_found.id)
                 return redirect (redirect_page)
@@ -275,19 +274,19 @@ def search_service (request):
             services_found = services_found.filter(serviceRequestNumber__in = services_handled_by)
 
         if project_name != '' or run_name != '' or sample_name != '':
+            samples_in_services = RequestedSamplesInServices.objects.all()
             if project_name != '':
-                samples_in_services = RequestedSamplesInServices.objects.filter(projectName__icontains = project_name, samplesInService__in = service_found)
+                samples_in_services = RequestedSamplesInServices.objects.filter(projectName__icontains = project_name, samplesInService__in = services_found)
             else:
-                samples_in_services =  RequestedSamplesInServices.objects.filter(samplesInService__in = service_found)
+                samples_in_services =  RequestedSamplesInServices.objects.filter(samplesInService__in = services_found)
             if run_name != '':
                 samples_in_services = samples_in_services.filter(runName__icontains = run_name)
             if sample_name != '':
-                samples_in_services = samples_in_services.filter(sampleNane__icontains = sample_name)
+                samples_in_services = samples_in_services.filter(sampleName__icontains = sample_name)
             service_list = []
-            for project_in_service in project_in_services:
-                service_list.append(project_in_service.samplesInService.pk)
+            for samples_in_service in samples_in_services:
+                service_list.append(samples_in_service.samplesInService.pk)
             services_found = services_found.filter(pk__in = service_list)
-
         if len(services_found) == 0 :
             error_message = drylab_config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
             return render( request,'iSkyLIMS_drylab/searchService.html',{'services_search_list': services_search_list , 'ERROR':error_message})
