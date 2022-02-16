@@ -177,7 +177,7 @@ def infrastructure_request(request):
 
         return render(request,'iSkyLIMS_drylab/requestInfrastructureService.html',{'confirmation_result':confirmation_result})
     else:
-        service_data_information = prepare_form_data_request_counseling_service()
+        service_data_information = prepare_form_data_request_infrastructure_service()
         return render(request,'iSkyLIMS_drylab/requestInfrastructureService.html',{'service_data_information':service_data_information})
 
 
