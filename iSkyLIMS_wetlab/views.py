@@ -681,8 +681,7 @@ def search_run (request):
             if (RunProcess.objects.filter(runName__iexact =run_name).exists()):
                 run_name_found=RunProcess.objects.filter(runName__iexact =run_name)
                 if len(run_name_found) == 1:
-                    r_data_display= get_information_run(run_name_found[0])
-                    return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_one_run': r_data_display })
+                    return redirect ('display_run', run_id=run_name_found[0].pk)
             if (runs_found.filter(runName__icontains =run_name).exists()):
                 runs_found=runs_found.filter(runName__icontains =run_name).order_by('runName')
             else:
