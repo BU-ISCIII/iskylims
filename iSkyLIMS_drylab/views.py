@@ -181,6 +181,33 @@ def infrastructure_request(request):
         return render(request,'iSkyLIMS_drylab/requestInfrastructureService.html',{'service_data_information':service_data_information})
 
 @login_required
+def add_samples_in_service(request):
+    if request.user.is_authenticated:
+        if not is_service_manager(request):
+            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_USER_NOT_ALLOWED })
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+    if Service.objects.filter(pk = request.POST['service_id']).exists():
+        service_manager = is_service_manager(request)
+    if request.method == 'POST' and request.POST['action'] == 'addeSamplesInService':
+        if not Service.objects.filter(pk__exact = request.POST['service_id']).exists():
+            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The service that you are trying to get does not exist ']})
+        service_obj = get_service_obj_from_id(request.POST['service_id'])
+        samples_added = {}
+        samples_added['samples'] = stored_samples_for_sequencing_request_service(request.POST, service_obj)
+        samples_added['service_name'] = service_obj.get_service_request_number()
+        samples_added['service_id'] = request.POST['service_id']
+        return (render(request,'iSkyLIMS_drylab/addSamplesInService.html',{'samples_added': samples_added}))
+    else:
+        service_data_information = add_requested_samples_in_service(request)
+        service_data_information['service_id'] = request.POST['service_id']
+        return (render(request,'iSkyLIMS_drylab/addSamplesInService.html',{'service_data_information': service_data_information}))
+    return redirect ('/drylab/display_service=' + str(request.POST['service_id']))
+
+
+
+@login_required
 def delete_samples_in_service(request):
     if request.user.is_authenticated:
         if not is_service_manager(request):
@@ -195,14 +222,10 @@ def delete_samples_in_service(request):
             return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The service that you are trying to get does not exist ']})
         if  not 'sampleId' in request.POST :
             return redirect ('/drylab/display_service=' + str(request.POST['service_id']))
-        samples_in_services_objs = RequestedSamplesInServices.objects.filter(pk__in = request.POST.getlist('sampleId'))
-        deleted_samples = []
-
-        for samples_in_services_obj in samples_in_services_objs:
-            deleted_samples.append(samples_in_services_obj.get_sample_name())
-            #samples_in_services_obj.delete()
+        deleted_samples = delete_requested_samples_in_service(request.POST.getlist('sampleId'))
         service_data ={'service_id':request.POST['service_id'],'service_name':get_service_obj_from_id(request.POST['service_id']).get_service_request_number()}
         return (render(request,'iSkyLIMS_drylab/deleteSamplesInService.html',{'deleted_samples': deleted_samples, 'service_data':service_data}))
+    return redirect ('/drylab/display_service=' + str(request.POST['service_id']))
 
 
 

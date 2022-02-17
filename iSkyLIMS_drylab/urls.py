@@ -11,6 +11,7 @@ urlpatterns = [
     path('addResolution',views.add_resolution, name='add_resolution'),
     path('addInProgress', views.add_in_progress, name='add_in_progress'),
     path('addDelivery', views.add_delivery, name= 'add_delivery'),
+    path('addSamplesInService', views.add_samples_in_service, name = 'add_samples_in_service'),
     path('counselingRequest',views.counseling_request, name='counseling_service'),
     path('configurationEmail', views.configuration_email, name='configuration_email'),
     path('configurationTest',views.configuration_test, name='configuration_test'),

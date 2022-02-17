@@ -39,6 +39,22 @@ def add_files_to_service(file_ids, service_obj):
             update_upload_file_with_service(file_id, service_obj)
     return
 
+def add_requested_samples_in_service(request):
+    '''
+    Description:
+        The get the list of samples to be added to the already requested service. it reused the
+		same function prepare_form_data_request_service_sequencing, as used for getting the samples to
+		request a new service
+    Input:
+        request
+
+	Functions:
+		prepare_form_data_request_service_sequencing		# located at this file
+    Return:
+        service_data_information
+    '''
+    return prepare_form_data_request_service_sequencing(request)
+
 def check_service_id_exists(service_id):
     '''
     Description:
@@ -145,6 +161,25 @@ def create_new_save_counseling_infrastructure_service_request(request):
         new_service.serviceAvailableService.add(av_service_obj)
 
     return new_service
+
+
+
+def delete_requested_samples_in_service(sample_list):
+	'''
+	Description:
+		The function delete the samples requested in service
+	Input:
+		sample_list  # list of samples to be deleted
+	Return:
+		deleted_sample_names
+	'''
+	deleted_sample_names = []
+	samples_in_services_objs = RequestedSamplesInServices.objects.filter(pk__in = sample_list)
+	for samples_in_services_obj in samples_in_services_objs:
+		deleted_sample_names.append(samples_in_services_obj.get_sample_name())
+		samples_in_services_obj.delete()
+	return deleted_sample_names
+
 
 def get_available_children_services_and_id(all_tree_services):
 	'''
@@ -452,7 +487,7 @@ def get_service_information (service_id, service_manager):
         samples_in_service = RequestedSamplesInServices.objects.filter(samplesInService = service_obj, onlyRecordedSample__exact = True)
         display_service_details['only_recorded_samples'] = []
         for sample in samples_in_service:
-            display_service_details['only_recorded_samples'].append([sample.get_sample_id(), sample.get_sample_name(), sample.get_project_name()])
+            display_service_details['only_recorded_samples'].append([sample.get_sample_name(), '--' , sample.get_requested_sample_id()])
 
     display_service_details['user_name'] = service_obj.get_service_requested_user()
     user_input_files = get_uploaded_files_and_file_name_for_service(service_obj)
