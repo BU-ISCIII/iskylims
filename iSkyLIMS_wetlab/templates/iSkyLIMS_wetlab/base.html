@@ -132,6 +132,17 @@
                         				    </li>
                                         {% endif %}
                     				{% endif%}
+                                    {% if user.is_authenticated %}
+                    				    {% if request.user|has_group:"WetlabManager" %}
+                            				<li class="js_nav-item nav-item dropdown"><a class="nav-item-child nav-item-hover dropdown-toggle" data-toggle="dropdown" href="#">Reports<span class="caret"></span></a>
+                            				    <ul class="dropdown-menu">
+                            				    <li><a href="/wetlab/AnnualReport">Annual Reports</a></li>
+                            				    <li><a href="/wetlab/QuarterReport">Quarter Reports</a></li>
+                            				    <li><a href="/wetlab/MonthlyReport">Monthly Reports</a></li>
+                            				    </ul>
+                            				</li>
+                    				    {% endif %}
+                    				{% endif%}
                                 </ul>
 
                             </div> <!-- menu- container -->
