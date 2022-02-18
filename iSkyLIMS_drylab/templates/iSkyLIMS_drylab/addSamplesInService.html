@@ -1,0 +1,206 @@
+{% extends 'iSkyLIMS_drylab/base.html' %}
+{% block content %}
+{% load upload_tags %}
+{% include 'iSkyLIMS_core/jexcel_functionality.html' %}
+<style>
+    .scrolling-wrapper {
+        overflow-x: auto;
+        overflow-y: auto;
+        white-space: nowrap;
+        height: auto;
+    }
+    .jexcel > tbody > tr > td.readonly {
+        color:rgba(0,0,0,0.6) !important;
+    }
+</style>
+{% if error_message %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7 col-sm-offset-3">
+            <div class="panel panel-danger">
+                <div class="panel-heading"><h3 style="text-align:center"></h3> </div>
+                <div class="panel-body">
+                    {% for values in error_message %}
+                        <h4>{{values}}</h4>
+                    {% endfor %}
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-7 -->
+    </div> <!--  end of row -->
+{% endif %}
+{% if samples_added %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-7 col-sm-offset-3">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3 style="text-align:center">More samples are added to the service {{samples_added.service_name}}</h3> </div>
+                <div class="panel-body">
+                    {% if samples_added.samples %}
+                        <h5> The new samples included in the services are:</h5>
+                        <br>
+                        <p>
+                            {% for sample in samples_added.samples %}
+                                {% if forloop.last %}
+                                    and {{sample}}.
+                                {% else %}
+                                    {{sample }},
+                                {% endif %}
+                            {% endfor %}
+                        </p>
+                    {% endif %}
+                    <input type="button" value="Return to service" onclick="location.href ='/drylab/display_service={{samples_added.service_id}}' ;"/>
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-7 -->
+    </div> <!--  end of row -->
+
+{% else %}
+    <div class="row row-space-2 margin-b-4">
+        <div class="col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h3 style="text-align:center">Request Service form for Adding more samples to an existing Service.</h3></div>
+                <div class="panel-body">
+                    <div class="tab">
+                        <button type="button" class="tablinks" onclick="summaryBin(event, 'sequencingSamples')"  id="defaultOpen">Samples in iSkyLIMS with Sequencing data</button>
+                        <button type="button" class="tablinks" onclick="summaryBin(event, 'onlyRecordedSamples')">Samples with only recorded data</button>
+                    </div> <!--  end tabs -->
+                    <div class="col-sm-12">  <!-- Resolution and Delivery Information from service -->
+                        <form  method="post" id="addeSamplesInService" name="addeSamplesInService"  enctype="multipart/form-data" class="form-horizontal well">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="addeSamplesInService"/>
+                            <input type="hidden" name="service_id" value="{{service_data_information.service_id}}"/>
+                            <div id="sequencingSamples" class="tabcontent">
+
+                                <div class="panel panel-default">
+                                    <div class="panel-heading"><h3 style="text-align:center">Internal Samples.</h3></div>
+                                    <div class="panel-body">
+                                        {% if service_data_information.samples_heading %}
+
+                                            <br>
+                                            <h4 style="text-align:center"> Select the samples to be included in the service</h4>
+
+                                            <div  class="scrolling-wrapper">
+                                                <div id="spreadsheet1"></div>
+                                                <br>
+                                                <script>
+                                                    var data = [{% for values in service_data_information.samples_data %}
+                                                       [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                                                    ];
+                                                    var table1 = jexcel(document.getElementById('spreadsheet1'), {
+                                                   // mySpreadsheet = $('#spreadsheet1').jexcel({
+                                                       data:data,
+                                                       columns: [
+                                                            {% for value in service_data_information.samples_heading %}
+                                                                {% if forloop.counter|divisibleby:2 %}
+                                                                   { type: 'hidden' },
+                                                                {% elif forloop.counter == 3 %}
+                                                                   { type: 'text', title:'{{value}}', width:300 , readOnly:true },
+                                                                {% else %}
+                                                                    { type: 'text', title:'{{value}}', width:160 , readOnly:true },
+                                                                {% endif %}
+                                                           {% endfor %}
+                                                           { type: 'checkbox',  title:'Select Sample', width:100 },
+                                                        ],
+                                                        allowInsertColumn:false,
+                                                        allowDeleteColumn:false,
+                                                        allowRenameColumn:false,
+                                                        allowInsertRow:false,
+                                                        allowDeleteRow:false,
+                                                        tableOverflow:false,
+                                                        search:true,
+                                                        pagination:20,
+                                                        csvFileName:'SamplesDefined.csv',
+
+                                                   });
+                                                </script>
+                                            </div> <!--  end of scrolling  -->
+                                        {% else %}
+                                            <h3 style="text-align:center">There are no Samples to select, for user </h3>
+                                            <h5 style="text-align:center">Check the User Guide to define new Samples</h5>
+                                        {% endif %}
+                                    </div> <!--  end of panel body -->
+                                </div> <!--  end of panel  -->
+                            </div><!-- // end of tab internal_samples -->
+
+                            <div id="onlyRecordedSamples" class="tabcontent">
+                                <div class="col-sm-12">
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading"><h3 style="text-align:center">Only recorded Samples </h3></div>
+                                        <div class="panel-body">
+                                            {% if service_data_information.sample_only_recorded_heading %}
+                                                <h5 style="text-align:center">Select the samples to be included in the service.</h5>
+                                                <p  style="text-align:center" class="text-primary">Contact with Bioinformatic unit to provide the sample files</p>
+                                                <div id="spreadsheet2"></div>
+                                                <script>
+                                                    var data2 = [{% for values in service_data_information.sample_only_recorded %}
+                                                       [{% for value in values %}'{{value}}',{% endfor %}],{% endfor %}
+                                                       ];
+                                                    var table2  = jexcel(document.getElementById('spreadsheet2'), {
+                                                        data:data2,
+                                                        columns: [
+                                                            {% for item in  service_data_information.sample_only_recorded_heading %}
+                                                                {% if forloop.last %}
+                                                                    { type: 'hidden' },
+                                                                {% else %}
+                                                                { type: 'text', title:'{{item}}', width:150 },
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                            { type: 'checkbox',  title:'Select Sample', width:100 },
+                                                        ],
+                                                        allowInsertColumn:false,
+                                                        allowDeleteColumn:false,
+                                                        allowRenameColumn:false,
+                                                        allowInsertRow:false,
+                                                        allowDeleteRow:false,
+                                                        tableOverflow:false,
+                                                        search:true,
+                                                        pagination:20,
+                                                        csvFileName:'only_recorded_samples',
+                                                    });
+                                                </script>
+                                            {% else %}
+                                                <h3 style="text-align:center">There are no Samples which are defined as only recorded </h3>
+                                                <h5 style="text-align:center">Check the User Guide to define new Samples</h5>
+                                            {% endif %}
+                                        </div> <!--// end panel body -->
+                                    </div> <!--// end panel -->
+                                </div> <!--// end col-sm-12  Projects Requested services  -->
+                            </div><!-- // end of tab external_samples -->
+                            <input class="btn pull-right btn-primary" type="submit" id ="btnSubmit" value="Submit your Request">
+                        </form>
+                    </div> <!--  end of col-sm-12 -->
+                    <script>
+                       $(document).ready(function () {
+                           $("#addeSamplesInService").submit(function (e) {
+                               //stop submitting the form to see the disabled button effect
+                               //e.preventDefault();
+                               //disable the submit button
+                               //var table_data = $('#spreadsheet').jexcel('getData')
+                               {% if service_data_information.samples_heading %}
+                                   var table_data1 = table1.getData()
+                                   var data_json = JSON.stringify(table_data1)
+                                   $("<input />").attr("type", "hidden")
+                                       .attr("name", "samples_requested")
+                                       .attr("value", data_json)
+                                       .appendTo("#addeSamplesInService");
+                               {% endif %}
+                               var table_data2 = table2.getData()
+                               var data_json = JSON.stringify(table_data2)
+                               $("<input />").attr("type", "hidden")
+                                   .attr("name", "only_recorded_samples")
+                                   .attr("value", data_json)
+                                   .appendTo("#addeSamplesInService");
+                               $("#btnSubmit").attr("disabled", true);
+                               return true;
+                           });
+                       });
+                    </script>
+                    <script>
+                        // Get the element with id="defaultOpen" and click on it
+                        document.getElementById("defaultOpen").click();
+                    </script>
+
+                </div> <!--  end of panel body -->
+            </div> <!--  end of panel  -->
+        </div> <!--  end of col-sm-12 -->
+    </div> <!--  end of row -->
+{% endif %}
+{% endblock %}

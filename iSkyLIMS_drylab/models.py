@@ -426,6 +426,9 @@ class RequestedSamplesInServices (models.Model):
 	def __str__ (self):
 		return '%s' %(self.sampleName)
 
+	def get_requested_sample_id(self):
+		return '%s' %(self.pk)
+
 	def get_sample_name  (self):
 		return '%s' %(self.sampleName)
 

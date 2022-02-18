@@ -267,7 +267,7 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        {% for s_id, s_name, res_name , s_acronym,  queued_date, estimated_date in user_pending_services.queued %}
+                                                        {% for s_id, s_name, res_name , s_acronym,  queued_date, estimated_date in user_pending_services.in_progress %}
                                                             <tr>
                                                                 <td><a href="/drylab/display_service={{ s_id }}">{{ s_name }}</a> </td>
                                                                 <td> {{ res_name }}</td>

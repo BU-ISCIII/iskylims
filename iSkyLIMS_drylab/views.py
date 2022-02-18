@@ -94,8 +94,7 @@ def request_sequencing_service(request):
 			add_files_to_service(request.POST.getlist('files'), new_service)
 		## Send mail to user and drylab notification email
 		email_data = {}
-
-		if request.POST['requestedForUserid'] != '':
+		if 'requestedForUserid' in request.POST and request.POST['requestedForUserid'] != '':
 			user_obj= User.objects.filter(pk__exact = request.POST['requestedForUserid']).last()
 			email_data['user_name'] = user_obj.username
 			email_data['user_email'] = user_obj.email
@@ -132,7 +131,7 @@ def counseling_request(request):
             return render(request,'iSkyLIMS_drylab/requestCounselingService.html',{'service_data_information':service_data_information,
                            'error_message':error_message})
 
-        new_service = create_new_save_counseling_service_request(request)
+        new_service = create_new_save_counseling_infrastructure_service_request(request)
 
         email_data = {}
         email_data['user_email'] = request.user.email
@@ -163,7 +162,7 @@ def infrastructure_request(request):
             return render(request,'iSkyLIMS_drylab/requestInfrastructureService.html',{'service_data_information':service_data_information,
                            'error_message':error_message})
 
-        new_service = create_new_save_infrastructure_service_request(request)
+        new_service = create_new_save_counseling_infrastructure_service_request(request)
 
         email_data = {}
         email_data['user_email'] = request.user.email
@@ -177,10 +176,56 @@ def infrastructure_request(request):
         confirmation_result['text'] = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), drylab_config.CONFIRMATION_TEXT_MESSAGE))
 
         return render(request,'iSkyLIMS_drylab/requestInfrastructureService.html',{'confirmation_result':confirmation_result})
-
     else:
-        service_data_information = prepare_form_data_request_counseling_service()
+        service_data_information = prepare_form_data_request_infrastructure_service()
         return render(request,'iSkyLIMS_drylab/requestInfrastructureService.html',{'service_data_information':service_data_information})
+
+@login_required
+def add_samples_in_service(request):
+    if request.user.is_authenticated:
+        if not is_service_manager(request):
+            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_USER_NOT_ALLOWED })
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+    if Service.objects.filter(pk = request.POST['service_id']).exists():
+        service_manager = is_service_manager(request)
+    if request.method == 'POST' and request.POST['action'] == 'addeSamplesInService':
+        if not Service.objects.filter(pk__exact = request.POST['service_id']).exists():
+            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The service that you are trying to get does not exist ']})
+        service_obj = get_service_obj_from_id(request.POST['service_id'])
+        samples_added = {}
+        samples_added['samples'] = stored_samples_for_sequencing_request_service(request.POST, service_obj)
+        samples_added['service_name'] = service_obj.get_service_request_number()
+        samples_added['service_id'] = request.POST['service_id']
+        return (render(request,'iSkyLIMS_drylab/addSamplesInService.html',{'samples_added': samples_added}))
+    else:
+        service_data_information = add_requested_samples_in_service(request)
+        service_data_information['service_id'] = request.POST['service_id']
+        return (render(request,'iSkyLIMS_drylab/addSamplesInService.html',{'service_data_information': service_data_information}))
+    return redirect ('/drylab/display_service=' + str(request.POST['service_id']))
+
+
+
+@login_required
+def delete_samples_in_service(request):
+    if request.user.is_authenticated:
+        if not is_service_manager(request):
+            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_USER_NOT_ALLOWED })
+    else:
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+    if Service.objects.filter(pk = request.POST['service_id']).exists():
+        service_manager = is_service_manager(request)
+    if request.method == 'POST' and request.POST['action'] == 'deleteSamplesInService':
+        if not Service.objects.filter(pk__exact = request.POST['service_id']).exists():
+            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The service that you are trying to get does not exist ']})
+        if  not 'sampleId' in request.POST :
+            return redirect ('/drylab/display_service=' + str(request.POST['service_id']))
+        deleted_samples = delete_requested_samples_in_service(request.POST.getlist('sampleId'))
+        service_data ={'service_id':request.POST['service_id'],'service_name':get_service_obj_from_id(request.POST['service_id']).get_service_request_number()}
+        return (render(request,'iSkyLIMS_drylab/deleteSamplesInService.html',{'deleted_samples': deleted_samples, 'service_data':service_data}))
+    return redirect ('/drylab/display_service=' + str(request.POST['service_id']))
 
 
 
@@ -242,7 +287,6 @@ def search_service (request):
         if service_number_request != '':
             # check if the requested service in the form matches exactly with the existing service in DB
             if Service.objects.filter(serviceRequestNumber__exact = service_number_request).exists():
-
                 services_found = Service.objects.get(serviceRequestNumber__exact = service_number_request)
                 redirect_page = '/drylab/display_service=' + str(services_found.id)
                 return redirect (redirect_page)
@@ -277,19 +321,19 @@ def search_service (request):
             services_found = services_found.filter(serviceRequestNumber__in = services_handled_by)
 
         if project_name != '' or run_name != '' or sample_name != '':
+            samples_in_services = RequestedSamplesInServices.objects.all()
             if project_name != '':
-                samples_in_services = RequestedSamplesInServices.objects.filter(projectName__icontains = project_name, samplesInService__in = service_found)
+                samples_in_services = RequestedSamplesInServices.objects.filter(projectName__icontains = project_name, samplesInService__in = services_found)
             else:
-                samples_in_services =  RequestedSamplesInServices.objects.filter(samplesInService__in = service_found)
+                samples_in_services =  RequestedSamplesInServices.objects.filter(samplesInService__in = services_found)
             if run_name != '':
                 samples_in_services = samples_in_services.filter(runName__icontains = run_name)
             if sample_name != '':
-                samples_in_services = samples_in_services.filter(sampleNane__icontains = sample_name)
+                samples_in_services = samples_in_services.filter(sampleName__icontains = sample_name)
             service_list = []
-            for project_in_service in project_in_services:
-                service_list.append(project_in_service.samplesInService.pk)
+            for samples_in_service in samples_in_services:
+                service_list.append(samples_in_service.samplesInService.pk)
             services_found = services_found.filter(pk__in = service_list)
-
         if len(services_found) == 0 :
             error_message = drylab_config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
             return render( request,'iSkyLIMS_drylab/searchService.html',{'services_search_list': services_search_list , 'ERROR':error_message})

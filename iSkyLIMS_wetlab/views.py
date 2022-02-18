@@ -345,7 +345,7 @@ def create_nextseq_run (request):
             else:
                 library[project_index_kit[x]]= [projects[x]]
         ## convert the sample sheet to base space format and have different files according the library kit
-
+        ''' Removed because Base space creation file is not longer used
         for key, value in library.items():
             lib_kit_file =key.replace(' ', '_')
             library_file = sample_sheet_map_basespace(in_file, key, lib_kit_file, value,'Plate96')
@@ -369,7 +369,7 @@ def create_nextseq_run (request):
             else:
                 bs_file[key] = library_file
                 results.append([key, bs_file[key]])
-
+        '''
         ## save the project information on database
 
         for p in range(len( projects)):
@@ -379,7 +379,9 @@ def create_nextseq_run (request):
             library_kit_id = LibraryKit.objects.filter(libraryName__exact = library_kit[p]).last()
             update_info_proj=Projects.objects.get(projectName = my_project)
             update_info_proj.libraryKit=project_index_kit[p]
-            update_info_proj.baseSpaceFile=bs_file[project_index_kit[p]]
+            # removed the link to base space file
+            #update_info_proj.baseSpaceFile=bs_file[project_index_kit[p]]
+            update_info_proj.baseSpaceFile= None
             update_info_proj.LibraryKit_id = library_kit_id
             update_info_proj.user_id = User.objects.get(username__exact = user_name[p])
             update_info_proj.save()
@@ -679,8 +681,7 @@ def search_run (request):
             if (RunProcess.objects.filter(runName__iexact =run_name).exists()):
                 run_name_found=RunProcess.objects.filter(runName__iexact =run_name)
                 if len(run_name_found) == 1:
-                    r_data_display= get_information_run(run_name_found[0])
-                    return render(request, 'iSkyLIMS_wetlab/SearchRun.html', {'display_one_run': r_data_display })
+                    return redirect ('display_run', run_id=run_name_found[0].pk)
             if (runs_found.filter(runName__icontains =run_name).exists()):
                 runs_found=runs_found.filter(runName__icontains =run_name).order_by('runName')
             else:
