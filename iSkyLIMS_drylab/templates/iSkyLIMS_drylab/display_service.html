@@ -3,7 +3,13 @@
 {% block content %}
 {% load mptt_tags %}
 {% load l10n %}
-
+<style>
+    .scrolling-wrapper {
+        overflow-x: auto;
+        overflow-y: auto;
+        white-space: nowrap;
+        height: 400px;
+ </style>
 {% if display_service %}
     <h1><div class="color-heading">Service Information for the service {{ display_service.service_name}}</div></h1>
     <div class="row row-space-2 margin-b-4">
@@ -260,9 +266,6 @@
             <div class="tab">
                     <button class="tablinks" onclick="summaryBin(event, 'request_services')"  id="defaultOpen">Requested Services</button>
                     <button class="tablinks" onclick="summaryBin(event, 'r_samples')">Samples in Service</button>
-                    {% if display_service.service_manager %}
-                        <button class="tablinks" onclick="summaryBin(event, 'a_samples')">Add Samples</button>
-                    {% endif %}
                     <button class="tablinks" onclick="summaryBin(event, 'pipelines')">Pipelines</button>
                     <button class="tablinks" onclick="summaryBin(event, 'resolutions')">Resolutions</button>
                     <button class="tablinks" onclick="summaryBin(event, 'deliveries')">Deliveries</button>
@@ -311,105 +314,97 @@
                                     <div class="panel-body">
                                         {% if display_service.samples_sequenced|length > 0 %}
                                             <br>
-                                            <table class="table table-hover">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Sample Name</th>
-                                                        <th>Project Name</th>
-                                                        <th>Run Name</th>
-                                                        {% if display_service.service_manager %}
-                                                            <th>Select to delete</th>
-                                                        {% endif %}
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {% for key, sample, project, run, s_id in display_service.samples_sequenced %}
-                                                        <tr>
-                                                            <td>
-                                                                {% if key == 'None' %}
-                                                                    {{sample}}
-                                                                {% else %}
-                                                                    <a href="/wetlab/displaySampleInRun={{ key }}"  target="_blank" rel="noopener noreferrer">{{sample}}</a>
-                                                                {% endif %}
-                                                            </td>
-                                                            <td>{{project}}</td>
-                                                            <td>{{run}}</td>
-                                                            {% if display_service.service_manager %}
-                                                                <td><input type="checkbox" name="sampleId" value="{{s_id}}"></td>
-                                                            {% endif %}
-                                                        </tr>
-                                                    {% endfor %}
-
-                                                </tbody>
-                                            </table>
-                                        {% else %}
-                                            <h5 style="text-align:center"> There is not sequencing samples assigned to this service</h5>
-                                        {% endif %}
-                                        {% if display_service.only_recorded_samples %}
-                                            <div class="panel-heading"><h3>External Samples requested in service</h3></div>
-                                            <div class="panel-body">
+                                            <div class="scrolling-wrapper">
                                                 <table class="table table-hover">
                                                     <thead>
                                                         <tr>
                                                             <th>Sample Name</th>
-                                                            <th>Sample Project Name</th>
+                                                            <th>Project Name</th>
+                                                            <th>Run Name</th>
                                                             {% if display_service.service_manager %}
                                                                 <th>Select to delete</th>
                                                             {% endif %}
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        {% for sample, project, s_id in display_service.only_recorded_samples %}
+                                                        {% for key, sample, project, run, s_id in display_service.samples_sequenced %}
                                                             <tr>
-                                                                <td>{{sample}}</td>
+                                                                <td>
+                                                                    {% if key == 'None' %}
+                                                                        {{sample}}
+                                                                    {% else %}
+                                                                        <a href="/wetlab/displaySampleInRun={{ key }}"  target="_blank" rel="noopener noreferrer">{{sample}}</a>
+                                                                    {% endif %}
+                                                                </td>
                                                                 <td>{{project}}</td>
+                                                                <td>{{run}}</td>
                                                                 {% if display_service.service_manager %}
                                                                     <td><input type="checkbox" name="sampleId" value="{{s_id}}"></td>
                                                                 {% endif %}
                                                             </tr>
                                                         {% endfor %}
+
                                                     </tbody>
                                                 </table>
+                                            </div> <!--  end of scrolling wrapper -->
+                                        {% else %}
+                                            <h5 style="text-align:center"> There is not sequencing samples assigned to this service</h5>
+                                        {% endif %}
+                                    </div> <!--// end panel body -->
+                                        {% if display_service.only_recorded_samples %}
+                                            <div class="panel-heading"><h3>External Samples requested in service</h3></div>
+                                            <div class="panel-body">
+                                                <div class="scrolling-wrapper">
+                                                    <table class="table table-hover">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Sample Name</th>
+                                                                <th>Sample Project Name</th>
+                                                                {% if display_service.service_manager %}
+                                                                    <th>Select to delete</th>
+                                                                {% endif %}
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for sample, project, s_id in display_service.only_recorded_samples %}
+                                                                <tr>
+                                                                    <td>{{sample}}</td>
+                                                                    <td>{{project}}</td>
+                                                                    {% if display_service.service_manager %}
+                                                                        <td><input type="checkbox" name="sampleId" value="{{s_id}}"></td>
+                                                                    {% endif %}
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div> <!--  end of scrolling wrapper -->
                                             </div> <!--// end panel body -->
-                                    {% endif %}
-                                    {% if display_service.service_manager %}
-                                        <input class="btn pull-right btn-primary" type="submit" id ="btnSubmit" value="Submit your Request">
-                                    </form>
-                                    {% endif %}
-                                </div> <!--// end panel body -->
-
-
+                                        {% endif %}
+                                        {% if display_service.service_manager %}
+                                            <input class="btn pull-left btn-danger" type="submit" id ="btnSubmit" value="Delete Samples">
+                                        {% endif %}
+                                </form>
+                                {% if display_service.service_manager %}
+                                <form id="addSamplesInService" class="" action="/drylab/addSamplesInService" method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="addSamplesInService">
+                                    <input type="hidden" name="service_id" value="{{display_service.service_id}}">
+                                    <input class="btn pull-right btn-primary" type="submit" id ="btnSubmit" value="Add new Samples">
+                                </form>
+                                <script>
+                                    $(document).ready(function () {
+                                        $("#addSamplesInService").one('submit', function() {
+                                            //stop submitting the form to see the disabled button effect
+                                            $(this).find('input[type="submit"]').attr('disabled','disabled');
+                                            return true;
+                                        });
+                                    });
+                                </script>
+                                {% endif %}
                         </div> <!--// end panel -->
                     </div> <!--// end col-sm-8   -->
                 </div> <!-- // end of tab request_services -->
-                {% if display_service.service_manager %}
-                    <div id="a_samples" class="tabcontent">
-                        <div class="col-sm-6 col-sm-offset-3">  <!-- Samples Requested services -->
-                            <div class="panel panel-default">
-                                <div class="panel-heading"><h3>Add new samples to the Service</h3></div>
-                                <div class="panel-body">
-                                    <p>Click on the button below to add new samples </p>
-                                    <form id="addSamplesInService" class="" action="/drylab/addSamplesInService" method="post">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="action" value="addSamplesInService">
-                                        <input type="hidden" name="service_id" value="{{display_service.service_id}}">
-                                        <input class="btn pull-right btn-primary" type="submit" id ="btnSubmit" value="Submit your Request">
-                                    </form>
-                                </div> <!--// end panel body -->
-                            </div> <!--// end panel -->
-                        </div> <!--// end col-sm-12   samples Requested services  -->
-                        <script>
-                            $(document).ready(function () {
-                                $("#addSamplesInService").one('submit', function() {
-                                    //stop submitting the form to see the disabled button effect
-                                    $(this).find('input[type="submit"]').attr('disabled','disabled');
-                                    return true;
-                                });
-                            });
-                        </script>
 
-                    </div><!-- // end of tab a_samples -->
-                {% endif %}
                 <div id="pipelines" class="tabcontent">
                     <div class="col-sm-6">
                         <div class="panel panel-default">
