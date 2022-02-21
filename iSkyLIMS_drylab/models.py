@@ -69,6 +69,9 @@ class Platform(models.Model):
 class AvailableService(MPTTModel):
 	availServiceDescription=models.CharField(_("Available services"),max_length=100)
 	parent=TreeForeignKey('self',models.SET_NULL,null=True,blank=True)
+	inUse = models.BooleanField(default = True)
+	serviceId = models.CharField(max_length = 40,null = True, blank = True)
+	description = models.CharField (max_length = 200,null = True, blank = True)
 
 	def __str__(self):
 		return '%s' %(self.availServiceDescription)
