@@ -1,10 +1,10 @@
-from django.shortcuts import render
-from django.shortcuts import get_object_or_404
+# from django.shortcuts import render
+# from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from iSkyLIMS_drylab import drylab_config
-from iSkyLIMS_drylab.models import *
+# from iSkyLIMS_drylab import drylab_config
+from iSkyLIMS_drylab.models import Service, Resolution, ResolutionStates
 
 from .serializers import *
 
@@ -112,24 +112,53 @@ def service_full_data(request):
         return Response(status = status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['GET'])
+def resolution_full_data(request):
+    if 'resolution' in request.GET:
+        if Resolution.objects.filter(
+                resolutionNumber__iexact=request.GET['resolution']).exists():
+            resolution_full_data = {}
+            resolution_obj = Resolution.objects.filter(
+                resolutionNumber__iexact=request.GET['resolution']).last()
+            service_obj = resolution_obj.get_service_obj()
+            resolution_full_data['Service'] = ServiceSerializer(
+                                                service_obj, many=False).data
+            resolution_full_data['Resolutions'] = ResolutionSerializer(
+                                             resolution_obj, many=False).data
+            if RequestedSamplesInServices.objects.filter(
+                                        samplesInService=service_obj).exists():
+                sample_objs = RequestedSamplesInServices.objects.filter(
+                                            samplesInService=service_obj)
+                resolution_full_data['Samples'] = RequestedSamplesInServicesSerializer(sample_objs, many=True).data
+
+            return Response(resolution_full_data, status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+    else:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['PUT'])
-def update_resolution_to_in_progress(request):
-    if 'resolution' in request.query_params:
-        if Resolution.objects.filter(resolutionNumber__exact = request.query_params['resolution']).exists():
-            resolution_obj = Resolution.objects.get(resolutionNumber__exact =request.query_params['resolution'])
-            state_obj = ResolutionStates.objects.get(resolutionStateName__exact = 'In Progress')
+def update_resolution(request):
+    if ('resolution' in request.query_params) and ('state' in request.query_params):
+        if Resolution.objects.filter(resolutionNumber__exact=request.query_params['resolution']).exists():
+            resolution_obj = Resolution.objects.get(resolutionNumber__exact=request.query_params['resolution'])
+            state = request.query_params['state']
+            try:
+                state_obj = ResolutionStates.objects.get(resolutionStateName__iexact = state)
+            except Exception:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
 
-            updated_resolution = UpdateResolutionSerializer.update(resolution_obj,state_obj)
+            UpdateResolutionSerializer.update(resolution_obj, state_obj)
             updated_resolution_serializer = UpdateResolutionSerializer(resolution_obj)
             service_obj = resolution_obj.get_service_obj()
-
+            """
             email_data = {}
             email_data['user_email'] = service_obj.get_user_email()
             email_data['user_name'] = service_obj.get_username()
             email_data['resolution_number'] = resolution_obj.get_resolution_number()
             send_resolution_in_progress_email(email_data)
-
+            """
             return Response(updated_resolution_serializer.data, status = status.HTTP_200_OK)
 
         else:
