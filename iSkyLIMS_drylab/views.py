@@ -385,7 +385,6 @@ def add_resolution (request):
         return render (request, 'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_SERVICE_ID_NOT_FOUND})
 
     if request.method == "POST" and request.POST['action'] == 'addResolutionService' :
-
         resolution_data_form = get_add_resolution_data_form(request.POST)
         new_resolution = create_new_resolution(resolution_data_form)
         if 'pipeline_ids' in resolution_data_form:

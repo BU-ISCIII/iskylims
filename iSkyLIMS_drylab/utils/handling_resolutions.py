@@ -204,13 +204,18 @@ def create_new_resolution(resolution_data_form):
     resolution_data_form['resolutionNumber'] = create_resolution_number(resolution_data_form['service_id'])
 
     #service_request_number = service_obj.get_service_request_number()
-
     new_resolution = Resolution.objects.create_resolution(resolution_data_form)
-    if 'select_available_services' in resolution_data_form :
-        # Add selected available services to the new resolution
-        for avail_sarvice in resolution_data_form['select_available_services'] :
-            avail_service_obj = get_available_service_obj_from_id(avail_sarvice)
-            new_resolution.availableServices.add(avail_service_obj)
+    if  'select_available_services'  not in resolution_data_form :
+        # include all services in the resolution
+        resolution_data_form['select_available_services'] = []
+        avail_services = service_obj.get_child_services()
+        for avail_service in avail_services:
+            resolution_data_form['select_available_services'].append(avail_service[0])
+
+    # Add selected available services to the new resolution
+    for avail_sarvice in resolution_data_form['select_available_services'] :
+        avail_service_obj = get_available_service_obj_from_id(avail_sarvice)
+        new_resolution.availableServices.add(avail_service_obj)
 
     if 'pipelines' in resolution_data_form:
         for pipeline in resolution_data_form['pipelines']:
