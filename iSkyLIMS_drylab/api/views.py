@@ -1,14 +1,22 @@
-# from django.shortcuts import render
-# from django.shortcuts import get_object_or_404
+from datetime import datetime
+
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-# from iSkyLIMS_drylab import drylab_config
 from iSkyLIMS_drylab.models import Service, Resolution, ResolutionStates
 
 from .serializers import *
 
 from iSkyLIMS_drylab.utils.handling_resolutions import send_resolution_in_progress_email
+
+
+def check_valid_date_format(date):
+    try:
+        datetime.strptime(date, "%Y")
+        return True
+    except ValueError:
+        return False
+
 
 '''
 try:
@@ -26,22 +34,35 @@ def get_projectsid(service):
        projects_id.append(str(project.get_requested_external_project_id()))
    return projects_id
 '''
-@api_view(['GET'])
-def service_list(request ):
 
+
+@api_view(['GET'])
+def service_list(request):
+    if 'date' in request.GET:
+        if not check_valid_date_format(request.GET["date"]):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            date = request.GET["date"] + "-01-01"
+            end_date = request.GET["date"] + "-12-31"
     if 'state' in request.GET:
         state = request.GET['state']
-        if Service.objects.filter(serviceStatus__exact = state).exists():
-            service_objs = Service.objects.filter(serviceStatus__exact = state).order_by('serviceRequestNumber')
-        else:
-            return Response(status = status.HTTP_204_NO_CONTENT)
-    else:
-        if Service.objects.all().exists():
-            service_objs = Service.objects.all()
-        else:
-            return Response(status = status.HTTP_204_NO_CONTENT)
+    if not Service.objects.filter(serviceStatus__exact=state).exists():
+        return Response(status = status.HTTP_204_NO_CONTENT)
+
+    service_objs = Service.objects.all()
+    if state:
+        service_objs = service_objs.filter(serviceStatus__exact=state).order_by('serviceRequestNumber')
+    if date:
+        service_objs = service_objs.filter(serviceOnDeliveredDate__range=(date, end_date)).order_by('serviceRequestNumber')
+    if len(service_objs) == 0:
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     services_serializer = ServiceSerializer(service_objs, many=True)
+    for item in range(len(services_serializer.data)):
+        user_id = services_serializer.data[item]['serviceUserId']['username']
+        profile_obj = Profile.objects.get(profileUserID__username__exact = user_id)
+        services_serializer.data[item]['serviceUserId']['Center'] = profile_obj.get_profile_center_abbr()
+        services_serializer.data[item]['serviceUserId']['Area'] = profile_obj.get_clasification_area()
     if not 'resolutionData' in request.GET or request.GET['resolutionData'] == 'False':
         for item in range(len(services_serializer.data)):
             if Resolution.objects.filter(resolutionServiceID__pk__exact = services_serializer.data[item]['pk']).exists():
@@ -167,8 +188,18 @@ def update_resolution(request):
         return Response(status = status.HTTP_400_BAD_REQUEST)
 
 
+api_view(['POST',])
+def create(request):
+    if request.method == 'POST':
+        data = request.data
+        if isinstance(data, QueryDict ):
+            data = data.dict()
+        if 'delivery' in data:
+            serializer = CreateDeliveryPostSerializer(data = data)
+            if not serializer.is_valid():
+                return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
-
+            robot_action_obj = serializer.save()
 
 
 
