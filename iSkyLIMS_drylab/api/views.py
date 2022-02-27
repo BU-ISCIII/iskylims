@@ -39,19 +39,20 @@ def get_projectsid(service):
 @api_view(['GET'])
 def service_list(request):
     if 'date' in request.GET:
-        if not check_valid_date_format(request.GET["date"]):
+        date = request.GET["date"].strip()
+        if not check_valid_date_format(date):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
-            date = request.GET["date"] + "-01-01"
-            end_date = request.GET["date"] + "-12-31"
+            end_date = date + "-12-31"
+            date += "-01-01"
     if 'state' in request.GET:
-        state = request.GET['state']
+        state = request.GET['state'].strip()
     if not Service.objects.filter(serviceStatus__exact=state).exists():
-        return Response(status = status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     service_objs = Service.objects.all()
     if state:
-        service_objs = service_objs.filter(serviceStatus__exact=state).order_by('serviceRequestNumber')
+        service_objs = service_objs.filter(serviceStatus__iexact=state).order_by('serviceRequestNumber')
     if date:
         service_objs = service_objs.filter(serviceOnDeliveredDate__range=(date, end_date)).order_by('serviceRequestNumber')
     if len(service_objs) == 0:
@@ -63,26 +64,28 @@ def service_list(request):
         profile_obj = Profile.objects.get(profileUserID__username__exact = user_id)
         services_serializer.data[item]['serviceUserId']['Center'] = profile_obj.get_profile_center_abbr()
         services_serializer.data[item]['serviceUserId']['Area'] = profile_obj.get_clasification_area()
-    if not 'resolutionData' in request.GET or request.GET['resolutionData'] == 'False':
-        for item in range(len(services_serializer.data)):
-            if Resolution.objects.filter(resolutionServiceID__pk__exact = services_serializer.data[item]['pk']).exists():
-                resolution_objs = Resolution.objects.filter(resolutionServiceID__pk__exact = services_serializer.data[item]['pk'])
-                resolution_list = []
-                for resolution_obj in resolution_objs:
-                    resolution_data = {}
-                    resolution_data['id'] = resolution_obj.get_resolution_id()
-                    resolution_data['number'] = resolution_obj.get_resolution_number()
-                    resolution_data['state'] = resolution_obj.get_resolution_state()
-                    resolution_list.append(resolution_data)
-                services_serializer.data[item]['resolutions'] = resolution_list
+
+    for item in range(len(services_serializer.data)):
+        if Resolution.objects.filter(resolutionServiceID__pk__exact = services_serializer.data[item]['pk']).exists():
+            resolution_objs = Resolution.objects.filter(resolutionServiceID__pk__exact = services_serializer.data[item]['pk'])
+            resolution_list = []
+            for resolution_obj in resolution_objs:
+                resolution_data = {}
+                resolution_data['id'] = resolution_obj.get_resolution_id()
+                resolution_data['number'] = resolution_obj.get_resolution_number()
+                resolution_data['state'] = resolution_obj.get_resolution_state()
+                resolution_list.append(resolution_data)
+            services_serializer.data[item]['resolutions'] = resolution_list
 
     return Response(services_serializer.data, status = status.HTTP_200_OK)
+
 
 @api_view(['GET'])
 def resolution_data(request):
     if 'resolution' in request.GET:
-        if Resolution.objects.filter(resolutionNumber__exact = request.GET['resolution']).exists():
-            resolution_obj = Resolution.objects.filter(resolutionNumber__exact =request.GET['resolution']).last()
+        resolution = request.GET['resolution'].strip()
+        if Resolution.objects.filter(resolutionNumber__exact=resolution).exists():
+            resolution_obj = Resolution.objects.filter(resolutionNumber__exact =rresolution).last()
             resolution_serializer = ResolutionSerializer(resolution_obj, many=False)
             return Response(resolution_serializer.data, status = status.HTTP_200_OK)
         else:
@@ -115,15 +118,16 @@ def samples_in_service(request):
 @api_view(['GET'])
 def service_full_data(request):
     if 'service' in request.GET:
-        if Service.objects.filter(serviceRequestNumber__iexact = request.GET['service']).exists():
+        service = request.GET['service'].strip()
+        if Service.objects.filter(serviceRequestNumber__iexact=service).exists():
             service_full_data = {}
-            service_obj = Service.objects.filter(serviceRequestNumber__iexact = request.GET['service']).last()
+            service_obj = Service.objects.filter(serviceRequestNumber__iexact=service).last()
             service_full_data['Service']= ServiceSerializer(service_obj, many = False).data
             if Resolution.objects.filter(resolutionServiceID = service_obj).exists():
                 resolution_objs =  Resolution.objects.filter(resolutionServiceID = service_obj)
                 service_full_data['Resolutions'] = ResolutionSerializer(resolution_objs, many=True).data
-            if RequestedSamplesInServices.objects.filter(samplesInService__serviceRequestNumber__iexact = request.GET['service']).exists():
-                sample_objs = RequestedSamplesInServices.objects.filter(samplesInService__serviceRequestNumber__iexact = request.GET['service'])
+            if RequestedSamplesInServices.objects.filter(samplesInService__serviceRequestNumber__iexact=service).exists():
+                sample_objs = RequestedSamplesInServices.objects.filter(samplesInService__serviceRequestNumber__iexact=service)
                 service_full_data['Samples'] = RequestedSamplesInServicesSerializer(sample_objs, many = True).data
 
             return Response(service_full_data, status = status.HTTP_200_OK)
@@ -136,11 +140,12 @@ def service_full_data(request):
 @api_view(['GET'])
 def resolution_full_data(request):
     if 'resolution' in request.GET:
+        resolution = request.GET['resolution'].strip()
         if Resolution.objects.filter(
-                resolutionNumber__iexact=request.GET['resolution']).exists():
+                resolutionNumber__iexact=resolution).exists():
             resolution_full_data = {}
             resolution_obj = Resolution.objects.filter(
-                resolutionNumber__iexact=request.GET['resolution']).last()
+                resolutionNumber__iexact=resolution).last()
             service_obj = resolution_obj.get_service_obj()
             resolution_full_data['Service'] = ServiceSerializer(
                                                 service_obj, many=False).data
@@ -162,25 +167,25 @@ def resolution_full_data(request):
 @api_view(['PUT'])
 def update_resolution(request):
     if ('resolution' in request.query_params) and ('state' in request.query_params):
-        if Resolution.objects.filter(resolutionNumber__exact=request.query_params['resolution']).exists():
-            resolution_obj = Resolution.objects.get(resolutionNumber__exact=request.query_params['resolution'])
-            state = request.query_params['state']
+        resolution = request.query_params['resolution'].strip()
+        if Resolution.objects.filter(resolutionNumber__exact=resolution).exists():
+            resolution_obj = Resolution.objects.get(resolutionNumber__exact=resolution)
+            state = request.query_params['state'].strip()
             try:
-                state_obj = ResolutionStates.objects.get(resolutionStateName__iexact = state)
+                state_obj = ResolutionStates.objects.get(resolutionStateName__iexact=state)
             except Exception:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
 
             UpdateResolutionSerializer.update(resolution_obj, state_obj)
             updated_resolution_serializer = UpdateResolutionSerializer(resolution_obj)
             service_obj = resolution_obj.get_service_obj()
-            """
+
             email_data = {}
             email_data['user_email'] = service_obj.get_user_email()
             email_data['user_name'] = service_obj.get_username()
             email_data['resolution_number'] = resolution_obj.get_resolution_number()
             send_resolution_in_progress_email(email_data)
-            """
-            return Response(updated_resolution_serializer.data, status = status.HTTP_200_OK)
+            return Response(updated_resolution_serializer.data, status=status.HTTP_200_OK)
 
         else:
             return Response(status = status.HTTP_204_NO_CONTENT)
@@ -188,7 +193,7 @@ def update_resolution(request):
         return Response(status = status.HTTP_400_BAD_REQUEST)
 
 
-api_view(['POST',])
+@api_view(['POST'])
 def create(request):
     if request.method == 'POST':
         data = request.data
