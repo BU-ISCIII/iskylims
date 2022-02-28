@@ -38,6 +38,10 @@ def get_projectsid(service):
 
 @api_view(['GET'])
 def service_list(request):
+    param_requests = request.GET.keys()
+    for param_request in param_requests:
+        if param_request not in ["date", "state"]:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
     if 'date' in request.GET:
         date = request.GET["date"].strip()
         if not check_valid_date_format(date):
@@ -47,13 +51,13 @@ def service_list(request):
             date += "-01-01"
     if 'state' in request.GET:
         state = request.GET['state'].strip()
-    if not Service.objects.filter(serviceStatus__exact=state).exists():
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        if not Service.objects.filter(serviceStatus__exact=state).exists():
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     service_objs = Service.objects.all()
-    if state:
+    if 'state' in request.GET:
         service_objs = service_objs.filter(serviceStatus__iexact=state).order_by('serviceRequestNumber')
-    if date:
+    if 'date' in request.GET:
         service_objs = service_objs.filter(serviceOnDeliveredDate__range=(date, end_date)).order_by('serviceRequestNumber')
     if len(service_objs) == 0:
         return Response(status=status.HTTP_204_NO_CONTENT)
