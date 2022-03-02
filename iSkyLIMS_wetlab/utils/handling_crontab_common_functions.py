@@ -114,7 +114,7 @@ def check_sequencer_status_from_log_file(log_file_content, log_cycles, number_of
             logger.warning ('%s : Forced to continue on execution that was canceled', experiment_name)
         else:
             logger.warning ('%s : Sequencer execution was canceled', experiment_name)
-            status = 'Cancelled'
+            status = 'cancelled'
             logger.debug ('%s : End function check_sequencer_status_from_log_file', experiment_name)
             return status, run_completion_date
     elif log_cycles != number_of_cycles :
