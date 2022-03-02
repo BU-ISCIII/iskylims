@@ -81,11 +81,11 @@ def get_researcher_statistics(researcher_name, start_date, end_date):
         sample_objs = SamplesInProject.objects.filter(user_id = user_objs[0]).order_by('runProcess_id')
         # check if start and end date are present in the form
         if start_date != '' and end_date !='':
-            sample_objs= sample_objs.filter(runProcess_id__state__runStateName__range=(start_date, end_date))
+            sample_objs= sample_objs.filter(runProcess_id__run_date__range=(start_date, end_date))
         elif start_date != '':
-            sample_objs = sample_objs.filter(runProcess_id__state__runStateName__gte = start_date)
+            sample_objs = sample_objs.filter(runProcess_id__run_date__gte = start_date)
         elif end_date != '':
-            sample_objs = sample_objs.filter(runProcess_id__state__runStateName__lte = end_date)
+            sample_objs = sample_objs.filter(runProcess_id__run_date__lte = end_date)
         if len(sample_objs) == 0:
             researcher_statistics['ERROR'] = wetlab_config.ERROR_NO_MATCHES_FOR_INPUT_CONDITIONS
             return researcher_statistics
