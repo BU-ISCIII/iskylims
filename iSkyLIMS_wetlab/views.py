@@ -46,8 +46,8 @@ from iSkyLIMS_core.utils.handling_load_batch_samples import *
 
 
 def index(request):
-    #
-    return render(request, 'iSkyLIMS_wetlab/index.html')
+    org_name = get_configuration_from_database("ORGANIZATION_NAME")
+    return render(request, 'iSkyLIMS_wetlab/index.html', {"organization_name": org_name})
 
 @login_required
 def register_wetlab(request):

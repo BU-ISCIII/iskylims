@@ -19,8 +19,8 @@ from iSkyLIMS_core.utils.handling_patient_projects import *
 from iSkyLIMS_core.utils.handling_platforms import get_defined_platforms_and_ids
 
 def index(request):
-    #
-    return render(request, 'iSkyLIMS_clinic/index.html')
+    org_name = get_configuration_from_database("ORGANIZATION_NAME")
+    return render(request, 'iSkyLIMS_clinic/index.html', {"organization_name": org_name})
 
 
 @login_required

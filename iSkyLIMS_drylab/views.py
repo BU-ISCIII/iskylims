@@ -45,8 +45,8 @@ def index(request):
             s_info = ongoing_services_obj.get_service_information()
             s_info.append(ongoing_services_obj.get_delivery_date())
             service_list['ongoing'].append(s_info)
-
-    return render(request, 'iSkyLIMS_drylab/index.html',{'service_list': service_list})
+    org_name = get_configuration_from_database("ORGANIZATION_NAME")
+    return render(request, 'iSkyLIMS_drylab/index.html',{'service_list': service_list,"organization_name": org_name})
 
 
 
