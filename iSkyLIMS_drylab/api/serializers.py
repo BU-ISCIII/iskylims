@@ -1,23 +1,11 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from django_utils.models import Center, Profile
-
-# from iSkyLIMS_drylab.models import ParameterPipeline
 from iSkyLIMS_drylab.models import (
     Service,
     Resolution,
     RequestedSamplesInServices,
     Delivery
-)
-
-# from iSkyLIMS_wetlab.models import SamplesInProject
-
-"""
-class ParameterPipelineSerializer (serializers.ModelSerializer):
-    class Meta:
-         model = ParameterPipeline
-         fields = '__all__'
-"""
+    )
 
 
 class CreateDeliveryPostSerializer(serializers.ModelSerializer):
@@ -32,26 +20,6 @@ class UserIDSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["username", "first_name", "last_name", "email"]
-
-
-"""
-class AvailableServicesSerializer(serializers.ModelSerializer):
-    #serviceId = CustomAvailableServiceField(many=True, read_only=True)
-    class Meta:
-        model = AvailableService
-        fields = ['availServiceDescription', 'parent', 'level', 'pk']
-        #fields = ['availServiceDescription', 'serviceId']
-        #attributes :availServiceDescription, :serviceId
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        import pdb; pdb.set_trace()
-        if not data['serviceId']:
-            removed = data.pop("servideId", None)
-            import pdb; pdb.set_trace()
-            # data['serviceId'] = ""
-        return data
-"""
 
 
 class ServiceSerializer(serializers.ModelSerializer):
@@ -71,7 +39,7 @@ class ServiceSerializer(serializers.ModelSerializer):
             "serviceAvailableService",
             "serviceFileExt",
             "serviceNotes",
-        ]
+            ]
 
 
 class UpdateResolutionSerializer(serializers.ModelSerializer):
@@ -120,7 +88,7 @@ class ResolutionSerializer(serializers.ModelSerializer):
             "resolutionNotes",
             "resolutionPipelines",
             "availableServices",
-        ]
+            ]
 
 
 class RequestedSamplesInServicesSerializer(serializers.ModelSerializer):
