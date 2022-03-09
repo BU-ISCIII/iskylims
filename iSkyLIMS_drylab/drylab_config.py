@@ -95,7 +95,7 @@ HEADING_PENDING_SERVICE_QUEUED =['Services', 'Resolution', 'Acronym name', 'Assi
 
 HEADING_USER_PENDING_SERVICE_QUEUED =['Services', 'Resolution', 'Acronym name', 'On queued date', 'Estimated date']
 
-HEADING_SERVICE_DATES = ['Service Date Creation', 'Approval Service Date', 'Rejected Service Date']
+HEADING_SERVICE_DATES = ['Service Date Creation', 'Approval Service Date', 'Rejected Service Date', 'Service Delivered Date']
 
 HEADING_SELECT_SAMPLE_IN_SERVICE = ['Run Name', 'Run ID', 'Project Name',  'Project ID','Sample Name', 'sample id', 'Run finish date','Folder Run']
 

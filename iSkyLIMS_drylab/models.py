@@ -278,7 +278,10 @@ class Service(models.Model):
 				service_dates.append('Rejected Date not set')
 		else:
 			service_dates.append(self.serviceOnRejectedDate.strftime("%d %B, %Y"))
-
+		if self.serviceOnDeliveredDate is None:
+			service_dates.append('--')
+		else:
+			service_dates.append(self.serviceOnDeliveredDate.strftime("%d %B, %Y"))
 		return service_dates
 
 	def get_stats_information (self):
