@@ -525,7 +525,8 @@ def add_in_progress (request):
         # check if services can change to "in progress"
         if allow_to_service_update_state (resolution_obj, 'in_progress'):
             # update the service status and in_porgress date
-            service_obj.update_service_status('in_progress')
+            service_obj = service_obj.update_service_status('in_progress')
+            service_obj = service_obj.update_service_delivered_date(date.today())
         email_data = {}
         email_data['user_email'] = service_obj.get_user_email()
         email_data['user_name'] = service_obj.get_username()
