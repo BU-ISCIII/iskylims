@@ -80,9 +80,9 @@ def service_list(request):
         ] = profile_obj.get_clasification_area()
         
         if Resolution.objects.filter(resolutionServiceID__pk__exact = services_serializer.data[item]['pk']).exists():
-            services_serializer.data[item]["ServiceFolderName"] = Resolution.objects.filter(resolutionServiceID__pk__exact = services_serializer.data[item]['pk']).last().resolutionFullNumber
+            services_serializer.data[item]["serviceFolderName"] = Resolution.objects.filter(resolutionServiceID__pk__exact = services_serializer.data[item]['pk']).last().resolutionFullNumber
         else:
-            services_serializer.data[item]["ServiceFolderName"] = None
+            services_serializer.data[item]["serviceFolderName"] = None
 
     for item in range(len(services_serializer.data)):
         if Resolution.objects.filter(
