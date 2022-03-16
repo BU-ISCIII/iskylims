@@ -71,11 +71,11 @@ CONVERSION_STATS_FILE = 'ConversionStats.xml'
 DEMULTIPLEXION_STATS_FILE = 'DemultiplexingStats.xml'
 ##############################################################
 
-PLATFORM_WAY_TO_CHECK_RUN_COMPLETION = [['NextSeq', 'xml_file'],['MiSeq', 'logs'], ['NovaSeq','txt_file']]
+PLATFORM_WAY_TO_CHECK_RUN_COMPLETION = [['NextSeq', 'xml_file'],['MiSeq', 'xml_file'], ['NovaSeq','txt_file']]
 
 ############ VALUE TAG FOR XML FILES #########################
 COMPLETION_TAG = 'CompletionStatus'
-COMPLETION_SUCCESS = 'CompletedAsPlanned'
+COMPLETION_SUCCESS = ['CompletedAsPlanned', 'SuccessfullyCompleted']
 EXPERIMENT_NAME_TAG = 'ExperimentName'
 APPLICATION_NAME_TAG = 'ApplicationName'
 NUMBER_CYCLES_TAG = 'NumCycles'
