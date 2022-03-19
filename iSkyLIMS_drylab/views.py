@@ -45,8 +45,8 @@ def index(request):
             s_info = ongoing_services_obj.get_service_information()
             s_info.append(ongoing_services_obj.get_delivery_date())
             service_list['ongoing'].append(s_info)
-
-    return render(request, 'iSkyLIMS_drylab/index.html',{'service_list': service_list})
+    org_name = get_configuration_from_database("ORGANIZATION_NAME")
+    return render(request, 'iSkyLIMS_drylab/index.html',{'service_list': service_list,"organization_name": org_name})
 
 
 
@@ -385,7 +385,6 @@ def add_resolution (request):
         return render (request, 'iSkyLIMS_drylab/error_page.html', {'content':drylab_config.ERROR_SERVICE_ID_NOT_FOUND})
 
     if request.method == "POST" and request.POST['action'] == 'addResolutionService' :
-
         resolution_data_form = get_add_resolution_data_form(request.POST)
         new_resolution = create_new_resolution(resolution_data_form)
         if 'pipeline_ids' in resolution_data_form:
@@ -526,7 +525,8 @@ def add_in_progress (request):
         # check if services can change to "in progress"
         if allow_to_service_update_state (resolution_obj, 'in_progress'):
             # update the service status and in_porgress date
-            service_obj.update_service_status('in_progress')
+            service_obj = service_obj.update_service_status('in_progress')
+            service_obj = service_obj.update_service_delivered_date(date.today())
         email_data = {}
         email_data['user_email'] = service_obj.get_user_email()
         email_data['user_name'] = service_obj.get_username()

@@ -403,6 +403,7 @@ class ConfigSetting (models.Model):
     def get_configuration_value(self):
         return '%s' %(self.configurationValue)
 
+
 '''
 class ClinicProjects (models.Model):
     patientCore_id = models.ForeignKey(

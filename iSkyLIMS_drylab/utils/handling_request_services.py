@@ -654,7 +654,7 @@ def prepare_form_data_request_service_sequencing (request):
 
     if is_service_manager(request):
         service_data_information['users'] = get_defined_username_and_ids()
-    service_data_information['nodes'] = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True)
+    service_data_information['nodes'] = AvailableService.objects.filter(availServiceDescription__exact="Genomic data analysis").get_descendants(include_self=True).exclude(inUse = False)
 
     if wetlab_api_available :
 		## get samples which have sequencing data in iSkyLIMS
