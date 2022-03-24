@@ -78,7 +78,7 @@ def service_list(request):
         services_serializer.data[item]["serviceUserId"][
             "Area"
         ] = profile_obj.get_clasification_area()
-        
+
         if Resolution.objects.filter(resolutionServiceID__pk__exact = services_serializer.data[item]['pk']).exists():
             services_serializer.data[item]["serviceFolderName"] = Resolution.objects.filter(resolutionServiceID__pk__exact = services_serializer.data[item]['pk']).last().resolutionFullNumber
         else:
@@ -161,18 +161,17 @@ def service_full_data(request):
             service_full_data["Service"] = ServiceSerializer(
                 service_obj, many=False
             ).data
-
-            for item in range(len(services_serializer.data)):
-                user_id = services_serializer.data[item]["serviceUserId"]["username"]
-                profile_obj = Profile.objects.get(
-                    profileUserID__username__exact=user_id
-                )
-                services_serializer.data[item]["serviceUserId"][
-                    "Center"
-                ] = profile_obj.get_profile_center_abbr()
-                services_serializer.data[item]["serviceUserId"][
-                    "Area"
-                ] = profile_obj.get_clasification_area()
+            services_serializer = ServiceSerializer(service_obj, many=False)
+            user_id = services_serializer.data["serviceUserId"]["username"]
+            profile_obj = Profile.objects.get(
+                profileUserID__username__exact=user_id
+            )
+            services_serializer.data["serviceUserId"][
+                "Center"
+            ] = profile_obj.get_profile_center_abbr()
+            services_serializer.data["serviceUserId"][
+                "Area"
+            ] = profile_obj.get_clasification_area()
 
             if Resolution.objects.filter(resolutionServiceID=service_obj).exists():
                 resolution_objs = Resolution.objects.filter(
