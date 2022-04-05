@@ -109,7 +109,7 @@ def resolution_data(request):
         resolution = request.GET["resolution"].strip()
         if Resolution.objects.filter(resolutionNumber__exact=resolution).exists():
             resolution_obj = Resolution.objects.filter(
-                resolutionNumber__exact=rresolution
+                resolutionNumber__exact=resolution
             ).last()
             resolution_serializer = ResolutionSerializer(resolution_obj, many=False)
             return Response(resolution_serializer.data, status=status.HTTP_200_OK)
