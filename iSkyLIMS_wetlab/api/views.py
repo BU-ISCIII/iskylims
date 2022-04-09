@@ -1,7 +1,10 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .serializers import *
+from django.http import QueryDict
+
+from .serializers import CreateSampleSerializer, CreateProjectDataSerializer
+from .utils.request_handling import split_sample_data
 
 
 @api_view(["GET"])
@@ -12,7 +15,6 @@ def sample_list(request):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-
 @api_view(["POST"])
 def create_sample_data(request):
     if request.method == "POST":
@@ -21,11 +23,16 @@ def create_sample_data(request):
         if isinstance(data, QueryDict):
             data = data.dict()
         if "sample" not in data and "project" not in data:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        if "project" in data:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        split_data = split_sample_data(data)
+        if not split_data:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        sample_serializer = CreateSampleSerializer(data=split_data["s_data"])
+        if not sample_serializer.is_valid():
+            return Response(sample_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        project_serializer = CreateProjectDataSerializer(data=split_data["p_data"])
+        if not project_serializer.is_valid():
+            return Response(project_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        p_data_obj = project_serializer.save()
 
-            serializer = CreateSampleDataInProject(data=data)
-            if not serializer.is_valid():
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-            sample_obj = serializer.save()
+        sample_obj = serializer.save()
