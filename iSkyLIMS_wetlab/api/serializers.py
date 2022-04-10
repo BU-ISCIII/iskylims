@@ -19,6 +19,7 @@ class CreateSampleSerializer(serializers.ModelSerializer):
             "sampleEntryDate",
             "uniqueSampleID",
             "sampleCodeID",
+            "sampleName"
         ]
 
 

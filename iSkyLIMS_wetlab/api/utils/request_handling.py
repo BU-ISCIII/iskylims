@@ -1,4 +1,5 @@
-from iSkyLIMS_core.models import SampleProjects, SampleProjectsFields
+from iSkyLIMS_core.models import SampleProjects, SampleProjectsFields, Samples
+from iSkyLIMS_core.utils.handling_samples import increase_unique_value
 
 
 def get_sample_project_obj(project_name):
@@ -18,6 +19,15 @@ def get_project_fields_objs(p_obj):
     return fields
 
 
+def include_additional_sample_data(s_data):
+    """Add required coding data for sample"""
+    if not Samples.objects.exclude(uniqueSampleID__isnull=True).exists():
+        s_data['uniqueSampleID'] = 'AAA-0001'
+    else:
+        last_unique_value = Samples.objects.exclude(uniqueSampleID__isnull=True).last().uniqueSampleID
+        s_data['uniqueSampleID'] = increase_unique_value(last_unique_value)
+
+
 def split_sample_data(data):
     """Split the json data in 2 dictionary, for having data to create the
         sample an data to create the project related data
@@ -27,17 +37,16 @@ def split_sample_data(data):
         return False
     split_data = {"s_data": {}, "p_data": {}}
     fields_in_sample = [
-        "sampleState",
         "patientCore",
+        "sampleName",
         "labRequest",
         "sampleType",
-        "sampleUser",
-        "sampleCodeID",
-        "uniqueSampleID",
         "species",
-        "sampleLocation",
+        "collectionSampleDate",
         "sampleEntryDate",
-        "uniqueSampleID",
-        "sampleCodeID",
+        "sampleLocation",
+        "onlyRecorded"
     ]
     p_fields = get_project_fields_objs(project_obj)
+    "sampleCodeID",
+    "uniqueSampleID",
