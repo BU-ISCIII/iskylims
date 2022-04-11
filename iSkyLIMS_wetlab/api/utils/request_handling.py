@@ -79,43 +79,48 @@ def include_instances_in_sample(data):
     if data["patientCore"] == "" or data["patientCore"].lower() == "null":
         data["patientCore"] = None
     else:
-        data["patientCore"] = get_patient_obj(data["patientCore"])
-        if not data["patientCore"]:
+        try:
+            data["patientCore"] = get_patient_obj(data["patientCore"]).get_patient_id()
+        except AttributeError:
             return str(
                 "patientCore " + data["patientCore"] + " is not defined in database"
             )
     if LabRequest.objects.filter(labName__exact=data["labRequest"]).exists():
-        data["labRequest"] = LabRequest.objects.filter(
-            labName__exact=data["labRequest"]
-        ).last()
+        data["labRequest"] = (
+            LabRequest.objects.filter(labName__exact=data["labRequest"]).last().get_id()
+        )
     else:
         return str("labRequest " + data["labRequest"] + " is not defined in database")
     if SampleType.objects.filter(sampleType__exact=data["sampleType"]).exists():
-        data["sampleType"] = SampleType.objects.filter(
-            sampleType__exact=data["sampleType"]
-        ).last()
+        data["sampleType"] = (
+            SampleType.objects.filter(sampleType__exact=data["sampleType"])
+            .last()
+            .get_sample_type_id()
+        )
     else:
         return str("sampleType " + data["sampleType"] + " is not defined in database")
     if Species.objects.filter(speciesName__exact=data["species"]).exists():
-        data["species"] = Species.objects.filter(
-            speciesName__exact=data["species"]
-        ).last()
+        data["species"] = (
+            Species.objects.filter(speciesName__exact=data["species"]).last().get_id()
+        )
     else:
         return str("species " + data["species"] + " is not defined in database")
     if SampleProjects.objects.filter(sampleProjectName__exact=data["project"]).exists():
-        data["project"] = SampleProjects.objects.filter(
-            sampleProjectName__exact=data["project"]
-        ).last()
+        data["project"] = (
+            SampleProjects.objects.filter(sampleProjectName__exact=data["project"])
+            .last()
+            .get_id()
+        )
     else:
         return str("project " + data["project"] + " is not defined")
     if data["onlyRecorded"].lower == "yes":
-        data["sampleState"] = StatesForSample.objects.filter(
-            sampleStateName="Completed"
-        ).last()
+        data["sampleState"] = (
+            StatesForSample.objects.filter(sampleStateName="Completed").last().get_id()
+        )
     else:
-        data["sampleState"] = StatesForSample.objects.filter(
-            sampleStateName="Recorded"
-        ).last()
+        data["sampleState"] = (
+            StatesForSample.objects.filter(sampleStateName="Defined").last().get_id()
+        )
 
     return data
 

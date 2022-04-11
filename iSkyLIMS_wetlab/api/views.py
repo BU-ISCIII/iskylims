@@ -32,7 +32,6 @@ def create_sample_data(request):
 
         if isinstance(data, QueryDict):
             data = data.dict()
-
         if "sample" not in data and "project" not in data:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         split_data = split_sample_data(data)
@@ -42,10 +41,10 @@ def create_sample_data(request):
         if not isinstance(inst_req_sample, dict):
             return Response(inst_req_sample, status=status.HTTP_400_BAD_REQUEST)
         split_data["s_data"] = inst_req_sample
-        split_data["s_data"]["sampleUser"] = request.user
+        split_data["s_data"]["sampleUser"] = request.user.pk
         # Adding coding for sample
         split_data["s_data"].update(
-            include_codding(request.user.name), split_data["s_data"]["sampleName"]
+            include_codding(request.user.username, split_data["s_data"]["sampleName"])
         )
         sample_serializer = CreateSampleSerializer(data=split_data["s_data"])
         if not sample_serializer.is_valid():
