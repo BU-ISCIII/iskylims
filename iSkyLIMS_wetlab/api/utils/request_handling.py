@@ -6,7 +6,7 @@ from iSkyLIMS_core.models import (
     LabRequest,
     SampleType,
     Species,
-    StatesForSamples,
+    StatesForSample,
 )
 from iSkyLIMS_core.utils.handling_samples import increase_unique_value
 
@@ -35,17 +35,6 @@ def get_patient_obj(patient):
     if PatientCore.objects.filter(patientCode__iexact=patient).exists():
         return PatientCore.objects.filter(patientCode__iexact=patient).last()
     return False
-
-
-def include_additional_sample_data(s_data):
-    """Add required coding data for sample"""
-    if not Samples.objects.exclude(uniqueSampleID__isnull=True).exists():
-        s_data["uniqueSampleID"] = "AAA-0001"
-    else:
-        last_unique_value = (
-            Samples.objects.exclude(uniqueSampleID__isnull=True).last().uniqueSampleID
-        )
-        s_data["uniqueSampleID"] = increase_unique_value(last_unique_value)
 
 
 def split_sample_data(data):
@@ -120,11 +109,26 @@ def include_instances_in_sample(data):
     else:
         return str("project " + data["project"] + " is not defined")
     if data["onlyRecorded"].lower == "yes":
-        data["sampleState"] = StatesForSamples.objects.filter(
+        data["sampleState"] = StatesForSample.objects.filter(
             sampleStateName="Completed"
         ).last()
     else:
-        data["sampleState"] = StatesForSamples.objects.filter(
+        data["sampleState"] = StatesForSample.objects.filter(
             sampleStateName="Recorded"
         ).last()
+
     return data
+
+
+def include_codding(user_name, sample):
+    """Include Unique_id and Code_"""
+    c_data = {}
+    if not Samples.objects.exclude(uniqueSampleID__isnull=True).exists():
+        c_data["uniqueSampleID"] = "AAA-0001"
+    else:
+        last_unique_value = (
+            Samples.objects.exclude(uniqueSampleID__isnull=True).last().uniqueSampleID
+        )
+        c_data["uniqueSampleID"] = increase_unique_value(last_unique_value)
+    c_data["sampleCodeID"] = str(user_name + "_" + sample)
+    return c_data
