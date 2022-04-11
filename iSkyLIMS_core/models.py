@@ -216,6 +216,9 @@ class StatesForSample (models.Model):
     def get_sample_state (self):
         return '%s' %(self.sampleStateName)
 
+    def get_id(self):
+        return "%s" %(self.pk)
+
 
 class StatesForMolecule (models.Model):
     moleculeStateName = models.CharField(max_length=50)
