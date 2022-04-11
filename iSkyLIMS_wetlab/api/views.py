@@ -8,7 +8,11 @@ from rest_framework.response import Response
 from django.http import QueryDict
 
 from .serializers import CreateSampleSerializer, CreateProjectDataSerializer
-from .utils.request_handling import split_sample_data, include_instances_in_sample, include_codding
+from .utils.request_handling import (
+    split_sample_data,
+    include_instances_in_sample,
+    include_codding,
+)
 
 
 @api_view(["GET"])
@@ -40,13 +44,19 @@ def create_sample_data(request):
         split_data["s_data"] = inst_req_sample
         split_data["s_data"]["sampleUser"] = request.user
         # Adding coding for sample
-        split_data["s_data"].update(include_codding(request.user.name), split_data["s_data"]["sampleName"])
+        split_data["s_data"].update(
+            include_codding(request.user.name), split_data["s_data"]["sampleName"]
+        )
         sample_serializer = CreateSampleSerializer(data=split_data["s_data"])
         if not sample_serializer.is_valid():
-            return Response(sample_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                sample_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
         project_serializer = CreateProjectDataSerializer(data=split_data["p_data"])
         if not project_serializer.is_valid():
-            return Response(project_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                project_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
         p_data_obj = project_serializer.save()
 
         sample_obj = serializer.save()
