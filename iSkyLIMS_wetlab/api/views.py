@@ -47,18 +47,22 @@ def create_sample_data(request):
             include_codding(request.user.username, split_data["s_data"]["sampleName"])
         )
         sample_serializer = CreateSampleSerializer(data=split_data["s_data"])
-        import pdb; pdb.set_trace()
+        import pdb
+
+        pdb.set_trace()
 
         if not sample_serializer.is_valid():
             return Response(
                 sample_serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
-        # new_sample_obj = sample_serializer.save()
-        project_serializer = CreateProjectDataSerializer(data=split_data["p_data"])
-        if not project_serializer.is_valid():
-            return Response(
-                project_serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
-        p_data_obj = project_serializer.save()
+        new_sample_id = sample_serializer.save().get_sample_id()
+        for d_field in split_data["p_data"]:
+            d_field["sample_id"] = new_sample_id
+            s_project_serializer = CreateProjectDataSerializer(data=d_field)
+            if not s_project_serializer.is_valid():
+                return Response(
+                    s_project_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                )
+            s_project_serializer.save()
 
-        sample_obj = serializer.save()
+        return Response("Successful upload information", status=status.HTTP_201_CREATED)

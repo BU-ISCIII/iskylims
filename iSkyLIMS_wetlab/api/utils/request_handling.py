@@ -22,13 +22,13 @@ def get_sample_project_obj(project_name):
     return False
 
 
-def get_project_fields_objs(p_obj):
+def get_project_fields_id_and_name(p_obj):
     """Fetch the fields defined for project"""
     fields = []
     if SampleProjectsFields.objects.filter(sampleProjects_id=p_obj).exists():
         p_field_objs = SampleProjectsFields.objects.filter(sampleProjects_id=p_obj)
         for p_field_obj in p_field_objs:
-            fields.append(p_field_obj)
+            fields.append([p_field_obj.get_field_id(), p_field_obj.get_field_name()])
     return fields
 
 
@@ -43,7 +43,7 @@ def split_sample_data(data):
     """Split the json data in 2 dictionaries, for having data to create the
     sample and data to create the project related info
     """
-    split_data = {"s_data": {}, "p_data": {}}
+    split_data = {"s_data": {}, "p_data": []}
     sample_fields = [
         "patientCore",
         "sampleName",
@@ -59,7 +59,9 @@ def split_sample_data(data):
     for sample_field in sample_fields:
         try:
             if "date" in sample_field.lower():
-                split_data["s_data"][sample_field] = datetime.strptime(data[sample_field], "%Y/%m/%d")
+                split_data["s_data"][sample_field] = datetime.strptime(
+                    data[sample_field], "%Y/%m/%d"
+                )
             else:
                 split_data["s_data"][sample_field] = data[sample_field]
         except KeyError as e:
@@ -68,12 +70,17 @@ def split_sample_data(data):
     project_obj = get_sample_project_obj(data["project"])
     if not project_obj:
         return "Project is not defined"
-    project_fields = get_project_fields_objs(project_obj)
+    project_fields = get_project_fields_id_and_name(project_obj)
     # check fields that are linked to other table
     if len(project_fields) > 0:
         for p_field in project_fields:
             try:
-                split_data["p_data"][p_field] = data[p_field]
+                split_data["p_data"].append(
+                    {
+                        "sampleProjecttField_id": p_field[0],
+                        "sampleProjectFieldValue": data[p_field[1]],
+                    }
+                )
             except KeyError as e:
                 return str(str(e) + " is not defined in your query")
     return split_data
