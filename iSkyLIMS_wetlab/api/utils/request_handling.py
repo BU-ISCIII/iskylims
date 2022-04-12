@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from iSkyLIMS_core.models import (
     SampleProjects,
     SampleProjectsFields,
@@ -49,14 +51,17 @@ def split_sample_data(data):
         "sampleType",
         "species",
         "project",
-        "collectionSampleDate",
         "sampleEntryDate",
+        "sampleCollectionDate",
         "sampleLocation",
         "onlyRecorded",
     ]
     for sample_field in sample_fields:
         try:
-            split_data["s_data"][sample_field] = data[sample_field]
+            if "date" in sample_field.lower():
+                split_data["s_data"][sample_field] = datetime.strptime(data[sample_field], "%Y/%m/%d")
+            else:
+                split_data["s_data"][sample_field] = data[sample_field]
         except KeyError as e:
             return str(str(e) + " is not defined in your query")
     # fetch project fields
@@ -113,7 +118,7 @@ def include_instances_in_sample(data):
         )
     else:
         return str("project " + data["project"] + " is not defined")
-    if data["onlyRecorded"].lower == "yes":
+    if data["onlyRecorded"].lower() == "yes":
         data["sampleState"] = (
             StatesForSample.objects.filter(sampleStateName="Completed").last().get_id()
         )

@@ -47,10 +47,13 @@ def create_sample_data(request):
             include_codding(request.user.username, split_data["s_data"]["sampleName"])
         )
         sample_serializer = CreateSampleSerializer(data=split_data["s_data"])
+        import pdb; pdb.set_trace()
+
         if not sample_serializer.is_valid():
             return Response(
                 sample_serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
+        # new_sample_obj = sample_serializer.save()
         project_serializer = CreateProjectDataSerializer(data=split_data["p_data"])
         if not project_serializer.is_valid():
             return Response(
