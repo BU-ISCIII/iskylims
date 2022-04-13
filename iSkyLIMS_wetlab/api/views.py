@@ -8,6 +8,10 @@ from rest_framework.response import Response
 from django.http import QueryDict
 
 from .serializers import CreateSampleSerializer, CreateProjectDataSerializer
+
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
 from .utils.request_handling import (
     split_sample_data,
     include_instances_in_sample,

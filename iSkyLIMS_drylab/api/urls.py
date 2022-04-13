@@ -4,7 +4,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 app_name = 'iSkyLIMS_drylab_api'
 
 urlpatterns = [
-    path('services/', views.service_list,  name='service_list'),
+    path('services/', views.service_list, name='service_list'),
     path('serviceFullData', views.service_full_data, name='service_full_data'),
     path('resolutionFullData', views.resolution_full_data, name='resolution_full_data'),
     path('resolution', views.resolution_data, name='resolution_data'),
