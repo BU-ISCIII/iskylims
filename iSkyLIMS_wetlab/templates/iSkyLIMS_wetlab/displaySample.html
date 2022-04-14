@@ -1,6 +1,14 @@
 {% extends 'iSkyLIMS_wetlab/base.html' %}
 {% load static %}
 {% block content %}
+<style>
+    .scrolling-wrapper {
+        overflow-x: auto;
+        overflow-y: auto;
+        white-space: nowrap;
+        height: 150px;
+    }
+ </style>
 {% if sample_information.sample_definition_heading %}
     <div class="row row-space-2 margin-b-4">
         <div class="col-sm-11">
@@ -28,7 +36,7 @@
                 {% if sample_information.sample_project_name %}
                     <div class="panel-heading"><h4>Additional Sample Information {{sample_information.sample_project_name }}</h4></div>
                     <div class="panel-body">
-
+                        <div class="scrolling-wrapper">
                             <table class="table">
                                 <thead>
                                     <tr>
@@ -45,7 +53,7 @@
                                     </tr>
                                 </tbody>
                             </table>
-
+                        </div> <!--  end of scrolling  -->
                     </div> <!--  end of panel body -->
                 {% endif %}
 
