@@ -34,15 +34,12 @@ param_create_sample_data = openapi.Schema(
 )
 
 
-# @swagger_auto_schema(method='post', request_body=[param_create_sample_data])
-
-
 @swagger_auto_schema(method='post', request_body=openapi.Schema(
     type=openapi.TYPE_OBJECT,
     properties={
-        'id': openapi.Schema(type=openapi.TYPE_INTEGER, description='Donor ID')
+        'sample': openapi.Schema(type=openapi.TYPE_INTEGER, description='Sample name')
     }),
-    responses={200: CreateSampleSerializer, 400: 'Bad Request'})
+    responses={200: "Successful upload information", 400: 'Bad Request'})
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
