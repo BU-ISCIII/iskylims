@@ -1,7 +1,11 @@
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from rest_framework.decorators import authentication_classes, permission_classes, api_view
+from rest_framework.decorators import (
+    authentication_classes,
+    permission_classes,
+    api_view,
+)
 from rest_framework import status
 from rest_framework.response import Response
 from django.http import QueryDict
@@ -30,16 +34,23 @@ param_create_sample_data = openapi.Schema(
     type=openapi.TYPE_OBJECT,
     properties={
         "phone": openapi.Schema(type=openapi.TYPE_STRING, description="phone"),
-        "body": openapi.Schema(type=openapi.TYPE_STRING, description="body")}
+        "body": openapi.Schema(type=openapi.TYPE_STRING, description="body"),
+    },
 )
 
 
-@swagger_auto_schema(method='post', request_body=openapi.Schema(
-    type=openapi.TYPE_OBJECT,
-    properties={
-        'sample': openapi.Schema(type=openapi.TYPE_INTEGER, description='Sample name')
-    }),
-    responses={200: "Successful upload information", 400: 'Bad Request'})
+@swagger_auto_schema(
+    method="post",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "sample": openapi.Schema(
+                type=openapi.TYPE_INTEGER, description="Sample name"
+            )
+        },
+    ),
+    responses={200: "Successful upload information", 400: "Bad Request"},
+)
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])

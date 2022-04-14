@@ -3,17 +3,32 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 from rest_framework.permissions import IsAuthenticated
 
 
-from rest_framework.decorators import authentication_classes, permission_classes, api_view
+from rest_framework.decorators import (
+    authentication_classes,
+    permission_classes,
+    api_view,
+)
 from rest_framework import status
 from rest_framework.response import Response
 
-from iSkyLIMS_drylab.models import Service, Resolution, ResolutionStates, RequestedSamplesInServices
+from iSkyLIMS_drylab.models import (
+    Service,
+    Resolution,
+    ResolutionStates,
+    RequestedSamplesInServices,
+)
 from django_utils.models import Profile
 from django.http import QueryDict
 
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from .serializers import ServiceSerializer, ResolutionSerializer, RequestedSamplesInServicesSerializer, UpdateResolutionSerializer, CreateDeliveryPostSerializer
+from .serializers import (
+    ServiceSerializer,
+    ResolutionSerializer,
+    RequestedSamplesInServicesSerializer,
+    UpdateResolutionSerializer,
+    CreateDeliveryPostSerializer,
+)
 
 from iSkyLIMS_drylab.utils.handling_resolutions import send_resolution_in_progress_email
 
@@ -43,47 +58,57 @@ def get_projectsid(service):
    return projects_id
 """
 service_state_param = openapi.Parameter(
-    'state',
+    "state",
     openapi.IN_QUERY,
-    description='State parameter is optional. The allowed values are: [approved/rejected/queued/in_progress/delivered/archived/recorded]',
-    enum=["approved", "rejected", "queued", "in_progress", "delivered", "archived", "recorded"],
-    type=openapi.TYPE_STRING
+    description="State parameter is optional. The allowed values are: [approved/rejected/queued/in_progress/delivered/archived/recorded]",
+    enum=[
+        "approved",
+        "rejected",
+        "queued",
+        "in_progress",
+        "delivered",
+        "archived",
+        "recorded",
+    ],
+    type=openapi.TYPE_STRING,
 )
 year_date_param = openapi.Parameter(
-    'date',
+    "date",
     openapi.IN_QUERY,
-    description='Date parameter is optional.It will limit the results for the year specified in the parameter. Example 2022',
-    type=openapi.TYPE_STRING
+    description="Date parameter is optional.It will limit the results for the year specified in the parameter. Example 2022",
+    type=openapi.TYPE_STRING,
 )
 
 resolution_state_param = openapi.Parameter(
-    'state',
+    "state",
     openapi.IN_QUERY,
-    description='State parameter is optional. The allowed values are: [Recorded/ In Progress/ Delivery/ Cancelled]',
+    description="State parameter is optional. The allowed values are: [Recorded/ In Progress/ Delivery/ Cancelled]",
     enum=["Recorded", "In Progress", "Delivery", "Cancelled"],
-    type=openapi.TYPE_STRING
+    type=openapi.TYPE_STRING,
 )
 resolution_number_param = openapi.Parameter(
-    'resolution',
+    "resolution",
     openapi.IN_QUERY,
-    description='Resolution parameter resolution is optional. Example SRVCNM123.1',
-    type=openapi.TYPE_STRING
+    description="Resolution parameter resolution is optional. Example SRVCNM123.1",
+    type=openapi.TYPE_STRING,
 )
 service_name_param = openapi.Parameter(
-    'service',
+    "service",
     openapi.IN_QUERY,
-    description='Service parameter is mandatory. Example SRVCNM123',
-    type=openapi.TYPE_STRING
+    description="Service parameter is mandatory. Example SRVCNM123",
+    type=openapi.TYPE_STRING,
 )
 resolution_state_mand = openapi.Parameter(
-    'status',
+    "status",
     openapi.IN_QUERY,
-    description='Parameter status is mandatory and can take the following possible values:[approved/rejected/queued/in_progress/delivered/archived/recorded]',
-    type=openapi.TYPE_STRING
+    description="Parameter status is mandatory and can take the following possible values:[approved/rejected/queued/in_progress/delivered/archived/recorded]",
+    type=openapi.TYPE_STRING,
 )
 
 
-@swagger_auto_schema(method='get', manual_parameters=[service_state_param, year_date_param])
+@swagger_auto_schema(
+    method="get", manual_parameters=[service_state_param, year_date_param]
+)
 @api_view(["GET"])
 def service_list(request):
     param_requests = request.GET.keys()
@@ -126,8 +151,16 @@ def service_list(request):
             "Area"
         ] = profile_obj.get_clasification_area()
 
-        if Resolution.objects.filter(resolutionServiceID__pk__exact=services_serializer.data[item]['pk']).exists():
-            services_serializer.data[item]["serviceFolderName"] = Resolution.objects.filter(resolutionServiceID__pk__exact=services_serializer.data[item]['pk']).last().resolutionFullNumber
+        if Resolution.objects.filter(
+            resolutionServiceID__pk__exact=services_serializer.data[item]["pk"]
+        ).exists():
+            services_serializer.data[item]["serviceFolderName"] = (
+                Resolution.objects.filter(
+                    resolutionServiceID__pk__exact=services_serializer.data[item]["pk"]
+                )
+                .last()
+                .resolutionFullNumber
+            )
         else:
             services_serializer.data[item]["serviceFolderName"] = None
 
@@ -151,8 +184,7 @@ def service_list(request):
 
 
 @swagger_auto_schema(
-    method='get',
-    manual_parameters=[resolution_state_param, resolution_number_param]
+    method="get", manual_parameters=[resolution_state_param, resolution_number_param]
 )
 @api_view(["GET"])
 def resolution_data(request):
@@ -181,7 +213,7 @@ def resolution_data(request):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-@swagger_auto_schema(method='get', manual_parameters=[service_name_param])
+@swagger_auto_schema(method="get", manual_parameters=[service_name_param])
 @api_view(["GET"])
 def samples_in_service(request):
     if "service" in request.GET:
@@ -201,7 +233,7 @@ def samples_in_service(request):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-@swagger_auto_schema(method='get', manual_parameters=[service_name_param])
+@swagger_auto_schema(method="get", manual_parameters=[service_name_param])
 @api_view(["GET"])
 def service_full_data(request):
     if "service" in request.GET:
@@ -216,9 +248,7 @@ def service_full_data(request):
             ).data
             services_serializer = ServiceSerializer(service_obj, many=False)
             user_id = services_serializer.data["serviceUserId"]["username"]
-            profile_obj = Profile.objects.get(
-                profileUserID__username__exact=user_id
-            )
+            profile_obj = Profile.objects.get(profileUserID__username__exact=user_id)
             services_serializer.data["serviceUserId"][
                 "Center"
             ] = profile_obj.get_profile_center_abbr()
@@ -250,7 +280,7 @@ def service_full_data(request):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-@swagger_auto_schema(method='get', manual_parameters=[resolution_number_param])
+@swagger_auto_schema(method="get", manual_parameters=[resolution_number_param])
 @api_view(["GET"])
 def resolution_full_data(request):
     if "resolution" in request.GET:
@@ -284,7 +314,9 @@ def resolution_full_data(request):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-@swagger_auto_schema(method='put', manual_parameters=[resolution_number_param, resolution_state_param])
+@swagger_auto_schema(
+    method="put", manual_parameters=[resolution_number_param, resolution_state_param]
+)
 @api_view(["PUT"])
 def update_resolution(request):
     if ("resolution" in request.query_params) and ("state" in request.query_params):
@@ -318,12 +350,18 @@ def update_resolution(request):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-@swagger_auto_schema(method='post', request_body=openapi.Schema(
-    type=openapi.TYPE_OBJECT,
-    properties={
-        'delvery': openapi.Schema(type=openapi.TYPE_STRING, description='Delivery ID')
-    }),
-    responses={200: "Successful delivery creation", 400: 'Bad Request'})
+@swagger_auto_schema(
+    method="post",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "delvery": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Delivery ID"
+            )
+        },
+    ),
+    responses={200: "Successful delivery creation", 400: "Bad Request"},
+)
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
