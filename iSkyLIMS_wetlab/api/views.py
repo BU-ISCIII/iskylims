@@ -45,8 +45,44 @@ param_create_sample_data = openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
             "sample": openapi.Schema(
-                type=openapi.TYPE_INTEGER, description="Sample name"
-            )
+                type=openapi.TYPE_STRING, description="Sample name"
+            ),
+            "sampleState": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Sample state"
+            ),
+            "patientCore": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Code assigned to the patient"
+            ),
+            "labRequest": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Laboratory that request the sample",
+            ),
+            "sampleType": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Type of the sample"
+            ),
+            "species": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Specie that the sample belongs to",
+            ),
+            "sampleLocation": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Location where the sample is stored",
+            ),
+            "sampleEntryDate": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Date when sample is received in the lab",
+            ),
+            "sampleCollectionDate": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Date when the sample is collected from the specimen",
+            ),
+            "onlyRecorded": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Select if sample is just recorded or if DNA/RNA manipulation will be don ein the lab ",
+            ),
+            "project": openapi.Schema(
+                type=openapi.TYPE_STRING, description="Project name"
+            ),
         },
     ),
     responses={200: "Successful upload information", 400: "Bad Request"},
