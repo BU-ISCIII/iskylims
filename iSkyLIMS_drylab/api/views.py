@@ -9,6 +9,7 @@ from rest_framework.response import Response
 
 from iSkyLIMS_drylab.models import Service, Resolution, ResolutionStates, RequestedSamplesInServices
 from django_utils.models import Profile
+from django.http import QueryDict
 
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -41,22 +42,48 @@ def get_projectsid(service):
        projects_id.append(str(project.get_requested_external_project_id()))
    return projects_id
 """
-service_status_param = openapi.Parameter(
+service_state_param = openapi.Parameter(
     'state',
     openapi.IN_QUERY,
-    description='Parameter status is optional and can take the following possible values: [approved/rejected/queued/in_progress/delivered/archived/recorded]',
+    description='State parameter is optional. The allowed values are: [approved/rejected/queued/in_progress/delivered/archived/recorded]',
     enum=["approved", "rejected", "queued", "in_progress", "delivered", "archived", "recorded"],
     type=openapi.TYPE_STRING
 )
-service_date_param = openapi.Parameter(
+year_date_param = openapi.Parameter(
     'date',
     openapi.IN_QUERY,
-    description='Parameter date is optional and limit the results for the year specified in the parameter. Example 2022',
+    description='Date parameter is optional.It will limit the results for the year specified in the parameter. Example 2022',
+    type=openapi.TYPE_STRING
+)
+
+resolution_state_param = openapi.Parameter(
+    'state',
+    openapi.IN_QUERY,
+    description='State parameter is optional. The allowed values are: [Recorded/ In Progress/ Delivery/ Cancelled]',
+    enum=["Recorded", "In Progress", "Delivery", "Cancelled"],
+    type=openapi.TYPE_STRING
+)
+resolution_number_param = openapi.Parameter(
+    'resolution',
+    openapi.IN_QUERY,
+    description='Resolution parameter resolution is optional. Example SRVCNM123.1',
+    type=openapi.TYPE_STRING
+)
+service_name_param = openapi.Parameter(
+    'service',
+    openapi.IN_QUERY,
+    description='Service parameter is mandatory. Example SRVCNM123',
+    type=openapi.TYPE_STRING
+)
+resolution_state_mand = openapi.Parameter(
+    'status',
+    openapi.IN_QUERY,
+    description='Parameter status is mandatory and can take the following possible values:[approved/rejected/queued/in_progress/delivered/archived/recorded]',
     type=openapi.TYPE_STRING
 )
 
 
-@swagger_auto_schema(method='get', manual_parameters=[service_status_param, service_date_param])
+@swagger_auto_schema(method='get', manual_parameters=[service_state_param, year_date_param])
 @api_view(["GET"])
 def service_list(request):
     param_requests = request.GET.keys()
@@ -123,6 +150,10 @@ def service_list(request):
     return Response(services_serializer.data, status=status.HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    method='get',
+    manual_parameters=[resolution_state_param, resolution_number_param]
+)
 @api_view(["GET"])
 def resolution_data(request):
     if "resolution" in request.GET:
@@ -150,6 +181,7 @@ def resolution_data(request):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(method='get', manual_parameters=[service_name_param])
 @api_view(["GET"])
 def samples_in_service(request):
     if "service" in request.GET:
@@ -169,6 +201,7 @@ def samples_in_service(request):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(method='get', manual_parameters=[service_name_param])
 @api_view(["GET"])
 def service_full_data(request):
     if "service" in request.GET:
@@ -217,6 +250,7 @@ def service_full_data(request):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(method='get', manual_parameters=[resolution_number_param])
 @api_view(["GET"])
 def resolution_full_data(request):
     if "resolution" in request.GET:
@@ -250,6 +284,7 @@ def resolution_full_data(request):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(method='put', manual_parameters=[resolution_number_param, resolution_state_param])
 @api_view(["PUT"])
 def update_resolution(request):
     if ("resolution" in request.query_params) and ("state" in request.query_params):
@@ -286,9 +321,9 @@ def update_resolution(request):
 @swagger_auto_schema(method='post', request_body=openapi.Schema(
     type=openapi.TYPE_OBJECT,
     properties={
-        'id': openapi.Schema(type=openapi.TYPE_INTEGER, description='Donor ID')
+        'delvery': openapi.Schema(type=openapi.TYPE_STRING, description='Delivery ID')
     }),
-    responses={200: CreateDeliveryPostSerializer, 400: 'Bad Request'})
+    responses={200: "Successful delivery creation", 400: 'Bad Request'})
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -302,4 +337,6 @@ def create(request):
             if not serializer.is_valid():
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            robot_action_obj = serializer.save()
+            serializer.save()
+            return Response("Successful delivery creation", status=status.HTTP_200_OK)
+    return Response(status=status.HTTP_400_BAD_REQUEST)
