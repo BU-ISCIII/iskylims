@@ -1,6 +1,6 @@
 from django.urls import path
 from iSkyLIMS_drylab.api import views
-from rest_framework.urlpatterns import format_suffix_patterns
+
 app_name = 'iSkyLIMS_drylab_api'
 
 urlpatterns = [
@@ -10,5 +10,6 @@ urlpatterns = [
     path('resolution', views.resolution_data, name='resolution_data'),
     path('samplesInService', views.samples_in_service, name='samples_in_service'),
     path('updateResolution', views.update_resolution, name='update_resolution'),
+    path('create', views.create, name='create'),
     ]
-urlpatterns = format_suffix_patterns(urlpatterns)
+# urlpatterns = format_suffix_patterns(urlpatterns)

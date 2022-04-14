@@ -1,9 +1,8 @@
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from rest_framework.decorators import authentication_classes, permission_classes
+from rest_framework.decorators import authentication_classes, permission_classes, api_view
 from rest_framework import status
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.http import QueryDict
 
@@ -27,13 +26,29 @@ def sample_list(request):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["POST"])
+param_create_sample_data = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties={
+        "phone": openapi.Schema(type=openapi.TYPE_STRING, description="phone"),
+        "body": openapi.Schema(type=openapi.TYPE_STRING, description="body")}
+)
+
+
+# @swagger_auto_schema(method='post', request_body=[param_create_sample_data])
+
+
+@swagger_auto_schema(method='post', request_body=openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties={
+        'id': openapi.Schema(type=openapi.TYPE_INTEGER, description='Donor ID')
+    }),
+    responses={200: CreateSampleSerializer, 400: 'Bad Request'})
 @authentication_classes([SessionAuthentication, BasicAuthentication])
+@api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def create_sample_data(request):
     if request.method == "POST":
         data = request.data
-
         if isinstance(data, QueryDict):
             data = data.dict()
         if "sample" not in data and "project" not in data:

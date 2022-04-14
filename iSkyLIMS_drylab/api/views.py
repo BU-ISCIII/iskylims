@@ -1,12 +1,18 @@
 from datetime import datetime
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
 
+
+from rest_framework.decorators import authentication_classes, permission_classes, api_view
 from rest_framework import status
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from iSkyLIMS_drylab.models import Service, Resolution, ResolutionStates
-from django_utils.models import Profile,Center
 
-from .serializers import *
+from iSkyLIMS_drylab.models import Service, Resolution, ResolutionStates, RequestedSamplesInServices
+from django_utils.models import Profile
+
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+from .serializers import ServiceSerializer, ResolutionSerializer, RequestedSamplesInServicesSerializer, UpdateResolutionSerializer, CreateDeliveryPostSerializer
 
 from iSkyLIMS_drylab.utils.handling_resolutions import send_resolution_in_progress_email
 
@@ -35,8 +41,22 @@ def get_projectsid(service):
        projects_id.append(str(project.get_requested_external_project_id()))
    return projects_id
 """
+service_status_param = openapi.Parameter(
+    'state',
+    openapi.IN_QUERY,
+    description='Parameter status is optional and can take the following possible values: [approved/rejected/queued/in_progress/delivered/archived/recorded]',
+    enum=["approved", "rejected", "queued", "in_progress", "delivered", "archived", "recorded"],
+    type=openapi.TYPE_STRING
+)
+service_date_param = openapi.Parameter(
+    'date',
+    openapi.IN_QUERY,
+    description='Parameter date is optional and limit the results for the year specified in the parameter. Example 2022',
+    type=openapi.TYPE_STRING
+)
 
 
+@swagger_auto_schema(method='get', manual_parameters=[service_status_param, service_date_param])
 @api_view(["GET"])
 def service_list(request):
     param_requests = request.GET.keys()
@@ -79,8 +99,8 @@ def service_list(request):
             "Area"
         ] = profile_obj.get_clasification_area()
 
-        if Resolution.objects.filter(resolutionServiceID__pk__exact = services_serializer.data[item]['pk']).exists():
-            services_serializer.data[item]["serviceFolderName"] = Resolution.objects.filter(resolutionServiceID__pk__exact = services_serializer.data[item]['pk']).last().resolutionFullNumber
+        if Resolution.objects.filter(resolutionServiceID__pk__exact=services_serializer.data[item]['pk']).exists():
+            services_serializer.data[item]["serviceFolderName"] = Resolution.objects.filter(resolutionServiceID__pk__exact=services_serializer.data[item]['pk']).last().resolutionFullNumber
         else:
             services_serializer.data[item]["serviceFolderName"] = None
 
@@ -263,7 +283,15 @@ def update_resolution(request):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(method='post', request_body=openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties={
+        'id': openapi.Schema(type=openapi.TYPE_INTEGER, description='Donor ID')
+    }),
+    responses={200: CreateDeliveryPostSerializer, 400: 'Bad Request'})
+@authentication_classes([SessionAuthentication, BasicAuthentication])
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def create(request):
     if request.method == "POST":
         data = request.data
