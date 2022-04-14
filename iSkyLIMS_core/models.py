@@ -1011,7 +1011,7 @@ class MoleculeUsedFor (models.Model):
     apps_name = models.CharField(max_length = 50)
     massiveUse = models.BooleanField(default= False)
 
-    def __str__ (self):
+    def __str__(self):
         return '%s' %(self.usedFor)
 
     def get_molecule_use_name (self):

@@ -753,7 +753,7 @@ def get_all_sample_information (sample_id , massive):
             sample_information['sample_project_field_value'] = []
             sample_project_fields = SampleProjectsFields.objects.filter(sampleProjects_id = sample_project_obj)
             for s_p_field in sample_project_fields :
-                sample_information['sample_project_field_heading'].append(s_p_field.get_field_name())
+                sample_information['sample_project_field_heading'].append(s_p_field.get_description())
                 if SampleProjectsFieldsValue.objects.filter(sample_id = sample_obj, sampleProjecttField_id = s_p_field ).exists() :
                     field_value = SampleProjectsFieldsValue.objects.get(sample_id = sample_obj, sampleProjecttField_id = s_p_field ).get_field_value()
                     if s_p_field.get_field_type() == 'Date':

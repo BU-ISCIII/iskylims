@@ -37,7 +37,7 @@
                     <div class="panel-heading"><h4>Additional Sample Information {{sample_information.sample_project_name }}</h4></div>
                     <div class="panel-body">
                         <div class="scrolling-wrapper">
-                            <table class="table">
+                            <table class="table table-bordered">
                                 <thead>
                                     <tr>
                                     {% for values in sample_information.sample_project_field_heading %}
@@ -48,7 +48,7 @@
                                 <tbody>
                                     <tr>
                                         {% for values in sample_information.sample_project_field_value %}
-                                            <td>{{ values }} </td>
+                                            <td style="text-align: center">{{ values }} </td>
                                         {%endfor%}
                                     </tr>
                                 </tbody>
