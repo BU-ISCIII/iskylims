@@ -7,19 +7,16 @@ class CreateSampleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Samples
         fields = [
-            "sampleState",
             "patientCore",
+            "sampleName",
             "labRequest",
             "sampleType",
-            "sampleUser",
-            "sampleCodeID",
-            "uniqueSampleID",
             "species",
-            "sampleLocation",
+            "sampleProject",
             "sampleEntryDate",
-            "uniqueSampleID",
-            "sampleCodeID",
-            "sampleName",
+            "sampleCollectionDate",
+            "sampleLocation",
+            "onlyRecorded",
         ]
 
 
