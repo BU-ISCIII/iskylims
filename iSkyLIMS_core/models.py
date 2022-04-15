@@ -670,7 +670,7 @@ class SampleProjectsFields (models.Model):
                 on_delete= models.CASCADE, null = True, blank = True)
     #sampleProjectsOptionValues = models.ManyToManyField(SamplesProjectsOptionValues, blank = True)
 
-    sampleProjectFieldName = models.CharField(max_length=50)
+    sampleProjectFieldName = models.CharField(max_length=80)
     sampleProjectFieldDescription = models.CharField(max_length= 400, null=True, blank=True)
     sampleProjectFieldOrder = models.IntegerField()
     sampleProjectFieldUsed = models.BooleanField()
