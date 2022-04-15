@@ -126,3 +126,8 @@ def create_sample_data(request):
             s_project_serializer.save()
 
         return Response("Successful upload information", status=status.HTTP_201_CREATED)
+
+
+@api_view(["GET"])
+def sample_project_fields(request):
+    return Response(status=status.HTTP_400_BAD_REQUEST)
