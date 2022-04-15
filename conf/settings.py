@@ -122,7 +122,23 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'basic': {
+            'type': 'basic'
+        }
+    }
+}
 
+""" For using token in the authorization request
+    'api_key': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization'
+        }
+     
+"""
+# 'PERSIST_AUTH': True
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
