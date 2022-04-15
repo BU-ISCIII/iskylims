@@ -771,30 +771,38 @@ class SamplesProjectsOptionValues(models.Model):
     objects = SamplesProjectsOptionValuesManager()
 '''
 
+
 class SamplesManager (models.Manager):
 
-    def create_sample (self, sample_data):
-        ## Set to null in case that there is not samples_origin defined
-
+    def create_sample(self, sample_data):
         if sample_data['labRequest'] != '':
-            sample_data['labRequest'] = LabRequest.objects.get(labNameCoding__exact = sample_data['labRequest'])
+            sample_data['labRequest'] = LabRequest.objects.get(labNameCoding__exact=sample_data['labRequest'])
         else:
             sample_data['labRequest'] = None
         if sample_data['species'] != '':
-            sample_data['species'] = Species.objects.get(speciesName__exact = sample_data['species'])
+            sample_data['species'] = Species.objects.get(speciesName__exact=sample_data['species'])
         else:
             sample_data['species'] = None
-        new_sample = self.create(sampleState = StatesForSample.objects.get(sampleStateName__exact = sample_data['sampleState']),
-                            patientCore = sample_data['patient'],
-                            labRequest = sample_data['labRequest'], sampleProject = sample_data['sampleProject'],
-                            sampleType = SampleType.objects.get(sampleType__exact = sample_data['sampleType'], apps_name__exact = sample_data['app_name']) ,
-                            sampleUser = User.objects.get(username__exact = sample_data['user']),
-                            sampleCodeID = sample_data['sample_id'] , sampleName =  sample_data['sampleName'],
-                            uniqueSampleID = sample_data['new_unique_value'],
-                            species = sample_data['species'],
-                            sampleLocation = sample_data['sampleLocation'], onlyRecorded = sample_data['onlyRecorded'],
-                            #sampleEntryDate = datetime.datetime.strptime(sample_data['Date for entry in Lab'],'%Y-%m-%d %H:%M:%S'))
-                            sampleEntryDate = datetime.datetime.strptime(sample_data['sampleEntryDate'],'%Y-%m-%d %H:%M:%S'))
+        if 'completedDate' in sample_data:
+            completedDate = datetime.datetime.strptime(sample_data['completedDate'], '%Y-%m-%d %H:%M:%S')
+        else:
+            completedDate = None
+        import pdb; pdb.set_trace()
+        new_sample = self.create(
+            sampleState=StatesForSample.objects.get(sampleStateName__exact=sample_data['sampleState']),
+            patientCore=sample_data['patient'],
+            labRequest=sample_data['labRequest'],
+            sampleProject=sample_data['sampleProject'],
+            sampleType=SampleType.objects.get(sampleType__exact=sample_data['sampleType'], apps_name__exact=sample_data['app_name']),
+            sampleUser=User.objects.get(username__exact=sample_data['user']),
+            sampleCodeID=sample_data['sample_id'], sampleName=sample_data['sampleName'],
+            uniqueSampleID=sample_data['new_unique_value'],
+            species=sample_data['species'],
+            sampleLocation=sample_data['sampleLocation'], onlyRecorded=sample_data['onlyRecorded'],
+            sampleEntryDate=datetime.datetime.strptime(sample_data['sampleEntryDate'], '%Y-%m-%d %H:%M:%S'),
+            collectionSampleDate=datetime.datetime.strptime(sample_data['sampleEntryDate'], '%Y-%m-%d %H:%M:%S'),
+            completedDate=completedDate
+        )
 
         return new_sample
 
@@ -829,6 +837,7 @@ class Samples (models.Model):
     sampleName = models.CharField(max_length=255, null = True)
     sampleLocation = models.CharField(max_length=255, null = True, blank = True)
     sampleEntryDate = models.DateTimeField(auto_now_add = False, null =True)
+    collectionSampleDate = models.DateTimeField(auto_now_add = False, null =True)
     uniqueSampleID = models.CharField(max_length=8, null = True)
     sampleCodeID = models.CharField(max_length=60, null = True)
     numberOfReused = models.IntegerField(default=0)
@@ -872,12 +881,22 @@ class Samples (models.Model):
             sample_info.append('Not defined')
         return sample_info
 
-    def get_info_for_display (self):
+    def get_info_for_display(self):
+        if self.collectionSampleDate:
+            collectionSampleDate = self.collectionSampleDate.strftime("%d , %B , %Y")
+        else:
+            collectionSampleDate = ""
+        if self.sampleEntryDate:
+            sampleEntryDate = self.sampleEntryDate.strftime("%d , %B , %Y")
+        else:
+            sampleEntryDate = ""
         sample_info = []
         sample_info.append(self.sampleName)
         sample_info.append(self.sampleCodeID)
         sample_info.append(self.sampleState.get_sample_state())
         sample_info.append(self.generated_at.strftime("%d , %B , %Y"))
+        sample_info.append(collectionSampleDate)
+        sample_info.append(sampleEntryDate)
         sample_info.append(self.sampleType.get_name())
         sample_info.append(self.species.get_name())
         sample_info.append(self.numberOfReused)
