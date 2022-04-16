@@ -10,7 +10,12 @@ from rest_framework import status
 from rest_framework.response import Response
 from django.http import QueryDict
 
-from .serializers import CreateSampleSerializer, CreateProjectDataSerializer
+from iSkyLIMS_core.models import SampleProjects, SampleProjectsFields
+from .serializers import (
+    CreateSampleSerializer,
+    CreateProjectDataSerializer,
+    SampleProjectFieldSerializer,
+)
 
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -130,4 +135,19 @@ def create_sample_data(request):
 
 @api_view(["GET"])
 def sample_project_fields(request):
+    if "project" in request.GET:
+        project = request.GET["project"].strip()
+        if SampleProjects.objects.filter(sampleProjectName__iexact=project).exists():
+            s_project_obj = SampleProjects.objects.filter(
+                sampleProjectName__iexact=project
+            ).last()
+            s_project_field_objs = SampleProjectsFields.objects.filter(
+                sampleProjects_id=s_project_obj
+            )
+            s_project_serializer = SampleProjectFieldSerializer(
+                s_project_field_objs, many=True
+            )
+            return Response(s_project_serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_204_NO_CONTENT)
     return Response(status=status.HTTP_400_BAD_REQUEST)
