@@ -35,12 +35,11 @@ def sample_list(request):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-param_create_sample_data = openapi.Schema(
-    type=openapi.TYPE_OBJECT,
-    properties={
-        "phone": openapi.Schema(type=openapi.TYPE_STRING, description="phone"),
-        "body": openapi.Schema(type=openapi.TYPE_STRING, description="body"),
-    },
+sample_project_fields = openapi.Parameter(
+    "project",
+    openapi.IN_QUERY,
+    description="Project name to fetch the sample project fields defined. Example Relecov",
+    type=openapi.TYPE_STRING,
 )
 
 
@@ -133,6 +132,7 @@ def create_sample_data(request):
         return Response("Successful upload information", status=status.HTTP_201_CREATED)
 
 
+@swagger_auto_schema(method="get", manual_parameters=[sample_project_fields])
 @api_view(["GET"])
 def sample_project_fields(request):
     if "project" in request.GET:
