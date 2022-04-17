@@ -4,6 +4,15 @@ from django.contrib.auth.views import LoginView
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
+schema_view = get_schema_view(openapi.Info(
+    title="iSkyLIMS API",
+    default_version='v0.0.1',
+    description="iSkyLIMS API",
+    ),
+    public=True,
+)
+
+
 urlpatterns = [
     path('',include('iSkyLIMS_core.urls')),
     path('background', LoginView.as_view(template_name='iSkyLIMS_core/background.html'), name="background"),
@@ -18,4 +27,6 @@ urlpatterns = [
     
     # REST FRAMEWORK URLS
     path('drylab/api/', include('iSkyLIMS_drylab.api.urls')),
+    path('wetlab/api/', include('iSkyLIMS_wetlab.api.urls')),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0))
 ]
