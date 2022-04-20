@@ -1,4 +1,6 @@
-import json, re, datetime
+import json
+import re
+import datetime
 from iSkyLIMS_core.core_config import *
 from iSkyLIMS_core.models import *
 from iSkyLIMS_core.utils.generic_functions import get_friend_list
@@ -191,55 +193,55 @@ def analyze_input_samples (request, app_name):
 
     sample_recorded = {}
 
-    defined_samples, samples_continue  = [] , []
-    pre_defined_samples , pre_defined_samples_id = [] ,[]
-    invalid_samples , invalid_samples_id = [] ,[]
+    defined_samples, samples_continue = [], []
+    pre_defined_samples, pre_defined_samples_id = [], []
+    invalid_samples, invalid_samples_id = [], []
     incomplete_samples = []
     sample_recorded['all_samples_defined'] = True
 
     reg_user = request.user.username
 
-    for row in na_json_data :
+    for row in na_json_data:
         sample_data = {}
         sample_name = str(row[heading_in_form.index('Sample Name')])
-        if sample_name == '' :
+        if sample_name == '':
             continue
 
-        if not check_if_sample_already_defined (row[heading_in_form.index('Sample Name')], reg_user) :
+        if not check_if_sample_already_defined(row[heading_in_form.index('Sample Name')], reg_user):
             sample_type = str(row[heading_in_form.index('Type of Sample')])
 
             if sample_type == '':
                 incomplete_samples.append(row)
                 continue
 
-            for i in range(len(heading_in_form)) :
+            for i in range(len(heading_in_form)):
                 sample_data[MAPPING_SAMPLE_FORM_TO_DDBB[i][1]] = row[i]
-            #optional_fields = []
+            # optional_fields = []
 
-            #for opt_field in OPTIONAL_SAMPLES_FIELDS:
+            # for opt_field in OPTIONAL_SAMPLES_FIELDS:
             #    optional_fields.append(HEADING_FOR_RECORD_SAMPLES.index(opt_field))
-            optional_fields = SampleType.objects.get(sampleType__exact = sample_type, apps_name__exact = app_name).get_optional_values()
+            optional_fields = SampleType.objects.get(sampleType__exact=sample_type, apps_name__exact=app_name).get_optional_values()
 
             # check_empty_fields does not consider if the optional values are empty
-            if  check_empty_fields(row,optional_fields):
+            if check_empty_fields(row, optional_fields):
                 incomplete_samples.append(row)
                 sample_recorded['all_samples_defined'] = False
                 continue
-            ## Check if patient code  already exists on database, If not if will be created giving a sequencial dummy value
-            if sample_data['p_code_id'] != '' :
-                patient_obj = check_patient_code_exists(sample_data['p_code_id'] )
+            # Check if patient code  already exists on database, If not if will be created giving a sequencial dummy value
+            if sample_data['p_code_id'] != '':
+                patient_obj = check_patient_code_exists(sample_data['p_code_id'])
                 if patient_obj == False:
                     # Define the new patient only Patient code is defined
                     patient_obj = create_empty_patient(sample_data['p_code_id'])
-            else :
+            else:
                 patient_obj = None
             sample_data['patient'] = patient_obj
             sample_data['user'] = reg_user
             sample_data['sample_id'] = str(reg_user + '_' + sample_name)
-            if not Samples.objects.exclude(uniqueSampleID__isnull = True).exists():
+            if not Samples.objects.exclude(uniqueSampleID__isnull=True).exists():
                 sample_data['new_unique_value'] = 'AAA-0001'
             else:
-                last_unique_value = Samples.objects.exclude(uniqueSampleID__isnull = True).last().uniqueSampleID
+                last_unique_value = Samples.objects.exclude(uniqueSampleID__isnull=True).last().uniqueSampleID
                 sample_data['new_unique_value'] = increase_unique_value(last_unique_value)
             # set to Defined state the sample if not required to add more additional data
 
@@ -247,6 +249,7 @@ def analyze_input_samples (request, app_name):
                 sample_data['sampleProject'] = None
                 if sample_data['onlyRecorded']:
                     sample_data['sampleState'] = 'Completed'
+                    sample_data['completedDate'] = datetime.datetime.now()
                 else:
                     sample_data['sampleState'] = 'Defined'
             else:
@@ -735,24 +738,25 @@ def save_type_of_sample(form_data, app_name):
     save_s_type['new_defined_id'] = sample_type.get_sample_type_id()
     return save_s_type
 
-def get_all_sample_information (sample_id , massive):
+
+def get_all_sample_information(sample_id, massive):
     sample_information = {}
     sample_information['sample_id'] = sample_id
     parameter_heading_values = []
-    if not Samples.objects.filter(pk__exact = sample_id).exists():
+    if not Samples.objects.filter(pk__exact=sample_id).exists():
         return 'Error'
-    sample_obj = Samples.objects.get(pk__exact = sample_id)
+    sample_obj = Samples.objects.get(pk__exact=sample_id)
     sample_information['sample_definition'] = sample_obj.get_info_for_display()
     sample_information['sample_definition_heading'] = HEADING_FOR_SAMPLE_DEFINITION
     # get the sample project information fields
     sample_project_obj = sample_obj.get_sample_project_obj()
     if sample_project_obj != None:
         sample_information['sample_project_name'] = sample_project_obj.get_sample_project_name()
-        if SampleProjectsFields.objects.filter(sampleProjects_id = sample_project_obj).exists():
+        if SampleProjectsFields.objects.filter(sampleProjects_id=sample_project_obj).exists():
             sample_information['sample_project_field_heading'] = []
             sample_information['sample_project_field_value'] = []
-            sample_project_fields = SampleProjectsFields.objects.filter(sampleProjects_id = sample_project_obj)
-            for s_p_field in sample_project_fields :
+            sample_project_fields = SampleProjectsFields.objects.filter(sampleProjects_id=sample_project_obj)
+            for s_p_field in sample_project_fields:
                 sample_information['sample_project_field_heading'].append(s_p_field.get_field_name())
                 if SampleProjectsFieldsValue.objects.filter(sample_id = sample_obj, sampleProjecttField_id = s_p_field ).exists() :
                     field_value = SampleProjectsFieldsValue.objects.get(sample_id = sample_obj, sampleProjecttField_id = s_p_field ).get_field_value()
@@ -786,7 +790,7 @@ def get_all_sample_information (sample_id , massive):
                         except:
                             # if the parameter was not set at the time the molecule was handeled
                             mol_param_value.append('')
-                #parameter_heading_values.append([molecule_param_heading, mol_param_value ])
+
                 molecule_definition_data.append(molecule_param_heading)
                 molecule_definition_data.append(mol_param_value)
             else:
@@ -794,25 +798,6 @@ def get_all_sample_information (sample_id , massive):
                 molecule_definition_data.append('')
                 molecule_definition_data.append('')
             sample_information['molecule_definition_data'].append(molecule_definition_data)
-
-
-
-        '''
-            sample_information['molecule_definition'].append(molecule.get_info_for_display())
-            protocol_used_obj = molecule.get_protocol_obj()
-            if ProtocolParameters.objects.filter(protocol_id = protocol_used_obj).exists():
-                parameter_names = ProtocolParameters.objects.filter(protocol_id = protocol_used_obj).order_by('parameterOrder')
-                molecule_param_heading = ['Molecule CodeID']
-                mol_param_value = [molecule.get_molecule_code_id()]
-                for p_name in parameter_names:
-                    molecule_param_heading.append(p_name.get_parameter_name())
-                    if MoleculeParameterValue.objects.filter(molecule_id = molecule).exists():
-                        mol_param_value.append(MoleculeParameterValue.objects.get(molecule_id = molecule, moleculeParameter_id = p_name).get_param_value())
-                parameter_heading_values.append([molecule_param_heading, mol_param_value ])
-                #sample_information['molecule_parameter_values'].append(mol_param_value)
-                #sample_information['molecule_parameter_heading'] = molecule_param_heading
-        '''
-        #sample_information['parameter_heading_values'] = parameter_heading_values
 
     return sample_information
 
@@ -1383,9 +1368,10 @@ def increase_unique_value (old_unique_number):
 
 def prepare_sample_input_table (app_name):
     '''
-    Description:    The function collect the species, Lab request, type of samples, and heading
-                    used in the input table. Return a dictionary with collected information.
-    Input:
+    Description: The function collect the species, Lab request, type of
+        samples, and heading used in the input table.
+        Return a dictionary with collected information.
+
     Functions:
         build_record_sample_form  : located at this file
     Variables:

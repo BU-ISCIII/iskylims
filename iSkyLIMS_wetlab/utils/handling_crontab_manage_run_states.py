@@ -226,11 +226,12 @@ def manage_run_in_processing_bcl2fastq_state(conn, run_process_objs):
     Functions:
         check_run_metrics_processed             # located in utils.handling_crontab_run_metric.py
         waiting_time_expired                    # located in utils.handling_crontab_common_functions.py
+        check_demultiplexing_folder_exists      # located in utils.handling_crontab_bcl2fastq.py
     Return:
         None
     '''
     logger = logging.getLogger(__name__)
-    logger.debug (' Starting function manage_run_in_processing_bcl2fastq_state')
+    logger.debug('Starting function manage_run_in_processing_bcl2fastq_state')
     for run_process_obj in run_process_objs:
         experiment_name = run_process_obj.get_run_name()
         logger.info('%s : Start handling in manage_run_in_processing_bcl2fastq_state function', experiment_name)

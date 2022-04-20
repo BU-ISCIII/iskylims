@@ -4,17 +4,23 @@
 
 ################# SAMPLE SETTINGS ##############################
 ### Headings used when recording information
-HEADING_FOR_RECORD_SAMPLES = [ 'Patient Code ID', 'Sample Name', 'Lab requested', 'Type of Sample', 'Species', 'Project/Service', 'Date sample reception', 'Sample Storage Location','Only recorded']
+HEADING_FOR_RECORD_SAMPLES = ['Patient Code ID', 'Sample Name', 'Lab requested', 'Type of Sample', 'Species', 'Project/Service', 'Date sample reception', 'Collection Sample Date', 'Sample Storage Location', 'Only recorded']
 
-HEADING_FOR_OPTIONAL_FIELD_SAMPLES = [ 'Patient Code ID', 'Lab requested', 'Species', 'Date sample reception', 'Sample Storage Location']
+HEADING_FOR_OPTIONAL_FIELD_SAMPLES = [ 'Patient Code ID', 'Lab requested', 'Species', 'Date sample reception', 'Collection Sample Date', 'Sample Storage Location']
 
 HEADING_FOR_DISPLAY_RECORDED_SAMPLES = ['Unique Sample ID', 'Sample CodeID', 'Sample Name', 'Date for entry in Lab', 'Type of Sample']
 
 HEADING_FOR_COMPLETION_SAMPLES_PRE_DEFINED = ['Date sample extraction' , 'Sample CodeID', 'Sample name']
 
-MAPPING_SAMPLE_FORM_TO_DDBB = [('Patient Code ID','p_code_id'), ('Sample Name', 'sampleName'), ('Lab requested', 'labRequest'),
-                ('Type of Sample','sampleType'), ('Species', 'species'),('Project/Service', 'project_service'),('Date sample extraction', 'sampleEntryDate'),
-                ('Sample Storage Location', 'sampleLocation'), ('Only recorded','onlyRecorded')]
+MAPPING_SAMPLE_FORM_TO_DDBB = [
+    ('Patient Code ID', 'p_code_id'), ('Sample Name', 'sampleName'),
+    ('Lab requested', 'labRequest'), ('Type of Sample', 'sampleType'),
+    ('Species', 'species'), ('Project/Service', 'project_service'),
+    ('Date sample extraction', 'sampleEntryDate'),
+    ('Collection Sample Date', 'collectionSampleDate'),
+    ('Sample Storage Location', 'sampleLocation'),
+    ('Only recorded', 'onlyRecorded')
+]
 
 HEADING_FOR_MOLECULE_PROTOCOL_DEFINITION = ['Sample ID','Sample Type', 'Molecule type', 'Type of Extraction', 'Extraction date', 'Protocol to be used']
 HEADING_FOR_MOLECULE_ADDING_PARAMETERS = ['Molecule Code ID', 'Lot Commercial Kit']
@@ -37,7 +43,11 @@ HEADING_FOR_EXTRACTED_MOLECULES_STATE_WETLAB_MANAGER = ['Sample extraction date'
                                     'Used Protocol', 'UserID']
 
 ### Heading for display information on sample definition
-HEADING_FOR_SAMPLE_DEFINITION = ['Sample Name', 'Sample CodeID','Sample State', 'Recorded Date', 'Sample Type', 'Species', 'Number of reused', 'User']
+HEADING_FOR_SAMPLE_DEFINITION = [
+    'Sample Name', 'Sample CodeID', 'Sample State', 'Recorded Date',
+    'Collection Sample Date', 'Date sample reception', 'Sample Type', 'Species',
+    'Number of reused', 'User'
+]
 ### Heading for display information on molecule definition
 HEADING_FOR_MOLECULE_DEFINITION = ['Molecule CodeID', 'Molecule State','Extraction Date', 'Extraction Type', 'Molecule Type', 'Used for', 'Used Protocol', 'Number of reused']
 

@@ -19,6 +19,7 @@ paramiko
 pysmb
 django_extensions
 djangorestframework
+drf-yasg
 xlrd
 pandas
 openpyxl

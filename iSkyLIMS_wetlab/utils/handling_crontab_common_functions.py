@@ -151,7 +151,7 @@ def check_sequencer_status_from_completion_file(l_run_completion, experiment_nam
     logger.debug ('%s : Starting function for check_sequencer_status_from_completion_file', experiment_name)
     # check if NextSEq run have been successful completed
     status_run = find_xml_tag_text (l_run_completion, COMPLETION_TAG )
-    if  status_run != COMPLETION_SUCCESS:
+    if  status_run not in COMPLETION_SUCCESS:
         logger.info('%s : Run in sequencer was not completed but %s', experiment_name, status_run)
         string_message = experiment_name + ' : Sequencer Run was not completed. Reason was ' + status_run
         logging_warnings (string_message, False)

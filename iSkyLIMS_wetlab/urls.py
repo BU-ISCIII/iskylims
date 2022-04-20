@@ -6,8 +6,6 @@ from . import views
 from django.conf.urls.static import static
 from django.views.generic import ListView, DetailView
 
-
-
 urlpatterns = [
     path('',views.index, name = 'index'),
     path('AddBasespaceLibrary/',views.add_basespace_library, name='add_basespace_library'),

@@ -2944,7 +2944,7 @@ def record_samples(request):
         sample_recorded = analyze_input_samples (request, __package__)
         # if no samples are in any of the options, displays the inital page
 
-        if (not 'defined_samples' in sample_recorded and not 'pre_defined_samples' in sample_recorded and not 'invalid_samples' in sample_recorded and not 'incomplete_samples' in sample_recorded) :
+        if ('defined_samples' not in sample_recorded and 'pre_defined_samples' not in sample_recorded and 'invalid_samples' not in sample_recorded and 'incomplete_samples' not in sample_recorded) :
             sample_information = prepare_sample_input_table(__package__)
             return render(request, 'iSkyLIMS_wetlab/recordSample.html',{'sample_information':sample_information})
 
@@ -3175,7 +3175,7 @@ def define_type_of_samples (request):
 
 
 @login_required
-def display_sample (request, sample_id):
+def display_sample(request, sample_id):
     '''
     Functions:
         get_all_sample_information : located at iSkyLIMS_core/utils/handling_samples.py
