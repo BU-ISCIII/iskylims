@@ -7,19 +7,25 @@ import datetime
 
 
 class StateInCountryManager(models.Manager):
-    def create_new_state(self, state_name):
-        new_state = self.create(stateName=state_name)
+    def create_new_state(self, data):
+        new_state = self.create(
+            stateName=data['state'],
+            apps_name=data['apps_name']
+        )
         return new_state
 
 
 class StateInCountry(models.Model):
     stateName = models.CharField(max_length=80)
+    apps_name = models.CharField(max_length=40, null=True)
 
     def __str__(self):
         return "%s" % (self.stateName)
 
     def get_state_name(self):
         return "%s" % (self.stateName)
+
+    objects = StateInCountryManager()
 
 
 class CityManager(models.Manager):
@@ -28,6 +34,7 @@ class CityManager(models.Manager):
             city=data["city"],
             geoLocLatitude=data["latitude"],
             geoLocLongitude=data["longitude"],
+            apps_name=data['apps_name']
         )
         return new_city
 
@@ -39,6 +46,7 @@ class City(models.Model):
     city_name = models.CharField(max_length=80)
     geoLocLatitude = models.CharField(max_length=80)
     geoLocLongitude = models.CharField(max_length=80)
+    apps_name = models.CharField(max_length=40, null=True)
 
     def __str__(self):
         return "%s" % (self.city_name)
