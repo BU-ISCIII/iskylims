@@ -1,8 +1,58 @@
 from django.db import models
 from django.contrib.auth.models import User
 import datetime
-from datetime import date
-from iSkyLIMS_core.core_config import COLLECTION_INDEX_KITS_DIRECTORY
+
+# from datetime import date
+# from iSkyLIMS_core.core_config import COLLECTION_INDEX_KITS_DIRECTORY
+
+
+class StateInCountryManager(models.Manager):
+    def create_new_state(self, state_name):
+        new_state = self.create(stateName=state_name)
+        return new_state
+
+
+class StateInCountry(models.Model):
+    stateName = models.CharField(max_length=80)
+
+    def __str__(self):
+        return "%s" % (self.stateName)
+
+    def get_state_name(self):
+        return "%s" % (self.stateName)
+
+
+class CityManager(models.Manager):
+    def create_new_city(self, data):
+        new_city = self.create(
+            city=data["city"],
+            geoLocLatitude=data["latitude"],
+            geoLocLongitude=data["longitude"],
+        )
+        return new_city
+
+
+class City(models.Model):
+    belongsToState = models.ForeignKey(
+        StateInCountry, on_delete=models.CASCADE, null=True, blank=True
+    )
+    city_name = models.CharField(max_length=80)
+    geoLocLatitude = models.CharField(max_length=80)
+    geoLocLongitude = models.CharField(max_length=80)
+
+    def __str__(self):
+        return "%s" % (self.city_name)
+
+    def get_city_name(self):
+        return "%s" % (self.city_name)
+
+    def get_city_id(self):
+        return "%s" % (self.pk)
+
+    def get_coordenates(self):
+        return {"latitude": self.geoLocLatitude, "longitude": self.geoLocLongitude}
+
+    objects = CityManager()
 
 
 class LabRequestManager(models.Manager):
@@ -21,6 +71,7 @@ class LabRequestManager(models.Manager):
 
 
 class LabRequest(models.Model):
+    labCity = models.ForeignKey(City, on_delete=models.CASCADE, null=True, blank=True)
     labName = models.CharField(max_length=80)
     labNameCoding = models.CharField(max_length=50)
     labUnit = models.CharField(max_length=50)
@@ -28,8 +79,7 @@ class LabRequest(models.Model):
     labPhone = models.CharField(max_length=20)
     labEmail = models.CharField(max_length=70)
     address = models.CharField(max_length=255)
-    city = models.CharField(max_length=80)
-    state = models.CharField(max_length=80)
+
     apps_name = models.CharField(max_length=40, null=True)
 
     def __str__(self):
