@@ -92,32 +92,37 @@ def configuration_samba(request):
     else:
         return render(request, 'iSkyLIMS_wetlab/configurationSamba.html',{'samba_conf_data': samba_conf_data})
 
+
 @login_required
 def initial_settings(request):
     if not request.user.is_authenticated:
-        #redirect to login webpage
-        return redirect ('/accounts/login')
+        # redirect to login webpage
+        return redirect('/accounts/login')
 
     if not is_wetlab_manager(request):
-        return render (request,'iSkyLIMS_wetlab/error_page.html', {'content': ERROR_USER_NOT_WETLAB_MANAGER})
+        return render(request, 'iSkyLIMS_wetlab/error_page.html', {'content': ERROR_USER_NOT_WETLAB_MANAGER})
     initial_data = get_inital_sample_settings_values(__package__)
     form_data = {}
-    if request.method == 'POST' and request.POST['action']=='defineNewSpecie':
+    if request.method == 'POST' and request.POST['action'] == 'defineNewSpecie':
         form_data['species'] = request.POST['specieName']
-    if request.method == 'POST' and request.POST['action']=='defineNewLabRequest':
+    if request.method == 'POST' and request.POST['action'] == 'defineNewState':
+        form_data['state'] = request.POST['stateName']
+    if request.method == 'POST' and request.POST['action'] == 'defineNewCity':
+        form_data['city'] = request.POST
+    if request.method == 'POST' and request.POST['action'] == 'defineNewLabRequest':
         form_data['lab_request'] = request.POST
-    if request.method == 'POST' and request.POST['action']=='defineMoleculeType':
+    if request.method == 'POST' and request.POST['action'] == 'defineMoleculeType':
         form_data['molecule_type'] = request.POST['moleculeName']
-    if request.method == 'POST' and request.POST['action']=='defineProtocolType':
+    if request.method == 'POST' and request.POST['action'] == 'defineProtocolType':
         form_data['protocol_type'] = [request.POST['protocolName'], request.POST['moleculeType']]
 
     if form_data:
         new_inital_data = save_inital_sample_setting_value(__package__, form_data)
         if 'ERROR' in new_inital_data:
-            return render(request,'iSkyLIMS_wetlab/initialSettings.html',{'initial_data': initial_data, 'ERROR': new_inital_data['ERROR']})
+            return render(request, 'iSkyLIMS_wetlab/initialSettings.html', {'initial_data': initial_data, 'ERROR': new_inital_data['ERROR']})
         return render(request,'iSkyLIMS_wetlab/initialSettings.html',{'initial_data': initial_data, 'new_setting_defined': new_inital_data})
     else:
-        return render(request,'iSkyLIMS_wetlab/initialSettings.html',{'initial_data': initial_data})
+        return render(request, 'iSkyLIMS_wetlab/initialSettings.html', {'initial_data': initial_data})
 
 
 @login_required
