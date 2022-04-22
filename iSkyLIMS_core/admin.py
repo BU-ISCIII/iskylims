@@ -1,6 +1,13 @@
 from django.contrib import admin
 from iSkyLIMS_core.models import *
 
+class StateInCountryAdmin(admin.ModelAdmin):
+    list_display = ["stateName", 'apps_name']
+
+class CityAdmin(admin.ModelAdmin):
+    list_display = ["cityName", "apps_name"]
+
+
 class CommercialKitsAdmin (admin.ModelAdmin):
     list_display =( 'name','provider' , 'platformKits' , 'cat_number')
 
@@ -90,6 +97,8 @@ class UserLotCommercialKitsAdmin (admin.ModelAdmin):
     list_display = ('user', 'basedCommercial', 'runOut', 'numberOfuses', 'chipLot', 'latestUsedDate','expirationDate')
 
 
+admin.site.register(StateInCountry, StateInCountryAdmin)
+admin.site.register(City, CityAdmin)
 admin.site.register(CommercialKits, CommercialKitsAdmin)
 admin.site.register(LabRequest, LabRequestAdmin)
 
