@@ -6,7 +6,7 @@ from iSkyLIMS_core.models import *
 from iSkyLIMS_core.core_config  import *
 
 def get_installed_apps () :
-    
+
     return settings.APPS_NAMES
 
 def get_friend_list(user_name):
@@ -22,6 +22,7 @@ def get_friend_list(user_name):
     friend_list.append(user_name)
     return friend_list
 
+
 def get_inital_sample_settings_values(apps_name):
     '''
     Description:
@@ -33,31 +34,41 @@ def get_inital_sample_settings_values(apps_name):
         initial_data
     '''
     initial_data = {}
-    if Species.objects.filter(apps_name__exact = apps_name).exists():
-        species_objs = Species.objects.filter(apps_name__exact = apps_name)
+    if Species.objects.filter(apps_name__exact=apps_name).exists():
+        species_objs = Species.objects.filter(apps_name__exact=apps_name)
         initial_data['species_data'] = []
         for species_obj in species_objs:
             initial_data['species_data'].append([species_obj.get_name(), species_obj.get_id()])
-    if LabRequest.objects.filter(apps_name__exact = apps_name).exists():
-        lab_request_objs = LabRequest.objects.filter(apps_name__exact = apps_name)
+    if LabRequest.objects.filter(apps_name__exact=apps_name).exists():
+        lab_request_objs = LabRequest.objects.filter(apps_name__exact=apps_name)
         initial_data['lab_request_data'] = []
         for lab_request_obj in lab_request_objs:
             data = lab_request_obj.get_all_data()
             data.append(lab_request_obj.get_id())
             initial_data['lab_request_data'].append(data)
-    if MoleculeType.objects.filter(apps_name__exact = apps_name).exists():
+    if MoleculeType.objects.filter(apps_name__exact=apps_name).exists():
         initial_data['molecule_type_data'] = []
-        molecule_type_objs = MoleculeType.objects.filter(apps_name__exact = apps_name)
+        molecule_type_objs = MoleculeType.objects.filter(apps_name__exact=apps_name)
         for molecule_type_obj in molecule_type_objs:
-            initial_data['molecule_type_data'].append([molecule_type_obj.get_name() ,molecule_type_obj.get_id()])
+            initial_data['molecule_type_data'].append([molecule_type_obj.get_name(), molecule_type_obj.get_id()])
     if ProtocolType.objects.filter(apps_name__exact = apps_name).exists():
-        protocol_type_objs = ProtocolType.objects.filter(apps_name__exact = apps_name).order_by('molecule')
+        protocol_type_objs = ProtocolType.objects.filter(apps_name__exact=apps_name).order_by('molecule')
         initial_data['protocol_type_data'] = []
         for protocol_type_obj in protocol_type_objs:
             initial_data['protocol_type_data'].append([protocol_type_obj.get_name(), protocol_type_obj.get_id(), protocol_type_obj.get_molecule_type()])
+    if StateInCountry.objects.filter(apps_name__exact=apps_name).exists():
+        state_objs = StateInCountry.objects.filter(apps_name__exact=apps_name).order_by('stateName')
+        initial_data['states_data'] = []
+        for state_obj in state_objs:
+            initial_data['states_data'].append([state_obj.get_state_name(), state_obj.get_state_id()])
+    if City.objects.filter(apps_name__exact=apps_name).exists():
+        city_objs = City.objects.filter(apps_name__exact=apps_name).order_by('cityName')
+        initial_data['cities_data'] = []
+        for city_obj in city_objs:
+            initial_data['cities_data'].append([city_obj.get_city_name(), city_obj.get_city_id()])
+
 
     return initial_data
-
 
 
 def get_email_data():
@@ -112,7 +123,8 @@ def send_test_email(form_data):
     except Exception as e:
         return str(e)
 
-def save_inital_sample_setting_value (apps_name, data):
+
+def save_inital_sample_setting_value(apps_name, data):
     '''
     Description:
         The function get the defined values for species, origin of the sample,
@@ -161,7 +173,7 @@ def save_inital_sample_setting_value (apps_name, data):
         molecule_type_data = {}
         molecule_type_data['apps_name'] = apps_name
         molecule_type_data['moleculeType'] = data['molecule_type']
-        if MoleculeType.objects.filter(moleculeType__iexact = molecule_type_data['moleculeType'],  apps_name__exact = molecule_type_data['apps_name']).exists():
+        if MoleculeType.objects.filter(moleculeType__iexact = molecule_type_data['moleculeType'], apps_name__exact = molecule_type_data['apps_name']).exists():
             setting_defined['ERROR'] = [ERROR_MOLECULE_TYPE_ALREADY_DEFINED, molecule_type_data['moleculeType']]
             return setting_defined
         new_molecule_type_obj = MoleculeType.objects.create_molecule_type(molecule_type_data)
@@ -182,4 +194,29 @@ def save_inital_sample_setting_value (apps_name, data):
         new_protocol_type_obj = ProtocolType.objects.create_protocol_type(protocol_type_data)
         setting_defined['settings'] = 'Protocol Type'
         setting_defined['value'] = protocol_type_data['protocol_type']
+
+    if 'state' in data:
+        state_data = {}
+        if StateInCountry.objects.filter(stateName__iexact=data['state'], apps_name__exact=apps_name).exists():
+            setting_defined['ERROR'] = [ERROR_STATE_ALREADY_DEFINED, data['state']]
+            return setting_defined
+            state_data['appps_name'] = apps_name
+            state_data['state'] = data['state']
+        StateInCountry.objects.create_new_state(state_data)
+        setting_defined['settings'] = 'State'
+        setting_defined['value'] = data['state']
+
+    if 'city' in data:
+        city_data = {}
+        if City.objects.filter(cityName__iexact=data['city']['cityName'], apps_name__exact=apps_name).exists():
+            setting_defined['ERROR'] = [ERROR_CITY_ALREADY_DEFINED, data['city']['cityName']]
+            return setting_defined
+        city_data['apps_name'] = apps_name
+        city_data['state'] = data['city']['state']
+        city_data['cityName'] = data['city']['cityName']
+        city_data['latitude'] = data['city']['latitude']
+        city_data['longitude'] = data['city']['longitude']
+        City.objects.create_new_city(city_data)
+        setting_defined['settings'] = 'City'
+        setting_defined['value'] = data['city']['cityName']
     return setting_defined
