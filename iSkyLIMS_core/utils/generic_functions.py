@@ -201,8 +201,8 @@ def save_inital_sample_setting_value(apps_name, data):
         if StateInCountry.objects.filter(stateName__iexact=data['state'], apps_name__exact=apps_name).exists():
             setting_defined['ERROR'] = [ERROR_STATE_ALREADY_DEFINED, data['state']]
             return setting_defined
-            state_data['appps_name'] = apps_name
-            state_data['state'] = data['state']
+        state_data['apps_name'] = apps_name
+        state_data['state'] = data['state']
         StateInCountry.objects.create_new_state(state_data)
         setting_defined['settings'] = 'State'
         setting_defined['value'] = data['state']
