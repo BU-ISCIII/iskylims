@@ -163,6 +163,7 @@ def save_inital_sample_setting_value(apps_name, data):
         lab_request_data['labPhone'] = data['lab_request']['phone']
         lab_request_data['labEmail'] = data['lab_request']['email']
         lab_request_data['address'] = data['lab_request']['address']
+        lab_request_data['city'] = data['lab_request']['city']
         if LabRequest.objects.filter(labNameCoding__iexact = lab_request_data['labNameCoding'],  apps_name__exact = lab_request_data['apps_name']).exists():
             setting_defined['ERROR'] = [ERROR_LABORATORY_REQUEST_ALREADY_DEFINED, lab_request_data['labNameCoding']]
             return setting_defined

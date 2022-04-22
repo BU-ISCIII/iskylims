@@ -73,6 +73,7 @@ class City(models.Model):
 
 class LabRequestManager(models.Manager):
     def create_lab_request(self, data):
+        city_obj = City.objects.filter(pk__exact=data['city']).last()
         new_lab_request = self.create(
             labName=data["labName"],
             labNameCoding=data["labNameCoding"],
@@ -82,6 +83,7 @@ class LabRequestManager(models.Manager):
             labEmail=data["labEmail"],
             address=data["address"],
             apps_name=data["apps_name"],
+            labCity=city_obj
         )
         return new_lab_request
 

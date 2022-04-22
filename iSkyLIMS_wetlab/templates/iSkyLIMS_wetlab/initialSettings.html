@@ -237,7 +237,7 @@
                         <div class="panel panel-default">
                             <div class="panel-heading"><h3>Define new Laboratory from the samples came from</h3></div>
                             <div class="panel-body">
-                                {% if initial_data.city %}
+                                {% if initial_data.cities_data%}
                                     <form method="post" enctype="multipart/form-data" name="defineNewLabRequest" id="defineNewLabRequest" class="form-horizontal">
                                         {% csrf_token %}
                                         <h5>Fill the follwing form for the Laboratory, Hospital or any institution from you could receive samples</h5>
@@ -276,9 +276,8 @@
                                                 <div class="col-sm-6">
                                                     <select class="form-control" required = "required" name="city" id="city">
                                                         <option value="">Select City</option>
-                                                        <option value="None">None</option>
-                                                        {% for value in initial_data.city %}
-                                                            <option value="{{value}}">{{value}}</option>
+                                                        {% for value , id in initial_data.cities_data %}
+                                                            <option value="{{id}}">{{value}}</option>
                                                         {% endfor %}
                                                     </select>
                                                 </div>
