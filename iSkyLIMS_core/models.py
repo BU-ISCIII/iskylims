@@ -25,13 +25,21 @@ class StateInCountry(models.Model):
     def get_state_name(self):
         return "%s" % (self.stateName)
 
+    def get_state_id(self):
+        return "%s" % (self.pk)
+
     objects = StateInCountryManager()
 
 
 class CityManager(models.Manager):
     def create_new_city(self, data):
+        if StateInCountry.objects.filter(pk__exact=data['state']).exists():
+            state_obj = StateInCountry.objects.filter(pk__exact=data['state']).last()
+        else:
+            state_obj = None
         new_city = self.create(
-            city=data["city"],
+            belongsToState=state_obj,
+            cityName=data["cityName"],
             geoLocLatitude=data["latitude"],
             geoLocLongitude=data["longitude"],
             apps_name=data['apps_name']
@@ -43,16 +51,16 @@ class City(models.Model):
     belongsToState = models.ForeignKey(
         StateInCountry, on_delete=models.CASCADE, null=True, blank=True
     )
-    city_name = models.CharField(max_length=80)
+    cityName = models.CharField(max_length=80)
     geoLocLatitude = models.CharField(max_length=80)
     geoLocLongitude = models.CharField(max_length=80)
     apps_name = models.CharField(max_length=40, null=True)
 
     def __str__(self):
-        return "%s" % (self.city_name)
+        return "%s" % (self.cityName)
 
     def get_city_name(self):
-        return "%s" % (self.city_name)
+        return "%s" % (self.cityName)
 
     def get_city_id(self):
         return "%s" % (self.pk)
