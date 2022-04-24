@@ -68,6 +68,11 @@ class City(models.Model):
     def get_coordenates(self):
         return {"latitude": self.geoLocLatitude, "longitude": self.geoLocLongitude}
 
+    def get_state(self):
+        if self.belongsToState is None:
+            return ""
+        return "%s" % (self.belongsToState.get_state_name())
+
     objects = CityManager()
 
 
@@ -121,6 +126,22 @@ class LabRequest(models.Model):
         data.append(self.labPhone)
         data.append(self.labEmail)
         data.append(self.address)
+        return data
+
+    def get_fields_and_data(self):
+        data = {}
+        if self.labCity is None:
+            data["state"] = ""
+            data["city"] = ""
+            data["latitude"] = ""
+            data["longitude"] = ""
+        else:
+            data["state"] = self.labCity.get_state()
+            data["city"] = self.labCity.get_city_name()
+            data.update(self.labCity.get_coordenates())
+        data["Lab Name"] = self.labName
+        data["Lab Coding"] = self.labNameCoding
+
         return data
 
     objects = LabRequestManager()

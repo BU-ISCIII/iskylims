@@ -30,3 +30,12 @@ class SampleProjectFieldSerializer(serializers.ModelSerializer):
     class Meta:
         model = SampleProjectsFields
         fields = ["sampleProjectFieldName"]
+
+
+class SampleFields(object):
+    def __init__(self, sample_fields):
+        self.sample_fields = sample_fields
+
+
+class SampleFieldsSerializer(serializers.Serializer):
+    sample_fields = serializers.CharField(max_length=800)

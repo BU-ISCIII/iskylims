@@ -15,6 +15,9 @@ from .serializers import (
     CreateSampleSerializer,
     CreateProjectDataSerializer,
     SampleProjectFieldSerializer,
+    SampleFieldsSerializer,
+    SampleFields
+
 )
 
 from drf_yasg.utils import swagger_auto_schema
@@ -24,16 +27,8 @@ from .utils.request_handling import (
     split_sample_data,
     include_instances_in_sample,
     include_codding,
+    get_sample_fields
 )
-
-
-@api_view(["GET"])
-def sample_list(request):
-    param_requests = request.GET.keys()
-    for param_request in param_requests:
-        if param_request not in ["date", "state", "onlyRecorded"]:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-
 
 sample_project_fields = openapi.Parameter(
     "project",
@@ -42,6 +37,19 @@ sample_project_fields = openapi.Parameter(
     type=openapi.TYPE_STRING,
 )
 
+sample_fields = openapi.Parameter(
+    "project",
+    openapi.IN_QUERY,
+    description="Fetch the sample fields",
+    type=openapi.TYPE_STRING,
+)
+
+@api_view(["GET"])
+def sample_list(request):
+    param_requests = request.GET.keys()
+    for param_request in param_requests:
+        if param_request not in ["date", "state", "onlyRecorded"]:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 @swagger_auto_schema(
     method="post",
@@ -130,6 +138,19 @@ def create_sample_data(request):
             s_project_serializer.save()
 
         return Response("Successful upload information", status=status.HTTP_201_CREATED)
+
+
+@swagger_auto_schema(method="get")
+@api_view(["GET"])
+def sample_fields(request):
+    apps_name = __package__.split(".")[0]
+    sample_fields = SampleFieldsSerializer(SampleFields(get_sample_fields(apps_name)))
+    if "ERROR" in sample_fields.data["sample_fields"]:
+        return Response(sample_fields.data, status=status.HTTP_202_ACCEPTED)
+        # return Response(sample_fields.data, status=status.HTTP_204_NO_CONTENT)
+    else:
+        return Response(sample_fields.data, status=status.HTTP_200_OK)
+    return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 @swagger_auto_schema(method="get", manual_parameters=[sample_project_fields])

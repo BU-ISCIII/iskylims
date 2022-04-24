@@ -11,6 +11,52 @@ from iSkyLIMS_core.models import (
     StatesForSample,
 )
 from iSkyLIMS_core.utils.handling_samples import increase_unique_value
+from iSkyLIMS_core.core_config import HEADING_FOR_RECORD_SAMPLES
+
+# HEADING_FOR_RECORD_SAMPLES = ['Patient Code ID', 'Sample Name', 'Lab requested', 'Type of Sample', 'Species', 'Project/Service', 'Date sample reception', 'Collection Sample Date', 'Sample Storage Location', 'Only recorded']
+
+
+def get_sample_fields(apps_name):
+    sample_fields = {}
+    lab_data = []
+    species = []
+    type_sample = []
+    s_proj = []
+    if LabRequest.objects.all().exists():
+        lab_request_objs = LabRequest.objects.all().order_by("labName")
+        for lab_request_obj in lab_request_objs:
+            lab_data.append(lab_request_obj.get_fields_and_data())
+
+    if Species.objects.filter(apps_name__exact=apps_name).exists():
+        species_objs = Species.objects.filter(apps_name__exact=apps_name).order_by("speciesName")
+        for species_obj in species_objs:
+            species.append(species_obj.get_name())
+    if SampleType.objects.filter(apps_name__exact=apps_name).exists():
+        s_type_objs = SampleType.objects.filter(apps_name__exact=apps_name).order_by("sampleType")
+        for s_type_obj in s_type_objs:
+            type_sample.append(s_type_obj.get_name())
+    if SampleProjects.objects.filter(apps_name__exact=apps_name).exists():
+        s_proj_objs = SampleProjects.objects.filter(apps_name__exact=apps_name).order_by("sampleProjectName")
+        for s_proj_obj in s_proj_objs:
+            s_proj.append(s_proj_obj.get_sample_project_name())
+    for field in HEADING_FOR_RECORD_SAMPLES:
+        if "Date" in field:
+            sample_fields[field] = "Date"
+        else:
+            sample_fields[field] = "String"
+    if len(type_sample) == 0 and len(species) == 0:
+        sample_fields["ERROR"] = "Not enough data are defined in iSkyLIMS"
+        return sample_fields
+    if len(type_sample) > 0:
+        sample_fields["Type of Sample"] = type_sample
+    if len(species) > 0:
+        sample_fields["Species"] = species
+    if len(lab_data) > 0:
+        sample_fields["Lab requested"] = lab_data
+    if len(s_proj) > 0:
+        sample_fields["Project/Service"] = s_proj
+
+    return sample_fields
 
 
 def get_sample_project_obj(project_name):
