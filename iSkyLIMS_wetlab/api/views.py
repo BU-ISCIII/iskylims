@@ -107,7 +107,7 @@ def create_sample_data(request):
         data = request.data
         if isinstance(data, QueryDict):
             data = data.dict()
-        if "sampleName" not in data and "project" not in data:
+        if "sampleName" not in data and "sampleProject" not in data:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         split_data = split_sample_data(data)
         if not isinstance(split_data, dict):

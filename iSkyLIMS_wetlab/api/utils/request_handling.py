@@ -96,7 +96,7 @@ def split_sample_data(data):
         "labRequest",
         "sampleType",
         "species",
-        "project",
+        "sampleProject",
         "sampleEntryDate",
         "collectionSampleDate",
         "sampleLocation",
