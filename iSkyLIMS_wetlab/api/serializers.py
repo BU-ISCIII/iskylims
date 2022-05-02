@@ -18,8 +18,10 @@ class CreateSampleSerializer(serializers.ModelSerializer):
             "sampleLocation",
             "onlyRecorded",
             "sampleCodeID",
+            "uniqueSampleID",
             "sampleUser",
-            "sampleState"
+            "sampleState",
+            "completedDate"
         ]
 
 
