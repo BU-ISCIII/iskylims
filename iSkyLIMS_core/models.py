@@ -8,10 +8,7 @@ import datetime
 
 class StateInCountryManager(models.Manager):
     def create_new_state(self, data):
-        new_state = self.create(
-            stateName=data['state'],
-            apps_name=data['apps_name']
-        )
+        new_state = self.create(stateName=data["state"], apps_name=data["apps_name"])
         return new_state
 
 
@@ -33,8 +30,8 @@ class StateInCountry(models.Model):
 
 class CityManager(models.Manager):
     def create_new_city(self, data):
-        if StateInCountry.objects.filter(pk__exact=data['state']).exists():
-            state_obj = StateInCountry.objects.filter(pk__exact=data['state']).last()
+        if StateInCountry.objects.filter(pk__exact=data["state"]).exists():
+            state_obj = StateInCountry.objects.filter(pk__exact=data["state"]).last()
         else:
             state_obj = None
         new_city = self.create(
@@ -42,7 +39,7 @@ class CityManager(models.Manager):
             cityName=data["cityName"],
             geoLocLatitude=data["latitude"],
             geoLocLongitude=data["longitude"],
-            apps_name=data['apps_name']
+            apps_name=data["apps_name"],
         )
         return new_city
 
@@ -78,7 +75,7 @@ class City(models.Model):
 
 class LabRequestManager(models.Manager):
     def create_lab_request(self, data):
-        city_obj = City.objects.filter(pk__exact=data['city']).last()
+        city_obj = City.objects.filter(pk__exact=data["city"]).last()
         new_lab_request = self.create(
             labName=data["labName"],
             labNameCoding=data["labNameCoding"],
@@ -88,7 +85,7 @@ class LabRequestManager(models.Manager):
             labEmail=data["labEmail"],
             address=data["address"],
             apps_name=data["apps_name"],
-            labCity=city_obj
+            labCity=city_obj,
         )
         return new_lab_request
 
@@ -951,9 +948,6 @@ class SamplesManager(models.Manager):
             )
         else:
             completedDate = None
-        import pdb
-
-        pdb.set_trace()
         new_sample = self.create(
             sampleState=StatesForSample.objects.get(
                 sampleStateName__exact=sample_data["sampleState"]
@@ -1181,7 +1175,7 @@ class SampleProjectsFieldsValue(models.Model):
     sampleProjecttField_id = models.ForeignKey(
         SampleProjectsFields, on_delete=models.CASCADE, null=True
     )
-    sampleProjectFieldValue = models.CharField(max_length=255)
+    sampleProjectFieldValue = models.CharField(max_length=255, null=True, blank=True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
