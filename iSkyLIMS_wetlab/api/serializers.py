@@ -14,9 +14,12 @@ class CreateSampleSerializer(serializers.ModelSerializer):
             "species",
             "sampleProject",
             "sampleEntryDate",
-            "sampleCollectionDate",
+            "collectionSampleDate",
             "sampleLocation",
             "onlyRecorded",
+            "sampleCodeID",
+            "sampleUser",
+            "sampleState"
         ]
 
 
