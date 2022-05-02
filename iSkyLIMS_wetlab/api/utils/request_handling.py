@@ -117,7 +117,7 @@ def split_sample_data(data):
     else:
         split_data["s_data"]["onlyRecorded"] = False
     # fetch project fields
-    project_obj = get_sample_project_obj(data["project"])
+    project_obj = get_sample_project_obj(data["sampleProject"])
     if not project_obj:
         return "Project is not defined"
     project_fields = get_project_fields_id_and_name(project_obj)
@@ -168,23 +168,24 @@ def include_instances_in_sample(data):
         )
     else:
         return str("species " + data["species"] + " is not defined in database")
-    if SampleProjects.objects.filter(sampleProjectName__exact=data["project"]).exists():
-        data["project"] = (
-            SampleProjects.objects.filter(sampleProjectName__exact=data["project"])
+    if SampleProjects.objects.filter(sampleProjectName__exact=data["sampleProject"]).exists():
+        data["sampleProject"] = (
+            SampleProjects.objects.filter(sampleProjectName__exact=data["sampleProject"])
             .last()
             .get_id()
         )
     else:
-        return str("project " + data["project"] + " is not defined")
+        return str("sampleProject " + data["sampleProject"] + " is not defined")
     if data["onlyRecorded"]:
         data["sampleState"] = (
             StatesForSample.objects.filter(sampleStateName="Completed").last().get_id()
         )
+        data["completedDate"] = datetime.now()
     else:
         data["sampleState"] = (
             StatesForSample.objects.filter(sampleStateName="Defined").last().get_id()
         )
-
+        data["completedDate"] = None
     return data
 
 
