@@ -943,9 +943,7 @@ class SamplesManager(models.Manager):
         else:
             sample_data["species"] = None
         if "completedDate" in sample_data:
-            completedDate = datetime.datetime.strptime(
-                sample_data["completedDate"], "%Y-%m-%d %H:%M:%S"
-            )
+            completedDate = sample_data["completedDate"]
         else:
             completedDate = None
         new_sample = self.create(

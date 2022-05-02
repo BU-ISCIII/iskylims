@@ -230,7 +230,7 @@ def analyze_input_samples (request, app_name):
             # Check if patient code  already exists on database, If not if will be created giving a sequencial dummy value
             if sample_data['p_code_id'] != '':
                 patient_obj = check_patient_code_exists(sample_data['p_code_id'])
-                if patient_obj == False:
+                if patient_obj is False:
                     # Define the new patient only Patient code is defined
                     patient_obj = create_empty_patient(sample_data['p_code_id'])
             else:
