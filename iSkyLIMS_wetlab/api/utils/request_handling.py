@@ -98,20 +98,24 @@ def split_sample_data(data):
         "species",
         "project",
         "sampleEntryDate",
-        "sampleCollectionDate",
+        "collectionSampleDate",
         "sampleLocation",
-        "onlyRecorded",
+        "onlyRecorded"
     ]
     for sample_field in sample_fields:
         try:
             if "date" in sample_field.lower():
                 split_data["s_data"][sample_field] = datetime.strptime(
-                    data[sample_field], "%Y/%m/%d"
+                    data[sample_field], "%Y-%m-%d"
                 )
             else:
                 split_data["s_data"][sample_field] = data[sample_field]
         except KeyError as e:
             return str(str(e) + " is not defined in your query")
+    if split_data["s_data"]["onlyRecorded"] == "Yes":
+        split_data["s_data"]["onlyRecorded"] = True
+    else:
+        split_data["s_data"]["onlyRecorded"] = False
     # fetch project fields
     project_obj = get_sample_project_obj(data["project"])
     if not project_obj:
@@ -133,6 +137,7 @@ def split_sample_data(data):
 
 
 def include_instances_in_sample(data):
+
     """Fecth the patient instance"""
     if data["patientCore"] == "" or data["patientCore"].lower() == "null":
         data["patientCore"] = None
@@ -171,7 +176,7 @@ def include_instances_in_sample(data):
         )
     else:
         return str("project " + data["project"] + " is not defined")
-    if data["onlyRecorded"].lower() == "yes":
+    if data["onlyRecorded"]:
         data["sampleState"] = (
             StatesForSample.objects.filter(sampleStateName="Completed").last().get_id()
         )

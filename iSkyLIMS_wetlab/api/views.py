@@ -122,7 +122,6 @@ def create_sample_data(request):
             include_codding(request.user.username, split_data["s_data"]["sampleName"])
         )
         sample_serializer = CreateSampleSerializer(data=split_data["s_data"])
-
         if not sample_serializer.is_valid():
             return Response(
                 sample_serializer.errors, status=status.HTTP_400_BAD_REQUEST
