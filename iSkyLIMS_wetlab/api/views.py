@@ -10,20 +10,25 @@ from rest_framework import status
 from rest_framework.response import Response
 from django.http import QueryDict
 
-from iSkyLIMS_core.models import SampleProjects, SampleProjectsFields
+from iSkyLIMS_core.models import (
+    SampleProjects,
+    SampleProjectsFields,
+    LabRequest
+)
 from .serializers import (
     CreateSampleSerializer,
     CreateProjectDataSerializer,
     SampleProjectFieldSerializer,
     SampleFieldsSerializer,
-    SampleFields
+    SampleFields,
+    LabRequestSerializer
 
 )
 
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from .utils.request_handling import (
+from .utils.sample_request_handling import (
     split_sample_data,
     include_instances_in_sample,
     include_codding,
@@ -44,12 +49,21 @@ sample_fields = openapi.Parameter(
     type=openapi.TYPE_STRING,
 )
 
+laboratory = openapi.Parameter(
+    "laboratory",
+    openapi.IN_QUERY,
+    description="Laboratory name form to fetch contact information. Example Harlem Hospital Center",
+    type=openapi.TYPE_STRING,
+)
+
+
 @api_view(["GET"])
 def sample_list(request):
     param_requests = request.GET.keys()
     for param_request in param_requests:
         if param_request not in ["date", "state", "onlyRecorded"]:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
 @swagger_auto_schema(
     method="post",
@@ -168,6 +182,20 @@ def sample_project_fields(request):
                 s_project_field_objs, many=True
             )
             return Response(s_project_serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+    return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+@swagger_auto_schema(method="get", manual_parameters=[laboratory])
+@api_view(["GET"])
+def get_lab_information_contact(request):
+    if "laboratory" in request.GET:
+        lab_name = request.GET["laboratory"].strip()
+        if LabRequest.objects.filter(labName__iexact=lab_name).exists():
+            lab_req_obj = LabRequest.objects.filter(labName__iexact=lab_name).last()
+            lab_req_serializer = LabRequestSerializer(lab_req_obj, many=False)
+            return Response(lab_req_serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_204_NO_CONTENT)
     return Response(status=status.HTTP_400_BAD_REQUEST)
