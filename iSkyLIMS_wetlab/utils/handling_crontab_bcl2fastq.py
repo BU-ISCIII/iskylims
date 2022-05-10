@@ -570,7 +570,7 @@ def process_and_store_fl_summary_data(parsed_data, run_process_obj, number_of_la
             project_flowcell['project_id'] = None
             project_flowcell['defaultAll'] = project
         else:
-            project_flowcell['project_id'] = Projects.objects.get(projectName__iexact = project)
+            project_flowcell['project_id'] = Projects.objects.filter(projectName__iexact=project).last()
             project_flowcell['defaultAll'] = None
         project_flowcell['runprocess_id'] = run_process_obj
         #store in database
@@ -631,7 +631,7 @@ def process_and_store_lane_summary_data (parsed_data, run_process_obj, number_of
                 project_lane['project_id'] = None
                 project_lane['defaultAll'] = project
             else:
-                project_lane['project_id'] = Projects.objects.get(projectName__exact = project)
+                project_lane['project_id'] = Projects.objects.filter(projectName__exact = project).last()
                 project_lane['defaultAll'] =  None
 
             project_lane['runprocess_id'] = run_process_obj
@@ -755,7 +755,7 @@ def process_and_store_samples_projects_data(parsed_data, run_process_obj, experi
 
             project_sample_data['qualityQ30'] = bigger_q30
             project_sample_data['meanQuality'] = mean_quality
-            project_sample_data['project_id'] = Projects.objects.get(projectName__exact = project)
+            project_sample_data['project_id'] = Projects.objects.filter(projectName__exact=project).last()
             project_sample_data['runProcess_id'] = run_process_obj
             project_sample_data['user_id'] = samples_with_user_ids[sample]
 
