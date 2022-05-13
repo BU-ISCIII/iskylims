@@ -199,3 +199,23 @@ def get_lab_information_contact(request):
         else:
             return Response(status=status.HTTP_204_NO_CONTENT)
     return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["PUT"])
+def update_lab(request):
+    if request.method == "PUT":
+        data = request.data
+        if isinstance(data, QueryDict):
+            data = data.dict()
+        data["apps_name"] = "wetlab"
+        serializer = LabRequestSerializer(data=data)
+        if not serializer.is_valid():
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        lab_name = data["labName"].strip()
+        if not LabRequest.objects.filter(labName__iexact=lab_name).exists():
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        lab_req_obj = LabRequest.objects.filter(labName__iexact=lab_name).last()
+        LabRequestSerializer.update(lab_req_obj, data=data)
+
+        return Response("Successful Update information", status=status.HTTP_201_CREATED)
+    return Response(status=status.HTTP_400_BAD_REQUEST)

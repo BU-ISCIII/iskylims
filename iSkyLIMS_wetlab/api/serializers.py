@@ -42,6 +42,19 @@ class LabRequestSerializer(serializers.ModelSerializer):
         # fields = "__all__"
         exclude = ["id", "labCity", "apps_name"]
 
+    def update(self, data):
+        self.labName = data["labName"]
+        self.labNameCoding = data["labNameCoding"]
+        self.labUnit = data["labUnit"]
+        self.labContactName = data["labContactName"]
+        self.labPhone = data["labPhone"]
+        self.labEmail = data["labEmail"]
+        self.address = data["address"]
+        self.apps_name = data["apps_name"]
+        self.save()
+        return self
+
+
 class SampleProjectFieldSerializer(serializers.ModelSerializer):
     class Meta:
         model = SampleProjectsFields
