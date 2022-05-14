@@ -144,3 +144,6 @@ ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_MOLECULE_TYPES = ['No molecule ty
 ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_MOLECULE_TYPE = ['The molecule Type', 'is not defined' ]
 ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_PROTOCOL =['No protocols name are defined yet', 'Check documentation to define them']
 ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_MOLECULE_PROTOCOL_NAME = ['The protocol name', 'is not defined' ]
+
+ERROR_MESSAGE_INVALID_JSON_SCHEMA = ["Upload schema cannot used because it contains errors "]
+ERROR_MESSAGE_PROPERTY_NOT_FOUND_IN_SCHEMA = ["Property was not found in schema"]

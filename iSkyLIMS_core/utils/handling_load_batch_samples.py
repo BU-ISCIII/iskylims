@@ -1,5 +1,9 @@
 import pandas as pd
 from datetime import datetime
+import json
+import jsonschema
+from jsonschema import Draft202012Validator
+import re
 from iSkyLIMS_core.core_config import *
 from iSkyLIMS_core.models import *
 from iSkyLIMS_core.utils.handling_samples import *
@@ -357,3 +361,60 @@ def save_samples_in_batch_file (sample_batch_df, reg_user, package):
         new_molecule.set_molecule_use('SNV/CNV' , package)
         new_molecule.set_state('Completed')
     return 'OK'
+
+
+def read_json_schema(json_schema):
+    """
+    Description:
+        Function reads the json and validate the schema.
+    Input:
+        json_schema     # File containing the schema
+    Output:
+        schema
+    """
+    schema = json.load(json_schema)
+    try:
+        Draft202012Validator.check_schema(schema)
+    except jsonschema.ValidationError:
+        return {"ERROR": ERROR_MESSAGE_INVALID_JSON_SCHEMA}
+    return {"schema": schema}
+
+
+def store_schema(schema, field, valid_fields):
+    """
+
+    """
+    if valid_fields == "":
+        no_filter = True
+    else:
+        v_fields = valid_fields.split("\r\n")
+    property_list = []
+
+    for property in schema["properties"].keys():
+        try:
+            schema_dict = {"Field name": property}
+            schema_dict["Description"] = schema["properties"][property]["label"]
+            if field not in schema["properties"][property]:
+                print(property)
+                continue
+                return {"ERROR": ERROR_MESSAGE_PROPERTY_NOT_FOUND_IN_SCHEMA}
+            if schema["properties"][property][field] not in v_fields:
+                continue
+            if "format" in schema["properties"][property]:
+                schema_dict["Field type"] = "Date"
+            elif "Enums" in schema["properties"][property]:
+                schema_dict["Field type"] = "Table"
+                schema_dict["Enums"] = []
+                for item in schema["properties"][property]["Enums"]:
+                    enum = re.search(r"(.+) \[(.*)\]", item)
+                    if enum:
+                        schema_dict["Enums"].append(enum.group(1))
+                    else:
+                        schema_dict["Enums"].append(item)
+            else:
+                schema_dict["Field type"] = "String"
+            property_list.append(schema_dict)
+        except:
+            import pdb; pdb.set_trace()
+    import pdb; pdb.set_trace()
+    return

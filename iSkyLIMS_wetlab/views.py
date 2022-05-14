@@ -3062,13 +3062,23 @@ def define_sample_projects_fields (request, sample_project_id):
         sample_project_field_data = set_sample_project_fields(request.POST)
 
         return render(request, 'iSkyLIMS_wetlab/defineSampleProjectFields.html', {'sample_project_field_data':sample_project_field_data})
+    elif request.method == 'POST' and request.POST['action'] == 'defineBatchFields':
 
+        sample_project_data = define_table_for_sample_project_fields(request.POST["sample_project_id"])
+        # sample_information = prepare_sample_input_table(__package__)
+        if 'jsonSchema' in request.FILES:
+            schema = read_json_schema(request.FILES['jsonSchema'])
+            if 'ERROR' in schema:
+                return render(request, 'iSkyLIMS_wetlab/defineSampleProjectFields.html', {'sample_project_data': sample_project_data, 'error_message': schema['ERROR']})
+
+            result = store_schema(schema["schema"], request.POST["classification"], request.POST["subfilter"])
+            return render(request, 'iSkyLIMS_wetlab/defineSampleProjectFields.html', {'result':result})
+        return render(request, 'iSkyLIMS_wetlab/defineSampleProjectFields.html', {'error_message': ERROR_MESSAGE_UPLOAD_FILE_NOT_EXISTS})
     else:
         if not check_if_sample_project_id_exists(sample_project_id):
             return render ( request,'iSkyLIMS_wetlab/error_page.html',
                         {'content':['The requested Protocol does not exist',
                             'Create the protocol name before assigning custom protocol parameters.']})
-
 
         sample_project_data = define_table_for_sample_project_fields(sample_project_id)
         return render(request, 'iSkyLIMS_wetlab/defineSampleProjectFields.html', {'sample_project_data':sample_project_data})
@@ -3898,7 +3908,7 @@ def create_new_run (request):
 
         for pool_obj in pools_obj:
             pool_obj.set_pool_state('Used')
-        update_batch_lib_prep_sample_state(run_data['lib_prep_ids'],  'Sequencing')
+        update_batch_lib_prep_sample_state(run_data['lib_prep_ids'], 'Sequencing')
         created_new_run = {}
         created_new_run['exp_name'] = run_data['exp_name']
         created_new_run['run_process_id'] = request.POST['run_process_id']
