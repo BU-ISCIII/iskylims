@@ -16,6 +16,7 @@ interop
 mod_wsgi
 mysqlclient==2.0.3
 paramiko
+jsonschema
 pysmb
 django_extensions
 djangorestframework
