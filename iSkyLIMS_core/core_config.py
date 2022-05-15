@@ -287,7 +287,7 @@ FORM_PROJECT_CREATION = [
 # #################### DEFAULT INFORMATION  ################
 VALUE_NOT_PROVIDED = "Not Provided"
 
-
+SUCCESSFUL_JSON_SCHEMA = ["Json schema was loaded successfully"]
 # #################### ERROR MESSAGES  #####################
 ERROR_TYPE_OF_SAMPLE_EXISTS = ["Type of sample is already recorded"]
 ERROR_TYPE_OF_SAMPLE_ID_DOES_NOT_EXISTS = [
@@ -374,3 +374,4 @@ ERROR_MESSAGE_INVALID_JSON_SCHEMA = [
     "Upload schema cannot used because it contains errors "
 ]
 ERROR_MESSAGE_PROPERTY_NOT_FOUND_IN_SCHEMA = ["Property was not found in schema"]
+ERROR_FIELD_NOT_EXIST_IN_SCHEMA = ["Field does not exists in schema"]

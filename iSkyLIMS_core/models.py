@@ -836,8 +836,20 @@ class SampleProjectsFields(models.Model):
     def get_field_id(self):
         return "%s" % (self.id)
 
-    def get_field_option_list(self):
-        return "%s" % (self.sampleProjectOptionList)
+    def get_field_options_list(self):
+        if self.sampleProjectFieldType == "Options List":
+            if SamplesProjectsTableOptions.objects.filter(
+                sampleProjectField=self
+            ).exists():
+                s_p_opt_objs = SamplesProjectsTableOptions.objects.filter(
+                    sampleProjectField=self
+                )
+                data = []
+                for s_p_opt_obj in s_p_opt_objs:
+                    data.append(s_p_opt_obj.get_option_value())
+            return data
+        else:
+            return ""
 
     def get_field_name(self):
         return "%s" % (self.sampleProjectFieldName)
@@ -861,7 +873,7 @@ class SampleProjectsFields(models.Model):
         field_data.append(used)
         field_data.append(self.sampleProjectSearchable)
         field_data.append(self.sampleProjectFieldType)
-        field_data.append(self.sampleProjectOptionList)
+        field_data.append(self.get_field_options_list())
         field_data.append(self.sampleProjectFieldDescription)
         return field_data
 
@@ -912,7 +924,7 @@ class SamplesProjectsTableOptions(models.Model):
     sampleProjectField = models.ForeignKey(
         SampleProjectsFields, on_delete=models.CASCADE, null=True, blank=True
     )
-    optionValue = models.CharField(max_length=60)
+    optionValue = models.CharField(max_length=120)
 
     def __str__(self):
         return "%s" % (self.optionValue)
@@ -923,7 +935,7 @@ class SamplesProjectsTableOptions(models.Model):
     def get_option_and_pk(self):
         return [self.pk, self.optionValue]
 
-    objects = SamplesProjectsTableOptionsManager
+    objects = SamplesProjectsTableOptionsManager()
 
 
 class SamplesManager(models.Manager):
