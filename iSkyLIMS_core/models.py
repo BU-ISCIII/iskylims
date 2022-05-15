@@ -2,9 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 import datetime
 
-# from datetime import date
-# from iSkyLIMS_core.core_config import COLLECTION_INDEX_KITS_DIRECTORY
-
 
 class StateInCountryManager(models.Manager):
     def create_new_state(self, data):
@@ -684,7 +681,7 @@ class PatientCoreManager(models.Manager):
     def create_patient(self, p_data):
         try:
             sex = PatientSex.objects.get(sex__exact=p_data["patientSex"])
-        except:
+        except ValueError:
             sex = None
         new_patient = self.create(
             patientName=p_data["patientName"],
@@ -903,29 +900,30 @@ class SampleProjectsFields(models.Model):
     objects = SampleProjectsFieldsManager()
 
 
-"""
-class SamplesProjectsOptionValuesManager():
-    def create_sample_project_option_value (self, option_data):
-        new_sample_project_opt_value = self.create( sampleProjectField = option_data['sample_project_field_obj'],
-                    orderedPosition = option_data['position'], optionStringValue = option_data['value'])
-        return new_sample_project_opt_value
+class SamplesProjectsTableOptionsManager(models.Manager):
+    def create_new_s_proj_table_opt(self, data):
+        new_s_proj_table_opt = self.create(
+            sampleProjectField=data["s_proj_obj"], optionValue=data["opt_value"]
+        )
+        return new_s_proj_table_opt
 
-class SamplesProjectsOptionValues(models.Model):
+
+class SamplesProjectsTableOptions(models.Model):
     sampleProjectField = models.ForeignKey(
-                SampleProjectsFields,
-                on_delete = models.CASCADE, null = True, blank = True)
-    orderedPosition = models.IntegerField(default = 1)
-    optionStringValue = models.CharField(max_length=40)
-    generated_at = models.DateTimeField(auto_now_add=True)
+        SampleProjectsFields, on_delete=models.CASCADE, null=True, blank=True
+    )
+    optionValue = models.CharField(max_length=60)
 
-    def __str__ (self):
-        return '%s' %(self.optionStringValue)
+    def __str__(self):
+        return "%s" % (self.optionValue)
 
     def get_option_value(self):
-        return '%s' %(self.optionStringValue)
+        return "%s" % (self.optionValue)
 
-    objects = SamplesProjectsOptionValuesManager()
-"""
+    def get_option_and_pk(self):
+        return [self.pk, self.optionValue]
+
+    objects = SamplesProjectsTableOptionsManager
 
 
 class SamplesManager(models.Manager):
@@ -1043,7 +1041,7 @@ class Samples(models.Model):
         sample_info.append(self.sampleType.get_name())
         try:
             sample_info.append(self.species.get_name())
-        except:
+        except KeyError:
             sample_info.append("Not defined")
         return sample_info
 
@@ -1266,11 +1264,6 @@ class MoleculePreparation(models.Model):
     def __str__(self):
         return "%s" % (self.moleculeCodeId)
 
-    """
-    def get_if_massive(self):
-        return self.usedForMassiveSequencing
-    """
-
     def get_info_for_display(self):
         extraction_date = self.moleculeExtractionDate.strftime("%d, %B, %Y")
         molecule_info = []
@@ -1386,7 +1379,7 @@ class SequencingConfigurationManager(models.Manager):
     def create_new_configuration(self, data):
         try:
             platform_obj = SequencingPlatform.objects.get(pk__exact=data["platformID"])
-        except:
+        except models.SequencingPlatform.DoesNotExist:
             platform_obj = None
         new_sequencer_configuration = self.create(
             platformID=platform_obj, configurationName=data["configurationName"]
@@ -1421,7 +1414,7 @@ class SequencerInLabManager(models.Manager):
             platform_obj = SequencingPlatform.objects.get(
                 pk__exact=sequencer_value["platformID"]
             )
-        except models.SequencingPlatform.MultipleObjectsReturned:
+        except models.SequencingPlatform.DoesNotExist:
             platform_obj = None
         new_sequencer = self.create(
             platformID=platform_obj,

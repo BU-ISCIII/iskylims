@@ -1264,6 +1264,20 @@ def get_species ():
             species_names.append(species.get_name())
     return species_names
 
+def get_sample_project_obj_from_id(s_project_id):
+    """
+    Description:
+        The fuction return sample project object from id
+    Input:
+        s_project_id    # id of the sample project
+    Output:
+        s_project_obj
+    """
+    s_project_obj = None
+    if SampleProjects.objects.filter(pk__exact=s_project_id).exists():
+        s_project_obj = SampleProjects.objects.get(pk__exact=s_project_id)
+    return s_project_obj
+
 def get_sample_project_field_obj_from_id(sample_project_field_id):
     '''
     Description:

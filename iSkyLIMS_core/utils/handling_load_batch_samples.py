@@ -380,13 +380,14 @@ def read_json_schema(json_schema):
     return {"schema": schema}
 
 
-def store_schema(schema, field, valid_fields):
+def store_schema(schema, field, valid_fields, s_project_id):
     """
 
     """
     if valid_fields == "":
-        no_filter = True
+        all_fields = True
     else:
+        all_fields = False
         v_fields = valid_fields.split("\r\n")
     property_list = []
 
@@ -394,10 +395,9 @@ def store_schema(schema, field, valid_fields):
         try:
             schema_dict = {"Field name": property}
             schema_dict["Description"] = schema["properties"][property]["label"]
-            if field not in schema["properties"][property]:
+            if not all_fields and field not in schema["properties"][property]:
                 print(property)
                 continue
-                return {"ERROR": ERROR_MESSAGE_PROPERTY_NOT_FOUND_IN_SCHEMA}
             if schema["properties"][property][field] not in v_fields:
                 continue
             if "format" in schema["properties"][property]:
@@ -417,4 +417,18 @@ def store_schema(schema, field, valid_fields):
         except:
             import pdb; pdb.set_trace()
     import pdb; pdb.set_trace()
+    s_project_obj = get_sample_project_obj_from_id(s_project_id)
+    counter = 0
+    for property in property_list:
+        counter += 1
+        property["Used"] = True
+        property["Searchable"] = False
+        property["Option Values"] = ""
+        property["sample_project_id"] = s_project_obj
+        property["order"] = counter
+        new_s_project_prop = SampleProjectsFields.objects.create_sample_project_fields(property)
+        if "Enums" in property:
+            data = {"s_proj_obj": new_s_project_prop}
+            data["opt_value"] = property["Enums"]
+            SamplesProjectsTableOptions.objects.create_new_s_proj_table_opt(data)
     return
