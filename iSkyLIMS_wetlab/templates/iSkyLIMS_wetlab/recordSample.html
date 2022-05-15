@@ -361,7 +361,7 @@
                                             {% for name, type, options in sample_recorded.pre_defined_fields_heading_type %}
                                                 {% if type == 'Date' %}
                                                     { type: 'calendar', title:'{{name}}', width:150 },
-                                                {% elif type == 'Option List'%}
+                                                {% elif type == 'Options List'%}
 
                                                     { type: 'dropdown', title:'{{name}}', width:150 , source: [{% for value in options %}"{{value}}",{% endfor %}] },
                                                 {% else %}

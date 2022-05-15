@@ -3056,23 +3056,21 @@ def define_sample_projects_fields (request, sample_project_id):
         #redirect to login webpage
         return redirect ('/accounts/login')
     # get the list of defined sample Projects
-
     if request.method == 'POST' and request.POST['action'] == 'defineSampleProjectFields':
-
         sample_project_field_data = set_sample_project_fields(request.POST)
+        return render(request, 'iSkyLIMS_wetlab/defineSampleProjectFields.html', {'sample_project_field_data': sample_project_field_data})
 
-        return render(request, 'iSkyLIMS_wetlab/defineSampleProjectFields.html', {'sample_project_field_data':sample_project_field_data})
     elif request.method == 'POST' and request.POST['action'] == 'defineBatchFields':
-
         sample_project_data = define_table_for_sample_project_fields(request.POST["sample_project_id"])
         # sample_information = prepare_sample_input_table(__package__)
         if 'jsonSchema' in request.FILES:
             schema = read_json_schema(request.FILES['jsonSchema'])
             if 'ERROR' in schema:
                 return render(request, 'iSkyLIMS_wetlab/defineSampleProjectFields.html', {'sample_project_data': sample_project_data, 'error_message': schema['ERROR']})
-
-            result = store_schema(schema["schema"], request.POST["classification"], request.POST["subfilter"])
-            return render(request, 'iSkyLIMS_wetlab/defineSampleProjectFields.html', {'result':result})
+            result = store_schema(schema["schema"], request.POST["classification"], request.POST["subfilter"], request.POST["sample_project_id"])
+            if "ERROR" in result:
+                return render(request, 'iSkyLIMS_wetlab/defineSampleProjectFields.html', {'error_message': result["ERROR"], 'sample_project_data': sample_project_data})
+            return render(request, 'iSkyLIMS_wetlab/defineSampleProjectFields.html', {'schema_result': result})
         return render(request, 'iSkyLIMS_wetlab/defineSampleProjectFields.html', {'error_message': ERROR_MESSAGE_UPLOAD_FILE_NOT_EXISTS})
     else:
         if not check_if_sample_project_id_exists(sample_project_id):
@@ -3081,16 +3079,16 @@ def define_sample_projects_fields (request, sample_project_id):
                             'Create the protocol name before assigning custom protocol parameters.']})
 
         sample_project_data = define_table_for_sample_project_fields(sample_project_id)
-        return render(request, 'iSkyLIMS_wetlab/defineSampleProjectFields.html', {'sample_project_data':sample_project_data})
+        return render(request, 'iSkyLIMS_wetlab/defineSampleProjectFields.html', {'sample_project_data': sample_project_data})
 
 
 @login_required
 def modify_additional_kits(request, protocol_id):
-    ## Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
+    # Check user == WETLAB_MANAGER: if false,  redirect to 'login' page
     if request.user.is_authenticated:
         if not is_wetlab_manager(request):
-            return render (
-                request,'iSkyLIMS_wetlab/error_page.html',
+            return render(
+                request, 'iSkyLIMS_wetlab/error_page.html',
                 {'content':['You do not have enough privileges to see this page ',
                             'Contact with your administrator .']})
     else:
