@@ -922,7 +922,11 @@ class SamplesProjectsTableOptionsManager(models.Manager):
 
 class SamplesProjectsTableOptions(models.Model):
     sampleProjectField = models.ForeignKey(
-        SampleProjectsFields, on_delete=models.CASCADE, null=True, blank=True
+        SampleProjectsFields,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="opt_value_prop",
     )
     optionValue = models.CharField(max_length=120)
 

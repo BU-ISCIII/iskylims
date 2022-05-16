@@ -4,7 +4,8 @@ from iSkyLIMS_core.models import (
     LabRequest,
     Samples,
     SampleProjectsFieldsValue,
-    SampleProjectsFields
+    SampleProjectsFields,
+    SamplesProjectsTableOptions,
 )
 
 
@@ -26,7 +27,7 @@ class CreateSampleSerializer(serializers.ModelSerializer):
             "uniqueSampleID",
             "sampleUser",
             "sampleState",
-            "completedDate"
+            "completedDate",
         ]
 
 
@@ -55,10 +56,28 @@ class LabRequestSerializer(serializers.ModelSerializer):
         return self
 
 
+class SamplProjetPropertyOptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SamplesProjectsTableOptions
+        fields = ("id", "optionValue")
+
+
 class SampleProjectFieldSerializer(serializers.ModelSerializer):
+    # sampleProjectOptionList = SamplProjetPropertyOptionSerializer(SamplesProjectsTableOptions.ForeignKey(SampleProjectsFields, related_name='optionValue'))
+    sampleProjectOptionList = SamplProjetPropertyOptionSerializer(
+        source="opt_value_prop", many=True
+    )
+
     class Meta:
         model = SampleProjectsFields
-        fields = ["sampleProjectFieldName"]
+        depth = 1
+        fields = [
+            "sampleProjectFieldName",
+            "sampleProjectFieldUsed",
+            "sampleProjectFieldType",
+            "sampleProjectOptionList",
+            "sampleProjectFieldDescription",
+        ]
 
 
 class SampleFields(object):
