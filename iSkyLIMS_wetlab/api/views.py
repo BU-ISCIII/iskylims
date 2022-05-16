@@ -10,19 +10,14 @@ from rest_framework import status
 from rest_framework.response import Response
 from django.http import QueryDict
 
-from iSkyLIMS_core.models import (
-    SampleProjects,
-    SampleProjectsFields,
-    LabRequest
-)
+from iSkyLIMS_core.models import SampleProjects, SampleProjectsFields, LabRequest
 from .serializers import (
     CreateSampleSerializer,
     CreateProjectDataSerializer,
     SampleProjectFieldSerializer,
     SampleFieldsSerializer,
     SampleFields,
-    LabRequestSerializer
-
+    LabRequestSerializer,
 )
 
 from drf_yasg.utils import swagger_auto_schema
@@ -32,7 +27,7 @@ from .utils.sample_request_handling import (
     split_sample_data,
     include_instances_in_sample,
     include_codding,
-    get_sample_fields
+    get_sample_fields,
 )
 
 sample_project_fields = openapi.Parameter(
@@ -55,14 +50,6 @@ laboratory = openapi.Parameter(
     description="Laboratory name form to fetch contact information. Example Harlem Hospital Center",
     type=openapi.TYPE_STRING,
 )
-
-
-@api_view(["GET"])
-def sample_list(request):
-    param_requests = request.GET.keys()
-    for param_request in param_requests:
-        if param_request not in ["date", "state", "onlyRecorded"]:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 @swagger_auto_schema(
@@ -111,7 +98,11 @@ def sample_list(request):
             ),
         },
     ),
-    responses={200: "Successful upload information", 400: "Bad Request"},
+    responses={
+        200: "Successful upload information",
+        400: "Bad Request",
+        500: "Internal Server Error",
+    },
 )
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @api_view(["POST"])
