@@ -299,12 +299,12 @@ class ProtocolParameters(models.Model):
         return field_data
 
     def update_protocol_fields(self, prot_param_data):
-        self.parameterName = prot_param_data["Field name"]
+        self.parameterName = prot_param_data["Parameter name"]
         self.parameterDescription = prot_param_data["Description"]
         self.parameterOrder = prot_param_data["Order"]
         self.parameterUsed = prot_param_data["Used"]
         self.parameterOptionValues = prot_param_data["Option Values"]
-        self.parameterType = prot_param_data["Field type"]
+        self.parameterType = prot_param_data["Parameter Type"]
         self.save()
 
     objects = ProtocolParametersManager()

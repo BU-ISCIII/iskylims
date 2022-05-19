@@ -151,7 +151,7 @@ HEADING_FOR_MODIFY_PROTOCOL_FIELDS = [
     "New field name",
     "Order",
     "Used",
-    "Field type",
+    "Parameter Type",
     "Option Values",
     "Description",
 ]

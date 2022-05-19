@@ -384,7 +384,7 @@ def modify_fields_in_protocol(form_data):
         for i in range(len(fields)):
             p_fields[fields[i]] = row_data[i]
 
-        if row_data[fields.index("Field type")] == "Option List":
+        if row_data[fields.index("Parameter Type")] == "Option List":
             option_list_values = row_data[fields.index("Option Values")].split(",")
             clean_value_list = []
             for opt_value in option_list_values:
@@ -399,6 +399,8 @@ def modify_fields_in_protocol(form_data):
             # new field
             p_fields["Parameter name"] = row_data[1]
             p_fields["protocol_id"] = protocol_obj
+            p_fields["Max Value"] = ""
+            p_fields["Min Value"] = ""
             saved_fields["fields"].append(
                 ProtocolParameters.objects.create_protocol_parameter(
                     p_fields
@@ -407,9 +409,9 @@ def modify_fields_in_protocol(form_data):
             continue
         if row_data[0] != "" and row_data[1] != "":
             # rename field name
-            p_fields["Field name"] = row_data[1]
+            p_fields["Parameter name"] = row_data[1]
         else:
-            p_fields["Field name"] = row_data[0]
+            p_fields["Parameter name"] = row_data[0]
         # Update  Field
         protocol_parameter_obj = get_protocol_parameter_obj_from_id(row_data[-1])
         if not protocol_parameter_obj:
