@@ -847,7 +847,8 @@ class SampleProjectsFields(models.Model):
                 data = []
                 for s_p_opt_obj in s_p_opt_objs:
                     data.append(s_p_opt_obj.get_option_value())
-            return data
+                return data
+            return ""
         else:
             return ""
 
@@ -905,7 +906,7 @@ class SampleProjectsFields(models.Model):
         self.sampleProjectFieldUsed = project_field_data["Used"]
         self.sampleProjectFieldType = project_field_data["Field type"]
         self.sampleProjectSearchable = project_field_data["Searchable"]
-        self.sampleProjectOptionList = project_field_data["Option Values"]
+        # self.sampleProjectOptionList = project_field_data["Option Values"]
         self.save()
         return self
 

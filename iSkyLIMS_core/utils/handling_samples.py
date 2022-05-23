@@ -2091,7 +2091,14 @@ def modify_fields_in_sample_project(form_data):
     saved_fields["fields"] = []
     saved_fields["heading"] = HEADING_FOR_SAMPLE_PROJECT_FIELDS
     saved_fields["sample_project_name"] = sample_project_obj.get_sample_project_name()
+    # Delete existing optionns to add new values. Even they are the same,
+    # is easier to remmmve all and created again instaed of infividual checking
 
+    if SamplesProjectsTableOptions.objects.filter(sampleProjectField__sampleProjects_id=sample_project_obj).exists():
+        # Delete existing information
+        s_p_option_objs = SamplesProjectsTableOptions.objects.filter(sampleProjectField__sampleProjects_id=sample_project_obj)
+        for s_p_option_obj in s_p_option_objs:
+            s_p_option_obj.delete()
     for row_data in json_data:
         if row_data[0] == "" and row_data[1] == "":
             continue
@@ -2099,43 +2106,42 @@ def modify_fields_in_sample_project(form_data):
         for i in range(len(fields)):
             s_p_fields[fields[i]] = row_data[i]
 
-        if row_data[fields.index("Field type")] == "Option List":
-            option_list_values = row_data[fields.index("Option Values")].split(",")
-            clean_value_list = []
-            for opt_value in option_list_values:
-                value = opt_value.strip()
-                if value != "":
-                    clean_value_list.append(value)
-
-            s_p_fields["Option Values"] = ",".join(clean_value_list)
-        else:
-            s_p_fields["Option Values"] = ""
         if row_data[0] == "" and row_data[1] != "":
-            # new field
+            # Add new field
             s_p_fields["Field name"] = row_data[1]
             s_p_fields["sample_project_id"] = sample_project_obj
-            saved_fields["fields"].append(
-                SampleProjectsFields.objects.create_sample_project_fields(
-                    s_p_fields
-                ).get_sample_project_fields_name()
+            sample_project_field_obj = SampleProjectsFields.objects.create_sample_project_fields(
+                s_p_fields
             )
-            continue
-        if row_data[0] != "" and row_data[1] != "":
+            saved_fields["fields"].append(sample_project_field_obj.get_sample_project_fields_name())
+            # check if field is a list to create the new opt fields on database
+
+        elif row_data[0] != "" and row_data[1] != "":
             # rename field name
             s_p_fields["Field name"] = row_data[1]
         else:
             s_p_fields["Field name"] = row_data[0]
         # Update  Field
-        right_id = parameter_ids[parameter_names.index(row_data[0])]
-        sample_project_field_obj = get_sample_project_field_obj_from_id(right_id)
-        if not sample_project_field_obj:
-            # Unable to find the object class. Skipping this change
-            continue
-        sample_project_field_obj.update_sample_project_fields(s_p_fields)
-        saved_fields["fields"].append(
-            sample_project_field_obj.get_sample_project_fields_name()
-        )
+            right_id = parameter_ids[parameter_names.index(row_data[0])]
+            sample_project_field_obj = get_sample_project_field_obj_from_id(right_id)
+            if not sample_project_field_obj:
+                # Unable to find the object class. Skipping this change
+                continue
 
+            sample_project_field_obj.update_sample_project_fields(s_p_fields)
+            saved_fields["fields"].append(
+                sample_project_field_obj.get_sample_project_fields_name()
+            )
+
+        if row_data[fields.index("Field type")] == "Options List":
+            option_list_values = row_data[fields.index("Option Values")].split(",")
+            for opt_value in option_list_values:
+                value = opt_value.strip()
+                if value == "":
+                    continue
+                data = {"s_proj_obj": sample_project_field_obj}
+                data["opt_value"] = value
+                SamplesProjectsTableOptions.objects.create_new_s_proj_table_opt(data)
     return saved_fields
 
 
