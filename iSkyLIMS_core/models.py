@@ -874,7 +874,7 @@ class SampleProjectsFields(models.Model):
         field_data.append(used)
         field_data.append(self.sampleProjectSearchable)
         field_data.append(self.sampleProjectFieldType)
-        field_data.append(self.get_field_options_list())
+        field_data.append(",".join(self.get_field_options_list()))
         field_data.append(self.sampleProjectFieldDescription)
         return field_data
 
@@ -894,7 +894,7 @@ class SampleProjectsFields(models.Model):
         field_data.append(used)
         field_data.append(searchable)
         field_data.append(self.sampleProjectFieldType)
-        field_data.append(self.sampleProjectOptionList)
+        field_data.append(",".join(self.get_field_options_list()))
         field_data.append(self.sampleProjectFieldDescription)
         return field_data
 
