@@ -91,7 +91,7 @@ laboratory = openapi.Parameter(
             ),
             "onlyRecorded": openapi.Schema(
                 type=openapi.TYPE_STRING,
-                description="Select if sample is just recorded or if DNA/RNA manipulation will be don ein the lab ",
+                description="Select if sample is just recorded or if DNA/RNA manipulation will be done in the lab ",
             ),
             "project": openapi.Schema(
                 type=openapi.TYPE_STRING, description="Project name"
