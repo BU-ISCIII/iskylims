@@ -8,6 +8,7 @@ from iSkyLIMS_core.models import (
     SamplesProjectsTableOptions,
 )
 
+from rest_framework.parsers import JSONParser
 
 class CreateSampleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -86,4 +87,6 @@ class SampleFields(object):
 
 
 class SampleFieldsSerializer(serializers.Serializer):
+
     sample_fields = serializers.CharField(max_length=800)
+    

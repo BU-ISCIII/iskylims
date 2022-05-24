@@ -15,7 +15,7 @@ from .serializers import (
     CreateSampleSerializer,
     CreateProjectDataSerializer,
     SampleProjectFieldSerializer,
-    SampleFieldsSerializer,
+    # SampleFieldsSerializer,
     SampleFields,
     LabRequestSerializer,
 )
@@ -148,12 +148,15 @@ def create_sample_data(request):
 @api_view(["GET"])
 def sample_fields(request):
     apps_name = __package__.split(".")[0]
-    sample_fields = SampleFieldsSerializer(SampleFields(get_sample_fields(apps_name)))
-    if "ERROR" in sample_fields.data["sample_fields"]:
-        return Response(sample_fields.data, status=status.HTTP_202_ACCEPTED)
+    #sample_fields = SampleFieldsSerializer(SampleFields(get_sample_fields(apps_name)))
+
+    sample_fields = get_sample_fields(apps_name)
+
+    if "ERROR" in sample_fields:
+        return Response(sample_fields, status=status.HTTP_202_ACCEPTED)
         # return Response(sample_fields.data, status=status.HTTP_204_NO_CONTENT)
     else:
-        return Response(sample_fields.data, status=status.HTTP_200_OK)
+        return Response(sample_fields, status=status.HTTP_200_OK)
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
