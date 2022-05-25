@@ -26,7 +26,8 @@ from iSkyLIMS_core.models import (
     StatesForMolecule,
     StatesForSample,
     StateInCountry,
-    UserLotCommercialKits
+    UserLotCommercialKits,
+    OntologyMap
 )
 
 
@@ -74,6 +75,10 @@ class MoleculePreparationAdmin(admin.ModelAdmin):
 
 class MoleculeUsedForAdmin(admin.ModelAdmin):
     list_display = ["usedFor", "apps_name", "massiveUse"]
+
+
+class OntologyMapAdmin(admin.ModelAdmin):
+    list_display = ["label", "ontology"]
 
 
 class PatientCoreAdmin(admin.ModelAdmin):
@@ -228,6 +233,7 @@ admin.site.register(LabRequest, LabRequestAdmin)
 admin.site.register(MoleculeType, MoleculeTypeAdmin)
 admin.site.register(MoleculeUsedFor, MoleculeUsedForAdmin)
 admin.site.register(MoleculePreparation, MoleculePreparationAdmin)
+admin.site.register(OntologyMap, OntologyMapAdmin)
 admin.site.register(PatientCore, PatientCoreAdmin)
 admin.site.register(PatientSex, PatientSexAdmin)
 admin.site.register(PatientProjects, PatientProjectsAdmin)

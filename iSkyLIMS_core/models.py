@@ -1513,3 +1513,20 @@ class SequencerInLab(models.Model):
         return data
 
     objects = SequencerInLabManager()
+
+
+class OntologyMap(models.Model):
+    label = models.CharField(max_length=255)
+    ontology = models.CharField(max_length=50, null=True, blank=True)
+
+    def __str__(self):
+        return "%s" % (self.label)
+
+    def get_label(self):
+        return "%s" % (self.label)
+
+    def get_ontology(self):
+        return "%s" % (self.ontology)
+
+    def get_label_and_ontology(self):
+        return {self.label: self.ontology}
