@@ -13,8 +13,8 @@ from .handling_crontab_manage_run_states import *
 from .generic_functions import *
 from django.conf import settings
 
-#from .miseq_run_functions import  handle_miseq_run , manage_miseq_in_samplesent,  manage_miseq_in_processing_run
-#from .nextseq_run_functions import handle_nextseq_recorded_run, manage_nextseq_in_samplesent, manage_nextseq_in_processing_run
+# from .miseq_run_functions import  handle_miseq_run , manage_miseq_in_samplesent,  manage_miseq_in_processing_run
+# from .nextseq_run_functions import handle_nextseq_recorded_run, manage_nextseq_in_samplesent, manage_nextseq_in_processing_run
 from .common_run_functions import manage_run_in_processed_run, manage_run_in_processing_bcl2fastq, manage_run_in_processed_bcl2fastq
 
 
@@ -22,7 +22,7 @@ from django.conf import settings
 from django_utils.models import Center
 
 
-def get_list_processed_runs () :
+def get_list_processed_runs():
     '''
     Description:
         The function get the run folder id from the Running Parameter
@@ -33,19 +33,19 @@ def get_list_processed_runs () :
         processed_runs
     '''
     logger = logging.getLogger(__name__)
-    logger.debug('Starting function get_list_processed_runs' )
+    logger.debug('Starting function get_list_processed_runs')
     processed_runs = []
     r_parameters_objects = RunningParameters.objects.all()
 
-    for r_parameter in r_parameters_objects :
+    for r_parameter in r_parameters_objects:
         processed_runs.append(r_parameter.get_run_folder())
 
     logger.info('run processed list is filled')
-    logger.debug('End function get_list_processed_runs' )
+    logger.debug('End function get_list_processed_runs')
     return processed_runs
 
 
-def search_update_new_runs (request_reason):
+def search_update_new_runs(request_reason):
     '''
     Description:
         The function will check if there are new run folder in the remote
@@ -173,7 +173,7 @@ def search_update_new_runs (request_reason):
             logger.info('%s : Sequencer  stored on database', experiment_name)
             run_parameter_obj = save_run_parameters_data_to_database(running_parameters['running_data'], run_process_obj, experiment_name)
             logger.info('%s : RunParameters information  stored on database', experiment_name)
-            if run_process_obj.get_sample_file() == '' :
+            if run_process_obj.get_sample_file() == '':
                 # Fetch sample Sheet from remote server
                 l_sample_sheet_path = get_remote_sample_sheet(conn, new_run ,experiment_name)
                 if not l_sample_sheet_path :

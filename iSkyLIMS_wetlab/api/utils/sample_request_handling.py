@@ -9,6 +9,7 @@ from iSkyLIMS_core.models import (
     SampleType,
     Species,
     StatesForSample,
+    OntologyMap,
 )
 from iSkyLIMS_core.utils.handling_samples import increase_unique_value
 from iSkyLIMS_core.core_config import HEADING_FOR_RECORD_SAMPLES
@@ -17,44 +18,58 @@ from iSkyLIMS_core.core_config import HEADING_FOR_RECORD_SAMPLES
 
 
 def get_sample_fields(apps_name):
-    sample_fields = {}
-    lab_data = []
-    species = []
-    type_sample = []
-    s_proj = []
+    sample_fields = {
+        "Patient Code ID": {"field_name": "patientCore"},
+        "Sample Name": {"field_name": "sampleName"},
+        "Lab Requested": {"field_name": "labRequest"},
+        "Type of Sample": {"field_name": "sampleType"},
+        "Species": {"field_name": "species"},
+        "Project/Service": {"field_name": "sampleProject"},
+        "Date sample reception": {"field_name": "sampleEntryDate"},
+        "Collection Sample Date": {"field_name": "collectionSampleDate"},
+        "Sample Storage": {"field_name": "sampleLocation"},
+        "Only recorded": {"field_name": "onlyRecorded"},
+    }
+    if SampleType.objects.filter(apps_name__exact=apps_name).exists():
+        s_type_objs = SampleType.objects.filter(apps_name__exact=apps_name).order_by(
+            "sampleType"
+        )
+        sample_fields["Type of Sample"]["options"] = []
+        for s_type_obj in s_type_objs:
+            sample_fields["Type of Sample"]["options"].append(s_type_obj.get_name())
+    if Species.objects.filter(apps_name__exact=apps_name).exists():
+        sample_fields["Species"]["options"] = []
+        species_objs = Species.objects.filter(apps_name__exact=apps_name).order_by(
+            "speciesName"
+        )
+        for species_obj in species_objs:
+            sample_fields["Species"]["options"].append(species_obj.get_name())
     if LabRequest.objects.all().exists():
+        sample_fields["Lab Requested"]["options"] = []
         lab_request_objs = LabRequest.objects.all().order_by("labName")
         for lab_request_obj in lab_request_objs:
-            lab_data.append(lab_request_obj.get_fields_and_data())
-
-    if Species.objects.filter(apps_name__exact=apps_name).exists():
-        species_objs = Species.objects.filter(apps_name__exact=apps_name).order_by("speciesName")
-        for species_obj in species_objs:
-            species.append(species_obj.get_name())
-    if SampleType.objects.filter(apps_name__exact=apps_name).exists():
-        s_type_objs = SampleType.objects.filter(apps_name__exact=apps_name).order_by("sampleType")
-        for s_type_obj in s_type_objs:
-            type_sample.append(s_type_obj.get_name())
+            sample_fields["Lab Requested"]["options"].append(lab_request_obj.get_name())
     if SampleProjects.objects.filter(apps_name__exact=apps_name).exists():
-        s_proj_objs = SampleProjects.objects.filter(apps_name__exact=apps_name).order_by("sampleProjectName")
+        sample_fields["Project/Service"]["options"] = []
+        s_proj_objs = SampleProjects.objects.filter(
+            apps_name__exact=apps_name
+        ).order_by("sampleProjectName")
         for s_proj_obj in s_proj_objs:
-            s_proj.append(s_proj_obj.get_sample_project_name())
-    for field in HEADING_FOR_RECORD_SAMPLES:
-        if "Date" in field:
-            sample_fields[field] = "Date"
-        else:
-            sample_fields[field] = "String"
-    if len(type_sample) == 0 and len(species) == 0:
-        sample_fields["ERROR"] = "Not enough data are defined in iSkyLIMS"
-        return sample_fields
-    if len(type_sample) > 0:
-        sample_fields["Type of Sample"] = type_sample
-    if len(species) > 0:
-        sample_fields["Species"] = species
-    if len(lab_data) > 0:
-        sample_fields["Lab requested"] = lab_data
-    if len(s_proj) > 0:
-        sample_fields["Project/Service"] = s_proj
+            sample_fields["Project/Service"]["options"].append(
+                s_proj_obj.get_sample_project_name()
+            )
+    for key in sample_fields.keys():
+        # import pdb; pdb.set_trace()
+        if OntologyMap.objects.filter(
+            label__iexact=sample_fields[key]["field_name"]
+        ).exists():
+            sample_fields[key]["ontology"] = (
+                OntologyMap.objects.filter(
+                    label__iexact=sample_fields[key]["field_name"]
+                )
+                .last()
+                .get_ontology()
+            )
 
     return sample_fields
 
@@ -100,7 +115,7 @@ def split_sample_data(data):
         "sampleEntryDate",
         "collectionSampleDate",
         "sampleLocation",
-        "onlyRecorded"
+        "onlyRecorded",
     ]
     for sample_field in sample_fields:
         try:
@@ -168,9 +183,13 @@ def include_instances_in_sample(data):
         )
     else:
         return str("species " + data["species"] + " is not defined in database")
-    if SampleProjects.objects.filter(sampleProjectName__exact=data["sampleProject"]).exists():
+    if SampleProjects.objects.filter(
+        sampleProjectName__exact=data["sampleProject"]
+    ).exists():
         data["sampleProject"] = (
-            SampleProjects.objects.filter(sampleProjectName__exact=data["sampleProject"])
+            SampleProjects.objects.filter(
+                sampleProjectName__exact=data["sampleProject"]
+            )
             .last()
             .get_id()
         )
