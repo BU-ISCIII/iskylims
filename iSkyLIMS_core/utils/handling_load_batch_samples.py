@@ -479,7 +479,13 @@ def store_schema(schema, field, valid_fields, s_project_id):
         all_fields = False
         v_fields = valid_fields.split("\r\n")
     property_list = []
-
+    # get the ontology value defined for sample. Do not include them in the
+    # sample project list
+    ont_list = []
+    if OntologyMap.objects.all().exists():
+        ont_list = list(OntologyMap.objects.values_list("ontology", flat=True))
+    else:
+        ont_list = []
     for property in schema["properties"].keys():
         try:
             schema_dict = {"Field name": property}
@@ -489,6 +495,8 @@ def store_schema(schema, field, valid_fields, s_project_id):
                 continue
 
             if not all_fields and schema["properties"][property][field] not in v_fields:
+                continue
+            if schema["properties"][property]["ontology"] in ont_list:
                 continue
             if "format" in schema["properties"][property]:
                 schema_dict["Field type"] = "Date"
