@@ -99,7 +99,7 @@ laboratory = openapi.Parameter(
         },
     ),
     responses={
-        200: "Successful upload information",
+        201: "Successful create information",
         400: "Bad Request",
         500: "Internal Server Error",
     },

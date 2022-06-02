@@ -117,6 +117,7 @@ def split_sample_data(data):
         "sampleLocation",
         "onlyRecorded",
     ]
+
     for sample_field in sample_fields:
         try:
             if "date" in sample_field.lower():
@@ -143,11 +144,19 @@ def split_sample_data(data):
                 split_data["p_data"].append(
                     {
                         "sampleProjecttField_id": p_field[0],
+
                         "sampleProjectFieldValue": data[p_field[1]],
                     }
                 )
-            except KeyError as e:
-                return str(str(e) + " is not defined in your query")
+            except KeyError:
+                # if not entry for the field set it to empty
+                split_data["p_data"].append(
+                    {
+                        "sampleProjecttField_id": p_field[0],
+
+                        "sampleProjectFieldValue": "",
+                    }
+                )
     return split_data
 
 
