@@ -8,7 +8,17 @@ from iSkyLIMS_core.models import (
     SamplesProjectsTableOptions,
 )
 
-from rest_framework.parsers import JSONParser
+from iSkyLIMS_wetlab.models import SamplesInProject, Projects, RunProcess
+from django.contrib.auth.models import User
+
+# from rest_framework.parsers import JSONParser
+
+
+class UserIDSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["username"]
+
 
 class CreateSampleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -89,4 +99,27 @@ class SampleFields(object):
 class SampleFieldsSerializer(serializers.Serializer):
 
     sample_fields = serializers.CharField(max_length=800)
-    
+
+
+class ProjectsSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Projects
+        fields = ["projectName"]
+
+
+class RunProcessSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = RunProcess
+        fields = ["runName"]
+
+
+class SampleRunInfoSerializers(serializers.ModelSerializer):
+    project_id = ProjectsSerializers(many=False)
+    user_id = UserIDSerializer(many=False)
+    runProcess_id = RunProcessSerializers(many=False)
+    generated_at = serializers.DateTimeField(format="%Y-%m-%d")
+
+    class Meta:
+        model = SamplesInProject
+        # fields = "__all__"
+        exclude = ["sampleInCore"]

@@ -5,6 +5,7 @@ app_name = 'iSkyLIMS_wetlab_api'
 
 
 urlpatterns = [
+    path("fetchRunInformation", views.fetch_run_information, name="fetch_run_information"),
     path("laboratoryData", views.get_lab_information_contact, name="get_lab_information_contact"),
     path("createSampleData", views.create_sample_data, name="create_sample_data"),
     path("samplefields", views.sample_fields, name="sample_fields"),

@@ -14,6 +14,7 @@ from iSkyLIMS_core.models import (
 from iSkyLIMS_core.utils.handling_samples import increase_unique_value
 from iSkyLIMS_core.core_config import HEADING_FOR_RECORD_SAMPLES
 
+from iSkyLIMS_wetlab.models import SamplesInProject
 # HEADING_FOR_RECORD_SAMPLES = ['Patient Code ID', 'Sample Name', 'Lab requested', 'Type of Sample', 'Species', 'Project/Service', 'Date sample reception', 'Collection Sample Date', 'Sample Storage Location', 'Only recorded']
 
 

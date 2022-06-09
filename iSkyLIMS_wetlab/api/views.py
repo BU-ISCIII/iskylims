@@ -11,6 +11,8 @@ from rest_framework.response import Response
 from django.http import QueryDict
 
 from iSkyLIMS_core.models import SampleProjects, SampleProjectsFields, LabRequest
+from iSkyLIMS_wetlab.models import SamplesInProject
+
 from .serializers import (
     CreateSampleSerializer,
     CreateProjectDataSerializer,
@@ -18,6 +20,7 @@ from .serializers import (
     # SampleFieldsSerializer,
     SampleFields,
     LabRequestSerializer,
+    SampleRunInfoSerializers,
 )
 
 from drf_yasg.utils import swagger_auto_schema
@@ -48,6 +51,13 @@ laboratory = openapi.Parameter(
     "laboratory",
     openapi.IN_QUERY,
     description="Laboratory name form to fetch contact information. Example Harlem Hospital Center",
+    type=openapi.TYPE_STRING,
+)
+
+sample_in_run = openapi.Parameter(
+    "samples",
+    openapi.IN_QUERY,
+    description="Sample name list to fetch run information",
     type=openapi.TYPE_STRING,
 )
 
@@ -144,11 +154,35 @@ def create_sample_data(request):
         return Response("Successful upload information", status=status.HTTP_201_CREATED)
 
 
+@swagger_auto_schema(method="get", manual_parameters=[sample_in_run])
+@api_view(["GET"])
+def fetch_run_information(request):
+    if "samples" in request.GET:
+        samples = request.GET["samples"]
+        # sample_run_info = get_run_info_for_sample(apps_name, samples)
+        s_list = samples.strip().split(",")
+        s_data = []
+        for sample in s_list:
+            sample = sample.strip()
+            if SamplesInProject.objects.filter(sampleName__iexact=sample).exists():
+                s_found_objs = SamplesInProject.objects.filter(
+                    sampleName__iexact=sample
+                )
+                for s_found_obj in s_found_objs:
+                    s_data.append(
+                        SampleRunInfoSerializers(s_found_obj, many=False).data
+                    )
+            else:
+                s_data.append({"sampleName": sample, "Run data": "Not found"})
+        return Response(s_data, status=status.HTTP_200_OK)
+    return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
 @swagger_auto_schema(method="get")
 @api_view(["GET"])
 def sample_fields(request):
     apps_name = __package__.split(".")[0]
-    #sample_fields = SampleFieldsSerializer(SampleFields(get_sample_fields(apps_name)))
+    # sample_fields = SampleFieldsSerializer(SampleFields(get_sample_fields(apps_name)))
 
     sample_fields = get_sample_fields(apps_name)
 
