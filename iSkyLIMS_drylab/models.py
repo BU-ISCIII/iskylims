@@ -487,7 +487,7 @@ class ResolutionManager(models.Manager):
 		today = date.today()
 		resolutionAsignedUser = User.objects.get(pk__exact = resolution_data['resolutionAsignedUser'])
 		resolutionServiceID = Service.objects.get(pk__exact = resolution_data['service_id'])
-		state = ResolutionStates.objects.get(resolutionStateName__exact = 'Recorded')
+		state = ResolutionStates.objects.get(resolutionStateName__exact = 'Queued')
 		new_resolution = self.create(resolutionServiceID = resolutionServiceID, resolutionAsignedUser  = resolutionAsignedUser,
 					resolutionNumber = resolution_data['resolutionNumber'],  resolutionEstimatedDate= resolution_data['resolutionEstimatedDate'],
 					resolutionOnQueuedDate =  date.today(), resolutionNotes = resolution_data['resolutionNotes'],

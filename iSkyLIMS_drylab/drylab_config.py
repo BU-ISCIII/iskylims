@@ -115,7 +115,7 @@ SUBJECT_SERVICE_RECORDED = ['Service ', ' has been recorded']
 BODY_SERVICE_RECORDED = ['Dear USER_NAME','Your service  SERVICE_NUMBER has been recorded.','You will received the resolution of the request as soon as possible.',
                     'Kind regards', 'BU-ISCIII']
 
-SUBJECT_RESOLUTION_RECORDED = ['Resolution ', ' has been updated']
+SUBJECT_RESOLUTION_QUEUED = ['Resolution ', ' has been updated']
 BODY_RESOLUTION_ACCEPTED = ['Dear  USER_NAME','A new resolution has been added for your service:  SERVICE_NUMBER.', 'Your service has been STATUS',
                     'and your delivery estimated date is DATE','Your service is now queued and you will be notified when it is updated',
                      'Kind regards', 'BU-ISCIII']
