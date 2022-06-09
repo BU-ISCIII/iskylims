@@ -532,7 +532,10 @@ def get_all_library_information(sample_id):
                 for p_name in parameter_names:
                     lib_prep_param_heading.append(p_name.get_parameter_name())
                     if LibParameterValue.objects.filter(library_id = library_item).exists():
-                        lib_prep_param_value.append(LibParameterValue.objects.get(library_id = library_item, parameter_id = p_name).get_parameter_information())
+                        try:
+                            lib_prep_param_value.append(LibParameterValue.objects.get(library_id = library_item, parameter_id = p_name).get_parameter_information())
+                        except LibParameterValue.DoesNotExist:
+                            lib_prep_param_value.append("")
                 lib_prep_data.append(lib_prep_param_heading)
                 lib_prep_data.append(lib_prep_param_value)
             else:

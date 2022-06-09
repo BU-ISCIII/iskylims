@@ -943,7 +943,7 @@ def get_all_sample_information(sample_id, massive):
                                     molecule_id=molecule, moleculeParameter_id=p_name
                                 ).get_param_value()
                             )
-                        except:
+                        except MoleculeParameterValue.DoesNotExist:
                             # if the parameter was not set at the time the molecule was handeled
                             mol_param_value.append("")
 
