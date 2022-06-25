@@ -168,6 +168,7 @@ def search_update_new_runs(request_reason):
             run_process_obj = get_run_process_obj_or_create_if_not_exists(running_parameters, experiment_name)
             sequencer_obj = get_sequencer_obj_or_create_if_no_exists(running_parameters, experiment_name)
             run_process_obj.set_used_sequencer(sequencer_obj)
+            run_process_obj.set_run_date(running_parameters["run_date"])
             logger.info('%s : Sequencer  stored on database', experiment_name)
             run_parameter_obj = save_run_parameters_data_to_database(running_parameters['running_data'], run_process_obj, experiment_name)
             logger.info('%s : RunParameters information  stored on database', experiment_name)
