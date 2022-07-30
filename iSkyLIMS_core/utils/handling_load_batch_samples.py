@@ -496,6 +496,8 @@ def store_schema(schema, field, valid_fields, s_project_id):
 
             if not all_fields and schema["properties"][property][field] not in v_fields:
                 continue
+            # do noet include the fields that are included in the main recorded
+            # sample form
             if schema["properties"][property]["ontology"] in ont_list:
                 continue
             if "format" in schema["properties"][property]:
@@ -518,6 +520,7 @@ def store_schema(schema, field, valid_fields, s_project_id):
             return {"ERROR": error}
     s_project_obj = get_sample_project_obj_from_id(s_project_id)
     counter = 0
+
     for property in property_list:
         counter += 1
         property["Used"] = True
