@@ -1614,9 +1614,9 @@ def increase_unique_value(old_unique_number):
                 index_letter[2] = "A"
             else:
                 index_letter[1] = chr(ord(index_letter[1]) + 1)
-                split_index_letter[2] = "A"
+                index_letter[2] = "A"
 
-            index_letter = "".join(split_index_letter)
+            index_letter = "".join(index_letter)
         else:
             index_letter[2] = chr(ord(index_letter[2]) + 1)
 
