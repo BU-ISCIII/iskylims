@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from iSkyLIMS_core.models import (
+    City,
     SampleProjects,
     SampleProjectsFields,
     Samples,
@@ -9,13 +10,59 @@ from iSkyLIMS_core.models import (
     SampleType,
     Species,
     StatesForSample,
+    StateInCountry,
     OntologyMap,
 )
 from iSkyLIMS_core.utils.handling_samples import increase_unique_value
-from iSkyLIMS_core.core_config import HEADING_FOR_RECORD_SAMPLES
 
-from iSkyLIMS_wetlab.models import SamplesInProject
+# from iSkyLIMS_core.core_config import HEADING_FOR_RECORD_SAMPLES
+
+# from iSkyLIMS_wetlab.models import SamplesInProject
 # HEADING_FOR_RECORD_SAMPLES = ['Patient Code ID', 'Sample Name', 'Lab requested', 'Type of Sample', 'Species', 'Project/Service', 'Date sample reception', 'Collection Sample Date', 'Sample Storage Location', 'Only recorded']
+
+
+def create_state(state, apps_name):
+    """Create state instance"""
+    data = {"state": state, "apps_name": apps_name}
+    return StateInCountry.objects.create_new_state(data)
+
+
+def create_city(data, apps_name):
+    """Create a City instance"""
+    data["state"] = create_state(data["geo_loc_state"], apps_name).get_id()
+    data["cityName"] = data["geo_loc_city"]
+    data["latitude"] = data["geo_loc_latitude"]
+    data["longitude"] = data["geo_loc_longitude"]
+    data["apps_name"] = apps_name
+    return City.objects.create_new_city(data)
+
+
+def create_new_laboratory(lab_data):
+    """Create new laboratory instance with the data collected in the request"""
+    if City.objects.filter(cityName__exact=lab_data["geo_loc_city"]).exists():
+        city_id = (
+            City.objects.filter(cityName__exact=lab_data["geo_loc_city"])
+            .last()
+            .get_city_id()
+        )
+    else:
+        if StateInCountry.objects.filter(
+            stateName__exact=lab_data["geo_loc_state"]
+        ).exists():
+            lab_data["state"] = (
+                StateInCountry.objects.filter(
+                    stateName__exact=lab_data["geo_loc_state"]
+                )
+                .last()
+                .get_state_id()
+            )
+        else:
+            lab_data["state"] = create_state(
+                lab_data["geo_loc_state"], lab_data["apps_name"]
+            ).get_state_id()
+            city_id = City.objects.create_new_city(lab_data).get_city_id()
+    lab_data["city"] = city_id
+    return LabRequest.objects.create_lab_request(lab_data)
 
 
 def get_sample_fields(apps_name):
@@ -60,7 +107,6 @@ def get_sample_fields(apps_name):
                 s_proj_obj.get_sample_project_name()
             )
     for key in sample_fields.keys():
-        # import pdb; pdb.set_trace()
         if OntologyMap.objects.filter(
             label__iexact=sample_fields[key]["field_name"]
         ).exists():
@@ -82,6 +128,79 @@ def get_sample_project_obj(project_name):
             sampleProjectName__exact=project_name
         ).last()
     return False
+
+
+def include_instances_in_sample(data, lab_data, apps_name):
+    """Collect the instances before creating the sample instance
+    If laboratory will be created if it is not defined
+    """
+    if LabRequest.objects.filter(labName__exact=data["labRequest"]).exists():
+        data["labRequest"] = (
+            LabRequest.objects.filter(labName__exact=data["labRequest"]).last().get_id()
+        )
+    else:
+        lab_data["apps_name"] = apps_name
+        data["labRequest"] = create_new_laboratory(lab_data).get_id()
+    if SampleType.objects.filter(sampleType__exact=data["sampleType"]).exists():
+        data["sampleType"] = (
+            SampleType.objects.filter(sampleType__exact=data["sampleType"])
+            .last()
+            .get_sample_type_id()
+        )
+    else:
+        return str("sampleType " + data["sampleType"] + " is not defined in database")
+    if Species.objects.filter(speciesName__exact=data["species"]).exists():
+        data["species"] = (
+            Species.objects.filter(speciesName__exact=data["species"]).last().get_id()
+        )
+    else:
+        return str("species " + data["species"] + " is not defined in database")
+    if data["patientCore"] == "" or data["patientCore"].lower() == "null":
+        data["patientCore"] = None
+    else:
+        try:
+            data["patientCore"] = get_patient_obj(data["patientCore"]).get_patient_id()
+        except AttributeError:
+            return str(
+                "patientCore " + data["patientCore"] + " is not defined in database"
+            )
+    if SampleProjects.objects.filter(
+        sampleProjectName__exact=data["sampleProject"]
+    ).exists():
+        data["sampleProject"] = (
+            SampleProjects.objects.filter(
+                sampleProjectName__exact=data["sampleProject"]
+            )
+            .last()
+            .get_id()
+        )
+    else:
+        return str("sampleProject " + data["sampleProject"] + " is not defined")
+    if data["onlyRecorded"]:
+        data["sampleState"] = (
+            StatesForSample.objects.filter(sampleStateName="Completed").last().get_id()
+        )
+        data["completedDate"] = datetime.now()
+    else:
+        data["sampleState"] = (
+            StatesForSample.objects.filter(sampleStateName="Defined").last().get_id()
+        )
+        data["completedDate"] = None
+    return data
+
+
+def include_coding(user_name, sample):
+    """Include Unique_id and Code_"""
+    c_data = {}
+    if not Samples.objects.exclude(uniqueSampleID__isnull=True).exists():
+        c_data["uniqueSampleID"] = "AAA-0001"
+    else:
+        last_unique_value = (
+            Samples.objects.exclude(uniqueSampleID__isnull=True).last().uniqueSampleID
+        )
+        c_data["uniqueSampleID"] = increase_unique_value(last_unique_value)
+    c_data["sampleCodeID"] = str(user_name + "_" + sample)
+    return c_data
 
 
 def get_project_fields_id_and_name(p_obj):
@@ -106,6 +225,7 @@ def split_sample_data(data):
     sample and data to create the project related info
     """
     split_data = {"s_data": {}, "p_data": []}
+
     sample_fields = [
         "patientCore",
         "sampleName",
@@ -145,7 +265,6 @@ def split_sample_data(data):
                 split_data["p_data"].append(
                     {
                         "sampleProjecttField_id": p_field[0],
-
                         "sampleProjectFieldValue": data[p_field[1]],
                     }
                 )
@@ -154,79 +273,27 @@ def split_sample_data(data):
                 split_data["p_data"].append(
                     {
                         "sampleProjecttField_id": p_field[0],
-
                         "sampleProjectFieldValue": "",
                     }
                 )
+    # fetched data to define new lab
+    lab_data = {}
+    lab_data["labName"] = data["labRequest"]
+    lab_split = data["labRequest"].strip().split(" ")
+    lab_code = ""
+    for word in lab_split:
+        lab_code += word[0]
+    lab_data["labNameCoding"] = lab_code
+    lab_data["labUnit"] = ""
+    lab_data["labContactName"] = ""
+    lab_data["labPhone"] = ""
+    lab_data["labEmail"] = data["collecting_institution_email"]
+    lab_data["address"] = data["collecting_institution_email"]
+    lab_data["geo_loc_city"] = data["geo_loc_city"]
+    lab_data["geo_loc_state"] = data["geo_loc_state"]
+    lab_data["geo_loc_latitude"] = data["geo_loc_latitude"]
+    lab_data["geo_loc_longitude"] = data["geo_loc_longitude"]
+
+    split_data["lab_data"] = lab_data
+
     return split_data
-
-
-def include_instances_in_sample(data):
-
-    """Fecth the patient instance"""
-    if data["patientCore"] == "" or data["patientCore"].lower() == "null":
-        data["patientCore"] = None
-    else:
-        try:
-            data["patientCore"] = get_patient_obj(data["patientCore"]).get_patient_id()
-        except AttributeError:
-            return str(
-                "patientCore " + data["patientCore"] + " is not defined in database"
-            )
-    if LabRequest.objects.filter(labName__exact=data["labRequest"]).exists():
-        data["labRequest"] = (
-            LabRequest.objects.filter(labName__exact=data["labRequest"]).last().get_id()
-        )
-    else:
-        return str("labRequest " + data["labRequest"] + " is not defined in database")
-    if SampleType.objects.filter(sampleType__exact=data["sampleType"]).exists():
-        data["sampleType"] = (
-            SampleType.objects.filter(sampleType__exact=data["sampleType"])
-            .last()
-            .get_sample_type_id()
-        )
-    else:
-        return str("sampleType " + data["sampleType"] + " is not defined in database")
-    if Species.objects.filter(speciesName__exact=data["species"]).exists():
-        data["species"] = (
-            Species.objects.filter(speciesName__exact=data["species"]).last().get_id()
-        )
-    else:
-        return str("species " + data["species"] + " is not defined in database")
-    if SampleProjects.objects.filter(
-        sampleProjectName__exact=data["sampleProject"]
-    ).exists():
-        data["sampleProject"] = (
-            SampleProjects.objects.filter(
-                sampleProjectName__exact=data["sampleProject"]
-            )
-            .last()
-            .get_id()
-        )
-    else:
-        return str("sampleProject " + data["sampleProject"] + " is not defined")
-    if data["onlyRecorded"]:
-        data["sampleState"] = (
-            StatesForSample.objects.filter(sampleStateName="Completed").last().get_id()
-        )
-        data["completedDate"] = datetime.now()
-    else:
-        data["sampleState"] = (
-            StatesForSample.objects.filter(sampleStateName="Defined").last().get_id()
-        )
-        data["completedDate"] = None
-    return data
-
-
-def include_codding(user_name, sample):
-    """Include Unique_id and Code_"""
-    c_data = {}
-    if not Samples.objects.exclude(uniqueSampleID__isnull=True).exists():
-        c_data["uniqueSampleID"] = "AAA-0001"
-    else:
-        last_unique_value = (
-            Samples.objects.exclude(uniqueSampleID__isnull=True).last().uniqueSampleID
-        )
-        c_data["uniqueSampleID"] = increase_unique_value(last_unique_value)
-    c_data["sampleCodeID"] = str(user_name + "_" + sample)
-    return c_data
