@@ -135,8 +135,13 @@ class LabRequest(models.Model):
             data.update(self.labCity.get_coordenates())
         data["Lab Name"] = self.labName
         data["Lab Coding"] = self.labNameCoding
-
         return data
+
+    def get_region(self):
+        if self.labCity is None:
+            return ""
+        else:
+            return "%s" % (self.labCity.get_state())
 
     objects = LabRequestManager()
 
@@ -1127,6 +1132,12 @@ class Samples(models.Model):
             return "None"
         else:
             return "%s" % (self.sampleProject.get_sample_project_name())
+
+    def get_region(self):
+        if self.labRequest is None:
+            return ""
+        else:
+            return "%s" % (self.labRequest.get_region())
 
     def get_sample_state(self):
         return "%s" % (self.sampleState)

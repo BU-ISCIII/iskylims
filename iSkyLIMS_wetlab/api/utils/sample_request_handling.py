@@ -15,6 +15,11 @@ from iSkyLIMS_core.models import (
 )
 from iSkyLIMS_core.utils.handling_samples import increase_unique_value
 
+from iSkyLIMS_wetlab.wetlab_config import (
+    ERROR_API_NO_SAMPLE_DEFINED,
+    ERROR_API_SAMPLE_STATE_VALUE_IS_NOT_DEFINED,
+)
+
 # from iSkyLIMS_core.core_config import HEADING_FOR_RECORD_SAMPLES
 
 # from iSkyLIMS_wetlab.models import SamplesInProject
@@ -297,3 +302,48 @@ def split_sample_data(data):
     split_data["lab_data"] = lab_data
 
     return split_data
+
+
+def summarize_samples(data):
+    summarize = {}
+    sample_objs = Samples.objects.all()
+    if len(sample_objs) == 0:
+        return {"ERROR": ERROR_API_NO_SAMPLE_DEFINED}
+    if "sampleList" in data:
+        sample_objs = sample_objs.filter(sampleName__in=data["sampleList"])
+    if "sampleState" in data:
+        if not StatesForSample.object.filter(
+            sampleStateName__iexact=data["state"]
+        ).exists():
+            return {"ERROR": ERROR_API_SAMPLE_STATE_VALUE_IS_NOT_DEFINED}
+        sample_objs = sample_objs.filter(
+            sampleState__sampleStateName__iexact=data["state"]
+        )
+    if "startDate" in data and "endDate" in data:
+        sample_objs = sample_objs.filter(
+            generated_at__range=(data["startDate"], data["end_date"])
+        )
+    elif "startDate" in data:
+        sample_objs = sample_objs.filter(generated_at__gte=data["startDate"])
+    elif "endDate" in data:
+        sample_objs.filter(generated_at__lte=data["endDate"])
+    if "region" in data and "laboratory" not in data:
+        sample_objs = sample_objs.filter(
+            labRequest__labCity__belongsToState__stateName__iexact=data["region"]
+        )
+        summarize["region"] = sample_objs.count()
+        return summarize
+    if "laboratory" in data:
+        summarize["sample_list"] = sample_objs.filter(
+            labRequest__iexact=data["laboratory"]
+        ).values_list("sampleName", flat=True)
+        return summarize
+    for sample_obj in sample_objs:
+        s_region = sample_obj.get_region()
+        # if s_region == "":
+        #    continue
+        if s_region not in summarize:
+            summarize[s_region] = 0
+        summarize[s_region] += 1
+
+    return summarize

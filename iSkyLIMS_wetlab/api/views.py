@@ -18,7 +18,7 @@ from .serializers import (
     CreateProjectDataSerializer,
     SampleProjectFieldSerializer,
     # SampleFieldsSerializer,
-    SampleFields,
+    # SampleFields,
     LabRequestSerializer,
     SampleRunInfoSerializers,
 )
@@ -31,6 +31,7 @@ from .utils.sample_request_handling import (
     include_instances_in_sample,
     include_coding,
     get_sample_fields,
+    summarize_samples,
 )
 
 sample_project_fields = openapi.Parameter(
@@ -58,6 +59,41 @@ sample_in_run = openapi.Parameter(
     "samples",
     openapi.IN_QUERY,
     description="Sample name list to fetch run information",
+    type=openapi.TYPE_STRING,
+)
+
+sample_state = openapi.Parameter(
+    "sampleState",
+    openapi.IN_QUERY,
+    description="Filter result to the sample which are in this state",
+    type=openapi.TYPE_STRING,
+)
+
+start_date = openapi.Parameter(
+    "startDate",
+    openapi.IN_QUERY,
+    description="Start date from starting collecting samples",
+    type=openapi.TYPE_STRING,
+)
+
+end_date = openapi.Parameter(
+    "endDate",
+    openapi.IN_QUERY,
+    description="Start date from starting collecting samples",
+    type=openapi.TYPE_STRING,
+)
+
+region = openapi.Parameter(
+    "region",
+    openapi.IN_QUERY,
+    description="Filter the samples for the selected region",
+    type=openapi.TYPE_STRING,
+)
+
+sample_list = openapi.Parameter(
+    "samples",
+    openapi.IN_QUERY,
+    description="List of samples to collect information",
     type=openapi.TYPE_STRING,
 )
 
@@ -232,6 +268,27 @@ def get_lab_information_contact(request):
         else:
             return Response(status=status.HTTP_204_NO_CONTENT)
     return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+@swagger_auto_schema(
+    method="get",
+    manual_parameters=[
+        sample_list,
+        sample_state,
+        start_date,
+        end_date,
+        region,
+        laboratory,
+    ],
+)
+@api_view(["GET"])
+def summarize_samples_information(request):
+    summarize_data = summarize_samples(request.data)
+    if "ERROR" in summarize_data:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    if len(summarize_data) == 0:
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    return Response(summarize_data, status=status.HTTP_200_OK)
 
 
 @api_view(["PUT"])
