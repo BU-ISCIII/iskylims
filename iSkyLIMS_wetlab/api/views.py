@@ -10,7 +10,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from django.http import QueryDict
 
-from iSkyLIMS_core.models import SampleProjects, SampleProjectsFields, LabRequest
+from iSkyLIMS_core.models import SampleProjects, SampleProjectsFields, LabRequest, Samples
 from iSkyLIMS_wetlab.models import SamplesInProject
 
 from .serializers import (
@@ -160,7 +160,9 @@ def create_sample_data(request):
             data = data.dict()
         if "sampleName" not in data and "sampleProject" not in data:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-
+        if Samples.objects.filter(sampleName__iexact=data["sampleName"]).exists():
+            error = {"ERROR": "sample already defined"}
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
         split_data = split_sample_data(data)
         if not isinstance(split_data, dict):
             return Response(split_data, status=status.HTTP_400_BAD_REQUEST)
