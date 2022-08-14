@@ -871,6 +871,38 @@ def save_type_of_sample(form_data, app_name):
     return save_s_type
 
 
+def get_sample_project_information(sample_project_obj, sample_obj):
+    """Get the sample project, fields and value"""
+    s_project_info = {}
+    s_project_info[
+        "sample_project_name"
+    ] = sample_project_obj.get_sample_project_name()
+    if SampleProjectsFields.objects.filter(
+        sampleProjects_id=sample_project_obj
+    ).exists():
+        s_project_info["sample_project_field_heading"] = []
+        s_project_info["sample_project_field_value"] = []
+        sample_project_fields = SampleProjectsFields.objects.filter(
+            sampleProjects_id=sample_project_obj
+        )
+        for s_p_field in sample_project_fields:
+            s_project_info["sample_project_field_heading"].append(
+                s_p_field.get_field_name()
+            )
+            if SampleProjectsFieldsValue.objects.filter(
+                sample_id=sample_obj, sampleProjecttField_id=s_p_field
+            ).exists():
+                field_value = SampleProjectsFieldsValue.objects.get(
+                    sample_id=sample_obj, sampleProjecttField_id=s_p_field
+                ).get_field_value()
+                if s_p_field.get_field_type() == "Date":
+                    field_value = field_value.replace(" 00:00:00", "")
+            else:
+                field_value = VALUE_NOT_PROVIDED
+            s_project_info["sample_project_field_value"].append(field_value)
+    return s_project_info
+
+
 def get_all_sample_information(sample_id, massive):
     sample_information = {}
     sample_information["sample_id"] = sample_id
@@ -882,35 +914,10 @@ def get_all_sample_information(sample_id, massive):
     sample_information["sample_definition_heading"] = HEADING_FOR_SAMPLE_DEFINITION
     # get the sample project information fields
     sample_project_obj = sample_obj.get_sample_project_obj()
-    if sample_project_obj != None:
-        sample_information[
-            "sample_project_name"
-        ] = sample_project_obj.get_sample_project_name()
-        if SampleProjectsFields.objects.filter(
-            sampleProjects_id=sample_project_obj
-        ).exists():
-            sample_information["sample_project_field_heading"] = []
-            sample_information["sample_project_field_value"] = []
-            sample_project_fields = SampleProjectsFields.objects.filter(
-                sampleProjects_id=sample_project_obj
-            )
-            for s_p_field in sample_project_fields:
-                sample_information["sample_project_field_heading"].append(
-                    s_p_field.get_field_name()
-                )
-                if SampleProjectsFieldsValue.objects.filter(
-                    sample_id=sample_obj, sampleProjecttField_id=s_p_field
-                ).exists():
-                    field_value = SampleProjectsFieldsValue.objects.get(
-                        sample_id=sample_obj, sampleProjecttField_id=s_p_field
-                    ).get_field_value()
-                    if s_p_field.get_field_type() == "Date":
-                        field_value = field_value.replace(" 00:00:00", "")
-                else:
-                    field_value = VALUE_NOT_PROVIDED
-                sample_information["sample_project_field_value"].append(field_value)
-    # check if molecule information exists for the sample
+    if sample_project_obj is not None:
+        sample_information.update(get_sample_project_information(sample_project_obj, sample_obj))
 
+    # check if molecule information exists for the sample
     if MoleculePreparation.objects.filter(sample=sample_obj).exists():
         molecules = MoleculePreparation.objects.filter(sample=sample_obj)
         sample_information[
