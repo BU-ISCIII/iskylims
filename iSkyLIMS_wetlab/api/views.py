@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from django.http import QueryDict
 
 from iSkyLIMS_core.models import SampleProjects, SampleProjectsFields, LabRequest, Samples
+
 from iSkyLIMS_wetlab.models import SamplesInProject
 
 from .serializers import (
@@ -31,6 +32,7 @@ from .utils.sample_request_handling import (
     include_instances_in_sample,
     include_coding,
     get_sample_fields,
+    get_sample_information,
     summarize_samples,
 )
 
@@ -96,6 +98,12 @@ sample_list = openapi.Parameter(
     description="List of samples to collect information",
     type=openapi.TYPE_STRING,
 )
+
+sample_information = openapi.Parameter(
+    "sample",
+    openapi.IN_QUERY,
+    description="Fecthing information from sample",
+    type=openapi.TYPE_STRING)
 
 
 @swagger_auto_schema(
@@ -218,6 +226,18 @@ def fetch_run_information(request):
             else:
                 s_data.append({"sampleName": sample, "Run data": "Not found"})
         return Response(s_data, status=status.HTTP_200_OK)
+    return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+@swagger_auto_schema(method="get", manual_parameters=[sample_information])
+@api_view(["GET"])
+def fetch_sample_information(request):
+    if "sample" in request.GET:
+        sample = request.GET["sample"]
+        if not Samples.objects.filter(sampleName__iexact=sample).exists():
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        sample_data = get_sample_information(sample)
+        return Response(sample_data, status=status.HTTP_200_OK)
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 

@@ -13,6 +13,7 @@ urlpatterns = [
         views.get_lab_information_contact,
         name="get_lab_information_contact",
     ),
+    path("fetchSampleIinformation", views.fetch_sample_information, name="fetch_sample_information"),
     path("createSampleData", views.create_sample_data, name="create_sample_data"),
     # path("samplefields", views.sample_fields, name="sample_fields"),
     path("sampleFields/", views.sample_fields, name="sample_fields"),

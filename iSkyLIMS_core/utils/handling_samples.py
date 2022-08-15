@@ -903,6 +903,10 @@ def get_sample_project_information(sample_project_obj, sample_obj):
     return s_project_info
 
 
+def get_sample_definition_heading():
+    """Function to return the sample fields if other apps need them"""
+    return HEADING_FOR_SAMPLE_DEFINITION
+
 def get_all_sample_information(sample_id, massive):
     sample_information = {}
     sample_information["sample_id"] = sample_id
