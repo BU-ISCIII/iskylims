@@ -38,7 +38,7 @@ def create_state(state, apps_name):
 
 def create_city(data, apps_name):
     """Create a City instance"""
-    data["state"] = create_state(data["geo_loc_state"], apps_name).get_id()
+    data["state"] = create_state(data["geo_loc_state"], apps_name).get_state_id()
     data["cityName"] = data["geo_loc_city"]
     data["latitude"] = data["geo_loc_latitude"]
     data["longitude"] = data["geo_loc_longitude"]
