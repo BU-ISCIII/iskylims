@@ -256,7 +256,7 @@ def search_run_samples(sample_name, user_name, start_date, end_date):
     if SamplesInProject.objects.all().exists():
         run_sample_founds = SamplesInProject.objects.all()
     else:
-        return sample_list
+        return run_sample_list
     if user_name != '':
         if User.objects.filter(username__exact = user_name).exists():
             user_name_obj = User.objects.filter(username__exact = user_name).last()
