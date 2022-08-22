@@ -70,7 +70,7 @@ def create_new_laboratory(lab_data):
                 lab_data["geo_loc_state"], lab_data["apps_name"]
             ).get_state_id()
         city_id = create_city(lab_data, lab_data["apps_name"]).get_city_id()
-    lab_data["cityName"] = city_id
+    lab_data["city"] = city_id
     return LabRequest.objects.create_lab_request(lab_data)
 
 
