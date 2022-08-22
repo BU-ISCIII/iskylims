@@ -69,8 +69,8 @@ def create_new_laboratory(lab_data):
             lab_data["state"] = create_state(
                 lab_data["geo_loc_state"], lab_data["apps_name"]
             ).get_state_id()
-            city_id = City.objects.create_new_city(lab_data).get_city_id()
-    lab_data["city"] = city_id
+        city_id = City.objects.create_new_city(lab_data).get_city_id()
+    lab_data["cityName"] = city_id
     return LabRequest.objects.create_lab_request(lab_data)
 
 
