@@ -39,7 +39,6 @@ from .utils.sample_request_handling import (
     get_sample_fields,
     get_sample_information,
     summarize_samples,
-    summarize_project_fields,
 )
 
 sample_project_fields = openapi.Parameter(
