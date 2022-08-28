@@ -887,7 +887,7 @@ def get_sample_project_information(sample_project_obj, sample_obj):
         )
         for s_p_field in sample_project_fields:
             s_project_info["sample_project_field_heading"].append(
-                s_p_field.get_field_name()
+                s_p_field.get_description()
             )
             if SampleProjectsFieldsValue.objects.filter(
                 sample_id=sample_obj, sampleProjecttField_id=s_p_field
