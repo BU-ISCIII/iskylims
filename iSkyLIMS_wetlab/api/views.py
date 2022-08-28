@@ -10,7 +10,12 @@ from rest_framework import status
 from rest_framework.response import Response
 from django.http import QueryDict
 
-from iSkyLIMS_core.models import SampleProjects, SampleProjectsFields, LabRequest, Samples
+from iSkyLIMS_core.models import (
+    SampleProjects,
+    SampleProjectsFields,
+    LabRequest,
+    Samples,
+)
 
 from iSkyLIMS_wetlab.models import SamplesInProject
 
@@ -34,6 +39,7 @@ from .utils.sample_request_handling import (
     get_sample_fields,
     get_sample_information,
     summarize_samples,
+    summarize_project_fields,
 )
 
 sample_project_fields = openapi.Parameter(
@@ -103,11 +109,27 @@ sample_information = openapi.Parameter(
     "sample",
     openapi.IN_QUERY,
     description="Fecthing information from sample",
-    type=openapi.TYPE_STRING)
+    type=openapi.TYPE_STRING,
+)
+
+sample_project_name = openapi.Parameter(
+    "sample_project_name",
+    openapi.IN_QUERY,
+    description="Sample Project Name",
+    type=openapi.TYPE_STRING,
+)
+
+sample_project_field = openapi.Parameter(
+    "sample_project_field",
+    openapi.IN_QUERY,
+    description="Name of the sample project Field. Requires project_name",
+    type=openapi.TYPE_STRING,
+)
 
 
 @swagger_auto_schema(
     method="post",
+    operation_description="Create a new sample Data in iSkyLIMS",
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
@@ -205,7 +227,11 @@ def create_sample_data(request):
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-@swagger_auto_schema(method="get", manual_parameters=[sample_in_run])
+@swagger_auto_schema(
+    method="get",
+    operation_description="Get the stored Run information available in iSkyLIMS for the list of samples",
+    manual_parameters=[sample_in_run],
+)
 @api_view(["GET"])
 def fetch_run_information(request):
     if "samples" in request.GET:
@@ -241,7 +267,10 @@ def fetch_sample_information(request):
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-@swagger_auto_schema(method="get")
+@swagger_auto_schema(
+    method="get",
+    operation_description="Send the request to gen the fields that are required when storing a new sample using the API",
+)
 @api_view(["GET"])
 def sample_fields(request):
     apps_name = __package__.split(".")[0]
@@ -257,7 +286,11 @@ def sample_fields(request):
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-@swagger_auto_schema(method="get", manual_parameters=[sample_project_fields])
+@swagger_auto_schema(
+    method="get",
+    operation_description="Use this request to get the field' s names that are required for the sample project",
+    manual_parameters=[sample_project_fields],
+)
 @api_view(["GET"])
 def sample_project_fields(request):
     if "project" in request.GET:
@@ -294,6 +327,7 @@ def get_lab_information_contact(request):
 
 @swagger_auto_schema(
     method="get",
+    operation_description="",
     manual_parameters=[
         sample_list,
         sample_state,
@@ -301,11 +335,13 @@ def get_lab_information_contact(request):
         end_date,
         region,
         laboratory,
+        sample_project_name,
+        sample_project_field,
     ],
 )
 @api_view(["GET"])
-def summarize_samples_information(request):
-    summarize_data = summarize_samples(request.data)
+def summarize_data_information(request):
+    summarize_data = summarize_samples(request.GET)
     if "ERROR" in summarize_data:
         return Response(status=status.HTTP_400_BAD_REQUEST)
     if len(summarize_data) == 0:

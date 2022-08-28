@@ -2,12 +2,13 @@ from datetime import datetime
 
 from iSkyLIMS_core.models import (
     City,
-    SampleProjects,
-    SampleProjectsFields,
     Samples,
     PatientCore,
     LabRequest,
     SampleType,
+    SampleProjects,
+    SampleProjectsFields,
+    SampleProjectsFieldsValue,
     Species,
     StatesForSample,
     StateInCountry,
@@ -16,12 +17,15 @@ from iSkyLIMS_core.models import (
 from iSkyLIMS_core.utils.handling_samples import (
     increase_unique_value,
     get_sample_project_information,
-    get_sample_definition_heading
+    get_sample_definition_heading,
 )
 
 from iSkyLIMS_wetlab.wetlab_config import (
+    ERROR_API_MISSING_SAMPLE_PROJECT_FIELD,
     ERROR_API_NO_SAMPLE_DEFINED,
     ERROR_API_SAMPLE_STATE_VALUE_IS_NOT_DEFINED,
+    ERROR_API_NO_SAMPLE_PROJECT_DEFINED,
+    ERROR_API_NO_SAMPLE_PROJECT_FIELD_DEFINED,
 )
 
 # from iSkyLIMS_core.core_config import HEADING_FOR_RECORD_SAMPLES
@@ -354,6 +358,44 @@ def summarize_samples(data):
             labRequest__iexact=data["laboratory"]
         ).values_list("sampleName", flat=True)
         return summarize
+    if "sample_project_name" in data:
+        if not SampleProjects.objects.filter(
+            sampleProjectName__iexact=data["sample_project_name"]
+        ).exists():
+            return {"ERROR": ERROR_API_NO_SAMPLE_PROJECT_DEFINED}
+        s_project_obj = SampleProjects.objects.filter(
+            sampleProjectName__iexact=data["sample_project_name"]
+        ).last()
+        if "sample_project_field" not in data:
+            return {"ERROR": ERROR_API_MISSING_SAMPLE_PROJECT_FIELD}
+        if not SampleProjectsFields.objects.filter(
+            sampleProjects_id=s_project_obj,
+            sampleProjectFieldDescription__iexact=data["sample_project_field"],
+        ).exists():
+            return {"ERROR": ERROR_API_NO_SAMPLE_PROJECT_FIELD_DEFINED}
+        s_project_field_obj = SampleProjectsFields.objects.filter(
+            sampleProjects_id=s_project_obj,
+            sampleProjectFieldDescription__iexact=data["sample_project_field"],
+        ).last()
+        sample_list = list(sample_objs.values_list("sampleName", flat=True))
+
+        # get the unique values to iter over them
+        f_values = (
+            SampleProjectsFieldsValue.objects.filter(
+                sampleProjecttField_id=s_project_field_obj
+            )
+            .values_list("sampleProjectFieldValue", flat=True)
+            .distinct()
+        )
+        for f_value in f_values:
+            summarize[f_value] = list(
+                SampleProjectsFieldsValue.objects.filter(
+                    sampleProjecttField_id=s_project_field_obj,
+                    sampleProjectFieldValue__exact=f_value,
+                    sample_id__sampleName__in=sample_list,
+                ).values_list("sample_id__sampleName", flat=True)
+            )
+        return summarize
     for sample_obj in sample_objs:
         s_region = sample_obj.get_region()
         # if s_region == "":
@@ -361,5 +403,50 @@ def summarize_samples(data):
         if s_region not in summarize:
             summarize[s_region] = 0
         summarize[s_region] += 1
+
+    return summarize
+
+
+def summarize_project_fields(data):
+    """Return values of the field as key and list of samples as value"""
+    summarize = {}
+    # import pdb; pdb.set_trace()
+    if not SampleProjects.objects.filter(
+        sampleProjectName__iexact=data["sample_project_name"]
+    ).exists():
+        return {"ERROR": ERROR_API_NO_SAMPLE_PROJECT_DEFINED}
+    s_project_obj = SampleProjects.objects.filter(
+        sampleProjectName__iexact=data["sample_project_name"]
+    ).last()
+
+    if not SampleProjectsFields.objects.filter(
+        sampleProjects_id=s_project_obj,
+        sampleProjectFieldDescription__iexact=data["sample_project_field"],
+    ).exists():
+        return {"ERROR": ERROR_API_NO_SAMPLE_PROJECT_FIELD_DEFINED}
+    s_project_field_obj = SampleProjectsFields.objects.filter(
+        sampleProjects_id=s_project_obj,
+        sampleProjectFieldDescription__iexact=data["sample_project_field"],
+    ).last()
+    if not SampleProjectsFieldsValue.objects.filter(
+        sampleProjecttField_id=s_project_field_obj
+    ).exists():
+        return summarize
+
+    # get the unique values to iter over them
+    f_values = (
+        SampleProjectsFieldsValue.objects.filter(
+            sampleProjecttField_id=s_project_field_obj
+        )
+        .values_list("sampleProjectFieldValue", flat=True)
+        .distinct()
+    )
+    for f_value in f_values:
+        summarize[f_value] = list(
+            SampleProjectsFieldsValue.objects.filter(
+                sampleProjecttField_id=s_project_field_obj,
+                sampleProjectFieldValue__exact=f_value,
+            ).values_list("sample_id__sampleName", flat=True)
+        )
 
     return summarize

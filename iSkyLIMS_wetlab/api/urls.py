@@ -13,7 +13,11 @@ urlpatterns = [
         views.get_lab_information_contact,
         name="get_lab_information_contact",
     ),
-    path("fetchSampleIinformation", views.fetch_sample_information, name="fetch_sample_information"),
+    path(
+        "fetchSampleIinformation",
+        views.fetch_sample_information,
+        name="fetch_sample_information",
+    ),
     path("createSampleData", views.create_sample_data, name="create_sample_data"),
     # path("samplefields", views.sample_fields, name="sample_fields"),
     path("sampleFields/", views.sample_fields, name="sample_fields"),
@@ -21,9 +25,9 @@ urlpatterns = [
         "sampleProjectFields", views.sample_project_fields, name="sample_project_fields"
     ),
     path(
-        "summarizeSamplesInformation",
-        views.summarize_samples_information,
-        name="summarize_samples_information",
+        "summarizeDataInformation",
+        views.summarize_data_information,
+        name="summarize_data_information",
     ),
     path("updateLab", views.update_lab, name="update_lab"),
 ]

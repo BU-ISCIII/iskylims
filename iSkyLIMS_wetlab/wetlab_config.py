@@ -1,7 +1,4 @@
-import os
-from django.conf import settings
-
-##### Allow to import the configuration samba files from configuration folder
+# Allow to import the configuration samba files from configuration folder
 import sys
 
 sys.path.append
@@ -12,21 +9,22 @@ WETLAB_MANAGER = "WetlabManager"
 ####
 ##############################################################
 
-##### SETTINGS FOR CLEANUP RUNS AND NOT VALID FILES ##########
-####
+########################################################
+# SETTINGS FOR CLEANUP RUNS AND NOT VALID FILES ##########
+
 RETENTION_TIME = "7"  # in days
-####
+
 ##############################################################
 
-##############  Define in proyect names can be the same in different Runs ######
+# #############  Define in proyect names can be the same in different Runs ######
 # PROJECTS_ALLOWED_IN_MULTIPLE_RUNS = 'False' ## ('True'/'False')
 ##############################################################
 
-############## FOLDER SETTINGS ###############################
-## Directory settings for processing the run data files ######
-## Relative path from settings.BASE_DIR
+# ############# FOLDER SETTINGS ###############################
+# # Directory settings for processing the run data files ######
+# Relative path from settings.BASE_DIR
 LOG_DIRECTORY = "logs/"
-## Relative path from settings.MEDIA_ROOT
+# Relative path from settings.MEDIA_ROOT
 RUN_TEMP_DIRECTORY_RECORDED = "wetlab/tmp/recorded/"
 RUN_TEMP_DIRECTORY = "wetlab/tmp"
 RUN_TEMP_DIRECTORY_PROCESSING = "wetlab/tmp/processing"
@@ -35,31 +33,35 @@ RUN_SAMPLE_SHEET_DIRECTORY = "wetlab/SampleSheets/"
 # SAMPLE_SHEET_CREATED_ON_LAB = 'wetlab/SampleSheetsFromLab'
 TEMPLATE_FILES_DIRECTORY = "wetlab/templates"
 
-## Directory to store the imported user sampleSheets
+# Directory to store the imported user sampleSheets
 LIBRARY_PREPARATION_SAMPLE_SHEET_DIRECTORY = "wetlab/SampleSheets4LibPrep/"
 
 ##############################################################
 
-################# LOG NAMES #############################
+##############################################
+#                 LOG NAMES
+#############################
 LOG_NAME_FIND_UPDATE_RUNS = "update_run"
 
-################# CONFIG FILE LOG NAME ###############################
+###############################
+#              CONFIG FILE LOG NAME
+###############################
 LOGGING_CONFIG_FILE = "logging_config.ini"
 
 ##############################################################
 
-## FILE NAME CONTAINING THE PROCESSED RUNS ###################
+#  FILE NAME CONTAINING THE PROCESSED RUNS ###################
 PROCESSED_RUN_FILE = "processed_run_file"
 ##############################################################
 
-############# ILLUMINA OUTPUT FILES ##########################
+# ############ ILLUMINA OUTPUT FILES ##########################
 RUN_PARAMETER_FILE = "RunParameters.xml"
 # RUN_PARAMETER_MISEQ = 'runParameters.xml'
 RUN_INFO = "RunInfo.xml"
 RUN_COMPLETION_XML_FILE = "RunCompletionStatus.xml"
 RUN_COMPLETION_TXT_FILE = "SequenceComplete.txt"
 SAMPLE_SHEET = "samplesheet.csv"
-## sample sheet to be copied on the remote folder
+# # sample sheet to be copied on the remote folder
 COPY_SAMPLE_SHEET_TO_REMOTE = True  # boolean constant True if NextSeq
 # sample sheet needs to be copied to remote server
 RUN_LOG_FOLDER = "Logs"
@@ -79,7 +81,7 @@ PLATFORM_WAY_TO_CHECK_RUN_COMPLETION = [
     ["NovaSeq", "txt_file"],
 ]
 
-############ VALUE TAG FOR XML FILES #########################
+# ########### VALUE TAG FOR XML FILES #########################
 COMPLETION_TAG = "CompletionStatus"
 COMPLETION_SUCCESS = ["CompletedAsPlanned", "SuccessfullyCompleted"]
 EXPERIMENT_NAME_TAG = "ExperimentName"
@@ -99,7 +101,9 @@ RUN_METRIC_GRAPHIC_COMMANDS = [
 ]
 ##############################################################
 
-############### FIELD TAG NAMES TO COLLECT FROM RunParameter FILE #####################
+######################################
+# FIELD TAG NAMES TO COLLECT FROM RunParameter FILE
+#####################################
 FIELDS_TO_COLLECT_FROM_RUN_INFO_FILE = [
     "RunID",
     "ExperimentName",
@@ -128,7 +132,7 @@ READ_NUMBER_OF_CYCLES = [
     "PlannedIndex2ReadCycles",
     "PlannedRead2Cycles",
 ]
-### NOVASEQ 6000
+# NOVASEQ 6000
 FIELDS_NOVASEQ_TO_FETCH_TAG = [
     "NumLanes",
     "Application",
@@ -139,25 +143,25 @@ FIELDS_NOVASEQ_TO_FETCH_TAG = [
 
 ##############################################################
 
-############ DEFAULT VALUES FOR MISEQ SAMPLE SHEET  ##########
+# ########### DEFAULT VALUES FOR MISEQ SAMPLE SHEET  ##########
 DEFAULT_LIBRARY_KIT = "Unknown"
 DEFAULT_CENTER = "CNM"
 ##############################################################
 
-############ RUN METRIC FOLDERS AND FILES ####################
+# ########### RUN METRIC FOLDERS AND FILES ####################
 INTEROP_PATH = "/opt/interop/bin/"
 RUN_METRIC_FOLDER = "InterOp"
 PLOT_EXTENSION = ".png"
 
 ##############################################################
 
-#########  FOLDER SETTINGS FOR PROCESSING LIBRARY KITS #######
-## Relative path from settings.BASE_DIR
+# ########  FOLDER SETTINGS FOR PROCESSING LIBRARY KITS #######
+# # Relative path from settings.BASE_DIR
 LIBRARY_KITS_DIRECTORY = "wetlab/collection_index_kits/"
 COLLECTION_INDEX_KITS_DIRECTORY = "wetlab/collection_index_kits/"
-## Maximum file size allowed for the index library kits (in bytes)
+# # Maximum file size allowed for the index library kits (in bytes)
 LIBRARY_MAXIMUM_SIZE = "3145728"
-## Configuration for index library file
+# # Configuration for index library file
 COLLECTION_INDEX_HEADING = [
     "[Version]",
     "[Name]",
@@ -186,7 +190,7 @@ SAMPLE_SHEET_NEXTSEQ_VERSION_5_TEMPLATE_NAME = (
     "nextseq_version_5_sample_sheet_template.csv"
 )
 
-##### CONFIGURATION FOR ADDING KITS FOR LIBRARY PREPARATION ########
+# #### CONFIGURATION FOR ADDING KITS FOR LIBRARY PREPARATION ########
 HEADING_ADDING_COMMERCIAL_KITS_TO_PROTOCOL = [
     "Given name ",
     "Order",
@@ -204,7 +208,7 @@ HEADING_FOR_MODIFYING_ADDITIONAL_KITS = [
 ]
 
 ##### CONFIGURATION FOR SAMPLE SHEET CONVERSION ##############
-######### FILE TO BASESPACE FORMAT     #######################
+# ######## FILE TO BASESPACE FORMAT     #######################
 # column names when sample sheet has only one index
 """
 BASESPACE_FILE_ONE_INDEX = ['SampleID','Name','Species','Project','NucleicAcid',
@@ -248,7 +252,7 @@ MAP_BASESPACE_SAMPLE_SHEET_ONE_INDEX = [('SampleID','Sample_ID'),('Name','Sample
 MAP_BASESPACE_SAMPLE_SHEET_TWO_INDEX = [('SampleID','Sample_ID'),('Name','Sample_Name'), ('Project','Sample_Project'),
                 ('Index1Name','I7_Index_ID'), ('Index1Sequence','index' ),('Index2Name','I5_Index_ID'),('Index2Sequence','index2') ]
 """
-######### MAPPING COLUMNS IN SAMPLE SHEET FROM USER TO DATABASE   #############
+# ######## MAPPING COLUMNS IN SAMPLE SHEET FROM USER TO DATABASE   #############
 MAP_USER_SAMPLE_SHEET_TO_DATABASE_NEXTSEQ_SINGLE_READ = [
     ("Sample_ID", "userSampleID"),
     ("Sample_Name", "sample_name"),
@@ -337,7 +341,7 @@ MAP_USER_SAMPLE_SHEET_TO_DATABASE_ALL_PLATFORMS = [
     ("Sample_Project", "projectInSampleSheet"),
     ("Description", "userInSampleSheet"),
 ]
-######### MAPPING OPTIONAL COLUMNS THAT COULD BE IN SAMPLE SHEET FROM USER TO DATABASE   #############
+# ######## MAPPING OPTIONAL COLUMNS THAT COULD BE IN SAMPLE SHEET FROM USER TO DATABASE   #############
 MAP_USER_SAMPLE_SHEET_ADDITIONAL_FIELDS_FROM_TYPE_OF_SECUENCER = [
     ("Index_Plate_Well", "indexPlateWell"),
     ("Manifest", "manifest"),
@@ -376,9 +380,9 @@ FIELDS_IN_SAMPLE_SHEET_HEADER_IEM_VERSION_5 = [
     "Description",
 ]
 
-##### HEADINGS VALUES
+# #### HEADINGS VALUES
 
-## Heading for pending Library Preparation state
+# # Heading for pending Library Preparation state
 
 HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL = [
     "Sample Name",
@@ -395,7 +399,7 @@ HEADING_FOR_LIBRARY_PREPARATION_STATE = [
     "UserID",
 ]
 
-#######HEADING_FOR_ADD_LIBRARY_PREPARATION = ['Molecule Code ID', 'Protocol', 'Extraction Date', 'To be included']
+# ######HEADING_FOR_ADD_LIBRARY_PREPARATION = ['Molecule Code ID', 'Protocol', 'Extraction Date', 'To be included']
 HEADING_FOR_ADD_LIBRARY_PREPARATION_PARAMETERS = [
     "Library Preparation Code ID",
     "Sample Name",
@@ -426,7 +430,7 @@ HEADING_MAIN_DATA_SAMPLE_SHEET = [
 HEADING_SUMMARY_DATA_SAMPLE_SHEET = ["Number of Samples", "Projects Name", "Users"]
 
 
-### Heading for display information on library Preparation definition
+# ## Heading for display information on library Preparation definition
 HEADING_FOR_LIBRARY_PREPARATION_DEFINITION = [
     "Library CodeID",
     "Molecule CodeID ",
@@ -438,7 +442,7 @@ HEADING_FOR_LIBRARY_PREPARATION_DEFINITION = [
     "Number of reused",
 ]
 
-### Heading for display pool with the samples belongs to
+# ## Heading for display pool with the samples belongs to
 HEADING_FOR_DISPLAY_SAMPLES_IN_POOL = [
     "Library CodeID",
     "Sample Name",
@@ -449,7 +453,7 @@ HEADING_FOR_DISPLAY_SAMPLES_IN_POOL = [
     "Include in Pool",
 ]
 
-### Heading for display pool with the samples belongs to
+# ## Heading for display pool with the samples belongs to
 HEADING_FOR_DISPLAY_CREATED_POOL = [
     "Pool Name",
     "Pool Code",
@@ -458,7 +462,7 @@ HEADING_FOR_DISPLAY_CREATED_POOL = [
 
 HEADING_FOR_DISPLAY_LIB_PREP_IN_POOL = ["Library Code", "Sample Name", "User Name"]
 
-### Heading for display samples to be selected for Run
+# ## Heading for display samples to be selected for Run
 HEADING_FOR_SELECTING_POOLS = [
     "Pool Name",
     "Pool Code",
@@ -472,7 +476,7 @@ HEADING_FOR_INCOMPLETED_SELECTION_POOLS = [
     "Number of Samples",
 ]
 
-### Heading for display pool information when showing sample information
+# ## Heading for display pool information when showing sample information
 HEADING_FOR_DISPLAY_POOL_INFORMATION_IN_SAMPLE_INFO = [
     "Library Code",
     "Pool Name",
@@ -480,7 +484,7 @@ HEADING_FOR_DISPLAY_POOL_INFORMATION_IN_SAMPLE_INFO = [
     "Run Name",
 ]
 
-### Heading for displying additional kits used in library prepation
+# ## Heading for displying additional kits used in library prepation
 HEADING_FOR_DISPLAY_ADDITIONAL_KIT_LIBRARY_PREPARATION = [
     "Library Preparation Code ID",
     "Additional Lot kit name",
@@ -489,7 +493,7 @@ HEADING_FOR_DISPLAY_ADDITIONAL_KIT_LIBRARY_PREPARATION = [
     "Recorded Date",
 ]
 
-### Heading for displying  kits used in run preparation
+# ## Heading for displying  kits used in run preparation
 HEADING_FOR_DISPLAY_KIT_IN_RUN_PREPARATION = [
     "Library Preparation Code ID",
     "Lot NUMBER",
@@ -498,7 +502,7 @@ HEADING_FOR_DISPLAY_KIT_IN_RUN_PREPARATION = [
     "Run recorded Date",
 ]
 
-### Heading for creating the pool for selected samples
+# ## Heading for creating the pool for selected samples
 HEADING_FOR_CREATING_RUN = [
     "Library CodeID",
     "Sample Name",
@@ -514,7 +518,7 @@ HEADING_FOR_CREATING_RUN = [
 ]
 
 
-### Heading for getting information when creating a new Run
+# ## Heading for getting information when creating a new Run
 HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_PAIRED_END = [
     "Sample_ID",
     "Sample_Name",
@@ -611,7 +615,7 @@ RESEARCHER_SAMPLE_HEADING_STATISTICS = [
 
 NUMBER_OF_VALUES_TO_FETCH_FROM_RESEARCHER = 5
 
-############### SUCCESSFUL_MESSAGES #######################################
+# ############## SUCCESSFUL_MESSAGES #######################################
 SUCCESSFUL_RUN_STATE_CHANGE_FOR_RETRY = [
     "State of the Run has changed back to the state previous to error",
     "Now the run is again in the process for updating information",
@@ -626,7 +630,7 @@ SUCCESSFUL_REUSE_LIB_PREP = [
     "Now is ready to be assigned to a new pool",
 ]
 
-########## ERROR MESSAGES  #########################
+# ######### ERROR MESSAGES  #########################
 
 ERROR_USER_NOT_WETLAB_MANAGER = [
     "You do not have enough privileges to see this page ",
@@ -769,7 +773,7 @@ ERROR_DUPLICATED_INDEXES_FOUND_IN_DIFFERENT_POOLS = [
     "in the pools",
 ]
 
-###### ERROR TEXT FOR SEACHING #############################################
+# ERROR TEXT FOR SEACHING #############################################
 ERROR_NO_MATCHES_FOR_RUN_SEARCH = [
     "There is not any run that matches your input conditions"
 ]
@@ -816,7 +820,7 @@ ERROR_NOT_SAMPLES_FOR_USER_FOUND_BECAUSE_OF_CONFIGURATION_SETTINGS = [
     "There are no results. This could because the DESCRIPTION_IN_SAMPLE_SHEET_MUST_HAVE_USERNAME setting is set fo FALSE"
 ]
 
-#########################  Sequencer errors #####################################
+# ########################  Sequencer errors #####################################
 ERROR_SEQUENCER_ALREADY_DEFINED = [
     "Unable to save the Sequencer, because it already exists"
 ]
@@ -830,7 +834,7 @@ ERROR_NOT_ALLOWED_REPEATED_PROJECTS = [
     "The following project is already defined",
 ]
 
-#########################  Configuration test errors #####################################
+# ########################  Configuration test errors #####################################
 ERROR_NOT_FOLDER_RUN_TEST_WAS_FOUND = [
     "Unable to run the configuration test",
     "Run test folder was found on remote server",
@@ -844,14 +848,19 @@ ERROR_NO_RUN_TEST_WAS_CREATED = [
 ERROR_MESSAGE_UPLOAD_FILE_NOT_EXISTS = ["Upload file does not exist"]
 
 # ######################## API ERRORS ########################################
+ERROR_API_MISSING_SAMPLE_PROJECT_FIELD = (
+    "Sample project field was not included in the request"
+)
 ERROR_API_NO_SAMPLE_DEFINED = "There are no samples defined yet"
-ERROR_API_SAMPLE_STATE_VALUE_IS_NOT_DEFINED = "the sample state is not defined"
+ERROR_API_SAMPLE_STATE_VALUE_IS_NOT_DEFINED = "The sample state is not defined"
+ERROR_API_NO_SAMPLE_PROJECT_DEFINED = "The sample project is not defined"
+ERROR_API_NO_SAMPLE_PROJECT_FIELD_DEFINED = "The sample project field is not defined"
 
-############### HEADING FOR PROJECT DATA VISUALIZATION #####################
+# ############## HEADING FOR PROJECT DATA VISUALIZATION #####################
 HEADING_FOR_PROJECT_DATES = ["Project Recorder date", "Project date"]
 
 
-################ EMAIL CONFIGURATION FIELDS ###############################
+# ############### EMAIL CONFIGURATION FIELDS ###############################
 EMAIL_CONFIGURATION_FIELDS = [
     "EMAIL_HOST",
     "EMAIL_PORT",
@@ -863,7 +872,7 @@ EMAIL_CONFIGURATION_FIELDS = [
 ]
 
 
-################ SAMBA CONFIGURATION FIELDS ###############################
+# ############### SAMBA CONFIGURATION FIELDS ###############################
 SAMBA_CONFIGURATION_FIELDS = [
     "SAMBA_USER_ID",
     "SAMBA_USER_PASSWORD",
@@ -878,7 +887,7 @@ SAMBA_CONFIGURATION_FIELDS = [
     "SAMBA_DOMAIN",
 ]
 
-######### PROJECT HEADING  #########################################
+# ######## PROJECT HEADING  #########################################
 HEADING_SINGLE_PROJECT_FL_SUMMARY = [
     "Cluster (Raw)",
     "Cluster (PF)",
@@ -908,7 +917,7 @@ HEADING_SINGLE_PROJECT_SAMPLES = [
 ]
 
 
-########   Sequencer data   #########################
+# #######   Sequencer data   #########################
 EMPTY_FIELDS_IN_SEQUENCER = [
     "platformID",
     "sequencerDescription",
@@ -918,7 +927,7 @@ EMPTY_FIELDS_IN_SEQUENCER = [
 ]
 
 
-######## Sample comparation #########################
+# ####### Sample comparation #########################
 HEADING_COMPARATION_SAMPLE_LIST = [
     "Sample Nane",
     "Project",
