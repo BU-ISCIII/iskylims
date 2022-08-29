@@ -387,6 +387,7 @@ def summarize_samples(data):
             .values_list("sampleProjectFieldValue", flat=True)
             .distinct()
         )
+        """
         for f_value in f_values:
             summarize[f_value] = list(
                 SampleProjectsFieldsValue.objects.filter(
@@ -395,6 +396,14 @@ def summarize_samples(data):
                     sample_id__sampleName__in=sample_list,
                 ).values_list("sample_id__sampleName", flat=True)
             )
+        """
+        for f_value in f_values:
+            summarize[f_value] = SampleProjectsFieldsValue.objects.filter(
+                sampleProjecttField_id=s_project_field_obj,
+                sampleProjectFieldValue__exact=f_value,
+                sample_id__sampleName__in=sample_list,
+            ).count()
+
         return summarize
     for sample_obj in sample_objs:
         s_region = sample_obj.get_region()
