@@ -327,6 +327,7 @@ def split_sample_data(data):
 def summarize_samples(data):
     summarize = {}
     sample_objs = Samples.objects.all()
+    # Filter the samples to get the summary information
     if len(sample_objs) == 0:
         return {"ERROR": ERROR_API_NO_SAMPLE_DEFINED}
     if "sampleList" in data:
@@ -347,6 +348,11 @@ def summarize_samples(data):
         sample_objs = sample_objs.filter(generated_at__gte=data["startDate"])
     elif "endDate" in data:
         sample_objs.filter(generated_at__lte=data["endDate"])
+    #
+    # get the sumarize infomation for the selected samples
+    #
+    sample_list = list(sample_objs.values_list("sampleName", flat=True))
+    summarize["samples_number"] = len(sample_list)
     if "region" in data and "laboratory" not in data:
         sample_objs = sample_objs.filter(
             labRequest__labCity__belongsToState__stateName__iexact=data["region"]
@@ -366,45 +372,70 @@ def summarize_samples(data):
         s_project_obj = SampleProjects.objects.filter(
             sampleProjectName__iexact=data["sample_project_name"]
         ).last()
-        if "sample_project_field" not in data:
-            return {"ERROR": ERROR_API_MISSING_SAMPLE_PROJECT_FIELD}
+        s_project_field_objs = SampleProjectsFields.objects.filter(
+            sampleProjects_id=s_project_obj
+        )
+
+    if "sample_project_field" in data:
+        if "sample_project_name" not in data:
+            return {"ERROR": ERROR_API_NO_SAMPLE_PROJECT_DEFINED}
         if not SampleProjectsFields.objects.filter(
             sampleProjects_id=s_project_obj,
             sampleProjectFieldDescription__iexact=data["sample_project_field"],
         ).exists():
             return {"ERROR": ERROR_API_NO_SAMPLE_PROJECT_FIELD_DEFINED}
-        s_project_field_obj = SampleProjectsFields.objects.filter(
+
+        s_project_field_objs = SampleProjectsFields.objects.filter(
             sampleProjects_id=s_project_obj,
             sampleProjectFieldDescription__iexact=data["sample_project_field"],
-        ).last()
-        sample_list = list(sample_objs.values_list("sampleName", flat=True))
-
-        # get the unique values to iter over them
-        f_values = (
-            SampleProjectsFieldsValue.objects.filter(
-                sampleProjecttField_id=s_project_field_obj
-            )
-            .values_list("sampleProjectFieldValue", flat=True)
-            .distinct()
         )
-        """
-        for f_value in f_values:
-            summarize[f_value] = list(
+
+    # import pdb; pdb.set_trace()
+    summarize["parameters"] = {}
+    for s_project_field_obj in s_project_field_objs:
+        p_name = s_project_field_obj.get_field_name()
+        # summarize["parameters"][] =
+        # check if sample Proyect fields has options
+        # if true then get the used values and get their numbers
+        if SampleProjectsFieldsValue.objects.filter(
+            sampleProjecttField_id=s_project_field_obj
+        ).exists():
+            # get the unique values to iter over them
+            summarize["parameters"][p_name] = {}
+            f_values = (
                 SampleProjectsFieldsValue.objects.filter(
+                    sampleProjecttField_id=s_project_field_obj
+                )
+                .values_list("sampleProjectFieldValue", flat=True)
+                .distinct()
+            )
+            """
+            for f_value in f_values:
+                summarize[f_value] = list(
+                    SampleProjectsFieldsValue.objects.filter(
+                        sampleProjecttField_id=s_project_field_obj,
+                        sampleProjectFieldValue__exact=f_value,
+                        sample_id__sampleName__in=sample_list,
+                    ).values_list("sample_id__sampleName", flat=True)
+                )
+            """
+            for f_value in f_values:
+                summarize["parameters"][p_name][
+                    f_value
+                ] = SampleProjectsFieldsValue.objects.filter(
                     sampleProjecttField_id=s_project_field_obj,
                     sampleProjectFieldValue__exact=f_value,
                     sample_id__sampleName__in=sample_list,
-                ).values_list("sample_id__sampleName", flat=True)
-            )
-        """
-        for f_value in f_values:
-            summarize[f_value] = SampleProjectsFieldsValue.objects.filter(
+                ).count()
+        else:
+            summarize["parameters"][p_name] = SampleProjectsFieldsValue.objects.filter(
                 sampleProjecttField_id=s_project_field_obj,
-                sampleProjectFieldValue__exact=f_value,
                 sample_id__sampleName__in=sample_list,
             ).count()
+        # import pdb; pdb.set_trace()
 
-        return summarize
+        # return summarize
+    """
     for sample_obj in sample_objs:
         s_region = sample_obj.get_region()
         # if s_region == "":
@@ -412,5 +443,5 @@ def summarize_samples(data):
         if s_region not in summarize:
             summarize[s_region] = 0
         summarize[s_region] += 1
-
+    """
     return summarize
