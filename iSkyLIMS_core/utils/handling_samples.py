@@ -2182,14 +2182,14 @@ def set_sample_project_fields(data_form):
             s_p_fields[fields[i]] = row_data[i]
 
         # check classification
-        if row_data[fields.index["Classification"]] != "":
-            classification_name = row_data[fields.index["Classification"]]
+        classification_name = row_data[fields.index("Classification")]
+        if classification_name != "":
             if SampleProjectFieldClassification.objects.filter(
-                sampleProjects_id__iexact=sample_project_obj,
+                sampleProjects_id=sample_project_obj,
                 classification_name__iexact=classification_name,
             ).exists():
                 classification_obj = SampleProjectFieldClassification.objects.filter(
-                    sampleProjects_id__iexact=sample_project_obj,
+                    sampleProjects_id=sample_project_obj,
                     classification_name__iexact=classification_name,
                 ).last()
             else:

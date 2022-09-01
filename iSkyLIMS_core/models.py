@@ -809,9 +809,9 @@ class SampleProjectFieldClassificationManager(models.Manager):
         if "classification_display" not in data:
             data["classification_display"] = data["classification_name"]
         new_s_p_classification = self.create(
-            sample_project_id=data["sample_project_id"],
+            sampleProjects_id=data["sample_project_id"],
             classification_name=data["classification_name"],
-            classification_display=data["classification_display"]
+            classification_display=data["classification_display"],
         )
         return new_s_p_classification
 
@@ -840,7 +840,9 @@ class SampleProjectsFieldsManager(models.Manager):
     def create_sample_project_fields(self, project_field_data):
         new_project_field = self.create(
             sampleProjects_id=project_field_data["sample_project_id"],
-            SampleProjectFieldClassificationID=["SampleProjectFieldClassificationID"],
+            SampleProjectFieldClassificationID=project_field_data[
+                "SampleProjectFieldClassificationID"
+            ],
             sampleProjectFieldName=project_field_data["Field name"],
             sampleProjectFieldDescription=project_field_data["Description"],
             sampleProjectFieldOrder=project_field_data["Order"],
@@ -857,7 +859,12 @@ class SampleProjectsFields(models.Model):
         SampleProjects, on_delete=models.CASCADE, null=True, blank=True
     )
     # sampleProjectsOptionValues = models.ManyToManyField(SamplesProjectsOptionValues, blank = True)
-    SampleProjectFieldClassificationID = models.ForeignKey(SampleProjectFieldClassification, on_delete=models.CASCADE, null=True, blank=True)
+    SampleProjectFieldClassificationID = models.ForeignKey(
+        SampleProjectFieldClassification,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
     sampleProjectFieldName = models.CharField(max_length=80)
     sampleProjectFieldDescription = models.CharField(
         max_length=400, null=True, blank=True
@@ -905,7 +912,12 @@ class SampleProjectsFields(models.Model):
             used = "Yes"
         else:
             used = "No"
-
+        if self.SampleProjectFieldClassificationID is not None:
+            classification = (
+                self.SampleProjectFieldClassificationID.get_classification_display()
+            )
+        else:
+            classification = ""
         field_data = []
         field_data.append(self.sampleProjectFieldName)
 
@@ -915,6 +927,8 @@ class SampleProjectsFields(models.Model):
         field_data.append(self.sampleProjectFieldType)
         field_data.append(",".join(self.get_field_options_list()))
         field_data.append(self.sampleProjectFieldDescription)
+        field_data.append(classification)
+
         return field_data
 
     def get_sample_project_fields_for_javascript(self):
