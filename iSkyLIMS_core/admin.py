@@ -15,8 +15,8 @@ from iSkyLIMS_core.models import (
     ProtocolType,
     Samples,
     SampleProjects,
-    SampleProjectClassification,
     SampleProjectsFields,
+    SampleProjectFieldClassification,
     SamplesProjectsTableOptions,
     SampleProjectsFieldsValue,
     SampleType,
@@ -56,6 +56,10 @@ class LabRequestAdmin(admin.ModelAdmin):
 
 class MoleculeTypeAdmin(admin.ModelAdmin):
     list_display = ("moleculeType",)
+
+
+class MoleculeParameterValueAdmin(admin.ModelAdmin):
+    list_display = ("moleculeParameter_id", "molecule_id", "parameterValue")
 
 
 class MoleculePreparationAdmin(admin.ModelAdmin):
@@ -117,10 +121,6 @@ class ProtocolParametersAdmin(admin.ModelAdmin):
     search_fields = ("parameterName__startswith",)
 
 
-class MoleculeParameterValueAdmin(admin.ModelAdmin):
-    list_display = ("moleculeParameter_id", "molecule_id", "parameterValue")
-
-
 class SamplesAdmin(admin.ModelAdmin):
     list_display = (
         "sampleCodeID",
@@ -144,10 +144,6 @@ class SampleTypeAdmin(admin.ModelAdmin):
     list_display = ("sampleType", "apps_name", "optional_fields")
 
 
-class SampleProjectClassificationAdmin(admin.ModelAdmin):
-    list_display = ('classification_name', 'classification_display')
-
-
 class SampleProjectsAdmin(admin.ModelAdmin):
     list_display = [
         "sampleProjectName",
@@ -167,6 +163,10 @@ class SampleProjectsFieldsAdmin(admin.ModelAdmin):
         "sampleProjectFieldOrder",
         "sampleProjectFieldUsed",
     ]
+
+
+class SampleProjectFieldClassificationAdmin(admin.ModelAdmin):
+    list_display = ["classification_name", "classification_display"]
 
 
 class SamplesProjectsTableOptionsAdmin(admin.ModelAdmin):
@@ -243,7 +243,7 @@ admin.site.register(MoleculeParameterValue, MoleculeParameterValueAdmin)
 admin.site.register(SampleType, SampleTypeAdmin)
 admin.site.register(Samples, SamplesAdmin)
 admin.site.register(SampleProjects, SampleProjectsAdmin)
-admin.site.register(SampleProjectClassification, SampleProjectClassificationAdmin)
+admin.site.register(SampleProjectFieldClassification, SampleProjectFieldClassificationAdmin)
 admin.site.register(SampleProjectsFields, SampleProjectsFieldsAdmin)
 admin.site.register(SamplesProjectsTableOptions, SamplesProjectsTableOptionsAdmin)
 admin.site.register(SampleProjectsFieldsValue, SampleProjectsFieldsValueAdmin)

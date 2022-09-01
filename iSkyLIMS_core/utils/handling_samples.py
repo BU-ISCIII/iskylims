@@ -2181,6 +2181,28 @@ def set_sample_project_fields(data_form):
         for i in range(len(fields)):
             s_p_fields[fields[i]] = row_data[i]
 
+        # check classification
+        if row_data[fields.index["Classification"]] != "":
+            classification_name = row_data[fields.index["Classification"]]
+            if SampleProjectFieldClassification.objects.filter(
+                sampleProjects_id__iexact=sample_project_obj,
+                classification_name__iexact=classification_name,
+            ).exists():
+                classification_obj = SampleProjectFieldClassification.objects.filter(
+                    sampleProjects_id__iexact=sample_project_obj,
+                    classification_name__iexact=classification_name,
+                ).last()
+            else:
+                c_data = {
+                    "sample_project_id": sample_project_obj,
+                    "classification_name": classification_name,
+                }
+                classification_obj = SampleProjectFieldClassification.objects.create_sample_project_field_classification(
+                    c_data
+                )
+            s_p_fields["SampleProjectFieldClassificationID"] = classification_obj
+        else:
+            s_p_fields["SampleProjectFieldClassificationID"] = None
         if row_data[fields.index("Field type")] == "Option List":
             option_list_values = row_data[fields.index("Option Values")].split(",")
             clean_value_list = []
