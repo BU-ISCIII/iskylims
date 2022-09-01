@@ -874,9 +874,7 @@ def save_type_of_sample(form_data, app_name):
 def get_sample_project_information(sample_project_obj, sample_obj):
     """Get the sample project, fields and value"""
     s_project_info = {}
-    s_project_info[
-        "sample_project_name"
-    ] = sample_project_obj.get_sample_project_name()
+    s_project_info["sample_project_name"] = sample_project_obj.get_sample_project_name()
     if SampleProjectsFields.objects.filter(
         sampleProjects_id=sample_project_obj
     ).exists():
@@ -907,6 +905,7 @@ def get_sample_definition_heading():
     """Function to return the sample fields if other apps need them"""
     return HEADING_FOR_SAMPLE_DEFINITION
 
+
 def get_all_sample_information(sample_id, massive):
     sample_information = {}
     sample_information["sample_id"] = sample_id
@@ -919,7 +918,9 @@ def get_all_sample_information(sample_id, massive):
     # get the sample project information fields
     sample_project_obj = sample_obj.get_sample_project_obj()
     if sample_project_obj is not None:
-        sample_information.update(get_sample_project_information(sample_project_obj, sample_obj))
+        sample_information.update(
+            get_sample_project_information(sample_project_obj, sample_obj)
+        )
 
     # check if molecule information exists for the sample
     if MoleculePreparation.objects.filter(sample=sample_obj).exists():
@@ -2105,9 +2106,13 @@ def modify_fields_in_sample_project(form_data):
     # Delete existing optionns to add new values. Even they are the same,
     # is easier to remmmve all and created again instaed of infividual checking
 
-    if SamplesProjectsTableOptions.objects.filter(sampleProjectField__sampleProjects_id=sample_project_obj).exists():
+    if SamplesProjectsTableOptions.objects.filter(
+        sampleProjectField__sampleProjects_id=sample_project_obj
+    ).exists():
         # Delete existing information
-        s_p_option_objs = SamplesProjectsTableOptions.objects.filter(sampleProjectField__sampleProjects_id=sample_project_obj)
+        s_p_option_objs = SamplesProjectsTableOptions.objects.filter(
+            sampleProjectField__sampleProjects_id=sample_project_obj
+        )
         for s_p_option_obj in s_p_option_objs:
             s_p_option_obj.delete()
     for row_data in json_data:
@@ -2121,10 +2126,12 @@ def modify_fields_in_sample_project(form_data):
             # Add new field
             s_p_fields["Field name"] = row_data[1]
             s_p_fields["sample_project_id"] = sample_project_obj
-            sample_project_field_obj = SampleProjectsFields.objects.create_sample_project_fields(
-                s_p_fields
+            sample_project_field_obj = (
+                SampleProjectsFields.objects.create_sample_project_fields(s_p_fields)
             )
-            saved_fields["fields"].append(sample_project_field_obj.get_sample_project_fields_name())
+            saved_fields["fields"].append(
+                sample_project_field_obj.get_sample_project_fields_name()
+            )
             # check if field is a list to create the new opt fields on database
 
         elif row_data[0] != "" and row_data[1] != "":
@@ -2132,7 +2139,7 @@ def modify_fields_in_sample_project(form_data):
             s_p_fields["Field name"] = row_data[1]
         else:
             s_p_fields["Field name"] = row_data[0]
-        # Update  Field
+            # Update  Field
             right_id = parameter_ids[parameter_names.index(row_data[0])]
             sample_project_field_obj = get_sample_project_field_obj_from_id(right_id)
             if not sample_project_field_obj:
