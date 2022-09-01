@@ -15,6 +15,7 @@ from iSkyLIMS_core.models import (
     ProtocolType,
     Samples,
     SampleProjects,
+    SampleProjectClassification,
     SampleProjectsFields,
     SamplesProjectsTableOptions,
     SampleProjectsFieldsValue,
@@ -143,10 +144,8 @@ class SampleTypeAdmin(admin.ModelAdmin):
     list_display = ("sampleType", "apps_name", "optional_fields")
 
 
-"""
-class SampleProjectBelongsAdmin(admin.ModelAdmin):
-    list_display = ('projectName', 'projectManager', 'projectDescription', 'contactEmail', 'contactPhone', 'contactComments')
-"""
+class SampleProjectClassificationAdmin(admin.ModelAdmin):
+    list_display = ('classification_name', 'classification_display')
 
 
 class SampleProjectsAdmin(admin.ModelAdmin):
@@ -244,6 +243,7 @@ admin.site.register(MoleculeParameterValue, MoleculeParameterValueAdmin)
 admin.site.register(SampleType, SampleTypeAdmin)
 admin.site.register(Samples, SamplesAdmin)
 admin.site.register(SampleProjects, SampleProjectsAdmin)
+admin.site.register(SampleProjectClassification, SampleProjectClassificationAdmin)
 admin.site.register(SampleProjectsFields, SampleProjectsFieldsAdmin)
 admin.site.register(SamplesProjectsTableOptions, SamplesProjectsTableOptionsAdmin)
 admin.site.register(SampleProjectsFieldsValue, SampleProjectsFieldsValueAdmin)

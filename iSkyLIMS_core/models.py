@@ -756,6 +756,32 @@ class PatientProjectFieldValue(models.Model):
     objects = PatientProjectFieldValueManager()
 
 
+class SampleProjectClassificationManager(models.Manager):
+    def create_sample_project_classification(self, data):
+        new_s_p_classification = self.create(
+            classification_name=data["classification_name"],
+            classification_display=data["classification_display"]
+        )
+        return new_s_p_classification
+
+
+class SampleProjectClassification(models.Model):
+    classification_name = models.CharField(max_length=80)
+    classification_display = models.CharField(max_length=100)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "%s" % (self.classification_name)
+
+    def get_classification_name(self):
+        return "%s" % (self.classification_name)
+
+    def get_classification_display(self):
+        return "%s" % (self.classification_display)
+
+    objects = SampleProjectClassificationManager()
+
+
 class SampleProjectsManager(models.Manager):
     def create_sample_project(self, s_project_data):
         new_sample_project = self.create(
@@ -769,6 +795,7 @@ class SampleProjectsManager(models.Manager):
 
 
 class SampleProjects(models.Model):
+    SampleProjectClassificationID = models.ForeignKey(SampleProjectClassification, on_delete=models.CASCADE, null=True, blank=True)
     sampleProjectName = models.CharField(max_length=255)
     sampleProjectManager = models.CharField(max_length=50, null=True, blank=True)
     sampleProjectContact = models.CharField(max_length=250, null=True, blank=True)
