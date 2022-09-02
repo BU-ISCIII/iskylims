@@ -29,7 +29,7 @@
             <div class="panel panel-default">
                 <div class="panel-heading"><h4>Fields definition</h4></div>
                 <div class="panel-body">
-                    <div class="col-sm-11" >
+                    <div class="col-sm-12" >
                         <table class="table table-hover">
                             <thead>
                                 <tr>
@@ -39,7 +39,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for  name, order, used, search, type, option, descrp in samples_project_data.fields %}
+                                {% for  name, order, used, search, type, option, descrp, classif in samples_project_data.fields %}
                                     <tr>
                                         <td>{{ name }}</td>
                                         <td>{{ order }}</td>
@@ -52,6 +52,7 @@
                                             {% endif %}
                                         </td>
                                         <td>{{ descrp }}</td>
+                                        <td>{{classif}}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>

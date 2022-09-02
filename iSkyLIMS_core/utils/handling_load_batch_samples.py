@@ -11,19 +11,49 @@ from iSkyLIMS_core.core_config import (
     ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SAMPLE_TYPE,
     ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_SPECIES,
     ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SPECIES,
+    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_MOLECULE_TYPES,
+    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_MOLECULE_TYPE,
     ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_SAMPLE_PROJECTS,
     ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_SAMPLE_PROJECTS,
     ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAMPLE_FIELD_DEFINED,
     ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_MOLECULE_NOT_DEFINED,
     ERROR_MESSAGE_FOR_EMPTY_SAMPLE_BATCH_FILE,
     ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_EMPTY_VALUE,
+    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_MOLECULE_PROTOCOL_NAME,
+    ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NO_DEFINED_PROTOCOL,
     ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_NOT_SAME_SAMPLE_PROTOCOL,
     ERROR_MESSAGE_INVALID_JSON_SCHEMA,
     ERROR_FIELD_NOT_EXIST_IN_SCHEMA,
     SUCCESSFUL_JSON_SCHEMA,
 )
-from iSkyLIMS_core.models import *
-from iSkyLIMS_core.utils.handling_samples import *
+from iSkyLIMS_core.models import (
+    LabRequest,
+    MoleculeType,
+    MoleculeParameterValue,
+    MoleculePreparation,
+    OntologyMap,
+    Protocols,
+    ProtocolParameters,
+    Samples,
+    SampleProjects,
+    SampleProjectsFields,
+    SampleProjectFieldClassification,
+    SampleProjectsFieldsValue,
+    SamplesProjectsTableOptions,
+    SampleType,
+    Species,
+    UserLotCommercialKits
+
+)
+
+
+from iSkyLIMS_core.utils.handling_samples import (
+    check_if_sample_already_defined,
+    check_patient_code_exists,
+    create_empty_patient,
+    increase_unique_value,
+    get_sample_project_obj_from_id
+)
 
 
 def check_samples_belongs_to_same_type_and_molecule_protocol(sample_batch_data):
@@ -153,7 +183,7 @@ def check_molecule_has_same_data_type(sample_batch_df, package):
         "ProtocolName",
     ]
     for m_field in mandatory_fields:
-        if not m_field in sample_batch_df:
+        if m_field not in sample_batch_df:
             error_cause = (
                 ERROR_MESSAGE_FOR_SAMPLE_BATCH_FILE_MOLECULE_NOT_DEFINED.copy()
             )
@@ -211,7 +241,7 @@ def create_sample_from_batch_file(sample_data, reg_user, package):
 
     sample_new = {}
     samples_already_recorded = []
-    ## Check if sample alredy  defined for this user
+    # Check if sample alredy  defined for this user
     if not check_if_sample_already_defined(sample_data["Sample Name"], reg_user):
         if sample_data["Type of Sample"] == "":
             print("Type of Sample is null for the Sample ", sample_data["Sample Name"])
@@ -219,7 +249,7 @@ def create_sample_from_batch_file(sample_data, reg_user, package):
     sample_new["sampleType"] = sample_data["Type of Sample"]
     sample_new["sampleName"] = sample_data["Sample Name"]
 
-    ## Check if patient code  already exists on database, If not if will be created giving a sequencial dummy value
+    #  Check if patient code  already exists on database, If not if will be created giving a sequencial dummy value
     if sample_data["Patient Code ID"] != "":
         patient_obj = check_patient_code_exists(sample_data["Patient Code ID"])
         if patient_obj == False:
@@ -496,32 +526,59 @@ def store_schema(schema, field, valid_fields, s_project_id):
 
             if not all_fields and schema["properties"][property][field] not in v_fields:
                 continue
-            # do noet include the fields that are included in the main recorded
+            # do not include the fields that are included in the main recorded
             # sample form
             if schema["properties"][property]["ontology"] in ont_list:
                 continue
             if "format" in schema["properties"][property]:
                 schema_dict["Field type"] = "Date"
-            elif "Enums" in schema["properties"][property]:
+            elif "enum" in schema["properties"][property]:
                 schema_dict["Field type"] = "Options List"
-                schema_dict["Enums"] = []
-                for item in schema["properties"][property]["Enums"]:
+                schema_dict["enum"] = []
+                for item in schema["properties"][property]["enum"]:
                     enum = re.search(r"(.+) \[(.*)\]", item)
                     if enum:
-                        schema_dict["Enums"].append(enum.group(1))
+                        schema_dict["enum"].append(enum.group(1))
                     else:
-                        schema_dict["Enums"].append(item)
+                        schema_dict["enum"].append(item)
             else:
                 schema_dict["Field type"] = "String"
+            if "classification" in schema["properties"][property]:
+                schema_dict["classification"] = schema["properties"][property]["classification"]
+            else:
+                schema_dict["classification"] = None
             property_list.append(schema_dict)
         except KeyError as e:
             error = ERROR_FIELD_NOT_EXIST_IN_SCHEMA.copy()
             error.append(e)
             return {"ERROR": error}
-    s_project_obj = get_sample_project_obj_from_id(s_project_id)
-    counter = 0
 
+    s_project_obj = get_sample_project_obj_from_id(s_project_id)
+    # get classification
+
+    counter = 0
     for property in property_list:
+        # create classification if not exists
+        if property["classification"] != "":
+            if SampleProjectFieldClassification.objects.filter(
+                sampleProjects_id=s_project_obj,
+                classification_name__iexact=property["classification"],
+            ).exists():
+                classification_obj = SampleProjectFieldClassification.objects.filter(
+                    sampleProjects_id=s_project_obj,
+                    classification_name__iexact=property["classification"],
+                ).last()
+            else:
+                c_data = {
+                    "sample_project_id": s_project_obj,
+                    "classification_name": property["classification"],
+                }
+                classification_obj = SampleProjectFieldClassification.objects.create_sample_project_field_classification(
+                    c_data
+                )
+            property["SampleProjectFieldClassificationID"] = classification_obj
+        else:
+            property["SampleProjectFieldClassificationID"] = None
         counter += 1
         property["Used"] = True
         property["Searchable"] = False
@@ -531,11 +588,13 @@ def store_schema(schema, field, valid_fields, s_project_id):
         new_s_project_prop = SampleProjectsFields.objects.create_sample_project_fields(
             property
         )
-        if "Enums" in property:
-            for opt in property["Enums"]:
+        if "enum" in property:
+            for opt in property["enum"]:
 
                 data = {"s_proj_obj": new_s_project_prop}
                 data["opt_value"] = opt
-
-                SamplesProjectsTableOptions.objects.create_new_s_proj_table_opt(data)
+                try:
+                    SamplesProjectsTableOptions.objects.create_new_s_proj_table_opt(data)
+                except:
+                    import pdb; pdb.set_trace()
     return {"Success": SUCCESSFUL_JSON_SCHEMA}
