@@ -21,7 +21,6 @@ from iSkyLIMS_core.utils.handling_samples import (
 )
 
 from iSkyLIMS_wetlab.wetlab_config import (
-    ERROR_API_MISSING_SAMPLE_PROJECT_FIELD,
     ERROR_API_NO_SAMPLE_DEFINED,
     ERROR_API_SAMPLE_STATE_VALUE_IS_NOT_DEFINED,
     ERROR_API_NO_SAMPLE_PROJECT_DEFINED,
@@ -378,7 +377,7 @@ def summarize_samples(data):
             s_project_field_objs = SampleProjectsFields.objects.filter(
                 sampleProjects_id=s_project_obj,
                 sampleProjectFieldDescription__iexact=data["sample_project_field"],
-            )
+            ).order_by("SampleProjectFieldClassificationID")
     #
     # get the sumarize infomation for the selected samples
     #
@@ -413,6 +412,7 @@ def summarize_samples(data):
 
         for s_project_field_obj in s_project_field_objs:
             p_name = s_project_field_obj.get_field_name()
+            summarize["parameters"][p_name] = {}
             # summarize["parameters"][] =
             # check if sample Proyect fields has options
             # if true then get the used values and get their numbers
@@ -421,7 +421,7 @@ def summarize_samples(data):
                     sampleProjecttField_id=s_project_field_obj
                 ).exists():
                     # get the unique values to iter over them
-                    summarize["parameters"][p_name] = {}
+
                     f_values = (
                         SampleProjectsFieldsValue.objects.filter(
                             sampleProjecttField_id=s_project_field_obj
@@ -449,14 +449,17 @@ def summarize_samples(data):
                             sample_id__sampleName__in=sample_list,
                         ).count()
                 else:
-                    summarize["parameters"][p_name] = 0
+                    summarize["parameters"][p_name]["value"] = 0
             else:
-                summarize["parameters"][
-                    p_name
+                summarize["parameters"][p_name][
+                    "value"
                 ] = SampleProjectsFieldsValue.objects.filter(
                     sampleProjecttField_id=s_project_field_obj,
                     sample_id__sampleName__in=sample_list,
                 ).count()
+            summarize["parameters"][p_name][
+                "classification"
+            ] = s_project_field_obj.get_classification_name()
 
     summarize["samples_number"] = len(sample_list)
     return summarize

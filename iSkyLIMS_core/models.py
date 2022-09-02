@@ -907,6 +907,10 @@ class SampleProjectsFields(models.Model):
     def get_description(self):
         return "%s" % (self.sampleProjectFieldDescription)
 
+    def get_classification_name(self):
+        if self.SampleProjectFieldClassificationID is not None:
+            return self.SampleProjectFieldClassificationID.get_classification_display()
+
     def get_sample_project_fields_name(self):
         if self.sampleProjectFieldUsed:
             used = "Yes"

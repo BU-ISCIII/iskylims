@@ -848,9 +848,6 @@ ERROR_NO_RUN_TEST_WAS_CREATED = [
 ERROR_MESSAGE_UPLOAD_FILE_NOT_EXISTS = ["Upload file does not exist"]
 
 # ######################## API ERRORS ########################################
-ERROR_API_MISSING_SAMPLE_PROJECT_FIELD = (
-    "Sample project field was not included in the request"
-)
 ERROR_API_NO_SAMPLE_DEFINED = "There are no samples defined yet"
 ERROR_API_SAMPLE_STATE_VALUE_IS_NOT_DEFINED = "The sample state is not defined"
 ERROR_API_NO_SAMPLE_PROJECT_DEFINED = "The sample project is not defined"
