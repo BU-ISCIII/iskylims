@@ -26,7 +26,7 @@ from iSkyLIMS_wetlab.wetlab_config import (
     ERROR_API_NO_SAMPLE_PROJECT_DEFINED,
     ERROR_API_NO_SAMPLE_PROJECT_FIELD_DEFINED,
 )
-
+from iSkyLIMS_wetlab.api.serializers import CreateSampleTypeSerializer
 # from iSkyLIMS_core.core_config import HEADING_FOR_RECORD_SAMPLES
 
 # from iSkyLIMS_wetlab.models import SamplesInProject
@@ -75,6 +75,21 @@ def create_new_laboratory(lab_data):
         city_id = create_city(lab_data, lab_data["apps_name"]).get_city_id()
     lab_data["city"] = city_id
     return LabRequest.objects.create_lab_request(lab_data)
+
+
+def create_new_sample_type(sample_type, apps_name):
+    """Create new Sample type with optional fields Patient, sample storage
+    location
+    """
+    data = {}
+    data["optional_fields"] = "0,8"
+    data["apps_name"] = apps_name
+    data["sampleType"] = sample_type
+    sample_type_serializers = CreateSampleTypeSerializer(data=data)
+    if sample_type_serializers.is_valid():
+        sample_type_obj = sample_type_serializers.save()
+        return sample_type_obj
+    return None
 
 
 def get_sample_fields(apps_name):
@@ -172,7 +187,10 @@ def include_instances_in_sample(data, lab_data, apps_name):
             .get_sample_type_id()
         )
     else:
-        return str("sampleType " + data["sampleType"] + " is not defined in database")
+        # create Sample type instance
+        sample_type_obj = create_new_sample_type(data["sampleType"], apps_name)
+        data["sampleType"] = sample_type_obj.get_sample_type_id()
+        # return str("sampleType " + data["sampleType"] + " is not defined in database")
     if Species.objects.filter(speciesName__exact=data["species"]).exists():
         data["species"] = (
             Species.objects.filter(speciesName__exact=data["species"]).last().get_id()

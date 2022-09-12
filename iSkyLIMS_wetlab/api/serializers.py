@@ -3,6 +3,7 @@ from rest_framework import serializers
 from iSkyLIMS_core.models import (
     LabRequest,
     Samples,
+    SampleType,
     SampleProjectsFieldsValue,
     SampleProjectsFields,
     SamplesProjectsTableOptions,
@@ -40,6 +41,12 @@ class CreateSampleSerializer(serializers.ModelSerializer):
             "sampleState",
             "completedDate",
         ]
+
+
+class CreateSampleTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SampleType
+        fields = "__all__"
 
 
 class CreateProjectDataSerializer(serializers.ModelSerializer):
