@@ -7,7 +7,7 @@ body:
       value: |
         Before you post this issue, please check the documentation:
 
-        - [iSkyLIMS documentation(https://iskylims.readthedocs.io/en/latest/)
+        - [iSkyLIMS documentation](https://iskylims.readthedocs.io/en/latest/)
 
   - type: textarea
     id: description
