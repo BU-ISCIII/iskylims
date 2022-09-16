@@ -7,8 +7,7 @@ body:
       value: |
         Before you post this issue, please check the documentation:
 
-        - [nf-core website: troubleshooting](https://nf-co.re/usage/troubleshooting)
-        - [nf-core/smrnaseq pipeline documentation](https://nf-co.re/smrnaseq/usage)
+        - [iSkyLIMS documentation(https://iskylims.readthedocs.io/en/latest/)
 
   - type: textarea
     id: description
@@ -22,10 +21,10 @@ body:
     id: command_used
     attributes:
       label: Command used and terminal output
-      description: Steps to reproduce the behaviour. Please paste the command you used to launch the pipeline and the output from your terminal.
+      description: Steps to reproduce the behaviour. Please paste the picture which describes the error or the command line you executed in your terminal.
       render: console
       placeholder: |
-        $ nextflow run ...
+        $ iSkyLIMS ...
 
         Some output where something broke
 
@@ -35,16 +34,13 @@ body:
       label: Relevant files
       description: |
         Please drag and drop the relevant files here. Create a `.zip` archive if the extension is not allowed.
-        Your verbose log file `.nextflow.log` is often useful _(this is a hidden file in the directory where you launched the pipeline)_ as well as custom Nextflow configuration files.
 
   - type: textarea
     id: system
     attributes:
       label: System information
       description: |
-        * Nextflow version _(eg. 21.10.3)_
+        * iSkyLIMS version _(eg. 21.10.3)_
         * Hardware _(eg. HPC, Desktop, Cloud)_
-        * Executor _(eg. slurm, local, awsbatch)_
-        * Container engine: _(e.g. Docker, Singularity, Conda, Podman, Shifter or Charliecloud)_
         * OS _(eg. CentOS Linux, macOS, Linux Mint)_
-        * Version of nf-core/smrnaseq _(eg. 1.1, 1.5, 1.8.2)_
+
