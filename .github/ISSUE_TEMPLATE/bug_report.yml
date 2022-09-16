@@ -24,7 +24,7 @@ body:
       description: Steps to reproduce the behaviour. Please paste the picture which describes the error or the command line you executed in your terminal.
       render: console
       placeholder: |
-        $ iSkyLIMS ...
+        $ python manage.py ...
 
         Some output where something broke
 
@@ -40,7 +40,7 @@ body:
     attributes:
       label: System information
       description: |
-        * iSkyLIMS version _(eg. 21.10.3)_
-        * Hardware _(eg. HPC, Desktop, Cloud)_
-        * OS _(eg. CentOS Linux, macOS, Linux Mint)_
+        * iSkyLIMS version _(eg. 2.0.3)_
+        * Hardware _(eg. Desktop, Cloud)_
+        * OS _(eg. CentOS Linux, Ubuntu Linux, macOS, Linux Mint)_
 
