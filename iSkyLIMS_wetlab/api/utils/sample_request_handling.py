@@ -416,6 +416,8 @@ def summarize_samples(data):
 
     if "laboratory" in data:
         laboratories = [data["laboratory"]]
+        summarize["samples"] = sample_list
+        summarize.pop("region", None)
     else:
         laboratories = (
             LabRequest.objects.all().values_list("labName", flat=True).distinct()
