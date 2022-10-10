@@ -127,34 +127,6 @@ sample_project_field = openapi.Parameter(
     type=openapi.TYPE_STRING,
 )
 
-lab_name = openapi.Parameter(
-    "lab_name",
-    openapi.IN_QUERY,
-    description="Name of the Laboatory",
-    type=openapi.TYPE_STRING,
-)
-
-lab_contact_name = openapi.Parameter(
-    "lab_contact_name",
-    openapi.IN_QUERY,
-    description="Name for laboratory contact",
-    type=openapi.TYPE_STRING,
-)
-
-lab_contact_telephone = openapi.Parameter(
-    "lab_contact_telephone",
-    openapi.IN_QUERY,
-    description="Phone number of contact",
-    type=openapi.TYPE_STRING,
-)
-
-lab_contact_email = openapi.Parameter(
-    "lab_contact_email",
-    openapi.IN_QUERY,
-    description="Contact email",
-    type=openapi.TYPE_STRING,
-)
-
 
 @swagger_auto_schema(
     method="post",
@@ -381,12 +353,28 @@ def summarize_data_information(request):
 @swagger_auto_schema(
     method="put",
     operation_description="Update laboratory contact information",
-    manual_parameters=[
-        lab_name,
-        lab_contact_name,
-        lab_contact_telephone,
-        lab_contact_email
-    ],
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            "lab_name": openapi.Schema(
+                type=openapi.TYPE_STRING,
+                description="Name of the Laboratory",
+            ),
+            "lab_contact_name": openapi.Schema(
+                description="Name for laboratory contact",
+                type=openapi.TYPE_STRING,
+            ),
+            "lab_contact_telephone": openapi.Schema(
+                description="Phone number of contact",
+                type=openapi.TYPE_STRING,
+            ),
+            "lab_contact_email": openapi.Schema(
+
+                description="Contact email",
+                type=openapi.TYPE_STRING,
+            ),
+        },
+    ),
     responses={
         201: "Successful create information",
         204: "Laboratory not defined",
@@ -394,16 +382,19 @@ def summarize_data_information(request):
         500: "Internal Server Error",
     }
 )
+@authentication_classes([SessionAuthentication, BasicAuthentication])
 @api_view(["PUT"])
+@permission_classes([IsAuthenticated])
 def update_lab(request):
-    if request.method == "PUT" and "lab_name" in request.query_params:
-        data = request.query_params
+    if request.method == "PUT":
+        data = request.data
         if isinstance(data, QueryDict):
             data = data.dict()
-        lab_obj = get_laboratory_instance(data["lab_name"])
-        if lab_obj is None:
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        LabRequestSerializer.update(lab_obj, data)
+        if "lab_name" in data:
+            lab_obj = get_laboratory_instance(data["lab_name"])
+            if lab_obj is None:
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            LabRequestSerializer.update(lab_obj, data)
 
-        return Response("Successful Update information", status=status.HTTP_201_CREATED)
+            return Response("Successful Update information", status=status.HTTP_201_CREATED)
     return Response(status=status.HTTP_400_BAD_REQUEST)
