@@ -32,6 +32,8 @@ from .serializers import (
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
+from .utils.lab_request_handling import get_laboratory_instance
+
 from .utils.sample_request_handling import (
     split_sample_data,
     include_instances_in_sample,
@@ -122,6 +124,34 @@ sample_project_field = openapi.Parameter(
     "sample_project_field",
     openapi.IN_QUERY,
     description="Name of the sample project Field. Requires project_name",
+    type=openapi.TYPE_STRING,
+)
+
+lab_name = openapi.Parameter(
+    "lab_name",
+    openapi.IN_QUERY,
+    description="Name of the Laboatory",
+    type=openapi.TYPE_STRING,
+)
+
+lab_contact_name = openapi.Parameter(
+    "lab_contact_name",
+    openapi.IN_QUERY,
+    description="Name for laboratory contact",
+    type=openapi.TYPE_STRING,
+)
+
+lab_contact_telephone = openapi.Parameter(
+    "lab_contact_telephone",
+    openapi.IN_QUERY,
+    description="Phone number of contact",
+    type=openapi.TYPE_STRING,
+)
+
+lab_contact_email = openapi.Parameter(
+    "lab_contact_email",
+    openapi.IN_QUERY,
+    description="Contact email",
     type=openapi.TYPE_STRING,
 )
 
@@ -348,21 +378,32 @@ def summarize_data_information(request):
     return Response(summarize_data, status=status.HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    method="put",
+    operation_description="Update laboratory contact information",
+    manual_parameters=[
+        lab_name,
+        lab_contact_name,
+        lab_contact_telephone,
+        lab_contact_email
+    ],
+    responses={
+        201: "Successful create information",
+        204: "Laboratory not defined",
+        400: "Bad Request",
+        500: "Internal Server Error",
+    }
+)
 @api_view(["PUT"])
 def update_lab(request):
-    if request.method == "PUT":
-        data = request.data
+    if request.method == "PUT" and "lab_name" in request.query_params:
+        data = request.query_params
         if isinstance(data, QueryDict):
             data = data.dict()
-        data["apps_name"] = "wetlab"
-        serializer = LabRequestSerializer(data=data)
-        if not serializer.is_valid():
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        lab_name = data["labName"].strip()
-        if not LabRequest.objects.filter(labName__iexact=lab_name).exists():
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        lab_req_obj = LabRequest.objects.filter(labName__iexact=lab_name).last()
-        LabRequestSerializer.update(lab_req_obj, data=data)
+        lab_obj = get_laboratory_instance(data["lab_name"])
+        if lab_obj is None:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        LabRequestSerializer.update(lab_obj, data)
 
         return Response("Successful Update information", status=status.HTTP_201_CREATED)
     return Response(status=status.HTTP_400_BAD_REQUEST)
