@@ -896,26 +896,26 @@ def skip_cancel_situation (request):
 @login_required
 def display_run (request, run_id):
     # check user privileges
-    if request.user.is_authenticated:
-        try:
-            groups = Group.objects.get(name = wetlab_config.WETLAB_MANAGER)
-            if groups not in request.user.groups.all():
-                # check if user is owner of the run
-                if Projects.objects.filter(runprocess_id__exact = run_id).exists():
-                    projects = Projects.objects.filter(runprocess_id__exact = run_id)
-                    user_list =[]
-                    for project in projects:
-                        user_list.append(project.user_id.id)
-                    if  not request.user.id in user_list :
-                        return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
-                else:
-                    return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the run  ']})
-
-        except:
-            return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
-    else:
+    if not request.user.is_authenticated:
         #redirect to login webpage
         return redirect ('/accounts/login')
+    groups = Group.objects.get(name = wetlab_config.WETLAB_MANAGER)
+    if groups not in request.user.groups.all():
+        # check if user is owner of the run or belongs to the shared user
+        shared_user_ids = get_allowed_user_for_sharing(request.user)
+        if Projects.objects.filter(runProcess__exact=run_id).exists():
+            projects = Projects.objects.filter(runProcess__exact=run_id)
+            allowed = False
+            for project in projects:
+                if project.get_user_id() in shared_user_ids:
+                    allowed = True
+                    break
+            import pdb; pdb.set_trace()
+            if not allowed:
+                return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
+        else:
+            return render(request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the run ']})
+
     if (RunProcess.objects.filter(pk=run_id).exists()):
         run_name_found = RunProcess.objects.get(pk=run_id)
         r_data_display  = get_information_run(run_name_found)

@@ -350,14 +350,17 @@ class Projects(models.Model):
     #   return '%s' %(self.runprocess_id.get_run_name())
 
     def get_run_id(self):
-        return '%s' %(self.runprocess_id.get_run_id())
+        return '%s' % (self.runprocess_id.get_run_id())
 
     def get_run_obj(self):
         return self.runprocess_id
 
-    def get_user_name (self):
+    def get_user_name(self):
         user_name = self.user_id.username
-        return '%s' %(user_name)
+        return '%s' % (user_name)
+
+    def get_user_id(self):
+        return '%s' % (self.user_id.pk)
 
     def get_project_name (self):
         return '%s' %(self.projectName)
