@@ -15,7 +15,7 @@ def user_edit(request):
             email_address = form1.cleaned_data['email']
 
             domain = email_address.split('@')[1]
-            if len(ALLOWED_EMAIL_DOMAINS) > 0:
+            if len(settings.ALLOWED_EMAIL_DOMAINS) > 0:
                 if not domain in settings.ALLOWED_EMAIL_DOMAINS :
                     error_description = str( 'Invalid email address . Your email domain ' + domain + ' is not allowed')
                     allowed_domains = ' or '.join(settings.ALLOWED_EMAIL_DOMAINS) 
