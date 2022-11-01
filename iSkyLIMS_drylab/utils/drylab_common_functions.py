@@ -47,15 +47,19 @@ def create_service_id (service_number,user_name):
         user_name           # user name to get the center
 	Constants:
 		USER_CENTER_USED_WHEN_NOT_PROVIDED
-        ABBREVIATION_USED_FOR_SERVICE_REQUEST
 	Return:
 		service_id
 	'''
-    try:
-        user_center = Profile.objects.get(profileUserID = user_name).profileCenter.centerAbbr
-    except:
-        user_center = drylab_config.USER_CENTER_USED_WHEN_NOT_PROVIDED
-    service_id = drylab_config.ABBREVIATION_USED_FOR_SERVICE_REQUEST + user_center + service_number
+    if get_configuration_from_database("USER_CENTER_USED_FOR_NAMING_SERVICE") == "True":
+        try:
+            user_center = Profile.objects.get(profileUserID = user_name).profileCenter.centerAbbr
+        except ValueError:
+            user_center = drylab_config.USER_CENTER_USED_WHEN_NOT_PROVIDED
+    else:
+        user_center = ""
+    abbr = get_configuration_from_database("ABBREVIATION_USED_FOR_SERVICE_REQUEST")
+
+    service_id = abbr + user_center + service_number
     return service_id
 
 
