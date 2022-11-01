@@ -670,11 +670,15 @@ def search_run (request):
         if allowed_all_runs :
             runs_found=RunProcess.objects.all().order_by('run_date').reverse()
         else:
-
-            user_projects = Projects.objects.filter(user_id__exact = request.user.id)
+            user_ids = get_allowed_user_for_sharing(request.user)
+            import pdb; pdb.set_trace()
+            user_projects = Projects.objects.filter(user_id__in=user_ids)
             run_list =[]
             for user_project in user_projects :
-                run_list.append(user_project.runprocess_id.id)
+                # run_list.append(user_project.runprocess_id.id)
+                run_objs = user_project.runProcess.all()
+                for run_obj in run_objs:
+                    run_list.append(run_obj.get_run_id())
             if RunProcess.objects.filter(pk__in = run_list).exists():
                 runs_found = RunProcess.objects.filter(pk__in = run_list)
             else:

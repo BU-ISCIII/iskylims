@@ -337,6 +337,25 @@ def get_log_file_name(config_log_file) :
                  log_file_name = line.split('\'')[1]
     return log_file_name
 
+
+def get_allowed_user_for_sharing(request_user):
+    '''
+    Description:
+        The function get the primary key of the that are allowed view information
+    Input:
+        request_user      # user obj
+    Return:
+        sharing_list
+    '''
+    # getting projects from user sharing list
+    sharing_list = []
+    user_groups = request_user.groups.values_list('name', flat=True)
+    for user in user_groups:
+        if User.objects.filter(username__exact=user).exists():
+            sharing_list.append(User.objects.get(username__exact=user).id)
+    sharing_list.append(request_user.id)
+    return sharing_list
+
 def get_userid_list ():
     '''
     Descripion:
