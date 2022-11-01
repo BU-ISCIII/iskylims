@@ -804,7 +804,12 @@ def search_project (request):
             run_objs = RunProcess.objects.filter(state__runStateName__exact = run_state)
             projects_found = projects_found.filter(runProcess__in = run_objs)
         if user_name != '':
-            projects_found = projects_found.filter(user_id__username__icontains = user_name)
+            # check if user has a shared user
+            if user_name == request.user.username:
+                p_shared_list = get_allowed_user_for_sharing(request.user)
+                projects_found = projects_found.filter(user_id__in=p_shared_list)
+            else:
+                projects_found = projects_found.filter(user_id__username__icontains = user_name)
         if start_date !='' and end_date != '':
             projects_found = projects_found.filter(generatedat__range=(start_date, end_date))
         if start_date !='' and end_date == '':
@@ -907,10 +912,9 @@ def display_run (request, run_id):
             projects = Projects.objects.filter(runProcess__exact=run_id)
             allowed = False
             for project in projects:
-                if project.get_user_id() in shared_user_ids:
+                if int(project.get_user_id()) in shared_user_ids:
                     allowed = True
                     break
-            import pdb; pdb.set_trace()
             if not allowed:
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
         else:
@@ -982,22 +986,22 @@ def check_user_access (request, project_found_id ) :
     return True
 
 
-
 @login_required
-def display_project (request, project_id):
-
+def display_project(request, project_id):
+    if not request.user.is_authenticated:
+        # redirect to login webpage
+        return redirect ('/accounts/login')
     if (Projects.objects.filter(pk=project_id).exists()):
-        project_found_id = Projects.objects.get(pk=project_id)
-        if request.user.is_authenticated:
-            # check that user is allow to make the change
-            allowed_access = check_user_access (request, project_found_id)
-            if not allowed_access :
+        project_obj = Projects.objects.filter(pk=project_id).last()
+
+        # check that user is allow to see the project
+        groups = Group.objects.get(name = wetlab_config.WETLAB_MANAGER)
+        if groups not in request.user.groups.all():
+            p_shared_list = get_allowed_user_for_sharing(request.user)
+            if int(project_obj.get_user_id()) not in p_shared_list:
                 return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['You do have the enough privileges to see this page ','Contact with your administrator .']})
-        else:
-            #redirect to login webpage
-            return redirect ('/accounts/login')
         # Display the proyect information
-        display_project_data  = get_information_project(project_found_id, request)
+        display_project_data  = get_information_project(project_obj, request)
         return render(request, 'iSkyLIMS_wetlab/displayProject.html', {'display_project_data': display_project_data })
     else:
         return render (request,'iSkyLIMS_wetlab/error_page.html', {'content':['No matches have been found for the project  ' ]})
