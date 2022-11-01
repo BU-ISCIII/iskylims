@@ -543,7 +543,8 @@ def get_service_information (service_id, service_manager):
                         delivered_services = resolution_obj.get_available_services_and_ids()
                         if not 'None' in delivered_services :
                             for delivered_service in delivered_services:
-                                display_service_details['children_services'].remove(delivered_service)
+                                if delivered_service in display_service_details['children_services']:
+                                    display_service_details['children_services'].remove(delivered_service)
 
                 if (len(available_services_ids) < len(display_service_details['children_services'])):
                 # if len(available_services_ids) > 0 and (len(available_services_ids) < len(display_service_details['children_services'])):
