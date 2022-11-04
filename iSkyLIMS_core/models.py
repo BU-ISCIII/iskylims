@@ -1014,10 +1014,45 @@ class SamplesManager(models.Manager):
             )
         else:
             sample_data["species"] = None
-        if "completedDate" in sample_data:
-            completedDate = sample_data["completedDate"]
+        if "sampleEntryDate" in sample_data:
+            if not isinstance(sample_data["sampleEntryDate"], datetime.date):
+                try:
+                    sample_entry_date = datetime.datetime.strptime(
+                        sample_data["sampleEntryDate"], "%Y-%m-%d %H:%M:%S"
+                    )
+                except ValueError:
+                    sample_entry_date = None
+            else:
+                sample_entry_date = sample_data["sampleEntryDate"]
         else:
-            completedDate = None
+            sample_entry_date = None
+
+        if "collectionSampleDate" in sample_data:
+            if not isinstance(sample_data["collectionSampleDate"], datetime.date):
+                try:
+                    collection_sample_date = datetime.datetime.strptime(
+                        sample_data["collectionSampleDate"], "%Y-%m-%d %H:%M:%S"
+                    )
+                except ValueError:
+                    collection_sample_date = None
+            else:
+                collection_sample_date = sample_data["collectionSampleDate"]
+        else:
+            collection_sample_date = None
+
+        if "completedDate" in sample_data:
+            if not isinstance(sample_data["completedDate"], datetime.date):
+                try:
+                    completed_date = datetime.datetime.strptime(
+                        sample_data["completedDate"], "%Y-%m-%d %H:%M:%S"
+                    )
+                except ValueError:
+                    completed_date = None
+            else:
+                completed_date = sample_data["completedDate"]
+        else:
+            completed_date = None
+
         new_sample = self.create(
             sampleState=StatesForSample.objects.get(
                 sampleStateName__exact=sample_data["sampleState"]
@@ -1036,13 +1071,9 @@ class SamplesManager(models.Manager):
             species=sample_data["species"],
             sampleLocation=sample_data["sampleLocation"],
             onlyRecorded=sample_data["onlyRecorded"],
-            sampleEntryDate=datetime.datetime.strptime(
-                sample_data["sampleEntryDate"], "%Y-%m-%d %H:%M:%S"
-            ),
-            collectionSampleDate=datetime.datetime.strptime(
-                sample_data["sampleEntryDate"], "%Y-%m-%d %H:%M:%S"
-            ),
-            completedDate=completedDate,
+            sampleEntryDate=sample_entry_date,
+            collectionSampleDate=collection_sample_date,
+            completedDate=completed_date,
         )
 
         return new_sample
@@ -1074,8 +1105,8 @@ class Samples(models.Model):
 
     sampleName = models.CharField(max_length=255, null=True)
     sampleLocation = models.CharField(max_length=255, null=True, blank=True)
-    sampleEntryDate = models.DateTimeField(auto_now_add=False, null=True)
-    collectionSampleDate = models.DateTimeField(auto_now_add=False, null=True)
+    sampleEntryDate = models.DateTimeField(auto_now_add=False, null=True, blank=True)
+    collectionSampleDate = models.DateTimeField(auto_now_add=False, null=True, blank=True)
     uniqueSampleID = models.CharField(max_length=8, null=True)
     sampleCodeID = models.CharField(max_length=60, null=True)
     numberOfReused = models.IntegerField(default=0)
@@ -1089,7 +1120,10 @@ class Samples(models.Model):
 
     def get_sample_definition_information(self):
         sample_info = []
-        recordeddate = self.sampleEntryDate.strftime("%d , %B , %Y")
+        if self.sampleEntryDate is not None:
+            recordeddate = self.sampleEntryDate.strftime("%d , %B , %Y")
+        else:
+            recordeddate = ""
         sample_info.append(self.uniqueSampleID)
         sample_info.append(self.sampleCodeID)
         sample_info.append(self.sampleName)
