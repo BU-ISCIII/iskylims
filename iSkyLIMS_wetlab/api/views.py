@@ -40,6 +40,7 @@ from .utils.sample_request_handling import (
     include_coding,
     get_sample_fields,
     get_sample_information,
+    samples_match_on_parameter,
     summarize_samples,
 )
 
@@ -89,6 +90,13 @@ end_date = openapi.Parameter(
     "endDate",
     openapi.IN_QUERY,
     description="Start date from starting collecting samples",
+    type=openapi.TYPE_STRING,
+)
+
+sample_parameter = openapi.Parameter(
+    "sampleParameter",
+    openapi.IN_QUERY,
+    description="Get the samples grouped by the parameter",
     type=openapi.TYPE_STRING,
 )
 
@@ -284,6 +292,24 @@ def sample_fields(request):
         # return Response(sample_fields.data, status=status.HTTP_204_NO_CONTENT)
     else:
         return Response(sample_fields, status=status.HTTP_200_OK)
+    return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+@swagger_auto_schema(
+    method="get",
+    operation_description="Get the samples names grouped by the given parameter",
+    manual_parameters=[sample_parameter],
+)
+@api_view(["GET"])
+def fetch_samples_on_parameter(request):
+    """Returns the samples that match parameter
+    """
+    if "sampleParameter" in request.GET:
+        data = samples_match_on_parameter(request.GET)
+        if data:
+            return Response(data, status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_204_NO_CONTENT)
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 

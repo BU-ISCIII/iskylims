@@ -1,4 +1,5 @@
 from datetime import datetime
+from django.core.exceptions import FieldError
 
 from iSkyLIMS_core.models import (
     City,
@@ -147,6 +148,29 @@ def get_sample_fields(apps_name):
 
     return sample_fields
 
+
+def samples_match_on_parameter(req_param):
+    """Check if parameter is one of the available belongs to sample and return
+    a sample list for each group of the parameter"""
+
+    r_param = req_param["sampleParameter"]
+    query = r_param + "__isnull"
+
+    try:
+        if Samples.objects.filter(**{query: False}).exists():
+            out_data = {}
+    except FieldError:
+        return None
+
+    values = Samples.objects.filter(**{query: False}).values_list(r_param, flat=True).distinct().order_by(r_param)
+    for value in values:
+        try:
+            f_value = value.strftime("%B_%d_%Y")
+        except AttributeError:
+            f_value = value
+        out_data[f_value] = list(Samples.objects.filter(**{r_param: value}).values_list("sampleName", flat=True))
+
+    return out_data
 
 def get_sample_project_obj(project_name):
     """Check if sampleProyect is defined in database"""

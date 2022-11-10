@@ -14,6 +14,11 @@ urlpatterns = [
         name="get_lab_information_contact",
     ),
     path(
+        "fetchSamplesOnParameter",
+        views.fetch_samples_on_parameter,
+        name="fetch_samples_on_parameter"
+    ),
+    path(
         "fetchSampleIinformation",
         views.fetch_sample_information,
         name="fetch_sample_information",
