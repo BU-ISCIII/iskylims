@@ -16,7 +16,7 @@ urlpatterns = [
     path(
         "fetchSamplesOnParameter",
         views.fetch_samples_on_parameter,
-        name="fetch_samples_on_parameter"
+        name="fetch_samples_on_parameter",
     ),
     path(
         "fetchSampleIinformation",
@@ -28,6 +28,11 @@ urlpatterns = [
     path("sampleFields/", views.sample_fields, name="sample_fields"),
     path(
         "sampleProjectFields", views.sample_project_fields, name="sample_project_fields"
+    ),
+    path(
+        "statisticsInformation",
+        views.statistic_information,
+        name="statistic_information",
     ),
     path(
         "summarizeDataInformation",

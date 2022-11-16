@@ -28,6 +28,7 @@ from iSkyLIMS_wetlab.wetlab_config import (
     ERROR_API_NO_SAMPLE_PROJECT_FIELD_DEFINED,
 )
 from iSkyLIMS_wetlab.api.serializers import CreateSampleTypeSerializer
+
 # from iSkyLIMS_core.core_config import HEADING_FOR_RECORD_SAMPLES
 
 # from iSkyLIMS_wetlab.models import SamplesInProject
@@ -162,15 +163,25 @@ def samples_match_on_parameter(req_param):
     except FieldError:
         return None
 
-    values = Samples.objects.filter(**{query: False}).values_list(r_param, flat=True).distinct().order_by(r_param)
+    values = (
+        Samples.objects.filter(**{query: False})
+        .values_list(r_param, flat=True)
+        .distinct()
+        .order_by(r_param)
+    )
     for value in values:
         try:
             f_value = value.strftime("%d-%b-%Y")
         except AttributeError:
             f_value = value
-        out_data[f_value] = list(Samples.objects.filter(**{r_param: value}).values_list("sampleName", flat=True))
+        out_data[f_value] = list(
+            Samples.objects.filter(**{r_param: value}).values_list(
+                "sampleName", flat=True
+            )
+        )
 
     return out_data
+
 
 def get_sample_project_obj(project_name):
     """Check if sampleProyect is defined in database"""
@@ -473,17 +484,6 @@ def summarize_samples(data):
                         .values_list("sampleProjectFieldValue", flat=True)
                         .distinct()
                     )
-
-                    """
-                    for f_value in f_values:
-                        summarize[f_value] = list(
-                            SampleProjectsFieldsValue.objects.filter(
-                                sampleProjecttField_id=s_project_field_obj,
-                                sampleProjectFieldValue__exact=f_value,
-                                sample_id__sampleName__in=sample_list,
-                            ).values_list("sample_id__sampleName", flat=True)
-                        )
-                    """
                     for f_value in f_values:
                         summarize["parameters"][p_name][
                             f_value
@@ -507,3 +507,48 @@ def summarize_samples(data):
 
     summarize["samples_number"] = len(sample_list)
     return summarize
+
+
+def collect_statistics_information(data):
+    """Collect statistics for the fields utilization for the requested project"""
+
+    stats_data = {"always_none": [], "fields": {}, "never_used": []}
+    if "sample_project_name" in data:
+        # Collect the fields utilization for sample projects
+        if not SampleProjects.objects.filter(
+            sampleProjectName__iexact=data["sample_project_name"]
+        ).exists():
+            return {"ERROR": ERROR_API_NO_SAMPLE_PROJECT_DEFINED}
+
+        s_project_obj = SampleProjects.objects.filter(
+            sampleProjectName__iexact=data["sample_project_name"]
+        ).last()
+        num_samples = Samples.objects.filter(sampleProject=s_project_obj).count()
+        s_project_field_objs = SampleProjectsFields.objects.filter(
+            sampleProjects_id=s_project_obj
+        )
+        for s_project_field_obj in s_project_field_objs:
+            f_name = s_project_field_obj.get_field_name()
+            if not SampleProjectsFieldsValue.objects.filter(
+                sampleProjecttField_id=s_project_field_obj
+            ).exists():
+                stats_data["never_used"].append(f_name)
+                continue
+            count_not_none = (
+                SampleProjectsFieldsValue.objects.filter(
+                    sampleProjecttField_id=s_project_field_obj
+                )
+                .exclude(sampleProjectFieldValue__in=["None", ""])
+                .count()
+            )
+            if count_not_none == 0:
+                stats_data["always_none"].append(f_name)
+                continue
+            try:
+                stats_data["fields"][f_name] = count_not_none / num_samples
+            except ZeroDivisionError:
+                stats_data["fields"][f_name] = 0
+        stats_data["num_samples"] = num_samples
+        return stats_data
+
+    return None

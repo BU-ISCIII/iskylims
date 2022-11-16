@@ -35,14 +35,23 @@ from drf_yasg import openapi
 from .utils.lab_request_handling import get_laboratory_instance
 
 from .utils.sample_request_handling import (
-    split_sample_data,
+    collect_statistics_information,
     include_instances_in_sample,
     include_coding,
     get_sample_fields,
     get_sample_information,
     samples_match_on_parameter,
+    split_sample_data,
     summarize_samples,
 )
+"""
+stats = openapi.Parameter(
+    "project",
+    openapi.IN_QUERY,
+    description="Project name to fetch the statistics utilization fields. Example Relecov",
+    type=openapi.TYPE_STRING,
+)
+"""
 
 sample_project_fields = openapi.Parameter(
     "project",
@@ -302,8 +311,7 @@ def sample_fields(request):
 )
 @api_view(["GET"])
 def fetch_samples_on_parameter(request):
-    """Returns the samples that match parameter
-    """
+    """Returns the samples that match parameter"""
     if "sampleParameter" in request.GET:
         data = samples_match_on_parameter(request.GET)
         if data:
@@ -377,6 +385,23 @@ def summarize_data_information(request):
 
 
 @swagger_auto_schema(
+    method="get",
+    operation_description="",
+    manual_parameters=[
+        sample_project_name,
+    ],
+)
+@api_view(["GET"])
+def statistic_information(request):
+    statistics_data = collect_statistics_information(request.GET)
+    if "ERROR" in statistics_data:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    if len(statistics_data) == 0:
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    return Response(statistics_data, status=status.HTTP_200_OK)
+
+
+@swagger_auto_schema(
     method="put",
     operation_description="Update laboratory contact information",
     request_body=openapi.Schema(
@@ -395,7 +420,6 @@ def summarize_data_information(request):
                 type=openapi.TYPE_STRING,
             ),
             "lab_contact_email": openapi.Schema(
-
                 description="Contact email",
                 type=openapi.TYPE_STRING,
             ),
@@ -406,7 +430,7 @@ def summarize_data_information(request):
         204: "Laboratory not defined",
         400: "Bad Request",
         500: "Internal Server Error",
-    }
+    },
 )
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @api_view(["PUT"])
@@ -422,5 +446,7 @@ def update_lab(request):
                 return Response(status=status.HTTP_204_NO_CONTENT)
             LabRequestSerializer.update(lab_obj, data)
 
-            return Response("Successful Update information", status=status.HTTP_201_CREATED)
+            return Response(
+                "Successful Update information", status=status.HTTP_201_CREATED
+            )
     return Response(status=status.HTTP_400_BAD_REQUEST)
