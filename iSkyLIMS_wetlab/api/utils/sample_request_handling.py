@@ -511,8 +511,7 @@ def summarize_samples(data):
 
 def collect_statistics_information(data):
     """Collect statistics for the fields utilization for the requested project"""
-
-    stats_data = {"always_none": [], "fields": {}, "never_used": []}
+    stats_data = {"always_none": [], "fields_norm": {}, "never_used": [], "fields_value": {}}
     if "sample_project_name" in data:
         # Collect the fields utilization for sample projects
         if not SampleProjects.objects.filter(
@@ -533,6 +532,7 @@ def collect_statistics_information(data):
                 sampleProjecttField_id=s_project_field_obj
             ).exists():
                 stats_data["never_used"].append(f_name)
+                stats_data["fields_value"][f_name] = 0
                 continue
             count_not_none = (
                 SampleProjectsFieldsValue.objects.filter(
@@ -541,14 +541,15 @@ def collect_statistics_information(data):
                 .exclude(sampleProjectFieldValue__in=["None", ""])
                 .count()
             )
+            stats_data["fields_value"][f_name] = count_not_none
             if count_not_none == 0:
                 stats_data["always_none"].append(f_name)
                 continue
             try:
-                stats_data["fields"][f_name] = count_not_none / num_samples
+                stats_data["fields_norm"][f_name] = count_not_none / num_samples
             except ZeroDivisionError:
-                stats_data["fields"][f_name] = 0
+                stats_data["fields_norm"][f_name] = 0
         stats_data["num_samples"] = num_samples
         return stats_data
 
-    return None
+    return {"ERROR": ""}
