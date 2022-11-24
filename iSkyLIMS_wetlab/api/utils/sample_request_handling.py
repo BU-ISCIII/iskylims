@@ -511,45 +511,127 @@ def summarize_samples(data):
 
 def collect_statistics_information(data):
     """Collect statistics for the fields utilization for the requested project"""
-    stats_data = {"always_none": [], "fields_norm": {}, "never_used": [], "fields_value": {}}
+
     if "sample_project_name" in data:
-        # Collect the fields utilization for sample projects
         if not SampleProjects.objects.filter(
             sampleProjectName__iexact=data["sample_project_name"]
         ).exists():
-            return {"ERROR": ERROR_API_NO_SAMPLE_PROJECT_DEFINED}
-
+            return ""
         s_project_obj = SampleProjects.objects.filter(
             sampleProjectName__iexact=data["sample_project_name"]
         ).last()
-        num_samples = Samples.objects.filter(sampleProject=s_project_obj).count()
-        s_project_field_objs = SampleProjectsFields.objects.filter(
-            sampleProjects_id=s_project_obj
-        )
-        for s_project_field_obj in s_project_field_objs:
-            f_name = s_project_field_obj.get_field_name()
-            if not SampleProjectsFieldsValue.objects.filter(
-                sampleProjecttField_id=s_project_field_obj
-            ).exists():
-                stats_data["never_used"].append(f_name)
-                stats_data["fields_value"][f_name] = 0
-                continue
-            count_not_none = (
+        if "project_field" in data:
+            query_params = data["project_field"].split(",")
+
+            if len(query_params) > 2:
+                return {"ERROR": ""}
+            stats_data = {}
+            par1_values = (
                 SampleProjectsFieldsValue.objects.filter(
-                    sampleProjecttField_id=s_project_field_obj
+                    sampleProjecttField_id__sampleProjects_id=s_project_obj,
+                    sampleProjecttField_id__sampleProjectFieldName__iexact=query_params[
+                        0
+                    ],
                 )
-                .exclude(sampleProjectFieldValue__in=["None", ""])
-                .count()
+                .values_list("sampleProjectFieldValue", flat=True)
+                .distinct()
             )
-            stats_data["fields_value"][f_name] = count_not_none
-            if count_not_none == 0:
-                stats_data["always_none"].append(f_name)
-                continue
-            try:
-                stats_data["fields_norm"][f_name] = count_not_none / num_samples
-            except ZeroDivisionError:
-                stats_data["fields_norm"][f_name] = 0
-        stats_data["num_samples"] = num_samples
-        return stats_data
+
+            if len(query_params) == 2:
+                if "related" in data and data["related"] == "True":
+                    pass
+                    par2_values = (
+                        SampleProjectsFieldsValue.objects.filter(
+                            sampleProjecttField_id__sampleProjects_id=s_project_obj,
+                            sampleProjecttField_id__sampleProjectFieldName__iexact=query_params[
+                                1
+                            ],
+                        )
+                        .values_list("sampleProjectFieldValue", flat=True)
+                        .distinct()
+                    )
+
+                else:
+                    for par1_val in par1_values:
+                        stats_data[par1_val] = {}
+
+                        samples = SampleProjectsFieldsValue.objects.filter(
+                            sampleProjecttField_id__sampleProjects_id=s_project_obj,
+                            sampleProjecttField_id__sampleProjectFieldName__iexact=query_params[
+                                0
+                            ],
+                            sampleProjectFieldValue__exact=par1_val,
+                        ).values_list("sample_id", flat=True)
+                        par2_values = (
+                            SampleProjectsFieldsValue.objects.filter(
+                                sample_id__in=samples,
+                                sampleProjecttField_id__sampleProjectFieldName__iexact=query_params[
+                                    1
+                                ],
+                            )
+                            .values_list("sampleProjectFieldValue", flat=True)
+                            .distinct()
+                        )
+                        for par2_val in par2_values:
+
+                            # import pdb; pdb.set_trace()
+                            value = SampleProjectsFieldsValue.objects.filter(
+                                sample_id__in=samples,
+                                sampleProjectFieldValue__exact=par2_val,
+                            ).count()
+                            if value > 0:
+                                stats_data[par1_val][par2_val] = value
+
+                # import pdb; pdb.set_trace()
+
+            else:
+                for par1_val in par1_values:
+                    stats_data[par1_val] = SampleProjectsFieldsValue.objects.filter(
+                        sampleProjecttField_id__sampleProjects_id=s_project_obj,
+                        sampleProjecttField_id__sampleProjectFieldName__iexact=query_params[
+                            0
+                        ],
+                        sampleProjectFieldValue=par1_val,
+                    ).count()
+
+            return stats_data
+        else:  # Collect info stats for all fields
+            # Collect the fields utilization for sample projects
+            stats_data = {
+                "always_none": [],
+                "fields_norm": {},
+                "never_used": [],
+                "fields_value": {},
+            }
+
+            num_samples = Samples.objects.filter(sampleProject=s_project_obj).count()
+            s_project_field_objs = SampleProjectsFields.objects.filter(
+                sampleProjects_id=s_project_obj
+            )
+            for s_project_field_obj in s_project_field_objs:
+                f_name = s_project_field_obj.get_field_name()
+                if not SampleProjectsFieldsValue.objects.filter(
+                    sampleProjecttField_id=s_project_field_obj
+                ).exists():
+                    stats_data["never_used"].append(f_name)
+                    stats_data["fields_value"][f_name] = 0
+                    continue
+                count_not_none = (
+                    SampleProjectsFieldsValue.objects.filter(
+                        sampleProjecttField_id=s_project_field_obj
+                    )
+                    .exclude(sampleProjectFieldValue__in=["None", ""])
+                    .count()
+                )
+                stats_data["fields_value"][f_name] = count_not_none
+                if count_not_none == 0:
+                    stats_data["always_none"].append(f_name)
+                    continue
+                try:
+                    stats_data["fields_norm"][f_name] = count_not_none / num_samples
+                except ZeroDivisionError:
+                    stats_data["fields_norm"][f_name] = 0
+            stats_data["num_samples"] = num_samples
+            return stats_data
 
     return {"ERROR": ""}

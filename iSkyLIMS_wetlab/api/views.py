@@ -137,6 +137,13 @@ sample_project_name = openapi.Parameter(
     type=openapi.TYPE_STRING,
 )
 
+project_fields = openapi.Parameter(
+    "project_field",
+    openapi.IN_QUERY,
+    description="Project fields to make the query. Maximum number of fiels are 2",
+    type=openapi.TYPE_STRING,
+)
+
 sample_project_field = openapi.Parameter(
     "sample_project_field",
     openapi.IN_QUERY,
@@ -389,6 +396,7 @@ def summarize_data_information(request):
     operation_description="",
     manual_parameters=[
         sample_project_name,
+        project_fields,
     ],
 )
 @api_view(["GET"])

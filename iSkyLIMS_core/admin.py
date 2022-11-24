@@ -176,7 +176,7 @@ class SamplesProjectsTableOptionsAdmin(admin.ModelAdmin):
 class SampleProjectsFieldsValueAdmin(admin.ModelAdmin):
     list_display = ["sample_id", "sampleProjecttField_id", "sampleProjectFieldValue"]
     list_filter = ["sample_id"]
-    search_fields = ("sampleProjecttField_id__sampleProjectFieldName",)
+    search_fields = ("sampleProjecttField_id__sampleProjectFieldName", "sampleProjectFieldValue")
 
 
 class SequencingPlatformAdmin(admin.ModelAdmin):
