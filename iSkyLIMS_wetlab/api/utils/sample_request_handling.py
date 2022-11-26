@@ -538,11 +538,20 @@ def collect_statistics_information(data):
             )
 
             if len(query_params) == 2:
-                if "related" in data and data["related"] == "True":
-                    pass
+
+                for par1_val in par1_values:
+                    stats_data[par1_val] = {}
+
+                    samples = SampleProjectsFieldsValue.objects.filter(
+                        sampleProjecttField_id__sampleProjects_id=s_project_obj,
+                        sampleProjecttField_id__sampleProjectFieldName__iexact=query_params[
+                            0
+                        ],
+                        sampleProjectFieldValue__exact=par1_val,
+                    ).values_list("sample_id", flat=True)
                     par2_values = (
                         SampleProjectsFieldsValue.objects.filter(
-                            sampleProjecttField_id__sampleProjects_id=s_project_obj,
+                            sample_id__in=samples,
                             sampleProjecttField_id__sampleProjectFieldName__iexact=query_params[
                                 1
                             ],
@@ -550,40 +559,18 @@ def collect_statistics_information(data):
                         .values_list("sampleProjectFieldValue", flat=True)
                         .distinct()
                     )
+                    for par2_val in par2_values:
 
-                else:
-                    for par1_val in par1_values:
-                        stats_data[par1_val] = {}
-
-                        samples = SampleProjectsFieldsValue.objects.filter(
-                            sampleProjecttField_id__sampleProjects_id=s_project_obj,
-                            sampleProjecttField_id__sampleProjectFieldName__iexact=query_params[
-                                0
+                        # import pdb; pdb.set_trace()
+                        value = SampleProjectsFieldsValue.objects.filter(
+                            sample_id__in=samples,
+                            sampleProjecttField_id__sampleProjectFieldName=query_params[
+                                1
                             ],
-                            sampleProjectFieldValue__exact=par1_val,
-                        ).values_list("sample_id", flat=True)
-                        par2_values = (
-                            SampleProjectsFieldsValue.objects.filter(
-                                sample_id__in=samples,
-                                sampleProjecttField_id__sampleProjectFieldName__iexact=query_params[
-                                    1
-                                ],
-                            )
-                            .values_list("sampleProjectFieldValue", flat=True)
-                            .distinct()
-                        )
-                        for par2_val in par2_values:
-
-                            # import pdb; pdb.set_trace()
-                            value = SampleProjectsFieldsValue.objects.filter(
-                                sample_id__in=samples,
-                                sampleProjectFieldValue__exact=par2_val,
-                            ).count()
-                            if value > 0:
-                                stats_data[par1_val][par2_val] = value
-
-                # import pdb; pdb.set_trace()
-
+                            sampleProjectFieldValue__exact=par2_val,
+                        ).count()
+                        if value > 0:
+                            stats_data[par1_val][par2_val] = value
             else:
                 for par1_val in par1_values:
                     stats_data[par1_val] = SampleProjectsFieldsValue.objects.filter(
