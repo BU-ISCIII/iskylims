@@ -134,8 +134,8 @@ def search_update_new_runs(request_reason):
                     continue
 
             logger.debug('%s : Found the experiment name called : %s', new_run, experiment_name)
-
-            if RunProcess.objects.filter(runName__exact=experiment_name).exclude(state__runStateName='Recorded').exists():
+            exclude_states = ["Error", "Recorded"]
+            if RunProcess.objects.filter(runName__exact=experiment_name).exclude(state__runStateName__in=exclude_states).exists():
                 # This situation should not occurr. The run_processed file should  have this value. To avoid new iterations with this run
                 # we update the run process file with this run and continue  with the next item
                 run_state = RunProcess.objects.get(runName__exact = experiment_name).get_state()
