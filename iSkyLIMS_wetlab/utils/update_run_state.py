@@ -14,6 +14,9 @@ from .generic_functions import *
 from django.conf import settings
 
 from .common_run_functions import manage_run_in_processed_run, manage_run_in_processing_bcl2fastq, manage_run_in_processed_bcl2fastq
+from .generic_functions import get_userid_list
+
+from .sample_sheet_utils import validate_userid_in_user_iem_file
 
 
 from django.conf import settings
@@ -86,31 +89,31 @@ def search_update_new_runs(request_reason):
     run_with_error = []
     try:
 
-        conn=open_samba_connection()
+        conn = open_samba_connection()
         logger.info('Sucessfully  SAMBA connection for search_update_new_runs')
-    except Exception as e:
+    except Exception:
         string_message = 'Unable to open SAMBA connection for the process search update runs'
         # raising the exception to stop crontab
         logging_errors(string_message, True, True)
         raise
 
-    new_runs = get_new_runs_from_remote_server (processed_runs, conn, get_samba_shared_folder())
+    new_runs = get_new_runs_from_remote_server(processed_runs, conn, get_samba_shared_folder())
 
-    if len (new_runs) > 0 :
+    if len(new_runs) > 0:
         for new_run in new_runs :
             l_run_parameter_path = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_PARAMETER_FILE)
             s_run_parameter_path = os.path.join(get_samba_application_shared_folder(), new_run, wetlab_config.RUN_PARAMETER_FILE)
             try:
                l_run_parameter = fetch_remote_file (conn, new_run, s_run_parameter_path, l_run_parameter_path)
                logger.info('%s : Sucessfully fetch of RunParameter file', new_run)
-            except Exception as e:
-                error_message = 'Unable to fetch RunParameter file for folder :' +  new_run
+            except Exception:
+                error_message = 'Unable to fetch RunParameter file for folder :' + new_run
                 logging_errors(error_message, True, True)
                 continue
 
             experiment_name = get_experiment_name_from_file (l_run_parameter)
             if request_reason == 'crontab_request':
-                if experiment_name == ''  or experiment_name == 'NOT FOUND' or 'test' in experiment_name.lower():
+                if experiment_name == '' or experiment_name == 'NOT FOUND' or 'test' in experiment_name.lower():
                     if experiment_name == '':
                         string_message = new_run + ' : Experiment name is empty'
                         logging_errors(string_message, False, True)
@@ -125,14 +128,14 @@ def search_update_new_runs(request_reason):
                     continue
             else:
                 if experiment_name != request_reason:
-                    logger.info('ignoring test folder %s' , experiment_name)
+                    logger.info('ignoring test folder %s', experiment_name)
                     os.remove(l_run_parameter)
                     logger.info(' %s  : Deleted temporary run parameter file', new_run)
                     continue
 
-            logger.debug('%s : Found the experiment name called : %s', new_run , experiment_name)
+            logger.debug('%s : Found the experiment name called : %s', new_run, experiment_name)
 
-            if RunProcess.objects.filter(runName__exact = experiment_name).exclude(state__runStateName ='Recorded').exists():
+            if RunProcess.objects.filter(runName__exact=experiment_name).exclude(state__runStateName='Recorded').exists():
                 # This situation should not occurr. The run_processed file should  have this value. To avoid new iterations with this run
                 # we update the run process file with this run and continue  with the next item
                 run_state = RunProcess.objects.get(runName__exact = experiment_name).get_state()
@@ -145,11 +148,11 @@ def search_update_new_runs(request_reason):
 
             # Fetch run info
             l_run_info_path = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_INFO)
-            s_run_info_path = os.path.join(get_samba_application_shared_folder() , new_run, wetlab_config.RUN_INFO)
+            s_run_info_path = os.path.join(get_samba_application_shared_folder(), new_run, wetlab_config.RUN_INFO)
             try:
                 l_run_info = fetch_remote_file (conn, new_run, s_run_info_path, l_run_info_path)
                 logger.info('%s : Sucessfully fetch of RunInfo file', experiment_name)
-            except Exception as e:
+            except Exception:
                 string_message = experiment_name + ' : Unable to fetch the RunInfo file on folder ' + new_run
                 logging_errors(string_message, True, True)
                 handling_errors_in_run(experiment_name, '20')
@@ -167,20 +170,28 @@ def search_update_new_runs(request_reason):
 
             run_process_obj = get_run_process_obj_or_create_if_not_exists(running_parameters, experiment_name)
             sequencer_obj = get_sequencer_obj_or_create_if_no_exists(running_parameters, experiment_name)
-            run_process_obj.set_used_sequencer(sequencer_obj)
+            run_process_obj= run_process_obj.set_used_sequencer(sequencer_obj)
             run_process_obj.set_run_date(running_parameters["run_date"])
             logger.info('%s : Sequencer  stored on database', experiment_name)
-            run_parameter_obj = save_run_parameters_data_to_database(running_parameters['running_data'], run_process_obj, experiment_name)
-            logger.info('%s : RunParameters information  stored on database', experiment_name)
+
             if run_process_obj.get_sample_file() == '':
                 # Fetch sample Sheet from remote server
-                l_sample_sheet_path = get_remote_sample_sheet(conn, new_run ,experiment_name)
-                if not l_sample_sheet_path :
-                    logger.debug ('%s : End the process. Waiting more time to get Sample Sheet file', experiment_name)
+                l_sample_sheet_path = get_remote_sample_sheet(conn, new_run, experiment_name)
+                if not l_sample_sheet_path:
+                    logger.debug('%s : End the process. Waiting more time to get Sample Sheet file', experiment_name)
+                    # Delete the previous collected data to create again when file is availabñe
+                    run_process_obj.delete()
                     continue
-
+                # check if sampleSheet contains userID in description
+                if get_configuration_value("DESCRIPTION_IN_SAMPLE_SHEET_MUST_HAVE_USERNAME") == "TRUE":
+                    user_id_list = get_userid_list()
+                    if "ERROR" in validate_userid_in_user_iem_file(l_sample_sheet_path, user_id_list):
+                        string_message = experiment_name + ' : Description field does not contains userids'
+                        logging_errors(string_message, True, True)
+                        handling_errors_in_run(experiment_name, '1')
+                        continue
                 assign_projects_to_run(run_process_obj, l_sample_sheet_path, experiment_name)
-                assign_used_library_in_run (run_process_obj,l_sample_sheet_path, experiment_name )
+                assign_used_library_in_run (run_process_obj,l_sample_sheet_path, experiment_name)
                 store_sample_sheet_if_not_defined_in_run (run_process_obj,l_sample_sheet_path, experiment_name)
             else :
                 if wetlab_config.COPY_SAMPLE_SHEET_TO_REMOTE and  'NextSeq' in running_parameters['running_data'][wetlab_config.APPLICATION_NAME_TAG]:
@@ -188,14 +199,15 @@ def search_update_new_runs(request_reason):
                     sample_sheet_path = os.path.join(settings.MEDIA_ROOT, sample_sheet)
                     run_folder = RunningParameters.objects.get( runName_id__exact = run_process_obj).get_run_folder()
                     try:
-                        copy_sample_sheet_to_remote_folder(conn, sample_sheet_path, run_folder ,experiment_name)
+                        copy_sample_sheet_to_remote_folder(conn, sample_sheet_path, run_folder,experiment_name)
                     except Exception as e:
                         string_message = experiment_name + ' : Unable to copy Sample Sheet to Remote folder' + new_run
                         logging_errors(string_message, True, True)
                         handling_errors_in_run(experiment_name, '23')
                         logger.debug ('%s : Aborting the process. Exiting with exception', experiment_name)
                         raise Exception   # returning to handle next run folder
-
+            save_run_parameters_data_to_database(running_parameters['running_data'], run_process_obj, experiment_name)
+            logger.info('%s : RunParameters information  stored on database', experiment_name)
             run_process_obj.set_run_state('Sample Sent')
 
     logger.info ('Clossing SAMBA connection')

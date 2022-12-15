@@ -229,7 +229,7 @@ class RunProcess(models.Model):
     def set_run_date (self, run_date):
         self.run_date = run_date
         self.save()
-        return True
+        return self
 
     def set_run_bcl2fastq_finished_date (self, bcl2fastq_finish_date):
         self.bcl2fastq_finish_date = bcl2fastq_finish_date
@@ -249,27 +249,27 @@ class RunProcess(models.Model):
     def set_run_completion_date (self, completion_date):
         self.run_completed_date = completion_date
         self.save()
-        return True
+        return self
 
     def set_run_finish_date (self, finish_date):
         self.run_finish_date = finish_date
         self.save()
-        return True
+        return self
 
     def set_run_sample_sheet(self, sample_sheet):
         self.sampleSheet = sample_sheet
         self.save()
-        return True
+        return self
 
     def set_used_sequencer (self, sequencer):
         self.usedSequencer = sequencer
         self.save()
-        return True
+        return self
 
     def set_forced_continue_on_error(self):
         self.run_forced_continue_on_error = True
         self.save()
-        return True
+        return self
 
     objects = RunProcessManager()
 

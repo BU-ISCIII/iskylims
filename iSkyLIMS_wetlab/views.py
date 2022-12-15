@@ -184,6 +184,7 @@ def create_nextseq_run (request):
 
         ## Check that runName is not already used in the database.
         ## Error page is showed if runName is already  defined
+        import pdb; pdb.set_trace()
         if (RunProcess.objects.filter(runName__iexact = run_name)).exists():
             if RunProcess.objects.filter(runName__iexact = run_name, state__runStateName__exact ='Pre-Recorded').exists():
                 ## Delete the Sample Sheet file and the row in database
