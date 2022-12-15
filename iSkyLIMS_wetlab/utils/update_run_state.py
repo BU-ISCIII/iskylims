@@ -185,11 +185,13 @@ def search_update_new_runs(request_reason):
                 # check if sampleSheet contains userID in description
                 if get_configuration_value("DESCRIPTION_IN_SAMPLE_SHEET_MUST_HAVE_USERNAME") == "TRUE":
                     user_id_list = get_userid_list()
-                    if "ERROR" in validate_userid_in_user_iem_file(l_sample_sheet_path, user_id_list):
+                    users = validate_userid_in_user_iem_file(l_sample_sheet_path, user_id_list)
+                    if "user_ids" in users and len(users["user_ids"]) == 0:
                         string_message = experiment_name + ' : Description field does not contains userid'
                         logging_errors(string_message, True, True)
                         handling_errors_in_run(experiment_name, '1')
                         continue
+                import pdb; pdb.set_trace()
                 assign_projects_to_run(run_process_obj, l_sample_sheet_path, experiment_name)
                 assign_used_library_in_run (run_process_obj,l_sample_sheet_path, experiment_name)
                 store_sample_sheet_if_not_defined_in_run (run_process_obj,l_sample_sheet_path, experiment_name)
