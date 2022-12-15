@@ -170,7 +170,7 @@ def search_update_new_runs(request_reason):
 
             run_process_obj = get_run_process_obj_or_create_if_not_exists(running_parameters, experiment_name)
             sequencer_obj = get_sequencer_obj_or_create_if_no_exists(running_parameters, experiment_name)
-            run_process_obj= run_process_obj.set_used_sequencer(sequencer_obj)
+            run_process_obj = run_process_obj.set_used_sequencer(sequencer_obj)
             run_process_obj.set_run_date(running_parameters["run_date"])
             logger.info('%s : Sequencer  stored on database', experiment_name)
 
@@ -186,7 +186,7 @@ def search_update_new_runs(request_reason):
                 if get_configuration_value("DESCRIPTION_IN_SAMPLE_SHEET_MUST_HAVE_USERNAME") == "TRUE":
                     user_id_list = get_userid_list()
                     if "ERROR" in validate_userid_in_user_iem_file(l_sample_sheet_path, user_id_list):
-                        string_message = experiment_name + ' : Description field does not contains userids'
+                        string_message = experiment_name + ' : Description field does not contains userid'
                         logging_errors(string_message, True, True)
                         handling_errors_in_run(experiment_name, '1')
                         continue
