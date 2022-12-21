@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 import datetime
+from itertools import chain
 
 
 class StateInCountryManager(models.Manager):
@@ -1100,10 +1101,10 @@ class Samples(models.Model):
     )
 
     sampleProject = models.ForeignKey(
-        SampleProjects, on_delete=models.CASCADE, null=True, blank=True
+        SampleProjects, on_delete=models.CASCADE, verbose_name="Sample Project", null=True, blank=True
     )
 
-    sampleName = models.CharField(max_length=255, null=True)
+    sampleName = models.CharField(max_length=255, null=True, verbose_name="Sample Name")
     sampleLocation = models.CharField(max_length=255, null=True, blank=True)
     sampleEntryDate = models.DateTimeField(auto_now_add=False, null=True, blank=True)
     collectionSampleDate = models.DateTimeField(auto_now_add=False, null=True, blank=True)

@@ -280,17 +280,16 @@ def fetch_run_information(request):
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-@swagger_auto_schema(method="get", manual_parameters=[sample_information])
+@swagger_auto_schema(method="get", manual_parameters=[sample_information, project_fields])
 @api_view(["GET"])
 def fetch_sample_information(request):
     if "sample" in request.GET:
         sample = request.GET["sample"]
         if not Samples.objects.filter(sampleName__iexact=sample).exists():
             return Response(status=status.HTTP_204_NO_CONTENT)
+
         sample_data = get_sample_information(sample)
         return Response(sample_data, status=status.HTTP_200_OK)
-    return Response(status=status.HTTP_400_BAD_REQUEST)
-
 
 @swagger_auto_schema(
     method="get",

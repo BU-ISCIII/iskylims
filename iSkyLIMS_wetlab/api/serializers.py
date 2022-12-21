@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from collections import OrderedDict
 
 from iSkyLIMS_core.models import (
     LabRequest,
@@ -21,7 +22,34 @@ class UserIDSerializer(serializers.ModelSerializer):
         fields = ["username"]
 
 
+class SampleSerializer(serializers.ModelSerializer):
+    labRequest = serializers.StringRelatedField(many=False, label="Laboratory")
+    sampleProject = serializers.StringRelatedField(many=False, label="Sample Project")
+    sampleEntryDate = serializers.DateTimeField(format="%Y-%m-%d", label="Recorded sample date")
+    collectionSampleDate = serializers.DateTimeField(format="%Y-%m-%d", label="Collection sample date")
+
+    def to_representation(self,instance):
+        data = super(SampleSerializer, self).to_representation(instance)
+        data_update = OrderedDict()
+
+        for key in self.fields:
+            data_update[self.fields[key].label] = data[key]
+
+        return data_update
+
+    class Meta:
+        model = Samples
+        fields = [
+            "sampleName",
+            "labRequest",
+            "sampleProject",
+            "sampleEntryDate",
+            "collectionSampleDate",
+        ]
+
+
 class CreateSampleSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Samples
         fields = [

@@ -196,11 +196,13 @@ def get_sample_information(sample):
     """Collect the information from Sample table and from sample proyect fields"""
     sample_data = {}
     sample_obj = Samples.objects.filter(sampleName__iexact=sample).last()
-    sample_data["s_basic"] = sample_obj.get_info_for_display()
-    sample_data["heading"] = get_sample_definition_heading()
-    s_project_obj = sample_obj.get_sample_project_obj()
-    if s_project_obj is not None:
-        sample_data.update(get_sample_project_information(s_project_obj, sample_obj))
+    import pdb; pdb.set_trace()
+    sample_data = SampleSerializer(sample_obj,many=False).data
+    #sample_data["s_basic"] = sample_obj.get_info_for_display()
+    #sample_data["heading"] = get_sample_definition_heading()
+    #s_project_obj = sample_obj.get_sample_project_obj()
+    #if s_project_obj is not None:
+    #    sample_data.update(get_sample_project_information(s_project_obj, sample_obj))
     return sample_data
 
 
