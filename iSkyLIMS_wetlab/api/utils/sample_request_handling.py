@@ -199,6 +199,7 @@ def get_sample_information(sample):
     """Collect the information from Sample table and from sample proyect fields"""
     sample_data = {}
     sample_obj = Samples.objects.filter(sampleName__iexact=sample).last()
+    #import pdb; pdb.set_trace()
     sample_data = SampleSerializer(sample_obj,many=False).data
     return sample_data
 

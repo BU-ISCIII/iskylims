@@ -21,12 +21,26 @@ class UserIDSerializer(serializers.ModelSerializer):
         model = User
         fields = ["username"]
 
+class ProjectValuesSerializers(serializers.ModelSerializer):
+    sampleProjecttField_id=serializers.StringRelatedField(many=False)
+
+    def to_representation(self,instance):
+        data = super(ProjectValuesSerializers, self).to_representation(instance)
+        data_update = dict()
+        data_update[data["sampleProjecttField_id"]] = data["sampleProjectFieldValue"]
+
+        return data_update
+
+    class Meta:
+        model = SampleProjectsFieldsValue
+        fields = ["sampleProjecttField_id", "sampleProjectFieldValue"]
 
 class SampleSerializer(serializers.ModelSerializer):
     labRequest = serializers.StringRelatedField(many=False, label="Laboratory")
     sampleProject = serializers.StringRelatedField(many=False, label="Sample Project")
     sampleEntryDate = serializers.DateTimeField(format="%Y-%m-%d", label="Recorded sample date")
     collectionSampleDate = serializers.DateTimeField(format="%Y-%m-%d", label="Collection sample date")
+    project_values = ProjectValuesSerializers(many=True)
 
     def to_representation(self,instance):
         data = super(SampleSerializer, self).to_representation(instance)
@@ -45,6 +59,7 @@ class SampleSerializer(serializers.ModelSerializer):
             "sampleProject",
             "sampleEntryDate",
             "collectionSampleDate",
+            "project_values",
         ]
 
 
@@ -153,3 +168,4 @@ class SampleRunInfoSerializers(serializers.ModelSerializer):
         model = SamplesInProject
         # fields = "__all__"
         exclude = ["sampleInCore"]
+
