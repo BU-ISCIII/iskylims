@@ -27,7 +27,10 @@ from iSkyLIMS_wetlab.wetlab_config import (
     ERROR_API_NO_SAMPLE_PROJECT_DEFINED,
     ERROR_API_NO_SAMPLE_PROJECT_FIELD_DEFINED,
 )
-from iSkyLIMS_wetlab.api.serializers import CreateSampleTypeSerializer
+from iSkyLIMS_wetlab.api.serializers import (
+    CreateSampleTypeSerializer,
+    SampleSerializer
+)
 
 # from iSkyLIMS_core.core_config import HEADING_FOR_RECORD_SAMPLES
 
@@ -196,13 +199,7 @@ def get_sample_information(sample):
     """Collect the information from Sample table and from sample proyect fields"""
     sample_data = {}
     sample_obj = Samples.objects.filter(sampleName__iexact=sample).last()
-    import pdb; pdb.set_trace()
     sample_data = SampleSerializer(sample_obj,many=False).data
-    #sample_data["s_basic"] = sample_obj.get_info_for_display()
-    #sample_data["heading"] = get_sample_definition_heading()
-    #s_project_obj = sample_obj.get_sample_project_obj()
-    #if s_project_obj is not None:
-    #    sample_data.update(get_sample_project_information(s_project_obj, sample_obj))
     return sample_data
 
 
