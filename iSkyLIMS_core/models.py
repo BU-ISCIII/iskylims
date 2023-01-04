@@ -1082,22 +1082,22 @@ class SamplesManager(models.Manager):
 
 class Samples(models.Model):
     sampleState = models.ForeignKey(
-        StatesForSample, on_delete=models.CASCADE, null=True
+        StatesForSample, on_delete=models.CASCADE, verbose_name="Sample state", null=True
     )
 
     patientCore = models.ForeignKey(
         PatientCore, on_delete=models.CASCADE, null=True, blank=True
     )
     labRequest = models.ForeignKey(
-        LabRequest, on_delete=models.CASCADE, null=True, blank=True
+        LabRequest, on_delete=models.CASCADE, verbose_name="Laboratory", null=True, blank=True
     )
 
-    sampleType = models.ForeignKey(SampleType, on_delete=models.CASCADE, null=True)
+    sampleType = models.ForeignKey(SampleType, on_delete=models.CASCADE, verbose_name="Sample type", null=True)
 
-    sampleUser = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    sampleUser = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Username", null=True)
 
     species = models.ForeignKey(
-        Species, on_delete=models.CASCADE, null=True, blank=True
+        Species, on_delete=models.CASCADE, null=True, verbose_name="Species", blank=True
     )
 
     sampleProject = models.ForeignKey(
@@ -1105,16 +1105,16 @@ class Samples(models.Model):
     )
 
     sampleName = models.CharField(max_length=255, null=True, verbose_name="Sample Name")
-    sampleLocation = models.CharField(max_length=255, null=True, blank=True)
-    sampleEntryDate = models.DateTimeField(auto_now_add=False, null=True, blank=True)
-    collectionSampleDate = models.DateTimeField(auto_now_add=False, null=True, blank=True)
-    uniqueSampleID = models.CharField(max_length=8, null=True)
-    sampleCodeID = models.CharField(max_length=60, null=True)
-    numberOfReused = models.IntegerField(default=0)
-    sequencingDate = models.DateTimeField(auto_now_add=False, null=True, blank=True)
-    completedDate = models.DateTimeField(auto_now_add=False, null=True, blank=True)
-    generated_at = models.DateTimeField(auto_now_add=True)
-    onlyRecorded = models.BooleanField(default=False, null=True, blank=True)
+    sampleLocation = models.CharField(max_length=255, null=True, verbose_name="Sample location", blank=True)
+    sampleEntryDate = models.DateTimeField(auto_now_add=False, null=True, verbose_name="Sample defined date", blank=True)
+    collectionSampleDate = models.DateTimeField(auto_now_add=False, null=True, verbose_name="Sample collection date", blank=True)
+    uniqueSampleID = models.CharField(max_length=8, verbose_name="Unique sample id", null=True)
+    sampleCodeID = models.CharField(max_length=60, null=True, verbose_name="Sample code id")
+    numberOfReused = models.IntegerField(default=0, verbose_name="Number of type reused")
+    sequencingDate = models.DateTimeField(auto_now_add=False, null=True, blank=True, verbose_name="Sequencing date")
+    completedDate = models.DateTimeField(auto_now_add=False, null=True, blank=True, verbose_name="Completion date")
+    generated_at = models.DateTimeField(auto_now_add=True, verbose_name="Generated at")
+    onlyRecorded = models.BooleanField(default=False, null=True, blank=True, verbose_name="Only recorded?")
 
     def __str__(self):
         return "%s" % (self.sampleName)
