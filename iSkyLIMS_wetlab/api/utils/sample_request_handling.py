@@ -194,16 +194,6 @@ def get_sample_project_obj(project_name):
         ).last()
     return False
 
-
-def get_sample_information(sample):
-    """Collect the information from Sample table and from sample proyect fields"""
-    sample_data = {}
-    sample_obj = Samples.objects.filter(sampleName__iexact=sample).last()
-    #import pdb; pdb.set_trace()
-    sample_data = SampleSerializer(sample_obj,many=False).data
-    return sample_data
-
-
 def include_instances_in_sample(data, lab_data, apps_name):
     """Collect the instances before creating the sample instance
     If laboratory will be created if it is not defined
