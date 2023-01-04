@@ -27,6 +27,8 @@ class ProjectValuesSerializers(serializers.ModelSerializer):
     def to_representation(self,instance):
         data = super(ProjectValuesSerializers, self).to_representation(instance)
         data_update = dict()
+        # Convert dict according to db table fields, to id and values inside the table.
+        # WARNING: This will have to be change if db fields change in models.py
         data_update[data["sampleProjecttField_id"]] = data["sampleProjectFieldValue"]
 
         return data_update
@@ -45,9 +47,22 @@ class SampleSerializer(serializers.ModelSerializer):
     def to_representation(self,instance):
         data = super(SampleSerializer, self).to_representation(instance)
         data_update = OrderedDict()
+        field_values = dict()
 
         for key in self.fields:
-            data_update[self.fields[key].label] = data[key]
+
+            # Append all dictionaries into one.
+            # origin: [{'id1':value1}{id1:value2}]
+            # dest: {'id1':value1, 'id2:value2'}
+            if key == "project_values":
+
+                for item in data["project_values"]:
+                    field_values.update(item)
+
+                data_update[self.fields[key].label] = field_values
+            else:
+                # Change id to label for api rest output
+                data_update[self.fields[key].label] = data[key]
 
         return data_update
 
