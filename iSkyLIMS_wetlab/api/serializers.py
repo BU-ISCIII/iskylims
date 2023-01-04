@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from collections import OrderedDict
 
 from iSkyLIMS_core.models import (
     LabRequest,
@@ -20,8 +21,65 @@ class UserIDSerializer(serializers.ModelSerializer):
         model = User
         fields = ["username"]
 
+class ProjectValuesSerializers(serializers.ModelSerializer):
+    sampleProjecttField_id=serializers.StringRelatedField(many=False)
+
+    def to_representation(self,instance):
+        data = super(ProjectValuesSerializers, self).to_representation(instance)
+        data_update = dict()
+        # Convert dict according to db table fields, to id and values inside the table.
+        # WARNING: This will have to be change if db fields change in models.py
+        data_update[data["sampleProjecttField_id"]] = data["sampleProjectFieldValue"]
+
+        return data_update
+
+    class Meta:
+        model = SampleProjectsFieldsValue
+        fields = ["sampleProjecttField_id", "sampleProjectFieldValue"]
+
+class SampleSerializer(serializers.ModelSerializer):
+    labRequest = serializers.StringRelatedField(many=False, label="Laboratory")
+    sampleProject = serializers.StringRelatedField(many=False, label="Sample Project")
+    sampleEntryDate = serializers.DateTimeField(format="%Y-%m-%d", label="Recorded sample date")
+    collectionSampleDate = serializers.DateTimeField(format="%Y-%m-%d", label="Collection sample date")
+    project_values = ProjectValuesSerializers(many=True)
+
+    def to_representation(self,instance):
+        data = super(SampleSerializer, self).to_representation(instance)
+        data_update = OrderedDict()
+        field_values = dict()
+
+        for key in self.fields:
+
+            # Append all dictionaries into one.
+            # origin: [{'id1':value1}{id1:value2}]
+            # dest: {'id1':value1, 'id2:value2'}
+            if key == "project_values":
+
+                for item in data["project_values"]:
+                    field_values.update(item)
+
+                data_update[self.fields[key].label] = field_values
+            else:
+                # Change id to label for api rest output
+                data_update[self.fields[key].label] = data[key]
+
+        return data_update
+
+    class Meta:
+        model = Samples
+        fields = [
+            "sampleName",
+            "labRequest",
+            "sampleProject",
+            "sampleEntryDate",
+            "collectionSampleDate",
+            "project_values",
+        ]
+
 
 class CreateSampleSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Samples
         fields = [
@@ -125,3 +183,4 @@ class SampleRunInfoSerializers(serializers.ModelSerializer):
         model = SamplesInProject
         # fields = "__all__"
         exclude = ["sampleInCore"]
+

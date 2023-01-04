@@ -19,7 +19,7 @@ urlpatterns = [
         name="fetch_samples_on_parameter",
     ),
     path(
-        "fetchSampleIinformation",
+        "fetchSampleInformation",
         views.fetch_sample_information,
         name="fetch_sample_information",
     ),

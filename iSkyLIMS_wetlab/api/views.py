@@ -23,8 +23,7 @@ from .serializers import (
     CreateSampleSerializer,
     CreateProjectDataSerializer,
     SampleProjectFieldSerializer,
-    # SampleFieldsSerializer,
-    # SampleFields,
+    SampleSerializer,
     LabRequestSerializer,
     SampleRunInfoSerializers,
 )
@@ -39,7 +38,6 @@ from .utils.sample_request_handling import (
     include_instances_in_sample,
     include_coding,
     get_sample_fields,
-    get_sample_information,
     samples_match_on_parameter,
     split_sample_data,
     summarize_samples,
@@ -283,14 +281,17 @@ def fetch_run_information(request):
 @swagger_auto_schema(method="get", manual_parameters=[sample_information])
 @api_view(["GET"])
 def fetch_sample_information(request):
+    sample_data = {}
     if "sample" in request.GET:
         sample = request.GET["sample"]
         if not Samples.objects.filter(sampleName__iexact=sample).exists():
             return Response(status=status.HTTP_204_NO_CONTENT)
-        sample_data = get_sample_information(sample)
-        return Response(sample_data, status=status.HTTP_200_OK)
-    return Response(status=status.HTTP_400_BAD_REQUEST)
-
+        sample_obj = Samples.objects.filter(sampleName__iexact=sample).last()
+        sample_data = SampleSerializer(sample_obj,many=False).data
+    else:
+        sample_obj = Samples.objects.prefetch_related("project_values")
+        sample_data = SampleSerializer(sample_obj,many=True).data
+    return Response(sample_data, status=status.HTTP_200_OK)
 
 @swagger_auto_schema(
     method="get",
