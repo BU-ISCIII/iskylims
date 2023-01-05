@@ -24,6 +24,7 @@ from .serializers import (
     CreateProjectDataSerializer,
     SampleProjectFieldSerializer,
     SampleSerializer,
+    SampleParameterSerializer,
     LabRequestSerializer,
     SampleRunInfoSerializers,
 )
@@ -42,6 +43,7 @@ from .utils.sample_request_handling import (
     split_sample_data,
     summarize_samples,
 )
+
 """
 stats = openapi.Parameter(
     "project",
@@ -127,6 +129,14 @@ sample_information = openapi.Parameter(
     description="Fecthing information from sample",
     type=openapi.TYPE_STRING,
 )
+
+sample_parameter = openapi.Parameter(
+    "parameter",
+    openapi.IN_QUERY,
+    description="Fecthing only parameter information from sample",
+    type=openapi.TYPE_STRING,
+)
+
 
 sample_project_name = openapi.Parameter(
     "sample_project_name",
@@ -278,7 +288,9 @@ def fetch_run_information(request):
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-@swagger_auto_schema(method="get", manual_parameters=[sample_information])
+@swagger_auto_schema(
+    method="get", manual_parameters=[sample_information, sample_parameter]
+)
 @api_view(["GET"])
 def fetch_sample_information(request):
     sample_data = {}
@@ -287,11 +299,19 @@ def fetch_sample_information(request):
         if not Samples.objects.filter(sampleName__iexact=sample).exists():
             return Response(status=status.HTTP_204_NO_CONTENT)
         sample_obj = Samples.objects.filter(sampleName__iexact=sample).last()
-        sample_data = SampleSerializer(sample_obj,many=False).data
+        sample_data = SampleSerializer(sample_obj, many=False).data
     else:
-        sample_obj = Samples.objects.prefetch_related("project_values")
-        sample_data = SampleSerializer(sample_obj,many=True).data
+        if "parameter" in request.GET:
+            param = request.GET["parameter"]
+            sample_obj = Samples.objects.all()
+            sample_data = SampleParameterSerializer(
+                sample_obj, many=True, context={"parameter": param}
+            ).data
+        else:
+            sample_obj = Samples.objects.prefetch_related("project_values")
+            sample_data = SampleSerializer(sample_obj, many=True).data
     return Response(sample_data, status=status.HTTP_200_OK)
+
 
 @swagger_auto_schema(
     method="get",

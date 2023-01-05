@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from collections import OrderedDict
+from datetime import datetime
 
 from iSkyLIMS_core.models import (
     LabRequest,
@@ -21,10 +22,11 @@ class UserIDSerializer(serializers.ModelSerializer):
         model = User
         fields = ["username"]
 
-class ProjectValuesSerializers(serializers.ModelSerializer):
-    sampleProjecttField_id=serializers.StringRelatedField(many=False)
 
-    def to_representation(self,instance):
+class ProjectValuesSerializers(serializers.ModelSerializer):
+    sampleProjecttField_id = serializers.StringRelatedField(many=False)
+
+    def to_representation(self, instance):
         data = super(ProjectValuesSerializers, self).to_representation(instance)
         data_update = dict()
         # Convert dict according to db table fields, to id and values inside the table.
@@ -37,14 +39,19 @@ class ProjectValuesSerializers(serializers.ModelSerializer):
         model = SampleProjectsFieldsValue
         fields = ["sampleProjecttField_id", "sampleProjectFieldValue"]
 
+
 class SampleSerializer(serializers.ModelSerializer):
     labRequest = serializers.StringRelatedField(many=False, label="Laboratory")
     sampleProject = serializers.StringRelatedField(many=False, label="Sample Project")
-    sampleEntryDate = serializers.DateTimeField(format="%Y-%m-%d", label="Recorded sample date")
-    collectionSampleDate = serializers.DateTimeField(format="%Y-%m-%d", label="Collection sample date")
+    sampleEntryDate = serializers.DateTimeField(
+        format="%Y-%m-%d", label="Recorded sample date"
+    )
+    collectionSampleDate = serializers.DateTimeField(
+        format="%Y-%m-%d", label="Collection sample date"
+    )
     project_values = ProjectValuesSerializers(many=True)
 
-    def to_representation(self,instance):
+    def to_representation(self, instance):
         data = super(SampleSerializer, self).to_representation(instance)
         data_update = OrderedDict()
         field_values = dict()
@@ -79,7 +86,6 @@ class SampleSerializer(serializers.ModelSerializer):
 
 
 class CreateSampleSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Samples
         fields = [
@@ -99,6 +105,41 @@ class CreateSampleSerializer(serializers.ModelSerializer):
             "sampleState",
             "completedDate",
         ]
+
+
+class SampleParameterSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        data = super(SampleParameterSerializer, self).to_representation(instance)
+        data_update = OrderedDict()
+        for key in self.fields:
+            # change parameter label name
+            if key == "req_param":
+                data_update[self.context["parameter"]] = data[key]
+            else:
+                # Change id to label for api rest output
+                data_update[self.fields[key].label] = data[key]
+
+        return data_update
+
+    req_param = serializers.SerializerMethodField("parameter_value")
+
+    class Meta:
+        model = Samples
+        fields = ["sampleName", "req_param"]
+
+    def parameter_value(self, obj):
+        param = self.context["parameter"]
+        if param:
+            req_parameter = "obj." + param
+            value = eval(req_parameter)
+            if "date" in param.lower():
+                if value is not None:
+                    return value.strftime("%Y-%m-%d")
+                else:
+                    return value
+            else:
+                return value
+        return False
 
 
 class CreateSampleTypeSerializer(serializers.ModelSerializer):
@@ -183,4 +224,3 @@ class SampleRunInfoSerializers(serializers.ModelSerializer):
         model = SamplesInProject
         # fields = "__all__"
         exclude = ["sampleInCore"]
-
