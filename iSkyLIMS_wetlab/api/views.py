@@ -304,6 +304,11 @@ def fetch_sample_information(request):
         if "parameter" in request.GET:
             param = request.GET["parameter"]
             sample_obj = Samples.objects.all()
+            # check if parameter exists
+            try:
+                eval("sample_obj[0]." + param)
+            except AttributeError:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
             sample_data = SampleParameterSerializer(
                 sample_obj, many=True, context={"parameter": param}
             ).data
