@@ -119,10 +119,10 @@ class SampleProjectParameterSerializer(serializers.ModelSerializer):
                 data_update[self.fields[key].label] = data[key]
 
         return data_update
-
+    sample_name = serializers.CharField(source="sample_id.sampleName")
     class Meta:
         model = SampleProjectsFieldsValue
-        fields = ["sample_id", "sampleProjectFieldValue"]
+        fields = ["sample_name", "sampleProjectFieldValue"]
 
 
 class SampleParameterSerializer(serializers.ModelSerializer):
