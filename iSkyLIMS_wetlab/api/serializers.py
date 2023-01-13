@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from collections import OrderedDict
-from datetime import datetime
 
 from iSkyLIMS_core.models import (
     LabRequest,
@@ -105,6 +104,25 @@ class CreateSampleSerializer(serializers.ModelSerializer):
             "sampleState",
             "completedDate",
         ]
+
+
+class SampleProjectParameterSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        data = super(SampleProjectParameterSerializer, self).to_representation(instance)
+        data_update = OrderedDict()
+        for key in self.fields:
+            # change parameter label name
+            if key == "sampleProjectFieldValue":
+                data_update[self.context["parameter"]] = data[key]
+            else:
+                # Change id to label for api rest output
+                data_update[self.fields[key].label] = data[key]
+
+        return data_update
+
+    class Meta:
+        model = SampleProjectsFieldsValue
+        fields = ["sample_id", "sampleProjectFieldValue"]
 
 
 class SampleParameterSerializer(serializers.ModelSerializer):

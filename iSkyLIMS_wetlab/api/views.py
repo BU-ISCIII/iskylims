@@ -13,6 +13,7 @@ from django.http import QueryDict
 from iSkyLIMS_core.models import (
     SampleProjects,
     SampleProjectsFields,
+    SampleProjectsFieldsValue,
     LabRequest,
     Samples,
 )
@@ -25,6 +26,7 @@ from .serializers import (
     SampleProjectFieldSerializer,
     SampleSerializer,
     SampleParameterSerializer,
+    SampleProjectParameterSerializer,
     LabRequestSerializer,
     SampleRunInfoSerializers,
 )
@@ -39,7 +41,6 @@ from .utils.sample_request_handling import (
     include_instances_in_sample,
     include_coding,
     get_sample_fields,
-    samples_match_on_parameter,
     split_sample_data,
     summarize_samples,
 )
@@ -289,7 +290,8 @@ def fetch_run_information(request):
 
 
 @swagger_auto_schema(
-    method="get", manual_parameters=[sample_information, sample_parameter]
+    method="get",
+    manual_parameters=[sample_information, sample_project_name, sample_parameter],
 )
 @api_view(["GET"])
 def fetch_sample_information(request):
@@ -301,6 +303,35 @@ def fetch_sample_information(request):
         sample_obj = Samples.objects.filter(sampleName__iexact=sample).last()
         sample_data = SampleSerializer(sample_obj, many=False).data
     else:
+        if "sample_project_name" in request.GET:
+            project_name = request.GET["sample_project_name"]
+            if "parameter" not in request.GET:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            param = request.GET["parameter"]
+            if SampleProjects.objects.filter(
+                sampleProjectName__iexact=project_name
+            ).exists():
+                project_obj = SampleProjects.objects.filter(
+                    sampleProjectName__iexact=project_name
+                ).last()
+
+                if not SampleProjectsFields.objects.filter(
+                    sampleProjects_id=project_obj, sampleProjectFieldName__iexact=param
+                ).exists():
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+                s_p_field_obj = SampleProjectsFields.objects.filter(
+                    sampleProjects_id=project_obj, sampleProjectFieldName__iexact=param
+                ).last()
+                sample_obj = SampleProjectsFieldsValue.objects.filter(
+                    sampleProjecttField_id=s_p_field_obj
+                )
+                # import pdb; pdb.set_trace()
+                sample_data = SampleProjectParameterSerializer(
+                    sample_obj, many=True, context={"parameter": param}
+                ).data
+                return Response(sample_data, status=status.HTTP_200_OK)
+            else:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
         if "parameter" in request.GET:
             param = request.GET["parameter"]
             sample_obj = Samples.objects.all()
