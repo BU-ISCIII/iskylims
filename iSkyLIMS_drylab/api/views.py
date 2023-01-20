@@ -124,11 +124,11 @@ def service_list(request):
             return Response(status=status.HTTP_400_BAD_REQUEST)
     if "date_from" in request.GET:
         date_from = request.GET["date_from"].strip()
-        if not check_valid_date_format(date):
+        if not check_valid_date_format(date_from):
             return Response(status=status.HTTP_400_BAD_REQUEST)
     if "date_until" in request.GET:
         date_until = request.GET["date_until"].strip()
-        if not check_valid_date_format(date):
+        if not check_valid_date_format(date_until):
             return Response(status=status.HTTP_400_BAD_REQUEST)
     if "state" in request.GET:
         state = request.GET["state"].strip()
