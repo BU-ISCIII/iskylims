@@ -72,10 +72,17 @@ service_state_param = openapi.Parameter(
     ],
     type=openapi.TYPE_STRING,
 )
-year_date_param = openapi.Parameter(
-    "date",
+date_from_param = openapi.Parameter(
+    "date_from",
     openapi.IN_QUERY,
-    description="Date parameter is optional.It will limit the results for the year specified in the parameter. Example 2022",
+    description="Date parameter is optional.It will limit the results from the date specified in the parameter. Example 2022-01-01",
+    type=openapi.TYPE_STRING,
+)
+
+date_until_param = openapi.Parameter(
+    "date_until",
+    openapi.IN_QUERY,
+    description="Date parameter is optional.It will limit the results up to the date specified in the parameter. Example 2022-01-01",
     type=openapi.TYPE_STRING,
 )
 
@@ -107,21 +114,22 @@ resolution_state_mand = openapi.Parameter(
 
 
 @swagger_auto_schema(
-    method="get", manual_parameters=[service_state_param, year_date_param]
+    method="get", manual_parameters=[service_state_param, date_from_param, date_until_param]
 )
 @api_view(["GET"])
 def service_list(request):
     param_requests = request.GET.keys()
     for param_request in param_requests:
-        if param_request not in ["date", "state"]:
+        if param_request not in ["date_from", "date_until", "state"]:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-    if "date" in request.GET:
-        date = request.GET["date"].strip()
+    if "date_from" in request.GET:
+        date_from = request.GET["date_from"].strip()
         if not check_valid_date_format(date):
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        else:
-            end_date = date + "-12-31"
-            date += "-01-01"
+    if "date_until" in request.GET:
+        date_until = request.GET["date_until"].strip()
+        if not check_valid_date_format(date):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
     if "state" in request.GET:
         state = request.GET["state"].strip()
         if not Service.objects.filter(serviceStatus__exact=state).exists():
@@ -132,9 +140,17 @@ def service_list(request):
         service_objs = service_objs.filter(serviceStatus__iexact=state).order_by(
             "serviceRequestNumber"
         )
-    if "date" in request.GET:
+    if "date_from" in request.GET:
+        date_until = date.today()
         service_objs = service_objs.filter(
-            serviceOnDeliveredDate__range=(date, end_date)
+            serviceOnDeliveredDate__range=(date_from, date_until)
+        ).order_by("serviceRequestNumber")
+    if len(service_objs) == 0:
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    if "date_from" in request.GET and "date_until" in request.GET:
+        service_objs = service_objs.filter(
+            serviceOnDeliveredDate__range=(date_from, date_until)
         ).order_by("serviceRequestNumber")
     if len(service_objs) == 0:
         return Response(status=status.HTTP_204_NO_CONTENT)
