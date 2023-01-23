@@ -35,7 +35,7 @@ from iSkyLIMS_drylab.utils.handling_resolutions import send_resolution_in_progre
 
 def check_valid_date_format(date):
     try:
-        datetime.strptime(date, "%Y")
+        datetime.strptime(date, "%Y-%m-%d")
         return True
     except ValueError:
         return False
@@ -141,7 +141,7 @@ def service_list(request):
             "serviceRequestNumber"
         )
     if "date_from" in request.GET:
-        date_until = date.today()
+        date_until = datetime.today()
         service_objs = service_objs.filter(
             serviceOnDeliveredDate__range=(date_from, date_until)
         ).order_by("serviceRequestNumber")
