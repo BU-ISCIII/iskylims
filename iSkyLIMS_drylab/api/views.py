@@ -23,6 +23,7 @@ from django.http import QueryDict
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .serializers import (
+    ServiceListSerializer,
     ServiceSerializer,
     ResolutionSerializer,
     RequestedSamplesInServicesSerializer,
@@ -140,63 +141,24 @@ def service_list(request):
         service_objs = service_objs.filter(serviceStatus__iexact=state).order_by(
             "serviceRequestNumber"
         )
-    if "date_from" in request.GET:
-        date_until = datetime.today()
-        service_objs = service_objs.filter(
-            serviceOnDeliveredDate__range=(date_from, date_until)
-        ).order_by("serviceRequestNumber")
-    if len(service_objs) == 0:
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
     if "date_from" in request.GET and "date_until" in request.GET:
         service_objs = service_objs.filter(
             serviceOnDeliveredDate__range=(date_from, date_until)
         ).order_by("serviceRequestNumber")
-    if len(service_objs) == 0:
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        if len(service_objs) == 0:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+    elif "date_from" in request.GET:
+        date_until = datetime.today()
+        service_objs = service_objs.filter(
+            serviceOnDeliveredDate__range=(date_from, date_until)
+        ).order_by("serviceRequestNumber")
+        if len(service_objs) == 0:
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
-    services_serializer = ServiceSerializer(service_objs, many=True)
-    for item in range(len(services_serializer.data)):
-        user_id = services_serializer.data[item]["serviceUserId"]["username"]
 
-        profile_obj = Profile.objects.get(profileUserID__username__exact=user_id)
-        services_serializer.data[item]["serviceUserId"][
-            "Center"
-        ] = profile_obj.get_profile_center_abbr()
-        services_serializer.data[item]["serviceUserId"][
-            "Area"
-        ] = profile_obj.get_clasification_area()
+    services_list_serializer = ServiceListSerializer(service_objs, many=True)
 
-        if Resolution.objects.filter(
-            resolutionServiceID__pk__exact=services_serializer.data[item]["pk"]
-        ).exists():
-            services_serializer.data[item]["serviceFolderName"] = (
-                Resolution.objects.filter(
-                    resolutionServiceID__pk__exact=services_serializer.data[item]["pk"]
-                )
-                .last()
-                .resolutionFullNumber
-            )
-        else:
-            services_serializer.data[item]["serviceFolderName"] = None
-
-    for item in range(len(services_serializer.data)):
-        if Resolution.objects.filter(
-            resolutionServiceID__pk__exact=services_serializer.data[item]["pk"]
-        ).exists():
-            resolution_objs = Resolution.objects.filter(
-                resolutionServiceID__pk__exact=services_serializer.data[item]["pk"]
-            )
-            resolution_list = []
-            for resolution_obj in resolution_objs:
-                resolution_data = {}
-                resolution_data["id"] = resolution_obj.get_resolution_id()
-                resolution_data["number"] = resolution_obj.get_resolution_number()
-                resolution_data["state"] = resolution_obj.get_resolution_state()
-                resolution_list.append(resolution_data)
-            services_serializer.data[item]["resolutions"] = resolution_list
-
-    return Response(services_serializer.data, status=status.HTTP_200_OK)
+    return Response(services_list_serializer.data, status=status.HTTP_200_OK)
 
 
 @swagger_auto_schema(

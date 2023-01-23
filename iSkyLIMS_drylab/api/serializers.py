@@ -21,6 +21,16 @@ class UserIDSerializer(serializers.ModelSerializer):
         model = User
         fields = ["username", "first_name", "last_name", "email"]
 
+class ServiceListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Service
+        fields = [
+            "serviceRequestNumber",
+            "serviceStatus",
+            "serviceCreatedOnDate",
+            "serviceOnDeliveredDate",
+            ]
 
 class ServiceSerializer(serializers.ModelSerializer):
     serviceFileExt = serializers.StringRelatedField(many=False)
@@ -35,6 +45,7 @@ class ServiceSerializer(serializers.ModelSerializer):
             "serviceStatus",
             "serviceUserId",
             "serviceCreatedOnDate",
+            "serviceOnDeliveredDate",
             "serviceSeqCenter",
             "serviceAvailableService",
             "serviceFileExt",
