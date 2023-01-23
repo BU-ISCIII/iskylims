@@ -281,7 +281,7 @@ def update_resolution(request):
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
-            "delvery": openapi.Schema(
+            "delivery": openapi.Schema(
                 type=openapi.TYPE_STRING, description="Delivery ID"
             )
         },
@@ -291,7 +291,7 @@ def update_resolution(request):
 @authentication_classes([SessionAuthentication, BasicAuthentication])
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def create(request):
+def create_delivery(request):
     if request.method == "POST":
         data = request.data
         if isinstance(data, QueryDict):

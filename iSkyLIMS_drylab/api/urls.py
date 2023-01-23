@@ -9,6 +9,6 @@ urlpatterns = [
     path('resolution', views.resolution_data, name='resolution_data'),
     path('samplesInService', views.samples_in_service, name='samples_in_service'),
     path('updateResolution', views.update_resolution, name='update_resolution'),
-    path('create', views.create, name='create'),
+    path('createDelivery', views.create_delivery, name='create_delivery'),
     ]
 # urlpatterns = format_suffix_patterns(urlpatterns)
