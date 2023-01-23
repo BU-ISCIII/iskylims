@@ -228,7 +228,7 @@ def service_full_data(request):
     method="put", manual_parameters=[resolution_number_param, resolution_state_param]
 )
 @api_view(["PUT"])
-def update_resolution(request):
+def update_state(request):
     if ("resolution" in request.query_params) and ("state" in request.query_params):
         resolution = request.query_params["resolution"].strip()
         if Resolution.objects.filter(resolutionNumber__exact=resolution).exists():

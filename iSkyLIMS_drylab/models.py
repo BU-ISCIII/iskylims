@@ -213,10 +213,6 @@ class Service(models.Model):
 	serviceUserId = models.ForeignKey(
 				User ,
 				on_delete=models.CASCADE, null=True)
-	#servicePlatform = models.ForeignKey(
-	#			Platform ,
-	#			on_delete=models.CASCADE ,
-	#			verbose_name=_("Sequencing platform"),blank=True,null=True)
 	serviceFileExt = models.ForeignKey(
 				FileExt ,
 				on_delete=models.CASCADE ,

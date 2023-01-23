@@ -12,10 +12,43 @@ from iSkyLIMS_drylab.models import (
 class CreateDeliveryPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Delivery
-        fields = ["deliveryResolutionID", "deliveryDate",
-                  "deliveryNotes", "executionStartDate"]
+        fields = [
+            "deliveryResolutionID",
+            "pipelinesInDelivery",
+            "deliveryDate",
+            "executionStartDate",
+            "executionEndDate",
+            "permanentUsedSpace",
+            "temporaryUsedSpace"
+            ]
 
-class UpdateResolutionSerializer(serializers.ModelSerializer):
+
+class UpdateResolutionStateSerializer(serializers.ModelSerializer):
+    resolutionState = serializers.StringRelatedField(many=False)
+
+    class Meta:
+        model = Resolution
+
+        fields = ["resolutionNumber", "resolutionState"]
+
+    def update(self, state_obj):
+        self.resolutionState = state_obj
+        self.save()
+        return self
+
+class UpdateServiceStateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Service
+
+        fields = ["serviceRequestNumber", "serviceStatus"]
+
+    def update(self, state_obj):
+        self.serviceStatus = state_obj
+        self.save()
+        return self
+
+class UpdateResolutionStateSerializer(serializers.ModelSerializer):
     resolutionState = serializers.StringRelatedField(many=False)
 
     class Meta:
