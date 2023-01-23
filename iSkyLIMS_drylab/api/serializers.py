@@ -21,38 +21,6 @@ class UserIDSerializer(serializers.ModelSerializer):
         model = User
         fields = ["username", "first_name", "last_name", "email"]
 
-class ServiceListSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Service
-        fields = [
-            "serviceRequestNumber",
-            "serviceStatus",
-            "serviceCreatedOnDate",
-            "serviceOnDeliveredDate",
-            ]
-
-class ServiceSerializer(serializers.ModelSerializer):
-    serviceFileExt = serializers.StringRelatedField(many=False)
-    serviceUserId = UserIDSerializer(many=False)
-    serviceAvailableService = serializers.StringRelatedField(many=True)
-
-    class Meta:
-        model = Service
-        fields = [
-            "pk",
-            "serviceRequestNumber",
-            "serviceStatus",
-            "serviceUserId",
-            "serviceCreatedOnDate",
-            "serviceOnDeliveredDate",
-            "serviceSeqCenter",
-            "serviceAvailableService",
-            "serviceFileExt",
-            "serviceNotes",
-            ]
-
-
 class UpdateResolutionSerializer(serializers.ModelSerializer):
     resolutionState = serializers.StringRelatedField(many=False)
 
@@ -78,21 +46,18 @@ class CustomAvailableServiceField(serializers.RelatedField):
 
 
 class ResolutionSerializer(serializers.ModelSerializer):
-    # resolutionServiceID = serializers.StringRelatedField(many = False)
     resolutionPipelines = serializers.StringRelatedField(many=True)
-    # esolutionServiceID = ServiceSerializer(many = False)
-    # availableServices = AvailableServicesSerializer(many=True)
     availableServices = CustomAvailableServiceField(many=True, read_only=True)
+    resolutionServiceID = serializers.StringRelatedField(many=False)
 
     class Meta:
         model = Resolution
         fields = [
-            "pk",
             "resolutionNumber",
             "resolutionFullNumber",
-            "resolutionServiceID",
             "resolutionDate",
             "resolutionEstimatedDate",
+            "resolutionServiceID",
             "resolutionOnQueuedDate",
             "resolutionOnInProgressDate",
             "resolutionDeliveryDate",
@@ -101,8 +66,42 @@ class ResolutionSerializer(serializers.ModelSerializer):
             "availableServices",
             ]
 
-
 class RequestedSamplesInServicesSerializer(serializers.ModelSerializer):
     class Meta:
         model = RequestedSamplesInServices
         fields = ["runName", "projectName", "sampleName", "samplePath"]
+
+
+class ServiceListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Service
+        fields = [
+            "serviceRequestNumber",
+            "serviceStatus",
+            "serviceCreatedOnDate",
+            "serviceOnDeliveredDate",
+            ]
+
+class ServiceSerializer(serializers.ModelSerializer):
+    serviceFileExt = serializers.StringRelatedField(many=False)
+    serviceUserId = UserIDSerializer(many=False)
+    serviceAvailableService = serializers.StringRelatedField(many=True)
+    resolutions = ResolutionSerializer(many=True)
+
+    class Meta:
+        model = Service
+        fields = [
+            "serviceRequestNumber",
+            "serviceStatus",
+            "serviceUserId",
+            "serviceCreatedOnDate",
+            "serviceOnDeliveredDate",
+            "serviceSeqCenter",
+            "serviceAvailableService",
+            "serviceFileExt",
+            "serviceNotes",
+            "resolutions"
+            ]
+
+

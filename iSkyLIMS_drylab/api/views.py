@@ -221,35 +221,35 @@ def service_full_data(request):
             service_obj = Service.objects.filter(
                 serviceRequestNumber__iexact=service
             ).last()
-            service_full_data["Service"] = ServiceSerializer(
+            service_full_data = ServiceSerializer(
                 service_obj, many=False
             ).data
-            services_serializer = ServiceSerializer(service_obj, many=False)
-            user_id = services_serializer.data["serviceUserId"]["username"]
-            profile_obj = Profile.objects.get(profileUserID__username__exact=user_id)
-            services_serializer.data["serviceUserId"][
-                "Center"
-            ] = profile_obj.get_profile_center_abbr()
-            services_serializer.data["serviceUserId"][
-                "Area"
-            ] = profile_obj.get_clasification_area()
+            #services_serializer = ServiceSerializer(service_obj, many=False)
+            #user_id = services_serializer.data["serviceUserId"]["username"]
+            #profile_obj = Profile.objects.get(profileUserID__username__exact=user_id)
+            #services_serializer.data["serviceUserId"][
+            #    "Center"
+            #] = profile_obj.get_profile_center_abbr()
+            #services_serializer.data["serviceUserId"][
+            #    "Area"
+            #] = profile_obj.get_clasification_area()
 
-            if Resolution.objects.filter(resolutionServiceID=service_obj).exists():
-                resolution_objs = Resolution.objects.filter(
-                    resolutionServiceID=service_obj
-                )
-                service_full_data["Resolutions"] = ResolutionSerializer(
-                    resolution_objs, many=True
-                ).data
-            if RequestedSamplesInServices.objects.filter(
-                samplesInService__serviceRequestNumber__iexact=service
-            ).exists():
-                sample_objs = RequestedSamplesInServices.objects.filter(
-                    samplesInService__serviceRequestNumber__iexact=service
-                )
-                service_full_data["Samples"] = RequestedSamplesInServicesSerializer(
-                    sample_objs, many=True
-                ).data
+#            if Resolution.objects.filter(resolutionServiceID=service_obj).exists():
+#                resolution_objs = Resolution.objects.filter(
+#                    resolutionServiceID=service_obj
+#                )
+#                service_full_data["Resolutions"] = ResolutionSerializer(
+#                    resolution_objs, many=True
+#                ).data
+#            if RequestedSamplesInServices.objects.filter(
+#                samplesInService__serviceRequestNumber__iexact=service
+#            ).exists():
+#                sample_objs = RequestedSamplesInServices.objects.filter(
+#                    samplesInService__serviceRequestNumber__iexact=service
+#                )
+#                service_full_data["Samples"] = RequestedSamplesInServicesSerializer(
+#                    sample_objs, many=True
+#                ).data
 
             return Response(service_full_data, status=status.HTTP_200_OK)
         else:

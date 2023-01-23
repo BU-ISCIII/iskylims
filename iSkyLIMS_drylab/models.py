@@ -498,7 +498,7 @@ class ResolutionManager(models.Manager):
 class Resolution(models.Model):
 	resolutionServiceID =  models.ForeignKey(
 				Service ,
-				on_delete=models.CASCADE)
+				on_delete=models.CASCADE, related_name = "resolutions")
 	resolutionAsignedUser = models.ForeignKey(
 				User,
 				related_name='groups+',
