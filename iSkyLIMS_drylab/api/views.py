@@ -1,7 +1,7 @@
 from datetime import datetime
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
-
+from django.db.models import Prefetch
 
 from rest_framework.decorators import (
     authentication_classes,
@@ -155,7 +155,6 @@ def service_list(request):
         if len(service_objs) == 0:
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-
     services_list_serializer = ServiceListSerializer(service_objs, many=True)
 
     return Response(services_list_serializer.data, status=status.HTTP_200_OK)
@@ -172,8 +171,6 @@ def resolution_data(request):
             resolution_obj = Resolution.objects.filter(
                 resolutionNumber__exact=resolution
             ).last()
-            resolution_serializer = ResolutionSerializer(resolution_obj, many=False)
-            return Response(resolution_serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_204_NO_CONTENT)
     elif "state" in request.GET:
@@ -183,12 +180,13 @@ def resolution_data(request):
             resolution_objs = Resolution.objects.filter(
                 resolutionState__resolutionStateName__exact=request.GET["state"]
             )
-            resolution_serializer = ResolutionSerializer(resolution_objs, many=True)
-            return Response(resolution_serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_204_NO_CONTENT)
     else:
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    resolution_serializer = ResolutionSerializer(resolution_obj, many=False)
+    return Response(resolution_serializer.data, status=status.HTTP_200_OK)
 
 
 @swagger_auto_schema(method="get", manual_parameters=[service_name_param])
@@ -211,86 +209,36 @@ def samples_in_service(request):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-@swagger_auto_schema(method="get", manual_parameters=[service_name_param])
+@swagger_auto_schema(method="get", manual_parameters=[service_name_param, resolution_number_param])
 @api_view(["GET"])
 def service_full_data(request):
     if "service" in request.GET:
         service = request.GET["service"].strip()
-        if Service.objects.filter(serviceRequestNumber__iexact=service).exists():
-            service_full_data = {}
-            service_obj = Service.objects.filter(
-                serviceRequestNumber__iexact=service
-            ).last()
-            service_full_data = ServiceSerializer(
-                service_obj, many=False
-            ).data
-            #services_serializer = ServiceSerializer(service_obj, many=False)
-            #user_id = services_serializer.data["serviceUserId"]["username"]
-            #profile_obj = Profile.objects.get(profileUserID__username__exact=user_id)
-            #services_serializer.data["serviceUserId"][
-            #    "Center"
-            #] = profile_obj.get_profile_center_abbr()
-            #services_serializer.data["serviceUserId"][
-            #    "Area"
-            #] = profile_obj.get_clasification_area()
-
-#            if Resolution.objects.filter(resolutionServiceID=service_obj).exists():
-#                resolution_objs = Resolution.objects.filter(
-#                    resolutionServiceID=service_obj
-#                )
-#                service_full_data["Resolutions"] = ResolutionSerializer(
-#                    resolution_objs, many=True
-#                ).data
-#            if RequestedSamplesInServices.objects.filter(
-#                samplesInService__serviceRequestNumber__iexact=service
-#            ).exists():
-#                sample_objs = RequestedSamplesInServices.objects.filter(
-#                    samplesInService__serviceRequestNumber__iexact=service
-#                )
-#                service_full_data["Samples"] = RequestedSamplesInServicesSerializer(
-#                    sample_objs, many=True
-#                ).data
-
-            return Response(service_full_data, status=status.HTTP_200_OK)
-        else:
-            return Response(status=status.HTTP_204_NO_CONTENT)
-    else:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
-@swagger_auto_schema(method="get", manual_parameters=[resolution_number_param])
-@api_view(["GET"])
-def resolution_full_data(request):
-    if "resolution" in request.GET:
+        service_obj = Service.objects.prefetch_related(
+            Prefetch('resolutions', queryset=Resolution.objects.all(), to_attr='filtered_resolutions')
+        )
+    elif "resolution" in request.GET:
         resolution = request.GET["resolution"].strip()
-        if Resolution.objects.filter(resolutionNumber__iexact=resolution).exists():
-            resolution_full_data = {}
-            resolution_obj = Resolution.objects.filter(
-                resolutionNumber__iexact=resolution
-            ).last()
-            service_obj = resolution_obj.get_service_obj()
-            resolution_full_data["Service"] = ServiceSerializer(
-                service_obj, many=False
-            ).data
-            resolution_full_data["Resolutions"] = ResolutionSerializer(
-                resolution_obj, many=False
-            ).data
-            if RequestedSamplesInServices.objects.filter(
-                samplesInService=service_obj
-            ).exists():
-                sample_objs = RequestedSamplesInServices.objects.filter(
-                    samplesInService=service_obj
-                )
-                resolution_full_data["Samples"] = RequestedSamplesInServicesSerializer(
-                    sample_objs, many=True
-                ).data
-
-            return Response(resolution_full_data, status=status.HTTP_200_OK)
-        else:
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        service = Resolution.objects.filter(resolutionNumber__iexact= resolution).last().resolutionServiceID
+        service_obj = Service.objects.prefetch_related(
+            Prefetch('resolutions', queryset=Resolution.objects.filter(resolutionNumber__iexact=resolution), to_attr='filtered_resolutions')
+        )
     else:
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
+    if Service.objects.filter(serviceRequestNumber__iexact=service).exists():
+        service_full_data = {}
+
+        service_obj = service_obj.filter(
+            serviceRequestNumber__iexact=service
+        ).last()
+
+        service_full_data = ServiceSerializer(
+            service_obj, many=False
+        ).data
+        return Response(service_full_data, status=status.HTTP_200_OK)
+    else:
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 @swagger_auto_schema(
     method="put", manual_parameters=[resolution_number_param, resolution_state_param]

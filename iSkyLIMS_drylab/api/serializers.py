@@ -85,7 +85,7 @@ class ServiceSerializer(serializers.ModelSerializer):
     serviceFileExt = serializers.StringRelatedField(many=False)
     serviceUserId = UserIDSerializer(many=False)
     serviceAvailableService = serializers.StringRelatedField(many=True)
-    resolutions = ResolutionSerializer(many=True)
+    resolutions = ResolutionSerializer(source="filtered_resolutions", many=True)
     samples = RequestedSamplesInServicesSerializer(many=True)
 
     class Meta:
