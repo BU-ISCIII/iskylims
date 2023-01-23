@@ -14,13 +14,6 @@ class CreateDeliveryPostSerializer(serializers.ModelSerializer):
         fields = ["deliveryResolutionID", "deliveryDate",
                   "deliveryNotes", "executionStartDate"]
 
-
-class UserIDSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = User
-        fields = ["username", "first_name", "last_name", "email"]
-
 class UpdateResolutionSerializer(serializers.ModelSerializer):
     resolutionState = serializers.StringRelatedField(many=False)
 
@@ -34,6 +27,11 @@ class UpdateResolutionSerializer(serializers.ModelSerializer):
         self.save()
         return self
 
+class UserIDSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ["username", "first_name", "last_name", "email"]
 
 class CustomAvailableServiceField(serializers.RelatedField):
     def to_representation(self, service):
@@ -88,6 +86,7 @@ class ServiceSerializer(serializers.ModelSerializer):
     serviceUserId = UserIDSerializer(many=False)
     serviceAvailableService = serializers.StringRelatedField(many=True)
     resolutions = ResolutionSerializer(many=True)
+    samples = RequestedSamplesInServicesSerializer(many=True)
 
     class Meta:
         model = Service
@@ -101,7 +100,6 @@ class ServiceSerializer(serializers.ModelSerializer):
             "serviceAvailableService",
             "serviceFileExt",
             "serviceNotes",
-            "resolutions"
+            "resolutions",
+            "samples"
             ]
-
-

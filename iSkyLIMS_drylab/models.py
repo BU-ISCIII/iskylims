@@ -417,7 +417,7 @@ class RequestedSamplesInServicesManager (models.Manager):
 class RequestedSamplesInServices (models.Model):
 	samplesInService = models.ForeignKey(
 					Service,
-					on_delete = models.CASCADE)
+					on_delete = models.CASCADE, related_name = "samples")
 
 	sampleKey = models.CharField(max_length = 15, null = True, blank = True)
 	sampleName = models.CharField(max_length = 50, null = True, blank = True)
