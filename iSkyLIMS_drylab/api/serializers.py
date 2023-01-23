@@ -4,7 +4,8 @@ from iSkyLIMS_drylab.models import (
     Service,
     Resolution,
     RequestedSamplesInServices,
-    Delivery
+    Delivery,
+    Pipelines
     )
 
 
@@ -42,11 +43,36 @@ class CustomAvailableServiceField(serializers.RelatedField):
             data["serviceId"] = None
         return data
 
+class PipelinesSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model=Pipelines
+        fields = [
+            "pipelineName",
+            "PipelineVersion"
+        ]
+
+class DeliverySerializer(serializers.ModelSerializer):
+    deliveryResolutionID = serializers.StringRelatedField(many=False)
+    pipelinesInDelivery = PipelinesSerializer(many=True)
+
+    class Meta:
+        model= Delivery
+        fields = [
+            "deliveryResolutionID",
+            "pipelinesInDelivery",
+            "deliveryDate",
+            "executionStartDate",
+            "executionEndDate",
+            "permanentUsedSpace",
+            "temporaryUsedSpace"
+        ]
 
 class ResolutionSerializer(serializers.ModelSerializer):
     resolutionPipelines = serializers.StringRelatedField(many=True)
     availableServices = CustomAvailableServiceField(many=True, read_only=True)
     resolutionServiceID = serializers.StringRelatedField(many=False)
+    delivery = DeliverySerializer(many=True)
 
     class Meta:
         model = Resolution
@@ -62,6 +88,7 @@ class ResolutionSerializer(serializers.ModelSerializer):
             "resolutionNotes",
             "resolutionPipelines",
             "availableServices",
+            "delivery"
             ]
 
 class RequestedSamplesInServicesSerializer(serializers.ModelSerializer):

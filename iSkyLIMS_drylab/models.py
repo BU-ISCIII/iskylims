@@ -710,7 +710,8 @@ class DeliveryManager(models.Manager):
 class Delivery(models.Model):
 	deliveryResolutionID = models.ForeignKey(
 						Resolution ,
-						on_delete=models.CASCADE )
+						on_delete=models.CASCADE,
+						related_name="delivery")
 	pipelinesInDelivery = models.ManyToManyField(Pipelines, blank = True)
 
 	deliveryDate = models.DateField(auto_now_add=True,null=True,blank=True)

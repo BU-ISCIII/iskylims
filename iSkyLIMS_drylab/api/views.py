@@ -42,22 +42,6 @@ def check_valid_date_format(date):
         return False
 
 
-"""
-try:
-   from iSkyLIMS_wetlab.utils.api.wetlab_api  import *
-   wetlab_api_available = True
-except:
-   wetlab_api_available = False
-
-def get_projectsid(service):
-   serv = Service.objects.get(serviceRequestNumber__exact = service)
-   service_id = serv.id
-   project_list = RequestedProjectInServices.objects.filter(projectService = service_id)
-   projects_id=[]
-   for project in project_list:
-       projects_id.append(str(project.get_requested_external_project_id()))
-   return projects_id
-"""
 service_state_param = openapi.Parameter(
     "state",
     openapi.IN_QUERY,
