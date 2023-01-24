@@ -23,7 +23,7 @@ STATUS_CHOICES = (
 	   		('approved',_("Approved")),
 			('rejected',_("Rejected")),
 			('queued',_("Queued")),
-			('in_progress',_('In progress')),
+			('in_progress',_('In Progress')),
 			('delivered',_("Delivered")),
 			('archived',_("Archived"))
 		)

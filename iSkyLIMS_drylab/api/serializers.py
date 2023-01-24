@@ -43,23 +43,10 @@ class UpdateServiceStateSerializer(serializers.ModelSerializer):
 
         fields = ["serviceRequestNumber", "serviceStatus"]
 
-    def update(self, state_obj):
-        self.serviceStatus = state_obj
-        self.save()
-        return self
-
-class UpdateResolutionStateSerializer(serializers.ModelSerializer):
-    resolutionState = serializers.StringRelatedField(many=False)
-
-    class Meta:
-        model = Resolution
-
-        fields = ["resolutionNumber", "resolutionState"]
-
-    def update(self, state_obj):
-        self.resolutionState = state_obj
-        self.save()
-        return self
+#     def update(self, state):
+#         self.serviceStatus = state
+#         self.save()
+#         return self
 
 class UserIDSerializer(serializers.ModelSerializer):
 
