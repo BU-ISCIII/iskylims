@@ -254,15 +254,15 @@ def update_state(request):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
 
             UpdateResolutionStateSerializer.update(resolution_obj, state_obj)
-            updated_resolution_serializer = UpdateResolutionStateSerializer(resolution_obj)
+            resolution_serializer = UpdateResolutionStateSerializer(resolution_obj)
 #             data_resolution = {
 #                 "resolutionNumber" : resolution,
 #                 "resolutionState" : state_obj
 #             }
 #
-#             updated_resolution_serializer = UpdateResolutionStateSerializer(resolution_obj, data=data_resolution)
-#             updated_resolution_serializer.is_valid(raise_exception=True)
-#             updated_resolution_serializer.save()
+#             resolution_serializer = UpdateResolutionStateSerializer(resolution_obj, data=data_resolution)
+#             resolution_serializer.is_valid(raise_exception=True)
+#             resolution_serializer.save()
 
             email_data = {}
             email_data["user_email"] = service_obj.get_user_email()
@@ -293,7 +293,7 @@ def update_state(request):
                  send_delivery_service_email(email_data)
 
             return Response(
-                updated_resolution_serializer.data, status=status.HTTP_200_OK
+                resolution_serializer.data, status=status.HTTP_200_OK
             )
 
         else:
