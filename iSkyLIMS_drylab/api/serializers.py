@@ -24,17 +24,18 @@ class CreateDeliveryPostSerializer(serializers.ModelSerializer):
 
 
 class UpdateResolutionStateSerializer(serializers.ModelSerializer):
-    resolutionState = serializers.StringRelatedField(many=False)
+    #resolutionState = serializers.StringRelatedField(many=False)
 
     class Meta:
         model = Resolution
 
         fields = ["resolutionNumber", "resolutionState"]
 
-    def update(self, state_obj):
-        self.resolutionState = state_obj
-        self.save()
-        return self
+    def update(self, instance, validated_data):
+        instance.resolutionNumber = validated_data["resolutionNumber"]
+        instance.resolutionState = validated_data["resolutionState"]
+        instance.save()
+        return instance
 
 class UpdateServiceStateSerializer(serializers.ModelSerializer):
 
@@ -42,11 +43,6 @@ class UpdateServiceStateSerializer(serializers.ModelSerializer):
         model = Service
 
         fields = ["serviceRequestNumber", "serviceStatus"]
-
-#     def update(self, state):
-#         self.serviceStatus = state
-#         self.save()
-#         return self
 
 class UserIDSerializer(serializers.ModelSerializer):
 
