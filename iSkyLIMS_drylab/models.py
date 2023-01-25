@@ -23,7 +23,7 @@ STATUS_CHOICES = (
 	   		('approved',_("Approved")),
 			('rejected',_("Rejected")),
 			('queued',_("Queued")),
-			('in_progress',_('In progress')),
+			('in_progress',_('In Progress')),
 			('delivered',_("Delivered")),
 			('archived',_("Archived"))
 		)
@@ -213,10 +213,6 @@ class Service(models.Model):
 	serviceUserId = models.ForeignKey(
 				User ,
 				on_delete=models.CASCADE, null=True)
-	#servicePlatform = models.ForeignKey(
-	#			Platform ,
-	#			on_delete=models.CASCADE ,
-	#			verbose_name=_("Sequencing platform"),blank=True,null=True)
 	serviceFileExt = models.ForeignKey(
 				FileExt ,
 				on_delete=models.CASCADE ,
@@ -417,7 +413,7 @@ class RequestedSamplesInServicesManager (models.Manager):
 class RequestedSamplesInServices (models.Model):
 	samplesInService = models.ForeignKey(
 					Service,
-					on_delete = models.CASCADE)
+					on_delete = models.CASCADE, related_name = "samples")
 
 	sampleKey = models.CharField(max_length = 15, null = True, blank = True)
 	sampleName = models.CharField(max_length = 50, null = True, blank = True)
@@ -498,7 +494,7 @@ class ResolutionManager(models.Manager):
 class Resolution(models.Model):
 	resolutionServiceID =  models.ForeignKey(
 				Service ,
-				on_delete=models.CASCADE)
+				on_delete=models.CASCADE, related_name = "resolutions")
 	resolutionAsignedUser = models.ForeignKey(
 				User,
 				related_name='groups+',
@@ -710,7 +706,8 @@ class DeliveryManager(models.Manager):
 class Delivery(models.Model):
 	deliveryResolutionID = models.ForeignKey(
 						Resolution ,
-						on_delete=models.CASCADE )
+						on_delete=models.CASCADE,
+						related_name="delivery")
 	pipelinesInDelivery = models.ManyToManyField(Pipelines, blank = True)
 
 	deliveryDate = models.DateField(auto_now_add=True,null=True,blank=True)

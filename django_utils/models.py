@@ -7,14 +7,17 @@ from django.contrib.auth.models import User,AbstractUser
 
 
 class Center(models.Model):
-  	centerName = models.CharField(_("Center"),max_length=50)
-  	centerAbbr = models.CharField(_("Acronym"),max_length=25)
+    centerName = models.CharField(_("Center"),max_length=50)
+    centerAbbr = models.CharField(_("Acronym"),max_length=25)
 
-  	def __str__ (self):
-  		return '%s' %(self.centerName)
+    def __str__ (self):
+        return '%s' %(self.centerAbbr)
 
-  	def get_center_abbr(self):
-  	  	return '%s' %(self.centerAbbr)
+    def get_center_abbr(self):
+        return '%s' %(self.centerAbbr)
+
+    def get_center_name(self):
+        return '%s' %(self.centerName)
 
 class ClassificationArea(models.Model):
     classificationAreaName = models.CharField(max_length = 80)
@@ -28,7 +31,7 @@ class ClassificationArea(models.Model):
 
 class Profile(models.Model):
     profileUserID = models.OneToOneField(
-            User,
+            User, related_name="profile",
             on_delete=models.CASCADE)
     profileClassificationArea = models.ForeignKey(
             ClassificationArea,

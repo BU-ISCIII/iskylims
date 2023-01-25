@@ -312,8 +312,8 @@ def get_pending_services_information():
             pending_services_per_unit[unit_serv]['recorded'] += 1
 
     # Resolution  in queued state
-    if Resolution.objects.filter(resolutionState__resolutionStateName__exact = 'Recorded').exists():
-        resolution_recorded_objs = Resolution.objects.filter(resolutionState__resolutionStateName__exact = 'Recorded').order_by('-resolutionServiceID')
+    if Resolution.objects.filter(resolutionState__resolutionStateName__exact = 'Queued').exists():
+        resolution_recorded_objs = Resolution.objects.filter(resolutionState__resolutionStateName__exact = 'Queued').order_by('-resolutionServiceID')
         for resolution_recorded_obj in resolution_recorded_objs :
             queued.append(resolution_recorded_obj.get_information_for_pending_resolutions())
         pending_services_details['queued'] = queued
@@ -520,7 +520,7 @@ def get_service_information (service_id, service_manager):
                 # display_service_details['resolution_delivered'] = []
                 available_services_ids = []
                 for resolution_obj in resolution_objs:
-                    if resolution_obj.get_resolution_state() == 'Recorded':
+                    if resolution_obj.get_resolution_state() == 'Queued':
                         req_available_services = resolution_obj.get_available_services()
                         if req_available_services != ['None']:
                             req_available_service_ids = resolution_obj.get_available_services_ids()
