@@ -16,6 +16,7 @@ from iSkyLIMS_drylab.models import (
     Resolution,
     ResolutionStates,
     RequestedSamplesInServices,
+    Pipelines,
 )
 from django_utils.models import Profile
 from django.http import QueryDict
@@ -306,9 +307,27 @@ def update_state(request):
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
-            "delivery": openapi.Schema(
-                type=openapi.TYPE_STRING, description="Delivery ID"
-            )
+            "resolutionNumber": openapi.Schema(
+                type=openapi.TYPE_STRING, description="resolutionNumber. pe. SRVCNM123.1"
+            ),
+            "pipelinesInDelivery": openapi.Schema(
+                type=openapi.TYPE_ARRAY, items = openapi.Items(type="string"), description="resolutionNumber. pe. ['viralrecon']"
+            ),
+            "deliveryDate": openapi.Schema(
+                type=openapi.TYPE_STRING, description="delivery date. pe. 2022-01-01"
+            ),
+            "executionStartDate": openapi.Schema(
+                type=openapi.TYPE_STRING, description="execution start date. pe. 2022-01-01"
+            ),
+            "executionEndDate": openapi.Schema(
+                type=openapi.TYPE_STRING, description="execution end date. pe. 2022-01-01"
+            ),
+            "permanentUsedSpace": openapi.Schema(
+                type=openapi.TYPE_INTEGER, description="permanent used space in GB. pe. 134"
+            ),
+            "temporaryUsedSpace": openapi.Schema(
+                type=openapi.TYPE_INTEGER, description="temporary used space in GB. pe. SRVCNM123.1"
+            ),
         },
     ),
     responses={200: "Successful delivery creation", 400: "Bad Request"},
@@ -321,11 +340,20 @@ def create_delivery(request):
         data = request.data
         if isinstance(data, QueryDict):
             data = data.dict()
-        if "delivery" in data:
-            serializer = CreateDeliveryPostSerializer(data=data)
-            if not serializer.is_valid():
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+        resolution_pk = Resolution.objects.filter(resolutionNumber__exact=data["resolutionNumber"]).last().pk
+        pipelines = [ Pipelines.objects.filter(pipelineName__exact=pip).last().pk for pip in data["pipelinesInDelivery"]]
+
+        data.pop("resolutionNumber")
+        data["deliveryResolutionID"] = resolution_pk
+        data["pipelinesInDelivery"] = pipelines
+
+        serializer = CreateDeliveryPostSerializer(data=data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     return Response(status=status.HTTP_400_BAD_REQUEST)
