@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from django_utils.models import Profile
 from iSkyLIMS_drylab.models import (
     Service,
     Resolution,
@@ -44,11 +45,20 @@ class UpdateServiceStateSerializer(serializers.ModelSerializer):
 
         fields = ["serviceRequestNumber", "serviceStatus"]
 
+class ProfileUserSerializer(serializers.ModelSerializer):
+    profileClassificationArea= serializers.StringRelatedField()
+    profileCenter = serializers.StringRelatedField()
+
+    class Meta:
+        model = Profile
+        fields = ["profileClassificationArea", "profileCenter"]
+
 class UserIDSerializer(serializers.ModelSerializer):
+    profile = ProfileUserSerializer(many=False)
 
     class Meta:
         model = User
-        fields = ["username", "first_name", "last_name", "email"]
+        fields = ["username", "first_name", "last_name", "email", "profile"]
 
 class CustomAvailableServiceField(serializers.RelatedField):
     def to_representation(self, service):
