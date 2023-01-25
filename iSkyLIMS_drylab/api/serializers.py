@@ -30,11 +30,15 @@ class UpdateResolutionStateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Resolution
 
-        fields = ["resolutionNumber", "resolutionState"]
+        fields = ["resolutionNumber", "resolutionOnInProgressDate", "resolutionDeliveryDate","resolutionState"]
 
     def update(self, instance, validated_data):
         instance.resolutionNumber = validated_data["resolutionNumber"]
         instance.resolutionState = validated_data["resolutionState"]
+        if "resolutionOnInProgressDate" in validated_data:
+            instance.resolutionOnInProgressDate = validated_data["resolutionOnInProgressDate"]
+        if "resolutionDeliveryDate" in validated_data:
+            instance.resolutionDeliveryDate = validated_data["resolutionDeliveryDate"]
         instance.save()
         return instance
 
@@ -43,7 +47,7 @@ class UpdateServiceStateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
 
-        fields = ["serviceRequestNumber", "serviceStatus"]
+        fields = ["serviceRequestNumber", "serviceOnDeliveredDate", "serviceStatus"]
 
 class ProfileUserSerializer(serializers.ModelSerializer):
     profileClassificationArea= serializers.StringRelatedField()
@@ -95,6 +99,7 @@ class DeliverySerializer(serializers.ModelSerializer):
         ]
 
 class ResolutionSerializer(serializers.ModelSerializer):
+    resolutionState=serializers.StringRelatedField(many=False)
     resolutionPipelines = serializers.StringRelatedField(many=True)
     availableServices = CustomAvailableServiceField(many=True, read_only=True)
     resolutionServiceID = serializers.StringRelatedField(many=False)
@@ -105,6 +110,7 @@ class ResolutionSerializer(serializers.ModelSerializer):
         fields = [
             "resolutionNumber",
             "resolutionFullNumber",
+            "resolutionState",
             "resolutionDate",
             "resolutionEstimatedDate",
             "resolutionServiceID",

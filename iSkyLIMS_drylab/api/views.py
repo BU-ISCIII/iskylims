@@ -254,14 +254,6 @@ def update_state(request):
             except Exception:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
 
-            data_resolution = {
-                "resolutionNumber" : resolution,
-                "resolutionState" : state_obj.pk
-            }
-
-            resolution_serializer = UpdateResolutionStateSerializer(resolution_obj, data=data_resolution)
-            resolution_serializer.is_valid(raise_exception=True)
-            resolution_serializer.save()
 
             service_obj = resolution_obj.get_service_obj()
 
@@ -271,26 +263,40 @@ def update_state(request):
             email_data["resolution_number"] = resolution_obj.get_resolution_number()
 
             if state == "In Progress":
-                 data_service = {
-                     "serviceRequestNumber" : service_obj.serviceRequestNumber,
-                     "serviceStatus" : "in_progress"
-                 }
-                 serializer_services = UpdateServiceStateSerializer(service_obj,data=data_service)
-                 if serializer_services.is_valid(raise_exception=True):
-                    serializer_services.save()
-                 # Send email in progress
-                 send_resolution_in_progress_email(email_data)
+                data_resolution = {
+                    "resolutionNumber" : resolution,
+                    "resolutionState" : state_obj.pk,
+                    "resolutionOnInProgressDate" : datetime.today().strftime("%Y-%m-%d")
+                }
+                data_service = {
+                    "serviceRequestNumber" : service_obj.serviceRequestNumber,
+                    "serviceStatus" : "in_progress"
+                }
+                # Send email in progress
+                send_resolution_in_progress_email(email_data)
 
-            elif state == "Delivery" and all_resolutions_delivered(service_obj,state_obj):
-                 data_service = {
-                     "serviceRequestNumber" : service_obj.serviceRequestNumber,
-                     "serviceStatus" : "delivered"
-                 }
-                 serializer_services = UpdateServiceStateSerializer(service_obj,data=data_service)
-                 if serializer_services.is_valid(raise_exception=True):
+            elif state == "Delivery":
+                data_resolution = {
+                    "resolutionNumber" : resolution,
+                    "resolutionState" : state_obj.pk,
+                    "resolutionDeliveryDate" : datetime.today().strftime("%Y-%m-%d")
+                }
+                data_service = {
+                    "serviceRequestNumber" : service_obj.serviceRequestNumber,
+                    "serviceStatus" : "delivered",
+                    "serviceOnDeliveredDate" : datetime.today().strftime("%Y-%m-%d")
+                }
+                    # Send email
+                send_delivery_service_email(email_data)
+
+            resolution_serializer = UpdateResolutionStateSerializer(resolution_obj, data=data_resolution)
+            if resolution_serializer.is_valid(raise_exception=True):
+                resolution_serializer.save()
+
+            if (state=="Delivery" and all_resolutions_delivered(service_obj,state_obj)) or state=="In Progress":
+                serializer_services = UpdateServiceStateSerializer(service_obj,data=data_service)
+                if serializer_services.is_valid(raise_exception=True):
                     serializer_services.save()
-                 # Send email
-                 send_delivery_service_email(email_data)
 
             return Response(
                 resolution_serializer.data, status=status.HTTP_200_OK
