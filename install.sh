@@ -1,23 +1,6 @@
 #!/bin/bash
 
-#=============================================================
-# HEADER
-#=============================================================
-
-#INSTITUTION:ISCIII
-#CENTRE:BU-ISCIII
-#AUTHOR: Luis Chapado
 SCRIPT_VERSION=0.2
-#CREATED: 08 November 2021
-#
-#
-#DESCRIPTION: This script install on your local server the latest stable
-#   version of iSkyLIMS application 
-#
-#
-#================================================================
-# END_OF_HEADER
-#================================================================
 
 ISKYLIMS_VERSION="2.0.x"
 . ./install_settings.txt
@@ -39,21 +22,51 @@ db_check(){
 }
 
 apache_check(){
-    if ! pidof apache2 > /dev/null ; then
-        # web server down, restart the server
-        echo "Apache Server is down... Trying to restart Apache"
-        systemctl restart apache2.service
-        sleep 10
-        if pidof apache2 > /dev/null ; then
-            echo "Apache Server is up"
-        else
-            echo -e "${RED}ERROR : Unable to start Apache ${NC}"
-            echo -e "${RED}ERROR : Solve the issue with Apache server and run again the installation script ${NC}"
-            exit 1
+    if [[ $linux_distribution == "Ubuntu" ]]; then
+        if ! pidof apache2 > /dev/null ; then
+            # web server down, restart the server
+            echo "Apache Server is down... Trying to restart Apache"
+            systemctl restart apache2.service
+            sleep 10
+            if pidof apache2 > /dev/null ; then
+                echo "Apache Server is up"
+            else
+                echo -e "${RED}ERROR : Unable to start Apache ${NC}"
+                echo -e "${RED}ERROR : Solve the issue with Apache server and run again the installation script ${NC}"
+                exit 1
+            fi
+        fi
+    elif [[ $linux_distribution == "CentOs" || $linux_distribution == "RedHatEnterprise" ]]; then
+        if ! pidof httpd > /dev/null ; then
+            # web server down, restart the server
+            echo "Apache Server is down... Trying to restart Apache"
+            systemctl restart httpd
+            sleep 10
+            if pidof httpd > /dev/null ; then
+                echo "Apache Server is up"
+            else
+                echo -e "${RED}ERROR : Unable to start Apache ${NC}"
+                echo -e "${RED}ERROR : Solve the issue with Apache server and run again the installation script ${NC}"
+                exit 1
+            fi
         fi
     fi
 }
+python_check(){
 
+    python_version=$(su -c python3 --version $user)
+    if [[ $python_version == "" ]]; then
+        echo -e "${RED}ERROR : Python3 is not found in your system ${NC}"
+        echo -e "${RED}ERROR : Solve the issue with Python and run again the installation script ${NC}"
+        exit 1
+    fi
+    p_version=$(echo $python_version | cut -d"." -f2)
+    if (( $p_version < 7 )); then
+        echo -e "${RED}ERROR : Application requieres at least the version 3.7.x of Python3  ${NC}"
+        echo -e "${RED}ERROR : Solve the issue with Python and run again the installation script ${NC}"
+        exit 1
+    fi
+}
 #================================================================
 #SET TEMINAL COLORS
 #================================================================
@@ -91,17 +104,26 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
-echo "Checking main requirements"
-db_check
-echo "Successful check for database"
-apache_check
-echo "Successful check for apache"
+user=$SUDO_USER
+group=$(groups | cut -d" " -f1)
+
+#Linux distribution
 linux_distribution=$(lsb_release -i | cut -f 2-)
+
+echo "Checking main requirements"
+python_check
+printf "${BLUE}Valid version of Python${NC}\n"
+db_check
+printf "${BLUE}Successful check for database${NC}\n"
+apache_check
+printf "${BLUE}Successful check for apache${NC}\n"
+
 #================================================================
 
 read -p "Are you sure you want to install iSkyLIMS in this server? " -n 1 -r
 echo    # (optional) move to a new line
 if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+    echo "Exiting without running iSkyLIMS installation"
     exit 1
 fi
 
@@ -110,40 +132,105 @@ if [[ $linux_distribution == "Ubuntu" ]]; then
     echo "Software installation for Ubuntu"
     apt-get update && apt-get upgrade -y
     apt-get install -y \
-        lightdm git apt-utils libcairo2 libcairo2-dev  wget gnuplot python3-pip \
-        libmysqlclient-dev apache2-dev vim libapache2-mod-wsgi-py3
-    #apt-get install build-essential  -y 
-    #apt-get install libghc-zlib-dev libbz2-dev libssl1.0-dev -y
-    #apt-get install git libpango1.0 libpango1.0-dev   -y
+        apt-utils wget \
+        libmysqlclient-dev apache2-dev \
+        python3-venv
+fi
+
+if [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterprise" ]]; then
+    echo "Software installation for Centos/RedHat"
+    yum install zlib-devel bzip2-devel openssl-devel \
+                wget httpd-devel mysql-libs
 fi
 
 echo "Installing Interop"
-mkdir -p /opt/interop
-cd /opt/interop
-
-wget https://github.com/Illumina/interop/releases/download/v1.1.15/InterOp-1.1.15-Linux-GNU.tar.gz
-tar -xf  InterOp-1.1.15-Linux-GNU.tar.gz
-ln -s InterOp-1.1.15-Linux-GNU interop
-rm InterOp-1.1.15-Linux-GNU.tar.gz
-
-
-echo "iSkyLIMS installation"
-cd /opt/iSkyLIMS
-git checkout master
-
-mkdir -p /opt/iSkyLIMS/documents/wetlab/tmp
-mkdir -p /opt/iSkyLIMS/documents/drylab
-mkdir -p /opt/iSkyLIMS/logs
-
-# install virtual environment
-if [[ $linux_distribution == "Ubuntu" ]]; then 
-    echo "Creating virtual environment"
-    pip3 install virtualenv 
-    virtualenv --python=/usr/bin/python3 virtualenv
-    
-    
+if [ -d /opt/interop ]; then
+    echo "There is already an interop installation"
+    echo "Skipping the Interop installation"
+else
+    mkdir -p /opt/interop
+    cd /opt/interop
+    echo "Downloading interop software"
+    wget https://github.com/Illumina/interop/releases/download/v1.1.15/InterOp-1.1.15-Linux-GNU.tar.gz
+    tar -xf  InterOp-1.1.15-Linux-GNU.tar.gz
+    ln -s InterOp-1.1.15-Linux-GNU interop
+    rm InterOp-1.1.15-Linux-GNU.tar.gz
+    echo "Interop is now installed"
 fi
 
+echo "Starting iSkyLIMS installation"
+if [ -d $INSTALL_PATH ]; then
+    echo "There already is an installation of relecov-platform in $INSTALL_PATH."
+    read -p "Do you want to remove current installation and reinstall? (Y/N) " -n 1 -r
+    echo    # (optional) move to a new line
+    if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+        echo "Exiting without running relecov_platform installation"
+        exit 1
+    else
+        rm -rf $INSTALL_PATH
+    fi
+fi
+
+
+## Create the installation folder 
+mkdir $INSTALL_PATH/
+
+rsync -rlv README.md LICENSE conf iskylims_core iskylims_drylab \
+        iskylims_wetlab iskylims_clinic django_utils $INSTALL_PATH
+
+cd $INSTALL_PATH
+
+## Create apache group if it does not exist.
+if ! grep -q apache /etc/group
+then
+    groupadd apache
+fi
+
+## Fix permissions and owners
+
+if [ $LOG_TYPE == "symbolic_link" ]; then
+    if [ -d $LOG_PATH ]; then
+        ln -s $LOG_PATH  $INSTALL_PATH/logs
+    chmod 775 $LOG_PATH
+    else
+        echo "Log folder path: $LOG_PATH does not exist. Fix it in the initial_settings.txt and run again."
+    exit 1
+    fi
+else
+    mkdir -p $INSTALL_PATH/logs
+    chown $user:apache $INSTALL_PATH/logs
+    chmod 775 $INSTALL_PATH/logs
+fi
+
+# Create necessary folders
+mkdir -p $INSTALL_PATH/documents/wetlab/tmp
+chown $user:apache $INSTALL_PATH/documents
+chmod 775 $INSTALL_PATH/documents
+chown $user:apache $INSTALL_PATH/documents/tmp
+chmod 775 $INSTALL_PATH/documents
+mkdir -p $INSTALL_PATH/documents/drylab
+chown $user:apache $INSTALL_PATH/documents/drylab
+chmod 775 $INSTALL_PATH/documents/drylab
+echo "Created folders for logs and documents "
+
+
+# install virtual environment
+echo "Creating virtual environment"
+if [ -d $INSTALL_PATH/virtualenv ]; then
+    echo "There already is a virtualenv for relecov-platform in $INSTALL_PATH."
+    read -p "Do you want to remove current virtualenv and reinstall? (Y/N) " -n 1 -r
+    echo    # (optional) move to a new line
+    if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+        rm -rf $INSTALL_PATH/virtualenv
+        bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
+    else
+        echo "virtualenv alredy defined. Skipping."
+    fi
+else
+    bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
+fi
+
+echo "activate the virtualenv"
 source virtualenv/bin/activate
 
 # Starting iSkyLIMS
@@ -177,8 +264,8 @@ python3 manage.py migrate
 
 python3 manage.py collectstatic
 
-echo "Change owner of files to Apache user"
-chown -R www-data:www-data /opt/iSkyLIMS
+# echo "Change owner of files to Apache user"
+# chown -R www-data:www-data /opt/iSkyLIMS
 
 echo "Loading in database initial data"
 python3 manage.py loaddata conf/new_installation_loading_tables.json
@@ -191,14 +278,21 @@ chown www-data /var/spool/cron/crontabs/www-data
 
 
 echo "Updating Apache configuration"
-cp conf/apache2.conf /etc/apache2/sites-available/000-default.conf
-echo  'LoadModule wsgi_module "/opt/iSkyLIMS/virtualenv/lib/python3.8/site-packages/mod_wsgi/server/mod_wsgi-py38.cpython-38-x86_64-linux-gnu.so"' >/etc/apache2/mods-available/iskylims.load
-cp conf/iskylims.conf /etc/apache2/mods-available/iskylims.conf
+if [[ $linux_distribution == "Ubuntu" ]]; then
+    cp conf/apache2.conf /etc/apache2/sites-available/000-default.conf
+    echo  'LoadModule wsgi_module "/opt/iSkyLIMS/virtualenv/lib/python3.8/site-packages/mod_wsgi/server/mod_wsgi-py38.cpython-38-x86_64-linux-gnu.so"' >/etc/apache2/mods-available/iskylims.load
+    cp conf/iskylims.conf /etc/apache2/mods-available/iskylims.conf
 
-# Create needed symbolic links to enable the configurations:
+    # Create needed symbolic links to enable the configurations:
 
-ln -s /etc/apache2/mods-available/iskylims.load /etc/apache2/mods-enabled/
-ln -s /etc/apache2/mods-available/iskylims.conf /etc/apache2/mods-enabled/
+    ln -s /etc/apache2/mods-available/iskylims.load /etc/apache2/mods-enabled/
+    ln -s /etc/apache2/mods-available/iskylims.conf /etc/apache2/mods-enabled/
+fi
+
+if [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterprise" ]]; then
+    cp conf/relecov_apache_centos_redhat.conf /etc/httpd/conf.d/relecov_platform.conf
+fi
+
 
 echo "Creating super user "
 python3 manage.py createsuperuser

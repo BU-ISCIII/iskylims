@@ -48,14 +48,32 @@ Before starting the installation check :
 -   Database (MySQL/MariaDB) is running  
 -   Local server configured for sending emails
 -   Apache server is running on local server
+-   Python installed in server
+-   Dependencies:
+     - lsb_release:
+     RedHat/CentOS: ```yum install redhat-lsb-core```
+     Ubuntu: ```xxx`
 
 #### Clone github repository
+Open a linux terminal and move to a directory where relecov code will be 
+downloaded
 ```bash
-
-cd /opt
+cd <your personal folder>
 sudo git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
+cd iSkyLIMS
 ``` 
+
+#### Create relecov database and grant permissions
+
+1. Create a new database named "iskylims" (this is mandatory)
+2. Create a new user with permission to read and modify that database.
+3. Write down user, passwd and db server info.
+
 #### Configuration settings
+Copy the initial setting template into a file named install_settings.txt
+```bash
+cp conf/template_install_settings.txt install_settings.txt
+```
 
 Open with your favourite editor the configuration file to set your own values for
 database ,email settings and the local IP of the server where iSkyLIMS will run.
@@ -66,7 +84,7 @@ sudo nano install_settings.txt
 
 ### Run installation script
 
-iSkyLIMS will be installed on the "/opt" directory. Before start the installation be sure you have sudo priveleges.
+iSkyLIMS should be installed on the "/opt" directory. Before start the installation be sure you have sudo priveleges.
 
 Execute the following commands in a linux terminal.
 
