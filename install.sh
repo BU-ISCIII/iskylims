@@ -12,7 +12,7 @@ db_check(){
         echo -e "${RED}ERROR : Unable to connect to database. Check if your database is running and accessible${NC}"
         exit 1
     fi
-    RESULT=`mysqlshow --user=$DB_USER --password=$DB_PASS --host=$DB_SERVER_IP --port=$DB_PORT | grep -o iSkyLIMS`
+    RESULT=`mysqlshow --user=$DB_USER --password=$DB_PASS --host=$DB_SERVER_IP --port=$DB_PORT | grep -o $DB_NAME`
 
     if  ! [ "$RESULT" == "iSkyLIMS" ] ; then
         echo -e "${RED}ERROR : iSkyLIMS database is not defined yet ${NC}"
@@ -248,6 +248,7 @@ sed -i "s/djangouser/${DB_USER}/g" iSkyLIMS/settings.py
 sed -i "s/djangopass/${DB_PASS}/g" iSkyLIMS/settings.py
 sed -i "s/djangohost/${DB_SERVER_IP}/g" iSkyLIMS/settings.py
 sed -i "s/djangoport/${DB_PORT}/g" iSkyLIMS/settings.py
+sed -i "s/djangodbname/${DB_NAME}/g" iSkyLIMS/settings.py
 
 sed -i "s/emailhostserver/${EMAIL_HOST_SERVER}/g" iSkyLIMS/settings.py
 sed -i "s/emailport/${EMAIL_PORT}/g" iSkyLIMS/settings.py

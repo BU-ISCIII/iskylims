@@ -8,6 +8,7 @@ PYTHON_BIN_PATH='python3' # example: /opt/python/3.9.6/bin/python3
 
 DB_USER='<user_name>'
 DB_PASS='<your_passwd>'
+DB_NAME='iSkyLIMS' 
 DB_SERVER_IP='<IP_db_server>'
 DB_PORT=3306
 
