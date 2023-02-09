@@ -59,7 +59,7 @@ Open a linux terminal and move to a directory where relecov code will be
 downloaded
 ```bash
 cd <your personal folder>
-sudo git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
+git clone https://github.com/BU-ISCIII/iSkyLIMS.git iSkyLIMS
 cd iSkyLIMS
 ``` 
 
