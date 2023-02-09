@@ -175,8 +175,8 @@ fi
 ## Create the installation folder 
 mkdir $INSTALL_PATH/
 
-rsync -rlv README.md LICENSE conf iskylims_core iskylims_drylab \
-        iskylims_wetlab iskylims_clinic django_utils $INSTALL_PATH
+rsync -rlv README.md LICENSE conf iSkyLIMS_core iSkyLIMS_drylab \
+        iSkyLIMS_wetlab iSkyLIMS_clinic django_utils $INSTALL_PATH
 
 cd $INSTALL_PATH
 
