@@ -14,7 +14,7 @@ db_check(){
     fi
     RESULT=`mysqlshow --user=$DB_USER --password=$DB_PASS --host=$DB_SERVER_IP --port=$DB_PORT | grep -o $DB_NAME`
 
-    if  ! [ "$RESULT" == "iSkyLIMS" ] ; then
+    if  ! [ "$RESULT" == $DB_NAME ] ; then
         echo -e "${RED}ERROR : iSkyLIMS database is not defined yet ${NC}"
         echo -e "${RED}ERROR : Create iSkyLIMS database on your mysql server and run again the installation script ${NC}"
         exit 1    
