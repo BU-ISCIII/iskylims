@@ -1,12 +1,12 @@
 #!/bin/bash
 
-SCRIPT_VERSION=0.2
+SCRIPT_VERSION=0.3
 
 ISKYLIMS_VERSION="2.0.x"
 . ./install_settings.txt
 
 db_check(){
-    mysqladmin -h $DB_SERVER_IP -u$DB_USER -p$DB_PASS -P$DB_PORT processlist >null ###user should have mysql permission on remote server.
+    mysqladmin -h $DB_SERVER_IP -u$DB_USER -p$DB_PASS -P$DB_PORT processlist > /dev/null ###user should have mysql permission on remote server.
 
     if ! [ $? -eq 0 ]; then
         echo -e "${RED}ERROR : Unable to connect to database. Check if your database is running and accessible${NC}"
@@ -164,7 +164,7 @@ if [ -d $INSTALL_PATH ]; then
     read -p "Do you want to remove current installation and reinstall? (Y/N) " -n 1 -r
     echo    # (optional) move to a new line
     if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-        echo "Exiting without running relecov_platform installation"
+        echo "Exiting without running iSkyLIMS installation"
         exit 1
     else
         rm -rf $INSTALL_PATH
@@ -193,7 +193,7 @@ if [ $LOG_TYPE == "symbolic_link" ]; then
         ln -s $LOG_PATH  $INSTALL_PATH/logs
     chmod 775 $LOG_PATH
     else
-        echo "Log folder path: $LOG_PATH does not exist. Fix it in the initial_settings.txt and run again."
+        echo "Log folder path: $LOG_PATH does not exist. Fix it in the install_settings.txt and run again."
     exit 1
     fi
 else
@@ -217,7 +217,7 @@ echo "Created folders for logs and documents "
 # install virtual environment
 echo "Creating virtual environment"
 if [ -d $INSTALL_PATH/virtualenv ]; then
-    echo "There already is a virtualenv for relecov-platform in $INSTALL_PATH."
+    echo "There already is a virtualenv for iSkyLIMS in $INSTALL_PATH."
     read -p "Do you want to remove current virtualenv and reinstall? (Y/N) " -n 1 -r
     echo    # (optional) move to a new line
     if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
@@ -240,22 +240,22 @@ grep ^SECRET iSkyLIMS/settings.py > ~/.secret
 
 
 # Copying config files and script
-cp conf/settings.py /opt/iSkyLIMS/iSkyLIMS/settings.py
-cp conf/urls.py /opt/iSkyLIMS/iSkyLIMS/
+cp conf/settings.py $INSTALL_PATH/iSkyLIMS/settings.py
+cp conf/urls.py $INSTALL_PATH/iSkyLIMS/
 
-sed -i "/^SECRET/c\\$(cat ~/.secret)" iSkyLIMS/settings.py
-sed -i "s/djangouser/${DB_USER}/g" iSkyLIMS/settings.py
-sed -i "s/djangopass/${DB_PASS}/g" iSkyLIMS/settings.py
-sed -i "s/djangohost/${DB_SERVER_IP}/g" iSkyLIMS/settings.py
-sed -i "s/djangoport/${DB_PORT}/g" iSkyLIMS/settings.py
-sed -i "s/djangodbname/${DB_NAME}/g" iSkyLIMS/settings.py
+sed -i "/^SECRET/c\\$(cat ~/.secret)" $INSTALL_PATH/iSkyLIMS/settings.py
+sed -i "s/djangouser/${DB_USER}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+sed -i "s/djangopass/${DB_PASS}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+sed -i "s/djangohost/${DB_SERVER_IP}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+sed -i "s/djangoport/${DB_PORT}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+sed -i "s/djangodbname/${DB_NAME}/g" $INSTALL_PATH/iSkyLIMS/settings.py
 
-sed -i "s/emailhostserver/${EMAIL_HOST_SERVER}/g" iSkyLIMS/settings.py
-sed -i "s/emailport/${EMAIL_PORT}/g" iSkyLIMS/settings.py
-sed -i "s/emailhostuser/${EMAIL_HOST_USER}/g" iSkyLIMS/settings.py
-sed -i "s/emailhostpassword/${EMAIL_HOST_PASSWORD}/g" iSkyLIMS/settings.py
-sed -i "s/emailhosttls/${EMAIL_USE_TLS}/g" iSkyLIMS/settings.py
-sed -i "s/localserverip/${LOCAL_SERVER_IP}/g" iSkyLIMS/settings.py
+sed -i "s/emailhostserver/${EMAIL_HOST_SERVER}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+sed -i "s/emailport/${EMAIL_PORT}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+sed -i "s/emailhostuser/${EMAIL_HOST_USER}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+sed -i "s/emailhostpassword/${EMAIL_HOST_PASSWORD}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+sed -i "s/emailhosttls/${EMAIL_USE_TLS}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+sed -i "s/localserverip/${LOCAL_SERVER_IP}/g" $INSTALL_PATH/iSkyLIMS/settings.py
 
 
 echo "Creating the database structure for iSkyLIMS"
@@ -291,11 +291,12 @@ if [[ $linux_distribution == "Ubuntu" ]]; then
 fi
 
 if [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterprise" ]]; then
-    cp conf/relecov_apache_centos_redhat.conf /etc/httpd/conf.d/relecov_platform.conf
+    cp conf/iskylims_apache_centos_redhat.conf /etc/httpd/conf.d/iskylims.conf
 fi
 
 
 echo "Creating super user "
+echo "User name must be admin"
 python3 manage.py createsuperuser
 
 printf "\n\n%s"
