@@ -15,6 +15,7 @@ iSkyLIMS/
 documents/
 manage.py
 logs/
+logs
 
 
 # Byte-compiled / optimized / DLL files
