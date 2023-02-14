@@ -205,10 +205,16 @@ fi
 
 # Create necessary folders
 mkdir -p $INSTALL_PATH/documents/wetlab/tmp
+mkdir -p $INSTALL_PATH/documents/wetlab/SampleSheets
+mkdir -p $INSTALL_PATH/documents/wetlab/images_plot
 chown $user:apache $INSTALL_PATH/documents
 chmod 775 $INSTALL_PATH/documents
-chown $user:apache $INSTALL_PATH/documents/tmp
-chmod 775 $INSTALL_PATH/documents
+chown $user:apache $INSTALL_PATH/documents/wetlab/tmp
+chmod 775 $INSTALL_PATH/documents/wetlab/tmp
+chown $user:apache $INSTALL_PATH/documents/wetlab/SampleSheets
+chmod 775 $INSTALL_PATH/documents/wetlab/SampleSheets
+chown $user:apache $INSTALL_PATH/documents/wetlab/images_plot
+chmod 775 $INSTALL_PATH/documents/wetlab/images_plot
 mkdir -p $INSTALL_PATH/documents/drylab
 chown $user:apache $INSTALL_PATH/documents/drylab
 chmod 775 $INSTALL_PATH/documents/drylab
@@ -306,7 +312,3 @@ printf "%s"
 printf "${BLUE}Successfuly iSkyLIMS Installation version: ${ISKYLIMS_VERSION}${NC}\n"
 printf "%s"
 printf "${BLUE}------------------${NC}\n\n"
-
-
-
-
