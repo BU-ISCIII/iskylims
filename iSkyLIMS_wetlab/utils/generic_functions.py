@@ -15,6 +15,8 @@ from iSkyLIMS_wetlab import wetlab_config
 from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters, SambaConnectionData, ConfigSetting
 from iSkyLIMS_core.models import SequencerInLab, SequencingPlatform
 
+from .handling_crontab_common_functions import logging_errors
+
 '''
 def check_all_projects_exists (project_list):
 
