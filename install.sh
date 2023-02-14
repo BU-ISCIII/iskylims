@@ -148,8 +148,7 @@ if [ -d /opt/interop ]; then
     echo "There is already an interop installation"
     echo "Skipping the Interop installation"
 else
-    mkdir -p /opt/interop
-    cd /opt/interop
+    cd /opt
     echo "Downloading interop software"
     wget https://github.com/Illumina/interop/releases/download/v1.1.15/InterOp-1.1.15-Linux-GNU.tar.gz
     tar -xf  InterOp-1.1.15-Linux-GNU.tar.gz
