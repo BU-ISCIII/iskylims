@@ -17,7 +17,7 @@ db_check(){
     if  ! [ "$RESULT" == $DB_NAME ] ; then
         echo -e "${RED}ERROR : iSkyLIMS database is not defined yet ${NC}"
         echo -e "${RED}ERROR : Create iSkyLIMS database on your mysql server and run again the installation script ${NC}"
-        exit 1    
+        exit 1
     fi
 }
 
@@ -97,7 +97,7 @@ if [[ $EUID -ne 0 ]]; then
     printf "\n\n%s"
     printf "${RED}------------------${NC}\n"
     printf "%s"
-    printf "${RED}Exiting installation. This script must be run as root ${NC}\n" 
+    printf "${RED}Exiting installation. This script must be run as root ${NC}\n"
     printf "\n\n%s"
     printf "${RED}------------------${NC}\n"
     printf "%s"
@@ -128,7 +128,7 @@ if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
 fi
 
 #================================================================
-if [[ $linux_distribution == "Ubuntu" ]]; then 
+if [[ $linux_distribution == "Ubuntu" ]]; then
     echo "Software installation for Ubuntu"
     apt-get update && apt-get upgrade -y
     apt-get install -y \
@@ -156,6 +156,7 @@ else
     ln -s InterOp-1.1.15-Linux-GNU interop
     rm InterOp-1.1.15-Linux-GNU.tar.gz
     echo "Interop is now installed"
+    cd -
 fi
 
 echo "Starting iSkyLIMS installation"
@@ -172,7 +173,7 @@ if [ -d $INSTALL_PATH ]; then
 fi
 
 
-## Create the installation folder 
+## Create the installation folder
 mkdir $INSTALL_PATH/
 
 rsync -rlv README.md LICENSE conf iSkyLIMS_core iSkyLIMS_drylab \
@@ -274,14 +275,14 @@ python3 manage.py loaddata conf/new_installation_loading_tables.json
 echo "Running crontab"
 python3 manage.py crontab add
 mv /var/spool/cron/crontabs/root /var/spool/cron/crontabs/www-data
-chown www-data /var/spool/cron/crontabs/www-data 
+chown www-data /var/spool/cron/crontabs/www-data
 
 
 
 echo "Updating Apache configuration"
 if [[ $linux_distribution == "Ubuntu" ]]; then
     cp conf/apache2.conf /etc/apache2/sites-available/000-default.conf
-    echo  'LoadModule wsgi_module "/opt/iSkyLIMS/virtualenv/lib/python3.8/site-packages/mod_wsgi/server/mod_wsgi-py38.cpython-38-x86_64-linux-gnu.so"' >/etc/apache2/mods-available/iskylims.load
+    echo  'LoadModule wsgi_module "/opt/iSkyLIMS/virtualenv/lib/python3.10.6/site-packages/mod_wsgi/server/mod_wsgi-py38.cpython-38-x86_64-linux-gnu.so"' >/etc/apache2/mods-available/iskylims.load
     cp conf/iskylims.conf /etc/apache2/mods-available/iskylims.conf
 
     # Create needed symbolic links to enable the configurations:
