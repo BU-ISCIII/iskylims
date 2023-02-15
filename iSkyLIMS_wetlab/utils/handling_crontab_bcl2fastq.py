@@ -2,6 +2,7 @@ import os
 import xml.etree.ElementTree as ET
 from iSkyLIMS_wetlab.wetlab_config import *
 from iSkyLIMS_wetlab.models import *
+from .generic_functions import logging_errors, logging_warnings
 from .handling_crontab_common_functions import *
 from .sample_sheet_utils import get_sample_with_user_owner
 import logging
