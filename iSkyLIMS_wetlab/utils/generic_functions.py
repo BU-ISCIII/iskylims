@@ -1,21 +1,21 @@
-import logging
 import os, re
+import sys
 import smtplib
-from datetime import datetime
+import traceback
+import socket
+import logging
 from logging.config import fileConfig
 from logging.handlers import RotatingFileHandler
+from datetime import datetime
 from smb.SMBConnection import SMBConnection
-import socket
 
 from django.core.mail import send_mail
 from django.contrib.auth.models import Group, User
-
 from django.conf import settings
+
 from iSkyLIMS_wetlab import wetlab_config
 from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters, SambaConnectionData, ConfigSetting
 from iSkyLIMS_core.models import SequencerInLab, SequencingPlatform
-
-from .handling_crontab_common_functions import logging_errors
 
 '''
 def check_all_projects_exists (project_list):
@@ -165,7 +165,8 @@ def open_samba_connection():
     samba_data = get_samba_connection_data()
     if not samba_data :
         string_message = 'Samba connection data on database is empty'
-        logging_errors (string_message, True, False)
+        logging_errors (string_message, True, True)
+        sys.exit(1)
     if samba_data['SAMBA_APPLICATION_FOLDER_NAME'] != '':
         samba_data['SAMBA_SHARED_FOLDER_NAME'] = os.path.join(samba_data['SAMBA_SHARED_FOLDER_NAME'] , samba_data['SAMBA_APPLICATION_FOLDER_NAME'])
     conn = SMBConnection(samba_data['SAMBA_USER_ID'], samba_data['SAMBA_USER_PASSWORD'],
@@ -470,3 +471,91 @@ def save_database_configuration_value(configuration_name, configuration_value):
     else:
         config_settings_obj = ConfigSetting.objects.create_config_setting(configuration_name, configuration_value)
     return config_settings_obj
+
+def logging_errors(string_text, showing_traceback , print_on_screen ):
+    '''
+    Description:
+        The function will log the error information to file.
+        Optional can send an email to inform about the issue
+    Input:
+        logger # contains the logger object
+        string_text # information text to include in the log
+    Functions:
+
+    Constant:
+        SENT_EMAIL_ON_ERROR
+        EMAIL_FOR_NOTIFICATIONS
+    Variables:
+        subject # text to include in the subject email
+    '''
+    logger = logging.getLogger(__name__)
+    logger.error('-----------------    ERROR   ------------------')
+    logger.error(string_text )
+    if ConfigSetting.objects.filter(configurationName__exact = 'SENT_EMAIL_ON_ERROR').exists():
+        email_on_error_obj = ConfigSetting.objects.filter(configurationName__exact = 'SENT_EMAIL_ON_ERROR').last()
+        if email_on_error_obj.get_configuration_value() == 'TRUE':
+            if ConfigSetting.objects.filter(configurationName__exact = 'EMAIL_FOR_NOTIFICATIONS').exists():
+                email_on_notification_obj = ConfigSetting.objects.filter(configurationName__exact = 'EMAIL_FOR_NOTIFICATIONS').last()
+                email_notification = email_on_notification_obj.get_configuration_value()
+                if '@' in email_notification:
+                    subject = 'Error found on wetlab when running crontab'
+                    try:
+                        send_mail (subject, string_text, email_notification,[email_notification])
+                    except:
+                        logger.error('*************UNABLE TO SEND ERROR EMAIL TO USER *****************')
+                else:
+                    logger.error('****** INVALID EMAIL FORMAT.  EMAIL IS NOT SENT ***************')
+    if showing_traceback :
+        logger.error('################################')
+        logger.error(traceback.format_exc())
+        logger.error('################################')
+    logger.error('-----------------    END ERROR   --------------')
+    if print_on_screen :
+        from datetime import datetime
+        print('********* ERROR **********')
+        print(string_text)
+        print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        print('Check log for detail information')
+        print('******* END ERROR ********')
+    return ''
+
+def logging_warnings(string_text, print_on_screen ):
+    '''
+    Description:
+        The function will log the error information to file.
+        Optional can send an email to inform about the issue
+    Input:
+        logger # contains the logger object
+        string_text # information text to include in the log
+    '''
+    logger = logging.getLogger(__name__)
+    logger.warning('-----------------    WARNING   ------------------')
+    logger.warning(string_text )
+    logger.warning('-----------------    END WARNING   --------------')
+    if print_on_screen :
+        from datetime import datetime
+        print('******* WARNING ********')
+        print(string_text)
+        print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        print('Check log for detail information')
+        print('**** END WARNING *******')
+    return ''
+
+
+
+
+def open_log(config_file):
+    '''
+    Description:
+        The function will create the log object to write all logging information
+    Input:
+        logger_name    # contains the logger name that will be included
+                        in the log file
+    Constant:
+        LOGGING_CONFIG_FILE
+    Return:
+        logger object
+    '''
+    fileConfig(config_file)
+    logger = logging.getLogger(__name__)
+    return logger

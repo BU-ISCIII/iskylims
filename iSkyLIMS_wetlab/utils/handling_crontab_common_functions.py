@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 
 from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters, SambaConnectionData, ConfigSetting
-from .generic_functions import get_samba_connection_data, find_xml_tag_text, get_attributes_remote_file
+from .generic_functions import get_samba_connection_data, find_xml_tag_text, get_attributes_remote_file, logging_errors, logging_warnings, open_log
 from iSkyLIMS_wetlab.wetlab_config import *
 from .sample_sheet_utils import get_projects_in_run, get_index_library_name
 from iSkyLIMS_core.models import SequencerInLab
@@ -611,96 +611,6 @@ def handling_errors_in_run (experiment_name, error_code):
         logger.info ('%s : experiment name is not defined yet in database' , experiment_name)
     logger.debug ('%s : End function handling_errors_in_run' , experiment_name)
     return True
-
-
-def logging_errors(string_text, showing_traceback , print_on_screen ):
-    '''
-    Description:
-        The function will log the error information to file.
-        Optional can send an email to inform about the issue
-    Input:
-        logger # contains the logger object
-        string_text # information text to include in the log
-    Functions:
-
-    Constant:
-        SENT_EMAIL_ON_ERROR
-        EMAIL_FOR_NOTIFICATIONS
-    Variables:
-        subject # text to include in the subject email
-    '''
-    logger = logging.getLogger(__name__)
-    logger.error('-----------------    ERROR   ------------------')
-    logger.error(string_text )
-    if ConfigSetting.objects.filter(configurationName__exact = 'SENT_EMAIL_ON_ERROR').exists():
-        email_on_error_obj = ConfigSetting.objects.filter(configurationName__exact = 'SENT_EMAIL_ON_ERROR').last()
-        if email_on_error_obj.get_configuration_value() == 'TRUE':
-            if ConfigSetting.objects.filter(configurationName__exact = 'EMAIL_FOR_NOTIFICATIONS').exists():
-                email_on_notification_obj = ConfigSetting.objects.filter(configurationName__exact = 'EMAIL_FOR_NOTIFICATIONS').last()
-                email_notification = email_on_notification_obj.get_configuration_value()
-                if '@' in email_notification:
-                    subject = 'Error found on wetlab when running crontab'
-                    try:
-                        send_mail (subject, string_text, email_notification,[email_notification])
-                    except:
-                        logger.error('*************UNABLE TO SEND ERROR EMAIL TO USER *****************')
-                else:
-                    logger.error('****** INVALID EMAIL FORMAT.  EMAIL IS NOT SENT ***************')
-    if showing_traceback :
-        logger.error('################################')
-        logger.error(traceback.format_exc())
-        logger.error('################################')
-    logger.error('-----------------    END ERROR   --------------')
-    if print_on_screen :
-        from datetime import datetime
-        print('********* ERROR **********')
-        print(string_text)
-        print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        print('Check log for detail information')
-        print('******* END ERROR ********')
-    return ''
-
-def logging_warnings(string_text, print_on_screen ):
-    '''
-    Description:
-        The function will log the error information to file.
-        Optional can send an email to inform about the issue
-    Input:
-        logger # contains the logger object
-        string_text # information text to include in the log
-    '''
-    logger = logging.getLogger(__name__)
-    logger.warning('-----------------    WARNING   ------------------')
-    logger.warning(string_text )
-    logger.warning('-----------------    END WARNING   --------------')
-    if print_on_screen :
-        from datetime import datetime
-        print('******* WARNING ********')
-        print(string_text)
-        print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        print('Check log for detail information')
-        print('**** END WARNING *******')
-    return ''
-
-
-
-
-def open_log(config_file):
-    '''
-    Description:
-        The function will create the log object to write all logging information
-    Input:
-        logger_name    # contains the logger name that will be included
-                        in the log file
-    Constant:
-        LOGGING_CONFIG_FILE
-    Return:
-        logger object
-    '''
-    fileConfig(config_file)
-    logger = logging.getLogger(__name__)
-    return logger
-
 
 def parsing_run_info_and_parameter_information(l_run_info, l_run_parameter, experiment_name) :
     '''

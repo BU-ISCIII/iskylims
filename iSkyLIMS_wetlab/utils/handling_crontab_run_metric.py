@@ -6,7 +6,9 @@ from  iSkyLIMS_wetlab.models import RunProcess, RunningParameters, StatsRunSumma
 from django.conf import settings
 from iSkyLIMS_wetlab.wetlab_config import *
 
+from .generic_functions import logging_errors, logging_warnings
 from .handling_crontab_common_functions import *
+
 
 
 def create_run_metric_graphics(run_metric_folder,run_process_obj, run_folder,experiment_name):

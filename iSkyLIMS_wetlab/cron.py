@@ -7,7 +7,7 @@ import traceback
 from iSkyLIMS_wetlab import wetlab_config
 from .utils.update_run_state import search_update_new_runs, handle_not_completed_run
 
-from .utils.handling_crontab_common_functions import open_log
+from .utils.generic_functions import open_log
 
 
 def looking_for_new_runs():
