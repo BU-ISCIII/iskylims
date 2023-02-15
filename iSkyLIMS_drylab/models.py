@@ -331,18 +331,14 @@ class Service(models.Model):
 	def get_user_service_obj (self):
 		return self.serviceUserId
 
-	def get_service_request_center_unit_abbr(self):
+	def get_service_request_center_abbr(self):
 		return '%s' %(self.serviceUserId.profile.profileCenter.centerAbbr)
 
 	def get_service_state(self):
 		return '%s' %(self.serviceStatus)
 
-	def get_service_request_center(self):
-		try:
-			center = serviceUserId.serviceSeqCenter
-		except:
-			center = 'NA'
-		return center
+	def get_service_request_center_name(self):
+		return '%s' %(self.serviceUserId.profile.profileCenter.centerName)
 
 	def get_service_user_notes(self):
 		return '%s' %(self.serviceNotes)
@@ -635,9 +631,11 @@ class Resolution(models.Model):
 	def get_resolution_in_progress_date_no_format(self):
 		return self.resolutionOnInProgressDate
 
-	def get_resolution_request_center_unit_abbr(self):
-		#return '%s' %(self.resolutionServiceID.serviceUserId.profile.profileCenter.centerAbbr)
-		return '%s' %(self.resolutionServiceID.get_service_request_center_unit_abbr())
+	def get_resolution_request_center_abbr(self):
+		return '%s' %(self.resolutionServiceID.serviceUserId.profile.profileCenter.centerAbbr)
+
+	def get_resolution_request_center_abbr(self):
+		return '%s' %(self.resolutionServiceID.serviceUserId.profile.profileCenter.centerName)
 
 	def get_service_owner_email(self):
 		if self.resolutionServiceID != None:

@@ -304,7 +304,7 @@ def get_pending_services_information():
         pending_services_details['recorded'] = recorded
         for service_unit in services_in_request:
             try:
-                unit_serv = service_unit.get_service_request_center_unit_abbr()
+                unit_serv = service_unit.get_service_request_center_name()
             except:
                 continue
             if unit_serv not in pending_services_per_unit:
@@ -320,7 +320,7 @@ def get_pending_services_information():
         pending_services_details['heading_queued'] = drylab_config.HEADING_PENDING_SERVICE_QUEUED
         for resolution_in_q_unit in resolution_recorded_objs:
             try:
-                unit_res = resolution_in_q_unit.get_resolution_request_center_unit_abbr()
+                unit_res = resolution_in_q_unit.get_resolution_request_center_name()
             except:
                 continue
             if not unit_res in pending_services_per_unit:
@@ -338,7 +338,7 @@ def get_pending_services_information():
         pending_services_details['heading_in_progress'] = drylab_config.HEADING_PENDING_SERVICE_QUEUED
         for resolution_in_q_unit in resolution_recorded_objs:
             try:
-                unit_res = resolution_in_q_unit.get_resolution_request_center_unit_abbr()
+                unit_res = resolution_in_q_unit.get_resolution_request_center_name()
             except:
                 continue
             if not unit_res in pending_services_per_unit:
