@@ -98,7 +98,7 @@ def create_new_save_sequencing_service_request(request):
 
     if Profile.objects.filter(profileUserID = request_user).exists():
         try:
-            service_data['serviceSeqCenter'] = Profile.objects.filter(profileUserID = request_user).last().profileCenter
+            service_data['serviceSeqCenter'] = Profile.objects.filter(profileUserID = request_user).last().profileCenter.get_center_name()
         except:
             service_data['serviceSeqCenter'] = drylab_config.INTERNAL_SEQUENCING_UNIT
 
