@@ -334,6 +334,9 @@ def update_state(request):
             "temporaryUsedSpace": openapi.Schema(
                 type=openapi.TYPE_INTEGER, description="temporary used space in GB. pe. SRVCNM123.1"
             ),
+            "deliveryNotes": openapi.Schema(
+                type=openapi.TYPE_INTEGER, description="delivery notes with brief results description."
+            ),
         },
     ),
     responses={200: "Successful delivery creation", 400: "Bad Request"},

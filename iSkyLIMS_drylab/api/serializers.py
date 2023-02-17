@@ -20,7 +20,8 @@ class CreateDeliveryPostSerializer(serializers.ModelSerializer):
             "executionStartDate",
             "executionEndDate",
             "permanentUsedSpace",
-            "temporaryUsedSpace"
+            "temporaryUsedSpace",
+            "deliveryNotes"
             ]
 
 
