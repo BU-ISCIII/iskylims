@@ -96,7 +96,8 @@ class DeliverySerializer(serializers.ModelSerializer):
             "executionStartDate",
             "executionEndDate",
             "permanentUsedSpace",
-            "temporaryUsedSpace"
+            "temporaryUsedSpace",
+            "deliveryNotes"
         ]
 
 class ResolutionSerializer(serializers.ModelSerializer):
