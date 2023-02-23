@@ -351,11 +351,13 @@ def create_delivery(request):
             data = data.dict()
 
         resolution_pk = Resolution.objects.filter(resolutionNumber__exact=data["resolutionNumber"]).last().pk
-        pipelines = [ Pipelines.objects.filter(pipelineName__exact=pip).last().pk for pip in data["pipelinesInDelivery"]]
+
+        if "pipelinesInDelivery" in data:
+            pipelines = [ Pipelines.objects.filter(pipelineName__exact=pip).last().pk for pip in data["pipelinesInDelivery"]]
+            data["pipelinesInDelivery"] = pipelines
 
         data.pop("resolutionNumber")
         data["deliveryResolutionID"] = resolution_pk
-        data["pipelinesInDelivery"] = pipelines
 
         serializer = CreateDeliveryPostSerializer(data=data)
 
