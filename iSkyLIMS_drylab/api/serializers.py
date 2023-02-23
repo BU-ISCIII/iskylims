@@ -80,7 +80,7 @@ class PipelinesSerializer(serializers.ModelSerializer):
         model=Pipelines
         fields = [
             "pipelineName",
-            "PipelineVersion"
+            "pipelineVersion"
         ]
 
 class DeliverySerializer(serializers.ModelSerializer):
