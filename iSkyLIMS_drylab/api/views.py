@@ -17,6 +17,7 @@ from iSkyLIMS_drylab.models import (
     ResolutionStates,
     RequestedSamplesInServices,
     Pipelines,
+    Delivery,
 )
 from django_utils.models import Profile
 from django.http import QueryDict
@@ -359,7 +360,11 @@ def create_delivery(request):
         data.pop("resolutionNumber")
         data["deliveryResolutionID"] = resolution_pk
 
-        serializer = CreateDeliveryPostSerializer(data=data)
+        if Delivery.objects.filter(deliveryResolutionID__exact=resolution_pk).exists():
+            delivery_obj = Delivery.objects.filter(deliveryResolutionID__exact=resolution_pk).last()
+            serializer = CreateDeliveryPostSerializer(delivery_obj, data=data)
+        else:
+            serializer = CreateDeliveryPostSerializer(data=data)
 
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
