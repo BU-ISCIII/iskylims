@@ -160,7 +160,7 @@ def search_update_new_runs(request_reason):
                 logger.debug ('%s : Deleting RunParameter file', experiment_name)
                 os.remove(l_run_parameter)
                 logger.debug ('%s : Aborting the process. Exiting with exception', experiment_name)
-                raise Exception   # returning to handle next run folder
+                #raise Exception   # returning to handle next run folder
 
             running_parameters = parsing_run_info_and_parameter_information(l_run_info, l_run_parameter, experiment_name)
             logger.info('%s  : Deleting runParameter file', experiment_name)

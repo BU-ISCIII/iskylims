@@ -378,7 +378,7 @@ def fetch_remote_file (conn, run_dir, remote_file, local_file) :
             logger.info('%s : Retrieving the remote %s file for %s ', run_dir, remote_file, local_file)
         except Exception as e:
             string_message = 'Unable to fetch the ' + local_file + ' file on folder : ' + run_dir
-            logging_errors (string_message, False, True)
+            logging_errors (string_message, True, True)
             os.remove(local_file)
             logger.debug ('%s : End function for fetching remote file', run_dir)
             raise Exception('File not found')
