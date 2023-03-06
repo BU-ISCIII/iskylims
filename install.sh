@@ -122,7 +122,7 @@ done
 #SETTING DEFAULT VALUES
 upgrade=false
 git_branch="main"
-conf_file="./initial_settings.txt"
+conf_file="./install_settings.txt"
 
 #PARSE VARIABLE ARGUMENTS WITH getops
 options=":c:duvh"
