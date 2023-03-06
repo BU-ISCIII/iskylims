@@ -4,17 +4,17 @@ ISKYLIMS_VERSION="2.0.x"
 
 usage() {
 cat << EOF
-    This script install and upgrade the relecov platform application.
+    This script install and upgrade the iskylims application.
 
     usage : $0 --upgrade --dev --conf
         Optional input data:
-        --upgrade | Upgrade the relecov application
+        --upgrade | Upgrade the iskylims application
         --dev     | Use the develop version instead of main release
         --conf    | Select configuration file
 
 
     Examples:
-        To install relecov application with the main release
+        To install iskylims application with the main release
         sudo $0
 
         To upgrade using develop code
@@ -29,11 +29,11 @@ db_check(){
         echo -e "${RED}ERROR : Unable to connect to database. Check if your database is running and accessible${NC}"
         exit 1
     fi
-    RESULT=`mysqlshow --user=$DB_USER --password=$DB_PASS --host=$DB_SERVER_IP --port=$DB_PORT | grep -o relecov`
+    RESULT=`mysqlshow --user=$DB_USER --password=$DB_PASS --host=$DB_SERVER_IP --port=$DB_PORT | grep -o $DB_NAME`
 
-    if  ! [ "$RESULT" == "relecov" ] ; then
-        echo -e "${RED}ERROR : Relecov database is not defined yet ${NC}"
-        echo -e "${RED}ERROR : Create Relecov database on your mysql server and run again the installation script ${NC}"
+    if  ! [ "$RESULT" == "$DB_NAME" ] ; then
+        echo -e "${RED}ERROR : iskylims database is not defined yet ${NC}"
+        echo -e "${RED}ERROR : Create iskylims database on your mysql server and run again the installation script ${NC}"
         exit 1
     fi
 }
@@ -142,7 +142,7 @@ while getopts $options opt; do
 		  	exit 1
 		  	;;
 		v )
-		  	echo $RELECOVPLATFORM_VERSION
+		  	echo $ISKYLIMS_VERSION
 		  	exit 1
 		  	;;
 		\?)
@@ -220,9 +220,9 @@ if [ $upgrade == true ]; then
 
     # update installation by sinchronize folders
     echo "Copying files to installation folder"
-    rsync -rlv README.md LICENSE conf relecov_core relecov_dashboard relecov_documentation $INSTALL_PATH/relecov-platform
+    rsync -rlv README.md LICENSE conf iSkyLIMS_core iSkyLIMS_drylab iSkyLIMS_clinic iSkyLIMS_wetlab django_utils $INSTALL_PATH/iskylims
     # upgrade database if needed
-    cd $INSTALL_PATH/relecov-platform
+    cd $INSTALL_PATH/iskylims
     echo "activate the virtualenv"
     source virtualenv/bin/activate
     echo "Installing required python packages"
@@ -261,7 +261,7 @@ fi
 printf "\n\n%s"
 printf "${YELLOW}------------------${NC}\n"
 printf "%s"
-printf "${YELLOW}Starting Relecov Installation version: ${RELECOVPLATFORM_VERSION}${NC}\n"
+printf "${YELLOW}Starting iskylims installation version: ${ISKYLIMS_VERSION}${NC}\n"
 printf "%s"
 printf "${YELLOW}------------------${NC}\n\n"
 
@@ -301,10 +301,10 @@ printf "${BLUE}Successful check for apache${NC}\n"
 
 #================================================================
 
-read -p "Are you sure you want to install Relecov-platform in this server? (Y/N) " -n 1 -r
+read -p "Are you sure you want to install iskylims in this server? (Y/N) " -n 1 -r
 echo    # (optional) move to a new line
 if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-    echo "Exiting without running relecov_platform installation"
+    echo "Exiting without running iskylims installation"
     exit 1
 fi
 
@@ -325,7 +325,7 @@ fi
 
 echo "Starting iSkyLIMS installation"
 if [ -d $INSTALL_PATH ]; then
-    echo "There already is an installation of relecov-platform in $INSTALL_PATH."
+    echo "There already is an installation of iskylims in $INSTALL_PATH."
     read -p "Do you want to remove current installation and reinstall? (Y/N) " -n 1 -r
     echo    # (optional) move to a new line
     if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
@@ -387,7 +387,7 @@ chmod 775 $INSTALL_PATH/iSkyLIMS/documents/drylab
 # install virtual environment
 echo "Creating virtual environment"
 if [ -d $INSTALL_PATH/iSkyLIMS/virtualenv ]; then
-    echo "There already is a virtualenv for relecov-platform in $INSTALL_PATH."
+    echo "There already is a virtualenv for iskylims in $INSTALL_PATH."
     read -p "Do you want to remove current virtualenv and reinstall? (Y/N) " -n 1 -r
     echo    # (optional) move to a new line
     if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
@@ -406,7 +406,7 @@ source virtualenv/bin/activate
 # Starting iSkyLIMS
 python3 -m pip install -r conf/requirements.txt
 echo ""
-echo "Creating relecov_platform project"
+echo "Creating iskylims project"
 django-admin startproject iSkyLIMS .
 grep ^SECRET iSkyLIMS/settings.py > ~/.secret
 
@@ -451,7 +451,7 @@ if [[ $linux_distribution == "Ubuntu" ]]; then
 fi
 
 if [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterprise" ]]; then
-    cp conf/iskylims_apache_centos_redhat.conf /etc/httpd/conf.d/relecov_platform.conf
+    cp conf/iskylims_apache_centos_redhat.conf /etc/httpd/conf.d/iskylims.conf
 fi
 
 echo "Creating super user "
