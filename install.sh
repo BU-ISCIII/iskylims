@@ -1,22 +1,39 @@
 #!/bin/bash
 
-SCRIPT_VERSION=0.3
-
 ISKYLIMS_VERSION="2.0.x"
-. ./install_settings.txt
+
+usage() {
+cat << EOF
+    This script install and upgrade the relecov platform application.
+
+    usage : $0 --upgrade --dev --conf
+        Optional input data:
+        --upgrade | Upgrade the relecov application
+        --dev     | Use the develop version instead of main release
+        --conf    | Select configuration file
+
+
+    Examples:
+        To install relecov application with the main release
+        sudo $0
+
+        To upgrade using develop code
+        $0 --upgrade --dev
+EOF
+}
 
 db_check(){
-    mysqladmin -h $DB_SERVER_IP -u$DB_USER -p$DB_PASS -P$DB_PORT processlist > /dev/null ###user should have mysql permission on remote server.
+	mysqladmin -h $DB_SERVER_IP -u$DB_USER -p$DB_PASS -P$DB_PORT processlist >/tmp/null ###user should have mysql permission on remote server.
 
     if ! [ $? -eq 0 ]; then
         echo -e "${RED}ERROR : Unable to connect to database. Check if your database is running and accessible${NC}"
         exit 1
     fi
-    RESULT=`mysqlshow --user=$DB_USER --password=$DB_PASS --host=$DB_SERVER_IP --port=$DB_PORT | grep -o $DB_NAME`
+    RESULT=`mysqlshow --user=$DB_USER --password=$DB_PASS --host=$DB_SERVER_IP --port=$DB_PORT | grep -o relecov`
 
-    if  ! [ "$RESULT" == $DB_NAME ] ; then
-        echo -e "${RED}ERROR : iSkyLIMS database is not defined yet ${NC}"
-        echo -e "${RED}ERROR : Create iSkyLIMS database on your mysql server and run again the installation script ${NC}"
+    if  ! [ "$RESULT" == "relecov" ] ; then
+        echo -e "${RED}ERROR : Relecov database is not defined yet ${NC}"
+        echo -e "${RED}ERROR : Create Relecov database on your mysql server and run again the installation script ${NC}"
         exit 1
     fi
 }
@@ -52,6 +69,7 @@ apache_check(){
         fi
     fi
 }
+
 python_check(){
 
     python_version=$(su -c python3 --version $user)
@@ -63,10 +81,11 @@ python_check(){
     p_version=$(echo $python_version | cut -d"." -f2)
     if (( $p_version < 7 )); then
         echo -e "${RED}ERROR : Application requieres at least the version 3.7.x of Python3  ${NC}"
-        echo -e "${RED}ERROR : Solve the issue with Python and run again the installation script ${NC}"
+        echo -e "${RED}ERROR : Solve the issue with python and run again the installation script ${NC}"
         exit 1
     fi
 }
+
 #================================================================
 #SET TEMINAL COLORS
 #================================================================
@@ -78,14 +97,171 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m'
 
+# translate long options to short
+reset=true
+for arg in "$@"
+do
+    if [ -n "$reset" ]; then
+      unset reset
+      set --      # this resets the "$@" array so we can rebuild it
+    fi
+    case "$arg" in
+    ##OPTIONAL
+		--upgrade)	set -- "$@"	-u ;;
+        --dev)      set -- "$@" -d ;;
+        --conf)     set -- "$@" -c ;;
+
+    ## ADITIONAL
+        --help)     set -- "$@" -h ;;
+        --version)  set -- "$@" -v ;;
+    ## PASSING VALUE IN PARAMETER
+        *)          set -- "$@" "$arg" ;;
+    esac
+done
+
+#SETTING DEFAULT VALUES
+upgrade=false
+git_branch="main"
+conf_file="./initial_settings.txt"
+
+#PARSE VARIABLE ARGUMENTS WITH getops
+options=":c:duvh"
+while getopts $options opt; do
+	case $opt in
+		u )
+			upgrade=true
+			;;
+		d )
+			git_branch="develop"
+			;;
+        c )
+		  	conf_file=$OPTARG
+		  	;;
+		h )
+		  	usage
+		  	exit 1
+		  	;;
+		v )
+		  	echo $RELECOVPLATFORM_VERSION
+		  	exit 1
+		  	;;
+		\?)
+			echo "Invalid Option: -$OPTARG" 1>&2
+			usage
+			exit 1
+			;;
+		: )
+      		echo "Option -$OPTARG requires an argument." >&2
+      		exit 1
+      		;;
+      	* )
+			echo "Unimplemented option: -$OPTARG" >&2;
+			exit 1
+			;;
+	esac
+done
+shift $((OPTIND-1))
+
+#=============================================================================
+#                     SETTINGS CHECKINGS
+#=============================================================================
+
+if [ ! -f "$conf_file" ]; then
+    printf "\n\n%s"
+    printf "${RED}------------------${NC}\n"
+    printf "${RED}Unable to start.${NC}\n"
+    printf "${RED}Configuration File $conf_file does not exist.${NC}\n"
+    printf "${RED}------------------${NC}\n"
+    exit 1
+fi
+
+# Read configuration file
+
+. $conf_file
+
+# check if branch master/develop is defined and checkout
+if [ "`git branch --list $git_branch`" ]; then
+    git checkout $git_branch
+else
+    printf "\n\n%s"
+    printf "${RED}------------------${NC}\n"
+    printf "${RED}Unable to start.${NC}\n"
+    printf "${RED}Git branch $git_branch is not define in ${PWD}.${NC}\n"
+    printf "${RED}------------------${NC}\n"
+    exit 1
+fi
+
+#=============================================================================
+#                   UPGRADE INSTALLATION
+# Check if parameter is passing to script to upgrade the installation
+# If "upgrade" parameter is set then the script only execute the upgrade part.
+# If other parameter as upgrade is given return usage message and exit
+#=============================================================================
+
+if [ $upgrade == true ]; then
+    # check if upgrade keyword is given
+    if [ ! -d $INSTALL_PATH/iSkyLIMS ]; then
+        printf "\n\n%s"
+        printf "${RED}------------------${NC}\n"
+        printf "${RED}Unable to start the upgrade.${NC}\n"
+        printf "${RED}Folder $INSTALL_PATH/iSkyLIMS does not exist.${NC}\n"
+        printf "${RED}------------------${NC}\n"
+        exit 1
+    fi
+    #================================================================
+    # MAIN_BODY FOR UPGRADE
+    #================================================================
+    printf "\n\n%s"
+    printf "${YELLOW}------------------${NC}\n"
+    printf "%s"
+    printf "${YELLOW}Starting iSKyLIMS Upgrade version: ${ISKYLIMS_VERSION}${NC}\n"
+    printf "%s"
+    printf "${YELLOW}------------------${NC}\n\n"
+
+    # update installation by sinchronize folders
+    echo "Copying files to installation folder"
+    rsync -rlv README.md LICENSE conf relecov_core relecov_dashboard relecov_documentation $INSTALL_PATH/relecov-platform
+    # upgrade database if needed
+    cd $INSTALL_PATH/relecov-platform
+    echo "activate the virtualenv"
+    source virtualenv/bin/activate
+    echo "Installing required python packages"
+    python3 -m pip install -r conf/requirements.txt
+
+    echo "checking for database changes"
+    ./manage.py makemigrations
+    ./manage.py migrate
+    ./manage.py collectstatic
+    #Linux distribution
+    linux_distribution=$(lsb_release -i | cut -f 2-)
+
+    echo ""
+    echo "Restart apache server to update changes"
+    if [[ $linux_distribution == "Ubuntu" ]]; then
+        apache_user="apache"
+    else
+        apache_user="httpd"
+    fi
+    sudo systemctl restart $apache_user
+
+    printf "\n\n%s"
+    printf "${BLUE}------------------${NC}\n"
+    printf "%s"
+    printf "${BLUE}Successfuly upgrade of iSKyLIMS version: ${ISKYLIMS_VERSION}${NC}\n"
+    printf "%s"
+    printf "${BLUE}------------------${NC}\n\n"
+
+    exit 0
+fi
+
 #================================================================
-# MAIN_BODY
+# MAIN_BODY FOR NEW INSTALLATION
 #================================================================
 
 printf "\n\n%s"
 printf "${YELLOW}------------------${NC}\n"
 printf "%s"
-printf "${YELLOW}Starting iSkyLIMS Installation version: ${ISKYLIMS_VERSION}${NC}\n"
+printf "${YELLOW}Starting Relecov Installation version: ${RELECOVPLATFORM_VERSION}${NC}\n"
 printf "%s"
 printf "${YELLOW}------------------${NC}\n\n"
 
@@ -119,34 +295,23 @@ apache_check
 printf "${BLUE}Successful check for apache${NC}\n"
 
 #================================================================
+## move to develop branch if --dev param
 
-read -p "Are you sure you want to install iSkyLIMS in this server? " -n 1 -r
-echo    # (optional) move to a new line
-if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-    echo "Exiting without running iSkyLIMS installation"
-    exit 1
-fi
+##git checkout develop
 
 #================================================================
-if [[ $linux_distribution == "Ubuntu" ]]; then
-    echo "Software installation for Ubuntu"
-    apt-get update && apt-get upgrade -y
-    apt-get install -y \
-        apt-utils wget \
-        libmysqlclient-dev apache2-dev \
-        python3-venv
-fi
 
-if [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterprise" ]]; then
-    echo "Software installation for Centos/RedHat"
-    yum install zlib-devel bzip2-devel openssl-devel \
-                wget httpd-devel mysql-libs
+read -p "Are you sure you want to install Relecov-platform in this server? (Y/N) " -n 1 -r
+echo    # (optional) move to a new line
+if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
+    echo "Exiting without running relecov_platform installation"
+    exit 1
 fi
 
 echo "Installing Interop"
 if [ -d /opt/interop ]; then
     echo "There is already an interop installation"
-    echo "Skipping the Interop installation"
+    echo "Skipping Interop installation"
 else
     cd /opt
     echo "Downloading interop software"
@@ -167,18 +332,17 @@ if [ -d $INSTALL_PATH ]; then
         echo "Exiting without running iSkyLIMS installation"
         exit 1
     else
-        rm -rf $INSTALL_PATH
+        rm -rf $INSTALL_PATH/iSkyLIMS
     fi
 fi
 
-
 ## Create the installation folder
-mkdir $INSTALL_PATH/
+mkdir $INSTALL_PATH/iSkyLIMS
 
 rsync -rlv README.md LICENSE conf iSkyLIMS_core iSkyLIMS_drylab \
         iSkyLIMS_wetlab iSkyLIMS_clinic django_utils $INSTALL_PATH
 
-cd $INSTALL_PATH
+cd $INSTALL_PATH/iSkyLIMS
 
 ## Create apache group if it does not exist.
 if ! grep -q apache /etc/group
@@ -190,44 +354,44 @@ fi
 
 if [ $LOG_TYPE == "symbolic_link" ]; then
     if [ -d $LOG_PATH ]; then
-        ln -s $LOG_PATH  $INSTALL_PATH/logs
+        ln -s $LOG_PATH  $INSTALL_PATH/iSkyLIMS/logs
     chmod 775 $LOG_PATH
     else
         echo "Log folder path: $LOG_PATH does not exist. Fix it in the install_settings.txt and run again."
     exit 1
     fi
 else
-    mkdir -p $INSTALL_PATH/logs
-    chown $user:apache $INSTALL_PATH/logs
-    chmod 775 $INSTALL_PATH/logs
+    mkdir -p $INSTALL_PATH/iSkyLIMS/logs
+    chown $user:apache $INSTALL_PATH/iSkyLIMS/logs
+    chmod 775 $INSTALL_PATH/iSkyLIMS/logs
 fi
 
 # Create necessary folders
-mkdir -p $INSTALL_PATH/documents/wetlab/tmp
-mkdir -p $INSTALL_PATH/documents/wetlab/SampleSheets
-mkdir -p $INSTALL_PATH/documents/wetlab/images_plot
-chown $user:apache $INSTALL_PATH/documents
-chmod 775 $INSTALL_PATH/documents
-chown $user:apache $INSTALL_PATH/documents/wetlab/tmp
-chmod 775 $INSTALL_PATH/documents/wetlab/tmp
-chown $user:apache $INSTALL_PATH/documents/wetlab/SampleSheets
-chmod 775 $INSTALL_PATH/documents/wetlab/SampleSheets
-chown $user:apache $INSTALL_PATH/documents/wetlab/images_plot
-chmod 775 $INSTALL_PATH/documents/wetlab/images_plot
-mkdir -p $INSTALL_PATH/documents/drylab
-chown $user:apache $INSTALL_PATH/documents/drylab
-chmod 775 $INSTALL_PATH/documents/drylab
-echo "Created folders for logs and documents "
+echo "Created documents structure"
+mkdir -p $INSTALL_PATH/iSkyLIMS/documents/wetlab/tmp
+mkdir -p $INSTALL_PATH/iSkyLIMS/documents/wetlab/SampleSheets
+mkdir -p $INSTALL_PATH/iSkyLIMS/documents/wetlab/images_plot
+chown $user:apache $INSTALL_PATH/iSkyLIMS/documents
+chmod 775 $INSTALL_PATH/iSkyLIMS/documents
+chown $user:apache $INSTALL_PATH/iSkyLIMS/documents/wetlab/tmp
+chmod 775 $INSTALL_PATH/iSkyLIMS/documents/wetlab/tmp
+chown $user:apache $INSTALL_PATH/iSkyLIMS/documents/wetlab/SampleSheets
+chmod 775 $INSTALL_PATH/iSkyLIMS/documents/wetlab/SampleSheets
+chown $user:apache $INSTALL_PATH/iSkyLIMS/documents/wetlab/images_plot
+chmod 775 $INSTALL_PATH/iSkyLIMS/documents/wetlab/images_plot
+mkdir -p $INSTALL_PATH/iSkyLIMS/documents/drylab
+chown $user:apache $INSTALL_PATH/iSkyLIMS/documents/drylab
+chmod 775 $INSTALL_PATH/iSkyLIMS/documents/drylab
 
 
 # install virtual environment
 echo "Creating virtual environment"
-if [ -d $INSTALL_PATH/virtualenv ]; then
-    echo "There already is a virtualenv for iSkyLIMS in $INSTALL_PATH."
+if [ -d $INSTALL_PATH/iSkyLIMS/virtualenv ]; then
+    echo "There already is a virtualenv for relecov-platform in $INSTALL_PATH."
     read -p "Do you want to remove current virtualenv and reinstall? (Y/N) " -n 1 -r
     echo    # (optional) move to a new line
     if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-        rm -rf $INSTALL_PATH/virtualenv
+        rm -rf $INSTALL_PATH/iSkyLIMS/virtualenv
         bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
     else
         echo "virtualenv alredy defined. Skipping."
@@ -240,10 +404,11 @@ echo "activate the virtualenv"
 source virtualenv/bin/activate
 
 # Starting iSkyLIMS
-python3 -m pip install -r conf/pythonPackagesRequired.txt
+python3 -m pip install -r conf/requirements.txt
+echo ""
+echo "Creating relecov_platform project"
 django-admin startproject iSkyLIMS .
 grep ^SECRET iSkyLIMS/settings.py > ~/.secret
-
 
 # Copying config files and script
 cp conf/settings.py $INSTALL_PATH/iSkyLIMS/settings.py
@@ -263,47 +428,34 @@ sed -i "s/emailhostpassword/${EMAIL_HOST_PASSWORD}/g" $INSTALL_PATH/iSkyLIMS/set
 sed -i "s/emailhosttls/${EMAIL_USE_TLS}/g" $INSTALL_PATH/iSkyLIMS/settings.py
 sed -i "s/localserverip/${LOCAL_SERVER_IP}/g" $INSTALL_PATH/iSkyLIMS/settings.py
 
-
 echo "Creating the database structure for iSkyLIMS"
 python3 manage.py migrate
 python3 manage.py makemigrations django_utils iSkyLIMS_core iSkyLIMS_wetlab iSkyLIMS_drylab iSkyLIMS_clinic
 python3 manage.py migrate
 
+echo "Run collectstatic"
 python3 manage.py collectstatic
 
-# echo "Change owner of files to Apache user"
-# chown -R www-data:www-data /opt/iSkyLIMS
-
 echo "Loading in database initial data"
-python3 manage.py loaddata conf/new_installation_loading_tables.json
+python3 manage.py loaddata conf/first_install_tables.json
 
 echo "Running crontab"
+## TODO: CHECK THIS.
 python3 manage.py crontab add
 mv /var/spool/cron/crontabs/root /var/spool/cron/crontabs/www-data
 chown www-data /var/spool/cron/crontabs/www-data
 
-
-
 echo "Updating Apache configuration"
 if [[ $linux_distribution == "Ubuntu" ]]; then
-    cp conf/apache2.conf /etc/apache2/sites-available/000-default.conf
-    echo  'LoadModule wsgi_module "/opt/iSkyLIMS/virtualenv/lib/python3.10.6/site-packages/mod_wsgi/server/mod_wsgi-py38.cpython-38-x86_64-linux-gnu.so"' >/etc/apache2/mods-available/iskylims.load
-    cp conf/iskylims.conf /etc/apache2/mods-available/iskylims.conf
-
-    # Create needed symbolic links to enable the configurations:
-
-    ln -s /etc/apache2/mods-available/iskylims.load /etc/apache2/mods-enabled/
-    ln -s /etc/apache2/mods-available/iskylims.conf /etc/apache2/mods-enabled/
+    cp conf/iskylims_apache_ubuntu.conf /etc/apache2/sites-available/000-default.conf
 fi
 
 if [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterprise" ]]; then
-    cp conf/iskylims_apache_centos_redhat.conf /etc/httpd/conf.d/iskylims.conf
+    cp conf/iskylims_apache_centos_redhat.conf /etc/httpd/conf.d/relecov_platform.conf
 fi
 
-
 echo "Creating super user "
-echo "User name must be admin"
-python3 manage.py createsuperuser
+python3 manage.py createsuperuser --username admin
 
 printf "\n\n%s"
 printf "${BLUE}------------------${NC}\n"
@@ -311,3 +463,5 @@ printf "%s"
 printf "${BLUE}Successfuly iSkyLIMS Installation version: ${ISKYLIMS_VERSION}${NC}\n"
 printf "%s"
 printf "${BLUE}------------------${NC}\n\n"
+
+echo "Installation completed"
