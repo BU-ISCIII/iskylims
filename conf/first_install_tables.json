@@ -240,6 +240,1322 @@
     }
 },
 {
+    "model": "django_utils.profile",
+    "pk": 1,
+    "fields": {
+        "profileUserID": [
+            "smonzon"
+        ],
+        "profileClassificationArea": 2,
+        "profileCenter": 2,
+        "profilePosition": "Bioinformatician",
+        "profileArea": "Bioinformatics Unit",
+        "profileExtension": "23253"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 2,
+    "fields": {
+        "profileUserID": [
+            "icuesta"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Scientific Researcher",
+        "profileArea": "Bioinformatics Unit",
+        "profileExtension": "23738"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 4,
+    "fields": {
+        "profileUserID": [
+            "bioinfoadm"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Admin",
+        "profileArea": "Bioinformatics Unit",
+        "profileExtension": "23253"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 5,
+    "fields": {
+        "profileUserID": [
+            "azaballos"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 9,
+        "profilePosition": "Head Genomics Unit",
+        "profileArea": "Genomics Unit",
+        "profileExtension": "1234"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 6,
+    "fields": {
+        "profileUserID": [
+            "bmartinezd"
+        ],
+        "profileClassificationArea": 5,
+        "profileCenter": 5,
+        "profilePosition": "Researcher",
+        "profileArea": "Human Genetics",
+        "profileExtension": "1234"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 7,
+    "fields": {
+        "profileUserID": [
+            "sherrera"
+        ],
+        "profileClassificationArea": 1,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Bacteriology",
+        "profileExtension": "1234"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 8,
+    "fields": {
+        "profileUserID": [
+            "svaldezate"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Bacteriology",
+        "profileExtension": "23734"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 9,
+    "fields": {
+        "profileUserID": [
+            "fjalonso"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 5,
+        "profilePosition": "Researcher",
+        "profileArea": "Human Genetics",
+        "profileExtension": "1234"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 10,
+    "fields": {
+        "profileUserID": [
+            "mjferrandiz"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Bacteriology",
+        "profileExtension": "1234"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 11,
+    "fields": {
+        "profileUserID": [
+            "anaalastruey"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Micology",
+        "profileExtension": "1234"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 12,
+    "fields": {
+        "profileUserID": [
+            "j.rodriguez"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "1234"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 13,
+    "fields": {
+        "profileUserID": [
+            "sergio.sanchez"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Bacteriology",
+        "profileExtension": "1234"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 14,
+    "fields": {
+        "profileUserID": [
+            "mposada"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 5,
+        "profilePosition": "Director",
+        "profileArea": "Human Genetics",
+        "profileExtension": "1234"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 15,
+    "fields": {
+        "profileUserID": [
+            "mperezv"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Bacteriology",
+        "profileExtension": "1234"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 17,
+    "fields": {
+        "profileUserID": [
+            "mjuliam"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Bioinformatician",
+        "profileArea": "BUISCIII",
+        "profileExtension": "23230"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 20,
+    "fields": {
+        "profileUserID": [
+            "estrella.montero"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Parasitology",
+        "profileExtension": "23739"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 21,
+    "fields": {
+        "profileUserID": [
+            "bdandres"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Inmunology",
+        "profileExtension": "23924"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 22,
+    "fields": {
+        "profileUserID": [
+            "lalcazar"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Micology",
+        "profileExtension": "23776"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 23,
+    "fields": {
+        "profileUserID": [
+            "mthomson"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "23900"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 24,
+    "fields": {
+        "profileUserID": [
+            "icasas"
+        ],
+        "profileClassificationArea": 4,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "23415"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 25,
+    "fields": {
+        "profileUserID": [
+            "chus.perteguer"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Parasitology",
+        "profileExtension": "23670"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 26,
+    "fields": {
+        "profileUserID": [
+            "nvilla"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "23662"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 27,
+    "fields": {
+        "profileUserID": [
+            "imago"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "23272"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 28,
+    "fields": {
+        "profileUserID": [
+            "horacio.gil"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Bacteriology",
+        "profileExtension": "--"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 29,
+    "fields": {
+        "profileUserID": [
+            "rescude"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Bacteriology",
+        "profileExtension": "23953"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 30,
+    "fields": {
+        "profileUserID": [
+            "ozaragoza"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Micology",
+        "profileExtension": "23584"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 31,
+    "fields": {
+        "profileUserID": [
+            "sresino"
+        ],
+        "profileClassificationArea": 4,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "23266"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 32,
+    "fields": {
+        "profileUserID": [
+            "jyuste"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Bacteriology",
+        "profileExtension": "23620"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 33,
+    "fields": {
+        "profileUserID": [
+            "ccasado"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "23934"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 34,
+    "fields": {
+        "profileUserID": [
+            "amandafr"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "23892"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 35,
+    "fields": {
+        "profileUserID": [
+            "aavellon"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "23633"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 36,
+    "fields": {
+        "profileUserID": [
+            "aurorafg"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "0000"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 37,
+    "fields": {
+        "profileUserID": [
+            "vsandonism"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "0000"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 38,
+    "fields": {
+        "profileUserID": [
+            "rabad"
+        ],
+        "profileClassificationArea": 1,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Bacteriology",
+        "profileExtension": "0000"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 39,
+    "fields": {
+        "profileUserID": [
+            "iperez"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 5,
+        "profilePosition": "Researcher",
+        "profileArea": "Human Genetics",
+        "profileExtension": "0000"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 40,
+    "fields": {
+        "profileUserID": [
+            "emellado"
+        ],
+        "profileClassificationArea": 2,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Micology",
+        "profileExtension": "0000"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 41,
+    "fields": {
+        "profileUserID": [
+            "cpelaz"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Bacteriology",
+        "profileExtension": "0000"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 42,
+    "fields": {
+        "profileUserID": [
+            "c.robledo"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 5,
+        "profilePosition": "Researcher",
+        "profileArea": "Human Genetics",
+        "profileExtension": "0000"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 44,
+    "fields": {
+        "profileUserID": [
+            "mcoiras"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "0000"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 46,
+    "fields": {
+        "profileUserID": [
+            "iliste"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 7,
+        "profilePosition": "Researcher",
+        "profileArea": "UFIEC",
+        "profileExtension": "0000"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 47,
+    "fields": {
+        "profileUserID": [
+            "lchapado"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 9,
+        "profilePosition": "Researcher",
+        "profileArea": "Bioinformatics Unit",
+        "profileExtension": "0000"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 48,
+    "fields": {
+        "profileUserID": [
+            "pjsola"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 9,
+        "profilePosition": "Researcher",
+        "profileArea": "Bioinformatics",
+        "profileExtension": "0000"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 49,
+    "fields": {
+        "profileUserID": [
+            "ggomezm"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 5,
+        "profilePosition": "Researcher",
+        "profileArea": "Human Genetics",
+        "profileExtension": "0000"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 50,
+    "fields": {
+        "profileUserID": [
+            "ecalonge"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "0000"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 51,
+    "fields": {
+        "profileUserID": [
+            "jgcastro"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 5,
+        "profilePosition": "Researcher",
+        "profileArea": "Human Genetics",
+        "profileExtension": "23288"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 52,
+    "fields": {
+        "profileUserID": [
+            "lherrera"
+        ],
+        "profileClassificationArea": 1,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Bacteriology",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 54,
+    "fields": {
+        "profileUserID": [
+            "ijado"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Bacteriology",
+        "profileExtension": "23404"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 55,
+    "fields": {
+        "profileUserID": [
+            "mamblar"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Unknown",
+        "profileExtension": "0000"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 56,
+    "fields": {
+        "profileUserID": [
+            "srmora"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 57,
+    "fields": {
+        "profileUserID": [
+            "jimenezsousa"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 58,
+    "fields": {
+        "profileUserID": [
+            "javier.sotillo"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Parasitology",
+        "profileExtension": "23789"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 59,
+    "fields": {
+        "profileUserID": [
+            "mjmedina"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Bacteriology",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 60,
+    "fields": {
+        "profileUserID": [
+            "mgaliano"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 9,
+        "profilePosition": "Researcher",
+        "profileArea": "Bioinformatics Unit",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 61,
+    "fields": {
+        "profileUserID": [
+            "victorialopez"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 7,
+        "profilePosition": "Researcher",
+        "profileArea": "Computational Biology Unit",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 62,
+    "fields": {
+        "profileUserID": [
+            "pvillalon"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Taxonomy",
+        "profileExtension": "0000"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 63,
+    "fields": {
+        "profileUserID": [
+            "lauzurica"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Inmunology",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 64,
+    "fields": {
+        "profileUserID": [
+            "a.vazquez"
+        ],
+        "profileClassificationArea": 4,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 65,
+    "fields": {
+        "profileUserID": [
+            "s.varona"
+        ],
+        "profileClassificationArea": 7,
+        "profileCenter": 9,
+        "profilePosition": "Researcher",
+        "profileArea": "BU-ISCIII",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 67,
+    "fields": {
+        "profileUserID": [
+            "davtarrago"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Bacteriology",
+        "profileExtension": "23682"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 68,
+    "fields": {
+        "profileUserID": [
+            "icortegano"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 1,
+        "profilePosition": "Investigator",
+        "profileArea": "Inmunology",
+        "profileExtension": "1234"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 69,
+    "fields": {
+        "profileUserID": [
+            "mpdelucas"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 7,
+        "profilePosition": "Researcher",
+        "profileArea": "UFIEC",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 70,
+    "fields": {
+        "profileUserID": [
+            "crueda"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Titulado Superior",
+        "profileArea": "Micology",
+        "profileExtension": "23696"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 71,
+    "fields": {
+        "profileUserID": [
+            "Lola_Fernandez"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Contrato Miguel Servet",
+        "profileArea": "Virology",
+        "profileExtension": "23840"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 72,
+    "fields": {
+        "profileUserID": [
+            "rayala"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 73,
+    "fields": {
+        "profileUserID": [
+            "fdiezf"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "virology",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 74,
+    "fields": {
+        "profileUserID": [
+            "anabelnegredo"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 75,
+    "fields": {
+        "profileUserID": [
+            "mdfernandez"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Titulado Superior",
+        "profileArea": "Virology",
+        "profileExtension": "23840"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 76,
+    "fields": {
+        "profileUserID": [
+            "svazquez"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 77,
+    "fields": {
+        "profileUserID": [
+            "pacopozo"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 79,
+    "fields": {
+        "profileUserID": [
+            "pacebo"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 5,
+        "profilePosition": "Researcher",
+        "profileArea": "Human Genetics",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 80,
+    "fields": {
+        "profileUserID": [
+            "mcabrerizo"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "-",
+        "profileArea": "Virology",
+        "profileExtension": "23663"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 81,
+    "fields": {
+        "profileUserID": [
+            "vmontero"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "1234"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 82,
+    "fields": {
+        "profileUserID": [
+            "mmolinero"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "1234"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 83,
+    "fields": {
+        "profileUserID": [
+            "mgesguevillas"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "1234"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 84,
+    "fields": {
+        "profileUserID": [
+            "n.reyes"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "1234"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 85,
+    "fields": {
+        "profileUserID": [
+            "dianasantos"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "1234"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 86,
+    "fields": {
+        "profileUserID": [
+            "sara.camarero"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "1234"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 87,
+    "fields": {
+        "profileUserID": [
+            "miglesias"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "1234"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 88,
+    "fields": {
+        "profileUserID": [
+            "eva.bermejo"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 5,
+        "profilePosition": "Científico Titular - Jefe de Área",
+        "profileArea": "Unidad de Investigación sobre Anomalías Congénitas",
+        "profileExtension": "22434"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 89,
+    "fields": {
+        "profileUserID": [
+            "sbarturen"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "PhD",
+        "profileArea": "Virology",
+        "profileExtension": "23633"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 90,
+    "fields": {
+        "profileUserID": [
+            "jsempere"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Bacteriology",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 91,
+    "fields": {
+        "profileUserID": [
+            "adelavieja"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 7,
+        "profilePosition": "Researcher",
+        "profileArea": "UFIEC",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 92,
+    "fields": {
+        "profileUserID": [
+            "jeecheva"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "0000"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 94,
+    "fields": {
+        "profileUserID": [
+            "ana.heredero"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 9,
+        "profilePosition": "Researcher",
+        "profileArea": "Bioinformatics Unit",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 97,
+    "fields": {
+        "profileUserID": [
+            "mperez"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Investigador",
+        "profileArea": "LAR",
+        "profileExtension": "23707"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 100,
+    "fields": {
+        "profileUserID": [
+            "da.valle"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Bioinformatician",
+        "profileArea": "Virology",
+        "profileExtension": "23769"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 104,
+    "fields": {
+        "profileUserID": [
+            "g.gorines"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 9,
+        "profilePosition": "Bioinformatician",
+        "profileArea": "Bioinformatics Unit",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 108,
+    "fields": {
+        "profileUserID": [
+            "jc.solana"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Parasitology",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 111,
+    "fields": {
+        "profileUserID": [
+            "mmchimeno"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Researcher",
+        "profileArea": "Virology",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 114,
+    "fields": {
+        "profileUserID": [
+            "sara.perez"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 5,
+        "profilePosition": "Researcher",
+        "profileArea": "Human Genetics",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 115,
+    "fields": {
+        "profileUserID": [
+            "majimenezsousa"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 2,
+        "profilePosition": "Investigador Miguel Servet",
+        "profileArea": "Unidad de Infección Viral e Inmunidad",
+        "profileExtension": "23862"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 118,
+    "fields": {
+        "profileUserID": [
+            "erika.kvalem"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 9,
+        "profilePosition": "Bioinformatician",
+        "profileArea": "BUISCIII",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 119,
+    "fields": {
+        "profileUserID": [
+            "ycampos"
+        ],
+        "profileClassificationArea": null,
+        "profileCenter": 7,
+        "profilePosition": "Researcher",
+        "profileArea": "UFIEC",
+        "profileExtension": "-"
+    }
+},
+{
+    "model": "django_utils.profile",
+    "pk": 121,
+    "fields": {
+        "profileUserID": [
+            "admin"
+        ],
+        "profileClassificationArea": 7,
+        "profileCenter": 2,
+        "profilePosition": "bioinformatic",
+        "profileArea": "Bioinformatic",
+        "profileExtension": "21478"
+    }
+},
+{
     "model": "iSkyLIMS_core.sequencerinlab",
     "pk": 1,
     "fields": {
@@ -20089,3223 +21405,6 @@
     "pk": 7,
     "fields": {
         "clinicState": "Invalid"
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 1,
-    "fields": {
-        "password": "pbkdf2_sha256$260000$o1VVdpA4lH8LV3xYm7cerQ$p68GFC88rKk9Oi4I/GIJbXcYubmTG1NI6/2owmRz3XI=",
-        "last_login": "2023-02-15T14:10:43.948",
-        "is_superuser": true,
-        "username": "bioinfoadm",
-        "first_name": "Admin",
-        "last_name": "Admin",
-        "email": "bioinformatica@isciii.es",
-        "is_staff": true,
-        "is_active": true,
-        "date_joined": "2017-09-06T09:31:47",
-        "groups": [
-            [
-                "WetlabManager"
-            ],
-            [
-                "ServiceManager"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 2,
-    "fields": {
-        "password": "pbkdf2_sha256$260000$wbkBicGSM9ibcqLYRBkXF1$k+jsxhUJDafrSwidLsUpvCLA4b55mjWJsmfKiex0V7A=",
-        "last_login": "2022-02-18T12:40:13",
-        "is_superuser": false,
-        "username": "smonzon",
-        "first_name": "Sara",
-        "last_name": "Monzon",
-        "email": "smonzon@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2017-09-06T09:34:57",
-        "groups": [
-            [
-                "WetlabManager"
-            ],
-            [
-                "ServiceManager"
-            ],
-            [
-                "bmartinezd"
-            ],
-            [
-                "mposada"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 3,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$LH7CBTSzyQNW$rZXdi38t9Jro555L/oxCo20b6/i4UM0enilLwGYS0TE=",
-        "last_login": "2022-01-17T09:22:30.531",
-        "is_superuser": false,
-        "username": "icuesta",
-        "first_name": "Isabel",
-        "last_name": "Cuesta",
-        "email": "isabel.cuesta@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2017-09-06T11:14:50",
-        "groups": [
-            [
-                "WetlabManager"
-            ],
-            [
-                "ServiceManager"
-            ],
-            [
-                "mposada"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 7,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$iPnIJNqIAgVO$vgDD/qiNIbz999GlIh5buC90ruRmLFjl0+1jD9SoiVQ=",
-        "last_login": "2022-01-14T10:17:38.349",
-        "is_superuser": false,
-        "username": "azaballos",
-        "first_name": "Ángel",
-        "last_name": "Zaballos",
-        "email": "azaballos@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2017-11-09T14:59:29",
-        "groups": [
-            [
-                "WetlabManager"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 8,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$ZyuJUn8Edz7S$2qjt1w7VrxMNyEqC1dl7jg2QiWXb3H30r/J4xHAr5xM=",
-        "last_login": "2021-11-30T10:43:11",
-        "is_superuser": false,
-        "username": "bmartinezd",
-        "first_name": "Beatriz",
-        "last_name": "Martínez",
-        "email": "bmartinezd@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2017-11-09T15:10:59",
-        "groups": [
-            [
-                "bmartinezd"
-            ],
-            [
-                "ggomezm"
-            ],
-            [
-                "mposada"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 9,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$hSWEVUpJt5ZF$KPSjzRqW5YqShSH3iBcQLuquBbHJDgCr/tnZTgOfcro=",
-        "last_login": "2022-01-20T11:24:53",
-        "is_superuser": false,
-        "username": "sherrera",
-        "first_name": "Silvia",
-        "last_name": "Herrera",
-        "email": "sherrera@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2017-11-09T15:12:24",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 10,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$rlExUBoQGYxf$n02U8nbjRWM0f2yJR6QwWip1kw7AlTKtQ/vU4BsawiQ=",
-        "last_login": "2021-11-03T11:50:23.594",
-        "is_superuser": false,
-        "username": "svaldezate",
-        "first_name": "Sylvia",
-        "last_name": "Valdezate",
-        "email": "svaldezate@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2017-11-09T15:17:04",
-        "groups": [
-            [
-                "mperezv"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 11,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$ErIoubmOpOw1$RHBTkI6WVFrKRr2SfnOeaqLPCC2utImWNN6/7y9m2kg=",
-        "last_login": "2020-09-10T08:10:43.904",
-        "is_superuser": false,
-        "username": "fjalonso",
-        "first_name": "Francisco Javier",
-        "last_name": "Alonso",
-        "email": "fjalonso@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2017-11-09T15:17:48",
-        "groups": [
-            [
-                "mposada"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 12,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$4mFnW0sS92a4$BX4zv4wjUqgxqQMOI+7750uigpy21X6plsrH7Fk+nO0=",
-        "last_login": "2018-09-24T10:37:23",
-        "is_superuser": false,
-        "username": "emellado",
-        "first_name": "Emilia",
-        "last_name": "Mellado",
-        "email": "emellado@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2017-11-09T15:19:01",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 13,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$RIwFXD3uueg9$K9n099rluR3t5+7wIPLzJOcC8tAh4BiOSMhyVoHleFs=",
-        "last_login": "2021-04-09T14:41:05.452",
-        "is_superuser": false,
-        "username": "anaalastruey",
-        "first_name": "Ana",
-        "last_name": "Alastruey",
-        "email": "anaalastruey@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2017-11-09T15:20:27",
-        "groups": [
-            [
-                "anaalastruey"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 14,
-    "fields": {
-        "password": "pbkdf2_sha256$150000$biUsP8pbUcLg$erMEeMiQSaVW6yZ1evILS0I40H6J36HC3Lj+W30pm2U=",
-        "last_login": "2020-12-04T14:08:47.909",
-        "is_superuser": false,
-        "username": "iperez",
-        "first_name": "Iñaki",
-        "last_name": "Pérez",
-        "email": "iperez@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2017-11-09T15:21:30",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 15,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$JXUSBtBrZqRC$HvtGS0b7Bv0dpTlCoW4FDuD5U2HIxFx9KX/4mXpNzPg=",
-        "last_login": "2020-07-08T10:42:44.791",
-        "is_superuser": false,
-        "username": "c.robledo",
-        "first_name": "Cristina",
-        "last_name": "Robledo",
-        "email": "c.robledo@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2017-11-09T15:22:30",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 16,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$1HPEOB2PB10Q$S+BAhzIZEkicupWrVS9K34/NM/MxDFITuo5HXA9Rf9A=",
-        "last_login": "2022-01-17T00:13:25",
-        "is_superuser": false,
-        "username": "rabad",
-        "first_name": "Raquel",
-        "last_name": "Abad",
-        "email": "rabad@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2017-11-09T15:23:42",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 17,
-    "fields": {
-        "password": "pbkdf2_sha256$36000$Sn0Ft3yLeF0x$crtn3QQJ9gchXbpdgU+3vT9LOwo2TdfbEKNYMi5gqF8=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "mjferrandiz",
-        "first_name": "Maria Jose",
-        "last_name": "Ferrandiz",
-        "email": "mjferrandiz@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2017-11-09T15:27:33",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 18,
-    "fields": {
-        "password": "pbkdf2_sha256$36000$plXJgFJhKgDw$L57JOFtuSap23MO/wjbUo+UHJsAOL54yoCBDcw4ly7k=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "j.rodriguez",
-        "first_name": "Javier María",
-        "last_name": "Rodríguez",
-        "email": "j.rodriguez@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2017-11-09T15:33:37",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 19,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$szEjMFoStCJR$9llDDXZOuMzeIfrmp+qtWpdQkWdpMPHKgu4rGGJOADY=",
-        "last_login": "2021-12-09T10:23:39.882",
-        "is_superuser": false,
-        "username": "sergio.sanchez",
-        "first_name": "Sergio",
-        "last_name": "Sánchez",
-        "email": "sergio.sanchez@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2017-11-09T15:34:56",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 20,
-    "fields": {
-        "password": "pbkdf2_sha256$150000$pxi0ILtD8yuq$G7XoE4vU2zXCqrFH3wHgtJ7ONQZXeTa9Vbl0n92GYO0=",
-        "last_login": "2020-10-08T07:56:39",
-        "is_superuser": false,
-        "username": "mposada",
-        "first_name": "Manuel",
-        "last_name": "Posada",
-        "email": "mposada@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2017-11-09T15:37:20",
-        "groups": [
-            [
-                "mposada"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 21,
-    "fields": {
-        "password": "pbkdf2_sha256$260000$cqbZb4otiYRQfCq18EbxK4$O5YOz1R6mxKg6jgv3vZwKXmsvsLAhX2J0BGSQ0G3MB8=",
-        "last_login": "2022-02-15T14:56:28.530",
-        "is_superuser": false,
-        "username": "mperezv",
-        "first_name": "María",
-        "last_name": "Pérez",
-        "email": "mperezv@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2017-11-09T16:39:14",
-        "groups": [
-            [
-                "mperezv"
-            ],
-            [
-                "mperez"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 22,
-    "fields": {
-        "password": "pbkdf2_sha256$36000$J7hG5WOsVNGZ$qAYjl3ziBXIWP4r6rR7Q21jF+LbRmxcNVHUUqlkhMRM=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "cpelaz",
-        "first_name": "Carmen",
-        "last_name": "Pelaz",
-        "email": "cpelaz@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2017-12-02T17:11:53",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 25,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$oQOEfAx1WWHp$ZQpvhlYh+rZPh1W41hGC2cRb6k9lGnIf73ZWzsxeuaM=",
-        "last_login": "2021-04-20T11:32:30.151",
-        "is_superuser": true,
-        "username": "django",
-        "first_name": "",
-        "last_name": "",
-        "email": "bioinformatica@isciii.es",
-        "is_staff": true,
-        "is_active": true,
-        "date_joined": "2018-01-30T12:31:39",
-        "groups": [
-            [
-                "WetlabManager"
-            ],
-            [
-                "anaalastruey"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 28,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$0QaIsXmYHOJ4$qncfg6PrYSj1DpvPdqr9vKEACBewpDl4PaLNDYfwtGo=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "mcoiras",
-        "first_name": "Mayte",
-        "last_name": "Coiras",
-        "email": "mcoiras@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-03-01T17:07:23",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 30,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$khwQCSyYFW2K$M9Kv1HixBKkPE90sMyniJYS6RTUzLCYDlLryvy6CWIo=",
-        "last_login": "2018-07-23T08:14:29.586",
-        "is_superuser": false,
-        "username": "mjuliam",
-        "first_name": "Miguel",
-        "last_name": "Juliá",
-        "email": "mjuliam@isciii.es",
-        "is_staff": true,
-        "is_active": true,
-        "date_joined": "2018-04-19T11:23:50",
-        "groups": [
-            [
-                "WetlabManager"
-            ],
-            [
-                "ServiceManager"
-            ],
-            [
-                "mposada"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 33,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$aJOsx3EDQK0G$lXyT6CoDuUZDw+MSu6ZNYUjHZr20jZOaG02Svwam/9o=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "estrella.montero",
-        "first_name": "",
-        "last_name": "",
-        "email": "",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-06-05T11:10:50",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 34,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$dIz9FKXddjSK$bpaqAnhCJQxm9wuFJHr1ijUrqIk3gu5IMmWNTPBE4sw=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "bdandres",
-        "first_name": "",
-        "last_name": "",
-        "email": "",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-06-05T11:19:15",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 35,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$frkCCTUTaWbq$wxC6/rf9tGGUHuMzxhiHvU2bdl0vjUSWEZvxgDIxysk=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "lalcazar",
-        "first_name": "Laura",
-        "last_name": "Alcazar",
-        "email": "lalcazar@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-06-05T11:20:22",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 36,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$fOOIBNlccvPy$COR2YtY0cGlw9XZsYh1JeSIRvbwwsMRIUXyiA72BwnE=",
-        "last_login": "2021-09-24T11:45:26.236",
-        "is_superuser": false,
-        "username": "mthomson",
-        "first_name": "Miguel",
-        "last_name": "Thomson",
-        "email": "mthomson@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-06-05T11:21:46",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 37,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$Nh3dFGzDzrao$LxVF0iqI0FjacIdp3S+kBKXo8JZvPAUY9UOWiLabNJc=",
-        "last_login": "2021-12-27T13:08:22",
-        "is_superuser": false,
-        "username": "icasas",
-        "first_name": "Inmaculada",
-        "last_name": "Casas",
-        "email": "icasas@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-06-05T11:23:02",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 38,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$jthNCs7y8xW1$2Npum8iIME3Kbw774KaScM/dYzhio0CAO0lPsRIdq1k=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "chus.perteguer",
-        "first_name": "María Jesús",
-        "last_name": "Perteguer",
-        "email": "chus.perteguer@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-06-05T11:24:10",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 39,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$3Sof9CJ0JLJR$HGRtK/AEnN6wqbWedpp2PnSZe8S3SmCfiNk2+oi60/Y=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "nvilla",
-        "first_name": "Nieves",
-        "last_name": "Villanueva",
-        "email": "nvilla@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-06-05T11:25:31",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 40,
-    "fields": {
-        "password": "pbkdf2_sha256$150000$dtKYb8ny4Bqg$dLpw6WYvSTfsfbAzvWPTrKmdoR+sKovhi06Cs3fyOsk=",
-        "last_login": "2020-10-08T10:11:56.799",
-        "is_superuser": false,
-        "username": "imago",
-        "first_name": "Isidoro",
-        "last_name": "Martínez",
-        "email": "imago@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-06-05T11:27:38",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 41,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$A32LiTFaVeAE$TpuGM9TCUpMzEStjhrAFAN1881IiCNBW3cS4Z4t47as=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "horacio.gil",
-        "first_name": "Horacio",
-        "last_name": "Gil",
-        "email": "",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-06-05T11:29:04",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 42,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$k2WxLm9wG9QC$UHXm7nCITLpm886RZRDGgRoDByaG/J4FyeMBnaSRauQ=",
-        "last_login": "2021-11-08T08:04:30.366",
-        "is_superuser": false,
-        "username": "rescude",
-        "first_name": "Raquel",
-        "last_name": "Escudero",
-        "email": "rescude@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-06-05T11:29:58",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 43,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$dyBrpjjgOc2Z$WdlvHJTZlQs/dECHbhLKyVypigXXQbIbz7WAeffISWY=",
-        "last_login": "2020-05-16T16:50:22.726",
-        "is_superuser": false,
-        "username": "ozaragoza",
-        "first_name": "Óscar",
-        "last_name": "Zaragoza",
-        "email": "ozaragoza@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-06-05T11:31:14",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 44,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$rirbVpZT3nOz$ITb1AffcX5kNyCZg+vVd5B75xEkx3Ax6PP1FtwYGQWc=",
-        "last_login": "2020-01-08T11:13:37",
-        "is_superuser": false,
-        "username": "sresino",
-        "first_name": "Salvador",
-        "last_name": "Resino",
-        "email": "sresino@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-06-05T11:32:33",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 45,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$1fbkNP7KCDZ0$SeAxT81ld+3ez6zl/z1QwmjNFlaFKqeWj37NdwUZSKI=",
-        "last_login": "2020-12-23T13:23:28.134",
-        "is_superuser": false,
-        "username": "jyuste",
-        "first_name": "Jose",
-        "last_name": "Yuste",
-        "email": "jyuste@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-06-05T11:34:08",
-        "groups": [
-            [
-                "jyuste"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 46,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$IMGXcrAsAO6Q$4nKqZ4nkrjyzr8+fUofohWJsV4FYXDY7K8cZAuH11kk=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "ccasado",
-        "first_name": "Concha",
-        "last_name": "Casado",
-        "email": "ccasado@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-06-05T11:35:06",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 47,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$UiNmZ2BvxpAH$PaYzyyIB8vBXL1rvNDHZaOpmJRfoaIvi/czzVPlmzN4=",
-        "last_login": "2021-08-03T11:49:23.328",
-        "is_superuser": false,
-        "username": "amandafr",
-        "first_name": "Amanda",
-        "last_name": "Fernández",
-        "email": "amandafr@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-06-05T11:50:17",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 48,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$frGApx8BGg77$FpWAZSB7JC7axqTkDVDihArVZVCSa3QpFLPI3NcdNtk=",
-        "last_login": "2021-11-26T15:44:13.850",
-        "is_superuser": false,
-        "username": "aavellon",
-        "first_name": "Ana",
-        "last_name": "Avellón",
-        "email": "aavellon@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-06-05T11:51:27",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 49,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$HaOrBHroHJQJ$HveavAodCCzkBw1cHxw0DkNa4JGRPtlyzteOEjFEtAU=",
-        "last_login": "2021-12-10T16:31:05.992",
-        "is_superuser": false,
-        "username": "aurorafg",
-        "first_name": "Aurora",
-        "last_name": "Fernández",
-        "email": "aurorafg@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-06-20T09:53:31",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 50,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$9nkyvIPppok2$HFDaucbnTYbHedWexPT4+148eBQQikWOibp6AA6XjWM=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "vsandonism",
-        "first_name": "",
-        "last_name": "",
-        "email": "",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-06-20T09:57:28.059",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 51,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$DKpMIMMIi6QJ$LR/eRcwHqoO7ASI0lOweA882YI3Rhqz/JahIfC6+iNo=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "iliste",
-        "first_name": "Isabel",
-        "last_name": "liste",
-        "email": "iliste@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-06-21T13:55:31",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 52,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$67YlkH3nhAm7$Fx0+VW9ls2wabexLAaBRcSpApVcBrpTxfMeu+l5nFeg=",
-        "last_login": "2021-12-15T17:46:39.299",
-        "is_superuser": true,
-        "username": "lchapado",
-        "first_name": "Luis",
-        "last_name": "Chapado",
-        "email": "lchapado@externos.isciii.es",
-        "is_staff": true,
-        "is_active": true,
-        "date_joined": "2018-06-28T15:41:41",
-        "groups": [
-            [
-                "WetlabManager"
-            ],
-            [
-                "ServiceManager"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 53,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$0hsvdNnTInBB$wyA2QZ/LbwbJ5kkih78dZfZ8URjzs/HYYMDHMA3idD4=",
-        "last_login": "2020-01-21T08:17:45.961",
-        "is_superuser": false,
-        "username": "pjsola",
-        "first_name": "",
-        "last_name": "",
-        "email": "",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-06-28T15:42:32",
-        "groups": [
-            [
-                "WetlabManager"
-            ],
-            [
-                "ServiceManager"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 54,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$q6VQxQa1CSJx$8HwltMeQJqONVml3s+2N7oMyifeQyO5AsvcE+tY5VrI=",
-        "last_login": "2021-11-22T10:00:05.655",
-        "is_superuser": false,
-        "username": "ggomezm",
-        "first_name": "Gema",
-        "last_name": "Gómez",
-        "email": "ggomezm@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-06-29T07:38:57",
-        "groups": [
-            [
-                "ggomezm"
-            ],
-            [
-                "mposada"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 55,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$2QSSJyCnyXKs$2O+0m7EBcLOL28nzylHDXtBs0P7015DA56eToGUp74s=",
-        "last_login": "2021-07-30T13:55:01",
-        "is_superuser": false,
-        "username": "ecalonge",
-        "first_name": "",
-        "last_name": "",
-        "email": "",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-07-10T11:13:46",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 56,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$aNym4r1bnHf2$iuelDK/cYI9qgBAHsB2mUxMVpD4Q5NRpjCzsLGk8h6g=",
-        "last_login": "2020-01-03T10:14:13.518",
-        "is_superuser": false,
-        "username": "jgcastro",
-        "first_name": "Javier",
-        "last_name": "García Castro",
-        "email": "jgcastro@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-07-26T14:52:33",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 57,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$JuGRg9k7ohBP$YLCMc8YQ5Bu63neNUKATv9jbzKULO136Cn/F6LbQYH8=",
-        "last_login": "2021-12-01T10:58:20",
-        "is_superuser": false,
-        "username": "lherrera",
-        "first_name": "Laura",
-        "last_name": "Herrera",
-        "email": "lherrera@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-10-18T08:40:20",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 59,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$O73VQ4wn1BAX$3VwQZ4OPg/YgmAFp/qA4mtUOV069VSccXFAWV9qFKGE=",
-        "last_login": "2018-12-11T18:01:00",
-        "is_superuser": false,
-        "username": "ijado",
-        "first_name": "Isabel",
-        "last_name": "Jado García",
-        "email": "ijado@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-12-11T17:51:44",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 60,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$8kzkcH6GJ4bY$PKTVxqnAhAMyYtipi7yR1UJ3ZDb3sJoQueUsx3tiMww=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "mamblar",
-        "first_name": "",
-        "last_name": "",
-        "email": "",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2018-12-14T09:58:47",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 61,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$iqaY5CoqAx3K$R3GpIQ7QHMsqQ94L0OvNe3YqSmt4HPFAKhkfRk/YqTs=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "srmora",
-        "first_name": "",
-        "last_name": "",
-        "email": "",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2019-01-18T11:25:03",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 62,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$uRaxdl58uSp1$QZjN9MTOj3ZXtWUbi4gOICbD9KW3eZKlJ8ITaAsjSh4=",
-        "last_login": "2019-01-22T11:21:27",
-        "is_superuser": false,
-        "username": "jimenezsousa",
-        "first_name": "María de los Ángeles",
-        "last_name": "Jiménez",
-        "email": "jimenezsousa@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2019-01-22T11:20:47",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 63,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$wq7UBjprZaCX$XD/qG3dicJb7U/ms8kuH411yc2zOkXjsjqy6r3tIPv8=",
-        "last_login": "2019-01-24T16:13:19.350",
-        "is_superuser": false,
-        "username": "javier.sotillo",
-        "first_name": "",
-        "last_name": "",
-        "email": "",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2019-01-24T16:13:03.164",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 64,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$Sf4kLkDo6Z3b$LnjXH0bmDR8F0r61FUhNBVisiX+JoLqG552tYRaYsMs=",
-        "last_login": "2019-01-31T12:16:56.015",
-        "is_superuser": false,
-        "username": "mjmedina",
-        "first_name": "María José",
-        "last_name": "Medina",
-        "email": "mjmedina@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2019-01-31T12:04:02",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 65,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$gVL2dvoTqqfa$EuYwxukBZMvA+1rxjiP5nKEymNbTdsgJAXmQ/jb4ZNA=",
-        "last_login": "2019-08-07T09:15:51",
-        "is_superuser": false,
-        "username": "mgaliano",
-        "first_name": "Javier",
-        "last_name": "Martín Galiano",
-        "email": "mgaliano@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2019-01-31T12:20:25",
-        "groups": [
-            [
-                "jyuste"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 66,
-    "fields": {
-        "password": "pbkdf2_sha256$150000$FnBy6qnZeMZ2$B2FwtrEJgk9A+PyjNtyMktiJ4vTOIh5VFfaO+qFdB4Y=",
-        "last_login": "2020-10-08T07:11:02.716",
-        "is_superuser": false,
-        "username": "victorialopez",
-        "first_name": "Victoria",
-        "last_name": "Lopez",
-        "email": "victorialopez@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2019-03-11T09:28:02",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 67,
-    "fields": {
-        "password": "pbkdf2_sha256$150000$MqOQSFuDbUP9$1nruLo4/xgddyfTCMvGVfFCy6GRgs23ASqEraoDGy1o=",
-        "last_login": "2020-10-08T06:51:28.424",
-        "is_superuser": false,
-        "username": "pvillalon",
-        "first_name": "Pilar",
-        "last_name": "Villalón",
-        "email": "pvillalon@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2019-03-28T10:21:03",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 68,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$L8LZVBCkaPhT$okoHAjvYAASnF2UHGVjVMUkKhLBPNkYCucQ5a59SZec=",
-        "last_login": "2019-06-04T11:27:06.118",
-        "is_superuser": false,
-        "username": "lauzurica",
-        "first_name": "Pilar",
-        "last_name": "Lauzurica",
-        "email": "lauzurica@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2019-04-30T10:21:38",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 69,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$5UqnhqNgpYCq$Hu/AXcMjvPdVY9sGNa6fm+g/+hbHiP1TY9TRGeRgcC4=",
-        "last_login": "2021-12-20T17:45:10",
-        "is_superuser": false,
-        "username": "a.vazquez",
-        "first_name": "Ana",
-        "last_name": "Vázquez",
-        "email": "a.vazquez@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2019-05-22T14:49:51",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 70,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$PvX3vmmUCCoP$aNSrH9A8HtpMtg6wdtI5uyz1j6k8E5b7blgN/KhvrV4=",
-        "last_login": "2021-04-21T16:10:13",
-        "is_superuser": false,
-        "username": "s.varona",
-        "first_name": "Sarai",
-        "last_name": "Varona",
-        "email": "s.varona@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2019-06-04T11:33:21",
-        "groups": [
-            [
-                "ServiceManager"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 72,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$BHEPIVtveHcK$DKCDcgz7QbXmns5mgPsiRP4NSJ84Zg/VWaEfR/sL6LM=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "test_user1",
-        "first_name": "",
-        "last_name": "",
-        "email": "test_user1@iskylims.com",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2019-06-24T15:26:08.076",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 73,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$i9MczLSmQCi8$frti8qB17ltDI6W+1TUV0pwpo9gP6X8H/kLvoIuxN5o=",
-        "last_login": "2019-10-28T14:34:14.142",
-        "is_superuser": false,
-        "username": "davtarrago",
-        "first_name": "David",
-        "last_name": "Tarrago",
-        "email": "davtarrago@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2019-09-18T06:31:25",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 74,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$H2Fh1Yd77JbQ$uQy9bEOG4l4ZUVnQkYDlRWvi0Mtu2CAbsJDBbg43rZM=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "icortegano",
-        "first_name": "Isabel",
-        "last_name": "Cortegano Jimeno",
-        "email": "icortegano@externos.isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2019-12-11T14:24:09",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 75,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$iYD0K5s02ysI$tjFaNWmhkGZHR1H9kDcoKEGpf3pQEubRigqRtHFdFzQ=",
-        "last_login": "2021-11-25T10:57:00.948",
-        "is_superuser": false,
-        "username": "mpdelucas",
-        "first_name": "María Pilar",
-        "last_name": "de Lucas",
-        "email": "mpdelucas@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2020-01-22T09:43:22",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 76,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$bfIaJeFcvTEQ$UsR56OC7WrVU9lr15ei3lSPNXmqE6BW9UXliOTRpCVc=",
-        "last_login": "2020-02-05T08:33:09",
-        "is_superuser": false,
-        "username": "crueda",
-        "first_name": "Cristina",
-        "last_name": "Rueda",
-        "email": "crueda@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2020-01-28T09:23:55",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 77,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$mxD8vMlcrCdH$l0aeZoEtylYkKJHRmZuhyUZZvLwHIrM5xKSdw51HDec=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "Lola_Fernandez",
-        "first_name": "MARIA DOLORES",
-        "last_name": "FERNANDEZ GARCIA",
-        "email": "mdfernandez@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2020-02-19T10:11:27",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 78,
-    "fields": {
-        "password": "pbkdf2_sha256$150000$fnyxkr2bjAJL$rJRF/xXJaj/ETjJvdjMYrwPIzIutiT1MuODvnkXbGRM=",
-        "last_login": "2020-10-08T06:52:32.335",
-        "is_superuser": false,
-        "username": "rayala",
-        "first_name": "Ruben",
-        "last_name": "Ayala",
-        "email": "rayala@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2020-02-20T13:11:55",
-        "groups": [
-            [
-                "rayala"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 79,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$Dxsfou9L3kaD$yvQu5Y+DZPWBMHvbyKZrFWnCV2Xh6cvnS2DlPBpZY9E=",
-        "last_login": "2020-03-12T12:09:18.215",
-        "is_superuser": false,
-        "username": "fdiezf",
-        "first_name": "Francisco",
-        "last_name": "Díez",
-        "email": "fdiezf@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2020-02-20T13:12:50",
-        "groups": [
-            [
-                "rayala"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 80,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$cLPTTkwSt9F4$ihu6NefYgNvjWm0TExxAVg+4hgSCd3i+QmFkaVjE5H4=",
-        "last_login": "2021-10-18T16:26:20.384",
-        "is_superuser": false,
-        "username": "anabelnegredo",
-        "first_name": "Anabel",
-        "last_name": "Negredo",
-        "email": "anabelnegredo@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2020-02-24T09:58:32",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 81,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$DlRRV1QWsG6X$I1o0S20odNUXv16gsY3XYDKOfmm4BDO6Wlp09ev+sJk=",
-        "last_login": "2021-06-22T11:18:30.318",
-        "is_superuser": false,
-        "username": "mdfernandez",
-        "first_name": "Maria Dolores",
-        "last_name": "Fernandez",
-        "email": "mdfernandez@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2020-03-12T17:11:04",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 82,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$GxLlf4g5hRK9$WRcY2YTvVSYR/SE6kfel+qqbwFNBjqQSe5fKMvEyrp8=",
-        "last_login": "2022-01-11T10:02:37.088",
-        "is_superuser": false,
-        "username": "svazquez",
-        "first_name": "Sonia",
-        "last_name": "Vázquez",
-        "email": "svazquez@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2020-05-20T15:55:18",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 83,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$Uam0zCDw01RA$IwZcTqpEyRoMRe8jxG+aifg7xD3IDuc1vo/cgiYflkg=",
-        "last_login": "2020-09-18T07:10:48.275",
-        "is_superuser": false,
-        "username": "pacopozo",
-        "first_name": "Paco",
-        "last_name": "Pozo",
-        "email": "pacopozo@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2020-05-20T16:00:02",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 85,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$CQ1UJNg3sGVU$s6gTMRb5pTT0ahQqoWk22p9y/S9XMyOSCvxuEZ8gifg=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "pacebo",
-        "first_name": "Paloma",
-        "last_name": "Acebo",
-        "email": "pacebo@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2020-09-07T07:34:37",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 86,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$PI4mgycyfqJ5$igZs/4BNjKRjPmEhttCwthppaeCch8DP/kbqsezztfU=",
-        "last_login": "2020-09-23T08:34:54",
-        "is_superuser": false,
-        "username": "mcabrerizo",
-        "first_name": "",
-        "last_name": "",
-        "email": "",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2020-09-09T08:12:31",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 87,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$d0CQ1NaFCaJK$TApr4hc7Ic2dXXMENpM2ZwQSPFDrmkf/W6VPrmZZZZk=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "vmontero",
-        "first_name": "Vanessa",
-        "last_name": "Montero",
-        "email": "vmontero@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2020-09-23T12:01:15",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 88,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$RjRJLVpVQYfn$+vezPC+bWy8RtBF3FmpmunrF1Tfr0xFmuo3EwyMg1Rk=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "mmolinero",
-        "first_name": "Mar",
-        "last_name": "Molinero",
-        "email": "mmolinero@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2020-09-23T12:03:22",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 89,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$BoWCgM1XdBmd$xRXlB0+FHG43dY9DhIc88niwEgTVVTqy4U7R12mwVi8=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "mgesguevillas",
-        "first_name": "Mónica",
-        "last_name": "González",
-        "email": "mgesguevillas@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2020-09-23T12:04:11",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 90,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$XTaBQIu7BUsR$tktBXxHiJsPxYOsnfplzo9unCox3nN8fCYpATGacXE4=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "n.reyes",
-        "first_name": "Noelia",
-        "last_name": "Reyes",
-        "email": "n.reyes@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2020-09-23T12:04:58",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 91,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$rEvBZX8RpgHL$2EOkPdmkzv4HBWgCXVqPSOPReusq17kqlhGNRRdFfk4=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "dianasantos",
-        "first_name": "Diana",
-        "last_name": "Santos",
-        "email": "diana.santos@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2020-09-23T12:05:40",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 92,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$3fwT1omhO6zW$OyPqAXJxjuZfsKhD50Q/I0Rolhjk5l9oNjFtTyVGrwI=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "sara.camarero",
-        "first_name": "Sara",
-        "last_name": "Camarero",
-        "email": "sara.camarero@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2020-09-23T12:06:20",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 93,
-    "fields": {
-        "password": "pbkdf2_sha256$150000$q7xJnFUApL6c$LDb91gcI+Vq6S7tzzz0Ynr4+OH/EiZl1B7rJi97PBaU=",
-        "last_login": "2020-10-13T11:40:19",
-        "is_superuser": false,
-        "username": "miglesias",
-        "first_name": "María",
-        "last_name": "Iglesias",
-        "email": "miglesias@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2020-09-23T12:07:13",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 94,
-    "fields": {
-        "password": "pbkdf2_sha256$150000$fzGHSd7Q5S35$USE7GUz/hS9OyoLWzx27K1p4e/tKeemWypBCQiUmJM4=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "test_userDrylab",
-        "first_name": "",
-        "last_name": "",
-        "email": "test_userDrylab@iskylims.com",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2020-10-07T14:10:28.598",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 95,
-    "fields": {
-        "password": "pbkdf2_sha256$150000$LD2y5Wju651P$l72q9Kk8bkzoILoCk8tn+415AWnkZ/VD0kZechvepPQ=",
-        "last_login": "2020-10-08T15:27:25.677",
-        "is_superuser": false,
-        "username": "eva.bermejo",
-        "first_name": "Eva",
-        "last_name": "Bermejo Sánchez",
-        "email": "eva.bermejo@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2020-10-08T10:10:27.581",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 96,
-    "fields": {
-        "password": "pbkdf2_sha256$150000$sgATVGk8gBel$LWogzeSpbxMS15fkQTSu6SBF072oLYIqf8NDbZmrKqg=",
-        "last_login": "2020-10-28T11:36:13",
-        "is_superuser": false,
-        "username": "sbarturen",
-        "first_name": "Silvia",
-        "last_name": "Barturen",
-        "email": "sbarturen@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2020-10-26T09:40:34",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 97,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$vSrU9lnAxTzR$MofM2jqQSVPjzWsbRtpYPBvsjLwHbKemel/Xdza9VD0=",
-        "last_login": "2021-04-14T10:20:00.005",
-        "is_superuser": false,
-        "username": "jsempere",
-        "first_name": "Julio",
-        "last_name": "Sempere",
-        "email": "jsempere@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2021-02-26T09:44:47",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 98,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$iLS6kDsLv4od$dLdQD00e31UHv3fv7AHiYvbXAxasfuiqPfqWhjMhlI8=",
-        "last_login": "2021-03-10T10:20:47.848",
-        "is_superuser": false,
-        "username": "adelavieja",
-        "first_name": "Antonio",
-        "last_name": "de la vieja",
-        "email": "adelavieja@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2021-03-08T10:56:58",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 99,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$HQAoZVsz3SUQ$y91HtmLp7Z103FVOHXFDEU9eDw5BBdHeJMwlMVQ3xEM=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "jeecheva",
-        "first_name": "Juan Emilio",
-        "last_name": "Echevarria",
-        "email": "jeecheva@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2021-03-26T11:32:36",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 100,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$Cih0ikwx7qtX$T8I2ztp0ZC5P9hKKgS0AC5v1Dtlyikv6Vrmd2kFOdBI=",
-        "last_login": "2021-06-21T12:38:23",
-        "is_superuser": false,
-        "username": "ana.heredero",
-        "first_name": "Ana",
-        "last_name": "Heredero",
-        "email": "ana.heredero@externos.isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2021-04-21T12:04:49",
-        "groups": [
-            [
-                "ServiceManager"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 103,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$mpL62gbyXfX8$M5ba3OKf0Fcuft+d0O1WFiLQi4I/ueA4/kRy7KhXviU=",
-        "last_login": "2021-05-27T14:10:12.821",
-        "is_superuser": false,
-        "username": "mperez",
-        "first_name": "María",
-        "last_name": "Pérez-Vázquez",
-        "email": "mperezv@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2021-05-27T13:46:46.370",
-        "groups": [
-            [
-                "mperez"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 106,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$re2pZcTF3x0O$HoFlzxOffGbYdn5vMK5f/Vli1uYaVI60ArY4GepGhak=",
-        "last_login": "2021-11-19T14:26:43.052",
-        "is_superuser": false,
-        "username": "da.valle",
-        "first_name": "Daniel",
-        "last_name": "Valle Millares",
-        "email": "da.valle@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2021-07-23T06:48:54",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 110,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$oZqHvmu5i3fJ$gU5Lk4qEQCdOfWiPbKM5RmEmROA/BD9h6NjOmGaWYXw=",
-        "last_login": "2022-01-20T12:42:39.680",
-        "is_superuser": false,
-        "username": "g.gorines",
-        "first_name": "Guillermo",
-        "last_name": "Gorines",
-        "email": "g.gorines@externos.isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2021-09-06T10:14:12",
-        "groups": [
-            [
-                "ServiceManager"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 114,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$jJT821I8Ry4O$ydxPhEVqFDYGU6QlagrClGCKqTUjQlMVcQjCZtJ3hPA=",
-        "last_login": "2021-11-19T12:01:31.007",
-        "is_superuser": false,
-        "username": "jc.solana",
-        "first_name": "Jose Carlos",
-        "last_name": "Solana",
-        "email": "jc.solana@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2021-11-09T14:12:29",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 117,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$9Pg8zG9XoDDp$HNqlrIVi3dUY/cchuL3l54iOmGnwlaFjXhhk9JtaMFA=",
-        "last_login": null,
-        "is_superuser": false,
-        "username": "mmchimeno",
-        "first_name": "Milagros",
-        "last_name": "Chimeno",
-        "email": "mmchimeno@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2021-11-16T11:08:43",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 120,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$UvhR3Xrq1LyJ$vheku6Nb35a2yf2+f6JFK1JpcNkPZBE3wKYx/gRTQz0=",
-        "last_login": "2021-11-22T10:02:10.193",
-        "is_superuser": false,
-        "username": "sara.perez",
-        "first_name": "Sara",
-        "last_name": "Pérez",
-        "email": "sara.perez@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2021-11-19T09:28:07",
-        "groups": [
-            [
-                "bmartinezd"
-            ],
-            [
-                "ggomezm"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 121,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$gpcHzQjRMz7z$C3PzNsNT3ySF+EOXb9obeaIZYcowXtmDCmMbYwJr/mA=",
-        "last_login": "2022-01-13T08:38:00.547",
-        "is_superuser": false,
-        "username": "majimenezsousa",
-        "first_name": "Maria Angeles",
-        "last_name": "Jiménez Sousa",
-        "email": "jimenezsousa@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2021-12-21T08:44:35.233",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 124,
-    "fields": {
-        "password": "pbkdf2_sha256$260000$AznthbsaXGDfWb3g3r7UIm$3pzpn4KYIk43f+GrBfO9yXw+2DDO3itvFnziiHmRzgA=",
-        "last_login": "2022-02-23T12:27:31.069",
-        "is_superuser": false,
-        "username": "erika.kvalem",
-        "first_name": "Erika",
-        "last_name": "Kvalem",
-        "email": "erika.kvalem@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2021-12-27T15:11:31",
-        "groups": [
-            [
-                "ServiceManager"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 125,
-    "fields": {
-        "password": "pbkdf2_sha256$100000$WGj9aUaFxvzx$zE67SWOCXqQqa+1oVdBi1kcHkUMPoMWCm2DFonYLywE=",
-        "last_login": "2022-01-20T15:05:58.066",
-        "is_superuser": false,
-        "username": "ycampos",
-        "first_name": "Yolanda",
-        "last_name": "Campos",
-        "email": "ycampos@isciii.es",
-        "is_staff": false,
-        "is_active": true,
-        "date_joined": "2022-01-20T13:43:28",
-        "groups": [],
-        "user_permissions": []
-    }
-},
-{
-    "model": "auth.user",
-    "pk": 127,
-    "fields": {
-        "password": "pbkdf2_sha256$260000$Fccn6eVWCsJuOUuLh8MEZ2$0UxjW/pStDBH7WnCSK81Zs9xXWWOHKPl6Y7YxGR7wWk=",
-        "last_login": "2023-02-15T15:32:57.463",
-        "is_superuser": true,
-        "username": "admin",
-        "first_name": "",
-        "last_name": "",
-        "email": "",
-        "is_staff": true,
-        "is_active": true,
-        "date_joined": "2022-01-31T12:15:15",
-        "groups": [
-            [
-                "WetlabManager"
-            ],
-            [
-                "ServiceManager"
-            ]
-        ],
-        "user_permissions": []
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 1,
-    "fields": {
-        "profileUserID": [
-            "smonzon"
-        ],
-        "profileClassificationArea": 2,
-        "profileCenter": 2,
-        "profilePosition": "Bioinformatician",
-        "profileArea": "Bioinformatics Unit",
-        "profileExtension": "23253"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 2,
-    "fields": {
-        "profileUserID": [
-            "icuesta"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Scientific Researcher",
-        "profileArea": "Bioinformatics Unit",
-        "profileExtension": "23738"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 4,
-    "fields": {
-        "profileUserID": [
-            "bioinfoadm"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Admin",
-        "profileArea": "Bioinformatics Unit",
-        "profileExtension": "23253"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 5,
-    "fields": {
-        "profileUserID": [
-            "azaballos"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 9,
-        "profilePosition": "Head Genomics Unit",
-        "profileArea": "Genomics Unit",
-        "profileExtension": "1234"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 6,
-    "fields": {
-        "profileUserID": [
-            "bmartinezd"
-        ],
-        "profileClassificationArea": 5,
-        "profileCenter": 5,
-        "profilePosition": "Researcher",
-        "profileArea": "Human Genetics",
-        "profileExtension": "1234"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 7,
-    "fields": {
-        "profileUserID": [
-            "sherrera"
-        ],
-        "profileClassificationArea": 1,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Bacteriology",
-        "profileExtension": "1234"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 8,
-    "fields": {
-        "profileUserID": [
-            "svaldezate"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Bacteriology",
-        "profileExtension": "23734"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 9,
-    "fields": {
-        "profileUserID": [
-            "fjalonso"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 5,
-        "profilePosition": "Researcher",
-        "profileArea": "Human Genetics",
-        "profileExtension": "1234"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 10,
-    "fields": {
-        "profileUserID": [
-            "mjferrandiz"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Bacteriology",
-        "profileExtension": "1234"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 11,
-    "fields": {
-        "profileUserID": [
-            "anaalastruey"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Micology",
-        "profileExtension": "1234"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 12,
-    "fields": {
-        "profileUserID": [
-            "j.rodriguez"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "1234"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 13,
-    "fields": {
-        "profileUserID": [
-            "sergio.sanchez"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Bacteriology",
-        "profileExtension": "1234"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 14,
-    "fields": {
-        "profileUserID": [
-            "mposada"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 5,
-        "profilePosition": "Director",
-        "profileArea": "Human Genetics",
-        "profileExtension": "1234"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 15,
-    "fields": {
-        "profileUserID": [
-            "mperezv"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Bacteriology",
-        "profileExtension": "1234"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 17,
-    "fields": {
-        "profileUserID": [
-            "mjuliam"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Bioinformatician",
-        "profileArea": "BUISCIII",
-        "profileExtension": "23230"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 20,
-    "fields": {
-        "profileUserID": [
-            "estrella.montero"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Parasitology",
-        "profileExtension": "23739"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 21,
-    "fields": {
-        "profileUserID": [
-            "bdandres"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Inmunology",
-        "profileExtension": "23924"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 22,
-    "fields": {
-        "profileUserID": [
-            "lalcazar"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Micology",
-        "profileExtension": "23776"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 23,
-    "fields": {
-        "profileUserID": [
-            "mthomson"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "23900"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 24,
-    "fields": {
-        "profileUserID": [
-            "icasas"
-        ],
-        "profileClassificationArea": 4,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "23415"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 25,
-    "fields": {
-        "profileUserID": [
-            "chus.perteguer"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Parasitology",
-        "profileExtension": "23670"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 26,
-    "fields": {
-        "profileUserID": [
-            "nvilla"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "23662"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 27,
-    "fields": {
-        "profileUserID": [
-            "imago"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "23272"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 28,
-    "fields": {
-        "profileUserID": [
-            "horacio.gil"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Bacteriology",
-        "profileExtension": "--"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 29,
-    "fields": {
-        "profileUserID": [
-            "rescude"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Bacteriology",
-        "profileExtension": "23953"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 30,
-    "fields": {
-        "profileUserID": [
-            "ozaragoza"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Micology",
-        "profileExtension": "23584"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 31,
-    "fields": {
-        "profileUserID": [
-            "sresino"
-        ],
-        "profileClassificationArea": 4,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "23266"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 32,
-    "fields": {
-        "profileUserID": [
-            "jyuste"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Bacteriology",
-        "profileExtension": "23620"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 33,
-    "fields": {
-        "profileUserID": [
-            "ccasado"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "23934"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 34,
-    "fields": {
-        "profileUserID": [
-            "amandafr"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "23892"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 35,
-    "fields": {
-        "profileUserID": [
-            "aavellon"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "23633"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 36,
-    "fields": {
-        "profileUserID": [
-            "aurorafg"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "0000"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 37,
-    "fields": {
-        "profileUserID": [
-            "vsandonism"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "0000"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 38,
-    "fields": {
-        "profileUserID": [
-            "rabad"
-        ],
-        "profileClassificationArea": 1,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Bacteriology",
-        "profileExtension": "0000"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 39,
-    "fields": {
-        "profileUserID": [
-            "iperez"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 5,
-        "profilePosition": "Researcher",
-        "profileArea": "Human Genetics",
-        "profileExtension": "0000"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 40,
-    "fields": {
-        "profileUserID": [
-            "emellado"
-        ],
-        "profileClassificationArea": 2,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Micology",
-        "profileExtension": "0000"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 41,
-    "fields": {
-        "profileUserID": [
-            "cpelaz"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Bacteriology",
-        "profileExtension": "0000"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 42,
-    "fields": {
-        "profileUserID": [
-            "c.robledo"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 5,
-        "profilePosition": "Researcher",
-        "profileArea": "Human Genetics",
-        "profileExtension": "0000"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 44,
-    "fields": {
-        "profileUserID": [
-            "mcoiras"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "0000"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 46,
-    "fields": {
-        "profileUserID": [
-            "iliste"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 7,
-        "profilePosition": "Researcher",
-        "profileArea": "UFIEC",
-        "profileExtension": "0000"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 47,
-    "fields": {
-        "profileUserID": [
-            "lchapado"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 9,
-        "profilePosition": "Researcher",
-        "profileArea": "Bioinformatics Unit",
-        "profileExtension": "0000"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 48,
-    "fields": {
-        "profileUserID": [
-            "pjsola"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 9,
-        "profilePosition": "Researcher",
-        "profileArea": "Bioinformatics",
-        "profileExtension": "0000"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 49,
-    "fields": {
-        "profileUserID": [
-            "ggomezm"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 5,
-        "profilePosition": "Researcher",
-        "profileArea": "Human Genetics",
-        "profileExtension": "0000"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 50,
-    "fields": {
-        "profileUserID": [
-            "ecalonge"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "0000"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 51,
-    "fields": {
-        "profileUserID": [
-            "jgcastro"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 5,
-        "profilePosition": "Researcher",
-        "profileArea": "Human Genetics",
-        "profileExtension": "23288"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 52,
-    "fields": {
-        "profileUserID": [
-            "lherrera"
-        ],
-        "profileClassificationArea": 1,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Bacteriology",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 54,
-    "fields": {
-        "profileUserID": [
-            "ijado"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Bacteriology",
-        "profileExtension": "23404"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 55,
-    "fields": {
-        "profileUserID": [
-            "mamblar"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Unknown",
-        "profileExtension": "0000"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 56,
-    "fields": {
-        "profileUserID": [
-            "srmora"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 57,
-    "fields": {
-        "profileUserID": [
-            "jimenezsousa"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 58,
-    "fields": {
-        "profileUserID": [
-            "javier.sotillo"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Parasitology",
-        "profileExtension": "23789"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 59,
-    "fields": {
-        "profileUserID": [
-            "mjmedina"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Bacteriology",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 60,
-    "fields": {
-        "profileUserID": [
-            "mgaliano"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 9,
-        "profilePosition": "Researcher",
-        "profileArea": "Bioinformatics Unit",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 61,
-    "fields": {
-        "profileUserID": [
-            "victorialopez"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 7,
-        "profilePosition": "Researcher",
-        "profileArea": "Computational Biology Unit",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 62,
-    "fields": {
-        "profileUserID": [
-            "pvillalon"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Taxonomy",
-        "profileExtension": "0000"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 63,
-    "fields": {
-        "profileUserID": [
-            "lauzurica"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Inmunology",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 64,
-    "fields": {
-        "profileUserID": [
-            "a.vazquez"
-        ],
-        "profileClassificationArea": 4,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 65,
-    "fields": {
-        "profileUserID": [
-            "s.varona"
-        ],
-        "profileClassificationArea": 7,
-        "profileCenter": 9,
-        "profilePosition": "Researcher",
-        "profileArea": "BU-ISCIII",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 67,
-    "fields": {
-        "profileUserID": [
-            "davtarrago"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Bacteriology",
-        "profileExtension": "23682"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 68,
-    "fields": {
-        "profileUserID": [
-            "icortegano"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 1,
-        "profilePosition": "Investigator",
-        "profileArea": "Inmunology",
-        "profileExtension": "1234"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 69,
-    "fields": {
-        "profileUserID": [
-            "mpdelucas"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 7,
-        "profilePosition": "Researcher",
-        "profileArea": "UFIEC",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 70,
-    "fields": {
-        "profileUserID": [
-            "crueda"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Titulado Superior",
-        "profileArea": "Micology",
-        "profileExtension": "23696"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 71,
-    "fields": {
-        "profileUserID": [
-            "Lola_Fernandez"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Contrato Miguel Servet",
-        "profileArea": "Virology",
-        "profileExtension": "23840"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 72,
-    "fields": {
-        "profileUserID": [
-            "rayala"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 73,
-    "fields": {
-        "profileUserID": [
-            "fdiezf"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "virology",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 74,
-    "fields": {
-        "profileUserID": [
-            "anabelnegredo"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 75,
-    "fields": {
-        "profileUserID": [
-            "mdfernandez"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Titulado Superior",
-        "profileArea": "Virology",
-        "profileExtension": "23840"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 76,
-    "fields": {
-        "profileUserID": [
-            "svazquez"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 77,
-    "fields": {
-        "profileUserID": [
-            "pacopozo"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 79,
-    "fields": {
-        "profileUserID": [
-            "pacebo"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 5,
-        "profilePosition": "Researcher",
-        "profileArea": "Human Genetics",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 80,
-    "fields": {
-        "profileUserID": [
-            "mcabrerizo"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "-",
-        "profileArea": "Virology",
-        "profileExtension": "23663"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 81,
-    "fields": {
-        "profileUserID": [
-            "vmontero"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "1234"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 82,
-    "fields": {
-        "profileUserID": [
-            "mmolinero"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "1234"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 83,
-    "fields": {
-        "profileUserID": [
-            "mgesguevillas"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "1234"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 84,
-    "fields": {
-        "profileUserID": [
-            "n.reyes"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "1234"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 85,
-    "fields": {
-        "profileUserID": [
-            "dianasantos"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "1234"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 86,
-    "fields": {
-        "profileUserID": [
-            "sara.camarero"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "1234"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 87,
-    "fields": {
-        "profileUserID": [
-            "miglesias"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "1234"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 88,
-    "fields": {
-        "profileUserID": [
-            "eva.bermejo"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 5,
-        "profilePosition": "Científico Titular - Jefe de Área",
-        "profileArea": "Unidad de Investigación sobre Anomalías Congénitas",
-        "profileExtension": "22434"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 89,
-    "fields": {
-        "profileUserID": [
-            "sbarturen"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "PhD",
-        "profileArea": "Virology",
-        "profileExtension": "23633"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 90,
-    "fields": {
-        "profileUserID": [
-            "jsempere"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Bacteriology",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 91,
-    "fields": {
-        "profileUserID": [
-            "adelavieja"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 7,
-        "profilePosition": "Researcher",
-        "profileArea": "UFIEC",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 92,
-    "fields": {
-        "profileUserID": [
-            "jeecheva"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "0000"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 94,
-    "fields": {
-        "profileUserID": [
-            "ana.heredero"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 9,
-        "profilePosition": "Researcher",
-        "profileArea": "Bioinformatics Unit",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 97,
-    "fields": {
-        "profileUserID": [
-            "mperez"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Investigador",
-        "profileArea": "LAR",
-        "profileExtension": "23707"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 100,
-    "fields": {
-        "profileUserID": [
-            "da.valle"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Bioinformatician",
-        "profileArea": "Virology",
-        "profileExtension": "23769"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 104,
-    "fields": {
-        "profileUserID": [
-            "g.gorines"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 9,
-        "profilePosition": "Bioinformatician",
-        "profileArea": "Bioinformatics Unit",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 108,
-    "fields": {
-        "profileUserID": [
-            "jc.solana"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Parasitology",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 111,
-    "fields": {
-        "profileUserID": [
-            "mmchimeno"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Researcher",
-        "profileArea": "Virology",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 114,
-    "fields": {
-        "profileUserID": [
-            "sara.perez"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 5,
-        "profilePosition": "Researcher",
-        "profileArea": "Human Genetics",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 115,
-    "fields": {
-        "profileUserID": [
-            "majimenezsousa"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 2,
-        "profilePosition": "Investigador Miguel Servet",
-        "profileArea": "Unidad de Infección Viral e Inmunidad",
-        "profileExtension": "23862"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 118,
-    "fields": {
-        "profileUserID": [
-            "erika.kvalem"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 9,
-        "profilePosition": "Bioinformatician",
-        "profileArea": "BUISCIII",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 119,
-    "fields": {
-        "profileUserID": [
-            "ycampos"
-        ],
-        "profileClassificationArea": null,
-        "profileCenter": 7,
-        "profilePosition": "Researcher",
-        "profileArea": "UFIEC",
-        "profileExtension": "-"
-    }
-},
-{
-    "model": "django_utils.profile",
-    "pk": 121,
-    "fields": {
-        "profileUserID": [
-            "admin"
-        ],
-        "profileClassificationArea": 7,
-        "profileCenter": 2,
-        "profilePosition": "bioinformatic",
-        "profileArea": "Bioinformatic",
-        "profileExtension": "21478"
     }
 }
 ]
