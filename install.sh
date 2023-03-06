@@ -340,7 +340,7 @@ fi
 mkdir $INSTALL_PATH/iSkyLIMS
 
 rsync -rlv README.md LICENSE conf iSkyLIMS_core iSkyLIMS_drylab \
-        iSkyLIMS_wetlab iSkyLIMS_clinic django_utils $INSTALL_PATH
+        iSkyLIMS_wetlab iSkyLIMS_clinic django_utils $INSTALL_PATH/iSkyLIMS
 
 cd $INSTALL_PATH/iSkyLIMS
 
@@ -411,22 +411,22 @@ django-admin startproject iSkyLIMS .
 grep ^SECRET iSkyLIMS/settings.py > ~/.secret
 
 # Copying config files and script
-cp conf/settings.py $INSTALL_PATH/iSkyLIMS/settings.py
-cp conf/urls.py $INSTALL_PATH/iSkyLIMS/
+cp conf/template_settings.py $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
+cp conf/urls.py $INSTALL_PATH/iSkyLIMS/iSkyLIMS
 
-sed -i "/^SECRET/c\\$(cat ~/.secret)" $INSTALL_PATH/iSkyLIMS/settings.py
-sed -i "s/djangouser/${DB_USER}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-sed -i "s/djangopass/${DB_PASS}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-sed -i "s/djangohost/${DB_SERVER_IP}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-sed -i "s/djangoport/${DB_PORT}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-sed -i "s/djangodbname/${DB_NAME}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+sed -i "/^SECRET/c\\$(cat ~/.secret)" $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
+sed -i "s/djangouser/${DB_USER}/g" $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
+sed -i "s/djangopass/${DB_PASS}/g" $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
+sed -i "s/djangohost/${DB_SERVER_IP}/g" $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
+sed -i "s/djangoport/${DB_PORT}/g" $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
+sed -i "s/djangodbname/${DB_NAME}/g" $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
 
-sed -i "s/emailhostserver/${EMAIL_HOST_SERVER}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-sed -i "s/emailport/${EMAIL_PORT}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-sed -i "s/emailhostuser/${EMAIL_HOST_USER}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-sed -i "s/emailhostpassword/${EMAIL_HOST_PASSWORD}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-sed -i "s/emailhosttls/${EMAIL_USE_TLS}/g" $INSTALL_PATH/iSkyLIMS/settings.py
-sed -i "s/localserverip/${LOCAL_SERVER_IP}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+sed -i "s/emailhostserver/${EMAIL_HOST_SERVER}/g" $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
+sed -i "s/emailport/${EMAIL_PORT}/g" $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
+sed -i "s/emailhostuser/${EMAIL_HOST_USER}/g" $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
+sed -i "s/emailhostpassword/${EMAIL_HOST_PASSWORD}/g" $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
+sed -i "s/emailhosttls/${EMAIL_USE_TLS}/g" $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
+sed -i "s/localserverip/${LOCAL_SERVER_IP}/g" $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
 
 echo "Creating the database structure for iSkyLIMS"
 python3 manage.py migrate
