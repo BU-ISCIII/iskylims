@@ -1617,44 +1617,6 @@ def configuration_test(request):
                 test_results["basic_checks_ok"] = "NOK"
                 break
 
-<<<<<<< HEAD
-        return render(
-            request,
-            "iSkyLIMS_drylab/ConfigurationTest.html",
-            {"test_results": test_results},
-        )
-    elif request.method == "POST" and request.POST["action"] == "resolutionTest":
-        if "Delete" in request.POST:
-            delete_test_service("SRVTEST-IIER001")
-            return render(request, "iSkyLIMS_drylab/ConfigurationTest.html")
-
-        resolution_results = {}
-        service_requested = "SRVTEST-IIER001"
-        resolution_results["CreateService"], result = create_service_test(
-            service_requested
-        )
-
-        if result == "NOK":
-            resolution_results["create_service_ok"] = "NOK"
-            return render(
-                request,
-                "iSkyLIMS_drylab/ConfigurationTest.html",
-                {"resolution_results": resolution_results},
-            )
-
-        else:
-            resolution_results["create_service_ok"] = "OK"
-            resolution_number = "SRVTEST-IIER001.1"
-            resolution_results["resolution_test"] = create_resolution_test(
-                resolution_number, service_requested
-            )
-            resolution_results["create_resolution_ok"] = "OK"
-
-            resolution_results["completed_ok"] = "OK"
-            for result in resolution_results["resolution_test"]:
-                if result[1] == "NOK":
-                    resolution_results["completed_ok"] = "NOK"
-=======
         return render (request,'iSkyLIMS_drylab/ConfigurationTest.html', {'test_results': test_results})
     elif request.method=='POST' and request.POST['action'] == 'resolutionTest':
         if 'Delete' in request.POST :
@@ -1679,7 +1641,6 @@ def configuration_test(request):
             for result in resolution_results ['resolution_test']:
                 if result[1] == 'NOK':
                     resolution_results['completed_ok']= 'NOK'
->>>>>>> Added origin of testing_drylab_configuration import
                 break
 
             # service_request_file = os.path.join (settings.BASE_DIR, drylab_config.OUTPUT_DIR_TEMPLATE,str('test_resolution.pdf'))
