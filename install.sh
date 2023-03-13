@@ -220,9 +220,9 @@ if [ $upgrade == true ]; then
 
     # update installation by sinchronize folders
     echo "Copying files to installation folder"
-    rsync -rlv README.md LICENSE conf iSkyLIMS_core iSkyLIMS_drylab iSkyLIMS_clinic iSkyLIMS_wetlab django_utils $INSTALL_PATH/iskylims
+    rsync -rlv README.md LICENSE conf iSkyLIMS_core iSkyLIMS_drylab iSkyLIMS_clinic iSkyLIMS_wetlab django_utils $INSTALL_PATH/iSkyLIMS
     # upgrade database if needed
-    cd $INSTALL_PATH/iskylims
+    cd $INSTALL_PATH/iSkyLIMS
     echo "activate the virtualenv"
     source virtualenv/bin/activate
     echo "Installing required python packages"
