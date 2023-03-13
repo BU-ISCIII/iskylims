@@ -1449,7 +1449,7 @@ def user_login(request):
 
     user_data = []
     login_data = {}
-    user_list = User.objects.all().order_by("-last_login")
+    user_list = iSkyLIMS_drylab.models.User.objects.all().order_by('-last_login')
     for user in user_list:
         user_data.append(
             [
@@ -1500,7 +1500,7 @@ def configuration_test(request):
 
         # check if available services are defined
 
-        list_available_services = AvailableService.objects.all()
+        list_available_services = iSkyLIMS_drylab.models.AvailableService.objects.all()
 
         if len(list_available_services) == 0:
             test_results["services"] = ("Available services", "NOK")
@@ -1594,12 +1594,10 @@ def define_pipeline_service(request):
                 request.FILES["pipelinefile"],
             )
         else:
-            pipeline_data_form["filename"] = ""
-        new_pipeline = Pipelines.objects.create_pipeline(pipeline_data_form)
-        if "additional_parameters" in pipeline_data_form:
-            store_parameters_pipeline(
-                new_pipeline, pipeline_data_form["additional_parameters"]
-            )
+            pipeline_data_form['filename'] =''
+        new_pipeline = iSkyLIMS_drylab.models.Pipelines.objects.create_pipeline(pipeline_data_form)
+        if 'additional_parameters' in  pipeline_data_form :
+            store_parameters_pipeline(new_pipeline, pipeline_data_form['additional_parameters'])
         defined_service_pipeline = get_defined_pipeline_data_to_display(new_pipeline)
 
         # set_default_service_pipeline(new_pipeline)
