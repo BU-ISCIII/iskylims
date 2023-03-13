@@ -35,7 +35,7 @@ from iSkyLIMS_core.utils.common import send_test_email, get_email_data
 def index(request):
     service_list = {}
     if iSkyLIMS_drylab.models.Service.objects.filter(serviceStatus__exact = 'recorded').exists():
-        r_service_objs =  iSkyLIMS_drylab.models.Service.objects.filter(serviceStatus__exact = 'recorded').order_by('serviceCreatedOnDate')
+        r_service_objs =  iSkyLIMS_drylab.models.Service.objects.filter(serviceStatus__exact = 'recorded').order_by('service_created_date')
         service_list['recorded'] = []
         for r_service_obj in r_service_objs:
             s_info = r_service_obj.get_service_name_and_center()
@@ -448,44 +448,25 @@ def search_service(request):
         else:
             services_found = iSkyLIMS_drylab.models.Service.objects.all()
 
-        if service_state != "":
-            services_found = services_found.filter(serviceStatus__exact=service_state)
-        if start_date != "" and end_date != "":
-            services_found = services_found.filter(
-                service_created_date__range=(start_date, end_date)
-            )
-        if start_date != "" and end_date == "":
-            services_found = services_found.filter(service_created_date__gte=start_date)
-        if start_date == "" and end_date != "":
-            services_found = services_found.filter(service_created_date__lte=end_date)
-        if center != "":
-            services_found = services_found.filter(
-                service_request_number__icontains=center
-            )
-        if user_name != "":
-            services_found = services_found.filter(
-                serviceUserId__username__iexact=user_name
-            )
-        if handeld_user != "":
+        if service_state != '':
+            services_found = services_found.filter(serviceStatus__exact = service_state)
+        if start_date !='' and end_date != '':
+            services_found = services_found.filter(service_created_date__range=(start_date, end_date))
+        if start_date !='' and end_date == '':
+            services_found = services_found.filter(service_created_date__gte = start_date)
+        if start_date =='' and end_date != '':
+            services_found = services_found.filter(service_created_date__lte = end_date)
+        if center != '':
+            services_found = services_found.filter(service_request_number__icontains  = center)
+        if  user_name != '':
+            services_found = services_found.filter(serviceUserId__username__iexact  = user_name)
+        if handeld_user != '':
 
-            if not Resolution.objects.filter(
-                resolution_asigned_user__username__icontains=user_name
-            ).exists():
-                error_message = (
-                    drylab_config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
-                )
-                return render(
-                    request,
-                    "iSkyLIMS_drylab/searchService.html",
-                    {
-                        "services_search_list": services_search_list,
-                        "ERROR": error_message,
-                    },
-                )
+            if not iSkyLIMS_drylab.models.Resolution.objects.filter(resolution_asigned_user__username__icontains = user_name).exists():
+                error_message = drylab_config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
+                return render( request,'iSkyLIMS_drylab/searchService.html',{'services_search_list': services_search_list , 'ERROR':error_message})
             services_handled_by = []
-            services_handled_by_objs = Resolution.objects.filter(
-                resolution_asigned_user__username__icontains=user_name
-            )
+            services_handled_by_objs = iSkyLIMS_drylab.models.Resolution.objects.filter(resolution_asigned_user__username__icontains = user_name)
             for services_handled_by_obj in services_handled_by_objs:
                 services_handled_by.append(services_handled_by_obj.get_service_name())
             services_found = services_found.filter(
