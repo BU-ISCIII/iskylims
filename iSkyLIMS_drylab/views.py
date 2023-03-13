@@ -365,7 +365,7 @@ def search_service(request):
     services_search_list = {}
 
     center_list_abbr = []
-    center_availables = Center.objects.all().order_by("centerAbbr")
+    center_availables = iSkyLIMS_drylab.models.Center.objects.all().order_by ('centerAbbr')
     for center in center_availables:
         center_list_abbr.append(center.centerAbbr)
     services_search_list["centers"] = center_list_abbr
