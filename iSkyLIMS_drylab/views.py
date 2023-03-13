@@ -1191,10 +1191,8 @@ def stats_by_services_request(request):
             user_area_dict = {}
             for service in services_found:
                 user_service_obj = service.get_user_service_obj()
-                if Profile.objects.filter(profileUserID=user_service_obj).exists():
-                    user_classification_area = Profile.objects.get(
-                        profileUserID=user_service_obj
-                    ).get_clasification_area()
+                if iSkyLIMS_drylab.models.Profile.objects.filter(profileUserID = user_service_obj).exists():
+                    user_classification_area = iSkyLIMS_drylab.models.Profile.objects.get(profileUserID = user_service_obj).get_clasification_area()
                 else:
                     user_classification_area = "No_user_area"
 
@@ -1222,10 +1220,8 @@ def stats_by_services_request(request):
             user_center_dict = {}
             for service in services_found:
                 user_service_obj = service.get_user_service_obj()
-                if Profile.objects.filter(profileUserID=user_service_obj).exists():
-                    user_center = Profile.objects.get(
-                        profileUserID=user_service_obj
-                    ).get_profile_center_abbr()
+                if iSkyLIMS_drylab.models.Profile.objects.filter(profileUserID = user_service_obj).exists():
+                    user_center = iSkyLIMS_drylab.models.Profile.objects.get(profileUserID = user_service_obj).get_profile_center_abbr()
                 else:
                     user_center = "Not defined"
                 if user_center in user_center_dict:
@@ -1264,11 +1260,9 @@ def stats_by_services_request(request):
             time_values_dict = {}
             for service in services_found:
                 user_service_obj = service.get_user_service_obj()
-                date_service = service.service_created_date.strftime(period_year_month)
-                if Profile.objects.filter(profileUserID=user_service_obj).exists():
-                    user_center = Profile.objects.get(
-                        profileUserID=user_service_obj
-                    ).get_profile_center_abbr()
+                date_service = service.serviceCreatedOnDate.strftime(period_year_month)
+                if iSkyLIMS_drylab.models.Profile.objects.filter(profileUserID = user_service_obj).exists():
+                    user_center = iSkyLIMS_drylab.models.Profile.objects.get(profileUserID = user_service_obj).get_profile_center_abbr()
                 else:
                     user_center = "Not defined"
                 if not date_service in time_values_dict:
@@ -1310,9 +1304,9 @@ def stats_by_services_request(request):
             time_values_dict = {}
             for service in services_found:
                 user_id = service.serviceUserId.id
-                date_service = service.service_created_date.strftime(period_year_month)
-                if Profile.objects.filter(profileUserID=user_id).exists():
-                    user_area = Profile.objects.get(profileUserID=user_id).profileArea
+                date_service = service.serviceCreatedOnDate.strftime(period_year_month)
+                if  iSkyLIMS_drylab.models.Profile.objects.filter(profileUserID = user_id).exists():
+                    user_area =  iSkyLIMS_drylab.models.Profile.objects.get(profileUserID = user_id).profileArea
                 else:
                     user_center = "Not defined"
                 if not date_service in time_values_dict:
