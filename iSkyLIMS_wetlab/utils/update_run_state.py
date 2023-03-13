@@ -16,7 +16,7 @@ from django.conf import settings
 from .common_run_functions import manage_run_in_processed_run, manage_run_in_processing_bcl2fastq, manage_run_in_processed_bcl2fastq
 from .generic_functions import get_userid_list
 
-from .sample_sheet_utils import validate_userid_in_user_iem_file
+from .sample_sheet_utils import validate_userid_in_user_iem_file, read_user_iem_file
 
 
 from django.conf import settings
@@ -105,11 +105,14 @@ def search_update_new_runs(request_reason):
                l_run_parameter = fetch_remote_file (conn, new_run, s_run_parameter_path, l_run_parameter_path)
                logger.info('%s : Sucessfully fetch of RunParameter file', new_run)
                experiment_name = get_experiment_name_from_file (l_run_parameter)
-            except Exception:
+            except Exception as e:
                 error_message = 'Unable to fetch RunParameter file for folder :' + new_run
                 logging_errors(error_message, True, False)
-                run_process_obj = get_run_process_obj_or_create_if_not_exists(experiment_name)
-                handling_errors_in_run(experiment_name, '21')
+                # we don't have experiment name when there is no run_parameters file. We used the run folder name instead.
+                run_process_obj = get_run_process_obj_or_create_if_not_exists(new_run)
+                handling_errors_in_run(new_run, '21')
+                logger.debug ('%s : Deleting RunParameter file', experiment_name)
+                logger.debug ('%s : Aborting the process for this run. Continue with the next.', experiment_name)
                 continue
 
             if request_reason == 'crontab_request':
@@ -133,19 +136,6 @@ def search_update_new_runs(request_reason):
                     logger.info(' %s  : Deleted temporary run parameter file', new_run)
                     continue
 
-            logger.debug('%s : Found the experiment name called : %s', new_run, experiment_name)
-            exclude_states = ["Error", "Recorded"]
-            if RunProcess.objects.filter(runName__exact=experiment_name).exclude(state__runStateName__in=exclude_states).exists():
-                # This situation should not occurr. The run_processed file should  have this value. To avoid new iterations with this run
-                # we update the run process file with this run and continue  with the next item
-                run_state = RunProcess.objects.get(runName__exact = experiment_name).get_state()
-                string_message = new_run  + ' :  experiment name  state ' + experiment_name + 'in incorrect state. Run state is ' + run_state
-                logging_errors( string_message, False, True)
-                logger.info('%s : Deleting temporary runParameter file' , experiment_name)
-                os.remove(l_run_parameter)
-                logger.info('%s : RunParameter file. Local copy deleted',experiment_name)
-                continue
-
             # Fetch run info
             l_run_info_path = os.path.join(wetlab_config.RUN_TEMP_DIRECTORY, wetlab_config.RUN_INFO)
             s_run_info_path = os.path.join(get_samba_application_shared_folder(), new_run, wetlab_config.RUN_INFO)
@@ -161,6 +151,19 @@ def search_update_new_runs(request_reason):
                 logger.debug ('%s : Deleting RunParameter file', experiment_name)
                 os.remove(l_run_parameter)
                 logger.debug ('%s : Aborting the process for this run. Continue with the next.', experiment_name)
+                continue
+            
+            logger.debug('%s : Found the experiment name called : %s', new_run, experiment_name)
+            exclude_states = ["Error", "Recorded"]
+            if RunProcess.objects.filter(runName__exact=experiment_name).exclude(state__runStateName__in=exclude_states).exists():
+                # This situation should not occurr. The run_processed file should  have this value. To avoid new iterations with this run
+                # we update the run process file with this run and continue  with the next item
+                run_state = RunProcess.objects.get(runName__exact = experiment_name).get_state()
+                string_message = new_run  + ' :  experiment name  state ' + experiment_name + ' in incorrect state. Run state is ' + run_state
+                logging_errors( string_message, False, False)
+                logger.info('%s : Deleting temporary runParameter file' , experiment_name)
+                os.remove(l_run_parameter)
+                logger.info('%s : RunParameter file. Local copy deleted',experiment_name)
                 continue
 
             running_parameters = parsing_run_info_and_parameter_information(l_run_info, l_run_parameter, experiment_name)
@@ -186,12 +189,15 @@ def search_update_new_runs(request_reason):
                 # check if sampleSheet contains userID in description
                 if get_configuration_value("DESCRIPTION_IN_SAMPLE_SHEET_MUST_HAVE_USERNAME") == "TRUE":
                     user_id_list = get_userid_list()
-                    users = validate_userid_in_user_iem_file(l_sample_sheet_path, user_id_list)
-                    if "user_ids" in users and len(users["user_ids"]) == 0:
-                        string_message = experiment_name + ' : Description field does not contains userid'
-                        logging_errors(string_message, True, True)
+                    file_read = read_user_iem_file(l_sample_sheet_path)
+                    users = validate_userid_in_user_iem_file(file_read, user_id_list)
+                
+                    if 'ERROR' in users:
+                        string_message = experiment_name + ' : Description field does not contains userid.'
+                        logging_errors(string_message, True, False)
                         handling_errors_in_run(experiment_name, '1')
                         continue
+                
                 assign_projects_to_run(run_process_obj, l_sample_sheet_path, experiment_name)
                 assign_used_library_in_run (run_process_obj,l_sample_sheet_path, experiment_name)
                 store_sample_sheet_if_not_defined_in_run (run_process_obj,l_sample_sheet_path, experiment_name)
@@ -204,7 +210,7 @@ def search_update_new_runs(request_reason):
                         copy_sample_sheet_to_remote_folder(conn, sample_sheet_path, run_folder,experiment_name)
                     except Exception as e:
                         string_message = experiment_name + ' : Unable to copy Sample Sheet to Remote folder' + new_run
-                        logging_errors(string_message, True, True)
+                        logging_errors(string_message, True, False)
                         handling_errors_in_run(experiment_name, '23')
                         logger.debug ('%s : Aborting the process. Exiting with exception', experiment_name)
                         continue   # returning to handle next run folder
