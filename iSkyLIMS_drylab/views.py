@@ -94,65 +94,44 @@ def configuration_email(request):
 @login_required
 def request_sequencing_service(request):
 
-    if request.POST and request.FILES:
-        if "file" in request.FILES:
-            data = get_and_save_service_file(request)
-            response = JSONResponse(data, mimetype="application/json")
-            response["Content-Disposition"] = "inline; filename=files.json"
-            return response
-        else:
-            service_data_information = prepare_form_data_request_service_sequencing(
-                request
-            )
-            return render(
-                request,
-                "iSkyLIMS_drylab/requestSequencingService.html",
-                {"service_data_information": service_data_information},
-            )
+	if request.POST and request.FILES :
+		if 'file' in request.FILES:
+			data = get_and_save_service_file(request)
+			response = JSONResponse(data, mimetype='application/json')
+			response['Content-Disposition'] = 'inline; filename=files.json'
+			return response
+		else:
+			service_data_information = prepare_form_data_request_service_sequencing(request)
+			return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'service_data_information':service_data_information})
 
-    if request.method == "POST" and request.POST["subAction"] == "createservice":
-        # check that at some services have been requested
-        if len(request.POST.getlist("RequestedServices")) == 0:
-            service_data_information = prepare_form_data_request_service_sequencing(
-                request
-            )
-            error_message = drylab_config.ERROR_NO_SERVICES_ARE_SELECTED
-            return render(
-                request,
-                "iSkyLIMS_drylab/requestSequencingService.html",
-                {
-                    "service_data_information": service_data_information,
-                    "error_message": error_message,
-                },
-            )
+	if request.method == 'POST' and request.POST['subAction'] == 'createservice':
+		# check that at some services have been requested
+		if len(request.POST.getlist('RequestedServices')) == 0 :
+			service_data_information = prepare_form_data_request_service_sequencing(request)
+			error_message = drylab_config.ERROR_NO_SERVICES_ARE_SELECTED
+			return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'service_data_information':service_data_information,
+									'error_message':error_message})
 
-        new_service = create_new_save_sequencing_service_request(request)
-        sample_stored = stored_samples_for_sequencing_request_service(
-            request.POST, new_service
-        )
-        if "files" in request.POST:
-            add_files_to_service(request.POST.getlist("files"), new_service)
-        ## Send mail to user and drylab notification email
-        email_data = {}
-        if (
-            "requestedForUserid" in request.POST
-            and request.POST["requestedForUserid"] != ""
-        ):
-            user_obj = User.objects.filter(
-                pk__exact=request.POST["requestedForUserid"]
-            ).last()
-            email_data["user_name"] = user_obj.username
-            email_data["user_email"] = user_obj.email
-        else:
-            email_data["user_email"] = request.user.email
-            email_data["user_name"] = request.user.username
-        email_data["service_number"] = new_service.get_service_request_number()
-        email_result = send_service_creation_confirmation_email(email_data)
-        # PDF preparation file for confirmation of service request
-        confirmation_result = {}
-        """ removed creation of pdf file when creating a new service
+		new_service = create_new_save_sequencing_service_request(request)
+		sample_stored = stored_samples_for_sequencing_request_service(request.POST, new_service)
+		if 'files' in request.POST:
+			add_files_to_service(request.POST.getlist('files'), new_service)
+		## Send mail to user and drylab notification email
+		email_data = {}
+		if 'requestedForUserid' in request.POST and request.POST['requestedForUserid'] != '':
+			user_obj= iSkyLIMS_drylab.models.User.objects.filter(pk__exact = request.POST['requestedForUserid']).last()
+			email_data['user_name'] = user_obj.username
+			email_data['user_email'] = user_obj.email
+		else:
+			email_data['user_email'] = request.user.email
+			email_data['user_name'] = request.user.username
+		email_data['service_number'] = new_service.get_service_request_number()
+		email_result = send_service_creation_confirmation_email(email_data)
+		# PDF preparation file for confirmation of service request
+		confirmation_result = {}
+		''' removed creation of pdf file when creating a new service
 		confirmation_result['download_file'] = create_service_pdf_file(new_service.get_service_request_number(), request.build_absolute_uri())
-		"""
+		'''
         service_request_number = new_service.get_service_request_number()
         confirmation_result["text"] = list(
             map(
@@ -1011,7 +990,7 @@ def stats_by_user(request):
         else:
             end_date = date.today().strftime("%Y-%m-%d")
 
-        if not User.objects.filter(pk__exact=user_id).exists():
+        if not iSkyLIMS_drylab.models.User.objects.filter(pk__exact = user_id).exists():
             error_message = drylab_config.ERROR_USER_NOT_DEFINED
             return render(request, 'iSkyLIMS_drylab/statsByUser.html' , {'user_list': user_list,'ERROR':error_message })
 
@@ -1029,8 +1008,8 @@ def stats_by_user(request):
             )
 
         stats_info = {}
-        stats_info["service_by_user"] = []
-        stats_info["user_name"] = User.objects.filter(pk__exact=user_id).last().username
+        stats_info ['service_by_user'] = []
+        stats_info ['user_name'] = iSkyLIMS_drylab.models.User.objects.filter(pk__exact = user_id).last().username
         for service_item in service_objs:
             stats_info["service_by_user"].append(service_item.get_stats_information())
 
