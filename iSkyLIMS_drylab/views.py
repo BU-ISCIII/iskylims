@@ -20,8 +20,8 @@ from django.core.files.storage import FileSystemStorage
 from datetime import date, datetime
 import statistics
 from iSkyLIMS_drylab import drylab_config
-from iSkyLIMS_drylab.utils.testing_drylab_configuration import *
 from iSkyLIMS_drylab.utils.drylab_common_functions import *
+import iSkyLIMS_drylab.utils.testing_drylab_configuration
 from iSkyLIMS_drylab.utils.handling_pipelines import *
 from iSkyLIMS_drylab.utils.handling_request_services import *
 from iSkyLIMS_drylab.utils.handling_resolutions import *
@@ -1610,14 +1610,14 @@ def configuration_test(request):
             test_results["services"] = ("Available services", "NOK")
         else:
             test_results["services"] = ("Available services", "OK")
-        test_results["iSkyLIMS_settings"] = get_iSkyLIMS_settings()
-        test_results["config_file"] = get_config_file(drylab_config_file)
-
+        test_results['iSkyLIMS_settings'] = iSkyLIMS_drylab.utils.testing_drylab_configuration.get_iSkyLIMS_settings()
+        test_results['config_file'] = iSkyLIMS_drylab.utils.testing_drylab_configuration.get_config_file(drylab_config_file)
         for result in test_results:
             if test_results[result] == "NOK":
                 test_results["basic_checks_ok"] = "NOK"
                 break
 
+<<<<<<< HEAD
         return render(
             request,
             "iSkyLIMS_drylab/ConfigurationTest.html",
@@ -1654,6 +1654,32 @@ def configuration_test(request):
             for result in resolution_results["resolution_test"]:
                 if result[1] == "NOK":
                     resolution_results["completed_ok"] = "NOK"
+=======
+        return render (request,'iSkyLIMS_drylab/ConfigurationTest.html', {'test_results': test_results})
+    elif request.method=='POST' and request.POST['action'] == 'resolutionTest':
+        if 'Delete' in request.POST :
+            iSkyLIMS_drylab.utils.testing_drylab_configuration.delete_test_service ('SRVTEST-IIER001')
+            return render(request,'iSkyLIMS_drylab/ConfigurationTest.html')
+
+        resolution_results = {}
+        service_requested = 'SRVTEST-IIER001'
+        resolution_results['CreateService'], result = iSkyLIMS_drylab.utils.testing_drylab_configuration.create_service_test(service_requested)
+
+        if result == 'NOK' :
+            resolution_results['create_service_ok'] = 'NOK'
+            return render (request,'iSkyLIMS_drylab/ConfigurationTest.html', {'resolution_results': resolution_results})
+
+        else:
+            resolution_results['create_service_ok'] = 'OK'
+            resolution_number = 'SRVTEST-IIER001.1'
+            resolution_results ['resolution_test'] = iSkyLIMS_drylab.utils.testing_drylab_configuration.create_resolution_test (resolution_number, service_requested)
+            resolution_results['create_resolution_ok'] = 'OK'
+
+            resolution_results['completed_ok']= 'OK'
+            for result in resolution_results ['resolution_test']:
+                if result[1] == 'NOK':
+                    resolution_results['completed_ok']= 'NOK'
+>>>>>>> Added origin of testing_drylab_configuration import
                 break
 
             # service_request_file = os.path.join (settings.BASE_DIR, drylab_config.OUTPUT_DIR_TEMPLATE,str('test_resolution.pdf'))
