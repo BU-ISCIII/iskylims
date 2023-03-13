@@ -356,7 +356,7 @@ if [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterpris
 fi
 
 ## Create the installation folder
-mkdir $INSTALL_PATH/iSkyLIMS
+mkdir -p $INSTALL_PATH/iSkyLIMS
 
 rsync -rlv README.md LICENSE conf iSkyLIMS_core iSkyLIMS_drylab \
         iSkyLIMS_wetlab iSkyLIMS_clinic django_utils $INSTALL_PATH/iSkyLIMS
