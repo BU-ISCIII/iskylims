@@ -30,7 +30,6 @@ def get_list_processed_runs():
         table. This list will be used to compare agains the folder on
         remote server.
     Return:
-        raise exception when not access to database
         processed_runs
     '''
     logger = logging.getLogger(__name__)
@@ -49,12 +48,12 @@ def get_list_processed_runs():
 def search_update_new_runs(request_reason):
     '''
     Description:
-        The function will check if there are new run folder in the remote
+        The function will check if there are new run folders in the remote
         server.
         Get the runParameter file to identify if run is NextSeq or miSeq
         to execute its dedicate handler process.
     Input:
-        request_reason      # define if crontab process request the searc or was for testing
+        request_reason      # define if crontab process request the search or was for testing
     Functions:
         assign_projects_to_run               # located at utils.handling_crontab_common_functions
         assign_used_library_in_run           # located at utils.handling_crontab_common_functions
@@ -88,7 +87,6 @@ def search_update_new_runs(request_reason):
     new_processed_runs = []
     run_with_error = []
     try:
-
         conn = open_samba_connection()
         logger.info('Sucessfully  SAMBA connection for search_update_new_runs')
     except Exception:
@@ -106,20 +104,23 @@ def search_update_new_runs(request_reason):
             try:
                l_run_parameter = fetch_remote_file (conn, new_run, s_run_parameter_path, l_run_parameter_path)
                logger.info('%s : Sucessfully fetch of RunParameter file', new_run)
+               experiment_name = get_experiment_name_from_file (l_run_parameter)
             except Exception:
                 error_message = 'Unable to fetch RunParameter file for folder :' + new_run
-                logging_errors(error_message, True, True)
+                logging_errors(error_message, True, False)
+                running_parameters["run_date"] = ""
+                run_process_obj = get_run_process_obj_or_create_if_not_exists(running_parameters, experiment_name)
+                handling_errors_in_run(experiment_name, '21')
                 continue
 
-            experiment_name = get_experiment_name_from_file (l_run_parameter)
             if request_reason == 'crontab_request':
                 if experiment_name == '' or experiment_name == 'NOT FOUND' or 'test' in experiment_name.lower():
                     if experiment_name == '':
                         string_message = new_run + ' : Experiment name is empty'
-                        logging_errors(string_message, False, True)
+                        logging_errors(string_message, False, False)
                     elif experiment_name == 'NOT FOUND':
                         string_message = new_run + ' : Experiment name field was not found in file'
-                        logging_errors(string_message, False, True)
+                        logging_errors(string_message, False, False)
                     else:
                         string_message = new_run + ' : Ignoring test folder ' + experiment_name
                         logger.info(string_message)
@@ -154,13 +155,15 @@ def search_update_new_runs(request_reason):
                 logger.info('%s : Sucessfully fetch of RunInfo file', experiment_name)
             except Exception:
                 string_message = experiment_name + ' : Unable to fetch the RunInfo file on folder ' + new_run
-                logging_errors(string_message, True, True)
+                logging_errors(string_message, True, False)
+                running_parameters["run_date"] = ""
+                run_process_obj = get_run_process_obj_or_create_if_not_exists(running_parameters, experiment_name)
                 handling_errors_in_run(experiment_name, '20')
                 # cleaning up the RunParameter in local temporaty file
                 logger.debug ('%s : Deleting RunParameter file', experiment_name)
                 os.remove(l_run_parameter)
-                logger.debug ('%s : Aborting the process. Exiting with exception', experiment_name)
-                #raise Exception   # returning to handle next run folder
+                logger.debug ('%s : Aborting the process for this run. Continue with the next.', experiment_name)
+                continue
 
             running_parameters = parsing_run_info_and_parameter_information(l_run_info, l_run_parameter, experiment_name)
             logger.info('%s  : Deleting runParameter file', experiment_name)
@@ -206,7 +209,7 @@ def search_update_new_runs(request_reason):
                         logging_errors(string_message, True, True)
                         handling_errors_in_run(experiment_name, '23')
                         logger.debug ('%s : Aborting the process. Exiting with exception', experiment_name)
-                        raise Exception   # returning to handle next run folder
+                        continue   # returning to handle next run folder
             save_run_parameters_data_to_database(running_parameters['running_data'], run_process_obj, experiment_name)
             logger.info('%s : RunParameters information  stored on database', experiment_name)
             run_process_obj.set_run_state('Sample Sent')
