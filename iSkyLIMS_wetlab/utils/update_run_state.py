@@ -108,8 +108,7 @@ def search_update_new_runs(request_reason):
             except Exception:
                 error_message = 'Unable to fetch RunParameter file for folder :' + new_run
                 logging_errors(error_message, True, False)
-                running_parameters["run_date"] = ""
-                run_process_obj = get_run_process_obj_or_create_if_not_exists(running_parameters, experiment_name)
+                run_process_obj = get_run_process_obj_or_create_if_not_exists(experiment_name)
                 handling_errors_in_run(experiment_name, '21')
                 continue
 
@@ -156,8 +155,7 @@ def search_update_new_runs(request_reason):
             except Exception:
                 string_message = experiment_name + ' : Unable to fetch the RunInfo file on folder ' + new_run
                 logging_errors(string_message, True, False)
-                running_parameters["run_date"] = ""
-                run_process_obj = get_run_process_obj_or_create_if_not_exists(running_parameters, experiment_name)
+                run_process_obj = get_run_process_obj_or_create_if_not_exists(experiment_name)
                 handling_errors_in_run(experiment_name, '20')
                 # cleaning up the RunParameter in local temporaty file
                 logger.debug ('%s : Deleting RunParameter file', experiment_name)
@@ -171,7 +169,7 @@ def search_update_new_runs(request_reason):
             logger.info('%s  : Deleting runInfo file', experiment_name)
             os.remove(l_run_info)
 
-            run_process_obj = get_run_process_obj_or_create_if_not_exists(running_parameters, experiment_name)
+            run_process_obj = get_run_process_obj_or_create_if_not_exists(experiment_name)
             sequencer_obj = get_sequencer_obj_or_create_if_no_exists(running_parameters, experiment_name)
             run_process_obj = run_process_obj.set_used_sequencer(sequencer_obj)
             run_process_obj.set_run_date(running_parameters["run_date"])
