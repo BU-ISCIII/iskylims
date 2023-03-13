@@ -473,25 +473,16 @@ def search_service(request):
                 service_request_number__in=services_handled_by
             )
 
-        if project_name != "" or run_name != "" or sample_name != "":
-            samples_in_services = RequestedSamplesInServices.objects.all()
-            if project_name != "":
-                samples_in_services = RequestedSamplesInServices.objects.filter(
-                    project_name__icontains=project_name,
-                    samples_in_service__in=services_found,
-                )
+        if project_name != '' or run_name != '' or sample_name != '':
+            samples_in_services = iSkyLIMS_drylab.models.RequestedSamplesInServices.objects.all()
+            if project_name != '':
+                samples_in_services = iSkyLIMS_drylab.models.RequestedSamplesInServices.objects.filter(project_name__icontains = project_name, samples_in_service__in = services_found)
             else:
-                samples_in_services = RequestedSamplesInServices.objects.filter(
-                    samples_in_service__in=services_found
-                )
-            if run_name != "":
-                samples_in_services = samples_in_services.filter(
-                    run_name__icontains=run_name
-                )
-            if sample_name != "":
-                samples_in_services = samples_in_services.filter(
-                    sample_name__icontains=sample_name
-                )
+                samples_in_services =  iSkyLIMS_drylab.models.RequestedSamplesInServices.objects.filter(samples_in_service__in = services_found)
+            if run_name != '':
+                samples_in_services = samples_in_services.filter(run_name__icontains = run_name)
+            if sample_name != '':
+                samples_in_services = samples_in_services.filter(sample_name__icontains = sample_name)
             service_list = []
             for samples_in_service in samples_in_services:
                 service_list.append(samples_in_service.samples_in_service.pk)
