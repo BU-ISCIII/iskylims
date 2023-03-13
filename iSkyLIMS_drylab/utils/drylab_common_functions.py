@@ -4,7 +4,7 @@ import re, os
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from iSkyLIMS_drylab import drylab_config
-from iSkyLIMS_drylab.models import *
+import iSkyLIMS_drylab.models
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from django.core.files.storage import FileSystemStorage
@@ -32,7 +32,7 @@ def create_service_id (service_number,user_name):
 	'''
     if get_configuration_from_database("USER_CENTER_USED_FOR_NAMING_SERVICE") == "True":
         try:
-            user_center = Profile.objects.get(profileUserID = user_name).profileCenter.centerAbbr
+            user_center = iSkyLIMS_drylab.models.Profile.objects.get(profileUserID = user_name).profileCenter.centerAbbr
         except ValueError:
             user_center = drylab_config.USER_CENTER_USED_WHEN_NOT_PROVIDED
     else:
@@ -51,8 +51,8 @@ def get_configuration_from_database(configuration_name):
         configuration_name      # configuration settings name
     '''
     configuration_value = ''
-    if ConfigSetting.objects.filter(configuration_name__exact = configuration_name).exists():
-        configuration_settings_obj = ConfigSetting.objects.filter(configuration_name__exact = configuration_name).last()
+    if iSkyLIMS_drylab.models.ConfigSetting.objects.filter(configuration_name__exact = configuration_name).exists():
+        configuration_settings_obj = iSkyLIMS_drylab.models.ConfigSetting.objects.filter(configuration_name__exact = configuration_name).last()
         configuration_value = configuration_settings_obj.get_configuration_value()
     return configuration_value
 
@@ -90,13 +90,13 @@ def increment_service_number ( request_user):
         service_number
     '''
     try:
-        user_center = Profile.objects.get(profileUserID = request_user).profileCenter.centerAbbr
+        user_center = iSkyLIMS_drylab.models.Profile.objects.get(profileUserID = request_user).profileCenter.centerAbbr
     except:
         user_center = drylab_config.USER_CENTER_USED_WHEN_NOT_PROVIDED
     # get latest service used for user's center
 
-    if Service.objects.filter(serviceUserId__profile__profileCenter__centerAbbr__exact = user_center).exists():
-        number_request = Service.objects.filter(serviceUserId__profile__profileCenter__centerAbbr__exact = user_center).last().get_service_request_integer()
+    if iSkyLIMS_drylab.models.Service.objects.filter(serviceUserId__profile__profileCenter__centerAbbr__exact = user_center).exists():
+        number_request = iSkyLIMS_drylab.models.Service.objects.filter(serviceUserId__profile__profileCenter__centerAbbr__exact = user_center).last().get_service_request_integer()
         if number_request == None:
             service_number = '001'
         else:
@@ -116,8 +116,8 @@ def get_children_available_services():
         children_services
     '''
     children_services = []
-    if AvailableService.objects.filter(parent = None).exists():
-        all_services = AvailableService.objects.filter(parent = None).get_descendants()
+    if iSkyLIMS_drylab.models.AvailableService.objects.filter(parent = None).exists():
+        all_services = iSkyLIMS_drylab.models.AvailableService.objects.filter(parent = None).get_descendants()
         for service in all_services :
             if not service.get_children().exists():
                 children_services.append([service.pk, service.get_service_description()])
@@ -173,8 +173,8 @@ def get_users_requested_services():
         user_list
     '''
     user_list = []
-    if Service.objects.all().exists():
-        user_ids = Service.objects.all().order_by('serviceUserId').values('serviceUserId').distinct()
+    if iSkyLIMS_drylab.models.Service.objects.all().exists():
+        user_ids = iSkyLIMS_drylab.models.Service.objects.all().order_by('serviceUserId').values('serviceUserId').distinct()
         for user_id in user_ids:
             user_list.append([user_id['serviceUserId'], User.objects.filter(pk__exact = user_id['serviceUserId']).last().username])
     return user_list
@@ -204,11 +204,11 @@ def save_database_configuration_value(configuration_name, configuration_value):
         configuration_name       # configuration setting name
         configuration_value     # value for this configuration settings
     '''
-    if ConfigSetting.objects.filter(configuration_name__exact = configuration_name).exists():
-        config_settings_obj = ConfigSetting.objects.filter(configuration_name__exact = configuration_name).last()
+    if iSkyLIMS_drylab.models.ConfigSetting.objects.filter(configuration_name__exact = configuration_name).exists():
+        config_settings_obj = iSkyLIMS_drylab.models.ConfigSetting.objects.filter(configuration_name__exact = configuration_name).last()
         config_settings_obj.set_configuration_value(configuration_value)
     else:
-        config_settings_obj = ConfigSetting.objects.create_config_setting(configuration_name, configuration_value)
+        config_settings_obj = iSkyLIMS_drylab.models.ConfigSetting.objects.create_config_setting(configuration_name, configuration_value)
     return config_settings_obj
 
 
