@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import get_object_or_404, render, redirect
-from .models import *
-
-# from .forms import *
 from .utils.graphics import *
 import os, re
 
@@ -22,6 +19,8 @@ import statistics
 from iSkyLIMS_drylab import drylab_config
 from iSkyLIMS_drylab.utils.drylab_common_functions import *
 import iSkyLIMS_drylab.utils.testing_drylab_configuration
+import iSkyLIMS_drylab.utils.drylab_common_functions
+import iSkyLIMS_drylab.models
 from iSkyLIMS_drylab.utils.handling_pipelines import *
 from iSkyLIMS_drylab.utils.handling_request_services import *
 from iSkyLIMS_drylab.utils.handling_resolutions import *
@@ -35,29 +34,17 @@ from iSkyLIMS_core.utils.common import send_test_email, get_email_data
 @login_required
 def index(request):
     service_list = {}
-    if Service.objects.filter(serviceStatus__exact="recorded").exists():
-        r_service_objs = Service.objects.filter(
-            serviceStatus__exact="recorded"
-        ).order_by("service_created_date")
-        service_list["recorded"] = []
+    if iSkyLIMS_drylab.models.Service.objects.filter(serviceStatus__exact = 'recorded').exists():
+        r_service_objs =  iSkyLIMS_drylab.models.Service.objects.filter(serviceStatus__exact = 'recorded').order_by('serviceCreatedOnDate')
+        service_list['recorded'] = []
         for r_service_obj in r_service_objs:
             s_info = r_service_obj.get_service_name_and_center()
             s_info.append(r_service_obj.get_service_requested_user())
-            service_list["recorded"].append(s_info)
+            service_list['recorded'].append(s_info)
 
-    if (
-        Service.objects.all()
-        .exclude(serviceStatus__exact="delivered")
-        .exclude(service_approved_date=None)
-        .exists()
-    ):
-        ongoing_services_objs = (
-            Service.objects.all()
-            .exclude(serviceStatus__exact="delivered")
-            .exclude(service_approved_date=None)
-            .order_by("service_approved_date")
-        )
-        service_list["ongoing"] = []
+    if iSkyLIMS_drylab.models.Service.objects.all().exclude(serviceStatus__exact = 'delivered').exclude(service_approved_date = None).exists():
+        ongoing_services_objs = iSkyLIMS_drylab.models.Service.objects.all().exclude(serviceStatus__exact = 'delivered').exclude(service_approved_date = None).order_by('service_approved_date')
+        service_list['ongoing'] = []
         for ongoing_services_obj in ongoing_services_objs:
             s_info = ongoing_services_obj.get_service_name_and_center()
             s_info.append(ongoing_services_obj.get_delivery_date())
@@ -309,18 +296,14 @@ def add_samples_in_service(request):
                 {"content": drylab_config.ERROR_USER_NOT_ALLOWED},
             )
     else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
-    if Service.objects.filter(pk=request.POST["service_id"]).exists():
-        service_manager = is_service_manager(request)
-    if request.method == "POST" and request.POST["action"] == "addeSamplesInService":
-        if not Service.objects.filter(pk__exact=request.POST["service_id"]).exists():
-            return render(
-                request,
-                "iSkyLIMS_drylab/error_page.html",
-                {"content": ["The service that you are trying to get does not exist "]},
-            )
-        service_obj = get_service_obj_from_id(request.POST["service_id"])
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+    if iSkyLIMS_drylab.models.Service.objects.filter(pk = request.POST['service_id']).exists():
+        service_manager = iSkyLIMS_drylab.utils.drylab_common_functions.is_service_manager(request)
+    if request.method == 'POST' and request.POST['action'] == 'addeSamplesInService':
+        if not iSkyLIMS_drylab.models.Service.objects.filter(pk__exact = request.POST['service_id']).exists():
+            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The service that you are trying to get does not exist ']})
+        service_obj = get_service_obj_from_id(request.POST['service_id'])
         samples_added = {}
         samples_added["samples"] = stored_samples_for_sequencing_request_service(
             request.POST, service_obj
@@ -353,34 +336,20 @@ def delete_samples_in_service(request):
                 {"content": drylab_config.ERROR_USER_NOT_ALLOWED},
             )
     else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
-    if Service.objects.filter(pk=request.POST["service_id"]).exists():
-        service_manager = is_service_manager(request)
-    if request.method == "POST" and request.POST["action"] == "deleteSamplesInService":
-        if not Service.objects.filter(pk__exact=request.POST["service_id"]).exists():
-            return render(
-                request,
-                "iSkyLIMS_drylab/error_page.html",
-                {"content": ["The service that you are trying to get does not exist "]},
-            )
-        if not "sampleId" in request.POST:
-            return redirect("/drylab/displayService=" + str(request.POST["service_id"]))
-        deleted_samples = delete_requested_samples_in_service(
-            request.POST.getlist("sampleId")
-        )
-        service_data = {
-            "service_id": request.POST["service_id"],
-            "service_name": get_service_obj_from_id(
-                request.POST["service_id"]
-            ).get_service_request_number(),
-        }
-        return render(
-            request,
-            "iSkyLIMS_drylab/deleteSamplesInService.html",
-            {"deleted_samples": deleted_samples, "service_data": service_data},
-        )
-    return redirect("/drylab/displayService=" + str(request.POST["service_id"]))
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+    if iSkyLIMS_drylab.models.Service.objects.filter(pk = request.POST['service_id']).exists():
+        service_manager = iSkyLIMS_drylab.utils.drylab_common_functions.is_service_manager(request)
+    if request.method == 'POST' and request.POST['action'] == 'deleteSamplesInService':
+        if not iSkyLIMS_drylab.models.Service.objects.filter(pk__exact = request.POST['service_id']).exists():
+            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The service that you are trying to get does not exist ']})
+        if  not 'sampleId' in request.POST :
+            return redirect ('/drylab/display_service=' + str(request.POST['service_id']))
+        deleted_samples = delete_requested_samples_in_service(request.POST.getlist('sampleId'))
+        service_data ={'service_id':request.POST['service_id'],'service_name':get_service_obj_from_id(request.POST['service_id']).get_service_request_number()}
+        return (render(request,'iSkyLIMS_drylab/deleteSamplesInService.html',{'deleted_samples': deleted_samples, 'service_data':service_data}))
+    return redirect ('/drylab/display_service=' + str(request.POST['service_id']))
+
 
 
 @login_required
@@ -480,20 +449,12 @@ def search_service(request):
 
         if service_number_request != "":
             # check if the requested service in the form matches exactly with the existing service in DB
-            if Service.objects.filter(
-                service_request_number__exact=service_number_request
-            ).exists():
-                services_found = Service.objects.get(
-                    service_request_number__exact=service_number_request
-                )
-                redirect_page = "/drylab/displayService=" + str(services_found.id)
-                return redirect(redirect_page)
-            if Service.objects.filter(
-                service_request_number__icontains=service_number_request
-            ).exists():
-                services_found = Service.objects.filter(
-                    service_request_number__icontains=service_number_request
-                )
+            if iSkyLIMS_drylab.models.Service.objects.filter(service_request_number__exact = service_number_request).exists():
+                services_found = iSkyLIMS_drylab.models.Service.objects.get(service_request_number__exact = service_number_request)
+                redirect_page = '/drylab/display_service=' + str(services_found.id)
+                return redirect (redirect_page)
+            if iSkyLIMS_drylab.models.Service.objects.filter(service_request_number__icontains = service_number_request).exists():
+                services_found = iSkyLIMS_drylab.models.Service.objects.filter(service_request_number__icontains = service_number_request)
             else:
                 return render(
                     request,
@@ -506,7 +467,7 @@ def search_service(request):
                     },
                 )
         else:
-            services_found = Service.objects.all()
+            services_found = iSkyLIMS_drylab.models.Service.objects.all()
 
         if service_state != "":
             services_found = services_found.filter(serviceStatus__exact=service_state)
@@ -1052,19 +1013,13 @@ def stats_by_user(request):
 
         if not User.objects.filter(pk__exact=user_id).exists():
             error_message = drylab_config.ERROR_USER_NOT_DEFINED
-            return render(
-                request,
-                "iSkyLIMS_drylab/statsByUser.html",
-                {"user_list": user_list, "ERROR": error_message},
-            )
+            return render(request, 'iSkyLIMS_drylab/statsByUser.html' , {'user_list': user_list,'ERROR':error_message })
 
-        service_objs = Service.objects.filter(serviceUserId__exact=user_id).order_by(
-            "-service_request_number"
-        )
-        if start_date != "":
-            service_objs = service_objs.filter(service_created_date__gte=start_date)
-        if end_date != "":
-            service_objs = service_objs.filter(service_created_date__lte=end_date)
+        service_objs = iSkyLIMS_drylab.models.Service.objects.filter(serviceUserId__exact = user_id).order_by('-service_request_number')
+        if start_date != '':
+            service_objs = service_objs.filter(service_created_date__gte = start_date)
+        if end_date != '':
+            service_objs = service_objs.filter(service_created_date__lte = end_date)
         if len(service_objs) == 0:
             error_message = drylab_config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
             return render(
@@ -1221,16 +1176,12 @@ def stats_by_services_request(request):
             if not check_valid_date_format(end_date):
                 return render(request, "iSkyLIMS_drylab/statsByServicesRequest.html")
         else:
-            end_date = date.today().strftime("%Y-%m-%d")
-        start_date_format = datetime.strptime(start_date, "%Y-%m-%d")
-        end_date_format = datetime.strptime(end_date, "%Y-%m-%d")
+            end_date  = date.today().strftime('%Y-%m-%d')
+        start_date_format = datetime.strptime(start_date, '%Y-%m-%d')
+        end_date_format = datetime.strptime(end_date, '%Y-%m-%d')
 
-        if Service.objects.filter(
-            service_created_date__range=(start_date, end_date)
-        ).exists():
-            services_found = Service.objects.filter(
-                service_created_date__range=(start_date, end_date)
-            ).order_by("-service_created_date")
+        if iSkyLIMS_drylab.models.Service.objects.filter(service_created_date__range=(start_date,end_date)).exists():
+            services_found = iSkyLIMS_drylab.models.Service.objects.filter(service_created_date__range=(start_date,end_date)). order_by('-service_created_date')
             services_stats_info = {}
             # preparing stats for services request by users
             user_services = {}
@@ -1597,8 +1548,8 @@ def configuration_test(request):
         )
         # check if access to databases are defined
         try:
-            access_db = Service.objects.all()
-            test_results["database_access"] = "OK"
+            access_db = iSkyLIMS_drylab.models.Service.objects.all()
+            test_results['database_access'] = 'OK'
         except:
             test_results["database_access"] = "NOK"
 
