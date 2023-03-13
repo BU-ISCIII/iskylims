@@ -519,12 +519,11 @@ def get_run_platform_from_file (l_run_parameter) :
 
     return platform
 
-def get_run_process_obj_or_create_if_not_exists(running_parameters, experiment_name):
+def get_run_process_obj_or_create_if_not_exists(experiment_name):
     '''
     Description:
         The function get the run_proces obj or it is created if does not exists
     Input:
-        running_parameters  # dictionary to collect information to create the new run process
         experiment_name     # experiment name
     Return:
         run_process_obj
@@ -536,9 +535,8 @@ def get_run_process_obj_or_create_if_not_exists(running_parameters, experiment_n
     else:
         run_data = {}
         run_data['experiment_name'] = experiment_name
-        run_data['run_date'] = running_parameters['run_date']
         run_process_obj = RunProcess.objects.create_new_run_from_crontab(run_data)
-        logger.info('%s  : New RunProcess instance created')
+        logger.info('%s  : New RunProcess instance created',experiment_name)
     logger.debug('End function get_run_process_obj_or_create_if_not_exists' )
     return run_process_obj
 

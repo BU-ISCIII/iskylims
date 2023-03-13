@@ -30,8 +30,7 @@ class RunStates (models.Model):
 class RunProcessManager (models.Manager):
     def create_new_run_from_crontab(self,run_data):
         run_state = RunStates.objects.get(runStateName__exact = 'Recorded')
-        new_run = self.create( state = run_state , runName = run_data['experiment_name'],
-                    run_date = run_data['run_date'])
+        new_run = self.create( state = run_state , runName = run_data['experiment_name'])
         return new_run
 
 class RunProcess(models.Model):
