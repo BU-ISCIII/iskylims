@@ -3,7 +3,7 @@ from django.conf import settings
 
 from iSkyLIMS_drylab.utils.drylab_common_functions import *
 from iSkyLIMS_drylab import drylab_config
-from iSkyLIMS_drylab.models import *
+import iSkyLIMS_drylab.models
 
 from django.contrib.auth.models import User
 
@@ -49,8 +49,8 @@ def get_iSkyLIMS_settings():
 def create_service_test(service_requested):
     service_results = []
     # Check if test service exists
-    if Service.objects.filter(service_request_number__exact = service_requested).exists():
-        delete_service =  Service.objects.get(service_request_number__exact = service_requested)
+    if iSkyLIMS_drylab.models.Service.objects.filter(service_request_number__exact = service_requested).exists():
+        delete_service =  iSkyLIMS_drylab.models.Service.objects.get(service_request_number__exact = service_requested)
         delete_service.delete()
 
     # Check user is defined in database
@@ -66,12 +66,12 @@ def create_service_test(service_requested):
     except:
         service_results.append(('User defined', 'NOK'))
     try:
-        service_platform = Platform.objects.first()
+        service_platform = iSkyLIMS_drylab.models.Platform.objects.first()
         service_results.append(('Platform defined', 'OK'))
     except:
         service_results.append(('Platform defined', 'NOK'))
     try:
-        service_file_ext = FileExt.objects.first()
+        service_file_ext = iSkyLIMS_drylab.models.FileExt.objects.first()
         service_results.append(('File extension defined', 'OK'))
     except:
         service_results.append(('File extension defined', 'NOK'))
@@ -80,7 +80,7 @@ def create_service_test(service_requested):
         if 'NOK' in service_results[i]:
             return service_results, 'NOK'
     try:
-        new_test_service = Service(service_request_number = service_requested, serviceUserId = user_name,
+        new_test_service = iSkyLIMS_drylab.models.Service(service_request_number = service_requested, serviceUserId = user_name,
                     servicePlatform = service_platform, serviceFileExt = service_file_ext,
                     serviceStatus = 'recorded')
         new_test_service.save()
@@ -100,11 +100,11 @@ def create_resolution_test (resolution_number, service_requested):
 
     resolution_test = []
     # get service object
-    service = Service.objects.get(service_request_number = service_requested)
-    
+    service = iSkyLIMS_drylab.models.Service.objects.get(service_request_number = service_requested)
+
     # Create resolution object
     try:
-        test_resolution = Resolution(resolution_serviceID = service, resolutionNumber = resolution_number, resolution_full_number = str('Test_'+ resolution_number))
+        test_resolution = iSkyLIMS_drylab.models.Resolution(resolution_serviceID = service, resolutionNumber = resolution_number, resolution_full_number = str('Test_'+ resolution_number))
         resolution_test.append(('Resolution creation', 'OK'))
     except:
         resolution_test.append(('Resolution creation', 'NOK'))
@@ -159,7 +159,7 @@ def create_resolution_test (resolution_number, service_requested):
 
 def delete_test_service(service_name):
     try:
-        d_service = Service.objects.get(service_request_number__exact = service_name)
+        d_service = iSkyLIMS_drylab.models.Service.objects.get(service_request_number__exact = service_name)
         d_service.delete()
     except:
         return
