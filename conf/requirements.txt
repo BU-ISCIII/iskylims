@@ -1,6 +1,7 @@
 ## 30/05/2018
 ## encoding (1.0.0) --deprecated
 
+wheel
 asn1crypto
 bcrypt
 biopython

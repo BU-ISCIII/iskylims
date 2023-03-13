@@ -336,6 +336,25 @@ if [ -d $INSTALL_PATH ]; then
     fi
 fi
 
+if [[ $linux_distribution == "Ubuntu" ]]; then
+    echo "Software installation for Ubuntu"
+    apt-get update && apt-get upgrade -y
+    apt-get install -y \
+        apt-utils wget \
+        libmysqlclient-dev apache2-dev \
+        python3-venv mariadb-server \
+        gcc libpq-dev \
+        python3-dev python3-pip python3-wheel
+fi
+
+if [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterprise" ]]; then
+    echo "Software installation for Centos/RedHat"
+    yum groupinstall "Development tools"
+    yum install zlib-devel bzip2-devel openssl-devel \
+                wget httpd-devel mysql-libs sqlite sqlite-devel \
+                mariadb mariadb-devel libffi-devel
+fi
+
 ## Create the installation folder
 mkdir $INSTALL_PATH/iSkyLIMS
 
@@ -404,6 +423,7 @@ echo "activate the virtualenv"
 source virtualenv/bin/activate
 
 # Starting iSkyLIMS
+python3 -m pip install wheel
 python3 -m pip install -r conf/requirements.txt
 echo ""
 echo "Creating iskylims project"
