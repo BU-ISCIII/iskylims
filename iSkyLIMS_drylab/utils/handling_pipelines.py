@@ -1,6 +1,6 @@
 import json, os
 from .drylab_common_functions import *
-from iSkyLIMS_drylab import drylab_config
+import iSkyLIMS_drylab.drylab_config
 import iSkyLIMS_drylab.models
 #from iSkyLIMS_wetlab.utils.api.wetlab_api import get_run_folder_from_user_project
 from iSkyLIMS_drylab.utils.handling_request_services import get_requested_services_obj_from_available_service
@@ -80,8 +80,8 @@ def get_data_form_pipeline():
         additional_data
     """
     additional_data = {}
-    # additional_data ['available_services']= get_children_available_services ()
-    additional_data["heading"] = drylab_config.HEADING_PARAMETER_PIPELINE
+    #additional_data ['available_services']= get_children_available_services ()
+    additional_data['heading']= iSkyLIMS_drylab.drylab_config.HEADING_PARAMETER_PIPELINE
 
     return additional_data
 
@@ -105,13 +105,13 @@ def get_detail_pipeline_data(pipeline_id):
         pipeline_obj = iSkyLIMS_drylab.models.Pipelines.objects.get(pk__exact = pipeline_id)
         detail_pipelines_data['pipeline_name'] = pipeline_obj.get_pipeline_name()
         detail_pipelines_data['pipeline_basic'] = pipeline_obj.get_pipeline_basic()
-        detail_pipelines_data['pipeline_basic_heading'] = drylab_config.DISPLAY_DETAIL_PIPELINE_BASIC_INFO
-        detail_pipelines_data['pipeline_additional_data'] = zip( drylab_config.DISPLAY_DETAIL_PIPELINE_ADDITIONAL_INFO, pipeline_obj.get_pipeline_additional())
+        detail_pipelines_data['pipeline_basic_heading'] = iSkyLIMS_drylab.drylab_config.DISPLAY_DETAIL_PIPELINE_BASIC_INFO
+        detail_pipelines_data['pipeline_additional_data'] = zip( iSkyLIMS_drylab.drylab_config.DISPLAY_DETAIL_PIPELINE_ADDITIONAL_INFO, pipeline_obj.get_pipeline_additional())
 
         #pipeline_obj = get_pipeline_obj_from_id (pipeline_id)
         if iSkyLIMS_drylab.models.ParameterPipeline.objects.filter(parameter_pipeline = pipeline_obj).exists():
             parameter_objs = iSkyLIMS_drylab.models.ParameterPipeline.objects.filter(parameter_pipeline = pipeline_obj)
-            detail_pipelines_data['parameter_heading'] = drylab_config.HEADING_PARAMETER_PIPELINE
+            detail_pipelines_data['parameter_heading'] = iSkyLIMS_drylab.drylab_config.HEADING_PARAMETER_PIPELINE
             detail_pipelines_data['parameters'] = []
             for parameter_obj in parameter_objs :
 
@@ -141,12 +141,8 @@ def get_defined_pipeline_data_to_display(pipeline_obj):
     pipeline_data = {}
 
     # service_name = pipeline_obj.get_pipleline_avail_service()
-    pipeline_data["pipeline_data"] = [
-        pipeline_obj.get_pipeline_name(),
-        pipeline_obj.get_pipeline_version(),
-        pipeline_obj.get_pipeline_description(),
-    ]
-    pipeline_data["heading_pipeline"] = drylab_config.DISPLAY_NEW_DEFINED_PIPELINE
+    pipeline_data['pipeline_data'] = [pipeline_obj.get_pipeline_name(), pipeline_obj.get_pipeline_version(),pipeline_obj.get_pipeline_description()]
+    pipeline_data['heading_pipeline']= iSkyLIMS_drylab.drylab_config.DISPLAY_NEW_DEFINED_PIPELINE
     return pipeline_data
 
 
@@ -162,8 +158,8 @@ def get_pipelines_for_manage():
         pipelines_objs = iSkyLIMS_drylab.models.Pipelines.objects.filter(pipeline_in_use__exact = True).order_by('pipeline_name')
         pipeline_data['data'] = []
         for pipeline in pipelines_objs:
-            pipeline_data["data"].append(pipeline.get_pipeline_info())
-        pipeline_data["heading"] = drylab_config.HEADING_MANAGE_PIPELINES
+            pipeline_data['data'].append(pipeline.get_pipeline_info())
+        pipeline_data['heading'] = iSkyLIMS_drylab.drylab_config.HEADING_MANAGE_PIPELINES
 
     return pipeline_data
 
@@ -180,12 +176,10 @@ def get_pipelines_for_resolution(resolution_obj):
     pipeline_data = {}
     pipeline_data["pipelines"] = []
     pipeline_objs = resolution_obj.resolutionPipelines.all()
-    for pipeline_obj in pipeline_objs:
-        pipeline_data["pipelines"].append(pipeline_obj.get_pipeline_info())
-    if len(pipeline_data["pipelines"]) > 0:
-        pipeline_data[
-            "heading_pipelines"
-        ] = drylab_config.DISPLAY_PIPELINES_USED_IN_RESOLUTION
+    for pipeline_obj in pipeline_objs :
+        pipeline_data['pipelines'].append(pipeline_obj.get_pipeline_info())
+    if len(pipeline_data['pipelines']) > 0:
+        pipeline_data['heading_pipelines'] = iSkyLIMS_drylab.drylab_config.DISPLAY_PIPELINES_USED_IN_RESOLUTION
     return pipeline_data
 
 
