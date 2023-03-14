@@ -19,9 +19,9 @@ import iSkyLIMS_drylab.utils.graphics
 import iSkyLIMS_drylab.utils.testing_drylab_configuration
 import iSkyLIMS_drylab.utils.drylab_common_functions
 import iSkyLIMS_drylab.utils.handling_request_services
+import iSkyLIMS_drylab.utils.handling_resolutions
 #
 #
-from iSkyLIMS_drylab.utils.handling_resolutions import *
 from iSkyLIMS_drylab.utils.handling_deliveries import *
 from iSkyLIMS_drylab.utils.handling_multiple_files import *
 from iSkyLIMS_core.utils.common import send_test_email, get_email_data
@@ -213,7 +213,7 @@ def add_samples_in_service(request):
     if request.method == 'POST' and request.POST['action'] == 'addeSamplesInService':
         if not iSkyLIMS_drylab.models.Service.objects.filter(pk__exact = request.POST['service_id']).exists():
             return render (request,'iSkyLIMS_drylab/error_page.html', {'content':['The service that you are trying to get does not exist ']})
-        service_obj = get_service_obj_from_id(request.POST['service_id'])
+        service_obj = iSkyLIMS_drylab.utils.handling_resolutions.get_service_obj_from_id(request.POST['service_id'])
         samples_added = {}
         samples_added['samples'] = iSkyLIMS_drylab.utils.drylab_common_functions.stored_samples_for_sequencing_request_service(request.POST, service_obj)
         samples_added['service_name'] = service_obj.get_service_request_number()
@@ -243,7 +243,7 @@ def delete_samples_in_service(request):
         if  not 'sampleId' in request.POST :
             return redirect ('/drylab/display_service=' + str(request.POST['service_id']))
         deleted_samples = iSkyLIMS_drylab.utils.drylab_common_functions.delete_requested_samples_in_service(request.POST.getlist('sampleId'))
-        service_data ={'service_id':request.POST['service_id'],'service_name':get_service_obj_from_id(request.POST['service_id']).get_service_request_number()}
+        service_data ={'service_id':request.POST['service_id'],'service_name':iSkyLIMS_drylab.utils.handling_resolutions.get_service_obj_from_id(request.POST['service_id']).get_service_request_number()}
         return (render(request,'iSkyLIMS_drylab/deleteSamplesInService.html',{'deleted_samples': deleted_samples, 'service_data':service_data}))
     return redirect ('/drylab/display_service=' + str(request.POST['service_id']))
 
@@ -497,10 +497,10 @@ def add_resolution(request):
         )
 
     if request.method == "POST" and request.POST["action"] == "addResolutionService":
-        resolution_data_form = get_add_resolution_data_form(request.POST)
-        new_resolution = create_new_resolution(resolution_data_form)
+        resolution_data_form = iSkyLIMS_drylab.utils.handling_resolutions.get_add_resolution_data_form(request.POST)
+        new_resolution = iSkyLIMS_drylab.utils.handling_resolutions.create_new_resolution(resolution_data_form)
         if "pipeline_ids" in resolution_data_form:
-            add_pipelines_to_resolution(
+            iSkyLIMS_drylab.utils.handling_resolutions.add_pipelines_to_resolution(
                 new_resolution, resolution_data_form["pipeline_ids"]
             )
         # create a new resolution to be added to the service folder including the path where file is stored
@@ -519,8 +519,8 @@ def add_resolution(request):
         email_data["status"] = resolution_data_form["serviceAccepted"]
         email_data["date"] = resolution_data_form["resolutionEstimatedDate"]
         # include the email for the user who requested the service
-        email_data["service_owner_email"] = new_resolution.get_service_owner_email()
-        send_resolution_creation_email(email_data)
+        email_data['service_owner_email'] = new_resolution.get_service_owner_email()
+        iSkyLIMS_drylab.utils.handling_resolutions.send_resolution_creation_email(email_data)
         created_resolution = {}
         created_resolution["resolution_number"] = resolution_data_form[
             "resolutionNumber"
@@ -533,16 +533,10 @@ def add_resolution(request):
             {"created_resolution": created_resolution},
         )
 
-    if (
-        request.method == "POST"
-        and request.POST["action"] == "formToaddResolutionService"
-    ):
-        resolution_form_data = prepare_form_data_add_resolution(request.POST)
-        return render(
-            request,
-            "iSkyLIMS_drylab/addResolution.html",
-            {"resolution_form_data": resolution_form_data},
-        )
+
+    if request.method == "POST" and request.POST['action'] == 'formToaddResolutionService':
+        resolution_form_data = iSkyLIMS_drylab.utils.handling_resolutions.prepare_form_data_add_resolution(request.POST)
+        return render(request, 'iSkyLIMS_drylab/addResolution.html' , { 'resolution_form_data' : resolution_form_data})
     else:
         return render (request, 'iSkyLIMS_drylab/error_page.html', {'content':iSkyLIMS_drylab.drylab_config.ERROR_SERVICE_ID_NOT_FOUND})
 
@@ -659,7 +653,7 @@ def add_in_progress(request):
 
     if request.method == "POST" and request.POST['action'] == 'inProgressResolutionService' :
         resolution_id = request.POST['resolution_id']
-        if  not check_if_resolution_exists(resolution_id):
+        if  not iSkyLIMS_drylab.utils.handling_resolutions.check_if_resolution_exists(resolution_id):
             error_message = iSkyLIMS_drylab.drylab_config.ERROR_RESOLUTION_DOES_NOT_EXISTS
             return render (request,'iSkyLIMS_drylab/error_page.html', {'content':error_message})
 
@@ -668,14 +662,14 @@ def add_in_progress(request):
         resolution_number = resolution_obj.get_resolution_number()
         service_obj = resolution_obj.get_service_obj()
         # check if services can change to "in progress"
-        if allow_to_service_update_state(resolution_obj, "in_progress"):
+        if iSkyLIMS_drylab.utils.handling_resolutions.allow_to_service_update_state (resolution_obj, 'in_progress'):
             # update the service status and in_porgress date
             service_obj = service_obj.update_service_state("in_progress")
         email_data = {}
-        email_data["user_email"] = service_obj.get_user_email()
-        email_data["user_name"] = service_obj.get_service_requested_user()
-        email_data["resolution_number"] = resolution_number
-        send_resolution_in_progress_email(email_data)
+        email_data['user_email'] = service_obj.get_user_email()
+        email_data['user_name'] = service_obj.get_service_requested_user()
+        email_data['resolution_number'] = resolution_number
+        iSkyLIMS_drylab.utils.handling_resolutions.send_resolution_in_progress_email(email_data)
         in_progress_resolution = {}
         in_progress_resolution["resolution_number"] = resolution_number
         return render(
@@ -738,7 +732,7 @@ def add_delivery(request):
             email_data["resolution_number"] = delivery_recorded["resolution_number"]
             email_data["service_owner_email"] = resolution_obj.get_service_owner_email()
             send_delivery_service_email(email_data)
-            if allow_to_service_update_state(resolution_obj, "delivered"):
+            if iSkyLIMS_drylab.utils.handling_resolutions.allow_to_service_update_state (resolution_obj, 'delivered'):
                 service_obj = resolution_obj.get_service_obj()
                 service_obj = service_obj.update_service_state("delivered")
                 service_obj.update_service_delivered_date(date.today())
