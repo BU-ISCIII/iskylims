@@ -1779,6 +1779,14 @@
     }
 },
 {
+    "model": "iSkyLIMS_wetlab.runerrors",
+    "pk": 33,
+    "fields": {
+        "errorCode": "33",
+        "errorText": "Sample names differ between sample sheet and demultiplexing stats."
+    }
+},
+{
     "model": "iSkyLIMS_wetlab.runconfigurationtest",
     "pk": 1,
     "fields": {
