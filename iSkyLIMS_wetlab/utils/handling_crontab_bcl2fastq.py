@@ -1002,7 +1002,10 @@ def process_and_store_samples_projects_data(
                 projectName__exact=project
             ).last()
             project_sample_data["runProcess_id"] = run_process_obj
-            project_sample_data["user_id"] = samples_with_user_ids[sample]
+            try:
+                project_sample_data["user_id"] = samples_with_user_ids[sample]
+            except KeyError as e:
+                raise KeyError("Sample id not found in sample sheet")
 
             new_sample_stats = SamplesInProject.objects.create_sample_project(
                 project_sample_data

@@ -318,7 +318,7 @@ def manage_run_in_processed_bcl2fastq_state(conn, run_process_objs):
                 string_message = experiment_name + ' : Unable to fetch the Conversion Stats file' + run_folder
                 logging_errors(string_message, False, True)
                 handling_errors_in_run (experiment_name, 31)
-                logger.debug ('%s : Aborting the process. Unable to fetch Confersion Stats files', experiment_name)
+                logger.debug ('%s : Aborting the process. Unable to fetch Conversion Stats files', experiment_name)
                 continue
         number_of_lanes = run_param_obj.get_number_of_lanes()
         try:
@@ -354,14 +354,29 @@ def manage_run_in_processed_bcl2fastq_state(conn, run_process_objs):
 
         process_and_store_unknown_barcode_data(project_parsed_data, run_process_obj,number_of_lanes, experiment_name )
 
-        process_and_store_samples_projects_data(sample_project_parsed_data, run_process_obj, experiment_name)
+        try:
+            process_and_store_samples_projects_data(sample_project_parsed_data, run_process_obj, experiment_name)
+        except KeyError as key_error:
+            string_message = experiment_name + ' : Error when processing and storing samples in projects.'
+            logging_errors (string_message, True, False)
+            if key_error.args[0] == "Sample id not found in sample sheet":
+                handling_errors_in_run (experiment_name, '33' )
+            else:
+                string_message = experiment_name + ' : Unknown error when processing and storing samples in projects.'
+                logging_errors (string_message, True, False) 
+            logger.debug('%s : End function manage_run_in_processed_bcl2fast2_run with error', experiment_name)
+            continue
+        except Exception as e:
+            string_message = experiment_name + ' : Unknown error when processing and storing samples in projects.'
+            logging_errors (string_message, True, False)
+            continue
 
         ## Get the disk space utilization for this run
         try:
             disk_utilization = get_run_disk_utilization (conn, run_folder, experiment_name)
         except:
             string_message = experiment_name + ' : Error when fetching the disk utilization'
-            logging_errors (string_message, True, True)
+            logging_errors (string_message, True, False)
             handling_errors_in_run (experiment_name, '17' )
             logger.debug('%s : End function manage_run_in_processed_bcl2fast2_run with error', experiment_name)
             continue
