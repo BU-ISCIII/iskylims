@@ -21,7 +21,7 @@ from iSkyLIMS_drylab.utils.drylab_common_functions import *
 import iSkyLIMS_drylab.utils.testing_drylab_configuration
 import iSkyLIMS_drylab.utils.drylab_common_functions
 import iSkyLIMS_drylab.models
-from iSkyLIMS_drylab.utils.handling_pipelines import *
+import iSkyLIMS_drylab.utils.handling_pipelines
 from iSkyLIMS_drylab.utils.handling_request_services import *
 from iSkyLIMS_drylab.utils.handling_resolutions import *
 from iSkyLIMS_drylab.utils.handling_deliveries import *
@@ -1563,14 +1563,13 @@ def define_pipeline_service(request):
                 {"content": drylab_config.ERROR_USER_NOT_ALLOWED},
             )
     else:
-        return redirect("/accounts/login")
-    data_pipeline = get_data_form_pipeline()
-    if request.method == "POST" and request.POST["action"] == "definePipeline":
+        return redirect ('/accounts/login')
+    data_pipeline = iSkyLIMS_drylab.utils.handling_pipelines.get_data_form_pipeline()
+    if request.method == 'POST' and request.POST['action'] == 'definePipeline':
 
-        pipeline_data_form = analyze_input_pipelines(request)
-        if pipeline_version_exists(
-            request.POST["pipeline_name"], request.POST["pipeline_version"]
-        ):
+
+        pipeline_data_form = iSkyLIMS_drylab.utils.handling_pipelines.analyze_input_pipelines(request)
+        if iSkyLIMS_drylab.utils.handling_pipelines.pipeline_version_exists(request.POST['pipeline_name'], request.POST['pipeline_version']):
             error_message = drylab_config.ERROR_PIPELINE_ALREADY_EXISTS
             data_pipeline.update(pipeline_data_form)
             return render(
@@ -1597,8 +1596,8 @@ def define_pipeline_service(request):
             pipeline_data_form['filename'] =''
         new_pipeline = iSkyLIMS_drylab.models.Pipelines.objects.create_pipeline(pipeline_data_form)
         if 'additional_parameters' in  pipeline_data_form :
-            store_parameters_pipeline(new_pipeline, pipeline_data_form['additional_parameters'])
-        defined_service_pipeline = get_defined_pipeline_data_to_display(new_pipeline)
+            iSkyLIMS_drylab.utils.handling_pipelines.store_parameters_pipeline(new_pipeline, pipeline_data_form['additional_parameters'])
+        defined_service_pipeline = iSkyLIMS_drylab.utils.handling_pipelines.get_defined_pipeline_data_to_display(new_pipeline)
 
         # set_default_service_pipeline(new_pipeline)
         return render(
@@ -1624,15 +1623,10 @@ def manage_pipelines(request):
                 {"content": drylab_config.ERROR_USER_NOT_ALLOWED},
             )
     else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
-    pipelines_data = get_pipelines_for_manage()
-    return render(
-        request,
-        "iSkyLIMS_drylab/managePipelines.html",
-        {"pipelines_data": pipelines_data},
-    )
-
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+    pipelines_data = iSkyLIMS_drylab.utils.handling_pipelines.get_pipelines_for_manage()
+    return render(request,'iSkyLIMS_drylab/managePipelines.html', {'pipelines_data': pipelines_data})
 
 @login_required
 def detail_pipeline(request, pipeline_id):
@@ -1644,14 +1638,11 @@ def detail_pipeline(request, pipeline_id):
                 {"content": drylab_config.ERROR_USER_NOT_ALLOWED},
             )
     else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
-    detail_pipelines_data = get_detail_pipeline_data(pipeline_id)
-    return render(
-        request,
-        "iSkyLIMS_drylab/detailPipeline.html",
-        {"detail_pipelines_data": detail_pipelines_data},
-    )
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+    detail_pipelines_data = iSkyLIMS_drylab.utils.handling_pipelines.get_detail_pipeline_data(pipeline_id)
+    return render(request,'iSkyLIMS_drylab/detailPipeline.html', {'detail_pipelines_data': detail_pipelines_data})
+
 
 
 ###################### Delete upload service file  #########################
