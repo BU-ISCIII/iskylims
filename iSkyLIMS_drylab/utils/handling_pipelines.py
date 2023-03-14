@@ -3,7 +3,7 @@ from .drylab_common_functions import *
 import iSkyLIMS_drylab.drylab_config
 import iSkyLIMS_drylab.models
 #from iSkyLIMS_wetlab.utils.api.wetlab_api import get_run_folder_from_user_project
-from iSkyLIMS_drylab.utils.handling_request_services import get_requested_services_obj_from_available_service
+import iSkyLIMS_drylab.utils.handling_request_services
 
 def analyze_input_pipelines(request):
     """
@@ -118,7 +118,7 @@ def get_detail_pipeline_data(pipeline_id):
                 detail_pipelines_data['parameters'].append([parameter_obj.get_pipeline_parameter_name(), parameter_obj.get_pipeline_parameter_type()])
         # get the services where the pipeline was used
         """
-        req_serv_objs = get_requested_services_obj_from_available_service(pipeline_obj.get_pipleline_avail_service_obj())
+        req_serv_objs = iSkyLIMS_drylab.utils.handling_request_services.get_requested_services_obj_from_available_service(pipeline_obj.get_pipleline_avail_service_obj())
         if req_serv_objs != None :
             detail_pipelines_data['services_using_pipeline'] = []
             detail_pipelines_data['services_using_pipeline_heading'] = drylab_config.HEADING_SERVICES_IN_PIPELINE
