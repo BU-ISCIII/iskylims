@@ -10,7 +10,6 @@ from django.core.mail import send_mail
 from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.models import User
 
-
 def check_valid_date_format (date):
     try:
         datetime.strptime(date, '%Y-%m-%d')

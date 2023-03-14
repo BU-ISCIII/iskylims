@@ -1,7 +1,6 @@
 import os
 from django.conf import settings
 
-from iSkyLIMS_drylab.utils.drylab_common_functions import *
 from iSkyLIMS_drylab import drylab_config
 import iSkyLIMS_drylab.models
 
