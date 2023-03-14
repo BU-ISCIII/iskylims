@@ -364,7 +364,6 @@ def get_samples_clinic_in_search (data_request):
     else:
         return clinic_s_list
     if data_request['patientCode'] != '':
-        import pdb; pdb.set_trace()
         clinic_s_found = clinic_s_found.filter(patientCore__patientCode__icontains = data_request['patientCode'])
 
     if data_request['patientName'] != '':
