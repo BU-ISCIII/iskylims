@@ -13,14 +13,8 @@ from .handling_crontab_manage_run_states import *
 from .generic_functions import *
 from django.conf import settings
 
-from .common_run_functions import manage_run_in_processed_run, manage_run_in_processing_bcl2fastq, manage_run_in_processed_bcl2fastq
 from .generic_functions import get_userid_list
-
 from .sample_sheet_utils import validate_userid_in_user_iem_file, read_user_iem_file
-
-
-from django.conf import settings
-from django_utils.models import Center
 
 
 def get_list_processed_runs():

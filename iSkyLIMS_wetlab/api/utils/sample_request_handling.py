@@ -159,7 +159,6 @@ def samples_match_on_parameter(req_param):
 
     r_param = req_param["sampleParameter"]
     query = r_param + "__isnull"
-    import pdb; pdb.set_trace()
     try:
         if Samples.objects.filter(**{query: False}).exists():
             out_data = {}
