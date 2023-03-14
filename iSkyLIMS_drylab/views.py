@@ -1,24 +1,11 @@
 # -*- coding: utf-8 -*-
-<<<<<<< HEAD
-from django.shortcuts import get_object_or_404, render, redirect
-from .utils.graphics import *
-=======
 # Generic imports
->>>>>>> Cleaned and fixed imports
 import os, re
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from django.conf import settings
-<<<<<<< HEAD
-
-# from django.template.loader import render_to_string
 from django_utils.fusioncharts.fusioncharts import FusionCharts
-
-# from django.core.mail import send_mail
-=======
-from django_utils.fusioncharts.fusioncharts import FusionCharts
->>>>>>> Cleaned and fixed imports
 from django.http import HttpResponse
 from django.core.files.storage import FileSystemStorage
 from datetime import date, datetime
@@ -34,11 +21,6 @@ import iSkyLIMS_drylab.utils.drylab_common_functions
 from iSkyLIMS_drylab.utils.handling_request_services import *
 from iSkyLIMS_drylab.utils.handling_resolutions import *
 from iSkyLIMS_drylab.utils.handling_deliveries import *
-<<<<<<< HEAD
-
-# from iSkyLIMS_drylab.utils.handling_forms import *
-=======
->>>>>>> Cleaned and fixed imports
 from iSkyLIMS_drylab.utils.handling_multiple_files import *
 from iSkyLIMS_core.utils.common import send_test_email, get_email_data
 
@@ -889,33 +871,14 @@ def stats_by_user(request):
         # preparing graphic for status of the services
         number_of_services = {}
 
-        number_of_services["RECORDED"] = service_objs.filter(
-            serviceStatus__exact="recorded"
-        ).count()
-        number_of_services["QUEUED"] = service_objs.filter(
-            serviceStatus__exact="queued"
-        ).count()
-        number_of_services["IN PROGRESS"] = service_objs.filter(
-            serviceStatus__exact="in_progress"
-        ).count()
-        number_of_services["DELIVERED"] = service_objs.filter(
-            serviceStatus__exact="delivered"
-        ).count()
+        number_of_services ['RECORDED'] = service_objs.filter(serviceStatus__exact = 'recorded').count()
+        number_of_services ['QUEUED'] = service_objs.filter(serviceStatus__exact = 'queued').count()
+        number_of_services ['IN PROGRESS'] = service_objs.filter(serviceStatus__exact = 'in_progress').count()
+        number_of_services ['DELIVERED'] = service_objs.filter(serviceStatus__exact = 'delivered').count()
 
-        data_source = graphic_3D_pie(
-            "Status of Requested Services from:",
-            stats_info["user_name"],
-            "",
-            "",
-            "fint",
-            number_of_services,
-        )
-        graphic_by_user_date_services = FusionCharts(
-            "pie3d", "ex1", "600", "350", "chart-1", "json", data_source
-        )
-        stats_info[
-            "graphic_by_user_date_services"
-        ] = graphic_by_user_date_services.render()
+        data_source = iSkyLIMS_drylab.utils.graphics.graphic_3D_pie('Status of Requested Services from:', stats_info ['user_name'], '', '','fint',number_of_services)
+        graphic_by_user_date_services = FusionCharts("pie3d", "ex1" , "600", "350", "chart-1", "json", data_source)
+        stats_info ['graphic_by_user_date_services'] = graphic_by_user_date_services.render()
 
         # getting statistics of the created services
 
@@ -927,20 +890,11 @@ def stats_by_user(request):
                 if service_name in service_dict:
                     service_dict[service_name] += 1
                 else:
-                    service_dict[service_name] = 1
-        # creating the graphic for requested services
-        data_source = column_graphic_dict(
-            "Requested Services by:",
-            stats_info["user_name"],
-            "",
-            "",
-            "fint",
-            service_dict,
-        )
-        graphic_requested_services = FusionCharts(
-            "column3d", "ex2", "550", "350", "chart-2", "json", data_source
-        )
-        stats_info["graphic_requested_services"] = graphic_requested_services.render()
+                    service_dict [service_name] = 1
+        #creating the graphic for requested services
+        data_source = iSkyLIMS_drylab.utils.graphics.column_graphic_dict('Requested Services by:', stats_info ['user_name'], '', '','fint',service_dict)
+        graphic_requested_services = FusionCharts("column3d", "ex2" , "550", "350", "chart-2", "json", data_source)
+        stats_info ['graphic_requested_services'] = graphic_requested_services.render()
 
         # getting statistics for requested per time
         service_time_dict = {}
@@ -951,28 +905,16 @@ def stats_by_user(request):
             else:
                 service_time_dict[date_service] = 1
         # sorting the dictionary to get
-        # creating the graphic for monthly requested services
-        service_time_tupla = []
-        for key, value in sorted(service_time_dict.items()):
-            service_time_tupla.append([key, service_time_dict[key]])
-        data_source = column_graphic_tupla(
-            "Requested Services by:",
-            stats_info["user_name"],
-            "",
-            "",
-            "fint",
-            service_time_tupla,
-        )
-        graphic_date_requested_services = FusionCharts(
-            "column3d", "ex3", "550", "350", "chart-3", "json", data_source
-        )
-        stats_info[
-            "graphic_date_requested_services"
-        ] = graphic_date_requested_services.render()
+        #creating the graphic for monthly requested services
+        service_time_tupla =[]
+        for key , value in sorted(service_time_dict.items()):
+            service_time_tupla.append([key,service_time_dict[key]])
+        data_source = iSkyLIMS_drylab.utils.graphics.column_graphic_tupla('Requested Services by:', stats_info ['user_name'], '', '','fint',service_time_tupla)
+        graphic_date_requested_services = FusionCharts("column3d", "ex3" , "550", "350", "chart-3", "json", data_source)
+        stats_info ['graphic_date_requested_services'] = graphic_date_requested_services.render()
 
-        return render(
-            request, "iSkyLIMS_drylab/statsByUser.html", {"stats_info": stats_info}
-        )
+
+        return render (request, 'iSkyLIMS_drylab/statsByUser.html', {'stats_info':stats_info})
     else:
         return render(
             request, "iSkyLIMS_drylab/statsByUser.html", {"user_list": user_list}
@@ -1034,26 +976,13 @@ def stats_by_services_request(request):
                 else:
                     user_services[user] = 1
 
-            period_of_time_selected = str(
-                " For the period between " + start_date + " and " + end_date
-            )
-            # creating the graphic for requested services
-            data_source = column_graphic_dict(
-                "Requested Services by:",
-                period_of_time_selected,
-                "User names",
-                "Number of Services",
-                "fint",
-                user_services,
-            )
-            graphic_requested_services = FusionCharts(
-                "column3d", "ex1", "525", "350", "chart-1", "json", data_source
-            )
-            services_stats_info[
-                "graphic_requested_services_per_user"
-            ] = graphic_requested_services.render()
-            # preparing stats for status of the services
-            status_services = {}
+            period_of_time_selected = str(' For the period between ' + start_date + ' and ' + end_date)
+            #creating the graphic for requested services
+            data_source = iSkyLIMS_drylab.utils.graphics.column_graphic_dict('Requested Services by:', period_of_time_selected , 'User names', 'Number of Services','fint',user_services)
+            graphic_requested_services = FusionCharts("column3d", "ex1" , "525", "350", "chart-1", "json", data_source)
+            services_stats_info ['graphic_requested_services_per_user'] = graphic_requested_services.render()
+            #preparing stats for status of the services
+            status_services ={}
             for service in services_found:
                 # user_id = service.serviceUserId.id
 
@@ -1062,24 +991,13 @@ def stats_by_services_request(request):
                     status_services[status] += 1
                 else:
                     status_services[status] = 1
-            # creating the graphic for status services
-            data_source = graphic_3D_pie(
-                "Status of Requested Services",
-                period_of_time_selected,
-                "",
-                "",
-                "fint",
-                status_services,
-            )
-            graphic_status_requested_services = FusionCharts(
-                "pie3d", "ex2", "525", "350", "chart-2", "json", data_source
-            )
-            services_stats_info[
-                "graphic_status_requested_services"
-            ] = graphic_status_requested_services.render()
+            #creating the graphic for status services
+            data_source = iSkyLIMS_drylab.utils.graphics.graphic_3D_pie('Status of Requested Services', period_of_time_selected ,'', '','fint',status_services)
+            graphic_status_requested_services = FusionCharts("pie3d", "ex2" , "525", "350", "chart-2", "json", data_source)
+            services_stats_info ['graphic_status_requested_services'] = graphic_status_requested_services.render()
 
-            # preparing stats for request by Area
-            user_area_dict = {}
+            #preparing stats for request by Area
+            user_area_dict ={}
             for service in services_found:
                 user_service_obj = service.get_user_service_obj()
                 if iSkyLIMS_drylab.models.Profile.objects.filter(profileUserID = user_service_obj).exists():
@@ -1091,24 +1009,13 @@ def stats_by_services_request(request):
                     user_area_dict[user_classification_area] += 1
                 else:
                     user_area_dict[user_classification_area] = 1
-            # creating the graphic for areas
-            data_source = column_graphic_dict(
-                "Services requested per Area",
-                period_of_time_selected,
-                "Area ",
-                "Number of Services",
-                "fint",
-                user_area_dict,
-            )
-            graphic_area_services = FusionCharts(
-                "column3d", "ex3", "600", "350", "chart-3", "json", data_source
-            )
-            services_stats_info[
-                "graphic_area_services"
-            ] = graphic_area_services.render()
+            #creating the graphic for areas
+            data_source = iSkyLIMS_drylab.utils.graphics.column_graphic_dict('Services requested per Area', period_of_time_selected, 'Area ', 'Number of Services','fint',user_area_dict)
+            graphic_area_services = FusionCharts("column3d", "ex3" , "600", "350", "chart-3", "json", data_source)
+            services_stats_info ['graphic_area_services'] = graphic_area_services.render()
 
-            # preparing stats for services request by Center
-            user_center_dict = {}
+            #preparing stats for services request by Center
+            user_center_dict ={}
             for service in services_found:
                 user_service_obj = service.get_user_service_obj()
                 if iSkyLIMS_drylab.models.Profile.objects.filter(profileUserID = user_service_obj).exists():
@@ -1119,21 +1026,11 @@ def stats_by_services_request(request):
                     user_center_dict[user_center] += 1
                 else:
                     user_center_dict[user_center] = 1
-            # creating the graphic for areas
-            data_source = column_graphic_dict(
-                "Services requested per Center",
-                period_of_time_selected,
-                "Center ",
-                "Number of Services",
-                "fint",
-                user_center_dict,
-            )
-            graphic_center_services = FusionCharts(
-                "column3d", "ex4", "600", "350", "chart-4", "json", data_source
-            )
-            services_stats_info[
-                "graphic_center_services"
-            ] = graphic_center_services.render()
+            #creating the graphic for areas
+            data_source = iSkyLIMS_drylab.utils.graphics.column_graphic_dict('Services requested per Center', period_of_time_selected, 'Center ', 'Number of Services','fint',user_center_dict)
+            graphic_center_services = FusionCharts("column3d", "ex4" , "600", "350", "chart-4", "json", data_source)
+            services_stats_info ['graphic_center_services'] = graphic_center_services.render()
+
 
             ################################################
             ## Preparing the statistics per period of time
@@ -1174,20 +1071,10 @@ def stats_by_services_request(request):
                 for d_period in time_values:
                     if not d_period in user_services_period[center]:
                         user_services_period[center][d_period] = 0
-            data_source = column_graphic_per_time(
-                "Services requested by center ",
-                period_of_time_selected,
-                "date",
-                "number of services",
-                time_values,
-                user_services_period,
-            )
-            graphic_center_services_per_time = FusionCharts(
-                "mscolumn3d", "ex5", "525", "350", "chart-5", "json", data_source
-            )
-            services_stats_info[
-                "graphic_center_services_per_time"
-            ] = graphic_center_services_per_time.render()
+            data_source = iSkyLIMS_drylab.utils.graphics.column_graphic_per_time ('Services requested by center ',period_of_time_selected,  'date', 'number of services', time_values , user_services_period)
+            graphic_center_services_per_time = FusionCharts("mscolumn3d", "ex5" , "525", "350", "chart-5", "json", data_source)
+            services_stats_info ['graphic_center_services_per_time'] = graphic_center_services_per_time.render()
+
 
             ## Preparing the statistics for Area on period of time
             user_area_services_period = {}
@@ -1219,22 +1106,12 @@ def stats_by_services_request(request):
                     if not d_period in user_area_services_period[area]:
                         user_area_services_period[area][d_period] = 0
 
-            data_source = column_graphic_per_time(
-                "Services requested by Area ",
-                period_of_time_selected,
-                "date",
-                "number of services",
-                time_values,
-                user_area_services_period,
-            )
-            graphic_area_services_per_time = FusionCharts(
-                "mscolumn3d", "ex6", "525", "350", "chart-6", "json", data_source
-            )
-            services_stats_info[
-                "graphic_area_services_per_time"
-            ] = graphic_area_services_per_time.render()
+            data_source = iSkyLIMS_drylab.utils.graphics.column_graphic_per_time ('Services requested by Area ',period_of_time_selected,  'date', 'number of services', time_values , user_area_services_period)
+            graphic_area_services_per_time = FusionCharts("mscolumn3d", "ex6" , "525", "350", "chart-6", "json", data_source)
+            services_stats_info ['graphic_area_services_per_time'] = graphic_area_services_per_time.render()
 
-            services_stats_info["period_time"] = period_of_time_selected
+            services_stats_info['period_time']= period_of_time_selected
+
 
             # statistics on Requested Level 2 Services
 
@@ -1246,18 +1123,12 @@ def stats_by_services_request(request):
                     if service_name in service_dict:
                         service_dict[service_name] += 1
                     else:
-                        service_dict[service_name] = 1
+                        service_dict [service_name] = 1
 
-            # creating the graphic for requested services
-            data_source = column_graphic_dict(
-                "Requested Services:", "level 2 ", "", "", "fint", service_dict
-            )
-            graphic_req_l2_services = FusionCharts(
-                "column3d", "ex7", "800", "375", "chart-7", "json", data_source
-            )
-            services_stats_info[
-                "graphic_req_l2_services"
-            ] = graphic_req_l2_services.render()
+            #creating the graphic for requested services
+            data_source = iSkyLIMS_drylab.utils.graphics.column_graphic_dict('Requested Services:', 'level 2 ', '', '','fint',service_dict)
+            graphic_req_l2_services = FusionCharts("column3d", "ex7" , "800", "375", "chart-7", "json", data_source)
+            services_stats_info ['graphic_req_l2_services'] = graphic_req_l2_services.render()
 
             # statistics on Requested Level 3 Services
 
@@ -1269,24 +1140,14 @@ def stats_by_services_request(request):
                     if service_name in service_dict:
                         service_dict[service_name] += 1
                     else:
-                        service_dict[service_name] = 1
+                        service_dict [service_name] = 1
 
-            # creating the graphic for requested services
-            data_source = column_graphic_dict(
-                "Requested Services:", "level 3 ", "", "", "fint", service_dict
-            )
-            graphic_req_l3_services = FusionCharts(
-                "column3d", "ex8", "800", "375", "chart-8", "json", data_source
-            )
-            services_stats_info[
-                "graphic_req_l3_services"
-            ] = graphic_req_l3_services.render()
+            #creating the graphic for requested services
+            data_source = iSkyLIMS_drylab.utils.graphics.column_graphic_dict('Requested Services:', 'level 3 ', '', '','fint',service_dict)
+            graphic_req_l3_services = FusionCharts("column3d", "ex8" , "800", "375", "chart-8", "json", data_source)
+            services_stats_info ['graphic_req_l3_services'] = graphic_req_l3_services.render()
 
-            return render(
-                request,
-                "iSkyLIMS_drylab/statsByServicesRequest.html",
-                {"services_stats_info": services_stats_info},
-            )
+            return render (request, 'iSkyLIMS_drylab/statsByServicesRequest.html', {'services_stats_info':services_stats_info})
 
         else:
             return render(
