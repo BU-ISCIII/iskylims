@@ -3,7 +3,7 @@ import re
 import datetime
 from iSkyLIMS_core.core_config import *
 from iSkyLIMS_core.models import *
-from iSkyLIMS_core.utils.generic_functions import get_friend_list
+from iSkyLIMS_core.utils.common import get_friend_list
 from iSkyLIMS_core.utils.handling_commercial_kits import get_lot_commercial_kits
 from iSkyLIMS_core.utils.handling_protocols import *
 from django.contrib.auth.models import User

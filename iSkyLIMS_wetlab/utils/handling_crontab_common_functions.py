@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 
 from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters, SambaConnectionData, ConfigSetting
-from .generic_functions import get_samba_connection_data, find_xml_tag_text, get_attributes_remote_file, logging_errors, logging_warnings, open_log
+from .common import get_samba_connection_data, find_xml_tag_text, get_attributes_remote_file, logging_errors, logging_warnings, open_log
 from iSkyLIMS_wetlab.wetlab_config import *
 from .sample_sheet_utils import get_projects_in_run, get_index_library_name
 from iSkyLIMS_core.models import SequencerInLab
@@ -141,7 +141,7 @@ def check_sequencer_status_from_completion_file(l_run_completion, experiment_nam
         l_run_completion  # local path for the run completion file
         experiment_name   # Contains the experiment name
     Functions:
-        find_xml_tag_text # located at utils.generic_functions
+        find_xml_tag_text # located at utils.common
     Constant:
         COMPLETION_TAG
     Return

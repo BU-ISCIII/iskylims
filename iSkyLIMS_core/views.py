@@ -7,7 +7,7 @@ from django.shortcuts import render, redirect
 from .forms import ContactForm
 from django.core.mail import send_mail
 
-from .utils.generic_functions import *
+from .utils.common import *
 #from django.conf import settings
 
 # Create your views here.

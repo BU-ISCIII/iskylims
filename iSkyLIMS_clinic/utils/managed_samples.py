@@ -1,6 +1,6 @@
 from iSkyLIMS_clinic.models import *
 from iSkyLIMS_clinic.clinic_config import *
-from iSkyLIMS_clinic.utils.generic_functions import *
+from iSkyLIMS_clinic.utils.common import *
 from iSkyLIMS_core.models import MoleculePreparation
 from iSkyLIMS_core.utils.handling_samples import *
 
@@ -241,7 +241,7 @@ def get_clinic_samples_in_state(user, state):
         user  # pending samples limited to the logged user and the friend list
         state #
     Functions:
-        get_friend_list # located at core.utils.generic_functions
+        get_friend_list # located at core.utils.common
     Return:
         samples or False
     '''
@@ -262,7 +262,7 @@ def get_clinic_samples_defined_state (user):
     Variables:
         sample_type_names # list containing all sample types names
     Functions:
-        get_friend_list # located at core.utils.generic_functions
+        get_friend_list # located at core.utils.common
     Return:
         samples_in_state.
     '''
@@ -321,7 +321,7 @@ def get_clinic_samples_pending_results(user, state):
     Input:
         user  # pending samples limited to the logged user and the friend list
     Functions:
-        get_friend_list # located at core.utils.generic_functions
+        get_friend_list # located at core.utils.common
     Return:
         samples_in_state.
     '''

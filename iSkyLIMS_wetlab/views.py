@@ -25,7 +25,7 @@ from iSkyLIMS_wetlab import wetlab_config
 from .utils.sample_sheet_utils import *
 from .utils.sample_functions import *
 from .utils.stats_graphics import *
-from .utils.generic_functions import *
+from .utils.common import *
 from .utils.collection_index_functions import *
 from .utils.fetching_information import *
 from .utils.testing_wetlab_configuration import *
@@ -41,7 +41,7 @@ from .utils.handling_sequencers import *
 # from .utils.wetlab_misc_utilities import normalized_data
 from iSkyLIMS_core.utils.handling_samples import *
 from iSkyLIMS_core.utils.handling_platforms import get_defined_platforms_and_ids
-from iSkyLIMS_core.utils.generic_functions import (
+from iSkyLIMS_core.utils.common import (
     get_inital_sample_settings_values,
     save_inital_sample_setting_value,
     send_test_email,
@@ -5912,7 +5912,7 @@ def search_sample(request):
     """
     Functions:
         get_sample_states  : located at iSkyLIMS_core/utils/handling_samples.py
-        check_valid_date_format : located at utils/generic_functions.py
+        check_valid_date_format : located at utils/common.py
         search_samples          : located at iSkyLIMS_core/utils/handling_samples.py
         search_run_samples      : located at utils/sample_functions.py
     """

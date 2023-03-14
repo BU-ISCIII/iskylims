@@ -25,7 +25,7 @@ from iSkyLIMS_drylab.utils.handling_resolutions import *
 from iSkyLIMS_drylab.utils.handling_deliveries import *
 #from iSkyLIMS_drylab.utils.handling_forms import *
 from iSkyLIMS_drylab.utils.handling_multiple_files import *
-from iSkyLIMS_core.utils.generic_functions import send_test_email, get_email_data
+from iSkyLIMS_core.utils.common import send_test_email, get_email_data
 
 @login_required
 def index(request):

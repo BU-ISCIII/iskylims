@@ -15,7 +15,7 @@ from django.core.files.storage import FileSystemStorage
 
 from iSkyLIMS_wetlab import wetlab_config
 from iSkyLIMS_wetlab.models import *
-# from iSkyLIMS_wetlab.utils.generic_functions import  *
+# from iSkyLIMS_wetlab.utils.common import  *
 
 def validate_userid_in_user_iem_file (file_read, user_id_list):
     '''
@@ -833,7 +833,7 @@ def valid_user_iem_file (file_read):
     Input:
         file_read                           # content of the input file from user
     Functions:
-        get_userid_list                 # located at utils.generic_functions.py file
+        get_userid_list                 # located at utils.common.py file
     Constant:
         SECTIONS_IN_IEM_SAMPLE_SHEET
     Return

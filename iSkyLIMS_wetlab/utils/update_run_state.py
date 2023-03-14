@@ -10,10 +10,10 @@ from iSkyLIMS_wetlab import wetlab_config
 
 from .handling_crontab_common_functions import *
 from .handling_crontab_manage_run_states import *
-from .generic_functions import *
+from .common import *
 from django.conf import settings
 
-from .generic_functions import get_userid_list
+from .common import get_userid_list
 from .sample_sheet_utils import validate_userid_in_user_iem_file, read_user_iem_file
 
 
@@ -53,11 +53,11 @@ def search_update_new_runs(request_reason):
         assign_used_library_in_run           # located at utils.handling_crontab_common_functions
         copy_sample_sheet_to_remote_folder   # located at utils.handling_crontab_common_functions
         fetch_remote_file                    # located at utils.handling_crontab_common_functions
-        open_samba_connection                # located in utils.generic_functions.py
+        open_samba_connection                # located in utils.common.py
         get_list_processed_runs              # located at this file
-        get_new_runs_on_remote_server        # located at utils.generic_functions.py
+        get_new_runs_on_remote_server        # located at utils.common.py
         get_new_runs_from_remote_server      # located at utils.handling_crontab_common_functions
-        get_experiment_name_from_file        # located at utils.generic_functions.py
+        get_experiment_name_from_file        # located at utils.common.py
         get_remote_sample_sheet              # located at utils.handling_crontab_common_functions
         get_samba_application_shared_folder  # located at utils.handling_crontab_common_functions.py
         get_samba_shared_folder              # located at utils.handling_crontab_common_functions.py
@@ -231,7 +231,7 @@ def handle_not_completed_run ():
     Input:
         logger # log object for logging
     Functions:
-        open_samba_connection   # located in utils.generic_functions.py
+        open_samba_connection   # located in utils.common.py
 
         save_new_miseq_run      # located at this file
     Constants:

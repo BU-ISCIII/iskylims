@@ -184,7 +184,7 @@ def get_patients_in_search(data_request):
     Input:
         data_request  # input data from the user form
     Functions:
-        get_friend_list # located at core.utils.generic_functions
+        get_friend_list # located at core.utils.common
     Return:
         patient_list.
     '''
