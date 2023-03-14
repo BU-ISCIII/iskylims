@@ -1,21 +1,30 @@
 # -*- coding: utf-8 -*-
+<<<<<<< HEAD
 from django.shortcuts import get_object_or_404, render, redirect
 from .utils.graphics import *
+=======
+# Generic imports
+>>>>>>> Cleaned and fixed imports
 import os, re
-
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from django.conf import settings
+<<<<<<< HEAD
 
 # from django.template.loader import render_to_string
 from django_utils.fusioncharts.fusioncharts import FusionCharts
 
 # from django.core.mail import send_mail
+=======
+from django_utils.fusioncharts.fusioncharts import FusionCharts
+>>>>>>> Cleaned and fixed imports
 from django.http import HttpResponse
 from django.core.files.storage import FileSystemStorage
-
 from datetime import date, datetime
 import statistics
+
+# Local imports
 import iSkyLIMS_drylab.drylab_config
 import iSkyLIMS_drylab.models
 import iSkyLIMS_drylab.utils.handling_pipelines
@@ -25,8 +34,11 @@ import iSkyLIMS_drylab.utils.drylab_common_functions
 from iSkyLIMS_drylab.utils.handling_request_services import *
 from iSkyLIMS_drylab.utils.handling_resolutions import *
 from iSkyLIMS_drylab.utils.handling_deliveries import *
+<<<<<<< HEAD
 
 # from iSkyLIMS_drylab.utils.handling_forms import *
+=======
+>>>>>>> Cleaned and fixed imports
 from iSkyLIMS_drylab.utils.handling_multiple_files import *
 from iSkyLIMS_core.utils.common import send_test_email, get_email_data
 

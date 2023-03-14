@@ -1,6 +1,8 @@
+# Generic imports
 import os
 from django.conf import settings
 
+# Local imports
 from iSkyLIMS_drylab import drylab_config
 import iSkyLIMS_drylab.models
 

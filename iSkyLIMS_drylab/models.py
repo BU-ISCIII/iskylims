@@ -1,17 +1,14 @@
+# Generic imports
 import os
 from datetime import date, datetime
 from django.db import models
 from django import forms
 from django.contrib.auth.models import User
-
 from django.utils.translation import gettext_lazy as _
 from mptt.models import MPTTModel
 from mptt.fields import TreeForeignKey, TreeManyToManyField
 from django.utils.timezone import now as timezone_now
-
-# from iSkyLIMS_wetlab.models import RunProcess, Projects
-
-from django_utils.models import Profile, Center
+from django_utils.models import Profile,Center
 from django.contrib.auth.models import User
 
 from iSkyLIMS_core.models import SequencingPlatform
@@ -880,4 +877,3 @@ class ConfigSetting(models.Model):
         return self
 
     objects = ConfigSettingManager()
-

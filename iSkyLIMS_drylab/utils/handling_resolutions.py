@@ -1,12 +1,12 @@
+# Generic imports
 from datetime import date, datetime
 import json
 from smtplib import SMTPException
-
 from django.core.mail import send_mail
 from django.contrib.auth.models import User
-
 from django_utils.models import Profile
 
+# Local imports
 from iSkyLIMS_drylab.models import Resolution, ConfigSetting, ResolutionParameters
 from iSkyLIMS_drylab import drylab_config
 from iSkyLIMS_drylab.utils.handling_request_services import (
