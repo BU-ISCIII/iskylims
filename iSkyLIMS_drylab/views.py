@@ -16,12 +16,12 @@ from django.core.files.storage import FileSystemStorage
 
 from datetime import date, datetime
 import statistics
-from iSkyLIMS_drylab import drylab_config
-from iSkyLIMS_drylab.utils.drylab_common_functions import *
-import iSkyLIMS_drylab.utils.testing_drylab_configuration
-import iSkyLIMS_drylab.utils.drylab_common_functions
+import iSkyLIMS_drylab.drylab_config
 import iSkyLIMS_drylab.models
 import iSkyLIMS_drylab.utils.handling_pipelines
+import iSkyLIMS_drylab.utils.graphics
+import iSkyLIMS_drylab.utils.testing_drylab_configuration
+import iSkyLIMS_drylab.utils.drylab_common_functions
 from iSkyLIMS_drylab.utils.handling_request_services import *
 from iSkyLIMS_drylab.utils.handling_resolutions import *
 from iSkyLIMS_drylab.utils.handling_deliveries import *
@@ -108,7 +108,7 @@ def request_sequencing_service(request):
 		# check that at some services have been requested
 		if len(request.POST.getlist('RequestedServices')) == 0 :
 			service_data_information = prepare_form_data_request_service_sequencing(request)
-			error_message = drylab_config.ERROR_NO_SERVICES_ARE_SELECTED
+			error_message = iSkyLIMS_drylab.drylab_config.ERROR_NO_SERVICES_ARE_SELECTED
 			return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'service_data_information':service_data_information,
 									'error_message':error_message})
 
@@ -132,36 +132,16 @@ def request_sequencing_service(request):
 		''' removed creation of pdf file when creating a new service
 		confirmation_result['download_file'] = create_service_pdf_file(new_service.get_service_request_number(), request.build_absolute_uri())
 		'''
-        service_request_number = new_service.get_service_request_number()
-        confirmation_result["text"] = list(
-            map(
-                lambda st: str.replace(st, "SERVICE_NUMBER", service_request_number),
-                drylab_config.CONFIRMATION_TEXT_MESSAGE,
-            )
-        )
-        if len(sample_stored) > 0:
-            confirmation_result["samples"] = sample_stored
-        if email_result != "OK":
-            return render(
-                request,
-                "iSkyLIMS_drylab/requestSequencingService.html",
-                {
-                    "confirmation_result": confirmation_result,
-                    "error_message": email_result,
-                },
-            )
-        return render(
-            request,
-            "iSkyLIMS_drylab/requestSequencingService.html",
-            {"confirmation_result": confirmation_result},
-        )
-    else:
-        service_data_information = prepare_form_data_request_service_sequencing(request)
-        return render(
-            request,
-            "iSkyLIMS_drylab/requestSequencingService.html",
-            {"service_data_information": service_data_information},
-        )
+		service_request_number = new_service.get_service_request_number()
+		confirmation_result['text'] = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), iSkyLIMS_drylab.drylab_config.CONFIRMATION_TEXT_MESSAGE))
+		if len(sample_stored) > 0 :
+			confirmation_result['samples'] = sample_stored
+		if email_result != 'OK':
+			return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'confirmation_result':confirmation_result, 'error_message':email_result})
+		return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'confirmation_result':confirmation_result})
+	else:
+		service_data_information = prepare_form_data_request_service_sequencing(request)
+		return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'service_data_information':service_data_information})
 
 
 @login_required
@@ -171,15 +151,9 @@ def counseling_request(request):
         # check that at some services have been requested
         if len(request.POST.getlist("RequestedServices")) == 0:
             service_data_information = prepare_form_data_request_counseling_service()
-            error_message = drylab_config.ERROR_NO_SERVICES_ARE_SELECTED
-            return render(
-                request,
-                "iSkyLIMS_drylab/requestCounselingService.html",
-                {
-                    "service_data_information": service_data_information,
-                    "error_message": error_message,
-                },
-            )
+            error_message = iSkyLIMS_drylab.drylab_config.ERROR_NO_SERVICES_ARE_SELECTED
+            return render(request,'iSkyLIMS_drylab/requestCounselingService.html',{'service_data_information':service_data_information,
+                           'error_message':error_message})
 
         new_service = create_new_save_counseling_infrastructure_service_request(request)
 
@@ -192,18 +166,9 @@ def counseling_request(request):
         # confirmation_result['download_file'] = create_service_pdf_file(new_service.get_service_request_number(), request.build_absolute_uri())
 
         service_request_number = new_service.get_service_request_number()
-        confirmation_result["text"] = list(
-            map(
-                lambda st: str.replace(st, "SERVICE_NUMBER", service_request_number),
-                drylab_config.CONFIRMATION_TEXT_MESSAGE,
-            )
-        )
+        confirmation_result['text'] = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), iSkyLIMS_drylab.drylab_config.CONFIRMATION_TEXT_MESSAGE))
 
-        return render(
-            request,
-            "iSkyLIMS_drylab/requestSequencingService.html",
-            {"confirmation_result": confirmation_result},
-        )
+        return render(request,'iSkyLIMS_drylab/requestSequencingService.html',{'confirmation_result':confirmation_result})
 
     else:
         service_data_information = prepare_form_data_request_counseling_service()
@@ -219,19 +184,11 @@ def infrastructure_request(request):
 
     if request.method == "POST" and request.POST["action"] == "createService":
         # check that at some services have been requested
-        if len(request.POST.getlist("RequestedServices")) == 0:
-            service_data_information = (
-                prepare_form_data_request_infrastructure_service()
-            )
-            error_message = drylab_config.ERROR_NO_SERVICES_ARE_SELECTED
-            return render(
-                request,
-                "iSkyLIMS_drylab/requestInfrastructureService.html",
-                {
-                    "service_data_information": service_data_information,
-                    "error_message": error_message,
-                },
-            )
+        if len(request.POST.getlist('RequestedServices')) == 0 :
+            service_data_information = prepare_form_data_request_infrastructure_service()
+            error_message = iSkyLIMS_drylab.drylab_config.ERROR_NO_SERVICES_ARE_SELECTED
+            return render(request,'iSkyLIMS_drylab/requestInfrastructureService.html',{'service_data_information':service_data_information,
+                           'error_message':error_message})
 
         new_service = create_new_save_counseling_infrastructure_service_request(request)
 
@@ -244,18 +201,9 @@ def infrastructure_request(request):
         # confirmation_result['download_file'] = create_service_pdf_file(new_service.get_service_request_number(), request.build_absolute_uri())
 
         service_request_number = new_service.get_service_request_number()
-        confirmation_result["text"] = list(
-            map(
-                lambda st: str.replace(st, "SERVICE_NUMBER", service_request_number),
-                drylab_config.CONFIRMATION_TEXT_MESSAGE,
-            )
-        )
+        confirmation_result['text'] = list(map(lambda st: str.replace(st, 'SERVICE_NUMBER', service_request_number), iSkyLIMS_drylab.drylab_config.CONFIRMATION_TEXT_MESSAGE))
 
-        return render(
-            request,
-            "iSkyLIMS_drylab/requestInfrastructureService.html",
-            {"confirmation_result": confirmation_result},
-        )
+        return render(request,'iSkyLIMS_drylab/requestInfrastructureService.html',{'confirmation_result':confirmation_result})
     else:
         service_data_information = prepare_form_data_request_infrastructure_service()
         return render(
@@ -268,12 +216,8 @@ def infrastructure_request(request):
 @login_required
 def add_samples_in_service(request):
     if request.user.is_authenticated:
-        if not is_service_manager(request):
-            return render(
-                request,
-                "iSkyLIMS_drylab/error_page.html",
-                {"content": drylab_config.ERROR_USER_NOT_ALLOWED},
-            )
+        if not iSkyLIMS_drylab.utils.drylab_common_functions.is_service_manager(request):
+            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':iSkyLIMS_drylab.drylab_config.ERROR_USER_NOT_ALLOWED })
     else:
         #redirect to login webpage
         return redirect ('/accounts/login')
@@ -308,12 +252,8 @@ def add_samples_in_service(request):
 @login_required
 def delete_samples_in_service(request):
     if request.user.is_authenticated:
-        if not is_service_manager(request):
-            return render(
-                request,
-                "iSkyLIMS_drylab/error_page.html",
-                {"content": drylab_config.ERROR_USER_NOT_ALLOWED},
-            )
+        if not iSkyLIMS_drylab.utils.drylab_common_functions.is_service_manager(request):
+            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':iSkyLIMS_drylab.drylab_config.ERROR_USER_NOT_ALLOWED })
     else:
         #redirect to login webpage
         return redirect ('/accounts/login')
@@ -412,19 +352,9 @@ def search_service(request):
             )
 
         ### check the right format of start and end date
-        if (
-            request.POST["startdate"] != ""
-            and not check_valid_date_format(request.POST["startdate"])
-        ) or (
-            request.POST["enddate"] != ""
-            and not check_valid_date_format(request.POST["enddate"])
-        ):
-            error_message = drylab_config.ERROR_INCORRECT_FORMAT_DATE
-            return render(
-                request,
-                "iSkyLIMS_drylab/searchService.html",
-                {"services_search_list": services_search_list, "ERROR": error_message},
-            )
+        if (request.POST['startdate'] != '' and not iSkyLIMS_drylab.utils.drylab_common_functions.check_valid_date_format(request.POST['startdate'])) or  (request.POST['enddate'] != '' and not iSkyLIMS_drylab.utils.drylab_common_functions.check_valid_date_format(request.POST['enddate'])):
+            error_message = iSkyLIMS_drylab.drylab_config.ERROR_INCORRECT_FORMAT_DATE
+            return render( request,'iSkyLIMS_drylab/searchService.html',{'services_search_list': services_search_list , 'ERROR':error_message})
 
         if service_number_request != "":
             # check if the requested service in the form matches exactly with the existing service in DB
@@ -463,7 +393,7 @@ def search_service(request):
         if handeld_user != '':
 
             if not iSkyLIMS_drylab.models.Resolution.objects.filter(resolution_asigned_user__username__icontains = user_name).exists():
-                error_message = drylab_config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
+                error_message = iSkyLIMS_drylab.drylab_config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
                 return render( request,'iSkyLIMS_drylab/searchService.html',{'services_search_list': services_search_list , 'ERROR':error_message})
             services_handled_by = []
             services_handled_by_objs = iSkyLIMS_drylab.models.Resolution.objects.filter(resolution_asigned_user__username__icontains = user_name)
@@ -485,21 +415,15 @@ def search_service(request):
                 samples_in_services = samples_in_services.filter(sample_name__icontains = sample_name)
             service_list = []
             for samples_in_service in samples_in_services:
-                service_list.append(samples_in_service.samples_in_service.pk)
-            services_found = services_found.filter(pk__in=service_list)
-        if len(services_found) == 0:
-            error_message = drylab_config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
-            return render(
-                request,
-                "iSkyLIMS_drylab/searchService.html",
-                {"services_search_list": services_search_list, "ERROR": error_message},
-            )
-        # If only 1 service mathes the user conditions, then get the user information
-        if len(services_found) == 1:
-            redirect_page = "/drylab/displayService=" + str(
-                services_found[0].get_service_id()
-            )
-            return redirect(redirect_page)
+                service_list.append(samples_in_service.samplesInService.pk)
+            services_found = services_found.filter(pk__in = service_list)
+        if len(services_found) == 0 :
+            error_message = iSkyLIMS_drylab.drylab_config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
+            return render( request,'iSkyLIMS_drylab/searchService.html',{'services_search_list': services_search_list , 'ERROR':error_message})
+        #If only 1 service mathes the user conditions, then get the user information
+        if len(services_found) == 1 :
+            redirect_page = '/drylab/display_service=' + str(services_found[0].get_service_id())
+            return redirect (redirect_page)
         else:
             display_multiple_services = {}
             s_list = {}
@@ -530,12 +454,8 @@ def search_service(request):
 @login_required
 def pending_services(request):
     if request.user.is_authenticated:
-        if not is_service_manager(request):
-            return render(
-                request,
-                "iSkyLIMS_drylab/error_page.html",
-                {"content": drylab_config.ERROR_USER_NOT_ALLOWED},
-            )
+        if not iSkyLIMS_drylab.utils.drylab_common_functions.is_service_manager(request):
+            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':iSkyLIMS_drylab.drylab_config.ERROR_USER_NOT_ALLOWED })
     else:
         # redirect to login webpage
         return redirect("/accounts/login")
@@ -556,7 +476,7 @@ def pending_services(request):
 def service_in_waiting_info(request):
     if request.user.is_authenticated:
         try:
-            groups = Group.objects.get(name=drylab_config.SERVICE_MANAGER)
+            groups = Group.objects.get(name=iSkyLIMS_drylab.drylab_config.SERVICE_MANAGER)
             if groups not in request.user.groups.all():
                 return render(
                     request,
@@ -626,8 +546,8 @@ def add_resolution(request):
         # pdf_file = create_resolution_pdf_file(new_resolution, request.build_absolute_uri())
         # new_resolution.update_resolution_file(pdf_file)
         """
-        # pdf_name = resolution_data_form['resolutionNumber'] + ".pdf"
-        # resolution_file = create_pdf(request,information, drylab_config.RESOLUTION_TEMPLATE, pdf_name)
+        #pdf_name = resolution_data_form['resolutionNumber'] + ".pdf"
+        #resolution_file = create_pdf(request,information, iSkyLIMS_drylab.drylab_config.RESOLUTION_TEMPLATE, pdf_name)
 
         ## Send email
         email_data = {}
@@ -662,11 +582,7 @@ def add_resolution(request):
             {"resolution_form_data": resolution_form_data},
         )
     else:
-        return render(
-            request,
-            "iSkyLIMS_drylab/error_page.html",
-            {"content": drylab_config.ERROR_SERVICE_ID_NOT_FOUND},
-        )
+        return render (request, 'iSkyLIMS_drylab/error_page.html', {'content':iSkyLIMS_drylab.drylab_config.ERROR_SERVICE_ID_NOT_FOUND})
 
 
 """
@@ -717,7 +633,7 @@ def test (request):
     html_string = render_to_string('resolution_template.html', {'information': information})
 
     html = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf('documents/drylab/res_pdf.pdf',stylesheets=[CSS(settings.STATIC_ROOT +
-                                drylab_config.CSS_FOR_PDF)])
+                                iSkyLIMS_drylab.drylab_config.CSS_FOR_PDF)])
 
     fs = FileSystemStorage('documents/drylab')
     with fs.open('res_pdf.pdf') as pdf:
@@ -736,11 +652,11 @@ def add_new_resolution_file (conn, full_service_path,resolution_file,year):
 
     temp_file=resolution_file.split('/')
     resolution_name_file = temp_file[-1]
-    resolution_remote_file = os.path.join(drylab_config.SAMBA_SERVICE_FOLDER,str(year),full_service_path,drylab_config.FOLDERS_FOR_SERVICES[1],resolution_name_file)
+    resolution_remote_file = os.path.join(iSkyLIMS_drylab.drylab_config.SAMBA_SERVICE_FOLDER,str(year),full_service_path,iSkyLIMS_drylab.drylab_config.FOLDERS_FOR_SERVICES[1],resolution_name_file)
 
     try:
         with open(resolution_file ,'rb') as  res_samba_fp:
-            conn.storeFile(drylab_config.SAMBA_SHARED_FOLDER_NAME, resolution_remote_file, res_samba_fp)
+            conn.storeFile(iSkyLIMS_drylab.drylab_config.SAMBA_SHARED_FOLDER_NAME, resolution_remote_file, res_samba_fp)
     except:
         return ( 'Unable to copy the resolution file ',resolution_remote_file,resolution_name_file)
 
@@ -752,7 +668,7 @@ def add_new_resolution_file (conn, full_service_path,resolution_file,year):
 def add_in_progress(request):
     if request.user.is_authenticated:
         try:
-            groups = iSkyLIMS_drylab.models.Group.objects.get(name = drylab_config.SERVICE_MANAGER)
+            groups = iSkyLIMS_drylab.models.Group.objects.get(name = iSkyLIMS_drylab.drylab_config.SERVICE_MANAGER)
             if groups not in request.user.groups.all():
                 return render(
                     request,
@@ -776,19 +692,14 @@ def add_in_progress(request):
                 },
             )
     else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
+        #redirect to login webpage
+        return redirect ('/accounts/login')
 
-    if (
-        request.method == "POST"
-        and request.POST["action"] == "inProgressResolutionService"
-    ):
-        resolution_id = request.POST["resolution_id"]
-        if not check_if_resolution_exists(resolution_id):
-            error_message = drylab_config.ERROR_RESOLUTION_DOES_NOT_EXISTS
-            return render(
-                request, "iSkyLIMS_drylab/error_page.html", {"content": error_message}
-            )
+    if request.method == "POST" and request.POST['action'] == 'inProgressResolutionService' :
+        resolution_id = request.POST['resolution_id']
+        if  not check_if_resolution_exists(resolution_id):
+            error_message = iSkyLIMS_drylab.drylab_config.ERROR_RESOLUTION_DOES_NOT_EXISTS
+            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':error_message})
 
         resolution_obj = get_resolution_obj_from_id(resolution_id)
         resolution_obj.update_resolution_in_progress_date()
@@ -811,17 +722,14 @@ def add_in_progress(request):
             {"in_progress_resolution": in_progress_resolution},
         )
 
-    error_message = drylab_config.ERROR_RESOLUTION_DOES_NOT_EXISTS
-    return render(
-        request, "iSkyLIMS_drylab/error_page.html", {"content": error_message}
-    )
-
+    error_message = iSkyLIMS_drylab.drylab_config.ERROR_RESOLUTION_DOES_NOT_EXISTS
+    return render (request,'iSkyLIMS_drylab/error_page.html', {'content':error_message})
 
 @login_required
 def add_delivery(request):
     if request.user.is_authenticated:
         try:
-            groups = iSkyLIMS_drylab.models.Group.objects.get(name = drylab_config.SERVICE_MANAGER)
+            groups = iSkyLIMS_drylab.models.Group.objects.get(name = iSkyLIMS_drylab.drylab_config.SERVICE_MANAGER)
             if groups not in request.user.groups.all():
                 return render(
                     request,
@@ -845,40 +753,23 @@ def add_delivery(request):
                 },
             )
     else:
-        # redirect to login webpage
-        return redirect("/accounts/login")
-    if (
-        request.method == "POST"
-        and request.POST["action"] == "deliveryResolutionService"
-    ):
-        delivery_data = prepare_delivery_form(request.POST["resolution_id"])
+        #redirect to login webpage
+        return redirect ('/accounts/login')
+    if request.method == 'POST' and request.POST['action'] == 'deliveryResolutionService':
+        delivery_data = prepare_delivery_form (request.POST['resolution_id'])
 
-        return render(
-            request,
-            "iSkyLIMS_drylab/addDelivery.html",
-            {"delivery_data": delivery_data},
-        )
+        return render (request, 'iSkyLIMS_drylab/addDelivery.html', {'delivery_data':delivery_data})
 
-    if request.method == "POST" and request.POST["action"] == "addDeliveryResolution":
+    if request.method == 'POST' and request.POST['action'] == 'addDeliveryResolution':
 
-        if (
-            request.POST["startdate"] != ""
-            and not check_valid_date_format(request.POST["startdate"])
-        ) or (
-            request.POST["enddate"] != ""
-            and not check_valid_date_format(request.POST["enddate"])
-        ):
-            delivery_data = prepare_delivery_form(request.POST["resolution_id"])
-            error_message = drylab_config.ERROR_INCORRECT_FORMAT_DATE
-            return render(
-                request,
-                "iSkyLIMS_drylab/addDelivery.html",
-                {"delivery_data": delivery_data, "ERROR": error_message},
-            )
+        if (request.POST['startdate'] != '' and not iSkyLIMS_drylab.utils.drylab_common_functions.check_valid_date_format(request.POST['startdate'])) or  (request.POST['enddate'] != '' and not iSkyLIMS_drylab.utils.drylab_common_functions.check_valid_date_format(request.POST['enddate'])):
+            delivery_data = prepare_delivery_form (request.POST['resolution_id'])
+            error_message = iSkyLIMS_drylab.drylab_config.ERROR_INCORRECT_FORMAT_DATE
+            return render (request, 'iSkyLIMS_drylab/addDelivery.html', {'delivery_data':delivery_data, 'ERROR': error_message})
 
-        delivery_recorded = store_resolution_delivery(request.POST)
-        resolution_obj = delivery_recorded["delivery_resolutionID"]
-        if delivery_recorded != None:
+        delivery_recorded = store_resolution_delivery (request.POST)
+        resolution_obj = delivery_recorded['deliveryResolutionID']
+        if delivery_recorded != None :
             email_data = {}
             email_data["user_email"] = request.user.email
             email_data["user_name"] = request.user.username
@@ -911,7 +802,7 @@ def add_delivery(request):
 def stats_by_user(request):
     if request.user.is_authenticated:
         try:
-            groups = iSkyLIMS_drylab.models.Group.objects.get(name = drylab_config.SERVICE_MANAGER)
+            groups = iSkyLIMS_drylab.models.Group.objects.get(name = iSkyLIMS_drylab.drylab_config.SERVICE_MANAGER)
             if groups not in request.user.groups.all():
                 return render(
                     request,
@@ -944,26 +835,18 @@ def stats_by_user(request):
         start_date = request.POST["start_date"]
         end_date = request.POST["end_date"]
 
-        if start_date != "" and not check_valid_date_format(start_date):
-            error_message = drylab_config.ERROR_INCORRECT_FORMAT_DATE
-            return render(
-                request,
-                "iSkyLIMS_drylab/statsByUser.html",
-                {"user_list": user_list, "ERROR": error_message},
-            )
-        if end_date != "":
-            if not check_valid_date_format(end_date):
-                error_message = drylab_config.ERROR_INCORRECT_FORMAT_DATE
-                return render(
-                    request,
-                    "iSkyLIMS_drylab/statsByUser.html",
-                    {"user_list": user_list, "ERROR": error_message},
-                )
+        if start_date != '' and not iSkyLIMS_drylab.utils.drylab_common_functions.check_valid_date_format(start_date):
+            error_message = iSkyLIMS_drylab.drylab_config.ERROR_INCORRECT_FORMAT_DATE
+            return render(request, 'iSkyLIMS_drylab/statsByUser.html' , {'user_list': user_list,'ERROR':error_message })
+        if end_date != '':
+            if not iSkyLIMS_drylab.utils.drylab_common_functions.check_valid_date_format(end_date):
+                error_message = iSkyLIMS_drylab.drylab_config.ERROR_INCORRECT_FORMAT_DATE
+                return render(request, 'iSkyLIMS_drylab/statsByUser.html' , {'user_list': user_list,'ERROR':error_message })
         else:
             end_date = date.today().strftime("%Y-%m-%d")
 
         if not iSkyLIMS_drylab.models.User.objects.filter(pk__exact = user_id).exists():
-            error_message = drylab_config.ERROR_USER_NOT_DEFINED
+            error_message = iSkyLIMS_drylab.drylab_config.ERROR_USER_NOT_DEFINED
             return render(request, 'iSkyLIMS_drylab/statsByUser.html' , {'user_list': user_list,'ERROR':error_message })
 
         service_objs = iSkyLIMS_drylab.models.Service.objects.filter(serviceUserId__exact = user_id).order_by('-service_request_number')
@@ -972,12 +855,8 @@ def stats_by_user(request):
         if end_date != '':
             service_objs = service_objs.filter(service_created_date__lte = end_date)
         if len(service_objs) == 0:
-            error_message = drylab_config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
-            return render(
-                request,
-                "iSkyLIMS_drylab/statsByUser.html",
-                {"user_list": user_list, "ERROR": error_message},
-            )
+            error_message = iSkyLIMS_drylab.drylab_config.ERROR_NO_MATCHES_FOUND_FOR_YOUR_SERVICE_SEARCH
+            return render(request, 'iSkyLIMS_drylab/statsByUser.html' , {'user_list': user_list,'ERROR':error_message })
 
         stats_info = {}
         stats_info ['service_by_user'] = []
@@ -1092,7 +971,7 @@ def stats_by_user(request):
 def stats_by_services_request(request):
     if request.user.is_authenticated:
         try:
-            groups = iSkyLIMS_drylab.models.Group.objects.get(name = drylab_config.SERVICE_MANAGER)
+            groups = iSkyLIMS_drylab.models.Group.objects.get(name = iSkyLIMS_drylab.drylab_config.SERVICE_MANAGER)
             if groups not in request.user.groups.all():
                 return render(
                     request,
@@ -1487,10 +1366,8 @@ def configuration_test(request):
 
     if request.method == "POST" and request.POST["action"] == "basicTest":
         test_results = {}
-        test_results["basic_checks_ok"] = "OK"
-        drylab_config_file = os.path.join(
-            settings.BASE_DIR, "iSkyLIMS_drylab", "drylab_config.py"
-        )
+        test_results['basic_checks_ok'] = 'OK'
+        iSkyLIMS_drylab.drylab_config_file = os.path.join(settings.BASE_DIR, 'iSkyLIMS_drylab', 'drylab_config.py')
         # check if access to databases are defined
         try:
             access_db = iSkyLIMS_drylab.models.Service.objects.all()
@@ -1516,12 +1393,12 @@ def configuration_test(request):
         return render (request,'iSkyLIMS_drylab/ConfigurationTest.html', {'test_results': test_results})
     elif request.method=='POST' and request.POST['action'] == 'resolutionTest':
         if 'Delete' in request.POST :
-            iSkyLIMS_drylab.utils.testing_drylab_configuration.delete_test_service ('SRVTEST-IIER001')
+            iSkyLIMS_drylab.utils.testing_iSkyLIMS_drylab.drylab_configuration.delete_test_service ('SRVTEST-IIER001')
             return render(request,'iSkyLIMS_drylab/ConfigurationTest.html')
 
         resolution_results = {}
         service_requested = 'SRVTEST-IIER001'
-        resolution_results['CreateService'], result = iSkyLIMS_drylab.utils.testing_drylab_configuration.create_service_test(service_requested)
+        resolution_results['CreateService'], result = iSkyLIMS_drylab.utils.testing_iSkyLIMS_drylab.drylab_configuration.create_service_test(service_requested)
 
         if result == 'NOK' :
             resolution_results['create_service_ok'] = 'NOK'
@@ -1530,7 +1407,7 @@ def configuration_test(request):
         else:
             resolution_results['create_service_ok'] = 'OK'
             resolution_number = 'SRVTEST-IIER001.1'
-            resolution_results ['resolution_test'] = iSkyLIMS_drylab.utils.testing_drylab_configuration.create_resolution_test (resolution_number, service_requested)
+            resolution_results ['resolution_test'] = iSkyLIMS_drylab.utils.testing_iSkyLIMS_drylab.drylab_configuration.create_resolution_test (resolution_number, service_requested)
             resolution_results['create_resolution_ok'] = 'OK'
 
             resolution_results['completed_ok']= 'OK'
@@ -1539,8 +1416,8 @@ def configuration_test(request):
                     resolution_results['completed_ok']= 'NOK'
                 break
 
-            # service_request_file = os.path.join (settings.BASE_DIR, drylab_config.OUTPUT_DIR_TEMPLATE,str('test_resolution.pdf'))
-            # service_file_uploaded = ''
+            #service_request_file = os.path.join (settings.BASE_DIR, iSkyLIMS_drylab.drylab_config.OUTPUT_DIR_TEMPLATE,str('test_resolution.pdf'))
+            #service_file_uploaded = ''
 
             # create_service_structure (conn, service_request_file, service_file_uploaded, full_service_path, resolution_file)
 
@@ -1556,12 +1433,8 @@ def configuration_test(request):
 @login_required
 def define_pipeline_service(request):
     if request.user.is_authenticated:
-        if not is_service_manager(request):
-            return render(
-                request,
-                "iSkyLIMS_drylab/error_page.html",
-                {"content": drylab_config.ERROR_USER_NOT_ALLOWED},
-            )
+        if not iSkyLIMS_drylab.utils.drylab_common_functions.is_service_manager(request):
+            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':iSkyLIMS_drylab.drylab_config.ERROR_USER_NOT_ALLOWED })
     else:
         return redirect ('/accounts/login')
     data_pipeline = iSkyLIMS_drylab.utils.handling_pipelines.get_data_form_pipeline()
@@ -1570,28 +1443,13 @@ def define_pipeline_service(request):
 
         pipeline_data_form = iSkyLIMS_drylab.utils.handling_pipelines.analyze_input_pipelines(request)
         if iSkyLIMS_drylab.utils.handling_pipelines.pipeline_version_exists(request.POST['pipeline_name'], request.POST['pipeline_version']):
-            error_message = drylab_config.ERROR_PIPELINE_ALREADY_EXISTS
+            error_message = iSkyLIMS_drylab.drylab_config.ERROR_PIPELINE_ALREADY_EXISTS
             data_pipeline.update(pipeline_data_form)
-            return render(
-                request,
-                "iSkyLIMS_drylab/definePipelineService.html",
-                {"data_pipeline": data_pipeline, "error_message": error_message},
-            )
-        # pipeline_data_form = analyze_input_pipelines(request)
-        if request.FILES:
-            fs = FileSystemStorage(
-                location=os.path.join(
-                    settings.MEDIA_ROOT, drylab_config.PIPELINE_FILE_DIRECTORY
-                )
-            )
-            pipeline_data_form["filename"] = fs.save(
-                str(
-                    pipeline_data_form["pipeline_name"]
-                    + "_"
-                    + pipeline_data_form["pipeline_version"]
-                ),
-                request.FILES["pipelinefile"],
-            )
+            return render(request,'iSkyLIMS_drylab/definePipelineService.html', {'data_pipeline': data_pipeline,'error_message': error_message})
+        #pipeline_data_form = analyze_input_pipelines(request)
+        if request.FILES :
+            fs = FileSystemStorage(location = os.path.join(settings.MEDIA_ROOT,iSkyLIMS_drylab.drylab_config.PIPELINE_FILE_DIRECTORY))
+            pipeline_data_form['filename'] = fs.save(str(pipeline_data_form['pipeline_name'] + '_' + pipeline_data_form['pipeline_version']),  request.FILES['pipelinefile'] )
         else:
             pipeline_data_form['filename'] =''
         new_pipeline = iSkyLIMS_drylab.models.Pipelines.objects.create_pipeline(pipeline_data_form)
@@ -1616,12 +1474,8 @@ def define_pipeline_service(request):
 @login_required
 def manage_pipelines(request):
     if request.user.is_authenticated:
-        if not is_service_manager(request):
-            return render(
-                request,
-                "iSkyLIMS_drylab/error_page.html",
-                {"content": drylab_config.ERROR_USER_NOT_ALLOWED},
-            )
+        if not iSkyLIMS_drylab.utils.drylab_common_functions.is_service_manager(request):
+            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':iSkyLIMS_drylab.drylab_config.ERROR_USER_NOT_ALLOWED })
     else:
         #redirect to login webpage
         return redirect ('/accounts/login')
@@ -1631,12 +1485,8 @@ def manage_pipelines(request):
 @login_required
 def detail_pipeline(request, pipeline_id):
     if request.user.is_authenticated:
-        if not is_service_manager(request):
-            return render(
-                request,
-                "iSkyLIMS_drylab/error_page.html",
-                {"content": drylab_config.ERROR_USER_NOT_ALLOWED},
-            )
+        if not iSkyLIMS_drylab.utils.drylab_common_functions.is_service_manager(request):
+            return render (request,'iSkyLIMS_drylab/error_page.html', {'content':iSkyLIMS_drylab.drylab_config.ERROR_USER_NOT_ALLOWED })
     else:
         #redirect to login webpage
         return redirect ('/accounts/login')
