@@ -1,15 +1,18 @@
+# Generic imports
 import json
 from datetime import datetime
 import os
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
+from django_utils.fusioncharts.fusioncharts import FusionCharts
+
+# Local imports
 from iSkyLIMS_drylab import drylab_config
 from iSkyLIMS_drylab.models import *
 from iSkyLIMS_drylab.utils.graphics import *
 from iSkyLIMS_core.models import Samples, SequencingPlatform
 from iSkyLIMS_core.utils.handling_samples import get_only_recorded_samples_and_dates
-
 from iSkyLIMS_drylab.utils.drylab_common_functions import *
 from iSkyLIMS_drylab.utils.handling_multiple_files import (
     get_uploaded_files_for_service,

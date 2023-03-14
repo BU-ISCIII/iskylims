@@ -1,3 +1,4 @@
+# Generic imports
 from datetime import datetime
 from django.core.mail import send_mail
 from iSkyLIMS_drylab.models import *

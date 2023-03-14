@@ -1,7 +1,9 @@
 # encoding: utf-8
+# Generic imports
 from django.http import HttpResponse
 import json
 
+# Local imports
 from iSkyLIMS_drylab.models import UploadServiceFile
 from iSkyLIMS_drylab import drylab_config
 

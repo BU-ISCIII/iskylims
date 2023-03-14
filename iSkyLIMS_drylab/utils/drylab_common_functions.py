@@ -1,14 +1,17 @@
+# Generic imports
 import time
 from datetime import datetime
 import re, os
 from django.conf import settings
 from django.contrib.auth.models import Group, User
-from iSkyLIMS_drylab import drylab_config
-import iSkyLIMS_drylab.models
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.models import User
+
+# Local imports
+from iSkyLIMS_drylab import drylab_config
+import iSkyLIMS_drylab.models
 
 def check_valid_date_format (date):
     try:

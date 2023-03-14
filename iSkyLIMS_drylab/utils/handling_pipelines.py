@@ -1,4 +1,7 @@
+# Generic imports
 import json, os
+
+# Local imports
 import iSkyLIMS_drylab.drylab_config
 import iSkyLIMS_drylab.models
 import iSkyLIMS_drylab.utils.handling_request_services
