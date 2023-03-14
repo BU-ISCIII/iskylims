@@ -24,7 +24,6 @@ from iSkyLIMS_wetlab import wetlab_config
 ## import methods defined on utils.py
 from .utils.sample_sheet_utils import *
 from .utils.sample_functions import *
-from .utils.stats_calculation import *
 from .utils.stats_graphics import *
 from .utils.generic_functions import *
 from .utils.collection_index_functions import *
