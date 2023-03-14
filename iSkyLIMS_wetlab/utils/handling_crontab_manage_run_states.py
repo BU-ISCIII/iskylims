@@ -7,7 +7,7 @@ from iSkyLIMS_wetlab.models import RunProcess, RunningParameters, Projects, Conf
 from iSkyLIMS_wetlab.wetlab_config import *
 
 from .sample_sheet_utils import get_projects_in_run, get_index_library_name
-from .generic_functions import logging_errors, logging_warnings
+from .common import logging_errors, logging_warnings
 from .handling_crontab_common_functions import *
 from .handling_crontab_run_metric import *
 from .handling_crontab_bcl2fastq import *
@@ -29,7 +29,7 @@ def manage_run_in_recorded_state(conn, run_process_objs):
     Functions:
         get_remote_sample_sheet                 # located in utils.handling_crontab_common_functions.py
         waiting_time_expired                    # located in utils.handling_crontab_common_functions.py
-        logging_errors                          # located in utils.generic_functions.py
+        logging_errors                          # located in utils.common.py
         handling_errors_in_run                  # located in utils.handling_crontab_common_functions.py
         assign_projects_to_run                  # located in utils.handling_crontab_common_functions.py
         assign_used_library_in_run              # located in utils.handling_crontab_common_functions.py

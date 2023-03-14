@@ -1,6 +1,6 @@
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_core.utils.handling_samples import *
-from iSkyLIMS_core.utils.generic_functions import get_friend_list
+from iSkyLIMS_core.utils.common import get_friend_list
 from ..fusioncharts.fusioncharts import FusionCharts
 from .stats_graphics import *
 from iSkyLIMS_wetlab.wetlab_config import *
@@ -155,7 +155,7 @@ def get_list_of_samples_in_projects(user, wetlab_manager):
     Constants:
         HEADING_COMPARATION_SAMPLE_LIST
     Functions:
-        get_friend_list     # Located at iSkyLIMS_core.utils.generic_functions
+        get_friend_list     # Located at iSkyLIMS_core.utils.common
     Return:
         samples_data.
     '''
@@ -247,7 +247,7 @@ def search_run_samples(sample_name, user_name, start_date, end_date):
         start_date      # date from starting the search
         end_date        # date from ending the search
     Functions:
-        get_friend_list # located at iSkyLIMS_core/utils/generic_functions.py
+        get_friend_list # located at iSkyLIMS_core/utils/common.py
     Return:
         run_sample_obj.
     '''

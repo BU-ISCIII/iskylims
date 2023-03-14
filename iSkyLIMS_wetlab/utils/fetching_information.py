@@ -10,7 +10,7 @@ from django.contrib.auth.models import Group
 from iSkyLIMS_core.models import SequencerInLab
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
-from .generic_functions import normalized_data, get_run_in_same_year_to_compare
+from .common import normalized_data, get_run_in_same_year_to_compare
 from iSkyLIMS_wetlab.utils.sample_functions import get_sample_in_project_obj_from_id
 from .stats_graphics import *
 
@@ -23,9 +23,9 @@ def get_boxplot_comparation_runs (run_object):
     Input:
         run_object      # contains the runProcess object
     functions:
-        normalized_data # located at utils.generic_functions
+        normalized_data # located at utils.common
         bloxplot_graphic # located at utils.
-        get_run_in_same_year_to_compare # located at utils.generic_functions
+        get_run_in_same_year_to_compare # located at utils.common
     Variables:
         categories          # category list of the data to display
         chem_high_mid       # chemistry value of the run to compare
@@ -481,7 +481,7 @@ def get_information_run(run_object):
         graphics_state      # located at this file
         get_running_parameters # located at this file
         normalized_data     # imported from wetlab_misc_utilities
-        check_run_in_same_year # imported from generic_functions
+        check_run_in_same_year # imported from common
     Constants:
         RUN_IMAGES_DIRECTORY
         MEDIA_URL

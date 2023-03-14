@@ -7,7 +7,7 @@ import logging
 #from pathlib import Path
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
-from iSkyLIMS_wetlab.utils.generic_functions import *
+from iSkyLIMS_wetlab.utils.common import *
 from iSkyLIMS_wetlab.utils.handling_crontab_manage_run_states import *
 from iSkyLIMS_wetlab.utils.handling_crontab_common_functions import *
 from iSkyLIMS_wetlab.utils.update_run_state import search_update_new_runs
@@ -96,7 +96,7 @@ def folder_test_exists (folder_run_name):
         folder_run_name     # folder test name in remote server
 
     Functions:
-        open_samba_connection   # located at utils.generic_functions.py
+        open_samba_connection   # located at utils.common.py
         get_samba_application_shared_folder
     Return:
         True if folder exists
@@ -141,7 +141,7 @@ def execute_test_for_testing_run(run_test_name, run_test_folder):
         run_test_name     # folder test name in remote server
 
     Functions:
-        open_samba_connection               # located at utils.generic_functions.py
+        open_samba_connection               # located at utils.common.py
         get_samba_application_shared_folder # located at utils.handling_crontab_common_functions.py
         get_samba_shared_folder             # located at utils.handling_crontab_common_functions.py
 

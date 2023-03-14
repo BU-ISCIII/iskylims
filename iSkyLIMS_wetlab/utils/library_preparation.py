@@ -9,7 +9,7 @@ from iSkyLIMS_wetlab.wetlab_config import *
 from iSkyLIMS_wetlab.utils.sample_sheet_utils import *
 from iSkyLIMS_wetlab.utils.collection_index_functions import check_collection_index_exists , get_list_of_collection_kits
 from iSkyLIMS_wetlab.utils.handling_sequencers import *
-from iSkyLIMS_wetlab.utils.generic_functions import  *
+from iSkyLIMS_wetlab.utils.common import  *
 from ..fusioncharts.fusioncharts import FusionCharts
 from .stats_graphics import *
 from Bio.Seq import Seq
