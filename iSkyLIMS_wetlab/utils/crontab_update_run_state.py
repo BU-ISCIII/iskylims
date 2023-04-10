@@ -556,16 +556,16 @@ def manage_run_in_processed_bcl2fastq_state(conn, run_process_objs):
     Constants:
         RUN_TEMP_DIRECTORY_PROCESSING
     Functions:
-        delete_existing_bcl2fastq_table_processed    # located at utils.handling_crontab_bcl2fastq.py
-        get_demultiplexing_files                     # located at utils.handling_crontab_bcl2fastq.py
-        parsing_demux_and_conversion_files           # located at utils.handling_crontab_bcl2fastq.py
-        parsing_demux_sample_project                 # located at utils.handling_crontab_bcl2fastq.py
-        process_and_store_raw_demux_project_data     # located at utils.handling_crontab_bcl2fastq.py
-        process_and_store_fl_summary_data            # located at utils.handling_crontab_bcl2fastq.py
-        process_and_store_lane_summary_data          # located at utils.handling_crontab_bcl2fastq.py
-        process_and_store_unknown_barcode_data       # located at utils.handling_crontab_bcl2fastq.py
-        process_and_store_samples_projects_data      # located at utils.handling_crontab_bcl2fastq.py
-        get_run_disk_utilization                     # located at utils.handling_crontab_bcl2fastq.py
+        delete_existing_bcl2fastq_table_processed    
+        get_demultiplexing_files                     
+        parsing_demux_and_conversion_files           
+        parsing_demux_sample_project                 
+        process_and_store_raw_demux_project_data     
+        process_and_store_fl_summary_data            
+        process_and_store_lane_summary_data         
+        process_and_store_unknown_barcode_data      
+        process_and_store_samples_projects_data     
+        get_run_disk_utilization                    
 
     Return:
         None
