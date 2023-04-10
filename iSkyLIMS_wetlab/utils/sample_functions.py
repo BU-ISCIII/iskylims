@@ -48,6 +48,7 @@ def get_codeID_for_resequencing(sample_recorded):
     sample_recorded['lib_prep_available'] = lib_prep_available
     return sample_recorded
 
+
 def analyze_reprocess_data(reprocess_data, reprocess_sample_id, reg_user):
     '''
     Description:
@@ -122,6 +123,7 @@ def analyze_compare_samples_form(form_data):
         sample_objs.append(get_sample_in_project_obj_from_id(row_data[-2]))
     return sample_objs
 
+
 def get_comparation_sample_information(sample_objs):
     '''
     Description:
@@ -144,6 +146,7 @@ def get_comparation_sample_information(sample_objs):
         compared_data['table_data'].append(data)
     compared_data['table_heading'] = HEADING_COMPARATION_SAMPLE_INFORMATION
     return compared_data
+
 
 def get_list_of_samples_in_projects(user, wetlab_manager):
     '''
@@ -201,6 +204,7 @@ def get_sample_in_project_obj_from_id (sample_in_project_id):
 
     return sample_in_project_obj
 
+
 def get_sample_in_project_obj_from_sample_name (sample_name_in_project):
     '''
     Description:
@@ -216,6 +220,7 @@ def get_sample_in_project_obj_from_sample_name (sample_name_in_project):
         sample_in_project_obj = SamplesInProject.objects.filter(sampleName__exact = sample_name_in_project).last()
 
     return sample_in_project_obj
+
 
 def get_run_sample_id ( sample_name):
     '''
@@ -235,6 +240,7 @@ def get_run_sample_id ( sample_name):
         else:
             run_sample_obj = SamplesInProject.objects.get(sampleName__exact = sample_name)
     return run_sample_obj
+
 
 def search_run_samples(sample_name, user_name, start_date, end_date):
     '''
@@ -295,6 +301,7 @@ def search_run_samples(sample_name, user_name, start_date, end_date):
         run_sample_list.append(run_sample.get_basic_info())
 
     return run_sample_list
+
 
 def pending_samples_for_grafic(pending):
     '''

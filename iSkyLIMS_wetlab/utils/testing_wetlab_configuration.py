@@ -4,14 +4,11 @@ from django.conf import settings
 import pwd, stat, os, grp, shutil
 import logging
 
-#from pathlib import Path
 from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
 from iSkyLIMS_wetlab.utils.common import *
-from iSkyLIMS_wetlab.utils.handling_crontab_manage_run_states import *
-from iSkyLIMS_wetlab.utils.handling_crontab_common_functions import *
-from iSkyLIMS_wetlab.utils.update_run_state import search_update_new_runs
-#from .common_run_functions import manage_run_in_processed_run, manage_run_in_processing_bcl2fastq, manage_run_in_processed_bcl2fastq
+from iSkyLIMS_wetlab.utils.crontab_process import *
+from iSkyLIMS_wetlab.utils.crontab_update_run_state import *
 
 def get_config_file (config_file):
     c_file = []
@@ -23,6 +20,7 @@ def get_config_file (config_file):
     except:
         return
     return c_file
+
 
 def get_files_attribute (directory):
     attr_files = []
@@ -37,6 +35,7 @@ def get_files_attribute (directory):
     except:
         return
     return attr_files
+
 
 def get_iSkyLIMS_settings():
     s_file = []
@@ -70,6 +69,7 @@ def check_access_database ():
         return 'OK'
     except:
         return 'NOK'
+
 
 def check_samba_connection() :
 
@@ -123,6 +123,7 @@ def delete_graphic_folder_if_exists(run_name):
             shutil.rmtree(os.path.join(settings.MEDIA_ROOT,'wetlab', 'images_plot', folder_graphic))
     return True
 
+
 def delete_test_run(run_obj):
     '''
     Description:
@@ -132,6 +133,7 @@ def delete_test_run(run_obj):
     '''
     run_obj.delete()
     return
+
 
 def execute_test_for_testing_run(run_test_name, run_test_folder):
     '''

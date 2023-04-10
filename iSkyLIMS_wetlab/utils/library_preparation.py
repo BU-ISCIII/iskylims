@@ -8,14 +8,12 @@ from iSkyLIMS_wetlab.models import *
 from iSkyLIMS_wetlab.wetlab_config import *
 from iSkyLIMS_wetlab.utils.sample_sheet_utils import *
 from iSkyLIMS_wetlab.utils.collection_index_functions import check_collection_index_exists , get_list_of_collection_kits
-from iSkyLIMS_wetlab.utils.handling_sequencers import *
+from iSkyLIMS_wetlab.utils.sequencers import *
 from iSkyLIMS_wetlab.utils.common import  *
 from ..fusioncharts.fusioncharts import FusionCharts
 from .stats_graphics import *
 from Bio.Seq import Seq
 from django.contrib.auth.models import User
-
-
 
 
 def check_empty_fields (data):
@@ -32,6 +30,7 @@ def check_empty_fields (data):
             if field == '':
                 return True
     return False
+
 
 def check_users_exists(user_list):
     '''
@@ -116,6 +115,7 @@ def analyze_and_store_input_param_values(form_data):
 
     return stored_params
 
+
 def create_library_preparation_instance(samples_data, user):
     '''
     Description:
@@ -152,6 +152,7 @@ def create_library_preparation_instance(samples_data, user):
         library_preparation_objs.append(LibraryPreparation.objects.create_lib_preparation(lib_prep_data))
 
     return library_preparation_objs
+
 
 def extract_protocol_library_preparation_form(form_data):
     '''
@@ -225,6 +226,7 @@ def get_protocol_parameters_for_library_preparation(library_preparation_objs):
 
     return lib_prep_same_prot_parameters
 
+
 def get_samples_for_library_preparation():
     '''
     Description:
@@ -237,8 +239,8 @@ def get_samples_for_library_preparation():
     Constant:
         HEADING_FOR_SAMPLES_TO_DEFINE_PROTOCOL
     Functions:
-        configuration_sequencer_exists     # located at iSkyLIMS_wetlab.utils.handling_sequencers
-        get_configuration_sequencers       # located at iSkyLIMS_wetlab.utils.handling_sequencers
+        configuration_sequencer_exists     # located at iSkyLIMS_wetlab.utils.sequencers
+        get_configuration_sequencers       # located at iSkyLIMS_wetlab.utils.sequencers
     Return:
         samples_in_lib_prep
     '''
@@ -311,7 +313,6 @@ def get_samples_for_library_preparation():
     else:
         samples_in_lib_prep ['no_samples'] = 'No samples'
     return samples_in_lib_prep
-
 
 
 def extract_sample_data (s_data):
@@ -429,6 +430,7 @@ def validate_sample_sheet_data (input_data ):
     if 'ERROR' in duplicate_index:
         return duplicate_index
     return 'Validated'
+
 
 def find_duplicate_index (sample_row_data, heading):
     '''
@@ -563,7 +565,6 @@ def get_all_library_information(sample_id):
     return library_information
 
 
-
 def get_iem_version_for_library_prep_ids(lib_prep_id_list):
     '''
     Description:
@@ -582,6 +583,7 @@ def get_iem_version_for_library_prep_ids(lib_prep_id_list):
             if version != 'None' and not version in versions:
                 versions.append(version)
     return versions
+
 
 def get_lib_prep_to_add_parameters():
     '''
@@ -622,6 +624,7 @@ def get_protocol_from_library_id (library_prep_id):
     if LibraryPreparation.objects.filter(pk__exact = library_prep_id).exists():
          return LibraryPreparation.objects.get(pk__exact = library_prep_id).get_protocol_used()
     return ''
+
 
 def get_samples_in_lib_prep_state ():
     '''
@@ -678,8 +681,6 @@ def find_index_sequence_collection_values_kit(sequence):
     if CollectionIndexValues.objects.filter(i_5_seq__icontains =rev_sequence).exists():
         return ['I5', rev_sequence]
     return 'None', sequence
-
-
 
 
 def store_confirmation_library_preparation_index(form_data):
@@ -764,6 +765,7 @@ def store_library_preparation_sample_sheet(sample_sheet_data, user, platform, co
 
     return new_user_s_sheet_obj
 
+
 def get_library_code_and_unique_id (sample_id, molecule_id ):
     '''
     Description:
@@ -806,6 +808,7 @@ def get_user_for_sample_sheet():
     for user_obj in user_objs:
         user_list.append(user_obj.username)
     return user_list
+
 
 def format_sample_sheet_to_display_in_form (sample_sheet_data):
     '''
@@ -895,6 +898,7 @@ def format_sample_sheet_to_display_in_form (sample_sheet_data):
 
     return stored_lib_prep_data
     '''
+
 
 def get_lib_prep_obj_from_id (library_preparation_id):
     '''

@@ -61,6 +61,7 @@ def check_valid_data_for_creation_run(form_data,user_obj):
     '''
     return 'OK'
 
+
 def create_run_in_pre_recorded_and_get_data_for_confirmation (form_data, user_obj):
     '''
     Description:
@@ -133,6 +134,7 @@ def create_or_add_project_to_run(run_data, user_obj, project_name, proj_data):
     project_obj.runProcess.add(run_data['run_obj'])
     return
 
+
 def get_project_obj_from_project_name(project_name):
     '''
     Description:
@@ -146,6 +148,7 @@ def get_project_obj_from_project_name(project_name):
     if Projects.objects.filter(projectName__exact = project_name).exists():
         project_obj = Projects.objects.filter(projectName__exact = project_name).last()
     return project_obj
+
 
 def collect_data_and_update_library_preparation_samples_for_run (data_form, user):
     '''
@@ -262,6 +265,7 @@ def collect_data_and_update_library_preparation_samples_for_run (data_form, user
 
     return record_data
 
+
 def create_new_projects_added_to_run(project_list, run_obj, user_obj):
     '''
     Description:
@@ -306,6 +310,7 @@ def create_new_projects_added_to_run(project_list, run_obj, user_obj):
 
     return projects_objs
 
+
 def get_pool_objs_from_ids (pool_ids):
     '''
     Description:
@@ -317,6 +322,7 @@ def get_pool_objs_from_ids (pool_ids):
     for pool in pool_ids :
         pool_objs.append(LibraryPool.objects.get(pk__exact = pool))
     return pool_objs
+
 
 def get_pool_adapters(pool_objs):
     '''
@@ -353,6 +359,7 @@ def get_pool_adapters(pool_objs):
     return single_paired
     '''
 
+
 def get_pool_duplicated_index(pool_objs):
     '''
     Description:
@@ -374,6 +381,7 @@ def get_pool_duplicated_index(pool_objs):
         return 'False'
     else:
         return result_index
+
 
 def check_pools_compatible(data_form):
     '''
@@ -408,40 +416,7 @@ def check_pools_compatible(data_form):
         error['ERROR'] = error_message
         return error
     return 'True'
-'''
-def create_base_space_file(projects, bs_lib, plate, container_id, experiment_name, paired, ):
-    data = []
-    project_dict ={}
 
-    today_date = datetime.datetime.today().strftime("%Y%m%d_%H%M%S")
-    file_name = str(experiment_name + today_date + '_for_basespace_'+ bs_lib + '.csv')
-    bs_file_relative_path = os.path.join( MIGRATION_DIRECTORY_FILES, file_name)
-    bs_file_full_path = os.path.join(settings.MEDIA_ROOT, bs_file_relative_path)
-    for project in projects.keys():
-        for value in projects[project]['data'] :
-            data.append(value)
-        project_dict[project] = [(os.path.join(settings.MEDIA_URL, bs_file_relative_path)).replace('/', '', 1), bs_lib, projects[project]['project_user']]
-
-    sample_data = '\n'.join(data)
-    if container_id == '' :
-        today_date = datetime.datetime.today().strftime("%Y%m%d")
-        container_id = str('B' + today_date + id_generator())
-    if paired:
-        template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,BASE_SPACE_TWO_INDEX_TEMPLATE_NAME)
-    else:
-        template_file = os.path.join(settings.MEDIA_ROOT,TEMPLATE_FILES_DIRECTORY,BASE_SPACE_ONE_INDEX_TEMPLATE_NAME)
-
-    with open (template_file, 'r') as filein:
-        #filein = open(template_file, 'r')
-        bs_template = string.Template (filein.read())
-    d = {'bs_lib': bs_lib , 'plate': plate, 'container_id': container_id,  'sample_data': sample_data}
-    updated_info = bs_template.substitute(d)
-
-    fh = open(bs_file_full_path, 'w')
-    fh.write(updated_info)
-    fh.close()
-    return project_dict
-'''
 
 def store_confirmation_sample_sheet(fields):
     '''
@@ -524,6 +499,7 @@ def store_confirmation_sample_sheet(fields):
     os.remove(ss_file_full_path)
     return ss_file_relative_path
 
+
 def get_experiment_name (run_id):
     '''
     Description:
@@ -536,6 +512,7 @@ def get_experiment_name (run_id):
     run_obj= RunProcess.objects.get(pk__exact = run_id)
     experiment_name = run_obj.get_run_name()
     return experiment_name
+
 
 def get_library_preparation_unique_id (lib_prep_ids):
     '''
@@ -552,6 +529,7 @@ def get_library_preparation_unique_id (lib_prep_ids):
     for lib_prep_id in lib_prep_ids :
         unique_id_list.append(get_lib_prep_obj_from_id(lib_prep_id).get_unique_id())
     return unique_id_list
+
 
 def get_library_preparation_data_in_run (lib_prep_ids, pool_ids):
     '''
@@ -667,6 +645,7 @@ def get_stored_user_sample_sheet(lib_prep_ids):
     return 'SingleRead'
     '''
 
+
 def collect_lib_prep_data_for_new_run(lib_prep_ids, platform_in_pool):
     '''
     Description:
@@ -734,6 +713,7 @@ def collect_lib_prep_data_for_new_run(lib_prep_ids, platform_in_pool):
             lib_data['heading'] = HEADING_FOR_COLLECT_INFO_FOR_SAMPLE_SHEET_NEXTSEQ_PAIRED_END
     return lib_data
 
+
 def increase_reuse_if_samples_exists(sample_list):
     '''
     Description:
@@ -785,9 +765,6 @@ def increase_reuse_if_samples_exists(sample_list):
     return sample_sheet_data
     '''
 
-def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
-    return ''.join(random.choice(chars) for _ in range(size))
-
 
 def get_library_prep_in_pools (pool_ids):
     '''
@@ -804,9 +781,6 @@ def get_library_prep_in_pools (pool_ids):
             for lib_prep_obj in lib_prep_objs:
                 lib_prep_ids.append(lib_prep_obj.get_id())
     return lib_prep_ids
-
-
-
 
 
 def get_available_pools_for_run():
@@ -831,6 +805,7 @@ def get_available_pools_for_run():
         pools_to_update['defined_runs'] = LibraryPool.objects.filter(poolState__poolState__exact = 'Selected').exclude(runProcess_id = None).order_by('runProcess_id')
 
     return pools_to_update
+
 
 def get_pool_info (pools_to_update):
     '''
@@ -916,6 +891,7 @@ def get_pool_info (pools_to_update):
             pool_info['invalid_run_data']['heading'] = wetlab_config.HEADING_FOR_INCOMPLETED_SELECTION_POOLS
     return pool_info
 
+
 def get_run_obj_from_id(run_id):
     '''
     Description:
@@ -966,6 +942,7 @@ def get_run_user_lot_kit_used_in_sample(sample_id):
 
     return  kit_data
 
+
 def display_available_pools():
     '''
     Description:
@@ -984,9 +961,11 @@ def display_available_pools():
         display_pools_for_run = get_pool_info(pools_to_update)
     return display_pools_for_run
 
+
 def get_pool_instance_from_id (pool_id):
     pool_obj = LibraryPool.objects.get(pk__exact = pool_id)
     return pool_obj
+
 
 def parsing_data_for_bs_file(sample_sheet_data, mapping, paired, heading_base_space):
     base_space_lib ={}
@@ -1020,20 +999,7 @@ def parsing_data_for_bs_file(sample_sheet_data, mapping, paired, heading_base_sp
         string_row_data = ','.join(bs_row_data)
         base_space_lib[lib_name][project_name]['data'].append(string_row_data)
     return base_space_lib
-'''
-def parsing_data_for_sample_sheet_file(new_sample_sheet_data, heading_sample_sheet):
-    data = []
 
-    for key, values in new_sample_sheet_data.items():
-        row_data = []
-        #for item in range(len(mapping)):
-        #    ss_sample_data[mapping[item][0]] = new_sample_sheet_data[key][mapping[item][1]]
-
-        for item in heading_sample_sheet:
-            row_data.append(values[item])
-        data.append(','.join(row_data))
-    return data
-'''
 
 def prepare_fields_to_create_sample_sheet_from_template(data_form, user):
     '''
@@ -1100,6 +1066,7 @@ def prepare_fields_to_create_sample_sheet_from_template(data_form, user):
 
     return sample_sheet_relative
     '''
+
 
 def fetch_reagent_kits_used_in_run (form_data):
     '''

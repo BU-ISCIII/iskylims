@@ -45,7 +45,6 @@ def get_min_mean_and_max_values(values_data, reference_data, number_to_split):
     return reference_query_values
 
 
-
 def get_researcher_statistics(researcher_name, start_date, end_date):
     '''
     Description:

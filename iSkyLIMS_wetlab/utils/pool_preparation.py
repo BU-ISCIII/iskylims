@@ -23,38 +23,6 @@ def get_lib_prep_adapter(lib_prep_ids):
     return adapter_list
 
 
-
-    # def check_single_paired_compatible(lib_prep_ids):
-    '''
-    Description:
-        The function check if the library preparations instance has the same index, (Single Read or Paired End).
-        If there is some library ids that are not in database the function return an error message.
-        If the library preparation contains Single reads and Paired End , return False.
-    Input:
-        lib_prep_ids  # library preparation id list
-    Return:
-        error message if library id does not exists.
-        False when incompatible
-        True all library preparations belong to the same index.
-
-    single_paired = ''
-    not_defined_library_preparation_ids = []
-
-    for lib_prep_id in lib_prep_ids :
-        if not LibraryPreparation.objects.filter(pk__exact = lib_prep_id).exists():
-            not_defined_library_preparation_ids.append(lib_prep_id)
-            return 'ERROR'
-        lib_prep_obj =  LibraryPreparation.objects.get(pk__exact = lib_prep_id)
-
-        lib_prep_paired_end = lib_prep_obj.get_single_paired()
-        if single_paired == '':
-            single_paired = lib_prep_paired_end
-            continue
-        if single_paired != lib_prep_paired_end:
-            return 'False'
-    return 'True'
-    '''
-
 def check_if_duplicated_index (lib_prep_ids):
     '''
     Description:
@@ -97,6 +65,7 @@ def check_if_duplicated_index (lib_prep_ids):
         incompatible_samples['incompatible_index'] =incompatible_index
         return incompatible_samples
 
+
 def get_single_paired(lib_prep_ids):
     '''
     Description:
@@ -113,6 +82,7 @@ def get_single_paired(lib_prep_ids):
         if i5_index_value != '' :
             return 'PairedEnd'
     return 'SingleRead'
+
 
 def define_new_pool(form_data, user_obj):
     '''
@@ -187,6 +157,7 @@ def define_new_pool(form_data, user_obj):
 
     return new_pool
 
+
 def generate_pool_code_id():
     '''
     Description:
@@ -233,6 +204,7 @@ def get_lib_prep_to_select_in_pool():
 
     return display_list
 
+
 def get_info_to_display_created_pool(pool_obj):
     information_for_created_pool = {}
     information_for_created_pool['data'] = pool_obj.get_info()
@@ -247,6 +219,7 @@ def get_info_to_display_created_pool(pool_obj):
     information_for_created_pool['heading_library_pool'] = HEADING_FOR_DISPLAY_LIB_PREP_IN_POOL
 
     return information_for_created_pool
+
 
 def get_lib_prep_collection_index(lib_prep_ids):
     '''
@@ -274,24 +247,3 @@ def get_lib_prep_collection_index(lib_prep_ids):
                 max_value = value
                 collection_name = key
         return collection_name
-'''
-def get_lib_prep_assay(lib_prep_ids):
-    assay_dict = {}
-    for lib_prep_id in lib_prep_ids :
-        if not LibraryPreparation.objects.filter(pk__exact = lib_prep_id).exists():
-            continue
-        lib_prep_obj =  LibraryPreparation.objects.get(pk__exact = lib_prep_id)
-        assay_value = lib_prep_obj.get_assay()
-        if assay_value not in assay_dict :
-            assay_dict[assay_value] = 0
-        assay_dict[assay_value] += 1
-    if len(assay_dict) == 1:
-        return assay_value
-    else:
-        max_value = 0
-        for key, value in assay_dict.items():
-            if value > max_value :
-                max_value = value
-                assay = key
-        return assay
-'''

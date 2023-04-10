@@ -15,7 +15,6 @@ from django.core.files.storage import FileSystemStorage
 
 from iSkyLIMS_wetlab import wetlab_config
 from iSkyLIMS_wetlab.models import *
-# from iSkyLIMS_wetlab.utils.common import  *
 
 def validate_userid_in_user_iem_file (file_read, user_id_list):
     '''
@@ -70,7 +69,6 @@ def validate_userid_in_user_iem_file (file_read, user_id_list):
     return users
 
 
-
 def delete_stored_file (input_file):
     '''
     Description:
@@ -109,6 +107,7 @@ def get_assay_from_file(in_file):
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
+
 def include_csv_header (library_kit, out_file, plate, container):
     csv_header=['FileVersion','LibraryPrepKit','ContainerType','ContainerID','Notes']
 
@@ -122,6 +121,7 @@ def include_csv_header (library_kit, out_file, plate, container):
         out_file.write(header_line)
     #### adding additional line
     out_file.write('\n')
+
 
 def get_adapters (file_lines):
     adapter1 = ''
@@ -145,6 +145,7 @@ def get_adapters (file_lines):
 
     return adapter1, adapter2
 
+
 def get_index_adapter (file_lines):
     '''
     Description :
@@ -161,6 +162,7 @@ def get_index_adapter (file_lines):
             break
     #remove the \n or \r
     return index_adapters.rstrip()
+
 
 def get_projects_in_sample_sheet(file_lines):
     '''
@@ -254,6 +256,7 @@ def get_samples_in_sample_sheet(file_lines):
             samples_dict['samples'].append(sample_name)
     return samples_dict
 
+
 def get_sample_sheet_data (file_read):
     '''
     Description:
@@ -314,6 +317,7 @@ def get_sample_sheet_data (file_read):
 
     return sample_sheet_data
 
+
 def get_sample_with_user_owner (sample_sheet_path):
     '''
     Description:
@@ -358,6 +362,7 @@ def get_sample_with_user_owner (sample_sheet_path):
             sample_user[sample_name] = user_id
     fh.close()
     return sample_user
+
 
 def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects, plate):
     data_raw=[]
@@ -516,6 +521,7 @@ def sample_sheet_map_basespace(in_file, library_kit, library_kit_file, projects,
     file_name_in_database = out_file.replace(absolute_path,'')
     return file_name_in_database
 
+
 def get_projects_in_run(in_file):
     header_found=0
     projects={}
@@ -563,6 +569,7 @@ def get_experiment_name_from_file (in_file):
 
     return experiment_name
 
+
 def get_index_library_name (in_file):
     '''
     Description:
@@ -594,6 +601,7 @@ def get_index_library_name (in_file):
     fh.close()
     return library_value
 
+
 def update_library_kit_field (library_file_name, library_kit_name, library_name):
     #result_directory='documents/wetlab/BaseSpaceMigrationFiles/'
     timestr = time.strftime("%Y%m%d-%H%M%S")
@@ -620,6 +628,7 @@ def update_library_kit_field (library_file_name, library_kit_name, library_name)
     file_name_in_database = out_file.replace(absolute_path,'')
     return file_name_in_database
 
+
 def update_sample_sheet (in_file, experiment_name):
 
     out_line = str ( 'Experiment Name,'+ experiment_name+ '\n')
@@ -644,6 +653,7 @@ def update_sample_sheet (in_file, experiment_name):
     fh_in.close()
     fh_out.close()
     os.rename(temp, in_file)
+
 
 def create_unique_sample_id_values (infile, index_file):
     found_sample_line = False
@@ -701,7 +711,6 @@ def create_unique_sample_id_values (infile, index_file):
     fh.close()
     fh_out_file.close()
     os.rename(temp_sample_sheet, infile)
-
 
 
 def set_user_names_in_sample_sheet (in_file, user_names):
@@ -787,6 +796,7 @@ def store_user_input_file (user_input_file):
     stored_path_file = os.path.join(settings.MEDIA_ROOT, file_name)
     return stored_path_file, file_name
 
+
 def read_all_lines_in_sample_sheet(sample_sheet):
     '''
     Description:
@@ -802,7 +812,6 @@ def read_all_lines_in_sample_sheet(sample_sheet):
         read_lines = fh.readlines()
         fh.close()
     return read_lines
-
 
 
 def read_user_iem_file(in_file):
