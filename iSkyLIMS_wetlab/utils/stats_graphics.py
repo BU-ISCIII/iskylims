@@ -91,6 +91,7 @@ def json_2_column_graphic(heading, q_30_project_lane,q_30_media_lane):
     ]
     return data_source
 
+
 def json_unknow_barcode_graphic (heading, barcode_data) :
     data_source = {}
 
@@ -119,6 +120,7 @@ def json_unknow_barcode_graphic (heading, barcode_data) :
     data_source['data'] = data
 
     return data_source
+
 
 def graphic_for_unbarcodes (heading, theme, lane_unbarcode) :
     data_source = {}
@@ -156,6 +158,7 @@ def graphic_for_unbarcodes (heading, theme, lane_unbarcode) :
     data_source['data'] = data
 
     return data_source
+
 
 def graphic_for_library_kit (heading, sub_caption, x_axis_name, y_axis_name, theme, lane_quality) :
     data_source = {}
@@ -270,6 +273,7 @@ def graphic_for_quality_angular (heading, value) :
             }
     return data_source
 
+
 def pie_graphic_standard (heading, subcaption, theme, input_values):
     data_source = {}
     data_source['chart'] = {
@@ -295,6 +299,7 @@ def pie_graphic_standard (heading, subcaption, theme, input_values):
     data_source['data'] = data
 
     return data_source
+
 
 def column_graphic_for_year_report (heading, sub_caption, x_axis_name, y_axis_name, theme, year_report_data) :
     data_source = {}
@@ -334,6 +339,7 @@ def column_graphic_for_year_report (heading, sub_caption, x_axis_name, y_axis_na
 
     return data_source
 
+
 def researcher_project_column_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme, lane_report_data) :
     data_source = {}
     data_source['chart'] = {
@@ -371,6 +377,7 @@ def researcher_project_column_graphic (heading, sub_caption, x_axis_name, y_axis
     data_source['data'] = data
 
     return data_source
+
 
 def researcher_project_mean_column_graphic(heading,  x_axis_name, y_axis_name, user_project_lane,q_30_media_lane, user_average, overall_average, investigator):
     data_source = {}
@@ -461,6 +468,7 @@ def researcher_project_mean_column_graphic(heading,  x_axis_name, y_axis_name, u
     ]
     return data_source
 
+
 def column_graphic_one_column_highligthed (heading, sub_caption, x_axis_name, y_axis_name, theme, percentage_in_project, sample_name) :
     data_source = {}
     data_source['chart'] = {
@@ -500,6 +508,7 @@ def column_graphic_one_column_highligthed (heading, sub_caption, x_axis_name, y_
     data_source['data'] = data
 
     return data_source
+
 
 def bloxplot_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme, categories, series, data):
     '''
@@ -575,9 +584,6 @@ def bloxplot_graphic (heading, sub_caption, x_axis_name, y_axis_name, theme, cat
     data_source['dataset'] = dataset
 
     return data_source
-
-
-
 
 
 def column_graphic_with_categories(heading, sub_caption, x_axis_name, y_axis_name, theme, categories, series, data):
@@ -665,6 +671,7 @@ def column_graphic_with_categories(heading, sub_caption, x_axis_name, y_axis_nam
 
     return data_source
 
+
 def column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme, input_data) :
     data_source = {}
     data_source['chart'] = {
@@ -701,6 +708,7 @@ def column_graphic_simple (heading, sub_caption, x_axis_name, y_axis_name, theme
         data.append(data_dict)
     data_source['data'] = data
     return data_source
+
 
 def column_graphic_tupla (heading, sub_caption, x_axis_name, y_axis_name, theme, source_data, highlight_value) :
     data_source = {}
@@ -742,6 +750,7 @@ def column_graphic_tupla (heading, sub_caption, x_axis_name, y_axis_name, theme,
     data_source['data'] = data
 
     return data_source
+
 
 def graphic_3D_pie (heading, sub_title, axis_x_description, axis_y_description, theme, source_data) :
     data_source = {}

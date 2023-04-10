@@ -14,6 +14,7 @@ def configuration_sequencer_exists():
         return True
     return False
 
+
 def define_new_sequencer(form_data):
     '''
     Description:
@@ -38,6 +39,7 @@ def define_new_sequencer(form_data):
     new_sequencer_name = SequencerInLab.objects.create_sequencer_in_lab(seq_data).get_sequencer_name()
     return new_sequencer_name
 
+
 def define_new_seq_configuration(form_data):
     '''
     Description:
@@ -59,6 +61,7 @@ def define_new_seq_configuration(form_data):
     new_seq_configuration = SequencingConfiguration.objects.create_new_configuration(seq_configuration_data)
     new_configuration_data = [seq_configuration_data['configurationName'],new_seq_configuration.get_platform_name()]
     return new_configuration_data
+
 
 def get_configuration_sequencers_data():
     '''
@@ -84,6 +87,7 @@ def get_configuration_sequencers_data():
         sequencer_configuration['configuration_platform_option'].append([platform_name, conf_data])
 
     return sequencer_configuration
+
 
 def get_defined_sequencers():
     '''
@@ -146,6 +150,7 @@ def get_list_sequencer_configuration ():
         sequencer_configuration['sequencer_data'] = sequencer_data
 
     return sequencer_configuration
+
 
 def get_sequencer_inventory_data():
     '''

@@ -66,9 +66,7 @@ COPY_SAMPLE_SHEET_TO_REMOTE = True  # boolean constant True if NextSeq
 # sample sheet needs to be copied to remote server
 RUN_LOG_FOLDER = "Logs"
 
-DEMULTIPLEXION_BCL2FASTQ_FOLDER = "Data/Intensities/BaseCalls"
-REPORT_FOLDER = "Reports"
-STATS_FOLDER = "Stats"
+STATS_FILE_PATH = "Data/Intensities/BaseCalls/Stats"
 
 
 CONVERSION_STATS_FILE = "ConversionStats.xml"

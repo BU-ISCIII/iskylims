@@ -17,29 +17,6 @@ from iSkyLIMS_wetlab import wetlab_config
 from iSkyLIMS_wetlab.models import RunProcess, RunStates, Projects, RunningParameters, SambaConnectionData, ConfigSetting
 from iSkyLIMS_core.models import SequencerInLab, SequencingPlatform
 
-'''
-def check_all_projects_exists (project_list):
-
-    Description:
-        Function will check if all projects given in the project list
-        are defined on database
-        Return True if all are in , False if not
-    Input:
-        project_list    #list of the project to check
-    variables:
-        logger # logging object to write in the log file
-    Return:
-        True /False
-
-    logger = logging.getLogger(__name__)
-    logger.debug ('Starting function for check_all_projects_exists')
-    for project in project_list :
-        if not Projects.objects.filter(projectName__exact = project).exists():
-            logger.debug ('End function for check_all_projects_exists: Found some projects not defined')
-            return False
-    logger.debug ('End function for check_all_projects_exists')
-    return True
-'''
 
 def get_configuration_value(parameter_name):
     '''
@@ -57,6 +34,7 @@ def get_configuration_value(parameter_name):
         parameter_obj = ConfigSetting.objects.filter(configurationName__exact = parameter_name).last()
         parameter_value = parameter_obj.get_configuration_value()
     return parameter_value
+
 
 def get_run_in_same_year_to_compare (run_object):
     '''
@@ -78,44 +56,13 @@ def get_run_in_same_year_to_compare (run_object):
     same_run_in_year = RunProcess.objects.filter(run_date__range=(start_date, end_date)).exclude(runName__in = run_different_chemistry)
     return same_run_in_year
 
+
 def check_valid_date_format (date):
     try:
         datetime.strptime(date, '%Y-%m-%d')
         return True
     except:
         return False
-
-
-    '''
-    def get_sequencer_lanes_number_from_file (input_file, experiment_name):
-    '''
-    '''
-    Description:
-        Function read the RunInfo.xml file to get the number of lanes
-    Input:
-        input_file        # input file to get the number of lanes
-        experiment_name     # experiment name used for logging
-    Return:
-        number_of_lanes
-    '''
-    '''
-    logger = logging.getLogger(__name__)
-    logger.debug ('%s : Starting function get_sequencer_lanes_number_from_file', experiment_name)
-    number_of_lanes = ''
-    fh = open (input_file, 'r')
-    search_line = '.*LaneCount="(\d).*'
-    for line in fh:
-        lane_found = re.search('^\s+ %s' % search_line, line)
-        if lane_found:
-            number_of_lanes = lane_found.group(1)
-            break
-    fh.close()
-    logger.info('%s : number of lanes %s' , experiment_name , number_of_lanes)
-    logger.debug ('%s : End function get_sequencer_lanes_number_from_file', experiment_name)
-    return number_of_lanes
-    '''
-
-
 
 
 def get_samba_connection_data():
@@ -131,6 +78,7 @@ def get_samba_connection_data():
         samba_data = samba_connection_obj.get_samba_data()
 
     return samba_data
+
 
 def save_samba_connection_data(data):
     '''
@@ -165,7 +113,7 @@ def open_samba_connection():
     samba_data = get_samba_connection_data()
     if not samba_data :
         string_message = 'Samba connection data on database is empty'
-        logging_errors (string_message, True, True)
+        logging_errors (string_message, True, False)
         sys.exit(1)
     if samba_data['SAMBA_APPLICATION_FOLDER_NAME'] != '':
         samba_data['SAMBA_SHARED_FOLDER_NAME'] = os.path.join(samba_data['SAMBA_SHARED_FOLDER_NAME'] , samba_data['SAMBA_APPLICATION_FOLDER_NAME'])
@@ -186,6 +134,7 @@ def open_samba_connection():
 
     logger.debug ('End function open_samba_connection')
     return conn
+
 
 def get_type_of_data (data):
     '''
@@ -254,6 +203,7 @@ def get_attributes_remote_file (conn, run_dir, remote_file) :
     logger.debug ('End function for  getting remote attributes')
     return file_attributes
 
+
 def get_available_platform ():
     '''
     Description:
@@ -271,6 +221,7 @@ def get_available_platform ():
     for platform in platforms :
         available_platforms.append(platform.get_platform_name())
     return available_platforms
+
 
 def get_available_run_state ():
     '''
@@ -321,6 +272,7 @@ def get_configuration_from_database(configuration_name):
         configuration_value = configuration_settings_obj.get_configuration_value()
     return configuration_value
 
+
 def get_log_file_name(config_log_file) :
     '''
     Description:
@@ -359,6 +311,7 @@ def get_allowed_user_for_sharing(request_user):
     sharing_list.append(request_user.id)
     return sharing_list
 
+
 def get_userid_list ():
     '''
     Descripion:
@@ -371,6 +324,7 @@ def get_userid_list ():
     for user_obj in user_objs:
         user_id_list.append(user_obj.username)
     return user_id_list
+
 
 def is_wetlab_manager (request):
     '''
@@ -390,6 +344,7 @@ def is_wetlab_manager (request):
         return False
 
     return True
+
 
 def normalized_data (set_data, all_data) :
     '''
@@ -472,6 +427,7 @@ def save_database_configuration_value(configuration_name, configuration_value):
         config_settings_obj = ConfigSetting.objects.create_config_setting(configuration_name, configuration_value)
     return config_settings_obj
 
+
 def logging_errors(string_text, showing_traceback , print_on_screen ):
     '''
     Description:
@@ -519,6 +475,7 @@ def logging_errors(string_text, showing_traceback , print_on_screen ):
         print('******* END ERROR ********')
     return ''
 
+
 def logging_warnings(string_text, print_on_screen ):
     '''
     Description:
@@ -540,8 +497,6 @@ def logging_warnings(string_text, print_on_screen ):
         print('Check log for detail information')
         print('**** END WARNING *******')
     return ''
-
-
 
 
 def open_log(config_file):
