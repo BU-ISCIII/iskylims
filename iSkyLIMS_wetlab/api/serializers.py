@@ -42,12 +42,14 @@ class ProjectValuesSerializers(serializers.ModelSerializer):
 class SampleSerializer(serializers.ModelSerializer):
     labRequest = serializers.StringRelatedField(many=False, label="Laboratory")
     sampleProject = serializers.StringRelatedField(many=False, label="Sample Project")
+    """  
     sampleEntryDate = serializers.DateTimeField(
         format="%Y-%m-%d", label="Recorded sample date"
     )
     collectionSampleDate = serializers.DateTimeField(
         format="%Y-%m-%d", label="Collection sample date"
-    )
+    ) 
+    """
     project_values = ProjectValuesSerializers(many=True)
 
     def to_representation(self, instance):

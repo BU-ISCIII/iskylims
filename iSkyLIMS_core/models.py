@@ -1134,7 +1134,11 @@ class Samples(models.Model):
 
     def get_info_in_defined_state(self):
         sample_info = []
-        sample_info.append(self.sampleEntryDate.strftime("%d , %B , %Y"))
+        if self.sampleEntryDate is not None:
+            sampleEntryDate = self.sampleEntryDate.strftime("%d , %B , %Y")
+        else:
+            sampleEntryDate = ""
+        sample_info.append(sampleEntryDate)
         sample_info.append(self.sampleCodeID)
         sample_info.append(self.sampleName)
         sample_info.append(str(self.pk))
@@ -1142,10 +1146,14 @@ class Samples(models.Model):
 
     def get_info_for_searching(self):
         sample_info = []
+        if self.sampleEntryDate is not None:
+            sampleEntryDate = self.sampleEntryDate.strftime("%d , %B , %Y")
+        else:
+            sampleEntryDate = ""
         sample_info.append(str(self.pk))
         sample_info.append(self.sampleName)
         sample_info.append(self.sampleState.get_sample_state())
-        sample_info.append(self.sampleEntryDate.strftime("%d , %B , %Y"))
+        sample_info.append(sampleEntryDate)
         sample_info.append(self.sampleCodeID)
         sample_info.append(self.sampleType.get_name())
         try:
@@ -1178,17 +1186,24 @@ class Samples(models.Model):
 
     def get_info_for_patient(self):
         sample_info = []
+        if self.sampleEntryDate:
+            sampleEntryDate = self.sampleEntryDate.strftime("%d , %B , %Y")
+        else:
+            sampleEntryDate = ""
         sample_info.append(str(self.pk))
         sample_info.append(self.sampleName)
         sample_info.append(self.labRequest.get_name())
-        sample_info.append(self.sampleEntryDate.strftime("%d , %B , %Y"))
+        sample_info.append(sampleEntryDate)
         sample_info.append(self.sampleType.get_name())
         sample_info.append(self.sampleState.get_sample_state())
         return sample_info
 
-    def get_extraction_date(self):
-        recordeddate = self.sampleEntryDate.strftime("%d , %B , %Y")
-        return "%s" % (recordeddate)
+    def get_entry_date(self):
+        if self.sampleEntryDate:
+            sampleEntryDate = self.sampleEntryDate.strftime("%d , %B , %Y")
+        else:
+            sampleEntryDate = ""
+        return "%s" % (sampleEntryDate)
 
     def get_lab_request(self):
         return "%s" % (self.labRequest.get_name())
