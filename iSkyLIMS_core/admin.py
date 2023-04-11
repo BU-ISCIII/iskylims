@@ -28,9 +28,12 @@ from iSkyLIMS_core.models import (
     StatesForSample,
     StateInCountry,
     UserLotCommercialKits,
-    OntologyMap
+    OntologyMap,
+    Contact
 )
 
+class ContactAdmin(admin.ModelAdmin):
+    list_display = ["contactName", "contactMail"]
 
 class StateInCountryAdmin(admin.ModelAdmin):
     list_display = ["stateName", "apps_name"]
@@ -254,3 +257,5 @@ admin.site.register(Species, SpeciesAdmin)
 admin.site.register(StatesForMolecule, StatesForMoleculeAdmin)
 admin.site.register(StatesForSample, StatesForSampleAdmin)
 admin.site.register(UserLotCommercialKits, UserLotCommercialKitsAdmin)
+admin.site.register(Contact, ContactAdmin)
+
