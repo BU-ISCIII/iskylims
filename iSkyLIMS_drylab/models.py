@@ -37,6 +37,23 @@ def service_files_upload(instance,filename):
 			filename_ext.lower(),
 	)
 
+class ServiceState(models.Model):
+    state_value = models.CharField(max_length=50)
+    state_display = models.CharField(max_length=80, null=True, blank=True)
+    description = models.CharField(max_length=255, null=True, blank=True)
+    show_in_stats = models.BooleanField(default=False)
+    
+    class Meta:
+        db_table = "service_state"
+
+    def get_service(self, to_display=None):
+        if to_display:
+            return "%s" %(self.state_display)
+        else:
+            return "%s" %(self.state_value)
+
+
+
 class ResolutionStates(models.Model):
 	resolutionStateName = models.CharField(max_length=50)
 
