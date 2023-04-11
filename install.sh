@@ -200,11 +200,11 @@ fi
 
 if [ $upgrade == true ]; then
     # check if upgrade keyword is given
-    if [ ! -d $INSTALL_PATH/iSkyLIMS ]; then
+    if [ ! -d $INSTALL_PATH ]; then
         printf "\n\n%s"
         printf "${RED}------------------${NC}\n"
         printf "${RED}Unable to start the upgrade.${NC}\n"
-        printf "${RED}Folder $INSTALL_PATH/iSkyLIMS does not exist.${NC}\n"
+        printf "${RED}Folder $INSTALL_PATH does not exist.${NC}\n"
         printf "${RED}------------------${NC}\n"
         exit 1
     fi
@@ -220,9 +220,9 @@ if [ $upgrade == true ]; then
 
     # update installation by sinchronize folders
     echo "Copying files to installation folder"
-    rsync -rlv README.md LICENSE conf iSkyLIMS_core iSkyLIMS_drylab iSkyLIMS_clinic iSkyLIMS_wetlab django_utils $INSTALL_PATH/iSkyLIMS
+    rsync -rlv README.md LICENSE conf iSkyLIMS_core iSkyLIMS_drylab iSkyLIMS_clinic iSkyLIMS_wetlab django_utils $INSTALL_PATH
     # upgrade database if needed
-    cd $INSTALL_PATH/iSkyLIMS
+    cd $INSTALL_PATH
     echo "activate the virtualenv"
     source virtualenv/bin/activate
     echo "Installing required python packages"
@@ -332,7 +332,7 @@ if [ -d $INSTALL_PATH ]; then
         echo "Exiting without running iSkyLIMS installation"
         exit 1
     else
-        rm -rf $INSTALL_PATH/iSkyLIMS
+        rm -rf $INSTALL_PATH
     fi
 fi
 
@@ -356,12 +356,12 @@ if [[ $linux_distribution == "CentOS" || $linux_distribution == "RedHatEnterpris
 fi
 
 ## Create the installation folder
-mkdir -p $INSTALL_PATH/iSkyLIMS
+mkdir -p $INSTALL_PATH
 
 rsync -rlv README.md LICENSE conf iSkyLIMS_core iSkyLIMS_drylab \
-        iSkyLIMS_wetlab iSkyLIMS_clinic django_utils $INSTALL_PATH/iSkyLIMS
+        iSkyLIMS_wetlab iSkyLIMS_clinic django_utils $INSTALL_PATH
 
-cd $INSTALL_PATH/iSkyLIMS
+cd $INSTALL_PATH
 
 ## Create apache group if it does not exist.
 if ! grep -q apache /etc/group
@@ -373,44 +373,44 @@ fi
 
 if [ $LOG_TYPE == "symbolic_link" ]; then
     if [ -d $LOG_PATH ]; then
-        ln -s $LOG_PATH  $INSTALL_PATH/iSkyLIMS/logs
+        ln -s $LOG_PATH  $INSTALL_PATH/logs
     chmod 775 $LOG_PATH
     else
         echo "Log folder path: $LOG_PATH does not exist. Fix it in the install_settings.txt and run again."
     exit 1
     fi
 else
-    mkdir -p $INSTALL_PATH/iSkyLIMS/logs
-    chown $user:apache $INSTALL_PATH/iSkyLIMS/logs
-    chmod 775 $INSTALL_PATH/iSkyLIMS/logs
+    mkdir -p $INSTALL_PATH/logs
+    chown $user:apache $INSTALL_PATH/logs
+    chmod 775 $INSTALL_PATH/logs
 fi
 
 # Create necessary folders
 echo "Created documents structure"
-mkdir -p $INSTALL_PATH/iSkyLIMS/documents/wetlab/tmp
-mkdir -p $INSTALL_PATH/iSkyLIMS/documents/wetlab/SampleSheets
-mkdir -p $INSTALL_PATH/iSkyLIMS/documents/wetlab/images_plot
-chown $user:apache $INSTALL_PATH/iSkyLIMS/documents
-chmod 775 $INSTALL_PATH/iSkyLIMS/documents
-chown $user:apache $INSTALL_PATH/iSkyLIMS/documents/wetlab/tmp
-chmod 775 $INSTALL_PATH/iSkyLIMS/documents/wetlab/tmp
-chown $user:apache $INSTALL_PATH/iSkyLIMS/documents/wetlab/SampleSheets
-chmod 775 $INSTALL_PATH/iSkyLIMS/documents/wetlab/SampleSheets
-chown $user:apache $INSTALL_PATH/iSkyLIMS/documents/wetlab/images_plot
-chmod 775 $INSTALL_PATH/iSkyLIMS/documents/wetlab/images_plot
-mkdir -p $INSTALL_PATH/iSkyLIMS/documents/drylab
-chown $user:apache $INSTALL_PATH/iSkyLIMS/documents/drylab
-chmod 775 $INSTALL_PATH/iSkyLIMS/documents/drylab
+mkdir -p $INSTALL_PATH/documents/wetlab/tmp
+mkdir -p $INSTALL_PATH/documents/wetlab/SampleSheets
+mkdir -p $INSTALL_PATH/documents/wetlab/images_plot
+chown $user:apache $INSTALL_PATH/documents
+chmod 775 $INSTALL_PATH/documents
+chown $user:apache $INSTALL_PATH/documents/wetlab/tmp
+chmod 775 $INSTALL_PATH/documents/wetlab/tmp
+chown $user:apache $INSTALL_PATH/documents/wetlab/SampleSheets
+chmod 775 $INSTALL_PATH/documents/wetlab/SampleSheets
+chown $user:apache $INSTALL_PATH/documents/wetlab/images_plot
+chmod 775 $INSTALL_PATH/documents/wetlab/images_plot
+mkdir -p $INSTALL_PATH/documents/drylab
+chown $user:apache $INSTALL_PATH/documents/drylab
+chmod 775 $INSTALL_PATH/documents/drylab
 
 
 # install virtual environment
 echo "Creating virtual environment"
-if [ -d $INSTALL_PATH/iSkyLIMS/virtualenv ]; then
+if [ -d $INSTALL_PATH/virtualenv ]; then
     echo "There already is a virtualenv for iskylims in $INSTALL_PATH."
     read -p "Do you want to remove current virtualenv and reinstall? (Y/N) " -n 1 -r
     echo    # (optional) move to a new line
     if [[ ! $REPLY =~ ^[Yy]$ ]] ; then
-        rm -rf $INSTALL_PATH/iSkyLIMS/virtualenv
+        rm -rf $INSTALL_PATH/virtualenv
         bash -c "$PYTHON_BIN_PATH -m venv virtualenv"
     else
         echo "virtualenv alredy defined. Skipping."
@@ -431,22 +431,22 @@ django-admin startproject iSkyLIMS .
 grep ^SECRET iSkyLIMS/settings.py > ~/.secret
 
 # Copying config files and script
-cp conf/template_settings.py $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
-cp conf/urls.py $INSTALL_PATH/iSkyLIMS/iSkyLIMS
+cp conf/template_settings.py $INSTALL_PATH/iSkyLIMS/settings.py
+cp conf/urls.py $INSTALL_PATH/iSkyLIMS
 
-sed -i "/^SECRET/c\\$(cat ~/.secret)" $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
-sed -i "s/djangouser/${DB_USER}/g" $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
-sed -i "s/djangopass/${DB_PASS}/g" $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
-sed -i "s/djangohost/${DB_SERVER_IP}/g" $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
-sed -i "s/djangoport/${DB_PORT}/g" $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
-sed -i "s/djangodbname/${DB_NAME}/g" $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
+sed -i "/^SECRET/c\\$(cat ~/.secret)" $INSTALL_PATH/iSkyLIMS/settings.py
+sed -i "s/djangouser/${DB_USER}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+sed -i "s/djangopass/${DB_PASS}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+sed -i "s/djangohost/${DB_SERVER_IP}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+sed -i "s/djangoport/${DB_PORT}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+sed -i "s/djangodbname/${DB_NAME}/g" $INSTALL_PATH/iSkyLIMS/settings.py
 
-sed -i "s/emailhostserver/${EMAIL_HOST_SERVER}/g" $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
-sed -i "s/emailport/${EMAIL_PORT}/g" $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
-sed -i "s/emailhostuser/${EMAIL_HOST_USER}/g" $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
-sed -i "s/emailhostpassword/${EMAIL_HOST_PASSWORD}/g" $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
-sed -i "s/emailhosttls/${EMAIL_USE_TLS}/g" $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
-sed -i "s/localserverip/${LOCAL_SERVER_IP}/g" $INSTALL_PATH/iSkyLIMS/iSkyLIMS/settings.py
+sed -i "s/emailhostserver/${EMAIL_HOST_SERVER}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+sed -i "s/emailport/${EMAIL_PORT}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+sed -i "s/emailhostuser/${EMAIL_HOST_USER}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+sed -i "s/emailhostpassword/${EMAIL_HOST_PASSWORD}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+sed -i "s/emailhosttls/${EMAIL_USE_TLS}/g" $INSTALL_PATH/iSkyLIMS/settings.py
+sed -i "s/localserverip/${LOCAL_SERVER_IP}/g" $INSTALL_PATH/iSkyLIMS/settings.py
 
 echo "Creating the database structure for iSkyLIMS"
 python3 manage.py migrate
