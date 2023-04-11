@@ -222,7 +222,7 @@ def create_sample_data(request):
         data = request.data
         if isinstance(data, QueryDict):
             data = data.dict()
-        if "sampleName" not in data and "sampleProject" not in data:
+        if "sampleName" not in data or "sampleProject" not in data:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         if Samples.objects.filter(sampleName__iexact=data["sampleName"]).exists():
             error = {"ERROR": "sample already defined"}
