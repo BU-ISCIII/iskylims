@@ -11,43 +11,22 @@
         <div class="panel panel-default">
             <div class="panel-heading">Contact information</div>
             <div class="panel-body">
-                <h4>Drylab contact information</h4>
-                <table class="table">
+                <h4>Contact information</h4>
+                <table class="table table-hover" >
                     <thead>
                         <tr>
-                        <th>Person</th>
-                        <th>Telephone</th>
-                        <th>Email</th>
+                            <th>Contact</th>
+                            <th>Email</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                        <td>Isabel Cuesta de la Plaza</td>
-                        <td>23738</td>
-                        <td>bioinformatica@isciii.es</td>
-                        </tr>
-                        <tr>
-                        <td>Sara Monzón Fernández</td>
-                        <td>23253</td>
-                        <td>bioinformatica@isciii.es</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <h4>Wetlab contact information</h4>
-                <table class="table">
-                    <thead>
-                        <tr>
-                        <th>Person</th>
-                        <th>Telephone</th>
-                        <th>Email</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                        <td>Ángel Zaballos</td>
-                        <td></td>
-                        <td>azaballos@isciii.es</td>
-                        </tr>
+                        {% for values in contacts %}
+                            <tr>
+                                {% for value in values %}
+                                    <td>{{ value }} </td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
