@@ -49,7 +49,7 @@ def add_new_contacts (request):
 def contact(request):
     
     contact_info = {}
-    contacts = Contact.objets.all()
+    contacts = Contact.objects.all()
     for contact in contacts:
         contact_info[contact.get_contact_name()] = contact.get_contact_name()
     
