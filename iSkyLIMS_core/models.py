@@ -25,6 +25,18 @@ class StateInCountry(models.Model):
 
     objects = StateInCountryManager()
 
+class Contact(models.Model):
+    contactName = models.CharField(max_length=80)
+    contactMail = models.CharField(max_length=40, null=True)
+
+    def __str__(self):
+        return "%s" % (self.contactName)
+
+    def get_contact_name(self):
+        return "%s" % (self.contactName)
+
+    def get_contact_email(self):
+        return "%s" % (self.contactMail)
 
 class CityManager(models.Manager):
     def create_new_city(self, data):

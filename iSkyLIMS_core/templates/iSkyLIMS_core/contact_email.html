@@ -15,16 +15,15 @@
                 <table class="table table-hover" >
                     <thead>
                         <tr>
-                            <th>Contact</th>
+                            <th>Name</th>
                             <th>Email</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for values in contacts %}
+                        {% for name, email in contact_info.items %}
                             <tr>
-                                {% for value in values %}
-                                    <td>{{ value }} </td>
-                                {% endfor %}
+                                <td>{{ name }} </td>
+                                <td>{{ email }} </td>
                             </tr>
                         {% endfor %}
                     </tbody>
