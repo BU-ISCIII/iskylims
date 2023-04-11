@@ -47,6 +47,12 @@ def add_new_contacts (request):
     return render(request, "iSkyLIMS_core/addNewContacts.html",{'apps_installed':apps_installed})
 
 def contact(request):
+    
+    contact_info = {}
+    contacts = Contact.objets.all()
+    for contact in contacts:
+        contact_info[contact.get_contact_name()] = contact.get_contact_name()
+    
     if request.method == 'GET':
         form = ContactForm()
     else:
@@ -57,13 +63,11 @@ def contact(request):
             email_contact = form.cleaned_data['email_contact']
             message = form.cleaned_data['message']
             try:
-                #send_mail(subject, message, email_contact, ['bioinformatica@isciii.es'])
-                send_mail(subject, message, email_contact, ['luis.chapado@amgitt.es',])
-                #send_mail(subject, message, email_contact, ['chapado.l@gmail.com',])
+                send_mail(subject, message, email_contact, ['bioinformatica@isciii.es'])
             except BadHeaderError:
                 return HttpResponse('Invalid header found.')
             return redirect('thanks')
-    return render(request, "iSkyLIMS_core/contact_email.html", {'form': form})
+    return render(request, "iSkyLIMS_core/contact_email.html", { 'form': form, 'contact_info': contact_info })
 
 def thanks(request):
     return render(request, 'iSkyLIMS_core/thanks.html')
