@@ -1085,7 +1085,7 @@ def get_only_recorded_samples_and_dates():
             data.append(sample_obj.get_sample_project())
             data.append(sample_obj.get_sample_type())
             data.append(sample_obj.get_species())
-            data.append(sample_obj.get_extraction_date())
+            data.append(sample_obj.get_entry_date())
             data.append(sample_obj.get_sample_id())
             samples_data.append(data)
 
@@ -1358,7 +1358,7 @@ def get_samples_in_extracted_molecule_state(user):
                     if molecule.get_state() == "Completed":
                         continue
                     sample_information = []
-                    sample_information.append(sample_obj.get_extraction_date())
+                    sample_information.append(sample_obj.get_entry_date())
                     sample_information.append(sample_obj.get_sample_name())
                     molecule_data = molecule.get_molecule_information()
                     molecule_information.append(sample_information + molecule_data)

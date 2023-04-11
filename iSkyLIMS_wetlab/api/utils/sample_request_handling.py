@@ -308,13 +308,26 @@ def split_sample_data(data):
     for sample_field in sample_fields:
         try:
             if "date" in sample_field.lower():
-                split_data["s_data"][sample_field] = datetime.strptime(
+                try:
+                    # Check if value is in date format with - separation
+                    split_data["s_data"][sample_field] = datetime.strptime(
                     data[sample_field], "%Y-%m-%d"
-                )
+                    )
+                except ValueError:
+                    try:
+                        # Check if no separation is in date format
+                        split_data["s_data"][sample_field] = datetime.strptime(
+                            data[sample_field], "%Y%m%d"
+                        )
+                    except ValueError:
+                        # Value is not a date. Set to None to allow that serialzer
+                        # store it in database.
+                        split_data["s_data"][sample_field] = None
             else:
                 split_data["s_data"][sample_field] = data[sample_field]
         except KeyError as e:
             return str(str(e) + " is not defined in your query")
+    
     if split_data["s_data"]["onlyRecorded"] == "Yes":
         split_data["s_data"]["onlyRecorded"] = True
     else:

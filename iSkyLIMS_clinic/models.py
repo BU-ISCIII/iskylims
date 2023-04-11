@@ -198,7 +198,7 @@ class ClinicSampleRequest (models.Model):
         s_core_info.append(self.sampleCore.get_sample_origin())
         s_core_info.append(self.sampleCore.get_sample_type())
         s_core_info.append(self.sampleCore.get_species())
-        s_core_info.append(self.sampleCore.get_extraction_date())
+        s_core_info.append(self.sampleCore.get_entry_date())
         s_core_info.append(self.sampleCore.get_register_user())
 
         return s_core_info
@@ -209,7 +209,7 @@ class ClinicSampleRequest (models.Model):
         s_core_info.append(self.sampleCore.get_sample_origin())
         s_core_info.append(self.sampleCore.get_sample_type())
         s_core_info.append(self.sampleCore.get_species())
-        s_core_info.append(self.sampleCore.get_extraction_date())
+        s_core_info.append(self.sampleCore.get_entry_date())
         s_core_info.append(self.pk)
         return s_core_info
 
