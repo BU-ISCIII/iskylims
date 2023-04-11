@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django_utils',
     'mptt',
     'crispy_forms',
+    'crispy_bootstrap3',
     'django_crontab',
     'django_mptt_admin',
     'django.contrib.admin',
