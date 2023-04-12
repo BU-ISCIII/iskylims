@@ -236,7 +236,7 @@ def get_available_run_state ():
     available_states = []
     run_states = RunStates.objects.all()
     for state in run_states :
-        available_states.append(state.runStateName)
+        available_states.append(state.run_state_name)
     return available_states
 
 

@@ -26,7 +26,7 @@ def prepare_delivery_form(resolution_id):
             resolution_id
         )
     )
-    if resolution_obj != None:
+    if resolution_obj is not None:
         delivery_data_form[
             "available_services"
         ] = resolution_obj.get_available_services_ids()
@@ -63,7 +63,7 @@ def store_resolution_delivery(form_data):
             form_data["resolution_id"]
         )
     )
-    if resolution_obj != None:
+    if resolution_obj is not None:
         delivery_data = {}
         if form_data["startdate"] != "":
             delivery_data["executionStartDate"] = datetime.datetime.strptime(

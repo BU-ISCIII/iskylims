@@ -121,7 +121,7 @@ def increment_service_number(request_user):
             .last()
             .get_service_request_integer()
         )
-        if number_request == None:
+        if number_request is None:
             service_number = "001"
         else:
             service_number = str(int(number_request) + 1).zfill(3)

@@ -550,7 +550,7 @@ def add_basespace_library(request):
     basespace_library_objects = LibraryKit.objects.all()
     if len(basespace_library_objects) > 0:
         for l_kit in basespace_library_objects:
-            basespace_library.append(l_kit.libraryName)
+            basespace_library.append(l_kit.library_name)
 
     if request.method == "POST" and request.POST["action"] == "addNewBasespaceLibrary":
         new_basespace_library_name = request.POST["newBasespaceLibrary"]
@@ -6263,7 +6263,7 @@ def search_user_lot_kit(request):
 @login_required
 def display_user_lot_kit(request, user_kit_id):
     user_kit_obj = get_user_lot_commercial_kit_obj_from_id(user_kit_id)
-    if user_kit_obj == None:
+    if user_kit_obj is None:
         return render(
             request,
             "iSkyLIMS_wetlab/error_page.html",
